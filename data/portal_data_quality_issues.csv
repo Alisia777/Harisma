@@ -1,5 +1,4 @@
 ﻿severity;type;dataset;platform;place;articleKey;name;revenue;units;message
-"warning";"dataset_stale_or_empty";"dashboard";"";"";"";"";"";"";"Данные отстают на 2 дн."
 "info";"api_sku_known_outside_registry";"platform_trends.extraMarketplace";"ozon";"";"trezvin";"trezvin";"51100";"146";"API SKU is covered by the team price/repricer contour; master SKU card is optional"
 "info";"api_sku_known_outside_registry";"platform_trends.extraMarketplace";"ozon";"";"wbmicelix";"wbmicelix";"45526";"149";"API SKU is covered by the team price/repricer contour; master SKU card is optional"
 "info";"api_sku_known_outside_registry";"platform_trends.extraMarketplace";"ozon";"";"wboptitrin";"wboptitrin";"17982";"54";"API SKU is covered by the team price/repricer contour; master SKU card is optional"

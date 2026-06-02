@@ -11,14 +11,14 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "На вывод",
+    "registryStatus": "Вывод",
     "rating": 4.8,
     "reviews": 370,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Олеся",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -137,7 +137,20 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 97,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.507Z"
+    },
+    "aliases": [
+      {
+        "value": "MPL583151",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL583151"
+      ]
     }
   },
   {
@@ -152,14 +165,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Вывод",
-    "registryStatus": "На вывод",
+    "registryStatus": "Вывод",
     "rating": 4.7,
     "reviews": 299,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
-      "name": "Олеся",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Олеся",
@@ -287,14 +300,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "На вывод",
+    "registryStatus": "Вывод",
     "rating": 4.8,
     "reviews": 1158,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -413,7 +426,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 126,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -428,14 +441,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.7,
     "reviews": 1738,
     "focusScore": 1,
     "focusReasons": "Много возвратов",
     "owner": {
-      "name": "Олеся",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Кирилл",
@@ -563,14 +576,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "На вывод",
+    "registryStatus": "Вывод",
     "rating": 4.6,
     "reviews": 1048,
     "focusScore": 2,
     "focusReasons": "Низкий остаток; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Светлана",
@@ -700,14 +713,14 @@
     "abc": "A",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 1450,
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -828,7 +841,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 3,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     },
     "aliases": [
       {
@@ -848,6 +861,36 @@
         "platform": "wb",
         "source": "repricer-alias-csv",
         "note": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx"
+      },
+      {
+        "value": "99000114726",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465441",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL483098",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874428",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465441",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
@@ -855,6 +898,17 @@
         "otz_fbs6_curly_method_300ml",
         "439446390",
         "wb-nm-439446390"
+      ],
+      "ga": [
+        "99000114726",
+        "4603320465441"
+      ],
+      "letu": [
+        "MPL483098"
+      ],
+      "mm": [
+        "5874428",
+        "4603320465441"
       ]
     },
     "aliasImport": {
@@ -878,14 +932,14 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.7,
     "reviews": 977,
     "focusScore": 8,
     "focusReasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -1004,7 +1058,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 92,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -1019,14 +1073,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "На вывод",
+    "registryStatus": "Вывод",
     "rating": 4.9,
     "reviews": 1122,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Мария",
@@ -1140,7 +1194,52 @@
       "mm": "Пудра для умывания"
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "99000076220",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498017",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL378812",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5870958",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498017",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076220",
+        "4670020498017"
+      ],
+      "letu": [
+        "MPL378812"
+      ],
+      "mm": [
+        "5870958",
+        "4670020498017"
+      ]
+    }
   },
   {
     "article": "enzim_pudra_80gr_v2",
@@ -1154,14 +1253,14 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 368,
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -1282,7 +1381,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 27,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125143",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4645565747487",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL536294",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6796006",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4645565747487",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125143",
+        "4645565747487"
+      ],
+      "letu": [
+        "MPL536294"
+      ],
+      "mm": [
+        "6796006",
+        "4645565747487"
+      ]
     }
   },
   {
@@ -1297,14 +1441,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.7,
     "reviews": 1118,
     "focusScore": 1,
     "focusReasons": "Есть внешний трафик КЗ",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -1425,7 +1569,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 67,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -1440,14 +1584,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.7,
     "reviews": 573,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -1566,7 +1710,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 69,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -1581,14 +1725,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "На вывод",
+    "registryStatus": "Вывод",
     "rating": 4.8,
     "reviews": 800,
     "focusScore": 1,
     "focusReasons": "Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -1709,7 +1853,36 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 44,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "MPL439819",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874419",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498482",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL439819"
+      ],
+      "mm": [
+        "5874419",
+        "4670020498482"
+      ]
     }
   },
   {
@@ -1724,14 +1897,14 @@
     "abc": "B",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 1648,
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -1852,7 +2025,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 1,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114730",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417420110",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL497134",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880316",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417420110",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114730",
+        "4660417420110"
+      ],
+      "letu": [
+        "MPL497134"
+      ],
+      "mm": [
+        "5880316",
+        "4660417420110"
+      ]
     }
   },
   {
@@ -1867,14 +2085,14 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.8,
     "reviews": 705,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Кирилл",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -1993,7 +2211,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 51,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114725",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4676574657436",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411155",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874282",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4676574657436",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114725",
+        "4676574657436"
+      ],
+      "letu": [
+        "MPL411155"
+      ],
+      "mm": [
+        "5874282",
+        "4676574657436"
+      ]
     }
   },
   {
@@ -2008,14 +2271,14 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.7,
     "reviews": 792,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -2134,7 +2397,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 111,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000131680",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465458",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL553832",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880768",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465458",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000131680",
+        "4603320465458"
+      ],
+      "letu": [
+        "MPL553832"
+      ],
+      "mm": [
+        "5880768",
+        "4603320465458"
+      ]
     }
   },
   {
@@ -2149,14 +2457,14 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Под вопросом",
+    "registryStatus": "Вывод",
     "rating": 4.7,
     "reviews": 1248,
     "focusScore": 3,
     "focusReasons": "Отрицательная маржа Ozon; Много возвратов",
     "owner": {
-      "name": "Олеся",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Под вопросом",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -2275,7 +2583,59 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 45,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076224",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4609893777394",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4680918970174",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL378889",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868854",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4609893777394",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076224",
+        "4609893777394",
+        "4680918970174"
+      ],
+      "letu": [
+        "MPL378889"
+      ],
+      "mm": [
+        "5868854",
+        "4609893777394"
+      ]
     }
   },
   {
@@ -2290,14 +2650,14 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 1522,
     "focusScore": 2,
     "focusReasons": "Низкое выполнение плана",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -2416,7 +2776,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 95,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000081275",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465274",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411107",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5873782",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465274",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000081275",
+        "4603320465274"
+      ],
+      "letu": [
+        "MPL411107"
+      ],
+      "mm": [
+        "5873782",
+        "4603320465274"
+      ]
     }
   },
   {
@@ -2431,14 +2836,14 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.9,
     "reviews": 677,
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа Ozon",
     "owner": {
-      "name": "Олеся",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -2557,7 +2962,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 103,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000081276",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465267",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411108",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5871280",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465267",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000081276",
+        "4603320465267"
+      ],
+      "letu": [
+        "MPL411108"
+      ],
+      "mm": [
+        "5871280",
+        "4603320465267"
+      ]
     }
   },
   {
@@ -2571,7 +3021,7 @@
     "segment": null,
     "abc": null,
     "leadTimeDays": null,
-    "status": null,
+    "status": "На вывод",
     "registryStatus": "На вывод",
     "rating": 4.7,
     "reviews": 596,
@@ -2579,7 +3029,7 @@
     "focusReasons": "Низкий остаток",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "",
@@ -2693,7 +3143,52 @@
       "mm": "Масло гидрофильное"
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "99000076222",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4610172186202",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL378893",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868812",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4610172186202",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076222",
+        "4610172186202"
+      ],
+      "letu": [
+        "MPL378893"
+      ],
+      "mm": [
+        "5868812",
+        "4610172186202"
+      ]
+    }
   },
   {
     "article": "glikiron_BAD_60caps",
@@ -2707,14 +3202,14 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 562,
     "focusScore": 2,
     "focusReasons": "Низкое выполнение плана",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -2833,7 +3328,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 80,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     },
     "aliases": [
       {
@@ -2861,14 +3356,14 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.7,
     "reviews": 1601,
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа WB",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -2987,7 +3482,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 96,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -3008,8 +3503,8 @@
     "focusScore": 3,
     "focusReasons": "Отрицательная маржа Ozon; Много возвратов",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Под вопросом",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -3128,7 +3623,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 58,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -3143,14 +3638,14 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 3239,
     "focusScore": 2,
     "focusReasons": "Низкое выполнение плана",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -3269,7 +3764,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 35,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     },
     "aliases": [
       {
@@ -3297,14 +3792,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "На вывод",
+    "registryStatus": "Вывод",
     "rating": 4.9,
     "reviews": 348,
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа WB",
     "owner": {
-      "name": "Олеся",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -3423,7 +3918,36 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 91,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "MPL378978",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598588",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4630084864616",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL378978"
+      ],
+      "mm": [
+        "6598588",
+        "4630084864616"
+      ]
     }
   },
   {
@@ -3438,14 +3962,14 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 665,
     "focusScore": 8,
     "focusReasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -3564,7 +4088,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 112,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114723",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4630084865477",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL494932",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880311",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4630084865477",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114723",
+        "4630084865477"
+      ],
+      "letu": [
+        "MPL494932"
+      ],
+      "mm": [
+        "5880311",
+        "4630084865477"
+      ]
     }
   },
   {
@@ -3579,14 +4148,14 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Под вопросом",
+    "registryStatus": "Актуальный",
     "rating": 0,
     "reviews": 819,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; WB ниже min price",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Под вопросом",
       "byPlatform": {
         "wb": "Олеся",
@@ -3700,7 +4269,20 @@
       "mm": ""
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "MPL379166",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL379166"
+      ]
+    }
   },
   {
     "article": "krem_buster_250ml",
@@ -3714,14 +4296,14 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.7,
     "reviews": 641,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -3842,7 +4424,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 29,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125268",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465427",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL534369",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5878029",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465427",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125268",
+        "4603320465427"
+      ],
+      "letu": [
+        "MPL534369"
+      ],
+      "mm": [
+        "5878029",
+        "4603320465427"
+      ]
     }
   },
   {
@@ -3857,14 +4484,14 @@
     "abc": "B",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 1855,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -3983,7 +4610,66 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 50,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114729",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421452",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4601022298473",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4660417421889",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL379165",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5854268",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421452",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114729",
+        "4660417421452",
+        "4601022298473",
+        "4660417421889"
+      ],
+      "letu": [
+        "MPL379165"
+      ],
+      "mm": [
+        "5854268",
+        "4660417421452"
+      ]
     }
   },
   {
@@ -3998,14 +4684,14 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 609,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -4126,7 +4812,59 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 17,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125267",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498918",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4660417421643",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL534118",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880765",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498918",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125267",
+        "4670020498918",
+        "4660417421643"
+      ],
+      "letu": [
+        "MPL534118"
+      ],
+      "mm": [
+        "5880765",
+        "4670020498918"
+      ]
     }
   },
   {
@@ -4141,14 +4879,14 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 1121,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -4269,7 +5007,59 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 11,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114731",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020497898",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4660417421650",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL379167",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5869575",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020497898",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114731",
+        "4670020497898",
+        "4660417421650"
+      ],
+      "letu": [
+        "MPL379167"
+      ],
+      "mm": [
+        "5869575",
+        "4670020497898"
+      ]
     }
   },
   {
@@ -4284,14 +5074,14 @@
     "abc": "C",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Новинка",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 718,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Даша",
-      "source": "Рабочий спецификации · Реестр",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -4412,7 +5202,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 16,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000163832",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421766",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583158",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598168",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421766",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000163832",
+        "4660417421766"
+      ],
+      "letu": [
+        "MPL583158"
+      ],
+      "mm": [
+        "6598168",
+        "4660417421766"
+      ]
     }
   },
   {
@@ -4427,14 +5262,14 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 1314,
     "focusScore": 10,
     "focusReasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -4555,7 +5390,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 15,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076225",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498437",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL379168",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6780727",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498437",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076225",
+        "4670020498437"
+      ],
+      "letu": [
+        "MPL379168"
+      ],
+      "mm": [
+        "6780727",
+        "4670020498437"
+      ]
     }
   },
   {
@@ -4570,14 +5450,14 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 1900,
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -4698,7 +5578,73 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 5,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076205",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498208",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4603312714004",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4603312714007",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4640523970020",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411098",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5871877",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603312714007",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076205",
+        "4670020498208",
+        "4603312714004",
+        "4603312714007",
+        "4640523970020"
+      ],
+      "letu": [
+        "MPL411098"
+      ],
+      "mm": [
+        "5871877",
+        "4603312714007"
+      ]
     }
   },
   {
@@ -4719,8 +5665,8 @@
     "focusScore": 2,
     "focusReasons": "Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Под вопросом",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -4841,7 +5787,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 7,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -4856,14 +5802,14 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 2008,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -4984,7 +5930,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 57,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076210",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020497546",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381090",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868855",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020497546",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076210",
+        "4670020497546"
+      ],
+      "letu": [
+        "MPL381090"
+      ],
+      "mm": [
+        "5868855",
+        "4670020497546"
+      ]
     }
   },
   {
@@ -4999,14 +5990,14 @@
     "abc": "C",
     "leadTimeDays": null,
     "status": "Актуальный",
-    "registryStatus": "Новинка",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 172,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Есть внешний трафик КЗ; Owner не закреплён",
     "owner": {
-      "name": "[object Object]",
-      "source": "Рабочий спецификации · Реестр",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -5127,7 +6118,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 65,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000176492",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4630446234156",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583149",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598159",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4630446234156",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000176492",
+        "4630446234156"
+      ],
+      "letu": [
+        "MPL583149"
+      ],
+      "mm": [
+        "6598159",
+        "4630446234156"
+      ]
     }
   },
   {
@@ -5142,14 +6178,14 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 1469,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -5270,7 +6306,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 18,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076208",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465366",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411097",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874277",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465366",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076208",
+        "4603320465366"
+      ],
+      "letu": [
+        "MPL411097"
+      ],
+      "mm": [
+        "5874277",
+        "4603320465366"
+      ]
     }
   },
   {
@@ -5285,14 +6366,14 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 1426,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -5413,7 +6494,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 24,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     },
     "aliases": [
       {
@@ -5421,11 +6502,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000114727",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498741",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411103",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874286",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498741",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "maska_dlya_lica_100m"
+        "maska_dlya_lica_100m",
+        "99000114727",
+        "4670020498741"
+      ],
+      "letu": [
+        "MPL411103"
+      ],
+      "mm": [
+        "5874286",
+        "4670020498741"
       ]
     }
   },
@@ -5441,14 +6561,14 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 1880,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -5567,7 +6687,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 31,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     },
     "aliases": [
       {
@@ -5575,11 +6695,59 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000076215",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4610172186882",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381091",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868845",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4610172186882",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      },
+      {
+        "value": "fbs_maslo_dlya_borodi_50ml",
+        "platform": "ym",
+        "source": "sku_aliases.json",
+        "note": "Я.Маркет FBS alias"
       }
     ],
     "platformAliases": {
       "ga": [
-        "maslo_dlya_borodi_50"
+        "maslo_dlya_borodi_50",
+        "99000076215",
+        "4610172186882"
+      ],
+      "letu": [
+        "MPL381091"
+      ],
+      "mm": [
+        "5868845",
+        "4610172186882"
+      ],
+      "ym": [
+        "fbs_maslo_dlya_borodi_50ml"
       ]
     }
   },
@@ -5595,14 +6763,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "На вывод",
+    "registryStatus": "Вывод",
     "rating": 4.4,
     "reviews": 655,
     "focusScore": 4,
     "focusReasons": "Отрицательная маржа WB; Низкий остаток; WB ниже min price",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Мария",
@@ -5716,7 +6884,59 @@
       "mm": ""
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "99000076212",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4610172186875",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL498116",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "MPL381092",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5876472",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4610172186875",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076212",
+        "4610172186875"
+      ],
+      "letu": [
+        "MPL498116",
+        "MPL381092"
+      ],
+      "mm": [
+        "5876472",
+        "4610172186875"
+      ]
+    }
   },
   {
     "article": "maslo_dlya_volos_parf_110ml_",
@@ -5730,14 +6950,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.7,
     "reviews": 610,
     "focusScore": 3,
     "focusReasons": "Отрицательная маржа WB; Много возвратов",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -5856,7 +7076,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 71,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -5871,14 +7091,14 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 440,
     "focusScore": 9,
     "focusReasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -5997,7 +7217,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 107,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114732",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465304",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL485625",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5876222",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465304",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114732",
+        "4603320465304"
+      ],
+      "letu": [
+        "MPL485625"
+      ],
+      "mm": [
+        "5876222",
+        "4603320465304"
+      ]
     }
   },
   {
@@ -6012,14 +7277,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Под вопросом",
-    "registryStatus": "На вывод",
+    "registryStatus": "Под вопросом",
     "rating": 4.8,
     "reviews": 1009,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -6138,7 +7403,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 64,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -6153,14 +7418,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Вывод",
-    "registryStatus": "На вывод",
+    "registryStatus": "Вывод",
     "rating": 4.9,
     "reviews": 253,
     "focusScore": 2,
     "focusReasons": "Низкий остаток; WB ниже min price",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "",
@@ -6288,14 +7553,14 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "На вывод",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 563,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Кирилл",
@@ -6416,11 +7681,41 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000076218",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4698878338125",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "5873796",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4698878338125",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "nabor_penka_dlya_res"
+        "nabor_penka_dlya_res",
+        "99000076218",
+        "4698878338125"
+      ],
+      "mm": [
+        "5873796",
+        "4698878338125"
       ]
     }
   },
@@ -6436,14 +7731,14 @@
     "abc": "C",
     "leadTimeDays": 30,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.7,
     "reviews": 5364,
     "focusScore": 10,
     "focusReasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -6562,7 +7857,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 28,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076202",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4607050974747",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381166",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5843397",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4607050974747",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076202",
+        "4607050974747"
+      ],
+      "letu": [
+        "MPL381166"
+      ],
+      "mm": [
+        "5843397",
+        "4607050974747"
+      ]
     }
   },
   {
@@ -6577,14 +7917,14 @@
     "abc": null,
     "leadTimeDays": 30,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.7,
     "reviews": 692,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -6703,7 +8043,36 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 94,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "MPL583152",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874423",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4656887467946",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL583152"
+      ],
+      "mm": [
+        "5874423",
+        "4656887467946"
+      ]
     }
   },
   {
@@ -6718,14 +8087,14 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 5024,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -6844,7 +8213,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 38,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000177797",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4630040229770",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381167",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868852",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4629945399213",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000177797",
+        "4630040229770"
+      ],
+      "letu": [
+        "MPL381167"
+      ],
+      "mm": [
+        "5868852",
+        "4629945399213"
+      ]
     }
   },
   {
@@ -6859,14 +8273,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.9,
     "reviews": 964,
     "focusScore": 2,
     "focusReasons": "Низкий остаток; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Кирилл",
@@ -6982,7 +8396,36 @@
       "mm": ""
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "MPL381093",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868850",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4630084864777",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL381093"
+      ],
+      "mm": [
+        "5868850",
+        "4630084864777"
+      ]
+    }
   },
   {
     "article": "penka_kudryavii_metod_150ml",
@@ -6996,14 +8439,14 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 640,
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -7124,7 +8567,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 14,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125266",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498611",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL534436",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874567",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498611",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125266",
+        "4670020498611"
+      ],
+      "letu": [
+        "MPL534436"
+      ],
+      "mm": [
+        "5874567",
+        "4670020498611"
+      ]
     }
   },
   {
@@ -7139,14 +8627,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "На вывод",
+    "registryStatus": "Вывод",
     "rating": 4.8,
     "reviews": 850,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
-      "name": "Олеся",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Олеся",
@@ -7260,7 +8748,52 @@
       "mm": "Скрабы и пилинги"
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "99000076204",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020496761",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381095",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5854281",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020496761",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076204",
+        "4670020496761"
+      ],
+      "letu": [
+        "MPL381095"
+      ],
+      "mm": [
+        "5854281",
+        "4670020496761"
+      ]
+    }
   },
   {
     "article": "pink_pepper_50ml",
@@ -7274,14 +8807,14 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 540,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -7402,7 +8935,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 26,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125263",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465342",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL533896",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880769",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465342",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125263",
+        "4603320465342"
+      ],
+      "letu": [
+        "MPL533896"
+      ],
+      "mm": [
+        "5880769",
+        "4603320465342"
+      ]
     }
   },
   {
@@ -7417,14 +8995,14 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.8,
     "reviews": 713,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Светлана",
@@ -7552,14 +9130,14 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "На вывод",
+    "registryStatus": "Актуальный",
     "rating": 4.7,
     "reviews": 366,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -7680,7 +9258,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 83,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -7695,14 +9273,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Вывод",
-    "registryStatus": null,
+    "registryStatus": "Вывод",
     "rating": null,
     "reviews": null,
     "focusScore": 3,
     "focusReasons": "Низкий остаток; WB ниже min price; Ozon ниже min price; Owner не закреплён",
     "owner": {
-      "name": "",
-      "source": null,
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
         "wb": "",
@@ -7830,14 +9408,14 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 11004,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -7958,7 +9536,68 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 2,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076216",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4610172186219",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4660417421582",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381168",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868814",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421582",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      },
+      {
+        "value": "fbs_retiderm_50ml",
+        "platform": "ym",
+        "source": "sku_aliases.json",
+        "note": "Я.Маркет FBS alias"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076216",
+        "4610172186219",
+        "4660417421582"
+      ],
+      "letu": [
+        "MPL381168"
+      ],
+      "mm": [
+        "5868814",
+        "4660417421582"
+      ],
+      "ym": [
+        "fbs_retiderm_50ml"
+      ]
     }
   },
   {
@@ -7973,14 +9612,14 @@
     "abc": "B",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Новинка",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 150,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -8101,7 +9740,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 42,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000137436",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421629",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL570692",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6075447",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421629",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000137436",
+        "4660417421629"
+      ],
+      "letu": [
+        "MPL570692"
+      ],
+      "mm": [
+        "6075447",
+        "4660417421629"
+      ]
     }
   },
   {
@@ -8116,14 +9800,14 @@
     "abc": "A",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 835,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -8245,7 +9929,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 21,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     },
     "aliases": [
       {
@@ -8253,11 +9937,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000124418",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421599",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL532421",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880783",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421599",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "retinait_krem_025_50"
+        "retinait_krem_025_50",
+        "99000124418",
+        "4660417421599"
+      ],
+      "letu": [
+        "MPL532421"
+      ],
+      "mm": [
+        "5880783",
+        "4660417421599"
       ]
     }
   },
@@ -8273,14 +9996,14 @@
     "abc": "A",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 1359,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -8402,7 +10125,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 19,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     },
     "aliases": [
       {
@@ -8410,11 +10133,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000131675",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421759",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL553835",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5970789",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421759",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "retinait_krem_05_50m"
+        "retinait_krem_05_50m",
+        "99000131675",
+        "4660417421759"
+      ],
+      "letu": [
+        "MPL553835"
+      ],
+      "mm": [
+        "5970789",
+        "4660417421759"
       ]
     }
   },
@@ -8430,14 +10192,14 @@
     "abc": "A",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 1776,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -8559,7 +10321,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 8,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000124421",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421605",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL532549",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880780",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421605",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000124421",
+        "4660417421605"
+      ],
+      "letu": [
+        "MPL532549"
+      ],
+      "mm": [
+        "5880780",
+        "4660417421605"
+      ]
     }
   },
   {
@@ -8574,14 +10381,14 @@
     "abc": "A",
     "leadTimeDays": null,
     "status": "Актуальный",
-    "registryStatus": "Новинка",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 1080,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -8702,7 +10509,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 13,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000176496",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421827",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583160",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598583",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421827",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000176496",
+        "4660417421827"
+      ],
+      "letu": [
+        "MPL583160"
+      ],
+      "mm": [
+        "6598583",
+        "4660417421827"
+      ]
     }
   },
   {
@@ -8717,14 +10569,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Новинка",
-    "registryStatus": null,
+    "registryStatus": "Новинка",
     "rating": 4.8,
     "reviews": 21,
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа Ozon; Owner не закреплён",
     "owner": {
-      "name": "[object Object]",
-      "source": null,
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -8843,7 +10695,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 34,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000154001",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4640523970099",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL580332",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6342026",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4640523970099",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000154001",
+        "4640523970099"
+      ],
+      "letu": [
+        "MPL580332"
+      ],
+      "mm": [
+        "6342026",
+        "4640523970099"
+      ]
     }
   },
   {
@@ -8858,14 +10755,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Новинка",
-    "registryStatus": null,
+    "registryStatus": "Новинка",
     "rating": 4.8,
     "reviews": 40,
     "focusScore": 0,
     "focusReasons": "Owner не закреплён",
     "owner": {
-      "name": "[object Object]",
-      "source": null,
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -8984,7 +10881,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 20,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000153995",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4640523970082",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL580331",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6340976",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4640523970082",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000153995",
+        "4640523970082"
+      ],
+      "letu": [
+        "MPL580331"
+      ],
+      "mm": [
+        "6340976",
+        "4640523970082"
+      ]
     }
   },
   {
@@ -8999,14 +10941,14 @@
     "abc": "A",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 957,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -9127,7 +11069,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 6,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     },
     "aliases": [
       {
@@ -9135,11 +11077,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000125142",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465403",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL533706",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880771",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465403",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "retinait_syvorotka_1"
+        "retinait_syvorotka_1",
+        "99000125142",
+        "4603320465403"
+      ],
+      "letu": [
+        "MPL533706"
+      ],
+      "mm": [
+        "5880771",
+        "4603320465403"
       ]
     }
   },
@@ -9155,14 +11136,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Новинка",
-    "registryStatus": null,
+    "registryStatus": "Новинка",
     "rating": 4.9,
     "reviews": 285,
     "focusScore": 1,
     "focusReasons": "Много возвратов; Owner не закреплён",
     "owner": {
-      "name": "Олеся",
-      "source": "manual override 2026-04",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -9281,7 +11262,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 9,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000154005",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421636",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL580318",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6339736",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421636",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000154005",
+        "4660417421636"
+      ],
+      "letu": [
+        "MPL580318"
+      ],
+      "mm": [
+        "6339736",
+        "4660417421636"
+      ]
     }
   },
   {
@@ -9296,14 +11322,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Нет в спецификации",
-    "registryStatus": null,
+    "registryStatus": "Нет в спецификации",
     "rating": 0,
     "reviews": 0,
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": "",
-      "source": null,
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
         "wb": "",
@@ -9417,7 +11443,52 @@
       "mm": "Наборы средств для лица"
     },
     "costPrice": 0,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "aliases": [
+      {
+        "value": "99000176497",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660401460108",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583298",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598610",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660401460108",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000176497",
+        "4660401460108"
+      ],
+      "letu": [
+        "MPL583298"
+      ],
+      "mm": [
+        "6598610",
+        "4660401460108"
+      ]
+    }
   },
   {
     "article": "Retinol_Start_Kit",
@@ -9431,14 +11502,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Актуальный",
-    "registryStatus": "Новинка",
+    "registryStatus": "Актуальный",
     "rating": 0,
     "reviews": 0,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -9557,7 +11628,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 117,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000176503",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660401460092",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583296",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598129",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660401460092",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000176503",
+        "4660401460092"
+      ],
+      "letu": [
+        "MPL583296"
+      ],
+      "mm": [
+        "6598129",
+        "4660401460092"
+      ]
     }
   },
   {
@@ -9572,14 +11688,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Под вопросом",
-    "registryStatus": "На вывод",
+    "registryStatus": "Под вопросом",
     "rating": 4.8,
     "reviews": 1245,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Светлана",
@@ -9707,14 +11823,14 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 4688,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -9835,7 +11951,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 52,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     },
     "aliases": [
       {
@@ -9843,11 +11959,57 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000076213",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020496747",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4660417421834",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381169",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868808",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020496747",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "shampun_dlya_rosta_2"
+        "shampun_dlya_rosta_2",
+        "99000076213",
+        "4670020496747",
+        "4660417421834"
+      ],
+      "letu": [
+        "MPL381169"
+      ],
+      "mm": [
+        "5868808",
+        "4670020496747"
       ]
     }
   },
@@ -9863,14 +12025,14 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.7,
     "reviews": 3186,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -9991,7 +12153,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 70,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     },
     "aliases": [
       {
@@ -9999,11 +12161,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000076206",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020496679",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381173",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5854278",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020496679",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "shampun_protiv_perho"
+        "shampun_protiv_perho",
+        "99000076206",
+        "4670020496679"
+      ],
+      "letu": [
+        "MPL381173"
+      ],
+      "mm": [
+        "5854278",
+        "4670020496679"
       ]
     }
   },
@@ -10019,14 +12220,14 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 868,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -10147,7 +12348,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 61,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114733",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465465",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL477653",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5876205",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465465",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114733",
+        "4603320465465"
+      ],
+      "letu": [
+        "MPL477653"
+      ],
+      "mm": [
+        "5876205",
+        "4603320465465"
+      ]
     }
   },
   {
@@ -10162,14 +12408,14 @@
     "abc": "C",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 419,
     "focusScore": 9,
     "focusReasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -10290,7 +12536,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 101,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125265",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421476",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL534263",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880763",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421476",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125265",
+        "4660417421476"
+      ],
+      "letu": [
+        "MPL534263"
+      ],
+      "mm": [
+        "5880763",
+        "4660417421476"
+      ]
     }
   },
   {
@@ -10305,14 +12596,14 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 1226,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -10433,7 +12724,59 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 23,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076221",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498413",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4670020499816",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411095",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874418",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498413",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076221",
+        "4670020498413",
+        "4670020499816"
+      ],
+      "letu": [
+        "MPL411095"
+      ],
+      "mm": [
+        "5874418",
+        "4670020498413"
+      ]
     }
   },
   {
@@ -10448,14 +12791,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Новинка",
-    "registryStatus": null,
+    "registryStatus": "Новинка",
     "rating": 0,
     "reviews": 0,
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": "[object Object]",
-      "source": null,
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -10574,7 +12917,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 129,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000177799",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421858",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL589441",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598596",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421858",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000177799",
+        "4660417421858"
+      ],
+      "letu": [
+        "MPL589441"
+      ],
+      "mm": [
+        "6598596",
+        "4660417421858"
+      ]
     }
   },
   {
@@ -10589,14 +12977,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Нет в спецификации",
-    "registryStatus": null,
+    "registryStatus": "Нет в спецификации",
     "rating": 0,
     "reviews": 0,
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": "[object Object]",
-      "source": null,
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -10715,7 +13103,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 22,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000179436",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4630446231421",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL589408",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598607",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4630446231421",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000179436",
+        "4630446231421"
+      ],
+      "letu": [
+        "MPL589408"
+      ],
+      "mm": [
+        "6598607",
+        "4630446231421"
+      ]
     }
   },
   {
@@ -10730,14 +13163,14 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 2160,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -10858,7 +13291,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 10,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114724",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465359",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL484941",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5876463",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465359",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114724",
+        "4603320465359"
+      ],
+      "letu": [
+        "MPL484941"
+      ],
+      "mm": [
+        "5876463",
+        "4603320465359"
+      ]
     }
   },
   {
@@ -10873,14 +13351,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.8,
     "reviews": 583,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Олеся",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -10999,7 +13477,52 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 124,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114734",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4690222978568",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381174",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5869579",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4690222978568",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114734",
+        "4690222978568"
+      ],
+      "letu": [
+        "MPL381174"
+      ],
+      "mm": [
+        "5869579",
+        "4690222978568"
+      ]
     }
   },
   {
@@ -11014,14 +13537,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Нет в спецификации",
-    "registryStatus": null,
+    "registryStatus": "Нет в спецификации",
     "rating": 0,
     "reviews": 0,
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": "",
-      "source": null,
+      "name": "Александр Озон",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
         "wb": "",
@@ -11135,7 +13658,27 @@
       "mm": "Косметические наборы для волос"
     },
     "costPrice": 0,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "aliases": [
+      {
+        "value": "6598616",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660401460153",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "mm": [
+        "6598616",
+        "4660401460153"
+      ]
+    }
   },
   {
     "article": "syvorotka_dlya_lica_30ml",
@@ -11149,14 +13692,14 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 2092,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -11277,7 +13820,61 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 4,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076203",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020497034",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381175",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868848",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020497034",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      },
+      {
+        "value": "fbs_syvorotka_dlya_lica_30ml",
+        "platform": "ym",
+        "source": "sku_aliases.json",
+        "note": "Я.Маркет FBS alias"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076203",
+        "4670020497034"
+      ],
+      "letu": [
+        "MPL381175"
+      ],
+      "mm": [
+        "5868848",
+        "4670020497034"
+      ],
+      "ym": [
+        "fbs_syvorotka_dlya_lica_30ml"
+      ]
     }
   },
   {
@@ -11292,14 +13889,14 @@
     "abc": "C",
     "leadTimeDays": null,
     "status": "Актуальный",
-    "registryStatus": "Новинка",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 254,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; WB ниже min price; Много возвратов",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
         "wb": "",
@@ -11413,7 +14010,52 @@
       "mm": "Сыворотки"
     },
     "costPrice": 0,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "aliases": [
+      {
+        "value": "99000182844",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603312714069",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583154",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598165",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603312714069",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000182844",
+        "4603312714069"
+      ],
+      "letu": [
+        "MPL583154"
+      ],
+      "mm": [
+        "6598165",
+        "4603312714069"
+      ]
+    }
   },
   {
     "article": "syvorotka_dlya_rosta_6ml",
@@ -11427,14 +14069,14 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.7,
     "reviews": 1109,
     "focusScore": 1,
     "focusReasons": "Много возвратов",
     "owner": {
-      "name": "Олеся",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -11553,7 +14195,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 105,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076214",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4685518825374",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381176",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5869585",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4685518825374",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076214",
+        "4685518825374"
+      ],
+      "letu": [
+        "MPL381176"
+      ],
+      "mm": [
+        "5869585",
+        "4685518825374"
+      ]
     }
   },
   {
@@ -11568,14 +14255,14 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 532,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -11694,7 +14381,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 37,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000132524",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4656738598843",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL536269",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5878506",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4656738598843",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000132524",
+        "4656738598843"
+      ],
+      "letu": [
+        "MPL536269"
+      ],
+      "mm": [
+        "5878506",
+        "4656738598843"
+      ]
     }
   },
   {
@@ -11709,14 +14441,14 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 944,
     "focusScore": 8,
     "focusReasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -11835,7 +14567,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 53,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076209",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498093",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381177",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5871122",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498093",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076209",
+        "4670020498093"
+      ],
+      "letu": [
+        "MPL381177"
+      ],
+      "mm": [
+        "5871122",
+        "4670020498093"
+      ]
     }
   },
   {
@@ -11850,14 +14627,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Новинка",
-    "registryStatus": null,
+    "registryStatus": "Новинка",
     "rating": 4.8,
     "reviews": 78,
     "focusScore": 0,
     "focusReasons": "Owner не закреплён",
     "owner": {
-      "name": "[object Object]",
-      "source": null,
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -11976,7 +14753,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 12,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000154296",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4640523970297",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL580326",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6340523",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4640523970297",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000154296",
+        "4640523970297"
+      ],
+      "letu": [
+        "MPL580326"
+      ],
+      "mm": [
+        "6340523",
+        "4640523970297"
+      ]
     }
   },
   {
@@ -11991,14 +14813,14 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 364,
     "focusScore": 2,
     "focusReasons": "Низкое выполнение плана",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -12117,7 +14939,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 25,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -12132,14 +14954,14 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Под вопросом",
-    "registryStatus": "Актуально",
+    "registryStatus": "Под вопросом",
     "rating": 4.8,
     "reviews": 384,
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа WB",
     "owner": {
-      "name": "Мария",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Максим",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -12258,7 +15080,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 39,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076226",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020497980",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381178",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5870813",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020497980",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076226",
+        "4670020497980"
+      ],
+      "letu": [
+        "MPL381178"
+      ],
+      "mm": [
+        "5870813",
+        "4670020497980"
+      ]
     }
   },
   {
@@ -12273,14 +15140,14 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуально",
+    "registryStatus": "Актуальный",
     "rating": 4.8,
     "reviews": 832,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -12399,7 +15266,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 54,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     },
     "aliases": [
       {
@@ -12407,11 +15274,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000114728",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498499",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL440013",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874386",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498499",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "tonik_dlya_lica_200m"
+        "tonik_dlya_lica_200m",
+        "99000114728",
+        "4670020498499"
+      ],
+      "letu": [
+        "MPL440013"
+      ],
+      "mm": [
+        "5874386",
+        "4670020498499"
       ]
     }
   },
@@ -12427,14 +15333,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Актуальный",
-    "registryStatus": "Новинка",
+    "registryStatus": "Актуальный",
     "rating": 4.9,
     "reviews": 112,
     "focusScore": 1,
     "focusReasons": "Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
         "wb": "Лапыгин Максим",
@@ -12555,7 +15461,52 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 77,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
+    },
+    "aliases": [
+      {
+        "value": "99000131672",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670207150196",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL553766",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880787",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670207150196",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000131672",
+        "4670207150196"
+      ],
+      "letu": [
+        "MPL553766"
+      ],
+      "mm": [
+        "5880787",
+        "4670207150196"
+      ]
     }
   },
   {
@@ -12570,14 +15521,14 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Вывод",
-    "registryStatus": "Актуально",
+    "registryStatus": "Вывод",
     "rating": 4.5,
     "reviews": 1714,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Светлана",
-      "source": "Для Анны · Реестр  Смарт-Сэйл",
+      "name": "Мария",
+      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Васильева Мария",
@@ -12696,7 +15647,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 127,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -12849,7 +15800,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 33,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -13002,7 +15953,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 41,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -13155,7 +16106,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 30,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -13308,7 +16259,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 32,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -13461,7 +16412,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 76,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -13614,7 +16565,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 109,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -13767,7 +16718,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 40,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -13920,7 +16871,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 93,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -14073,7 +17024,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 63,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -14226,7 +17177,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 46,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -14379,7 +17330,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 99,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -14532,7 +17483,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 66,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -14685,7 +17636,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 49,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -14838,7 +17789,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 47,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -14982,7 +17933,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 55,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -15135,7 +18086,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 110,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -15288,7 +18239,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 56,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -15441,7 +18392,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 43,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -15594,7 +18545,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 88,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -15747,7 +18698,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 36,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -15900,7 +18851,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 68,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -16053,7 +19004,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 90,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -16206,7 +19157,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 62,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -16359,7 +19310,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 72,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -16512,7 +19463,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 74,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -16665,7 +19616,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 84,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -16818,7 +19769,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 48,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -16971,7 +19922,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 59,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -17124,7 +20075,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 125,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -17277,7 +20228,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 87,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -17430,7 +20381,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 81,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -17574,7 +20525,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 60,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -17727,7 +20678,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 75,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -17871,7 +20822,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 73,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -18024,7 +20975,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 78,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -18177,7 +21128,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 85,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -18330,7 +21281,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 108,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -18465,6 +21416,42 @@
         "platform": "goldapple",
         "source": "repricer-alias-csv",
         "note": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx"
+      },
+      {
+        "value": "99000125141",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421087",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "2042057189688",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4670142965169",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "5894994",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421087",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
@@ -18478,6 +21465,16 @@
       ],
       "goldapple": [
         "psoral_50ml"
+      ],
+      "ga": [
+        "99000125141",
+        "4660417421087",
+        "2042057189688",
+        "4670142965169"
+      ],
+      "mm": [
+        "5894994",
+        "4660417421087"
       ]
     },
     "aliasImport": {
@@ -18492,7 +21489,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 86,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -18645,7 +21642,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 116,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -18798,7 +21795,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 114,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -18951,7 +21948,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 104,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -19104,7 +22101,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 89,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -19248,7 +22245,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 79,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -19401,7 +22398,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 123,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -19554,7 +22551,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 106,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -19707,7 +22704,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 122,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -19860,7 +22857,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 118,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -20013,7 +23010,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 98,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -20166,7 +23163,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 113,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -20319,7 +23316,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 119,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -20463,7 +23460,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 82,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -20616,7 +23613,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 100,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {
@@ -20760,7 +23757,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 115,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T19:10:40.508Z"
     }
   },
   {

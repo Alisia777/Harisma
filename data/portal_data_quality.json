@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-06-02T09:00:47.262Z",
-  "status": "warning",
+  "generatedAt": "2026-06-02T09:46:16.373Z",
+  "status": "ok",
   "summary": {
-    "issueCount": 78,
+    "issueCount": 77,
     "criticalCount": 0,
-    "warningCount": 1,
+    "warningCount": 0,
     "monthKey": "2026-06",
     "maxDate": "2026-06-01",
     "apiUnmappedPlatformRows": 0,
@@ -19,7 +19,7 @@
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
-    "skuAliasCount": 341,
+    "skuAliasCount": 0,
     "priceContourSkuCount": 302,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
@@ -32,17 +32,17 @@
   "freshness": [
     {
       "dataset": "dashboard",
-      "asOfDate": "2026-05-31",
-      "generatedAt": "2026-06-01T19:10:39.054Z",
-      "rows": 369,
+      "asOfDate": "2026-06-01",
+      "generatedAt": "2026-06-02T09:32:38.298Z",
+      "rows": 383,
       "referenceDate": "2026-06-02",
-      "lagDays": 2,
-      "status": "warning"
+      "lagDays": 1,
+      "status": "ok"
     },
     {
       "dataset": "platform_trends",
       "asOfDate": "2026-06-01",
-      "generatedAt": "2026-06-02T09:00:32.215Z",
+      "generatedAt": "2026-06-02T09:32:38.018Z",
       "rows": 7,
       "referenceDate": "2026-06-02",
       "lagDays": 1,
@@ -50,17 +50,17 @@
     },
     {
       "dataset": "order_procurement",
-      "asOfDate": "2026-06-01",
-      "generatedAt": "2026-06-01T19:10:39.214Z",
-      "rows": 2741,
+      "asOfDate": "2026-06-02",
+      "generatedAt": "2026-06-02T09:32:38.447Z",
+      "rows": 2750,
       "referenceDate": "2026-06-02",
-      "lagDays": 1,
+      "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "warehouse_stock_overlay",
       "asOfDate": "2026-06-02",
-      "generatedAt": "2026-06-02T08:49:16.281Z",
+      "generatedAt": "2026-06-02T09:31:06.937Z",
       "rows": 134,
       "matchedRows": 136,
       "unmatchedRows": 25,
@@ -71,8 +71,8 @@
     {
       "dataset": "ads_summary",
       "asOfDate": "2026-06-01",
-      "generatedAt": "2026-06-02T09:00:41.872Z",
-      "rows": 6,
+      "generatedAt": "2026-06-02T09:45:47.656Z",
+      "rows": 5,
       "referenceDate": "2026-06-02",
       "lagDays": 1,
       "status": "ok"
@@ -80,8 +80,8 @@
     {
       "dataset": "iu_drr_summary",
       "asOfDate": "2026-06-01",
-      "generatedAt": "2026-06-02T09:00:46.241Z",
-      "rows": 1,
+      "generatedAt": "2026-06-02T09:46:16.060Z",
+      "rows": 32,
       "referenceDate": "2026-06-02",
       "lagDays": 1,
       "status": "ok"
@@ -124,7 +124,7 @@
     },
     "magnit": {
       "label": "Магнит Маркет",
-      "rows": 35,
+      "rows": 0,
       "directRevenue": 0,
       "directUnits": 0,
       "aggregateRevenue": 0,
@@ -192,12 +192,12 @@
     }
   },
   "orderSummary": {
-    "rows": 2741,
+    "rows": 2750,
     "noStockNeedRows": 0,
-    "lowTurnoverRows": 44,
+    "lowTurnoverRows": 48,
     "totalNeed7": 0,
-    "totalNeed14": 23530,
-    "totalNeed28": 104831
+    "totalNeed14": 23344,
+    "totalNeed28": 103803
   },
   "ownerSummary": {
     "totalSku": 143,
@@ -211,22 +211,13 @@
     "warningUnmatchedRows": 0
   },
   "wbOwnerDistributionSummary": {
-    "sourceGeneratedAt": "2026-06-01T19:10:40.508Z",
+    "sourceGeneratedAt": "2026-06-02T09:32:41.255Z",
     "matchedSkuCount": 125,
     "updatedOwnerCount": 125,
     "missingInPortalCount": 6,
     "missingInDistributionCount": 18
   },
   "issues": [
-    {
-      "severity": "warning",
-      "type": "dataset_stale_or_empty",
-      "dataset": "dashboard",
-      "asOfDate": "2026-05-31",
-      "referenceDate": "2026-06-02",
-      "lagDays": 2,
-      "message": "Данные отстают на 2 дн."
-    },
     {
       "severity": "info",
       "type": "api_sku_known_outside_registry",

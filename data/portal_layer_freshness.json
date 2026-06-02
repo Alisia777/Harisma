@@ -1,14 +1,40 @@
 {
-  "generatedAt": "2026-06-01T21:25:52.541Z",
-  "expectedDate": "2026-05-31",
+  "generatedAt": "2026-06-02T11:46:33.027Z",
+  "expectedDate": "2026-06-01",
   "publish": {
-    "allowed": true,
-    "blockingReasons": []
+    "allowed": false,
+    "blockingReasons": [
+      "dashboard: Missing source file dashboard.json",
+      "skus: Missing source file skus.json",
+      "platform_trends: Missing source file platform_trends.json",
+      "logistics: Missing source file logistics.json",
+      "warehouse_stock_overlay: Missing source file warehouse_stock_overlay.json",
+      "ads_summary: Layer ads_summary freshness 2026-05-30 is older than expected 2026-06-01",
+      "iu_drr_summary: Layer iu_drr_summary freshness 2026-05-30 is older than expected 2026-06-01",
+      "wb_feedbacks_summary: Missing source file wb_feedbacks_summary.json",
+      "iu_plan: Missing source file iu_plan.json",
+      "product_leaderboard: Missing source file product_leaderboard.json",
+      "product_leaderboard_history: Missing source file product_leaderboard_history.json",
+      "order_procurement: Missing source file order_procurement.json",
+      "order_procurement_wb: Missing source file order_procurement_wb.json",
+      "order_procurement_ozon: Missing source file order_procurement_ozon.json",
+      "oos_control: Missing source file oos_control.json",
+      "portal_data_quality: Missing source file portal_data_quality.json",
+      "sku_aliases: Missing source file sku_aliases.json",
+      "sku_alias_ignore: Missing source file sku_alias_ignore.json",
+      "sku_alias_audit: Missing source file sku_alias_audit.json",
+      "sku_matrix: Missing source file sku_matrix.json",
+      "wb_owner_distribution_audit: Missing source file wb_owner_distribution_audit.json",
+      "prices: Missing source file prices.json",
+      "repricer: Missing source file repricer.json",
+      "smart_price_overlay: Missing source file smart_price_overlay.json",
+      "google_sheet_sync_meta: Missing source file google_sheet_sync_meta.json"
+    ]
   },
   "summary": {
     "layerCount": 33,
     "requiredCount": 27,
-    "okCount": 33,
+    "okCount": 8,
     "warningCount": 0
   },
   "warnings": [],
@@ -20,18 +46,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 151203,
-      "sourceMtime": "2026-06-01T19:10:39.224Z",
-      "rowCount": 369,
-      "generatedAt": "2026-06-01T19:10:39.054Z",
-      "freshness": {
-        "date": "2026-05-31",
-        "source": "latestMarketplaceDate",
-        "value": "2026-05-31"
-      }
+      "blockingReasons": [
+        "Missing source file dashboard.json"
+      ],
+      "missing": true
     },
     {
       "name": "skus",
@@ -40,18 +60,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 795177,
-      "sourceMtime": "2026-06-01T19:38:58.725Z",
-      "rowCount": 0,
-      "generatedAt": "",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "fileMtime",
-        "value": "2026-06-01T19:38:58.725Z"
-      }
+      "blockingReasons": [
+        "Missing source file skus.json"
+      ],
+      "missing": true
     },
     {
       "name": "platform_trends",
@@ -60,18 +74,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 21158284,
-      "sourceMtime": "2026-06-01T19:10:39.487Z",
-      "rowCount": 0,
-      "generatedAt": "2026-06-01T19:10:38.888Z",
-      "freshness": {
-        "date": "2026-05-31",
-        "source": "latestMarketplaceDate",
-        "value": "2026-05-31"
-      }
+      "blockingReasons": [
+        "Missing source file platform_trends.json"
+      ],
+      "missing": true
     },
     {
       "name": "platform_plan",
@@ -82,16 +90,10 @@
       "freshnessPolicy": "none",
       "ok": true,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 15923,
-      "sourceMtime": "2026-05-28T09:58:17.185Z",
-      "rowCount": 0,
-      "generatedAt": "2026-04-17T22:31:24",
-      "freshness": {
-        "date": "2026-05-28",
-        "source": "fileMtime",
-        "value": "2026-05-28T09:58:17.185Z"
-      }
+      "blockingReasons": [
+        "Missing source file platform_plan.json"
+      ],
+      "missing": true
     },
     {
       "name": "logistics",
@@ -100,18 +102,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 1253860,
-      "sourceMtime": "2026-06-01T19:10:39.515Z",
-      "rowCount": 0,
-      "generatedAt": "2026-06-01T19:10:39.214Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T19:10:39.214Z"
-      }
+      "blockingReasons": [
+        "Missing source file logistics.json"
+      ],
+      "missing": true
     },
     {
       "name": "loyalty_system",
@@ -122,16 +118,10 @@
       "freshnessPolicy": "none",
       "ok": true,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 939,
-      "sourceMtime": "2026-06-01T19:10:39.516Z",
-      "rowCount": 0,
-      "generatedAt": "2026-06-01T19:10:39.214Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "fileMtime",
-        "value": "2026-06-01T19:10:39.516Z"
-      }
+      "blockingReasons": [
+        "Missing source file loyalty_system.json"
+      ],
+      "missing": true
     },
     {
       "name": "warehouse_stock_overlay",
@@ -140,18 +130,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 34069,
-      "sourceMtime": "2026-06-01T19:46:29.106Z",
-      "rowCount": 134,
-      "generatedAt": "2026-06-01T19:46:29.103Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T19:46:29.103Z"
-      }
+      "blockingReasons": [
+        "Missing source file warehouse_stock_overlay.json"
+      ],
+      "missing": true
     },
     {
       "name": "ads_summary",
@@ -160,17 +144,19 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 37230022,
-      "sourceMtime": "2026-06-01T19:25:05.082Z",
+      "blockingReasons": [
+        "Layer ads_summary freshness 2026-05-30 is older than expected 2026-06-01"
+      ],
+      "sourceBytes": 35959229,
+      "sourceMtime": "2026-05-31T16:51:01.998Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-01T19:25:04.656Z",
+      "generatedAt": "2026-05-31T16:51:01.757Z",
       "freshness": {
-        "date": "2026-05-31",
+        "date": "2026-05-30",
         "source": "asOfDate",
-        "value": "2026-05-31"
+        "value": "2026-05-30"
       }
     },
     {
@@ -180,17 +166,19 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 392180,
-      "sourceMtime": "2026-06-01T19:25:28.503Z",
-      "rowCount": 31,
-      "generatedAt": "2026-06-01T19:25:28.501Z",
+      "blockingReasons": [
+        "Layer iu_drr_summary freshness 2026-05-30 is older than expected 2026-06-01"
+      ],
+      "sourceBytes": 475591,
+      "sourceMtime": "2026-05-31T16:53:11.581Z",
+      "rowCount": 30,
+      "generatedAt": "2026-05-31T16:53:11.578Z",
       "freshness": {
-        "date": "2026-05-31",
+        "date": "2026-05-30",
         "source": "asOfDate",
-        "value": "2026-05-31"
+        "value": "2026-05-30"
       }
     },
     {
@@ -200,18 +188,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 6092345,
-      "sourceMtime": "2026-06-01T19:25:24.829Z",
-      "rowCount": 166,
-      "generatedAt": "2026-06-01T19:25:24.780Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "window.to",
-        "value": "2026-06-01"
-      }
+      "blockingReasons": [
+        "Missing source file wb_feedbacks_summary.json"
+      ],
+      "missing": true
     },
     {
       "name": "iu_plan",
@@ -220,18 +202,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 49664,
-      "sourceMtime": "2026-06-01T19:11:23.368Z",
-      "rowCount": 0,
-      "generatedAt": "2026-06-01T19:11:23.352Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T19:11:23.352Z"
-      }
+      "blockingReasons": [
+        "Missing source file iu_plan.json"
+      ],
+      "missing": true
     },
     {
       "name": "product_leaderboard",
@@ -240,20 +216,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "maxAge",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 225686,
-      "sourceMtime": "2026-06-01T20:26:22.821Z",
-      "rowCount": 50,
-      "generatedAt": "2026-06-01T20:26:22.819Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T20:26:22.819Z"
-      },
-      "ageDays": 0.04,
-      "maxAgeDays": 10
+      "blockingReasons": [
+        "Missing source file product_leaderboard.json"
+      ],
+      "missing": true
     },
     {
       "name": "product_leaderboard_history",
@@ -262,20 +230,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "maxAge",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 6892078,
-      "sourceMtime": "2026-06-01T20:26:23.062Z",
-      "rowCount": 0,
-      "generatedAt": "",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "fileMtime",
-        "value": "2026-06-01T20:26:23.062Z"
-      },
-      "ageDays": 0.04,
-      "maxAgeDays": 10
+      "blockingReasons": [
+        "Missing source file product_leaderboard_history.json"
+      ],
+      "missing": true
     },
     {
       "name": "order_procurement",
@@ -284,18 +244,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 1581068,
-      "sourceMtime": "2026-06-01T19:10:40.635Z",
-      "rowCount": 2741,
-      "generatedAt": "2026-06-01T19:10:39.214Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T19:10:39.214Z"
-      }
+      "blockingReasons": [
+        "Missing source file order_procurement.json"
+      ],
+      "missing": true
     },
     {
       "name": "order_procurement_wb",
@@ -304,18 +258,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 436298,
-      "sourceMtime": "2026-06-01T19:10:40.637Z",
-      "rowCount": 726,
-      "generatedAt": "2026-06-01T19:10:39.214Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T19:10:39.214Z"
-      }
+      "blockingReasons": [
+        "Missing source file order_procurement_wb.json"
+      ],
+      "missing": true
     },
     {
       "name": "order_procurement_ozon",
@@ -324,18 +272,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 1145227,
-      "sourceMtime": "2026-06-01T19:10:40.641Z",
-      "rowCount": 2015,
-      "generatedAt": "2026-06-01T19:10:39.214Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T19:10:39.214Z"
-      }
+      "blockingReasons": [
+        "Missing source file order_procurement_ozon.json"
+      ],
+      "missing": true
     },
     {
       "name": "order_procurement_ym",
@@ -346,16 +288,10 @@
       "freshnessPolicy": "daily",
       "ok": true,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 1182029,
-      "sourceMtime": "2026-06-01T12:03:32.680Z",
-      "rowCount": 987,
-      "generatedAt": "2026-05-22T14:42:44.101Z",
-      "freshness": {
-        "date": "2026-05-22",
-        "source": "generatedAt",
-        "value": "2026-05-22T14:42:44.101Z"
-      }
+      "blockingReasons": [
+        "Missing source file order_procurement_ym.json"
+      ],
+      "missing": true
     },
     {
       "name": "oos_control",
@@ -364,18 +300,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 21149,
-      "sourceMtime": "2026-06-01T19:11:20.385Z",
-      "rowCount": 2,
-      "generatedAt": "2026-06-01T19:11:20.384Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T19:11:20.384Z"
-      }
+      "blockingReasons": [
+        "Missing source file oos_control.json"
+      ],
+      "missing": true
     },
     {
       "name": "portal_data_quality",
@@ -384,18 +314,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 46185,
-      "sourceMtime": "2026-06-01T21:23:34.999Z",
-      "rowCount": 0,
-      "generatedAt": "2026-06-01T21:23:34.998Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T21:23:34.998Z"
-      }
+      "blockingReasons": [
+        "Missing source file portal_data_quality.json"
+      ],
+      "missing": true
     },
     {
       "name": "portal_data_quarantine",
@@ -408,13 +332,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 324,
-      "sourceMtime": "2026-06-01T21:25:52.211Z",
+      "sourceMtime": "2026-06-02T11:46:32.811Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-01T21:25:52.204Z",
+      "generatedAt": "2026-06-02T11:46:32.808Z",
       "freshness": {
-        "date": "2026-06-01",
+        "date": "2026-06-02",
         "source": "generatedAt",
-        "value": "2026-06-01T21:25:52.204Z"
+        "value": "2026-06-02T11:46:32.808Z"
       }
     },
     {
@@ -427,14 +351,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 14645,
-      "sourceMtime": "2026-06-01T21:25:52.211Z",
+      "sourceBytes": 14876,
+      "sourceMtime": "2026-06-02T11:46:32.811Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-01T21:25:52.210Z",
+      "generatedAt": "2026-06-02T11:46:32.810Z",
       "freshness": {
-        "date": "2026-05-31",
+        "date": "2026-06-01",
         "source": "freshness.maxDate",
-        "value": "2026-05-31"
+        "value": "2026-06-01"
       }
     },
     {
@@ -447,14 +371,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 19175,
-      "sourceMtime": "2026-06-01T21:23:35.775Z",
+      "sourceBytes": 15389,
+      "sourceMtime": "2026-06-02T09:32:32.063Z",
       "rowCount": 33,
-      "generatedAt": "2026-06-01T21:23:35.774Z",
+      "generatedAt": "2026-06-02T09:32:32.062Z",
       "freshness": {
-        "date": "2026-05-31",
+        "date": "2026-06-01",
         "source": "expectedDate",
-        "value": "2026-05-31"
+        "value": "2026-06-01"
       }
     },
     {
@@ -464,20 +388,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "maxAge",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 80937,
-      "sourceMtime": "2026-06-01T19:38:58.951Z",
-      "rowCount": 0,
-      "generatedAt": "",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "fileMtime",
-        "value": "2026-06-01T19:38:58.951Z"
-      },
-      "ageDays": 0.07,
-      "maxAgeDays": 2
+      "blockingReasons": [
+        "Missing source file sku_aliases.json"
+      ],
+      "missing": true
     },
     {
       "name": "sku_alias_ignore",
@@ -486,18 +402,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "none",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 260,
-      "sourceMtime": "2026-05-29T07:00:03.816Z",
-      "rowCount": 0,
-      "generatedAt": "",
-      "freshness": {
-        "date": "2026-05-29",
-        "source": "fileMtime",
-        "value": "2026-05-29T07:00:03.816Z"
-      }
+      "blockingReasons": [
+        "Missing source file sku_alias_ignore.json"
+      ],
+      "missing": true
     },
     {
       "name": "sku_alias_audit",
@@ -506,18 +416,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "none",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 74,
-      "sourceMtime": "2026-05-29T07:00:03.817Z",
-      "rowCount": 0,
-      "generatedAt": "",
-      "freshness": {
-        "date": "2026-05-29",
-        "source": "fileMtime",
-        "value": "2026-05-29T07:00:03.817Z"
-      }
+      "blockingReasons": [
+        "Missing source file sku_alias_audit.json"
+      ],
+      "missing": true
     },
     {
       "name": "sku_matrix",
@@ -526,18 +430,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 206353,
-      "sourceMtime": "2026-06-01T21:25:51.886Z",
-      "rowCount": 143,
-      "generatedAt": "2026-06-01T21:25:51.883Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T21:25:51.883Z"
-      }
+      "blockingReasons": [
+        "Missing source file sku_matrix.json"
+      ],
+      "missing": true
     },
     {
       "name": "wb_owner_distribution_audit",
@@ -546,18 +444,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 52625,
-      "sourceMtime": "2026-06-01T19:10:40.513Z",
-      "rowCount": 0,
-      "generatedAt": "2026-06-01T19:10:40.508Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T19:10:40.508Z"
-      }
+      "blockingReasons": [
+        "Missing source file wb_owner_distribution_audit.json"
+      ],
+      "missing": true
     },
     {
       "name": "prices",
@@ -566,18 +458,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 3375414,
-      "sourceMtime": "2026-06-01T19:48:57.258Z",
-      "rowCount": 0,
-      "generatedAt": "2026-06-01T19:11:06.026Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T19:11:06.026Z"
-      }
+      "blockingReasons": [
+        "Missing source file prices.json"
+      ],
+      "missing": true
     },
     {
       "name": "repricer",
@@ -586,18 +472,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 661987,
-      "sourceMtime": "2026-06-01T21:23:34.673Z",
-      "rowCount": 201,
-      "generatedAt": "2026-06-01T19:11:06.026Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T19:11:06.026Z"
-      }
+      "blockingReasons": [
+        "Missing source file repricer.json"
+      ],
+      "missing": true
     },
     {
       "name": "smart_price_overlay",
@@ -606,18 +486,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 2378389,
-      "sourceMtime": "2026-06-01T19:48:57.074Z",
-      "rowCount": 0,
-      "generatedAt": "2026-06-01T19:11:06.026Z",
-      "freshness": {
-        "date": "2026-05-31",
-        "source": "asOfDate",
-        "value": "2026-05-31"
-      }
+      "blockingReasons": [
+        "Missing source file smart_price_overlay.json"
+      ],
+      "missing": true
     },
     {
       "name": "smart_price_workbench",
@@ -628,18 +502,10 @@
       "freshnessPolicy": "maxAge",
       "ok": true,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 6400667,
-      "sourceMtime": "2026-06-01T19:48:57.014Z",
-      "rowCount": 0,
-      "generatedAt": "2026-05-18T14:34:19.064Z",
-      "freshness": {
-        "date": "2026-05-18",
-        "source": "generatedAt",
-        "value": "2026-05-18T14:34:19.064Z"
-      },
-      "ageDays": 0.07,
-      "maxAgeDays": 3
+      "blockingReasons": [
+        "Missing source file smart_price_workbench.json"
+      ],
+      "missing": true
     },
     {
       "name": "price_workbench_support",
@@ -650,18 +516,10 @@
       "freshnessPolicy": "maxAge",
       "ok": true,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 1382825,
-      "sourceMtime": "2026-06-01T19:48:57.030Z",
-      "rowCount": 0,
-      "generatedAt": "2026-04-20T14:28:01.203171Z",
-      "freshness": {
-        "date": "2026-04-20",
-        "source": "generatedAt",
-        "value": "2026-04-20T14:28:01.203171Z"
-      },
-      "ageDays": 0.07,
-      "maxAgeDays": 3
+      "blockingReasons": [
+        "Missing source file price_workbench_support.json"
+      ],
+      "missing": true
     },
     {
       "name": "google_sheet_sync_meta",
@@ -670,18 +528,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 1649,
-      "sourceMtime": "2026-06-01T19:10:39.725Z",
-      "rowCount": 0,
-      "generatedAt": "2026-06-01T19:10:39.214Z",
-      "freshness": {
-        "date": "2026-06-01",
-        "source": "generatedAt",
-        "value": "2026-06-01T19:10:39.214Z"
-      }
+      "blockingReasons": [
+        "Missing source file google_sheet_sync_meta.json"
+      ],
+      "missing": true
     }
   ]
 }

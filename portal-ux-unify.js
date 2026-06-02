@@ -270,6 +270,13 @@
     LABEL_RULES.forEach(function (rule) {
       root.querySelectorAll(rule.selector).forEach(function (node) {
         if (!(node instanceof HTMLElement)) return;
+        if (node.closest && node.closest(".launch-action-menu")) {
+          if (rule.title) {
+            node.title = rule.title;
+            node.setAttribute("aria-label", rule.title);
+          }
+          return;
+        }
         if (textOf(node) !== textOf({ textContent: rule.text })) {
           node.textContent = rule.text;
         }

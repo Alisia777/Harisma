@@ -10652,16 +10652,73 @@ function renderLaunchRedZone(items = []) {
   `;
 }
 
-function renderLaunchExcelMenu(label = 'Excel') {
+function renderLaunchExcelMenu(label = 'Меню запуска') {
   return `
-    <details class="launch-excel-menu">
-      <summary class="quick-chip">${escapeHtml(label)}</summary>
+    <details class="launch-excel-menu launch-action-menu">
+      <summary class="launch-action-menu-trigger">
+        <span class="launch-action-menu-mark">...</span>
+        <span class="launch-action-menu-copy">
+          <b>${escapeHtml(label)}</b>
+          <em>Excel / отбор / календарь</em>
+        </span>
+      </summary>
       <div class="launch-excel-menu-panel">
-        <button type="button" data-launch-import>Загрузить файл</button>
-        <button type="button" data-launch-download-form>Скачать форму</button>
-        <button type="button" data-launch-export="product">Выгрузить отбор</button>
+        <div class="launch-excel-menu-head">
+          <span>рабочие действия</span>
+          <strong>Запуск новинок</strong>
+        </div>
+        <button class="launch-menu-action" type="button" data-launch-import>
+          <b>Загрузить файл</b>
+          <span>Excel / HTML / CSV из рабочего файла</span>
+        </button>
+        <button class="launch-menu-action" type="button" data-launch-download-form>
+          <b>Скачать форму</b>
+          <span>шаблон для обновления новинок</span>
+        </button>
+        <button class="launch-menu-action" type="button" data-launch-export="product">
+          <b>Выгрузить отбор</b>
+          <span>текущий фильтр в Excel</span>
+        </button>
+        <button class="launch-menu-action" type="button" data-launch-show-gantt>
+          <b>Календарь этапов</b>
+          <span>открыть календарь запуска по фильтру</span>
+        </button>
+        <button class="launch-menu-action is-muted" type="button" data-launch-reset>
+          <b>Сбросить фильтры</b>
+          <span>вернуть общий список</span>
+        </button>
       </div>
     </details>
+  `;
+}
+
+function renderLaunchCommandStrip(summary = {}) {
+  const total = numberOrZero(summary.total);
+  const focus = numberOrZero(summary.focus);
+  const ready = numberOrZero(summary.ready);
+  const ownerRisk = numberOrZero(summary.ownerRisk);
+  const skuRisk = numberOrZero(summary.skuRisk);
+  return `
+    <div class="launch-command-strip">
+      <div class="launch-command-main">
+        <span>рабочее меню</span>
+        <strong>Запуски: карточка, файл, календарь</strong>
+        <em>${fmt.int(total)} новинок в текущем контуре</em>
+      </div>
+      <div class="launch-command-metrics">
+        <div class="ok"><span>готово</span><strong>${fmt.int(ready)}</strong></div>
+        <div class="${focus ? 'warn' : 'ok'}"><span>в фокусе</span><strong>${fmt.int(focus)}</strong></div>
+        <div class="${ownerRisk ? 'danger' : 'ok'}"><span>без owner</span><strong>${fmt.int(ownerRisk)}</strong></div>
+        <div class="${skuRisk ? 'warn' : 'ok'}"><span>без SKU</span><strong>${fmt.int(skuRisk)}</strong></div>
+      </div>
+      <div class="launch-command-actions">
+        <button class="launch-command-add" type="button" data-launch-add>
+          <b>Новая карточка</b>
+          <span>товар + этапы</span>
+        </button>
+        ${renderLaunchExcelMenu('Меню запуска')}
+      </div>
+    </div>
   `;
 }
 
@@ -11178,9 +11235,7 @@ function renderLaunchMonthFilters(model) {
         </div>
       </details>
       <div class="quick-actions launch-primary-actions">
-        <button class="quick-chip portal-action-primary" type="button" data-launch-add>+ Добавить новинку</button>
-        ${renderLaunchExcelMenu()}
-        <button class="quick-chip" type="button" data-launch-reset>Сбросить</button>
+        <button class="quick-chip" type="button" data-launch-reset>Сбросить фильтры</button>
       </div>
       <input type="file" id="launchWorkbookImport" accept=".xls,.html,.csv,.tsv,.txt" style="display:none">
     </div>
@@ -11247,6 +11302,15 @@ function bindLaunchMonthFilters(root, model) {
   root.querySelectorAll('[data-launch-import]').forEach((button) => {
     button.addEventListener('click', () => {
       root.querySelector('#launchWorkbookImport')?.click();
+    });
+  });
+  root.querySelectorAll('[data-launch-show-gantt]').forEach((button) => {
+    button.addEventListener('click', () => {
+      setLaunchGanttExpanded(true);
+      rerenderCurrentView();
+      window.requestAnimationFrame(() => {
+        document.querySelector('[data-launch-gantt-fold]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     });
   });
   root.querySelector('#launchWorkbookImport')?.addEventListener('change', (event) => {
@@ -11610,11 +11674,14 @@ function renderLaunchesDirectorLite() {
         <h2>Продукт / запуск новинок</h2>
         <p>Рабочий экран директора по продукту: карточка товара, поставщик, переговоры, SKU, площадки, комментарии и запуск в одном месте.</p>
       </div>
-      <div class="quick-actions">
-        <button class="quick-chip portal-action-primary" type="button" data-launch-add>+ Добавить новинку</button>
-        ${renderLaunchExcelMenu()}
+      <div class="badge-stack launch-director-badges">
+        ${badge(`${fmt.int(filteredItems.length)} новинок`, filteredItems.length ? 'info' : 'warn')}
+        ${badge(`${fmt.int(actionItems.length)} в фокусе`, actionItems.length ? 'warn' : 'ok')}
+        ${badge(`${fmt.int(readyCount)} готово`, readyCount ? 'ok' : 'warn')}
       </div>
     </div>
+
+    ${renderLaunchCommandStrip({ total: filteredItems.length, focus: actionItems.length, ready: readyCount, ownerRisk: withoutOwner, skuRisk: withoutSku })}
 
     ${renderLaunchMonthFilters({ ...model, filteredItems })}
 

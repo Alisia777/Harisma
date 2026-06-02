@@ -1125,6 +1125,28 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .pipeline-strip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
 .pipeline-strip span{padding:10px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid var(--line);font-size:12px;color:var(--muted)}
 .launch-director-title{align-items:flex-start}
+.launch-director-badges{justify-content:flex-end}
+.launch-command-strip{position:relative;display:grid;grid-template-columns:minmax(340px,.9fr) minmax(360px,1fr) auto;gap:12px;align-items:stretch;margin:14px 0;padding:14px;border:1px solid rgba(220,177,95,.30);border-radius:16px;background:radial-gradient(circle at 12% 0,rgba(220,177,95,.18),transparent 34%),radial-gradient(circle at 78% 12%,rgba(82,170,128,.12),transparent 34%),linear-gradient(135deg,rgba(220,177,95,.09),rgba(255,255,255,.018));box-shadow:0 20px 56px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.09);overflow:visible}
+.launch-command-strip::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,rgba(255,255,255,.10),transparent 38%,rgba(255,255,255,.035));pointer-events:none}
+.launch-command-strip>*{position:relative}
+.launch-command-main{display:grid;align-content:center;gap:5px;min-width:0;padding:2px 4px}
+.launch-command-main span,.launch-command-metrics span,.launch-action-menu-copy em,.launch-excel-menu-head span,.launch-menu-action span,.launch-command-add span{display:block;color:var(--muted);font-size:11px;line-height:1.25;text-transform:uppercase;letter-spacing:0;font-style:normal}
+.launch-command-main strong{display:block;color:#ffe5a8;font-size:clamp(20px,1.7vw,28px);line-height:1.08;font-weight:900}
+.launch-command-main em{display:block;color:#d8c09a;font-size:12px;font-style:normal}
+.launch-command-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.launch-command-metrics>div{min-width:0;border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:10px 11px;background:rgba(0,0,0,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+.launch-command-metrics strong{display:block;margin-top:5px;color:#fff7e6;font-size:24px;line-height:1;font-weight:900}
+.launch-command-metrics .ok{border-color:rgba(87,199,134,.28);background:linear-gradient(135deg,rgba(87,199,134,.12),rgba(0,0,0,.15))}
+.launch-command-metrics .warn{border-color:rgba(246,194,93,.34);background:linear-gradient(135deg,rgba(246,194,93,.14),rgba(0,0,0,.15))}
+.launch-command-metrics .danger{border-color:rgba(255,120,120,.34);background:linear-gradient(135deg,rgba(210,73,73,.15),rgba(0,0,0,.15))}
+.launch-command-actions{display:flex;align-items:stretch;justify-content:flex-end;gap:10px;min-width:max-content}
+.launch-command-add,.launch-action-menu-trigger{min-width:172px;border:1px solid rgba(220,177,95,.42);border-radius:14px;background:linear-gradient(180deg,rgba(220,177,95,.24),rgba(103,69,23,.20));color:var(--text);padding:11px 13px;text-align:left;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.10)}
+.launch-command-add:hover,.launch-action-menu-trigger:hover{transform:translateY(-1px);border-color:rgba(255,214,130,.62);box-shadow:0 20px 42px rgba(0,0,0,.30),0 0 0 1px rgba(255,214,130,.08)}
+.launch-command-add b,.launch-action-menu-copy b{display:block;color:#fff2c8;font-size:14px;line-height:1.12}
+.launch-action-menu{position:relative;display:inline-block;z-index:20}
+.launch-action-menu-trigger{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center;height:100%;list-style:none}
+.launch-action-menu-trigger::-webkit-details-marker{display:none}
+.launch-action-menu-mark{display:grid;place-items:center;width:34px;height:34px;border:1px solid rgba(255,214,130,.34);border-radius:999px;background:rgba(0,0,0,.18);color:#ffe5a8;font-weight:900;letter-spacing:1px;box-shadow:inset 0 1px 0 rgba(255,255,255,.09)}
 .launch-workflow-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:14px 0}
 .launch-work-step{min-height:72px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.025);padding:12px;display:grid;grid-template-columns:auto 1fr;column-gap:10px;row-gap:2px;align-items:center}
 .launch-work-step strong{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;background:linear-gradient(180deg,var(--gold),#94651c);color:#120b03}
@@ -1136,13 +1158,17 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .launch-filters-more{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
 .launch-filters-more summary,.launch-gantt-card summary,.launch-months-card summary{cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;list-style:none}
 .launch-filters-more summary::-webkit-details-marker,.launch-gantt-card summary::-webkit-details-marker,.launch-months-card summary::-webkit-details-marker{display:none}
-.launch-primary-actions{margin-top:12px}
+.launch-primary-actions{margin-top:12px;justify-content:flex-end}
 .launch-excel-menu{position:relative;display:inline-block}
 .launch-excel-menu summary{list-style:none;cursor:pointer}
 .launch-excel-menu summary::-webkit-details-marker{display:none}
-.launch-excel-menu-panel{position:absolute;right:0;top:calc(100% + 8px);z-index:12;min-width:190px;padding:8px;border:1px solid var(--line-strong);border-radius:14px;background:#111827;box-shadow:0 18px 44px rgba(0,0,0,.34);display:grid;gap:6px}
-.launch-excel-menu-panel button{width:100%;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.035);color:var(--text);padding:9px 10px;text-align:left;cursor:pointer}
-.launch-excel-menu-panel button:hover{border-color:var(--line-strong);background:rgba(255,255,255,.07)}
+.launch-excel-menu-panel{position:absolute;right:0;top:calc(100% + 10px);z-index:50;min-width:330px;padding:10px;border:1px solid rgba(220,177,95,.34);border-radius:16px;background:radial-gradient(circle at 0 0,rgba(220,177,95,.17),transparent 42%),linear-gradient(180deg,rgba(28,22,16,.98),rgba(10,10,12,.98));box-shadow:0 26px 64px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.10);display:grid;gap:8px}
+.launch-excel-menu-head{padding:8px 9px 10px;border-bottom:1px solid rgba(220,177,95,.18)}
+.launch-excel-menu-head strong{display:block;margin-top:3px;color:#ffe5a8;font-size:15px;line-height:1.15}
+.launch-menu-action{width:100%;min-width:0;border:1px solid rgba(255,255,255,.10);border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(0,0,0,.16));color:var(--text);padding:10px 11px;text-align:left;cursor:pointer;display:grid;gap:3px;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+.launch-menu-action b{font-size:13px;line-height:1.15;color:#fff7e6}
+.launch-menu-action:hover{border-color:rgba(255,214,130,.40);background:linear-gradient(135deg,rgba(220,177,95,.13),rgba(0,0,0,.18));transform:translateX(2px)}
+.launch-menu-action.is-muted{border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.025)}
 .launch-attention-card{margin-top:14px;border-color:rgba(220,177,95,.24);background:linear-gradient(180deg,rgba(220,177,95,.055),rgba(255,255,255,.018))}
 .launch-attention-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
 .launch-attention-row{min-width:0;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.12);color:var(--text);padding:12px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 10px;text-align:left;cursor:pointer;align-items:start}
@@ -1402,6 +1428,8 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
   .sku-plan-fact-actions{justify-content:flex-start}
   .sku-salary-xp-main{grid-template-columns:1fr}
   .sku-salary-xp-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .launch-command-strip{grid-template-columns:1fr}
+  .launch-command-actions{justify-content:flex-start;min-width:0}
   .launch-task-board{grid-template-columns:repeat(2,minmax(0,1fr))}
   .launch-stage-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .launch-readiness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1452,6 +1480,11 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
   .data-health-score strong{font-size:46px}
   .data-health-hero-head{flex-direction:column}
   .sku-plan-fact-toolbar{padding:10px}
+  .launch-director-badges{justify-content:flex-start}
+  .launch-command-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .launch-command-actions{display:grid;grid-template-columns:1fr;align-items:stretch}
+  .launch-command-add,.launch-action-menu-trigger,.launch-action-menu{width:100%;min-width:0}
+  .launch-excel-menu-panel{position:static;margin-top:8px;width:100%;min-width:0}
   .sku-plan-platform-card{min-height:124px}
   .sku-salary-xp-head{flex-direction:column}
   .sku-salary-xp-score strong{font-size:38px}

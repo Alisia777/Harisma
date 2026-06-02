@@ -2274,7 +2274,9 @@ function buildAutoTasks() {
 }
 
 function getAllTasks() {
-  const storedTasks = state.storage.tasks.filter((task) => !isDeprecatedAutoSignalTask(task));
+  const storedTasks = state.storage.tasks
+    .filter((task) => !isDeprecatedAutoSignalTask(task))
+    .map((task) => normalizeTask(task, task?.source || 'manual'));
   return sortTasks([...storedTasks, ...buildAutoTasks()]);
 }
 

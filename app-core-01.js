@@ -2316,6 +2316,11 @@ const EMPTY_OWNER_NAMES = new Set([
   'none'
 ]);
 
+const INACTIVE_OWNER_NAMES = new Set([
+  'олеся',
+  'олеся савинова'
+]);
+
 const OWNER_CANONICAL_NAMES = new Map([
   ['алексей', 'Алексей'],
   ['александр', 'Питайкин Артём'],
@@ -2330,7 +2335,6 @@ const OWNER_CANONICAL_NAMES = new Map([
   ['ксения', 'Ксения'],
   ['максим', 'Лапыгин Максим'],
   ['мария', 'Васильева Мария'],
-  ['олеся', 'Олеся'],
   ['светлана', 'Светлана']
 ]);
 
@@ -2354,8 +2358,7 @@ const OWNER_NAME_ALIASES = new Map([
   ['мария васильевна', 'Васильева Мария'],
   ['васильева мария', 'Васильева Мария'],
   ['лапыгин максим', 'Лапыгин Максим'],
-  ['максим лапыгин', 'Лапыгин Максим'],
-  ['олеся савинова', 'Олеся']
+  ['максим лапыгин', 'Лапыгин Максим']
 ]);
 
 function normalizeOwnerToken(value = '') {
@@ -2374,11 +2377,13 @@ function canonicalOwnerName(value = '') {
 
   const lowered = normalized.toLowerCase();
   if (EMPTY_OWNER_NAMES.has(lowered)) return '';
+  if (INACTIVE_OWNER_NAMES.has(lowered)) return '';
   if (OWNER_NAME_ALIASES.has(lowered)) return OWNER_NAME_ALIASES.get(lowered);
   if (OWNER_CANONICAL_NAMES.has(lowered)) return OWNER_CANONICAL_NAMES.get(lowered);
 
   const [firstToken = ''] = normalized.split(' ');
   const firstTokenLowered = firstToken.toLowerCase();
+  if (INACTIVE_OWNER_NAMES.has(firstTokenLowered)) return '';
   if (OWNER_CANONICAL_NAMES.has(firstTokenLowered)) return OWNER_CANONICAL_NAMES.get(firstTokenLowered);
 
   return normalized;

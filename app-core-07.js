@@ -3705,7 +3705,7 @@ function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1, sele
           const organicPct = Math.max(0, Math.min(100, numberOrZero(row.orders.organic) / total * 100));
           const weekLabel = productLeaderboardWeeklyChartLabel(row);
           const isActive = productLeaderboardWeeklyRowSnapshotMatch(row, selectedKey);
-          const tooltip = `${weekLabel}: всего ${fmt.int(total)} заказов · КЗ ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · органика ${fmt.int(row.orders.organic)} · выручка ${fmt.money(row.totalRevenue)}`;
+          const tooltip = `${weekLabel}: всего ${fmt.int(total)} заказов · КЗ-метка ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · без метки ${fmt.int(row.orders.organic)} · выручка ${fmt.money(row.totalRevenue)}`;
           return `
             <button
               type="button"
@@ -3726,9 +3726,9 @@ function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1, sele
               </div>
               <div class="product-leaderboard-weekly-bi-column__tooltip">
                 <b>${escapeHtml(weekLabel)}</b>
-                <span>КЗ ${fmt.int(row.orders.kz)} · ${fmt.pct(row.kzShare)}</span>
+                <span>КЗ-метка ${fmt.int(row.orders.kz)} · ${fmt.pct(row.kzShare)}</span>
                 <span>digital ${fmt.int(row.orders.digital)} · ${fmt.pct(row.digitalShare)}</span>
-                <span>органика ${fmt.int(row.orders.organic)} · ${fmt.pct(row.organicShare)}</span>
+                <span>без метки ${fmt.int(row.orders.organic)} · ${fmt.pct(row.organicShare)}</span>
                 <span>выручка ${fmt.money(row.totalRevenue)}</span>
               </div>
               <div class="product-leaderboard-weekly-bi-column__label">
@@ -3754,42 +3754,42 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}, selectedPayl
   const maxOrders = Math.max(1, ...rows.map((row) => numberOrZero(row.totalOrders)));
   const currentLabel = current.range.fromLabel && current.range.toLabel ? `${current.range.fromLabel} - ${current.range.toLabel}` : current.weekLabel;
   const previousLabel = previous ? (previous.range.fromLabel && previous.range.toLabel ? `${previous.range.fromLabel} - ${previous.range.toLabel}` : previous.weekLabel) : '';
-  const wbTotalOrders = numberOrZero(orderContour.totalOrders);
-  const kzListOrders = numberOrZero(orderContour.kzOrders) || numberOrZero(current.totalOrders);
-  const organicOrders = Math.max(0, wbTotalOrders - kzListOrders);
+  const weeklyTotalOrders = numberOrZero(current.totalOrders);
+  const kzMarkedOrders = numberOrZero(current.orders.kz);
   const digitalOrders = numberOrZero(current.orders.digital);
+  const unmarkedOrganicOrders = numberOrZero(current.orders.organic);
   const mpAds = productLeaderboardMarketplaceAdsShareModel();
-  const kzListShare = wbTotalOrders > 0 ? kzListOrders / wbTotalOrders : null;
-  const organicShare = wbTotalOrders > 0 ? organicOrders / wbTotalOrders : null;
-  const digitalGlobalShare = wbTotalOrders > 0 ? digitalOrders / wbTotalOrders : null;
+  const kzMarkedShare = weeklyTotalOrders > 0 ? kzMarkedOrders / weeklyTotalOrders : null;
+  const digitalShare = weeklyTotalOrders > 0 ? digitalOrders / weeklyTotalOrders : null;
+  const unmarkedOrganicShare = weeklyTotalOrders > 0 ? unmarkedOrganicOrders / weeklyTotalOrders : null;
   const growthModel = productLeaderboardWeeklyGrowthModel(current, previous);
   const cards = [
     {
       className: 'is-kz',
-      label: 'КЗ-лист / WB',
-      value: kzListShare == null ? '—' : fmt.pct(kzListShare),
-      meta: `${fmt.int(kzListOrders)} из ${fmt.int(wbTotalOrders)} заказов`,
+      label: 'КЗ-метка / неделя',
+      value: kzMarkedShare == null ? '—' : fmt.pct(kzMarkedShare),
+      meta: `${fmt.int(kzMarkedOrders)} из ${fmt.int(weeklyTotalOrders)} заказов`,
       delta: null,
-      progress: kzListShare,
+      progress: kzMarkedShare,
       hue: 42
     },
     {
       className: 'is-digital',
-      label: 'Digital / WB',
-      value: digitalGlobalShare == null ? '—' : fmt.pct(digitalGlobalShare),
-      meta: `${fmt.int(digitalOrders)} из ${fmt.int(wbTotalOrders)} заказов`,
+      label: 'Digital / неделя',
+      value: digitalShare == null ? '—' : fmt.pct(digitalShare),
+      meta: `${fmt.int(digitalOrders)} из ${fmt.int(weeklyTotalOrders)} заказов`,
       delta: null,
       detail: '',
-      progress: digitalGlobalShare,
+      progress: digitalShare,
       hue: 218
     },
     {
       className: 'is-organic',
-      label: 'Органика WB',
-      value: organicShare == null ? '—' : fmt.pct(organicShare),
-      meta: `${fmt.int(organicOrders)} заказов`,
+      label: 'Органика / без метки',
+      value: unmarkedOrganicShare == null ? '—' : fmt.pct(unmarkedOrganicShare),
+      meta: `${fmt.int(unmarkedOrganicOrders)} из ${fmt.int(weeklyTotalOrders)} заказов`,
       delta: null,
-      progress: organicShare,
+      progress: unmarkedOrganicShare,
       hue: 145
     },
     {

@@ -3569,6 +3569,8 @@ function productLeaderboardWeeklyGrowthModel(current = null, previous = null) {
     return {
       key,
       item,
+      currentItem: curr.item || {},
+      previousItem: prev.item || {},
       bucket,
       orders: curr.orders,
       previousOrders: prev.orders,
@@ -3576,8 +3578,14 @@ function productLeaderboardWeeklyGrowthModel(current = null, previous = null) {
       revenue: curr.revenue,
       previousRevenue: prev.revenue,
       revenueDelta: curr.revenue - prev.revenue,
+      clicks: curr.clicks,
+      previousClicks: prev.clicks,
       clicksDelta: curr.clicks - prev.clicks,
+      carts: curr.carts,
+      previousCarts: prev.carts,
       cartsDelta: curr.carts - prev.carts,
+      buys: curr.buys,
+      previousBuys: prev.buys,
       buysDelta: curr.buys - prev.buys
     };
   }).filter((row) => row.ordersDelta || row.revenueDelta);
@@ -3597,6 +3605,125 @@ function productLeaderboardWeeklyGrowthModel(current = null, previous = null) {
   };
 }
 
+function productLeaderboardFirstMetricNumber(...values) {
+  for (const value of values) {
+    const parsed = productLeaderboardNumberOrNull(value);
+    if (parsed !== null) return parsed;
+  }
+  return null;
+}
+
+function productLeaderboardDriverStockValue(item = {}) {
+  return productLeaderboardFirstMetricNumber(
+    item.stock,
+    item.stockWb,
+    item.wbStock,
+    item.stockWarehouse,
+    item.warehouseStock,
+    item.wb?.stock,
+    item.ozon?.stock
+  );
+}
+
+function productLeaderboardWarehouseOverlayForItem(item = {}, key = '') {
+  const articleKey = String(item.articleKey || key || '').trim().toLowerCase();
+  if (!articleKey) return null;
+  const rows = Array.isArray(state.warehouseStockOverlay?.rows) ? state.warehouseStockOverlay.rows : [];
+  return rows.find((row = {}) => {
+    const rowKey = String(row.articleKey || '').trim().toLowerCase();
+    const sourceKeys = Array.isArray(row.sourceKeys) ? row.sourceKeys : [];
+    return rowKey === articleKey || sourceKeys.some((sourceKey) => String(sourceKey || '').trim().toLowerCase() === articleKey);
+  }) || null;
+}
+
+function productLeaderboardSkuStockForItem(item = {}, key = '') {
+  try {
+    const skuKey = item.articleKey || key || item.article || '';
+    const sku = skuKey && typeof getSku === 'function' ? getSku(skuKey) : null;
+    if (!sku) return 0;
+    return numberOrZero(sku.wb?.stock) + numberOrZero(sku.ozon?.stock);
+  } catch (_error) {
+    return 0;
+  }
+}
+
+function productLeaderboardDriverRate(numerator, denominator, fallback = null) {
+  const den = numberOrZero(denominator);
+  if (den > 0) return numberOrZero(numerator) / den;
+  return fallback === null || fallback === undefined || Number.isNaN(Number(fallback)) ? null : Number(fallback);
+}
+
+function productLeaderboardDriverReasonBadges(row = {}, tone = 'ok') {
+  const item = row.item || {};
+  const currentItem = row.currentItem || item;
+  const previousItem = row.previousItem || {};
+  const reasons = [];
+  const add = (label, reasonTone = 'info', title = '') => {
+    if (!label || reasons.some((reason) => reason.label === label)) return;
+    reasons.push({ label, tone: reasonTone, title });
+  };
+
+  if (row.bucket === 'kz') add('КЗ', 'kz', 'SKU растет внутри КЗ-листа');
+  if (row.bucket === 'organic') add('органика', 'organic', 'Рост без КЗ/digital-метки');
+
+  const currentPrice = productLeaderboardPriceMetrics(currentItem).main;
+  const previousPrice = productLeaderboardPriceMetrics(previousItem).main;
+  if (currentPrice !== null && previousPrice !== null && previousPrice > 0) {
+    const priceDelta = (currentPrice - previousPrice) / previousPrice;
+    if (tone === 'ok' && priceDelta <= -0.01) add('цена ↓', 'price', `${fmt.money(previousPrice)} -> ${fmt.money(currentPrice)}`);
+    if (tone !== 'ok' && priceDelta >= 0.01) add('цена ↑', 'warn', `${fmt.money(previousPrice)} -> ${fmt.money(currentPrice)}`);
+  }
+
+  const currentStock = productLeaderboardDriverStockValue(currentItem);
+  const previousStock = productLeaderboardDriverStockValue(previousItem);
+  const warehouseRow = productLeaderboardWarehouseOverlayForItem(item, row.key);
+  const shippedToMarketplace = numberOrZero(warehouseRow?.shippedWB) + numberOrZero(warehouseRow?.shippedOzon);
+  const skuStock = productLeaderboardSkuStockForItem(item, row.key);
+  if (currentStock !== null && previousStock !== null && currentStock > previousStock) {
+    add('остаток ↑', 'stock', `${fmt.int(previousStock)} -> ${fmt.int(currentStock)}`);
+  } else if (tone === 'ok' && shippedToMarketplace > 0 && numberOrZero(row.ordersDelta) > 0) {
+    add('остаток ↑', 'stock', `отгружено на площадки ${fmt.int(shippedToMarketplace)}`);
+  } else if (tone === 'ok' && skuStock > 0 && numberOrZero(row.ordersDelta) > 0) {
+    add('остаток ↑', 'stock', `остаток на МП ${fmt.int(skuStock)}`);
+  }
+
+  if (numberOrZero(row.clicksDelta) > 0 && row.bucket !== 'organic') {
+    add('реклама ↑', 'ads', `${productLeaderboardSignedInt(row.clicksDelta)} кликов`);
+  } else if (numberOrZero(row.clicksDelta) < 0 && row.bucket !== 'organic') {
+    add('реклама ↓', 'danger', `${productLeaderboardSignedInt(row.clicksDelta)} кликов`);
+  }
+
+  const currentCartRate = productLeaderboardDriverRate(row.carts, row.clicks, currentItem.cartRatePct);
+  const previousCartRate = productLeaderboardDriverRate(row.previousCarts, row.previousClicks, previousItem.cartRatePct);
+  const currentOrderRate = productLeaderboardDriverRate(row.orders, row.clicks, currentItem.conversionPct ?? currentItem.buyRatePct);
+  const previousOrderRate = productLeaderboardDriverRate(row.previousOrders, row.previousClicks, previousItem.conversionPct ?? previousItem.buyRatePct);
+  const cartRateDelta = currentCartRate !== null && previousCartRate !== null ? currentCartRate - previousCartRate : 0;
+  const orderRateDelta = currentOrderRate !== null && previousOrderRate !== null ? currentOrderRate - previousOrderRate : 0;
+  if (tone === 'ok' && (cartRateDelta >= 0.01 || orderRateDelta >= 0.004)) {
+    add('карточка улучшена', 'card', `конверсия ${productLeaderboardSignedPp(orderRateDelta)}`);
+  } else if (tone !== 'ok' && (cartRateDelta <= -0.01 || orderRateDelta <= -0.004)) {
+    add('карточка просела', 'danger', `конверсия ${productLeaderboardSignedPp(orderRateDelta)}`);
+  }
+
+  const previousClicks = numberOrZero(row.previousClicks);
+  const clicksGrowth = previousClicks > 0 ? numberOrZero(row.clicksDelta) / previousClicks : 0;
+  if (numberOrZero(row.ordersDelta) > 0 && numberOrZero(row.cartsDelta) > 0 && clicksGrowth >= 0.18) {
+    add('сезонность', 'season', `клики ${productLeaderboardSignedInt(row.clicksDelta)}`);
+  }
+
+  return reasons.slice(0, 5);
+}
+
+function productLeaderboardWeeklyGrowthDriverReasonsHtml(row = {}, tone = 'ok') {
+  const reasons = productLeaderboardDriverReasonBadges(row, tone);
+  if (!reasons.length) return '';
+  return `
+    <div class="product-leaderboard-weekly-bi-driver__reasons" aria-label="Почему изменился SKU">
+      ${reasons.map((reason) => `<span class="is-${escapeHtml(reason.tone)}" title="${escapeHtml(reason.title || reason.label)}">${escapeHtml(reason.label)}</span>`).join('')}
+    </div>
+  `;
+}
+
 function productLeaderboardWeeklyGrowthDriverHtml(row = {}, tone = 'ok', options = {}) {
   const item = row.item || {};
   const title = item.name || item.articleKey || item.article || row.key || 'SKU';
@@ -3614,6 +3741,7 @@ function productLeaderboardWeeklyGrowthDriverHtml(row = {}, tone = 'ok', options
       <b class="${deltaClass}">${escapeHtml(productLeaderboardSignedInt(row.ordersDelta))} заказов</b>
       <strong>${escapeHtml(title)}</strong>
       <em>${escapeHtml(bucket)}</em>
+      ${productLeaderboardWeeklyGrowthDriverReasonsHtml(row, tone)}
       <div class="product-leaderboard-weekly-bi-driver__route">
         <span>${escapeHtml(source || 'SKU')}</span>
         <i></i>

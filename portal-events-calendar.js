@@ -431,7 +431,10 @@
       }
       if (needOverlay) state.smartPriceOverlay = overlay && typeof overlay === 'object' ? overlay : { generatedAt: '', platforms: {} };
       CALENDAR_STATE.dataLoaded = true;
-      if (isCalendarActive() && !CALENDAR_STATE.modalOpen) renderEventCalendar(rootId);
+      if (isCalendarActive()) {
+        if (CALENDAR_STATE.modalOpen) renderSkuPicker(document.getElementById(rootId));
+        else renderEventCalendar(rootId);
+      }
     } catch (error) {
       console.warn('[promo-calendar] data load', error);
     } finally {

@@ -1357,7 +1357,8 @@
     const queueFilter = controlSimpleNormalizeQueue(state?.controlFilters?.taskSimpleQueue);
     const displayTasks = queueFilter === 'all' ? tasks : (buckets[queueFilter] || []);
     const active = tasks.filter(controlSimpleIsActive);
-    return { selected, queueFilter, counts, tasks, displayTasks, buckets, active, filters, activeFilterCount: controlSimpleActiveFilterCount(filters), overdue: active.filter(controlSimpleIsOverdue), noOwner: active.filter((taskItem) => !taskItem?.owner) };
+    const game = controlSimpleGameModel(tasks, buckets, active);
+    return { selected, queueFilter, counts, tasks, displayTasks, buckets, active, game, filters, activeFilterCount: controlSimpleActiveFilterCount(filters), overdue: active.filter(controlSimpleIsOverdue), noOwner: active.filter((taskItem) => !taskItem?.owner) };
   }
 
   function controlSimpleWorkstreamCounts(tasks) {
@@ -1369,6 +1370,100 @@
       noOwner: active.filter((taskItem) => !taskItem?.owner).length,
       sent: active.filter((taskItem) => CONTROL_SIMPLE_SENT.has(controlSimpleStatus(taskItem))).length
     };
+  }
+
+  function controlSimpleDueDays(taskItem) {
+    const due = String(taskItem?.due || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(due)) return null;
+    const current = new Date(`${todayIso()}T00:00:00`);
+    const target = new Date(`${due}T00:00:00`);
+    if (Number.isNaN(current.getTime()) || Number.isNaN(target.getTime())) return null;
+    return Math.round((target - current) / 86400000);
+  }
+
+  function controlSimpleTaskProgress(taskItem) {
+    const status = controlSimpleStatus(taskItem);
+    if (status === 'done') return 100;
+    if (status === 'waiting_decision') return 78;
+    if (status === 'waiting_rop') return 64;
+    if (status === 'waiting_team') return 52;
+    if (status === 'in_progress') return 42;
+    if (String(taskItem?.source || '').toLowerCase() === 'auto') return 18;
+    return 22;
+  }
+
+  function controlSimpleTaskXp(taskItem) {
+    const urgency = controlSimpleUrgency(taskItem);
+    const statusBonus = controlSimpleIsDone(taskItem) ? 120 : CONTROL_SIMPLE_SENT.has(controlSimpleStatus(taskItem)) ? 70 : 40;
+    const sourceBonus = String(taskItem?.source || '').toLowerCase() === 'auto' ? 18 : 8;
+    return Math.max(18, Math.min(180, statusBonus + sourceBonus + Math.round(urgency / 2)));
+  }
+
+  function controlSimpleTaskBadges(taskItem, direction) {
+    const badges = [];
+    const dueDays = controlSimpleDueDays(taskItem);
+    if (controlSimpleIsOverdue(taskItem)) badges.push(['просрочено', 'danger']);
+    else if (dueDays === 0) badges.push(['сегодня', 'warn']);
+    else if (dueDays !== null && dueDays <= 2) badges.push([`${fmt.int(dueDays)} дн.`, 'warn']);
+    if (!String(taskItem?.owner || '').trim()) badges.push(['owner', 'warn']);
+    if (String(taskItem?.source || '').toLowerCase() === 'auto') badges.push(['авто-сигнал', 'info']);
+    if (taskItem?.priority === 'critical') badges.push(['критично', 'danger']);
+    else if (taskItem?.priority === 'high') badges.push(['высокий', 'warn']);
+    badges.push([direction?.label || 'контур', '']);
+    return badges.slice(0, 4);
+  }
+
+  function controlSimpleGameModel(tasks, buckets, active) {
+    const activeList = active || [];
+    const overdue = activeList.filter(controlSimpleIsOverdue);
+    const noOwner = activeList.filter((taskItem) => !String(taskItem?.owner || '').trim());
+    const sent = activeList.filter((taskItem) => CONTROL_SIMPLE_SENT.has(controlSimpleStatus(taskItem)));
+    const critical = activeList.filter((taskItem) => taskItem?.priority === 'critical');
+    const signals = (buckets?.signals || []).filter(controlSimpleIsActive);
+    const done = (tasks || []).filter(controlSimpleIsDone);
+    const ownerCoverage = activeList.length ? Math.round(((activeList.length - noOwner.length) / activeList.length) * 100) : 100;
+    const risk = overdue.length * 4 + critical.length * 3 + sent.length * 2 + noOwner.length;
+    const score = Math.max(0, Math.min(100, Math.round(100 - (risk / Math.max(1, activeList.length)) * 18)));
+    const xp = (tasks || []).reduce((sum, taskItem) => sum + controlSimpleTaskXp(taskItem), 0);
+    const focus = overdue.length ? 'просрочка'
+      : critical.length ? 'критично'
+        : sent.length ? 'ждут ответа'
+          : noOwner.length ? 'назначить owner'
+            : signals.length ? 'авто-сигналы'
+              : 'контур ровный';
+    return {
+      score,
+      xp,
+      focus,
+      ownerCoverage,
+      overdue: overdue.length,
+      noOwner: noOwner.length,
+      sent: sent.length,
+      signals: signals.length,
+      done: done.length,
+      level: score >= 86 ? 'контур чистый' : score >= 68 ? 'рабочий фокус' : 'разобрать риски'
+    };
+  }
+
+  function controlSimpleGameHero(data) {
+    const game = data.game || {};
+    const selectedMeta = CONTROL_SIMPLE_META[data.selected] || CONTROL_SIMPLE_META.cross;
+    const tone = game.score >= 86 ? 'ok' : game.score >= 68 ? 'warn' : 'danger';
+    return `
+      <section class="control-simple-game" data-platform="${escapeHtml(data.selected || 'all')}">
+        <div class="control-simple-game-main">
+          <span>Уровень задач</span>
+          <strong>${fmt.int(game.score || 0)}</strong>
+          <em>${escapeHtml(game.level || 'рабочий фокус')} · ${escapeHtml(selectedMeta.label || 'контур')}</em>
+          <div class="control-simple-game-meter"><i style="width:${Math.max(0, Math.min(100, game.score || 0))}%"></i></div>
+        </div>
+        <div class="control-simple-game-grid">
+          <div class="control-simple-game-cell is-xp"><span>XP команды</span><strong>${fmt.int(game.xp || 0)}</strong><em>за активность и закрытия</em></div>
+          <div class="control-simple-game-cell ${game.overdue ? 'is-danger' : 'is-ok'}"><span>Срочно</span><strong>${fmt.int(game.overdue || 0)}</strong><em>просрочено</em></div>
+          <div class="control-simple-game-cell ${game.ownerCoverage < 90 ? 'is-warn' : 'is-ok'}"><span>Owner</span><strong>${fmt.int(game.ownerCoverage || 0)}%</strong><em>покрытие задач</em></div>
+          <div class="control-simple-game-cell ${tone ? `is-${tone}` : ''}"><span>Фокус</span><strong>${escapeHtml(game.focus || 'контур')}</strong><em>${fmt.int(game.signals || 0)} авто · ${fmt.int(game.sent || 0)} ждут</em></div>
+        </div>
+      </section>`;
   }
 
   function controlSimpleWorkstreamPanel(key, tasks) {
@@ -1469,12 +1564,20 @@
     const directionKey = controlSimpleDirectionKey(taskItem);
     const direction = CONTROL_SIMPLE_META[directionKey] || CONTROL_SIMPLE_META.cross;
     const productStatus = taskProductStatusLabel(taskItem);
+    const progress = controlSimpleTaskProgress(taskItem);
+    const xp = controlSimpleTaskXp(taskItem);
+    const taskBadges = controlSimpleTaskBadges(taskItem, direction);
     return `
       <div class="control-simple-task ${tone ? `is-${tone}` : ''}" data-platform="${escapeHtml(directionKey)}">
         <button class="control-simple-task-main" type="button" data-control-simple-open-task="${escapeHtml(id)}">
+          <div class="control-simple-task-rank"><span>XP ${fmt.int(xp)}</span><b>${fmt.int(progress)}%</b></div>
           <strong>${escapeHtml(taskItem?.title || taskItem?.entityLabel || taskItem?.articleKey || 'Задача')}</strong>
           <span>${escapeHtml(taskPeopleLine(taskItem))} · срок ${escapeHtml(taskItem?.due || 'без срока')} · пост. ${escapeHtml(taskCreatedLabel(taskItem, true))}</span>
           ${next ? `<em>${escapeHtml(next.slice(0, 112))}${next.length > 112 ? '...' : ''}</em>` : ''}
+          <div class="control-simple-task-badges">
+            ${taskBadges.map(([label, badgeTone]) => `<i class="${badgeTone ? `is-${escapeHtml(badgeTone)}` : ''}">${escapeHtml(label)}</i>`).join('')}
+          </div>
+          <div class="control-simple-task-meter"><i style="width:${Math.max(0, Math.min(100, progress))}%"></i></div>
         </button>
         <div class="control-simple-task-foot">
           <span>${escapeHtml(direction.label)}</span>
@@ -1686,6 +1789,7 @@
         <div class="badge-stack">${badge(`${fmt.int(data.active.length)} активных`, data.active.length ? 'info' : 'ok')}${badge(`${fmt.int(data.overdue.length)} просрочено`, data.overdue.length ? 'danger' : 'ok')}${badge(`${fmt.int(data.noOwner.length)} без owner`, data.noOwner.length ? 'warn' : 'ok')}</div>
       </div>
       <div class="control-simple-panel">
+        ${controlSimpleGameHero(data)}
         ${controlSimpleWorkspacePanel(data)}
         <div class="control-simple-topbar">
           <input id="controlSimpleSearch" value="${escapeHtml(state.controlFilters.search || '')}" placeholder="Поиск по задаче, SKU, owner">

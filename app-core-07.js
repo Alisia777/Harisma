@@ -3305,8 +3305,61 @@ function productLeaderboardGrowthDriver(label, current, previous, options = {}) 
   return { label, value, detail, tone };
 }
 
-function renderProductLeaderboardKirillContourHtml(payload = {}, summary = {}, items = []) {
+function productLeaderboardCommonOrderContour(summary = {}, items = [], filters = {}) {
+  const substitutionModel = productLeaderboardSubstitutionRowsForItems(items, filters);
+  const substitutionSummary = productLeaderboardSubstitutionSummary(substitutionModel.rows);
+  const totalOrders = numberOrZero(substitutionSummary.orders);
+  const kzOrdersRaw = numberOrZero(summary.orders);
+  const kzOrders = totalOrders > 0 ? Math.min(kzOrdersRaw, totalOrders) : kzOrdersRaw;
+  const organicOrders = Math.max(0, totalOrders - kzOrders);
+  const denominator = totalOrders > 0 ? totalOrders : kzOrders + organicOrders;
+  return {
+    totalOrders: denominator,
+    kzOrders,
+    organicOrders,
+    kzShare: denominator > 0 ? kzOrders / denominator : null,
+    organicShare: denominator > 0 ? organicOrders / denominator : null,
+    substitutionSummary,
+    isFiltered: substitutionModel.isFiltered
+  };
+}
+
+function productLeaderboardCommonSplitCardHtml(contour = {}) {
+  const kzPct = contour.kzShare == null ? 0 : Math.min(100, Math.max(0, contour.kzShare * 100));
+  const organicPct = contour.organicShare == null ? 0 : Math.min(100, Math.max(0, contour.organicShare * 100));
+  const style = typeof skuPlanFactCardStyle === 'function'
+    ? skuPlanFactCardStyle('wb', contour.kzShare == null ? 0.5 : Math.max(0.15, contour.kzShare))
+    : '';
+  return `
+    <div class="sku-plan-platform-card level-${productLeaderboardScoreLevel(kzPct)}" style="${style};cursor:default;grid-column:span 2">
+      <span class="sku-plan-platform-card__top">
+        <strong>КЗ / органика</strong>
+        <em>${fmt.int(contour.totalOrders)} всего заказов</em>
+      </span>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 8px">
+        <div style="border:1px solid rgba(221,183,111,.28);border-radius:8px;padding:10px;background:rgba(184,76,255,.12)">
+          <span class="small muted">КЗ</span>
+          <strong style="display:block;font-size:clamp(24px,2.1vw,34px);line-height:1.05;margin-top:3px">${fmt.int(contour.kzOrders)}</strong>
+          <em class="small">${contour.kzShare == null ? '—' : fmt.pct(contour.kzShare)} от общего</em>
+        </div>
+        <div style="border:1px solid rgba(221,183,111,.22);border-radius:8px;padding:10px;background:rgba(58,190,138,.11)">
+          <span class="small muted">Органика</span>
+          <strong style="display:block;font-size:clamp(24px,2.1vw,34px);line-height:1.05;margin-top:3px">${fmt.int(contour.organicOrders)}</strong>
+          <em class="small">${contour.organicShare == null ? '—' : fmt.pct(contour.organicShare)} от общего</em>
+        </div>
+      </div>
+      <span class="sku-plan-platform-card__bar" style="background:linear-gradient(90deg,rgba(184,76,255,.82) 0 ${kzPct.toFixed(1)}%,rgba(58,190,138,.66) ${kzPct.toFixed(1)}% 100%)"><i style="width:100%;opacity:.01"></i></span>
+      <span class="sku-plan-platform-card__foot">
+        <b>КЗ ${fmt.int(contour.kzOrders)}</b>
+        <em>органика ${fmt.int(contour.organicOrders)} · ${organicPct.toFixed(1)}%</em>
+      </span>
+    </div>
+  `;
+}
+
+function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, items = [], filters = {}) {
   const digital = productLeaderboardLatestDigitalContour();
+  const orderContour = productLeaderboardCommonOrderContour(summary, items, filters);
   const previous = productLeaderboardPreviousComparableSnapshot(payload);
   const previousSummary = previous?.summary || null;
   const kzRevenue = numberOrZero(summary.revenue);
@@ -3325,41 +3378,31 @@ function renderProductLeaderboardKirillContourHtml(payload = {}, summary = {}, i
     productLeaderboardGrowthDriver('Средний выкуп', avgBuyRevenue, previousAvgBuyRevenue, { format: 'money', detail: `${fmt.money(avgBuyRevenue)} / выкуп` }),
     productLeaderboardGrowthDriver('ДРР КЗ', summary.drrPct, previousSummary.drrPct, { format: 'pp', lowerIsBetter: true, detail: `${fmt.pct(summary.drrPct)} сейчас` })
   ] : [];
-  const externalTone = numberOrZero(digital.externalAds) > 0 ? 'warn' : 'ok';
   const growthTone = revenueDelta == null ? 'info' : revenueDelta >= 0 ? 'ok' : 'warn';
   const previousLabel = previous?.snapshot?.weekLabel || 'прошлый валидный срез';
   return `
-    <div class="card product-leaderboard-kirill-contour" style="margin-top:14px">
+    <div class="card product-leaderboard-common-contour" style="margin-top:14px">
       <div class="section-subhead">
         <div>
-          <h3>Контур Кирилла</h3>
-          <p class="small muted">Ответы на вопросы: доля внешки, КЗ / digital и за счет чего растем.</p>
+          <h3>Общий контур</h3>
+          <p class="small muted">КЗ против органики: из заказов по WB-подменникам вычитаем заказы КЗ и сразу видим доли.</p>
         </div>
         <div class="badge-stack">
           ${badge(payload.weekLabel || 'КЗ неделя', 'info')}
-          ${badge(digital.label ? `digital ${digital.label}` : 'digital контур', digital.revenue ? 'ok' : 'warn')}
+          ${badge(orderContour.isFiltered ? 'по фильтрам лидерборда' : 'все WB-подменники', 'info')}
           ${badge(previousSummary ? `сравнение: ${previousLabel}` : 'нет базы сравнения', previousSummary ? 'info' : 'warn')}
         </div>
       </div>
-      <div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+      <div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+        ${productLeaderboardCommonSplitCardHtml(orderContour)}
         ${productLeaderboardModuleCardHtml({
-          title: 'Внешка / выручка',
-          kicker: `${fmt.money(digital.externalAds)} внешки`,
-          value: digital.externalRevenueShare == null ? '—' : fmt.pct(digital.externalRevenueShare),
-          meta: `${fmt.money(digital.revenue)} общей digital-выручки`,
-          completion: digital.externalRevenueShare == null ? null : Math.max(0, 1 - Math.min(1, digital.externalRevenueShare / 0.12)),
-          footer: `в рекламе ${digital.externalSpendShare == null ? '—' : fmt.pct(digital.externalSpendShare)}`,
-          hint: 'внешка считается отдельно от ДРР',
-          deltaClass: externalTone
-        })}
-        ${productLeaderboardModuleCardHtml({
-          title: 'КЗ / digital',
+          title: 'Digital выручка',
           kicker: `КЗ ${payload.weekLabel || 'неделя'}`,
-          value: fmt.money(kzRevenue),
-          meta: `digital ${digital.label}: ${fmt.money(digital.revenue)}`,
+          value: fmt.money(digital.revenue),
+          meta: `WB ${fmt.money(digital.revenueWb)} · Ozon ${fmt.money(digital.revenueOzon)}`,
           completion: kzDigitalShare == null ? null : Math.min(1.35, kzDigitalShare / 0.08),
-          footer: `КЗ в контуре ${kzDigitalShare == null ? '—' : fmt.pct(kzDigitalShare)}`,
-          hint: `WB ${fmt.money(digital.revenueWb)} · Ozon ${fmt.money(digital.revenueOzon)}`,
+          footer: `КЗ / digital ${kzDigitalShare == null ? '—' : fmt.pct(kzDigitalShare)}`,
+          hint: `КЗ выручка ${fmt.money(kzRevenue)}`,
           deltaClass: kzDigitalShare && kzDigitalShare > 0.06 ? 'ok' : 'info'
         })}
         ${productLeaderboardModuleCardHtml({
@@ -3378,7 +3421,7 @@ function renderProductLeaderboardKirillContourHtml(payload = {}, summary = {}, i
       </div>
       <div class="muted small" style="margin-top:10px">
         Вывод: ${revenueDelta != null && revenueDelta >= 0
-          ? `КЗ растет на ${productLeaderboardSignedMoney(revenueDelta)}: основной вклад дают выкупы ${drivers[4]?.value || ''}, заказы ${drivers[3]?.value || ''} и охваты ${drivers[0]?.value || ''}; ДРР ${productLeaderboardSignedPp(drrDelta)}`
+          ? `КЗ дает ${fmt.int(orderContour.kzOrders)} заказов из ${fmt.int(orderContour.totalOrders)} (${orderContour.kzShare == null ? '—' : fmt.pct(orderContour.kzShare)}), органика ${fmt.int(orderContour.organicOrders)} (${orderContour.organicShare == null ? '—' : fmt.pct(orderContour.organicShare)}). Рост КЗ ${productLeaderboardSignedMoney(revenueDelta)}: вклад дают выкупы ${drivers[4]?.value || ''}, заказы ${drivers[3]?.value || ''} и охваты ${drivers[0]?.value || ''}; ДРР ${productLeaderboardSignedPp(drrDelta)}`
           : revenueDelta != null
             ? `КЗ просел на ${productLeaderboardSignedMoney(revenueDelta)}; смотрим клики, корзины и выкупы относительно ${escapeHtml(previousLabel)}.`
             : 'нет валидной прошлой недели для честного сравнения.'}
@@ -8069,7 +8112,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const ownerCoverage = filteredSummary.skuCount > 0 ? filteredSummary.ownerAssignedCount / filteredSummary.skuCount : 0;
   const gameHeroHtml = productLeaderboardGameHeroHtml(payload, filteredItems, freshness);
   const moduleBoardHtml = productLeaderboardModuleBoardHtml(payload, filteredSummary, ownerCoverage);
-  const kirillContourHtml = renderProductLeaderboardKirillContourHtml(payload, filteredSummary, filteredItems);
+  const commonContourHtml = renderProductLeaderboardCommonContourHtml(payload, filteredSummary, filteredItems, filters);
   const insightTilesHtml = renderProductLeaderboardInsightTilesHtml(payload, filteredSummary, ownerCoverage, filteredItems, filters);
   const metricsPanelHtml = !isSubstitutionMode && filters.expandedPanel === 'metrics'
     ? renderProductLeaderboardMetricsPanel(payload, filteredSummary, ownerCoverage)
@@ -8130,7 +8173,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
 
     ${moduleBoardHtml}
 
-    ${kirillContourHtml}
+    ${commonContourHtml}
 
     ${insightTilesHtml}
 

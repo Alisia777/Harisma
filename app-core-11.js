@@ -3281,6 +3281,15 @@ function skuContourRecommendedDecision(issue = {}, candidates = null) {
   return { decision: 'need_check', tone: 'warn', text: 'Нужна ручная сверка', targetSku: best?.articleKey || '' };
 }
 
+function skuContourDecisionBadgeLabel(decision = '') {
+  const key = String(decision || '').toLowerCase();
+  if (key === 'alias') return 'Связать SKU';
+  if (key === 'ignore') return 'Исключить';
+  if (key === 'new_sku') return 'Новый SKU';
+  if (key === 'need_check') return 'Проверить';
+  return key || 'Решение';
+}
+
 function skuContourCandidateHtml(candidates = []) {
   if (!candidates.length) return '<div class="sku-contour-candidate-empty">Пары в реестре не видно</div>';
   return `
@@ -3304,7 +3313,7 @@ function skuContourRowNextActionHtml(row = {}, history = null) {
   const decision = skuContourRecommendedDecision(row, candidates);
   return `
     <div class="sku-contour-next-action">
-      ${badge(decision.decision, decision.tone)}
+      ${badge(skuContourDecisionBadgeLabel(decision.decision), decision.tone)}
       <span>${escapeHtml(decision.text)}</span>
     </div>
     ${skuContourCandidateHtml(candidates)}
@@ -3424,6 +3433,9 @@ function skuContourFocusQueueHtml(rows = []) {
     const meta = skuContourStatusMeta(row.status);
     const candidates = skuContourLikeForLikeCandidates(row, 1);
     const decision = skuContourRecommendedDecision(row, candidates);
+    const platformLabel = typeof skuDataPlatformLabel === 'function'
+      ? skuDataPlatformLabel(row.platform || 'all')
+      : (row.platform || 'all');
     return `
       <button class="sku-data-focus-row" type="button" data-sku-contour-open-registry="${escapeHtml(row.apiSku || '')}">
         <span>
@@ -3431,8 +3443,8 @@ function skuContourFocusQueueHtml(rows = []) {
           <em>${escapeHtml(decision.text || row.name || row.action || row.type || 'Нужен разбор')}</em>
           <small>
             ${badge(meta.label, meta.tone)}
-            <span class="chip">${escapeHtml(row.platform || 'all')}</span>
-            ${badge(decision.decision, decision.tone)}
+            <span class="chip">${escapeHtml(platformLabel)}</span>
+            ${badge(skuContourDecisionBadgeLabel(decision.decision), decision.tone)}
           </small>
         </span>
         <b>${fmt.money(row.revenue || 0)}</b>

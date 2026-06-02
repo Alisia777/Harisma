@@ -1062,3 +1062,78 @@ body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-actions .qui
 body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-actions .quick-chip.primary {
   box-shadow: 0 8px 18px rgba(246, 220, 155, 0.12) !important;
 }
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row,
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row.portal-action-primary,
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row.portal-action-filter,
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row.portal-action-add {
+  width: 100% !important;
+  min-height: 0 !important;
+  border-radius: 8px !important;
+  padding: 8px 10px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 10px !important;
+  align-items: center !important;
+  text-align: left !important;
+  background: rgba(0, 0, 0, 0.16) !important;
+  color: var(--sand-text) !important;
+  border-color: rgba(221, 192, 138, 0.14) !important;
+  box-shadow: none !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row::before {
+  content: none !important;
+  display: none !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row:hover {
+  background: rgba(221, 192, 138, 0.06) !important;
+  border-color: rgba(245, 220, 176, 0.34) !important;
+  transform: none !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row span {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 4px !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row strong,
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row em {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row em {
+  color: rgba(214, 194, 157, 0.82) !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row small {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row small .chip {
+  min-height: 22px !important;
+  height: 22px !important;
+  padding: 4px 7px !important;
+  border-radius: 8px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row small .chip::before {
+  content: none !important;
+  display: none !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row > b {
+  color: var(--sand-accent-2) !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}

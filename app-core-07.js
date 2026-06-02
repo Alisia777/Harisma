@@ -2832,11 +2832,43 @@ function productLeaderboardHistoryPayloads() {
     .sort((left, right) => parseFreshStamp(right.generatedAt || right.weekLabel) - parseFreshStamp(left.generatedAt || left.weekLabel));
 }
 
+function productLeaderboardSnapshotKey(snapshot = {}, index = 0) {
+  if (index === 0) return 'latest';
+  return String(snapshot.generatedAt || snapshot.weekLabel || snapshot.sourceSheetName || `snapshot-${index}`);
+}
+
+function productLeaderboardSnapshotSelectOptions(snapshots = []) {
+  const seenWeeks = new Set();
+  return (Array.isArray(snapshots) ? snapshots : [])
+    .map((snapshot, index) => {
+      const weekLabel = snapshot.weekLabel || snapshot.sourceSheetName || (index === 0 ? 'Текущий срез' : `Срез ${index + 1}`);
+      const weekKey = String(weekLabel || snapshot.generatedAt || index).trim().toLowerCase();
+      const key = productLeaderboardSnapshotKey(snapshot, index);
+      const generatedLabel = snapshot.generatedAt ? ` · ${fmt.date(snapshot.generatedAt)}` : '';
+      return {
+        snapshot,
+        index,
+        key,
+        weekKey,
+        label: `${weekLabel}${generatedLabel}`
+      };
+    })
+    .filter((option) => {
+      if (!option.weekKey) return true;
+      if (seenWeeks.has(option.weekKey)) return false;
+      seenWeeks.add(option.weekKey);
+      return true;
+    });
+}
+
 function currentProductLeaderboardPayload() {
   const filters = getProductLeaderboardFilters();
   const snapshots = productLeaderboardHistoryPayloads();
   if (filters.snapshot !== 'latest') {
-    const matched = snapshots.find((item) => item.generatedAt === filters.snapshot);
+    const matched = snapshots.find((item, index) => (
+      productLeaderboardSnapshotKey(item, index) === filters.snapshot
+      || item.generatedAt === filters.snapshot
+    ));
     if (matched) return matched;
     filters.snapshot = 'latest';
   }
@@ -3415,14 +3447,19 @@ function productLeaderboardWeekRange(payload = {}) {
   };
 }
 
-function productLeaderboardDateRangeCardHtml(range = {}, sourceLabel = '') {
+function productLeaderboardDateRangeCardHtml(range = {}, sourceLabel = '', filters = {}, snapshots = []) {
+  const options = productLeaderboardSnapshotSelectOptions(snapshots).map((option) => {
+    return `<option value="${escapeHtml(option.key)}" ${String(filters.snapshot || 'latest') === option.key ? 'selected' : ''}>${escapeHtml(option.label)}</option>`;
+  }).join('');
   return `
     <div class="product-leaderboard-date-card">
       <span>Период отчета</span>
-      <div class="product-leaderboard-date-card__inputs">
-        <label><em>с</em><input type="date" value="${escapeHtml(range.fromIso || '')}" readonly aria-label="Период с"></label>
-        <label><em>по</em><input type="date" value="${escapeHtml(range.toIso || '')}" readonly aria-label="Период по"></label>
-      </div>
+      <label class="product-leaderboard-date-card__select">
+        <em>неделя</em>
+        <select data-product-leaderboard-snapshot aria-label="Выбрать неделю продуктового лидерборда">
+          ${options || '<option value="latest">Текущий срез</option>'}
+        </select>
+      </label>
       <b>${escapeHtml(range.fromLabel && range.toLabel ? `${range.fromLabel} - ${range.toLabel}` : 'текущий срез')}</b>
       ${sourceLabel ? `<small>подменники: ${escapeHtml(sourceLabel)}</small>` : ''}
     </div>
@@ -3493,7 +3530,7 @@ function productLeaderboardCommonSplitCardHtml(contour = {}) {
   `;
 }
 
-function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, items = [], filters = {}) {
+function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, items = [], filters = {}, snapshots = []) {
   const orderContour = productLeaderboardCommonOrderContour(summary, items, filters);
   const kzPct = orderContour.kzShare == null ? 0 : Math.min(100, Math.max(0, orderContour.kzShare * 100));
   const heroBright = Math.min(1, Math.max(0.42, 0.52 + kzPct / 180));
@@ -3513,37 +3550,7 @@ function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, i
       <div class="product-leaderboard-common-layout">
         ${productLeaderboardCommonSplitCardHtml(orderContour)}
         <div class="product-leaderboard-common-side">
-        ${productLeaderboardDateRangeCardHtml(range, orderContour.sourceLabel)}
-        ${productLeaderboardOrderMiniCardHtml({
-          title: 'Все подменники WB',
-          kicker: `${fmt.int(orderContour.substitutionSummary.articles)} SKU`,
-          value: fmt.int(orderContour.totalOrders),
-          meta: `${fmt.int(orderContour.substitutionSummary.views)} просмотров · ${fmt.int(orderContour.substitutionSummary.carts)} корзин`,
-          completion: 1,
-          footer: '100.0%',
-          hint: 'база контура',
-          platform: 'wb'
-        })}
-        ${productLeaderboardOrderMiniCardHtml({
-          title: 'Контент завод',
-          kicker: `${fmt.int(summary.skuCount)} SKU КЗ`,
-          value: fmt.int(orderContour.kzOrders),
-          meta: `${orderContour.kzShare == null ? '—' : fmt.pct(orderContour.kzShare)} от продаж подменников`,
-          completion: orderContour.kzShare,
-          footer: 'КЗ',
-          hint: `${fmt.int(summary.clicks)} кликов`,
-          platform: 'wb'
-        })}
-        ${productLeaderboardOrderMiniCardHtml({
-          title: 'Органика WB',
-          kicker: 'остаток после КЗ',
-          value: fmt.int(orderContour.organicOrders),
-          meta: `${orderContour.organicShare == null ? '—' : fmt.pct(orderContour.organicShare)} от продаж подменников`,
-          completion: orderContour.organicShare,
-          footer: 'органика',
-          hint: `${fmt.int(orderContour.totalOrders)} - ${fmt.int(orderContour.kzOrders)}`,
-          platform: 'goldapple'
-        })}
+        ${productLeaderboardDateRangeCardHtml(range, orderContour.sourceLabel, filters, snapshots)}
         </div>
       </div>
       <div class="muted small" style="margin-top:10px">
@@ -8412,9 +8419,10 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const filteredItems = getFilteredProductLeaderboardItems(payload);
   const filteredSummary = productLeaderboardSummaryFromItems(filteredItems);
   const ownerCoverage = filteredSummary.skuCount > 0 ? filteredSummary.ownerAssignedCount / filteredSummary.skuCount : 0;
+  const snapshots = productLeaderboardHistoryPayloads();
   const gameHeroHtml = productLeaderboardGameHeroHtml(payload, filteredItems, freshness);
   const moduleBoardHtml = productLeaderboardModuleBoardHtml(payload, filteredSummary, ownerCoverage);
-  const commonContourHtml = renderProductLeaderboardCommonContourHtml(payload, filteredSummary, filteredItems, filters);
+  const commonContourHtml = renderProductLeaderboardCommonContourHtml(payload, filteredSummary, filteredItems, filters, snapshots);
   const insightTilesHtml = renderProductLeaderboardInsightTilesHtml(payload, filteredSummary, ownerCoverage, filteredItems, filters);
   const metricsPanelHtml = !isSubstitutionMode && filters.expandedPanel === 'metrics'
     ? renderProductLeaderboardMetricsPanel(payload, filteredSummary, ownerCoverage)
@@ -8427,8 +8435,8 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
     ? renderProductLeaderboardLikeForLikePanel(payload, filteredItems)
     : '';
   const standardLeaderboardCardStyle = isAlternateWorkbenchMode ? 'display:none' : 'margin-top:14px';
-  const snapshots = productLeaderboardHistoryPayloads();
-  const historyOptions = snapshots.slice(1);
+  const snapshotSelectOptions = productLeaderboardSnapshotSelectOptions(snapshots);
+  const historyOptions = snapshotSelectOptions.slice(1);
   const historyCards = snapshots.slice(0, 6).map((snapshot) => {
     const snapshotSummary = productLeaderboardSummaryFromItems(snapshot.items || []);
     return `
@@ -8536,7 +8544,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
         <input id="productLeaderboardSearch" placeholder="Поиск по SKU, названию, owner, категории…" value="${escapeHtml(filters.search)}">
         <select id="productLeaderboardSnapshot">
           <option value="latest" ${filters.snapshot === 'latest' ? 'selected' : ''}>Текущий срез</option>
-          ${historyOptions.map((snapshot) => `<option value="${escapeHtml(snapshot.generatedAt)}" ${filters.snapshot === snapshot.generatedAt ? 'selected' : ''}>${escapeHtml(productLeaderboardSnapshotLabel(snapshot))}</option>`).join('')}
+          ${historyOptions.map((option) => `<option value="${escapeHtml(option.key)}" ${filters.snapshot === option.key ? 'selected' : ''}>${escapeHtml(option.label)}</option>`).join('')}
         </select>
         <select id="productLeaderboardOwner">
           <option value="all" ${filters.owner === 'all' ? 'selected' : ''}>Все owner</option>
@@ -8682,9 +8690,11 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
     getProductLeaderboardFilters().search = event.target.value;
     rerenderCurrentView();
   });
-  root.querySelector('#productLeaderboardSnapshot')?.addEventListener('change', (event) => {
-    getProductLeaderboardFilters().snapshot = event.target.value;
-    rerenderCurrentView();
+  root.querySelectorAll('#productLeaderboardSnapshot, [data-product-leaderboard-snapshot]').forEach((select) => {
+    select.addEventListener('change', (event) => {
+      getProductLeaderboardFilters().snapshot = event.target.value;
+      rerenderCurrentView();
+    });
   });
   root.querySelector('#productLeaderboardOwner')?.addEventListener('change', (event) => {
     getProductLeaderboardFilters().owner = event.target.value;

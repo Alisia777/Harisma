@@ -3445,8 +3445,11 @@ function productLeaderboardWeeklyTrendCardHtml(config = {}) {
     ? ''
     : `<b class="${deltaTone === 'ok' ? 'ok-text' : deltaTone === 'danger' ? 'danger-text' : ''}">${escapeHtml(productLeaderboardWeeklyTrendDelta(config.delta))}</b>`;
   const detailHtml = config.detail ? `<small>${escapeHtml(config.detail)}</small>` : '';
+  const progress = Number(config.progress);
+  const progressStyle = Number.isFinite(progress) ? `--bi-card-progress:${Math.max(0, Math.min(100, progress * 100)).toFixed(1)}%;` : '';
+  const hueStyle = config.hue == null ? '' : `--bi-card-hue:${Number(config.hue) || 42};`;
   return `
-    <div class="product-leaderboard-weekly-bi-card ${escapeHtml(config.className || '')}">
+    <div class="product-leaderboard-weekly-bi-card ${escapeHtml(config.className || '')}" style="${progressStyle}${hueStyle}">
       <span>${escapeHtml(config.label || '')}</span>
       <strong>${escapeHtml(config.value || '')}</strong>
       <em>${escapeHtml(config.meta || '')}</em>
@@ -3630,6 +3633,63 @@ function productLeaderboardWeeklyGrowthHtml(model = null) {
   `;
 }
 
+function productLeaderboardWeeklyChartLabel(row = {}) {
+  const from = String(row.range?.fromLabel || '').slice(0, 5);
+  const to = String(row.range?.toLabel || '').slice(0, 5);
+  if (from && to) return `${from}-${to}`;
+  return String(row.weekLabel || '').replace(/\.\d{4}/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1) {
+  const safeRows = (Array.isArray(rows) ? rows : []).filter((row) => numberOrZero(row.totalOrders) > 0);
+  if (!safeRows.length) return '';
+  return `
+    <div class="product-leaderboard-weekly-bi-chart">
+      <div class="product-leaderboard-weekly-bi-chart__head">
+        <div>
+          <span>Недельные столбики</span>
+          <strong>КЗ-лист по структуре заказов</strong>
+          <em>Высота столбика — размер недели; цвет внутри — КЗ-метка, digital и без метки.</em>
+        </div>
+        <div class="product-leaderboard-weekly-bi-chart__legend" aria-label="Легенда недельного графика">
+          <span><i class="is-kz"></i>КЗ-метка</span>
+          <span><i class="is-digital"></i>digital</span>
+          <span><i class="is-organic"></i>без метки</span>
+        </div>
+      </div>
+      <div class="product-leaderboard-weekly-bi-chart__plot" style="--weekly-columns:${safeRows.length}">
+        ${safeRows.map((row) => {
+          const total = Math.max(1, numberOrZero(row.totalOrders));
+          const scale = Math.max(18, Math.min(100, total / Math.max(1, maxOrders) * 100));
+          const kzPct = Math.max(0, Math.min(100, numberOrZero(row.orders.kz) / total * 100));
+          const digitalPct = Math.max(0, Math.min(100, numberOrZero(row.orders.digital) / total * 100));
+          const organicPct = Math.max(0, Math.min(100, numberOrZero(row.orders.organic) / total * 100));
+          const weekLabel = productLeaderboardWeeklyChartLabel(row);
+          const delta = row.ordersDelta == null ? '' : productLeaderboardSignedInt(row.ordersDelta);
+          const deltaTone = row.ordersDelta == null || row.ordersDelta >= 0 ? 'ok' : 'danger';
+          return `
+            <div class="product-leaderboard-weekly-bi-column" style="--column-scale:${scale.toFixed(1)}%">
+              <div class="product-leaderboard-weekly-bi-column__value">
+                <b>${fmt.int(total)}</b>
+                ${delta ? `<em class="${deltaTone === 'ok' ? 'ok-text' : 'danger-text'}">${escapeHtml(delta)}</em>` : ''}
+              </div>
+              <div class="product-leaderboard-weekly-bi-column__stack" title="${escapeHtml(`${weekLabel}: КЗ-метка ${fmt.int(row.orders.kz)}, digital ${fmt.int(row.orders.digital)}, без метки ${fmt.int(row.orders.organic)}`)}">
+                <i class="is-kz" style="height:${kzPct.toFixed(1)}%"></i>
+                <i class="is-digital" style="height:${digitalPct.toFixed(1)}%"></i>
+                <i class="is-organic" style="height:${organicPct.toFixed(1)}%"></i>
+              </div>
+              <div class="product-leaderboard-weekly-bi-column__label">
+                <b>${escapeHtml(weekLabel)}</b>
+                <em>${fmt.int(row.skuCount)} SKU</em>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
 function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
   const rows = productLeaderboardWeeklyShareRows();
   if (!rows.length) return '';
@@ -3653,7 +3713,9 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
       label: 'КЗ-лист / WB',
       value: kzListShare == null ? '—' : fmt.pct(kzListShare),
       meta: `${fmt.int(kzListOrders)} из ${fmt.int(wbTotalOrders)} заказов`,
-      delta: null
+      delta: null,
+      progress: kzListShare,
+      hue: 42
     },
     {
       className: 'is-digital',
@@ -3661,14 +3723,18 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
       value: digitalGlobalShare == null ? '—' : fmt.pct(digitalGlobalShare),
       meta: `${fmt.int(digitalOrders)} из ${fmt.int(wbTotalOrders)} заказов`,
       delta: null,
-      detail: current.digitalShare == null ? '' : `${fmt.pct(current.digitalShare)} внутри КЗ-листа`
+      detail: current.digitalShare == null ? '' : `${fmt.pct(current.digitalShare)} внутри КЗ-листа`,
+      progress: digitalGlobalShare,
+      hue: 218
     },
     {
       className: 'is-organic',
       label: 'Органика WB',
       value: organicShare == null ? '—' : fmt.pct(organicShare),
       meta: `${fmt.int(organicOrders)} заказов`,
-      delta: null
+      delta: null,
+      progress: organicShare,
+      hue: 145
     },
     {
       className: 'is-ads',
@@ -3676,7 +3742,9 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
       value: mpAds.share == null ? '—' : fmt.pct(mpAds.share),
       meta: mpAds.totalOrders > 0 ? `${fmt.int(mpAds.adsOrders)} из ${fmt.int(mpAds.totalOrders)} заказов` : 'нет деноминатора МП',
       delta: null,
-      detail: `${mpAds.date ? productLeaderboardDateOnlyLabel(mpAds.date) : 'текущий срез'} · WB ${fmt.int(mpAds.wbAdsOrders)} · Ozon ${fmt.int(mpAds.ozonAdsOrders)}`
+      detail: `${mpAds.date ? productLeaderboardDateOnlyLabel(mpAds.date) : 'текущий срез'} · WB ${fmt.int(mpAds.wbAdsOrders)} · Ozon ${fmt.int(mpAds.ozonAdsOrders)}`,
+      progress: mpAds.share,
+      hue: 12
     }
   ];
   return `
@@ -3695,33 +3763,37 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
       <div class="product-leaderboard-weekly-bi__cards">
         ${cards.map(productLeaderboardWeeklyTrendCardHtml).join('')}
       </div>
+      ${productLeaderboardWeeklyStackedChartHtml(rows, maxOrders)}
       ${productLeaderboardWeeklyGrowthHtml(growthModel)}
-      <div class="product-leaderboard-weekly-bi__rows">
-        ${rows.map((row) => {
-          const kzPct = row.kzShare == null ? 0 : Math.max(0, Math.min(100, row.kzShare * 100));
-          const digitalPct = row.digitalShare == null ? 0 : Math.max(0, Math.min(100, row.digitalShare * 100));
-          const organicPct = row.organicShare == null ? 0 : Math.max(0, Math.min(100, row.organicShare * 100));
-          const week = row.range.fromLabel && row.range.toLabel ? `${row.range.fromLabel} - ${row.range.toLabel}` : row.weekLabel;
-          const barScale = Math.max(8, Math.min(100, numberOrZero(row.totalOrders) / maxOrders * 100));
-          return `
-            <div class="product-leaderboard-weekly-bi-row">
-              <span class="product-leaderboard-weekly-bi-row__label">
-                <b>${escapeHtml(week)}</b>
-                <em>${fmt.int(row.totalOrders)} заказов · ${fmt.int(row.skuCount)} SKU</em>
-              </span>
-              <span class="product-leaderboard-weekly-bi-row__track" style="--week-scale:${barScale.toFixed(1)}%">
-                <i class="is-kz" style="width:${kzPct.toFixed(1)}%"></i>
-                <i class="is-digital" style="width:${digitalPct.toFixed(1)}%"></i>
-                <i class="is-organic" style="width:${organicPct.toFixed(1)}%"></i>
-              </span>
-              <span class="product-leaderboard-weekly-bi-row__shares">
-                <b>КЗ-лист ${fmt.int(row.totalOrders)}</b>
-                <em>внутри листа: КЗ-метка ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · без метки ${fmt.int(row.orders.organic)}</em>
-              </span>
-            </div>
-          `;
-        }).join('')}
-      </div>
+      <details class="product-leaderboard-weekly-bi-details">
+        <summary>Расшифровка недель</summary>
+        <div class="product-leaderboard-weekly-bi__rows">
+          ${rows.map((row) => {
+            const kzPct = row.kzShare == null ? 0 : Math.max(0, Math.min(100, row.kzShare * 100));
+            const digitalPct = row.digitalShare == null ? 0 : Math.max(0, Math.min(100, row.digitalShare * 100));
+            const organicPct = row.organicShare == null ? 0 : Math.max(0, Math.min(100, row.organicShare * 100));
+            const week = row.range.fromLabel && row.range.toLabel ? `${row.range.fromLabel} - ${row.range.toLabel}` : row.weekLabel;
+            const barScale = Math.max(8, Math.min(100, numberOrZero(row.totalOrders) / maxOrders * 100));
+            return `
+              <div class="product-leaderboard-weekly-bi-row">
+                <span class="product-leaderboard-weekly-bi-row__label">
+                  <b>${escapeHtml(week)}</b>
+                  <em>${fmt.int(row.totalOrders)} заказов · ${fmt.int(row.skuCount)} SKU</em>
+                </span>
+                <span class="product-leaderboard-weekly-bi-row__track" style="--week-scale:${barScale.toFixed(1)}%">
+                  <i class="is-kz" style="width:${kzPct.toFixed(1)}%"></i>
+                  <i class="is-digital" style="width:${digitalPct.toFixed(1)}%"></i>
+                  <i class="is-organic" style="width:${organicPct.toFixed(1)}%"></i>
+                </span>
+                <span class="product-leaderboard-weekly-bi-row__shares">
+                  <b>КЗ-лист ${fmt.int(row.totalOrders)}</b>
+                  <em>внутри листа: КЗ-метка ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · без метки ${fmt.int(row.orders.organic)}</em>
+                </span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </details>
     </div>
   `;
 }

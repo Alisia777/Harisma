@@ -3263,6 +3263,116 @@ function skuContourOnlyNew() {
   return state.skuContourOnlyNew === true;
 }
 
+function skuContourStatusCounts(rows = []) {
+  return rows.reduce((acc, row) => {
+    const key = row.status || 'new';
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function skuContourFocusQueueHtml(rows = []) {
+  if (!rows.length) return '<div class="sku-data-focus-empty">Очередь по текущей площадке пустая</div>';
+  return rows.slice(0, 6).map((row) => {
+    const meta = skuContourStatusMeta(row.status);
+    return `
+      <div class="sku-data-focus-row">
+        <span>
+          <strong>${escapeHtml(row.apiSku || row.type || 'API SKU')}</strong>
+          <em>${escapeHtml(row.name || row.action || row.type || 'Нужен разбор')}</em>
+          <small>
+            ${badge(meta.label, meta.tone)}
+            <span class="chip">${escapeHtml(row.platform || 'all')}</span>
+          </small>
+        </span>
+        <b>${fmt.money(row.revenue || 0)}</b>
+      </div>
+    `;
+  }).join('');
+}
+
+function skuContourFocusBoardHtml({
+  health = {},
+  healthMeta = {},
+  quality = {},
+  quarantine = {},
+  activeMarket = 'all',
+  scopedIssueRows = [],
+  issueRows = [],
+  onlyNew = false,
+  showResolved = false,
+  hiddenResolvedCount = 0,
+  hiddenByCurrentFilterCount = 0,
+  wbMissingInDistribution = 0,
+  wbMissingInPortal = 0
+} = {}) {
+  const statusCounts = skuContourStatusCounts(scopedIssueRows);
+  const unresolvedRows = scopedIssueRows.filter((row) => !skuContourIssueIsResolved(row));
+  const resolvedRows = scopedIssueRows.filter(skuContourIssueIsResolved);
+  const progressRatio = scopedIssueRows.length ? resolvedRows.length / scopedIssueRows.length : 1;
+  const blockerCount = numberOrZero(statusCounts.blocked || 0) + numberOrZero(statusCounts.quarantine || 0);
+  const warningCount = numberOrZero(statusCounts.warning || 0);
+  const newCount = numberOrZero(statusCounts.new || 0);
+  const actionBuckets = [
+    { label: 'Новые', count: newCount, help: 'решить alias / ignore / new_sku', tone: newCount ? 'warn' : 'ok' },
+    { label: 'Блокеры', count: numberOrZero(statusCounts.blocked || 0), help: 'сначала источник или дубль', tone: statusCounts.blocked ? 'danger' : 'ok' },
+    { label: 'Карантин', count: numberOrZero(statusCounts.quarantine || quarantine.rows || 0), help: 'изолированные строки', tone: (statusCounts.quarantine || quarantine.rows) ? 'danger' : 'ok' },
+    { label: 'Проверить', count: warningCount, help: 'ручной контроль', tone: warningCount ? 'warn' : '' },
+    { label: 'Решено', count: resolvedRows.length, help: showResolved ? 'показаны в таблице' : 'скрыты из очереди', tone: resolvedRows.length ? 'ok' : '' },
+    { label: 'WB owner', count: numberOrZero(wbMissingInDistribution) + numberOrZero(wbMissingInPortal), help: 'сверка распределения', tone: (wbMissingInDistribution || wbMissingInPortal) ? 'info' : '' }
+  ];
+  return `
+    <div class="sku-data-focus-board sku-contour-focus-board">
+      <section class="sku-data-focus-panel sku-data-focus-panel--hero">
+        <div class="sku-data-focus-kicker">Контур SKU · ${escapeHtml(skuDataPlatformLabel(activeMarket))}</div>
+        <h3>${escapeHtml(healthMeta.label || 'статус не рассчитан')}</h3>
+        <p>API SKU без пары, alias/ignore, карантин и owner-сверка собраны в одну рабочую очередь.</p>
+        <div class="sku-data-focus-meter ${blockerCount ? 'danger' : progressRatio < 0.85 ? 'warn' : 'ok'}">
+          <span><b>Разбор контура</b><em>${fmt.pct(progressRatio)}</em></span>
+          <i style="width:${Math.max(0, Math.min(100, Math.round(progressRatio * 100)))}%"></i>
+        </div>
+        <div class="sku-data-focus-metric-grid">
+          <div class="sku-data-focus-metric ${unresolvedRows.length ? 'warn' : 'ok'}"><strong>${fmt.int(unresolvedRows.length)}</strong><span>нерешённых</span></div>
+          <div class="sku-data-focus-metric ${quality.apiUnmappedUniqueSku ? 'danger' : ''}"><strong>${fmt.int(quality.apiUnmappedUniqueSku || 0)}</strong><span>API без пары</span></div>
+          <div class="sku-data-focus-metric ${quality.apiUnmappedRevenue ? 'warn' : ''}"><strong>${fmt.money(quality.apiUnmappedRevenue || 0)}</strong><span>выручка риска</span></div>
+        </div>
+        <div class="sku-data-focus-note">Проверено: ${escapeHtml(fmt.date(health.generatedAt || health.publish?.checkedAt || ''))} · данные до ${escapeHtml(health.freshness?.maxDate || quality.maxDate || '—')}</div>
+      </section>
+      <section class="sku-data-focus-panel">
+        <div class="sku-data-focus-head">
+          <h3>Что сделать</h3>
+          <button class="quick-chip" type="button" data-sku-contour-refresh>Обновить</button>
+        </div>
+        <div class="sku-data-focus-actions">
+          <button class="quick-chip primary" type="button" data-sku-contour-quality-export>Выгрузить форму</button>
+          <button class="quick-chip" type="button" data-sku-contour-quality-import>Загрузить файл</button>
+          <button class="quick-chip ${onlyNew ? 'active' : ''}" type="button" data-sku-contour-toggle-new>${onlyNew ? 'Все нерешённые' : 'Только новые'}</button>
+          <button class="quick-chip ${showResolved ? 'active' : ''}" type="button" data-sku-contour-toggle-resolved>${showResolved ? 'Скрыть решённые' : `Показать решённые${hiddenResolvedCount ? ` (${fmt.int(hiddenResolvedCount)})` : ''}`}</button>
+        </div>
+        <div class="sku-data-bucket-grid sku-data-bucket-grid--compact">
+          ${actionBuckets.map((item) => `
+            <div class="sku-data-bucket ${escapeHtml(item.tone || '')}">
+              <strong>${fmt.int(item.count)}</strong>
+              <span>${escapeHtml(item.label)}</span>
+              <em>${escapeHtml(item.help)}</em>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+      <section class="sku-data-focus-panel">
+        <div class="sku-data-focus-head">
+          <h3>Первым разобрать</h3>
+          <button class="quick-chip" type="button" data-sku-contour-open-planfact>План-факт</button>
+        </div>
+        <div class="sku-data-focus-list">
+          ${skuContourFocusQueueHtml(issueRows)}
+        </div>
+        ${hiddenByCurrentFilterCount ? `<div class="sku-data-focus-note">${fmt.int(hiddenByCurrentFilterCount)} строк скрыто текущими переключателями</div>` : ''}
+      </section>
+    </div>
+  `;
+}
+
 function skuContourAuditIndex() {
   const map = new Map();
   const add = (key, event, kind, targetSku = '') => {
@@ -4881,6 +4991,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       </div>
     </div>
 
+    ${skuContourFocusBoardHtml({ health, healthMeta, quality, quarantine, activeMarket, scopedIssueRows, issueRows, onlyNew, showResolved, hiddenResolvedCount, hiddenByCurrentFilterCount, wbMissingInDistribution, wbMissingInPortal })}
     ${contourPlatformBoardHtml}
     ${contourGameCardsHtml}
 
@@ -4996,26 +5107,38 @@ function renderSkuContour(rootId = 'view-sku-contour') {
     </details>
   `;
 
-  root.querySelector('[data-sku-contour-refresh]')?.addEventListener('click', (event) => refreshSkuPlanFactData(event.currentTarget, rootId));
+  root.querySelectorAll('[data-sku-contour-refresh]').forEach((button) => {
+    button.addEventListener('click', (event) => refreshSkuPlanFactData(event.currentTarget, rootId));
+  });
   root.querySelectorAll('[data-market-filter]').forEach((button) => button.addEventListener('click', (event) => {
     state.filters.market = event.currentTarget.dataset.marketFilter || 'all';
     state.filters.owner = 'all';
     renderSkuContour(rootId);
   }));
-  root.querySelector('[data-sku-contour-toggle-new]')?.addEventListener('click', () => {
-    state.skuContourOnlyNew = !skuContourOnlyNew();
-    renderSkuContour(rootId);
+  root.querySelectorAll('[data-sku-contour-toggle-new]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.skuContourOnlyNew = !skuContourOnlyNew();
+      renderSkuContour(rootId);
+    });
   });
-  root.querySelector('[data-sku-contour-toggle-resolved]')?.addEventListener('click', () => {
-    state.skuContourShowResolved = !skuContourShowResolved();
-    renderSkuContour(rootId);
+  root.querySelectorAll('[data-sku-contour-toggle-resolved]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.skuContourShowResolved = !skuContourShowResolved();
+      renderSkuContour(rootId);
+    });
   });
-  root.querySelector('[data-sku-contour-open-planfact]')?.addEventListener('click', () => {
-    if (typeof setView === 'function') setView('sku-plan-fact');
-    else document.querySelector('.nav-btn[data-view="sku-plan-fact"]')?.click();
+  root.querySelectorAll('[data-sku-contour-open-planfact]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (typeof setView === 'function') setView('sku-plan-fact');
+      else document.querySelector('.nav-btn[data-view="sku-plan-fact"]')?.click();
+    });
   });
-  root.querySelector('[data-sku-contour-quality-export]')?.addEventListener('click', () => downloadSkuPlanFactQualityExcel(model));
-  root.querySelector('[data-sku-contour-quality-import]')?.addEventListener('click', () => root.querySelector('[data-sku-contour-quality-file]')?.click());
+  root.querySelectorAll('[data-sku-contour-quality-export]').forEach((button) => {
+    button.addEventListener('click', () => downloadSkuPlanFactQualityExcel(model));
+  });
+  root.querySelectorAll('[data-sku-contour-quality-import]').forEach((button) => {
+    button.addEventListener('click', () => root.querySelector('[data-sku-contour-quality-file]')?.click());
+  });
   root.querySelector('[data-sku-contour-quality-file]')?.addEventListener('change', async (event) => {
     const file = event.target.files?.[0] || null;
     event.target.value = '';

@@ -330,6 +330,136 @@ function getFilteredSkus(taskMap = null) {
   });
 }
 
+function skuRegistryMarketLabel(activeMarket = 'all') {
+  if (typeof skuDataPlatformLabel === 'function') return skuDataPlatformLabel(activeMarket);
+  const tab = REGISTRY_MARKET_TABS.find((item) => item.key === activeMarket);
+  return tab?.label || 'Все площадки';
+}
+
+function skuRegistryOwnerCount(sku, activeMarket = state.filters.market) {
+  return registryOwnersForFilter(sku, activeMarket).length;
+}
+
+function skuRegistryReasonList(sku, task = null, activeMarket = state.filters.market) {
+  const reasons = [];
+  const matrixProblemState = typeof skuMatrixProblemState === 'function' ? skuMatrixProblemState(sku) : 'ok';
+  const matrixProblemMeta = typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(matrixProblemState) : null;
+  if (!skuRegistryOwnerCount(sku, activeMarket)) reasons.push({ label: 'нет owner', tone: 'danger', focus: 'unassigned', weight: 60 });
+  if (matrixProblemState && matrixProblemState !== 'ok') reasons.push({ label: matrixProblemMeta?.label || 'матрица', tone: matrixProblemMeta?.tone || 'warn', focus: 'matrixIssue', weight: 55 });
+  if (task && isTaskOverdue(task)) reasons.push({ label: 'дедлайн горит', tone: 'danger', focus: 'toWork', weight: 45 });
+  if (sku?.flags?.underPlan) reasons.push({ label: 'ниже плана', tone: 'warn', focus: 'underPlan', weight: 40 });
+  if (sku?.flags?.lowStock) reasons.push({ label: 'низкий остаток', tone: 'danger', focus: 'lowStock', weight: 38 });
+  if (sku?.flags?.negativeMargin) reasons.push({ label: 'минус маржа', tone: 'danger', focus: 'negativeMargin', weight: 36 });
+  if (sku?.flags?.highReturn) reasons.push({ label: 'возвраты', tone: 'warn', focus: 'highReturn', weight: 24 });
+  if (sku?.flags?.hasExternalTraffic) reasons.push({ label: 'внешний трафик', tone: 'info', focus: 'extAny', weight: 18 });
+  if (filterSkuByWorkLogic(sku)) reasons.push({ label: currentWorkLabel(), tone: 'info', focus: 'toWork', weight: 16 });
+  return reasons;
+}
+
+function skuRegistryAttentionScore(sku, task = null, activeMarket = state.filters.market) {
+  return skuRegistryReasonList(sku, task, activeMarket).reduce((sum, item) => sum + numberOrZero(item.weight), 0)
+    + numberOrZero(sku?.focusScore || 0);
+}
+
+function skuRegistryFocusPillHtml(reason) {
+  return `<span class="chip ${escapeHtml(reason.tone || '')}">${escapeHtml(reason.label || '')}</span>`;
+}
+
+function skuRegistryFocusBoardHtml({ activeMarket = 'all', allMarketSkus = [], items = [], skuTaskMap = new Map(), matrixIssueCount = 0, registryIssueRows = [] } = {}) {
+  const total = allMarketSkus.length;
+  const assigned = allMarketSkus.filter((sku) => skuRegistryOwnerCount(sku, activeMarket)).length;
+  const unassigned = Math.max(0, total - assigned);
+  const ownerCoverage = total ? assigned / total : null;
+  const workCount = allMarketSkus.filter((sku) => filterSkuByWorkLogic(sku)).length;
+  const underPlanCount = allMarketSkus.filter((sku) => sku?.flags?.underPlan).length;
+  const lowStockCount = allMarketSkus.filter((sku) => sku?.flags?.lowStock).length;
+  const externalTrafficCount = allMarketSkus.filter((sku) => sku?.flags?.hasExternalTraffic).length;
+  const overdueTaskCount = allMarketSkus.filter((sku) => {
+    const task = skuTaskMap.get(String(sku.articleKey || '').trim()) || null;
+    return task && isTaskOverdue(task);
+  }).length;
+  const marketIssueCount = activeMarket === 'all' || typeof skuDataIssueMatchesPlatform !== 'function'
+    ? registryIssueRows.length
+    : registryIssueRows.filter((row) => skuDataIssueMatchesPlatform(row, activeMarket)).length;
+  const matrixIssuesBySku = allMarketSkus.filter((sku) => {
+    const stateKey = typeof skuMatrixProblemState === 'function' ? skuMatrixProblemState(sku) : 'ok';
+    return stateKey && stateKey !== 'ok';
+  }).length;
+  const queue = allMarketSkus
+    .map((sku) => {
+      const task = skuTaskMap.get(String(sku.articleKey || '').trim()) || null;
+      const reasons = skuRegistryReasonList(sku, task, activeMarket);
+      return {
+        sku,
+        task,
+        reasons,
+        score: skuRegistryAttentionScore(sku, task, activeMarket)
+      };
+    })
+    .filter((item) => item.reasons.length)
+    .sort((left, right) => right.score - left.score || String(left.sku.article || '').localeCompare(String(right.sku.article || ''), 'ru'))
+    .slice(0, 6);
+  const bucketItems = [
+    { focus: 'unassigned', label: 'Без owner', count: unassigned, help: 'закрепить ответственного', tone: unassigned ? 'danger' : 'ok' },
+    { focus: 'matrixIssue', label: 'Матрица', count: matrixIssuesBySku || matrixIssueCount, help: 'alias, ignore, дубли', tone: (matrixIssuesBySku || matrixIssueCount) ? 'warn' : 'ok' },
+    { focus: 'lowStock', label: 'Остатки', count: lowStockCount, help: 'не потерять продажи', tone: lowStockCount ? 'danger' : 'ok' },
+    { focus: 'underPlan', label: 'Ниже плана', count: underPlanCount, help: 'план-факт просел', tone: underPlanCount ? 'warn' : 'ok' },
+    { focus: 'toWork', label: 'В работе', count: workCount, help: currentWorkLabel(), tone: workCount ? 'info' : '' },
+    { focus: 'extAny', label: 'Трафик', count: externalTrafficCount, help: 'КЗ/VK и внешние хвосты', tone: externalTrafficCount ? 'info' : '' }
+  ];
+  return `
+    <div class="sku-data-focus-board sku-registry-focus-board">
+      <section class="sku-data-focus-panel sku-data-focus-panel--hero">
+        <div class="sku-data-focus-kicker">Реестр SKU · ${escapeHtml(skuRegistryMarketLabel(activeMarket))}</div>
+        <h3>${fmt.int(total)} SKU в контуре</h3>
+        <p>Сверяем owner, матрицу, план-факт, внешний трафик и статус товара в одном рабочем списке.</p>
+        <div class="sku-data-focus-meter ${ownerCoverage !== null && ownerCoverage < 0.9 ? 'warn' : 'ok'}">
+          <span><b>Owner coverage</b><em>${ownerCoverage === null ? 'нет данных' : fmt.pct(ownerCoverage)}</em></span>
+          <i style="width:${Math.max(0, Math.min(100, Math.round((ownerCoverage || 0) * 100)))}%"></i>
+        </div>
+        <div class="sku-data-focus-metric-grid">
+          <div class="sku-data-focus-metric"><strong>${fmt.int(items.length)}</strong><span>видно по фильтрам</span></div>
+          <div class="sku-data-focus-metric ${marketIssueCount ? 'warn' : 'ok'}"><strong>${fmt.int(marketIssueCount)}</strong><span>сигналов контура</span></div>
+          <div class="sku-data-focus-metric ${overdueTaskCount ? 'danger' : ''}"><strong>${fmt.int(overdueTaskCount)}</strong><span>горящих задач</span></div>
+        </div>
+      </section>
+      <section class="sku-data-focus-panel">
+        <div class="sku-data-focus-head">
+          <h3>Быстрый разбор</h3>
+          <button class="quick-chip" type="button" data-sku-registry-focus="all">Сбросить</button>
+        </div>
+        <div class="sku-data-bucket-grid">
+          ${bucketItems.map((item) => `
+            <button class="sku-data-bucket ${escapeHtml(item.tone || '')} ${state.filters.focus === item.focus ? 'active' : ''}" type="button" data-sku-registry-focus="${escapeHtml(item.focus)}">
+              <strong>${fmt.int(item.count)}</strong>
+              <span>${escapeHtml(item.label)}</span>
+              <em>${escapeHtml(item.help)}</em>
+            </button>
+          `).join('')}
+        </div>
+      </section>
+      <section class="sku-data-focus-panel">
+        <div class="sku-data-focus-head">
+          <h3>Очередь на сегодня</h3>
+          <button class="quick-chip" type="button" data-sku-registry-open-contour>Контур SKU</button>
+        </div>
+        <div class="sku-data-focus-list">
+          ${queue.length ? queue.map((item) => `
+            <button class="sku-data-focus-row" type="button" data-open-sku="${escapeHtml(item.sku.articleKey || '')}">
+              <span>
+                <strong>${escapeHtml(item.sku.article || item.sku.articleKey || 'SKU')}</strong>
+                <em>${escapeHtml(item.sku.name || registryDisplayOwner(item.sku, activeMarket) || 'Без названия')}</em>
+                <small>${item.reasons.slice(0, 3).map(skuRegistryFocusPillHtml).join('')}</small>
+              </span>
+              <b>${fmt.int(item.score)}</b>
+            </button>
+          `).join('') : '<div class="sku-data-focus-empty">Критичных SKU по текущей площадке не видно</div>'}
+        </div>
+      </section>
+    </div>
+  `;
+}
+
 function renderSkuRegistry() {
   const root = document.getElementById('view-skus');
   const skuTaskMap = buildSkuRegistryTaskMap();
@@ -338,6 +468,7 @@ function renderSkuRegistry() {
   const activeMarket = typeof skuDataActiveMarket === 'function'
     ? skuDataActiveMarket()
     : String(state.filters.market || 'all').toLowerCase();
+  const allMarketSkus = (state.skus || []).filter((sku) => filterSkuByMarket(sku));
   const items = getFilteredSkus(skuTaskMap);
   const registryIssueRows = typeof skuContourIssueRows === 'function' ? skuContourIssueRows(skuPlanModel) : [];
   const registryPlatformBoardHtml = typeof skuDataPlatformBoardHtml === 'function'
@@ -409,6 +540,7 @@ function renderSkuRegistry() {
       </div>
     </div>
 
+    ${skuRegistryFocusBoardHtml({ activeMarket, allMarketSkus, items, skuTaskMap, matrixIssueCount, registryIssueRows })}
     ${registryPlatformBoardHtml}
     ${registryGameCardsHtml}
 
@@ -483,6 +615,26 @@ function renderSkuRegistry() {
     state.filters.owner = 'all';
     renderSkuRegistry();
   }));
+  root.querySelectorAll('[data-sku-registry-focus]').forEach((button) => button.addEventListener('click', (event) => {
+    const focus = event.currentTarget.dataset.skuRegistryFocus || 'all';
+    state.filters.focus = focus;
+    if (focus === 'all') {
+      state.filters.assignment = 'all';
+      state.filters.traffic = 'all';
+    } else if (focus === 'unassigned') {
+      state.filters.assignment = 'unassigned';
+    } else if (focus === 'extAny') {
+      state.filters.traffic = 'any';
+      state.filters.assignment = 'all';
+    } else {
+      state.filters.assignment = 'all';
+    }
+    renderSkuRegistry();
+  }));
+  root.querySelector('[data-sku-registry-open-contour]')?.addEventListener('click', () => {
+    if (typeof setView === 'function') setView('sku-contour');
+    else document.querySelector('.nav-btn[data-view="sku-contour"]')?.click();
+  });
 }
 
 function metricRow(label, value, kind = '') {

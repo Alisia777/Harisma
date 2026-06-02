@@ -3248,24 +3248,45 @@ function productLeaderboardInsightTileHtml(config = {}) {
     ? skuPlanFactCompletionLevel(completion)
     : productLeaderboardScoreLevel((Number(completion) || 0) * 100);
   const style = typeof skuPlanFactCardStyle === 'function' ? skuPlanFactCardStyle('wb', completion) : '';
+  const actionText = config.active ? 'Открыто' : 'Открыть';
+  const actionHint = config.active ? 'Детали показаны ниже' : 'Нажать, чтобы раскрыть ниже';
+  const reliefStyle = [
+    'width:100%',
+    'min-height:168px',
+    'text-align:left',
+    `border:${config.active ? '2px solid rgba(255,214,130,.92)' : '1px solid rgba(255,214,130,.42)'}`,
+    `box-shadow:${config.active ? '0 0 0 2px rgba(255,214,130,.28), 0 20px 48px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.16)' : '0 14px 34px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.12)'}`,
+    `transform:translateY(${config.active ? '-2px' : '0'})`,
+    'cursor:pointer',
+    'font:inherit',
+    'color:inherit',
+    'appearance:none',
+    'transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease'
+  ].join(';');
   return `
     <button
       type="button"
       class="sku-plan-platform-card product-leaderboard-insight-tile level-${level}${config.active ? ' is-active' : ''}"
       data-product-leaderboard-panel="${escapeHtml(config.panel || '')}"
-      style="${style};width:100%;text-align:left;border-width:${config.active ? '2px' : '1px'};cursor:pointer;font:inherit;color:inherit;appearance:none"
+      style="${style};${reliefStyle}"
       aria-expanded="${config.active ? 'true' : 'false'}"
     >
-      <span class="sku-plan-platform-card__top">
-        <strong>${escapeHtml(config.title || '')}</strong>
-        <em>${escapeHtml(config.kicker || '')}</em>
+      <span class="sku-plan-platform-card__top" style="align-items:flex-start;gap:10px">
+        <span style="display:flex;flex-direction:column;gap:4px">
+          <strong>${escapeHtml(config.title || '')}</strong>
+          <em>${escapeHtml(config.kicker || '')}</em>
+        </span>
+        <span
+          class="quick-chip ${config.active ? 'portal-action-primary' : ''}"
+          style="margin-left:auto;pointer-events:none;box-shadow:0 8px 18px rgba(0,0,0,.28);border-color:${config.active ? 'rgba(255,214,130,.86)' : 'rgba(255,214,130,.45)'}"
+        >${escapeHtml(actionText)}</span>
       </span>
       <span class="sku-plan-platform-card__value">${escapeHtml(config.value || '')}</span>
       <span class="sku-plan-platform-card__meta">${escapeHtml(config.meta || '')}</span>
       <span class="sku-plan-platform-card__bar"><i></i></span>
       <span class="sku-plan-platform-card__foot">
         <b class="${escapeHtml(config.deltaClass || '')}">${escapeHtml(config.footer || '')}</b>
-        <span><em>${escapeHtml(config.active ? 'открыто, нажать чтобы скрыть' : 'открыть детали')}</em></span>
+        <span><em>${escapeHtml(actionHint)}</em></span>
       </span>
     </button>
   `;
@@ -3311,7 +3332,7 @@ function renderProductLeaderboardInsightTilesHtml(payload = {}, summary = {}, ow
 
 function renderProductLeaderboardMetricsPanel(payload = {}, filteredSummary = {}, ownerCoverage = 0) {
   return `
-    <div class="product-leaderboard-metrics-panel">
+    <div class="product-leaderboard-metrics-panel" data-product-leaderboard-expanded-panel="metrics">
       <div class="kpi-strip" style="margin-top:14px">
         <div class="mini-kpi"><span>Охваты</span><strong>${fmt.int(filteredSummary.reach)}</strong><span>верх воронки</span></div>
         <div class="mini-kpi"><span>Клики</span><strong>${fmt.int(filteredSummary.clicks)}</strong><span>CTR ${fmt.pct(filteredSummary.ctrPct)}</span></div>
@@ -3513,7 +3534,7 @@ function renderProductLeaderboardSubstitutionRacePanel(items = [], leaderboardPa
   ];
 
   return `
-    <div class="card product-leaderboard-substitution-race" style="margin-top:14px">
+    <div class="card product-leaderboard-substitution-race" data-product-leaderboard-expanded-panel="substitution" style="margin-top:14px">
       <div class="section-subhead">
         <div>
           <h3>WB подмены race</h3>
@@ -8132,8 +8153,16 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       const nextPanel = String(button.getAttribute('data-product-leaderboard-panel') || '').trim();
       if (!nextPanel) return;
       const productFilters = getProductLeaderboardFilters();
-      productFilters.expandedPanel = productFilters.expandedPanel === nextPanel ? '' : nextPanel;
+      const willOpen = productFilters.expandedPanel !== nextPanel;
+      productFilters.expandedPanel = willOpen ? nextPanel : '';
       rerenderCurrentView();
+      if (willOpen) {
+        window.setTimeout(() => {
+          document
+            .querySelector(`[data-product-leaderboard-expanded-panel="${nextPanel}"]`)
+            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 0);
+      }
     });
   });
   root.querySelector('[data-product-leaderboard-export]')?.addEventListener('click', () => {

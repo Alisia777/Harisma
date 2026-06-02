@@ -309,6 +309,8 @@
 }
 
 .promo-event-pill {
+  position: relative;
+  overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 3px 6px;
@@ -322,6 +324,27 @@
   color: var(--text);
   text-align: left;
   cursor: grab;
+}
+
+.promo-event-pill::after {
+  content: "";
+  grid-column: 1 / -1;
+  width: var(--event-xp, 0);
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff6c6c, #edce8a 48%, #5dcb94);
+}
+
+.promo-event-pill.mission-ok {
+  box-shadow: inset 0 0 0 1px rgba(93, 203, 148, .18);
+}
+
+.promo-event-pill.mission-warn {
+  box-shadow: inset 0 0 0 1px rgba(237, 206, 138, .18);
+}
+
+.promo-event-pill.mission-danger {
+  box-shadow: inset 0 0 0 1px rgba(255, 108, 108, .18);
 }
 
 .promo-event-pill:hover,
@@ -391,6 +414,27 @@
   border: 1px solid color-mix(in srgb, var(--promo-color, #74a7ff) 26%, var(--line));
   border-radius: 8px;
   background: color-mix(in srgb, var(--promo-color, #74a7ff) 7%, rgba(0, 0, 0, .18));
+}
+
+.promo-agenda-item::after {
+  content: "";
+  display: block;
+  width: var(--event-xp, 0);
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff6c6c, #edce8a 48%, #5dcb94);
+}
+
+.promo-agenda-item.mission-ok {
+  border-color: rgba(93, 203, 148, .34);
+}
+
+.promo-agenda-item.mission-warn {
+  border-color: rgba(237, 206, 138, .38);
+}
+
+.promo-agenda-item.mission-danger {
+  border-color: rgba(255, 108, 108, .34);
 }
 
 .promo-agenda-item button {
@@ -749,6 +793,49 @@
 }
 
 .promo-sku-bulk span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.promo-sku-import {
+  display: grid;
+  gap: 7px;
+}
+
+.promo-sku-import textarea {
+  width: 100%;
+  min-height: 74px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .22);
+  color: var(--text);
+  padding: 9px 10px;
+  font: inherit;
+  line-height: 1.35;
+  resize: vertical;
+}
+
+.promo-sku-import div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.promo-sku-import button {
+  min-height: 32px;
+  border: 1px solid rgba(93, 203, 148, .3);
+  border-radius: 8px;
+  background: rgba(93, 203, 148, .08);
+  color: var(--text);
+  padding: 6px 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.promo-sku-import span {
   color: var(--muted);
   font-size: 12px;
 }

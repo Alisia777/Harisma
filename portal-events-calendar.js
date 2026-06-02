@@ -688,6 +688,47 @@
     return skuCandidatePool(platform, query, selectedKeys).slice(0, MAX_SKU_RESULTS);
   }
 
+  function resolveSkuImportKey(value = '') {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const direct = findSkuByKey(raw);
+    if (direct) return skuPrimaryKey(direct, raw);
+    const rawToken = token(raw);
+    if (!rawToken) return '';
+    const skus = Array.isArray(appState().skus) ? appState().skus : [];
+    const exact = skus.find((sku) => {
+      const values = typeof skuLookupValues === 'function'
+        ? skuLookupValues(sku)
+        : [sku?.articleKey, sku?.article, sku?.sku, sku?.vendorCode, sku?.supplierArticle, sku?.nmId, sku?.barcode];
+      return values.some((item) => token(item) === rawToken);
+    });
+    if (exact) return skuPrimaryKey(exact, raw);
+    const byName = skus.find((sku) => {
+      const nameToken = token(skuName(sku));
+      return nameToken && rawToken.length >= 6 && (nameToken.includes(rawToken) || rawToken.includes(nameToken));
+    });
+    return byName ? skuPrimaryKey(byName, raw) : raw;
+  }
+
+  function parseSkuImportText(value = '') {
+    const rawItems = String(value || '')
+      .split(/\r?\n|[\t,;]+/g)
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const keys = [];
+    const unmatched = [];
+    const seen = new Set((CALENDAR_STATE.draftSkus || []).map(String));
+    rawItems.forEach((item) => {
+      const key = resolveSkuImportKey(item);
+      if (!key) return;
+      if (!findSkuByKey(key)) unmatched.push(item);
+      if (seen.has(key)) return;
+      seen.add(key);
+      keys.push(key);
+    });
+    return { keys, unmatched, total: rawItems.length };
+  }
+
   function skuLoadLabel(count) {
     if (count >= 150) return 'мега-акция';
     if (count >= 50) return 'массовое промо';
@@ -768,6 +809,20 @@
     `;
   }
 
+  function eventMission(event = {}) {
+    const rows = (event.skus || []).map((key) => {
+      const sku = findSkuByKey(key);
+      return { key, sku, signals: skuSignals(sku || key, event.platform) };
+    });
+    const totals = rows.reduce((acc, row) => {
+      acc.warehouse += number(row.signals.warehouse);
+      acc.shipped += number(row.signals.shipped);
+      acc.orders7 += number(row.signals.orders7);
+      return acc;
+    }, { warehouse: 0, shipped: 0, orders7: 0 });
+    return promoReadiness(event, rows, totals);
+  }
+
   function renderSkuRow(item, platform) {
     const { sku, key, signals, selected } = item;
     return `
@@ -806,6 +861,13 @@
         <button type="button" data-calendar-sku-add-results ${addableCount ? '' : 'disabled'}>Добавить найденные</button>
         <button type="button" data-calendar-sku-clear ${selectedRows.length ? '' : 'disabled'}>Очистить SKU</button>
         <span>показано ${formatInt(candidates.length)} из ${formatInt(pool.length)} · выбрано ${formatInt(selectedRows.length)}</span>
+      </div>
+      <div class="promo-sku-import">
+        <textarea rows="3" data-calendar-sku-import placeholder="Вставить SKU списком из Excel"></textarea>
+        <div>
+          <button type="button" data-calendar-sku-import-add>Добавить списком</button>
+          <span data-calendar-sku-import-status></span>
+        </div>
       </div>
       <div class="promo-sku-results">
         ${candidates.length ? candidates.map((item) => renderSkuRow(item, platform)).join('') : '<div class="promo-sku-empty">Ничего не нашлось. Проверьте площадку или поиск.</div>'}
@@ -872,11 +934,17 @@
   }
 
   function renderEventPill(event, compact = false) {
+    const mission = eventMission(event);
+    const riskLabel = mission.dangerCount
+      ? `${formatInt(mission.dangerCount)} риск`
+      : mission.warnCount
+        ? `${formatInt(mission.warnCount)} watch`
+        : `${formatInt(mission.score)} XP`;
     return `
-      <button class="promo-event-pill ${eventClass(event)} ${eventTone(event)}" type="button" draggable="true" data-calendar-event="${html(event.id)}">
+      <button class="promo-event-pill ${eventClass(event)} ${eventTone(event)} mission-${mission.tone}" type="button" draggable="true" data-calendar-event="${html(event.id)}" style="--event-xp:${mission.score}%">
         <span>${html(platformLabel(event.platform))}</span>
         <strong>${html(event.title)}</strong>
-        ${compact ? '' : `<em>${html(statusLabel(event.status))}</em>`}
+        <em>${html(compact ? riskLabel : `${formatInt(mission.score)} XP · ${statusLabel(event.status)}`)}</em>
         ${event.skus.length ? `<b>${formatInt(event.skus.length)} SKU</b>` : ''}
       </button>
     `;
@@ -939,19 +1007,24 @@
   function renderSideList(events) {
     const sorted = [...events].sort((a, b) => `${a.startDate}|${a.title}`.localeCompare(`${b.startDate}|${b.title}`));
     if (!sorted.length) return '<div class="promo-empty">Событий пока нет.</div>';
-    return sorted.slice(0, 10).map((event) => `
-      <div class="promo-agenda-item ${eventClass(event)}">
-        <button type="button" data-calendar-edit="${html(event.id)}">
-          <strong>${html(event.title)}</strong>
-          <span>${html(formatDate(event.startDate))}${event.endDate !== event.startDate ? ` - ${html(formatDate(event.endDate))}` : ''}</span>
-        </button>
-        <div>
-          <span>${html(platformLabel(event.platform))}</span>
-          ${event.skus.length ? `<span>${formatInt(event.skus.length)} SKU</span>` : '<span>SKU не выбраны</span>'}
-          ${event.taskId ? '<span>задача есть</span>' : '<span>задача нужна</span>'}
+    return sorted.slice(0, 10).map((event) => {
+      const mission = eventMission(event);
+      return `
+        <div class="promo-agenda-item ${eventClass(event)} mission-${mission.tone}" style="--event-xp:${mission.score}%">
+          <button type="button" data-calendar-edit="${html(event.id)}">
+            <strong>${html(event.title)}</strong>
+            <span>${html(formatDate(event.startDate))}${event.endDate !== event.startDate ? ` - ${html(formatDate(event.endDate))}` : ''}</span>
+          </button>
+          <div>
+            <span>${html(platformLabel(event.platform))}</span>
+            <span>${formatInt(mission.score)} XP</span>
+            ${mission.dangerCount ? `<span>${formatInt(mission.dangerCount)} риск</span>` : ''}
+            ${event.skus.length ? `<span>${formatInt(event.skus.length)} SKU</span>` : '<span>SKU не выбраны</span>'}
+            ${event.taskId ? '<span>задача есть</span>' : '<span>задача нужна</span>'}
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   function renderModal() {
@@ -1411,6 +1484,25 @@
       if (clearSkus) {
         CALENDAR_STATE.draftSkus = [];
         renderSkuPicker(root);
+        return;
+      }
+      const importAdd = event.target.closest('[data-calendar-sku-import-add]');
+      if (importAdd) {
+        const textarea = root.querySelector('[data-calendar-sku-import]');
+        const status = root.querySelector('[data-calendar-sku-import-status]');
+        const parsed = parseSkuImportText(textarea?.value || '');
+        const current = new Set(CALENDAR_STATE.draftSkus || []);
+        parsed.keys.slice(0, MAX_BULK_SKUS).forEach((key) => current.add(key));
+        CALENDAR_STATE.draftSkus = [...current];
+        renderSkuPicker(root);
+        const nextStatus = root.querySelector('[data-calendar-sku-import-status]');
+        if (nextStatus) {
+          nextStatus.textContent = parsed.total
+            ? `добавлено ${formatInt(parsed.keys.length)} · без пары ${formatInt(parsed.unmatched.length)}`
+            : 'вставьте список SKU';
+        } else if (status) {
+          status.textContent = '';
+        }
         return;
       }
       const toggle = event.target.closest('[data-calendar-sku-toggle]');

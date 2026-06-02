@@ -262,16 +262,9 @@ function taskAttachmentPublicUrl(bucket, objectPath) {
 }
 
 function taskAttachmentObjectPath(taskId, fileName) {
-  const brandSegment = safeStoragePathSegment(currentBrand() || 'brand', 'brand');
-  const taskSegment = safeStoragePathSegment(taskId || 'task', 'task');
-  const rawFileName = String(fileName || 'file');
-  const extMatch = rawFileName.toLowerCase().match(/\.([a-z0-9]{1,12})$/);
-  const ext = extMatch ? `.${extMatch[1]}` : '';
-  const baseName = ext ? rawFileName.slice(0, -ext.length) : rawFileName;
-  const baseSegment = safeStoragePathSegment(baseName, 'file').slice(0, Math.max(12, 120 - ext.length));
-  const fileSegment = `${baseSegment}${ext}`;
-  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  return `${brandSegment}/tasks/${taskSegment}/${stamp}-${uid('file')}-${fileSegment}`;
+  const ext = taskAttachmentExt(fileName || '') || 'bin';
+  const stamp = String(Date.now());
+  return `task-attachments/${stamp}-${uid('file')}.${ext}`;
 }
 
 function taskAttachmentExt(name = '') {

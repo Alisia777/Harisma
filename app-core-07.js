@@ -2971,7 +2971,7 @@ function downloadProductLeaderboardExcel(payload, items) {
     ['category', 'Категория'],
     ['traffic', 'Трафик'],
     ['signal', 'Сигнал'],
-    ['game_score', 'КЗ уровень'],
+    ['game_score', 'КЗ показатель'],
     ['game_level', 'КЗ статус'],
     ['reach', 'Охваты'],
     ['clicks', 'Клики'],
@@ -3162,7 +3162,7 @@ function productLeaderboardGameHeroHtml(payload = {}, filteredItems = [], freshn
     <div class="card sku-plan-fact-card salary-plan-kpi-card product-leaderboard-game-card level-${game.level}" style="margin-top:14px;--xp-hue:${hue};--xp-progress:${progress.toFixed(1)}%;--xp-forecast:${progress.toFixed(1)}%;--xp-bright:${brightness.toFixed(2)}">
       <div class="sku-salary-xp-head">
         <div>
-          <h3>КЗ уровень недели</h3>
+          <h3>КЗ состояние недели</h3>
           <p class="small muted">${escapeHtml(payload.weekLabel || payload.sourceSheetName || 'текущий срез')}</p>
         </div>
         <div class="badge-stack">
@@ -3171,11 +3171,11 @@ function productLeaderboardGameHeroHtml(payload = {}, filteredItems = [], freshn
       </div>
       <div class="sku-salary-xp-main">
         <div class="sku-salary-xp-score">
-          <span>уровень</span>
+          <span>индекс</span>
           <strong>${fmt.int(game.score)}</strong>
           <em>${escapeHtml(game.label)}</em>
         </div>
-        <div class="sku-salary-xp-track" aria-label="КЗ уровень недели" title="${escapeHtml(`${fmt.int(game.score)} / 100`)}"><i></i></div>
+        <div class="sku-salary-xp-track" aria-label="КЗ состояние недели" title="${escapeHtml(`${fmt.int(game.score)} / 100`)}"><i></i></div>
         <div class="sku-salary-xp-delta ${game.score >= 75 ? 'ok' : game.score >= 55 ? 'warn' : 'danger'}">
           <span>фокус</span>
           <strong>${game.score >= 75 ? 'масштабировать' : game.score >= 55 ? 'дожать модули' : 'разобрать риски'}</strong>
@@ -3398,6 +3398,8 @@ function productLeaderboardWeeklyShareRows() {
         weekLabel,
         range,
         generatedAt: snapshot.generatedAt || '',
+        items,
+        summary,
         skuCount: summary.skuCount,
         orders,
         revenue,
@@ -3442,12 +3444,188 @@ function productLeaderboardWeeklyTrendCardHtml(config = {}) {
   const deltaHtml = config.delta === null
     ? ''
     : `<b class="${deltaTone === 'ok' ? 'ok-text' : deltaTone === 'danger' ? 'danger-text' : ''}">${escapeHtml(productLeaderboardWeeklyTrendDelta(config.delta))}</b>`;
+  const detailHtml = config.detail ? `<small>${escapeHtml(config.detail)}</small>` : '';
   return `
     <div class="product-leaderboard-weekly-bi-card ${escapeHtml(config.className || '')}">
       <span>${escapeHtml(config.label || '')}</span>
       <strong>${escapeHtml(config.value || '')}</strong>
       <em>${escapeHtml(config.meta || '')}</em>
       ${deltaHtml}
+      ${detailHtml}
+    </div>
+  `;
+}
+
+function productLeaderboardLatestIuDailyRow(preferredDate = '') {
+  const rows = Array.isArray(state.iuDrrSummary?.daily) ? state.iuDrrSummary.daily : [];
+  if (!rows.length) return {};
+  const cleanDate = String(preferredDate || '').slice(0, 10);
+  if (cleanDate) {
+    const exact = rows.find((row) => String(row?.date || '').slice(0, 10) === cleanDate);
+    if (exact) return exact;
+  }
+  return rows[rows.length - 1] || {};
+}
+
+function productLeaderboardAdsPlatform(key = '') {
+  const cleanKey = String(key || '').trim().toLowerCase();
+  const platforms = Array.isArray(state.adsSummary?.platforms) ? state.adsSummary.platforms : [];
+  return platforms.find((platform) => (
+    String(platform?.key || platform?.platformKey || '').trim().toLowerCase() === cleanKey
+  )) || null;
+}
+
+function productLeaderboardMarketplaceAdsShareModel() {
+  const ads = state.adsSummary && typeof state.adsSummary === 'object' ? state.adsSummary : {};
+  const date = ads.asOfDate || ads.window?.to || ads.window?.from || '';
+  const daily = productLeaderboardLatestIuDailyRow(date);
+  const wbAds = productLeaderboardAdsPlatform('wb');
+  const ozonAds = productLeaderboardAdsPlatform('ozon');
+  const allAds = productLeaderboardAdsPlatform('all');
+  const wbAdsOrders = numberOrZero(wbAds?.orders) || numberOrZero(daily.adsOrders);
+  const ozonAdsOrders = numberOrZero(ozonAds?.orders) || numberOrZero(daily.ozonAdsOrders);
+  const adsOrders = numberOrZero(allAds?.orders) || wbAdsOrders + ozonAdsOrders;
+  const wbOrders = numberOrZero(daily.unitsWb);
+  const ozonOrders = numberOrZero(daily.ordersUnitsOzon) || numberOrZero(daily.unitsOzon);
+  const totalOrders = wbOrders + ozonOrders;
+  return {
+    date: date || daily.date || '',
+    adsOrders,
+    totalOrders,
+    wbAdsOrders,
+    ozonAdsOrders,
+    wbOrders,
+    ozonOrders,
+    share: productLeaderboardSafeRatio(adsOrders, totalOrders)
+  };
+}
+
+function productLeaderboardDateOnlyLabel(value = '') {
+  const text = String(value || '').trim();
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[3]}.${match[2]}.${match[1]}`;
+  return text ? fmt.date(text) : '';
+}
+
+function productLeaderboardBucketLabel(bucket = '') {
+  if (bucket === 'kz') return 'КЗ-метка';
+  if (bucket === 'digital') return 'digital';
+  return 'без метки';
+}
+
+function productLeaderboardAggregateItemsByKey(items = []) {
+  const map = new Map();
+  (Array.isArray(items) ? items : []).forEach((item = {}) => {
+    const key = productLeaderboardItemCompareKey(item);
+    if (!key) return;
+    const entry = map.get(key) || {
+      key,
+      item,
+      orders: 0,
+      revenue: 0,
+      clicks: 0,
+      carts: 0,
+      buys: 0
+    };
+    entry.orders += numberOrZero(item.orders);
+    entry.revenue += numberOrZero(item.revenue);
+    entry.clicks += numberOrZero(item.clicks);
+    entry.carts += numberOrZero(item.carts);
+    entry.buys += numberOrZero(item.buys);
+    if (!entry.item?.name && item.name) entry.item = item;
+    map.set(key, entry);
+  });
+  return map;
+}
+
+function productLeaderboardWeeklyGrowthModel(current = null, previous = null) {
+  if (!current || !previous) return null;
+  const currentMap = productLeaderboardAggregateItemsByKey(current.items || []);
+  const previousMap = productLeaderboardAggregateItemsByKey(previous.items || []);
+  const keys = new Set([...currentMap.keys(), ...previousMap.keys()]);
+  const rows = [...keys].map((key) => {
+    const curr = currentMap.get(key) || { item: {}, orders: 0, revenue: 0, clicks: 0, carts: 0, buys: 0 };
+    const prev = previousMap.get(key) || { item: {}, orders: 0, revenue: 0, clicks: 0, carts: 0, buys: 0 };
+    const item = curr.item && (curr.item.name || curr.item.articleKey || curr.item.article) ? curr.item : prev.item;
+    const bucket = productLeaderboardTrafficBucket(item.traffic || curr.item?.traffic || prev.item?.traffic || '');
+    return {
+      key,
+      item,
+      bucket,
+      orders: curr.orders,
+      previousOrders: prev.orders,
+      ordersDelta: curr.orders - prev.orders,
+      revenue: curr.revenue,
+      previousRevenue: prev.revenue,
+      revenueDelta: curr.revenue - prev.revenue,
+      clicksDelta: curr.clicks - prev.clicks,
+      cartsDelta: curr.carts - prev.carts,
+      buysDelta: curr.buys - prev.buys
+    };
+  }).filter((row) => row.ordersDelta || row.revenueDelta);
+  const bucketDeltas = {
+    kz: numberOrZero(current.orders?.kz) - numberOrZero(previous.orders?.kz),
+    digital: numberOrZero(current.orders?.digital) - numberOrZero(previous.orders?.digital),
+    organic: numberOrZero(current.orders?.organic) - numberOrZero(previous.orders?.organic)
+  };
+  return {
+    current,
+    previous,
+    ordersDelta: numberOrZero(current.totalOrders) - numberOrZero(previous.totalOrders),
+    revenueDelta: numberOrZero(current.totalRevenue) - numberOrZero(previous.totalRevenue),
+    bucketDeltas,
+    positive: rows.filter((row) => row.ordersDelta > 0).sort((left, right) => right.ordersDelta - left.ordersDelta).slice(0, 4),
+    negative: rows.filter((row) => row.ordersDelta < 0).sort((left, right) => left.ordersDelta - right.ordersDelta).slice(0, 2)
+  };
+}
+
+function productLeaderboardWeeklyGrowthDriverHtml(row = {}, tone = 'ok') {
+  const item = row.item || {};
+  const title = item.name || item.articleKey || item.article || row.key || 'SKU';
+  const link = [item.articleKey || row.key || '', item.article ? `WB ${item.article}` : ''].filter(Boolean).join(' -> ');
+  const owner = item.owner ? ` · ${item.owner}` : '';
+  const bucket = productLeaderboardBucketLabel(row.bucket);
+  const deltaClass = tone === 'ok' ? 'ok-text' : 'danger-text';
+  return `
+    <div class="product-leaderboard-weekly-bi-driver is-${escapeHtml(tone)}">
+      <b class="${deltaClass}">${escapeHtml(productLeaderboardSignedInt(row.ordersDelta))} заказов</b>
+      <strong>${escapeHtml(title)}</strong>
+      <em>${escapeHtml(`${bucket} · ${link}${owner}`)}</em>
+      <small>${escapeHtml(`выручка ${productLeaderboardSignedMoney(row.revenueDelta)} · клики ${productLeaderboardSignedInt(row.clicksDelta)} · корзины ${productLeaderboardSignedInt(row.cartsDelta)}`)}</small>
+    </div>
+  `;
+}
+
+function productLeaderboardWeeklyGrowthHtml(model = null) {
+  if (!model) return '';
+  const buckets = [
+    { label: 'КЗ-метка', value: model.bucketDeltas.kz, tone: model.bucketDeltas.kz >= 0 ? 'ok' : 'danger' },
+    { label: 'digital', value: model.bucketDeltas.digital, tone: model.bucketDeltas.digital >= 0 ? 'ok' : 'danger' },
+    { label: 'без метки', value: model.bucketDeltas.organic, tone: model.bucketDeltas.organic >= 0 ? 'ok' : 'danger' }
+  ];
+  const positive = model.positive.map((row) => productLeaderboardWeeklyGrowthDriverHtml(row, 'ok')).join('');
+  const negative = model.negative.map((row) => productLeaderboardWeeklyGrowthDriverHtml(row, 'danger')).join('');
+  return `
+    <div class="product-leaderboard-weekly-bi-growth">
+      <div class="product-leaderboard-weekly-bi-growth__head">
+        <div>
+          <span>Рост за счет чего</span>
+          <strong>${escapeHtml(productLeaderboardSignedInt(model.ordersDelta))} заказов</strong>
+          <em>${escapeHtml(`к прошлой неделе · выручка ${productLeaderboardSignedMoney(model.revenueDelta)}`)}</em>
+        </div>
+        <div class="product-leaderboard-weekly-bi-growth__buckets">
+          ${buckets.map((bucket) => `
+            <span class="is-${escapeHtml(bucket.tone)}">
+              <b>${escapeHtml(bucket.label)}</b>
+              <em>${escapeHtml(productLeaderboardSignedInt(bucket.value))}</em>
+            </span>
+          `).join('')}
+        </div>
+      </div>
+      <div class="product-leaderboard-weekly-bi-growth__drivers">
+        ${positive || '<div class="product-leaderboard-weekly-bi-driver"><b>0 заказов</b><strong>Новых драйверов роста нет</strong><em>Сравнение недель без положительных скачков по SKU.</em></div>'}
+        ${negative}
+      </div>
     </div>
   `;
 }
@@ -3464,8 +3642,11 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
   const kzListOrders = numberOrZero(orderContour.kzOrders) || numberOrZero(current.totalOrders);
   const organicOrders = Math.max(0, wbTotalOrders - kzListOrders);
   const digitalOrders = numberOrZero(current.orders.digital);
+  const mpAds = productLeaderboardMarketplaceAdsShareModel();
   const kzListShare = wbTotalOrders > 0 ? kzListOrders / wbTotalOrders : null;
   const organicShare = wbTotalOrders > 0 ? organicOrders / wbTotalOrders : null;
+  const digitalGlobalShare = wbTotalOrders > 0 ? digitalOrders / wbTotalOrders : null;
+  const growthModel = productLeaderboardWeeklyGrowthModel(current, previous);
   const cards = [
     {
       className: 'is-kz',
@@ -3476,10 +3657,11 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
     },
     {
       className: 'is-digital',
-      label: 'Digital внутри КЗ-листа',
-      value: current.digitalShare == null ? '—' : fmt.pct(current.digitalShare),
-      meta: `${fmt.int(current.orders.digital)} заказов`,
-      delta: current.digitalShareDelta
+      label: 'Digital / WB',
+      value: digitalGlobalShare == null ? '—' : fmt.pct(digitalGlobalShare),
+      meta: `${fmt.int(digitalOrders)} из ${fmt.int(wbTotalOrders)} заказов`,
+      delta: null,
+      detail: current.digitalShare == null ? '' : `${fmt.pct(current.digitalShare)} внутри КЗ-листа`
     },
     {
       className: 'is-organic',
@@ -3487,14 +3669,22 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
       value: organicShare == null ? '—' : fmt.pct(organicShare),
       meta: `${fmt.int(organicOrders)} заказов`,
       delta: null
+    },
+    {
+      className: 'is-ads',
+      label: 'Реклама МП / заказы МП',
+      value: mpAds.share == null ? '—' : fmt.pct(mpAds.share),
+      meta: mpAds.totalOrders > 0 ? `${fmt.int(mpAds.adsOrders)} из ${fmt.int(mpAds.totalOrders)} заказов` : 'нет деноминатора МП',
+      delta: null,
+      detail: `${mpAds.date ? productLeaderboardDateOnlyLabel(mpAds.date) : 'текущий срез'} · WB ${fmt.int(mpAds.wbAdsOrders)} · Ozon ${fmt.int(mpAds.ozonAdsOrders)}`
     }
   ];
   return `
     <div class="product-leaderboard-weekly-bi">
       <div class="section-subhead">
         <div>
-          <h3>Недельная динамика КЗ-листа</h3>
-          <p class="small muted">КЗ-лист по неделям и текущая доля от всех WB-подменников. История WB-подменников появится после следующих выгрузок ANS.</p>
+          <h3>BI-срез заказов: КЗ / digital / органика / реклама МП</h3>
+          <p class="small muted">Доли сверху считаются по своим рабочим контурам: WB-подменники для КЗ, digital и органики; WB+Ozon для заказов с рекламы МП. Ниже — недельная динамика КЗ-листа и SKU-драйверы роста.</p>
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(rows.length)} недель`, rows.length > 1 ? 'info' : 'warn')}
@@ -3505,6 +3695,7 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
       <div class="product-leaderboard-weekly-bi__cards">
         ${cards.map(productLeaderboardWeeklyTrendCardHtml).join('')}
       </div>
+      ${productLeaderboardWeeklyGrowthHtml(growthModel)}
       <div class="product-leaderboard-weekly-bi__rows">
         ${rows.map((row) => {
           const kzPct = row.kzShare == null ? 0 : Math.max(0, Math.min(100, row.kzShare * 100));
@@ -4508,7 +4699,7 @@ function productLeaderboardOwnerRaceHtml(items = []) {
   return `
     <div class="card product-leaderboard-race" style="margin-top:14px">
       <div class="section-subhead">
-        <div><h3>Owner race</h3><p class="small muted">Кто тащит КЗ по доходу, выкупам и чистоте сигналов.</p></div>
+        <div><h3>Ответственные</h3><p class="small muted">Кто держит КЗ по доходу, выкупам и чистоте сигналов.</p></div>
         ${badge(`${fmt.int(rows.length)} owner`, rows.length ? 'info' : 'warn')}
       </div>
       <div class="list" style="margin-top:12px">
@@ -9058,7 +9249,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
     <div class="section-title">
       <div>
         <h2>Продуктовый лидерборд</h2>
-        <p>Сначала доля КЗ-листа в WB-подменниках, ниже уровень недели, метрики, owner race и рабочий список SKU.</p>
+        <p>Сначала BI-срез долей КЗ, digital, органики и рекламы МП, ниже метрики, ответственные и рабочий список SKU.</p>
       </div>
       <div class="badge-stack">
         ${badge(payload.weekLabel || 'недельный срез', 'info')}
@@ -9145,7 +9336,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
           ${['leader', 'steady', 'risk', 'no_owner', 'no_sales'].map((signal) => `<option value="${signal}" ${filters.signal === signal ? 'selected' : ''}>${escapeHtml(productLeaderboardSignalMeta(signal).label)}</option>`).join('')}
         </select>
         <select id="productLeaderboardSort">
-          <option value="gameScore" ${filters.sort === 'gameScore' ? 'selected' : ''}>Сортировка: КЗ уровень</option>
+          <option value="gameScore" ${filters.sort === 'gameScore' ? 'selected' : ''}>Сортировка: КЗ показатель</option>
           <option value="reach" ${filters.sort === 'reach' ? 'selected' : ''}>Сортировка: охваты</option>
           <option value="clicks" ${filters.sort === 'clicks' ? 'selected' : ''}>Сортировка: клики</option>
           <option value="carts" ${filters.sort === 'carts' ? 'selected' : ''}>Сортировка: корзины</option>

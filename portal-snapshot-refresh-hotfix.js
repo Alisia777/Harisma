@@ -699,7 +699,7 @@
     "sku-plan-fact": ["smart_price_workbench", "smart_price_overlay", "price_workbench_support", "ads_summary", "iu_drr_summary", "portal_data_quality", "sku_aliases", "sku_alias_ignore", "sku_alias_audit", "sku_matrix"],
     "iu-drr": ["iu_drr_summary", "ads_summary", "wb_feedbacks_summary", "wb_substitution_traffic"],
     "wb-rating": ["wb_feedbacks_summary", "iu_drr_summary"],
-    "product-leaderboard": ["product_leaderboard", "product_leaderboard_history", "wb_substitution_traffic", "wb_substitution_traffic_history"]
+    "product-leaderboard": ["product_leaderboard", "product_leaderboard_history", "wb_substitution_traffic", "wb_substitution_traffic_history", "ads_summary", "iu_drr_summary"]
   };
 
   function activeRefreshView() {

@@ -2927,7 +2927,7 @@ const LAZY_DATA_LOADERS = {
         return cloneFallback(fallback);
       }
     };
-    const [payload, history, wbSubstitutionTraffic, wbSubstitutionTrafficHistory, iuDrrSummary] = await Promise.all([
+    const [payload, history, wbSubstitutionTraffic, wbSubstitutionTrafficHistory, iuDrrSummary, adsSummary] = await Promise.all([
       Array.isArray(state.productLeaderboard?.items) && state.productLeaderboard.items.length
         ? Promise.resolve(state.productLeaderboard)
         : loadLocalProductData('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
@@ -2946,6 +2946,11 @@ const LAZY_DATA_LOADERS = {
         'data/iu_drr_summary.json',
         { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
         'Показатели площадок'
+      ),
+      loadLocalProductData(
+        'data/ads_summary.json',
+        { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
+        'Реклама МП'
       )
     ]);
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
@@ -2959,6 +2964,9 @@ const LAZY_DATA_LOADERS = {
     state.iuDrrSummary = iuDrrSummary && typeof iuDrrSummary === 'object'
       ? iuDrrSummary
       : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
+    state.adsSummary = adsSummary && typeof adsSummary === 'object'
+      ? adsSummary
+      : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
   },
   meetings: async () => {
     const meetings = await loadJsonOrFallback('data/meetings.json', [], 'Ритм работы');

@@ -472,7 +472,7 @@ function executiveFunnelApplyPayrollPlatformRows(platformRows = [], planModel = 
   Object.keys(planModel.payrollKpi.platforms || {}).forEach((platform) => {
     if (!EXECUTIVE_FUNNEL_PLATFORMS.includes(platform)) return;
     if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
-    const metric = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows' });
+    const metric = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false });
     if (!metric?.payrollKpi || metric.salaryIncluded === false) return;
 
     let row = platformRows.find((item) => item.platform === platform);
@@ -617,7 +617,7 @@ function executiveFunnelApplyPayrollOwnerControls(ownerMap = new Map(), planMode
   const controls = {};
   EXECUTIVE_FUNNEL_PLATFORMS.forEach((platform) => {
     if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
-    const target = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows' });
+    const target = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false });
     if (!target?.payrollKpi || target.salaryIncluded === false) return;
     const raw = [...ownerMap.values()].reduce((acc, ownerBucket) => {
       const metric = ownerBucket.platforms?.get(platform);
@@ -745,11 +745,12 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     row.skuKeys.forEach((key) => acc.skuKeys.add(key));
     return acc;
   }, executiveFunnelOwnerPlanBucket('Итого')));
-  const payrollTotalPlatform = selectedPlatform === 'all' ? 'all' : selectedPlatform;
-  const payrollTotalMetric = typeof skuPlanFactPlatformSummary === 'function'
-    ? skuPlanFactPlatformSummary(planModel, payrollTotalPlatform, { scope: 'allRows' })
-    : planModel.payrollKpi;
-  if (payrollTotalMetric?.payrollKpi || planModel.payrollKpi) {
+  const payrollTotalMetric = selectedPlatform === 'all'
+    ? (typeof skuPlanFactPlatformSummary === 'function'
+      ? skuPlanFactPlatformSummary(planModel, 'all', { scope: 'allRows', includePayroll: true })
+      : planModel.payrollKpi)
+    : null;
+  if (payrollTotalMetric?.payrollKpi) {
     executiveFunnelApplyPayrollPlatformMetric(totals, payrollTotalMetric || planModel.payrollKpi);
   }
 

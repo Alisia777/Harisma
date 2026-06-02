@@ -4172,7 +4172,7 @@ function portalHealthSkuPassportHtml() {
       </div>
       <div class="quick-actions" style="margin-top:12px">
         ${sku ? `<button class="quick-chip" type="button" data-open-sku="${escapeHtml(sku.articleKey)}">Открыть пример SKU</button>` : ''}
-        <button class="quick-chip" type="button" data-health-open="skus">Открыть Реестр SKU</button>
+        <button class="quick-chip" type="button" data-health-open="sku-contour">Открыть SKU workspace</button>
       </div>
     </div>
   `;
@@ -4896,6 +4896,11 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
 function renderSkuContour(rootId = 'view-sku-contour') {
   const root = document.getElementById(rootId);
   if (!root) return;
+  if (rootId === 'view-sku-contour' && state.skuWorkspaceMode === 'registry' && typeof renderSkuRegistry === 'function') {
+    renderSkuRegistry(rootId);
+    return;
+  }
+  if (rootId === 'view-sku-contour') state.skuWorkspaceMode = 'contour';
   const model = skuPlanFactBuildModel();
   const health = state.syncHealth || {};
   const matrix = state.skuMatrix || {};
@@ -5109,6 +5114,16 @@ function renderSkuContour(rootId = 'view-sku-contour') {
     </details>
   `;
 
+  root.querySelector('.section-title h2')?.replaceChildren(document.createTextNode('SKU workspace'));
+  if (root.dataset.skuJourneyDelegated !== '1') {
+    root.dataset.skuJourneyDelegated = '1';
+    root.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-sku-journey-action]');
+      if (!button || !root.contains(button) || event.__skuJourneyHandled) return;
+      event.__skuJourneyHandled = true;
+      skuJourneyHandleAction(button.dataset.skuJourneyAction || '', { rootId });
+    });
+  }
   root.querySelectorAll('[data-sku-contour-refresh]').forEach((button) => {
     button.addEventListener('click', (event) => refreshSkuPlanFactData(event.currentTarget, rootId));
   });
@@ -5137,6 +5152,8 @@ function renderSkuContour(rootId = 'view-sku-contour') {
   });
   root.querySelectorAll('[data-sku-journey-action]').forEach((button) => {
     button.addEventListener('click', (event) => {
+      if (event.__skuJourneyHandled) return;
+      event.__skuJourneyHandled = true;
       skuJourneyHandleAction(event.currentTarget.dataset.skuJourneyAction || '', { rootId });
     });
   });

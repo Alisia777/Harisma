@@ -2144,7 +2144,8 @@ function openSkuModal(articleKey) {
       state.filters.market = 'all';
       state.filters.focus = 'all';
       state.filters.assignment = 'all';
-      setView('skus');
+      if (typeof skuJourneyApplyRegistryFocus === 'function') skuJourneyApplyRegistryFocus('all', rawKey);
+      else setView('skus');
     }
     setAppError(rawKey
       ? `SKU ${rawKey} не найден в реестре. Открыла Реестр SKU и поставила поиск по артикулу.`
@@ -2211,6 +2212,7 @@ function setView(view, options = {}) {
   const persist = options.persist !== false;
   const syncHash = options.syncHash !== false;
   state.activeView = view;
+  if (view === 'sku-contour' && options.preserveSkuWorkspaceMode !== true) state.skuWorkspaceMode = 'contour';
   if (persist) persistActiveView(view);
   if (syncHash) syncHashWithView(view);
   document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
@@ -2321,7 +2323,7 @@ function ensureSkuContourShell() {
     button.className = 'nav-btn';
     button.type = 'button';
     button.dataset.view = 'sku-contour';
-    button.innerHTML = '<span>Контур SKU</span><small>ошибки · alias · ignore · аудит</small>';
+    button.innerHTML = '<span>SKU workspace</span><small>&#1056;&#1077;&#1077;&#1089;&#1090;&#1088; &middot; API-&#1082;&#1086;&#1085;&#1090;&#1091;&#1088; &middot; &#1087;&#1083;&#1072;&#1085;-&#1092;&#1072;&#1082;&#1090;</small>';
     const planButton = nav.querySelector('.nav-btn[data-view="sku-plan-fact"]');
     nav.insertBefore(button, planButton?.nextSibling || nav.firstChild);
   }
@@ -2461,7 +2463,7 @@ function rerenderCurrentView() {
   const renderPlan = [
     ['view-data-health', 'Здоровье данных', () => { if (typeof renderPortalDataHealth === 'function') renderPortalDataHealth('view-data-health'); }],
     ['view-oos-control', 'OOS контроль', () => { if (typeof renderOosControl === 'function') renderOosControl('view-oos-control'); }],
-    ['view-sku-contour', 'Контур SKU', () => renderSkuContour('view-sku-contour')],
+    ['view-sku-contour', 'SKU workspace', () => renderSkuContour('view-sku-contour')],
     ['view-sku-plan-fact', 'План-факт SKU', () => renderSkuPlanFact('view-sku-plan-fact')],
     ['view-wb-rating', 'Рейтинг карточек', () => renderWbCardRating('view-wb-rating')],
     ['view-iu-drr', 'Показатели площадок', () => renderIuDrr('view-iu-drr')],

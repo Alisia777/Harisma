@@ -207,7 +207,7 @@ const VIEW_TITLES = {
   skus: 'Реестр СКЮ',
   'data-health': 'Здоровье данных',
   'oos-control': 'OOS контроль',
-  'sku-contour': 'Контур SKU',
+  'sku-contour': 'SKU workspace',
   launches: 'Продукт / новинки',
   'iu-drr': 'Показатели площадок',
   'sku-plan-fact': 'План-факт SKU',

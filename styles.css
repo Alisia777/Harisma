@@ -39,6 +39,7 @@ body{min-height:100vh}
 
 .nav{display:flex;flex-direction:column;gap:10px}
 .nav-btn{border:1px solid var(--line);background:rgba(255,255,255,.02);border-radius:18px;color:var(--text);text-align:left;padding:13px 14px;cursor:pointer;transition:.18s ease;display:flex;flex-direction:column;gap:0}
+.nav-btn-legacy-hidden{display:none!important}
 .nav-btn small{display:none}
 .nav-btn:hover{transform:translateY(-1px);box-shadow:var(--shadow);border-color:var(--line-strong)}
 .nav-btn.active{background:linear-gradient(180deg,rgba(59,130,246,.14),rgba(255,255,255,.03));border-color:rgba(59,130,246,.45)}

@@ -365,25 +365,27 @@ function skuRegistryFocusPillHtml(reason) {
   return `<span class="chip ${escapeHtml(reason.tone || '')}">${escapeHtml(reason.label || '')}</span>`;
 }
 
-function skuJourneyOpenView(view) {
-  if (typeof setView === 'function') setView(view);
+function skuJourneyOpenView(view, options = {}) {
+  if (typeof setView === 'function') setView(view, options);
   else document.querySelector(`.nav-btn[data-view="${escapeHtml(view)}"]`)?.click();
 }
 
 function skuJourneyApplyRegistryFocus(focus = 'all', search = '') {
+  state.skuWorkspaceMode = 'registry';
   state.filters.focus = focus || 'all';
   state.filters.assignment = 'all';
   state.filters.traffic = 'all';
   if (search !== undefined && search !== null) state.filters.search = String(search || '');
   if (state.filters.focus === 'unassigned') state.filters.assignment = 'unassigned';
   if (state.filters.focus === 'extAny') state.filters.traffic = 'any';
-  skuJourneyOpenView('skus');
-  if (state.activeView === 'skus' && typeof renderSkuRegistry === 'function') renderSkuRegistry();
+  skuJourneyOpenView('sku-contour', { preserveSkuWorkspaceMode: true });
+  if (state.activeView === 'sku-contour' && typeof renderSkuRegistry === 'function') renderSkuRegistry('view-sku-contour');
 }
 
 function skuJourneyHandleAction(action = '', options = {}) {
   const key = String(action || '').trim();
   if (key === 'open-contour') {
+    state.skuWorkspaceMode = 'contour';
     state.skuContourOnlyNew = true;
     skuJourneyOpenView('sku-contour');
     if (state.activeView === 'sku-contour' && typeof renderSkuContour === 'function') renderSkuContour(options.rootId || 'view-sku-contour');
@@ -410,6 +412,7 @@ function skuJourneyHandleAction(action = '', options = {}) {
     return;
   }
   if (key === 'only-new-contour') {
+    state.skuWorkspaceMode = 'contour';
     state.skuContourOnlyNew = true;
     if (state.activeView === 'sku-contour' && typeof renderSkuContour === 'function') renderSkuContour(options.rootId || 'view-sku-contour');
     else skuJourneyOpenView('sku-contour');
@@ -578,8 +581,9 @@ function skuRegistryFocusBoardHtml({ activeMarket = 'all', allMarketSkus = [], i
   `;
 }
 
-function renderSkuRegistry() {
-  const root = document.getElementById('view-skus');
+function renderSkuRegistry(rootId = 'view-skus') {
+  const root = document.getElementById(rootId);
+  if (!root) return;
   const skuTaskMap = buildSkuRegistryTaskMap();
   const skuPlanModel = typeof skuPlanFactBuildModel === 'function' ? skuPlanFactBuildModel() : {};
   state.filters.lifecycle = state.filters.lifecycle || 'all';
@@ -726,17 +730,17 @@ function renderSkuRegistry() {
 
   `;
 
-  document.getElementById('skuSearchInput').addEventListener('input', (e) => { state.filters.search = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuOwnerFilter').addEventListener('change', (e) => { state.filters.owner = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuSegmentFilter').addEventListener('change', (e) => { state.filters.segment = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuLifecycleFilter').addEventListener('change', (e) => { state.filters.lifecycle = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuFocusFilter').addEventListener('change', (e) => { state.filters.focus = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuTrafficFilter').addEventListener('change', (e) => { state.filters.traffic = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuAssignmentFilter').addEventListener('change', (e) => { state.filters.assignment = e.target.value; renderSkuRegistry(); });
+  root.querySelector('#skuSearchInput')?.addEventListener('input', (e) => { state.filters.search = e.target.value; renderSkuRegistry(rootId); });
+  root.querySelector('#skuOwnerFilter')?.addEventListener('change', (e) => { state.filters.owner = e.target.value; renderSkuRegistry(rootId); });
+  root.querySelector('#skuSegmentFilter')?.addEventListener('change', (e) => { state.filters.segment = e.target.value; renderSkuRegistry(rootId); });
+  root.querySelector('#skuLifecycleFilter')?.addEventListener('change', (e) => { state.filters.lifecycle = e.target.value; renderSkuRegistry(rootId); });
+  root.querySelector('#skuFocusFilter')?.addEventListener('change', (e) => { state.filters.focus = e.target.value; renderSkuRegistry(rootId); });
+  root.querySelector('#skuTrafficFilter')?.addEventListener('change', (e) => { state.filters.traffic = e.target.value; renderSkuRegistry(rootId); });
+  root.querySelector('#skuAssignmentFilter')?.addEventListener('change', (e) => { state.filters.assignment = e.target.value; renderSkuRegistry(rootId); });
   root.querySelectorAll('[data-market-filter]').forEach((btn) => btn.addEventListener('click', (e) => {
     state.filters.market = e.currentTarget.dataset.marketFilter;
     state.filters.owner = 'all';
-    renderSkuRegistry();
+    renderSkuRegistry(rootId);
   }));
   root.querySelectorAll('[data-sku-registry-focus]').forEach((button) => button.addEventListener('click', (event) => {
     const focus = event.currentTarget.dataset.skuRegistryFocus || 'all';
@@ -747,6 +751,8 @@ function renderSkuRegistry() {
   });
   root.querySelectorAll('[data-sku-journey-action]').forEach((button) => {
     button.addEventListener('click', (event) => {
+      if (event.__skuJourneyHandled) return;
+      event.__skuJourneyHandled = true;
       skuJourneyHandleAction(event.currentTarget.dataset.skuJourneyAction || '');
     });
   });

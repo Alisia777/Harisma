@@ -85,8 +85,8 @@
       subtitle: "\u0421\u041a\u042e \u00b7 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438 \u00b7 owner"
     },
     "sku-contour": {
-      title: "\u041a\u043e\u043d\u0442\u0443\u0440 SKU",
-      subtitle: "\u043e\u0448\u0438\u0431\u043a\u0438 \u00b7 alias \u00b7 ignore \u00b7 \u0430\u0443\u0434\u0438\u0442"
+      title: "SKU workspace",
+      subtitle: "\u0420\u0435\u0435\u0441\u0442\u0440 \u00b7 API-\u043a\u043e\u043d\u0442\u0443\u0440 \u00b7 \u043f\u043b\u0430\u043d-\u0444\u0430\u043a\u0442"
     },
     "sku-plan-fact": {
       title: "\u041f\u043b\u0430\u043d-\u0444\u0430\u043a\u0442 SKU",
@@ -196,10 +196,10 @@
   function patchViewFunctions() {
     if (typeof window.setView === "function" && !window.setView.__alteaSidebarPatched) {
       var originalSetView = window.setView;
-      var wrappedSetView = function (view) {
+      var wrappedSetView = function (view, options) {
         var normalized = normalizeView(view);
         saveLastView(normalized);
-        return originalSetView.call(this, normalized);
+        return originalSetView.call(this, normalized, options);
       };
       wrappedSetView.__alteaSidebarPatched = true;
       window.setView = wrappedSetView;
@@ -231,6 +231,13 @@
       if (byView[view] && byView[view].parentNode) byView[view].parentNode.removeChild(byView[view]);
       delete byView[view];
     });
+
+    if (byView.skus) {
+      byView.skus.hidden = true;
+      byView.skus.setAttribute("aria-hidden", "true");
+      byView.skus.tabIndex = -1;
+      byView.skus.classList.add("nav-btn-legacy-hidden");
+    }
 
     var orderedButtons = [];
     ORDER.forEach(function (view) {

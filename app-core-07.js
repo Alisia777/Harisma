@@ -3359,6 +3359,173 @@ function productLeaderboardCommonOrderContour(summary = {}, items = [], filters 
   };
 }
 
+function productLeaderboardTrafficBucket(value = '') {
+  const traffic = String(value || '').trim().toLowerCase();
+  if (traffic.includes('\u043a\u0437') || traffic.includes('kz')) return 'kz';
+  if (traffic) return 'digital';
+  return 'organic';
+}
+
+function productLeaderboardWeeklyShareRows() {
+  const byWeek = new Map();
+  productLeaderboardHistoryPayloads().forEach((snapshot) => {
+    const weekLabel = String(snapshot.weekLabel || snapshot.sourceSheetName || (snapshot.generatedAt || '').slice(0, 10) || '').trim();
+    if (!weekLabel) return;
+    const previous = byWeek.get(weekLabel);
+    const currentStamp = parseFreshStamp(snapshot.generatedAt || snapshot.sourceWeekTo || weekLabel);
+    const previousStamp = previous ? parseFreshStamp(previous.snapshot.generatedAt || previous.snapshot.sourceWeekTo || previous.weekLabel) : 0;
+    if (!previous || currentStamp >= previousStamp) {
+      byWeek.set(weekLabel, { weekLabel, snapshot });
+    }
+  });
+
+  const rows = [...byWeek.values()]
+    .map(({ weekLabel, snapshot }) => {
+      const items = getFilteredProductLeaderboardItems(snapshot);
+      const summary = productLeaderboardSummaryFromItems(items);
+      const orders = { kz: 0, digital: 0, organic: 0 };
+      const revenue = { kz: 0, digital: 0, organic: 0 };
+      items.forEach((item) => {
+        const bucket = productLeaderboardTrafficBucket(item.traffic);
+        orders[bucket] += numberOrZero(item.orders);
+        revenue[bucket] += numberOrZero(item.revenue);
+      });
+      const totalOrders = orders.kz + orders.digital + orders.organic || numberOrZero(summary.orders);
+      const totalRevenue = revenue.kz + revenue.digital + revenue.organic || numberOrZero(summary.revenue);
+      const range = productLeaderboardWeekRange(snapshot);
+      const sortStamp = parseFreshStamp(range.fromIso || snapshot.sourceWeekFrom || snapshot.generatedAt || weekLabel);
+      return {
+        weekLabel,
+        range,
+        generatedAt: snapshot.generatedAt || '',
+        skuCount: summary.skuCount,
+        orders,
+        revenue,
+        totalOrders,
+        totalRevenue,
+        kzShare: totalOrders > 0 ? orders.kz / totalOrders : null,
+        digitalShare: totalOrders > 0 ? orders.digital / totalOrders : null,
+        organicShare: totalOrders > 0 ? orders.organic / totalOrders : null,
+        sortStamp
+      };
+    })
+    .filter((row) => row.totalOrders > 0)
+    .sort((left, right) => (
+      numberOrZero(left.sortStamp) - numberOrZero(right.sortStamp)
+      || String(left.weekLabel || '').localeCompare(String(right.weekLabel || ''), 'ru')
+    ));
+
+  rows.forEach((row, index) => {
+    const previous = rows[index - 1] || null;
+    row.previous = previous;
+    row.kzShareDelta = previous && row.kzShare != null && previous.kzShare != null ? row.kzShare - previous.kzShare : null;
+    row.digitalShareDelta = previous && row.digitalShare != null && previous.digitalShare != null ? row.digitalShare - previous.digitalShare : null;
+    row.organicShareDelta = previous && row.organicShare != null && previous.organicShare != null ? row.organicShare - previous.organicShare : null;
+    row.ordersDelta = previous ? row.totalOrders - previous.totalOrders : null;
+  });
+  return rows;
+}
+
+function productLeaderboardWeeklyTrendTone(delta) {
+  const numeric = Number(delta);
+  if (!Number.isFinite(numeric) || numeric === 0) return 'info';
+  return numeric > 0 ? 'ok' : 'danger';
+}
+
+function productLeaderboardWeeklyTrendDelta(delta) {
+  if (delta === null || delta === undefined || Number.isNaN(Number(delta))) return '—';
+  return productLeaderboardSignedPp(delta);
+}
+
+function productLeaderboardWeeklyTrendCardHtml(config = {}) {
+  const deltaTone = productLeaderboardWeeklyTrendTone(config.delta);
+  return `
+    <div class="product-leaderboard-weekly-bi-card ${escapeHtml(config.className || '')}">
+      <span>${escapeHtml(config.label || '')}</span>
+      <strong>${escapeHtml(config.value || '')}</strong>
+      <em>${escapeHtml(config.meta || '')}</em>
+      <b class="${deltaTone === 'ok' ? 'ok-text' : deltaTone === 'danger' ? 'danger-text' : ''}">${escapeHtml(productLeaderboardWeeklyTrendDelta(config.delta))}</b>
+    </div>
+  `;
+}
+
+function renderProductLeaderboardWeeklyTrendHtml() {
+  const rows = productLeaderboardWeeklyShareRows();
+  if (!rows.length) return '';
+  const current = rows[rows.length - 1];
+  const previous = current.previous;
+  const maxOrders = Math.max(1, ...rows.map((row) => numberOrZero(row.totalOrders)));
+  const currentLabel = current.range.fromLabel && current.range.toLabel ? `${current.range.fromLabel} - ${current.range.toLabel}` : current.weekLabel;
+  const previousLabel = previous ? (previous.range.fromLabel && previous.range.toLabel ? `${previous.range.fromLabel} - ${previous.range.toLabel}` : previous.weekLabel) : '';
+  const cards = [
+    {
+      className: 'is-kz',
+      label: 'КЗ доля',
+      value: current.kzShare == null ? '—' : fmt.pct(current.kzShare),
+      meta: `${fmt.int(current.orders.kz)} заказов`,
+      delta: current.kzShareDelta
+    },
+    {
+      className: 'is-digital',
+      label: 'Digital доля',
+      value: current.digitalShare == null ? '—' : fmt.pct(current.digitalShare),
+      meta: `${fmt.int(current.orders.digital)} заказов`,
+      delta: current.digitalShareDelta
+    },
+    {
+      className: 'is-organic',
+      label: 'Органика',
+      value: current.organicShare == null ? '—' : fmt.pct(current.organicShare),
+      meta: `${fmt.int(current.orders.organic)} заказов`,
+      delta: current.organicShareDelta
+    }
+  ];
+  return `
+    <div class="product-leaderboard-weekly-bi">
+      <div class="section-subhead">
+        <div>
+          <h3>Недельная динамика долей</h3>
+          <p class="small muted">КЗ, digital и органика по заказам weekly лидерборда.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(rows.length)} недель`, rows.length > 1 ? 'info' : 'warn')}
+          ${badge(currentLabel, 'info')}
+          ${previousLabel ? badge(`сравнение: ${previousLabel}`, 'info') : ''}
+        </div>
+      </div>
+      <div class="product-leaderboard-weekly-bi__cards">
+        ${cards.map(productLeaderboardWeeklyTrendCardHtml).join('')}
+      </div>
+      <div class="product-leaderboard-weekly-bi__rows">
+        ${rows.map((row) => {
+          const kzPct = row.kzShare == null ? 0 : Math.max(0, Math.min(100, row.kzShare * 100));
+          const digitalPct = row.digitalShare == null ? 0 : Math.max(0, Math.min(100, row.digitalShare * 100));
+          const organicPct = row.organicShare == null ? 0 : Math.max(0, Math.min(100, row.organicShare * 100));
+          const week = row.range.fromLabel && row.range.toLabel ? `${row.range.fromLabel} - ${row.range.toLabel}` : row.weekLabel;
+          const barScale = Math.max(8, Math.min(100, numberOrZero(row.totalOrders) / maxOrders * 100));
+          return `
+            <div class="product-leaderboard-weekly-bi-row">
+              <span class="product-leaderboard-weekly-bi-row__label">
+                <b>${escapeHtml(week)}</b>
+                <em>${fmt.int(row.totalOrders)} заказов · ${fmt.int(row.skuCount)} SKU</em>
+              </span>
+              <span class="product-leaderboard-weekly-bi-row__track" style="--week-scale:${barScale.toFixed(1)}%">
+                <i class="is-kz" style="width:${kzPct.toFixed(1)}%"></i>
+                <i class="is-digital" style="width:${digitalPct.toFixed(1)}%"></i>
+                <i class="is-organic" style="width:${organicPct.toFixed(1)}%"></i>
+              </span>
+              <span class="product-leaderboard-weekly-bi-row__shares">
+                <b>КЗ ${fmt.pct(row.kzShare)}</b>
+                <em>digital ${fmt.pct(row.digitalShare)} · орг ${fmt.pct(row.organicShare)}</em>
+              </span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
 function productLeaderboardItemCompareKey(item = {}) {
   return productLeaderboardSubstitutionKey(item.articleKey || item.article || item.sku || item.vendorCode || item.name || item.id || '');
 }
@@ -3847,6 +4014,7 @@ function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, i
           ${badge(orderContour.isFiltered ? 'по фильтрам лидерборда' : 'все WB-подменники', 'info')}
         </div>
       </div>
+      ${renderProductLeaderboardWeeklyTrendHtml()}
       <div class="product-leaderboard-common-layout">
         ${productLeaderboardCommonSplitCardHtml(orderContour)}
         <div class="product-leaderboard-common-side">

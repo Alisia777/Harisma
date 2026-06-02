@@ -730,6 +730,8 @@ function repricerBuildArrivalPriceSignalMaps() {
     keys.forEach((key) => {
       const warehouse = warehouseMap.get(key) || {};
       const procurement = procurementMaps[platform].get(key) || {};
+      const procurementSnapshotAvailable = procurementMaps[platform].size > 0;
+      const procurementPresent = procurementMaps[platform].has(key);
       const shippedUnits = platform === 'ozon' ? numberOrZero(warehouse.shippedOzon) : numberOrZero(warehouse.shippedWB);
       const platformStock = numberOrZero(procurement.inStock);
       const inboundUnits = numberOrZero(procurement.inTransit) + numberOrZero(procurement.inRequest);
@@ -737,6 +739,8 @@ function repricerBuildArrivalPriceSignalMaps() {
       maps[platform].set(key, {
         articleKey: key,
         platform,
+        procurementSnapshotAvailable,
+        procurementPresent,
         platformStock,
         shippedUnits,
         inboundUnits,
@@ -763,7 +767,8 @@ function repricerArrivalStockLabel(signal = {}) {
 
 function repricerBuildArrivalPriceSignal(side, fact = {}) {
   const platformStock = numberOrZero(fact?.platformStock);
-  const shippedUnits = numberOrZero(fact?.shippedUnits);
+  const historicalShippedUnits = numberOrZero(fact?.shippedUnits);
+  const shippedUnits = fact?.procurementSnapshotAvailable ? 0 : historicalShippedUnits;
   const inboundUnits = numberOrZero(fact?.inboundUnits);
   const hasMovement = platformStock > 0 || shippedUnits > 0 || inboundUnits > 0;
   const reasons = [];
@@ -791,6 +796,7 @@ function repricerBuildArrivalPriceSignal(side, fact = {}) {
     tone,
     platformStock,
     shippedUnits,
+    historicalShippedUnits,
     inboundUnits,
     acceptedUnits: numberOrZero(fact?.acceptedUnits),
     warehouseStock: numberOrZero(fact?.warehouseStock),
@@ -886,6 +892,26 @@ function repricerHasOverride(override) {
     || Boolean(String(override.note || '').trim());
 }
 
+function repricerRecordHasKzTraffic(record) {
+  if (!record || typeof record !== 'object') return false;
+  const traffic = record.traffic && typeof record.traffic === 'object' ? record.traffic : {};
+  const flags = record.flags && typeof record.flags === 'object' ? record.flags : {};
+  const channels = Array.isArray(traffic.channels) ? traffic.channels : [];
+  const rawText = [
+    record.externalTraffic,
+    record.trafficSignal,
+    record.focusReasons,
+    record.contentStatus,
+    record.contentComment,
+    ...channels
+  ].filter(Boolean).join(' ').toLowerCase();
+  return Boolean(traffic.kz || flags.hasKZ || rawText.includes('кз') || rawText.includes('content завод') || rawText.includes('контент завод'));
+}
+
+function repricerHasKzTraffic(...records) {
+  return records.some((record) => repricerRecordHasKzTraffic(record));
+}
+
 function repricerSourceSummary(candidates, target, fallback = '') {
   const winner = numberOrZero(target);
   if (winner <= 0) return fallback;
@@ -966,7 +992,11 @@ function repricerApplyStepLimit(side, roundedPrice, guardFloor, guardCap) {
   const delta = nextPrice - currentPrice;
   if (Math.abs(delta) < 1) return nextPrice;
   const marginRiskNow = side.marginPct != null && side.requiredMarginPct != null && numberOrZero(side.marginPct) + 0.0001 < numberOrZero(side.requiredMarginPct);
-  const upLimitPct = marginRiskNow || (guardFloor > 0 && currentPrice + 0.001 < guardFloor) ? 0.18 : 0.07;
+  const kzRaiseCapActive = Boolean(side.kzTrafficActive && delta > 0 && currentPrice > 0);
+  const upLimitPct = Math.min(
+    marginRiskNow || (guardFloor > 0 && currentPrice + 0.001 < guardFloor) ? 0.18 : 0.07,
+    kzRaiseCapActive ? 0.10 : 1
+  );
   const downLimitPct = 0.05;
   let limitPrice = nextPrice;
   if (delta > 0) {
@@ -986,6 +1016,16 @@ function repricerApplyStepLimit(side, roundedPrice, guardFloor, guardCap) {
     }
   }
   if (guardFloor > 0) nextPrice = Math.max(nextPrice, guardFloor);
+  if (kzRaiseCapActive) {
+    const kzLimitPrice = Math.ceil(currentPrice * 1.10);
+    if (nextPrice > kzLimitPrice) {
+      nextPrice = kzLimitPrice;
+      side.stepLimited = true;
+      side.stepLimitPct = Math.min(numberOrZero(side.stepLimitPct) || 1, 0.10);
+      side.kzRaiseCapApplied = true;
+      if (guardFloor > 0 && nextPrice + 0.001 < guardFloor) side.kzRaiseCapBelowFloor = true;
+    }
+  }
   if (guardCap > 0) nextPrice = Math.min(nextPrice, guardCap);
   if (side.stepLimited) {
     side.reason = [side.reason, `лимит шага ${Math.round(numberOrZero(side.stepLimitPct) * 100)}%`].filter(Boolean).join(' · ');
@@ -1060,6 +1100,7 @@ function repricerApplyConfidence(side) {
 
   if (side.outOfSpec || side.criticalGate === 'SKIP') repricerAddReason(red, 'строка вне спецификации');
   if (side.criticalGate === 'BLOCK') repricerAddReason(red, 'нет обязательных входов');
+  if (side.stockGateBlocksAutoprice) repricerAddReason(red, side.marketplaceUnavailable ? 'товар не продаётся или нет на складе' : 'нет актуального остатка и поставок');
   if (currentPrice <= 0) repricerAddReason(red, 'нет текущей цены');
   if (finalPrice <= 0) repricerAddReason(red, 'нет финальной цены');
   if (floor <= 0) repricerAddReason(red, 'нет рабочего MIN');
@@ -1072,6 +1113,7 @@ function repricerApplyConfidence(side) {
   if (side.liveDrift) repricerAddReason(yellow, 'расходится с live-рекомендацией');
   if (side.launchHold === 'LAUNCH_HOLD') repricerAddReason(yellow, 'новинка не READY');
   if (side.stepLimited) repricerAddReason(yellow, 'сработал лимит шага цены');
+  if (side.kzRaiseCapApplied) repricerAddReason(yellow, 'КЗ: рост цены ограничен 10%');
   if (side.promoConfigured && !side.promoActive) repricerAddReason(yellow, 'промо не активно сейчас');
   if (side.promoAdjustedToFloor || side.manualPromoAdjustedToFloor || side.promoOfferAdjustedToFloor) repricerAddReason(yellow, 'промо поднято до MIN');
   if (freshAge != null && freshAge > 4) repricerAddReason(yellow, 'данные старше 4 дней');
@@ -1165,6 +1207,28 @@ function repricerApplyOutlierGuard(row) {
 
 function repricerFinalizeSide(side) {
   if (!side) return null;
+  if (side.stockGateBlocksAutoprice) {
+    const holdPrice = numberOrZero(side.currentPrice);
+    side.recommendedPrice = holdPrice;
+    side.finalPrice = holdPrice;
+    side.preAlignPrice = holdPrice;
+    side.cappedPrice = holdPrice;
+    side.changeRub = 0;
+    side.changePct = holdPrice > 0 ? 0 : null;
+    side.changed = false;
+    side.belowFloorNow = false;
+    side.marginRisk = side.marginPct != null && side.requiredMarginPct != null && numberOrZero(side.marginPct) + 0.0001 < numberOrZero(side.requiredMarginPct);
+    side.lowStockRisk = false;
+    side.hasLiveBenchmark = numberOrZero(side.liveReferencePrice) > 0;
+    side.liveDeltaRub = side.hasLiveBenchmark ? holdPrice - numberOrZero(side.liveReferencePrice) : null;
+    side.liveDeltaPct = side.hasLiveBenchmark && numberOrZero(side.liveReferencePrice) > 0
+      ? side.liveDeltaRub / numberOrZero(side.liveReferencePrice)
+      : null;
+    side.liveDrift = side.liveDeltaPct != null && Math.abs(side.liveDeltaPct) >= 0.03;
+    repricerApplyConfidence(side);
+    side.arrivalPriceSignal = repricerBuildArrivalPriceSignal(side, side.arrivalFact || {});
+    return side;
+  }
   const rawPrice = numberOrZero(side.recommendedPrice);
   const guardFloor = Math.ceil(Math.max(
     numberOrZero(side.finalGuardFloor),
@@ -1587,18 +1651,46 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     ? numberOrZero(brandRule.launchTargetDays)
     : numberOrZero(brandRule.defaultTargetDays)));
   const oosDays = numberOrZero(brandRule.oosDays);
+  const procurementSnapshotAvailable = Boolean(arrivalFact.procurementSnapshotAvailable);
+  const procurementPresent = Boolean(arrivalFact.procurementPresent);
+  const procurementPlatformStock = numberOrZero(arrivalFact.platformStock);
+  const procurementInboundUnits = numberOrZero(arrivalFact.inboundUnits);
+  const skuInboundUnits = numberOrZero(skuSide?.stockInTransit) + numberOrZero(skuSide?.stockInSupplyRequest);
+  const inboundUnits = procurementSnapshotAvailable ? procurementInboundUnits : skuInboundUnits;
   const stock = repricerFirstFilledNumber(
-    sourceRow.stockRepricer,
+    procurementSnapshotAvailable ? procurementPlatformStock : null,
+    platform === 'ozon' ? sourceRow.stockProducts : null,
+    platform === 'ozon' ? skuSide?.stockProducts : null,
     sourceRow.stock,
-    skuSide?.stockRepricer,
-    skuSide?.stockProducts,
     skuSide?.stock,
+    sourceRow.stockRepricer,
+    skuSide?.stockRepricer,
     legacySide?.stock,
     liveSide?.stock
   );
+  const stockSource = procurementSnapshotAvailable
+    ? (procurementPresent ? 'procurement_snapshot' : 'procurement_snapshot_absent')
+    : (platform === 'ozon' && (repricerHasValue(sourceRow.stockProducts) || repricerHasValue(skuSide?.stockProducts))
+      ? 'ozon_stock_products'
+      : 'repricer_stock');
   const ordersDaily = numberOrZero(skuFact?.orders?.units) / 27;
-  const inboundUnits = numberOrZero(skuSide?.stockInTransit) + numberOrZero(skuSide?.stockInSupplyRequest);
   const leadTimeDays = numberOrZero(skuFact?.leadTimeDays);
+  const marketplaceStatusText = [
+    sourceRow.productStatus,
+    sourceRow.statusDescription,
+    supportRow?.productStatus,
+    supportRow?.statusDescription,
+    priceRow?.productStatus,
+    priceRow?.statusDescription,
+    legacySide?.productStatus,
+    legacySide?.statusDescription,
+    skuSide?.productStatus,
+    skuSide?.statusDescription
+  ].filter(Boolean).join(' ').toLowerCase();
+  const marketplaceUnavailable = /не\s*прода|убран|нет\s+на\s+складе|архив|снят\s+с\s+продаж/.test(marketplaceStatusText);
+  const noCurrentPlatformSupply = procurementSnapshotAvailable && stock <= 0 && inboundUnits <= 0;
+  const stockGateBlocksAutoprice = modeCode !== 'FORCE' && (noCurrentPlatformSupply || marketplaceUnavailable);
+  const kzTrafficActive = repricerHasKzTraffic(sourceRow, skuFact, supportRow, priceRow, legacyRow, legacySide);
   let turnoverSource = sourceRow.turnoverCurrentDays != null
     ? 'workbench'
     : (skuSide?.turnoverDays != null ? 'order' : (legacySide?.turnoverDays != null ? 'legacy' : (liveSide?.turnoverDays != null ? 'live' : '')));
@@ -1656,6 +1748,11 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   }
   if (modeCode === 'AUTO' && !autopriceAllowed) reasons.push('autoprice disabled by status');
   if (modeCode === 'LAUNCH' && !launchAllowed) reasons.push('launch disabled by status');
+  if (stockGateBlocksAutoprice) {
+    criticalGate = 'BLOCK';
+    if (marketplaceUnavailable) reasons.push('площадка не продаёт товар / нет на складе');
+    if (noCurrentPlatformSupply) reasons.push(procurementPresent ? 'нет актуального остатка и поставок' : 'SKU отсутствует в актуальном отчёте остатков/поставок');
+  }
   if (stock <= 0) {
     oosFlag = 'OOS';
     reasons.push('stock_total <= 0');
@@ -1736,6 +1833,15 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   if (recommendedPrice < economicFloor) {
     recommendedPrice = economicFloor;
     reasons.push('подняли до economic floor');
+  }
+
+  if (stockGateBlocksAutoprice) {
+    preAlignPrice = currentPrice || 0;
+    cappedPrice = currentPrice || 0;
+    recommendedPrice = currentPrice || 0;
+    turnoverAction = 'NO_STOCK';
+    reasonCode = 'NO_STOCK';
+    strategy = 'NO_STOCK';
   }
 
   if (modeCode === 'FORCE') {
@@ -1838,11 +1944,19 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     targetDays,
     oosDays,
     stock,
+    stockSource,
+    platformStock: procurementPlatformStock,
+    procurementSnapshotAvailable,
+    procurementPresent,
+    noCurrentPlatformSupply,
+    marketplaceUnavailable,
+    stockGateBlocksAutoprice,
     sales7d,
     skuMinPrice,
     ordersDaily,
     inboundUnits,
     leadTimeDays,
+    kzTrafficActive,
     buyerDiscountFactor,
     commissionPctValue,
     logisticsRubValue,

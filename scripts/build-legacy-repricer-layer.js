@@ -38,6 +38,8 @@ function resolveOptions(args = {}) {
     liveRepricerMaxAgeDays: numberOption(args['live-repricer-max-age-days'] || process.env.ALTEA_LIVE_REPRICER_MAX_AGE_DAYS, 7),
     supportPath: path.resolve(args['support-file'] || path.join(ROOT, 'data', 'price_workbench_support.json')),
     pricesPath: path.resolve(args['prices-file'] || path.join(ROOT, 'data', 'prices.json')),
+    procurementWbPath: path.resolve(args['procurement-wb-file'] || path.join(ROOT, 'data', 'order_procurement_wb.json')),
+    procurementOzonPath: path.resolve(args['procurement-ozon-file'] || path.join(ROOT, 'data', 'order_procurement_ozon.json')),
     outputPath: path.resolve(args['output-file'] || path.join(ROOT, 'data', 'repricer.json'))
   };
 }
@@ -159,6 +161,38 @@ function buildMap(rows = []) {
     map.set(key, row);
   });
   return map;
+}
+
+function payloadRows(payload = {}) {
+  if (Array.isArray(payload?.rows)) return payload.rows;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.articles)) return payload.articles;
+  if (payload?.rows && typeof payload.rows === 'object') return Object.values(payload.rows);
+  return [];
+}
+
+function buildProcurementMap(payload = {}) {
+  const rows = payloadRows(payload);
+  const map = new Map();
+  rows.forEach((row) => {
+    const key = normalizeKey(row?.articleKey || row?.article || row?.sku || row?.offerId);
+    if (!key) return;
+    const current = map.get(key) || {
+      snapshotAvailable: rows.length > 0,
+      present: true,
+      inStock: 0,
+      inTransit: 0,
+      inRequest: 0
+    };
+    current.inStock += numberValue(row?.inStock, row?.stock, row?.stockUnits, 0) || 0;
+    current.inTransit += numberValue(row?.inTransit, row?.stockInTransit, 0) || 0;
+    current.inRequest += numberValue(row?.inRequest, row?.stockInSupplyRequest, 0) || 0;
+    map.set(key, current);
+  });
+  return {
+    snapshotAvailable: rows.length > 0,
+    map
+  };
 }
 
 function textValue(...values) {
@@ -295,7 +329,7 @@ function capRecommendation(recPrice, minPrice, upperCap) {
   };
 }
 
-function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRootGeneratedAt) {
+function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRootGeneratedAt, procurementFact = null) {
   if (!sourceRow && !priceRow && !liveSide) return null;
 
   const supportExportCurrentPrice = platform === 'ozon'
@@ -342,14 +376,39 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     currentPrice
   ) || 0;
   const upperCap = resolveUpperCap(sourceRow, supportRow);
-  const recGuard = capRecommendation(seedRecPrice, minPrice, upperCap);
-  const recPrice = recGuard.recPrice || 0;
+  const procurementSnapshotAvailable = Boolean(procurementFact?.snapshotAvailable);
+  const procurementPresent = Boolean(procurementFact?.present);
+  const procurementStock = numberValue(procurementFact?.inStock, 0) || 0;
+  const procurementInbound = (numberValue(procurementFact?.inTransit, 0) || 0) + (numberValue(procurementFact?.inRequest, 0) || 0);
+  const fallbackInbound = (numberValue(sourceRow?.stockInTransit, 0) || 0) + (numberValue(sourceRow?.stockInSupplyRequest, 0) || 0);
+  const inboundUnits = procurementSnapshotAvailable ? procurementInbound : fallbackInbound;
   const stock = numberValue(
-    sourceRow?.stockRepricer,
+    procurementSnapshotAvailable ? procurementStock : null,
+    platform === 'ozon' ? sourceRow?.stockProducts : null,
     sourceRow?.stock,
+    sourceRow?.stockRepricer,
     liveSide?.stock,
     0
   ) || 0;
+  const stockSource = procurementSnapshotAvailable
+    ? (procurementPresent ? 'procurement_snapshot' : 'procurement_snapshot_absent')
+    : (platform === 'ozon' && sourceRow?.stockProducts !== undefined && sourceRow?.stockProducts !== null ? 'ozon_stock_products' : 'repricer_stock');
+  const marketplaceStatusText = [
+    sourceRow?.productStatus,
+    sourceRow?.statusDescription,
+    supportRow?.productStatus,
+    supportRow?.statusDescription,
+    priceRow?.productStatus,
+    priceRow?.statusDescription,
+    liveSide?.productStatus,
+    liveSide?.statusDescription
+  ].filter(Boolean).join(' ').toLowerCase();
+  const marketplaceUnavailable = /не\s*прода|убран|нет\s+на\s+складе|архив|снят\s+с\s+продаж/.test(marketplaceStatusText);
+  const noCurrentPlatformSupply = procurementSnapshotAvailable && stock <= 0 && inboundUnits <= 0;
+  const stockGateBlocksAutoprice = noCurrentPlatformSupply || marketplaceUnavailable;
+  const recGuard = capRecommendation(seedRecPrice, minPrice, upperCap);
+  let recPrice = recGuard.recPrice || 0;
+  if (stockGateBlocksAutoprice) recPrice = currentPrice || 0;
   const turnoverDays = numberValue(
     sourceRow?.currentTurnoverDays,
     sourceRow?.turnoverCurrentDays,
@@ -383,7 +442,11 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     liveSide: liveSide ? { ...liveSide, generatedAt: liveRootGeneratedAt } : null
   });
   let reason = inferredReason;
-  if (recGuard.capApplied) {
+  if (stockGateBlocksAutoprice) {
+    reason = marketplaceUnavailable
+      ? 'Товар не продается или отсутствует на складе площадки: автопрайс удерживает текущую цену.'
+      : 'Нет актуального остатка и поставок по procurement snapshot: автопрайс удерживает текущую цену.';
+  } else if (recGuard.capApplied) {
     const capSourceLabel = sourceRow?.workingZoneTo
       ? 'верхней границей рабочего коридора'
       : (supportRow?.workingZoneTo
@@ -412,6 +475,13 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     currentPrice,
     buyerPrice: currentBuyerPrice,
     stock,
+    stockSource,
+    inboundUnits,
+    procurementSnapshotAvailable,
+    procurementPresent,
+    noCurrentPlatformSupply,
+    marketplaceUnavailable,
+    stockGateBlocksAutoprice,
     turnoverDays: turnoverDays === null ? null : turnoverDays,
     targetTurnoverDays,
     marginPct: marginPct === null ? null : marginPct,
@@ -500,6 +570,8 @@ function buildLegacyRepricerLayer(options = {}) {
   const liveWorkbench = safeReadJson(options.liveWorkbenchPath, { generatedAt: '', platforms: {} });
   const support = safeReadJson(options.supportPath, { generatedAt: '', platforms: {} });
   const prices = safeReadJson(options.pricesPath, { generatedAt: '', platforms: {} });
+  const procurementWb = safeReadJson(options.procurementWbPath, { generatedAt: '', rows: [] });
+  const procurementOzon = safeReadJson(options.procurementOzonPath, { generatedAt: '', rows: [] });
   const liveRepricer = safeReadLooseJson(options.liveRepricerPath, { generatedAt: '', rows: [] });
 
   const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, liveWorkbench || {});
@@ -512,6 +584,10 @@ function buildLegacyRepricerLayer(options = {}) {
   const liveRepricerMap = buildMap(liveRepricerRows);
   const supportMaps = Object.fromEntries(PLATFORM_KEYS.map((platform) => [platform, buildMap(supportRows(support, platform))]));
   const pricesMaps = Object.fromEntries(PLATFORM_KEYS.map((platform) => [platform, buildMap(platformRows(prices, platform))]));
+  const procurementMaps = {
+    wb: buildProcurementMap(procurementWb),
+    ozon: buildProcurementMap(procurementOzon)
+  };
   const byArticle = new Map();
 
   PLATFORM_KEYS.forEach((platform) => {
@@ -522,6 +598,14 @@ function buildLegacyRepricerLayer(options = {}) {
       const liveRow = liveRepricerMap.get(key) || null;
       const supportRow = supportMaps[platform].get(key) || null;
       const priceRow = pricesMaps[platform].get(key) || null;
+      const procurementBucket = procurementMaps[platform] || { snapshotAvailable: false, map: new Map() };
+      const procurementFact = procurementBucket.map.get(key) || {
+        snapshotAvailable: Boolean(procurementBucket.snapshotAvailable),
+        present: false,
+        inStock: 0,
+        inTransit: 0,
+        inRequest: 0
+      };
       if (!byArticle.has(key)) {
         const owner = textValue(sourceRow?.owner, priceRow?.owner, supportRow?.owner, liveRow?.owner);
         byArticle.set(key, {
@@ -549,7 +633,7 @@ function buildLegacyRepricerLayer(options = {}) {
       target.owner = textValue(target.owner, owner);
       target.status = normalizeStatus(target.status || sourceRow?.status || sourceRow?.productStatus || priceRow?.status || supportRow?.repricerStatus || supportRow?.productStatus || liveRow?.status);
       target.cost = positiveValue(target.cost, liveRow?.cost);
-      target[platform] = buildSide(sourceRow, platform, supportRow, priceRow, liveRow?.[platform] || null, liveRepricer?.generatedAt || '');
+      target[platform] = buildSide(sourceRow, platform, supportRow, priceRow, liveRow?.[platform] || null, liveRepricer?.generatedAt || '', procurementFact);
     });
   });
 

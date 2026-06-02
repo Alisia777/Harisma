@@ -9574,6 +9574,20 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
         </div>
       </div>
     ` : ''}
+
+    <details class="product-leaderboard-frog-egg" aria-label="Пасхалка продуктового лидерборда">
+      <summary>
+        <span>секретный люк</span>
+        <b>не открывать после 18:00</b>
+      </summary>
+      <div class="product-leaderboard-frog-egg__stage">
+        <img src="assets/product-leaderboard-frog.jpg" alt="Секретная жабка продуктового лидерборда" loading="lazy">
+        <div>
+          <strong>КЗ одобряет этот срез</strong>
+          <em>пасхалка для тех, кто дошел до самого низа</em>
+        </div>
+      </div>
+    </details>
   `;
 
   root.querySelector('#productLeaderboardSearch')?.addEventListener('input', (event) => {

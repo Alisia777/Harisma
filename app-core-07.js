@@ -3213,6 +3213,180 @@ function productLeaderboardModuleBoardHtml(payload = {}, summary = {}, ownerCove
   return `<div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:14px">${cards.map(productLeaderboardModuleCardHtml).join('')}</div>`;
 }
 
+function productLeaderboardLatestDigitalContour() {
+  const payload = state.iuDrrSummary && typeof state.iuDrrSummary === 'object' ? state.iuDrrSummary : {};
+  const months = Array.isArray(payload.months) ? payload.months : [];
+  const ranked = months
+    .slice()
+    .sort((left, right) => String(right.monthKey || '').localeCompare(String(left.monthKey || '')));
+  const month = ranked.find((entry) => (
+    numberOrZero(entry.iuRevenueFactToDate)
+    || numberOrZero(entry.revenueWb)
+    || numberOrZero(entry.revenueOzon)
+  )) || ranked[0] || {};
+  const revenueWb = numberOrZero(month.revenueWb || month.iuRevenueWbFactToDate);
+  const revenueOzon = numberOrZero(month.revenueOzon || month.iuRevenueOzonFactToDate);
+  const revenue = numberOrZero(month.iuRevenueFactToDate) || revenueWb + revenueOzon;
+  const spendWb = numberOrZero(month.spendFact || month.iuAdsFactWbToDate);
+  const spendOzon = numberOrZero(month.spendFactOzon || month.iuAdsFactOzonToDate);
+  const spend = numberOrZero(month.spendFactIu || month.iuAdsFactTotalToDate) || spendWb + spendOzon;
+  const externalAds = numberOrZero(month.externalAds || month.channels?.externalAds?.spend);
+  const totalSpendWithExternal = spend + externalAds;
+  return {
+    label: month.label || month.monthKey || 'digital',
+    monthKey: month.monthKey || '',
+    revenue,
+    revenueWb,
+    revenueOzon,
+    spend,
+    spendWb,
+    spendOzon,
+    externalAds,
+    externalRevenueShare: revenue > 0 ? externalAds / revenue : null,
+    externalSpendShare: totalSpendWithExternal > 0 ? externalAds / totalSpendWithExternal : null,
+    drr: revenue > 0 ? spend / revenue : null
+  };
+}
+
+function productLeaderboardPreviousComparableSnapshot(payload = {}) {
+  const currentWeek = String(payload.weekLabel || '').trim();
+  const candidates = productLeaderboardHistoryPayloads()
+    .slice(1)
+    .map((snapshot) => {
+      const summary = productLeaderboardSummaryFromItems(snapshot.items || []);
+      return { snapshot, summary };
+    })
+    .filter((entry) => entry.summary.revenue > 0)
+    .filter((entry) => String(entry.snapshot.weekLabel || '').trim() !== currentWeek)
+    .sort((left, right) => {
+      const rightDate = Date.parse(right.snapshot.generatedAt || '') || 0;
+      const leftDate = Date.parse(left.snapshot.generatedAt || '') || 0;
+      return rightDate - leftDate;
+    });
+  return candidates[0] || null;
+}
+
+function productLeaderboardSignedMoney(value) {
+  const numeric = numberOrZero(value);
+  const sign = numeric > 0 ? '+' : numeric < 0 ? '-' : '';
+  return `${sign}${fmt.money(Math.abs(numeric))}`;
+}
+
+function productLeaderboardSignedPct(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+  const numeric = Number(value);
+  const sign = numeric > 0 ? '+' : numeric < 0 ? '-' : '';
+  return `${sign}${fmt.pct(Math.abs(numeric))}`;
+}
+
+function productLeaderboardSignedPp(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+  const numeric = Number(value) * 100;
+  const sign = numeric > 0 ? '+' : numeric < 0 ? '-' : '';
+  return `${sign}${Math.abs(numeric).toFixed(1)} п.п.`;
+}
+
+function productLeaderboardGrowthDriver(label, current, previous, options = {}) {
+  const curr = numberOrZero(current);
+  const prev = numberOrZero(previous);
+  const delta = curr - prev;
+  const rate = prev > 0 ? delta / prev : null;
+  const tone = options.lowerIsBetter
+    ? (delta <= 0 ? 'ok' : 'warn')
+    : (delta >= 0 ? 'ok' : 'warn');
+  const value = options.format === 'money'
+    ? productLeaderboardSignedMoney(delta)
+    : options.format === 'pp'
+      ? productLeaderboardSignedPp(delta)
+      : productLeaderboardSignedPct(rate);
+  const detail = options.detail || (options.format === 'money'
+    ? `${fmt.money(curr)} сейчас`
+    : `${fmt.int(curr)} сейчас`);
+  return { label, value, detail, tone };
+}
+
+function renderProductLeaderboardKirillContourHtml(payload = {}, summary = {}, items = []) {
+  const digital = productLeaderboardLatestDigitalContour();
+  const previous = productLeaderboardPreviousComparableSnapshot(payload);
+  const previousSummary = previous?.summary || null;
+  const kzRevenue = numberOrZero(summary.revenue);
+  const kzDigitalShare = digital.revenue > 0 ? kzRevenue / (kzRevenue + digital.revenue) : null;
+  const revenueDelta = previousSummary ? kzRevenue - previousSummary.revenue : null;
+  const revenueDeltaPct = previousSummary && previousSummary.revenue > 0 ? revenueDelta / previousSummary.revenue : null;
+  const avgBuyRevenue = summary.buys > 0 ? summary.revenue / summary.buys : 0;
+  const previousAvgBuyRevenue = previousSummary && previousSummary.buys > 0 ? previousSummary.revenue / previousSummary.buys : 0;
+  const drrDelta = previousSummary ? summary.drrPct - previousSummary.drrPct : null;
+  const drivers = previousSummary ? [
+    productLeaderboardGrowthDriver('Охваты', summary.reach, previousSummary.reach),
+    productLeaderboardGrowthDriver('Клики', summary.clicks, previousSummary.clicks),
+    productLeaderboardGrowthDriver('Корзины', summary.carts, previousSummary.carts),
+    productLeaderboardGrowthDriver('Заказы', summary.orders, previousSummary.orders),
+    productLeaderboardGrowthDriver('Выкупы', summary.buys, previousSummary.buys),
+    productLeaderboardGrowthDriver('Средний выкуп', avgBuyRevenue, previousAvgBuyRevenue, { format: 'money', detail: `${fmt.money(avgBuyRevenue)} / выкуп` }),
+    productLeaderboardGrowthDriver('ДРР КЗ', summary.drrPct, previousSummary.drrPct, { format: 'pp', lowerIsBetter: true, detail: `${fmt.pct(summary.drrPct)} сейчас` })
+  ] : [];
+  const externalTone = numberOrZero(digital.externalAds) > 0 ? 'warn' : 'ok';
+  const growthTone = revenueDelta == null ? 'info' : revenueDelta >= 0 ? 'ok' : 'warn';
+  const previousLabel = previous?.snapshot?.weekLabel || 'прошлый валидный срез';
+  return `
+    <div class="card product-leaderboard-kirill-contour" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Контур Кирилла</h3>
+          <p class="small muted">Ответы на вопросы: доля внешки, КЗ / digital и за счет чего растем.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(payload.weekLabel || 'КЗ неделя', 'info')}
+          ${badge(digital.label ? `digital ${digital.label}` : 'digital контур', digital.revenue ? 'ok' : 'warn')}
+          ${badge(previousSummary ? `сравнение: ${previousLabel}` : 'нет базы сравнения', previousSummary ? 'info' : 'warn')}
+        </div>
+      </div>
+      <div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+        ${productLeaderboardModuleCardHtml({
+          title: 'Внешка / выручка',
+          kicker: `${fmt.money(digital.externalAds)} внешки`,
+          value: digital.externalRevenueShare == null ? '—' : fmt.pct(digital.externalRevenueShare),
+          meta: `${fmt.money(digital.revenue)} общей digital-выручки`,
+          completion: digital.externalRevenueShare == null ? null : Math.max(0, 1 - Math.min(1, digital.externalRevenueShare / 0.12)),
+          footer: `в рекламе ${digital.externalSpendShare == null ? '—' : fmt.pct(digital.externalSpendShare)}`,
+          hint: 'внешка считается отдельно от ДРР',
+          deltaClass: externalTone
+        })}
+        ${productLeaderboardModuleCardHtml({
+          title: 'КЗ / digital',
+          kicker: `КЗ ${payload.weekLabel || 'неделя'}`,
+          value: fmt.money(kzRevenue),
+          meta: `digital ${digital.label}: ${fmt.money(digital.revenue)}`,
+          completion: kzDigitalShare == null ? null : Math.min(1.35, kzDigitalShare / 0.08),
+          footer: `КЗ в контуре ${kzDigitalShare == null ? '—' : fmt.pct(kzDigitalShare)}`,
+          hint: `WB ${fmt.money(digital.revenueWb)} · Ozon ${fmt.money(digital.revenueOzon)}`,
+          deltaClass: kzDigitalShare && kzDigitalShare > 0.06 ? 'ok' : 'info'
+        })}
+        ${productLeaderboardModuleCardHtml({
+          title: 'Рост КЗ',
+          kicker: previousSummary ? `к ${previousLabel}` : 'нет прошлой базы',
+          value: revenueDelta == null ? '—' : productLeaderboardSignedMoney(revenueDelta),
+          meta: revenueDeltaPct == null ? `${fmt.money(kzRevenue)} сейчас` : `${productLeaderboardSignedPct(revenueDeltaPct)} к базе`,
+          completion: revenueDeltaPct == null ? null : Math.min(1.35, Math.max(0, 1 + revenueDeltaPct)),
+          footer: `заказы ${previousSummary ? productLeaderboardSignedPct((summary.orders - previousSummary.orders) / Math.max(1, previousSummary.orders)) : '—'}`,
+          hint: `выкупы ${previousSummary ? productLeaderboardSignedPct((summary.buys - previousSummary.buys) / Math.max(1, previousSummary.buys)) : '—'}`,
+          deltaClass: growthTone
+        })}
+      </div>
+      <div class="quick-actions" style="margin-top:12px">
+        ${drivers.map((driver) => badge(`${driver.label}: ${driver.value}`, driver.tone)).join('')}
+      </div>
+      <div class="muted small" style="margin-top:10px">
+        Вывод: ${revenueDelta != null && revenueDelta >= 0
+          ? `КЗ растет на ${productLeaderboardSignedMoney(revenueDelta)}: основной вклад дают выкупы ${drivers[4]?.value || ''}, заказы ${drivers[3]?.value || ''} и охваты ${drivers[0]?.value || ''}; ДРР ${productLeaderboardSignedPp(drrDelta)}`
+          : revenueDelta != null
+            ? `КЗ просел на ${productLeaderboardSignedMoney(revenueDelta)}; смотрим клики, корзины и выкупы относительно ${escapeHtml(previousLabel)}.`
+            : 'нет валидной прошлой недели для честного сравнения.'}
+      </div>
+    </div>
+  `;
+}
+
 function productLeaderboardHasActiveFilters(filters = {}) {
   return Boolean(
     String(filters.search || '').trim()
@@ -7895,6 +8069,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const ownerCoverage = filteredSummary.skuCount > 0 ? filteredSummary.ownerAssignedCount / filteredSummary.skuCount : 0;
   const gameHeroHtml = productLeaderboardGameHeroHtml(payload, filteredItems, freshness);
   const moduleBoardHtml = productLeaderboardModuleBoardHtml(payload, filteredSummary, ownerCoverage);
+  const kirillContourHtml = renderProductLeaderboardKirillContourHtml(payload, filteredSummary, filteredItems);
   const insightTilesHtml = renderProductLeaderboardInsightTilesHtml(payload, filteredSummary, ownerCoverage, filteredItems, filters);
   const metricsPanelHtml = !isSubstitutionMode && filters.expandedPanel === 'metrics'
     ? renderProductLeaderboardMetricsPanel(payload, filteredSummary, ownerCoverage)
@@ -7954,6 +8129,8 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
     ${gameHeroHtml}
 
     ${moduleBoardHtml}
+
+    ${kirillContourHtml}
 
     ${insightTilesHtml}
 

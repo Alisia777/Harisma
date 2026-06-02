@@ -2922,7 +2922,7 @@ const LAZY_DATA_LOADERS = {
         return cloneFallback(fallback);
       }
     };
-    const [payload, history, wbSubstitutionTraffic] = await Promise.all([
+    const [payload, history, wbSubstitutionTraffic, iuDrrSummary] = await Promise.all([
       Array.isArray(state.productLeaderboard?.items) && state.productLeaderboard.items.length
         ? Promise.resolve(state.productLeaderboard)
         : loadLocalProductData('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
@@ -2931,6 +2931,11 @@ const LAZY_DATA_LOADERS = {
         'data/wb_substitution_traffic.json',
         { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
         'WB подменные артикулы'
+      ),
+      loadLocalProductData(
+        'data/iu_drr_summary.json',
+        { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
+        'Показатели площадок'
       )
     ]);
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
@@ -2940,6 +2945,9 @@ const LAZY_DATA_LOADERS = {
     state.wbSubstitutionTraffic = wbSubstitutionTraffic && typeof wbSubstitutionTraffic === 'object'
       ? wbSubstitutionTraffic
       : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
+    state.iuDrrSummary = iuDrrSummary && typeof iuDrrSummary === 'object'
+      ? iuDrrSummary
+      : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
   },
   meetings: async () => {
     const meetings = await loadJsonOrFallback('data/meetings.json', [], 'Ритм работы');

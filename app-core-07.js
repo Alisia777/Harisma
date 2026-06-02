@@ -685,8 +685,15 @@ function launchManualActiveTaskCount(articleKey, entityLabel = '') {
   }).length;
 }
 
+function launchOwnerValue(value = '') {
+  return typeof canonicalOwnerName === 'function'
+    ? canonicalOwnerName(value || '')
+    : String(value || '').trim();
+}
+
 function launchCurrentOwner(item) {
-  if (item?.owner) return item.owner;
+  const explicitOwner = launchOwnerValue(item?.owner || '');
+  if (explicitOwner) return explicitOwner;
   const sku = item?.articleKey ? getSku(item.articleKey) : null;
   return ownerName(sku) || '';
 }
@@ -756,32 +763,32 @@ function normalizeLaunchItem(item = {}, options = {}) {
     factoryName: item.factoryName || '',
     supplierContact: item.supplierContact || '',
     negotiationStatus: item.negotiationStatus || '',
-    negotiationOwner: item.negotiationOwner || '',
+    negotiationOwner: launchOwnerValue(item.negotiationOwner || ''),
     negotiationDue: item.negotiationDue || '',
     negotiationSince: item.negotiationSince || '',
     negotiationComment: item.negotiationComment || '',
     sampleStatus: item.sampleStatus || '',
-    sampleOwner: item.sampleOwner || '',
+    sampleOwner: launchOwnerValue(item.sampleOwner || ''),
     sampleDue: item.sampleDue || '',
     sampleSince: item.sampleSince || '',
     sampleComment: item.sampleComment || '',
     productionStatus: item.productionStatus || '',
-    productionOwner: item.productionOwner || '',
+    productionOwner: launchOwnerValue(item.productionOwner || ''),
     productionDue: item.productionDue || '',
     productionSince: item.productionSince || '',
     productionComment: item.productionComment || '',
     packagingStatus: item.packagingStatus || '',
-    packagingOwner: item.packagingOwner || '',
+    packagingOwner: launchOwnerValue(item.packagingOwner || ''),
     packagingDue: item.packagingDue || '',
     packagingSince: item.packagingSince || '',
     packagingComment: item.packagingComment || '',
     contentStatus: item.contentStatus || '',
-    contentOwner: item.contentOwner || '',
+    contentOwner: launchOwnerValue(item.contentOwner || ''),
     contentDue: item.contentDue || '',
     contentSince: item.contentSince || '',
     contentComment: item.contentComment || '',
     launchReadinessStatus: item.launchReadinessStatus || '',
-    launchReadinessOwner: item.launchReadinessOwner || '',
+    launchReadinessOwner: launchOwnerValue(item.launchReadinessOwner || ''),
     launchReadinessDue: item.launchReadinessDue || '',
     launchReadinessSince: item.launchReadinessSince || '',
     launchReadinessComment: item.launchReadinessComment || '',
@@ -10202,6 +10209,7 @@ function launchStageDueText(item = {}, config = {}) {
 }
 
 function launchStageEntries(item = {}) {
+  const fallbackOwner = launchCurrentOwner(item);
   return launchStageConfigs().map((config) => {
     const status = String(item[config.status] || '').trim();
     const column = launchStageColumnMeta(status);
@@ -10209,6 +10217,7 @@ function launchStageEntries(item = {}) {
     const ageDays = launchStageAgeDays(item, config);
     const done = column.key === 'done';
     const stale = !done && ((column.key === 'waiting' && ageDays !== null && ageDays >= 7) || (dueDays !== null && dueDays < 0));
+    const stageOwner = launchOwnerValue(item[config.owner] || '') || fallbackOwner;
     return {
       config,
       status,
@@ -10218,7 +10227,7 @@ function launchStageEntries(item = {}) {
       ageDays,
       dueDays,
       due: String(item[config.due] || '').trim(),
-      owner: String(item[config.owner] || '').trim(),
+      owner: stageOwner,
       comment: String(item[config.comment] || '').trim()
     };
   });
@@ -10235,7 +10244,7 @@ function launchReadinessChecks(item = {}) {
   const hasSupply = Boolean(String(item.supplierName || item.factoryName || item.production || '').trim());
   const check = (key, label, ok, detail = '') => ({ key, label, ok: Boolean(ok), detail });
   return [
-    check('owner', 'Owner назначен', launchHasOwner(item), item.owner || 'нужен ответственный'),
+    check('owner', 'Owner назначен', launchHasOwner(item), launchCurrentOwner(item) || 'нужен ответственный'),
     check('supplier', 'Поставщик / завод заполнен', hasSupply, launchSupplyLabel(item) || 'нужен поставщик, завод или условия'),
     check('negotiation', 'Переговоры закрыты', stageByStatus.get('negotiationStatus')?.done, item.negotiationStatus || 'нужно закрыть переговоры'),
     check('sample', 'Образец готов', stageByStatus.get('sampleStatus')?.done, item.sampleStatus || 'нужен статус образца'),
@@ -10290,7 +10299,11 @@ function renderLaunchStageTaskCard(item = {}, config = {}) {
   const statusOptions = config.statusOptions || launchTaskStatusOptionsHtml;
   const dueText = launchStageDueText(item, config);
   const ageText = launchStageAgeText(item, config);
-  const stale = launchStageEntries(item).find((entry) => entry.config.status === config.status)?.stale;
+  const entry = launchStageEntries(item).find((stage) => stage.config.status === config.status);
+  const stale = entry?.stale;
+  const ownerValue = entry?.owner || '';
+  const dueValue = entry?.due || '';
+  const commentValue = entry?.comment || '';
   return `
     <div class="launch-task-card launch-task-${tone} ${stale ? 'is-stale' : ''}" draggable="true" data-launch-stage-card data-launch-stage-field="${escapeHtml(config.status)}" data-launch-stage-current="${escapeHtml(columnMeta.key)}">
       <div class="launch-task-card-head">
@@ -10300,12 +10313,17 @@ function renderLaunchStageTaskCard(item = {}, config = {}) {
         </div>
         <span class="chip ${escapeHtml(columnMeta.tone || tone)}" data-launch-stage-status-chip>${escapeHtml(statusValue || columnMeta.value)}</span>
       </div>
+      <div class="launch-task-card-topline">
+        <span class="launch-stage-owner-chip ${ownerValue ? '' : 'is-missing'}" data-launch-stage-owner-chip>${escapeHtml(ownerValue || 'назначить owner')}</span>
+        <span class="launch-stage-date-chip ${dueValue ? '' : 'is-missing'}" data-launch-stage-date-chip>${escapeHtml(dueValue || 'срок не задан')}</span>
+      </div>
       <input type="hidden" name="${escapeHtml(config.since)}" value="${escapeHtml(item[config.since] || '')}">
       <div class="launch-task-age ${stale ? 'warn' : ''}" data-launch-stage-age>${escapeHtml([ageText, dueText].filter(Boolean).join(' · '))}</div>
+      <div class="launch-stage-brief">${escapeHtml(commentValue || config.hint || 'Следующий шаг не описан')}</div>
       <div class="launch-task-fields">
         <label><span class="muted small">Статус</span><select name="${escapeHtml(config.status)}">${statusOptions(statusValue)}</select></label>
         <label><span class="muted small">Срок</span><input name="${escapeHtml(config.due)}" type="date" value="${escapeHtml(item[config.due] || '')}"></label>
-        <label class="span-all"><span class="muted small">Ответственный / контакт</span><input name="${escapeHtml(config.owner)}" value="${escapeHtml(item[config.owner] || '')}" placeholder="кто ведет этот шаг"></label>
+        <label class="span-all"><span class="muted small">Ответственный / контакт</span><input name="${escapeHtml(config.owner)}" value="${escapeHtml(ownerValue)}" placeholder="кто ведет этот шаг"></label>
         <label class="span-all"><span class="muted small">Комментарий</span><textarea name="${escapeHtml(config.comment)}" rows="2" placeholder="что происходит, что ждем, следующий шаг">${escapeHtml(item[config.comment] || '')}</textarea></label>
       </div>
       <div class="launch-task-move-row">
@@ -10318,26 +10336,39 @@ function renderLaunchStageTaskCard(item = {}, config = {}) {
 
 function renderLaunchStageTaskBoard(item = {}) {
   const configs = launchStageConfigs();
+  const entries = launchStageEntries(item);
+  const doneCount = entries.filter((entry) => entry.done).length;
+  const blockerCount = entries.filter((entry) => entry.column.key === 'blocked').length;
+  const waitingCount = entries.filter((entry) => entry.column.key === 'waiting').length;
+  const ownerCount = entries.filter((entry) => entry.owner).length;
   return `
-    <div class="launch-task-board" data-launch-stage-board>
-      ${LAUNCH_STAGE_STATUS_COLUMNS.map((column) => {
-        const cards = configs
-          .filter((config) => launchStageColumnKey(item[config.status]) === column.key)
-          .map((config) => renderLaunchStageTaskCard(item, config))
-          .join('');
-        return `
-          <div class="launch-task-column" data-launch-stage-column="${escapeHtml(column.key)}">
-            <div class="launch-task-column-head">
-              <strong>${escapeHtml(column.label)}</strong>
-              <span data-launch-stage-count>${fmt.int(cards ? (cards.match(/data-launch-stage-card/g) || []).length : 0)}</span>
+    <div class="launch-stage-board-wrap">
+      <div class="launch-stage-summary">
+        <div><span>готово</span><strong>${fmt.int(doneCount)} / ${fmt.int(entries.length)}</strong></div>
+        <div><span>owner</span><strong>${fmt.int(ownerCount)} / ${fmt.int(entries.length)}</strong></div>
+        <div><span>ждём</span><strong>${fmt.int(waitingCount)}</strong></div>
+        <div class="${blockerCount ? 'danger' : 'ok'}"><span>блокеры</span><strong>${fmt.int(blockerCount)}</strong></div>
+      </div>
+      <div class="launch-task-board" data-launch-stage-board>
+        ${LAUNCH_STAGE_STATUS_COLUMNS.map((column) => {
+          const cards = configs
+            .filter((config) => launchStageColumnKey(item[config.status]) === column.key)
+            .map((config) => renderLaunchStageTaskCard(item, config))
+            .join('');
+          return `
+            <div class="launch-task-column" data-launch-stage-column="${escapeHtml(column.key)}">
+              <div class="launch-task-column-head">
+                <strong>${escapeHtml(column.label)}</strong>
+                <span data-launch-stage-count>${fmt.int(cards ? (cards.match(/data-launch-stage-card/g) || []).length : 0)}</span>
+              </div>
+              <div class="launch-task-list" data-launch-stage-list="${escapeHtml(column.key)}">
+                ${cards}
+                <div class="launch-stage-empty" data-launch-stage-empty ${cards ? 'hidden' : ''}>Перетащите этап сюда</div>
+              </div>
             </div>
-            <div class="launch-task-list" data-launch-stage-list="${escapeHtml(column.key)}">
-              ${cards}
-              <div class="launch-stage-empty" data-launch-stage-empty ${cards ? 'hidden' : ''}>Перетащите этап сюда</div>
-            </div>
-          </div>
-        `;
-      }).join('')}
+          `;
+        }).join('')}
+      </div>
     </div>
   `;
 }
@@ -10368,6 +10399,10 @@ function launchStageRefreshCard(card) {
   const statusValue = String(select?.value || '').trim();
   const columnMeta = launchStageColumnMeta(statusValue);
   const tone = launchTaskTone(statusValue || columnMeta.value);
+  const config = launchStageConfigs().find((entry) => entry.status === card.getAttribute('data-launch-stage-field'));
+  const ownerInput = config ? card.querySelector(`[name="${config.owner}"]`) : null;
+  const dueInput = config ? card.querySelector(`[name="${config.due}"]`) : null;
+  const commentInput = config ? card.querySelector(`[name="${config.comment}"]`) : null;
   card.dataset.launchStageCurrent = columnMeta.key;
   card.classList.remove('launch-task-ok', 'launch-task-warn', 'launch-task-danger', 'launch-task-info', 'is-stale');
   if (tone) card.classList.add(`launch-task-${tone}`);
@@ -10376,12 +10411,31 @@ function launchStageRefreshCard(card) {
     chip.className = `chip ${columnMeta.tone || tone}`.trim();
     chip.textContent = statusValue || columnMeta.value;
   }
+  const ownerChip = card.querySelector('[data-launch-stage-owner-chip]');
+  if (ownerChip) {
+    const ownerValue = launchOwnerValue(ownerInput?.value || '');
+    ownerChip.textContent = ownerValue || 'назначить owner';
+    ownerChip.classList.toggle('is-missing', !ownerValue);
+  }
+  const dueChip = card.querySelector('[data-launch-stage-date-chip]');
+  if (dueChip) {
+    const dueValue = String(dueInput?.value || '').trim();
+    dueChip.textContent = dueValue || 'срок не задан';
+    dueChip.classList.toggle('is-missing', !dueValue);
+  }
+  const brief = card.querySelector('.launch-stage-brief');
+  if (brief) brief.textContent = String(commentInput?.value || config?.hint || 'Следующий шаг не описан').trim();
   const age = card.querySelector('[data-launch-stage-age]');
   const since = card.querySelector('input[type="hidden"]')?.value || '';
   if (age) {
     const days = /^\d{4}-\d{2}-\d{2}$/.test(since) ? Math.max(0, -diffFromTodayInDays(since)) : null;
+    const dueValue = String(dueInput?.value || '').trim();
+    const dueDays = /^\d{4}-\d{2}-\d{2}$/.test(dueValue) ? diffFromTodayInDays(dueValue) : null;
+    const dueLabel = dueDays === null ? '' : dueDays < 0 ? `просрочено ${fmt.int(Math.abs(dueDays))} дн.` : dueDays === 0 ? 'срок сегодня' : `до срока ${fmt.int(dueDays)} дн.`;
     age.classList.remove('warn');
-    age.textContent = days === null ? 'в колонке: новая запись' : days === 0 ? 'в колонке: сегодня' : `в колонке ${fmt.int(days)} дн.`;
+    if (dueDays !== null && dueDays < 0) age.classList.add('warn');
+    const ageLabel = days === null ? 'в колонке: новая запись' : days === 0 ? 'в колонке: сегодня' : `в колонке ${fmt.int(days)} дн.`;
+    age.textContent = [ageLabel, dueLabel].filter(Boolean).join(' · ');
   }
 }
 
@@ -10437,6 +10491,11 @@ function bindLaunchStageTaskBoard(root) {
         const nextColumn = LAUNCH_STAGE_STATUS_COLUMNS[Math.min(Math.max(currentIndex + direction, 0), LAUNCH_STAGE_STATUS_COLUMNS.length - 1)];
         if (nextColumn) launchStageMoveCard(board, card, nextColumn.key);
       });
+    });
+    card.querySelectorAll('input, textarea').forEach((field) => {
+      if (field.type === 'hidden') return;
+      field.addEventListener('input', () => launchStageRefreshCard(card));
+      field.addEventListener('change', () => launchStageRefreshCard(card));
     });
   });
 
@@ -11312,10 +11371,10 @@ function openLaunchEditor(launchId = '') {
         </div>
       </div>
 
-      <details class="launch-editor-detail-pack">
+      <details class="launch-editor-detail-pack" open>
         <summary>
           <span>Подробно: поставщик, этапы, SKU и комментарии</span>
-          ${badge('открыть детали', 'info')}
+          ${badge('этапы открыты', 'info')}
         </summary>
 
       <div class="launch-editor-panel launch-editor-section">

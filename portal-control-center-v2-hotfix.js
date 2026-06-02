@@ -1289,6 +1289,80 @@
     return ['now', 'mine', 'urgent', 'waiting', 'no_owner', 'general', 'all'].includes(raw) ? raw : 'now';
   }
 
+  function taskFilterValue(key, fallback = 'all') {
+    state.controlFilters = state.controlFilters || {};
+    const raw = state.controlFilters[key];
+    return raw === undefined || raw === null || raw === '' ? fallback : String(raw);
+  }
+
+  function taskFilterActiveCount() {
+    const filters = state.controlFilters || {};
+    return [
+      String(filters.search || '').trim(),
+      filters.owner && filters.owner !== 'all',
+      filters.type && filters.type !== 'all',
+      filters.priority && filters.priority !== 'all',
+      filters.horizon && filters.horizon !== 'all',
+      filters.source && filters.source !== 'all',
+      filters.status && filters.status !== 'active'
+    ].filter(Boolean).length;
+  }
+
+  function renderTaskFilterBar(tasks, owners) {
+    const search = taskFilterValue('search', '');
+    const owner = taskFilterValue('owner', 'all');
+    const status = taskFilterValue('status', 'active');
+    const type = taskFilterValue('type', 'all');
+    const priority = taskFilterValue('priority', 'all');
+    const horizon = taskFilterValue('horizon', 'all');
+    const source = taskFilterValue('source', 'all');
+    const activeCount = taskFilterActiveCount();
+    return `
+      <div class="task-filter-panel" data-task-filter-panel>
+        <div class="task-filter-panel-head">
+          <div>
+            <strong>Фильтры поиска</strong>
+            <span>${fmt.int((tasks || []).filter(isTaskActive).length)} активных в текущем срезе</span>
+          </div>
+          ${activeCount ? badge(`фильтров ${fmt.int(activeCount)}`, 'warn') : badge('без лишнего шума', 'ok')}
+        </div>
+        <div class="task-filter-grid">
+          <label class="span-2"><span>Поиск</span><input data-task-filter="search" value="${escapeHtml(search)}" placeholder="SKU, задача, owner, следующий шаг..."></label>
+          <label><span>Owner</span><select data-task-filter="owner">
+            <option value="all">Все owner</option>
+            ${owners.map((name) => `<option value="${escapeHtml(name)}" ${owner === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
+          </select></label>
+          <label><span>Статус</span><select data-task-filter="status">
+            <option value="active" ${status === 'active' ? 'selected' : ''}>Только активные</option>
+            <option value="all" ${status === 'all' ? 'selected' : ''}>Все статусы</option>
+            ${Object.entries(TASK_STATUS_META).map(([value, meta]) => `<option value="${value}" ${status === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}
+          </select></label>
+          <label><span>Тип</span><select data-task-filter="type">
+            <option value="all">Все типы</option>
+            ${Object.entries(TASK_TYPE_META).map(([value, label]) => `<option value="${value}" ${type === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}
+          </select></label>
+          <label><span>Приоритет</span><select data-task-filter="priority">
+            <option value="all">Любой приоритет</option>
+            ${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}" ${priority === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}
+          </select></label>
+          <label><span>Срок</span><select data-task-filter="horizon">
+            <option value="all" ${horizon === 'all' ? 'selected' : ''}>Любой срок</option>
+            <option value="overdue" ${horizon === 'overdue' ? 'selected' : ''}>Просрочено</option>
+            <option value="today" ${horizon === 'today' ? 'selected' : ''}>Сегодня</option>
+            <option value="week" ${horizon === 'week' ? 'selected' : ''}>7 дней</option>
+            <option value="no_owner" ${horizon === 'no_owner' ? 'selected' : ''}>Без owner</option>
+          </select></label>
+          <label><span>Источник</span><select data-task-filter="source">
+            <option value="all" ${source === 'all' ? 'selected' : ''}>Все</option>
+            <option value="manual" ${source === 'manual' ? 'selected' : ''}>Ручные + seed</option>
+            <option value="auto" ${source === 'auto' ? 'selected' : ''}>Авто-сигналы</option>
+          </select></label>
+          <button class="btn ghost small-btn" type="button" data-task-filter-reset>Сбросить</button>
+        </div>
+      </div>
+    `;
+  }
+
   function parseTaskArticleKeysInput(rawValue) {
     const raw = String(rawValue || '').replace(/\r\n?/g, '\n');
     if (!raw.trim()) return [];
@@ -1525,6 +1599,7 @@
           </div>
         </div>
         <datalist id="taskLazyOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
+        ${renderTaskFilterBar(tasks, owners)}
         ${renderTaskBulkToolbar(owners, [])}
         ${renderGeneralQuickTaskForm(owners, defaultPlatform)}
         <div class="task-lazy-list">
@@ -1688,6 +1763,31 @@
         ? 'Открыть задачу, обновить шаг и отправить результат на согласование.'
         : 'Открывать задачу, фиксировать короткий апдейт и вести следующий шаг.';
     }
+
+    root.querySelectorAll('[data-task-filter]').forEach((control) => {
+      const eventName = control.tagName === 'INPUT' ? 'input' : 'change';
+      control.addEventListener(eventName, (event) => {
+        const key = event.currentTarget.getAttribute('data-task-filter');
+        if (!key) return;
+        state.controlFilters = state.controlFilters || {};
+        state.controlFilters[key] = event.currentTarget.value;
+        renderControlCenter();
+      });
+    });
+
+    root.querySelector('[data-task-filter-reset]')?.addEventListener('click', () => {
+      state.controlFilters = {
+        ...(state.controlFilters || {}),
+        search: '',
+        owner: 'all',
+        status: 'active',
+        type: 'all',
+        priority: 'all',
+        horizon: 'all',
+        source: 'all'
+      };
+      renderControlCenter();
+    });
 
     root.querySelectorAll('[data-task-lazy-queue]').forEach((button) => button.addEventListener('click', () => {
       state.controlFilters.lazyQueue = button.dataset.taskLazyQueue || 'mine';

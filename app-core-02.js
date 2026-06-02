@@ -545,7 +545,7 @@ function taskPlatformOwnerName(sku, platform = '', fallback = '') {
     const marketplaceOwner = canonicalOwnerName(platformOwnerName(sku, normalizedPlatform) || '');
     if (marketplaceOwner) return marketplaceOwner;
   }
-  return canonicalOwnerName(fallback || ownerName(sku) || '');
+  return canonicalOwnerName(fallback || '') || ownerName(sku) || '';
 }
 
 function ownerOptions() {
@@ -1483,7 +1483,7 @@ function autoSignalOwner(sku, platform = '', fallback = '') {
   if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'].includes(normalizedPlatform)) {
     return taskPlatformOwnerName(sku, normalizedPlatform, fallback);
   }
-  return canonicalOwnerName(fallback || ownerName(sku) || '');
+  return canonicalOwnerName(fallback || '') || ownerName(sku) || '';
 }
 
 function autoSignalMetric(item, key) {
@@ -2225,11 +2225,12 @@ function buildAutoTasks() {
     if (/запущ|live|продаж|готово/.test(statusRaw)) return;
     const linkedSku = item?.articleKey ? getSku(item.articleKey) : null;
     if (linkedSku && !autoSignalSkuAllowed(linkedSku)) return;
+    const launchOwner = autoSignalOwner(linkedSku, 'product', item.owner);
     const dedupeKey = `${String(item?.articleKey || '').trim()}|${String(item?.name || '').trim().toLowerCase()}`;
     if (activeLaunchTaskKeys.has(dedupeKey)) return;
     activeLaunchTaskKeys.add(dedupeKey);
     const blockers = [
-      item.owner ? '' : 'нет owner',
+      launchOwner ? '' : 'нет owner',
       item.articleKey ? '' : 'нет SKU',
       item.presentationUrl ? '' : 'нет презентации'
     ].filter(Boolean);
@@ -2259,7 +2260,7 @@ function buildAutoTasks() {
         item.production || '',
         blockers.length ? `блокеры: ${blockers.join(', ')}` : 'критичных блокеров не найдено'
       ].filter(Boolean).join(' · '),
-      owner: item.owner || '',
+      owner: launchOwner,
       due,
       status: 'new',
       type: 'launch',

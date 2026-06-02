@@ -3,6 +3,8 @@ param(
   [string]$InputXlsx = "",
   [string]$ProfileDir = "",
   [string]$OutputDir = "",
+  [string]$AdsWindowFrom = "",
+  [string]$AdsWindowTo = "",
   [string]$LiveHealthUrl = "https://xn--80aocfomk2b.xn--p1ai/data/portal_sync_health.json"
 )
 
@@ -203,6 +205,41 @@ $resolvedOutputDir = if ($OutputDir) { $OutputDir } else { ".altea-google-sheet-
 New-Item -ItemType Directory -Path $resolvedOutputDir -Force | Out-Null
 $script:retrySteps = @()
 $script:syncIssuesPath = Join-Path $resolvedOutputDir "portal_sync_issues.json"
+
+function Resolve-DateOnly {
+  param(
+    [string]$Value,
+    [datetime]$Fallback
+  )
+
+  if ([string]::IsNullOrWhiteSpace($Value)) {
+    return $Fallback.Date
+  }
+
+  return ([datetime]::ParseExact($Value, "yyyy-MM-dd", [System.Globalization.CultureInfo]::InvariantCulture)).Date
+}
+
+function Format-DateOnly {
+  param([datetime]$Value)
+  return $Value.ToString("yyyy-MM-dd")
+}
+
+$portalAdsWindowToDate = Resolve-DateOnly -Value $AdsWindowTo -Fallback ((Get-Date).Date.AddDays(-1))
+$portalAdsWindowFromDefault = (Get-Date -Year $portalAdsWindowToDate.Year -Month $portalAdsWindowToDate.Month -Day 1).Date
+if ($portalAdsWindowToDate.Day -le 3) {
+  $portalAdsWindowFromDefault = $portalAdsWindowFromDefault.AddMonths(-1)
+}
+$portalAdsWindowFromDate = Resolve-DateOnly -Value $AdsWindowFrom -Fallback $portalAdsWindowFromDefault
+
+if ($portalAdsWindowFromDate -gt $portalAdsWindowToDate) {
+  throw "AdsWindowFrom must be before or equal AdsWindowTo. Got $($portalAdsWindowFromDate.ToString("yyyy-MM-dd"))..$($portalAdsWindowToDate.ToString("yyyy-MM-dd"))."
+}
+
+$portalAdsWindowFrom = Format-DateOnly $portalAdsWindowFromDate
+$portalAdsWindowTo = Format-DateOnly $portalAdsWindowToDate
+$portalOzonFinanceWindowFromDate = (Get-Date -Year $portalAdsWindowToDate.Year -Month $portalAdsWindowToDate.Month -Day 1).Date
+$portalOzonFinanceWindowFrom = Format-DateOnly $portalOzonFinanceWindowFromDate
+Write-Output "[sync] Ozon ads analytics window: $portalAdsWindowFrom..$portalAdsWindowTo; Ozon finance API window: $portalOzonFinanceWindowFrom..$portalAdsWindowTo"
 
 function Write-SyncIssues {
   $payload = [ordered]@{
@@ -472,6 +509,10 @@ $extraMarketplaceMergeArguments = @(
   "exports/altea_max_funnel_2025_2026.xlsx",
   "--output-dir",
   $resolvedOutputDir,
+  "--ads-window-from",
+  $portalAdsWindowFrom,
+  "--ads-window-to",
+  $portalAdsWindowTo,
   "--mirror-local-fallback"
 )
 
@@ -716,6 +757,14 @@ $iuDrrArguments = @(
   "data",
   "--output-dir",
   $resolvedOutputDir,
+  "--date-from",
+  $portalAdsWindowFrom,
+  "--date-to",
+  $portalAdsWindowTo,
+  "--ozon-finance-api-from",
+  $portalOzonFinanceWindowFrom,
+  "--ozon-finance-api-to",
+  $portalAdsWindowTo,
   "--mirror-local-fallback"
 )
 

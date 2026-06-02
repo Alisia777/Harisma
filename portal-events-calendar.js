@@ -4,6 +4,7 @@
 
   const SNAPSHOT_KEY = 'promo_events_calendar';
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
+  const MAX_SKU_RESULTS = 28;
   const CALENDAR_STATE = window.__ALTEA_PROMO_CALENDAR_STATE__ || {
     month: '',
     dateFrom: '',
@@ -12,9 +13,14 @@
     search: '',
     editingId: '',
     selectedDate: '',
+    modalOpen: false,
+    skuQuery: '',
+    draftSkus: [],
     remoteLoaded: false,
     remoteLoading: false,
-    remoteSaving: false
+    remoteSaving: false,
+    dataLoaded: false,
+    dataLoading: false
   };
   window.__ALTEA_PROMO_CALENDAR_STATE__ = CALENDAR_STATE;
 
@@ -29,7 +35,13 @@
     ['magnit', 'Магнит'],
     ['product', 'Продукт']
   ];
-  const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+  const EVENT_STATUSES = [
+    ['planned', 'План'],
+    ['active', 'В эфире'],
+    ['done', 'Завершено'],
+    ['draft', 'Черновик']
+  ];
+  const WEEKDAYS = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
   const MONTHS = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
 
   function appState() {
@@ -44,6 +56,26 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  function number(value) {
+    if (typeof numberOrZero === 'function') return numberOrZero(value);
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function formatInt(value) {
+    return typeof fmt?.int === 'function' ? fmt.int(value) : String(Math.round(number(value)));
+  }
+
+  function formatMoney(value) {
+    if (!(number(value) > 0)) return '';
+    return typeof fmt?.money === 'function' ? fmt.money(value) : `${Math.round(number(value)).toLocaleString('ru-RU')} ₽`;
+  }
+
+  function token(value = '') {
+    if (typeof skuLookupToken === 'function') return skuLookupToken(value);
+    return String(value ?? '').trim().toLowerCase().replaceAll('ё', 'е').replace(/[^a-zа-я0-9]+/gi, '');
   }
 
   function textLines(value) {
@@ -124,10 +156,11 @@
 
   function platformLabel(value) {
     const key = platformKey(value);
-    const found = PLATFORMS.find(([item]) => item === key);
-    if (found) return found[1];
-    if (typeof controlWorkstreamMeta === 'function') return controlWorkstreamMeta(key)?.chip || key;
-    return key;
+    return PLATFORMS.find(([item]) => item === key)?.[1] || key;
+  }
+
+  function statusLabel(status) {
+    return EVENT_STATUSES.find(([key]) => key === status)?.[1] || 'План';
   }
 
   function storage() {
@@ -269,11 +302,11 @@
     url.searchParams.set('select', 'snapshot_key,payload');
     url.searchParams.set('brand', `eq.${cfg.brand}`);
     url.searchParams.set('snapshot_key', `eq.${SNAPSHOT_KEY}`);
-    const token = cfg.accessToken || cfg.anonKey;
+    const tokenValue = cfg.accessToken || cfg.anonKey;
     const response = await fetchWithTimeout(fetch(url.toString(), {
       headers: {
         apikey: cfg.anonKey,
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${tokenValue}`,
         Accept: 'application/json'
       }
     }), 8000, 'Календарь событий');
@@ -319,9 +352,7 @@
       applyCalendarPayload(merged);
       if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason: 'promo-calendar-sync' });
       CALENDAR_STATE.remoteLoaded = true;
-      if (options.rerender !== false && (appState().activeView === 'data-health' || document.getElementById('view-data-health')?.classList.contains('active'))) {
-        renderEventCalendar(options.rootId || 'view-data-health');
-      }
+      if (options.rerender !== false && isCalendarActive() && !CALENDAR_STATE.modalOpen) renderEventCalendar(options.rootId || 'view-data-health');
       return merged;
     } catch (error) {
       console.warn('[promo-calendar] sync', error);
@@ -359,6 +390,59 @@
     }
   }
 
+  function payloadLooksLoaded(payload, rowsKey = 'rows') {
+    if (!payload || typeof payload !== 'object') return false;
+    if (Array.isArray(payload?.[rowsKey]) && payload[rowsKey].length) return true;
+    if (payload.platforms && Object.keys(payload.platforms).length) return true;
+    return false;
+  }
+
+  async function loadCalendarJson(path, fallback, label) {
+    if (typeof loadJsonOrFallback === 'function') return loadJsonOrFallback(path, fallback, label);
+    if (typeof loadJson === 'function') {
+      try { return await loadJson(path); } catch { return JSON.parse(JSON.stringify(fallback)); }
+    }
+    const response = await fetch(path);
+    if (!response.ok) return JSON.parse(JSON.stringify(fallback));
+    return response.json();
+  }
+
+  async function ensureCalendarData(rootId = 'view-data-health') {
+    if (CALENDAR_STATE.dataLoading) return;
+    const state = appState();
+    const needSkus = !Array.isArray(state.skus) || !state.skus.length;
+    const needWarehouse = !payloadLooksLoaded(state.warehouseStockOverlay || state.warehouse_stock_overlay);
+    const needOverlay = !payloadLooksLoaded(state.smartPriceOverlay);
+    if (!needSkus && !needWarehouse && !needOverlay) {
+      CALENDAR_STATE.dataLoaded = true;
+      return;
+    }
+    CALENDAR_STATE.dataLoading = true;
+    try {
+      const [skus, warehouse, overlay] = await Promise.all([
+        needSkus ? loadCalendarJson('data/skus.json', [], 'SKU') : Promise.resolve(state.skus),
+        needWarehouse ? loadCalendarJson('data/warehouse_stock_overlay.json', { generatedAt: '', rows: [] }, 'Склад/остатки') : Promise.resolve(state.warehouseStockOverlay || state.warehouse_stock_overlay),
+        needOverlay ? loadCalendarJson('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт SKU') : Promise.resolve(state.smartPriceOverlay)
+      ]);
+      if (needSkus) state.skus = Array.isArray(skus) ? skus : [];
+      if (needWarehouse) {
+        state.warehouseStockOverlay = warehouse && typeof warehouse === 'object' ? warehouse : { generatedAt: '', rows: [] };
+        state.warehouse_stock_overlay = state.warehouseStockOverlay;
+      }
+      if (needOverlay) state.smartPriceOverlay = overlay && typeof overlay === 'object' ? overlay : { generatedAt: '', platforms: {} };
+      CALENDAR_STATE.dataLoaded = true;
+      if (isCalendarActive() && !CALENDAR_STATE.modalOpen) renderEventCalendar(rootId);
+    } catch (error) {
+      console.warn('[promo-calendar] data load', error);
+    } finally {
+      CALENDAR_STATE.dataLoading = false;
+    }
+  }
+
+  function isCalendarActive() {
+    return appState().activeView === 'data-health' || document.getElementById('view-data-health')?.classList.contains('active');
+  }
+
   function monthDays(monthKey) {
     const first = dateFromKey(startOfMonth(monthKey));
     const firstDay = (first.getDay() + 6) % 7;
@@ -391,15 +475,9 @@
     });
   }
 
-  function eventClass(event) {
-    return `promo-platform-${platformKey(event.platform)}`;
-  }
-
-  function statusLabel(status) {
-    if (status === 'active') return 'В эфире';
-    if (status === 'done') return 'Завершено';
-    if (status === 'draft') return 'Черновик';
-    return 'План';
+  function eventClass(eventOrPlatform) {
+    const key = typeof eventOrPlatform === 'string' ? eventOrPlatform : eventOrPlatform?.platform;
+    return `promo-platform-${platformKey(key)}`;
   }
 
   function eventTone(event) {
@@ -408,41 +486,6 @@
     if (event.startDate <= today && event.endDate >= today) return 'active';
     if (daysBetween(today, event.startDate) <= 3) return 'soon';
     return 'planned';
-  }
-
-  function renderEventPill(event, compact = false) {
-    const skus = event.skus.length ? `<span>${html(event.skus.length)} SKU</span>` : '';
-    return `
-      <button class="promo-event-pill ${eventClass(event)} ${eventTone(event)}" type="button" draggable="true" data-calendar-event="${html(event.id)}">
-        <strong>${html(event.title)}</strong>
-        ${compact ? '' : `<em>${html(platformLabel(event.platform))}</em>`}
-        ${skus}
-      </button>
-    `;
-  }
-
-  function renderDay(day, events, monthKey) {
-    const inMonth = startOfMonth(day) === startOfMonth(monthKey);
-    const dayEvents = events.filter((event) => eventOverlapsDate(event, day)).sort((a, b) => a.startDate.localeCompare(b.startDate));
-    const className = [
-      'promo-calendar-day',
-      inMonth ? '' : 'muted-day',
-      day === todayKey() ? 'today' : '',
-      dayEvents.length ? 'has-events' : '',
-      dayEvents[0] ? eventClass(dayEvents[0]) : ''
-    ].filter(Boolean).join(' ');
-    return `
-      <div class="${className}" data-calendar-day="${html(day)}">
-        <div class="promo-day-head">
-          <span>${dateFromKey(day).getDate()}</span>
-          <button type="button" data-calendar-new-date="${html(day)}">+</button>
-        </div>
-        <div class="promo-day-events">
-          ${dayEvents.slice(0, 4).map((event) => renderEventPill(event, true)).join('')}
-          ${dayEvents.length > 4 ? `<span class="promo-more">+${dayEvents.length - 4}</span>` : ''}
-        </div>
-      </div>
-    `;
   }
 
   function activeEvent() {
@@ -458,6 +501,7 @@
       startDate: date,
       endDate: date,
       skuText: '',
+      skus: [],
       comment: '',
       owner: '',
       status: 'planned',
@@ -465,94 +509,413 @@
     };
   }
 
-  function renderForm() {
-    const event = activeEvent() || blankEvent();
-    const isEdit = Boolean(event.id);
+  function skuPrimaryKey(sku = {}, fallback = '') {
+    if (typeof window.skuPrimaryKey === 'function') return window.skuPrimaryKey(sku, fallback);
+    return String(sku?.articleKey || sku?.article || sku?.sku || fallback || '').trim();
+  }
+
+  function skuName(sku = {}) {
+    return String(sku?.name || sku?.title || sku?.productName || skuPrimaryKey(sku) || '').trim();
+  }
+
+  function skuOwner(sku = {}, platform = '') {
+    if (typeof taskPlatformOwnerName === 'function') return taskPlatformOwnerName(sku, platform, '');
+    if (typeof ownerName === 'function') return ownerName(sku);
+    const key = platformKey(platform);
+    return String(sku?.owner?.byPlatform?.[key] || sku?.ownersByPlatform?.[key] || sku?.owner?.name || sku?.owner || '').trim();
+  }
+
+  function skuStatus(sku = {}) {
+    if (typeof skuMatrixStatusLabel === 'function') return skuMatrixStatusLabel(sku, sku?.registryStatus || sku?.status || '');
+    return String(sku?.registryStatus || sku?.status || '').trim();
+  }
+
+  function skuBelongsToPlatform(sku = {}, platform = 'all') {
+    const key = platformKey(platform);
+    if (key === 'all' || key === 'cross' || key === 'product') return true;
+    if (typeof skuDataSkuBelongsToPlatform === 'function') return skuDataSkuBelongsToPlatform(sku, key);
+    if (key === 'wb') return Boolean(sku?.flags?.hasWB || sku?.owner?.byPlatform?.wb || sku?.ownersByPlatform?.wb);
+    if (key === 'ozon') return Boolean(sku?.flags?.hasOzon || sku?.owner?.byPlatform?.ozon || sku?.ownersByPlatform?.ozon);
+    return Boolean(sku?.owner?.byPlatform?.[key] || sku?.ownersByPlatform?.[key]);
+  }
+
+  function skuByKeyMap() {
+    const map = new Map();
+    (appState().skus || []).forEach((sku) => {
+      const key = skuPrimaryKey(sku);
+      if (!key) return;
+      map.set(key, sku);
+      map.set(token(key), sku);
+    });
+    return map;
+  }
+
+  function findSkuByKey(key = '') {
+    const wanted = String(key || '').trim();
+    if (!wanted) return null;
+    if (typeof getSku === 'function') {
+      const found = getSku(wanted);
+      if (found) return found;
+    }
+    return skuByKeyMap().get(wanted) || skuByKeyMap().get(token(wanted)) || null;
+  }
+
+  function warehouseMap() {
+    const rows = Array.isArray(appState().warehouseStockOverlay?.rows)
+      ? appState().warehouseStockOverlay.rows
+      : Array.isArray(appState().warehouse_stock_overlay?.rows)
+        ? appState().warehouse_stock_overlay.rows
+        : [];
+    const map = new Map();
+    rows.forEach((row) => {
+      const key = token(row?.articleKey || row?.article || row?.sku);
+      if (!key) return;
+      const current = map.get(key) || { stockWarehouse: 0, accepted: 0, shippedWB: 0, shippedOzon: 0 };
+      current.stockWarehouse += number(row?.stockWarehouse);
+      current.accepted += number(row?.accepted);
+      current.shippedWB += number(row?.shippedWB);
+      current.shippedOzon += number(row?.shippedOzon);
+      map.set(key, current);
+    });
+    return map;
+  }
+
+  function overlayRowMap(platform = '') {
+    const key = platformKey(platform);
+    const platforms = key === 'cross' || key === 'all' ? ['wb', 'ozon', 'ya'] : [key];
+    const map = new Map();
+    platforms.forEach((platformName) => {
+      const rows = typeof skuPlanFactRowsForPlatform === 'function'
+        ? skuPlanFactRowsForPlatform(appState().smartPriceOverlay || {}, platformName)
+        : (appState().smartPriceOverlay?.platforms?.[platformName]?.rows || []);
+      rows.forEach((row) => {
+        const rowKey = token(row?.articleKey || row?.article || row?.sku);
+        if (!rowKey || map.has(rowKey)) return;
+        map.set(rowKey, { ...row, platformName });
+      });
+    });
+    return map;
+  }
+
+  function skuSignals(skuOrKey = {}, platform = '') {
+    const sku = typeof skuOrKey === 'object' ? skuOrKey : findSkuByKey(skuOrKey);
+    const key = skuPrimaryKey(sku || {}, typeof skuOrKey === 'string' ? skuOrKey : '');
+    const wh = warehouseMap().get(token(key)) || {};
+    const overlay = overlayRowMap(platform).get(token(key)) || {};
+    const platformStock = number(
+      platformKey(platform) === 'ozon'
+        ? overlay.stockOzon ?? overlay.stock ?? overlay.stockTotal
+        : platformKey(platform) === 'wb'
+          ? overlay.stockWb ?? overlay.stock ?? overlay.stockTotal
+          : overlay.stock ?? overlay.stockTotal ?? overlay.stockWb ?? overlay.stockOzon
+    );
+    const shipped = platformKey(platform) === 'ozon'
+      ? number(wh.shippedOzon)
+      : platformKey(platform) === 'wb'
+        ? number(wh.shippedWB)
+        : number(wh.shippedWB) + number(wh.shippedOzon);
+    const daily = Array.isArray(overlay.daily) ? overlay.daily.slice(-7) : [];
+    const orders7 = daily.reduce((sum, item) => sum + number(item?.ordersUnits || item?.orders || item?.sales), 0);
+    return {
+      articleKey: key,
+      warehouse: number(wh.stockWarehouse),
+      accepted: number(wh.accepted),
+      shipped,
+      platformStock,
+      orders7,
+      price: number(overlay.currentClientPrice || overlay.currentFillPrice || overlay.currentPrice || overlay.price),
+      marginPct: overlay.marginTotalPct ?? overlay.marginPct ?? overlay.avgMargin7dPct ?? null,
+      date: overlay.valueDate || overlay.historyFreshnessDate || appState().smartPriceOverlay?.asOfDate || appState().smartPriceOverlay?.generatedAt || ''
+    };
+  }
+
+  function skuSignalTone(signals = {}) {
+    if (signals.warehouse <= 0 && signals.shipped <= 0 && signals.platformStock <= 0) return 'danger';
+    if (signals.warehouse < 20 && signals.shipped < 20) return 'warn';
+    return 'ok';
+  }
+
+  function skuSignalSummary(signals = {}) {
+    const parts = [
+      `склад ${formatInt(signals.warehouse)}`,
+      signals.shipped ? `отгр. ${formatInt(signals.shipped)}` : '',
+      signals.orders7 ? `заказов 7д ${formatInt(signals.orders7)}` : '',
+      signals.price ? formatMoney(signals.price) : ''
+    ].filter(Boolean);
+    return parts.join(' · ') || 'остатки не найдены';
+  }
+
+  function skuCandidates(platform = 'all', query = '', selectedKeys = []) {
+    const selectedSet = new Set(selectedKeys.map(String));
+    const queryToken = token(query);
+    const rows = Array.isArray(appState().skus) ? appState().skus : [];
+    return rows
+      .filter((sku) => {
+        if (!skuBelongsToPlatform(sku, platform)) return false;
+        if (!queryToken) return true;
+        const haystack = [
+          skuPrimaryKey(sku),
+          skuName(sku),
+          skuStatus(sku),
+          skuOwner(sku, platform),
+          sku?.category,
+          sku?.type
+        ].join(' ');
+        return token(haystack).includes(queryToken);
+      })
+      .map((sku) => {
+        const key = skuPrimaryKey(sku);
+        const signals = skuSignals(sku, platform);
+        const selected = selectedSet.has(key);
+        const rank = (selected ? 10000 : 0)
+          + (signals.warehouse > 0 ? 200 : 0)
+          + (signals.shipped > 0 ? 120 : 0)
+          + (signals.orders7 > 0 ? 80 : 0)
+          + number(sku?.focusScore);
+        return { sku, key, signals, selected, rank };
+      })
+      .sort((a, b) => b.rank - a.rank || skuName(a.sku).localeCompare(skuName(b.sku), 'ru'))
+      .slice(0, MAX_SKU_RESULTS);
+  }
+
+  function selectedSkuRows(platform = 'all') {
+    return (CALENDAR_STATE.draftSkus || []).map((key) => {
+      const sku = findSkuByKey(key);
+      return {
+        key,
+        sku,
+        signals: skuSignals(sku || key, platform)
+      };
+    });
+  }
+
+  function renderSkuChip(row, platform) {
+    const name = row.sku ? skuName(row.sku) : row.key;
+    const status = row.sku ? skuStatus(row.sku) : 'ручной SKU';
     return `
-      <form class="promo-event-form" data-calendar-form>
-        <input type="hidden" name="id" value="${html(event.id)}">
-        <div class="promo-form-head">
-          <div>
-            <span>${isEdit ? 'Событие' : 'Новое событие'}</span>
-            <strong>${isEdit ? html(event.title) : 'Промо / запуск / инфоповод'}</strong>
-          </div>
-          ${isEdit ? `<button class="quick-chip" type="button" data-calendar-reset>Новое</button>` : ''}
-        </div>
-        <label>
-          <span>Название</span>
-          <input name="title" value="${html(event.title)}" placeholder="Хаммер по Красоте" required>
-        </label>
-        <div class="promo-form-row">
-          <label>
-            <span>Площадка</span>
-            <select name="platform">${PLATFORMS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${html(key)}" ${event.platform === key ? 'selected' : ''}>${html(label)}</option>`).join('')}</select>
-          </label>
-          <label>
-            <span>Статус</span>
-            <select name="status">
-              ${['planned', 'active', 'done', 'draft'].map((status) => `<option value="${status}" ${event.status === status ? 'selected' : ''}>${statusLabel(status)}</option>`).join('')}
-            </select>
-          </label>
-        </div>
-        <div class="promo-form-row">
-          <label>
-            <span>Старт</span>
-            <input name="startDate" type="date" value="${html(event.startDate)}" required>
-          </label>
-          <label>
-            <span>Финиш</span>
-            <input name="endDate" type="date" value="${html(event.endDate)}" required>
-          </label>
-        </div>
-        <label>
-          <span>SKU</span>
-          <textarea name="skuText" rows="5" placeholder="Артикулы через строку">${html(event.skuText || (event.skus || []).join('\n'))}</textarea>
-        </label>
-        <label>
-          <span>Комментарий</span>
-          <textarea name="comment" rows="4" placeholder="Условия, механика, что проверить">${html(event.comment)}</textarea>
-        </label>
-        <label>
-          <span>Owner</span>
-          <input name="owner" value="${html(event.owner)}" placeholder="${html(appState().team?.member?.name || 'Команда')}">
-        </label>
-        <div class="promo-form-actions">
-          <button class="quick-chip primary" type="submit">${isEdit ? 'Сохранить' : 'Добавить'}</button>
-          ${isEdit ? `<button class="quick-chip" type="button" data-calendar-create-task="${html(event.id)}">${event.taskId ? 'Обновить задачу' : 'Создать задачу'}</button>` : ''}
-          ${isEdit ? `<button class="quick-chip danger" type="button" data-calendar-delete="${html(event.id)}">Удалить</button>` : ''}
-        </div>
-      </form>
+      <button class="promo-sku-chip tone-${skuSignalTone(row.signals)}" type="button" data-calendar-sku-remove="${html(row.key)}">
+        <strong>${html(row.key)}</strong>
+        <span>${html(name)}</span>
+        <em>${html(status || platformLabel(platform))}</em>
+      </button>
     `;
   }
 
-  function renderSideList(events) {
-    const sorted = [...events].sort((a, b) => `${a.startDate}|${a.title}`.localeCompare(`${b.startDate}|${b.title}`));
-    if (!sorted.length) return '<div class="promo-empty">Событий нет</div>';
-    return sorted.map((event) => `
-      <div class="promo-agenda-item ${eventClass(event)}" data-calendar-agenda="${html(event.id)}">
-        <button type="button" data-calendar-edit="${html(event.id)}">
-          <strong>${html(event.title)}</strong>
-          <span>${html(formatDate(event.startDate))}${event.endDate !== event.startDate ? ` - ${html(formatDate(event.endDate))}` : ''}</span>
-        </button>
-        <div>
-          <span>${html(platformLabel(event.platform))}</span>
-          ${event.skus.length ? `<span>${html(event.skus.length)} SKU</span>` : ''}
-          ${event.taskId ? '<span>задача есть</span>' : '<span>задача нужна</span>'}
+  function renderSkuRow(item, platform) {
+    const { sku, key, signals, selected } = item;
+    return `
+      <button class="promo-sku-option ${selected ? 'selected' : ''} tone-${skuSignalTone(signals)}" type="button" data-calendar-sku-toggle="${html(key)}" aria-pressed="${selected ? 'true' : 'false'}">
+        <span class="promo-sku-option-main">
+          <strong>${html(key)}</strong>
+          <em>${html(skuName(sku))}</em>
+        </span>
+        <span class="promo-sku-option-meta">
+          <b>${html(skuStatus(sku) || 'без статуса')}</b>
+          <b>${html(skuOwner(sku, platform) || 'owner не задан')}</b>
+          <b>${html(skuSignalSummary(signals))}</b>
+        </span>
+      </button>
+    `;
+  }
+
+  function skuPickerInnerHtml(platform = 'all') {
+    const selectedRows = selectedSkuRows(platform);
+    const candidates = skuCandidates(platform, CALENDAR_STATE.skuQuery, CALENDAR_STATE.draftSkus);
+    const selectedHtml = selectedRows.length
+      ? selectedRows.map((row) => renderSkuChip(row, platform)).join('')
+      : '<div class="promo-sku-empty">SKU пока не выбраны.</div>';
+    return `
+      <div class="promo-sku-selected">
+        ${selectedHtml}
+      </div>
+      <div class="promo-sku-results">
+        ${candidates.length ? candidates.map((item) => renderSkuRow(item, platform)).join('') : '<div class="promo-sku-empty">Ничего не нашлось. Проверьте площадку или поиск.</div>'}
+      </div>
+    `;
+  }
+
+  function renderSkuPicker(root) {
+    const form = root.querySelector('[data-calendar-form]');
+    const platform = form?.querySelector('[name="platform"]')?.value || 'all';
+    const picker = root.querySelector('[data-calendar-sku-picker]');
+    if (picker) picker.innerHTML = skuPickerInnerHtml(platform);
+    const counter = root.querySelector('[data-calendar-selected-count]');
+    if (counter) counter.textContent = `${CALENDAR_STATE.draftSkus.length} SKU`;
+  }
+
+  function renderEventPill(event, compact = false) {
+    return `
+      <button class="promo-event-pill ${eventClass(event)} ${eventTone(event)}" type="button" draggable="true" data-calendar-event="${html(event.id)}">
+        <span>${html(platformLabel(event.platform))}</span>
+        <strong>${html(event.title)}</strong>
+        ${compact ? '' : `<em>${html(statusLabel(event.status))}</em>`}
+        ${event.skus.length ? `<b>${formatInt(event.skus.length)} SKU</b>` : ''}
+      </button>
+    `;
+  }
+
+  function renderDay(day, events, monthKey) {
+    const inMonth = startOfMonth(day) === startOfMonth(monthKey);
+    const dayEvents = events.filter((event) => eventOverlapsDate(event, day)).sort((a, b) => a.startDate.localeCompare(b.startDate));
+    const className = [
+      'promo-calendar-day',
+      inMonth ? '' : 'muted-day',
+      day === todayKey() ? 'today' : '',
+      dayEvents.length ? 'has-events' : '',
+      dayEvents[0] ? eventClass(dayEvents[0]) : ''
+    ].filter(Boolean).join(' ');
+    return `
+      <div class="${className}" role="button" tabindex="0" data-calendar-day="${html(day)}" aria-label="${html(formatDate(day))}">
+        <div class="promo-day-head">
+          <span>${dateFromKey(day).getDate()}</span>
+          <em>${day === todayKey() ? 'сегодня' : dayEvents.length ? `${dayEvents.length} событ.` : ''}</em>
+        </div>
+        <div class="promo-day-events">
+          ${dayEvents.slice(0, 4).map((event) => renderEventPill(event, true)).join('')}
+          ${dayEvents.length > 4 ? `<span class="promo-more">+${dayEvents.length - 4}</span>` : ''}
         </div>
       </div>
-    `).join('');
+    `;
   }
 
   function renderStats(events) {
     const active = events.filter((event) => eventTone(event) === 'active').length;
     const soon = events.filter((event) => eventTone(event) === 'soon').length;
     const skuCount = new Set(events.flatMap((event) => event.skus)).size;
+    const days = new Set(events.flatMap((event) => {
+      const duration = daysBetween(event.startDate, event.endDate);
+      return Array.from({ length: duration + 1 }, (_, index) => addDays(event.startDate, index));
+    })).size;
     return `
       <div class="promo-calendar-stats">
         <button type="button" data-calendar-filter-status="all"><span>события</span><strong>${events.length}</strong></button>
         <button type="button" data-calendar-filter-status="active"><span>в эфире</span><strong>${active}</strong></button>
         <button type="button" data-calendar-filter-status="soon"><span>старт рядом</span><strong>${soon}</strong></button>
-        <button type="button"><span>SKU</span><strong>${skuCount}</strong></button>
+        <button type="button"><span>закрашено дней</span><strong>${days}</strong><em>${formatInt(skuCount)} SKU</em></button>
+      </div>
+    `;
+  }
+
+  function renderPlatformRail() {
+    return `
+      <div class="promo-platform-rail">
+        ${PLATFORMS.map(([key, label]) => `
+          <button class="${CALENDAR_STATE.platform === key ? 'active' : ''} ${eventClass(key)}" type="button" data-calendar-platform-chip="${html(key)}">
+            <span>${html(label)}</span>
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function renderSideList(events) {
+    const sorted = [...events].sort((a, b) => `${a.startDate}|${a.title}`.localeCompare(`${b.startDate}|${b.title}`));
+    if (!sorted.length) return '<div class="promo-empty">Событий пока нет.</div>';
+    return sorted.slice(0, 10).map((event) => `
+      <div class="promo-agenda-item ${eventClass(event)}">
+        <button type="button" data-calendar-edit="${html(event.id)}">
+          <strong>${html(event.title)}</strong>
+          <span>${html(formatDate(event.startDate))}${event.endDate !== event.startDate ? ` - ${html(formatDate(event.endDate))}` : ''}</span>
+        </button>
+        <div>
+          <span>${html(platformLabel(event.platform))}</span>
+          ${event.skus.length ? `<span>${formatInt(event.skus.length)} SKU</span>` : '<span>SKU не выбраны</span>'}
+          ${event.taskId ? '<span>задача есть</span>' : '<span>задача нужна</span>'}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderModal() {
+    if (!CALENDAR_STATE.modalOpen) return '';
+    const event = activeEvent() || blankEvent();
+    const isEdit = Boolean(event.id);
+    const selectedRows = selectedSkuRows(event.platform);
+    const signalTotals = selectedRows.reduce((acc, row) => {
+      acc.warehouse += number(row.signals.warehouse);
+      acc.shipped += number(row.signals.shipped);
+      acc.orders7 += number(row.signals.orders7);
+      return acc;
+    }, { warehouse: 0, shipped: 0, orders7: 0 });
+    return `
+      <div class="promo-modal-backdrop" data-calendar-modal-close>
+        <section class="promo-event-modal ${eventClass(event)}" role="dialog" aria-modal="true" aria-label="${isEdit ? 'Событие календаря' : 'Новое событие календаря'}" data-calendar-modal>
+          <form class="promo-event-form" data-calendar-form>
+            <input type="hidden" name="id" value="${html(event.id)}">
+            <header class="promo-modal-head">
+              <div>
+                <span>${isEdit ? 'Событие' : 'Новое событие'}</span>
+                <strong>${isEdit ? html(event.title) : `Промо на ${html(formatDate(event.startDate))}`}</strong>
+              </div>
+              <button type="button" data-calendar-modal-close aria-label="Закрыть">×</button>
+            </header>
+
+            <div class="promo-modal-grid">
+              <section class="promo-modal-main">
+                <label class="promo-field-wide">
+                  <span>Название</span>
+                  <input name="title" value="${html(event.title)}" placeholder="Хаммер по Красоте" required>
+                </label>
+                <div class="promo-form-row">
+                  <label>
+                    <span>Площадка</span>
+                    <select name="platform">${PLATFORMS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${html(key)}" ${event.platform === key ? 'selected' : ''}>${html(label)}</option>`).join('')}</select>
+                  </label>
+                  <label>
+                    <span>Статус</span>
+                    <select name="status">${EVENT_STATUSES.map(([status, label]) => `<option value="${status}" ${event.status === status ? 'selected' : ''}>${html(label)}</option>`).join('')}</select>
+                  </label>
+                </div>
+                <div class="promo-form-row">
+                  <label>
+                    <span>Старт</span>
+                    <input name="startDate" type="date" value="${html(event.startDate)}" required>
+                  </label>
+                  <label>
+                    <span>Финиш</span>
+                    <input name="endDate" type="date" value="${html(event.endDate)}" required>
+                  </label>
+                </div>
+                <label class="promo-field-wide">
+                  <span>Комментарий</span>
+                  <textarea name="comment" rows="4" placeholder="Условия, механика, что проверить">${html(event.comment)}</textarea>
+                </label>
+                <label class="promo-field-wide">
+                  <span>Owner</span>
+                  <input name="owner" value="${html(event.owner)}" placeholder="${html(appState().team?.member?.name || 'Команда')}">
+                </label>
+              </section>
+
+              <aside class="promo-modal-side">
+                <div class="promo-sku-top">
+                  <div>
+                    <span>SKU в событии</span>
+                    <strong data-calendar-selected-count>${formatInt(CALENDAR_STATE.draftSkus.length)} SKU</strong>
+                  </div>
+                  <div class="promo-sku-totals">
+                    <span>склад ${formatInt(signalTotals.warehouse)}</span>
+                    <span>отгр. ${formatInt(signalTotals.shipped)}</span>
+                    <span>заказы 7д ${formatInt(signalTotals.orders7)}</span>
+                  </div>
+                </div>
+                <label class="promo-sku-search">
+                  <span>Выбор из реестра</span>
+                  <input type="search" data-calendar-sku-search value="${html(CALENDAR_STATE.skuQuery)}" placeholder="Название или артикул">
+                </label>
+                <div class="promo-sku-picker" data-calendar-sku-picker>
+                  ${skuPickerInnerHtml(event.platform)}
+                </div>
+              </aside>
+            </div>
+
+            <footer class="promo-modal-actions">
+              <button class="quick-chip primary" type="submit">${isEdit ? 'Сохранить событие' : 'Добавить событие'}</button>
+              ${isEdit ? `<button class="quick-chip" type="button" data-calendar-create-task="${html(event.id)}">${event.taskId ? 'Обновить задачу' : 'Создать задачу'}</button>` : ''}
+              ${isEdit ? `<button class="quick-chip danger" type="button" data-calendar-delete="${html(event.id)}">Удалить</button>` : ''}
+              <button class="quick-chip" type="button" data-calendar-modal-close>Отмена</button>
+            </footer>
+          </form>
+        </section>
       </div>
     `;
   }
@@ -569,16 +932,17 @@
     const gridDays = monthDays(month);
     root.innerHTML = `
       <div class="promo-calendar-shell">
-        <div class="section-title promo-calendar-title">
-          <div>
-            <h2>Календарь</h2>
-            <p>Промо, акции, запуски и события по SKU.</p>
+        <section class="promo-calendar-command">
+          <div class="promo-calendar-command-copy">
+            <span>Календарь промо</span>
+            <h2>События, SKU и стартовые задачи</h2>
+            <p>Промо, акции, запуски, SKU и задачи старта.</p>
           </div>
-          <div class="quick-actions">
+          <div class="promo-calendar-command-actions">
             <button class="quick-chip" type="button" data-calendar-sync>${CALENDAR_STATE.remoteSaving ? 'Сохраняем...' : 'Синхронизировать'}</button>
             <button class="quick-chip" type="button" data-calendar-today>Сегодня</button>
           </div>
-        </div>
+        </section>
 
         <section class="promo-calendar-toolbar">
           <label>
@@ -599,6 +963,7 @@
           </label>
         </section>
 
+        ${renderPlatformRail()}
         ${renderStats(events)}
 
         <section class="promo-calendar-layout">
@@ -612,19 +977,25 @@
             <div class="promo-month-grid">${gridDays.map((day) => renderDay(day, events, month)).join('')}</div>
           </div>
           <aside class="promo-calendar-side">
-            ${renderForm()}
-            <div class="promo-agenda">
+            <div class="promo-side-card">
               <div class="promo-agenda-head">
-                <span>Список</span>
+                <span>Ближайшие события</span>
                 <strong>${events.length}</strong>
               </div>
               ${renderSideList(events)}
             </div>
+            <div class="promo-side-card promo-data-card">
+              <span>Данные для SKU</span>
+              <strong>${CALENDAR_STATE.dataLoading ? 'грузим...' : `${formatInt((appState().skus || []).length)} SKU`}</strong>
+              <p>${payloadLooksLoaded(appState().warehouseStockOverlay || appState().warehouse_stock_overlay) ? 'Остатки подтянуты в карточку события.' : 'Остатки подтянутся при открытии календаря.'}</p>
+            </div>
           </aside>
         </section>
+        ${renderModal()}
       </div>
     `;
     bindCalendar(root, rootId);
+    if (!CALENDAR_STATE.dataLoaded && !CALENDAR_STATE.dataLoading) ensureCalendarData(rootId);
     if (!CALENDAR_STATE.remoteLoaded && !CALENDAR_STATE.remoteLoading) syncCalendarFromRemote({ rootId, rerender: true });
   }
 
@@ -634,6 +1005,20 @@
     CALENDAR_STATE.month = startOfMonth(dateKey(date));
     CALENDAR_STATE.dateFrom = startOfMonth(CALENDAR_STATE.month);
     CALENDAR_STATE.dateTo = endOfMonth(CALENDAR_STATE.month);
+  }
+
+  function openEventModal(eventId = '', date = '') {
+    CALENDAR_STATE.editingId = String(eventId || '').trim();
+    CALENDAR_STATE.selectedDate = date || CALENDAR_STATE.selectedDate || todayKey();
+    const event = activeEvent();
+    CALENDAR_STATE.draftSkus = event ? [...event.skus] : [];
+    CALENDAR_STATE.skuQuery = '';
+    CALENDAR_STATE.modalOpen = true;
+  }
+
+  function closeEventModal() {
+    CALENDAR_STATE.modalOpen = false;
+    CALENDAR_STATE.skuQuery = '';
   }
 
   async function saveEventFromForm(form, rootId) {
@@ -650,7 +1035,7 @@
       platform: data.get('platform'),
       startDate,
       endDate: endDateRaw >= startDate ? endDateRaw : startDate,
-      skuText: data.get('skuText'),
+      skus: [...new Set((CALENDAR_STATE.draftSkus || []).map((sku) => String(sku || '').trim()).filter(Boolean))],
       comment: data.get('comment'),
       owner: data.get('owner'),
       status: data.get('status'),
@@ -665,6 +1050,7 @@
     storage().promoEvents = allEvents().map((item) => item.id === eventWithTask.id ? eventWithTask : item);
     if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason: 'promo-calendar-task' });
     await persistPromoCalendarEvents({ rootId });
+    CALENDAR_STATE.modalOpen = false;
     renderEventCalendar(rootId);
     if (typeof setAppError === 'function') setAppError(`Событие сохранено: ${eventWithTask.title}.`);
   }
@@ -678,6 +1064,7 @@
       { id, deletedAt: new Date().toISOString() }
     ];
     CALENDAR_STATE.editingId = '';
+    CALENDAR_STATE.modalOpen = false;
     if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason: 'promo-calendar-delete' });
     if (event.taskId && typeof createTaskHistoryEntry === 'function') {
       try { await createTaskHistoryEntry(event.taskId, 'updated', `Календарное событие удалено: ${event.title}.`); } catch {}
@@ -688,6 +1075,11 @@
 
   function taskPayload(event) {
     const firstSku = event.skus[0] || '';
+    const skuRows = event.skus.map((key) => {
+      const sku = findSkuByKey(key);
+      const signals = skuSignals(sku || key, event.platform);
+      return `${key}: ${skuSignalSummary(signals)}`;
+    });
     const period = event.endDate !== event.startDate ? `${event.startDate} - ${event.endDate}` : event.startDate;
     return {
       articleKey: firstSku,
@@ -701,7 +1093,7 @@
       nextAction: `Проверить старт промо ${platformLabel(event.platform)}: ${event.title}.`,
       reason: [
         `Период: ${period}`,
-        event.skus.length ? `SKU: ${event.skus.join(', ')}` : '',
+        event.skus.length ? `SKU:\n${skuRows.join('\n')}` : '',
         event.comment ? `Комментарий: ${event.comment}` : ''
       ].filter(Boolean).join('\n'),
       skipRerender: true
@@ -796,6 +1188,12 @@
       CALENDAR_STATE.search = event.target.value || '';
       renderEventCalendar(rootId);
     });
+    root.querySelectorAll('[data-calendar-platform-chip]').forEach((button) => {
+      button.addEventListener('click', () => {
+        CALENDAR_STATE.platform = button.dataset.calendarPlatformChip || 'all';
+        renderEventCalendar(rootId);
+      });
+    });
     root.querySelectorAll('[data-calendar-month]').forEach((button) => {
       button.addEventListener('click', () => {
         updateMonth(button.dataset.calendarMonth);
@@ -812,29 +1210,18 @@
       await persistPromoCalendarEvents({ rootId, rerender: true });
       if (typeof setAppError === 'function') setAppError('Календарь синхронизирован.');
     });
-    root.querySelector('[data-calendar-form]')?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      await saveEventFromForm(event.currentTarget, rootId);
-    });
-    root.querySelectorAll('[data-calendar-new-date]').forEach((button) => {
-      button.addEventListener('click', () => {
-        CALENDAR_STATE.editingId = '';
-        CALENDAR_STATE.selectedDate = button.dataset.calendarNewDate || todayKey();
-        renderEventCalendar(rootId);
-      });
-    });
-    root.querySelectorAll('[data-calendar-event], [data-calendar-edit]').forEach((button) => {
-      button.addEventListener('click', () => {
-        CALENDAR_STATE.editingId = button.dataset.calendarEvent || button.dataset.calendarEdit || '';
-        renderEventCalendar(rootId);
-      });
-      button.addEventListener('dragstart', (event) => {
-        const id = button.dataset.calendarEvent || button.dataset.calendarEdit || '';
-        event.dataTransfer?.setData('text/plain', id);
-        event.dataTransfer?.setData('application/x-promo-event', id);
-      });
-    });
     root.querySelectorAll('[data-calendar-day]').forEach((day) => {
+      const open = () => {
+        openEventModal('', day.dataset.calendarDay || todayKey());
+        renderEventCalendar(rootId);
+      };
+      day.addEventListener('click', open);
+      day.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          open();
+        }
+      });
       day.addEventListener('dragover', (event) => {
         event.preventDefault();
         day.classList.add('drag-over');
@@ -847,10 +1234,45 @@
         if (id) await moveEvent(id, day.dataset.calendarDay, rootId);
       });
     });
-    root.querySelector('[data-calendar-reset]')?.addEventListener('click', () => {
-      CALENDAR_STATE.editingId = '';
-      CALENDAR_STATE.selectedDate = CALENDAR_STATE.dateFrom || todayKey();
-      renderEventCalendar(rootId);
+    root.querySelectorAll('[data-calendar-event], [data-calendar-edit]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openEventModal(button.dataset.calendarEvent || button.dataset.calendarEdit || '', '');
+        renderEventCalendar(rootId);
+      });
+      button.addEventListener('dragstart', (event) => {
+        const id = button.dataset.calendarEvent || button.dataset.calendarEdit || '';
+        event.dataTransfer?.setData('text/plain', id);
+        event.dataTransfer?.setData('application/x-promo-event', id);
+      });
+    });
+    root.querySelector('[data-calendar-form]')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      await saveEventFromForm(event.currentTarget, rootId);
+    });
+    root.querySelector('[data-calendar-form] select[name="platform"]')?.addEventListener('change', () => renderSkuPicker(root));
+    root.querySelector('[data-calendar-sku-search]')?.addEventListener('input', (event) => {
+      CALENDAR_STATE.skuQuery = event.target.value || '';
+      renderSkuPicker(root);
+    });
+    root.querySelector('[data-calendar-sku-picker]')?.addEventListener('click', (event) => {
+      const toggle = event.target.closest('[data-calendar-sku-toggle]');
+      const remove = event.target.closest('[data-calendar-sku-remove]');
+      const key = toggle?.dataset.calendarSkuToggle || remove?.dataset.calendarSkuRemove || '';
+      if (!key) return;
+      const current = new Set(CALENDAR_STATE.draftSkus || []);
+      if (remove || current.has(key)) current.delete(key);
+      else current.add(key);
+      CALENDAR_STATE.draftSkus = [...current];
+      renderSkuPicker(root);
+    });
+    root.querySelectorAll('[data-calendar-modal-close]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        if (event.currentTarget === event.target || event.currentTarget.tagName === 'BUTTON') {
+          closeEventModal();
+          renderEventCalendar(rootId);
+        }
+      });
     });
     root.querySelector('[data-calendar-delete]')?.addEventListener('click', async (event) => {
       await deleteEvent(event.currentTarget.dataset.calendarDelete, rootId);
@@ -863,11 +1285,9 @@
       storage().promoEvents = allEvents().map((item) => item.id === updated.id ? updated : item);
       if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason: 'promo-calendar-task-manual' });
       await persistPromoCalendarEvents({ rootId });
+      closeEventModal();
       renderEventCalendar(rootId);
       openTaskForEvent(updated.id);
-    });
-    root.querySelectorAll('[data-calendar-agenda]').forEach((item) => {
-      item.addEventListener('dblclick', () => openTaskForEvent(item.dataset.calendarAgenda));
     });
   }
 

@@ -2810,6 +2810,7 @@ function getProductLeaderboardFilters() {
   state.productLeaderboardFilters.sort = state.productLeaderboardFilters.sort || 'gameScore';
   state.productLeaderboardFilters.sortDir = state.productLeaderboardFilters.sortDir === 'asc' ? 'asc' : 'desc';
   state.productLeaderboardFilters.snapshot = state.productLeaderboardFilters.snapshot || 'latest';
+  state.productLeaderboardFilters.expandedPanel = state.productLeaderboardFilters.expandedPanel || '';
   return state.productLeaderboardFilters;
 }
 
@@ -3212,6 +3213,140 @@ function productLeaderboardModuleBoardHtml(payload = {}, summary = {}, ownerCove
   return `<div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:14px">${cards.map(productLeaderboardModuleCardHtml).join('')}</div>`;
 }
 
+function productLeaderboardHasActiveFilters(filters = {}) {
+  return Boolean(
+    String(filters.search || '').trim()
+    || (filters.owner && filters.owner !== 'all')
+    || (filters.category && filters.category !== 'all')
+    || (filters.signal && filters.signal !== 'all')
+  );
+}
+
+function productLeaderboardSubstitutionRowsForItems(items = [], filters = {}) {
+  const payload = wbSubstitutionTrafficPayload();
+  const articles = Array.isArray(payload.articles) ? payload.articles : [];
+  const hasActiveFilter = productLeaderboardHasActiveFilters(filters);
+  const visibleKeys = new Set((Array.isArray(items) ? items : [])
+    .map((item) => productLeaderboardSubstitutionKey(item.articleKey || item.article || item.sku || item.vendorCode || ''))
+    .filter(Boolean));
+  const filteredByLeaderboard = hasActiveFilter && visibleKeys.size > 0
+    ? articles.filter((row) => visibleKeys.has(productLeaderboardSubstitutionArticleKey(row)))
+    : articles;
+  const rows = filteredByLeaderboard.length ? filteredByLeaderboard : articles;
+  return {
+    payload,
+    articles,
+    rows,
+    hasActiveFilter,
+    isFiltered: hasActiveFilter && visibleKeys.size > 0 && rows.length !== articles.length
+  };
+}
+
+function productLeaderboardInsightTileHtml(config = {}) {
+  const completion = config.completion;
+  const level = typeof skuPlanFactCompletionLevel === 'function'
+    ? skuPlanFactCompletionLevel(completion)
+    : productLeaderboardScoreLevel((Number(completion) || 0) * 100);
+  const style = typeof skuPlanFactCardStyle === 'function' ? skuPlanFactCardStyle('wb', completion) : '';
+  return `
+    <button
+      type="button"
+      class="sku-plan-platform-card product-leaderboard-insight-tile level-${level}${config.active ? ' is-active' : ''}"
+      data-product-leaderboard-panel="${escapeHtml(config.panel || '')}"
+      style="${style};width:100%;text-align:left;border-width:${config.active ? '2px' : '1px'};cursor:pointer;font:inherit;color:inherit;appearance:none"
+      aria-expanded="${config.active ? 'true' : 'false'}"
+    >
+      <span class="sku-plan-platform-card__top">
+        <strong>${escapeHtml(config.title || '')}</strong>
+        <em>${escapeHtml(config.kicker || '')}</em>
+      </span>
+      <span class="sku-plan-platform-card__value">${escapeHtml(config.value || '')}</span>
+      <span class="sku-plan-platform-card__meta">${escapeHtml(config.meta || '')}</span>
+      <span class="sku-plan-platform-card__bar"><i></i></span>
+      <span class="sku-plan-platform-card__foot">
+        <b class="${escapeHtml(config.deltaClass || '')}">${escapeHtml(config.footer || '')}</b>
+        <span><em>${escapeHtml(config.active ? 'открыто, нажать чтобы скрыть' : 'открыть детали')}</em></span>
+      </span>
+    </button>
+  `;
+}
+
+function renderProductLeaderboardInsightTilesHtml(payload = {}, summary = {}, ownerCoverage = 0, items = [], filters = {}) {
+  const game = productLeaderboardGameScore(payload, items);
+  const substitutionModel = productLeaderboardSubstitutionRowsForItems(items, filters);
+  const substitutionSummary = productLeaderboardSubstitutionSummary(substitutionModel.rows);
+  const activePanel = String(filters.expandedPanel || '');
+  const substitutionCompletion = substitutionSummary.orderRate
+    ? Math.min(1.35, substitutionSummary.orderRate / 0.06)
+    : null;
+  const tiles = [
+    {
+      panel: 'metrics',
+      title: 'Метрики КЗ',
+      kicker: `${fmt.int(summary.skuCount)} SKU · owner ${fmt.pct(ownerCoverage)}`,
+      value: fmt.money(summary.revenue),
+      meta: `${fmt.int(summary.orders)} заказов · ${fmt.int(summary.buys)} выкупов`,
+      completion: game.score / 100,
+      footer: `ROMI ${fmt.pct(summary.romiPct)} · ДРР ${fmt.pct(summary.drrPct)}`,
+      active: activePanel === 'metrics'
+    },
+    {
+      panel: 'substitution',
+      title: 'WB подменные артикулы',
+      kicker: substitutionModel.isFiltered ? 'по фильтрам лидерборда' : 'все SKU WB',
+      value: fmt.int(substitutionSummary.orders),
+      meta: `${fmt.int(substitutionSummary.views)} просмотров · CR ${fmt.pct(substitutionSummary.orderRate)}`,
+      completion: substitutionCompletion,
+      footer: `${fmt.int(substitutionSummary.articles)} SKU · ${fmt.int(substitutionSummary.substitutionCount)} подмен`,
+      deltaClass: wbSubstitutionTrafficTone(substitutionSummary.orderRate),
+      active: activePanel === 'substitution'
+    }
+  ];
+  return `
+    <div class="sku-plan-platform-board product-leaderboard-insight-board" style="margin-top:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+      ${tiles.map(productLeaderboardInsightTileHtml).join('')}
+    </div>
+  `;
+}
+
+function renderProductLeaderboardMetricsPanel(payload = {}, filteredSummary = {}, ownerCoverage = 0) {
+  return `
+    <div class="product-leaderboard-metrics-panel">
+      <div class="kpi-strip" style="margin-top:14px">
+        <div class="mini-kpi"><span>Охваты</span><strong>${fmt.int(filteredSummary.reach)}</strong><span>верх воронки</span></div>
+        <div class="mini-kpi"><span>Клики</span><strong>${fmt.int(filteredSummary.clicks)}</strong><span>CTR ${fmt.pct(filteredSummary.ctrPct)}</span></div>
+        <div class="mini-kpi"><span>Корзины</span><strong>${fmt.int(filteredSummary.carts)}</strong><span>из кликов ${fmt.pct(filteredSummary.cartRatePct)}</span></div>
+        <div class="mini-kpi"><span>Заказы</span><strong>${fmt.int(filteredSummary.orders)}</strong><span>из кликов ${fmt.pct(filteredSummary.orderRatePct)}</span></div>
+        <div class="mini-kpi"><span>Выкупы</span><strong>${fmt.int(filteredSummary.buys)}</strong><span>buyout ${fmt.pct(filteredSummary.buyoutPct)}</span></div>
+        <div class="mini-kpi"><span>Выручка / доход</span><strong>${fmt.money(filteredSummary.revenue)}</strong><span>${fmt.money(filteredSummary.income)}</span></div>
+      </div>
+
+      <div class="card product-leaderboard-insight-panel" style="margin-top:14px">
+        <div class="section-subhead">
+          <div>
+            <h3>Итог недели по КЗ</h3>
+            <p class="small muted">Источник: ${escapeHtml(payload.sourceSheetName || 'weekly КЗ-лист')} · обновлено ${escapeHtml(fmt.date(payload.generatedAt))}</p>
+          </div>
+          <div class="badge-stack">
+            ${badge(`ROMI ${fmt.pct(filteredSummary.romiPct)}`, filteredSummary.romiPct >= 2 ? 'ok' : filteredSummary.romiPct >= 1 ? 'info' : 'warn')}
+            ${badge(`ДРР ${fmt.pct(filteredSummary.drrPct)}`, filteredSummary.drrPct <= 0.3 ? 'ok' : filteredSummary.drrPct <= 0.4 ? 'info' : 'warn')}
+            ${badge(`Owner coverage ${fmt.pct(ownerCoverage)}`, ownerCoverage >= 0.95 ? 'ok' : 'warn')}
+            ${badge(`Критичных ${fmt.int(payload.alertCounts.critical || 0)}`, payload.alertCounts.critical ? 'danger' : 'ok')}
+          </div>
+        </div>
+        <div class="quick-actions" style="margin-top:12px">
+          ${badge(`Отклик ${fmt.int(filteredSummary.reactions)}`, 'info')}
+          ${badge(`Публикации ${fmt.int(filteredSummary.posts)}`, '')}
+          ${badge(`Контент ${fmt.money(filteredSummary.contentCost)}`, filteredSummary.contentCost ? 'warn' : '')}
+          ${badge(`Доход ${fmt.money(filteredSummary.income)}`, filteredSummary.income > 0 ? 'ok' : 'warn')}
+          ${badge(`Buy rate ${fmt.pct(filteredSummary.buyRatePct)}`, 'info')}
+          ${badge(`High alerts ${fmt.int(payload.alertCounts.high || 0)}`, payload.alertCounts.high ? 'warn' : '')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function productLeaderboardOwnerRaceHtml(items = []) {
   const rows = [...items.reduce((map, item) => {
     const owner = item.owner || 'Без owner';
@@ -3317,23 +3452,12 @@ function productLeaderboardSubstitutionArticleKey(row = {}) {
 }
 
 function renderProductLeaderboardSubstitutionRacePanel(items = [], leaderboardPayload = {}, filters = {}) {
-  const payload = wbSubstitutionTrafficPayload();
-  const articles = Array.isArray(payload.articles) ? payload.articles : [];
+  const model = productLeaderboardSubstitutionRowsForItems(items, filters);
+  const payload = model.payload;
+  const articles = model.articles;
   if (!articles.length) return '';
 
-  const hasActiveFilter = Boolean(
-    String(filters.search || '').trim()
-    || (filters.owner && filters.owner !== 'all')
-    || (filters.category && filters.category !== 'all')
-    || (filters.signal && filters.signal !== 'all')
-  );
-  const visibleKeys = new Set((Array.isArray(items) ? items : [])
-    .map((item) => productLeaderboardSubstitutionKey(item.articleKey || item.article || item.sku || item.vendorCode || ''))
-    .filter(Boolean));
-  const filteredByLeaderboard = hasActiveFilter && visibleKeys.size > 0
-    ? articles.filter((row) => visibleKeys.has(productLeaderboardSubstitutionArticleKey(row)))
-    : articles;
-  const raceRows = filteredByLeaderboard.length ? filteredByLeaderboard : articles;
+  const raceRows = model.rows;
   const summary = productLeaderboardSubstitutionSummary(raceRows);
   const maxOrders = Math.max(1, ...raceRows.map((row) => numberOrZero(row.orders)));
   const maxViews = Math.max(1, ...raceRows.map((row) => numberOrZero(row.views)));
@@ -3346,7 +3470,7 @@ function renderProductLeaderboardSubstitutionRacePanel(items = [], leaderboardPa
     ))
     .slice(0, 6);
   const sourceLabel = payload.asOfDate || payload.source?.sourceGeneratedAt || payload.generatedAt || '';
-  const isFiltered = hasActiveFilter && visibleKeys.size > 0 && raceRows.length !== articles.length;
+  const isFiltered = model.isFiltered;
   const orderTone = wbSubstitutionTrafficTone(summary.orderRate);
   const cards = [
     {
@@ -7709,8 +7833,14 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const ownerCoverage = filteredSummary.skuCount > 0 ? filteredSummary.ownerAssignedCount / filteredSummary.skuCount : 0;
   const gameHeroHtml = productLeaderboardGameHeroHtml(payload, filteredItems, freshness);
   const moduleBoardHtml = productLeaderboardModuleBoardHtml(payload, filteredSummary, ownerCoverage);
+  const insightTilesHtml = renderProductLeaderboardInsightTilesHtml(payload, filteredSummary, ownerCoverage, filteredItems, filters);
+  const metricsPanelHtml = filters.expandedPanel === 'metrics'
+    ? renderProductLeaderboardMetricsPanel(payload, filteredSummary, ownerCoverage)
+    : '';
   const ownerRaceHtml = productLeaderboardOwnerRaceHtml(filteredItems);
-  const substitutionRaceHtml = renderProductLeaderboardSubstitutionRacePanel(filteredItems, payload, filters);
+  const substitutionRaceHtml = filters.expandedPanel === 'substitution'
+    ? renderProductLeaderboardSubstitutionRacePanel(filteredItems, payload, filters)
+    : '';
   const snapshots = productLeaderboardHistoryPayloads();
   const historyOptions = snapshots.slice(1);
   const historyCards = snapshots.slice(0, 6).map((snapshot) => {
@@ -7762,7 +7892,11 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
 
     ${moduleBoardHtml}
 
-    <div class="kpi-strip">
+    ${insightTilesHtml}
+
+    ${metricsPanelHtml}
+
+    <div class="kpi-strip" style="display:none">
       <div class="mini-kpi"><span>Охваты</span><strong>${fmt.int(filteredSummary.reach)}</strong><span>верх воронки</span></div>
       <div class="mini-kpi"><span>Клики</span><strong>${fmt.int(filteredSummary.clicks)}</strong><span>CTR ${fmt.pct(filteredSummary.ctrPct)}</span></div>
       <div class="mini-kpi"><span>Корзины</span><strong>${fmt.int(filteredSummary.carts)}</strong><span>из кликов ${fmt.pct(filteredSummary.cartRatePct)}</span></div>
@@ -7771,7 +7905,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       <div class="mini-kpi"><span>Выручка / доход</span><strong>${fmt.money(filteredSummary.revenue)}</strong><span>${fmt.money(filteredSummary.income)}</span></div>
     </div>
 
-    <div class="card">
+    <div class="card" style="display:none">
       <div class="section-subhead">
         <div>
           <h3>Итог недели по КЗ</h3>
@@ -7990,6 +8124,15 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
         productFilters.sort = nextSort;
         productFilters.sortDir = 'desc';
       }
+      rerenderCurrentView();
+    });
+  });
+  root.querySelectorAll('[data-product-leaderboard-panel]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const nextPanel = String(button.getAttribute('data-product-leaderboard-panel') || '').trim();
+      if (!nextPanel) return;
+      const productFilters = getProductLeaderboardFilters();
+      productFilters.expandedPanel = productFilters.expandedPanel === nextPanel ? '' : nextPanel;
       rerenderCurrentView();
     });
   });

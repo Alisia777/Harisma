@@ -3325,6 +3325,82 @@ function productLeaderboardCommonOrderContour(summary = {}, items = [], filters 
   };
 }
 
+function productLeaderboardItemCompareKey(item = {}) {
+  return productLeaderboardSubstitutionKey(item.articleKey || item.article || item.sku || item.vendorCode || item.name || item.id || '');
+}
+
+function productLeaderboardSignedInt(value) {
+  const numeric = Math.round(numberOrZero(value));
+  const sign = numeric > 0 ? '+' : numeric < 0 ? '-' : '';
+  return `${sign}${fmt.int(Math.abs(numeric))}`;
+}
+
+function productLeaderboardLikeForLikeModel(payload = {}, items = []) {
+  const previous = productLeaderboardPreviousComparableSnapshot(payload);
+  const previousPayload = previous?.snapshot || null;
+  const previousItems = Array.isArray(previousPayload?.items) ? previousPayload.items : [];
+  const previousMap = new Map(previousItems.map((item) => [productLeaderboardItemCompareKey(item), item]).filter(([key]) => key));
+  const rows = (Array.isArray(items) ? items : [])
+    .map((current) => {
+      const key = productLeaderboardItemCompareKey(current);
+      const previousItem = key ? previousMap.get(key) : null;
+      if (!previousItem) return null;
+      const ordersDelta = numberOrZero(current.orders) - numberOrZero(previousItem.orders);
+      const revenueDelta = numberOrZero(current.revenue) - numberOrZero(previousItem.revenue);
+      const buysDelta = numberOrZero(current.buys) - numberOrZero(previousItem.buys);
+      const clicksDelta = numberOrZero(current.clicks) - numberOrZero(previousItem.clicks);
+      const cartsDelta = numberOrZero(current.carts) - numberOrZero(previousItem.carts);
+      return {
+        key,
+        current,
+        previous: previousItem,
+        ordersDelta,
+        ordersDeltaPct: numberOrZero(previousItem.orders) > 0 ? ordersDelta / numberOrZero(previousItem.orders) : null,
+        revenueDelta,
+        revenueDeltaPct: numberOrZero(previousItem.revenue) > 0 ? revenueDelta / numberOrZero(previousItem.revenue) : null,
+        buysDelta,
+        clicksDelta,
+        cartsDelta
+      };
+    })
+    .filter(Boolean);
+  const currentMatched = rows.map((row) => row.current);
+  const previousMatched = rows.map((row) => row.previous);
+  const currentSummary = productLeaderboardSummaryFromItems(currentMatched);
+  const previousSummary = productLeaderboardSummaryFromItems(previousMatched);
+  const ordersDelta = currentSummary.orders - previousSummary.orders;
+  const revenueDelta = currentSummary.revenue - previousSummary.revenue;
+  const buysDelta = currentSummary.buys - previousSummary.buys;
+  const clicksDelta = currentSummary.clicks - previousSummary.clicks;
+  const cartsDelta = currentSummary.carts - previousSummary.carts;
+  const sortedRows = rows.slice().sort((left, right) => (
+    numberOrZero(right.ordersDelta) - numberOrZero(left.ordersDelta)
+    || numberOrZero(right.revenueDelta) - numberOrZero(left.revenueDelta)
+    || String(left.current.articleKey || '').localeCompare(String(right.current.articleKey || ''), 'ru')
+  ));
+  const currentKeys = new Set((Array.isArray(items) ? items : []).map(productLeaderboardItemCompareKey).filter(Boolean));
+  const previousKeys = new Set(previousItems.map(productLeaderboardItemCompareKey).filter(Boolean));
+  return {
+    previousPayload,
+    previousLabel: previousPayload ? (previousPayload.weekLabel || previousPayload.sourceSheetName || 'прошлая неделя') : '',
+    rows: sortedRows,
+    currentSummary,
+    previousSummary,
+    ordersDelta,
+    ordersDeltaPct: previousSummary.orders > 0 ? ordersDelta / previousSummary.orders : null,
+    revenueDelta,
+    revenueDeltaPct: previousSummary.revenue > 0 ? revenueDelta / previousSummary.revenue : null,
+    buysDelta,
+    clicksDelta,
+    cartsDelta,
+    growingRows: rows.filter((row) => row.ordersDelta > 0).length,
+    fallingRows: rows.filter((row) => row.ordersDelta < 0).length,
+    flatRows: rows.filter((row) => row.ordersDelta === 0).length,
+    newRows: [...currentKeys].filter((key) => !previousKeys.has(key)).length,
+    lostRows: [...previousKeys].filter((key) => !currentKeys.has(key)).length
+  };
+}
+
 function productLeaderboardWeekRange(payload = {}) {
   const label = String(payload.weekLabel || payload.sourceSheetName || '').trim();
   const match = label.match(/(\d{2})\.(\d{2})\.(\d{4})\s*-\s*(\d{2})\.(\d{2})\.(\d{4})/);
@@ -3563,10 +3639,14 @@ function renderProductLeaderboardInsightTilesHtml(payload = {}, summary = {}, ow
   const game = productLeaderboardGameScore(payload, items);
   const substitutionModel = productLeaderboardSubstitutionRowsForItems(items, filters);
   const substitutionSummary = productLeaderboardSubstitutionSummary(substitutionModel.rows);
+  const likeForLike = productLeaderboardLikeForLikeModel(payload, items);
   const activePanel = String(filters.expandedPanel || '');
   const substitutionCompletion = substitutionSummary.orderRate
     ? Math.min(1.35, substitutionSummary.orderRate / 0.06)
     : null;
+  const lflCompletion = likeForLike.ordersDeltaPct == null
+    ? null
+    : Math.min(1.35, Math.max(0.05, 1 + likeForLike.ordersDeltaPct));
   const tiles = [
     {
       panel: 'metrics',
@@ -3592,6 +3672,19 @@ function renderProductLeaderboardInsightTilesHtml(payload = {}, summary = {}, ow
       active: activePanel === 'substitution',
       actionLabel: 'Показать список',
       actionHint: 'Вместо SKU-воронки'
+    },
+    {
+      panel: 'likeforlike',
+      title: 'Like for like',
+      kicker: likeForLike.previousLabel ? `к ${likeForLike.previousLabel}` : 'нет базы сравнения',
+      value: productLeaderboardSignedInt(likeForLike.ordersDelta),
+      meta: `${fmt.int(likeForLike.rows.length)} SKU · выручка ${productLeaderboardSignedMoney(likeForLike.revenueDelta)}`,
+      completion: lflCompletion,
+      footer: `растут ${fmt.int(likeForLike.growingRows)} · падают ${fmt.int(likeForLike.fallingRows)}`,
+      deltaClass: likeForLike.ordersDelta >= 0 ? 'ok-text' : 'danger-text',
+      active: activePanel === 'likeforlike',
+      actionLabel: 'Показать LFL',
+      actionHint: 'Какие SKU дали рост'
     }
   ];
   return `
@@ -3634,6 +3727,118 @@ function renderProductLeaderboardMetricsPanel(payload = {}, filteredSummary = {}
           ${badge(`Buy rate ${fmt.pct(filteredSummary.buyRatePct)}`, 'info')}
           ${badge(`High alerts ${fmt.int(payload.alertCounts.high || 0)}`, payload.alertCounts.high ? 'warn' : '')}
         </div>
+      </div>
+    </div>
+  `;
+}
+
+function productLeaderboardLikeForLikeDeltaBadge(value, format = 'int') {
+  const numeric = numberOrZero(value);
+  const text = format === 'money'
+    ? productLeaderboardSignedMoney(numeric)
+    : productLeaderboardSignedInt(numeric);
+  return badge(text, numeric > 0 ? 'ok' : numeric < 0 ? 'danger' : 'info');
+}
+
+function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = []) {
+  const model = productLeaderboardLikeForLikeModel(payload, filteredItems);
+  const rows = model.rows;
+  if (!model.previousPayload) {
+    return `
+      <div class="card product-leaderboard-likeforlike-panel" data-product-leaderboard-expanded-panel="likeforlike" style="margin-top:14px">
+        <div class="empty">Нет прошлой валидной недели для Like for like.</div>
+      </div>
+    `;
+  }
+  const currentLabel = payload.weekLabel || payload.sourceSheetName || 'текущая неделя';
+  const previousLabel = model.previousLabel || 'прошлая неделя';
+  return `
+    <div class="card product-leaderboard-likeforlike-panel" data-product-leaderboard-expanded-panel="likeforlike" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Like for like: неделя к неделе</h3>
+          <p class="small muted">Сравниваем только одинаковые SKU в двух срезах: ${escapeHtml(currentLabel)} против ${escapeHtml(previousLabel)}.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(rows.length)} LFL SKU`, rows.length ? 'info' : 'warn')}
+          ${badge(`${fmt.int(model.newRows)} новых вне LFL`, model.newRows ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(model.lostRows)} выпали из LFL`, model.lostRows ? 'warn' : 'ok')}
+        </div>
+      </div>
+      <div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+        ${productLeaderboardModuleCardHtml({
+          title: 'Заказы LFL',
+          kicker: `${fmt.int(model.currentSummary.orders)} сейчас`,
+          value: productLeaderboardSignedInt(model.ordersDelta),
+          meta: `${fmt.int(model.previousSummary.orders)} было · ${model.ordersDeltaPct == null ? '—' : productLeaderboardSignedPct(model.ordersDeltaPct)}`,
+          completion: model.ordersDeltaPct == null ? null : Math.min(1.35, Math.max(0.05, 1 + model.ordersDeltaPct)),
+          footer: `растут ${fmt.int(model.growingRows)}`,
+          hint: `падают ${fmt.int(model.fallingRows)}`,
+          deltaClass: model.ordersDelta >= 0 ? 'ok' : 'danger'
+        })}
+        ${productLeaderboardModuleCardHtml({
+          title: 'Выручка LFL',
+          kicker: fmt.money(model.currentSummary.revenue),
+          value: productLeaderboardSignedMoney(model.revenueDelta),
+          meta: `${fmt.money(model.previousSummary.revenue)} было · ${model.revenueDeltaPct == null ? '—' : productLeaderboardSignedPct(model.revenueDeltaPct)}`,
+          completion: model.revenueDeltaPct == null ? null : Math.min(1.35, Math.max(0.05, 1 + model.revenueDeltaPct)),
+          footer: 'выручка',
+          hint: 'по тем же SKU',
+          deltaClass: model.revenueDelta >= 0 ? 'ok' : 'danger'
+        })}
+        ${productLeaderboardModuleCardHtml({
+          title: 'Верх воронки',
+          kicker: `клики ${productLeaderboardSignedInt(model.clicksDelta)}`,
+          value: productLeaderboardSignedInt(model.cartsDelta),
+          meta: `корзины · выкупы ${productLeaderboardSignedInt(model.buysDelta)}`,
+          completion: model.previousSummary.carts > 0 ? Math.min(1.35, Math.max(0.05, 1 + model.cartsDelta / model.previousSummary.carts)) : null,
+          footer: 'клики / корзины',
+          hint: 'по LFL SKU',
+          deltaClass: model.cartsDelta >= 0 ? 'ok' : 'danger'
+        })}
+      </div>
+      <div class="table-wrap" style="margin-top:12px">
+        <table>
+          <thead>
+            <tr>
+              <th>SKU / товар</th>
+              <th>Owner</th>
+              <th>Заказы сейчас</th>
+              <th>Заказы было</th>
+              <th>Δ заказов</th>
+              <th>Δ выручки</th>
+              <th>Клики</th>
+              <th>Корзины</th>
+              <th>Выкупы</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => {
+              const current = row.current;
+              const previous = row.previous;
+              return `
+                <tr data-product-likeforlike-row="${escapeHtml(row.key)}">
+                  <td>
+                    <div><strong>${current.articleKey ? linkToSku(current.articleKey, current.articleKey) : escapeHtml(current.article || current.name || row.key)}</strong></div>
+                    <div class="muted small">${escapeHtml(current.name || previous.name || '')}</div>
+                    <div class="badge-stack" style="margin-top:8px">
+                      ${row.ordersDelta > 0 ? badge('растет', 'ok') : row.ordersDelta < 0 ? badge('просел', 'danger') : badge('без изменения', 'info')}
+                      ${row.ordersDeltaPct == null ? '' : badge(productLeaderboardSignedPct(row.ordersDeltaPct), row.ordersDelta >= 0 ? 'ok' : 'danger')}
+                    </div>
+                  </td>
+                  <td>${current.owner ? badge(current.owner, 'info') : badge('Без owner', 'warn')}</td>
+                  <td><strong>${fmt.int(current.orders)}</strong><div class="muted small">${fmt.money(current.revenue)}</div></td>
+                  <td>${fmt.int(previous.orders)}<div class="muted small">${fmt.money(previous.revenue)}</div></td>
+                  <td>${productLeaderboardLikeForLikeDeltaBadge(row.ordersDelta)}</td>
+                  <td>${productLeaderboardLikeForLikeDeltaBadge(row.revenueDelta, 'money')}</td>
+                  <td>${fmt.int(current.clicks)}<div class="muted small">${productLeaderboardSignedInt(row.clicksDelta)}</div></td>
+                  <td>${fmt.int(current.carts)}<div class="muted small">${productLeaderboardSignedInt(row.cartsDelta)}</div></td>
+                  <td>${fmt.int(current.buys)}<div class="muted small">${productLeaderboardSignedInt(row.buysDelta)}</div></td>
+                </tr>
+              `;
+            }).join('') || '<tr><td colspan="9"><div class="empty">Нет совпавших SKU для Like for like.</div></td></tr>'}
+          </tbody>
+        </table>
       </div>
     </div>
   `;
@@ -8157,6 +8362,8 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const freshness = productLeaderboardFreshnessMeta(payload);
   const filters = getProductLeaderboardFilters();
   const isSubstitutionMode = filters.expandedPanel === 'substitution';
+  const isLikeForLikeMode = filters.expandedPanel === 'likeforlike';
+  const isAlternateWorkbenchMode = isSubstitutionMode || isLikeForLikeMode;
   const filteredItems = getFilteredProductLeaderboardItems(payload);
   const filteredSummary = productLeaderboardSummaryFromItems(filteredItems);
   const ownerCoverage = filteredSummary.skuCount > 0 ? filteredSummary.ownerAssignedCount / filteredSummary.skuCount : 0;
@@ -8167,11 +8374,14 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const metricsPanelHtml = !isSubstitutionMode && filters.expandedPanel === 'metrics'
     ? renderProductLeaderboardMetricsPanel(payload, filteredSummary, ownerCoverage)
     : '';
-  const ownerRaceHtml = isSubstitutionMode ? '' : productLeaderboardOwnerRaceHtml(filteredItems);
+  const ownerRaceHtml = isAlternateWorkbenchMode ? '' : productLeaderboardOwnerRaceHtml(filteredItems);
   const substitutionRaceHtml = isSubstitutionMode
     ? renderProductLeaderboardSubstitutionRacePanel(filteredItems, payload, filters)
     : '';
-  const standardLeaderboardCardStyle = isSubstitutionMode ? 'display:none' : 'margin-top:14px';
+  const likeForLikePanelHtml = isLikeForLikeMode
+    ? renderProductLeaderboardLikeForLikePanel(payload, filteredItems)
+    : '';
+  const standardLeaderboardCardStyle = isAlternateWorkbenchMode ? 'display:none' : 'margin-top:14px';
   const snapshots = productLeaderboardHistoryPayloads();
   const historyOptions = snapshots.slice(1);
   const historyCards = snapshots.slice(0, 6).map((snapshot) => {
@@ -8264,6 +8474,8 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
     ${ownerRaceHtml}
 
     ${substitutionRaceHtml}
+
+    ${likeForLikePanelHtml}
 
     <div class="card" style="${standardLeaderboardCardStyle}">
       <div class="section-subhead">

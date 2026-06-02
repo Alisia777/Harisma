@@ -13,6 +13,7 @@
     dateFrom: '',
     dateTo: '',
     platform: 'all',
+    kind: 'all',
     search: '',
     editingId: '',
     selectedDate: '',
@@ -26,6 +27,7 @@
     dataLoading: false
   };
   window.__ALTEA_PROMO_CALENDAR_STATE__ = CALENDAR_STATE;
+  if (!CALENDAR_STATE.kind) CALENDAR_STATE.kind = 'all';
 
   const PLATFORMS = [
     ['all', 'Все площадки'],
@@ -43,6 +45,13 @@
     ['active', 'В эфире'],
     ['done', 'Завершено'],
     ['draft', 'Черновик']
+  ];
+  const EVENT_KINDS = [
+    ['all', 'Все события'],
+    ['promo', 'Промо'],
+    ['task-auto', 'Автозадачи'],
+    ['task-manual', 'Задачи'],
+    ['launch', 'Новинки']
   ];
   const WEEKDAYS = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
   const MONTHS = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
@@ -205,6 +214,8 @@
       owner: String(item.owner || '').trim(),
       status: String(item.status || 'planned').trim() || 'planned',
       taskId: String(item.taskId || item.task_id || '').trim(),
+      calendarKind: 'promo',
+      readonly: false,
       createdAt: String(item.createdAt || item.created_at || now),
       updatedAt: String(item.updatedAt || item.updated_at || item.createdAt || now)
     };
@@ -212,6 +223,175 @@
 
   function allEvents() {
     return storage().promoEvents.map(normalizeEvent).filter((event) => event.id && event.title);
+  }
+
+  function validDateKey(value = '') {
+    const key = String(value || '').trim().slice(0, 10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(key) ? key : '';
+  }
+
+  function uniqueList(values = []) {
+    return [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))];
+  }
+
+  function calendarSafeId(prefix, parts = []) {
+    const raw = parts.map((item) => String(item || '').trim()).filter(Boolean).join('|') || `${prefix}|${Date.now()}`;
+    const hash = typeof hashString === 'function'
+      ? hashString(raw)
+      : (token(raw).slice(0, 48) || Math.random().toString(36).slice(2, 10));
+    return `${prefix}:${hash}`;
+  }
+
+  function eventKindKey(eventOrKind = 'promo') {
+    const raw = typeof eventOrKind === 'string'
+      ? eventOrKind
+      : (eventOrKind?.calendarKind || eventOrKind?.kind || 'promo');
+    return EVENT_KINDS.some(([key]) => key === raw) ? raw : 'promo';
+  }
+
+  function eventKindLabel(eventOrKind = 'promo') {
+    const key = eventKindKey(eventOrKind);
+    return EVENT_KINDS.find(([item]) => item === key)?.[1] || 'Промо';
+  }
+
+  function isEditableEvent(event = {}) {
+    return !event.readonly && eventKindKey(event) === 'promo';
+  }
+
+  function taskDoneStatus(value = '') {
+    const status = String(value || '').trim().toLowerCase();
+    return Boolean(status && /done|closed|complete|cancel|archive|deleted|removed|finish/.test(status));
+  }
+
+  function taskEventKind(task = {}) {
+    const source = String(task.source || '').trim().toLowerCase();
+    const id = String(task.id || '').trim().toLowerCase();
+    return source === 'auto' || Boolean(task.autoCode) || id.startsWith('auto-') ? 'task-auto' : 'task-manual';
+  }
+
+  function taskStatusForCalendar(task = {}) {
+    if (taskDoneStatus(task.status)) return 'done';
+    return 'planned';
+  }
+
+  function taskDateKey(task = {}) {
+    return validDateKey(task.due || task.deadline || task.date || task.startDate);
+  }
+
+  function taskSkuKeys(task = {}) {
+    return uniqueList([
+      task.articleKey,
+      task.article,
+      ...(Array.isArray(task.skus) ? task.skus : []),
+      ...textLines(task.skuText || task.skusText || task.sku || '')
+    ]);
+  }
+
+  function normalizedTaskList() {
+    const state = appState();
+    try {
+      if (typeof getAllTasks === 'function') return getAllTasks();
+    } catch (error) {
+      console.warn('[promo-calendar] tasks', error);
+    }
+    return (Array.isArray(state.storage?.tasks) ? state.storage.tasks : [])
+      .map((task) => (typeof normalizeTask === 'function' ? normalizeTask(task, task?.source || 'manual') : task))
+      .filter(Boolean);
+  }
+
+  function taskCalendarEvents(manualEvents = allEvents()) {
+    const linkedPromoTaskIds = new Set(manualEvents.map((event) => String(event.taskId || '').trim()).filter(Boolean));
+    return normalizedTaskList().map((task) => {
+      const due = taskDateKey(task);
+      const taskId = String(task.id || '').trim();
+      if (!due || !taskId || linkedPromoTaskIds.has(taskId) || taskDoneStatus(task.status) && /deleted|removed|archive|cancel/.test(String(task.status || '').toLowerCase())) return null;
+      const skus = taskSkuKeys(task);
+      const title = String(task.title || task.nextAction || task.entityLabel || 'Задача').trim();
+      return {
+        id: `task:${taskId}`,
+        sourceId: taskId,
+        taskId,
+        calendarKind: taskEventKind(task),
+        readonly: true,
+        title,
+        platform: platformKey(task.platform || task.marketplace || 'cross'),
+        startDate: due,
+        endDate: due,
+        skus,
+        skuText: skus.join('\n'),
+        comment: [task.nextAction, task.reason].filter(Boolean).join('\n'),
+        owner: String(task.owner || task.coOwner || '').trim(),
+        status: taskStatusForCalendar(task),
+        rawStatus: String(task.status || '').trim(),
+        taskSource: String(task.source || '').trim(),
+        autoCode: String(task.autoCode || '').trim(),
+        createdAt: String(task.createdAt || ''),
+        updatedAt: String(task.updatedAt || task.createdAt || '')
+      };
+    }).filter(Boolean);
+  }
+
+  function launchPlatformKey(item = {}) {
+    const text = String([item.platform, item.marketplace, item.marketplaces].filter(Boolean).join(' ')).toLowerCase();
+    if (text.includes('wb') && text.includes('ozon')) return 'cross';
+    if (text.includes('wb') || text.includes('wildberries')) return 'wb';
+    if (text.includes('ozon')) return 'ozon';
+    if (text.includes('янд') || text.includes('ya')) return 'ya';
+    if (text.includes('золот') || text.includes('gold')) return 'goldapple';
+    if (text.includes('лету') || text.includes('letu')) return 'letu';
+    if (text.includes('магнит') || text.includes('magnit')) return 'magnit';
+    return 'product';
+  }
+
+  function launchCalendarDate(item = {}) {
+    if (typeof launchDueDateKey === 'function') return validDateKey(launchDueDateKey(item));
+    return validDateKey(item.launchDate || item.launchDateKey || item.date || item.startDate);
+  }
+
+  function launchCalendarEvents() {
+    const state = appState();
+    const items = (() => {
+      try {
+        if (typeof getLaunchItems === 'function') return getLaunchItems({ skipTaskLookup: true });
+      } catch (error) {
+        console.warn('[promo-calendar] launches', error);
+      }
+      return Array.isArray(state.launches) ? state.launches : [];
+    })();
+    return (Array.isArray(items) ? items : []).map((item) => {
+      const launchDate = launchCalendarDate(item);
+      if (!launchDate) return null;
+      const sourceId = String(item.id || '').trim() || calendarSafeId('launch-source', [item.articleKey, item.name, launchDate]);
+      const skus = uniqueList([item.articleKey]);
+      const name = String(item.name || item.title || item.articleKey || 'Новинка').trim();
+      return {
+        id: `launch:${sourceId}`,
+        sourceId,
+        calendarKind: 'launch',
+        readonly: true,
+        title: `Выход новинки: ${name}`,
+        platform: launchPlatformKey(item),
+        startDate: launchDate,
+        endDate: launchDate,
+        skus,
+        skuText: skus.join('\n'),
+        comment: [item.status, item.launchDecision, item.productComment || item.notes].filter(Boolean).join('\n'),
+        owner: String(item.owner || '').trim(),
+        status: 'planned',
+        launchStatus: String(item.status || '').trim(),
+        createdAt: '',
+        updatedAt: ''
+      };
+    }).filter(Boolean);
+  }
+
+  function calendarEvents() {
+    const manualEvents = allEvents().map((event) => ({ ...event, calendarKind: 'promo', readonly: false }));
+    return [
+      ...manualEvents,
+      ...taskCalendarEvents(manualEvents),
+      ...launchCalendarEvents()
+    ];
   }
 
   function deletedIds() {
@@ -416,16 +596,18 @@
     const needSkus = !Array.isArray(state.skus) || !state.skus.length;
     const needWarehouse = !payloadLooksLoaded(state.warehouseStockOverlay || state.warehouse_stock_overlay);
     const needOverlay = !payloadLooksLoaded(state.smartPriceOverlay);
-    if (!needSkus && !needWarehouse && !needOverlay) {
+    const needLaunches = !Array.isArray(state.launches) || !state.launches.length;
+    if (!needSkus && !needWarehouse && !needOverlay && !needLaunches) {
       CALENDAR_STATE.dataLoaded = true;
       return;
     }
     CALENDAR_STATE.dataLoading = true;
     try {
-      const [skus, warehouse, overlay] = await Promise.all([
+      const [skus, warehouse, overlay, launches] = await Promise.all([
         needSkus ? loadCalendarJson('data/skus.json', [], 'SKU') : Promise.resolve(state.skus),
         needWarehouse ? loadCalendarJson('data/warehouse_stock_overlay.json', { generatedAt: '', rows: [] }, 'Склад/остатки') : Promise.resolve(state.warehouseStockOverlay || state.warehouse_stock_overlay),
-        needOverlay ? loadCalendarJson('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт SKU') : Promise.resolve(state.smartPriceOverlay)
+        needOverlay ? loadCalendarJson('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт SKU') : Promise.resolve(state.smartPriceOverlay),
+        needLaunches ? loadCalendarJson('data/launches.json', [], 'Продукт / новинки') : Promise.resolve(state.launches)
       ]);
       if (needSkus) state.skus = Array.isArray(skus) ? skus : [];
       if (needWarehouse) {
@@ -433,6 +615,8 @@
         state.warehouse_stock_overlay = state.warehouseStockOverlay;
       }
       if (needOverlay) state.smartPriceOverlay = overlay && typeof overlay === 'object' ? overlay : { generatedAt: '', platforms: {} };
+      if (needLaunches) state.launches = Array.isArray(launches) ? launches : [];
+      if (state.boot?.lazyReady && needLaunches) state.boot.lazyReady.launches = true;
       CALENDAR_STATE.dataLoaded = true;
       if (isCalendarActive()) {
         if (CALENDAR_STATE.modalOpen) renderSkuPicker(document.getElementById(rootId));
@@ -473,11 +657,22 @@
 
   function filteredEvents() {
     const query = String(CALENDAR_STATE.search || '').trim().toLowerCase();
-    return allEvents().filter((event) => {
+    return calendarEvents().filter((event) => {
       if (CALENDAR_STATE.platform !== 'all' && event.platform !== CALENDAR_STATE.platform) return false;
+      if (CALENDAR_STATE.kind !== 'all' && eventKindKey(event) !== CALENDAR_STATE.kind) return false;
       if (!eventOverlapsRange(event, CALENDAR_STATE.dateFrom, CALENDAR_STATE.dateTo)) return false;
       if (!query) return true;
-      return [event.title, event.comment, event.platform, event.skuText, event.owner].join(' ').toLowerCase().includes(query);
+      return [
+        event.title,
+        event.comment,
+        event.platform,
+        eventKindLabel(event),
+        event.skuText,
+        event.owner,
+        event.taskSource,
+        event.autoCode,
+        event.launchStatus
+      ].join(' ').toLowerCase().includes(query);
     });
   }
 
@@ -486,9 +681,17 @@
     return `promo-platform-${platformKey(key)}`;
   }
 
+  function eventKindClass(eventOrKind) {
+    return `promo-kind-${eventKindKey(eventOrKind)}`;
+  }
+
+  function eventVisualClass(event) {
+    return `${eventClass(event)} ${eventKindClass(event)}`;
+  }
+
   function eventTone(event) {
     const today = todayKey();
-    if (event.status === 'done' || event.endDate < today) return 'done';
+    if (event.status === 'done' || taskDoneStatus(event.rawStatus || '') || event.endDate < today) return 'done';
     if (event.startDate <= today && event.endDate >= today) return 'active';
     if (daysBetween(today, event.startDate) <= 3) return 'soon';
     return 'planned';
@@ -935,16 +1138,18 @@
 
   function renderEventPill(event, compact = false) {
     const mission = eventMission(event);
+    const editable = isEditableEvent(event);
     const riskLabel = mission.dangerCount
       ? `${formatInt(mission.dangerCount)} риск`
       : mission.warnCount
         ? `${formatInt(mission.warnCount)} watch`
         : `${formatInt(mission.score)} XP`;
+    const fullMeta = editable ? statusLabel(event.status) : eventKindLabel(event);
     return `
-      <button class="promo-event-pill ${eventClass(event)} ${eventTone(event)} mission-${mission.tone}" type="button" draggable="true" data-calendar-event="${html(event.id)}" style="--event-xp:${mission.score}%">
-        <span>${html(platformLabel(event.platform))}</span>
+      <button class="promo-event-pill ${eventVisualClass(event)} ${eventTone(event)} mission-${mission.tone} ${editable ? '' : 'readonly'}" type="button" draggable="${editable ? 'true' : 'false'}" data-calendar-event="${html(event.id)}" style="--event-xp:${mission.score}%">
+        <span>${html(eventKindLabel(event))}</span>
         <strong>${html(event.title)}</strong>
-        <em>${html(compact ? riskLabel : `${formatInt(mission.score)} XP · ${statusLabel(event.status)}`)}</em>
+        <em>${html(compact ? `${platformLabel(event.platform)} · ${riskLabel}` : `${platformLabel(event.platform)} · ${formatInt(mission.score)} XP · ${fullMeta}`)}</em>
         ${event.skus.length ? `<b>${formatInt(event.skus.length)} SKU</b>` : ''}
       </button>
     `;
@@ -958,7 +1163,7 @@
       inMonth ? '' : 'muted-day',
       day === todayKey() ? 'today' : '',
       dayEvents.length ? 'has-events' : '',
-      dayEvents[0] ? eventClass(dayEvents[0]) : ''
+      dayEvents[0] ? eventVisualClass(dayEvents[0]) : ''
     ].filter(Boolean).join(' ');
     return `
       <div class="${className}" role="button" tabindex="0" data-calendar-day="${html(day)}" aria-label="${html(formatDate(day))}">
@@ -975,8 +1180,9 @@
   }
 
   function renderStats(events) {
-    const active = events.filter((event) => eventTone(event) === 'active').length;
-    const soon = events.filter((event) => eventTone(event) === 'soon').length;
+    const autoTasks = events.filter((event) => eventKindKey(event) === 'task-auto').length;
+    const manualTasks = events.filter((event) => eventKindKey(event) === 'task-manual').length;
+    const launches = events.filter((event) => eventKindKey(event) === 'launch').length;
     const skuCount = new Set(events.flatMap((event) => event.skus)).size;
     const days = new Set(events.flatMap((event) => {
       const duration = daysBetween(event.startDate, event.endDate);
@@ -984,10 +1190,10 @@
     })).size;
     return `
       <div class="promo-calendar-stats">
-        <button type="button" data-calendar-filter-status="all"><span>события</span><strong>${events.length}</strong></button>
-        <button type="button" data-calendar-filter-status="active"><span>в эфире</span><strong>${active}</strong></button>
-        <button type="button" data-calendar-filter-status="soon"><span>старт рядом</span><strong>${soon}</strong></button>
-        <button type="button"><span>закрашено дней</span><strong>${days}</strong><em>${formatInt(skuCount)} SKU</em></button>
+        <button type="button" data-calendar-kind-stat="all"><span>все события</span><strong>${events.length}</strong><em>${formatInt(days)} дней · ${formatInt(skuCount)} SKU</em></button>
+        <button type="button" data-calendar-kind-stat="task-auto"><span>автозадачи</span><strong>${autoTasks}</strong></button>
+        <button type="button" data-calendar-kind-stat="task-manual"><span>сроки задач</span><strong>${manualTasks}</strong></button>
+        <button type="button" data-calendar-kind-stat="launch"><span>новинки</span><strong>${launches}</strong></button>
       </div>
     `;
   }
@@ -1004,23 +1210,36 @@
     `;
   }
 
+  function renderKindRail() {
+    return `
+      <div class="promo-platform-rail promo-kind-rail">
+        ${EVENT_KINDS.map(([key, label]) => `
+          <button class="${CALENDAR_STATE.kind === key ? 'active' : ''} ${eventKindClass(key)}" type="button" data-calendar-kind-chip="${html(key)}">
+            <span>${html(label)}</span>
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
   function renderSideList(events) {
     const sorted = [...events].sort((a, b) => `${a.startDate}|${a.title}`.localeCompare(`${b.startDate}|${b.title}`));
     if (!sorted.length) return '<div class="promo-empty">Событий пока нет.</div>';
     return sorted.slice(0, 10).map((event) => {
       const mission = eventMission(event);
       return `
-        <div class="promo-agenda-item ${eventClass(event)} mission-${mission.tone}" style="--event-xp:${mission.score}%">
+        <div class="promo-agenda-item ${eventVisualClass(event)} mission-${mission.tone}" style="--event-xp:${mission.score}%">
           <button type="button" data-calendar-edit="${html(event.id)}">
             <strong>${html(event.title)}</strong>
             <span>${html(formatDate(event.startDate))}${event.endDate !== event.startDate ? ` - ${html(formatDate(event.endDate))}` : ''}</span>
           </button>
           <div>
+            <span>${html(eventKindLabel(event))}</span>
             <span>${html(platformLabel(event.platform))}</span>
             <span>${formatInt(mission.score)} XP</span>
             ${mission.dangerCount ? `<span>${formatInt(mission.dangerCount)} риск</span>` : ''}
             ${event.skus.length ? `<span>${formatInt(event.skus.length)} SKU</span>` : '<span>SKU не выбраны</span>'}
-            ${event.taskId ? '<span>задача есть</span>' : '<span>задача нужна</span>'}
+            ${event.taskId ? '<span>открыть задачу</span>' : eventKindKey(event) === 'launch' ? '<span>карточка новинки</span>' : '<span>задача нужна</span>'}
           </div>
         </div>
       `;
@@ -1136,9 +1355,9 @@
       <div class="promo-calendar-shell">
         <section class="promo-calendar-command">
           <div class="promo-calendar-command-copy">
-            <span>Календарь промо</span>
-            <h2>События, SKU и стартовые задачи</h2>
-            <p>Промо, акции, запуски, SKU и задачи старта.</p>
+            <span>Командный календарь</span>
+            <h2>Промо, задачи, автосигналы и выходы новинок</h2>
+            <p>Все сроки и события собираются в одну временную карту: ручные промо редактируются здесь, задачи и новинки подтягиваются автоматически.</p>
           </div>
           <div class="promo-calendar-command-actions">
             <button class="quick-chip" type="button" data-calendar-sync>${CALENDAR_STATE.remoteSaving ? 'Сохраняем...' : 'Синхронизировать'}</button>
@@ -1160,12 +1379,17 @@
             <select data-calendar-platform>${PLATFORMS.map(([key, label]) => `<option value="${html(key)}" ${CALENDAR_STATE.platform === key ? 'selected' : ''}>${html(label)}</option>`).join('')}</select>
           </label>
           <label>
+            <span>Тип</span>
+            <select data-calendar-kind>${EVENT_KINDS.map(([key, label]) => `<option value="${html(key)}" ${CALENDAR_STATE.kind === key ? 'selected' : ''}>${html(label)}</option>`).join('')}</select>
+          </label>
+          <label>
             <span>Поиск</span>
-            <input type="search" data-calendar-search value="${html(CALENDAR_STATE.search)}" placeholder="Промо или SKU">
+            <input type="search" data-calendar-search value="${html(CALENDAR_STATE.search)}" placeholder="Задача, промо или SKU">
           </label>
         </section>
 
         ${renderPlatformRail()}
+        ${renderKindRail()}
         ${renderStats(events)}
 
         <section class="promo-calendar-layout">
@@ -1187,9 +1411,9 @@
               ${renderSideList(events)}
             </div>
             <div class="promo-side-card promo-data-card">
-              <span>Данные для SKU</span>
-              <strong>${CALENDAR_STATE.dataLoading ? 'грузим...' : `${formatInt((appState().skus || []).length)} SKU`}</strong>
-              <p>${payloadLooksLoaded(appState().warehouseStockOverlay || appState().warehouse_stock_overlay) ? 'Остатки подтянуты в карточку события.' : 'Остатки подтянутся при открытии календаря.'}</p>
+              <span>Автослой</span>
+              <strong>${CALENDAR_STATE.dataLoading ? 'грузим...' : `${formatInt((appState().skus || []).length)} SKU · ${formatInt((appState().launches || []).length)} новинок`}</strong>
+              <p>${payloadLooksLoaded(appState().warehouseStockOverlay || appState().warehouse_stock_overlay) ? 'Остатки, дедлайны задач и новинки подтянуты в календарь.' : 'Остатки и новинки подтянутся при открытии календаря.'}</p>
             </div>
           </aside>
         </section>
@@ -1367,11 +1591,40 @@
     renderEventCalendar(rootId);
   }
 
-  function openTaskForEvent(id) {
-    const event = allEvents().find((item) => item.id === id);
-    if (!event?.taskId) return;
-    if (typeof openTaskModal === 'function') openTaskModal(event.taskId);
-    else if (typeof renderTaskModal === 'function') renderTaskModal(event.taskId);
+  function openTaskForEvent(idOrEvent) {
+    const event = typeof idOrEvent === 'object'
+      ? idOrEvent
+      : (calendarEvents().find((item) => item.id === idOrEvent) || allEvents().find((item) => item.id === idOrEvent));
+    const taskId = event?.taskId || String(event?.id || '').replace(/^task:/, '');
+    if (!taskId) return;
+    if (typeof openTaskModal === 'function') openTaskModal(taskId);
+    else if (typeof renderTaskModal === 'function') renderTaskModal(taskId);
+  }
+
+  function openLaunchForEvent(event = {}) {
+    const launchId = String(event.sourceId || event.id || '').replace(/^launch:/, '');
+    if (!launchId) return;
+    if (typeof setView === 'function') setView('launches');
+    if (typeof openLaunchEditor === 'function') {
+      window.setTimeout(() => openLaunchEditor(launchId), 160);
+    } else if (typeof setAppError === 'function') {
+      setAppError('Открыла вкладку новинок. Карточку можно найти по названию из календаря.');
+    }
+  }
+
+  function openCalendarItem(id, rootId) {
+    const event = calendarEvents().find((item) => item.id === id) || allEvents().find((item) => item.id === id);
+    if (!event) return;
+    if (isEditableEvent(event)) {
+      openEventModal(event.id, '');
+      renderEventCalendar(rootId);
+      return;
+    }
+    if (event.taskId || eventKindKey(event).startsWith('task-')) {
+      openTaskForEvent(event);
+      return;
+    }
+    if (eventKindKey(event) === 'launch') openLaunchForEvent(event);
   }
 
   function bindCalendar(root, rootId) {
@@ -1388,6 +1641,10 @@
       CALENDAR_STATE.platform = event.target.value || 'all';
       renderEventCalendar(rootId);
     });
+    root.querySelector('[data-calendar-kind]')?.addEventListener('change', (event) => {
+      CALENDAR_STATE.kind = event.target.value || 'all';
+      renderEventCalendar(rootId);
+    });
     root.querySelector('[data-calendar-search]')?.addEventListener('input', (event) => {
       CALENDAR_STATE.search = event.target.value || '';
       renderEventCalendar(rootId);
@@ -1395,6 +1652,12 @@
     root.querySelectorAll('[data-calendar-platform-chip]').forEach((button) => {
       button.addEventListener('click', () => {
         CALENDAR_STATE.platform = button.dataset.calendarPlatformChip || 'all';
+        renderEventCalendar(rootId);
+      });
+    });
+    root.querySelectorAll('[data-calendar-kind-chip], [data-calendar-kind-stat]').forEach((button) => {
+      button.addEventListener('click', () => {
+        CALENDAR_STATE.kind = button.dataset.calendarKindChip || button.dataset.calendarKindStat || 'all';
         renderEventCalendar(rootId);
       });
     });
@@ -1441,14 +1704,15 @@
     root.querySelectorAll('[data-calendar-event], [data-calendar-edit]').forEach((button) => {
       button.addEventListener('click', (event) => {
         event.stopPropagation();
-        openEventModal(button.dataset.calendarEvent || button.dataset.calendarEdit || '', '');
-        renderEventCalendar(rootId);
+        openCalendarItem(button.dataset.calendarEvent || button.dataset.calendarEdit || '', rootId);
       });
-      button.addEventListener('dragstart', (event) => {
-        const id = button.dataset.calendarEvent || button.dataset.calendarEdit || '';
-        event.dataTransfer?.setData('text/plain', id);
-        event.dataTransfer?.setData('application/x-promo-event', id);
-      });
+      if (button.getAttribute('draggable') === 'true') {
+        button.addEventListener('dragstart', (event) => {
+          const id = button.dataset.calendarEvent || button.dataset.calendarEdit || '';
+          event.dataTransfer?.setData('text/plain', id);
+          event.dataTransfer?.setData('application/x-promo-event', id);
+        });
+      }
     });
     root.querySelector('[data-calendar-form]')?.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -1546,7 +1810,7 @@
       const title = button.querySelector('span');
       const subtitle = button.querySelector('small');
       if (title) title.textContent = 'Календарь';
-      if (subtitle) subtitle.textContent = 'акции · события · SKU';
+      if (subtitle) subtitle.textContent = 'задачи · промо · новинки';
     }
   }
 

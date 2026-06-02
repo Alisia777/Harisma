@@ -66,7 +66,7 @@
 
 .promo-calendar-toolbar {
   display: grid;
-  grid-template-columns: minmax(140px, .8fr) minmax(140px, .8fr) minmax(180px, 1fr) minmax(240px, 1.35fr);
+  grid-template-columns: minmax(126px, .62fr) minmax(126px, .62fr) minmax(160px, .82fr) minmax(160px, .82fr) minmax(220px, 1.2fr);
   gap: 10px;
   padding: 12px;
   border: 1px solid var(--line);
@@ -326,6 +326,10 @@
   cursor: grab;
 }
 
+.promo-event-pill.readonly {
+  cursor: pointer;
+}
+
 .promo-event-pill::after {
   content: "";
   grid-column: 1 / -1;
@@ -355,6 +359,10 @@
 
 .promo-event-pill:active {
   cursor: grabbing;
+}
+
+.promo-event-pill.readonly:active {
+  cursor: pointer;
 }
 
 .promo-event-pill span,
@@ -942,6 +950,17 @@
 .promo-platform-letu { --promo-color: #f06f9f; }
 .promo-platform-magnit { --promo-color: #ff6c6c; }
 .promo-platform-product { --promo-color: #62d5d1; }
+
+.promo-kind-all { --promo-color: #e7c46b; }
+.promo-kind-promo { --promo-color: #edce8a; }
+.promo-kind-task-auto { --promo-color: #4aa3ff; }
+.promo-kind-task-manual { --promo-color: #8fd27d; }
+.promo-kind-launch { --promo-color: #62d5d1; }
+
+.promo-kind-rail button {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--promo-color, #7aa7ff) 14%, rgba(0, 0, 0, .24)), rgba(255, 255, 255, .02));
+}
 
 @media (max-width: 1240px) {
   .promo-calendar-layout {

@@ -440,11 +440,12 @@ function skuJourneyPanelHtml({
   blockerCount = 0,
   matrixIssueCount = 0,
   workCount = 0,
-  apiRiskRevenue = 0
+  apiRiskRevenue = 0,
+  journeyStats = null
 } = {}) {
   const marketLabel = typeof skuDataPlatformLabel === 'function' ? skuDataPlatformLabel(activeMarket) : skuRegistryMarketLabel(activeMarket);
   const activeModeLabel = source === 'contour' ? 'API-контур' : 'Реестр SKU';
-  const stats = [
+  const stats = Array.isArray(journeyStats) && journeyStats.length ? journeyStats : [
     {
       action: source === 'contour' ? 'only-new-contour' : 'open-contour',
       label: 'API без пары',

@@ -3467,14 +3467,17 @@ function skuContourFocusBoardHtml({
   const marketSkus = (state.skus || []).filter((sku) => typeof skuDataSkuBelongsToPlatform === 'function'
     ? skuDataSkuBelongsToPlatform(sku, activeMarket)
     : true);
-  const ownerCoverage = marketSkus.length
-    ? marketSkus.filter((sku) => registryOwnersForFilter(sku, activeMarket).length > 0).length / marketSkus.length
-    : null;
   const workCount = marketSkus.filter((sku) => typeof skuDataWorkFlag === 'function'
     ? skuDataWorkFlag(sku, activeMarket)
     : Boolean(sku?.flags?.toWork)).length;
   const apiRiskRevenue = scopedIssueRows.reduce((sum, row) => sum + numberOrZero(row.revenue || 0), 0);
   const matrixIssueCount = unresolvedRows.length;
+  const journeyStats = [
+    { action: 'only-new-contour', label: 'В очереди', value: fmt.int(unresolvedRows.length), tone: unresolvedRows.length ? 'warn' : 'ok' },
+    { action: 'open-contour', label: 'Кандидаты like-for-like', value: fmt.int(candidateCount), tone: candidateCount ? 'info' : '' },
+    { action: 'open-contour', label: 'Блокеры', value: fmt.int(blockerCount), tone: blockerCount ? 'danger' : 'ok' },
+    { action: 'planfact', label: 'SKU в работе', value: fmt.int(workCount), tone: workCount ? 'info' : '' }
+  ];
   const actionBuckets = [
     { label: 'Новые', count: newCount, help: 'решить alias / ignore / new_sku', tone: newCount ? 'warn' : 'ok' },
     { label: 'Блокеры', count: numberOrZero(statusCounts.blocked || 0), help: 'сначала источник или дубль', tone: statusCounts.blocked ? 'danger' : 'ok' },
@@ -3485,7 +3488,7 @@ function skuContourFocusBoardHtml({
     { label: 'WB owner', count: numberOrZero(wbMissingInDistribution) + numberOrZero(wbMissingInPortal), help: 'сверка распределения', tone: (wbMissingInDistribution || wbMissingInPortal) ? 'info' : '' }
   ];
   return `
-    ${skuJourneyPanelHtml({ source: 'contour', activeMarket, ownerCoverage, contourProgress: progressRatio, unresolvedCount: unresolvedRows.length, blockerCount, matrixIssueCount, workCount, apiRiskRevenue })}
+    ${skuJourneyPanelHtml({ source: 'contour', activeMarket, contourProgress: progressRatio, unresolvedCount: unresolvedRows.length, blockerCount, matrixIssueCount, workCount, apiRiskRevenue, journeyStats })}
     <div class="sku-data-focus-board sku-data-focus-board--compact sku-contour-focus-board">
       <section class="sku-data-focus-panel">
         <div class="sku-data-focus-head">

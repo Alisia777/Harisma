@@ -1970,6 +1970,9 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
   const reviewPointsMap = buildReviewPointsMap(wbFeedbacksSummary);
   const wbDailyPlanMap = buildWbDailyPlanMap(iuPlan);
   const range = dateRange(platformTrends, adsSummary, options.from, options.to);
+  const ozonAdsFactSourceMode = adsSummary?.diagnostics?.ozonDailySellerFunnel?.applied
+    ? 'ozon_seller_analytics_daily_funnel_smart_spend'
+    : 'google_sheets_fact_ads_daily_sku';
   return enumerateDates(range.from, range.to).map((date) => {
     const month = monthKey(date);
     const plan = monthPlan(iuPlan, month, companyPlan);
@@ -2011,7 +2014,7 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const planSpendOzon = numberOrZero(plan.dailyIuAdsOzon) || (targetRevenueOzon * planPctOzon);
     const spendFactOzon = hasOzonAdsFact ? numberOrZero(ozonAds.spend) : revenueOzon * planPctOzon;
     const ozonAdsFactMode = hasOzonAdsFact
-      ? 'google_sheets_fact_ads_daily_sku'
+      ? ozonAdsFactSourceMode
       : 'modeled_from_revenue_25pct_no_ozon_ads_fact';
     const channels = Object.fromEntries(CHANNEL_KEYS.map(([key]) => [key, 0]));
     for (const [key] of CHANNEL_KEYS) channels[key] = roundMoney(adsMaps.byDateChannel.get(`${date}|${key}`) || 0);

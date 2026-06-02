@@ -5,6 +5,7 @@ const path = require('path');
 const XLSX = require('xlsx');
 
 const DEFAULT_WORKBOOK = 'exports/altea_max_funnel_2025_2026.xlsx';
+const OZON_SELLER_URL = 'https://api-seller.ozon.ru';
 const EXTRA_PLATFORM_ORDER = ['goldapple', 'letu', 'magnit'];
 const EXTRA_PLATFORM_LABELS = {
   goldapple: 'ЗЯ',
@@ -12,6 +13,13 @@ const EXTRA_PLATFORM_LABELS = {
   magnit: 'Магнит Маркет'
 };
 const ADS_PLATFORM_ORDER = ['ozon', 'ya', ...EXTRA_PLATFORM_ORDER];
+const OZON_DAILY_FUNNEL_METRICS = [
+  'hits_view',
+  'hits_view_pdp',
+  'hits_tocart',
+  'ordered_units',
+  'revenue'
+];
 const PLATFORM_KEY_ALIASES = {
   ya: 'ya',
   ym: 'ya',
@@ -374,6 +382,41 @@ function distributeMonthlyValue(total, days) {
   if (!(days > 0)) return [];
   const daily = value / days;
   return Array.from({ length: days }, () => daily);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function requestJson(url, options, errorPrefix) {
+  const attempts = 4;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    let response;
+    try {
+      response = await fetch(url, options);
+    } catch (error) {
+      if (attempt < attempts) {
+        await sleep(Math.min(45000, attempt * 10000));
+        continue;
+      }
+      throw error;
+    }
+    const text = await response.text();
+    let payload = null;
+    try {
+      payload = text ? JSON.parse(text) : null;
+    } catch {
+      payload = null;
+    }
+    if (response.ok) return payload;
+    if (attempt < attempts && (response.status === 429 || response.status >= 500)) {
+      const retryAfter = Number(response.headers.get('retry-after'));
+      await sleep(Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : Math.min(60000, attempt * 15000));
+      continue;
+    }
+    throw new Error(`${errorPrefix}: HTTP ${response.status} ${text.slice(0, 700)}`);
+  }
+  throw new Error(`${errorPrefix}: request failed after retries`);
 }
 
 function rawMetricValue(metricName, row) {
@@ -799,6 +842,139 @@ function addPriorityMetric(bucket, metric, value) {
   }
 }
 
+function ozonDailyMetric(row, metricName) {
+  const metrics = Array.isArray(row?.metrics) ? row.metrics : [];
+  const index = OZON_DAILY_FUNNEL_METRICS.indexOf(metricName);
+  return index >= 0 ? numberOrZero(metrics[index]) : 0;
+}
+
+async function fetchOzonSellerDailyFunnel(options, from, to) {
+  const diagnostics = {
+    enabled: Boolean(options.ozonDailyFunnelEnabled),
+    source: 'Ozon Seller API /v1/analytics/data',
+    from,
+    to,
+    rows: 0,
+    applied: false,
+    warnings: []
+  };
+  if (!options.ozonDailyFunnelEnabled) {
+    diagnostics.warnings.push('disabled');
+    return { series: [], diagnostics };
+  }
+  if (!options.ozonClientId || !options.ozonApiKey) {
+    diagnostics.warnings.push('missing ALTEA_OZON_CLIENT_ID / ALTEA_OZON_API_KEY');
+    return { series: [], diagnostics };
+  }
+  if (!from || !to) {
+    diagnostics.warnings.push('empty date window');
+    return { series: [], diagnostics };
+  }
+
+  const rows = [];
+  const limit = 1000;
+  for (let offset = 0; ; offset += limit) {
+    const payload = {
+      date_from: from,
+      date_to: to,
+      metrics: OZON_DAILY_FUNNEL_METRICS,
+      dimension: ['day'],
+      filters: [],
+      sort: [{ key: 'hits_view', order: 'DESC' }],
+      limit,
+      offset
+    };
+    const json = await requestJson(`${OZON_SELLER_URL}/v1/analytics/data`, {
+      method: 'POST',
+      headers: {
+        'Client-Id': options.ozonClientId,
+        'Api-Key': options.ozonApiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    }, 'Ozon Seller daily funnel');
+    const batch = Array.isArray(json?.result?.data) ? json.result.data : [];
+    rows.push(...batch);
+    if (batch.length < limit) break;
+  }
+
+  diagnostics.rows = rows.length;
+  const series = rows
+    .map((row) => {
+      const dimension = Array.isArray(row?.dimensions) ? row.dimensions[0] : null;
+      const date = isoDate(dimension?.id || dimension?.name);
+      if (!date) return null;
+      const pdpViews = ozonDailyMetric(row, 'hits_view_pdp');
+      const toCart = ozonDailyMetric(row, 'hits_tocart');
+      return {
+        date,
+        label: date,
+        views: ozonDailyMetric(row, 'hits_view'),
+        clicks: pdpViews || toCart,
+        orders: ozonDailyMetric(row, 'ordered_units'),
+        revenue: ozonDailyMetric(row, 'revenue'),
+        source: diagnostics.source
+      };
+    })
+    .filter((point) => point && (point.views || point.clicks || point.orders || point.revenue))
+    .sort((left, right) => left.date.localeCompare(right.date));
+  diagnostics.applied = series.length > 0;
+  return { series, diagnostics };
+}
+
+function seriesByDate(series = []) {
+  const result = new Map();
+  for (const point of Array.isArray(series) ? series : []) {
+    const date = isoDate(point?.date || point?.label);
+    if (date) result.set(date, { ...point, date, label: date });
+  }
+  return result;
+}
+
+function mergeOzonSmartSpendWithSellerFunnel(existingSeries = [], monthlySeries = [], sellerSeries = [], from = '', to = '') {
+  const windowDates = enumerateDates(from, to);
+  const existingByDate = seriesByDate(existingSeries);
+  const monthlyByDate = seriesByDate(monthlySeries);
+  const sellerByDate = seriesByDate(sellerSeries);
+  const dates = new Set(windowDates);
+  [...existingByDate.keys(), ...monthlyByDate.keys(), ...sellerByDate.keys()].forEach((date) => {
+    if ((!from || date >= from) && (!to || date <= to)) dates.add(date);
+  });
+
+  return [...dates]
+    .sort()
+    .map((date) => {
+      const smartSpend = existingByDate.get(date) || monthlyByDate.get(date) || {};
+      const monthly = monthlyByDate.get(date) || {};
+      const seller = sellerByDate.get(date);
+      const base = numberOrZero(smartSpend.spend) > 0 ? smartSpend : (monthly || smartSpend);
+      const point = seller
+        ? {
+            ...base,
+            date,
+            label: date,
+            views: numberOrZero(seller.views),
+            clicks: numberOrZero(seller.clicks),
+            orders: numberOrZero(seller.orders),
+            revenue: numberOrZero(seller.revenue),
+            spend: numberOrZero(base.spend),
+            source: 'Ozon Seller API daily funnel + Smart spend'
+          }
+        : {
+            ...base,
+            date,
+            label: date,
+            spend: numberOrZero(base.spend),
+            views: numberOrZero(base.views),
+            clicks: numberOrZero(base.clicks),
+            orders: numberOrZero(base.orders),
+            revenue: numberOrZero(base.revenue)
+          };
+      return point;
+    })
+    .filter((point) => point.views || point.clicks || point.spend || point.orders || point.revenue);
+}
+
 function buildAdsItemSeries(rawRows, asOfDate) {
   const grouped = new Map();
   const totalGrouped = new Map();
@@ -888,7 +1064,8 @@ function mergeItemSeries(baseSeries, extraSeries) {
     const date = normalizeText(row?.date || row?.label);
     const platformKey = normalizeKey(row?.platformKey || row?.platform || '');
     const articleKey = normalizeText(row?.articleKey || row?.article || row?.offer_id || row?.offerId || row?.sku || '');
-    const key = `${date}|${platformKey}|${articleKey}`;
+    const campaignKey = normalizeText(row?.campaignId || row?.campaign_id || row?.campaignName || row?.campaign || row?.channel || '');
+    const key = `${date}|${platformKey}|${articleKey}|${campaignKey}`;
     if (seen.has(key)) continue;
     seen.add(key);
     result.push(row);
@@ -900,6 +1077,62 @@ function mergeItemSeries(baseSeries, extraSeries) {
       || normalizeKey(left?.platformKey || left?.platform || '').localeCompare(normalizeKey(right?.platformKey || right?.platform || ''))
       || normalizeText(left?.articleKey || left?.article || '').localeCompare(normalizeText(right?.articleKey || right?.article || ''));
   });
+}
+
+function replaceOzonWindowItemSeriesWithDailyTotal(baseSeries = [], ozonSeries = [], from = '', to = '') {
+  const windowFrom = isoDate(from);
+  const windowTo = isoDate(to);
+  const inWindow = (date) => {
+    if (!date) return false;
+    if (windowFrom && date < windowFrom) return false;
+    if (windowTo && date > windowTo) return false;
+    return true;
+  };
+  const dailyRows = (Array.isArray(ozonSeries) ? ozonSeries : [])
+    .map((point) => {
+      const date = isoDate(point?.date || point?.label);
+      if (!inWindow(date)) return null;
+      return {
+        date,
+        platformKey: 'ozon',
+        articleKey: 'ozon-total',
+        article: 'ozon-total',
+        name: 'Ozon Ads daily total',
+        views: numberOrZero(point?.views),
+        clicks: numberOrZero(point?.clicks),
+        spend: numberOrZero(point?.spend),
+        orders: numberOrZero(point?.orders),
+        revenue: numberOrZero(point?.revenue),
+        campaignId: 'ozon-seller-analytics-daily',
+        campaignName: 'Ozon Seller analytics daily funnel',
+        channel: 'Ozon Seller analytics + Smart spend',
+        source: point?.source || 'Ozon Seller API daily funnel + Smart spend'
+      };
+    })
+    .filter((row) => row && (row.views || row.clicks || row.spend || row.orders || row.revenue));
+
+  if (!dailyRows.length) {
+    return {
+      series: Array.isArray(baseSeries) ? baseSeries : [],
+      replacedRows: 0,
+      insertedRows: 0
+    };
+  }
+
+  let replacedRows = 0;
+  const keptRows = (Array.isArray(baseSeries) ? baseSeries : []).filter((row) => {
+    const platformKey = canonicalPlatformKey(row?.platformKey || row?.platform || row?.marketplace || row?.channel);
+    const date = isoDate(row?.date || row?.day || row?.label);
+    const remove = platformKey === 'ozon' && inWindow(date);
+    if (remove) replacedRows += 1;
+    return !remove;
+  });
+
+  return {
+    series: mergeItemSeries(keptRows, dailyRows),
+    replacedRows,
+    insertedRows: dailyRows.length
+  };
 }
 
 function buildPlatformSeriesFromMonthly(monthlyTotals, asOfDate) {
@@ -1346,7 +1579,10 @@ function resolveOptions(args) {
     mirrorLocalFallback: asBool(args['mirror-local-fallback'], Boolean(args.mirrorLocalFallback)),
     baseDataDir,
     outputDir,
-    workbookPath
+    workbookPath,
+    ozonDailyFunnelEnabled: asBool(args['ozon-daily-funnel'], true),
+    ozonClientId: normalizeText(args['ozon-client-id'] || process.env.ALTEA_OZON_CLIENT_ID || ''),
+    ozonApiKey: normalizeText(args['ozon-api-key'] || process.env.ALTEA_OZON_API_KEY || '')
   };
 }
 
@@ -1607,9 +1843,61 @@ async function main() {
     const series = buildAdsPlatformSeries(months, referenceDate);
     extraAdsSeriesMap.set(platformKey, series);
   }
+  const adsWindowFrom = isoDate(baseAdsSummary?.window?.from) || monthStart(iso(referenceDate));
+  const adsWindowTo = isoDate(baseAdsSummary?.window?.to) || iso(referenceDate);
+  let ozonDailyFunnelDiagnostics = null;
+  try {
+    const ozonDailyFunnel = await fetchOzonSellerDailyFunnel(options, adsWindowFrom, adsWindowTo);
+    ozonDailyFunnelDiagnostics = ozonDailyFunnel.diagnostics;
+    if (ozonDailyFunnel.series.length) {
+      const existingOzonPlatform = (Array.isArray(baseAdsSummary?.platforms) ? baseAdsSummary.platforms : [])
+        .find((platform) => canonicalPlatformKey(platform?.key || platform?.platformKey || platform?.label) === 'ozon');
+      const monthlyOzonSeries = extraAdsSeriesMap.get('ozon') || [];
+      extraAdsSeriesMap.set(
+        'ozon',
+        mergeOzonSmartSpendWithSellerFunnel(
+          existingOzonPlatform?.series || [],
+          monthlyOzonSeries,
+          ozonDailyFunnel.series,
+          adsWindowFrom,
+          adsWindowTo
+        )
+      );
+    }
+  } catch (error) {
+    ozonDailyFunnelDiagnostics = {
+      enabled: Boolean(options.ozonDailyFunnelEnabled),
+      source: 'Ozon Seller API /v1/analytics/data',
+      from: adsWindowFrom,
+      to: adsWindowTo,
+      rows: 0,
+      applied: false,
+      warnings: [error.message || String(error)]
+    };
+  }
 
   const mergedAdsSummary = buildAdsSummary(baseAdsSummary, wbPlatformSeries, extraAdsSeriesMap, referenceDate);
+  mergedAdsSummary.diagnostics = {
+    ...(mergedAdsSummary.diagnostics || {}),
+    ozonDailySellerFunnel: ozonDailyFunnelDiagnostics
+  };
   mergedAdsSummary.itemSeries = mergeItemSeries(mergedAdsSummary.itemSeries, buildAdsItemSeries(rawMonthlyRows, referenceDate));
+  const ozonDailyItemSeries = replaceOzonWindowItemSeriesWithDailyTotal(
+    mergedAdsSummary.itemSeries,
+    extraAdsSeriesMap.get('ozon') || [],
+    adsWindowFrom,
+    adsWindowTo
+  );
+  mergedAdsSummary.itemSeries = ozonDailyItemSeries.series;
+  if (mergedAdsSummary.diagnostics.ozonDailySellerFunnel) {
+    mergedAdsSummary.diagnostics.ozonDailySellerFunnel.itemSeriesReplacement = {
+      from: adsWindowFrom,
+      to: adsWindowTo,
+      replacedRows: ozonDailyItemSeries.replacedRows,
+      insertedRows: ozonDailyItemSeries.insertedRows,
+      source: 'Ozon Seller analytics daily total + Smart spend'
+    };
+  }
   mergedAdsSummary.extraMarketplace = {
     generatedAt: new Date().toISOString(),
     workbook: options.workbookPath,

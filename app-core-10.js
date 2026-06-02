@@ -495,6 +495,63 @@ function executiveFunnelRatioForControl(target = 0, raw = 0) {
   return 1;
 }
 
+function executiveFunnelPlanControlWeight(metric = {}) {
+  return executiveFunnelNumber(metric.planToDateRevenue)
+    || executiveFunnelNumber(metric.planRevenue)
+    || executiveFunnelNumber(metric.planAdSpend)
+    || 1;
+}
+
+function executiveFunnelApplyMissingPayrollFacts(ownerMap = new Map(), platform = '', target = {}, raw = {}) {
+  const targetRevenue = executiveFunnelNumber(target.factRevenue);
+  const targetUnits = executiveFunnelNumber(target.factUnits);
+  const targetAdSpend = executiveFunnelNumber(target.adSpend);
+  const targetMarginRub = executiveFunnelNumber(target.marginRub);
+  const targetMarginPct = executiveFunnelRatio(target.marginPct);
+  const allocateRevenue = targetRevenue > 0 && executiveFunnelNumber(raw.factRevenue) <= 0;
+  const allocateAdSpend = targetAdSpend > 0 && executiveFunnelNumber(raw.adSpend) <= 0;
+  const allocateMargin = allocateRevenue && (targetMarginRub > 0 || targetMarginPct !== null);
+  if (!allocateRevenue && !allocateAdSpend && !allocateMargin) return null;
+
+  const entries = [...ownerMap.values()]
+    .map((ownerBucket) => ({
+      owner: ownerBucket.owner,
+      metric: ownerBucket.platforms?.get(platform) || null
+    }))
+    .filter(({ metric }) => metric && executiveFunnelPlanBucketHasSignal(metric));
+  if (!entries.length) return null;
+
+  const revenueWeightSum = entries.reduce((sum, { metric }) => sum + executiveFunnelPlanControlWeight(metric), 0) || entries.length;
+  const adWeightSum = entries.reduce((sum, { metric }) => sum + (executiveFunnelNumber(metric.planAdSpend) || executiveFunnelPlanControlWeight(metric)), 0) || revenueWeightSum;
+  entries.forEach(({ metric }) => {
+    const revenueShare = executiveFunnelPlanControlWeight(metric) / revenueWeightSum;
+    if (allocateRevenue) {
+      metric.factRevenue = targetRevenue * revenueShare;
+      if (targetUnits > 0) metric.factUnits = targetUnits * revenueShare;
+    }
+    if (allocateAdSpend) {
+      const adWeight = executiveFunnelNumber(metric.planAdSpend) || executiveFunnelPlanControlWeight(metric);
+      metric.adSpend = targetAdSpend * adWeight / adWeightSum;
+    }
+    if (allocateMargin) {
+      metric.marginRub = targetMarginRub > 0
+        ? targetMarginRub * revenueShare
+        : executiveFunnelNumber(metric.factRevenue) * targetMarginPct;
+      metric.marginWeight = executiveFunnelNumber(metric.factRevenue);
+    }
+    metric.payrollFactAllocated = true;
+    metric.payrollFactAllocationBasis = 'plan_share';
+    executiveFunnelFinalizePlanBucket(metric);
+  });
+  return {
+    basis: 'plan_share',
+    owners: entries.length,
+    revenue: allocateRevenue,
+    adSpend: allocateAdSpend,
+    margin: allocateMargin
+  };
+}
+
 function executiveFunnelScalePlanBucket(bucket = {}, ratios = {}) {
   if (!bucket) return bucket;
   const revenueRatio = Number.isFinite(Number(ratios.revenue)) ? Number(ratios.revenue) : 1;
@@ -587,7 +644,8 @@ function executiveFunnelApplyPayrollOwnerControls(ownerMap = new Map(), planMode
       const metric = ownerBucket.platforms?.get(platform);
       if (metric) executiveFunnelScalePlanBucket(metric, ratios);
     });
-    controls[platform] = { raw, target, ratios };
+    const allocation = executiveFunnelApplyMissingPayrollFacts(ownerMap, platform, target, raw);
+    controls[platform] = { raw, target, ratios, allocation };
   });
   ownerMap.forEach((ownerBucket) => executiveFunnelRebuildOwnerFromPlatforms(ownerBucket));
   return controls;
@@ -1556,7 +1614,8 @@ function renderExecutiveOwnerFilters(model = {}) {
 }
 
 function renderExecutiveFunnel(funnel) {
-  if (!funnel?.ready) {
+  const ownerPlanModel = executiveFunnelBuildOwnerPlanFact(funnel || {});
+  if (!funnel?.ready && !ownerPlanModel?.ready) {
     return `
       <div class="card executive-funnel-card">
         <div class="section-subhead">
@@ -1569,7 +1628,7 @@ function renderExecutiveFunnel(funnel) {
       </div>
     `;
   }
-  const model = executiveFunnelBuildOwnerPlanFact(funnel);
+  const model = ownerPlanModel;
   if (!model?.ready) {
     return `
       <div class="card executive-funnel-card">

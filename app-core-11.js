@@ -1284,6 +1284,21 @@ function skuPlanFactPayrollRawFactRevenue(monthKey = '', platform = 'all', perio
     .reduce((sum, item) => sum + numberOrZero(skuPlanFactPlatformAggregateFact(item, monthKey, periodEnd, periodStart).revenue), 0);
 }
 
+function skuPlanFactPayrollPlanShareFactRevenue(monthKey = '', platform = 'all', periodStart = '', periodEnd = '') {
+  const control = skuPlanFactPayrollFactControl(monthKey, periodStart, periodEnd);
+  if (!(control > 0)) return null;
+  const rawAll = skuPlanFactPayrollRawFactRevenue(monthKey, 'all', periodStart, periodEnd);
+  if (rawAll > 0) return null;
+  if (!platform || platform === 'all') return control;
+  if (!SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(platform)) return 0;
+  const totals = skuPlanFactPayrollControlTotals(monthKey) || {};
+  const totalPlan = numberOrZero(totals.revenue)
+    || SKU_PLAN_FACT_PAYROLL_PLATFORMS.reduce((sum, key) => sum + numberOrZero(totals[key]), 0);
+  const platformPlan = numberOrZero(totals[platform]);
+  if (!(totalPlan > 0) || !(platformPlan > 0)) return 0;
+  return control * platformPlan / totalPlan;
+}
+
 function skuPlanFactPayrollFactControl(monthKey = '', periodStart = '', periodEnd = '') {
   const plan = skuPlanFactPayrollCompanyPlan();
   const activeMonth = plan?.activeMonth;
@@ -1306,6 +1321,8 @@ function skuPlanFactPayrollFactScale(monthKey = '', periodStart = '', periodEnd 
 }
 
 function skuPlanFactPayrollFactRevenue(monthKey = '', platform = 'all', periodStart = '', periodEnd = '') {
+  const planShareFact = skuPlanFactPayrollPlanShareFactRevenue(monthKey, platform, periodStart, periodEnd);
+  if (planShareFact !== null) return planShareFact;
   const control = skuPlanFactPayrollFactControl(monthKey, periodStart, periodEnd);
   if ((!platform || platform === 'all') && control) return control;
   const raw = skuPlanFactPayrollRawFactRevenue(monthKey, platform, periodStart, periodEnd);

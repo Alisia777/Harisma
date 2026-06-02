@@ -3525,7 +3525,7 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
               </span>
               <span class="product-leaderboard-weekly-bi-row__shares">
                 <b>КЗ-лист ${fmt.int(row.totalOrders)}</b>
-                <em>КЗ ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · без метки ${fmt.int(row.orders.organic)}</em>
+                <em>внутри листа: КЗ-метка ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · без метки ${fmt.int(row.orders.organic)}</em>
               </span>
             </div>
           `;

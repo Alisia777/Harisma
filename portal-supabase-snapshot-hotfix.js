@@ -11,6 +11,8 @@
     'iu_plan',
     'ads_summary',
     'iu_drr_summary',
+    'wb_substitution_traffic',
+    'wb_substitution_traffic_history',
     'platform_plan',
     'portal_sync_health',
     'portal_data_quarantine',
@@ -43,6 +45,8 @@
     'ads_summary',
     'iu_drr_summary',
     'wb_feedbacks_summary',
+    'wb_substitution_traffic',
+    'wb_substitution_traffic_history',
     'portal_sync_health',
     'portal_data_quarantine',
     'portal_data_quality',
@@ -72,9 +76,9 @@
     'ads-funnel': ['ads_summary', 'smart_price_overlay', 'iu_drr_summary'],
     'oos-control': ['oos_control', 'order_procurement', 'portal_sync_health', 'portal_data_quality', 'smart_price_overlay'],
     'sku-plan-fact': ['smart_price_workbench', 'smart_price_overlay', 'price_workbench_support', 'ads_summary', 'iu_drr_summary', 'portal_data_quality', 'sku_aliases', 'sku_alias_ignore', 'sku_alias_audit', 'sku_matrix'],
-    'iu-drr': ['iu_drr_summary', 'ads_summary', 'wb_feedbacks_summary'],
+    'iu-drr': ['iu_drr_summary', 'ads_summary', 'wb_feedbacks_summary', 'wb_substitution_traffic'],
     'wb-rating': ['wb_feedbacks_summary', 'iu_drr_summary'],
-    'product-leaderboard': ['product_leaderboard', 'product_leaderboard_history']
+    'product-leaderboard': ['product_leaderboard', 'product_leaderboard_history', 'wb_substitution_traffic', 'wb_substitution_traffic_history']
   };
   const SNAPSHOT_TIMEOUT_MS = 60000;
   const AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
@@ -88,6 +92,8 @@
     ads_summary: 'adsSummary',
     iu_drr_summary: 'iuDrrSummary',
     wb_feedbacks_summary: 'wbFeedbacks',
+    wb_substitution_traffic: 'wbSubstitutionTraffic',
+    wb_substitution_traffic_history: 'wbSubstitutionTrafficHistory',
     platform_plan: 'platformPlan',
     prices: 'prices',
     smart_price_workbench: 'smartPriceWorkbench',
@@ -341,6 +347,8 @@
     if (snapshotKey === 'sku_alias_ignore') return Array.isArray(payload?.ignored) || Array.isArray(payload?.ignores) || Array.isArray(payload?.rows);
     if (snapshotKey === 'sku_alias_audit') return Array.isArray(payload?.events);
     if (snapshotKey === 'sku_matrix') return Array.isArray(payload?.items) && payload.items.length > 0;
+    if (snapshotKey === 'wb_substitution_traffic') return Array.isArray(payload?.articles) || Array.isArray(payload?.rows);
+    if (snapshotKey === 'wb_substitution_traffic_history') return Array.isArray(payload);
     if (snapshotKey === 'product_leaderboard') return Array.isArray(payload?.items);
     if (snapshotKey === 'product_leaderboard_history') return Array.isArray(payload);
     if (snapshotKey === 'repricer') return Array.isArray(payload?.rows) || typeof payload?.summary === 'object';

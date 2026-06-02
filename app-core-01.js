@@ -16,6 +16,7 @@
   iuDrrSummary: { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
   wbFeedbacks: { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] },
   wbSubstitutionTraffic: { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
+  wbSubstitutionTrafficHistory: [],
   skuAliases: { schema: 'sku-api-aliases-v1', aliases: [] },
   skuAliasIgnore: { schema: 'sku-api-ignore-v1', ignored: [] },
   skuAliasAudit: { schema: 'sku-alias-audit-v1', events: [] },
@@ -94,7 +95,9 @@
     signal: 'all',
     sort: 'gameScore',
     category: 'all',
-    snapshot: 'latest'
+    snapshot: 'latest',
+    lflCurrentSnapshot: 'latest',
+    lflCompareSnapshot: ''
   },
   adsFunnelFilters: {
     search: '',
@@ -389,6 +392,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/iu_drr_summary.json': 'iu_drr_summary',
   'data/wb_feedbacks_summary.json': 'wb_feedbacks_summary',
   'data/wb_substitution_traffic.json': 'wb_substitution_traffic',
+  'data/wb_substitution_traffic_history.json': 'wb_substitution_traffic_history',
   'data/platform_plan.json': 'platform_plan',
   'data/prices.json': 'prices',
   'data/smart_price_workbench.json': 'smart_price_workbench',
@@ -1254,6 +1258,7 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   if (snapshotKey === 'iu_drr_summary') return Array.isArray(payload?.daily) && payload.daily.length > 0;
   if (snapshotKey === 'wb_feedbacks_summary') return Array.isArray(payload?.cards) && payload.cards.length > 0;
   if (snapshotKey === 'wb_substitution_traffic') return Array.isArray(payload?.articles) && payload.articles.length > 0;
+  if (snapshotKey === 'wb_substitution_traffic_history') return Array.isArray(payload) && payload.length > 0;
   if (snapshotKey === 'platform_plan') return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;
   if (snapshotKey === 'smart_price_workbench') {
     return typeof payload?.platforms === 'object' && payload.platforms !== null && Object.keys(payload.platforms).length > 0;
@@ -2922,7 +2927,7 @@ const LAZY_DATA_LOADERS = {
         return cloneFallback(fallback);
       }
     };
-    const [payload, history, wbSubstitutionTraffic, iuDrrSummary] = await Promise.all([
+    const [payload, history, wbSubstitutionTraffic, wbSubstitutionTrafficHistory, iuDrrSummary] = await Promise.all([
       Array.isArray(state.productLeaderboard?.items) && state.productLeaderboard.items.length
         ? Promise.resolve(state.productLeaderboard)
         : loadLocalProductData('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
@@ -2931,6 +2936,11 @@ const LAZY_DATA_LOADERS = {
         'data/wb_substitution_traffic.json',
         { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
         'WB подменные артикулы'
+      ),
+      loadLocalProductData(
+        'data/wb_substitution_traffic_history.json',
+        [],
+        'История WB подменных артикулов'
       ),
       loadLocalProductData(
         'data/iu_drr_summary.json',
@@ -2945,6 +2955,7 @@ const LAZY_DATA_LOADERS = {
     state.wbSubstitutionTraffic = wbSubstitutionTraffic && typeof wbSubstitutionTraffic === 'object'
       ? wbSubstitutionTraffic
       : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
+    state.wbSubstitutionTrafficHistory = Array.isArray(wbSubstitutionTrafficHistory) ? wbSubstitutionTrafficHistory : [];
     state.iuDrrSummary = iuDrrSummary && typeof iuDrrSummary === 'object'
       ? iuDrrSummary
       : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };

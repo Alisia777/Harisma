@@ -5,7 +5,9 @@ const path = require('path');
 const xlsx = require('xlsx');
 
 const OUTPUT_NAME = 'wb_substitution_traffic';
+const HISTORY_OUTPUT_NAME = 'wb_substitution_traffic_history';
 const WB_SUBSTITUTION_SCHEMA = 'portal-wb-substitution-traffic-v1';
+const DEFAULT_HISTORY_LIMIT = 24;
 
 function parseArgs(argv) {
   const args = {};
@@ -395,13 +397,45 @@ function writePayload(options, payload) {
   return outputPath;
 }
 
+function snapshotKey(payload = {}) {
+  const sourceStamp = payload.source?.sourceGeneratedAt || payload.asOfDate || payload.generatedAt;
+  const sourceFile = payload.source?.fileName || payload.source?.file || '';
+  return [sourceStamp, sourceFile].filter(Boolean).join('|') || payload.generatedAt || '';
+}
+
+function writeHistoryPayload(options, payload) {
+  fs.mkdirSync(options.outputDir, { recursive: true });
+  const historyPath = path.join(options.outputDir, `${HISTORY_OUTPUT_NAME}.json`);
+  const previous = readJsonIfExists(historyPath, []);
+  const historyLimit = Math.max(1, Number(process.env.ALTEA_WB_SUBSTITUTION_TRAFFIC_HISTORY_LIMIT || DEFAULT_HISTORY_LIMIT) || DEFAULT_HISTORY_LIMIT);
+  const seen = new Set();
+  const history = [payload, ...(Array.isArray(previous) ? previous : [])]
+    .filter((item) => item && typeof item === 'object')
+    .filter((item) => {
+      const key = snapshotKey(item);
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((left, right) => (
+      Date.parse(right.source?.sourceGeneratedAt || right.generatedAt || right.asOfDate || '') -
+      Date.parse(left.source?.sourceGeneratedAt || left.generatedAt || left.asOfDate || '')
+    ))
+    .slice(0, historyLimit);
+  fs.writeFileSync(historyPath, `${JSON.stringify(history, null, 2)}\n`, 'utf8');
+  return historyPath;
+}
+
 function main() {
   const options = resolveOptions(parseArgs(process.argv));
   const payload = buildPayload(options);
   const outputPath = writePayload(options, payload);
+  const historyPath = writeHistoryPayload(options, payload);
   console.log(JSON.stringify({
     inputXlsx: options.inputXlsx,
     outputPath,
+    historyPath,
     summary: payload.summary
   }, null, 2));
 }

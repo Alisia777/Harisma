@@ -2810,6 +2810,8 @@ function getProductLeaderboardFilters() {
   state.productLeaderboardFilters.sort = state.productLeaderboardFilters.sort || 'gameScore';
   state.productLeaderboardFilters.sortDir = state.productLeaderboardFilters.sortDir === 'asc' ? 'asc' : 'desc';
   state.productLeaderboardFilters.snapshot = state.productLeaderboardFilters.snapshot || 'latest';
+  state.productLeaderboardFilters.lflCurrentSnapshot = state.productLeaderboardFilters.lflCurrentSnapshot || 'latest';
+  state.productLeaderboardFilters.lflCompareSnapshot = state.productLeaderboardFilters.lflCompareSnapshot || '';
   state.productLeaderboardFilters.expandedPanel = state.productLeaderboardFilters.expandedPanel || 'metrics';
   return state.productLeaderboardFilters;
 }
@@ -3367,6 +3369,279 @@ function productLeaderboardSignedInt(value) {
   return `${sign}${fmt.int(Math.abs(numeric))}`;
 }
 
+function productLeaderboardSafeRatio(numerator, denominator) {
+  const top = Number(numerator);
+  const bottom = Number(denominator);
+  return Number.isFinite(top) && Number.isFinite(bottom) && bottom > 0 ? top / bottom : null;
+}
+
+function normalizeWbSubstitutionTrafficPayload(payload = {}) {
+  const source = payload.source && typeof payload.source === 'object' ? payload.source : {};
+  return {
+    schema: payload.schema || 'portal-wb-substitution-traffic-v1',
+    generatedAt: payload.generatedAt || '',
+    asOfDate: payload.asOfDate || '',
+    source,
+    summary: payload.summary || {},
+    articles: Array.isArray(payload.articles) ? payload.articles : [],
+    rows: Array.isArray(payload.rows) ? payload.rows : []
+  };
+}
+
+function wbSubstitutionTrafficSnapshotStamp(snapshot = {}) {
+  return snapshot.source?.sourceGeneratedAt || snapshot.generatedAt || snapshot.asOfDate || '';
+}
+
+function wbSubstitutionTrafficSnapshotDedupeKey(snapshot = {}) {
+  const sourceStamp = snapshot.source?.sourceGeneratedAt || snapshot.asOfDate || snapshot.generatedAt || '';
+  const sourceFile = snapshot.source?.fileName || snapshot.source?.file || '';
+  return [sourceStamp, sourceFile].filter(Boolean).join('|') || snapshot.generatedAt || '';
+}
+
+function wbSubstitutionTrafficHistoryPayloads() {
+  const current = normalizeWbSubstitutionTrafficPayload(state.wbSubstitutionTraffic || {});
+  const history = Array.isArray(state.wbSubstitutionTrafficHistory)
+    ? state.wbSubstitutionTrafficHistory.map((item) => normalizeWbSubstitutionTrafficPayload(item || {}))
+    : [];
+  const seen = new Set();
+  return [current, ...history]
+    .filter((item) => item.generatedAt || item.asOfDate || item.source?.sourceGeneratedAt || item.rows.length || item.articles.length)
+    .filter((item) => {
+      const key = wbSubstitutionTrafficSnapshotDedupeKey(item);
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((left, right) => parseFreshStamp(wbSubstitutionTrafficSnapshotStamp(right)) - parseFreshStamp(wbSubstitutionTrafficSnapshotStamp(left)));
+}
+
+function wbSubstitutionTrafficSnapshotKey(snapshot = {}, index = 0) {
+  if (index === 0) return 'latest';
+  return wbSubstitutionTrafficSnapshotDedupeKey(snapshot) || `wb-substitution-${index}`;
+}
+
+function wbSubstitutionTrafficSnapshotLabel(snapshot = {}, index = 0) {
+  const sourceDate = snapshot.asOfDate || (snapshot.source?.sourceGeneratedAt || '').slice(0, 10) || (snapshot.generatedAt || '').slice(0, 10);
+  const sourceTime = snapshot.source?.sourceGeneratedAt || snapshot.generatedAt || '';
+  const sourceName = snapshot.source?.fileName || snapshot.source?.file || '';
+  const base = sourceDate || (index === 0 ? 'Текущий срез' : `Срез ${index + 1}`);
+  const timeLabel = sourceTime ? ` · ${fmt.date(sourceTime)}` : '';
+  const nameLabel = sourceName ? ` · ${sourceName.replace(/\.xlsx$/i, '')}` : '';
+  return `${base}${timeLabel}${nameLabel}`;
+}
+
+function wbSubstitutionTrafficSnapshotOptions() {
+  return wbSubstitutionTrafficHistoryPayloads().map((snapshot, index) => ({
+    snapshot,
+    index,
+    key: wbSubstitutionTrafficSnapshotKey(snapshot, index),
+    label: wbSubstitutionTrafficSnapshotLabel(snapshot, index)
+  }));
+}
+
+function productLeaderboardExternalArticleRows(payload = {}, filters = {}, items = []) {
+  const normalizedPayload = normalizeWbSubstitutionTrafficPayload(payload);
+  const hasActiveFilter = productLeaderboardHasActiveFilters(filters);
+  const visibleKeys = new Set((Array.isArray(items) ? items : [])
+    .map((item) => productLeaderboardSubstitutionKey(item.articleKey || item.article || item.sku || item.vendorCode || ''))
+    .filter(Boolean));
+  const map = new Map();
+  normalizedPayload.rows.forEach((row = {}) => {
+    const sourceKey = productLeaderboardSubstitutionArticleKey(row);
+    if (hasActiveFilter && visibleKeys.size > 0 && !visibleKeys.has(sourceKey)) return;
+    const key = productLeaderboardSubstitutionKey(row.substitutionArticle || row.substitution || row.substitutionSku || '');
+    if (!key) return;
+    const current = map.get(key) || {
+      key,
+      label: row.substitutionArticle || row.substitution || key,
+      views: 0,
+      carts: 0,
+      orders: 0,
+      favorites: 0,
+      campaignBudget: 0,
+      rowCount: 0,
+      campaigns: new Set(),
+      trafficSources: new Set(),
+      sourceArticles: new Set(),
+      sourceArticleOrders: new Map()
+    };
+    const views = numberOrZero(row.views);
+    const carts = numberOrZero(row.carts);
+    const orders = numberOrZero(row.orders);
+    const favorites = numberOrZero(row.favorites);
+    current.views += views;
+    current.carts += carts;
+    current.orders += orders;
+    current.favorites += favorites;
+    current.campaignBudget += numberOrZero(row.campaignBudget);
+    current.rowCount += 1;
+    if (row.campaignName) current.campaigns.add(String(row.campaignName));
+    if (row.trafficSource) current.trafficSources.add(String(row.trafficSource));
+    const sourceArticle = row.articleKey || row.sellerArticle || row.article || row.productId || '';
+    if (sourceArticle) {
+      current.sourceArticles.add(String(sourceArticle));
+      current.sourceArticleOrders.set(String(sourceArticle), numberOrZero(current.sourceArticleOrders.get(String(sourceArticle))) + orders);
+    }
+    map.set(key, current);
+  });
+  return [...map.values()].map((item) => {
+    const topSourceArticles = [...item.sourceArticleOrders.entries()]
+      .sort((left, right) => numberOrZero(right[1]) - numberOrZero(left[1]) || String(left[0]).localeCompare(String(right[0]), 'ru'))
+      .slice(0, 4)
+      .map(([label, orders]) => ({ label, orders }));
+    return {
+      key: item.key,
+      label: item.label,
+      views: item.views,
+      carts: item.carts,
+      orders: item.orders,
+      favorites: item.favorites,
+      campaignBudget: item.campaignBudget,
+      rowCount: item.rowCount,
+      campaignCount: item.campaigns.size,
+      trafficSourceCount: item.trafficSources.size,
+      sourceArticleCount: item.sourceArticles.size,
+      topSourceArticles,
+      cartRate: productLeaderboardSafeRatio(item.carts, item.views),
+      orderRate: productLeaderboardSafeRatio(item.orders, item.views)
+    };
+  }).sort((left, right) => (
+    numberOrZero(right.orders) - numberOrZero(left.orders)
+    || numberOrZero(right.views) - numberOrZero(left.views)
+    || String(left.label || left.key).localeCompare(String(right.label || right.key), 'ru')
+  ));
+}
+
+function productLeaderboardExternalArticleSummary(rows = []) {
+  return rows.reduce((summary, row) => {
+    summary.articles += 1;
+    summary.views += numberOrZero(row.views);
+    summary.carts += numberOrZero(row.carts);
+    summary.orders += numberOrZero(row.orders);
+    summary.favorites += numberOrZero(row.favorites);
+    summary.campaignBudget += numberOrZero(row.campaignBudget);
+    summary.rowCount += numberOrZero(row.rowCount);
+    summary.sourceArticleLinks += numberOrZero(row.sourceArticleCount);
+    summary.campaignLinks += numberOrZero(row.campaignCount);
+    return summary;
+  }, {
+    articles: 0,
+    views: 0,
+    carts: 0,
+    orders: 0,
+    favorites: 0,
+    campaignBudget: 0,
+    rowCount: 0,
+    sourceArticleLinks: 0,
+    campaignLinks: 0
+  });
+}
+
+function productLeaderboardExternalLikeForLikeModel(filters = {}, filteredItems = []) {
+  const options = wbSubstitutionTrafficSnapshotOptions();
+  const currentKey = String(filters.lflCurrentSnapshot || 'latest');
+  const currentOption = options.find((option) => option.key === currentKey) || options[0] || null;
+  const compareKey = String(filters.lflCompareSnapshot || '');
+  const compareOption = options.find((option) => option.key === compareKey && (!currentOption || option.key !== currentOption.key))
+    || options.find((option) => !currentOption || option.key !== currentOption.key)
+    || null;
+  const currentRows = currentOption ? productLeaderboardExternalArticleRows(currentOption.snapshot, filters, filteredItems) : [];
+  const previousRows = compareOption ? productLeaderboardExternalArticleRows(compareOption.snapshot, filters, filteredItems) : [];
+  const currentMap = new Map(currentRows.map((row) => [row.key, row]));
+  const previousMap = new Map(previousRows.map((row) => [row.key, row]));
+  const keys = new Set([...currentMap.keys(), ...previousMap.keys()]);
+  const rows = [...keys].map((key) => {
+    const current = currentMap.get(key) || {
+      key,
+      label: previousMap.get(key)?.label || key,
+      views: 0,
+      carts: 0,
+      orders: 0,
+      favorites: 0,
+      campaignBudget: 0,
+      rowCount: 0,
+      campaignCount: 0,
+      trafficSourceCount: 0,
+      sourceArticleCount: 0,
+      topSourceArticles: [],
+      cartRate: null,
+      orderRate: null
+    };
+    const previous = previousMap.get(key) || {
+      key,
+      label: currentMap.get(key)?.label || key,
+      views: 0,
+      carts: 0,
+      orders: 0,
+      favorites: 0,
+      campaignBudget: 0,
+      rowCount: 0,
+      campaignCount: 0,
+      trafficSourceCount: 0,
+      sourceArticleCount: 0,
+      topSourceArticles: [],
+      cartRate: null,
+      orderRate: null
+    };
+    const ordersDelta = numberOrZero(current.orders) - numberOrZero(previous.orders);
+    const viewsDelta = numberOrZero(current.views) - numberOrZero(previous.views);
+    const cartsDelta = numberOrZero(current.carts) - numberOrZero(previous.carts);
+    const favoritesDelta = numberOrZero(current.favorites) - numberOrZero(previous.favorites);
+    const rowCountDelta = numberOrZero(current.rowCount) - numberOrZero(previous.rowCount);
+    return {
+      key,
+      current,
+      previous,
+      ordersDelta,
+      ordersDeltaPct: numberOrZero(previous.orders) > 0 ? ordersDelta / numberOrZero(previous.orders) : null,
+      viewsDelta,
+      viewsDeltaPct: numberOrZero(previous.views) > 0 ? viewsDelta / numberOrZero(previous.views) : null,
+      cartsDelta,
+      favoritesDelta,
+      rowCountDelta,
+      orderRateDelta: current.orderRate != null && previous.orderRate != null ? current.orderRate - previous.orderRate : null,
+      status: currentMap.has(key) && previousMap.has(key) ? 'matched' : currentMap.has(key) ? 'new' : 'lost'
+    };
+  }).sort((left, right) => (
+    numberOrZero(right.ordersDelta) - numberOrZero(left.ordersDelta)
+    || numberOrZero(right.viewsDelta) - numberOrZero(left.viewsDelta)
+    || numberOrZero(right.current.orders) - numberOrZero(left.current.orders)
+    || String(left.current.label || left.key).localeCompare(String(right.current.label || right.key), 'ru')
+  ));
+  const currentSummary = productLeaderboardExternalArticleSummary(currentRows);
+  const previousSummary = productLeaderboardExternalArticleSummary(previousRows);
+  const ordersDelta = currentSummary.orders - previousSummary.orders;
+  const viewsDelta = currentSummary.views - previousSummary.views;
+  const cartsDelta = currentSummary.carts - previousSummary.carts;
+  const favoritesDelta = currentSummary.favorites - previousSummary.favorites;
+  return {
+    options,
+    currentOption,
+    compareOption,
+    currentLabel: currentOption?.label || '',
+    previousLabel: compareOption?.label || '',
+    rows,
+    currentRows,
+    previousRows,
+    currentSummary,
+    previousSummary,
+    ordersDelta,
+    ordersDeltaPct: previousSummary.orders > 0 ? ordersDelta / previousSummary.orders : null,
+    viewsDelta,
+    viewsDeltaPct: previousSummary.views > 0 ? viewsDelta / previousSummary.views : null,
+    cartsDelta,
+    favoritesDelta,
+    growingRows: rows.filter((row) => row.ordersDelta > 0).length,
+    fallingRows: rows.filter((row) => row.ordersDelta < 0).length,
+    flatRows: rows.filter((row) => row.ordersDelta === 0).length,
+    matchedRows: rows.filter((row) => row.status === 'matched').length,
+    newRows: rows.filter((row) => row.status === 'new').length,
+    lostRows: rows.filter((row) => row.status === 'lost').length,
+    hasComparison: Boolean(currentOption && compareOption)
+  };
+}
+
 function productLeaderboardLikeForLikeModel(payload = {}, items = []) {
   const previous = productLeaderboardPreviousComparableSnapshot(payload);
   const previousPayload = previous?.snapshot || null;
@@ -3646,7 +3921,7 @@ function renderProductLeaderboardInsightTilesHtml(payload = {}, summary = {}, ow
   const game = productLeaderboardGameScore(payload, items);
   const substitutionModel = productLeaderboardSubstitutionRowsForItems(items, filters);
   const substitutionSummary = productLeaderboardSubstitutionSummary(substitutionModel.rows);
-  const likeForLike = productLeaderboardLikeForLikeModel(payload, items);
+  const likeForLike = productLeaderboardExternalLikeForLikeModel(filters, items);
   const activePanel = String(filters.expandedPanel || '');
   const substitutionCompletion = substitutionSummary.orderRate
     ? Math.min(1.35, substitutionSummary.orderRate / 0.06)
@@ -3683,15 +3958,19 @@ function renderProductLeaderboardInsightTilesHtml(payload = {}, summary = {}, ow
     {
       panel: 'likeforlike',
       title: 'Like for like',
-      kicker: likeForLike.previousLabel ? `к ${likeForLike.previousLabel}` : 'нет базы сравнения',
-      value: productLeaderboardSignedInt(likeForLike.ordersDelta),
-      meta: `${fmt.int(likeForLike.rows.length)} SKU · выручка ${productLeaderboardSignedMoney(likeForLike.revenueDelta)}`,
-      completion: lflCompletion,
-      footer: `растут ${fmt.int(likeForLike.growingRows)} · падают ${fmt.int(likeForLike.fallingRows)}`,
+      kicker: likeForLike.previousLabel ? `внешние к ${likeForLike.previousLabel}` : 'нужен второй срез внешки',
+      value: likeForLike.hasComparison ? productLeaderboardSignedInt(likeForLike.ordersDelta) : '—',
+      meta: likeForLike.hasComparison
+        ? `${fmt.int(likeForLike.rows.length)} внешн. арт. · просмотры ${productLeaderboardSignedInt(likeForLike.viewsDelta)}`
+        : `${fmt.int(likeForLike.options.length)} срез · ждём историю`,
+      completion: likeForLike.hasComparison ? lflCompletion : null,
+      footer: likeForLike.hasComparison
+        ? `растут ${fmt.int(likeForLike.growingRows)} · падают ${fmt.int(likeForLike.fallingRows)}`
+        : 'сравнение появится со 2-го среза',
       deltaClass: likeForLike.ordersDelta >= 0 ? 'ok-text' : 'danger-text',
       active: activePanel === 'likeforlike',
       actionLabel: 'Показать LFL',
-      actionHint: 'Какие SKU дали рост'
+      actionHint: 'Сравнить внешку'
     }
   ];
   return `
@@ -3754,18 +4033,60 @@ function productLeaderboardLikeForLikeTone(value) {
   return 'flat';
 }
 
+function renderProductLeaderboardExternalLikeForLikeControls(model = {}, filters = {}) {
+  const options = Array.isArray(model.options) ? model.options : [];
+  const currentKey = model.currentOption?.key || filters.lflCurrentSnapshot || 'latest';
+  const compareKey = model.compareOption?.key || filters.lflCompareSnapshot || '';
+  const currentOptions = options.map((option) => (
+    `<option value="${escapeHtml(option.key)}" ${option.key === currentKey ? 'selected' : ''}>${escapeHtml(option.label)}</option>`
+  )).join('');
+  const compareOptions = options
+    .filter((option) => option.key !== currentKey)
+    .map((option) => `<option value="${escapeHtml(option.key)}" ${option.key === compareKey ? 'selected' : ''}>${escapeHtml(option.label)}</option>`)
+    .join('');
+  return `
+    <div class="product-leaderboard-lfl-controls">
+      <label class="product-leaderboard-date-card__select">
+        <em>срез A</em>
+        <select data-product-lfl-current aria-label="Выбрать основной срез внешних артикулов">
+          ${currentOptions || '<option value="latest">Текущий срез</option>'}
+        </select>
+      </label>
+      <label class="product-leaderboard-date-card__select">
+        <em>сравнить с</em>
+        <select data-product-lfl-compare aria-label="Выбрать базовый срез внешних артикулов" ${compareOptions ? '' : 'disabled'}>
+          ${compareOptions || '<option value="">Нужен второй срез</option>'}
+        </select>
+      </label>
+    </div>
+  `;
+}
+
 function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = []) {
-  const model = productLeaderboardLikeForLikeModel(payload, filteredItems);
+  const filters = getProductLeaderboardFilters();
+  const model = productLeaderboardExternalLikeForLikeModel(filters, filteredItems);
   const rows = model.rows;
-  if (!model.previousPayload) {
+  const controlsHtml = renderProductLeaderboardExternalLikeForLikeControls(model, filters);
+  if (!model.hasComparison) {
     return `
-      <div class="card product-leaderboard-likeforlike-panel" data-product-leaderboard-expanded-panel="likeforlike" style="margin-top:14px">
-        <div class="empty">Нет прошлой валидной недели для Like for like.</div>
+      <div class="card product-leaderboard-likeforlike-panel lfl-flat" data-product-leaderboard-expanded-panel="likeforlike" style="margin-top:14px;--lfl-hue:212;--lfl-bright:.42;--lfl-growth:0%;--lfl-drop:0%">
+        <div class="section-subhead">
+          <div>
+            <h3>Like for like: внешние артикулы</h3>
+            <p class="small muted">Сравнение строится по внешнему артикулу из WB-подменников. Сейчас в истории доступен только ${fmt.int(model.options.length)} срез, поэтому базу сравнения нужно накопить следующим импортом.</p>
+          </div>
+          <div class="badge-stack">
+            ${badge(`${fmt.int(model.currentSummary.articles)} внешн. арт.`, model.currentSummary.articles ? 'info' : 'warn')}
+            ${badge('нет второго среза', 'warn')}
+          </div>
+        </div>
+        ${controlsHtml}
+        <div class="empty" style="margin-top:12px">После следующей выгрузки ANS здесь можно будет выбрать две даты и увидеть, какие внешние артикулы дали рост или просадку по просмотрам, корзинам и заказам.</div>
       </div>
     `;
   }
-  const currentLabel = payload.weekLabel || payload.sourceSheetName || 'текущая неделя';
-  const previousLabel = model.previousLabel || 'прошлая неделя';
+  const currentLabel = model.currentLabel || 'текущий срез';
+  const previousLabel = model.previousLabel || 'базовый срез';
   const lflTone = productLeaderboardLikeForLikeTone(model.ordersDelta);
   const growthShare = rows.length ? model.growingRows / rows.length : 0;
   const dropShare = rows.length ? model.fallingRows / rows.length : 0;
@@ -3778,21 +4099,22 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
     <div class="card product-leaderboard-likeforlike-panel lfl-${lflTone}" data-product-leaderboard-expanded-panel="likeforlike" style="margin-top:14px;--lfl-hue:${heroHue};--lfl-bright:${heroBright.toFixed(2)};--lfl-growth:${(growthShare * 100).toFixed(1)}%;--lfl-drop:${(dropShare * 100).toFixed(1)}%">
       <div class="section-subhead">
         <div>
-          <h3>Like for like: неделя к неделе</h3>
-          <p class="small muted">Сравниваем только одинаковые SKU в двух срезах: ${escapeHtml(currentLabel)} против ${escapeHtml(previousLabel)}.</p>
+          <h3>Like for like: внешние артикулы</h3>
+          <p class="small muted">Сравниваем выбранные срезы по внешнему артикулу WB-подменников: ${escapeHtml(currentLabel)} против ${escapeHtml(previousLabel)}.</p>
         </div>
         <div class="badge-stack">
-          ${badge(`${fmt.int(rows.length)} LFL SKU`, rows.length ? 'info' : 'warn')}
-          ${badge(`${fmt.int(model.newRows)} новых вне LFL`, model.newRows ? 'warn' : 'ok')}
-          ${badge(`${fmt.int(model.lostRows)} выпали из LFL`, model.lostRows ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(model.matchedRows)} LFL внешн. арт.`, model.matchedRows ? 'info' : 'warn')}
+          ${badge(`${fmt.int(model.newRows)} новых`, model.newRows ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(model.lostRows)} выпали`, model.lostRows ? 'warn' : 'ok')}
         </div>
       </div>
+      ${controlsHtml}
       <div class="product-leaderboard-lfl-hero">
         <div class="product-leaderboard-lfl-score">
-          <span>баланс заказов</span>
+          <span>баланс заказов внешки</span>
           <strong>${escapeHtml(productLeaderboardSignedInt(model.ordersDelta))}</strong>
-          <em>${model.ordersDeltaPct == null ? 'без базы процента' : `${escapeHtml(productLeaderboardSignedPct(model.ordersDeltaPct))} к прошлой неделе`}</em>
-          <div class="product-leaderboard-lfl-track" aria-label="Доля растущих и падающих SKU">
+          <em>${model.ordersDeltaPct == null ? 'без базы процента' : `${escapeHtml(productLeaderboardSignedPct(model.ordersDeltaPct))} к базовому срезу`}</em>
+          <div class="product-leaderboard-lfl-track" aria-label="Доля растущих и падающих внешних артикулов">
             <i class="is-growth"></i>
             <i class="is-drop"></i>
           </div>
@@ -3802,19 +4124,19 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
           </div>
         </div>
         <div class="product-leaderboard-lfl-driver is-growth">
-          <span>главный рост</span>
-          <strong>${topGrowth ? escapeHtml(topGrowth.current.articleKey || topGrowth.current.article || topGrowth.key) : 'нет роста'}</strong>
-          <em>${topGrowth ? `${productLeaderboardSignedInt(topGrowth.ordersDelta)} заказов · ${productLeaderboardSignedMoney(topGrowth.revenueDelta)}` : 'по LFL SKU'}</em>
+          <span>главный рост внешки</span>
+          <strong>${topGrowth ? escapeHtml(topGrowth.current.label || topGrowth.key) : 'нет роста'}</strong>
+          <em>${topGrowth ? `${productLeaderboardSignedInt(topGrowth.ordersDelta)} заказов · просмотры ${productLeaderboardSignedInt(topGrowth.viewsDelta)}` : 'по внешним артикулам'}</em>
         </div>
         <div class="product-leaderboard-lfl-driver is-drop">
           <span>главная просадка</span>
-          <strong>${topDrop ? escapeHtml(topDrop.current.articleKey || topDrop.current.article || topDrop.key) : 'нет просадки'}</strong>
-          <em>${topDrop ? `${productLeaderboardSignedInt(topDrop.ordersDelta)} заказов · ${productLeaderboardSignedMoney(topDrop.revenueDelta)}` : 'по LFL SKU'}</em>
+          <strong>${topDrop ? escapeHtml(topDrop.current.label || topDrop.previous.label || topDrop.key) : 'нет просадки'}</strong>
+          <em>${topDrop ? `${productLeaderboardSignedInt(topDrop.ordersDelta)} заказов · просмотры ${productLeaderboardSignedInt(topDrop.viewsDelta)}` : 'по внешним артикулам'}</em>
         </div>
       </div>
       <div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
         ${productLeaderboardModuleCardHtml({
-          title: 'Заказы LFL',
+          title: 'Заказы внешки',
           kicker: `${fmt.int(model.currentSummary.orders)} сейчас`,
           value: productLeaderboardSignedInt(model.ordersDelta),
           meta: `${fmt.int(model.previousSummary.orders)} было · ${model.ordersDeltaPct == null ? '—' : productLeaderboardSignedPct(model.ordersDeltaPct)}`,
@@ -3824,39 +4146,39 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
           deltaClass: model.ordersDelta >= 0 ? 'ok' : 'danger'
         })}
         ${productLeaderboardModuleCardHtml({
-          title: 'Выручка LFL',
-          kicker: fmt.money(model.currentSummary.revenue),
-          value: productLeaderboardSignedMoney(model.revenueDelta),
-          meta: `${fmt.money(model.previousSummary.revenue)} было · ${model.revenueDeltaPct == null ? '—' : productLeaderboardSignedPct(model.revenueDeltaPct)}`,
-          completion: model.revenueDeltaPct == null ? null : Math.min(1.35, Math.max(0.05, 1 + model.revenueDeltaPct)),
-          footer: 'выручка',
-          hint: 'по тем же SKU',
-          deltaClass: model.revenueDelta >= 0 ? 'ok' : 'danger'
+          title: 'Просмотры внешки',
+          kicker: `${fmt.int(model.currentSummary.views)} сейчас`,
+          value: productLeaderboardSignedInt(model.viewsDelta),
+          meta: `${fmt.int(model.previousSummary.views)} было · ${model.viewsDeltaPct == null ? '—' : productLeaderboardSignedPct(model.viewsDeltaPct)}`,
+          completion: model.viewsDeltaPct == null ? null : Math.min(1.35, Math.max(0.05, 1 + model.viewsDeltaPct)),
+          footer: 'верх воронки',
+          hint: `${fmt.int(model.currentSummary.articles)} внешн. арт.`,
+          deltaClass: model.viewsDelta >= 0 ? 'ok' : 'danger'
         })}
         ${productLeaderboardModuleCardHtml({
-          title: 'Верх воронки',
-          kicker: `клики ${productLeaderboardSignedInt(model.clicksDelta)}`,
-          value: productLeaderboardSignedInt(model.cartsDelta),
-          meta: `корзины · выкупы ${productLeaderboardSignedInt(model.buysDelta)}`,
+          title: 'Корзины / избранное',
+          kicker: `корзины ${productLeaderboardSignedInt(model.cartsDelta)}`,
+          value: productLeaderboardSignedInt(model.favoritesDelta),
+          meta: `${fmt.int(model.currentSummary.carts)} корзин · ${fmt.int(model.currentSummary.favorites)} избранное`,
           completion: model.previousSummary.carts > 0 ? Math.min(1.35, Math.max(0.05, 1 + model.cartsDelta / model.previousSummary.carts)) : null,
-          footer: 'клики / корзины',
-          hint: 'по LFL SKU',
+          footer: 'избранное',
+          hint: 'по внешним артикулам',
           deltaClass: model.cartsDelta >= 0 ? 'ok' : 'danger'
         })}
       </div>
       <div class="table-wrap product-leaderboard-lfl-table-wrap" style="margin-top:12px">
-        <table class="product-leaderboard-likeforlike-table">
+        <table class="product-leaderboard-likeforlike-table product-leaderboard-external-lfl-table">
           <thead>
             <tr>
-              <th>SKU / товар</th>
-              <th>Owner</th>
+              <th>Внешний артикул</th>
+              <th>Связанные SKU</th>
               <th>Заказы сейчас</th>
               <th>Заказы было</th>
               <th>Δ заказов</th>
-              <th>Δ выручки</th>
-              <th>Клики</th>
+              <th>Просмотры</th>
               <th>Корзины</th>
-              <th>Выкупы</th>
+              <th>Избранное</th>
+              <th>CR</th>
             </tr>
           </thead>
           <tbody>
@@ -3864,31 +4186,38 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
               const current = row.current;
               const previous = row.previous;
               const rowTone = productLeaderboardLikeForLikeTone(row.ordersDelta);
-              const rowLabel = rowTone === 'growth' ? 'рост' : rowTone === 'drop' ? 'просадка' : 'ровно';
+              const statusLabel = row.status === 'new' ? 'новый' : row.status === 'lost' ? 'выпал' : rowTone === 'growth' ? 'рост' : rowTone === 'drop' ? 'просадка' : 'ровно';
+              const statusTone = row.status === 'new' ? 'warn' : row.status === 'lost' ? 'danger' : rowTone === 'growth' ? 'ok' : rowTone === 'drop' ? 'danger' : 'info';
+              const sourceBadges = (current.topSourceArticles.length ? current.topSourceArticles : previous.topSourceArticles)
+                .map((entry) => badge(`${entry.label}: ${fmt.int(entry.orders)}`, 'info'))
+                .join('');
               return `
                 <tr class="product-leaderboard-lfl-row is-${rowTone}" data-product-likeforlike-row="${escapeHtml(row.key)}">
                   <td>
                     <div class="product-leaderboard-lfl-sku-head">
                       <span>${index + 1}</span>
-                      <strong>${current.articleKey ? linkToSku(current.articleKey, current.articleKey) : escapeHtml(current.article || current.name || row.key)}</strong>
+                      <strong>${escapeHtml(current.label || previous.label || row.key)}</strong>
                     </div>
-                    <div class="muted small">${escapeHtml(current.name || previous.name || '')}</div>
                     <div class="badge-stack" style="margin-top:8px">
-                      ${badge(rowLabel, rowTone === 'growth' ? 'ok' : rowTone === 'drop' ? 'danger' : 'info')}
+                      ${badge(statusLabel, statusTone)}
                       ${row.ordersDeltaPct == null ? '' : badge(productLeaderboardSignedPct(row.ordersDeltaPct), row.ordersDelta >= 0 ? 'ok' : 'danger')}
                     </div>
                   </td>
-                  <td>${current.owner ? badge(current.owner, 'info') : badge('Без owner', 'warn')}</td>
-                  <td><strong>${fmt.int(current.orders)}</strong><div class="muted small">${fmt.money(current.revenue)}</div></td>
-                  <td>${fmt.int(previous.orders)}<div class="muted small">${fmt.money(previous.revenue)}</div></td>
+                  <td>
+                    <strong>${fmt.int(current.sourceArticleCount || previous.sourceArticleCount)}</strong>
+                    <div class="muted small">КЗ SKU в связке</div>
+                    <div class="badge-stack" style="margin-top:8px">${sourceBadges || badge('нет связки', 'warn')}</div>
+                  </td>
+                  <td><strong>${fmt.int(current.orders)}</strong><div class="muted small">${fmt.int(current.rowCount)} строк · ${fmt.int(current.campaignCount)} РК</div></td>
+                  <td>${fmt.int(previous.orders)}<div class="muted small">${fmt.int(previous.rowCount)} строк · ${fmt.int(previous.campaignCount)} РК</div></td>
                   <td class="product-leaderboard-lfl-delta">${productLeaderboardLikeForLikeDeltaBadge(row.ordersDelta)}</td>
-                  <td class="product-leaderboard-lfl-delta">${productLeaderboardLikeForLikeDeltaBadge(row.revenueDelta, 'money')}</td>
-                  <td>${fmt.int(current.clicks)}<div class="muted small">${productLeaderboardSignedInt(row.clicksDelta)}</div></td>
+                  <td>${fmt.int(current.views)}<div class="muted small">${productLeaderboardSignedInt(row.viewsDelta)}</div></td>
                   <td>${fmt.int(current.carts)}<div class="muted small">${productLeaderboardSignedInt(row.cartsDelta)}</div></td>
-                  <td>${fmt.int(current.buys)}<div class="muted small">${productLeaderboardSignedInt(row.buysDelta)}</div></td>
+                  <td>${fmt.int(current.favorites)}<div class="muted small">${productLeaderboardSignedInt(row.favoritesDelta)}</div></td>
+                  <td>${fmt.pct(current.orderRate)}<div class="muted small">${row.orderRateDelta == null ? '—' : productLeaderboardSignedPct(row.orderRateDelta)}</div></td>
                 </tr>
               `;
-            }).join('') || '<tr><td colspan="9"><div class="empty">Нет совпавших SKU для Like for like.</div></td></tr>'}
+            }).join('') || '<tr><td colspan="9"><div class="empty">Нет внешних артикулов для Like for like.</div></td></tr>'}
           </tbody>
         </table>
       </div>
@@ -7411,14 +7740,7 @@ function renderWbFeedbacksIuDrrPanel() {
 
 function wbSubstitutionTrafficPayload() {
   const payload = state.wbSubstitutionTraffic && typeof state.wbSubstitutionTraffic === 'object' ? state.wbSubstitutionTraffic : {};
-  return {
-    generatedAt: payload.generatedAt || '',
-    asOfDate: payload.asOfDate || '',
-    source: payload.source || {},
-    summary: payload.summary || {},
-    articles: Array.isArray(payload.articles) ? payload.articles : [],
-    rows: Array.isArray(payload.rows) ? payload.rows : []
-  };
+  return normalizeWbSubstitutionTrafficPayload(payload);
 }
 
 function wbSubstitutionTrafficTone(rate) {
@@ -8695,6 +9017,20 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       getProductLeaderboardFilters().snapshot = event.target.value;
       rerenderCurrentView();
     });
+  });
+  root.querySelector('[data-product-lfl-current]')?.addEventListener('change', (event) => {
+    const filters = getProductLeaderboardFilters();
+    filters.lflCurrentSnapshot = event.target.value;
+    if (filters.lflCompareSnapshot === filters.lflCurrentSnapshot) {
+      const nextCompare = wbSubstitutionTrafficSnapshotOptions().find((option) => option.key !== filters.lflCurrentSnapshot);
+      filters.lflCompareSnapshot = nextCompare?.key || '';
+    }
+    rerenderCurrentView();
+  });
+  root.querySelector('[data-product-lfl-compare]')?.addEventListener('change', (event) => {
+    const filters = getProductLeaderboardFilters();
+    filters.lflCompareSnapshot = event.target.value;
+    rerenderCurrentView();
   });
   root.querySelector('#productLeaderboardOwner')?.addEventListener('change', (event) => {
     getProductLeaderboardFilters().owner = event.target.value;

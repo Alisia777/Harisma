@@ -365,6 +365,156 @@ function skuRegistryFocusPillHtml(reason) {
   return `<span class="chip ${escapeHtml(reason.tone || '')}">${escapeHtml(reason.label || '')}</span>`;
 }
 
+function skuJourneyOpenView(view) {
+  if (typeof setView === 'function') setView(view);
+  else document.querySelector(`.nav-btn[data-view="${escapeHtml(view)}"]`)?.click();
+}
+
+function skuJourneyApplyRegistryFocus(focus = 'all', search = '') {
+  state.filters.focus = focus || 'all';
+  state.filters.assignment = 'all';
+  state.filters.traffic = 'all';
+  if (search !== undefined && search !== null) state.filters.search = String(search || '');
+  if (state.filters.focus === 'unassigned') state.filters.assignment = 'unassigned';
+  if (state.filters.focus === 'extAny') state.filters.traffic = 'any';
+  skuJourneyOpenView('skus');
+  if (state.activeView === 'skus' && typeof renderSkuRegistry === 'function') renderSkuRegistry();
+}
+
+function skuJourneyHandleAction(action = '', options = {}) {
+  const key = String(action || '').trim();
+  if (key === 'open-contour') {
+    state.skuContourOnlyNew = true;
+    skuJourneyOpenView('sku-contour');
+    if (state.activeView === 'sku-contour' && typeof renderSkuContour === 'function') renderSkuContour(options.rootId || 'view-sku-contour');
+    return;
+  }
+  if (key === 'open-registry') {
+    skuJourneyApplyRegistryFocus('all', options.search || '');
+    return;
+  }
+  if (key === 'registry-unassigned') {
+    skuJourneyApplyRegistryFocus('unassigned', options.search || '');
+    return;
+  }
+  if (key === 'registry-matrix') {
+    skuJourneyApplyRegistryFocus('matrixIssue', options.search || '');
+    return;
+  }
+  if (key === 'registry-low-stock') {
+    skuJourneyApplyRegistryFocus('lowStock', options.search || '');
+    return;
+  }
+  if (key === 'registry-under-plan') {
+    skuJourneyApplyRegistryFocus('underPlan', options.search || '');
+    return;
+  }
+  if (key === 'only-new-contour') {
+    state.skuContourOnlyNew = true;
+    if (state.activeView === 'sku-contour' && typeof renderSkuContour === 'function') renderSkuContour(options.rootId || 'view-sku-contour');
+    else skuJourneyOpenView('sku-contour');
+    return;
+  }
+  if (key === 'planfact') {
+    skuJourneyOpenView('sku-plan-fact');
+  }
+}
+
+function skuJourneyLevelMeta(score = 0) {
+  const value = Math.max(0, Math.min(100, Math.round(numberOrZero(score))));
+  if (value >= 92) return { label: 'Уровень 4', title: 'Чистый контур', tone: 'ok' };
+  if (value >= 76) return { label: 'Уровень 3', title: 'Рабочий ритм', tone: 'info' };
+  if (value >= 56) return { label: 'Уровень 2', title: 'Собираем систему', tone: 'warn' };
+  return { label: 'Уровень 1', title: 'Разгрести базу', tone: 'danger' };
+}
+
+function skuJourneyPanelHtml({
+  source = 'registry',
+  activeMarket = 'all',
+  ownerCoverage = null,
+  contourProgress = null,
+  unresolvedCount = 0,
+  blockerCount = 0,
+  matrixIssueCount = 0,
+  workCount = 0,
+  apiRiskRevenue = 0
+} = {}) {
+  const ownerPart = ownerCoverage === null ? 0 : Math.max(0, Math.min(1, ownerCoverage)) * 30;
+  const contourPart = contourProgress === null ? 0 : Math.max(0, Math.min(1, contourProgress)) * 40;
+  const pressureBase = Math.max(1, numberOrZero(workCount) + numberOrZero(unresolvedCount) + numberOrZero(blockerCount) + 1);
+  const pressureRatio = Math.max(0, 1 - Math.min(1, (numberOrZero(unresolvedCount) + numberOrZero(blockerCount) * 2) / pressureBase));
+  const pressurePart = pressureRatio * 20;
+  const calmBonus = blockerCount ? 0 : 10;
+  const score = Math.max(0, Math.min(100, Math.round(ownerPart + contourPart + pressurePart + calmBonus)));
+  const level = skuJourneyLevelMeta(score);
+  const marketLabel = typeof skuDataPlatformLabel === 'function' ? skuDataPlatformLabel(activeMarket) : skuRegistryMarketLabel(activeMarket);
+  const missions = [
+    {
+      action: source === 'contour' ? 'only-new-contour' : 'open-contour',
+      label: 'Закрыть API-пары',
+      value: fmt.int(unresolvedCount),
+      help: 'alias / ignore / new_sku',
+      tone: unresolvedCount ? 'warn' : 'ok'
+    },
+    {
+      action: 'registry-unassigned',
+      label: 'Закрепить owner',
+      value: ownerCoverage === null ? '—' : fmt.pct(ownerCoverage),
+      help: 'ответственный по площадке',
+      tone: ownerCoverage !== null && ownerCoverage < 0.9 ? 'warn' : 'ok'
+    },
+    {
+      action: 'registry-matrix',
+      label: 'Свести матрицу',
+      value: fmt.int(matrixIssueCount),
+      help: 'дубли, статусы, связи',
+      tone: matrixIssueCount ? 'warn' : 'ok'
+    },
+    {
+      action: 'planfact',
+      label: 'Вернуть план-факт',
+      value: fmt.int(workCount),
+      help: 'SKU в работе',
+      tone: workCount ? 'info' : ''
+    }
+  ];
+  const sourceAction = source === 'contour' ? 'open-registry' : 'open-contour';
+  const sourceLabel = source === 'contour' ? 'Открыть Реестр SKU' : 'Открыть Контур SKU';
+  return `
+    <div class="sku-journey-panel">
+      <section class="sku-journey-score ${escapeHtml(level.tone)}">
+        <span>${escapeHtml(marketLabel)} · SKU quest</span>
+        <strong>${fmt.int(score)}</strong>
+        <em>${escapeHtml(level.label)} · ${escapeHtml(level.title)}</em>
+        <i><b style="width:${score}%"></b></i>
+      </section>
+      <section class="sku-journey-map">
+        ${missions.map((mission, index) => `
+          <button class="sku-journey-mission ${escapeHtml(mission.tone || '')}" type="button" data-sku-journey-action="${escapeHtml(mission.action)}">
+            <b>${index + 1}</b>
+            <span>
+              <strong>${escapeHtml(mission.label)}</strong>
+              <em>${escapeHtml(mission.help)}</em>
+            </span>
+            <small>${escapeHtml(mission.value)}</small>
+          </button>
+        `).join('')}
+      </section>
+      <section class="sku-journey-side">
+        <div>
+          <strong>${fmt.int(blockerCount)}</strong>
+          <span>блокеров</span>
+        </div>
+        <div>
+          <strong>${fmt.money(apiRiskRevenue || 0)}</strong>
+          <span>выручка риска</span>
+        </div>
+        <button class="quick-chip primary" type="button" data-sku-journey-action="${escapeHtml(sourceAction)}">${escapeHtml(sourceLabel)}</button>
+      </section>
+    </div>
+  `;
+}
+
 function skuRegistryFocusBoardHtml({ activeMarket = 'all', allMarketSkus = [], items = [], skuTaskMap = new Map(), matrixIssueCount = 0, registryIssueRows = [] } = {}) {
   const total = allMarketSkus.length;
   const assigned = allMarketSkus.filter((sku) => skuRegistryOwnerCount(sku, activeMarket)).length;
@@ -378,9 +528,17 @@ function skuRegistryFocusBoardHtml({ activeMarket = 'all', allMarketSkus = [], i
     const task = skuTaskMap.get(String(sku.articleKey || '').trim()) || null;
     return task && isTaskOverdue(task);
   }).length;
-  const marketIssueCount = activeMarket === 'all' || typeof skuDataIssueMatchesPlatform !== 'function'
-    ? registryIssueRows.length
-    : registryIssueRows.filter((row) => skuDataIssueMatchesPlatform(row, activeMarket)).length;
+  const marketIssueRows = activeMarket === 'all' || typeof skuDataIssueMatchesPlatform !== 'function'
+    ? registryIssueRows
+    : registryIssueRows.filter((row) => skuDataIssueMatchesPlatform(row, activeMarket));
+  const marketIssueCount = marketIssueRows.length;
+  const resolvedIssueCount = typeof skuContourIssueIsResolved === 'function'
+    ? marketIssueRows.filter(skuContourIssueIsResolved).length
+    : 0;
+  const unresolvedIssueCount = Math.max(0, marketIssueRows.length - resolvedIssueCount);
+  const blockerCount = marketIssueRows.filter((row) => row.status === 'blocked' || row.status === 'quarantine').length;
+  const apiRiskRevenue = marketIssueRows.reduce((sum, row) => sum + numberOrZero(row.revenue || 0), 0);
+  const contourProgress = marketIssueRows.length ? resolvedIssueCount / marketIssueRows.length : 1;
   const matrixIssuesBySku = allMarketSkus.filter((sku) => {
     const stateKey = typeof skuMatrixProblemState === 'function' ? skuMatrixProblemState(sku) : 'ok';
     return stateKey && stateKey !== 'ok';
@@ -408,6 +566,7 @@ function skuRegistryFocusBoardHtml({ activeMarket = 'all', allMarketSkus = [], i
     { focus: 'extAny', label: 'Трафик', count: externalTrafficCount, help: 'КЗ/VK и внешние хвосты', tone: externalTrafficCount ? 'info' : '' }
   ];
   return `
+    ${skuJourneyPanelHtml({ source: 'registry', activeMarket, ownerCoverage, contourProgress, unresolvedCount: unresolvedIssueCount, blockerCount, matrixIssueCount: matrixIssuesBySku || matrixIssueCount, workCount, apiRiskRevenue })}
     <div class="sku-data-focus-board sku-registry-focus-board">
       <section class="sku-data-focus-panel sku-data-focus-panel--hero">
         <div class="sku-data-focus-kicker">Реестр SKU · ${escapeHtml(skuRegistryMarketLabel(activeMarket))}</div>
@@ -451,7 +610,7 @@ function skuRegistryFocusBoardHtml({ activeMarket = 'all', allMarketSkus = [], i
                 <em>${escapeHtml(item.sku.name || registryDisplayOwner(item.sku, activeMarket) || 'Без названия')}</em>
                 <small>${item.reasons.slice(0, 3).map(skuRegistryFocusPillHtml).join('')}</small>
               </span>
-              <b>${fmt.int(item.score)}</b>
+              <b>${fmt.int(item.score)} XP</b>
             </button>
           `).join('') : '<div class="sku-data-focus-empty">Критичных SKU по текущей площадке не видно</div>'}
         </div>
@@ -617,23 +776,15 @@ function renderSkuRegistry() {
   }));
   root.querySelectorAll('[data-sku-registry-focus]').forEach((button) => button.addEventListener('click', (event) => {
     const focus = event.currentTarget.dataset.skuRegistryFocus || 'all';
-    state.filters.focus = focus;
-    if (focus === 'all') {
-      state.filters.assignment = 'all';
-      state.filters.traffic = 'all';
-    } else if (focus === 'unassigned') {
-      state.filters.assignment = 'unassigned';
-    } else if (focus === 'extAny') {
-      state.filters.traffic = 'any';
-      state.filters.assignment = 'all';
-    } else {
-      state.filters.assignment = 'all';
-    }
-    renderSkuRegistry();
+    skuJourneyApplyRegistryFocus(focus, state.filters.search || '');
   }));
   root.querySelector('[data-sku-registry-open-contour]')?.addEventListener('click', () => {
-    if (typeof setView === 'function') setView('sku-contour');
-    else document.querySelector('.nav-btn[data-view="sku-contour"]')?.click();
+    skuJourneyHandleAction('open-contour');
+  });
+  root.querySelectorAll('[data-sku-journey-action]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      skuJourneyHandleAction(event.currentTarget.dataset.skuJourneyAction || '');
+    });
   });
 }
 

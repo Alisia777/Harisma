@@ -3276,7 +3276,7 @@ function skuContourFocusQueueHtml(rows = []) {
   return rows.slice(0, 6).map((row) => {
     const meta = skuContourStatusMeta(row.status);
     return `
-      <div class="sku-data-focus-row">
+      <button class="sku-data-focus-row" type="button" data-sku-contour-open-registry="${escapeHtml(row.apiSku || '')}">
         <span>
           <strong>${escapeHtml(row.apiSku || row.type || 'API SKU')}</strong>
           <em>${escapeHtml(row.name || row.action || row.type || 'Нужен разбор')}</em>
@@ -3286,7 +3286,7 @@ function skuContourFocusQueueHtml(rows = []) {
           </small>
         </span>
         <b>${fmt.money(row.revenue || 0)}</b>
-      </div>
+      </button>
     `;
   }).join('');
 }
@@ -3313,6 +3313,17 @@ function skuContourFocusBoardHtml({
   const blockerCount = numberOrZero(statusCounts.blocked || 0) + numberOrZero(statusCounts.quarantine || 0);
   const warningCount = numberOrZero(statusCounts.warning || 0);
   const newCount = numberOrZero(statusCounts.new || 0);
+  const marketSkus = (state.skus || []).filter((sku) => typeof skuDataSkuBelongsToPlatform === 'function'
+    ? skuDataSkuBelongsToPlatform(sku, activeMarket)
+    : true);
+  const ownerCoverage = marketSkus.length
+    ? marketSkus.filter((sku) => registryOwnersForFilter(sku, activeMarket).length > 0).length / marketSkus.length
+    : null;
+  const workCount = marketSkus.filter((sku) => typeof skuDataWorkFlag === 'function'
+    ? skuDataWorkFlag(sku, activeMarket)
+    : Boolean(sku?.flags?.toWork)).length;
+  const apiRiskRevenue = scopedIssueRows.reduce((sum, row) => sum + numberOrZero(row.revenue || 0), 0);
+  const matrixIssueCount = unresolvedRows.length;
   const actionBuckets = [
     { label: 'Новые', count: newCount, help: 'решить alias / ignore / new_sku', tone: newCount ? 'warn' : 'ok' },
     { label: 'Блокеры', count: numberOrZero(statusCounts.blocked || 0), help: 'сначала источник или дубль', tone: statusCounts.blocked ? 'danger' : 'ok' },
@@ -3322,6 +3333,7 @@ function skuContourFocusBoardHtml({
     { label: 'WB owner', count: numberOrZero(wbMissingInDistribution) + numberOrZero(wbMissingInPortal), help: 'сверка распределения', tone: (wbMissingInDistribution || wbMissingInPortal) ? 'info' : '' }
   ];
   return `
+    ${skuJourneyPanelHtml({ source: 'contour', activeMarket, ownerCoverage, contourProgress: progressRatio, unresolvedCount: unresolvedRows.length, blockerCount, matrixIssueCount, workCount, apiRiskRevenue })}
     <div class="sku-data-focus-board sku-contour-focus-board">
       <section class="sku-data-focus-panel sku-data-focus-panel--hero">
         <div class="sku-data-focus-kicker">Контур SKU · ${escapeHtml(skuDataPlatformLabel(activeMarket))}</div>
@@ -5131,6 +5143,16 @@ function renderSkuContour(rootId = 'view-sku-contour') {
     button.addEventListener('click', () => {
       if (typeof setView === 'function') setView('sku-plan-fact');
       else document.querySelector('.nav-btn[data-view="sku-plan-fact"]')?.click();
+    });
+  });
+  root.querySelectorAll('[data-sku-journey-action]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      skuJourneyHandleAction(event.currentTarget.dataset.skuJourneyAction || '', { rootId });
+    });
+  });
+  root.querySelectorAll('[data-sku-contour-open-registry]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      skuJourneyHandleAction('registry-matrix', { search: event.currentTarget.dataset.skuContourOpenRegistry || '', rootId });
     });
   });
   root.querySelectorAll('[data-sku-contour-quality-export]').forEach((button) => {

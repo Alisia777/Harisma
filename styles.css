@@ -602,6 +602,36 @@ textarea{resize:vertical;min-height:84px}
 .sku-data-technical[open] .sku-data-technical-summary::after{content:'-'}
 .sku-data-technical-body{padding:0 14px 14px}
 .sku-data-technical:not([open]) .sku-data-technical-body{display:none}
+.sku-journey-panel{display:grid;grid-template-columns:minmax(240px,.82fr) minmax(420px,1.55fr) minmax(220px,.72fr);gap:12px;margin:0 0 14px;border:1px solid rgba(255,214,130,.30);border-radius:8px;background:linear-gradient(135deg,rgba(44,30,14,.86),rgba(10,9,8,.72) 58%,rgba(26,43,34,.48));box-shadow:0 18px 48px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.08);padding:12px;overflow:hidden}
+.sku-journey-score,.sku-journey-map,.sku-journey-side{min-width:0}
+.sku-journey-score{border:1px solid rgba(255,255,255,.10);border-radius:8px;background:rgba(0,0,0,.16);padding:12px;display:grid;gap:7px;align-content:start}
+.sku-journey-score span{color:#f2d18b;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;line-height:1.2}
+.sku-journey-score strong{font-size:44px;line-height:.95;font-weight:950;font-variant-numeric:tabular-nums}
+.sku-journey-score.ok strong{color:#8ee6ad}
+.sku-journey-score.info strong{color:#9fc7ff}
+.sku-journey-score.warn strong{color:#f6c25d}
+.sku-journey-score.danger strong{color:#ff8f8f}
+.sku-journey-score em{color:var(--muted);font-size:12px;line-height:1.25;font-style:normal}
+.sku-journey-score i{display:block;height:10px;border-radius:999px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);overflow:hidden}
+.sku-journey-score i b{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#ff8f8f,#f6c25d,#8ee6ad)}
+.sku-journey-map{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.sku-journey-mission{min-width:0;border:1px solid rgba(255,255,255,.10);border-radius:8px;background:rgba(255,255,255,.035);color:var(--text);font:inherit;text-align:left;padding:10px;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;gap:6px 8px;cursor:pointer}
+.sku-journey-mission:hover{border-color:rgba(255,214,130,.40);background:rgba(255,214,130,.07);transform:translateY(-1px)}
+.sku-journey-mission>b{width:22px;height:22px;border:1px solid rgba(255,214,130,.32);border-radius:999px;display:grid;place-items:center;color:#f2d18b;font-size:11px;line-height:1}
+.sku-journey-mission span{min-width:0;display:grid;gap:3px}
+.sku-journey-mission strong,.sku-journey-mission em{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.sku-journey-mission strong{font-size:12px;line-height:1.15}
+.sku-journey-mission em{color:var(--muted);font-size:11px;line-height:1.25;font-style:normal}
+.sku-journey-mission small{grid-column:1 / -1;font-size:18px;line-height:1;font-weight:900;font-variant-numeric:tabular-nums;color:#f2d18b}
+.sku-journey-mission.ok small{color:#8ee6ad}
+.sku-journey-mission.warn small{color:#f6c25d}
+.sku-journey-mission.danger small{color:#ff8f8f}
+.sku-journey-mission.info small{color:#9fc7ff}
+.sku-journey-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start}
+.sku-journey-side div{min-width:0;border:1px solid rgba(255,255,255,.10);border-radius:8px;background:rgba(0,0,0,.16);padding:10px;display:grid;gap:4px}
+.sku-journey-side strong{font-size:20px;line-height:1;font-variant-numeric:tabular-nums;color:#f2d18b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sku-journey-side span{color:var(--muted);font-size:11px;line-height:1.2}
+.sku-journey-side .quick-chip{grid-column:1 / -1;justify-content:center}
 .sku-data-focus-board{display:grid;grid-template-columns:minmax(320px,1.12fr) minmax(300px,1fr) minmax(320px,1.04fr);gap:12px;margin:0 0 14px}
 .sku-data-focus-panel{min-width:0;border:1px solid rgba(255,214,130,.22);border-radius:8px;background:rgba(18,14,10,.72);box-shadow:0 16px 42px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.05);padding:14px;display:grid;gap:12px}
 .sku-data-focus-panel--hero{background:linear-gradient(135deg,rgba(46,31,16,.86),rgba(12,10,8,.78) 62%,rgba(20,36,28,.50));border-color:rgba(255,214,130,.32)}
@@ -1204,6 +1234,7 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
   .product-leaderboard-lfl-hero{grid-template-columns:1fr 1fr}
   .product-leaderboard-lfl-score{grid-column:1 / -1}
   .sku-data-game-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sku-journey-panel{grid-template-columns:1fr}
   .sku-data-focus-board{grid-template-columns:1fr}
   .sku-plan-fact-toolbar{grid-template-columns:1fr}
   .sku-plan-fact-actions{justify-content:flex-start}
@@ -1229,6 +1260,8 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
   .topbar,.section-title{flex-direction:column}
   .cards,.kpi-strip,.board-columns,.task-mini-grid,.filters,.control-filters,.pipeline-strip{grid-template-columns:1fr}
   .sku-data-game-cards{grid-template-columns:1fr}
+  .sku-journey-map,.sku-journey-side{grid-template-columns:1fr}
+  .sku-journey-score strong{font-size:38px}
   .sku-data-focus-metric-grid,.sku-data-bucket-grid{grid-template-columns:1fr}
   .sku-data-focus-head{display:grid}
   .sku-data-focus-row{grid-template-columns:1fr}

@@ -3439,17 +3439,20 @@ function productLeaderboardWeeklyTrendDelta(delta) {
 
 function productLeaderboardWeeklyTrendCardHtml(config = {}) {
   const deltaTone = productLeaderboardWeeklyTrendTone(config.delta);
+  const deltaHtml = config.delta === null
+    ? ''
+    : `<b class="${deltaTone === 'ok' ? 'ok-text' : deltaTone === 'danger' ? 'danger-text' : ''}">${escapeHtml(productLeaderboardWeeklyTrendDelta(config.delta))}</b>`;
   return `
     <div class="product-leaderboard-weekly-bi-card ${escapeHtml(config.className || '')}">
       <span>${escapeHtml(config.label || '')}</span>
       <strong>${escapeHtml(config.value || '')}</strong>
       <em>${escapeHtml(config.meta || '')}</em>
-      <b class="${deltaTone === 'ok' ? 'ok-text' : deltaTone === 'danger' ? 'danger-text' : ''}">${escapeHtml(productLeaderboardWeeklyTrendDelta(config.delta))}</b>
+      ${deltaHtml}
     </div>
   `;
 }
 
-function renderProductLeaderboardWeeklyTrendHtml() {
+function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
   const rows = productLeaderboardWeeklyShareRows();
   if (!rows.length) return '';
   const current = rows[rows.length - 1];
@@ -3457,35 +3460,41 @@ function renderProductLeaderboardWeeklyTrendHtml() {
   const maxOrders = Math.max(1, ...rows.map((row) => numberOrZero(row.totalOrders)));
   const currentLabel = current.range.fromLabel && current.range.toLabel ? `${current.range.fromLabel} - ${current.range.toLabel}` : current.weekLabel;
   const previousLabel = previous ? (previous.range.fromLabel && previous.range.toLabel ? `${previous.range.fromLabel} - ${previous.range.toLabel}` : previous.weekLabel) : '';
+  const wbTotalOrders = numberOrZero(orderContour.totalOrders);
+  const kzListOrders = numberOrZero(orderContour.kzOrders) || numberOrZero(current.totalOrders);
+  const organicOrders = Math.max(0, wbTotalOrders - kzListOrders);
+  const digitalOrders = numberOrZero(current.orders.digital);
+  const kzListShare = wbTotalOrders > 0 ? kzListOrders / wbTotalOrders : null;
+  const organicShare = wbTotalOrders > 0 ? organicOrders / wbTotalOrders : null;
   const cards = [
     {
       className: 'is-kz',
-      label: 'КЗ доля',
-      value: current.kzShare == null ? '—' : fmt.pct(current.kzShare),
-      meta: `${fmt.int(current.orders.kz)} заказов`,
-      delta: current.kzShareDelta
+      label: 'КЗ-лист / WB',
+      value: kzListShare == null ? '—' : fmt.pct(kzListShare),
+      meta: `${fmt.int(kzListOrders)} из ${fmt.int(wbTotalOrders)} заказов`,
+      delta: null
     },
     {
       className: 'is-digital',
-      label: 'Digital доля',
+      label: 'Digital внутри КЗ-листа',
       value: current.digitalShare == null ? '—' : fmt.pct(current.digitalShare),
       meta: `${fmt.int(current.orders.digital)} заказов`,
       delta: current.digitalShareDelta
     },
     {
       className: 'is-organic',
-      label: 'Органика',
-      value: current.organicShare == null ? '—' : fmt.pct(current.organicShare),
-      meta: `${fmt.int(current.orders.organic)} заказов`,
-      delta: current.organicShareDelta
+      label: 'Органика WB',
+      value: organicShare == null ? '—' : fmt.pct(organicShare),
+      meta: `${fmt.int(organicOrders)} заказов`,
+      delta: null
     }
   ];
   return `
     <div class="product-leaderboard-weekly-bi">
       <div class="section-subhead">
         <div>
-          <h3>Недельная динамика долей</h3>
-          <p class="small muted">КЗ, digital и органика по заказам weekly лидерборда.</p>
+          <h3>Недельная динамика КЗ-листа</h3>
+          <p class="small muted">КЗ-лист по неделям и текущая доля от всех WB-подменников. История WB-подменников появится после следующих выгрузок ANS.</p>
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(rows.length)} недель`, rows.length > 1 ? 'info' : 'warn')}
@@ -3515,8 +3524,8 @@ function renderProductLeaderboardWeeklyTrendHtml() {
                 <i class="is-organic" style="width:${organicPct.toFixed(1)}%"></i>
               </span>
               <span class="product-leaderboard-weekly-bi-row__shares">
-                <b>КЗ ${fmt.pct(row.kzShare)}</b>
-                <em>digital ${fmt.pct(row.digitalShare)} · орг ${fmt.pct(row.organicShare)}</em>
+                <b>КЗ-лист ${fmt.int(row.totalOrders)}</b>
+                <em>КЗ ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · без метки ${fmt.int(row.orders.organic)}</em>
               </span>
             </div>
           `;
@@ -4014,7 +4023,7 @@ function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, i
           ${badge(orderContour.isFiltered ? 'по фильтрам лидерборда' : 'все WB-подменники', 'info')}
         </div>
       </div>
-      ${renderProductLeaderboardWeeklyTrendHtml()}
+      ${renderProductLeaderboardWeeklyTrendHtml(orderContour)}
       <div class="product-leaderboard-common-layout">
         ${productLeaderboardCommonSplitCardHtml(orderContour)}
         <div class="product-leaderboard-common-side">

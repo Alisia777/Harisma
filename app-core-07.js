@@ -3325,110 +3325,156 @@ function productLeaderboardCommonOrderContour(summary = {}, items = [], filters 
   };
 }
 
-function productLeaderboardCommonSplitCardHtml(contour = {}) {
-  const kzPct = contour.kzShare == null ? 0 : Math.min(100, Math.max(0, contour.kzShare * 100));
-  const organicPct = contour.organicShare == null ? 0 : Math.min(100, Math.max(0, contour.organicShare * 100));
-  const style = typeof skuPlanFactCardStyle === 'function'
-    ? skuPlanFactCardStyle('wb', contour.kzShare == null ? 0.5 : Math.max(0.15, contour.kzShare))
-    : '';
+function productLeaderboardWeekRange(payload = {}) {
+  const label = String(payload.weekLabel || payload.sourceSheetName || '').trim();
+  const match = label.match(/(\d{2})\.(\d{2})\.(\d{4})\s*-\s*(\d{2})\.(\d{2})\.(\d{4})/);
+  if (!match) return { fromLabel: '', toLabel: '', fromIso: '', toIso: '' };
+  const fromLabel = `${match[1]}.${match[2]}.${match[3]}`;
+  const toLabel = `${match[4]}.${match[5]}.${match[6]}`;
+  return {
+    fromLabel,
+    toLabel,
+    fromIso: `${match[3]}-${match[2]}-${match[1]}`,
+    toIso: `${match[6]}-${match[5]}-${match[4]}`
+  };
+}
+
+function productLeaderboardDateRangeCardHtml(range = {}, sourceLabel = '') {
   return `
-    <div class="sku-plan-platform-card level-${productLeaderboardScoreLevel(kzPct)}" style="${style};cursor:default;grid-column:span 2">
-      <span class="sku-plan-platform-card__top">
-        <strong>КЗ / органика</strong>
-        <em>${fmt.int(contour.totalOrders)} всего заказов</em>
-      </span>
-      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 8px">
-        <div style="border:1px solid rgba(221,183,111,.28);border-radius:8px;padding:10px;background:rgba(184,76,255,.12)">
-          <span class="small muted">КЗ</span>
-          <strong style="display:block;font-size:clamp(24px,2.1vw,34px);line-height:1.05;margin-top:3px">${fmt.int(contour.kzOrders)}</strong>
-          <em class="small">${contour.kzShare == null ? '—' : fmt.pct(contour.kzShare)} от общего</em>
-        </div>
-        <div style="border:1px solid rgba(221,183,111,.22);border-radius:8px;padding:10px;background:rgba(58,190,138,.11)">
-          <span class="small muted">Органика</span>
-          <strong style="display:block;font-size:clamp(24px,2.1vw,34px);line-height:1.05;margin-top:3px">${fmt.int(contour.organicOrders)}</strong>
-          <em class="small">${contour.organicShare == null ? '—' : fmt.pct(contour.organicShare)} от общего</em>
-        </div>
+    <div class="product-leaderboard-date-card">
+      <span>Период отчета</span>
+      <div class="product-leaderboard-date-card__inputs">
+        <label><em>с</em><input type="date" value="${escapeHtml(range.fromIso || '')}" readonly aria-label="Период с"></label>
+        <label><em>по</em><input type="date" value="${escapeHtml(range.toIso || '')}" readonly aria-label="Период по"></label>
       </div>
-      <span class="sku-plan-platform-card__bar" style="background:linear-gradient(90deg,rgba(184,76,255,.82) 0 ${kzPct.toFixed(1)}%,rgba(58,190,138,.66) ${kzPct.toFixed(1)}% 100%)"><i style="width:100%;opacity:.01"></i></span>
+      <b>${escapeHtml(range.fromLabel && range.toLabel ? `${range.fromLabel} - ${range.toLabel}` : 'текущий срез')}</b>
+      ${sourceLabel ? `<small>подменники: ${escapeHtml(sourceLabel)}</small>` : ''}
+    </div>
+  `;
+}
+
+function productLeaderboardOrderMiniCardHtml(config = {}) {
+  const style = typeof skuPlanFactCardStyle === 'function'
+    ? skuPlanFactCardStyle(config.platform || 'wb', config.completion)
+    : '';
+  const level = typeof skuPlanFactCompletionLevel === 'function'
+    ? skuPlanFactCompletionLevel(config.completion)
+    : productLeaderboardScoreLevel((Number(config.completion) || 0) * 100);
+  return `
+    <div class="sku-plan-platform-card product-leaderboard-order-mini level-${level}" style="${style};cursor:default">
+      <span class="sku-plan-platform-card__top">
+        <strong>${escapeHtml(config.title || '')}</strong>
+        <em>${escapeHtml(config.kicker || '')}</em>
+      </span>
+      <span class="sku-plan-platform-card__value">${escapeHtml(config.value || '')}</span>
+      <span class="sku-plan-platform-card__meta">${escapeHtml(config.meta || '')}</span>
+      <span class="sku-plan-platform-card__bar"><i></i></span>
       <span class="sku-plan-platform-card__foot">
-        <b>КЗ ${fmt.int(contour.kzOrders)}</b>
-        <em>органика ${fmt.int(contour.organicOrders)} · ${organicPct.toFixed(1)}%</em>
+        <b>${escapeHtml(config.footer || '')}</b>
+        <em>${escapeHtml(config.hint || '')}</em>
       </span>
     </div>
   `;
 }
 
-function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, items = [], filters = {}) {
-  const digital = productLeaderboardLatestDigitalContour();
-  const orderContour = productLeaderboardCommonOrderContour(summary, items, filters);
-  const previous = productLeaderboardPreviousComparableSnapshot(payload);
-  const previousSummary = previous?.summary || null;
-  const kzRevenue = numberOrZero(summary.revenue);
-  const kzDigitalShare = digital.revenue > 0 ? kzRevenue / (kzRevenue + digital.revenue) : null;
-  const revenueDelta = previousSummary ? kzRevenue - previousSummary.revenue : null;
-  const revenueDeltaPct = previousSummary && previousSummary.revenue > 0 ? revenueDelta / previousSummary.revenue : null;
-  const avgBuyRevenue = summary.buys > 0 ? summary.revenue / summary.buys : 0;
-  const previousAvgBuyRevenue = previousSummary && previousSummary.buys > 0 ? previousSummary.revenue / previousSummary.buys : 0;
-  const drrDelta = previousSummary ? summary.drrPct - previousSummary.drrPct : null;
-  const drivers = previousSummary ? [
-    productLeaderboardGrowthDriver('Охваты', summary.reach, previousSummary.reach),
-    productLeaderboardGrowthDriver('Клики', summary.clicks, previousSummary.clicks),
-    productLeaderboardGrowthDriver('Корзины', summary.carts, previousSummary.carts),
-    productLeaderboardGrowthDriver('Заказы', summary.orders, previousSummary.orders),
-    productLeaderboardGrowthDriver('Выкупы', summary.buys, previousSummary.buys),
-    productLeaderboardGrowthDriver('Средний выкуп', avgBuyRevenue, previousAvgBuyRevenue, { format: 'money', detail: `${fmt.money(avgBuyRevenue)} / выкуп` }),
-    productLeaderboardGrowthDriver('ДРР КЗ', summary.drrPct, previousSummary.drrPct, { format: 'pp', lowerIsBetter: true, detail: `${fmt.pct(summary.drrPct)} сейчас` })
-  ] : [];
-  const growthTone = revenueDelta == null ? 'info' : revenueDelta >= 0 ? 'ok' : 'warn';
-  const previousLabel = previous?.snapshot?.weekLabel || 'прошлый валидный срез';
+function productLeaderboardCommonSplitCardHtml(contour = {}) {
+  const kzPct = contour.kzShare == null ? 0 : Math.min(100, Math.max(0, contour.kzShare * 100));
+  const organicPct = contour.organicShare == null ? 0 : Math.min(100, Math.max(0, contour.organicShare * 100));
   return `
-    <div class="card product-leaderboard-common-contour" style="margin-top:14px">
+    <div class="product-leaderboard-order-hero" aria-label="КЗ и органика в заказах">
+      <div class="product-leaderboard-order-hero__top">
+        <div>
+          <span>всего заказов</span>
+          <strong>${fmt.int(contour.totalOrders)}</strong>
+          <em>WB-подменники</em>
+        </div>
+        <div class="product-leaderboard-order-hero__ratio">
+          <b>${contour.kzShare == null ? '—' : fmt.pct(contour.kzShare)}</b>
+          <em>КЗ</em>
+        </div>
+      </div>
+      <div class="product-leaderboard-order-hero__split">
+        <div class="product-leaderboard-order-metric is-kz">
+          <span>КЗ</span>
+          <strong>${fmt.int(contour.kzOrders)}</strong>
+          <em>${contour.kzShare == null ? '—' : fmt.pct(contour.kzShare)} от общего</em>
+        </div>
+        <div class="product-leaderboard-order-metric is-organic">
+          <span>Органика</span>
+          <strong>${fmt.int(contour.organicOrders)}</strong>
+          <em>${contour.organicShare == null ? '—' : fmt.pct(contour.organicShare)} от общего</em>
+        </div>
+      </div>
+      <div class="product-leaderboard-order-track" title="${escapeHtml(`КЗ ${kzPct.toFixed(1)}%, органика ${organicPct.toFixed(1)}%`)}">
+        <i class="is-kz" style="width:${kzPct.toFixed(1)}%"></i>
+        <i class="is-organic" style="width:${organicPct.toFixed(1)}%"></i>
+      </div>
+      <div class="product-leaderboard-order-hero__foot">
+        <b>КЗ ${fmt.int(contour.kzOrders)}</b>
+        <em>органика ${fmt.int(contour.organicOrders)} · ${organicPct.toFixed(1)}%</em>
+      </div>
+    </div>
+  `;
+}
+
+function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, items = [], filters = {}) {
+  const orderContour = productLeaderboardCommonOrderContour(summary, items, filters);
+  const kzPct = orderContour.kzShare == null ? 0 : Math.min(100, Math.max(0, orderContour.kzShare * 100));
+  const heroBright = Math.min(1, Math.max(0.42, 0.52 + kzPct / 180));
+  const range = productLeaderboardWeekRange(payload);
+  return `
+    <div class="card sku-plan-fact-card salary-plan-kpi-card product-leaderboard-common-contour" style="margin-top:14px;--xp-hue:278;--xp-progress:${kzPct.toFixed(1)}%;--xp-forecast:${kzPct.toFixed(1)}%;--xp-bright:${heroBright.toFixed(2)}">
       <div class="section-subhead">
         <div>
-          <h3>Общий контур</h3>
-          <p class="small muted">КЗ против органики: из заказов по WB-подменникам вычитаем заказы КЗ и сразу видим доли.</p>
+          <h3>Продажи WB: КЗ / органика</h3>
+          <p class="small muted">Все продажи по подменникам, вклад Контент завода и остаток органики WB.</p>
         </div>
         <div class="badge-stack">
           ${badge(payload.weekLabel || 'КЗ неделя', 'info')}
           ${badge(orderContour.isFiltered ? 'по фильтрам лидерборда' : 'все WB-подменники', 'info')}
-          ${badge(previousSummary ? `сравнение: ${previousLabel}` : 'нет базы сравнения', previousSummary ? 'info' : 'warn')}
         </div>
       </div>
-      <div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <div class="product-leaderboard-common-layout">
         ${productLeaderboardCommonSplitCardHtml(orderContour)}
-        ${productLeaderboardModuleCardHtml({
-          title: 'Digital выручка',
-          kicker: `КЗ ${payload.weekLabel || 'неделя'}`,
-          value: fmt.money(digital.revenue),
-          meta: `WB ${fmt.money(digital.revenueWb)} · Ozon ${fmt.money(digital.revenueOzon)}`,
-          completion: kzDigitalShare == null ? null : Math.min(1.35, kzDigitalShare / 0.08),
-          footer: `КЗ / digital ${kzDigitalShare == null ? '—' : fmt.pct(kzDigitalShare)}`,
-          hint: `КЗ выручка ${fmt.money(kzRevenue)}`,
-          deltaClass: kzDigitalShare && kzDigitalShare > 0.06 ? 'ok' : 'info'
+        <div class="product-leaderboard-common-side">
+        ${productLeaderboardDateRangeCardHtml(range, orderContour.sourceLabel)}
+        ${productLeaderboardOrderMiniCardHtml({
+          title: 'Все подменники WB',
+          kicker: `${fmt.int(orderContour.substitutionSummary.articles)} SKU`,
+          value: fmt.int(orderContour.totalOrders),
+          meta: `${fmt.int(orderContour.substitutionSummary.views)} просмотров · ${fmt.int(orderContour.substitutionSummary.carts)} корзин`,
+          completion: 1,
+          footer: '100.0%',
+          hint: 'база контура',
+          platform: 'wb'
         })}
-        ${productLeaderboardModuleCardHtml({
-          title: 'Рост КЗ',
-          kicker: previousSummary ? `к ${previousLabel}` : 'нет прошлой базы',
-          value: revenueDelta == null ? '—' : productLeaderboardSignedMoney(revenueDelta),
-          meta: revenueDeltaPct == null ? `${fmt.money(kzRevenue)} сейчас` : `${productLeaderboardSignedPct(revenueDeltaPct)} к базе`,
-          completion: revenueDeltaPct == null ? null : Math.min(1.35, Math.max(0, 1 + revenueDeltaPct)),
-          footer: `заказы ${previousSummary ? productLeaderboardSignedPct((summary.orders - previousSummary.orders) / Math.max(1, previousSummary.orders)) : '—'}`,
-          hint: `выкупы ${previousSummary ? productLeaderboardSignedPct((summary.buys - previousSummary.buys) / Math.max(1, previousSummary.buys)) : '—'}`,
-          deltaClass: growthTone
+        ${productLeaderboardOrderMiniCardHtml({
+          title: 'Контент завод',
+          kicker: `${fmt.int(summary.skuCount)} SKU КЗ`,
+          value: fmt.int(orderContour.kzOrders),
+          meta: `${orderContour.kzShare == null ? '—' : fmt.pct(orderContour.kzShare)} от продаж подменников`,
+          completion: orderContour.kzShare,
+          footer: 'КЗ',
+          hint: `${fmt.int(summary.clicks)} кликов`,
+          platform: 'wb'
         })}
-      </div>
-      <div class="quick-actions" style="margin-top:12px">
-        ${drivers.map((driver) => badge(`${driver.label}: ${driver.value}`, driver.tone)).join('')}
+        ${productLeaderboardOrderMiniCardHtml({
+          title: 'Органика WB',
+          kicker: 'остаток после КЗ',
+          value: fmt.int(orderContour.organicOrders),
+          meta: `${orderContour.organicShare == null ? '—' : fmt.pct(orderContour.organicShare)} от продаж подменников`,
+          completion: orderContour.organicShare,
+          footer: 'органика',
+          hint: `${fmt.int(orderContour.totalOrders)} - ${fmt.int(orderContour.kzOrders)}`,
+          platform: 'goldapple'
+        })}
+        </div>
       </div>
       <div class="muted small" style="margin-top:10px">
         Формула: органика = ${fmt.int(orderContour.totalOrders)} заказов WB-подменников - ${fmt.int(orderContour.kzOrders)} заказов КЗ = ${fmt.int(orderContour.organicOrders)}.${orderContour.sourceLabel ? ` Срез подменников: ${escapeHtml(orderContour.sourceLabel)}.` : ''}
       </div>
       <div class="muted small" style="margin-top:10px">
-        Вывод: ${revenueDelta != null && revenueDelta >= 0
-          ? `КЗ дает ${fmt.int(orderContour.kzOrders)} заказов из ${fmt.int(orderContour.totalOrders)} (${orderContour.kzShare == null ? '—' : fmt.pct(orderContour.kzShare)}), органика ${fmt.int(orderContour.organicOrders)} (${orderContour.organicShare == null ? '—' : fmt.pct(orderContour.organicShare)}). Рост КЗ ${productLeaderboardSignedMoney(revenueDelta)}: вклад дают выкупы ${drivers[4]?.value || ''}, заказы ${drivers[3]?.value || ''} и охваты ${drivers[0]?.value || ''}; ДРР ${productLeaderboardSignedPp(drrDelta)}`
-          : revenueDelta != null
-            ? `КЗ просел на ${productLeaderboardSignedMoney(revenueDelta)}; смотрим клики, корзины и выкупы относительно ${escapeHtml(previousLabel)}.`
-            : 'нет валидной прошлой недели для честного сравнения.'}
+        Вывод: из ${fmt.int(orderContour.totalOrders)} продаж по подменникам Контент завод дает ${fmt.int(orderContour.kzOrders)} (${orderContour.kzShare == null ? '—' : fmt.pct(orderContour.kzShare)}), органика WB дает ${fmt.int(orderContour.organicOrders)} (${orderContour.organicShare == null ? '—' : fmt.pct(orderContour.organicShare)}).
       </div>
     </div>
   `;
@@ -8163,7 +8209,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
     <div class="section-title">
       <div>
         <h2>Продуктовый лидерборд</h2>
-        <p>КЗ leaderboard с игровым уровнем недели: сверху скор, план-факт модули и owner race, ниже SKU с охватами, продажами, экономикой и рисками.</p>
+        <p>Сначала общий контур заказов КЗ / органика, ниже уровень недели, метрики, owner race и рабочий список SKU.</p>
       </div>
       <div class="badge-stack">
         ${badge(payload.weekLabel || 'недельный срез', 'info')}
@@ -8173,11 +8219,11 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       </div>
     </div>
 
+    ${commonContourHtml}
+
     ${gameHeroHtml}
 
     ${moduleBoardHtml}
-
-    ${commonContourHtml}
 
     ${insightTilesHtml}
 

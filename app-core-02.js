@@ -162,6 +162,8 @@ function normalizePortalStorageSnapshot(source = {}) {
     ownerOverrides: Array.isArray(parsed.ownerOverrides) ? parsed.ownerOverrides.map(normalizeOwnerOverride) : [],
     productLifecycleOverrides: Array.isArray(parsed.productLifecycleOverrides) ? parsed.productLifecycleOverrides.map(normalizeProductLifecycleOverride).filter((item) => item.articleKey) : [],
     taskAttachments: Array.isArray(parsed.taskAttachments) ? parsed.taskAttachments.map(normalizeTaskAttachment).filter((item) => item.taskId && item.objectPath) : [],
+    promoEvents: Array.isArray(parsed.promoEvents) ? parsed.promoEvents.filter((item) => item && typeof item === 'object') : [],
+    promoEventDeletedIds: Array.isArray(parsed.promoEventDeletedIds) ? parsed.promoEventDeletedIds.filter((item) => item && typeof item === 'object') : [],
     launchOverrides: Array.isArray(parsed.launchOverrides) ? parsed.launchOverrides.filter((item) => item && typeof item === 'object') : [],
     launchDeletedIds: Array.isArray(parsed.launchDeletedIds) ? parsed.launchDeletedIds.map((item) => String(item || '').trim()).filter(Boolean) : [],
     repricerSettings: normalizeRepricerSettings(parsed.repricerSettings || {}),
@@ -227,6 +229,8 @@ function portalStorageHistoryPayload(source = {}) {
     ownerOverrides: snapshot.ownerOverrides,
     productLifecycleOverrides: snapshot.productLifecycleOverrides,
     taskAttachments: snapshot.taskAttachments,
+    promoEvents: snapshot.promoEvents,
+    promoEventDeletedIds: snapshot.promoEventDeletedIds,
     launchOverrides: snapshot.launchOverrides,
     launchDeletedIds: snapshot.launchDeletedIds
   };
@@ -243,7 +247,8 @@ function portalStorageHistoryCounts(payload = {}) {
     tasks: Array.isArray(payload.tasks) ? payload.tasks.length : 0,
     decisions: Array.isArray(payload.decisions) ? payload.decisions.length : 0,
     ownerOverrides: Array.isArray(payload.ownerOverrides) ? payload.ownerOverrides.length : 0,
-    taskAttachments: Array.isArray(payload.taskAttachments) ? payload.taskAttachments.length : 0
+    taskAttachments: Array.isArray(payload.taskAttachments) ? payload.taskAttachments.length : 0,
+    promoEvents: Array.isArray(payload.promoEvents) ? payload.promoEvents.length : 0
   };
 }
 
@@ -695,6 +700,8 @@ function mergeImportedStorage(imported) {
     ownerOverrides: Array.isArray(imported.ownerOverrides) ? imported.ownerOverrides : [],
     productLifecycleOverrides: Array.isArray(imported.productLifecycleOverrides) ? imported.productLifecycleOverrides : [],
     taskAttachments: Array.isArray(imported.taskAttachments) ? imported.taskAttachments : [],
+    promoEvents: Array.isArray(imported.promoEvents) ? imported.promoEvents : [],
+    promoEventDeletedIds: Array.isArray(imported.promoEventDeletedIds) ? imported.promoEventDeletedIds : [],
     launchOverrides: Array.isArray(imported.launchOverrides) ? imported.launchOverrides : [],
     launchDeletedIds: Array.isArray(imported.launchDeletedIds) ? imported.launchDeletedIds : [],
     repricerSettings: imported.repricerSettings || {},

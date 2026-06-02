@@ -2374,7 +2374,7 @@ function ensureSkuContourShell() {
     button.className = 'nav-btn';
     button.type = 'button';
     button.dataset.view = 'data-health';
-    button.innerHTML = '<span>Здоровье данных</span><small>sync · проблемы · утро</small>';
+    button.innerHTML = '<span>Календарь</span><small>акции · события · SKU</small>';
     const dashboardButton = nav.querySelector('.nav-btn[data-view="dashboard"]');
     nav.insertBefore(button, dashboardButton?.nextSibling || nav.firstChild);
   }
@@ -2521,7 +2521,7 @@ function rerenderCurrentView() {
   const scrollSnapshot = capturePortalScrollState();
   applyOwnerOverridesToSkus();
   const renderPlan = [
-    ['view-data-health', 'Здоровье данных', () => { if (typeof renderPortalDataHealth === 'function') renderPortalDataHealth('view-data-health'); }],
+    ['view-data-health', 'Календарь', () => { if (typeof renderPortalDataHealth === 'function') renderPortalDataHealth('view-data-health'); }],
     ['view-oos-control', 'OOS контроль', () => { if (typeof renderOosControl === 'function') renderOosControl('view-oos-control'); }],
     ['view-sku-contour', 'SKU workspace', () => renderSkuContour('view-sku-contour')],
     ['view-sku-plan-fact', 'План-факт SKU', () => renderSkuPlanFact('view-sku-plan-fact')],

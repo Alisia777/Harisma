@@ -3320,6 +3320,7 @@ function productLeaderboardCommonOrderContour(summary = {}, items = [], filters 
     kzShare: denominator > 0 ? kzOrders / denominator : null,
     organicShare: denominator > 0 ? organicOrders / denominator : null,
     substitutionSummary,
+    sourceLabel: substitutionModel.payload.asOfDate || substitutionModel.payload.source?.sourceGeneratedAt || substitutionModel.payload.generatedAt || '',
     isFiltered: substitutionModel.isFiltered
   };
 }
@@ -3418,6 +3419,9 @@ function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, i
       </div>
       <div class="quick-actions" style="margin-top:12px">
         ${drivers.map((driver) => badge(`${driver.label}: ${driver.value}`, driver.tone)).join('')}
+      </div>
+      <div class="muted small" style="margin-top:10px">
+        Формула: органика = ${fmt.int(orderContour.totalOrders)} заказов WB-подменников - ${fmt.int(orderContour.kzOrders)} заказов КЗ = ${fmt.int(orderContour.organicOrders)}.${orderContour.sourceLabel ? ` Срез подменников: ${escapeHtml(orderContour.sourceLabel)}.` : ''}
       </div>
       <div class="muted small" style="margin-top:10px">
         Вывод: ${revenueDelta != null && revenueDelta >= 0

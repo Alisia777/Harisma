@@ -955,12 +955,40 @@
 .promo-kind-promo { --promo-color: #edce8a; }
 .promo-kind-task-auto { --promo-color: #4aa3ff; }
 .promo-kind-task-manual { --promo-color: #8fd27d; }
-.promo-kind-launch { --promo-color: #62d5d1; }
+.promo-kind-launch { --promo-color: #5dcb94; }
 
 .promo-kind-rail button {
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--promo-color, #7aa7ff) 14%, rgba(0, 0, 0, .24)), rgba(255, 255, 255, .02));
 }
+
+.promo-event-pill.promo-platform-cross,
+.promo-agenda-item.promo-platform-cross,
+.promo-calendar-day.promo-platform-cross { --promo-color: #6ec6a2; }
+.promo-event-pill.promo-platform-wb,
+.promo-agenda-item.promo-platform-wb,
+.promo-calendar-day.promo-platform-wb { --promo-color: #a16eff; }
+.promo-event-pill.promo-platform-ozon,
+.promo-agenda-item.promo-platform-ozon,
+.promo-calendar-day.promo-platform-ozon { --promo-color: #4aa3ff; }
+.promo-event-pill.promo-platform-ya,
+.promo-agenda-item.promo-platform-ya,
+.promo-calendar-day.promo-platform-ya { --promo-color: #ffcf4d; }
+.promo-event-pill.promo-platform-goldapple,
+.promo-agenda-item.promo-platform-goldapple,
+.promo-calendar-day.promo-platform-goldapple { --promo-color: #f5a96f; }
+.promo-event-pill.promo-platform-letu,
+.promo-agenda-item.promo-platform-letu,
+.promo-calendar-day.promo-platform-letu { --promo-color: #f06f9f; }
+.promo-event-pill.promo-platform-magnit,
+.promo-agenda-item.promo-platform-magnit,
+.promo-calendar-day.promo-platform-magnit { --promo-color: #ff6c6c; }
+.promo-event-pill.promo-platform-product,
+.promo-agenda-item.promo-platform-product,
+.promo-calendar-day.promo-platform-product { --promo-color: #62d5d1; }
+.promo-event-pill.promo-kind-launch,
+.promo-agenda-item.promo-kind-launch,
+.promo-calendar-day.promo-kind-launch { --promo-color: #5dcb94; }
 
 @media (max-width: 1240px) {
   .promo-calendar-layout {

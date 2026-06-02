@@ -943,11 +943,23 @@ function mergeOzonSmartSpendWithSellerFunnel(existingSeries = [], monthlySeries 
 
   return [...dates]
     .sort()
-    .map((date) => {
+    .map((date, _index, sortedDates) => {
       const smartSpend = existingByDate.get(date) || monthlyByDate.get(date) || {};
       const monthly = monthlyByDate.get(date) || {};
       const seller = sellerByDate.get(date);
       const base = numberOrZero(smartSpend.spend) > 0 ? smartSpend : (monthly || smartSpend);
+      const directSpend = numberOrZero(base.spend);
+      const previousSpend = directSpend > 0
+        ? directSpend
+        : sortedDates
+            .filter((candidateDate) => candidateDate < date)
+            .reverse()
+            .map((candidateDate) => {
+              const candidate = existingByDate.get(candidateDate) || monthlyByDate.get(candidateDate) || {};
+              return numberOrZero(candidate.spend);
+            })
+            .find((spend) => spend > 0) || 0;
+      const spend = directSpend > 0 ? directSpend : previousSpend;
       const point = seller
         ? {
             ...base,
@@ -957,14 +969,14 @@ function mergeOzonSmartSpendWithSellerFunnel(existingSeries = [], monthlySeries 
             clicks: numberOrZero(seller.clicks),
             orders: numberOrZero(seller.orders),
             revenue: numberOrZero(seller.revenue),
-            spend: numberOrZero(base.spend),
+            spend,
             source: 'Ozon Seller API daily funnel + Smart spend'
           }
         : {
             ...base,
             date,
             label: date,
-            spend: numberOrZero(base.spend),
+            spend,
             views: numberOrZero(base.views),
             clicks: numberOrZero(base.clicks),
             orders: numberOrZero(base.orders),
@@ -1494,16 +1506,18 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
   return next;
 }
 
-function buildAdsSummary(baseAdsSummary, wbPlatformSeries, platformAdsSeries, asOfDate) {
+function buildAdsSummary(baseAdsSummary, wbPlatformSeries, platformAdsSeries, asOfDate, options = {}) {
   const existing = deepClone(baseAdsSummary || {});
+  const windowFromValue = isoDate(options.adsWindowFrom) || isoDate(existing.window?.from) || monthStart(iso(asOfDate));
+  const windowToValue = isoDate(options.adsWindowTo) || isoDate(existing.window?.to) || iso(asOfDate);
   const next = {
     ...existing,
     generatedAt: new Date().toISOString(),
-    asOfDate: iso(asOfDate),
+    asOfDate: windowToValue && windowToValue > iso(asOfDate) ? windowToValue : iso(asOfDate),
     window: {
-      from: existing.window?.from || monthStart(iso(asOfDate)),
-      to: existing.window?.to || iso(asOfDate),
-      days: Number.isFinite(Number(existing.window?.days)) ? Number(existing.window.days) : enumerateDates(existing.window?.from || monthStart(iso(asOfDate)), existing.window?.to || iso(asOfDate)).length
+      from: windowFromValue,
+      to: windowToValue,
+      days: enumerateDates(windowFromValue, windowToValue).length
     },
     note: 'WB Promotion API daily facts plus marketplace workbook extras.',
     sourceMode: existing.sourceMode || 'wb-api+external-sheet+marketplace-workbook'
@@ -1573,6 +1587,8 @@ function resolveOptions(args) {
   const baseDataDir = path.resolve(args['base-data-dir'] || path.join(process.cwd(), 'data'));
   const outputDir = args['output-dir'] ? path.resolve(args['output-dir']) : '';
   const workbookPath = path.resolve(args.workbook || args['workbook'] || DEFAULT_WORKBOOK);
+  const adsWindowFrom = isoDate(args['ads-window-from'] || args['ads-date-from'] || args['date-from'] || '');
+  const adsWindowTo = isoDate(args['ads-window-to'] || args['ads-date-to'] || args['date-to'] || '');
   return {
     command: args.command || 'sync',
     dryRun: Boolean(args.dryRun),
@@ -1580,6 +1596,8 @@ function resolveOptions(args) {
     baseDataDir,
     outputDir,
     workbookPath,
+    adsWindowFrom,
+    adsWindowTo,
     ozonDailyFunnelEnabled: asBool(args['ozon-daily-funnel'], true),
     ozonClientId: normalizeText(args['ozon-client-id'] || process.env.ALTEA_OZON_CLIENT_ID || ''),
     ozonApiKey: normalizeText(args['ozon-api-key'] || process.env.ALTEA_OZON_API_KEY || '')
@@ -1843,8 +1861,8 @@ async function main() {
     const series = buildAdsPlatformSeries(months, referenceDate);
     extraAdsSeriesMap.set(platformKey, series);
   }
-  const adsWindowFrom = isoDate(baseAdsSummary?.window?.from) || monthStart(iso(referenceDate));
-  const adsWindowTo = isoDate(baseAdsSummary?.window?.to) || iso(referenceDate);
+  const adsWindowFrom = options.adsWindowFrom || isoDate(baseAdsSummary?.window?.from) || monthStart(iso(referenceDate));
+  const adsWindowTo = options.adsWindowTo || isoDate(baseAdsSummary?.window?.to) || iso(referenceDate);
   let ozonDailyFunnelDiagnostics = null;
   try {
     const ozonDailyFunnel = await fetchOzonSellerDailyFunnel(options, adsWindowFrom, adsWindowTo);
@@ -1876,7 +1894,10 @@ async function main() {
     };
   }
 
-  const mergedAdsSummary = buildAdsSummary(baseAdsSummary, wbPlatformSeries, extraAdsSeriesMap, referenceDate);
+  const mergedAdsSummary = buildAdsSummary(baseAdsSummary, wbPlatformSeries, extraAdsSeriesMap, referenceDate, {
+    adsWindowFrom,
+    adsWindowTo
+  });
   mergedAdsSummary.diagnostics = {
     ...(mergedAdsSummary.diagnostics || {}),
     ozonDailySellerFunnel: ozonDailyFunnelDiagnostics

@@ -3740,6 +3740,13 @@ function productLeaderboardLikeForLikeDeltaBadge(value, format = 'int') {
   return badge(text, numeric > 0 ? 'ok' : numeric < 0 ? 'danger' : 'info');
 }
 
+function productLeaderboardLikeForLikeTone(value) {
+  const numeric = numberOrZero(value);
+  if (numeric > 0) return 'growth';
+  if (numeric < 0) return 'drop';
+  return 'flat';
+}
+
 function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = []) {
   const model = productLeaderboardLikeForLikeModel(payload, filteredItems);
   const rows = model.rows;
@@ -3752,8 +3759,16 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
   }
   const currentLabel = payload.weekLabel || payload.sourceSheetName || 'текущая неделя';
   const previousLabel = model.previousLabel || 'прошлая неделя';
+  const lflTone = productLeaderboardLikeForLikeTone(model.ordersDelta);
+  const growthShare = rows.length ? model.growingRows / rows.length : 0;
+  const dropShare = rows.length ? model.fallingRows / rows.length : 0;
+  const topGrowth = rows.find((row) => row.ordersDelta > 0) || null;
+  const topDrop = rows.slice().reverse().find((row) => row.ordersDelta < 0) || null;
+  const heroCompletion = model.ordersDeltaPct == null ? 0 : Math.min(1.35, Math.max(0.05, 1 + model.ordersDeltaPct));
+  const heroHue = lflTone === 'drop' ? 5 : lflTone === 'growth' ? 145 : 212;
+  const heroBright = Math.min(1, Math.max(0.3, heroCompletion / 1.25));
   return `
-    <div class="card product-leaderboard-likeforlike-panel" data-product-leaderboard-expanded-panel="likeforlike" style="margin-top:14px">
+    <div class="card product-leaderboard-likeforlike-panel lfl-${lflTone}" data-product-leaderboard-expanded-panel="likeforlike" style="margin-top:14px;--lfl-hue:${heroHue};--lfl-bright:${heroBright.toFixed(2)};--lfl-growth:${(growthShare * 100).toFixed(1)}%;--lfl-drop:${(dropShare * 100).toFixed(1)}%">
       <div class="section-subhead">
         <div>
           <h3>Like for like: неделя к неделе</h3>
@@ -3763,6 +3778,31 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
           ${badge(`${fmt.int(rows.length)} LFL SKU`, rows.length ? 'info' : 'warn')}
           ${badge(`${fmt.int(model.newRows)} новых вне LFL`, model.newRows ? 'warn' : 'ok')}
           ${badge(`${fmt.int(model.lostRows)} выпали из LFL`, model.lostRows ? 'warn' : 'ok')}
+        </div>
+      </div>
+      <div class="product-leaderboard-lfl-hero">
+        <div class="product-leaderboard-lfl-score">
+          <span>баланс заказов</span>
+          <strong>${escapeHtml(productLeaderboardSignedInt(model.ordersDelta))}</strong>
+          <em>${model.ordersDeltaPct == null ? 'без базы процента' : `${escapeHtml(productLeaderboardSignedPct(model.ordersDeltaPct))} к прошлой неделе`}</em>
+          <div class="product-leaderboard-lfl-track" aria-label="Доля растущих и падающих SKU">
+            <i class="is-growth"></i>
+            <i class="is-drop"></i>
+          </div>
+          <div class="product-leaderboard-lfl-score__foot">
+            <b>растут ${fmt.int(model.growingRows)}</b>
+            <em>падают ${fmt.int(model.fallingRows)} · ровно ${fmt.int(model.flatRows)}</em>
+          </div>
+        </div>
+        <div class="product-leaderboard-lfl-driver is-growth">
+          <span>главный рост</span>
+          <strong>${topGrowth ? escapeHtml(topGrowth.current.articleKey || topGrowth.current.article || topGrowth.key) : 'нет роста'}</strong>
+          <em>${topGrowth ? `${productLeaderboardSignedInt(topGrowth.ordersDelta)} заказов · ${productLeaderboardSignedMoney(topGrowth.revenueDelta)}` : 'по LFL SKU'}</em>
+        </div>
+        <div class="product-leaderboard-lfl-driver is-drop">
+          <span>главная просадка</span>
+          <strong>${topDrop ? escapeHtml(topDrop.current.articleKey || topDrop.current.article || topDrop.key) : 'нет просадки'}</strong>
+          <em>${topDrop ? `${productLeaderboardSignedInt(topDrop.ordersDelta)} заказов · ${productLeaderboardSignedMoney(topDrop.revenueDelta)}` : 'по LFL SKU'}</em>
         </div>
       </div>
       <div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
@@ -3797,8 +3837,8 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
           deltaClass: model.cartsDelta >= 0 ? 'ok' : 'danger'
         })}
       </div>
-      <div class="table-wrap" style="margin-top:12px">
-        <table>
+      <div class="table-wrap product-leaderboard-lfl-table-wrap" style="margin-top:12px">
+        <table class="product-leaderboard-likeforlike-table">
           <thead>
             <tr>
               <th>SKU / товар</th>
@@ -3813,24 +3853,29 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
             </tr>
           </thead>
           <tbody>
-            ${rows.map((row) => {
+            ${rows.map((row, index) => {
               const current = row.current;
               const previous = row.previous;
+              const rowTone = productLeaderboardLikeForLikeTone(row.ordersDelta);
+              const rowLabel = rowTone === 'growth' ? 'рост' : rowTone === 'drop' ? 'просадка' : 'ровно';
               return `
-                <tr data-product-likeforlike-row="${escapeHtml(row.key)}">
+                <tr class="product-leaderboard-lfl-row is-${rowTone}" data-product-likeforlike-row="${escapeHtml(row.key)}">
                   <td>
-                    <div><strong>${current.articleKey ? linkToSku(current.articleKey, current.articleKey) : escapeHtml(current.article || current.name || row.key)}</strong></div>
+                    <div class="product-leaderboard-lfl-sku-head">
+                      <span>${index + 1}</span>
+                      <strong>${current.articleKey ? linkToSku(current.articleKey, current.articleKey) : escapeHtml(current.article || current.name || row.key)}</strong>
+                    </div>
                     <div class="muted small">${escapeHtml(current.name || previous.name || '')}</div>
                     <div class="badge-stack" style="margin-top:8px">
-                      ${row.ordersDelta > 0 ? badge('растет', 'ok') : row.ordersDelta < 0 ? badge('просел', 'danger') : badge('без изменения', 'info')}
+                      ${badge(rowLabel, rowTone === 'growth' ? 'ok' : rowTone === 'drop' ? 'danger' : 'info')}
                       ${row.ordersDeltaPct == null ? '' : badge(productLeaderboardSignedPct(row.ordersDeltaPct), row.ordersDelta >= 0 ? 'ok' : 'danger')}
                     </div>
                   </td>
                   <td>${current.owner ? badge(current.owner, 'info') : badge('Без owner', 'warn')}</td>
                   <td><strong>${fmt.int(current.orders)}</strong><div class="muted small">${fmt.money(current.revenue)}</div></td>
                   <td>${fmt.int(previous.orders)}<div class="muted small">${fmt.money(previous.revenue)}</div></td>
-                  <td>${productLeaderboardLikeForLikeDeltaBadge(row.ordersDelta)}</td>
-                  <td>${productLeaderboardLikeForLikeDeltaBadge(row.revenueDelta, 'money')}</td>
+                  <td class="product-leaderboard-lfl-delta">${productLeaderboardLikeForLikeDeltaBadge(row.ordersDelta)}</td>
+                  <td class="product-leaderboard-lfl-delta">${productLeaderboardLikeForLikeDeltaBadge(row.revenueDelta, 'money')}</td>
                   <td>${fmt.int(current.clicks)}<div class="muted small">${productLeaderboardSignedInt(row.clicksDelta)}</div></td>
                   <td>${fmt.int(current.carts)}<div class="muted small">${productLeaderboardSignedInt(row.cartsDelta)}</div></td>
                   <td>${fmt.int(current.buys)}<div class="muted small">${productLeaderboardSignedInt(row.buysDelta)}</div></td>

@@ -5,6 +5,9 @@
   const SNAPSHOT_KEY = 'promo_events_calendar';
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
   const MAX_SKU_RESULTS = 28;
+  const MAX_SELECTED_SKU_CHIPS = 18;
+  const MAX_BULK_SKUS = 500;
+  const MAX_TASK_SKU_LINES = 80;
   const CALENDAR_STATE = window.__ALTEA_PROMO_CALENDAR_STATE__ || {
     month: '',
     dateFrom: '',
@@ -648,7 +651,7 @@
     return parts.join(' · ') || 'остатки не найдены';
   }
 
-  function skuCandidates(platform = 'all', query = '', selectedKeys = []) {
+  function skuCandidatePool(platform = 'all', query = '', selectedKeys = []) {
     const selectedSet = new Set(selectedKeys.map(String));
     const queryToken = token(query);
     const rows = Array.isArray(appState().skus) ? appState().skus : [];
@@ -678,7 +681,49 @@
         return { sku, key, signals, selected, rank };
       })
       .sort((a, b) => b.rank - a.rank || skuName(a.sku).localeCompare(skuName(b.sku), 'ru'))
-      .slice(0, MAX_SKU_RESULTS);
+      .filter((item) => item.key);
+  }
+
+  function skuCandidates(platform = 'all', query = '', selectedKeys = []) {
+    return skuCandidatePool(platform, query, selectedKeys).slice(0, MAX_SKU_RESULTS);
+  }
+
+  function skuLoadLabel(count) {
+    if (count >= 150) return 'мега-акция';
+    if (count >= 50) return 'массовое промо';
+    if (count >= 12) return 'отряд SKU';
+    if (count > 0) return 'точечный запуск';
+    return 'SKU не выбраны';
+  }
+
+  function promoReadiness(event = {}, selectedRows = [], signalTotals = {}) {
+    const count = selectedRows.length;
+    const tones = selectedRows.map((row) => skuSignalTone(row.signals));
+    const dangerCount = tones.filter((tone) => tone === 'danger').length;
+    const warnCount = tones.filter((tone) => tone === 'warn').length;
+    const hasTitle = String(event.title || '').trim().length > 2;
+    const hasDates = Boolean(event.startDate && event.endDate && event.endDate >= event.startDate);
+    const hasSku = count > 0;
+    const hasComment = String(event.comment || '').trim().length >= 8;
+    const hasOwner = String(event.owner || '').trim().length > 1;
+    const stockReady = hasSku && dangerCount === 0 && signalTotals.warehouse + signalTotals.shipped + signalTotals.orders7 > 0;
+    const stockWarn = hasSku && dangerCount === 0 && warnCount > 0;
+    const checks = [
+      { key: 'title', label: 'название', done: hasTitle, points: 16 },
+      { key: 'dates', label: 'период', done: hasDates, points: 14 },
+      { key: 'sku', label: skuLoadLabel(count), done: hasSku, points: 26 },
+      { key: 'comment', label: 'механика', done: hasComment, points: 12 },
+      { key: 'owner', label: 'owner', done: hasOwner, points: 8 },
+      { key: 'stock', label: dangerCount ? `${dangerCount} риск остатков` : stockWarn ? 'остатки проверить' : 'остатки ок', done: stockReady, partial: stockWarn, points: 24 }
+    ];
+    const score = Math.min(100, checks.reduce((sum, item) => {
+      if (item.done) return sum + item.points;
+      if (item.partial) return sum + Math.round(item.points * .55);
+      return sum;
+    }, 0));
+    const level = score >= 90 ? 'легендарный старт' : score >= 72 ? 'готово к запуску' : score >= 46 ? 'нужно добрать' : 'черновик';
+    const tone = score >= 72 ? 'ok' : score >= 46 ? 'warn' : 'danger';
+    return { score, level, tone, checks, dangerCount, warnCount, count };
   }
 
   function selectedSkuRows(platform = 'all') {
@@ -704,6 +749,25 @@
     `;
   }
 
+  function renderMissionPanel(event, selectedRows, signalTotals) {
+    const mission = promoReadiness(event, selectedRows, signalTotals);
+    return `
+      <div class="promo-mission-panel tone-${mission.tone}" data-calendar-mission>
+        <div class="promo-mission-head">
+          <div>
+            <span>готовность промо</span>
+            <strong>${html(mission.level)}</strong>
+          </div>
+          <b>${formatInt(mission.score)} XP</b>
+        </div>
+        <div class="promo-xp-track" style="--promo-xp:${mission.score}%"><i></i></div>
+        <div class="promo-mission-checks">
+          ${mission.checks.map((item) => `<span class="${item.done ? 'done' : item.partial ? 'partial' : ''}">${html(item.label)}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   function renderSkuRow(item, platform) {
     const { sku, key, signals, selected } = item;
     return `
@@ -723,18 +787,78 @@
 
   function skuPickerInnerHtml(platform = 'all') {
     const selectedRows = selectedSkuRows(platform);
-    const candidates = skuCandidates(platform, CALENDAR_STATE.skuQuery, CALENDAR_STATE.draftSkus);
+    const pool = skuCandidatePool(platform, CALENDAR_STATE.skuQuery, CALENDAR_STATE.draftSkus);
+    const candidates = pool.slice(0, MAX_SKU_RESULTS);
+    const addableCount = pool.filter((item) => !item.selected).length;
+    const hiddenSelected = Math.max(0, selectedRows.length - MAX_SELECTED_SKU_CHIPS);
+    const visibleSelectedRows = selectedRows.slice(0, MAX_SELECTED_SKU_CHIPS);
     const selectedHtml = selectedRows.length
-      ? selectedRows.map((row) => renderSkuChip(row, platform)).join('')
+      ? [
+          ...visibleSelectedRows.map((row) => renderSkuChip(row, platform)),
+          hiddenSelected ? `<div class="promo-sku-more">ещё ${formatInt(hiddenSelected)} SKU выбрано</div>` : ''
+        ].join('')
       : '<div class="promo-sku-empty">SKU пока не выбраны.</div>';
     return `
       <div class="promo-sku-selected">
         ${selectedHtml}
       </div>
+      <div class="promo-sku-bulk">
+        <button type="button" data-calendar-sku-add-results ${addableCount ? '' : 'disabled'}>Добавить найденные</button>
+        <button type="button" data-calendar-sku-clear ${selectedRows.length ? '' : 'disabled'}>Очистить SKU</button>
+        <span>показано ${formatInt(candidates.length)} из ${formatInt(pool.length)} · выбрано ${formatInt(selectedRows.length)}</span>
+      </div>
       <div class="promo-sku-results">
         ${candidates.length ? candidates.map((item) => renderSkuRow(item, platform)).join('') : '<div class="promo-sku-empty">Ничего не нашлось. Проверьте площадку или поиск.</div>'}
       </div>
     `;
+  }
+
+  function selectedSignalTotals(platform = 'all') {
+    return selectedSkuRows(platform).reduce((acc, row) => {
+      acc.warehouse += number(row.signals.warehouse);
+      acc.shipped += number(row.signals.shipped);
+      acc.orders7 += number(row.signals.orders7);
+      return acc;
+    }, { warehouse: 0, shipped: 0, orders7: 0 });
+  }
+
+  function draftEventFromForm(form) {
+    const data = new FormData(form);
+    const base = activeEvent() || blankEvent();
+    const startDate = String(data.get('startDate') || base.startDate || todayKey()).slice(0, 10);
+    const endDateRaw = String(data.get('endDate') || base.endDate || startDate).slice(0, 10);
+    return {
+      ...base,
+      id: String(data.get('id') || base.id || 'draft'),
+      title: String(data.get('title') || ''),
+      platform: platformKey(data.get('platform') || base.platform),
+      startDate,
+      endDate: endDateRaw >= startDate ? endDateRaw : startDate,
+      skus: CALENDAR_STATE.draftSkus || [],
+      comment: String(data.get('comment') || ''),
+      owner: String(data.get('owner') || ''),
+      status: String(data.get('status') || base.status || 'planned')
+    };
+  }
+
+  function updateSkuSummary(root) {
+    const form = root?.querySelector('[data-calendar-form]');
+    if (!form) return;
+    const platform = form.querySelector('[name="platform"]')?.value || 'all';
+    const selectedRows = selectedSkuRows(platform);
+    const signalTotals = selectedSignalTotals(platform);
+    const counter = root.querySelector('[data-calendar-selected-count]');
+    if (counter) counter.textContent = `${formatInt(selectedRows.length)} SKU`;
+    const totals = root.querySelector('[data-calendar-sku-totals]');
+    if (totals) {
+      totals.innerHTML = `
+        <span>склад ${formatInt(signalTotals.warehouse)}</span>
+        <span>отгр. ${formatInt(signalTotals.shipped)}</span>
+        <span>заказы 7д ${formatInt(signalTotals.orders7)}</span>
+      `;
+    }
+    const mission = root.querySelector('[data-calendar-mission]');
+    if (mission) mission.outerHTML = renderMissionPanel(draftEventFromForm(form), selectedRows, signalTotals);
   }
 
   function renderSkuPicker(root) {
@@ -744,6 +868,7 @@
     if (picker) picker.innerHTML = skuPickerInnerHtml(platform);
     const counter = root.querySelector('[data-calendar-selected-count]');
     if (counter) counter.textContent = `${CALENDAR_STATE.draftSkus.length} SKU`;
+    updateSkuSummary(root);
   }
 
   function renderEventPill(event, compact = false) {
@@ -890,12 +1015,13 @@
               </section>
 
               <aside class="promo-modal-side">
+                ${renderMissionPanel(event, selectedRows, signalTotals)}
                 <div class="promo-sku-top">
                   <div>
                     <span>SKU в событии</span>
                     <strong data-calendar-selected-count>${formatInt(CALENDAR_STATE.draftSkus.length)} SKU</strong>
                   </div>
-                  <div class="promo-sku-totals">
+                  <div class="promo-sku-totals" data-calendar-sku-totals>
                     <span>склад ${formatInt(signalTotals.warehouse)}</span>
                     <span>отгр. ${formatInt(signalTotals.shipped)}</span>
                     <span>заказы 7д ${formatInt(signalTotals.orders7)}</span>
@@ -1083,6 +1209,8 @@
       const signals = skuSignals(sku || key, event.platform);
       return `${key}: ${skuSignalSummary(signals)}`;
     });
+    const visibleSkuRows = skuRows.slice(0, MAX_TASK_SKU_LINES);
+    const hiddenSkuRows = Math.max(0, skuRows.length - visibleSkuRows.length);
     const period = event.endDate !== event.startDate ? `${event.startDate} - ${event.endDate}` : event.startDate;
     return {
       articleKey: firstSku,
@@ -1096,7 +1224,7 @@
       nextAction: `Проверить старт промо ${platformLabel(event.platform)}: ${event.title}.`,
       reason: [
         `Период: ${period}`,
-        event.skus.length ? `SKU:\n${skuRows.join('\n')}` : '',
+        event.skus.length ? `SKU (${formatInt(event.skus.length)}):\n${visibleSkuRows.join('\n')}${hiddenSkuRows ? `\n...ещё ${formatInt(hiddenSkuRows)} SKU в событии` : ''}` : '',
         event.comment ? `Комментарий: ${event.comment}` : ''
       ].filter(Boolean).join('\n'),
       skipRerender: true
@@ -1253,12 +1381,38 @@
       event.preventDefault();
       await saveEventFromForm(event.currentTarget, rootId);
     });
-    root.querySelector('[data-calendar-form] select[name="platform"]')?.addEventListener('change', () => renderSkuPicker(root));
+    root.querySelector('[data-calendar-form]')?.addEventListener('input', (event) => {
+      if (event.target?.matches?.('[data-calendar-sku-search]')) return;
+      updateSkuSummary(root);
+    });
+    root.querySelector('[data-calendar-form]')?.addEventListener('change', (event) => {
+      if (event.target?.matches?.('select[name="platform"]')) renderSkuPicker(root);
+      else updateSkuSummary(root);
+    });
     root.querySelector('[data-calendar-sku-search]')?.addEventListener('input', (event) => {
       CALENDAR_STATE.skuQuery = event.target.value || '';
       renderSkuPicker(root);
     });
     root.querySelector('[data-calendar-sku-picker]')?.addEventListener('click', (event) => {
+      const addResults = event.target.closest('[data-calendar-sku-add-results]');
+      const clearSkus = event.target.closest('[data-calendar-sku-clear]');
+      if (addResults) {
+        const form = root.querySelector('[data-calendar-form]');
+        const platform = form?.querySelector('[name="platform"]')?.value || 'all';
+        const current = new Set(CALENDAR_STATE.draftSkus || []);
+        skuCandidatePool(platform, CALENDAR_STATE.skuQuery, CALENDAR_STATE.draftSkus)
+          .filter((item) => !item.selected)
+          .slice(0, MAX_BULK_SKUS)
+          .forEach((item) => current.add(item.key));
+        CALENDAR_STATE.draftSkus = [...current];
+        renderSkuPicker(root);
+        return;
+      }
+      if (clearSkus) {
+        CALENDAR_STATE.draftSkus = [];
+        renderSkuPicker(root);
+        return;
+      }
       const toggle = event.target.closest('[data-calendar-sku-toggle]');
       const remove = event.target.closest('[data-calendar-sku-remove]');
       const key = toggle?.dataset.calendarSkuToggle || remove?.dataset.calendarSkuRemove || '';

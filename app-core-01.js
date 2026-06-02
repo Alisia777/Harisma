@@ -2922,16 +2922,24 @@ const LAZY_DATA_LOADERS = {
         return cloneFallback(fallback);
       }
     };
-    const [payload, history] = await Promise.all([
+    const [payload, history, wbSubstitutionTraffic] = await Promise.all([
       Array.isArray(state.productLeaderboard?.items) && state.productLeaderboard.items.length
         ? Promise.resolve(state.productLeaderboard)
         : loadLocalProductData('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
-      loadLocalProductData('data/product_leaderboard_history.json', [], 'История продуктового лидерборда')
+      loadLocalProductData('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
+      loadLocalProductData(
+        'data/wb_substitution_traffic.json',
+        { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
+        'WB подменные артикулы'
+      )
     ]);
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
       ? normalizeProductLeaderboardPayload(payload)
       : (payload || { generatedAt: '', items: [], summary: {} });
     state.productLeaderboardHistory = Array.isArray(history) ? history : [];
+    state.wbSubstitutionTraffic = wbSubstitutionTraffic && typeof wbSubstitutionTraffic === 'object'
+      ? wbSubstitutionTraffic
+      : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
   },
   meetings: async () => {
     const meetings = await loadJsonOrFallback('data/meetings.json', [], 'Ритм работы');

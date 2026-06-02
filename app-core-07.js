@@ -3258,6 +3258,181 @@ function productLeaderboardOwnerRaceHtml(items = []) {
   `;
 }
 
+function productLeaderboardSubstitutionSummary(rows = []) {
+  const summary = {
+    articles: rows.length,
+    rowCount: 0,
+    substitutionCount: 0,
+    campaignCount: 0,
+    views: 0,
+    carts: 0,
+    orders: 0,
+    favorites: 0
+  };
+  rows.forEach((row) => {
+    summary.rowCount += numberOrZero(row.rowCount);
+    summary.substitutionCount += numberOrZero(row.substitutionCount);
+    summary.campaignCount += numberOrZero(row.campaignCount);
+    summary.views += numberOrZero(row.views);
+    summary.carts += numberOrZero(row.carts);
+    summary.orders += numberOrZero(row.orders);
+    summary.favorites += numberOrZero(row.favorites);
+  });
+  summary.cartRate = summary.views > 0 ? summary.carts / summary.views : 0;
+  summary.orderRate = summary.views > 0 ? summary.orders / summary.views : 0;
+  return summary;
+}
+
+function productLeaderboardSubstitutionScore(row = {}, maxOrders = 1, maxViews = 1) {
+  const orderShare = maxOrders > 0 ? numberOrZero(row.orders) / maxOrders : 0;
+  const viewShare = maxViews > 0 ? numberOrZero(row.views) / maxViews : 0;
+  const orderRateScore = Math.min(1, numberOrZero(row.orderRate) / 0.08);
+  const cartRateScore = Math.min(1, numberOrZero(row.cartRate) / 0.35);
+  const score = Math.max(1, Math.min(100, Math.round(
+    orderShare * 44
+    + viewShare * 22
+    + orderRateScore * 22
+    + cartRateScore * 12
+  )));
+  return {
+    score,
+    level: productLeaderboardScoreLevel(score),
+    tone: productLeaderboardScoreTone(score),
+    label: score >= 82 ? 'тянет заказы' : score >= 58 ? 'держит трафик' : score >= 36 ? 'нужен фокус' : 'разобрать'
+  };
+}
+
+function productLeaderboardSubstitutionKey(value = '') {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^\p{L}\p{N}_-]+/gu, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function productLeaderboardSubstitutionArticleKey(row = {}) {
+  return productLeaderboardSubstitutionKey(row.articleKey || row.article || row.sellerArticle || row.vendorCode || '');
+}
+
+function renderProductLeaderboardSubstitutionRacePanel(items = [], leaderboardPayload = {}, filters = {}) {
+  const payload = wbSubstitutionTrafficPayload();
+  const articles = Array.isArray(payload.articles) ? payload.articles : [];
+  if (!articles.length) return '';
+
+  const hasActiveFilter = Boolean(
+    String(filters.search || '').trim()
+    || (filters.owner && filters.owner !== 'all')
+    || (filters.category && filters.category !== 'all')
+    || (filters.signal && filters.signal !== 'all')
+  );
+  const visibleKeys = new Set((Array.isArray(items) ? items : [])
+    .map((item) => productLeaderboardSubstitutionKey(item.articleKey || item.article || item.sku || item.vendorCode || ''))
+    .filter(Boolean));
+  const filteredByLeaderboard = hasActiveFilter && visibleKeys.size > 0
+    ? articles.filter((row) => visibleKeys.has(productLeaderboardSubstitutionArticleKey(row)))
+    : articles;
+  const raceRows = filteredByLeaderboard.length ? filteredByLeaderboard : articles;
+  const summary = productLeaderboardSubstitutionSummary(raceRows);
+  const maxOrders = Math.max(1, ...raceRows.map((row) => numberOrZero(row.orders)));
+  const maxViews = Math.max(1, ...raceRows.map((row) => numberOrZero(row.views)));
+  const topRows = raceRows
+    .slice()
+    .sort((left, right) => (
+      numberOrZero(right.orders) - numberOrZero(left.orders)
+      || numberOrZero(right.views) - numberOrZero(left.views)
+      || String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru')
+    ))
+    .slice(0, 6);
+  const sourceLabel = payload.asOfDate || payload.source?.sourceGeneratedAt || payload.generatedAt || '';
+  const isFiltered = hasActiveFilter && visibleKeys.size > 0 && raceRows.length !== articles.length;
+  const orderTone = wbSubstitutionTrafficTone(summary.orderRate);
+  const cards = [
+    {
+      title: 'Трафик подмен',
+      kicker: `${fmt.int(summary.substitutionCount)} подмен`,
+      value: fmt.int(summary.views),
+      meta: `${fmt.int(summary.articles)} SKU в race`,
+      completion: Math.min(1.35, summary.views / Math.max(1, numberOrZero(payload.summary?.views))),
+      footer: isFiltered ? 'по текущему фильтру' : 'общий срез',
+      hint: 'просмотры'
+    },
+    {
+      title: 'Заказы',
+      kicker: `CR ${fmt.pct(summary.orderRate)}`,
+      value: fmt.int(summary.orders),
+      meta: `${fmt.int(summary.orders)} / ${fmt.int(summary.views)}`,
+      completion: Math.min(1.35, summary.orderRate / 0.06),
+      footer: summary.orderRate >= 0.05 ? 'масштабировать' : summary.orderRate >= 0.03 ? 'дожать связку' : 'разобрать',
+      hint: 'просмотр в заказ',
+      deltaClass: orderTone
+    },
+    {
+      title: 'Корзина',
+      kicker: `CR ${fmt.pct(summary.cartRate)}`,
+      value: fmt.int(summary.carts),
+      meta: `${fmt.int(summary.carts)} корзин`,
+      completion: Math.min(1.35, summary.cartRate / 0.32),
+      footer: summary.cartRate >= 0.3 ? 'связка живая' : 'проверить карточку',
+      hint: 'просмотр в корзину'
+    },
+    {
+      title: 'Матчинг',
+      kicker: `${fmt.int(payload.summary?.unmatchedRowCount || 0)} без SKU`,
+      value: fmt.int(summary.rowCount),
+      meta: `${fmt.int(payload.summary?.mappedRowCount || 0)} строк сматчено`,
+      completion: numberOrZero(payload.summary?.rowCount) ? numberOrZero(payload.summary?.mappedRowCount) / numberOrZero(payload.summary?.rowCount) : 1,
+      footer: numberOrZero(payload.summary?.unmatchedRowCount) ? 'дочистить alias' : 'контур закрыт',
+      hint: 'строки отчета'
+    }
+  ];
+
+  return `
+    <div class="card product-leaderboard-substitution-race" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>WB подмены race</h3>
+          <p class="small muted">Где подменные артикулы дают трафик, корзины и заказы. Это SKU-сигнал для КЗ: что масштабировать, а где проверить карточку и связку подмен.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(sourceLabel ? `срез ${escapeHtml(sourceLabel)}` : 'срез WB', sourceLabel ? 'ok' : 'warn')}
+          ${badge(isFiltered ? 'по фильтру лидерборда' : 'все SKU WB', isFiltered ? 'info' : '')}
+          ${badge(`${fmt.int(summary.articles)} SKU`, summary.articles ? 'info' : 'warn')}
+          ${badge(`CR ${fmt.pct(summary.orderRate)}`, orderTone)}
+        </div>
+      </div>
+      <div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:12px">
+        ${cards.map(productLeaderboardModuleCardHtml).join('')}
+      </div>
+      <div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:12px;grid-template-columns:repeat(3,minmax(0,1fr))">
+        ${topRows.map((row, index) => {
+          const score = productLeaderboardSubstitutionScore(row, maxOrders, maxViews);
+          const top = Array.isArray(row.topSubstitutions) ? row.topSubstitutions[0] : null;
+          const articleTitle = row.article || row.sellerArticle || row.articleKey || 'WB';
+          const articleHtml = row.matched && row.articleKey ? linkToSku(row.articleKey, articleTitle) : `<strong>${escapeHtml(articleTitle)}</strong>`;
+          const completion = score.score / 100;
+          return `
+            <div class="sku-plan-platform-card level-${score.level}" style="${typeof skuPlanFactCardStyle === 'function' ? skuPlanFactCardStyle('wb', completion) : ''};cursor:default">
+              <span class="sku-plan-platform-card__top">
+                <strong>${index + 1}. ${articleHtml}</strong>
+                <em>${escapeHtml(score.label)}</em>
+              </span>
+              <span class="sku-plan-platform-card__value">${fmt.int(row.orders)}</span>
+              <span class="sku-plan-platform-card__meta">${fmt.int(row.views)} просмотров · CR ${fmt.pct(row.orderRate)}</span>
+              <span class="sku-plan-platform-card__bar"><i></i></span>
+              <span class="sku-plan-platform-card__foot">
+                <b class="${escapeHtml(score.tone)}">${fmt.int(score.score)} очков</b>
+                <span><em>${top ? `${escapeHtml(top.label || top.key || '')}: ${fmt.int(top.orders)} заказов` : `${fmt.int(row.substitutionCount)} подмен`}</em></span>
+              </span>
+            </div>
+          `;
+        }).join('') || '<div class="empty">По текущему фильтру нет WB-подмен.</div>'}
+      </div>
+    </div>
+  `;
+}
+
 function productLeaderboardRowGameHtml(item = {}, payload = {}) {
   const score = productLeaderboardItemScore(item, payload);
   const alerts = numberOrZero(item.diagnostics?.alertCount);
@@ -7535,6 +7710,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const gameHeroHtml = productLeaderboardGameHeroHtml(payload, filteredItems, freshness);
   const moduleBoardHtml = productLeaderboardModuleBoardHtml(payload, filteredSummary, ownerCoverage);
   const ownerRaceHtml = productLeaderboardOwnerRaceHtml(filteredItems);
+  const substitutionRaceHtml = renderProductLeaderboardSubstitutionRacePanel(filteredItems, payload, filters);
   const snapshots = productLeaderboardHistoryPayloads();
   const historyOptions = snapshots.slice(1);
   const historyCards = snapshots.slice(0, 6).map((snapshot) => {
@@ -7619,6 +7795,8 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
     </div>
 
     ${ownerRaceHtml}
+
+    ${substitutionRaceHtml}
 
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">

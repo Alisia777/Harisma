@@ -3368,19 +3368,23 @@ function productLeaderboardTrafficBucket(value = '') {
 
 function productLeaderboardWeeklyShareRows() {
   const byWeek = new Map();
-  productLeaderboardHistoryPayloads().forEach((snapshot) => {
+  productLeaderboardHistoryPayloads().forEach((snapshot, index) => {
     const weekLabel = String(snapshot.weekLabel || snapshot.sourceSheetName || (snapshot.generatedAt || '').slice(0, 10) || '').trim();
     if (!weekLabel) return;
     const previous = byWeek.get(weekLabel);
     const currentStamp = parseFreshStamp(snapshot.generatedAt || snapshot.sourceWeekTo || weekLabel);
     const previousStamp = previous ? parseFreshStamp(previous.snapshot.generatedAt || previous.snapshot.sourceWeekTo || previous.weekLabel) : 0;
     if (!previous || currentStamp >= previousStamp) {
-      byWeek.set(weekLabel, { weekLabel, snapshot });
+      byWeek.set(weekLabel, {
+        weekLabel,
+        snapshot,
+        snapshotKey: productLeaderboardSnapshotKey(snapshot, index)
+      });
     }
   });
 
   const rows = [...byWeek.values()]
-    .map(({ weekLabel, snapshot }) => {
+    .map(({ weekLabel, snapshot, snapshotKey }) => {
       const items = getFilteredProductLeaderboardItems(snapshot);
       const summary = productLeaderboardSummaryFromItems(items);
       const orders = { kz: 0, digital: 0, organic: 0 };
@@ -3396,6 +3400,7 @@ function productLeaderboardWeeklyShareRows() {
       const sortStamp = parseFreshStamp(range.fromIso || snapshot.sourceWeekFrom || snapshot.generatedAt || weekLabel);
       return {
         weekLabel,
+        snapshotKey,
         range,
         generatedAt: snapshot.generatedAt || '',
         items,
@@ -3437,6 +3442,16 @@ function productLeaderboardWeeklyTrendTone(delta) {
 function productLeaderboardWeeklyTrendDelta(delta) {
   if (delta === null || delta === undefined || Number.isNaN(Number(delta))) return '—';
   return productLeaderboardSignedPp(delta);
+}
+
+function productLeaderboardWeeklyRowSnapshotMatch(row = {}, selectedKey = '') {
+  const cleanKey = String(selectedKey || '').trim();
+  if (!cleanKey || cleanKey === 'latest') return row.snapshotKey === 'latest';
+  return row.snapshotKey === cleanKey
+    || row.generatedAt === cleanKey
+    || row.weekLabel === cleanKey
+    || String(row.range?.fromIso || '') === cleanKey
+    || String(row.range?.toIso || '') === cleanKey;
 }
 
 function productLeaderboardWeeklyTrendCardHtml(config = {}) {
@@ -3582,39 +3597,63 @@ function productLeaderboardWeeklyGrowthModel(current = null, previous = null) {
   };
 }
 
-function productLeaderboardWeeklyGrowthDriverHtml(row = {}, tone = 'ok') {
+function productLeaderboardWeeklyGrowthDriverHtml(row = {}, tone = 'ok', options = {}) {
   const item = row.item || {};
   const title = item.name || item.articleKey || item.article || row.key || 'SKU';
-  const link = [item.articleKey || row.key || '', item.article ? `WB ${item.article}` : ''].filter(Boolean).join(' -> ');
-  const owner = item.owner ? ` · ${item.owner}` : '';
+  const source = item.articleKey || row.key || '';
+  const wb = item.article ? `WB ${item.article}` : '';
+  const link = [source, wb].filter(Boolean).join(' -> ');
+  const owner = item.owner ? item.owner : 'owner не назначен';
   const bucket = productLeaderboardBucketLabel(row.bucket);
+  const power = Math.max(8, Math.min(100, Math.abs(numberOrZero(row.ordersDelta)) / Math.max(1, numberOrZero(options.maxAbsOrders)) * 100));
   const deltaClass = tone === 'ok' ? 'ok-text' : 'danger-text';
+  const rank = Number(options.rank) || 1;
   return `
-    <div class="product-leaderboard-weekly-bi-driver is-${escapeHtml(tone)}">
+    <article class="product-leaderboard-weekly-bi-driver is-${escapeHtml(tone)}" style="--driver-power:${power.toFixed(1)}%">
+      <span class="product-leaderboard-weekly-bi-driver__rank">${escapeHtml(tone === 'ok' ? `рост #${rank}` : `риск #${rank}`)}</span>
       <b class="${deltaClass}">${escapeHtml(productLeaderboardSignedInt(row.ordersDelta))} заказов</b>
       <strong>${escapeHtml(title)}</strong>
-      <em>${escapeHtml(`${bucket} · ${link}${owner}`)}</em>
-      <small>${escapeHtml(`выручка ${productLeaderboardSignedMoney(row.revenueDelta)} · клики ${productLeaderboardSignedInt(row.clicksDelta)} · корзины ${productLeaderboardSignedInt(row.cartsDelta)}`)}</small>
-    </div>
+      <em>${escapeHtml(bucket)}</em>
+      <div class="product-leaderboard-weekly-bi-driver__route">
+        <span>${escapeHtml(source || 'SKU')}</span>
+        <i></i>
+        <span>${escapeHtml(wb || 'WB')}</span>
+      </div>
+      <div class="product-leaderboard-weekly-bi-driver__owner">${escapeHtml(owner)}</div>
+      <div class="product-leaderboard-weekly-bi-driver__stats">
+        <span><b>${escapeHtml(productLeaderboardSignedMoney(row.revenueDelta))}</b><em>выручка</em></span>
+        <span><b>${escapeHtml(productLeaderboardSignedInt(row.clicksDelta))}</b><em>клики</em></span>
+        <span><b>${escapeHtml(productLeaderboardSignedInt(row.cartsDelta))}</b><em>корзины</em></span>
+      </div>
+      <span class="product-leaderboard-weekly-bi-driver__bar"><i></i></span>
+    </article>
   `;
 }
 
 function productLeaderboardWeeklyGrowthHtml(model = null) {
   if (!model) return '';
+  const driverRows = [...model.positive, ...model.negative];
+  const maxAbsOrders = Math.max(1, ...driverRows.map((row) => Math.abs(numberOrZero(row.ordersDelta))));
   const buckets = [
     { label: 'КЗ-метка', value: model.bucketDeltas.kz, tone: model.bucketDeltas.kz >= 0 ? 'ok' : 'danger' },
     { label: 'digital', value: model.bucketDeltas.digital, tone: model.bucketDeltas.digital >= 0 ? 'ok' : 'danger' },
     { label: 'без метки', value: model.bucketDeltas.organic, tone: model.bucketDeltas.organic >= 0 ? 'ok' : 'danger' }
   ];
-  const positive = model.positive.map((row) => productLeaderboardWeeklyGrowthDriverHtml(row, 'ok')).join('');
-  const negative = model.negative.map((row) => productLeaderboardWeeklyGrowthDriverHtml(row, 'danger')).join('');
+  const positive = model.positive.map((row, index) => productLeaderboardWeeklyGrowthDriverHtml(row, 'ok', { rank: index + 1, maxAbsOrders })).join('');
+  const negative = model.negative.map((row, index) => productLeaderboardWeeklyGrowthDriverHtml(row, 'danger', { rank: index + 1, maxAbsOrders })).join('');
+  const currentLabel = model.current?.range?.fromLabel && model.current?.range?.toLabel
+    ? `${model.current.range.fromLabel} - ${model.current.range.toLabel}`
+    : model.current?.weekLabel || 'текущая неделя';
+  const previousLabel = model.previous?.range?.fromLabel && model.previous?.range?.toLabel
+    ? `${model.previous.range.fromLabel} - ${model.previous.range.toLabel}`
+    : model.previous?.weekLabel || 'предыдущая неделя';
   return `
     <div class="product-leaderboard-weekly-bi-growth">
       <div class="product-leaderboard-weekly-bi-growth__head">
         <div>
           <span>Рост за счет чего</span>
           <strong>${escapeHtml(productLeaderboardSignedInt(model.ordersDelta))} заказов</strong>
-          <em>${escapeHtml(`к прошлой неделе · выручка ${productLeaderboardSignedMoney(model.revenueDelta)}`)}</em>
+          <em>${escapeHtml(`${currentLabel} к ${previousLabel} · выручка ${productLeaderboardSignedMoney(model.revenueDelta)}`)}</em>
         </div>
         <div class="product-leaderboard-weekly-bi-growth__buckets">
           ${buckets.map((bucket) => `
@@ -3640,7 +3679,7 @@ function productLeaderboardWeeklyChartLabel(row = {}) {
   return String(row.weekLabel || '').replace(/\.\d{4}/g, '').replace(/\s+/g, ' ').trim();
 }
 
-function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1) {
+function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1, selectedKey = '') {
   const safeRows = (Array.isArray(rows) ? rows : []).filter((row) => numberOrZero(row.totalOrders) > 0);
   if (!safeRows.length) return '';
   return `
@@ -3665,21 +3704,38 @@ function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1) {
           const digitalPct = Math.max(0, Math.min(100, numberOrZero(row.orders.digital) / total * 100));
           const organicPct = Math.max(0, Math.min(100, numberOrZero(row.orders.organic) / total * 100));
           const weekLabel = productLeaderboardWeeklyChartLabel(row);
+          const isActive = productLeaderboardWeeklyRowSnapshotMatch(row, selectedKey);
+          const tooltip = `${weekLabel}: всего ${fmt.int(total)} заказов · КЗ ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · органика ${fmt.int(row.orders.organic)} · выручка ${fmt.money(row.totalRevenue)}`;
           return `
-            <div class="product-leaderboard-weekly-bi-column" style="--column-scale:${scale.toFixed(1)}%">
+            <button
+              type="button"
+              class="product-leaderboard-weekly-bi-column${isActive ? ' is-active' : ''}"
+              style="--column-scale:${scale.toFixed(1)}%"
+              data-product-week-snapshot="${escapeHtml(row.snapshotKey || '')}"
+              title="${escapeHtml(tooltip)}"
+              aria-label="${escapeHtml(`Выбрать неделю ${weekLabel}`)}"
+            >
               <div class="product-leaderboard-weekly-bi-column__value">
                 <b>${fmt.int(total)}</b>
+                ${row.ordersDelta == null ? '' : `<em class="${row.ordersDelta >= 0 ? 'ok-text' : 'danger-text'}">${escapeHtml(productLeaderboardSignedInt(row.ordersDelta))}</em>`}
               </div>
-              <div class="product-leaderboard-weekly-bi-column__stack" title="${escapeHtml(`${weekLabel}: КЗ-метка ${fmt.int(row.orders.kz)}, digital ${fmt.int(row.orders.digital)}, без метки ${fmt.int(row.orders.organic)}`)}">
+              <div class="product-leaderboard-weekly-bi-column__stack">
                 <i class="is-kz" style="height:${kzPct.toFixed(1)}%"></i>
                 <i class="is-digital" style="height:${digitalPct.toFixed(1)}%"></i>
                 <i class="is-organic" style="height:${organicPct.toFixed(1)}%"></i>
+              </div>
+              <div class="product-leaderboard-weekly-bi-column__tooltip">
+                <b>${escapeHtml(weekLabel)}</b>
+                <span>КЗ ${fmt.int(row.orders.kz)} · ${fmt.pct(row.kzShare)}</span>
+                <span>digital ${fmt.int(row.orders.digital)} · ${fmt.pct(row.digitalShare)}</span>
+                <span>органика ${fmt.int(row.orders.organic)} · ${fmt.pct(row.organicShare)}</span>
+                <span>выручка ${fmt.money(row.totalRevenue)}</span>
               </div>
               <div class="product-leaderboard-weekly-bi-column__label">
                 <b>${escapeHtml(weekLabel)}</b>
                 <em>${fmt.int(row.skuCount)} SKU</em>
               </div>
-            </div>
+            </button>
           `;
         }).join('')}
       </div>
@@ -3687,10 +3743,13 @@ function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1) {
   `;
 }
 
-function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
+function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}, selectedPayload = {}, filters = {}) {
   const rows = productLeaderboardWeeklyShareRows();
   if (!rows.length) return '';
-  const current = rows[rows.length - 1];
+  const selectedKey = String(filters.snapshot || productLeaderboardSnapshotKey(selectedPayload, 0) || 'latest');
+  const current = rows.find((row) => productLeaderboardWeeklyRowSnapshotMatch(row, selectedKey))
+    || rows.find((row) => row.weekLabel === selectedPayload.weekLabel)
+    || rows[rows.length - 1];
   const previous = current.previous;
   const maxOrders = Math.max(1, ...rows.map((row) => numberOrZero(row.totalOrders)));
   const currentLabel = current.range.fromLabel && current.range.toLabel ? `${current.range.fromLabel} - ${current.range.toLabel}` : current.weekLabel;
@@ -3757,10 +3816,24 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
           ${previousLabel ? badge(`сравнение: ${previousLabel}`, 'info') : ''}
         </div>
       </div>
+      ${productLeaderboardWeeklyStackedChartHtml(rows, maxOrders, current.snapshotKey || selectedKey)}
+      <div class="product-leaderboard-weekly-bi-picker">
+        <div>
+          <span>Фильтр недели</span>
+          <strong>${escapeHtml(currentLabel)}</strong>
+          <em>${previousLabel ? `сравнение: ${escapeHtml(previousLabel)}` : 'первый срез, без базы сравнения'}</em>
+        </div>
+        <select data-product-leaderboard-snapshot aria-label="Выбрать неделю для продуктового лидерборда">
+          ${rows.slice().reverse().map((row) => {
+            const label = row.range.fromLabel && row.range.toLabel ? `${row.range.fromLabel} - ${row.range.toLabel}` : row.weekLabel;
+            const key = row.snapshotKey || row.weekLabel;
+            return `<option value="${escapeHtml(key)}" ${productLeaderboardWeeklyRowSnapshotMatch(row, current.snapshotKey || selectedKey) ? 'selected' : ''}>${escapeHtml(label)} · ${fmt.int(row.totalOrders)} заказов</option>`;
+          }).join('')}
+        </select>
+      </div>
       <div class="product-leaderboard-weekly-bi__cards">
         ${cards.map(productLeaderboardWeeklyTrendCardHtml).join('')}
       </div>
-      ${productLeaderboardWeeklyStackedChartHtml(rows, maxOrders)}
       ${productLeaderboardWeeklyGrowthHtml(growthModel)}
       <details class="product-leaderboard-weekly-bi-details">
         <summary>Расшифровка недель</summary>
@@ -4268,7 +4341,7 @@ function productLeaderboardCommonSplitCardHtml(contour = {}) {
 
 function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, items = [], filters = {}, snapshots = []) {
   const orderContour = productLeaderboardCommonOrderContour(summary, items, filters);
-  return renderProductLeaderboardWeeklyTrendHtml(orderContour);
+  return renderProductLeaderboardWeeklyTrendHtml(orderContour, payload, filters);
 }
 
 function productLeaderboardHasActiveFilters(filters = {}) {
@@ -9510,6 +9583,14 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   root.querySelectorAll('#productLeaderboardSnapshot, [data-product-leaderboard-snapshot]').forEach((select) => {
     select.addEventListener('change', (event) => {
       getProductLeaderboardFilters().snapshot = event.target.value;
+      rerenderCurrentView();
+    });
+  });
+  root.querySelectorAll('[data-product-week-snapshot]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const snapshotKey = String(button.getAttribute('data-product-week-snapshot') || '').trim();
+      if (!snapshotKey) return;
+      getProductLeaderboardFilters().snapshot = snapshotKey;
       rerenderCurrentView();
     });
   });

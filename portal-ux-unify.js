@@ -328,7 +328,7 @@
       return;
     }
     if (viewKey === "product-leaderboard") {
-      setText(root, ".section-title p", "BI-срез КЗ, digital, органики и рекламы МП: сверху доли и драйверы роста, ниже SKU с охватами, продажами, экономикой и рисками.");
+      setText(root, ".section-title p", "КЗ, digital, органика и реклама МП: доли, динамика и SKU-драйверы роста.");
       return;
     }
     if (viewKey === "prices") {
@@ -368,6 +368,12 @@
 
   function ensureGuide(root, viewKey) {
     if (!(root instanceof HTMLElement)) return;
+    if (viewKey === "product-leaderboard") {
+      root.querySelectorAll("[data-portal-view-guide='product-leaderboard']").forEach(function (node) {
+        node.remove();
+      });
+      return;
+    }
     if (viewKey === "executive") {
       root.querySelectorAll("[data-portal-view-guide]").forEach(function (node) {
         node.remove();

@@ -3649,7 +3649,7 @@ function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1) {
         <div>
           <span>Недельные столбики</span>
           <strong>КЗ-лист по структуре заказов</strong>
-          <em>Высота столбика — размер недели; цвет внутри — КЗ-метка, digital и без метки.</em>
+          <em>Какая неделя растет и чем она наполнена.</em>
         </div>
         <div class="product-leaderboard-weekly-bi-chart__legend" aria-label="Легенда недельного графика">
           <span><i class="is-kz"></i>КЗ-метка</span>
@@ -3665,13 +3665,10 @@ function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1) {
           const digitalPct = Math.max(0, Math.min(100, numberOrZero(row.orders.digital) / total * 100));
           const organicPct = Math.max(0, Math.min(100, numberOrZero(row.orders.organic) / total * 100));
           const weekLabel = productLeaderboardWeeklyChartLabel(row);
-          const delta = row.ordersDelta == null ? '' : productLeaderboardSignedInt(row.ordersDelta);
-          const deltaTone = row.ordersDelta == null || row.ordersDelta >= 0 ? 'ok' : 'danger';
           return `
             <div class="product-leaderboard-weekly-bi-column" style="--column-scale:${scale.toFixed(1)}%">
               <div class="product-leaderboard-weekly-bi-column__value">
                 <b>${fmt.int(total)}</b>
-                ${delta ? `<em class="${deltaTone === 'ok' ? 'ok-text' : 'danger-text'}">${escapeHtml(delta)}</em>` : ''}
               </div>
               <div class="product-leaderboard-weekly-bi-column__stack" title="${escapeHtml(`${weekLabel}: КЗ-метка ${fmt.int(row.orders.kz)}, digital ${fmt.int(row.orders.digital)}, без метки ${fmt.int(row.orders.organic)}`)}">
                 <i class="is-kz" style="height:${kzPct.toFixed(1)}%"></i>
@@ -3723,7 +3720,7 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
       value: digitalGlobalShare == null ? '—' : fmt.pct(digitalGlobalShare),
       meta: `${fmt.int(digitalOrders)} из ${fmt.int(wbTotalOrders)} заказов`,
       delta: null,
-      detail: current.digitalShare == null ? '' : `${fmt.pct(current.digitalShare)} внутри КЗ-листа`,
+      detail: '',
       progress: digitalGlobalShare,
       hue: 218
     },
@@ -3752,7 +3749,7 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}) {
       <div class="section-subhead">
         <div>
           <h3>BI-срез заказов: КЗ / digital / органика / реклама МП</h3>
-          <p class="small muted">Доли сверху считаются по своим рабочим контурам: WB-подменники для КЗ, digital и органики; WB+Ozon для заказов с рекламы МП. Ниже — недельная динамика КЗ-листа и SKU-драйверы роста.</p>
+          <p class="small muted">Доли, недельные столбики и SKU-драйверы роста в одном блоке.</p>
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(rows.length)} недель`, rows.length > 1 ? 'info' : 'warn')}
@@ -4271,36 +4268,7 @@ function productLeaderboardCommonSplitCardHtml(contour = {}) {
 
 function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, items = [], filters = {}, snapshots = []) {
   const orderContour = productLeaderboardCommonOrderContour(summary, items, filters);
-  const kzPct = orderContour.kzShare == null ? 0 : Math.min(100, Math.max(0, orderContour.kzShare * 100));
-  const heroBright = Math.min(1, Math.max(0.42, 0.52 + kzPct / 180));
-  const range = productLeaderboardWeekRange(payload);
-  return `
-    <div class="card sku-plan-fact-card salary-plan-kpi-card product-leaderboard-common-contour" style="margin-top:14px;--xp-hue:278;--xp-progress:${kzPct.toFixed(1)}%;--xp-forecast:${kzPct.toFixed(1)}%;--xp-bright:${heroBright.toFixed(2)}">
-      <div class="section-subhead">
-        <div>
-          <h3>WB-подменники: КЗ-лист / остальные</h3>
-          <p class="small muted">Знаменатель — все заказы WB-подменников; числитель — заказы из weekly КЗ-листа.</p>
-        </div>
-        <div class="badge-stack">
-          ${badge(payload.weekLabel || 'КЗ неделя', 'info')}
-          ${badge(orderContour.isFiltered ? 'по фильтрам лидерборда' : 'все WB-подменники', 'info')}
-        </div>
-      </div>
-      ${renderProductLeaderboardWeeklyTrendHtml(orderContour)}
-      <div class="product-leaderboard-common-layout">
-        ${productLeaderboardCommonSplitCardHtml(orderContour)}
-        <div class="product-leaderboard-common-side">
-        ${productLeaderboardDateRangeCardHtml(range, orderContour.sourceLabel, filters, snapshots)}
-        </div>
-      </div>
-      <div class="muted small" style="margin-top:10px">
-        Формула: доля КЗ-листа = ${fmt.int(orderContour.kzOrders)} заказов weekly КЗ-листа / ${fmt.int(orderContour.totalOrders)} заказов WB-подменников = ${orderContour.kzShare == null ? '—' : fmt.pct(orderContour.kzShare)}. Остальные WB-подменники = ${fmt.int(orderContour.totalOrders)} - ${fmt.int(orderContour.kzOrders)} = ${fmt.int(orderContour.organicOrders)}.${orderContour.sourceLabel ? ` Срез подменников: ${escapeHtml(orderContour.sourceLabel)}.` : ''}
-      </div>
-      <div class="muted small" style="margin-top:10px">
-        Вывод: ${orderContour.kzShare == null ? '—' : fmt.pct(orderContour.kzShare)} — это вклад КЗ-листа в контур WB-подменников, а не доля КЗ внутри weekly-листа.
-      </div>
-    </div>
-  `;
+  return renderProductLeaderboardWeeklyTrendHtml(orderContour);
 }
 
 function productLeaderboardHasActiveFilters(filters = {}) {
@@ -9269,8 +9237,8 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const filteredSummary = productLeaderboardSummaryFromItems(filteredItems);
   const ownerCoverage = filteredSummary.skuCount > 0 ? filteredSummary.ownerAssignedCount / filteredSummary.skuCount : 0;
   const snapshots = productLeaderboardHistoryPayloads();
-  const gameHeroHtml = productLeaderboardGameHeroHtml(payload, filteredItems, freshness);
-  const moduleBoardHtml = productLeaderboardModuleBoardHtml(payload, filteredSummary, ownerCoverage);
+  const gameHeroHtml = '';
+  const moduleBoardHtml = '';
   const commonContourHtml = renderProductLeaderboardCommonContourHtml(payload, filteredSummary, filteredItems, filters, snapshots);
   const insightTilesHtml = renderProductLeaderboardInsightTilesHtml(payload, filteredSummary, ownerCoverage, filteredItems, filters);
   const metricsPanelHtml = !isSubstitutionMode && filters.expandedPanel === 'metrics'
@@ -9321,7 +9289,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
     <div class="section-title">
       <div>
         <h2>Продуктовый лидерборд</h2>
-        <p>Сначала BI-срез долей КЗ, digital, органики и рекламы МП, ниже метрики, ответственные и рабочий список SKU.</p>
+        <p>КЗ, digital, органика и реклама МП: доли, динамика и SKU-драйверы роста.</p>
       </div>
       <div class="badge-stack">
         ${badge(payload.weekLabel || 'недельный срез', 'info')}

@@ -7951,9 +7951,9 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       </div>
     </div>
 
-    ${isSubstitutionMode ? '' : gameHeroHtml}
+    ${gameHeroHtml}
 
-    ${isSubstitutionMode ? '' : moduleBoardHtml}
+    ${moduleBoardHtml}
 
     ${insightTilesHtml}
 
@@ -8197,11 +8197,6 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       const productFilters = getProductLeaderboardFilters();
       productFilters.expandedPanel = nextPanel;
       rerenderCurrentView();
-      window.setTimeout(() => {
-        document
-          .querySelector(`[data-product-leaderboard-expanded-panel="${nextPanel}"]`)
-          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 0);
     });
   });
   root.querySelector('[data-product-leaderboard-export]')?.addEventListener('click', () => {

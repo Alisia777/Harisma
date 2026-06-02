@@ -3334,25 +3334,10 @@ function skuContourFocusBoardHtml({
   ];
   return `
     ${skuJourneyPanelHtml({ source: 'contour', activeMarket, ownerCoverage, contourProgress: progressRatio, unresolvedCount: unresolvedRows.length, blockerCount, matrixIssueCount, workCount, apiRiskRevenue })}
-    <div class="sku-data-focus-board sku-contour-focus-board">
-      <section class="sku-data-focus-panel sku-data-focus-panel--hero">
-        <div class="sku-data-focus-kicker">Контур SKU · ${escapeHtml(skuDataPlatformLabel(activeMarket))}</div>
-        <h3>${escapeHtml(healthMeta.label || 'статус не рассчитан')}</h3>
-        <p>API SKU без пары, alias/ignore, карантин и owner-сверка собраны в одну рабочую очередь.</p>
-        <div class="sku-data-focus-meter ${blockerCount ? 'danger' : progressRatio < 0.85 ? 'warn' : 'ok'}">
-          <span><b>Разбор контура</b><em>${fmt.pct(progressRatio)}</em></span>
-          <i style="width:${Math.max(0, Math.min(100, Math.round(progressRatio * 100)))}%"></i>
-        </div>
-        <div class="sku-data-focus-metric-grid">
-          <div class="sku-data-focus-metric ${unresolvedRows.length ? 'warn' : 'ok'}"><strong>${fmt.int(unresolvedRows.length)}</strong><span>нерешённых</span></div>
-          <div class="sku-data-focus-metric ${quality.apiUnmappedUniqueSku ? 'danger' : ''}"><strong>${fmt.int(quality.apiUnmappedUniqueSku || 0)}</strong><span>API без пары</span></div>
-          <div class="sku-data-focus-metric ${quality.apiUnmappedRevenue ? 'warn' : ''}"><strong>${fmt.money(quality.apiUnmappedRevenue || 0)}</strong><span>выручка риска</span></div>
-        </div>
-        <div class="sku-data-focus-note">Проверено: ${escapeHtml(fmt.date(health.generatedAt || health.publish?.checkedAt || ''))} · данные до ${escapeHtml(health.freshness?.maxDate || quality.maxDate || '—')}</div>
-      </section>
+    <div class="sku-data-focus-board sku-data-focus-board--compact sku-contour-focus-board">
       <section class="sku-data-focus-panel">
         <div class="sku-data-focus-head">
-          <h3>Что сделать</h3>
+          <h3>Действия по API-контуре</h3>
           <button class="quick-chip" type="button" data-sku-contour-refresh>Обновить</button>
         </div>
         <div class="sku-data-focus-actions">
@@ -5004,8 +4989,13 @@ function renderSkuContour(rootId = 'view-sku-contour') {
     </div>
 
     ${skuContourFocusBoardHtml({ health, healthMeta, quality, quarantine, activeMarket, scopedIssueRows, issueRows, onlyNew, showResolved, hiddenResolvedCount, hiddenByCurrentFilterCount, wbMissingInDistribution, wbMissingInPortal })}
-    ${contourPlatformBoardHtml}
-    ${contourGameCardsHtml}
+    <details class="sku-data-technical sku-data-metrics-drawer">
+      <summary class="sku-data-technical-summary">Подробные метрики площадок</summary>
+      <div class="sku-data-technical-body">
+        ${contourPlatformBoardHtml}
+        ${contourGameCardsHtml}
+      </div>
+    </details>
 
     <div class="notice ${healthMeta.notice} sku-data-muted-noise">
       <div class="section-subhead">

@@ -439,78 +439,55 @@ function skuJourneyPanelHtml({
   workCount = 0,
   apiRiskRevenue = 0
 } = {}) {
-  const ownerPart = ownerCoverage === null ? 0 : Math.max(0, Math.min(1, ownerCoverage)) * 30;
-  const contourPart = contourProgress === null ? 0 : Math.max(0, Math.min(1, contourProgress)) * 40;
-  const pressureBase = Math.max(1, numberOrZero(workCount) + numberOrZero(unresolvedCount) + numberOrZero(blockerCount) + 1);
-  const pressureRatio = Math.max(0, 1 - Math.min(1, (numberOrZero(unresolvedCount) + numberOrZero(blockerCount) * 2) / pressureBase));
-  const pressurePart = pressureRatio * 20;
-  const calmBonus = blockerCount ? 0 : 10;
-  const score = Math.max(0, Math.min(100, Math.round(ownerPart + contourPart + pressurePart + calmBonus)));
-  const level = skuJourneyLevelMeta(score);
   const marketLabel = typeof skuDataPlatformLabel === 'function' ? skuDataPlatformLabel(activeMarket) : skuRegistryMarketLabel(activeMarket);
-  const missions = [
+  const activeModeLabel = source === 'contour' ? 'API-контур' : 'Реестр SKU';
+  const stats = [
     {
       action: source === 'contour' ? 'only-new-contour' : 'open-contour',
-      label: 'Закрыть API-пары',
+      label: 'API без пары',
       value: fmt.int(unresolvedCount),
-      help: 'alias / ignore / new_sku',
       tone: unresolvedCount ? 'warn' : 'ok'
     },
     {
       action: 'registry-unassigned',
-      label: 'Закрепить owner',
+      label: 'Owner coverage',
       value: ownerCoverage === null ? '—' : fmt.pct(ownerCoverage),
-      help: 'ответственный по площадке',
       tone: ownerCoverage !== null && ownerCoverage < 0.9 ? 'warn' : 'ok'
     },
     {
       action: 'registry-matrix',
-      label: 'Свести матрицу',
+      label: 'Матрица',
       value: fmt.int(matrixIssueCount),
-      help: 'дубли, статусы, связи',
       tone: matrixIssueCount ? 'warn' : 'ok'
     },
     {
       action: 'planfact',
-      label: 'Вернуть план-факт',
+      label: 'В работе',
       value: fmt.int(workCount),
-      help: 'SKU в работе',
       tone: workCount ? 'info' : ''
     }
   ];
-  const sourceAction = source === 'contour' ? 'open-registry' : 'open-contour';
-  const sourceLabel = source === 'contour' ? 'Открыть Реестр SKU' : 'Открыть Контур SKU';
   return `
-    <div class="sku-journey-panel">
-      <section class="sku-journey-score ${escapeHtml(level.tone)}">
-        <span>${escapeHtml(marketLabel)} · SKU quest</span>
-        <strong>${fmt.int(score)}</strong>
-        <em>${escapeHtml(level.label)} · ${escapeHtml(level.title)}</em>
-        <i><b style="width:${score}%"></b></i>
+    <div class="sku-workspace-panel">
+      <section class="sku-workspace-title">
+        <span>${escapeHtml(marketLabel)} · единый SKU workspace</span>
+        <strong>${escapeHtml(activeModeLabel)}</strong>
+        <em>Одна очередь: API-пары, owner, матрица и план-факт без лишней витрины.</em>
       </section>
-      <section class="sku-journey-map">
-        ${missions.map((mission, index) => `
-          <button class="sku-journey-mission ${escapeHtml(mission.tone || '')}" type="button" data-sku-journey-action="${escapeHtml(mission.action)}">
-            <b>${index + 1}</b>
-            <span>
-              <strong>${escapeHtml(mission.label)}</strong>
-              <em>${escapeHtml(mission.help)}</em>
-            </span>
-            <small>${escapeHtml(mission.value)}</small>
+      <section class="sku-workspace-switch">
+        <button class="${source === 'registry' ? 'active' : ''}" type="button" data-sku-journey-action="open-registry">Реестр</button>
+        <button class="${source === 'contour' ? 'active' : ''}" type="button" data-sku-journey-action="open-contour">API-контур</button>
+        <button type="button" data-sku-journey-action="planfact">План-факт</button>
+      </section>
+      <section class="sku-workspace-stats">
+        ${stats.map((item) => `
+          <button class="${escapeHtml(item.tone || '')}" type="button" data-sku-journey-action="${escapeHtml(item.action)}">
+            <b>${escapeHtml(item.value)}</b>
+            <span>${escapeHtml(item.label)}</span>
           </button>
         `).join('')}
       </section>
-      <section class="sku-journey-side">
-        <div>
-          <strong>${fmt.int(blockerCount)}</strong>
-          <span>блокеров</span>
-        </div>
-        <div>
-          <strong>${fmt.money(apiRiskRevenue || 0)}</strong>
-          <span>выручка риска</span>
-        </div>
-        <button class="quick-chip primary" type="button" data-sku-journey-action="${escapeHtml(sourceAction)}">${escapeHtml(sourceLabel)}</button>
-      </section>
+      ${blockerCount || apiRiskRevenue ? `<section class="sku-workspace-note">${fmt.int(blockerCount)} блокеров · ${fmt.money(apiRiskRevenue || 0)} риска</section>` : ''}
     </div>
   `;
 }
@@ -524,10 +501,6 @@ function skuRegistryFocusBoardHtml({ activeMarket = 'all', allMarketSkus = [], i
   const underPlanCount = allMarketSkus.filter((sku) => sku?.flags?.underPlan).length;
   const lowStockCount = allMarketSkus.filter((sku) => sku?.flags?.lowStock).length;
   const externalTrafficCount = allMarketSkus.filter((sku) => sku?.flags?.hasExternalTraffic).length;
-  const overdueTaskCount = allMarketSkus.filter((sku) => {
-    const task = skuTaskMap.get(String(sku.articleKey || '').trim()) || null;
-    return task && isTaskOverdue(task);
-  }).length;
   const marketIssueRows = activeMarket === 'all' || typeof skuDataIssueMatchesPlatform !== 'function'
     ? registryIssueRows
     : registryIssueRows.filter((row) => skuDataIssueMatchesPlatform(row, activeMarket));
@@ -567,24 +540,10 @@ function skuRegistryFocusBoardHtml({ activeMarket = 'all', allMarketSkus = [], i
   ];
   return `
     ${skuJourneyPanelHtml({ source: 'registry', activeMarket, ownerCoverage, contourProgress, unresolvedCount: unresolvedIssueCount, blockerCount, matrixIssueCount: matrixIssuesBySku || matrixIssueCount, workCount, apiRiskRevenue })}
-    <div class="sku-data-focus-board sku-registry-focus-board">
-      <section class="sku-data-focus-panel sku-data-focus-panel--hero">
-        <div class="sku-data-focus-kicker">Реестр SKU · ${escapeHtml(skuRegistryMarketLabel(activeMarket))}</div>
-        <h3>${fmt.int(total)} SKU в контуре</h3>
-        <p>Сверяем owner, матрицу, план-факт, внешний трафик и статус товара в одном рабочем списке.</p>
-        <div class="sku-data-focus-meter ${ownerCoverage !== null && ownerCoverage < 0.9 ? 'warn' : 'ok'}">
-          <span><b>Owner coverage</b><em>${ownerCoverage === null ? 'нет данных' : fmt.pct(ownerCoverage)}</em></span>
-          <i style="width:${Math.max(0, Math.min(100, Math.round((ownerCoverage || 0) * 100)))}%"></i>
-        </div>
-        <div class="sku-data-focus-metric-grid">
-          <div class="sku-data-focus-metric"><strong>${fmt.int(items.length)}</strong><span>видно по фильтрам</span></div>
-          <div class="sku-data-focus-metric ${marketIssueCount ? 'warn' : 'ok'}"><strong>${fmt.int(marketIssueCount)}</strong><span>сигналов контура</span></div>
-          <div class="sku-data-focus-metric ${overdueTaskCount ? 'danger' : ''}"><strong>${fmt.int(overdueTaskCount)}</strong><span>горящих задач</span></div>
-        </div>
-      </section>
+    <div class="sku-data-focus-board sku-data-focus-board--compact sku-registry-focus-board">
       <section class="sku-data-focus-panel">
         <div class="sku-data-focus-head">
-          <h3>Быстрый разбор</h3>
+          <h3>Быстрый фильтр</h3>
           <button class="quick-chip" type="button" data-sku-registry-focus="all">Сбросить</button>
         </div>
         <div class="sku-data-bucket-grid">
@@ -700,8 +659,13 @@ function renderSkuRegistry() {
     </div>
 
     ${skuRegistryFocusBoardHtml({ activeMarket, allMarketSkus, items, skuTaskMap, matrixIssueCount, registryIssueRows })}
-    ${registryPlatformBoardHtml}
-    ${registryGameCardsHtml}
+    <details class="sku-data-technical sku-data-metrics-drawer">
+      <summary class="sku-data-technical-summary">Подробные метрики площадок</summary>
+      <div class="sku-data-technical-body">
+        ${registryPlatformBoardHtml}
+        ${registryGameCardsHtml}
+      </div>
+    </details>
 
     <div class="filters filters-advanced">
       <input id="skuSearchInput" placeholder="Поиск по артикулу, названию, категории, owner…" value="${escapeHtml(state.filters.search)}">

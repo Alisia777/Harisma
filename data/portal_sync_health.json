@@ -1,12 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-03T08:48:46.706Z",
+  "generatedAt": "2026-06-03T08:51:09.257Z",
   "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
     "warnings": [],
-    "checkedAt": "2026-06-03T08:48:46.706Z"
+    "checkedAt": "2026-06-03T08:51:09.257Z"
   },
   "freshness": {
     "maxDate": "2026-06-02",
@@ -15,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-03T08:48:46.700Z",
+      "checkedAt": "2026-06-03T08:51:09.252Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-02",
       "maxDate": "2026-06-02",
@@ -62,7 +62,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-03T08:48:46.705Z",
+      "checkedAt": "2026-06-03T08:51:09.257Z",
       "expectedDate": "2026-06-02",
       "adsSummaryWindowTo": "2026-06-02",
       "iuDrrWindowTo": "2026-06-02",
@@ -239,7 +239,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-03T08:28:29.933Z",
+      "generatedAt": "2026-06-03T08:48:46.700Z",
       "asOfDate": "2026-06-03",
       "revenue": 0
     },
@@ -274,7 +274,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-03T08:28:29.939Z",
+      "generatedAt": "2026-06-03T08:48:46.706Z",
       "asOfDate": "2026-06-03",
       "revenue": 0
     }
@@ -429,7 +429,9 @@
         "previousRevenue": 0,
         "revenueRatio": 1
       }
-    ]
+    ],
+    "markedAt": "2026-06-03T08:51:09.397Z",
+    "copied": 25
   },
   "checks": [
     {

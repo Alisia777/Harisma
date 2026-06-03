@@ -1491,6 +1491,109 @@ function autoSignalOwner(sku, platform = '', fallback = '') {
   return canonicalOwnerName(fallback || '') || ownerName(sku) || '';
 }
 
+function promoHammerEvents() {
+  const events = Array.isArray(state.storage?.promoEvents) ? state.storage.promoEvents : [];
+  const deleted = new Set((Array.isArray(state.storage?.promoEventDeletedIds) ? state.storage.promoEventDeletedIds : [])
+    .map((item) => String(item?.id || '').trim())
+    .filter(Boolean));
+  return events
+    .map((event) => {
+      const id = String(event?.id || '').trim();
+      const startDate = String(event?.startDate || event?.start_date || event?.date || '').slice(0, 10);
+      const rawEnd = String(event?.endDate || event?.end_date || startDate || '').slice(0, 10);
+      const title = String(event?.title || event?.name || '').trim();
+      const skus = Array.isArray(event?.skus)
+        ? event.skus.map((sku) => String(sku || '').trim()).filter(Boolean)
+        : String(event?.skuText || event?.skusText || event?.sku || '').split(/\r?\n|[,;]/).map((sku) => sku.trim()).filter(Boolean);
+      return {
+        id,
+        title,
+        platform: normalizeTaskPlatform(event?.platform || event?.marketplace || 'cross') || 'cross',
+        startDate,
+        endDate: rawEnd && rawEnd >= startDate ? rawEnd : startDate,
+        skus,
+        comment: String(event?.comment || event?.note || '').trim(),
+        owner: String(event?.owner || '').trim()
+      };
+    })
+    .filter((event) => event.id && event.title && !deleted.has(event.id));
+}
+
+function promoHammerText(event = {}) {
+  return String([event.title, event.comment].filter(Boolean).join(' ')).toLowerCase();
+}
+
+function isPromoHammerEvent(event = {}) {
+  return /хамм?ер|hammer/.test(promoHammerText(event));
+}
+
+function daysFromToday(dateKey = '') {
+  const target = String(dateKey || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(target)) return 0;
+  const targetDate = new Date(`${target}T12:00:00`);
+  const todayDate = new Date(`${plusDays(0)}T12:00:00`);
+  if (Number.isNaN(targetDate.getTime())) return 0;
+  return Math.round((targetDate.getTime() - todayDate.getTime()) / 86400000);
+}
+
+function activePromoHammerTaskMarkers() {
+  const tasks = Array.isArray(state.storage?.tasks) ? state.storage.tasks : [];
+  return new Set(tasks
+    .filter(isTaskActive)
+    .filter((task) => String(task?.autoCode || '').trim().toLowerCase() === 'promo_hammer')
+    .map((task) => String(task?.reason || '').match(/\[\[promoEvent:([^\]]+)\]\]/)?.[1] || '')
+    .filter(Boolean));
+}
+
+function buildPromoHammerAutoTasks() {
+  const today = plusDays(0);
+  const minDate = shiftDateKey(today, -3);
+  const maxDate = shiftDateKey(today, 45);
+  const activeMarkers = activePromoHammerTaskMarkers();
+  return promoHammerEvents().map((event) => {
+    if (!isPromoHammerEvent(event)) return null;
+    if (!event.startDate || event.endDate < minDate || event.startDate > maxDate) return null;
+    if (activeMarkers.has(event.id)) return null;
+    const firstSkuKey = event.skus[0] || '';
+    const firstSku = firstSkuKey ? getSku(firstSkuKey) : null;
+    const platformLabel = autoSignalPlatformLabel(event.platform);
+    const daysUntilStart = daysFromToday(event.startDate);
+    const due = daysUntilStart > 1 ? shiftDateKey(event.startDate, -1) : today;
+    const period = event.endDate && event.endDate !== event.startDate ? `${event.startDate} - ${event.endDate}` : event.startDate;
+    const visibleSkus = event.skus.slice(0, 60);
+    const hiddenSkus = Math.max(0, event.skus.length - visibleSkus.length);
+    const skuSummary = event.skus.length
+      ? `SKU (${event.skus.length}): ${visibleSkus.join(', ')}${hiddenSkus ? `; еще ${hiddenSkus}` : ''}`
+      : 'SKU не выбраны';
+    const urgency = daysUntilStart <= 0 ? 'critical' : daysUntilStart <= 2 ? 'high' : 'medium';
+    return normalizeTask({
+      id: stableId('auto-promo-hammer', `${event.id}|${event.startDate}|${event.title}`),
+      source: 'auto',
+      autoCode: 'promo_hammer',
+      articleKey: firstSkuKey,
+      entityLabel: event.title,
+      title: `Хаммер: подготовить промо ${event.title}`,
+      nextAction: `Проверить ${platformLabel}: цену/скидку, остатки по SKU, РК и креативы до старта Хаммера.`,
+      reason: [
+        `[[promoEvent:${event.id}]]`,
+        `Промо из календаря: ${event.title}`,
+        `Период: ${period}`,
+        `Площадка: ${platformLabel}`,
+        skuSummary,
+        event.comment ? `Комментарий: ${event.comment}` : '',
+        'Автозадача сработала по слову Хаммер в календарном событии.'
+      ].filter(Boolean).join('\n'),
+      owner: autoSignalOwner(firstSku, event.platform, event.owner),
+      due,
+      startDate: due,
+      endDate: event.startDate,
+      priority: urgency,
+      type: 'traffic',
+      platform: event.platform
+    }, 'auto');
+  }).filter(Boolean);
+}
+
 function autoSignalMetric(item, key) {
   const metric = item?.diagnostics?.metrics?.[key] || {};
   return {
@@ -2037,6 +2140,7 @@ function buildAutoTasks() {
       .map((item) => [String(item.articleKey).trim().toLowerCase(), item])
   );
   tasks.push(...buildQualityAutoSignalTasks(keys, leaderboardFresh ? leaderboardPayload : { items: [] }));
+  tasks.push(...buildPromoHammerAutoTasks());
   const legacyKzAutoTasksEnabled = false;
   const legacySkuFlagAutoTasksEnabled = false;
 

@@ -24,7 +24,8 @@
     remoteLoading: false,
     remoteSaving: false,
     dataLoaded: false,
-    dataLoading: false
+    dataLoading: false,
+    taskSyncing: false
   };
   window.__ALTEA_PROMO_CALENDAR_STATE__ = CALENDAR_STATE;
   if (!CALENDAR_STATE.kind) CALENDAR_STATE.kind = 'all';
@@ -1668,6 +1669,9 @@
     bindCalendar(root, rootId);
     if (!CALENDAR_STATE.dataLoaded && !CALENDAR_STATE.dataLoading) ensureCalendarData(rootId);
     if (!CALENDAR_STATE.remoteLoaded && !CALENDAR_STATE.remoteLoading) syncCalendarFromRemote({ rootId, rerender: true });
+    if (!CALENDAR_STATE.taskSyncing && !CALENDAR_STATE.modalOpen) {
+      window.setTimeout(() => ensureCalendarTaskLinks(rootId), 0);
+    }
   }
 
   function updateMonth(delta) {
@@ -1775,11 +1779,57 @@
     };
   }
 
+  function comparableTaskText(value = '') {
+    return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  function taskDateKey(task = {}) {
+    return firstValidDate(
+      task.due,
+      task.deadline,
+      task.endDate,
+      task.end_date,
+      task.dateTo,
+      task.date_to,
+      task.date,
+      task.startDate,
+      task.start_date
+    );
+  }
+
+  function findExistingEventTask(normalized, payload, tasks = []) {
+    const linkedId = String(normalized.taskId || '').trim();
+    if (linkedId) {
+      const linked = tasks.find((task) => String(task?.id || '').trim() === linkedId);
+      if (linked) return linked;
+    }
+    const payloadTitle = comparableTaskText(payload.title);
+    const payloadEntity = comparableTaskText(payload.entityLabel || normalized.title);
+    const payloadDate = String(payload.due || payload.startDate || normalized.startDate || '').slice(0, 10);
+    const payloadPlatform = platformKey(payload.platform || normalized.platform || 'cross');
+    const firstSku = String(payload.articleKey || '').trim().toLowerCase();
+    return tasks.find((task) => {
+      if (!task) return false;
+      const source = String(task.source || 'manual').trim().toLowerCase();
+      if (source === 'auto' || task.autoCode) return false;
+      const taskTitle = comparableTaskText(task.title || task.nextAction || '');
+      const taskEntity = comparableTaskText(task.entityLabel || '');
+      const sameTitle = taskTitle === payloadTitle || (payloadEntity && taskEntity === payloadEntity && taskTitle.includes('старт'));
+      if (!sameTitle) return false;
+      const sameDate = taskDateKey(task) === payloadDate;
+      if (!sameDate) return false;
+      const samePlatform = platformKey(task.platform || task.marketplace || 'cross') === payloadPlatform;
+      if (!samePlatform) return false;
+      const taskSkus = taskSkuKeys(task).map((sku) => String(sku || '').trim().toLowerCase());
+      return firstSku ? taskSkus.includes(firstSku) : true;
+    }) || null;
+  }
+
   async function ensureEventTask(event, reason = 'updated') {
     const normalized = normalizeEvent(event);
     const tasks = Array.isArray(appState().storage?.tasks) ? appState().storage.tasks : [];
-    const existingTask = normalized.taskId ? tasks.find((task) => task.id === normalized.taskId) : null;
     const payload = taskPayload(normalized);
+    const existingTask = findExistingEventTask(normalized, payload, tasks);
     if (existingTask) {
       const before = JSON.stringify({
         title: existingTask.title,
@@ -1819,6 +1869,33 @@
     } catch (error) {
       console.warn('[promo-calendar] task create', error);
       return normalized;
+    }
+  }
+
+  async function ensureCalendarTaskLinks(rootId = 'view-data-health') {
+    if (CALENDAR_STATE.taskSyncing || CALENDAR_STATE.modalOpen) return;
+    if (typeof createManualTask !== 'function' && !Array.isArray(appState().storage?.tasks)) return;
+    const candidates = allEvents().filter((event) => !event.taskId);
+    if (!candidates.length) return;
+    CALENDAR_STATE.taskSyncing = true;
+    let changed = false;
+    try {
+      for (const event of candidates) {
+        const withTask = await ensureEventTask(event, 'created');
+        if (withTask.taskId && withTask.taskId !== event.taskId) {
+          storage().promoEvents = allEvents().map((item) => item.id === withTask.id ? withTask : item);
+          changed = true;
+        }
+      }
+      if (changed) {
+        if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason: 'promo-calendar-task-link-repair' });
+        await persistPromoCalendarEvents({ rootId, rerender: false });
+        if (isCalendarActive() && !CALENDAR_STATE.modalOpen) renderEventCalendar(rootId);
+      }
+    } catch (error) {
+      console.warn('[promo-calendar] task link repair', error);
+    } finally {
+      CALENDAR_STATE.taskSyncing = false;
     }
   }
 

@@ -1077,6 +1077,9 @@ function normalizeTask(task, sourceHint = 'manual') {
     || parsedReason.coOwner
     || ''
   );
+  const due = task?.due || task?.deadline || task?.endDate || task?.end_date || task?.dateTo || task?.date_to || plusDays(type === 'assignment' ? 1 : 3);
+  const startDate = task?.startDate || task?.start_date || task?.dateFrom || task?.date_from || task?.fromDate || task?.from_date || task?.periodStart || task?.period_start || task?.date || due;
+  const endDate = task?.endDate || task?.end_date || task?.dateTo || task?.date_to || task?.toDate || task?.to_date || task?.periodEnd || task?.period_end || task?.finishDate || task?.finish_date || task?.deadline || due || startDate;
   return {
     id: task?.id || stableId(sourceHint === 'auto' ? 'auto' : 'task', `${task?.articleKey || ''}|${title}|${task?.due || ''}|${createdAt}|${sourceHint}`),
     source,
@@ -1086,7 +1089,9 @@ function normalizeTask(task, sourceHint = 'manual') {
     reason: parsedReason.reason,
     owner: resolvedOwner,
     coOwner,
-    due: task?.due || plusDays(type === 'assignment' ? 1 : 3),
+    due,
+    startDate,
+    endDate: endDate && endDate >= startDate ? endDate : startDate,
     status: mapTaskStatus(task?.status),
     type,
     priority,

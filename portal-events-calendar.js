@@ -230,6 +230,14 @@
     return /^\d{4}-\d{2}-\d{2}$/.test(key) ? key : '';
   }
 
+  function firstValidDate(...values) {
+    for (const value of values) {
+      const key = validDateKey(value);
+      if (key) return key;
+    }
+    return '';
+  }
+
   function uniqueList(values = []) {
     return [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))];
   }
@@ -270,6 +278,7 @@
   function taskEventKind(task = {}) {
     const source = String(task.source || '').trim().toLowerCase();
     const id = String(task.id || '').trim().toLowerCase();
+    if (source === 'manual') return 'task-manual';
     return source === 'auto' || Boolean(task.autoCode) || id.startsWith('auto-') ? 'task-auto' : 'task-manual';
   }
 
@@ -278,8 +287,65 @@
     return 'planned';
   }
 
-  function taskDateKey(task = {}) {
-    return validDateKey(task.due || task.deadline || task.date || task.startDate);
+  function taskDateRange(task = {}) {
+    const due = firstValidDate(
+      task.due,
+      task.deadline,
+      task.dueDate,
+      task.due_date,
+      task.finishDate,
+      task.finish_date,
+      task.endDate,
+      task.end_date,
+      task.dateTo,
+      task.date_to,
+      task.toDate,
+      task.to_date,
+      task.to,
+      task.finish,
+      task.date
+    );
+    const start = firstValidDate(
+      task.startDate,
+      task.start_date,
+      task.dateFrom,
+      task.date_from,
+      task.fromDate,
+      task.from_date,
+      task.periodStart,
+      task.period_start,
+      task.beginDate,
+      task.begin_date,
+      task.dateStart,
+      task.date_start,
+      task.start,
+      task.from,
+      task.date,
+      due
+    );
+    const end = firstValidDate(
+      task.endDate,
+      task.end_date,
+      task.dateTo,
+      task.date_to,
+      task.toDate,
+      task.to_date,
+      task.periodEnd,
+      task.period_end,
+      task.finishDate,
+      task.finish_date,
+      task.dateEnd,
+      task.date_end,
+      task.end,
+      task.to,
+      task.finish,
+      due,
+      start
+    );
+    if (!start && !end) return { startDate: '', endDate: '', due: '' };
+    const startDate = start || end;
+    const endDate = end && end >= startDate ? end : startDate;
+    return { startDate, endDate, due: due || endDate || startDate };
   }
 
   function taskSkuKeys(task = {}) {
@@ -306,9 +372,9 @@
   function taskCalendarEvents(manualEvents = allEvents()) {
     const linkedPromoTaskIds = new Set(manualEvents.map((event) => String(event.taskId || '').trim()).filter(Boolean));
     return normalizedTaskList().map((task) => {
-      const due = taskDateKey(task);
+      const range = taskDateRange(task);
       const taskId = String(task.id || '').trim();
-      if (!due || !taskId || linkedPromoTaskIds.has(taskId) || taskDoneStatus(task.status) && /deleted|removed|archive|cancel/.test(String(task.status || '').toLowerCase())) return null;
+      if (!range.startDate || !taskId || linkedPromoTaskIds.has(taskId) || taskDoneStatus(task.status) && /deleted|removed|archive|cancel/.test(String(task.status || '').toLowerCase())) return null;
       const skus = taskSkuKeys(task);
       const title = String(task.title || task.nextAction || task.entityLabel || 'Задача').trim();
       return {
@@ -319,11 +385,11 @@
         readonly: true,
         title,
         platform: platformKey(task.platform || task.marketplace || 'cross'),
-        startDate: due,
-        endDate: due,
+        startDate: range.startDate,
+        endDate: range.endDate,
         skus,
         skuText: skus.join('\n'),
-        comment: [task.nextAction, task.reason].filter(Boolean).join('\n'),
+        comment: [task.nextAction, task.reason, range.endDate !== range.startDate ? `Период: ${range.startDate} - ${range.endDate}` : ''].filter(Boolean).join('\n'),
         owner: String(task.owner || task.coOwner || '').trim(),
         status: taskStatusForCalendar(task),
         priority: String(task.priority || '').trim(),
@@ -654,6 +720,10 @@
     return event.startDate <= day && event.endDate >= day;
   }
 
+  function isRangeCalendarEvent(event = {}) {
+    return Boolean(event.startDate && event.endDate && event.endDate > event.startDate);
+  }
+
   function eventOverlapsRange(event, from, to) {
     const start = from || '0000-01-01';
     const end = to || '9999-12-31';
@@ -729,6 +799,19 @@
     if (rankOrder) return rankOrder;
     const priorityOrder = eventPriorityRank(left) - eventPriorityRank(right);
     if (priorityOrder) return priorityOrder;
+    return String(left.title || '').localeCompare(String(right.title || ''));
+  }
+
+  function sortCalendarDayEvents(left, right) {
+    const rankOrder = eventKindRank(left) - eventKindRank(right);
+    if (rankOrder) return rankOrder;
+    const priorityOrder = eventPriorityRank(left) - eventPriorityRank(right);
+    if (priorityOrder) return priorityOrder;
+    const leftDuration = daysBetween(left.startDate, left.endDate);
+    const rightDuration = daysBetween(right.startDate, right.endDate);
+    if (leftDuration !== rightDuration) return rightDuration - leftDuration;
+    const dateOrder = String(left.startDate || '').localeCompare(String(right.startDate || ''));
+    if (dateOrder) return dateOrder;
     return String(left.title || '').localeCompare(String(right.title || ''));
   }
 
@@ -1209,14 +1292,89 @@
     `;
   }
 
+  function renderRangeBar(segment) {
+    const { event, left, span, lane, startsHere, endsHere } = segment;
+    const mission = eventMission(event);
+    const editable = isEditableEvent(event);
+    const skuLabel = event.skus.length ? `${formatInt(event.skus.length)} SKU` : eventKindLabel(event);
+    return `
+      <button class="promo-range-bar ${eventVisualClass(event)} ${eventTone(event)} mission-${mission.tone} ${startsHere ? 'range-start' : 'range-continue-start'} ${endsHere ? 'range-end' : 'range-continue-end'} ${editable ? '' : 'readonly'}" type="button" draggable="${editable ? 'true' : 'false'}" data-calendar-event="${html(event.id)}" style="--range-left:${left};--range-span:${span};--range-lane:${lane};--event-xp:${mission.score}%">
+        <strong>${html(event.title)}</strong>
+        <em>${html(`${platformLabel(event.platform)} - ${formatDate(event.startDate)}${event.endDate !== event.startDate ? ` / ${formatDate(event.endDate)}` : ''}`)}</em>
+        <span>${html(skuLabel)}</span>
+      </button>
+    `;
+  }
+
+  function weekRangeSegments(weekDays, events) {
+    const weekStart = weekDays[0];
+    const weekEnd = weekDays[weekDays.length - 1];
+    const lastIndex = (items, predicate) => {
+      for (let index = items.length - 1; index >= 0; index -= 1) {
+        if (predicate(items[index], index)) return index;
+      }
+      return -1;
+    };
+    const segments = events
+      .filter((event) => isRangeCalendarEvent(event) && eventOverlapsRange(event, weekStart, weekEnd))
+      .sort(sortCalendarDayEvents)
+      .map((event) => {
+        const left = Math.max(0, weekDays.findIndex((day) => day >= event.startDate));
+        const endIndex = lastIndex(weekDays, (day) => day <= event.endDate);
+        const safeEnd = endIndex >= left ? endIndex : left;
+        return {
+          event,
+          left,
+          span: Math.max(1, safeEnd - left + 1),
+          startsHere: event.startDate >= weekStart,
+          endsHere: event.endDate <= weekEnd
+        };
+      });
+    const lanes = [];
+    segments.forEach((segment) => {
+      let laneIndex = lanes.findIndex((lane) => {
+        for (let index = segment.left; index < segment.left + segment.span; index += 1) {
+          if (lane[index]) return false;
+        }
+        return true;
+      });
+      if (laneIndex < 0) {
+        laneIndex = lanes.length;
+        lanes.push(Array(7).fill(false));
+      }
+      for (let index = segment.left; index < segment.left + segment.span; index += 1) {
+        lanes[laneIndex][index] = true;
+      }
+      segment.lane = laneIndex;
+    });
+    return { segments, laneCount: lanes.length };
+  }
+
+  function renderWeek(weekDays, events, monthKey) {
+    const rangeModel = weekRangeSegments(weekDays, events);
+    return `
+      <div class="promo-week-layer" style="--range-lanes:${rangeModel.laneCount}">
+        <div class="promo-week-days">${weekDays.map((day) => renderDay(day, events, monthKey)).join('')}</div>
+        ${rangeModel.segments.length ? `<div class="promo-range-layer">${rangeModel.segments.map(renderRangeBar).join('')}</div>` : ''}
+      </div>
+    `;
+  }
+
+  function renderMonthGrid(gridDays, events, monthKey) {
+    const weeks = [];
+    for (let index = 0; index < gridDays.length; index += 7) weeks.push(gridDays.slice(index, index + 7));
+    return weeks.map((weekDays) => renderWeek(weekDays, events, monthKey)).join('');
+  }
+
   function renderDay(day, events, monthKey) {
     const inMonth = startOfMonth(day) === startOfMonth(monthKey);
-    const dayEvents = events.filter((event) => eventOverlapsDate(event, day)).sort(sortCalendarEvents);
+    const allDayEvents = events.filter((event) => eventOverlapsDate(event, day)).sort(sortCalendarDayEvents);
+    const dayEvents = allDayEvents.filter((event) => !isRangeCalendarEvent(event));
     const className = [
       'promo-calendar-day',
       inMonth ? '' : 'muted-day',
       day === todayKey() ? 'today' : '',
-      dayEvents.length ? 'has-events' : ''
+      allDayEvents.length ? 'has-events' : ''
     ].filter(Boolean).join(' ');
     return `
       <div class="${className}" role="button" tabindex="0" data-calendar-day="${html(day)}" aria-label="${html(formatDate(day))}">
@@ -1453,7 +1611,7 @@
               <button type="button" data-calendar-month="1">›</button>
             </div>
             <div class="promo-weekdays">${WEEKDAYS.map((day) => `<span>${day}</span>`).join('')}</div>
-            <div class="promo-month-grid">${gridDays.map((day) => renderDay(day, events, month)).join('')}</div>
+            <div class="promo-month-grid">${renderMonthGrid(gridDays, events, month)}</div>
           </div>
           <aside class="promo-calendar-side">
             <div class="promo-side-card">
@@ -1571,6 +1729,8 @@
       platform: event.platform,
       owner: event.owner || appState().team?.member?.name || '',
       due: event.startDate,
+      startDate: event.startDate,
+      endDate: event.endDate,
       nextAction: `Проверить старт промо ${platformLabel(event.platform)}: ${event.title}.`,
       reason: [
         `Период: ${period}`,
@@ -1590,18 +1750,22 @@
       const before = JSON.stringify({
         title: existingTask.title,
         due: existingTask.due,
+        startDate: existingTask.startDate,
+        endDate: existingTask.endDate,
         platform: existingTask.platform,
         nextAction: existingTask.nextAction
       });
       existingTask.title = payload.title;
       existingTask.due = payload.due;
+      existingTask.startDate = payload.startDate;
+      existingTask.endDate = payload.endDate;
       existingTask.platform = payload.platform;
       existingTask.owner = payload.owner || existingTask.owner;
       existingTask.nextAction = payload.nextAction;
       existingTask.reason = payload.reason;
       existingTask.updatedAt = new Date().toISOString();
       if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason: 'promo-calendar-task-update' });
-      if (before !== JSON.stringify({ title: existingTask.title, due: existingTask.due, platform: existingTask.platform, nextAction: existingTask.nextAction })) {
+      if (before !== JSON.stringify({ title: existingTask.title, due: existingTask.due, startDate: existingTask.startDate, endDate: existingTask.endDate, platform: existingTask.platform, nextAction: existingTask.nextAction })) {
         try {
           if (typeof persistTask === 'function') await persistTask(existingTask);
           if (typeof createTaskHistoryEntry === 'function') await createTaskHistoryEntry(existingTask.id, 'updated', `Календарь обновил задачу промо: старт ${normalized.startDate}.`);

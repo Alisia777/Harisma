@@ -279,6 +279,42 @@ function Invoke-IuDrrBuild {
   ) -Attempts 1 -RetryDelaySeconds 10 -TimeoutSeconds 900
 }
 
+function Invoke-OzonAdsFinanceBuild {
+  $adsSummaryPath = Join-Path $resolvedOutputDir "ads_summary.json"
+  $arguments = @(
+    "scripts/portal-ozon-ads-finance-sync.js",
+    "sync",
+    "--input-file",
+    $adsSummaryPath,
+    "--output-file",
+    $adsSummaryPath,
+    "--mirror-file",
+    (Join-Path "data" "ads_summary.json")
+  )
+
+  try {
+    if (Test-Path -LiteralPath $adsSummaryPath) {
+      $adsSummary = Get-Content -LiteralPath $adsSummaryPath -Raw | ConvertFrom-Json
+      $to = [string]$adsSummary.window.to
+      if ([string]::IsNullOrWhiteSpace($to)) {
+        $to = [string]$adsSummary.asOfDate
+      }
+      if (-not [string]::IsNullOrWhiteSpace($to)) {
+        $toDate = [datetime]::ParseExact($to, "yyyy-MM-dd", [System.Globalization.CultureInfo]::InvariantCulture)
+        $from = (Get-Date -Year $toDate.Year -Month $toDate.Month -Day 1).ToString("yyyy-MM-dd")
+        $arguments += "--from"
+        $arguments += $from
+        $arguments += "--to"
+        $arguments += $to
+      }
+    }
+  } catch {
+    Write-LogLine "[retry] Ozon ads finance retry will use ads_summary window defaults: $($_.Exception.Message)"
+  }
+
+  Invoke-NodeStep -StepName "Ozon ads finance retry refresh" -Arguments $arguments -Attempts 2 -RetryDelaySeconds 60 -TimeoutSeconds 900
+}
+
 function Invoke-StaticDataPublish {
   Invoke-PowerShellStep -StepName "static data retry publish" -ScriptPath (Join-Path $PSScriptRoot "portal-static-data-publish.ps1") -Parameters @{
     SourceDir = $resolvedOutputDir
@@ -401,6 +437,13 @@ function Invoke-RetryStep {
         "--mirror-local-fallback",
         "--skip-campaign-details"
       ) -Attempts 1 -RetryDelaySeconds 60 -TimeoutSeconds 2700
+      Invoke-OzonAdsFinanceBuild
+      Invoke-Upload @("ads_summary")
+      Invoke-IuDrrBuild
+      Invoke-Upload @("iu_drr_summary")
+    }
+    "ozon-ads-finance" {
+      Invoke-OzonAdsFinanceBuild
       Invoke-Upload @("ads_summary")
       Invoke-IuDrrBuild
       Invoke-Upload @("iu_drr_summary")

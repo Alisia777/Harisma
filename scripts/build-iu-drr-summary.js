@@ -1811,6 +1811,7 @@ function mergePlatformAdsSeries(adsSummary, platformKey, targetMap, onSpendGap) 
     current.clicks = Math.max(current.clicks, numberOrZero(point.clicks));
     current.orders = Math.max(current.orders, numberOrZero(point.orders));
     current.revenue = Math.max(current.revenue, numberOrZero(point.revenue));
+    current.rows = Math.max(current.rows, numberOrZero(point.sourceRows || point.rows));
     targetMap.set(date, current);
   }
 }
@@ -1970,8 +1971,12 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
   const reviewPointsMap = buildReviewPointsMap(wbFeedbacksSummary);
   const wbDailyPlanMap = buildWbDailyPlanMap(iuPlan);
   const range = dateRange(platformTrends, adsSummary, options.from, options.to);
+  const ozonAdsFinanceApplied = Boolean(adsSummary?.diagnostics?.ozonAdsFinance?.days)
+    || String(adsSummary?.sourceMode || adsSummary?.source || '').includes('ozon-seller-finance-api');
   const ozonAdsFactSourceMode = adsSummary?.diagnostics?.ozonDailySellerFunnel?.applied
     ? 'ozon_seller_analytics_daily_funnel_smart_spend'
+    : ozonAdsFinanceApplied
+      ? 'ozon_seller_finance_api'
     : 'google_sheets_fact_ads_daily_sku';
   return enumerateDates(range.from, range.to).map((date) => {
     const month = monthKey(date);

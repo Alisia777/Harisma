@@ -749,6 +749,39 @@ try {
   Write-Warning "[sync] WB ads build failed, but the portal sync will continue so price/repricer/order layers can still be uploaded: $($_.Exception.Message)"
 }
 
+$ozonAdsFinanceArguments = @(
+  "scripts/portal-ozon-ads-finance-sync.js",
+  "sync",
+  "--input-file",
+  (Join-Path $resolvedOutputDir "ads_summary.json"),
+  "--output-file",
+  (Join-Path $resolvedOutputDir "ads_summary.json"),
+  "--mirror-file",
+  (Join-Path "data" "ads_summary.json"),
+  "--from",
+  $portalOzonFinanceWindowFrom,
+  "--to",
+  $portalAdsWindowTo
+)
+
+if ($DryRun) {
+  $ozonAdsFinanceArguments += "--dry-run"
+}
+
+$adsSummaryForOzonFinance = Join-Path $resolvedOutputDir "ads_summary.json"
+if (Test-Path -LiteralPath $adsSummaryForOzonFinance) {
+  Write-Output "[sync] Ozon ads finance refresh started"
+  try {
+    Invoke-NodeStep -StepName "Ozon ads finance refresh" -Arguments $ozonAdsFinanceArguments -Attempts 2 -RetryDelaySeconds 60 -TimeoutSeconds 900
+    Write-Output "[sync] Ozon ads finance refresh completed"
+  } catch {
+    Add-RetryStep -Id "ozon-ads-finance" -Name "Ozon ads finance refresh" -Message ([string]$_.Exception.Message)
+    Write-Warning "[sync] Ozon ads finance refresh failed, IU/DRR will use the existing Ozon ads layer: $($_.Exception.Message)"
+  }
+} else {
+  Write-Warning "[sync] Ozon ads finance refresh skipped because ads_summary.json is missing in $resolvedOutputDir."
+}
+
 $iuDrrArguments = @(
   "scripts/build-iu-drr-summary.js",
   "--input-dir",

@@ -689,6 +689,23 @@
     return `${eventClass(event)} ${eventKindClass(event)}`;
   }
 
+  function eventKindRank(event) {
+    const key = eventKindKey(event);
+    if (key === 'launch') return 0;
+    if (key === 'promo') return 1;
+    if (key === 'task-manual') return 2;
+    if (key === 'task-auto') return 3;
+    return 9;
+  }
+
+  function sortCalendarEvents(left, right) {
+    const dateOrder = String(left.startDate || '').localeCompare(String(right.startDate || ''));
+    if (dateOrder) return dateOrder;
+    const rankOrder = eventKindRank(left) - eventKindRank(right);
+    if (rankOrder) return rankOrder;
+    return String(left.title || '').localeCompare(String(right.title || ''));
+  }
+
   function eventTone(event) {
     const today = todayKey();
     if (event.status === 'done' || taskDoneStatus(event.rawStatus || '') || event.endDate < today) return 'done';
@@ -1147,17 +1164,17 @@
     const fullMeta = editable ? statusLabel(event.status) : eventKindLabel(event);
     return `
       <button class="promo-event-pill ${eventVisualClass(event)} ${eventTone(event)} mission-${mission.tone} ${editable ? '' : 'readonly'}" type="button" draggable="${editable ? 'true' : 'false'}" data-calendar-event="${html(event.id)}" style="--event-xp:${mission.score}%">
-        <span>${html(eventKindLabel(event))}</span>
+        <span class="promo-event-kind-badge">${html(eventKindLabel(event))}</span>
         <strong>${html(event.title)}</strong>
-        <em>${html(compact ? `${platformLabel(event.platform)} · ${riskLabel}` : `${platformLabel(event.platform)} · ${formatInt(mission.score)} XP · ${fullMeta}`)}</em>
-        ${event.skus.length ? `<b>${formatInt(event.skus.length)} SKU</b>` : ''}
+        <em class="promo-event-meta">${html(compact ? `${platformLabel(event.platform)} · ${riskLabel}` : `${platformLabel(event.platform)} · ${formatInt(mission.score)} XP · ${fullMeta}`)}</em>
+        ${event.skus.length ? `<b class="promo-event-sku-count">${formatInt(event.skus.length)} SKU</b>` : ''}
       </button>
     `;
   }
 
   function renderDay(day, events, monthKey) {
     const inMonth = startOfMonth(day) === startOfMonth(monthKey);
-    const dayEvents = events.filter((event) => eventOverlapsDate(event, day)).sort((a, b) => a.startDate.localeCompare(b.startDate));
+    const dayEvents = events.filter((event) => eventOverlapsDate(event, day)).sort(sortCalendarEvents);
     const className = [
       'promo-calendar-day',
       inMonth ? '' : 'muted-day',
@@ -1223,7 +1240,7 @@
   }
 
   function renderSideList(events) {
-    const sorted = [...events].sort((a, b) => `${a.startDate}|${a.title}`.localeCompare(`${b.startDate}|${b.title}`));
+    const sorted = [...events].sort(sortCalendarEvents);
     if (!sorted.length) return '<div class="promo-empty">Событий пока нет.</div>';
     return sorted.slice(0, 10).map((event) => {
       const mission = eventMission(event);

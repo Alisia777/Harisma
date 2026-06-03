@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-03T08:28:29.670Z",
+  "generatedAt": "2026-06-03T09:47:56.010Z",
   "status": "ok",
   "summary": {
     "issueCount": 79,
@@ -33,8 +33,8 @@
     {
       "dataset": "dashboard",
       "asOfDate": "2026-06-02",
-      "generatedAt": "2026-06-03T08:15:02.362Z",
-      "rows": 404,
+      "generatedAt": "2026-06-03T09:33:11.058Z",
+      "rows": 411,
       "referenceDate": "2026-06-03",
       "lagDays": 1,
       "status": "ok"
@@ -42,7 +42,7 @@
     {
       "dataset": "platform_trends",
       "asOfDate": "2026-06-02",
-      "generatedAt": "2026-06-03T08:15:02.196Z",
+      "generatedAt": "2026-06-03T09:33:10.896Z",
       "rows": 7,
       "referenceDate": "2026-06-03",
       "lagDays": 1,
@@ -51,8 +51,8 @@
     {
       "dataset": "order_procurement",
       "asOfDate": "2026-06-03",
-      "generatedAt": "2026-06-03T08:15:02.513Z",
-      "rows": 2730,
+      "generatedAt": "2026-06-03T09:33:11.212Z",
+      "rows": 2741,
       "referenceDate": "2026-06-03",
       "lagDays": 0,
       "status": "ok"
@@ -60,7 +60,7 @@
     {
       "dataset": "warehouse_stock_overlay",
       "asOfDate": "2026-06-03",
-      "generatedAt": "2026-06-03T08:13:32.019Z",
+      "generatedAt": "2026-06-03T09:31:41.309Z",
       "rows": 134,
       "matchedRows": 136,
       "unmatchedRows": 25,
@@ -71,7 +71,7 @@
     {
       "dataset": "ads_summary",
       "asOfDate": "2026-06-02",
-      "generatedAt": "2026-06-03T08:27:55.044Z",
+      "generatedAt": "2026-06-03T09:47:20.915Z",
       "rows": 5,
       "referenceDate": "2026-06-03",
       "lagDays": 1,
@@ -80,7 +80,7 @@
     {
       "dataset": "iu_drr_summary",
       "asOfDate": "2026-06-02",
-      "generatedAt": "2026-06-03T08:28:29.487Z",
+      "generatedAt": "2026-06-03T09:47:55.794Z",
       "rows": 33,
       "referenceDate": "2026-06-03",
       "lagDays": 1,
@@ -159,9 +159,9 @@
     "wb": {
       "label": "WB",
       "rows": 114,
-      "directRevenue": 17788894,
+      "directRevenue": 17790535,
       "directUnits": 11915,
-      "aggregateRevenue": 17788893,
+      "aggregateRevenue": 17790534,
       "aggregateDate": "2026-06-02",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
@@ -175,11 +175,11 @@
     },
     "ya": {
       "label": "Я.Маркет",
-      "rows": 107,
-      "directRevenue": 383226,
-      "directUnits": 474,
-      "aggregateRevenue": 507486,
-      "aggregateDate": "2026-06-01",
+      "rows": 110,
+      "directRevenue": 691773,
+      "directUnits": 858,
+      "aggregateRevenue": 933816,
+      "aggregateDate": "2026-06-02",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -192,12 +192,12 @@
     }
   },
   "orderSummary": {
-    "rows": 2730,
+    "rows": 2741,
     "noStockNeedRows": 0,
-    "lowTurnoverRows": 48,
+    "lowTurnoverRows": 49,
     "totalNeed7": 0,
-    "totalNeed14": 24541,
-    "totalNeed28": 109806
+    "totalNeed14": 24535,
+    "totalNeed28": 109749
   },
   "ownerSummary": {
     "totalSku": 143,
@@ -211,7 +211,7 @@
     "warningUnmatchedRows": 0
   },
   "wbOwnerDistributionSummary": {
-    "sourceGeneratedAt": "2026-06-03T08:15:03.379Z",
+    "sourceGeneratedAt": "2026-06-03T09:33:12.147Z",
     "matchedSkuCount": 125,
     "updatedOwnerCount": 125,
     "missingInPortalCount": 6,

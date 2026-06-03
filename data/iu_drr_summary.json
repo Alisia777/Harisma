@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-03T08:28:29.487Z",
+  "generatedAt": "2026-06-03T09:47:55.794Z",
   "asOfDate": "2026-06-02",
   "source": {
-    "iuPlanGeneratedAt": "2026-06-03T08:15:45.733Z",
+    "iuPlanGeneratedAt": "2026-06-03T09:33:53.170Z",
     "companyPlanGeneratedAt": "2026-05-29T19:18:00+03:00",
-    "platformTrendsGeneratedAt": "2026-06-03T08:15:02.196Z",
-    "adsSummaryGeneratedAt": "2026-06-03T08:27:55.044Z",
-    "wbFeedbacksGeneratedAt": "2026-06-03T08:28:24.024Z",
+    "platformTrendsGeneratedAt": "2026-06-03T09:33:10.896Z",
+    "adsSummaryGeneratedAt": "2026-06-03T09:47:20.915Z",
+    "wbFeedbacksGeneratedAt": "2026-06-03T09:47:49.612Z",
     "ozonFinanceSourceMode": "api",
     "ozonFinanceEndpoint": "/v3/finance/transaction/list",
     "ozonFinanceFile": "",
@@ -94,7 +94,7 @@
     "planPctOzon": 0.24878,
     "planSpendOzon": 1000487.26,
     "revenueWb": 13806715,
-    "ordersRevenueWb": 17788893,
+    "ordersRevenueWb": 17790534,
     "adsPctBaseWb": 13806715,
     "revenueOzon": 4993663.97,
     "spendFact": 684801.34,
@@ -112,7 +112,7 @@
     "drrIu": 0.102935,
     "spendDelta": -293278.16,
     "spendDeltaPct": -0.299851,
-    "ordersAdPct": 0.038496,
+    "ordersAdPct": 0.038492,
     "spendDeltaOzon": 249923.76,
     "spendDeltaOzonPct": 0.249802,
     "spendDeltaIu": -43354.4,
@@ -8472,7 +8472,7 @@
     "days": 94,
     "targetRevenueWb": 467088741.06,
     "revenueWb": 678854562.92,
-    "ordersRevenueWb": 724113841.92,
+    "ordersRevenueWb": 724115482.92,
     "revenueDelta": 211765821.86,
     "revenueDeltaPct": 0.453374,
     "revenueCompletionPct": 1.453374,
@@ -8501,7 +8501,7 @@
     "days": 94,
     "targetRevenueWb": 467088741.06,
     "revenueWb": 678854562.92,
-    "ordersRevenueWb": 724113841.92,
+    "ordersRevenueWb": 724115482.92,
     "revenueDelta": 211765821.86,
     "revenueDeltaPct": 0.453374,
     "revenueCompletionPct": 1.453374,
@@ -8535,7 +8535,7 @@
       "stornoCancelRevenue": 594097126.4,
       "loadedTargetRevenue": 204704003.16,
       "factRevenue": 436117912.92,
-      "ordersRevenue": 440100090.92,
+      "ordersRevenue": 440101731.92,
       "revenueCompletionToLoadedTarget": 2.130481,
       "revenueCompletionToPeriodTarget": 0.719404,
       "marketingRate": 0.08,
@@ -9085,7 +9085,7 @@
       "planPctOzon": 0.24878,
       "planSpendOzon": 1000487.26,
       "revenueWb": 13806715,
-      "ordersRevenueWb": 17788893,
+      "ordersRevenueWb": 17790534,
       "adsPctBaseWb": 13806715,
       "revenueOzon": 4993663.97,
       "spendFact": 684801.34,
@@ -9103,7 +9103,7 @@
       "drrIu": 0.102935,
       "spendDelta": -293278.16,
       "spendDeltaPct": -0.299851,
-      "ordersAdPct": 0.038496,
+      "ordersAdPct": 0.038492,
       "spendDeltaOzon": 249923.76,
       "spendDeltaOzonPct": 0.249802,
       "spendDeltaIu": -43354.4,
@@ -11923,7 +11923,7 @@
       "wbIuAdsApiDelta": null,
       "wbRevenuePlanSource": "corporate_plan",
       "revenueWb": 6870979,
-      "ordersRevenueWb": 8764203,
+      "ordersRevenueWb": 8765844,
       "adsPctBaseWb": 6870979,
       "revenueWbDelta": -278237.6,
       "revenueWbDeltaPct": -0.038919,
@@ -11942,7 +11942,7 @@
       "ozonAdsFactMode": "google_sheets_fact_ads_daily_sku",
       "revenueTotalIu": 9316215.96,
       "revenueWbSource": "wb-seller-summary-finance-turnover",
-      "unitsWb": 7978,
+      "unitsWb": 7979,
       "unitsOzon": 3157,
       "ordersUnitsOzon": 3157,
       "deliveredUnitsOzon": 2951,
@@ -11957,7 +11957,7 @@
       "spendFactTotalIu": 965228.95,
       "factPct": 0.049487,
       "factPctIu": 0.103607,
-      "ordersAdPct": 0.038797,
+      "ordersAdPct": 0.03879,
       "wbPromotion": 339638.44,
       "wbMedia": 0,
       "wbInfluencer": 0,
@@ -11988,7 +11988,7 @@
   "diagnostics": {
     "adsSourceMode": "wb-api",
     "adsDiagnostics": {
-      "generatedAt": "2026-06-03T08:15:46.087Z",
+      "generatedAt": "2026-06-03T09:33:53.547Z",
       "docsUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
       "sourceWindow": {
         "from": "2026-06-01",
@@ -12019,7 +12019,7 @@
       },
       "campaigns": {
         "sourceGroups": 7,
-        "activeIds": 1655
+        "activeIds": 1656
       },
       "campaignDetails": {
         "skipped": true,
@@ -12088,10 +12088,10 @@
     "wbFeedbacksDiagnostics": {
       "requests": 7,
       "warnings": [
-        "seller rating: WB API GET /api/common/v1/rating failed: HTTP 403 {\n    \"title\": \"forbidden\",\n    \"detail\": \"personal token is not allowed\",\n    \"code\": \"personal token is not allowed for this path\",\n    \"requestId\": \"d34af2b0f7d6508387614d862a286c7c\",\n    \"origin\": \"s2s-api-auth-feedbacks\",\n    \"status\": 403,\n    \"statusText\": \"Forbidden\",\n    \"timestamp\": \"2026-06-03T08:28:08Z\"\n}\r\n"
+        "seller rating: WB API GET /api/common/v1/rating failed: HTTP 403 {\n    \"title\": \"forbidden\",\n    \"detail\": \"personal token is not allowed\",\n    \"code\": \"personal token is not allowed for this path\",\n    \"requestId\": \"94eef3434b95df2f703c1aa02fedd301\",\n    \"origin\": \"s2s-api-auth-feedbacks\",\n    \"status\": 403,\n    \"statusText\": \"Forbidden\",\n    \"timestamp\": \"2026-06-03T09:47:33Z\"\n}\r\n"
       ],
-      "feedbackRows": 17940,
-      "questionRows": 651,
+      "feedbackRows": 17997,
+      "questionRows": 656,
       "matchedCards": 166,
       "previousSnapshotDate": "2026-06-02"
     },

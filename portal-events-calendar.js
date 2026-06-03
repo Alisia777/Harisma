@@ -276,9 +276,24 @@
     return Boolean(status && /done|closed|complete|cancel|archive|deleted|removed|finish/.test(status));
   }
 
+  function isLaunchCalendarTask(task = {}) {
+    const autoCode = String(task.autoCode || '').trim().toLowerCase();
+    const text = [
+      task.title,
+      task.nextAction,
+      task.reason,
+      task.entityLabel,
+      task.platform
+    ].filter(Boolean).join(' ').toLowerCase();
+    return autoCode === 'launch_pipeline'
+      || taskTypeKey(task.type) === 'launch'
+      || (/новин|launch|запуск/.test(text) && platformKey(task.platform || 'product') === 'product');
+  }
+
   function taskEventKind(task = {}) {
     const source = String(task.source || '').trim().toLowerCase();
     const id = String(task.id || '').trim().toLowerCase();
+    if (isLaunchCalendarTask(task)) return 'launch';
     if (source === 'manual') return 'task-manual';
     return source === 'auto' || Boolean(task.autoCode) || id.startsWith('auto-') ? 'task-auto' : 'task-manual';
   }
@@ -376,13 +391,14 @@
       const range = taskDateRange(task);
       const taskId = String(task.id || '').trim();
       if (!range.startDate || !taskId || linkedPromoTaskIds.has(taskId) || taskDoneStatus(task.status) && /deleted|removed|archive|cancel/.test(String(task.status || '').toLowerCase())) return null;
+      const kind = taskEventKind(task);
       const skus = taskSkuKeys(task);
       const title = String(task.title || task.nextAction || task.entityLabel || 'Задача').trim();
       return {
         id: `task:${taskId}`,
         sourceId: taskId,
         taskId,
-        calendarKind: taskEventKind(task),
+        calendarKind: kind,
         readonly: true,
         title,
         platform: platformKey(task.platform || task.marketplace || 'cross'),
@@ -399,6 +415,7 @@
         rawStatus: String(task.status || '').trim(),
         taskSource: String(task.source || '').trim(),
         autoCode: String(task.autoCode || '').trim(),
+        launchStatus: kind === 'launch' ? String(task.rawStatus || task.status || task.priority || '').trim() : '',
         createdAt: String(task.createdAt || ''),
         updatedAt: String(task.updatedAt || task.createdAt || '')
       };
@@ -422,6 +439,63 @@
     return validDateKey(item.launchDate || item.launchDateKey || item.date || item.startDate);
   }
 
+  const LAUNCH_STAGE_DEADLINES = [
+    { key: 'negotiation', label: 'переговоры', due: 'negotiationDue', status: 'negotiationStatus', owner: 'negotiationOwner', comment: 'negotiationComment' },
+    { key: 'sample', label: 'образец', due: 'sampleDue', status: 'sampleStatus', owner: 'sampleOwner', comment: 'sampleComment' },
+    { key: 'production', label: 'производство', due: 'productionDue', status: 'productionStatus', owner: 'productionOwner', comment: 'productionComment' },
+    { key: 'packaging', label: 'упаковка', due: 'packagingDue', status: 'packagingStatus', owner: 'packagingOwner', comment: 'packagingComment' },
+    { key: 'content', label: 'контент / карточка', due: 'contentDue', status: 'contentStatus', owner: 'contentOwner', comment: 'contentComment' },
+    { key: 'readiness', label: 'готовность запуска', due: 'launchReadinessDue', status: 'launchReadinessStatus', owner: 'launchReadinessOwner', comment: 'launchReadinessComment' }
+  ];
+
+  function launchEventSourceId(item = {}, launchDate = '') {
+    return String(item.id || '').trim() || calendarSafeId('launch-source', [item.articleKey, item.name, launchDate || item.launchMonth]);
+  }
+
+  function launchItemName(item = {}) {
+    return String(item.name || item.title || item.articleKey || 'Новинка').trim();
+  }
+
+  function launchItemSkus(item = {}) {
+    return uniqueList([item.articleKey, item.article]);
+  }
+
+  function launchStageCalendarEvents(item = {}, sourceId = '') {
+    const name = launchItemName(item);
+    const platform = launchPlatformKey(item);
+    const skus = launchItemSkus(item);
+    return LAUNCH_STAGE_DEADLINES.map((stage) => {
+      const due = validDateKey(item[stage.due]);
+      if (!due) return null;
+      const status = String(item[stage.status] || '').trim();
+      if (taskDoneStatus(status)) return null;
+      const owner = String(item[stage.owner] || item.owner || '').trim();
+      const comment = [
+        status,
+        item[stage.comment],
+        item.productComment || item.notes
+      ].filter(Boolean).join('\n');
+      return {
+        id: `launch:${sourceId}:${stage.key}`,
+        sourceId,
+        calendarKind: 'launch',
+        readonly: true,
+        title: `Новинка: ${stage.label} - ${name}`,
+        platform,
+        startDate: due,
+        endDate: due,
+        skus,
+        skuText: skus.join('\n'),
+        comment,
+        owner,
+        status: 'planned',
+        launchStatus: status || item.status || stage.label,
+        createdAt: '',
+        updatedAt: ''
+      };
+    }).filter(Boolean);
+  }
+
   function launchCalendarEvents() {
     const state = appState();
     const items = (() => {
@@ -434,29 +508,33 @@
     })();
     return (Array.isArray(items) ? items : []).map((item) => {
       const launchDate = launchCalendarDate(item);
-      if (!launchDate) return null;
-      const sourceId = String(item.id || '').trim() || calendarSafeId('launch-source', [item.articleKey, item.name, launchDate]);
-      const skus = uniqueList([item.articleKey]);
-      const name = String(item.name || item.title || item.articleKey || 'Новинка').trim();
-      return {
-        id: `launch:${sourceId}`,
-        sourceId,
-        calendarKind: 'launch',
-        readonly: true,
-        title: `Выход новинки: ${name}`,
-        platform: launchPlatformKey(item),
-        startDate: launchDate,
-        endDate: launchDate,
-        skus,
-        skuText: skus.join('\n'),
-        comment: [item.status, item.launchDecision, item.productComment || item.notes].filter(Boolean).join('\n'),
-        owner: String(item.owner || '').trim(),
-        status: 'planned',
-        launchStatus: String(item.status || '').trim(),
-        createdAt: '',
-        updatedAt: ''
-      };
-    }).filter(Boolean);
+      const sourceId = launchEventSourceId(item, launchDate);
+      const skus = launchItemSkus(item);
+      const name = launchItemName(item);
+      const events = [];
+      if (launchDate) {
+        events.push({
+          id: `launch:${sourceId}`,
+          sourceId,
+          calendarKind: 'launch',
+          readonly: true,
+          title: `Выход новинки: ${name}`,
+          platform: launchPlatformKey(item),
+          startDate: launchDate,
+          endDate: launchDate,
+          skus,
+          skuText: skus.join('\n'),
+          comment: [item.status, item.launchDecision, item.productComment || item.notes].filter(Boolean).join('\n'),
+          owner: String(item.owner || '').trim(),
+          status: 'planned',
+          launchStatus: String(item.status || '').trim(),
+          createdAt: '',
+          updatedAt: ''
+        });
+      }
+      events.push(...launchStageCalendarEvents(item, sourceId));
+      return events;
+    }).flat().filter(Boolean);
   }
 
   function calendarEvents() {
@@ -655,13 +733,19 @@
   }
 
   async function loadCalendarJson(path, fallback, label) {
-    if (typeof loadJsonOrFallback === 'function') return loadJsonOrFallback(path, fallback, label);
-    if (typeof loadJson === 'function') {
-      try { return await loadJson(path); } catch { return JSON.parse(JSON.stringify(fallback)); }
+    const previousDeferredFlag = window.__ALTEA_ALLOW_REAL_DEFERRED_FETCH__;
+    window.__ALTEA_ALLOW_REAL_DEFERRED_FETCH__ = true;
+    try {
+      if (typeof loadJsonOrFallback === 'function') return await loadJsonOrFallback(path, fallback, label);
+      if (typeof loadJson === 'function') {
+        try { return await loadJson(path); } catch { return JSON.parse(JSON.stringify(fallback)); }
+      }
+      const response = await fetch(path, { cache: 'no-store' });
+      if (!response.ok) return JSON.parse(JSON.stringify(fallback));
+      return response.json();
+    } finally {
+      window.__ALTEA_ALLOW_REAL_DEFERRED_FETCH__ = previousDeferredFlag;
     }
-    const response = await fetch(path);
-    if (!response.ok) return JSON.parse(JSON.stringify(fallback));
-    return response.json();
   }
 
   async function ensureCalendarData(rootId = 'view-data-health') {
@@ -733,10 +817,22 @@
     return event.startDate <= end && event.endDate >= start;
   }
 
+  function eventMatchesPlatform(event = {}, selected = 'all') {
+    const platform = platformKey(selected);
+    if (platform === 'all') return true;
+    const eventPlatform = platformKey(event.platform || 'all');
+    if (eventPlatform === platform) return true;
+    if (eventKindKey(event) === 'launch') {
+      if (platform === 'product') return true;
+      if (['product', 'cross', 'all'].includes(eventPlatform)) return true;
+    }
+    return false;
+  }
+
   function filteredEvents() {
     const query = String(CALENDAR_STATE.search || '').trim().toLowerCase();
     return calendarEvents().filter((event) => {
-      if (CALENDAR_STATE.platform !== 'all' && event.platform !== CALENDAR_STATE.platform) return false;
+      if (!eventMatchesPlatform(event, CALENDAR_STATE.platform)) return false;
       if (CALENDAR_STATE.kind !== 'all' && eventKindKey(event) !== CALENDAR_STATE.kind) return false;
       if (!eventOverlapsRange(event, CALENDAR_STATE.dateFrom, CALENDAR_STATE.dateTo)) return false;
       if (!query) return true;

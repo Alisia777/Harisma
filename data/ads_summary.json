@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-03T11:25:47.728Z",
+  "generatedAt": "2026-06-03T11:50:11.399Z",
   "asOfDate": "2026-06-02",
   "source": "wb-promotion-api",
   "sourceUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
@@ -9,7 +9,7 @@
     "to": "2026-06-02",
     "days": 2
   },
-  "note": "WB Promotion API daily facts. Marketplace extras preserved from existing ads_summary.json. WB Promotion API daily facts plus marketplace workbook extras. Ozon ad spend replaced by daily Seller Finance API advertising operations.",
+  "note": "WB Promotion API daily facts. Marketplace extras preserved from existing ads_summary.json. WB Promotion API daily facts plus marketplace workbook extras. Ozon ad spend replaced by daily Seller Finance API advertising operations. Ozon ad spend replaced by daily Seller Finance API advertising operations.",
   "diagnostics": {
     "generatedAt": "2026-06-03T09:33:53.547Z",
     "docsUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
@@ -121,26 +121,26 @@
         "OperationMarketplaceInternetSiteAdvertising"
       ],
       "days": 2,
-      "sourceRows": 409,
-      "sourceOperations": 22724,
-      "spend": 1637969.21,
+      "sourceRows": 273,
+      "sourceOperations": 22899,
+      "spend": 1131587.36,
       "daily": [
         {
           "date": "2026-06-01",
-          "spend": 1131587.36,
-          "sourceRows": 273,
+          "spend": 625205.51,
+          "sourceRows": 137,
           "sourceOperations": 13413,
           "breakdown": {
-            "OperationMarketplaceCostPerClick": 1052988.39,
-            "OperationMarketplaceInternetSiteAdvertising": 10023.77,
-            "OperationPromotionWithCostPerOrder": 68575.2
+            "OperationMarketplaceCostPerClick": 585145.7,
+            "OperationMarketplaceInternetSiteAdvertising": 5013.01,
+            "OperationPromotionWithCostPerOrder": 35046.8
           }
         },
         {
           "date": "2026-06-02",
           "spend": 506381.85,
           "sourceRows": 136,
-          "sourceOperations": 9311,
+          "sourceOperations": 9486,
           "breakdown": {
             "OperationMarketplaceCostPerClick": 467842.69,
             "OperationMarketplaceInternetSiteAdvertising": 5010.76,
@@ -189,7 +189,7 @@
       "label": "Ozon",
       "views": 3653026,
       "clicks": 101176,
-      "spend": 1637969.21,
+      "spend": 1131587.36,
       "orders": 6418,
       "revenue": 4993663.97,
       "series": [
@@ -198,12 +198,12 @@
           "label": "2026-06-01",
           "views": 1923683,
           "clicks": 53214,
-          "spend": 1131587.36,
+          "spend": 625205.51,
           "orders": 3261,
           "revenue": 2548427.01,
           "dayOffset": 1,
           "sourceMode": "ozon_seller_finance_api",
-          "sourceRows": 273
+          "sourceRows": 137
         },
         {
           "date": "2026-06-02",
@@ -527,7 +527,7 @@
       "label": "Все площадки",
       "views": 5606655,
       "clicks": 137087,
-      "spend": 2321967.55,
+      "spend": 1815585.7,
       "orders": 16053,
       "revenue": 12461988.04,
       "series": [
@@ -847,7 +847,7 @@
           "date": "2026-06-01",
           "views": 2952221,
           "clicks": 72365,
-          "spend": 1475947.26,
+          "spend": 969565.41,
           "orders": 6238,
           "revenue": 4840238.01
         },
@@ -30130,7 +30130,7 @@
       "name": "Ozon Seller Finance API advertising operations",
       "views": 0,
       "clicks": 0,
-      "spend": 1131587.36,
+      "spend": 625205.51,
       "orders": 0,
       "revenue": 0,
       "campaignId": "ozon-seller-finance-api",
@@ -30138,12 +30138,12 @@
       "channel": "ozon_ads_finance",
       "source": "Ozon Seller API /v3/finance/transaction/list",
       "sourceMode": "ozon_seller_finance_api",
-      "sourceRows": 273,
+      "sourceRows": 137,
       "sourceOperations": 13413,
       "operationBreakdown": {
-        "OperationMarketplaceCostPerClick": 1052988.39,
-        "OperationMarketplaceInternetSiteAdvertising": 10023.77,
-        "OperationPromotionWithCostPerOrder": 68575.2
+        "OperationMarketplaceCostPerClick": 585145.7,
+        "OperationMarketplaceInternetSiteAdvertising": 5013.01,
+        "OperationPromotionWithCostPerOrder": 35046.8
       }
     },
     {
@@ -30163,7 +30163,7 @@
       "source": "Ozon Seller API /v3/finance/transaction/list",
       "sourceMode": "ozon_seller_finance_api",
       "sourceRows": 136,
-      "sourceOperations": 9311,
+      "sourceOperations": 9486,
       "operationBreakdown": {
         "OperationMarketplaceCostPerClick": 467842.69,
         "OperationMarketplaceInternetSiteAdvertising": 5010.76,

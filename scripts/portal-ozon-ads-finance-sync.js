@@ -179,6 +179,8 @@ async function fetchFinanceDay(options, dateKey) {
   for (const operation of operations) {
     const type = String(operation?.operation_type || '').trim();
     if (!options.operationTypes.has(type)) continue;
+    const operationDate = isoDate(operation?.operation_date || operation?.created_at || operation?.date);
+    if (operationDate && operationDate !== dateKey) continue;
     const amount = Math.abs(numberOrZero(operation.amount));
     spend += amount;
     rows += 1;

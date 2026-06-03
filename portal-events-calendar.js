@@ -393,6 +393,8 @@
         owner: String(task.owner || task.coOwner || '').trim(),
         status: taskStatusForCalendar(task),
         priority: String(task.priority || '').trim(),
+        taskType: taskTypeKey(task.type),
+        type: taskTypeKey(task.type),
         rawStatus: String(task.status || '').trim(),
         taskSource: String(task.source || '').trim(),
         autoCode: String(task.autoCode || '').trim(),
@@ -760,8 +762,47 @@
     return `promo-kind-${eventKindKey(eventOrKind)}`;
   }
 
+  const TASK_TYPE_LABELS = {
+    price_margin: 'Цена / маржа',
+    content: 'Контент / карточка',
+    traffic: 'Трафик / продвижение',
+    supply: 'Остатки / поставка',
+    returns: 'Отзывы / возвраты',
+    assignment: 'Закрепление',
+    launch: 'Новинка',
+    general: 'Общее'
+  };
+
+  function taskTypeKey(value = 'general') {
+    const raw = String(value || 'general').trim().toLowerCase().replace(/[-\s]+/g, '_');
+    if (TASK_TYPE_LABELS[raw]) return raw;
+    if (raw.includes('price') || raw.includes('margin')) return 'price_margin';
+    if (raw.includes('content') || raw.includes('card')) return 'content';
+    if (raw.includes('traffic') || raw.includes('promo') || raw.includes('ad')) return 'traffic';
+    if (raw.includes('supply') || raw.includes('stock') || raw.includes('oos')) return 'supply';
+    if (raw.includes('return') || raw.includes('review')) return 'returns';
+    if (raw.includes('assign') || raw.includes('owner')) return 'assignment';
+    if (raw.includes('launch') || raw.includes('product')) return 'launch';
+    return 'general';
+  }
+
+  function taskTypeLabel(value = 'general') {
+    const key = taskTypeKey(value);
+    if (typeof TASK_TYPE_META !== 'undefined' && TASK_TYPE_META?.[key]) return TASK_TYPE_META[key];
+    return TASK_TYPE_LABELS[key] || TASK_TYPE_LABELS.general;
+  }
+
+  function eventTaskTypeKey(event = {}) {
+    return eventKindKey(event).startsWith('task-') ? taskTypeKey(event.taskType || event.type) : '';
+  }
+
+  function eventTaskTypeClass(event = {}) {
+    const key = eventTaskTypeKey(event);
+    return key ? `promo-task-type-${key}` : '';
+  }
+
   function eventVisualClass(event) {
-    return eventKindClass(event);
+    return [eventKindClass(event), eventTaskTypeClass(event)].filter(Boolean).join(' ');
   }
 
   function eventLaunchStatusTheme(event = {}) {
@@ -1273,7 +1314,8 @@
         ? `${formatInt(mission.warnCount)} watch`
         : `${formatInt(mission.score)} XP`;
     const fullMeta = editable ? statusLabel(event.status) : eventKindLabel(event);
-    const badgeText = launchTheme?.label || eventKindLabel(event);
+    const isTaskEvent = eventKindKey(event).startsWith('task-');
+    const badgeText = launchTheme?.label || (isTaskEvent ? taskTypeLabel(event.taskType || event.type) : eventKindLabel(event));
     const launchStatusLabel = event.launchStatus || launchTheme?.label || '';
     const compactMeta = launchTheme
       ? `${platformLabel(event.platform)} · ${launchStatusLabel}`

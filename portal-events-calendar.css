@@ -1220,6 +1220,15 @@
 .promo-kind-task-manual { --promo-color: #b9c4d0; }
 .promo-kind-launch { --promo-color: #5dcb94; }
 
+.promo-task-type-price_margin { --promo-color: #ff7a6a; }
+.promo-task-type-content { --promo-color: #b982ff; }
+.promo-task-type-traffic { --promo-color: #4aa3ff; }
+.promo-task-type-supply { --promo-color: #5dcb94; }
+.promo-task-type-returns { --promo-color: #f06f9f; }
+.promo-task-type-assignment { --promo-color: #edce8a; }
+.promo-task-type-launch { --promo-color: #62d5d1; }
+.promo-task-type-general { --promo-color: #b9c4d0; }
+
 .promo-kind-rail button {
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--promo-color, #7aa7ff) 14%, rgba(0, 0, 0, .24)), rgba(255, 255, 255, .02));

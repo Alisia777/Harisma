@@ -14,6 +14,7 @@
     return memo;
   }, {});
   var currentTheme = 'dark';
+  var isOpen = false;
   var guardTimer = 0;
 
   function normalizeTheme(theme) {
@@ -29,12 +30,41 @@
   }
 
   function syncButtons() {
-    var buttons = document.querySelectorAll('[data-portal-theme-option]');
+    var buttons = document.querySelectorAll('.portal-theme-switcher__panel [data-portal-theme-option]');
     buttons.forEach(function (button) {
       var active = button.dataset.portalThemeOption === currentTheme;
       button.classList.toggle('is-active', active);
       button.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
+    syncSwitcherUi();
+  }
+
+  function syncSwitcherUi() {
+    var switcher = document.querySelector('[data-portal-theme-switcher]');
+    if (!switcher) return;
+
+    var toggle = switcher.querySelector('[data-portal-theme-toggle]');
+    var panel = switcher.querySelector('[data-portal-theme-panel]');
+    var toggleLabel = isOpen ? '\u0421\u043a\u0440\u044b\u0442\u044c \u0442\u0435\u043c\u044b' : '\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0442\u0435\u043c\u044b';
+
+    switcher.dataset.portalThemeCurrent = currentTheme;
+    switcher.classList.toggle('is-open', isOpen);
+
+    if (toggle) {
+      toggle.dataset.portalThemeOption = currentTheme;
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      toggle.setAttribute('aria-label', toggleLabel);
+      toggle.title = toggleLabel;
+    }
+
+    if (panel) {
+      panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    }
+  }
+
+  function setOpen(open) {
+    isOpen = Boolean(open);
+    syncSwitcherUi();
   }
 
   function guardSandDarkClass() {
@@ -89,6 +119,7 @@
 
     button.addEventListener('click', function () {
       applyTheme(theme.id, true);
+      setOpen(false);
     });
 
     return button;
@@ -100,26 +131,79 @@
     var switcher = document.createElement('div');
     switcher.className = 'portal-theme-switcher';
     switcher.dataset.portalThemeSwitcher = 'true';
-    switcher.setAttribute('role', 'group');
-    switcher.setAttribute('aria-label', '\u041f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0442\u0435\u043b\u044c \u0442\u0435\u043c\u044b');
+    switcher.setAttribute('aria-label', '\u041f\u0430\u043d\u0435\u043b\u044c \u0442\u0435\u043c\u044b');
+
+    var toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'portal-theme-switcher__button portal-theme-switcher__toggle';
+    toggle.dataset.portalThemeToggle = 'true';
+    toggle.dataset.portalThemeOption = currentTheme;
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.addEventListener('click', function (event) {
+      event.stopPropagation();
+      setOpen(!isOpen);
+    });
+
+    var toggleSwatch = document.createElement('span');
+    toggleSwatch.className = 'portal-theme-switcher__swatch';
+    toggleSwatch.setAttribute('aria-hidden', 'true');
+    toggle.appendChild(toggleSwatch);
+
+    var toggleText = document.createElement('span');
+    toggleText.className = 'portal-theme-switcher__sr';
+    toggleText.textContent = '\u0422\u0435\u043c\u044b';
+    toggle.appendChild(toggleText);
+    switcher.appendChild(toggle);
+
+    var panel = document.createElement('div');
+    panel.className = 'portal-theme-switcher__panel';
+    panel.dataset.portalThemePanel = 'true';
+    panel.setAttribute('role', 'group');
+    panel.setAttribute('aria-label', '\u0412\u044b\u0431\u043e\u0440 \u0442\u0435\u043c\u044b');
+    panel.setAttribute('aria-hidden', 'true');
 
     var label = document.createElement('span');
     label.className = 'portal-theme-switcher__label';
     label.textContent = '\u0422\u0435\u043c\u0430';
-    switcher.appendChild(label);
+    panel.appendChild(label);
 
     themes.forEach(function (theme) {
-      switcher.appendChild(createButton(theme));
+      panel.appendChild(createButton(theme));
     });
 
-    document.body.appendChild(switcher);
+    switcher.appendChild(panel);
+    (document.querySelector('.app-shell') || document.body).appendChild(switcher);
     syncButtons();
+  }
+
+  function bindCloseEvents() {
+    document.addEventListener('click', function (event) {
+      var switcher = document.querySelector('[data-portal-theme-switcher]');
+      if (!isOpen || !switcher || switcher.contains(event.target)) return;
+      setOpen(false);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') setOpen(false);
+    });
+
+    var shell = document.querySelector('.app-shell');
+    if (shell) {
+      var shellObserver = new MutationObserver(function (mutations) {
+        var shouldClose = mutations.some(function (mutation) {
+          return mutation.type === 'attributes' && mutation.attributeName === 'class';
+        });
+        if (shouldClose && shell.classList.contains('sidebar-collapsed')) setOpen(false);
+      });
+      shellObserver.observe(shell, { attributes: true, attributeFilter: ['class'] });
+    }
   }
 
   function boot() {
     currentTheme = readTheme();
     applyTheme(currentTheme, false);
     mountSwitcher();
+    bindCloseEvents();
 
     if (document.body) {
       var observer = new MutationObserver(function (mutations) {

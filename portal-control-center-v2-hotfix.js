@@ -935,6 +935,7 @@
     }
 
     if (replacedHistoryCard) {
+      bindTaskAttachmentsInline(taskId, body);
       body.querySelector('#taskCommentForm')?.addEventListener('submit', async (event) => {
         event.preventDefault();
         const form = new FormData(event.currentTarget);
@@ -1070,6 +1071,149 @@
     `;
   }
 
+  function taskAttachmentSizeLabel(size = 0) {
+    const bytes = Number(size || 0);
+    if (!Number.isFinite(bytes) || bytes <= 0) return '';
+    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(bytes >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
+    if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+    return `${Math.round(bytes)} B`;
+  }
+
+  function taskAttachmentHref(item) {
+    const direct = String(item?.publicUrl || '').trim();
+    if (direct) return direct;
+    if (typeof taskAttachmentPublicUrl === 'function') return taskAttachmentPublicUrl(item?.bucket || '', item?.objectPath || '');
+    return '';
+  }
+
+  function renderTaskAttachmentsInline(task) {
+    const taskId = String(task?.id || '').trim();
+    if (!taskId) return '';
+    const attachments = typeof getTaskAttachments === 'function' ? getTaskAttachments(taskId) : [];
+    const allowed = typeof TASK_ATTACHMENT_ALLOWED_EXTENSIONS !== 'undefined' && Array.isArray(TASK_ATTACHMENT_ALLOWED_EXTENSIONS)
+      ? TASK_ATTACHMENT_ALLOWED_EXTENSIONS.join(', ')
+      : 'xlsx, xls, csv';
+    const limit = typeof TASK_ATTACHMENT_MAX_BYTES !== 'undefined'
+      ? Math.round(TASK_ATTACHMENT_MAX_BYTES / (1024 * 1024))
+      : 20;
+    const rows = attachments.length ? attachments.map((item) => {
+      const href = taskAttachmentHref(item);
+      const size = taskAttachmentSizeLabel(item.size);
+      const meta = [
+        size,
+        item.createdBy ? `\u043e\u0442 ${escapeHtml(item.createdBy)}` : '',
+        item.createdAt ? fmt.date(item.createdAt) : ''
+      ].filter(Boolean).join(' \u00b7 ');
+      return `
+        <div class="task-attachment-row">
+          <div class="task-attachment-main">
+            <strong>${href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(item.fileName || '\u0424\u0430\u0439\u043b')}</a>` : escapeHtml(item.fileName || '\u0424\u0430\u0439\u043b')}</strong>
+            <span>${escapeHtml(meta || '\u0432\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u043a \u0437\u0430\u0434\u0430\u0447\u0435')}</span>
+          </div>
+          <div class="task-attachment-actions">
+            ${href ? `<a class="btn ghost small-btn" href="${escapeHtml(href)}" target="_blank" rel="noopener">\u041e\u0442\u043a\u0440\u044b\u0442\u044c</a>` : ''}
+            <button class="btn ghost small-btn" type="button" data-task-attachment-delete="${escapeHtml(item.id)}">\u0423\u0434\u0430\u043b\u0438\u0442\u044c</button>
+          </div>
+        </div>`;
+    }).join('') : '<div class="empty compact">\u0424\u0430\u0439\u043b\u043e\u0432 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442</div>';
+    return `
+      <div class="task-attachments-card task-attachments-panel" data-task-attachments-card>
+        <div class="section-subhead">
+          <div>
+            <h3>\u0424\u0430\u0439\u043b\u044b \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u0430</h3>
+            <p class="small muted">\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u0435 Excel/CSV \u0438\u043b\u0438 scorecard \u043f\u0440\u044f\u043c\u043e \u043a \u044d\u0442\u043e\u0439 \u0437\u0430\u0434\u0430\u0447\u0435.</p>
+          </div>
+          ${badge(`${fmt.int(attachments.length)} \u0444\u0430\u0439\u043b.`, attachments.length ? 'info' : 'ok')}
+        </div>
+        <div class="ui-stack">
+          <div class="task-attachment-list">${rows}</div>
+          <div class="task-attachment-upload">
+            <label class="btn file-input" data-task-attachment-picker>
+              <span data-task-attachment-label>\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b</span>
+              <input type="file" data-task-attachment-input accept=".xlsx,.xls,.csv">
+            </label>
+            <span class="ui-hint">\u0424\u043e\u0440\u043c\u0430\u0442\u044b: ${escapeHtml(allowed)} \u00b7 \u0434\u043e ${fmt.int(limit)} MB</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function bindTaskAttachmentsInline(taskId, body) {
+    const attachmentInput = body.querySelector('[data-task-attachment-input]');
+    if (attachmentInput && attachmentInput.dataset.boundAttachmentUpload !== '1') {
+      attachmentInput.dataset.boundAttachmentUpload = '1';
+      attachmentInput.addEventListener('change', async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const label = body.querySelector('[data-task-attachment-label]');
+        const picker = body.querySelector('[data-task-attachment-picker]');
+        const initialLabel = label?.textContent || '';
+        try {
+          attachmentInput.disabled = true;
+          if (picker) picker.classList.add('is-loading');
+          if (label) label.textContent = '\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u0435\u043c...';
+          const uploadFn = typeof window.uploadTaskAttachment === 'function'
+            ? window.uploadTaskAttachment
+            : (typeof uploadTaskAttachment === 'function' ? uploadTaskAttachment : null);
+          if (typeof uploadFn !== 'function') throw new Error('\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0444\u0430\u0439\u043b\u043e\u0432 \u0435\u0449\u0435 \u043d\u0435 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0430.');
+          const attachment = await uploadFn(taskId, file);
+          const historyFn = typeof window.appendTaskHistorySafe === 'function'
+            ? window.appendTaskHistorySafe
+            : (typeof createTaskHistoryEntry === 'function' ? createTaskHistoryEntry : null);
+          if (typeof historyFn === 'function') {
+            try {
+              await historyFn(taskId, 'comment', `\u041f\u0440\u0438\u043b\u043e\u0436\u0435\u043d \u0444\u0430\u0439\u043b: ${attachment?.fileName || file.name}`, {
+                team: typeof teamMemberLabel === 'function' ? teamMemberLabel() : 'Team'
+              });
+            } catch (error) {
+              console.error(error);
+            }
+          }
+          renderTaskModal(taskId);
+        } catch (error) {
+          console.error(error);
+          alert(error?.message || '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b.');
+        } finally {
+          if (attachmentInput.isConnected) {
+            attachmentInput.value = '';
+            attachmentInput.disabled = false;
+          }
+          if (picker) picker.classList.remove('is-loading');
+          if (label && label.isConnected) label.textContent = initialLabel || '\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b';
+        }
+      });
+    }
+
+    body.querySelectorAll('[data-task-attachment-delete]').forEach((button) => {
+      if (button.dataset.boundAttachmentDelete === '1') return;
+      button.dataset.boundAttachmentDelete = '1';
+      button.addEventListener('click', async () => {
+        const attachmentId = String(button.dataset.taskAttachmentDelete || '').trim();
+        if (!attachmentId) return;
+        if (!window.confirm('\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u044d\u0442\u043e\u0442 \u0444\u0430\u0439\u043b \u0438\u0437 \u0437\u0430\u0434\u0430\u0447\u0438?')) return;
+        const initialText = button.textContent || '';
+        try {
+          button.disabled = true;
+          button.textContent = '\u0423\u0434\u0430\u043b\u044f\u0435\u043c...';
+          const deleteFn = typeof window.deleteTaskAttachment === 'function'
+            ? window.deleteTaskAttachment
+            : (typeof deleteTaskAttachment === 'function' ? deleteTaskAttachment : null);
+          if (typeof deleteFn !== 'function') throw new Error('\u0423\u0434\u0430\u043b\u0435\u043d\u0438\u0435 \u0444\u0430\u0439\u043b\u043e\u0432 \u0435\u0449\u0435 \u043d\u0435 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u043e.');
+          await deleteFn(attachmentId);
+          renderTaskModal(taskId);
+        } catch (error) {
+          console.error(error);
+          alert(error?.message || '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0443\u0434\u0430\u043b\u0438\u0442\u044c \u0444\u0430\u0439\u043b.');
+        } finally {
+          if (button.isConnected) {
+            button.disabled = false;
+            button.textContent = initialText || '\u0423\u0434\u0430\u043b\u0438\u0442\u044c';
+          }
+        }
+      });
+    });
+  }
+
   function renderTaskUpdatesCard(task, history) {
     const historyHtml = history.length
       ? history.map(renderTaskHistoryItem).join('')
@@ -1084,6 +1228,7 @@
           ${badge(`${fmt.int(history.length)} записей`, history.length ? 'info' : 'ok')}
         </div>
         <div class="quick-note ok">Пишем кратко: что сделано, что мешает и что нужно от других.</div>
+        ${renderTaskAttachmentsInline(task)}
         <div class="compact-history" style="margin-top:12px">${historyHtml}</div>
         <form id="taskCommentForm" class="form-stack" style="margin-top:12px">
           <textarea name="text" rows="3" placeholder="Короткий апдейт по задаче" required></textarea>

@@ -57,6 +57,7 @@
   }
 
   function renderChip(label, tone = '') {
+    if (/owner/i.test(String(label || ''))) return '';
     try {
       if (typeof window.badge === 'function') return window.badge(label, tone);
     } catch (error) {

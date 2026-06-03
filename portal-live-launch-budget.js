@@ -42,6 +42,7 @@
   }
 
   function chip(label, tone = '') {
+    if (/owner/i.test(String(label || ''))) return '';
     try {
       if (typeof window.badge === 'function') return window.badge(label, tone);
     } catch (error) {
@@ -71,8 +72,8 @@
     const topMonths = Array.from(monthCounts.entries())
       .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'ru'))
       .slice(0, 5);
-    const withoutOwner = list.filter((item) => !String(item?.owner || '').trim()).length;
     const linkedSku = list.filter((item) => String(item?.articleKey || '').trim()).length;
+    const withoutOwner = 0;
 
     return `
       <div class="card launch-auto-graph-card">

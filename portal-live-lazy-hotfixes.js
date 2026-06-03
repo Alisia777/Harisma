@@ -2,8 +2,8 @@
   if (window.__ALTEA_LIVE_LAZY_HOTFIXES_20260521__) return;
   window.__ALTEA_LIVE_LAZY_HOTFIXES_20260521__ = true;
 
-  const RENDER_BUDGET_SRC = 'portal-live-render-budget.js?v=20260521budget1';
-  const LAUNCH_BUDGET_SRC = 'portal-live-launch-budget.js?v=20260521launchbudget2';
+  const RENDER_BUDGET_SRC = 'portal-live-render-budget.js?v=20260603novelties-noise1';
+  const LAUNCH_BUDGET_SRC = 'portal-live-launch-budget.js?v=20260603novelties-noise1';
   const TABLE_BUDGET_SRC = 'portal-live-table-budget.js?v=20260531notice2';
   const VIEW_BUDGET_SCRIPTS = {
     'sku-plan-fact': [TABLE_BUDGET_SRC],

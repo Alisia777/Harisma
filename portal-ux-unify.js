@@ -378,6 +378,12 @@
 
   function ensureGuide(root, viewKey) {
     if (!(root instanceof HTMLElement)) return;
+    if (viewKey === "launches") {
+      root.querySelectorAll("[data-portal-view-guide='launches']").forEach(function (node) {
+        node.remove();
+      });
+      return;
+    }
     if (viewKey === "product-leaderboard") {
       root.querySelectorAll("[data-portal-view-guide='product-leaderboard']").forEach(function (node) {
         node.remove();

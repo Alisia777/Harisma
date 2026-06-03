@@ -277,10 +277,16 @@
   document.addEventListener("click", function (event) {
     var target = event.target && event.target.closest ? event.target.closest(".sidebar .nav-btn[data-view]") : null;
     if (!target || isHidden(target)) return;
-    event.preventDefault();
-    event.stopPropagation();
-    activateView(String(target.dataset.view || ""));
-  }, true);
+    var view = String(target.dataset.view || "");
+    window.setTimeout(function () {
+      var activeButton = document.querySelector('.sidebar .nav-btn.active[data-view="' + view + '"]');
+      var activeSection = document.getElementById("view-" + view);
+      if (!activeButton || !activeSection || !activeSection.classList.contains("active")) {
+        activateView(view);
+      }
+      syncSidebar();
+    }, 80);
+  }, false);
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", syncSidebar, { once: true });

@@ -6345,7 +6345,7 @@ function dashboardTaskStatusChip(task) {
         </div>
         <div class="portal-lux-graph-grid">
           ${cards.map((card) => `
-            <article class="portal-lux-graph-card is-${esc(card.tone)}" data-portal-exec-open="${esc(card.open)}" data-portal-exec-key="${esc(card.openKey)}">
+            <article class="portal-lux-graph-card is-${esc(card.tone)}" data-platform="${esc(card.openKey)}" data-portal-exec-open="${esc(card.open)}" data-portal-exec-key="${esc(card.openKey)}" role="button" tabindex="0" aria-label="${esc(`${card.label}: открыть детали`)}">
               <div class="portal-lux-graph-top">
                 <span>${esc(card.label)}</span>
                 <b>${esc(card.value)}</b>
@@ -6419,7 +6419,7 @@ function dashboardTaskStatusChip(task) {
             const marginWidth = dashboardBarWidth(Math.max(0, num(metric.margin)), maxMargin);
             const drrWidth = dashboardDrrProgress(metric) * 100;
             return `
-              <article class="portal-lux-network-card is-${esc(tone)}" data-platform="${esc(metric.key)}" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}"${dashboardPlatformVarsAttr(metric.key)}>
+              <article class="portal-lux-network-card is-${esc(tone)}" data-platform="${esc(metric.key)}" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}" role="button" tabindex="0" aria-label="${esc(`${metric.label}: открыть план-факт`)}"${dashboardPlatformVarsAttr(metric.key)}>
                 <div class="portal-lux-network-head">
                   <div>
                     <span>${esc(metric.label)}</span>
@@ -7339,6 +7339,34 @@ function dashboardTaskStatusChip(task) {
       scheduleLocalApply(180);
     });
 
+    const keyboardClickCards = root.querySelectorAll('[role="button"][tabindex="0"]');
+    keyboardClickCards.forEach((card) => {
+      card.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        card.click();
+      });
+    });
+
+    const previewItems = Array.from(root.querySelectorAll('.portal-lux-platform-card[data-platform], .portal-lux-network-card[data-platform], .portal-lux-platform-row[data-platform]'));
+    const previewRoot = root.querySelector('[data-portal-dashboard-executive-root]') || root;
+    const setPlatformPreview = (platformKey) => {
+      const key = platformKey && platformKey !== 'all' ? platformKey : '';
+      root.classList.toggle('is-platform-previewing', Boolean(key));
+      previewRoot.classList.toggle('is-platform-previewing', Boolean(key));
+      previewItems.forEach((item) => {
+        const same = Boolean(key && item.dataset.platform === key);
+        item.classList.toggle('is-preview', same);
+        item.classList.toggle('is-soft-muted', Boolean(key && !same));
+      });
+    };
+    previewItems.forEach((item) => {
+      item.addEventListener('mouseenter', () => setPlatformPreview(item.dataset.platform || ''));
+      item.addEventListener('focus', () => setPlatformPreview(item.dataset.platform || ''));
+      item.addEventListener('mouseleave', () => setPlatformPreview(''));
+      item.addEventListener('blur', () => setPlatformPreview(''));
+    });
+
     root.querySelectorAll('[data-portal-calm-metric]').forEach((button) => {
       button.addEventListener('click', (event) => {
         event.preventDefault();
@@ -7788,10 +7816,43 @@ function dashboardTaskStatusChip(task) {
       #view-dashboard .portal-lux-network-kpis span { padding: 8px 9px; font-size: 12px; }
       #view-dashboard .portal-lux-platform-head,
       #view-dashboard .portal-lux-platform-row { grid-template-columns: minmax(190px, 1.25fr) minmax(110px, .68fr) minmax(150px, .9fr) minmax(100px, .62fr) minmax(108px, .62fr) minmax(108px, .64fr); }
-      #view-dashboard .portal-lux-platform-row { padding: 15px; }
+      #view-dashboard .portal-lux-platform-row { position: relative; padding: 15px; overflow: hidden; }
       #view-dashboard .portal-lux-platform-name strong { font-size: 15px; }
       #view-dashboard .portal-lux-platform-name span,
       #view-dashboard .portal-lux-platform-cell { font-size: 13px; }
+      #view-dashboard .portal-lux-graph-card,
+      #view-dashboard .portal-lux-network-card { position: relative; outline: none; }
+      #view-dashboard .portal-lux-platform-card,
+      #view-dashboard .portal-lux-period-option,
+      #view-dashboard .portal-lux-metric,
+      #view-dashboard .portal-lux-graph-card,
+      #view-dashboard .portal-lux-network-card,
+      #view-dashboard .portal-lux-platform-row { outline: none; }
+      #view-dashboard .portal-lux-platform-card:focus-visible,
+      #view-dashboard .portal-lux-period-option:focus-visible,
+      #view-dashboard .portal-lux-metric:focus-visible,
+      #view-dashboard .portal-lux-graph-card:focus-visible,
+      #view-dashboard .portal-lux-network-card:focus-visible,
+      #view-dashboard .portal-lux-platform-row:focus-visible { border-color: rgba(var(--portal-platform-rgb), .62); box-shadow: 0 0 0 3px rgba(var(--portal-platform-rgb), .16), 0 18px 42px rgba(0,0,0,.24); }
+      #view-dashboard .portal-lux-graph-card::after,
+      #view-dashboard .portal-lux-network-card::after,
+      #view-dashboard .portal-lux-platform-row::after { content: 'Детали'; position: absolute; top: 12px; right: 12px; min-height: 26px; display: grid; place-items: center; padding: 0 9px; border-radius: 999px; border: 1px solid rgba(var(--portal-platform-rgb), .28); background: rgba(9,9,10,.72); color: rgba(255,248,234,.88); font-size: 11px; line-height: 1; opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity .16s ease, transform .16s ease, border-color .16s ease; }
+      #view-dashboard .portal-lux-graph-card::after { content: 'Открыть'; }
+      #view-dashboard .portal-lux-graph-card:hover::after,
+      #view-dashboard .portal-lux-graph-card:focus-visible::after,
+      #view-dashboard .portal-lux-network-card:hover::after,
+      #view-dashboard .portal-lux-network-card:focus-visible::after,
+      #view-dashboard .portal-lux-platform-row:hover::after,
+      #view-dashboard .portal-lux-platform-row:focus-visible::after { opacity: 1; transform: translateY(0); }
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-platform-card.is-soft-muted,
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-network-card.is-soft-muted,
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-platform-row.is-soft-muted { opacity: .42; filter: saturate(.68); }
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-platform-card.is-preview,
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-network-card.is-preview,
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-platform-row.is-preview { opacity: 1; filter: none; border-color: rgba(var(--portal-platform-rgb), .68); box-shadow: 0 22px 54px rgba(0,0,0,.26), inset 0 0 0 1px rgba(var(--portal-platform-rgb), .16); }
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-platform-card.is-preview { transform: translateY(-2px); }
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-network-card.is-preview,
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-platform-row.is-preview { transform: translateY(-1px); }
       @media (max-width: 1280px) {
         #view-dashboard .portal-lux-cockpit,
         #view-dashboard .portal-lux-showcase-grid { grid-template-columns: 1fr; }
@@ -8264,7 +8325,7 @@ function dashboardTaskStatusChip(task) {
             const turnover = buildTurnoverMetric(metric.key, executive.range);
             const tone = dashboardNetworkTone(metric, turnover);
             return `
-              <article class="portal-lux-platform-row is-${esc(tone)}" data-platform="${esc(metric.key)}" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}"${dashboardPlatformVarsAttr(metric.key)}>
+              <article class="portal-lux-platform-row is-${esc(tone)}" data-platform="${esc(metric.key)}" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}" role="button" tabindex="0" aria-label="${esc(`${metric.label}: открыть детали площадки`)}"${dashboardPlatformVarsAttr(metric.key)}>
                 <div class="portal-lux-platform-name"><strong>${esc(metric.label)}</strong><span>${esc(int(metric.units))} шт. · чек ${esc(metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}</span></div>
                 <div class="portal-lux-platform-cell" data-label="План"><strong>${esc(pct(metric.completion))}</strong></div>
                 <div class="portal-lux-platform-cell" data-label="Выручка">${esc(money(metric.revenue))}</div>

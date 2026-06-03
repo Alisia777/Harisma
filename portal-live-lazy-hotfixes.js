@@ -20,7 +20,7 @@
     dashboard: [
       'portal-dashboard-calendar-stability-hotfix.js?v=20260521prod1',
       'portal-dashboard-prime-hotfix-20260422e.js?v=20260521prod1',
-      'portal-dashboard-interactive-hotfix.js?v=20260530dashboardpolish1'
+      'portal-dashboard-interactive-hotfix.js?v=20260603dashboardluxury4'
     ],
     control: [
       'portal-control-center-v2-hotfix.js?v=20260529taskzya1',
@@ -192,8 +192,7 @@
       const run = () => {
         if (activeView() === 'dashboard') loadViewHotfixes('dashboard');
       };
-      if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(run, { timeout: 1800 });
-      else window.setTimeout(run, 1200);
+      window.setTimeout(run, 0);
       return;
     }
     loadViewHotfixes(view);

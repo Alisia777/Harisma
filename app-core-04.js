@@ -717,6 +717,40 @@ function syncHealthNoticeHtml() {
 
 function renderDashboard() {
   const root = document.getElementById('view-dashboard');
+  if (!root) return;
+  if (root.querySelector('[data-portal-dashboard-executive-root]')) return;
+
+  const freshness = state.dashboard?.dataFreshness || {};
+  const asOf = state.dashboard?.asOfDate || freshness.asOfDate || freshness.maxDate || '';
+  const generatedAt = state.dashboard?.generatedAt || '';
+  root.innerHTML = `
+    <section data-dashboard-layout-root class="dashboard-lux-loader" style="display:grid;gap:14px;padding:18px;border:1px solid rgba(255,255,255,.09);border-radius:8px;background:linear-gradient(180deg,rgba(33,32,30,.96),rgba(12,12,13,.985));box-shadow:0 18px 46px rgba(0,0,0,.22)">
+      <div style="display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap">
+        <div>
+          <div style="color:rgba(245,232,207,.58);font-size:11px;text-transform:uppercase">ALTEA · dashboard</div>
+          <h2 style="margin:6px 0 0;color:#fff6e8;font-size:30px;line-height:1.08;letter-spacing:0">Пульс бренда</h2>
+          <p style="margin:7px 0 0;color:rgba(255,244,229,.68);font-size:13px;line-height:1.45">Собираем актуальный cockpit без legacy-слоя.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(asOf ? `Факт до ${fmt.date(asOf)}` : 'Факт обновляется', asOf ? 'info' : 'warn')}
+          ${generatedAt ? badge(`Сборка ${fmt.date(generatedAt)}`, 'ok') : ''}
+        </div>
+      </div>
+      <div style="height:7px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08)">
+        <span style="display:block;width:62%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#d9b45b,#f3d99b)"></span>
+      </div>
+    </section>
+  `;
+
+  const api = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
+  if (api && typeof api.applyNow === 'function') {
+    api.applyNow(false).catch?.((error) => console.warn('[dashboard-loader]', error));
+  } else if (typeof window.__alteaLoadLiveHotfixes === 'function') {
+    Promise.resolve(window.__alteaLoadLiveHotfixes('dashboard', { rerender: false }))
+      .catch((error) => console.warn('[dashboard-loader]', error));
+  }
+  return;
+
   const model = buildVisualDashboardModel();
   const control = model.control;
   const brandPlan = model.brandPlan;

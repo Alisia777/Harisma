@@ -21,6 +21,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
   const PRESET_KEYS = ['yesterday', '7', 'prevweek', '14', '30'];
+  const DASHBOARD_FOCUS_METRICS = ['revenue', 'completion', 'margin', 'stock'];
   const cache = {
     dashboard: null,
     platformTrends: null,
@@ -6239,6 +6240,213 @@ function dashboardTaskStatusChip(task) {
     `;
   }
 
+  function dashboardDrrPoints(metric) {
+    return dashboardCalmPoints(metric?.days || [], (row) => {
+      const spend = num(row?.spend);
+      const adRevenue = num(row?.adRevenue);
+      return adRevenue > 0 ? (spend / adRevenue) * 100 : NaN;
+    });
+  }
+
+  function dashboardTurnoverPoints(turnover) {
+    const source = turnover?.turnoverPublishedSeries?.length
+      ? turnover.turnoverPublishedSeries
+      : (turnover?.turnoverSeries?.length ? turnover.turnoverSeries : (turnover?.rows || []).slice(0, 18));
+    return dashboardCalmPoints(source, (row) => row.avgTurnover ?? row.turnoverDays);
+  }
+
+  function dashboardDrrProgress(metric) {
+    if (metric?.drr === null || metric?.drr === undefined) return 0.18;
+    return Math.max(0.05, Math.min(1, 1 - Math.min(0.34, num(metric.drr)) / 0.34));
+  }
+
+  function dashboardGraphDefinitions(executive) {
+    const metric = executive?.focusMetric || executive?.overall || {};
+    const turnover = buildTurnoverMetric(metric.key || 'all', executive.range);
+    return [
+      {
+        key: 'revenue',
+        label: 'Выручка',
+        value: money(metric.revenue),
+        sub: `${int(metric.units)} шт. · чек ${metric.avgCheck > 0 ? money(metric.avgCheck) : '—'}`,
+        tone: toneCompletion(metric.completion),
+        open: 'revenue',
+        openKey: metric.key || 'all',
+        progress: Math.max(0.04, Math.min(1, num(metric.completion))),
+        points: dashboardCalmPoints(metric.days, (row) => row.revenue),
+        empty: 'Нет ряда выручки'
+      },
+      {
+        key: 'completion',
+        label: 'План-факт',
+        value: pct(metric.completion),
+        sub: `${metricFactDisplay(metric)} / ${metricPlanDisplay(metric)}`,
+        tone: toneCompletion(metric.completion),
+        open: 'completion',
+        openKey: metric.key || 'all',
+        progress: Math.max(0.04, Math.min(1, num(metric.completion))),
+        points: dashboardCalmPoints(metric.days, (row) => {
+          const value = dailyCompletion(row, metric);
+          return value === null ? NaN : value * 100;
+        }),
+        empty: 'Нет ряда плана'
+      },
+      {
+        key: 'margin',
+        label: 'Маржа',
+        value: pct(metric.marginPct),
+        sub: `${money(metric.margin)} · ${pct(metric.marginPct)} от оборота`,
+        tone: toneMargin(metric.marginPct),
+        open: 'margin',
+        openKey: metric.key || 'all',
+        progress: Math.max(0.04, Math.min(1, num(metric.marginPct) / 0.35)),
+        points: dashboardCalmPoints(metric.days, (row) => row.margin),
+        empty: 'Нет ряда маржи'
+      },
+      {
+        key: 'drr',
+        label: 'ДРР',
+        value: metric.drr !== null && metric.drr !== undefined ? pct(metric.drr) : '—',
+        sub: metric.spend > 0 ? `расход ${money(metric.spend)} · рекл. выручка ${money(metric.adRevenue)}` : 'рекламный факт не опубликован',
+        tone: metric.drr !== null && metric.drr !== undefined ? toneDrr(metric.drr) : 'info',
+        open: 'ads',
+        openKey: metric.key || 'all',
+        progress: dashboardDrrProgress(metric),
+        points: dashboardDrrPoints(metric),
+        empty: 'Нет ряда ДРР'
+      },
+      {
+        key: 'stock',
+        label: 'Запас',
+        value: turnover.avgTurnoverDays !== null ? `${turnover.avgTurnoverDays.toFixed(1)} дн.` : '—',
+        sub: `остаток ${int(turnover.totalStock)} · в пути ${int(turnover.totalTransit)}`,
+        tone: turnover.avgTurnoverDays !== null && turnover.avgTurnoverDays > 90 ? 'warn' : 'ok',
+        open: 'stock',
+        openKey: turnover.key || metric.key || 'all',
+        progress: turnover.avgTurnoverDays !== null
+          ? Math.max(0.08, Math.min(1, 1 - Math.min(120, turnover.avgTurnoverDays) / 140))
+          : 0.18,
+        points: dashboardTurnoverPoints(turnover),
+        empty: 'Нет ряда запаса'
+      }
+    ];
+  }
+
+  function dashboardGraphCardsSection(executive) {
+    const cards = dashboardGraphDefinitions(executive);
+    return `
+      <section class="portal-lux-section portal-lux-analytics"${dashboardPlatformVarsAttr(executive.selectedPlatform)}>
+        <div class="portal-lux-section-head">
+          <div>
+            <h3>Динамика без шума</h3>
+            <p>${esc(executive.range.effectiveLabel)} · ${esc(currentFocusLabel(executive))}</p>
+          </div>
+          ${sectionMetaHtml(executive, [badgeHtml('графики кликабельны', 'info')])}
+        </div>
+        <div class="portal-lux-graph-grid">
+          ${cards.map((card) => `
+            <article class="portal-lux-graph-card is-${esc(card.tone)}" data-portal-exec-open="${esc(card.open)}" data-portal-exec-key="${esc(card.openKey)}">
+              <div class="portal-lux-graph-top">
+                <span>${esc(card.label)}</span>
+                <b>${esc(card.value)}</b>
+              </div>
+              <p>${esc(card.sub)}</p>
+              ${dashboardCalmChart(card.points, { tone: card.tone, platformKey: card.openKey, completion: card.progress, empty: card.empty })}
+            </article>
+          `).join('')}
+        </div>
+      </section>
+    `;
+  }
+
+  function dashboardNetworkTone(metric, turnover) {
+    if (num(metric.completion) < 0.78 || num(metric.marginPct) < 0.12) return 'danger';
+    if (num(metric.completion) < 0.94 || num(metric.marginPct) < 0.2 || (metric.drr !== null && metric.drr !== undefined && num(metric.drr) > 0.22) || (turnover.avgTurnoverDays !== null && turnover.avgTurnoverDays > 95)) return 'warn';
+    return 'ok';
+  }
+
+  function dashboardNetworkScore(metric, turnover) {
+    const plan = Math.min(34, Math.max(0, num(metric.completion) / 1.08 * 34));
+    const margin = Math.min(28, Math.max(0, num(metric.marginPct) / 0.34 * 28));
+    const ads = metric.drr === null || metric.drr === undefined
+      ? 12
+      : num(metric.drr) <= 0.15
+        ? 18
+        : num(metric.drr) <= 0.22
+          ? 13
+          : 7;
+    const stock = turnover.avgTurnoverDays === null
+      ? 10
+      : turnover.avgTurnoverDays <= 55
+        ? 20
+        : turnover.avgTurnoverDays <= 95
+          ? 13
+          : 7;
+    return Math.max(0, Math.min(100, Math.round(plan + margin + ads + stock)));
+  }
+
+  function dashboardBarWidth(value, maxValue, min = 4) {
+    if (!Number.isFinite(Number(value)) || !Number.isFinite(Number(maxValue)) || Number(maxValue) <= 0) return min;
+    return Math.max(min, Math.min(100, Math.round(Number(value) / Number(maxValue) * 100)));
+  }
+
+  function dashboardNetworkPulseSection(executive) {
+    const metrics = visibleMetrics(executive);
+    if (!metrics.length) {
+      return `
+        <section class="portal-lux-section portal-lux-network-section"${dashboardPlatformVarsAttr(executive.selectedPlatform)}>
+          <div class="portal-lux-empty">По выбранной площадке пока нет опубликованного среза.</div>
+        </section>
+      `;
+    }
+    const maxRevenue = Math.max(1, ...metrics.map((metric) => num(metric.revenue)));
+    const maxMargin = Math.max(1, ...metrics.map((metric) => Math.max(0, num(metric.margin))));
+    return `
+      <section class="portal-lux-section portal-lux-network-section"${dashboardPlatformVarsAttr(executive.selectedPlatform)}>
+        <div class="portal-lux-section-head">
+          <div>
+            <h3>Пульс площадок</h3>
+            <p>Сравнение сетей в одном темпе: продажи, план, маржа, ДРР и запас.</p>
+          </div>
+          ${sectionMetaHtml(executive, [badgeHtml(`${int(metrics.length)} площадки`, 'info')])}
+        </div>
+        <div class="portal-lux-network-grid">
+          ${metrics.map((metric) => {
+            const turnover = buildTurnoverMetric(metric.key, executive.range);
+            const score = dashboardNetworkScore(metric, turnover);
+            const tone = dashboardNetworkTone(metric, turnover);
+            const planWidth = Math.max(4, Math.min(100, Math.round(num(metric.completion) * 100)));
+            const marginWidth = dashboardBarWidth(Math.max(0, num(metric.margin)), maxMargin);
+            const drrWidth = dashboardDrrProgress(metric) * 100;
+            return `
+              <article class="portal-lux-network-card is-${esc(tone)}" data-platform="${esc(metric.key)}" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}"${dashboardPlatformVarsAttr(metric.key)}>
+                <div class="portal-lux-network-head">
+                  <div>
+                    <span>${esc(metric.label)}</span>
+                    <strong>${esc(money(metric.revenue))}</strong>
+                  </div>
+                  <b>${esc(int(score))}</b>
+                </div>
+                <div class="portal-lux-network-kpis">
+                  <span>план ${esc(pct(metric.completion))}</span>
+                  <span>маржа ${esc(pct(metric.marginPct))}</span>
+                  <span>ДРР ${esc(metric.drr !== null && metric.drr !== undefined ? pct(metric.drr) : '—')}</span>
+                  <span>${esc(turnover.avgTurnoverDays !== null ? `${turnover.avgTurnoverDays.toFixed(1)} дн.` : '—')}</span>
+                </div>
+                <div class="portal-lux-network-bars">
+                  <div class="portal-lux-network-bar"><span>Оборот</span><i><b style="width:${dashboardBarWidth(metric.revenue, maxRevenue)}%"></b></i></div>
+                  <div class="portal-lux-network-bar"><span>План</span><i><b style="width:${planWidth}%"></b></i></div>
+                  <div class="portal-lux-network-bar"><span>Маржа</span><i><b style="width:${marginWidth}%"></b></i></div>
+                  <div class="portal-lux-network-bar"><span>ДРР</span><i><b style="width:${Math.max(4, Math.min(100, Math.round(drrWidth)))}%"></b></i></div>
+                </div>
+              </article>
+            `;
+          }).join('')}
+        </div>
+      </section>
+    `;
+  }
+
   function dashboardPlatformCalmSection(executive) {
     const metrics = visibleMetrics(executive);
     return `
@@ -7131,6 +7339,15 @@ function dashboardTaskStatusChip(task) {
       scheduleLocalApply(180);
     });
 
+    root.querySelectorAll('[data-portal-calm-metric]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setDashboardMetricFocus(button.dataset.portalCalmMetric || 'revenue');
+        scheduleLocalApply(120);
+      });
+    });
+
     root.querySelectorAll('[data-portal-exec-open]').forEach((card) => {
       card.addEventListener('click', () => {
         const key = card.dataset.portalExecKey || 'all';
@@ -7314,15 +7531,617 @@ function dashboardTaskStatusChip(task) {
     const container = document.createElement('div');
     container.id = ROOT_ID;
     container.dataset.portalDashboardExecutiveRoot = 'true';
+    const themeRgb = dashboardPlatformRgb(executive.selectedPlatform);
+    container.style.setProperty('--portal-platform-rgb', themeRgb.join(', '));
     container.innerHTML = [
       dashboardHeroSection(executive),
       dashboardOverviewCalmSection(executive),
-      dashboardPrioritySection(executive),
+      dashboardGraphCardsSection(executive),
+      dashboardNetworkPulseSection(executive),
       dashboardPlatformCalmSection(executive),
       `<div class="portal-exec-section-foot">Источник факта: ${esc(executive.range.availableLabel)} · API-срез platform_trends · актуально на ${esc(longDate(executive.range.max))}.</div>`
     ].join('');
     root.insertAdjacentElement('afterbegin', container);
     bindDashboard(root, executive);
+  }
+
+  function ensureDashboardCalmStyles() {
+    if (document.getElementById('portalDashboardLuxStyles20260603')) return;
+    const style = document.createElement('style');
+    style.id = 'portalDashboardLuxStyles20260603';
+    style.textContent = `
+      #view-dashboard [data-portal-dashboard-executive-root] { gap: 14px; }
+      #view-dashboard .portal-lux-shell,
+      #view-dashboard .portal-lux-section,
+      #view-dashboard .portal-lux-panel,
+      #view-dashboard .portal-lux-metric,
+      #view-dashboard .portal-lux-chart-card,
+      #view-dashboard .portal-lux-platform-row { box-sizing: border-box; }
+      #view-dashboard .portal-lux-shell,
+      #view-dashboard .portal-lux-section,
+      #view-dashboard .portal-lux-panel,
+      #view-dashboard .portal-lux-chart-card { border: 1px solid rgba(255,255,255,.09); background: linear-gradient(180deg, rgba(33,32,30,.96), rgba(12,12,13,.985)); box-shadow: 0 18px 46px rgba(0,0,0,.22); }
+      #view-dashboard .portal-lux-shell { display: grid; gap: 16px; padding: 18px; border-radius: 8px; overflow: hidden; }
+      #view-dashboard .portal-lux-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: start; }
+      #view-dashboard .portal-lux-overline { display: block; color: rgba(245,232,207,.58); font-size: 11px; line-height: 1.2; text-transform: uppercase; letter-spacing: 0; }
+      #view-dashboard .portal-lux-title { margin: 5px 0 0; color: #fff6e8; font-size: 30px; line-height: 1.08; letter-spacing: 0; }
+      #view-dashboard .portal-lux-sub { margin: 7px 0 0; max-width: 820px; color: rgba(255,244,229,.68); font-size: 13px; line-height: 1.45; }
+      #view-dashboard .portal-lux-actions,
+      #view-dashboard .portal-lux-pills,
+      #view-dashboard .portal-lux-metric-head,
+      #view-dashboard .portal-lux-chip-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      #view-dashboard .portal-lux-action,
+      #view-dashboard .portal-lux-pill,
+      #view-dashboard .portal-lux-date-chip { min-height: 34px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); color: rgba(255,246,232,.86); border-radius: 8px; padding: 8px 10px; cursor: pointer; font: inherit; font-size: 12px; line-height: 1.1; transition: border-color .16s ease, background .16s ease, transform .16s ease; }
+      #view-dashboard .portal-lux-action:hover,
+      #view-dashboard .portal-lux-pill:hover,
+      #view-dashboard .portal-lux-date-chip:hover { transform: translateY(-1px); border-color: rgba(236,203,123,.42); background: rgba(255,255,255,.055); }
+      #view-dashboard .portal-lux-action.primary,
+      #view-dashboard .portal-lux-pill.active { border-color: rgba(236,203,123,.58); color: #160f07; background: linear-gradient(180deg, #f3d99b, #c99642); box-shadow: 0 10px 24px rgba(209,161,74,.16); }
+      #view-dashboard [data-platform="all"] { --platform-color:#d4a44a; --platform-soft:rgba(212,164,74,.075); --platform-active:rgba(212,164,74,.15); --platform-border:rgba(212,164,74,.24); --platform-strong:rgba(212,164,74,.58); }
+      #view-dashboard [data-platform="wb"] { --platform-color:#8b5cf6; --platform-soft:rgba(139,92,246,.08); --platform-active:rgba(139,92,246,.17); --platform-border:rgba(139,92,246,.26); --platform-strong:rgba(139,92,246,.6); }
+      #view-dashboard [data-platform="ozon"] { --platform-color:#1683ff; --platform-soft:rgba(22,131,255,.08); --platform-active:rgba(22,131,255,.17); --platform-border:rgba(22,131,255,.26); --platform-strong:rgba(22,131,255,.6); }
+      #view-dashboard [data-platform="ya"] { --platform-color:#f4c430; --platform-soft:rgba(244,196,48,.08); --platform-active:rgba(244,196,48,.15); --platform-border:rgba(244,196,48,.25); --platform-strong:rgba(244,196,48,.56); }
+      #view-dashboard [data-platform="goldapple"] { --platform-color:#9ac43a; --platform-soft:rgba(154,196,58,.08); --platform-active:rgba(154,196,58,.16); --platform-border:rgba(154,196,58,.25); --platform-strong:rgba(154,196,58,.56); }
+      #view-dashboard [data-platform="letu"] { --platform-color:#d946ef; --platform-soft:rgba(217,70,239,.075); --platform-active:rgba(217,70,239,.16); --platform-border:rgba(217,70,239,.24); --platform-strong:rgba(217,70,239,.54); }
+      #view-dashboard [data-platform="magnit"] { --platform-color:#ef4444; --platform-soft:rgba(239,68,68,.075); --platform-active:rgba(239,68,68,.16); --platform-border:rgba(239,68,68,.24); --platform-strong:rgba(239,68,68,.54); }
+      #view-dashboard .portal-lux-platform-pill { border-color: var(--platform-border, rgba(255,255,255,.1)); background: linear-gradient(180deg, var(--platform-soft, rgba(255,255,255,.03)), rgba(255,255,255,.025)); }
+      #view-dashboard .portal-lux-platform-pill.active { border-color: var(--platform-strong, rgba(236,203,123,.58)); color: #fff8ea; background: linear-gradient(180deg, var(--platform-active, rgba(212,164,74,.16)), rgba(255,255,255,.035)); box-shadow: inset 0 0 0 1px var(--platform-border, rgba(255,255,255,.1)); }
+      #view-dashboard .portal-lux-cockpit { display: grid; grid-template-columns: minmax(280px, .74fr) minmax(0, 1.26fr); gap: 12px; align-items: stretch; }
+      #view-dashboard .portal-lux-score-card { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 14px; align-items: center; padding: 14px; border: 1px solid rgba(255,255,255,.08); border-radius: 8px; background: rgba(255,255,255,.028); min-width: 0; }
+      #view-dashboard .portal-lux-score-ring { width: 118px; height: 118px; border-radius: 999px; display: grid; place-items: center; background: conic-gradient(from -90deg, rgba(236,203,123,.92) var(--score-pct, 0%), rgba(255,255,255,.08) 0); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+      #view-dashboard .portal-lux-score-core { width: 88px; height: 88px; border-radius: inherit; display: grid; place-items: center; background: linear-gradient(180deg, rgba(28,27,26,.98), rgba(9,9,10,.98)); }
+      #view-dashboard .portal-lux-score-core strong { color: #fff6e8; font-size: 30px; line-height: 1; }
+      #view-dashboard .portal-lux-score-core span { color: rgba(255,244,229,.58); font-size: 10px; text-transform: uppercase; }
+      #view-dashboard .portal-lux-focus { min-width: 0; display: grid; gap: 7px; }
+      #view-dashboard .portal-lux-focus span,
+      #view-dashboard .portal-lux-label { color: rgba(255,244,229,.56); font-size: 11px; line-height: 1.15; text-transform: uppercase; letter-spacing: 0; }
+      #view-dashboard .portal-lux-focus strong { color: #fff6e8; font-size: 24px; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-focus em { color: rgba(255,244,229,.7); font-style: normal; font-size: 12px; line-height: 1.35; }
+      #view-dashboard .portal-lux-progress,
+      #view-dashboard .portal-lux-metric-line { height: 7px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; }
+      #view-dashboard .portal-lux-progress > span,
+      #view-dashboard .portal-lux-metric-line > i { display: block; height: 100%; border-radius: inherit; background: var(--portal-calm-progress-fill, linear-gradient(90deg, #d9b45b, #f3d99b)); }
+      #view-dashboard .portal-lux-control-card { display: grid; gap: 11px; padding: 14px; border: 1px solid rgba(255,255,255,.08); border-radius: 8px; background: rgba(255,255,255,.024); min-width: 0; }
+      #view-dashboard .portal-lux-control-line { display: grid; gap: 7px; min-width: 0; }
+      #view-dashboard .portal-lux-date-strip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      #view-dashboard .portal-lux-date-chip { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: center; min-width: 0; padding: 9px 10px; }
+      #view-dashboard .portal-lux-date-chip span { color: rgba(255,244,229,.54); font-size: 11px; text-transform: uppercase; }
+      #view-dashboard .portal-lux-date-chip b { color: #fff5e4; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      #view-dashboard .portal-lux-date-chip input { position: absolute; inset: 0; opacity: 0; cursor: pointer; color-scheme: dark; }
+      #view-dashboard .portal-lux-metric-rail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+      #view-dashboard .portal-lux-metric { display: grid; gap: 8px; min-width: 0; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.024); color: inherit; text-align: left; cursor: pointer; transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease; }
+      #view-dashboard .portal-lux-metric:hover { transform: translateY(-1px); border-color: rgba(236,203,123,.34); background: rgba(255,255,255,.04); }
+      #view-dashboard .portal-lux-metric.is-active { border-color: rgba(236,203,123,.56); background: linear-gradient(180deg, rgba(236,203,123,.115), rgba(255,255,255,.03)); box-shadow: inset 0 0 0 1px rgba(236,203,123,.12); }
+      #view-dashboard .portal-lux-metric-head { justify-content: space-between; }
+      #view-dashboard .portal-lux-icon { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 8px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.05); color: #fff3dc; font-weight: 760; }
+      #view-dashboard .portal-lux-metric span:not(.portal-lux-icon) { color: rgba(255,244,229,.58); font-size: 11px; text-transform: uppercase; }
+      #view-dashboard .portal-lux-metric strong { color: #fff6e8; font-size: 20px; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-metric em { min-height: 30px; color: rgba(255,244,229,.66); font-size: 12px; font-style: normal; line-height: 1.3; overflow: hidden; }
+      #view-dashboard .portal-lux-section { display: grid; gap: 14px; padding: 16px; border-radius: 8px; }
+      #view-dashboard .portal-lux-section-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: start; }
+      #view-dashboard .portal-lux-section-head h3,
+      #view-dashboard .portal-lux-panel h3 { margin: 0; color: #fff6e8; font-size: 18px; line-height: 1.18; letter-spacing: 0; }
+      #view-dashboard .portal-lux-section-head p { margin: 5px 0 0; color: rgba(255,244,229,.62); font-size: 12px; line-height: 1.4; }
+      #view-dashboard .portal-lux-showcase-grid { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(280px, .82fr); gap: 12px; align-items: stretch; }
+      #view-dashboard .portal-lux-chart-card { display: grid; gap: 11px; min-width: 0; padding: 14px; border-radius: 8px; cursor: pointer; transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease; }
+      #view-dashboard .portal-lux-chart-card:hover { transform: translateY(-1px); border-color: rgba(236,203,123,.36); box-shadow: 0 18px 36px rgba(0,0,0,.24); }
+      #view-dashboard .portal-lux-chart-value { color: #fff6e8; font-size: 34px; line-height: 1.02; font-weight: 780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-chart-sub { color: rgba(255,244,229,.68); font-size: 12px; line-height: 1.35; }
+      #view-dashboard .portal-calm-chart { position: relative; height: 190px; width: 100%; border-radius: 8px; background: rgba(255,255,255,.018); overflow: hidden; }
+      #view-dashboard .portal-calm-chart svg { display: block; width: 100%; height: 100%; }
+      #view-dashboard .portal-calm-chart-gridline { stroke: rgba(255,255,255,.08); stroke-width: 1; }
+      #view-dashboard .portal-calm-chart-area { fill: var(--portal-calm-chart-area, rgba(231,188,101,.16)); }
+      #view-dashboard .portal-calm-chart-line { fill: none; stroke: var(--portal-calm-chart-line, rgba(240,208,123,.98)); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      #view-dashboard .portal-calm-chart-dot { fill: var(--portal-calm-chart-dot, #ffe3a3); stroke: rgba(17,12,8,.9); stroke-width: 2; }
+      #view-dashboard .portal-calm-chart.is-empty { display: grid; place-items: center; color: rgba(255,244,229,.5); font-size: 12px; }
+      #view-dashboard .portal-lux-quest-stack,
+      #view-dashboard .portal-lux-list { display: grid; gap: 8px; }
+      #view-dashboard .portal-lux-quest { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; min-width: 0; padding: 11px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.075); background: rgba(255,255,255,.026); }
+      #view-dashboard .portal-lux-quest > div { display: grid; gap: 3px; min-width: 0; }
+      #view-dashboard .portal-lux-quest strong { display: block; color: #fff6e8; font-size: 13px; line-height: 1.2; }
+      #view-dashboard .portal-lux-quest span { display: block; color: rgba(255,244,229,.58); font-size: 12px; line-height: 1.3; }
+      #view-dashboard .portal-lux-quest b { color: #fff6e8; font-size: 15px; white-space: nowrap; }
+      #view-dashboard .portal-lux-mission-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      #view-dashboard .portal-lux-panel { display: grid; gap: 12px; padding: 14px; border-radius: 8px; }
+      #view-dashboard .portal-lux-panel-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
+      #view-dashboard .portal-lux-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; min-width: 0; padding: 11px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.07); background: rgba(255,255,255,.024); color: inherit; text-align: left; cursor: pointer; transition: transform .16s ease, border-color .16s ease, background .16s ease; }
+      #view-dashboard .portal-lux-row:hover { transform: translateY(-1px); border-color: rgba(236,203,123,.32); background: rgba(255,255,255,.04); }
+      #view-dashboard .portal-lux-row-main { min-width: 0; display: grid; gap: 3px; }
+      #view-dashboard .portal-lux-row-main strong { color: #fff6e8; font-size: 13px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-row-main span { color: rgba(255,244,229,.62); font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-row-meta { display: flex; gap: 7px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+      #view-dashboard .portal-lux-empty { padding: 14px; border-radius: 8px; border: 1px dashed rgba(255,255,255,.13); color: rgba(255,244,229,.62); font-size: 13px; line-height: 1.45; }
+      #view-dashboard .portal-lux-platform-table { display: grid; gap: 7px; }
+      #view-dashboard .portal-lux-platform-head,
+      #view-dashboard .portal-lux-platform-row { display: grid; grid-template-columns: minmax(160px, 1.2fr) minmax(94px, .68fr) minmax(122px, .9fr) minmax(86px, .62fr) minmax(102px, .7fr) minmax(92px, .64fr); gap: 10px; align-items: center; }
+      #view-dashboard .portal-lux-platform-head { padding: 0 12px; color: rgba(255,244,229,.46); font-size: 11px; text-transform: uppercase; }
+      #view-dashboard .portal-lux-platform-row { padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.07); background: rgba(255,255,255,.024); cursor: pointer; transition: transform .16s ease, border-color .16s ease, background .16s ease; }
+      #view-dashboard .portal-lux-platform-row:hover { transform: translateY(-1px); border-color: rgba(236,203,123,.32); background: rgba(255,255,255,.04); }
+      #view-dashboard .portal-lux-platform-name { display: grid; gap: 3px; min-width: 0; }
+      #view-dashboard .portal-lux-platform-name strong { color: #fff6e8; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-platform-name span,
+      #view-dashboard .portal-lux-platform-cell { color: rgba(255,244,229,.66); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-platform-cell strong { color: #fff6e8; }
+      #view-dashboard .portal-lux-shell { border-color: rgba(var(--portal-platform-rgb), .22); background: radial-gradient(circle at 14% 0%, rgba(var(--portal-platform-rgb), .2), transparent 34%), linear-gradient(180deg, rgba(33,32,30,.97), rgba(10,10,11,.99)); }
+      #view-dashboard .portal-lux-analytics,
+      #view-dashboard .portal-lux-network-section,
+      #view-dashboard .portal-lux-platform-matrix { border-color: rgba(var(--portal-platform-rgb), .16); background: radial-gradient(circle at 0% 0%, rgba(var(--portal-platform-rgb), .105), transparent 28%), linear-gradient(180deg, rgba(30,29,28,.96), rgba(12,12,13,.985)); }
+      #view-dashboard .portal-lux-action.primary,
+      #view-dashboard .portal-lux-pill.active { border-color: rgba(var(--portal-platform-rgb), .55); color: #fff8ea; background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .34), rgba(var(--portal-platform-rgb), .15)); box-shadow: 0 10px 24px rgba(var(--portal-platform-rgb), .16); }
+      #view-dashboard .portal-lux-action:hover,
+      #view-dashboard .portal-lux-pill:hover,
+      #view-dashboard .portal-lux-date-chip:hover,
+      #view-dashboard .portal-lux-chart-card:hover,
+      #view-dashboard .portal-lux-platform-row:hover { border-color: rgba(var(--portal-platform-rgb), .34); }
+      #view-dashboard .portal-lux-score-ring { background: conic-gradient(from -90deg, rgba(var(--portal-platform-rgb), .95) var(--score-pct, 0%), rgba(255,255,255,.08) 0); box-shadow: inset 0 0 0 1px rgba(var(--portal-platform-rgb), .18), 0 0 36px rgba(var(--portal-platform-rgb), .1); }
+      #view-dashboard .portal-lux-metric:hover { border-color: rgba(var(--portal-platform-rgb), .34); }
+      #view-dashboard .portal-lux-metric.is-active { border-color: rgba(var(--portal-platform-rgb), .52); background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .13), rgba(255,255,255,.03)); box-shadow: inset 0 0 0 1px rgba(var(--portal-platform-rgb), .12); }
+      #view-dashboard .portal-lux-icon { border-color: rgba(var(--portal-platform-rgb), .18); background: rgba(var(--portal-platform-rgb), .08); }
+      #view-dashboard .portal-lux-graph-grid { display: grid; grid-template-columns: repeat(5, minmax(176px, 1fr)); gap: 10px; }
+      #view-dashboard .portal-lux-graph-card { display: grid; gap: 9px; min-width: 0; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.075); background: linear-gradient(180deg, rgba(255,255,255,.036), rgba(255,255,255,.018)); cursor: pointer; overflow: hidden; transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease; }
+      #view-dashboard .portal-lux-graph-card:hover { transform: translateY(-1px); border-color: rgba(var(--portal-platform-rgb), .34); background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .08), rgba(255,255,255,.022)); box-shadow: 0 16px 34px rgba(0,0,0,.24); }
+      #view-dashboard .portal-lux-graph-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; min-width: 0; }
+      #view-dashboard .portal-lux-graph-top span { color: rgba(255,244,229,.58); font-size: 11px; text-transform: uppercase; letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-graph-top b { color: #fff6e8; font-size: 18px; line-height: 1.08; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-graph-card p { min-height: 32px; margin: 0; color: rgba(255,244,229,.62); font-size: 12px; line-height: 1.35; overflow: hidden; }
+      #view-dashboard .portal-lux-graph-card .portal-calm-chart { height: 132px; background: rgba(0,0,0,.12); }
+      #view-dashboard .portal-lux-network-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(238px, 1fr)); gap: 10px; }
+      #view-dashboard .portal-lux-network-card { display: grid; gap: 12px; min-width: 0; padding: 13px; border-radius: 8px; border: 1px solid rgba(var(--portal-platform-rgb), .18); background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .09), rgba(255,255,255,.022)); cursor: pointer; transition: transform .16s ease, border-color .16s ease, background .16s ease; }
+      #view-dashboard .portal-lux-network-card:hover { transform: translateY(-1px); border-color: rgba(var(--portal-platform-rgb), .38); background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .13), rgba(255,255,255,.028)); }
+      #view-dashboard .portal-lux-network-head { display: grid; grid-template-columns: minmax(0, 1fr) 46px; gap: 10px; align-items: center; }
+      #view-dashboard .portal-lux-network-head div { min-width: 0; display: grid; gap: 3px; }
+      #view-dashboard .portal-lux-network-head span { color: rgba(255,244,229,.58); font-size: 11px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-network-head strong { color: #fff6e8; font-size: 20px; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-network-head b { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 999px; color: #fff6e8; border: 1px solid rgba(var(--portal-platform-rgb), .28); background: radial-gradient(circle, rgba(var(--portal-platform-rgb), .22), rgba(255,255,255,.03)); font-size: 15px; }
+      #view-dashboard .portal-lux-network-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+      #view-dashboard .portal-lux-network-kpis span { min-width: 0; padding: 7px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,.07); background: rgba(255,255,255,.025); color: rgba(255,244,229,.68); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-network-bars { display: grid; gap: 7px; }
+      #view-dashboard .portal-lux-network-bar { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 8px; align-items: center; }
+      #view-dashboard .portal-lux-network-bar span { color: rgba(255,244,229,.5); font-size: 10px; text-transform: uppercase; white-space: nowrap; }
+      #view-dashboard .portal-lux-network-bar i { display: block; height: 7px; border-radius: 999px; background: rgba(255,255,255,.075); overflow: hidden; }
+      #view-dashboard .portal-lux-network-bar b { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, rgba(var(--portal-platform-rgb), .68), rgba(var(--portal-platform-rgb), .98)); }
+      #view-dashboard .portal-lux-platform-row { border-color: rgba(var(--portal-platform-rgb), .11); background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .045), rgba(255,255,255,.018)); }
+      @media (max-width: 1280px) {
+        #view-dashboard .portal-lux-cockpit,
+        #view-dashboard .portal-lux-showcase-grid { grid-template-columns: 1fr; }
+        #view-dashboard .portal-lux-metric-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        #view-dashboard .portal-lux-graph-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      }
+      @media (max-width: 840px) {
+        #view-dashboard .portal-lux-top,
+        #view-dashboard .portal-lux-section-head,
+        #view-dashboard .portal-lux-mission-grid { grid-template-columns: 1fr; }
+        #view-dashboard .portal-lux-actions { justify-content: flex-start; }
+        #view-dashboard .portal-lux-platform-head { display: none; }
+        #view-dashboard .portal-lux-platform-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        #view-dashboard .portal-lux-platform-cell { display: grid; gap: 3px; }
+        #view-dashboard .portal-lux-platform-cell::before { content: attr(data-label); color: rgba(255,244,229,.46); font-size: 10px; line-height: 1.1; text-transform: uppercase; }
+        #view-dashboard .portal-lux-graph-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      @media (max-width: 620px) {
+        #view-dashboard .portal-lux-shell,
+        #view-dashboard .portal-lux-section { padding: 12px; }
+        #view-dashboard .portal-lux-title { font-size: 24px; }
+        #view-dashboard .portal-lux-score-card,
+        #view-dashboard .portal-lux-date-strip,
+        #view-dashboard .portal-lux-metric-rail,
+        #view-dashboard .portal-lux-platform-row,
+        #view-dashboard .portal-lux-graph-grid,
+        #view-dashboard .portal-lux-network-kpis { grid-template-columns: 1fr; }
+        #view-dashboard .portal-lux-chart-value { font-size: 26px; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function dashboardMetricFocusState() {
+    const fallback = DASHBOARD_FOCUS_METRICS[0] || 'revenue';
+    const app = stateRef();
+    if (!app) return fallback;
+    app.uiHotfix = app.uiHotfix || {};
+    const currentKey = String(app.uiHotfix.dashboardMetric || fallback).trim().toLowerCase();
+    app.uiHotfix.dashboardMetric = DASHBOARD_FOCUS_METRICS.includes(currentKey) ? currentKey : fallback;
+    return app.uiHotfix.dashboardMetric;
+  }
+
+  function setDashboardMetricFocus(metricKey) {
+    const fallback = DASHBOARD_FOCUS_METRICS[0] || 'revenue';
+    const nextKey = DASHBOARD_FOCUS_METRICS.includes(String(metricKey || '').trim().toLowerCase())
+      ? String(metricKey || '').trim().toLowerCase()
+      : fallback;
+    const app = stateRef();
+    if (app) {
+      app.uiHotfix = app.uiHotfix || {};
+      app.uiHotfix.dashboardMetric = nextKey;
+    }
+    return nextKey;
+  }
+
+  function dashboardMetricDefinitions(executive) {
+    const metric = executive?.focusMetric || executive?.overall || {};
+    const metricKey = metric.key || 'all';
+    const previous = executive?.compareByKey?.get ? executive.compareByKey.get(metricKey) : null;
+    const turnover = buildTurnoverMetric(metricKey, executive.range);
+    const turnoverSource = turnover.turnoverPublishedSeries?.length
+      ? turnover.turnoverPublishedSeries
+      : (turnover.turnoverSeries?.length ? turnover.turnoverSeries : (turnover.rows || []).slice(0, 18));
+    const completion = num(metric.completion);
+    const marginPct = num(metric.marginPct);
+    const turnoverProgress = turnover.avgTurnoverDays !== null
+      ? Math.max(0.08, Math.min(1, 1 - Math.min(120, turnover.avgTurnoverDays) / 140))
+      : 0.18;
+    return [
+      {
+        key: 'revenue',
+        icon: '₽',
+        label: 'Выручка',
+        value: money(metric.revenue),
+        sub: `${int(metric.units)} шт. · чек ${metric.avgCheck > 0 ? money(metric.avgCheck) : '—'}`,
+        tone: toneCompletion(metric.completion),
+        open: 'revenue',
+        openKey: metricKey,
+        progress: Math.max(0.04, Math.min(1, completion)),
+        delta: deltaBadge('LFL', relativeDelta(metric.revenue, previous?.revenue)),
+        points: dashboardCalmPoints(metric.days, (row) => row.revenue),
+        empty: 'Нет выручки'
+      },
+      {
+        key: 'completion',
+        icon: '%',
+        label: 'План',
+        value: pct(metric.completion),
+        sub: `факт ${metricFactDisplay(metric)} · план ${metricPlanDisplay(metric)}`,
+        tone: toneCompletion(metric.completion),
+        open: 'completion',
+        openKey: metricKey,
+        progress: Math.max(0.04, Math.min(1, completion)),
+        delta: deltaBadge('LFL', percentagePointDelta(metric.completion, previous?.completion), false, 'pp'),
+        points: dashboardCalmPoints(metric.days, (row) => {
+          const value = dailyCompletion(row, metric);
+          return value === null ? NaN : value * 100;
+        }),
+        empty: 'Нет плана'
+      },
+      {
+        key: 'margin',
+        icon: 'M',
+        label: 'Маржа',
+        value: pct(metric.marginPct),
+        sub: `${money(metric.margin)} · оборот ${money(metric.revenue)}`,
+        tone: toneMargin(metric.marginPct),
+        open: 'margin',
+        openKey: metricKey,
+        progress: Math.max(0.04, Math.min(1, marginPct / 0.35)),
+        delta: deltaBadge('LFL', relativeDelta(metric.margin, previous?.margin)),
+        points: dashboardCalmPoints(metric.days, (row) => row.margin),
+        empty: 'Нет маржи'
+      },
+      {
+        key: 'stock',
+        icon: 'D',
+        label: 'Запас',
+        value: turnover.avgTurnoverDays !== null ? `${turnover.avgTurnoverDays.toFixed(1)} дн.` : '—',
+        sub: `остаток ${int(turnover.totalStock)} · в пути ${int(turnover.totalTransit)}`,
+        tone: turnover.avgTurnoverDays !== null && turnover.avgTurnoverDays > 90 ? 'warn' : 'ok',
+        open: 'stock',
+        openKey: turnover.key,
+        progress: turnoverProgress,
+        delta: deltaBadge('LFL', relativeDelta(turnover.avgTurnoverDays, previous?.avgTurnoverDays), true),
+        points: dashboardCalmPoints(turnoverSource, (row) => row.avgTurnover ?? row.turnoverDays),
+        empty: 'Нет ряда запаса'
+      }
+    ];
+  }
+
+  function dashboardActiveMetric(executive) {
+    const activeKey = dashboardMetricFocusState();
+    const metrics = dashboardMetricDefinitions(executive);
+    return metrics.find((metric) => metric.key === activeKey) || metrics[0];
+  }
+
+  function dashboardScoreValue(executive) {
+    const metric = executive?.focusMetric || executive?.overall || {};
+    const turnover = buildTurnoverMetric(metric.key || 'all', executive.range);
+    const completionScore = Math.min(36, Math.max(0, num(metric.completion) / 1.12 * 36));
+    const marginScore = Math.min(24, Math.max(0, num(metric.marginPct) / 0.34 * 24));
+    const stockScore = turnover.avgTurnoverDays === null
+      ? 12
+      : turnover.avgTurnoverDays <= 45
+        ? 20
+        : turnover.avgTurnoverDays <= 90
+          ? 13
+          : 7;
+    const drrValue = metric.drr === null || metric.drr === undefined ? null : num(metric.drr);
+    const adsScore = drrValue === null
+      ? 10
+      : drrValue <= 0.15
+        ? 14
+        : drrValue <= 0.22
+          ? 10
+          : 6;
+    const volumeScore = num(metric.revenue) > 0 ? 6 : 2;
+    return Math.max(0, Math.min(100, Math.round(completionScore + marginScore + stockScore + adsScore + volumeScore)));
+  }
+
+  function dashboardScoreLevel(score) {
+    if (score >= 88) return { label: 'Level A', tone: 'ok' };
+    if (score >= 72) return { label: 'Level B', tone: 'info' };
+    if (score >= 56) return { label: 'Level C', tone: 'warn' };
+    return { label: 'Level D', tone: 'danger' };
+  }
+
+  function dashboardCleanStatusSentence(metric, executive) {
+    const completion = num(metric?.completion);
+    const marginPct = num(metric?.marginPct);
+    const drr = metric?.drr === null || metric?.drr === undefined ? null : num(metric.drr);
+    if (executive?.range?.clamped) {
+      return 'Период шире опубликованного факта, поэтому экран честно считает только доступные дни.';
+    }
+    if (completion >= 1 && marginPct >= 0.28 && (drr === null || drr <= 0.18)) {
+      return 'План держится, маржа выглядит здорово, рекламная нагрузка в спокойном коридоре.';
+    }
+    if (completion < 0.82) {
+      return 'Главный акцент сейчас — темп продаж: план ниже нужной траектории, смотрим вклад площадок и дней.';
+    }
+    if (marginPct < 0.18) {
+      return 'Продажи есть, но экран подсвечивает давление на маржу: важно смотреть mix, цену и рекламный вклад.';
+    }
+    if (drr !== null && drr > 0.22) {
+      return 'Рекламная нагрузка выше комфортной зоны, поэтому ДРР стоит держать рядом с выручкой и маржей.';
+    }
+    return 'Срез выглядит рабочим: сверху ключевые KPI, ниже динамика по дням и сравнение площадок.';
+  }
+
+  function dashboardQuestItems(executive) {
+    const metric = executive?.focusMetric || executive?.overall || {};
+    const turnover = buildTurnoverMetric(metric.key || 'all', executive.range);
+    return [
+      {
+        label: 'План',
+        value: pct(metric.completion),
+        hint: `${metricFactDisplay(metric)} / ${metricPlanDisplay(metric)}`,
+        tone: toneCompletion(metric.completion)
+      },
+      {
+        label: 'Маржа',
+        value: pct(metric.marginPct),
+        hint: money(metric.margin),
+        tone: toneMargin(metric.marginPct)
+      },
+      {
+        label: 'ДРР',
+        value: metric.drr !== null && metric.drr !== undefined ? pct(metric.drr) : '—',
+        hint: metric.spend > 0 ? `расход ${money(metric.spend)}` : 'нет рекламного расхода',
+        tone: metric.drr !== null && metric.drr !== undefined ? toneDrr(metric.drr) : 'info'
+      },
+      {
+        label: 'Запас',
+        value: turnover.avgTurnoverDays !== null ? `${turnover.avgTurnoverDays.toFixed(1)} дн.` : '—',
+        hint: `остаток ${int(turnover.totalStock)} · в пути ${int(turnover.totalTransit)}`,
+        tone: turnover.avgTurnoverDays !== null && turnover.avgTurnoverDays > 90 ? 'warn' : 'ok'
+      }
+    ];
+  }
+
+  function dashboardHeroSection(executive) {
+    const metric = executive.focusMetric || executive.overall;
+    const activeMetric = dashboardActiveMetric(executive);
+    const metricCards = dashboardMetricDefinitions(executive);
+    const score = dashboardScoreValue(executive);
+    const level = dashboardScoreLevel(score);
+    const selectedStart = parseDate(executive.range.state.start) || executive.range.effectiveStart;
+    const selectedEnd = parseDate(executive.range.state.end) || executive.range.effectiveEnd;
+    const platformOptions = [
+      { key: 'all', label: 'Все' },
+      ...PLATFORM_KEYS.filter((key) => key !== 'all').map((key) => ({ key, label: shortPlatformLabel(key) }))
+    ];
+    const periodLabel = (key) => {
+      if (key === 'yesterday') return shortDate(executive.range.max);
+      if (key === 'prevweek') return 'Неделя';
+      return `${key} дн.`;
+    };
+    const activeProgress = Math.max(4, Math.min(100, Math.round(num(activeMetric.progress) * 100)));
+    const scoreStyle = ` style="--score-pct:${score}%;"`;
+    return `
+      <section class="portal-lux-shell"${dashboardPlatformVarsAttr(executive.selectedPlatform)}>
+        <div class="portal-lux-top">
+          <div>
+            <span class="portal-lux-overline">ALTEA · ${esc(currentFocusLabel(executive))}</span>
+            <h2 class="portal-lux-title">Пульс бренда</h2>
+            <p class="portal-lux-sub">${esc(dashboardCleanStatusSentence(metric, executive))}</p>
+          </div>
+          <div class="portal-lux-actions">
+            <button type="button" class="portal-lux-action primary" data-portal-export="dashboard-summary">Excel</button>
+            <button type="button" class="portal-lux-action" data-portal-export="dashboard-daily">Дни</button>
+          </div>
+        </div>
+
+        <div class="portal-lux-cockpit">
+          <div class="portal-lux-score-card">
+            <div class="portal-lux-score-ring"${scoreStyle}>
+              <div class="portal-lux-score-core"><strong>${esc(int(score))}</strong><span>${esc(level.label)}</span></div>
+            </div>
+            <div class="portal-lux-focus">
+              <span>${esc(activeMetric.label)}</span>
+              <strong>${esc(activeMetric.value)}</strong>
+              <em>${esc(activeMetric.sub)}</em>
+              <div class="portal-lux-progress"${dashboardChartStyle(activeMetric.openKey, activeMetric.progress)}><span style="width:${activeProgress}%"></span></div>
+            </div>
+          </div>
+
+          <div class="portal-lux-control-card">
+            <div class="portal-lux-control-line">
+              <span class="portal-lux-label">Период</span>
+              <div class="portal-lux-pills">
+                ${PRESET_KEYS.map((key) => {
+                  const active = executive.range.state.mode === 'preset' && executive.range.state.active === key;
+                  return `<button type="button" class="portal-lux-pill ${active ? 'active' : ''}" data-portal-exec-preset="${esc(key)}">${esc(periodLabel(key))}</button>`;
+                }).join('')}
+              </div>
+            </div>
+            <div class="portal-lux-date-strip">
+              <label class="portal-lux-date-chip">
+                <span>с</span><b>${esc(shortDate(selectedStart))}</b>
+                <input type="date" class="portal-exec-date-input ${executive.range.state.mode === 'custom' ? 'is-active' : ''}" data-portal-exec-start data-portal-exec-min="${esc(iso(executive.range.min))}" data-portal-exec-max="${esc(iso(executive.range.max))}" value="${esc(executive.range.state.start || '')}">
+              </label>
+              <label class="portal-lux-date-chip">
+                <span>по</span><b>${esc(shortDate(selectedEnd))}</b>
+                <input type="date" class="portal-exec-date-input ${executive.range.state.mode === 'custom' ? 'is-active' : ''}" data-portal-exec-end data-portal-exec-min="${esc(iso(executive.range.min))}" data-portal-exec-max="${esc(iso(executive.range.max))}" value="${esc(executive.range.state.end || '')}">
+              </label>
+            </div>
+            <div class="portal-lux-control-line">
+              <span class="portal-lux-label">Площадка</span>
+              <div class="portal-lux-pills">
+                ${platformOptions.map((platform) => {
+                  const active = executive.selectedPlatform === platform.key;
+                  return `<button type="button" class="portal-lux-pill portal-lux-platform-pill ${active ? 'active' : ''}" data-platform="${esc(platform.key)}" data-portal-exec-platform="${esc(platform.key)}">${esc(platform.label)}</button>`;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="portal-lux-metric-rail">
+          ${metricCards.map((item) => {
+            const active = item.key === dashboardMetricFocusState();
+            const progress = Math.max(4, Math.min(100, Math.round(num(item.progress) * 100)));
+            return `
+              <button type="button" class="portal-lux-metric is-${esc(item.tone)} ${active ? 'is-active' : ''}" data-portal-calm-metric="${esc(item.key)}" aria-pressed="${active ? 'true' : 'false'}">
+                <div class="portal-lux-metric-head"><span class="portal-lux-icon">${esc(item.icon)}</span>${item.delta || ''}</div>
+                <span>${esc(item.label)}</span>
+                <strong>${esc(item.value)}</strong>
+                <em>${esc(item.sub)}</em>
+                <div class="portal-lux-metric-line"${dashboardChartStyle(item.openKey, item.progress)}><i style="width:${progress}%"></i></div>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </section>
+    `;
+  }
+
+  function dashboardOverviewCalmSection(executive) {
+    const activeMetric = dashboardActiveMetric(executive);
+    const progress = Math.max(4, Math.min(100, Math.round(num(activeMetric.progress) * 100)));
+    const quests = dashboardQuestItems(executive);
+    return `
+      <section class="portal-lux-section">
+        <div class="portal-lux-section-head">
+          <div>
+            <h3>${esc(activeMetric.label)}</h3>
+            <p>${esc(executive.range.effectiveLabel)} · ${esc(currentFocusLabel(executive))}</p>
+          </div>
+          ${sectionMetaHtml(executive, [activeMetric.delta || badgeHtml('LFL', 'info')])}
+        </div>
+        <div class="portal-lux-showcase-grid">
+          <article class="portal-lux-chart-card is-${esc(activeMetric.tone)}" data-portal-exec-open="${esc(activeMetric.open)}" data-portal-exec-key="${esc(activeMetric.openKey)}">
+            <div class="portal-lux-metric-head">
+              <span class="portal-lux-label">${esc(activeMetric.label)}</span>
+              <span class="portal-lux-icon">${esc(activeMetric.icon)}</span>
+            </div>
+            <div class="portal-lux-chart-value">${esc(activeMetric.value)}</div>
+            <div class="portal-lux-chart-sub">${esc(activeMetric.sub)}</div>
+            <div class="portal-lux-progress"${dashboardChartStyle(activeMetric.openKey, activeMetric.progress)}><span style="width:${progress}%"></span></div>
+            ${dashboardCalmChart(activeMetric.points, { tone: activeMetric.tone, platformKey: activeMetric.openKey, completion: activeMetric.progress, empty: activeMetric.empty })}
+          </article>
+          <div class="portal-lux-quest-stack">
+            ${quests.map((item) => `
+              <div class="portal-lux-quest is-${esc(item.tone)}">
+                <div><strong>${esc(item.label)}</strong><span>${esc(item.hint)}</span></div>
+                <b>${esc(item.value)}</b>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function dashboardPrioritySection(executive) {
+    const panel = dashboardTaskPanel(executive);
+    const tasks = panel.rows.slice(0, 4);
+    const issueRows = dashboardIssueRows(executive).slice(0, 4);
+    const overdueCount = panel.rows.filter(dashboardTaskIsOverdue).length;
+    const controlPlatformKey = dashboardControlPlatformKey(executive.selectedPlatform);
+    const taskMarkup = tasks.length
+      ? tasks.map((task) => {
+        const sku = typeof getSku === 'function' ? getSku(task.articleKey) : null;
+        const subject = sku?.article || task.articleKey || task.entityLabel || 'Без SKU';
+        const title = task.title || 'Задача';
+        const subtitle = task.nextAction || task.reason || sku?.name || task.entityLabel || 'Следующий шаг';
+        return `
+          <article class="portal-lux-row" data-portal-open-control="1" data-portal-control-platform="${esc(controlPlatformKey)}">
+            <div class="portal-lux-row-main"><strong>${esc(subject)}</strong><span>${esc(title)} · ${esc(subtitle)}</span></div>
+            <div class="portal-lux-row-meta">${dashboardTaskStatusChip(task)}${dashboardTaskPriorityChip(task)}</div>
+          </article>
+        `;
+      }).join('')
+      : `<div class="portal-lux-empty">Активных задач по выбранному срезу нет.</div>`;
+    const issueMarkup = issueRows.length
+      ? issueRows.map((row) => `
+        <article class="portal-lux-row" data-portal-exec-open="issues" data-portal-exec-key="${esc(row.platformKey)}">
+          <div class="portal-lux-row-main"><strong>${esc(row.article || 'Без артикула')}</strong><span>${esc(row.platformLabel)} · ${esc(row.reasons || row.name || 'Нужна проверка')}</span></div>
+          <div class="portal-lux-row-meta">${badgeHtml(row.owner || 'Без owner', row.owner && row.owner !== 'Без owner' ? 'ok' : 'warn')}</div>
+        </article>
+      `).join('')
+      : `<div class="portal-lux-empty">Крупных сигналов по текущему срезу не видно.</div>`;
+    return `
+      <section class="portal-lux-mission-grid">
+        <div class="portal-lux-panel">
+          <div class="portal-lux-panel-head">
+            <h3>Next moves</h3>
+            <div class="portal-lux-chip-row">
+              ${badgeHtml(`${int(panel.rows.length)} задач`, panel.rows.length ? 'warn' : 'ok')}
+              ${overdueCount ? badgeHtml(`${int(overdueCount)} проср.`, 'danger') : ''}
+              <button type="button" class="portal-lux-action" data-portal-open-control="1" data-portal-control-platform="${esc(controlPlatformKey)}">Задачи</button>
+            </div>
+          </div>
+          <div class="portal-lux-list">${taskMarkup}</div>
+        </div>
+        <div class="portal-lux-panel">
+          <div class="portal-lux-panel-head">
+            <h3>Signals</h3>
+            <div class="portal-lux-chip-row">${badgeHtml(`${int(issueRows.length)} в фокусе`, issueRows.length ? 'warn' : 'ok')}</div>
+          </div>
+          <div class="portal-lux-list">${issueMarkup}</div>
+        </div>
+      </section>
+    `;
+  }
+
+  function dashboardPlatformCalmSection(executive) {
+    const metrics = visibleMetrics(executive);
+    return `
+      <section class="portal-lux-section portal-lux-platform-matrix"${dashboardPlatformVarsAttr(executive.selectedPlatform)}>
+        <div class="portal-lux-section-head">
+          <div>
+            <h3>Матрица площадок</h3>
+            <p>${esc(executive.range.effectiveLabel)} · факт до ${esc(shortDate(executive.range.max))}</p>
+          </div>
+          ${sectionMetaHtml(executive, [badgeHtml(`${int(metrics.length)} площадки`, 'info')])}
+        </div>
+        <div class="portal-lux-platform-table">
+          <div class="portal-lux-platform-head">
+            <span>Площадка</span><span>План</span><span>Выручка</span><span>Маржа</span><span>ДРР</span><span>Запас</span>
+          </div>
+          ${metrics.map((metric) => {
+            const turnover = buildTurnoverMetric(metric.key, executive.range);
+            const tone = dashboardNetworkTone(metric, turnover);
+            return `
+              <article class="portal-lux-platform-row is-${esc(tone)}" data-platform="${esc(metric.key)}" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}"${dashboardPlatformVarsAttr(metric.key)}>
+                <div class="portal-lux-platform-name"><strong>${esc(metric.label)}</strong><span>${esc(int(metric.units))} шт. · чек ${esc(metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}</span></div>
+                <div class="portal-lux-platform-cell" data-label="План"><strong>${esc(pct(metric.completion))}</strong></div>
+                <div class="portal-lux-platform-cell" data-label="Выручка">${esc(money(metric.revenue))}</div>
+                <div class="portal-lux-platform-cell" data-label="Маржа">${esc(pct(metric.marginPct))}</div>
+                <div class="portal-lux-platform-cell" data-label="ДРР">${esc(metric.drr !== null && metric.drr !== undefined ? pct(metric.drr) : '—')}</div>
+                <div class="portal-lux-platform-cell" data-label="Запас">${esc(turnover.avgTurnoverDays !== null ? `${turnover.avgTurnoverDays.toFixed(1)} дн.` : '—')}</div>
+              </article>
+            `;
+          }).join('') || `<div class="portal-lux-empty">По выбранной площадке пока нет рабочего среза.</div>`}
+        </div>
+      </section>
+    `;
   }
 
   function liftModalActionCard(detail) {
@@ -8506,8 +9325,8 @@ function dashboardTaskStatusChip(task) {
       VERSION,
       executive?.signature || '',
       executive?.selectedPlatform || 'all',
-      metricPart,
-      dashboardTaskRenderSignature(executive?.selectedPlatform || 'all')
+      typeof dashboardMetricFocusState === 'function' ? dashboardMetricFocusState() : 'revenue',
+      metricPart
     ].join('||');
   }
 

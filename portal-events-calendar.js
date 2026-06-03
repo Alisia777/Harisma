@@ -1335,15 +1335,27 @@
     `;
   }
 
+  function compactCalendarDate(dateKey = '') {
+    const key = String(dateKey || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return key;
+    return `${key.slice(8, 10)}.${key.slice(5, 7)}`;
+  }
+
   function renderRangeBar(segment) {
     const { event, left, span, lane, startsHere, endsHere } = segment;
     const mission = eventMission(event);
     const editable = isEditableEvent(event);
     const skuLabel = event.skus.length ? `${formatInt(event.skus.length)} SKU` : eventKindLabel(event);
+    const dateLabel = event.endDate !== event.startDate
+      ? `${compactCalendarDate(event.startDate)}-${compactCalendarDate(event.endDate)}`
+      : compactCalendarDate(event.startDate);
+    const typeLabel = eventKindKey(event).startsWith('task-')
+      ? taskTypeLabel(event.taskType || event.type)
+      : eventKindLabel(event);
     return `
       <button class="promo-range-bar ${eventVisualClass(event)} ${eventTone(event)} mission-${mission.tone} ${startsHere ? 'range-start' : 'range-continue-start'} ${endsHere ? 'range-end' : 'range-continue-end'} ${editable ? '' : 'readonly'}" type="button" draggable="${editable ? 'true' : 'false'}" data-calendar-event="${html(event.id)}" style="--range-left:${left};--range-span:${span};--range-lane:${lane};--event-xp:${mission.score}%">
         <strong>${html(event.title)}</strong>
-        <em>${html(`${platformLabel(event.platform)} - ${formatDate(event.startDate)}${event.endDate !== event.startDate ? ` / ${formatDate(event.endDate)}` : ''}`)}</em>
+        <em>${html(`${platformLabel(event.platform)} - ${dateLabel} - ${typeLabel}`)}</em>
         <span>${html(skuLabel)}</span>
       </button>
     `;

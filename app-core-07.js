@@ -11808,6 +11808,7 @@ function launchCalendarState() {
   view.search = String(view.search || '');
   view.group = view.group || 'all';
   view.status = view.status || 'all';
+  view.statusTheme = view.statusTheme || 'all';
   return view;
 }
 
@@ -11885,6 +11886,7 @@ function launchCalendarFilteredItems(items = []) {
   return (items || []).filter((item) => {
     if (view.group !== 'all' && String(item.reportGroup || '') !== view.group) return false;
     if (view.status !== 'all' && String(item.status || '') !== view.status) return false;
+    if (view.statusTheme !== 'all' && launchStatusTheme(item.status).key !== view.statusTheme) return false;
     if (!search) return true;
     const haystack = [
       item.name,
@@ -11935,10 +11937,55 @@ function renderLaunchCalendarPill(item = {}) {
   return `
     <button class="promo-event-pill compact promo-kind-launch mission-${escapeHtml(tone)}" type="button" draggable="true" data-launch-calendar-event="${escapeHtml(item.id)}" data-launch-status-tone="${escapeHtml(statusTheme.key)}" style="--event-xp:${progress}%;${launchStatusInlineStyle(item.status)}">
       <span class="promo-event-kind-badge">${escapeHtml(statusTheme.label)}</span>
-      <b class="promo-event-sku-count">${escapeHtml(item.status || 'старт')}</b>
       <strong>${escapeHtml(item.name || item.articleKey || 'Новая новинка')}</strong>
       <em class="promo-event-meta">${escapeHtml(meta)}</em>
+      <b class="promo-event-sku-count">${escapeHtml(item.status || 'старт')}</b>
     </button>
+  `;
+}
+
+function launchCalendarGameStats(monthItems = [], allItems = []) {
+  const items = Array.isArray(monthItems) ? monthItems : [];
+  const total = items.length;
+  const ready = items.filter(launchIsReady).length;
+  const risk = items.filter((item) => (item.blockers || []).length || launchCalendarMissionTone(item) === 'danger').length;
+  const active = Math.max(0, total - ready - risk);
+  const score = total
+    ? Math.round(items.reduce((sum, item) => sum + launchCalendarProgressScore(item), 0) / total)
+    : 0;
+  const label = score >= 82 ? 'режим запуска' : score >= 55 ? 'разгон' : total ? 'сборка' : 'нет миссий';
+  const statusThemes = [...new Map((allItems || []).map((item) => {
+    const theme = launchStatusTheme(item.status);
+    return [theme.key, theme];
+  })).values()];
+  return { total, ready, risk, active, score, label, statusThemes };
+}
+
+function renderLaunchCalendarGame(monthItems = [], allItems = []) {
+  const stats = launchCalendarGameStats(monthItems, allItems);
+  const view = launchCalendarState();
+  return `
+    <section class="launch-calendar-game" style="--launch-game-score:${stats.score}%">
+      <div class="launch-calendar-game__score">
+        <span>Квест месяца</span>
+        <strong>${fmt.int(stats.score)}</strong>
+        <em>${escapeHtml(stats.label)}</em>
+        <i aria-hidden="true"></i>
+      </div>
+      <div class="launch-calendar-game__stats">
+        <span><b>${fmt.int(stats.total)}</b><em>в месяце</em></span>
+        <span><b>${fmt.int(stats.ready)}</b><em>готово</em></span>
+        <span><b>${fmt.int(stats.active)}</b><em>в работе</em></span>
+        <span class="${stats.risk ? 'is-risk' : ''}"><b>${fmt.int(stats.risk)}</b><em>риск</em></span>
+      </div>
+      <div class="launch-calendar-legend" aria-label="Легенда статусов новинок">
+        ${stats.statusThemes.map((theme) => `
+          <button type="button" class="${view.statusTheme === theme.key ? 'active' : ''}" data-launch-calendar-status-quick="${escapeHtml(theme.key)}" style="--launch-status-color:${theme.color}">
+            <i aria-hidden="true"></i><span>${escapeHtml(theme.label)}</span>
+          </button>
+        `).join('')}
+      </div>
+    </section>
   `;
 }
 
@@ -12014,6 +12061,8 @@ function renderLaunchCalendarWorkspace(items = []) {
         </label>
       </section>
 
+      ${renderLaunchCalendarGame(monthItems, filteredItems)}
+
       <section class="promo-calendar-layout launch-calendar-layout">
         <div class="promo-calendar-board launch-calendar-board">
           <div class="promo-month-head">
@@ -12066,7 +12115,16 @@ function bindLaunchCalendar(root) {
   });
   root.querySelector('[data-launch-calendar-status]')?.addEventListener('change', (event) => {
     view.status = event.target.value || 'all';
+    view.statusTheme = 'all';
     rerenderCurrentView();
+  });
+  root.querySelectorAll('[data-launch-calendar-status-quick]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const theme = button.getAttribute('data-launch-calendar-status-quick') || 'all';
+      view.statusTheme = view.statusTheme === theme ? 'all' : theme;
+      view.status = 'all';
+      rerenderCurrentView();
+    });
   });
   root.querySelectorAll('[data-launch-calendar-month]').forEach((button) => {
     button.addEventListener('click', () => {

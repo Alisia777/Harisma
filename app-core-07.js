@@ -2194,17 +2194,19 @@ async function createOrOpenLaunchTask(item = {}) {
   return task;
 }
 
-function getLaunchEditorItem(launchId = '') {
+function getLaunchEditorItem(launchId = '', defaults = {}) {
+  const seed = defaults && typeof defaults === 'object' ? defaults : {};
   if (!launchId) {
     return normalizeLaunchItem({
       id: uid('launch'),
       reportGroup: 'Продукт',
       launchMonth: state.dashboard?.dataFreshness?.launchPlanHorizon || 'Текущий фокус',
-      status: 'Черновик'
+      status: 'Черновик',
+      ...seed
     }, { skipTaskLookup: true });
   }
   return getLaunchItems({ skipTaskLookup: true }).find((item) => item.id === launchId)
-    || normalizeLaunchItem({ id: launchId, reportGroup: 'Продукт', launchMonth: state.dashboard?.dataFreshness?.launchPlanHorizon || 'Текущий фокус' }, { skipTaskLookup: true });
+    || normalizeLaunchItem({ id: launchId, reportGroup: 'Продукт', launchMonth: state.dashboard?.dataFreshness?.launchPlanHorizon || 'Текущий фокус', ...seed }, { skipTaskLookup: true });
 }
 
 function launchApplyStageSince(draft = {}, currentItem = {}) {
@@ -2370,8 +2372,8 @@ function renderLaunchReadinessPanel(item = {}) {
   `;
 }
 
-function openLaunchEditor(launchId = '') {
-  const currentItem = getLaunchEditorItem(launchId);
+function openLaunchEditor(launchId = '', defaults = {}) {
+  const currentItem = getLaunchEditorItem(launchId, defaults);
   const revenuePlan = normalizeLaunchPlanList(currentItem.monthlyRevenuePlan, launchPortalMonthPlanLabels(currentItem.launchMonth));
   const launchPlan = normalizeLaunchPlanList(currentItem.monthlyLaunchPlan, revenuePlan.map((entry) => entry.label));
   const ganttColumns = launchEditorMonthColumns(currentItem);
@@ -11410,8 +11412,8 @@ function bindLaunchMonthsFold(root) {
   });
 }
 
-function openLaunchEditor(launchId = '') {
-  const currentItem = getLaunchEditorItem(launchId);
+function openLaunchEditor(launchId = '', defaults = {}) {
+  const currentItem = getLaunchEditorItem(launchId, defaults);
   const revenuePlan = normalizeLaunchPlanList(currentItem.monthlyRevenuePlan, launchPortalMonthPlanLabels(currentItem.launchMonth));
   const launchPlan = normalizeLaunchPlanList(currentItem.monthlyLaunchPlan, revenuePlan.map((entry) => entry.label));
   const ganttColumns = launchEditorMonthColumns(currentItem);
@@ -11958,6 +11960,7 @@ function renderLaunchCalendarDay(day, items = [], monthKey = '') {
       <div class="promo-day-head">
         <span>${launchCalendarDateFromKey(day).getDate()}</span>
         <em>${day === today ? 'сегодня' : dayItems.length ? `${fmt.int(dayItems.length)} нов.` : ''}</em>
+        <button class="launch-calendar-day-add" type="button" data-launch-calendar-add-day="${escapeHtml(day)}" aria-label="${escapeHtml(`Новая карточка на ${launchCalendarShortDateLabel(day)}`)}" title="${escapeHtml(`Новая карточка на ${launchCalendarShortDateLabel(day)}`)}">+</button>
       </div>
       <div class="promo-day-events ${dayItems.length > 4 ? 'scrollable' : ''}">
         ${dayItems.map(renderLaunchCalendarPill).join('')}
@@ -12041,6 +12044,16 @@ function moveLaunchCalendarItem(launchId = '', day = '') {
   rerenderCurrentView();
 }
 
+function openLaunchCalendarNewItem(day = '') {
+  const dateKey = launchCalendarValidDateKey(day);
+  if (!dateKey) return;
+  openLaunchEditor('', {
+    launchDate: dateKey,
+    launchMonth: launchMonthKeyToLabel(dateKey.slice(0, 7)) || state.dashboard?.dataFreshness?.launchPlanHorizon || 'Текущий фокус',
+    status: 'Черновик'
+  });
+}
+
 function bindLaunchCalendar(root) {
   const view = launchCalendarState();
   root.querySelector('[data-launch-calendar-search]')?.addEventListener('input', (event) => {
@@ -12069,6 +12082,10 @@ function bindLaunchCalendar(root) {
     button.addEventListener('click', () => openLaunchEditor());
   });
   root.querySelectorAll('[data-launch-calendar-day]').forEach((day) => {
+    day.addEventListener('click', (event) => {
+      if (event.target?.closest?.('[data-launch-calendar-event], [data-launch-calendar-add-day]')) return;
+      openLaunchCalendarNewItem(day.getAttribute('data-launch-calendar-day') || '');
+    });
     day.addEventListener('dragover', (event) => {
       event.preventDefault();
       day.classList.add('drag-over');
@@ -12079,6 +12096,12 @@ function bindLaunchCalendar(root) {
       day.classList.remove('drag-over');
       const id = event.dataTransfer?.getData('application/x-launch-item') || event.dataTransfer?.getData('text/plain');
       moveLaunchCalendarItem(id, day.getAttribute('data-launch-calendar-day') || '');
+    });
+  });
+  root.querySelectorAll('[data-launch-calendar-add-day]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      openLaunchCalendarNewItem(button.getAttribute('data-launch-calendar-add-day') || '');
     });
   });
   root.querySelectorAll('[data-launch-calendar-event]').forEach((button) => {

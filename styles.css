@@ -1745,14 +1745,28 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .launch-secondary-details summary,.launch-ready-card summary{cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;list-style:none}
 .launch-secondary-details summary::-webkit-details-marker,.launch-ready-card summary::-webkit-details-marker{display:none}
 .launch-work-columns-secondary{margin-top:14px}
-.launch-calendar-shell{margin-top:12px}
+.launch-calendar-shell{width:100%;margin-top:12px}
 .launch-calendar-command{align-items:center;padding:14px}
 .launch-calendar-command .promo-calendar-command-copy{gap:2px}
 .launch-calendar-command .promo-calendar-command-copy h2{font-size:26px;line-height:1.12}
 .launch-calendar-toolbar{grid-template-columns:minmax(220px,1fr) minmax(150px,.42fr) minmax(150px,.42fr)}
-.launch-calendar-layout{grid-template-columns:minmax(0,1fr)}
-.launch-calendar-board .promo-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:154px}
-.launch-calendar-board .promo-calendar-day{min-height:0;height:154px}
+.launch-calendar-layout,.promo-calendar-layout.launch-calendar-layout{width:100%;grid-template-columns:minmax(0,1fr)}
+.launch-calendar-board{width:100%;border-color:rgba(220,177,95,.28);background:linear-gradient(180deg,rgba(220,177,95,.045),rgba(255,255,255,.012) 36%,rgba(0,0,0,.2)),rgba(255,255,255,.018);box-shadow:0 26px 70px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.055)}
+.launch-calendar-board .promo-month-head{padding:14px 12px;border-bottom:1px solid rgba(220,177,95,.26);background:linear-gradient(90deg,rgba(220,177,95,.14),rgba(255,255,255,.025) 42%,rgba(220,177,95,.08)),rgba(0,0,0,.22)}
+.launch-calendar-board .promo-month-head button{border-color:rgba(220,177,95,.24);background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(0,0,0,.22));box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.launch-calendar-board .promo-weekdays{border-bottom:1px solid rgba(220,177,95,.2);background:rgba(0,0,0,.32)}
+.launch-calendar-board .promo-weekdays span{border:0;color:rgba(238,219,176,.82);padding:10px 8px}
+.launch-calendar-board .promo-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:154px;gap:1px;padding:1px;background:linear-gradient(135deg,rgba(220,177,95,.22),rgba(255,255,255,.055) 36%,rgba(220,177,95,.12))}
+.launch-calendar-board .promo-calendar-day{min-height:0;height:154px;padding:10px;border:0;background:radial-gradient(circle at 50% 0,rgba(220,177,95,.055),transparent 42%),linear-gradient(180deg,rgba(255,255,255,.018),rgba(0,0,0,.2)),#080706;box-shadow:inset 0 0 0 1px rgba(255,255,255,.026);cursor:pointer}
+.launch-calendar-board .promo-calendar-day:hover{background:radial-gradient(circle at 50% 0,rgba(220,177,95,.12),transparent 48%),linear-gradient(180deg,rgba(255,255,255,.028),rgba(0,0,0,.16)),#0d0b08;box-shadow:inset 0 0 0 1px rgba(220,177,95,.24)}
+.launch-calendar-board .promo-calendar-day.has-events{background:radial-gradient(circle at 50% 0,rgba(220,177,95,.13),transparent 48%),linear-gradient(180deg,rgba(255,255,255,.026),rgba(0,0,0,.17)),#0b0907}
+.launch-calendar-board .promo-calendar-day.today{box-shadow:inset 0 0 0 1px rgba(244,204,113,.86),inset 0 0 34px rgba(220,177,95,.08)}
+.launch-calendar-board .promo-calendar-day.muted-day{opacity:1;background:linear-gradient(180deg,rgba(255,255,255,.012),rgba(0,0,0,.26)),#050505;color:rgba(226,210,176,.48)}
+.launch-calendar-board .promo-calendar-day.muted-day .promo-day-head span{color:rgba(226,210,176,.52)}
+.launch-calendar-board .promo-day-head{align-items:flex-start;margin-bottom:8px}
+.launch-calendar-board .promo-day-head span{min-width:27px;height:27px;border-color:rgba(220,177,95,.14);border-radius:999px;background:rgba(0,0,0,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.045)}
+.launch-calendar-board .promo-day-head em{max-width:calc(100% - 36px);padding:4px 7px;border:1px solid rgba(220,177,95,.12);border-radius:999px;background:rgba(0,0,0,.24);color:rgba(226,210,176,.72);font-size:10px}
+.launch-calendar-board .promo-day-head em:empty{display:none}
 .launch-calendar-board .promo-event-pill.compact{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) 3px;align-content:stretch;align-items:start;gap:3px 5px;height:66px;min-height:66px;max-height:66px;padding:6px}
 .launch-calendar-board .promo-event-pill.compact::after{grid-column:1 / -1;width:var(--event-xp,0);height:3px;margin-top:0}
 .launch-calendar-board .promo-event-pill .promo-event-kind-badge{display:none}
@@ -1765,9 +1779,7 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .launch-action-warn{--launch-action-color:#edce8a}
 .launch-action-info{--launch-action-color:#62d5d1}
 .launch-action-ok{--launch-action-color:#5dcb94}
-.launch-calendar-board .promo-day-events{max-height:112px}
-.launch-calendar-day-add{display:grid;place-items:center;width:24px;height:24px;border:1px solid rgba(220,177,95,.36);border-radius:7px;background:rgba(0,0,0,.28);color:var(--muted);font-weight:900;line-height:1;cursor:pointer;opacity:.52;transition:opacity .15s ease,border-color .15s ease,color .15s ease,background .15s ease}
-.promo-calendar-day:hover .launch-calendar-day-add,.launch-calendar-day-add:focus-visible{opacity:1;border-color:rgba(220,177,95,.68);background:rgba(220,177,95,.12);color:var(--text)}
+.launch-calendar-board .promo-day-events{height:106px;max-height:106px;padding-top:0;padding-right:2px;gap:7px}
 .launch-calendar-game{display:grid;grid-template-columns:minmax(160px,.28fr) minmax(260px,.45fr) minmax(260px,1fr);gap:10px;align-items:stretch;padding:10px;border:1px solid rgba(220,177,95,.2);border-radius:8px;background:rgba(255,255,255,.025)}
 .launch-calendar-game__score,.launch-calendar-game__stats,.launch-calendar-legend{min-width:0;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(0,0,0,.18)}
 .launch-calendar-game__score{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;padding:10px}
@@ -1804,5 +1816,7 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
   .launch-project-column{min-width:0}
   .launch-project-card__head{grid-template-columns:1fr}
   .launch-calendar-toolbar{grid-template-columns:1fr}
-  .launch-calendar-board .promo-calendar-day{min-height:136px}
+  .launch-calendar-board .promo-month-grid{grid-auto-rows:136px}
+  .launch-calendar-board .promo-calendar-day{height:136px}
+  .launch-calendar-board .promo-day-events{height:88px;max-height:88px}
 }

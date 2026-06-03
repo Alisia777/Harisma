@@ -12060,7 +12060,6 @@ function renderLaunchCalendarDay(day, items = [], monthKey = '') {
       <div class="promo-day-head">
         <span>${launchCalendarDateFromKey(day).getDate()}</span>
         <em>${day === today ? 'сегодня' : dayItems.length ? `${fmt.int(dayItems.length)} нов.` : ''}</em>
-        <button class="launch-calendar-day-add" type="button" data-launch-calendar-add-day="${escapeHtml(day)}" aria-label="${escapeHtml(`Новая карточка на ${launchCalendarShortDateLabel(day)}`)}" title="${escapeHtml(`Новая карточка на ${launchCalendarShortDateLabel(day)}`)}">+</button>
       </div>
       <div class="promo-day-events ${dayItems.length > 4 ? 'scrollable' : ''}">
         ${dayItems.map(renderLaunchCalendarPill).join('')}
@@ -12204,7 +12203,7 @@ function bindLaunchCalendar(root) {
   });
   root.querySelectorAll('[data-launch-calendar-day]').forEach((day) => {
     day.addEventListener('click', (event) => {
-      if (event.target?.closest?.('[data-launch-calendar-event], [data-launch-calendar-add-day]')) return;
+      if (event.target?.closest?.('[data-launch-calendar-event]')) return;
       openLaunchCalendarNewItem(day.getAttribute('data-launch-calendar-day') || '');
     });
     day.addEventListener('dragover', (event) => {
@@ -12217,12 +12216,6 @@ function bindLaunchCalendar(root) {
       day.classList.remove('drag-over');
       const id = event.dataTransfer?.getData('application/x-launch-item') || event.dataTransfer?.getData('text/plain');
       moveLaunchCalendarItem(id, day.getAttribute('data-launch-calendar-day') || '');
-    });
-  });
-  root.querySelectorAll('[data-launch-calendar-add-day]').forEach((button) => {
-    button.addEventListener('click', (event) => {
-      event.stopPropagation();
-      openLaunchCalendarNewItem(button.getAttribute('data-launch-calendar-add-day') || '');
     });
   });
   root.querySelectorAll('[data-launch-calendar-event]').forEach((button) => {

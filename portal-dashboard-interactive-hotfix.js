@@ -1,6 +1,6 @@
 (function () {
-if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260603REVENUECOLOR1__) return;
-window.__ALTEA_DASHBOARD_INTERACTIVE_20260603REVENUECOLOR1__ = true;
+if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260603EXPORTAUDIT2__) return;
+window.__ALTEA_DASHBOARD_INTERACTIVE_20260603EXPORTAUDIT2__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE3__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE2__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE1__ = true;
@@ -16,7 +16,7 @@ window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260603revenuecolor1';
+  const VERSION = '20260603exportaudit2';
 const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
@@ -1906,6 +1906,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   function dashboardRevenueSourceText(source, platformKey) {
     const value = String(source || '').toLowerCase();
     const platform = canonicalDashboardPlatformKey(platformKey);
+    if (!value) return 'нет факта';
     if (value === 'wb_finance_turnover') return 'WB finance API';
     if (value === 'company_revenue') return 'общий контур';
     if (value === 'orders_revenue') return 'orders API';
@@ -2534,8 +2535,50 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       .sort((left, right) => String(left.platform).localeCompare(String(right.platform), 'ru') || String(left.article).localeCompare(String(right.article), 'ru'));
   }
 
+  function dashboardSummaryExportRows(executive) {
+    const keys = executive?.selectedPlatform && executive.selectedPlatform !== 'all'
+      ? [executive.selectedPlatform]
+      : ['all', ...dashboardExportPlatformKeys(executive)];
+    return keys
+      .map((platformKey) => {
+        const key = canonicalDashboardPlatformKey(platformKey);
+        const metric = key === 'all' ? executive?.overall : executive?.byKey?.get(key);
+        if (!metric) return null;
+        const turnover = buildTurnoverMetric(key, executive.range);
+        return {
+          platform: key === 'all' ? 'Все площадки' : (metric.label || shortPlatformLabel(key)),
+          period: executive?.range?.effectiveLabel || '',
+          observed_days: metric.observedDays,
+          requested_days: metric.requestedDays,
+          plan_mode: metricUsesCompanyPlan(metric) ? 'выручка' : 'штуки',
+          plan: metricUsesCompanyPlan(metric) ? (metric.planRevenue || metric.plan) : metric.plan,
+          fact_revenue: metric.revenue,
+          raw_revenue: metric.rawRevenue,
+          finance_turnover: metric.financeTurnover,
+          revenue_source: dashboardRevenueSourceText(metric.revenueSource, metric.key),
+          fact_units: metric.units,
+          completion_pct: Math.round(num(metric.completion) * 10000) / 100,
+          margin: metric.margin,
+          margin_pct: Math.round(num(metric.marginPct) * 10000) / 100,
+          avg_check: metric.avgCheck,
+          spend: metric.spend,
+          ad_revenue: metric.adRevenue,
+          drr_pct: metric.drr != null ? Math.round(num(metric.drr) * 10000) / 100 : '',
+          stock: turnover.totalStock,
+          in_transit: turnover.totalTransit,
+          avg_turnover_days: turnover.avgTurnoverDays ?? ''
+        };
+      })
+      .filter(Boolean);
+  }
+
+  function dashboardDailyExportPlatformKeys(executive) {
+    if (executive?.selectedPlatform && executive.selectedPlatform !== 'all') return [executive.selectedPlatform];
+    return ['all', ...dashboardExportPlatformKeys(executive)];
+  }
+
   function dashboardDailyExportRows(executive) {
-    return dashboardExportPlatformKeys(executive)
+    return dashboardDailyExportPlatformKeys(executive)
       .flatMap((platformKey) => {
         const metric = executive?.byKey?.get(platformKey);
         if (!metric) return [];
@@ -2547,13 +2590,15 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
           const pricePoint = priceMap.get(dateKey) || null;
           const turnoverPoint = turnoverMap.get(dateKey) || null;
           return {
-            platform: shortPlatformLabel(platformKey),
+            platform: platformKey === 'all' ? 'Все площадки' : shortPlatformLabel(platformKey),
             date: dateKey,
             plan_units: day.planUnits,
             fact_units: day.factUnits,
             completion_pct: day.completion != null ? Math.round(Number(day.completion) * 10000) / 100 : '',
             revenue: day.revenue,
-            revenue_source: dashboardRevenueSourceText(day.revenueSource, platformKey),
+            raw_revenue: day.rawRevenue,
+            finance_turnover: day.financeTurnover,
+            revenue_source: day.hasFact ? dashboardRevenueSourceText(day.revenueSource, platformKey) : 'нет факта',
             margin: day.margin,
             margin_pct: day.marginPct != null ? Math.round(Number(day.marginPct) * 10000) / 100 : '',
             avg_price_mp: pricePoint?.avgPrice ?? '',
@@ -2597,6 +2642,32 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     ], dashboardExpandedExportRows(executive), `dashboard-detail-${dashboardExportScope(executive)}.xls`);
   }
 
+  function downloadDashboardSummaryExcel(executive) {
+    dashboardDownloadHtmlTable([
+      ['platform', 'Площадка'],
+      ['period', 'Период'],
+      ['observed_days', 'Дней факта'],
+      ['requested_days', 'Дней в окне'],
+      ['plan_mode', 'Режим плана'],
+      ['plan', 'План'],
+      ['fact_revenue', 'Выручка экрана'],
+      ['raw_revenue', 'Заказный контур'],
+      ['finance_turnover', 'Фин. оборот'],
+      ['revenue_source', 'Источник выручки'],
+      ['fact_units', 'Факт, шт'],
+      ['completion_pct', 'Выполнение, %'],
+      ['margin', 'Маржа'],
+      ['margin_pct', 'Маржа, %'],
+      ['avg_check', 'Средний чек'],
+      ['spend', 'Расход рекламы'],
+      ['ad_revenue', 'Рекламная выручка'],
+      ['drr_pct', 'ДРР, %'],
+      ['stock', 'Остаток'],
+      ['in_transit', 'В пути'],
+      ['avg_turnover_days', 'Оборачиваемость, дн']
+    ], dashboardSummaryExportRows(executive), `dashboard-summary-${dashboardExportScope(executive)}.xls`);
+  }
+
   function downloadDashboardDailyExcel(executive) {
     dashboardDownloadHtmlTable([
       ['platform', 'Площадка'],
@@ -2605,6 +2676,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       ['fact_units', 'Факт, шт'],
       ['completion_pct', 'Выполнение, %'],
       ['revenue', 'Выручка'],
+      ['raw_revenue', 'Заказный контур'],
+      ['finance_turnover', 'Фин. оборот'],
       ['revenue_source', 'Источник выручки'],
       ['margin', 'Маржа'],
       ['margin_pct', 'Маржа, %'],
@@ -5909,7 +5982,7 @@ function dashboardTaskStatusChip(task) {
           downloadDashboardDailyExcel(executive);
           return;
         }
-        downloadDashboardExpandedExcel(executive);
+        downloadDashboardSummaryExcel(executive);
       });
     });
     root.querySelectorAll('[data-portal-open-control]').forEach((node) => {

@@ -898,7 +898,7 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .sku-salary-xp-delta strong{display:block;margin-top:5px;font-size:18px;line-height:1.12}
 .sku-salary-xp-delta.ok{border-color:rgba(77,171,112,.38);color:#a8f0c0}
 .sku-salary-xp-delta.danger{border-color:rgba(210,73,73,.42);color:#ffb0a6}
-.sku-salary-xp-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.sku-salary-xp-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .sku-salary-xp-stats span{border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(0,0,0,.12);padding:10px 12px;min-width:0}
 .sku-salary-xp-stats b{display:block;margin-top:4px;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .executive-funnel-shell{display:grid;gap:14px;margin:14px 0}

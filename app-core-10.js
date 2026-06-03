@@ -274,6 +274,9 @@ function executiveFunnelOwnerPlanBucket(owner = '') {
     adSpend: 0,
     planAdSpend: 0,
     hasPlanAdSpend: false,
+    apiFactRevenue: 0,
+    apiPlanToDateRevenue: 0,
+    apiMarginRub: 0,
     externalExcludedSpend: 0,
     externalExcludedOrders: 0
   };
@@ -296,7 +299,10 @@ function executiveFunnelOwnerPlatformBucket(platform = '') {
     planMarginWeight: 0,
     adSpend: 0,
     planAdSpend: 0,
-    hasPlanAdSpend: false
+    hasPlanAdSpend: false,
+    apiFactRevenue: 0,
+    apiPlanToDateRevenue: 0,
+    apiMarginRub: 0
   };
 }
 
@@ -433,9 +439,15 @@ function executiveFunnelApplyPayrollPlatformMetric(row = {}, metric = {}) {
     row[key] = executiveFunnelNumber(metric[key]);
   };
 
+  const apiFactRevenue = executiveFunnelNumber(row.apiFactRevenue || row.factRevenue);
+  const apiPlanToDateRevenue = executiveFunnelNumber(row.apiPlanToDateRevenue || row.planToDateRevenue);
+  const apiMarginRub = executiveFunnelNumber(row.apiMarginRub || row.marginRub);
   row.payrollKpi = true;
   row.salaryIncluded = metric.salaryIncluded !== false;
   row.truthSource = 'company_plan';
+  row.apiFactRevenue = apiFactRevenue;
+  row.apiPlanToDateRevenue = apiPlanToDateRevenue;
+  row.apiMarginRub = apiMarginRub;
   copyNumber('planRevenue');
   copyNumber('planToDateRevenue');
   copyNumber('factRevenue');
@@ -464,6 +476,8 @@ function executiveFunnelApplyPayrollPlatformMetric(row = {}, metric = {}) {
     row.planMarginWeight = planMarginWeight;
   }
 
+  row.kpiFactRevenue = row.factRevenue;
+  row.kpiFactDelta = row.apiFactRevenue > 0 ? row.factRevenue - row.apiFactRevenue : 0;
   return executiveFunnelFinalizePlanBucket(row);
 }
 
@@ -561,6 +575,9 @@ function executiveFunnelScalePlanBucket(bucket = {}, ratios = {}) {
   const planAdRatio = Number.isFinite(Number(ratios.planAd)) ? Number(ratios.planAd) : 1;
   const marginRatio = Number.isFinite(Number(ratios.margin)) ? Number(ratios.margin) : revenueRatio;
   const planMarginRatio = Number.isFinite(Number(ratios.planMargin)) ? Number(ratios.planMargin) : planToDateRatio;
+  const apiFactRevenue = executiveFunnelNumber(bucket.apiFactRevenue || bucket.factRevenue);
+  const apiPlanToDateRevenue = executiveFunnelNumber(bucket.apiPlanToDateRevenue || bucket.planToDateRevenue);
+  const apiMarginRub = executiveFunnelNumber(bucket.apiMarginRub || bucket.marginRub);
 
   bucket.factRevenue = executiveFunnelNumber(bucket.factRevenue) * revenueRatio;
   bucket.factUnits = executiveFunnelNumber(bucket.factUnits) * revenueRatio;
@@ -578,6 +595,12 @@ function executiveFunnelScalePlanBucket(bucket = {}, ratios = {}) {
   bucket.planMarginWeight = executiveFunnelNumber(bucket.planMarginWeight) * planToDateRatio;
   bucket.planMarginRub = executiveFunnelNumber(bucket.planMarginRub) * planMarginRatio;
   bucket.payrollControlScaled = true;
+  bucket.payrollKpi = true;
+  bucket.apiFactRevenue = apiFactRevenue;
+  bucket.apiPlanToDateRevenue = apiPlanToDateRevenue;
+  bucket.apiMarginRub = apiMarginRub;
+  bucket.kpiFactRevenue = bucket.factRevenue;
+  bucket.kpiFactDelta = bucket.apiFactRevenue > 0 ? bucket.factRevenue - bucket.apiFactRevenue : 0;
   return executiveFunnelFinalizePlanBucket(bucket);
 }
 
@@ -603,6 +626,10 @@ function executiveFunnelRebuildOwnerFromPlatforms(bucket = {}) {
     bucket.planMarginValue += executiveFunnelNumber(metric.planMarginValue);
     bucket.planMarginWeight += executiveFunnelNumber(metric.planMarginWeight);
     bucket.adSpend += executiveFunnelNumber(metric.adSpend);
+    bucket.apiFactRevenue += executiveFunnelNumber(metric.apiFactRevenue);
+    bucket.apiPlanToDateRevenue += executiveFunnelNumber(metric.apiPlanToDateRevenue);
+    bucket.apiMarginRub += executiveFunnelNumber(metric.apiMarginRub);
+    if (metric.payrollKpi || metric.payrollControlScaled) bucket.payrollKpi = true;
     if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
       bucket.planAdSpend += executiveFunnelNumber(metric.planAdSpend);
       bucket.hasPlanAdSpend = true;
@@ -736,6 +763,9 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     acc.planMarginValue += row.planMarginValue;
     acc.planMarginWeight += row.planMarginWeight;
     acc.adSpend += row.adSpend;
+    acc.apiFactRevenue += executiveFunnelNumber(row.apiFactRevenue);
+    acc.apiPlanToDateRevenue += executiveFunnelNumber(row.apiPlanToDateRevenue);
+    acc.apiMarginRub += executiveFunnelNumber(row.apiMarginRub);
     if (row.planAdSpend !== null && row.planAdSpend !== undefined) {
       acc.planAdSpend += executiveFunnelNumber(row.planAdSpend);
       acc.hasPlanAdSpend = true;
@@ -1481,7 +1511,7 @@ function renderExecutiveOwnerMetricBars(row = {}) {
       ratio: revenueRatio,
       tone: executiveFunnelCompletionLevel(revenueRatio),
       planText: `план ${fmt.money(row.planToDateRevenue)}`,
-      factText: `факт ${fmt.money(row.factRevenue)}`
+      factText: executiveFunnelRevenueFactText(row)
     })}
     ${renderExecutivePlanFactBar({
       label: 'Маржа',
@@ -1521,6 +1551,18 @@ function renderExecutiveHeroKpi(options = {}) {
   `;
 }
 
+function executiveFunnelApiFactSuffix(row = {}, label = 'API-факт') {
+  const apiFact = executiveFunnelNumber(row.apiFactRevenue);
+  const kpiFact = executiveFunnelNumber(row.factRevenue);
+  if (!row.payrollKpi || !(apiFact > 0) || Math.abs(kpiFact - apiFact) < 1) return '';
+  return ` · ${label} ${fmt.money(apiFact)}`;
+}
+
+function executiveFunnelRevenueFactText(row = {}) {
+  const prefix = row.payrollKpi ? 'KPI-факт' : 'факт';
+  return `${prefix} ${fmt.money(row.factRevenue)}${executiveFunnelApiFactSuffix(row)}`;
+}
+
 function renderExecutiveOwnerCard(row = {}, index = 0) {
   const level = executiveFunnelCompletionLevel(row.completionToDate);
   const style = executiveFunnelCardStyle(row.primaryPlatform || 'all', row.completionToDate);
@@ -1552,6 +1594,7 @@ function renderExecutiveOwnerCard(row = {}, index = 0) {
 
 function renderExecutivePlatformPlanCard(row = {}) {
   const level = executiveFunnelCompletionLevel(row.completionToDate);
+  const factLabel = row.payrollKpi ? 'KPI-факт' : 'API-факт';
   return `
     <div class="executive-platform-plan-card level-${level}" data-platform="${escapeHtml(row.platform)}" style="${executiveFunnelCardStyle(row.platform, row.completionToDate)}">
       <div>
@@ -1561,7 +1604,7 @@ function renderExecutivePlatformPlanCard(row = {}) {
       <i><b></b></i>
       <div class="executive-platform-plan-grid">
         <span><b>${fmt.money(row.planToDateRevenue)}</b><em>план оборота</em></span>
-        <span><b>${fmt.money(row.factRevenue)}</b><em>факт оборота</em></span>
+        <span><b>${fmt.money(row.factRevenue)}</b><em>${factLabel}${executiveFunnelApiFactSuffix(row)}</em></span>
         <span><b>${executiveFunnelMoney(row.planAdSpend)}</b><em>план рекламы</em></span>
         <span><b>${fmt.money(row.adSpend)}</b><em>факт рекламы</em></span>
       </div>
@@ -1655,7 +1698,7 @@ function renderExecutiveFunnel(funnel) {
         <div class="section-subhead">
           <div>
             <h3>План-факт по сотрудникам</h3>
-            <p class="small muted">Период ${escapeHtml(model.periodStart)}-${escapeHtml(model.periodEnd)} · зарплатный KPI WB / Ozon / Яндекс.</p>
+            <p class="small muted">Период ${escapeHtml(model.periodStart)}-${escapeHtml(model.periodEnd)} · KPI-факт из company_plan для WB / Ozon / Яндекс; API-факт показан рядом, когда отличается.</p>
           </div>
           <div class="badge-stack">
             ${badge(`выполнение ${executiveFunnelPct(totals.completionToDate)}`, executiveFunnelTone(totals.completionToDate, 0.9, 1))}
@@ -1669,7 +1712,7 @@ function renderExecutiveFunnel(funnel) {
             ratio: totals.completionToDate,
             tone: executiveFunnelCompletionLevel(totals.completionToDate),
             value: executiveFunnelPct(totals.completionToDate),
-            detail: `план ${fmt.money(totals.planToDateRevenue)} · факт ${fmt.money(totals.factRevenue)}`
+            detail: `план ${fmt.money(totals.planToDateRevenue)} · KPI-факт ${fmt.money(totals.factRevenue)}${executiveFunnelApiFactSuffix(totals)}`
           })}
           ${renderExecutiveHeroKpi({
             label: 'Маржа',

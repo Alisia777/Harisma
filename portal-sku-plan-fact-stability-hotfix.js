@@ -154,6 +154,51 @@
     `;
   }
 
+  function signedMoney(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return fmt.money(0);
+    return `${numeric > 0 ? '+' : ''}${fmt.money(numeric)}`;
+  }
+
+  function updateSalaryKpiCard(host, model) {
+    if (!host || !model || typeof fmt !== 'object') return;
+    const card = host.querySelector('.salary-plan-kpi-card');
+    const stats = card?.querySelector('.sku-salary-xp-stats');
+    if (!card || !stats) return;
+    const apiFact = Number(model.totals?.apiFactRevenue ?? model.totals?.payrollOriginal?.factRevenue ?? 0);
+    const kpiFact = Number(model.totals?.kpiFactRevenue ?? model.totals?.factRevenue ?? 0);
+    if (!Number.isFinite(apiFact) || apiFact <= 0 || !Number.isFinite(kpiFact) || kpiFact <= 0) return;
+    const delta = kpiFact - apiFact;
+    const ensureStat = (selector, html, anchorSelector = '') => {
+      const existing = stats.querySelector(selector);
+      if (existing) {
+        existing.outerHTML = html;
+        return;
+      }
+      const anchor = anchorSelector ? stats.querySelector(anchorSelector) : null;
+      if (anchor) anchor.insertAdjacentHTML('afterend', html);
+      else stats.insertAdjacentHTML('afterbegin', html);
+    };
+    ensureStat(
+      '[data-sku-salary-api-fact]',
+      `<span data-sku-salary-api-fact><em>API-факт</em><b>${fmt.money(apiFact)}</b></span>`,
+      'span'
+    );
+    ensureStat(
+      '[data-sku-salary-kpi-delta]',
+      `<span data-sku-salary-kpi-delta><em>дельта KPI/API</em><b>${signedMoney(delta)}</b></span>`,
+      '[data-sku-salary-api-fact]'
+    );
+    const titleParts = [
+      `KPI-факт: ${fmt.money(kpiFact)}`,
+      `API-факт: ${fmt.money(apiFact)}`,
+      `Дельта KPI к API: ${signedMoney(delta)}`,
+      `План к дате: ${fmt.money(model.totals?.planToDateRevenue)}`
+    ];
+    card.title = titleParts.join(' · ');
+    card.querySelector('.sku-salary-xp-track')?.setAttribute('title', card.title);
+  }
+
   function renderStableBody() {
     const host = root();
     if (!host) return;
@@ -197,6 +242,7 @@
     if (!forceRender && body && body.dataset.skuStableSignature === bodySignature && lastStableBodySignature === bodySignature) {
       updateSortHeaders();
       updatePlatformShell(host, model);
+      updateSalaryKpiCard(host, model);
       return;
     }
     lastStableBodySignature = bodySignature;
@@ -242,6 +288,16 @@
     totals.planMarginPct = totals.planMarginWeight > 0 ? totals.planMarginValue / totals.planMarginWeight : null;
     totals.planMarginRub = totals.planMarginPct === null ? null : totals.planToDateRevenue * totals.planMarginPct;
     const headlineTotals = model.totals?.payrollSourceTotals ? model.totals : totals;
+    const headlineUsesKpi = Boolean(model.totals?.payrollSourceTotals);
+    const headlineApiFact = headlineUsesKpi
+      ? Number(model.totals?.apiFactRevenue ?? model.totals?.payrollOriginal?.factRevenue ?? totals.factRevenue ?? 0)
+      : Number(totals.factRevenue || 0);
+    const headlineFactDelta = headlineUsesKpi && headlineApiFact > 0
+      ? Number(headlineTotals.factRevenue || 0) - headlineApiFact
+      : 0;
+    const factHint = headlineUsesKpi
+      ? `план к дате ${fmt.money(headlineTotals.planToDateRevenue)} · API-факт ${fmt.money(headlineApiFact)} · дельта KPI ${fmt.money(headlineFactDelta)}`
+      : `план к дате ${fmt.money(headlineTotals.planToDateRevenue)}`;
 
     if (body && typeof skuPlanFactRowHtml === 'function') {
       const tableColspan = 8;
@@ -263,7 +319,7 @@
     if (cards && typeof fmt === 'object') {
       const deltaClass = typeof skuPlanFactDeltaClass === 'function' ? skuPlanFactDeltaClass : (() => '');
       cards.innerHTML = [
-        kpiHtml('Факт оборота', fmt.money(headlineTotals.factRevenue), `план к дате ${fmt.money(headlineTotals.planToDateRevenue)}`),
+        kpiHtml(headlineUsesKpi ? 'KPI-факт оборота' : 'Факт оборота', fmt.money(headlineTotals.factRevenue), factHint),
         kpiHtml('Выполнение к дате', fmt.pct(headlineTotals.completionToDate), `месячный план: ${fmt.pct(headlineTotals.completionMonth)}`, deltaClass(headlineTotals.completionToDate - 1)),
         kpiHtml('Отклонение к дате', fmt.money(headlineTotals.gapToDate), `${fmt.int(totals.underPlan)} SKU ниже плана`, deltaClass(headlineTotals.gapToDate)),
         kpiHtml('Средний чек', fmt.money(totals.avgCheck), `${fmt.int(totals.factUnits)} шт. факт`),
@@ -290,6 +346,7 @@
     host.querySelector('#skuPlanFactDateFrom') && (host.querySelector('#skuPlanFactDateFrom').value = model.periodStart || current.dateFrom || '');
     host.querySelector('#skuPlanFactDateTo') && (host.querySelector('#skuPlanFactDateTo').value = model.periodEnd || current.dateTo || current.date || '');
     updatePlatformShell(host, model);
+    updateSalaryKpiCard(host, model);
     updateSortHeaders();
     if (tableWrap && scrollSnapshot) {
       tableWrap.scrollLeft = scrollSnapshot.left;

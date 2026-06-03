@@ -31,6 +31,7 @@
     "portal:contract-smoke": "node scripts/portal-contract-smoke.js",
     "portal:price-audit": "node scripts/audit-price-contour.js",
     "portal:metric-audit": "node scripts/audit-portal-metrics.js",
+    "portal:data-guard-audit": "node scripts/portal-data-guard-audit.js --write",
     "portal:wb-audit": "node scripts/audit-wb-report-reconciliation.js"
   },
   "dependencies": {

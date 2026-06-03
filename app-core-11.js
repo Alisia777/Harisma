@@ -6496,7 +6496,13 @@ function skuPlanFactModelNeedsExportHydration(model = {}) {
   const monthEnd = model.monthKey ? skuPlanFactMonthEnd(model.monthKey) : '';
   const apiFact = Number(model.totals?.apiFactRevenue || 0);
   const kpiFact = Number(model.totals?.kpiFactRevenue ?? model.totals?.factRevenue ?? 0);
-  return Boolean(monthEnd && model.periodEnd === monthEnd && kpiFact > 0 && apiFact <= 0);
+  const rowCount = Array.isArray(model.rows) ? model.rows.length : 0;
+  const filters = model.filters || {};
+  const unfilteredScope = !filters.search && (!filters.owner || filters.owner === 'all') && (!filters.platform || filters.platform === 'all');
+  return Boolean(
+    (monthEnd && model.periodEnd === monthEnd && kpiFact > 0 && apiFact <= 0)
+    || (unfilteredScope && kpiFact > 0 && rowCount > 0 && rowCount < 170)
+  );
 }
 
 async function skuPlanFactHydratedExportModel(model = null) {

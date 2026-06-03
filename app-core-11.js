@@ -231,8 +231,8 @@ function skuPlanFactPlatformAdLines(row = {}) {
   }).join(' · ');
 }
 
-function skuPlanFactFilters() {
-  state.skuPlanFactFilters = {
+function skuPlanFactFilters(overrides = null, options = {}) {
+  const nextFilters = {
     search: '',
     owner: 'all',
     status: 'all',
@@ -244,22 +244,25 @@ function skuPlanFactFilters() {
     dateMode: 'latest',
     sort: 'gap',
     sortDir: 'asc',
-    ...(state.skuPlanFactFilters || {})
+    ...(state.skuPlanFactFilters || {}),
+    ...(overrides || {})
   };
-  if (state.skuPlanFactFilters.__truthFilterVersion !== SKU_PLAN_FACT_FILTER_VERSION) {
-    if (state.skuPlanFactFilters.status === 'active') state.skuPlanFactFilters.status = 'all';
-    if (!state.skuPlanFactFilters.dateMode || state.skuPlanFactFilters.dateMode === 'latest') {
-      state.skuPlanFactFilters.date = '';
-      state.skuPlanFactFilters.dateFrom = '';
-      state.skuPlanFactFilters.dateTo = '';
-      state.skuPlanFactFilters.month = 'latest';
-      state.skuPlanFactFilters.dateMode = 'latest';
+  if (nextFilters.__truthFilterVersion !== SKU_PLAN_FACT_FILTER_VERSION) {
+    if (nextFilters.status === 'active') nextFilters.status = 'all';
+    if (!nextFilters.dateMode || nextFilters.dateMode === 'latest') {
+      nextFilters.date = '';
+      nextFilters.dateFrom = '';
+      nextFilters.dateTo = '';
+      nextFilters.month = 'latest';
+      nextFilters.dateMode = 'latest';
     }
-    state.skuPlanFactFilters.__truthFilterVersion = SKU_PLAN_FACT_FILTER_VERSION;
+    nextFilters.__truthFilterVersion = SKU_PLAN_FACT_FILTER_VERSION;
   }
-  if (!['asc', 'desc'].includes(state.skuPlanFactFilters.sortDir)) {
-    state.skuPlanFactFilters.sortDir = skuPlanFactDefaultSortDir(state.skuPlanFactFilters.sort);
+  if (!['asc', 'desc'].includes(nextFilters.sortDir)) {
+    nextFilters.sortDir = skuPlanFactDefaultSortDir(nextFilters.sort);
   }
+  if (options.persist === false) return nextFilters;
+  state.skuPlanFactFilters = nextFilters;
   return state.skuPlanFactFilters;
 }
 
@@ -669,8 +672,8 @@ function skuPlanFactLatestMonth(months = []) {
   return months.includes(sourceMonth) ? sourceMonth : (months[0] || sourceMonth || todayIso().slice(0, 7));
 }
 
-function skuPlanFactSelectedMonth(months = []) {
-  const filters = skuPlanFactFilters();
+function skuPlanFactSelectedMonth(months = [], filtersOverride = null) {
+  const filters = filtersOverride || skuPlanFactFilters();
   if (filters.month && filters.month !== 'latest' && months.includes(filters.month)) return filters.month;
   if (filters.dateMode === 'manual') {
     const dateMonth = skuPlanFactMonthFromDate(filters.dateTo || filters.date || filters.dateFrom);
@@ -744,8 +747,8 @@ function skuPlanFactDateBounds(indexes, months = [], selectedMonth = '') {
   };
 }
 
-function skuPlanFactSelectedDate(indexes, monthKey, maxFactDate = '') {
-  const filters = skuPlanFactFilters();
+function skuPlanFactSelectedDate(indexes, monthKey, maxFactDate = '', filtersOverride = null) {
+  const filters = filtersOverride || skuPlanFactFilters();
   const maxDate = maxFactDate || skuPlanFactMaxFactDate(indexes, monthKey);
   const selected = skuPlanFactDateKey(filters.dateTo || filters.date);
   const monthStart = skuPlanFactMonthStart(monthKey);
@@ -766,12 +769,12 @@ function skuPlanFactElapsedDays(monthKey, maxFactDate) {
   return days;
 }
 
-function skuPlanFactSelectedPeriod(indexes, monthKey, maxFactDate = '') {
-  const filters = skuPlanFactFilters();
+function skuPlanFactSelectedPeriod(indexes, monthKey, maxFactDate = '', filtersOverride = null) {
+  const filters = filtersOverride || skuPlanFactFilters();
   const monthStart = skuPlanFactMonthStart(monthKey);
   const maxDate = maxFactDate || skuPlanFactMaxFactDate(indexes, monthKey);
   const monthMode = filters.dateMode === 'month';
-  let dateTo = monthMode ? maxDate : skuPlanFactSelectedDate(indexes, monthKey, maxDate);
+  let dateTo = monthMode ? maxDate : skuPlanFactSelectedDate(indexes, monthKey, maxDate, filters);
   let dateFrom = monthMode ? monthStart : skuPlanFactDateKey(filters.dateFrom);
   if (!dateFrom || skuPlanFactMonthFromDate(dateFrom) !== monthKey) {
     dateFrom = monthStart;
@@ -2608,14 +2611,15 @@ function skuPlanFactRowMatchesFilters(row = {}, filters = {}, options = {}) {
     .includes(search);
 }
 
-function skuPlanFactBuildModel() {
-  const filters = skuPlanFactFilters();
+function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
+  const persistFilters = options.persistFilters !== false;
+  const filters = skuPlanFactFilters(filterOverrides, { persist: persistFilters });
   const indexes = skuPlanFactBuildIndexes();
   const months = skuPlanFactAvailableMonths(indexes);
-  const monthKey = skuPlanFactSelectedMonth(months);
+  const monthKey = skuPlanFactSelectedMonth(months, filters);
   const dateBounds = skuPlanFactDateBounds(indexes, months, monthKey);
   const maxAvailableDate = skuPlanFactMaxFactDate(indexes, monthKey);
-  const selectedPeriod = skuPlanFactSelectedPeriod(indexes, monthKey, maxAvailableDate);
+  const selectedPeriod = skuPlanFactSelectedPeriod(indexes, monthKey, maxAvailableDate, filters);
   const periodStart = selectedPeriod.start;
   const selectedDate = selectedPeriod.end;
   const elapsedDays = selectedPeriod.days;
@@ -2646,7 +2650,7 @@ function skuPlanFactBuildModel() {
     .filter(skuPlanFactOwnerIsFilterOption))].sort((a, b) => a.localeCompare(b, 'ru'));
   if (filters.owner !== 'all' && !owners.includes(filters.owner)) {
     filters.owner = 'all';
-    state.skuPlanFactFilters.owner = 'all';
+    if (persistFilters && state.skuPlanFactFilters) state.skuPlanFactFilters.owner = 'all';
   }
   const platformBaseRows = rows.filter((row) => skuPlanFactRowMatchesFilters(row, filters, { platform: false }));
   const filteredRows = platformBaseRows.filter((row) => skuPlanFactRowMatchesFilters(row, filters));
@@ -6488,10 +6492,31 @@ function skuPlanFactExportRows(rows, model) {
   });
 }
 
-function downloadSkuPlanFactExcel(model) {
+function skuPlanFactModelNeedsExportHydration(model = {}) {
+  const monthEnd = model.monthKey ? skuPlanFactMonthEnd(model.monthKey) : '';
+  const apiFact = Number(model.totals?.apiFactRevenue || 0);
+  const kpiFact = Number(model.totals?.kpiFactRevenue ?? model.totals?.factRevenue ?? 0);
+  return Boolean(monthEnd && model.periodEnd === monthEnd && kpiFact > 0 && apiFact <= 0);
+}
+
+async function skuPlanFactHydratedExportModel(model = null) {
+  let current = model || skuPlanFactBuildModel();
+  if (!skuPlanFactModelNeedsExportHydration(current)) return current;
+  try {
+    if (typeof ensureViewData === 'function') await ensureViewData('sku-plan-fact');
+    if (typeof portalRefreshOperationalDataPayloads === 'function') await portalRefreshOperationalDataPayloads();
+  } catch (error) {
+    console.warn('[sku-plan-fact-export-hydration]', error);
+  }
+  const refreshed = skuPlanFactBuildModel();
+  return skuPlanFactModelNeedsExportHydration(refreshed) ? current : refreshed;
+}
+
+async function downloadSkuPlanFactExcel(model) {
   const now = Date.now();
   if (skuPlanFactExcelDownloadLockUntil && now < skuPlanFactExcelDownloadLockUntil) return;
   skuPlanFactExcelDownloadLockUntil = now + 1500;
+  model = await skuPlanFactHydratedExportModel(model);
   if (!model.rows.length) {
     window.alert('По текущим фильтрам нет строк для выгрузки.');
     skuPlanFactExcelDownloadLockUntil = 0;
@@ -6604,7 +6629,8 @@ function skuPlanFactQualityExportRows(model) {
   });
 }
 
-function downloadSkuPlanFactQualityExcel(model) {
+async function downloadSkuPlanFactQualityExcel(model) {
+  model = await skuPlanFactHydratedExportModel(model);
   const rows = skuPlanFactQualityExportRows(model);
   if (!rows.length) {
     window.alert('Проблем качества данных по текущему срезу нет.');

@@ -306,6 +306,44 @@
     };
   }
 
+  function parsePortalChunkedJsonText(text) {
+    var source = String(text || "").trim();
+    if (!source) return null;
+    try {
+      return JSON.parse(source);
+    } catch (firstError) {
+      var start = source.search(/[\[{]/);
+      var stack = [];
+      var inString = false;
+      var escaped = false;
+      var index;
+      if (start < 0) throw firstError;
+      for (index = start; index < source.length; index += 1) {
+        var char = source[index];
+        if (inString) {
+          if (escaped) escaped = false;
+          else if (char === "\\") escaped = true;
+          else if (char === "\"") inString = false;
+          continue;
+        }
+        if (char === "\"") {
+          inString = true;
+          continue;
+        }
+        if (char === "{" || char === "[") {
+          stack.push(char);
+          continue;
+        }
+        if (char === "}" || char === "]") {
+          var opener = stack.pop();
+          if ((char === "}" && opener !== "{") || (char === "]" && opener !== "[")) throw firstError;
+          if (!stack.length) return JSON.parse(source.slice(start, index + 1));
+        }
+      }
+      throw firstError;
+    }
+  }
+
   function withRowMeta(row, payload) {
     if (payload == null) return payload;
     if (typeof payload !== "object" || Array.isArray(payload)) return payload;
@@ -402,7 +440,7 @@
       }).join("");
       if (!text) return;
       try {
-        payloadByKey[baseKey] = withRowMeta(metaRow, JSON.parse(text));
+        payloadByKey[baseKey] = withRowMeta(metaRow, parsePortalChunkedJsonText(text));
       } catch (error) {
         console.warn("[portal-snapshot-refresh-hotfix] failed to decode chunked snapshot", baseKey, error);
       }

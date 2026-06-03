@@ -376,6 +376,43 @@
     return match ? { baseKey: match[1], index: Number(match[2]) } : null;
   }
 
+  function parsePortalChunkedJsonText(text = '') {
+    const source = String(text || '').trim();
+    if (!source) return null;
+    try {
+      return JSON.parse(source);
+    } catch (firstError) {
+      const start = source.search(/[\[{]/);
+      if (start < 0) throw firstError;
+      const stack = [];
+      let inString = false;
+      let escaped = false;
+      for (let index = start; index < source.length; index += 1) {
+        const char = source[index];
+        if (inString) {
+          if (escaped) escaped = false;
+          else if (char === '\\') escaped = true;
+          else if (char === '"') inString = false;
+          continue;
+        }
+        if (char === '"') {
+          inString = true;
+          continue;
+        }
+        if (char === '{' || char === '[') {
+          stack.push(char);
+          continue;
+        }
+        if (char === '}' || char === ']') {
+          const opener = stack.pop();
+          if ((char === '}' && opener !== '{') || (char === ']' && opener !== '[')) throw firstError;
+          if (!stack.length) return JSON.parse(source.slice(start, index + 1));
+        }
+      }
+      throw firstError;
+    }
+  }
+
   function decodeChunkedSnapshotRows(rows) {
     const decodedRows = [];
     const plainRowsByKey = new Map();
@@ -446,7 +483,7 @@
       try {
         decodedRows.push({
           ...metaRow,
-          payload: JSON.parse(text),
+          payload: parsePortalChunkedJsonText(text),
           updated_at: metaRow.updated_at || parts[parts.length - 1]?.updated_at
         });
       } catch (error) {

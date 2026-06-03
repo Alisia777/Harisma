@@ -403,11 +403,9 @@ function executiveFunnelSortRows(rows = [], sort = 'completionAsc') {
 
 function executiveFunnelBuildPlanModel(selectedPlatform = 'all') {
   if (typeof skuPlanFactBuildModel !== 'function') return null;
-  const previous = { ...(state.skuPlanFactFilters || {}) };
   const platform = EXECUTIVE_FUNNEL_PLATFORMS.includes(selectedPlatform) ? selectedPlatform : 'all';
   try {
-    state.skuPlanFactFilters = {
-      ...previous,
+    return skuPlanFactBuildModel({
       search: '',
       owner: 'all',
       status: 'all',
@@ -418,13 +416,10 @@ function executiveFunnelBuildPlanModel(selectedPlatform = 'all') {
       dateTo: '',
       sort: 'gap',
       sortDir: 'asc'
-    };
-    return skuPlanFactBuildModel();
+    }, { persistFilters: false });
   } catch (error) {
     console.warn('[executive-funnel] plan-fact model failed', error);
     return null;
-  } finally {
-    state.skuPlanFactFilters = previous;
   }
 }
 

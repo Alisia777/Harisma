@@ -69,7 +69,9 @@
     skus: ['skus']
   };
 
-  const SIDEBAR_LABELS = {
+  const SIDEBAR_LABELS = {};
+  /*
+  const SIDEBAR_LABELS_OLD = {
     'iu-drr': {
       title: 'Показатели площадок',
       subtitle: 'WB · Ozon · план-факт'
@@ -79,6 +81,8 @@
       subtitle: 'Ауты · потери · меры'
     }
   };
+
+  */
 
   const scriptPromises = new Map();
   let renderBudgetRerenderScheduled = false;
@@ -196,11 +200,6 @@
   }
 
   window.__alteaLoadLiveHotfixes = loadViewHotfixes;
-
-  document.addEventListener('click', (event) => {
-    const button = event.target.closest && event.target.closest('.nav-btn[data-view]');
-    if (button && button.dataset.view !== 'dashboard') loadViewHotfixes(button.dataset.view, { rerender: false });
-  }, true);
 
   window.addEventListener('altea:viewchange', (event) => {
     syncSidebarLabels();

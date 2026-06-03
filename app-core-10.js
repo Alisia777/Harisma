@@ -2581,7 +2581,15 @@ function attachGlobalListeners() {
   state.boot.listenersAttached = true;
   initSidebarToggle();
   ensureTaskModal();
-  document.querySelectorAll('.nav-btn').forEach((btn) => btn.addEventListener('click', () => setView(btn.dataset.view)));
+  const sidebarNav = document.querySelector('.sidebar .nav');
+  if (sidebarNav) {
+    sidebarNav.addEventListener('click', (event) => {
+      const btn = event.target.closest('.nav-btn[data-view]');
+      if (!btn || !sidebarNav.contains(btn)) return;
+      event.preventDefault();
+      setView(btn.dataset.view);
+    });
+  }
   window.addEventListener('hashchange', () => {
     const hashView = readViewFromHash();
     if (!hashView || hashView === state.activeView) return;

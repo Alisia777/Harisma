@@ -374,24 +374,10 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
   }
 
   function bindNavigation() {
-    document.addEventListener('click', (event) => {
-      const button = event.target.closest('.nav-btn[data-view]');
-      if (!button) return;
-      const requestedView = button.dataset.view;
-      hasUserNavigation = true;
-      loadBundleForView(requestedView);
-      window.setTimeout(() => {
-        const activeViewId = document.querySelector('.view.active')?.id || '';
-        const activeNav = document.querySelector('.nav-btn.active')?.dataset?.view || '';
-        if (activeViewId === `view-${requestedView}` && activeNav === requestedView) return;
-        forceActivateView(requestedView);
-      }, 60);
-    }, true);
-
     window.addEventListener('altea:viewchange', (event) => {
       const view = event.detail?.view;
       if (!view) return;
-      if (view === 'dashboard' && !hasUserNavigation) return;
+      hasUserNavigation = true;
       loadBundleForView(view);
       handleDeferredView(view);
     });

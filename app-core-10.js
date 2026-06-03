@@ -2534,9 +2534,9 @@ function rerenderCurrentView() {
     ['view-order', 'Логистика и заказ', () => { if (typeof renderOrderCalculator === 'function') renderOrderCalculator(); }],
     ['view-control', 'Задачи', renderControlCenter],
     ['view-skus', 'Реестр SKU', renderSkuRegistry],
-    ['view-launches', 'Продукт / новинки', renderLaunches],
+    ['view-launches', 'Новинки', renderLaunches],
     ['view-product-leaderboard', 'Продуктовый лидерборд', renderProductLeaderboard],
-    ['view-launch-control', 'Запуск новинок', renderLaunchControl],
+    ['view-launch-control', 'Новинки', renderLaunchControl],
     ['view-meetings', 'Ритм работы', renderMeetings],
     ['view-executive', 'Руководителю', renderExecutive]
   ];

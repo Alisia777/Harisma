@@ -18,7 +18,7 @@
     goldapple: { label: 'Золотое яблоко', chip: 'Золотое яблоко', kind: 'ok' },
     letu: { label: "Л'Этуаль", chip: "Л'Этуаль", kind: 'ok' },
     magnit: { label: 'Магнит Маркет', chip: 'Магнит Маркет', kind: 'ok' },
-    product: { label: 'Продукт / новинки', chip: 'Продукт', kind: 'info' },
+    product: { label: 'Новинки', chip: 'Новинки', kind: 'info' },
     executive: { label: 'Управленческий финал', chip: 'Финал', kind: 'danger' },
     cross: { label: 'Общий контур', chip: 'Общий контур', kind: '' }
   };
@@ -1454,7 +1454,7 @@
                 <option value="goldapple" ${selectedPlatform === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
                 <option value="letu" ${selectedPlatform === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
                 <option value="magnit" ${selectedPlatform === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
-                <option value="product" ${selectedPlatform === 'product' ? 'selected' : ''}>Продукт / новинки</option>
+                <option value="product" ${selectedPlatform === 'product' ? 'selected' : ''}>Новинки</option>
               </select>
               <select name="priority">
                 ${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}" ${value === 'high' ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}

@@ -16,7 +16,6 @@
     "sku-contour",
     "skus",
     "launches",
-    "launch-control",
     "ads-funnel",
     "iu-drr",
     "wb-rating",
@@ -57,8 +56,8 @@
       subtitle: "\u0420\u0438\u0441\u043a\u0438 \u00b7 \u0440\u0435\u0448\u0435\u043d\u0438\u044f \u00b7 \u0438\u0442\u043e\u0433"
     },
     launches: {
-      title: "\u041f\u0440\u043e\u0434\u0443\u043a\u0442 / \u043d\u043e\u0432\u0438\u043d\u043a\u0438",
-      subtitle: "\u0422\u043e\u0432\u0430\u0440 \u00b7 \u043d\u043e\u0432\u0438\u043d\u043a\u0438 \u00b7 \u044d\u043a\u043e\u043d\u043e\u043c\u0438\u043a\u0430"
+      title: "\u041d\u043e\u0432\u0438\u043d\u043a\u0438",
+      subtitle: "\u041a\u0430\u043b\u0435\u043d\u0434\u0430\u0440\u044c \u00b7 \u043f\u0440\u043e\u0435\u043a\u0442\u044b \u00b7 \u0437\u0430\u0434\u0430\u0447\u0438"
     },
     "ads-funnel": {
       title: "\u041a\u043e\u043d\u0442\u0440\u043e\u043b\u044c \u0420\u041a",
@@ -96,7 +95,8 @@
 
   var REDIRECTS = {
     meetings: "dashboard",
-    documents: "dashboard"
+    documents: "dashboard",
+    "launch-control": "launches"
   };
   var LAST_VIEW_STORAGE_KEY = "altea:last-view";
   var viewRestored = false;
@@ -227,7 +227,7 @@
       byView[String(btn.dataset.view || "").trim()] = btn;
     });
 
-    ["meetings", "documents"].forEach(function (view) {
+    ["meetings", "documents", "launch-control"].forEach(function (view) {
       if (byView[view] && byView[view].parentNode) byView[view].parentNode.removeChild(byView[view]);
       delete byView[view];
     });

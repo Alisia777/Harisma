@@ -43,9 +43,9 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     order: 'Логистика и заказ',
     control: 'Задачи',
     skus: 'Реестр SKU',
-    launches: 'Продукт / новинки',
+    launches: 'Новинки',
     'product-leaderboard': 'Продуктовый лидерборд',
-    'launch-control': 'Запуск новинок',
+    'launch-control': 'Новинки',
     meetings: 'Ритм работы',
     executive: 'Руководителю'
   };
@@ -66,7 +66,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     launches: {
       path: 'data/launches.json',
       fallback: [],
-      label: 'Продукт / новинки',
+      label: 'Новинки',
       assign(value) {
         state.launches = Array.isArray(value) ? value : [];
       }

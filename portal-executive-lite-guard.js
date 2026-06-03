@@ -16,7 +16,7 @@
     goldapple: { label: 'ЗЯ', title: 'Золотое яблоко' },
     letu: { label: "Л'Этуаль", title: "Л'Этуаль" },
     magnit: { label: 'Магнит', title: 'Магнит Маркет' },
-    product: { label: 'Продукт', title: 'Продукт / новинки' },
+    product: { label: 'Новинки', title: 'Новинки' },
     cross: { label: 'Общее', title: 'Общий контур' }
   };
 

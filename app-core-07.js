@@ -11651,8 +11651,117 @@ function openLaunchEditor(launchId = '') {
   });
 }
 
-function renderLaunchesDirectorLite() {
-  const root = document.getElementById('view-launches');
+const LAUNCH_PROJECT_COLUMN_ORDER = ['owner', 'supply', 'content', 'economy', 'scale'];
+
+function launchProjectColumnItems(items = [], columnKey = '') {
+  return (items || [])
+    .filter((item) => (item.phase || 'content') === columnKey)
+    .sort((left, right) => {
+      return launchDirectorPriority(right) - launchDirectorPriority(left)
+        || launchMonthSortValue(left.launchMonth) - launchMonthSortValue(right.launchMonth)
+        || String(left.name || '').localeCompare(String(right.name || ''), 'ru');
+    });
+}
+
+function renderLaunchProjectCard(item = {}) {
+  const phaseMeta = launchPhaseMeta(item.phase);
+  const stage = launchCurrentStageEntry(item) || {};
+  const dueLabel = launchDueDateLabel(item);
+  const taskCount = numberOrZero(item.activeTasks);
+  const readiness = launchReadinessState(item);
+  return `
+    <div class="launch-project-card ${launchIsReady(item) ? 'is-ready' : (item.blockers || []).length ? 'has-risk' : ''}">
+      <div class="launch-project-card__head">
+        <div>
+          <strong>${item.articleKey ? linkToSku(item.articleKey, item.name || item.articleKey) : escapeHtml(item.name || 'Новая новинка')}</strong>
+          <span>${escapeHtml(item.reportGroup || 'Продукт')} · ${escapeHtml(item.subCategory || item.category || 'без категории')}</span>
+        </div>
+        ${badge(phaseMeta.label, phaseMeta.tone)}
+      </div>
+      <div class="launch-project-card__meta">
+        ${item.owner ? badge(item.owner, 'info') : badge('без owner', 'warn')}
+        ${item.articleKey ? badge(item.articleKey, item.articleMatched ? 'ok' : 'warn') : badge('без SKU', 'warn')}
+        ${badge(`${fmt.int(taskCount)} задач`, taskCount ? 'warn' : '')}
+      </div>
+      <div class="launch-project-card__next">${escapeHtml(launchDirectorNextAction(item))}</div>
+      <div class="launch-project-card__foot">
+        <span>${escapeHtml(dueLabel)}</span>
+        <span>${escapeHtml(stage.config?.title || 'Этап запуска')} · ${escapeHtml(stage.status || stage.column?.label || 'не начато')}</span>
+      </div>
+      <div class="launch-project-card__progress">
+        <i style="width:${Math.max(6, Math.min(100, readiness.checks.length ? ((readiness.checks.length - readiness.missing.length) / readiness.checks.length) * 100 : 6)).toFixed(1)}%"></i>
+      </div>
+      <div class="quick-actions launch-project-card__actions">
+        <button class="quick-chip portal-action-primary" type="button" data-launch-edit="${escapeHtml(item.id)}">Папка</button>
+        <button class="quick-chip" type="button" data-launch-next-task="${escapeHtml(item.id)}">Ближайшая задача</button>
+        <button class="quick-chip" type="button" data-launch-stage-tasks="${escapeHtml(item.id)}">Этапы</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderLaunchProjectBoard(items = []) {
+  const total = (items || []).length;
+  return `
+    <div class="card launch-project-board-card">
+      <div class="section-subhead">
+        <div>
+          <h3>Доска проектов</h3>
+          <p class="small muted">Товар лежит в своем этапе, внутри карточки открывается папка с поставщиком, SKU, календарем и задачами запуска.</p>
+        </div>
+        ${badge(`${fmt.int(total)} проектов`, total ? 'info' : 'warn')}
+      </div>
+      <div class="launch-project-board">
+        ${LAUNCH_PROJECT_COLUMN_ORDER.map((columnKey) => {
+          const meta = launchPhaseMeta(columnKey);
+          const columnItems = launchProjectColumnItems(items, columnKey);
+          const risky = columnItems.filter((item) => (item.blockers || []).length || !launchHasOwner(item) || !launchHasLinkedSku(item)).length;
+          return `
+            <section class="launch-project-column launch-project-column-${escapeHtml(meta.tone || 'neutral')}">
+              <div class="launch-project-column__head">
+                <div>
+                  <strong>${escapeHtml(meta.label)}</strong>
+                  <span>${fmt.int(columnItems.length)} товаров</span>
+                </div>
+                ${risky ? badge(`${fmt.int(risky)} риск`, 'warn') : badge('ок', 'ok')}
+              </div>
+              <div class="launch-project-column__list">
+                ${columnItems.map(renderLaunchProjectCard).join('') || '<div class="launch-project-empty">Нет товаров в этом этапе</div>'}
+              </div>
+            </section>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function bindLaunchProjectActions(root) {
+  bindLaunchItemActions(root);
+  const findLaunch = (launchId) => getLaunchItems({ skipTaskLookup: true }).find((entry) => entry.id === launchId);
+  root.querySelectorAll('[data-launch-next-task]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const item = findLaunch(button.getAttribute('data-launch-next-task') || '');
+      if (!item) return;
+      const result = await createLaunchNextStageTask(item);
+      rerenderCurrentView();
+      window.alert(`Ближайшая задача: создано ${result.created}, пропущено ${result.skipped}.`);
+    });
+  });
+  root.querySelectorAll('[data-launch-stage-tasks]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const item = findLaunch(button.getAttribute('data-launch-stage-tasks') || '');
+      if (!item) return;
+      const result = await createLaunchStageTasks(item);
+      rerenderCurrentView();
+      window.alert(`Задачи по этапам: создано ${result.created}, пропущено ${result.skipped}.`);
+    });
+  });
+}
+
+function renderLaunchesDirectorLite(rootId = 'view-launches') {
+  const root = document.getElementById(rootId);
+  if (!root) return;
   const model = getLaunchViewModel();
   const taskCounts = launchTaskCountMap();
   const filteredItems = model.filteredItems.map((item) => launchWithTaskCount(item, taskCounts));
@@ -11671,8 +11780,8 @@ function renderLaunchesDirectorLite() {
   root.innerHTML = `
     <div class="section-title launch-director-title">
       <div>
-        <h2>Продукт / запуск новинок</h2>
-        <p>Рабочий экран директора по продукту: карточка товара, поставщик, переговоры, SKU, площадки, комментарии и запуск в одном месте.</p>
+        <h2>Новинки</h2>
+        <p>Единая доска запуска: календарь, проекты товаров, папки с данными и задачи этапов в одном рабочем месте.</p>
       </div>
       <div class="badge-stack launch-director-badges">
         ${badge(`${fmt.int(filteredItems.length)} новинок`, filteredItems.length ? 'info' : 'warn')}
@@ -11685,33 +11794,15 @@ function renderLaunchesDirectorLite() {
 
     ${renderLaunchMonthFilters({ ...model, filteredItems })}
 
-    ${renderLaunchAttentionPanel(actionItems, { total: filteredItems.length, withoutOwner, withoutSku, withoutMaterials, ready: readyCount })}
+    <div class="launch-sticky-calendar">
+      ${renderLaunchAutoGraph(filteredItems)}
+    </div>
 
-    ${renderLaunchAutoGraph(filteredItems)}
+    ${renderLaunchProjectBoard(filteredItems)}
 
-    ${renderLaunchRedZone(filteredItems)}
-
-    <div class="two-col launch-work-columns">
-      <div class="card">
-        <div class="section-subhead">
-          <div>
-            <h3>Сначала закрыть</h3>
-            <p class="small muted">Список уже отсортирован по тому, что мешает запуску: owner, SKU, материалы, календарь запуска, задачи.</p>
-          </div>
-          ${badge(`${fmt.int(actionItems.length)} в фокусе`, actionItems.length ? 'warn' : 'ok')}
-        </div>
-        <div class="launch-card-list">${actionItems.map(renderLaunchDirectorCard).join('') || '<div class="empty">Критичных дыр по текущему фильтру нет.</div>'}</div>
-      </div>
-      <div class="card">
-        <div class="section-subhead">
-          <div>
-            <h3>Ближайшие запуски</h3>
-            <p class="small muted">То, что подходит по сроку. Здесь удобно каждый день проверять статус.</p>
-          </div>
-          ${badge(`${fmt.int(upcomingItems.length)} позиций`, upcomingItems.length ? 'info' : 'ok')}
-        </div>
-        <div class="launch-card-list compact">${upcomingItems.map(renderLaunchDirectorCard).join('') || '<div class="empty">Ближайших запусков нет.</div>'}</div>
-      </div>
+    <div class="two-col launch-work-columns launch-work-columns-secondary">
+      ${renderLaunchAttentionPanel(actionItems, { total: filteredItems.length, withoutOwner, withoutSku, withoutMaterials, ready: readyCount })}
+      ${renderLaunchRedZone(filteredItems)}
     </div>
 
     <details class="card launch-gantt-card" data-launch-gantt-fold ${ganttExpanded ? 'open' : ''}>
@@ -11767,7 +11858,7 @@ function renderLaunchesDirectorLite() {
   bindLaunchMonthFilters(root, { ...model, filteredItems });
   bindLaunchGanttFold(root);
   bindLaunchMonthsFold(root);
-  bindLaunchItemActions(root);
+  bindLaunchProjectActions(root);
 }
 
 function renderLaunches() {
@@ -12005,7 +12096,11 @@ function renderLaunchControl() {
 }
 
 function renderLaunches() {
-  return renderLaunchesDirectorLite();
+  return renderLaunchesDirectorLite('view-launches');
+}
+
+function renderLaunchControl() {
+  return renderLaunchesDirectorLite('view-launch-control');
 }
 
 window.__ALTEA_MODERN_LAUNCH_PORTAL__ = true;

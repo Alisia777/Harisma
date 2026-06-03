@@ -10,7 +10,7 @@
     goldapple: { label: 'Золотое яблоко', chip: 'Золотое яблоко', kind: 'ok' },
     letu: { label: "Л'Этуаль", chip: "Л'Этуаль", kind: 'ok' },
     magnit: { label: 'Магнит Маркет', chip: 'Магнит Маркет', kind: 'ok' },
-    product: { label: 'Продукт / новинки', chip: 'Продукт', kind: 'info' },
+    product: { label: 'Новинки', chip: 'Новинки', kind: 'info' },
     executive: { label: 'Управленческий финал', chip: 'Финал', kind: 'danger' },
     cross: { label: 'Общий контур', chip: 'Общий контур', kind: '' }
   };
@@ -390,7 +390,7 @@
               <option value="goldapple" ${currentPlatform === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
               <option value="letu" ${currentPlatform === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
               <option value="magnit" ${currentPlatform === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
-              <option value="product" ${currentPlatform === 'product' ? 'selected' : ''}>Продукт / новинки</option>
+              <option value="product" ${currentPlatform === 'product' ? 'selected' : ''}>Новинки</option>
             </select></label>
             <div class="ui-grid-3">
               <label class="ui-field"><span class="ui-label">Тема / проект</span><input name="entityLabel" value="${escapeHtml(taskItem.entityLabel || '')}" placeholder="Проект / тема / блок"></label>
@@ -531,7 +531,7 @@
               <label class="ui-field"><span class="ui-label">Owner</span><input name="owner" list="generalTaskOwnerList" placeholder="Кто ведёт задачу"></label>
               <label class="ui-field"><span class="ui-label">Соисполнитель</span><input name="coOwner" list="generalTaskOwnerList" placeholder="Второй менеджер"></label>
               <label class="ui-field"><span class="ui-label">Срок</span><input name="due" type="date" value="${plusDays(2)}"></label>
-          ${fixed ? `<div class="ui-note"><strong>Контур задачи</strong>${escapeHtml(meta(platform).label)}<input type="hidden" name="platform" value="${escapeHtml(platform)}"></div>` : `<label class="ui-field"><span class="ui-label">Контур</span><select name="platform"><option value="cross" ${platform === 'cross' ? 'selected' : ''}>Общий контур</option><option value="wb">РОП WB</option><option value="ozon">РОП Ozon</option><option value="ya">Я.Маркет</option><option value="goldapple">Золотое яблоко</option><option value="letu">Л'Этуаль</option><option value="magnit">Магнит Маркет</option><option value="product">Продукт / новинки</option></select></label>`}
+          ${fixed ? `<div class="ui-note"><strong>Контур задачи</strong>${escapeHtml(meta(platform).label)}<input type="hidden" name="platform" value="${escapeHtml(platform)}"></div>` : `<label class="ui-field"><span class="ui-label">Контур</span><select name="platform"><option value="cross" ${platform === 'cross' ? 'selected' : ''}>Общий контур</option><option value="wb">РОП WB</option><option value="ozon">РОП Ozon</option><option value="ya">Я.Маркет</option><option value="goldapple">Золотое яблоко</option><option value="letu">Л'Этуаль</option><option value="magnit">Магнит Маркет</option><option value="product">Новинки</option></select></label>`}
             </div>
             <label class="ui-field"><span class="ui-label">Первый шаг</span><textarea name="nextAction" rows="3" placeholder="Что делаем первым действием" required></textarea></label>
             <label class="ui-field"><span class="ui-label">Артикулы для массовой постановки</span><textarea name="articleKeys" rows="4" placeholder="По одному SKU на строку, можно вставить столбец из Excel&#10;Пример:&#10;curly_method_300ml&#10;retinait_krem_05_50ml"></textarea><span class="ui-hint">Если поле заполнено, будет создана отдельная задача на каждый SKU.</span></label>

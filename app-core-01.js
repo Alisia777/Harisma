@@ -208,12 +208,12 @@ const VIEW_TITLES = {
   'data-health': 'Календарь',
   'oos-control': 'OOS контроль',
   'sku-contour': 'SKU workspace',
-  launches: 'Продукт / новинки',
+  launches: 'Новинки',
   'iu-drr': 'Показатели площадок',
   'sku-plan-fact': 'План-факт SKU',
   'wb-rating': 'Рейтинг карточек',
   'product-leaderboard': 'Продуктовый лидерборд',
-  'launch-control': 'Запуск новинок',
+  'launch-control': 'Новинки',
   meetings: 'Ритм работы',
   executive: 'Руководителю'
 };
@@ -233,11 +233,12 @@ const VIEW_DATA_REQUIREMENTS = {
   documents: 'documents',
   repricer: 'repricer'
 };
-const DISABLED_VIEWS = new Set(['meetings', 'documents', 'ads-funnel']);
+const DISABLED_VIEWS = new Set(['meetings', 'documents', 'ads-funnel', 'launch-control']);
 const VIEW_REDIRECTS = {
   meetings: 'dashboard',
   documents: 'dashboard',
-  'ads-funnel': 'iu-drr'
+  'ads-funnel': 'iu-drr',
+  'launch-control': 'launches'
 };
 
 function normalizePortalView(view = 'dashboard') {
@@ -325,9 +326,9 @@ const CONTROL_WORKSTREAM_META = {
     kind: 'ok'
   },
   product: {
-    label: 'Продукт / новинки',
-    chip: 'Продукт',
-    description: 'Календарь новинок, продуктовая проработка и запуск карточек.',
+    label: 'Новинки',
+    chip: 'Новинки',
+    description: 'Календарь, проект товара, запуск и задачи по этапам.',
     kind: 'info'
   },
   executive: {
@@ -2732,12 +2733,12 @@ async function loadJsonOrFallback(path, fallback, label = path) {
 
 const LAZY_DATA_LOADERS = {
   launches: async () => {
-    const launches = await loadJsonOrFallback('data/launches.json', [], 'Продукт / новинки');
+    const launches = await loadJsonOrFallback('data/launches.json', [], 'Новинки');
     state.launches = Array.isArray(launches) ? launches : [];
   },
   controlCenter: async () => {
     const [launches, productLeaderboard, productLeaderboardHistory, oosControl, smartPriceOverlay, returnBaselineSkus] = await Promise.all([
-      loadJsonOrFallback('data/launches.json', [], 'Продукт / новинки'),
+      loadJsonOrFallback('data/launches.json', [], 'Новинки'),
       loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
       loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
       loadJsonOrFallback('data/oos_control.json', { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } }, 'OOS контроль'),

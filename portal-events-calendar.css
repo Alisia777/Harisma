@@ -8,6 +8,7 @@
   display: grid;
   gap: 14px;
   max-width: 100%;
+  --calendar-accent: #e7c46b;
 }
 
 .promo-calendar-command {
@@ -19,8 +20,10 @@
   border: 1px solid rgba(237, 206, 138, .24);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(237, 206, 138, .12), rgba(90, 155, 255, .06) 44%, rgba(255, 255, 255, .018)),
+    radial-gradient(circle at 16% 0, color-mix(in srgb, var(--calendar-accent) 18%, transparent), transparent 34%),
+    linear-gradient(135deg, color-mix(in srgb, var(--calendar-accent) 14%, rgba(237, 206, 138, .04)), rgba(90, 155, 255, .06) 44%, rgba(255, 255, 255, .018)),
     rgba(0, 0, 0, .18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .055), 0 18px 38px color-mix(in srgb, var(--calendar-accent) 9%, transparent);
 }
 
 .promo-calendar-command-copy {
@@ -69,9 +72,11 @@
   grid-template-columns: minmax(126px, .62fr) minmax(126px, .62fr) minmax(160px, .82fr) minmax(160px, .82fr) minmax(220px, 1.2fr);
   gap: 10px;
   padding: 12px;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--calendar-accent) 18%, var(--line));
   border-radius: 8px;
-  background: rgba(255, 255, 255, .025);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--calendar-accent) 7%, transparent), transparent 44%),
+    rgba(255, 255, 255, .025);
 }
 
 .promo-calendar-toolbar label,
@@ -106,24 +111,76 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding: 7px;
+  border: 1px solid color-mix(in srgb, var(--calendar-accent) 16%, rgba(255, 255, 255, .08));
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--calendar-accent) 6%, rgba(255, 255, 255, .02)), rgba(0, 0, 0, .2)),
+    rgba(255, 255, 255, .018);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
 }
 
 .promo-platform-rail button {
+  position: relative;
+  overflow: hidden;
   flex: 0 0 auto;
-  min-height: 38px;
-  border: 1px solid color-mix(in srgb, var(--promo-color, #7aa7ff) 36%, var(--line));
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  border: 1px solid color-mix(in srgb, var(--promo-color, #7aa7ff) 34%, rgba(255, 255, 255, .08));
   border-radius: 8px;
-  background: color-mix(in srgb, var(--promo-color, #7aa7ff) 8%, rgba(0, 0, 0, .28));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .055), transparent 54%),
+    color-mix(in srgb, var(--promo-color, #7aa7ff) 8%, rgba(0, 0, 0, .32));
   color: var(--text);
-  padding: 8px 12px;
+  padding: 8px 12px 8px 10px;
   cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .055);
+  transition: border-color .16s ease, background .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.promo-platform-rail button::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--promo-color, #7aa7ff) 86%, white 8%);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--promo-color, #7aa7ff) 14%, transparent), 0 0 16px color-mix(in srgb, var(--promo-color, #7aa7ff) 42%, transparent);
+}
+
+.promo-platform-rail button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 0 36%, rgba(255, 255, 255, .14) 48%, transparent 62%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .promo-platform-rail button.active {
-  border-color: color-mix(in srgb, var(--promo-color, #7aa7ff) 72%, white 8%);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--promo-color, #7aa7ff) 24%, rgba(0, 0, 0, .2)), rgba(237, 206, 138, .08));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--promo-color, #7aa7ff) 28%, transparent);
+  border-color: color-mix(in srgb, var(--promo-color, #7aa7ff) 78%, white 10%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .105), transparent 50%),
+    linear-gradient(135deg, color-mix(in srgb, var(--promo-color, #7aa7ff) 28%, rgba(0, 0, 0, .14)), rgba(237, 206, 138, .055));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .12),
+    0 0 0 1px color-mix(in srgb, var(--promo-color, #7aa7ff) 28%, transparent),
+    0 12px 28px color-mix(in srgb, var(--promo-color, #7aa7ff) 18%, transparent);
+}
+
+.promo-platform-rail button.active::after {
+  opacity: 1;
+}
+
+.promo-platform-rail button.active span {
+  color: color-mix(in srgb, var(--promo-color, #7aa7ff) 28%, white);
+}
+
+.promo-platform-rail button:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--promo-color, #7aa7ff) 62%, white 8%);
 }
 
 .promo-calendar-stats {
@@ -137,13 +194,18 @@
   gap: 4px;
   min-height: 76px;
   padding: 13px;
-  border: 1px solid rgba(255, 255, 255, .1);
+  border: 1px solid color-mix(in srgb, var(--calendar-accent) 14%, rgba(255, 255, 255, .1));
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(237, 206, 138, .1), rgba(85, 139, 205, .1)),
+    linear-gradient(135deg, color-mix(in srgb, var(--calendar-accent) 12%, rgba(237, 206, 138, .03)), rgba(85, 139, 205, .08)),
     rgba(0, 0, 0, .22);
   color: var(--text);
   text-align: left;
+}
+
+.promo-calendar-stats button.active {
+  border-color: color-mix(in srgb, var(--calendar-accent) 58%, rgba(255, 255, 255, .18));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .075), 0 0 0 1px color-mix(in srgb, var(--calendar-accent) 18%, transparent);
 }
 
 .promo-calendar-stats span,
@@ -169,13 +231,14 @@
 .promo-calendar-board,
 .promo-calendar-side,
 .promo-side-card {
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--calendar-accent) 12%, var(--line));
   border-radius: 8px;
   background: rgba(255, 255, 255, .02);
 }
 
 .promo-calendar-board {
   overflow: hidden;
+  box-shadow: 0 24px 60px color-mix(in srgb, var(--calendar-accent) 7%, transparent);
 }
 
 .promo-month-head {
@@ -184,8 +247,10 @@
   gap: 10px;
   align-items: center;
   padding: 12px;
-  border-bottom: 1px solid var(--line);
-  background: rgba(0, 0, 0, .18);
+  border-bottom: 1px solid color-mix(in srgb, var(--calendar-accent) 14%, var(--line));
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--calendar-accent) 9%, rgba(255, 255, 255, .02)), transparent 60%),
+    rgba(0, 0, 0, .18);
 }
 
 .promo-month-head strong {
@@ -257,7 +322,7 @@
 }
 
 .promo-calendar-day.today {
-  box-shadow: inset 0 0 0 1px rgba(237, 206, 138, .7);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--calendar-accent) 76%, white 6%);
 }
 
 .promo-calendar-day.muted-day {
@@ -265,7 +330,7 @@
 }
 
 .promo-calendar-day.drag-over {
-  box-shadow: inset 0 0 0 2px rgba(237, 206, 138, .86), 0 0 24px rgba(237, 206, 138, .16);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--calendar-accent) 86%, white 8%), 0 0 24px color-mix(in srgb, var(--calendar-accent) 18%, transparent);
 }
 
 .promo-day-head {
@@ -359,7 +424,9 @@
 }
 
 .promo-event-pill.compact {
+  height: 58px;
   min-height: 58px;
+  max-height: 58px;
   grid-template-columns: minmax(0, 1fr) max-content;
   grid-template-rows: auto auto auto 3px;
   align-content: start;
@@ -1035,6 +1102,16 @@
 .promo-platform-letu { --promo-color: #f06f9f; }
 .promo-platform-magnit { --promo-color: #ff6c6c; }
 .promo-platform-product { --promo-color: #62d5d1; }
+
+.promo-calendar-shell.promo-platform-all { --calendar-accent: #e7c46b; }
+.promo-calendar-shell.promo-platform-cross { --calendar-accent: #6ec6a2; }
+.promo-calendar-shell.promo-platform-wb { --calendar-accent: #a16eff; }
+.promo-calendar-shell.promo-platform-ozon { --calendar-accent: #4aa3ff; }
+.promo-calendar-shell.promo-platform-ya { --calendar-accent: #ffcf4d; }
+.promo-calendar-shell.promo-platform-goldapple { --calendar-accent: #f5a96f; }
+.promo-calendar-shell.promo-platform-letu { --calendar-accent: #f06f9f; }
+.promo-calendar-shell.promo-platform-magnit { --calendar-accent: #ff6c6c; }
+.promo-calendar-shell.promo-platform-product { --calendar-accent: #62d5d1; }
 
 .promo-kind-all { --promo-color: #e7c46b; }
 .promo-kind-promo { --promo-color: #edce8a; }

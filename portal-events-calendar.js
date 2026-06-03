@@ -1220,10 +1220,10 @@
     })).size;
     return `
       <div class="promo-calendar-stats">
-        <button type="button" data-calendar-kind-stat="all"><span>все события</span><strong>${events.length}</strong><em>${formatInt(days)} дней · ${formatInt(skuCount)} SKU</em></button>
-        <button type="button" data-calendar-kind-stat="task-auto"><span>автозадачи</span><strong>${autoTasks}</strong></button>
-        <button type="button" data-calendar-kind-stat="task-manual"><span>сроки задач</span><strong>${manualTasks}</strong></button>
-        <button type="button" data-calendar-kind-stat="launch"><span>новинки</span><strong>${launches}</strong></button>
+        <button class="${CALENDAR_STATE.kind === 'all' ? 'active' : ''}" type="button" data-calendar-kind-stat="all"><span>все события</span><strong>${events.length}</strong><em>${formatInt(days)} дней · ${formatInt(skuCount)} SKU</em></button>
+        <button class="${CALENDAR_STATE.kind === 'task-auto' ? 'active' : ''}" type="button" data-calendar-kind-stat="task-auto"><span>автозадачи</span><strong>${autoTasks}</strong></button>
+        <button class="${CALENDAR_STATE.kind === 'task-manual' ? 'active' : ''}" type="button" data-calendar-kind-stat="task-manual"><span>сроки задач</span><strong>${manualTasks}</strong></button>
+        <button class="${CALENDAR_STATE.kind === 'launch' ? 'active' : ''}" type="button" data-calendar-kind-stat="launch"><span>новинки</span><strong>${launches}</strong></button>
       </div>
     `;
   }
@@ -1381,8 +1381,9 @@
     if (!CALENDAR_STATE.dateTo) CALENDAR_STATE.dateTo = endOfMonth(month);
     const events = filteredEvents();
     const gridDays = monthDays(month);
+    const shellClass = `promo-calendar-shell ${eventClass(CALENDAR_STATE.platform)}`;
     root.innerHTML = `
-      <div class="promo-calendar-shell">
+      <div class="${shellClass}">
         <section class="promo-calendar-command">
           <div class="promo-calendar-command-copy">
             <span>Командный календарь</span>

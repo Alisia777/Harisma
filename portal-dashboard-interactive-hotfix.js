@@ -1,5 +1,6 @@
 (function () {
-if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE3__) return;
+if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260603METRICSSOURCE1__) return;
+window.__ALTEA_DASHBOARD_INTERACTIVE_20260603METRICSSOURCE1__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE3__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE2__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE1__ = true;
@@ -15,7 +16,7 @@ window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260520stability9';
+  const VERSION = '20260603metricssource1';
 const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
@@ -1851,17 +1852,37 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     return metricUsesCompanyPlan(metric) ? money(metric.planFactRevenue || metric.revenue) : int(metric.units);
   }
 
+  function metricCoverageDisplay(metric) {
+    const observed = Number(metric?.observedDays);
+    const requested = Number(metric?.requestedDays);
+    if (!Number.isFinite(observed) || !Number.isFinite(requested) || requested <= 0) return '';
+    if (observed <= 0 || observed >= requested) return '';
+    return ` · факт ${int(observed)}/${int(requested)} дн.`;
+  }
+
+  function metricPlanSubDisplay(metric) {
+    return `факт ${metricFactDisplay(metric)} · план ${metricPlanDisplay(metric)}${metricCoverageDisplay(metric)}`;
+  }
+
+  function metricMarginSubDisplay(metric) {
+    const base = num(metric?.marginBase) || num(metric?.revenue);
+    const label = metric?.marginBaseLabel === 'finance_turnover' ? 'от фин. оборота' : 'от выручки';
+    return `${money(metric?.margin)} · ${label} ${money(base)}`;
+  }
+
   function dailyPlanDisplay(row, metric) {
     const planUnits = row?.planUnits !== undefined ? row.planUnits : row?.plan;
     return metricUsesCompanyPlan(metric) ? money(num(row?.planRevenue)) : int(planUnits);
   }
 
   function dailyFactDisplay(row, metric) {
+    if (row?.hasFact === false) return 'нет факта';
     const factUnits = row?.factUnits !== undefined ? row.factUnits : row?.units;
     return metricUsesCompanyPlan(metric) ? money(num(row?.revenue)) : int(factUnits);
   }
 
   function dailyCompletion(row, metric) {
+    if (row?.hasFact === false) return null;
     const planRevenue = num(row?.planRevenue);
     const revenue = num(row?.revenue);
     const planUnits = num(row?.planUnits !== undefined ? row.planUnits : row?.plan);
@@ -5476,8 +5497,10 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     const trendMap = new Map(platformSeries(platformKey, anchor).map((point) => [iso(point.date), point]));
     const adsMap = new Map(adsSeries(platformKey, adsAnchor).map((point) => [iso(point.date), point]));
     let days = enumerateDates(rangeLike.effectiveStart, rangeLike.effectiveEnd).map((date) => {
-      const trend = trendMap.get(iso(date)) || {};
-      const ads = adsMap.get(iso(date)) || {};
+      const dateKey = iso(date);
+      const hasFact = trendMap.has(dateKey);
+      const trend = trendMap.get(dateKey) || {};
+      const ads = adsMap.get(dateKey) || {};
       const planUnits = planUnitsForDate(date, platformKey);
       const planRevenue = companyPlanDailyRevenue(date, platformKey);
       const factUnits = num(trend.units);
@@ -5486,18 +5509,19 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       const margin = num(trend.margin);
       const spend = num(ads.spend);
       const adRevenue = num(ads.revenue);
-      const marginBase = financeTurnover > 0 ? financeTurnover : revenue;
+      const marginBase = revenue > 0 ? revenue : financeTurnover;
       const useCompanyPlanForDay = planRevenue > 0;
       return {
         date,
+        hasFact,
         planUnits,
         planRevenue,
         factUnits,
         financeTurnover,
-        completion: useCompanyPlanForDay ? revenue / planRevenue : planUnits > 0 ? factUnits / planUnits : 0,
+        completion: hasFact ? (useCompanyPlanForDay ? revenue / planRevenue : planUnits > 0 ? factUnits / planUnits : 0) : null,
         revenue,
         margin,
-        marginPct: marginBase > 0 ? margin / marginBase : 0,
+        marginPct: hasFact && marginBase > 0 ? margin / marginBase : null,
         views: num(ads.views),
         clicks: num(ads.clicks),
         orders: num(ads.orders),
@@ -5507,10 +5531,17 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       };
     });
     days = dashboardPayrollControlledDays(days, platformKey, rangeLike);
-    const planUnits = days.reduce((sum, row) => sum + row.planUnits, 0);
-    const planRevenue = days.reduce((sum, row) => sum + row.planRevenue, 0);
-    const usesCompanyPlan = planRevenue > 0;
-    const planFactDays = usesCompanyPlan ? days.filter((row) => row.planRevenue > 0) : days;
+    const requestedDays = days.length;
+    const observedRows = days.filter((row) => row.hasFact);
+    const observedDays = observedRows.length;
+    const planUnitsWindow = days.reduce((sum, row) => sum + row.planUnits, 0);
+    const planRevenueWindow = days.reduce((sum, row) => sum + row.planRevenue, 0);
+    const usesCompanyPlan = planRevenueWindow > 0;
+    const observedPlanRows = observedRows.filter((row) => usesCompanyPlan ? row.planRevenue > 0 : row.planUnits > 0);
+    const fallbackPlanRows = days.filter((row) => usesCompanyPlan ? row.planRevenue > 0 : row.planUnits > 0);
+    const planFactDays = observedPlanRows.length ? observedPlanRows : fallbackPlanRows;
+    const planUnits = planFactDays.reduce((sum, row) => sum + row.planUnits, 0);
+    const planRevenue = planFactDays.reduce((sum, row) => sum + row.planRevenue, 0);
     const planFactUnits = planFactDays.reduce((sum, row) => sum + row.factUnits, 0);
     const planFactRevenue = planFactDays.reduce((sum, row) => sum + row.revenue, 0);
     const plan = usesCompanyPlan ? planRevenue : planUnits;
@@ -5524,7 +5555,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     const spend = days.reduce((sum, row) => sum + row.spend, 0);
     const adRevenue = days.reduce((sum, row) => sum + row.adRevenue, 0);
     const completion = plan > 0 ? (usesCompanyPlan ? planFactRevenue / plan : units / plan) : 0;
-    const marginBase = financeTurnover > 0 ? financeTurnover : revenue;
+    const marginBase = revenue > 0 ? revenue : financeTurnover;
     const marginPct = marginBase > 0 ? margin / marginBase : 0;
     const avgCheck = units > 0 ? revenue / units : 0;
     const ctr = views > 0 ? clicks / views : null;
@@ -5548,16 +5579,23 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       plan,
       planUnits,
       planRevenue,
+      planUnitsWindow,
+      planRevenueWindow,
       planMode: usesCompanyPlan ? 'company_revenue' : 'units',
       planFactUnits,
       planFactRevenue,
+      observedDays,
+      requestedDays,
+      planDays: planFactDays.length,
       units,
       revenue,
       financeTurnover,
       margin,
       completion,
-      avgUnits: units / Math.max(1, rangeLike.days),
-      avgPlan: plan / Math.max(1, rangeLike.days),
+      avgUnits: units / Math.max(1, observedDays || rangeLike.days),
+      avgPlan: plan / Math.max(1, planFactDays.length || rangeLike.days),
+      marginBase,
+      marginBaseLabel: revenue > 0 ? 'revenue' : financeTurnover > 0 ? 'finance_turnover' : '',
       marginPct,
       views,
       clicks,
@@ -8005,7 +8043,7 @@ function dashboardTaskStatusChip(task) {
         icon: '%',
         label: 'План',
         value: pct(metric.completion),
-        sub: `факт ${metricFactDisplay(metric)} · план ${metricPlanDisplay(metric)}`,
+        sub: metricPlanSubDisplay(metric),
         tone: toneCompletion(metric.completion),
         open: 'completion',
         openKey: metricKey,
@@ -8022,7 +8060,7 @@ function dashboardTaskStatusChip(task) {
         icon: 'M',
         label: 'Маржа',
         value: pct(metric.marginPct),
-        sub: `${money(metric.margin)} · оборот ${money(metric.revenue)}`,
+        sub: metricMarginSubDisplay(metric),
         tone: toneMargin(metric.marginPct),
         open: 'margin',
         openKey: metricKey,
@@ -8114,13 +8152,13 @@ function dashboardTaskStatusChip(task) {
       {
         label: 'План',
         value: pct(metric.completion),
-        hint: `${metricFactDisplay(metric)} / ${metricPlanDisplay(metric)}`,
+        hint: `${metricFactDisplay(metric)} / ${metricPlanDisplay(metric)}${metricCoverageDisplay(metric)}`,
         tone: toneCompletion(metric.completion)
       },
       {
         label: 'Маржа',
         value: pct(metric.marginPct),
-        hint: money(metric.margin),
+        hint: metricMarginSubDisplay(metric),
         tone: toneMargin(metric.marginPct)
       },
       {

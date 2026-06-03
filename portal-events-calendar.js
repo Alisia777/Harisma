@@ -1628,14 +1628,6 @@
             <input type="date" data-calendar-date-to value="${html(CALENDAR_STATE.dateTo)}">
           </label>
           <label>
-            <span>Площадка</span>
-            <select data-calendar-platform>${PLATFORMS.map(([key, label]) => `<option value="${html(key)}" ${CALENDAR_STATE.platform === key ? 'selected' : ''}>${html(label)}</option>`).join('')}</select>
-          </label>
-          <label>
-            <span>Тип</span>
-            <select data-calendar-kind>${EVENT_KINDS.map(([key, label]) => `<option value="${html(key)}" ${CALENDAR_STATE.kind === key ? 'selected' : ''}>${html(label)}</option>`).join('')}</select>
-          </label>
-          <label>
             <span>Поиск</span>
             <input type="search" data-calendar-search value="${html(CALENDAR_STATE.search)}" placeholder="Задача, промо или SKU">
           </label>
@@ -1915,14 +1907,6 @@
     });
     root.querySelector('[data-calendar-date-to]')?.addEventListener('change', (event) => {
       CALENDAR_STATE.dateTo = event.target.value || endOfMonth(CALENDAR_STATE.month);
-      renderEventCalendar(rootId);
-    });
-    root.querySelector('[data-calendar-platform]')?.addEventListener('change', (event) => {
-      CALENDAR_STATE.platform = event.target.value || 'all';
-      renderEventCalendar(rootId);
-    });
-    root.querySelector('[data-calendar-kind]')?.addEventListener('change', (event) => {
-      CALENDAR_STATE.kind = event.target.value || 'all';
       renderEventCalendar(rootId);
     });
     root.querySelector('[data-calendar-search]')?.addEventListener('input', (event) => {

@@ -16,8 +16,20 @@
 <link rel="stylesheet" href="imperial.css?v=20260504c">
 <link rel="stylesheet" href="v87.css?v=20260530wbplanxp1">
 <link rel="stylesheet" href="portal-sand-dark.css?v=20260602sku-planfact-fix1">
+<link rel="stylesheet" href="portal-theme-switcher.css?v=20260603kirov1">
 </head>
-<body class="v87-imperial">
+<body class="v87-imperial" data-portal-theme="dark">
+  <script>
+    (function(){
+      try {
+        var savedTheme = localStorage.getItem('altea.portal.theme') || 'dark';
+        var allowed = { dark: true, light: true, gray: true, emerald: true, hellforge: true, terminal: true, redalert: true };
+        document.body.dataset.portalTheme = allowed[savedTheme] ? savedTheme : 'dark';
+      } catch (error) {
+        document.body.dataset.portalTheme = 'dark';
+      }
+    })();
+  </script>
   <div class="app-shell">
     <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-label="Скрыть меню" aria-expanded="true" title="Скрыть меню">
       <span aria-hidden="true">‹</span>
@@ -254,6 +266,7 @@
   <script defer src="portal-task-workflow-resilient-hotfix.js?v=20260525closehistory1"></script>
   <script defer src="portal-sidebar-priority-hotfix.js?v=20260603novelties-board2"></script>
 <script defer src="portal-ux-unify.js?v=20260603novelties-board3"></script>
+  <script defer src="portal-theme-switcher.js?v=20260603kirov1"></script>
   <script defer src="portal-rop-strategic-tasks.js?v=20260529presentation1"></script>
 </body>
 </html>

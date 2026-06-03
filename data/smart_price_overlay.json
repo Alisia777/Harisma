@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-03T08:15:28.424Z",
+  "generatedAt": "2026-06-03T09:33:35.373Z",
   "asOfDate": "2026-06-02",
   "sourceFile": "smart-price-workbook.xlsx",
   "platforms": {
@@ -102,7 +102,7 @@
           "manualMaxPrice": 2192,
           "manualClientMinPrice": 1570,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1570,
             "maxPrice": 2192,
@@ -367,7 +367,7 @@
           "manualMaxPrice": 812,
           "manualClientMinPrice": 582,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 582,
             "maxPrice": 812,
@@ -608,7 +608,7 @@
           "manualMaxPrice": 838,
           "manualClientMinPrice": 600,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 600,
             "maxPrice": 838,
@@ -865,7 +865,7 @@
           "manualMaxPrice": 734,
           "manualClientMinPrice": 525,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 525,
             "maxPrice": 734,
@@ -1034,7 +1034,7 @@
           "manualMaxPrice": 1467,
           "manualClientMinPrice": 1052,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1052,
             "maxPrice": 1467,
@@ -1291,7 +1291,7 @@
           "manualMaxPrice": 2202,
           "manualClientMinPrice": 1577,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1577,
             "maxPrice": 2202,
@@ -1556,7 +1556,7 @@
           "manualMaxPrice": 1061,
           "manualClientMinPrice": 761,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 761,
             "maxPrice": 1061,
@@ -1821,7 +1821,7 @@
           "manualMaxPrice": 2122,
           "manualClientMinPrice": 1520,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1520,
             "maxPrice": 2122,
@@ -2086,7 +2086,7 @@
           "manualMaxPrice": 1273,
           "manualClientMinPrice": 912,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 912,
             "maxPrice": 1273,
@@ -2135,7 +2135,7 @@
           "manualMaxPrice": 1144,
           "manualClientMinPrice": 820,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 820,
             "maxPrice": 1144,
@@ -2400,7 +2400,7 @@
           "manualMaxPrice": 2182,
           "manualClientMinPrice": 1563,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1563,
             "maxPrice": 2182,
@@ -2657,7 +2657,7 @@
           "manualMaxPrice": 750,
           "manualClientMinPrice": 537,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 537,
             "maxPrice": 750,
@@ -2922,7 +2922,7 @@
           "manualMaxPrice": 1941,
           "manualClientMinPrice": 1390,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1390,
             "maxPrice": 1941,
@@ -2971,7 +2971,7 @@
           "manualMaxPrice": 1251,
           "manualClientMinPrice": 896,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 896,
             "maxPrice": 1251,
@@ -3220,7 +3220,7 @@
           "manualMaxPrice": 1008,
           "manualClientMinPrice": 722,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 722,
             "maxPrice": 1008,
@@ -3485,7 +3485,7 @@
           "manualMaxPrice": 1117,
           "manualClientMinPrice": 823,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 823,
             "maxPrice": 1117,
@@ -3750,7 +3750,7 @@
           "manualMaxPrice": 825,
           "manualClientMinPrice": 592,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 592,
             "maxPrice": 825,
@@ -3975,7 +3975,7 @@
           "manualMaxPrice": 1552,
           "manualClientMinPrice": 1113,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1113,
             "maxPrice": 1552,
@@ -4240,7 +4240,7 @@
           "manualMaxPrice": 1007,
           "manualClientMinPrice": 721,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 721,
             "maxPrice": 1007,
@@ -4505,7 +4505,7 @@
           "manualMaxPrice": 2014,
           "manualClientMinPrice": 1442,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1442,
             "maxPrice": 2014,
@@ -4570,7 +4570,7 @@
           "manualMaxPrice": 1079,
           "manualClientMinPrice": 773,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 773,
             "maxPrice": 1079,
@@ -4771,7 +4771,7 @@
           "manualMaxPrice": 859,
           "manualClientMinPrice": 615,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 615,
             "maxPrice": 859,
@@ -5036,7 +5036,7 @@
           "manualMaxPrice": 1558,
           "manualClientMinPrice": 1116,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1116,
             "maxPrice": 1558,
@@ -5301,7 +5301,7 @@
           "manualMaxPrice": 1038,
           "manualClientMinPrice": 744,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 744,
             "maxPrice": 1038,
@@ -5566,7 +5566,7 @@
           "manualMaxPrice": 1029,
           "manualClientMinPrice": 738,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 738,
             "maxPrice": 1029,
@@ -5815,7 +5815,7 @@
           "manualMaxPrice": 1065,
           "manualClientMinPrice": 763,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 763,
             "maxPrice": 1065,
@@ -6032,7 +6032,7 @@
           "manualMaxPrice": 812,
           "manualClientMinPrice": 582,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 582,
             "maxPrice": 812,
@@ -6297,7 +6297,7 @@
           "manualMaxPrice": 1849,
           "manualClientMinPrice": 1325,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1325,
             "maxPrice": 1849,
@@ -6562,7 +6562,7 @@
           "manualMaxPrice": 1317,
           "manualClientMinPrice": 944,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 944,
             "maxPrice": 1317,
@@ -6611,7 +6611,7 @@
           "manualMaxPrice": 673,
           "manualClientMinPrice": 483,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 483,
             "maxPrice": 673,
@@ -6876,7 +6876,7 @@
           "manualMaxPrice": 679,
           "manualClientMinPrice": 486,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 486,
             "maxPrice": 679,
@@ -7133,7 +7133,7 @@
           "manualMaxPrice": 632,
           "manualClientMinPrice": 453,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 453,
             "maxPrice": 632,
@@ -7398,7 +7398,7 @@
           "manualMaxPrice": 1084,
           "manualClientMinPrice": 777,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 777,
             "maxPrice": 1084,
@@ -7663,7 +7663,7 @@
           "manualMaxPrice": 679,
           "manualClientMinPrice": 487,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 487,
             "maxPrice": 679,
@@ -7928,7 +7928,7 @@
           "manualMaxPrice": 1008,
           "manualClientMinPrice": 722,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 722,
             "maxPrice": 1008,
@@ -8145,7 +8145,7 @@
           "manualMaxPrice": 984,
           "manualClientMinPrice": 706,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 706,
             "maxPrice": 984,
@@ -8410,7 +8410,7 @@
           "manualMaxPrice": 848,
           "manualClientMinPrice": 608,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 608,
             "maxPrice": 848,
@@ -8619,7 +8619,7 @@
           "manualMaxPrice": 1028,
           "manualClientMinPrice": 737,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 737,
             "maxPrice": 1028,
@@ -8876,7 +8876,7 @@
           "manualMaxPrice": 1317,
           "manualClientMinPrice": 944,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 944,
             "maxPrice": 1317,
@@ -9109,7 +9109,7 @@
           "manualMaxPrice": 664,
           "manualClientMinPrice": 476,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 476,
             "maxPrice": 664,
@@ -9374,7 +9374,7 @@
           "manualMaxPrice": 2415,
           "manualClientMinPrice": 1730,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1730,
             "maxPrice": 2415,
@@ -9631,7 +9631,7 @@
           "manualMaxPrice": 1693,
           "manualClientMinPrice": 1213,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1213,
             "maxPrice": 1693,
@@ -9896,7 +9896,7 @@
           "manualMaxPrice": 1236,
           "manualClientMinPrice": 886,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 886,
             "maxPrice": 1236,
@@ -10391,7 +10391,7 @@
           "manualMaxPrice": 1420,
           "manualClientMinPrice": 1018,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1018,
             "maxPrice": 1420,
@@ -10544,7 +10544,7 @@
           "manualMaxPrice": 905,
           "manualClientMinPrice": 648,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 648,
             "maxPrice": 905,
@@ -10593,7 +10593,7 @@
           "manualMaxPrice": 893,
           "manualClientMinPrice": 640,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 640,
             "maxPrice": 893,
@@ -10858,7 +10858,7 @@
           "manualMaxPrice": 1784,
           "manualClientMinPrice": 1279,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1279,
             "maxPrice": 1784,
@@ -11123,7 +11123,7 @@
           "manualMaxPrice": 2677,
           "manualClientMinPrice": 1919,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1919,
             "maxPrice": 2677,
@@ -11388,7 +11388,7 @@
           "manualMaxPrice": 1039,
           "manualClientMinPrice": 745,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 745,
             "maxPrice": 1039,
@@ -11637,7 +11637,7 @@
           "manualMaxPrice": 2079,
           "manualClientMinPrice": 1489,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1489,
             "maxPrice": 2079,
@@ -11902,7 +11902,7 @@
           "manualMaxPrice": 1155,
           "manualClientMinPrice": 827,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 827,
             "maxPrice": 1155,
@@ -12071,7 +12071,7 @@
           "manualMaxPrice": 990,
           "manualClientMinPrice": 709,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 709,
             "maxPrice": 990,
@@ -12256,7 +12256,7 @@
           "manualMaxPrice": 1980,
           "manualClientMinPrice": 1419,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1419,
             "maxPrice": 1980,
@@ -12513,7 +12513,7 @@
           "manualMaxPrice": 1037,
           "manualClientMinPrice": 743,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 743,
             "maxPrice": 1037,
@@ -12770,7 +12770,7 @@
           "manualMaxPrice": 2074,
           "manualClientMinPrice": 1486,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1486,
             "maxPrice": 2074,
@@ -13035,7 +13035,7 @@
           "manualMaxPrice": 1103,
           "manualClientMinPrice": 791,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 791,
             "maxPrice": 1103,
@@ -13300,7 +13300,7 @@
           "manualMaxPrice": 613,
           "manualClientMinPrice": 440,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 440,
             "maxPrice": 613,
@@ -13565,7 +13565,7 @@
           "manualMaxPrice": 1113,
           "manualClientMinPrice": 798,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 798,
             "maxPrice": 1113,
@@ -13830,7 +13830,7 @@
           "manualMaxPrice": 1121,
           "manualClientMinPrice": 804,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 804,
             "maxPrice": 1121,
@@ -14095,7 +14095,7 @@
           "manualMaxPrice": 1144,
           "manualClientMinPrice": 820,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 820,
             "maxPrice": 1144,
@@ -14360,7 +14360,7 @@
           "manualMaxPrice": 759,
           "manualClientMinPrice": 544,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 544,
             "maxPrice": 759,
@@ -14625,7 +14625,7 @@
           "manualMaxPrice": 949,
           "manualClientMinPrice": 679,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 679,
             "maxPrice": 949,
@@ -14882,7 +14882,7 @@
           "manualMaxPrice": 1173,
           "manualClientMinPrice": 841,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 841,
             "maxPrice": 1173,
@@ -15139,7 +15139,7 @@
           "manualMaxPrice": 864,
           "manualClientMinPrice": 618,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 618,
             "maxPrice": 864,
@@ -15388,7 +15388,7 @@
           "manualMaxPrice": 1052,
           "manualClientMinPrice": 754,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 754,
             "maxPrice": 1052,
@@ -15653,7 +15653,7 @@
           "manualMaxPrice": 1271,
           "manualClientMinPrice": 911,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 911,
             "maxPrice": 1271,
@@ -15918,7 +15918,7 @@
           "manualMaxPrice": 1174,
           "manualClientMinPrice": 841,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 841,
             "maxPrice": 1174,
@@ -16183,7 +16183,7 @@
           "manualMaxPrice": 959,
           "manualClientMinPrice": 687,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 687,
             "maxPrice": 959,
@@ -16408,7 +16408,7 @@
           "manualMaxPrice": 1290,
           "manualClientMinPrice": 924,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 924,
             "maxPrice": 1290,
@@ -16657,7 +16657,7 @@
           "manualMaxPrice": 999,
           "manualClientMinPrice": 716,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 716,
             "maxPrice": 999,
@@ -16922,7 +16922,7 @@
           "manualMaxPrice": 1466,
           "manualClientMinPrice": 1051,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1051,
             "maxPrice": 1466,
@@ -17187,7 +17187,7 @@
           "manualMaxPrice": 1028,
           "manualClientMinPrice": 736,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 736,
             "maxPrice": 1028,
@@ -17452,7 +17452,7 @@
           "manualMaxPrice": 840,
           "manualClientMinPrice": 601,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 601,
             "maxPrice": 840,
@@ -17750,7 +17750,7 @@
           "manualMaxPrice": 982,
           "manualClientMinPrice": 704,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 704,
             "maxPrice": 982,
@@ -17927,7 +17927,7 @@
           "manualMaxPrice": 1964,
           "manualClientMinPrice": 1407,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1407,
             "maxPrice": 1964,
@@ -18152,7 +18152,7 @@
           "manualMaxPrice": 782,
           "manualClientMinPrice": 561,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 561,
             "maxPrice": 782,
@@ -18417,7 +18417,7 @@
           "manualMaxPrice": 427,
           "manualClientMinPrice": 306,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 306,
             "maxPrice": 427,
@@ -18682,7 +18682,7 @@
           "manualMaxPrice": 859,
           "manualClientMinPrice": 615,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 615,
             "maxPrice": 859,
@@ -18939,7 +18939,7 @@
           "manualMaxPrice": 899,
           "manualClientMinPrice": 644,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 644,
             "maxPrice": 899,
@@ -19164,7 +19164,7 @@
           "manualMaxPrice": 1081,
           "manualClientMinPrice": 774,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 774,
             "maxPrice": 1081,
@@ -19421,7 +19421,7 @@
           "manualMaxPrice": 1191,
           "manualClientMinPrice": 853,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 853,
             "maxPrice": 1191,
@@ -19678,7 +19678,7 @@
           "manualMaxPrice": 1189,
           "manualClientMinPrice": 852,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 852,
             "maxPrice": 1189,
@@ -19973,7 +19973,7 @@
           "manualMaxPrice": 1644,
           "manualClientMinPrice": 1178,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1178,
             "maxPrice": 1644,
@@ -20190,7 +20190,7 @@
           "manualMaxPrice": 856,
           "manualClientMinPrice": 613,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 613,
             "maxPrice": 856,
@@ -20263,7 +20263,7 @@
           "manualMaxPrice": 1007,
           "manualClientMinPrice": 722,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 722,
             "maxPrice": 1007,
@@ -20352,7 +20352,7 @@
           "manualMaxPrice": 1215,
           "manualClientMinPrice": 871,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 871,
             "maxPrice": 1215,
@@ -20617,7 +20617,7 @@
           "manualMaxPrice": 1275,
           "manualClientMinPrice": 914,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 914,
             "maxPrice": 1275,
@@ -20682,7 +20682,7 @@
           "manualMaxPrice": 1811,
           "manualClientMinPrice": 1298,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1298,
             "maxPrice": 1811,
@@ -20835,7 +20835,7 @@
           "manualMaxPrice": 917,
           "manualClientMinPrice": 657,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 657,
             "maxPrice": 917,
@@ -21052,7 +21052,7 @@
           "manualMaxPrice": 1133,
           "manualClientMinPrice": 812,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 812,
             "maxPrice": 1133,
@@ -21181,7 +21181,7 @@
           "manualMaxPrice": 1584,
           "manualClientMinPrice": 1135,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1135,
             "maxPrice": 1584,
@@ -21446,7 +21446,7 @@
           "manualMaxPrice": 813,
           "manualClientMinPrice": 583,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 583,
             "maxPrice": 813,
@@ -21957,7 +21957,7 @@
           "manualMaxPrice": 755,
           "manualClientMinPrice": 540,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 540,
             "maxPrice": 755,
@@ -22222,7 +22222,7 @@
           "manualMaxPrice": 939,
           "manualClientMinPrice": 672,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 672,
             "maxPrice": 939,
@@ -22487,7 +22487,7 @@
           "manualMaxPrice": 1044,
           "manualClientMinPrice": 748,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 748,
             "maxPrice": 1044,
@@ -22752,7 +22752,7 @@
           "manualMaxPrice": 857,
           "manualClientMinPrice": 614,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 614,
             "maxPrice": 857,
@@ -23271,7 +23271,7 @@
           "manualMaxPrice": 1138,
           "manualClientMinPrice": 815,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 815,
             "maxPrice": 1138,
@@ -23536,7 +23536,7 @@
           "manualMaxPrice": 1240,
           "manualClientMinPrice": 889,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 889,
             "maxPrice": 1240,
@@ -23801,7 +23801,7 @@
           "manualMaxPrice": 1035,
           "manualClientMinPrice": 742,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 742,
             "maxPrice": 1035,
@@ -23886,7 +23886,7 @@
           "manualMaxPrice": 2165,
           "manualClientMinPrice": 782,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 782,
             "maxPrice": 2165,
@@ -24039,7 +24039,7 @@
           "manualMaxPrice": 1791,
           "manualClientMinPrice": 1283,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1283,
             "maxPrice": 1791,
@@ -24272,7 +24272,7 @@
           "manualMaxPrice": 1001,
           "manualClientMinPrice": 718,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 718,
             "maxPrice": 1001,
@@ -24465,7 +24465,7 @@
           "manualMaxPrice": 2004,
           "manualClientMinPrice": 1436,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1436,
             "maxPrice": 2004,
@@ -24730,7 +24730,7 @@
           "manualMaxPrice": 991,
           "manualClientMinPrice": 710,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 710,
             "maxPrice": 991,
@@ -24995,7 +24995,7 @@
           "manualMaxPrice": 916,
           "manualClientMinPrice": 656,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 656,
             "maxPrice": 916,
@@ -25260,7 +25260,7 @@
           "manualMaxPrice": 1117,
           "manualClientMinPrice": 800,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 800,
             "maxPrice": 1117,
@@ -25509,7 +25509,7 @@
           "manualMaxPrice": 2135,
           "manualClientMinPrice": 1530,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1530,
             "maxPrice": 2135,
@@ -25726,7 +25726,7 @@
           "manualMaxPrice": 1035,
           "manualClientMinPrice": 742,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 742,
             "maxPrice": 1035,
@@ -25991,7 +25991,7 @@
           "manualMaxPrice": 851,
           "manualClientMinPrice": 610,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 610,
             "maxPrice": 851,
@@ -26255,7 +26255,7 @@
           "manualMaxPrice": 1407,
           "manualClientMinPrice": 459,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 459,
             "maxPrice": 1407,
@@ -26773,7 +26773,7 @@
           "manualMaxPrice": 1152,
           "manualClientMinPrice": 826,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 826,
             "maxPrice": 1152,
@@ -27038,7 +27038,7 @@
           "manualMaxPrice": 1085,
           "manualClientMinPrice": 778,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 778,
             "maxPrice": 1085,
@@ -27303,7 +27303,7 @@
           "manualMaxPrice": 1366,
           "manualClientMinPrice": 979,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 979,
             "maxPrice": 1366,
@@ -27552,7 +27552,7 @@
           "manualMaxPrice": 1355,
           "manualClientMinPrice": 970,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 970,
             "maxPrice": 1355,
@@ -27745,7 +27745,7 @@
           "manualMaxPrice": 1323,
           "manualClientMinPrice": 948,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 948,
             "maxPrice": 1323,
@@ -28010,7 +28010,7 @@
           "manualMaxPrice": 1144,
           "manualClientMinPrice": 820,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 820,
             "maxPrice": 1144,
@@ -28091,7 +28091,7 @@
           "manualMaxPrice": 454,
           "manualClientMinPrice": 324,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 324,
             "maxPrice": 454,
@@ -28356,7 +28356,7 @@
           "manualMaxPrice": 454,
           "manualClientMinPrice": 324,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 324,
             "maxPrice": 454,
@@ -28621,7 +28621,7 @@
           "manualMaxPrice": 771,
           "manualClientMinPrice": 552,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 552,
             "maxPrice": 771,
@@ -29064,7 +29064,7 @@
           "manualMaxPrice": 996,
           "manualClientMinPrice": 713,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 713,
             "maxPrice": 996,
@@ -29305,7 +29305,7 @@
           "manualMaxPrice": 1001,
           "manualClientMinPrice": 717,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 717,
             "maxPrice": 1001,
@@ -29570,7 +29570,7 @@
           "manualMaxPrice": 928,
           "manualClientMinPrice": 666,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 666,
             "maxPrice": 928,
@@ -29835,7 +29835,7 @@
           "manualMaxPrice": 629,
           "manualClientMinPrice": 452,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 452,
             "maxPrice": 629,
@@ -30092,7 +30092,7 @@
           "manualMaxPrice": 887,
           "manualClientMinPrice": 636,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 636,
             "maxPrice": 887,
@@ -30357,7 +30357,7 @@
           "manualMaxPrice": 1011,
           "manualClientMinPrice": 725,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 725,
             "maxPrice": 1011,
@@ -30622,7 +30622,7 @@
           "manualMaxPrice": 984,
           "manualClientMinPrice": 705,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 705,
             "maxPrice": 984,
@@ -30887,7 +30887,7 @@
           "manualMaxPrice": 906,
           "manualClientMinPrice": 648,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 648,
             "maxPrice": 906,
@@ -31152,7 +31152,7 @@
           "manualMaxPrice": 1129,
           "manualClientMinPrice": 809,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 809,
             "maxPrice": 1129,
@@ -31417,7 +31417,7 @@
           "manualMaxPrice": 803,
           "manualClientMinPrice": 576,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 576,
             "maxPrice": 803,
@@ -31682,7 +31682,7 @@
           "manualMaxPrice": 906,
           "manualClientMinPrice": 648,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 648,
             "maxPrice": 906,
@@ -31947,7 +31947,7 @@
           "manualMaxPrice": 1811,
           "manualClientMinPrice": 1298,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1298,
             "maxPrice": 1811,
@@ -32204,7 +32204,7 @@
           "manualMaxPrice": 1008,
           "manualClientMinPrice": 722,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 722,
             "maxPrice": 1008,
@@ -32413,7 +32413,7 @@
           "manualMaxPrice": 2015,
           "manualClientMinPrice": 1445,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1445,
             "maxPrice": 2015,
@@ -32678,7 +32678,7 @@
           "manualMaxPrice": 885,
           "manualClientMinPrice": 635,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 635,
             "maxPrice": 885,
@@ -32807,7 +32807,7 @@
           "manualMaxPrice": 1770,
           "manualClientMinPrice": 1268,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1268,
             "maxPrice": 1770,
@@ -33016,7 +33016,7 @@
           "manualMaxPrice": 1454,
           "manualClientMinPrice": 1042,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1042,
             "maxPrice": 1454,
@@ -33281,7 +33281,7 @@
           "manualMaxPrice": 726,
           "manualClientMinPrice": 520,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 520,
             "maxPrice": 726,
@@ -33330,7 +33330,7 @@
           "manualMaxPrice": 847,
           "manualClientMinPrice": 607,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 607,
             "maxPrice": 847,
@@ -33539,7 +33539,7 @@
           "manualMaxPrice": 1004,
           "manualClientMinPrice": 719,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 719,
             "maxPrice": 1004,
@@ -33772,7 +33772,7 @@
           "manualMaxPrice": 2007,
           "manualClientMinPrice": 1438,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1438,
             "maxPrice": 2007,
@@ -34037,7 +34037,7 @@
           "manualMaxPrice": 3011,
           "manualClientMinPrice": 2157,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 2157,
             "maxPrice": 3011,
@@ -34254,7 +34254,7 @@
           "manualMaxPrice": 2652,
           "manualClientMinPrice": 1900,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1900,
             "maxPrice": 2652,
@@ -34495,7 +34495,7 @@
           "manualMaxPrice": 737,
           "manualClientMinPrice": 529,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 529,
             "maxPrice": 737,
@@ -34760,7 +34760,7 @@
           "manualMaxPrice": 1002,
           "manualClientMinPrice": 719,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 719,
             "maxPrice": 1002,
@@ -34937,7 +34937,7 @@
           "manualMaxPrice": 2006,
           "manualClientMinPrice": 1437,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1437,
             "maxPrice": 2006,
@@ -35162,7 +35162,7 @@
           "manualMaxPrice": 1012,
           "manualClientMinPrice": 725,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 725,
             "maxPrice": 1012,
@@ -35275,7 +35275,7 @@
           "manualMaxPrice": 2223,
           "manualClientMinPrice": 1593,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1593,
             "maxPrice": 2223,
@@ -35516,7 +35516,7 @@
           "manualMaxPrice": 1067,
           "manualClientMinPrice": 765,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 765,
             "maxPrice": 1067,
@@ -35565,7 +35565,7 @@
           "manualMaxPrice": 987,
           "manualClientMinPrice": 707,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 707,
             "maxPrice": 987,
@@ -35830,7 +35830,7 @@
           "manualMaxPrice": 1193,
           "manualClientMinPrice": 855,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 855,
             "maxPrice": 1193,
@@ -36055,7 +36055,7 @@
           "manualMaxPrice": 2386,
           "manualClientMinPrice": 1710,
           "minMaxSource": "Озон мин_макс корр. 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": 1710,
             "maxPrice": 2386,
@@ -36179,7 +36179,7 @@
           "manualMinPrice": 882.3786364488253,
           "manualMaxPrice": 2595.2312836730157,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 882.3786364488253,
             "maxPrice": 2595.2312836730157,
@@ -36321,7 +36321,7 @@
           "manualMinPrice": 337.7325872533434,
           "manualMaxPrice": 993.3311389804219,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -36555,7 +36555,7 @@
           "manualMinPrice": 381.5468868194681,
           "manualMaxPrice": 1122.196725939612,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -36763,7 +36763,7 @@
           "manualMinPrice": 612.2961844166789,
           "manualMaxPrice": 1800.8711306372907,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 612.2961844166789,
             "maxPrice": 1800.8711306372907,
@@ -37021,7 +37021,7 @@
           "manualMinPrice": 455.37691463835773,
           "manualMaxPrice": 1339.3438665834049,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -37235,7 +37235,7 @@
           "manualMinPrice": 545.2970939821764,
           "manualMaxPrice": 1603.814982300519,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -37287,7 +37287,7 @@
           "manualMinPrice": 452.93581829978865,
           "manualMaxPrice": 1332.1641714699667,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 452.93581829978865,
             "maxPrice": 1332.1641714699667,
@@ -37551,7 +37551,7 @@
           "manualMinPrice": 809.4239542763842,
           "manualMaxPrice": 2380.658689048189,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 809.4239542763842,
             "maxPrice": 2380.658689048189,
@@ -37815,7 +37815,7 @@
           "manualMinPrice": 519.2301119204944,
           "manualMaxPrice": 1527.1473880014541,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 519.2301119204944,
             "maxPrice": 1527.1473880014541,
@@ -38039,7 +38039,7 @@
           "manualMinPrice": 375.2370657311421,
           "manualMaxPrice": 1103.6384286210061,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -38287,7 +38287,7 @@
           "manualMinPrice": 704.1020072448284,
           "manualMaxPrice": 2070.8882566024367,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -38467,7 +38467,7 @@
           "manualMinPrice": 431.0967308780184,
           "manualMaxPrice": 1267.9315614059365,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -38685,7 +38685,7 @@
           "manualMinPrice": 863.7531584936066,
           "manualMaxPrice": 2540.4504661576666,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -38915,7 +38915,7 @@
           "manualMinPrice": 463.4580528005777,
           "manualMaxPrice": 1363.1119200016992,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -39089,7 +39089,7 @@
           "manualMinPrice": 391.04708725450763,
           "manualMaxPrice": 1150.1384919250227,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -39245,7 +39245,7 @@
           "manualMinPrice": 653.293517321421,
           "manualMaxPrice": 1921.451521533591,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 653.293517321421,
             "maxPrice": 1921.451521533591,
@@ -39503,7 +39503,7 @@
           "manualMinPrice": 472.3897989269095,
           "manualMaxPrice": 1389.381761549734,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -39767,7 +39767,7 @@
           "manualMinPrice": 491.5369723424508,
           "manualMaxPrice": 1445.6969774777965,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 491.5369723424508,
             "maxPrice": 1445.6969774777965,
@@ -39897,7 +39897,7 @@
           "manualMinPrice": 445.8223946829522,
           "manualMaxPrice": 1311.2423373028005,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -40137,7 +40137,7 @@
           "manualMinPrice": 747.1547016859487,
           "manualMaxPrice": 2197.5138284880845,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 747.1547016859487,
             "maxPrice": 2197.5138284880845,
@@ -40393,7 +40393,7 @@
           "manualMinPrice": 527.6757101131521,
           "manualMaxPrice": 1551.9873826857417,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 527.6757101131521,
             "maxPrice": 1551.9873826857417,
@@ -40539,7 +40539,7 @@
           "manualMinPrice": 312.6040483784015,
           "manualMaxPrice": 919.4236717011809,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 312.6040483784015,
             "maxPrice": 919.4236717011809,
@@ -40803,7 +40803,7 @@
           "manualMinPrice": 321.0261662392808,
           "manualMaxPrice": 944.1946065861201,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 321.0261662392808,
             "maxPrice": 944.1946065861201,
@@ -41059,7 +41059,7 @@
           "manualMinPrice": 300.16555073993294,
           "manualMaxPrice": 882.8398551174498,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 300.16555073993294,
             "maxPrice": 882.8398551174498,
@@ -41273,7 +41273,7 @@
           "manualMinPrice": 507.09540961867094,
           "manualMaxPrice": 1491.457087113738,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 507.09540961867094,
             "maxPrice": 1491.457087113738,
@@ -41537,7 +41537,7 @@
           "manualMinPrice": 320.13499296372083,
           "manualMaxPrice": 941.573508716826,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 320.13499296372083,
             "maxPrice": 941.573508716826,
@@ -41801,7 +41801,7 @@
           "manualMinPrice": 473.0784685214141,
           "manualMaxPrice": 1391.4072603571,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 473.0784685214141,
             "maxPrice": 1391.4072603571,
@@ -42065,7 +42065,7 @@
           "manualMinPrice": 465.1405288025715,
           "manualMaxPrice": 1368.0603788310925,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 465.1405288025715,
             "maxPrice": 1368.0603788310925,
@@ -42315,7 +42315,7 @@
           "manualMinPrice": 369.55874987311483,
           "manualMaxPrice": 1086.9374996268084,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -42501,7 +42501,7 @@
           "manualMinPrice": 529.5861590670667,
           "manualMaxPrice": 1557.6063501972549,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 529.5861590670667,
             "maxPrice": 1557.6063501972549,
@@ -42677,7 +42677,7 @@
           "manualMinPrice": 976.997714899634,
           "manualMaxPrice": 2873.5226908812765,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 976.997714899634,
             "maxPrice": 2873.5226908812765,
@@ -42941,7 +42941,7 @@
           "manualMinPrice": 686.7805200909503,
           "manualMaxPrice": 2019.942706149854,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 686.7805200909503,
             "maxPrice": 2019.942706149854,
@@ -43205,7 +43205,7 @@
           "manualMinPrice": 591.4044804433292,
           "manualMaxPrice": 1739.4249424803804,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 591.4044804433292,
             "maxPrice": 1739.4249424803804,
@@ -43461,7 +43461,7 @@
           "manualMinPrice": 353.4009539190827,
           "manualMaxPrice": 1039.4145703502434,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 353.4009539190827,
             "maxPrice": 1039.4145703502434,
@@ -43685,7 +43685,7 @@
           "manualMinPrice": 426.0624216674598,
           "manualMaxPrice": 1253.124769610176,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 426.0624216674598,
             "maxPrice": 1253.124769610176,
@@ -43943,7 +43943,7 @@
           "manualMinPrice": 473.2140337978655,
           "manualMaxPrice": 1391.805981758428,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -44007,7 +44007,7 @@
           "manualMinPrice": 945.9350647024379,
           "manualMaxPrice": 2782.1619550071705,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -44265,7 +44265,7 @@
           "manualMinPrice": 525.9602127875376,
           "manualMaxPrice": 1546.941802316287,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -44355,7 +44355,7 @@
           "manualMinPrice": 405.23465911145433,
           "manualMaxPrice": 1191.8666444454539,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -44443,7 +44443,7 @@
           "manualMinPrice": 809.1897717806752,
           "manualMaxPrice": 2379.969917001986,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -44739,7 +44739,7 @@
           "manualMinPrice": 501.4956839484832,
           "manualMaxPrice": 1474.9873057308328,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 501.4956839484832,
             "maxPrice": 1474.9873057308328,
@@ -45003,7 +45003,7 @@
           "manualMinPrice": 314.86983093224626,
           "manualMaxPrice": 926.0877380360184,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 314.86983093224626,
             "maxPrice": 926.0877380360184,
@@ -45267,7 +45267,7 @@
           "manualMinPrice": 493.33974890718935,
           "manualMaxPrice": 1450.9992614917335,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 493.33974890718935,
             "maxPrice": 1450.9992614917335,
@@ -45531,7 +45531,7 @@
           "manualMinPrice": 519.7116114949821,
           "manualMaxPrice": 1528.5635632205356,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 519.7116114949821,
             "maxPrice": 1528.5635632205356,
@@ -45795,7 +45795,7 @@
           "manualMinPrice": 520.1302822431303,
           "manualMaxPrice": 1529.7949477739126,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 520.1302822431303,
             "maxPrice": 1529.7949477739126,
@@ -46059,7 +46059,7 @@
           "manualMinPrice": 344.9123723865376,
           "manualMaxPrice": 1014.4481540780516,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 344.9123723865376,
             "maxPrice": 1014.4481540780516,
@@ -46323,7 +46323,7 @@
           "manualMinPrice": 431.12369485059287,
           "manualMaxPrice": 1268.010867207626,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 431.12369485059287,
             "maxPrice": 1268.010867207626,
@@ -46587,7 +46587,7 @@
           "manualMinPrice": 455.6371727963129,
           "manualMaxPrice": 1340.1093317538614,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 455.6371727963129,
             "maxPrice": 1340.1093317538614,
@@ -46851,7 +46851,7 @@
           "manualMinPrice": 394.4607532039223,
           "manualMaxPrice": 1160.1786858938892,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 394.4607532039223,
             "maxPrice": 1160.1786858938892,
@@ -47115,7 +47115,7 @@
           "manualMinPrice": 476.3107674178645,
           "manualMaxPrice": 1400.9140218172483,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 476.3107674178645,
             "maxPrice": 1400.9140218172483,
@@ -47333,7 +47333,7 @@
           "manualMinPrice": 566.6588516449194,
           "manualMaxPrice": 1666.643681308586,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 566.6588516449194,
             "maxPrice": 1666.643681308586,
@@ -47597,7 +47597,7 @@
           "manualMinPrice": 531.965852095941,
           "manualMaxPrice": 1564.6054473410031,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 531.965852095941,
             "maxPrice": 1564.6054473410031,
@@ -47861,7 +47861,7 @@
           "manualMinPrice": 428.8080976935004,
           "manualMaxPrice": 1261.2002873338245,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 428.8080976935004,
             "maxPrice": 1261.2002873338245,
@@ -48093,7 +48093,7 @@
           "manualMinPrice": 485.48076194782504,
           "manualMaxPrice": 1427.8845939641913,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 583.825135548233,
             "maxPrice": 1717.13275161245,
@@ -48321,7 +48321,7 @@
           "manualMinPrice": 463.12651975745257,
           "manualMaxPrice": 1362.1368228160368,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 463.12651975745257,
             "maxPrice": 1362.1368228160368,
@@ -48575,7 +48575,7 @@
           "manualMinPrice": 592.2377902494469,
           "manualMaxPrice": 1741.875853674844,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 592.2377902494469,
             "maxPrice": 1741.875853674844,
@@ -48817,7 +48817,7 @@
           "manualMinPrice": 360.8266055371403,
           "manualMaxPrice": 1061.2547221680597,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -49067,7 +49067,7 @@
           "manualMinPrice": 724.6042079775835,
           "manualMaxPrice": 2131.1888469928926,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -49431,7 +49431,7 @@
           "manualMinPrice": 447.06297114553456,
           "manualMaxPrice": 1314.8910916045136,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -49731,7 +49731,7 @@
           "manualMinPrice": 222.8792956962162,
           "manualMaxPrice": 655.5273402829888,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 222.8792956962162,
             "maxPrice": 655.5273402829888,
@@ -49903,7 +49903,7 @@
           "manualMinPrice": 446.0555038135736,
           "manualMaxPrice": 1311.9279523928635,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 446.0555038135736,
             "maxPrice": 1311.9279523928635,
@@ -50167,7 +50167,7 @@
           "manualMinPrice": 409.78923447314116,
           "manualMaxPrice": 1205.2624543327681,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 409.78923447314116,
             "maxPrice": 1205.2624543327681,
@@ -50401,7 +50401,7 @@
           "manualMinPrice": 540.1460292089762,
           "manualMaxPrice": 1588.6647917911066,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -50563,7 +50563,7 @@
           "manualMinPrice": 495.7845313902337,
           "manualMaxPrice": 1458.1897982065698,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -50683,7 +50683,7 @@
           "manualMinPrice": 716.7918474115754,
           "manualMaxPrice": 2108.2113159163982,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -50947,7 +50947,7 @@
           "manualMinPrice": 539.5655080520484,
           "manualMaxPrice": 1586.9573766236715,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 539.5655080520484,
             "maxPrice": 1586.9573766236715,
@@ -51211,7 +51211,7 @@
           "manualMinPrice": 578.875528569825,
           "manualMaxPrice": 1702.5750840288968,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 578.875528569825,
             "maxPrice": 1702.5750840288968,
@@ -51405,7 +51405,7 @@
           "manualMinPrice": 419.9269690035271,
           "manualMaxPrice": 1235.0793205986092,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -51633,7 +51633,7 @@
           "manualMinPrice": 507.7128924597094,
           "manualMaxPrice": 1493.2732131167922,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -51897,7 +51897,7 @@
           "manualMinPrice": 632.2593436349929,
           "manualMaxPrice": 1859.5863048088024,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 632.2593436349929,
             "maxPrice": 1859.5863048088024,
@@ -52161,7 +52161,7 @@
           "manualMinPrice": 369.65740029235485,
           "manualMaxPrice": 1087.2276479186908,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 369.65740029235485,
             "maxPrice": 1087.2276479186908,
@@ -52425,7 +52425,7 @@
           "manualMinPrice": 442.11415780534696,
           "manualMaxPrice": 1300.3357582510205,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 442.11415780534696,
             "maxPrice": 1300.3357582510205,
@@ -52689,7 +52689,7 @@
           "manualMinPrice": 342.95174582745307,
           "manualMaxPrice": 1008.6816053748619,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 342.95174582745307,
             "maxPrice": 1008.6816053748619,
@@ -52953,7 +52953,7 @@
           "manualMinPrice": 426.38880313478927,
           "manualMaxPrice": 1254.0847151023213,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 426.38880313478927,
             "maxPrice": 1254.0847151023213,
@@ -53217,7 +53217,7 @@
           "manualMinPrice": 450.4905263738348,
           "manualMaxPrice": 1324.972136393632,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 450.4905263738348,
             "maxPrice": 1324.972136393632,
@@ -53481,7 +53481,7 @@
           "manualMinPrice": 389.93846323747493,
           "manualMaxPrice": 1146.8778330513967,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 389.93846323747493,
             "maxPrice": 1146.8778330513967,
@@ -53744,7 +53744,7 @@
           "manualMinPrice": 470.7363501805351,
           "manualMaxPrice": 1384.518677001574,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 470.7363501805351,
             "maxPrice": 1384.518677001574,
@@ -54007,7 +54007,7 @@
           "manualMinPrice": 505.9797120861695,
           "manualMaxPrice": 1488.1756237828515,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 505.9797120861695,
             "maxPrice": 1488.1756237828515,
@@ -54271,7 +54271,7 @@
           "manualMinPrice": 552.081072538829,
           "manualMaxPrice": 1623.7678604083205,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 552.081072538829,
             "maxPrice": 1623.7678604083205,
@@ -54534,7 +54534,7 @@
           "manualMinPrice": 578.2928409304518,
           "manualMaxPrice": 1700.86129685427,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 578.2928409304518,
             "maxPrice": 1700.86129685427,
@@ -54675,7 +54675,7 @@
           "manualMinPrice": 797.9289921340925,
           "manualMaxPrice": 2346.8499768649776,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 797.9289921340925,
             "maxPrice": 2346.8499768649776,
@@ -54917,7 +54917,7 @@
           "manualMinPrice": 416.698194314878,
           "manualMaxPrice": 1225.5829244555234,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -55085,7 +55085,7 @@
           "manualMinPrice": 829.3428883764294,
           "manualMaxPrice": 2439.2437893424394,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -55349,7 +55349,7 @@
           "manualMinPrice": 451.3723463112092,
           "manualMaxPrice": 1327.565724444733,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 451.3723463112092,
             "maxPrice": 1327.565724444733,
@@ -55639,7 +55639,7 @@
           "manualMinPrice": 415.512391060046,
           "manualMaxPrice": 1222.0952678236647,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 415.512391060046,
             "maxPrice": 1222.0952678236647,
@@ -55903,7 +55903,7 @@
           "manualMinPrice": 513.9075060412941,
           "manualMaxPrice": 1511.4926648273358,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 513.9075060412941,
             "maxPrice": 1511.4926648273358,
@@ -56091,7 +56091,7 @@
           "manualMinPrice": 972.6111299555239,
           "manualMaxPrice": 2860.6209704574226,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -56331,7 +56331,7 @@
           "manualMinPrice": 517.150314965682,
           "manualMaxPrice": 1521.0303381343588,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 517.150314965682,
             "maxPrice": 1521.0303381343588,
@@ -56595,7 +56595,7 @@
           "manualMinPrice": 377.9792694246652,
           "manualMaxPrice": 1111.7037336019564,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 377.9792694246652,
             "maxPrice": 1111.7037336019564,
@@ -56832,7 +56832,7 @@
           "manualMinPrice": 515.0058970236695,
           "manualMaxPrice": 1514.7232265402045,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 515.0058970236695,
             "maxPrice": 1514.7232265402045,
@@ -57095,7 +57095,7 @@
           "manualMinPrice": 643.2571587420484,
           "manualMaxPrice": 1891.9328198295543,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 643.2571587420484,
             "maxPrice": 1891.9328198295543,
@@ -57359,7 +57359,7 @@
           "manualMinPrice": 521.5282237289572,
           "manualMaxPrice": 1533.9065403792858,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 521.5282237289572,
             "maxPrice": 1533.9065403792858,
@@ -57617,7 +57617,7 @@
           "manualMinPrice": 495.5542612836871,
           "manualMaxPrice": 1457.5125331873148,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -57745,7 +57745,7 @@
           "manualMinPrice": 988.6074018224436,
           "manualMaxPrice": 2907.66882888954,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -58003,7 +58003,7 @@
           "manualMinPrice": 622.7200062436576,
           "manualMaxPrice": 1831.5294301284048,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -58261,7 +58261,7 @@
           "manualMinPrice": 616.3607351427393,
           "manualMaxPrice": 1812.8256915962922,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -58525,7 +58525,7 @@
           "manualMinPrice": 589.169207432559,
           "manualMaxPrice": 1732.850610095762,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 589.169207432559,
             "maxPrice": 1732.850610095762,
@@ -58741,7 +58741,7 @@
           "manualMinPrice": 202.25538499978586,
           "manualMaxPrice": 594.8687794111348,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 202.25538499978586,
             "maxPrice": 594.8687794111348,
@@ -59005,7 +59005,7 @@
           "manualMinPrice": 202.0034756506616,
           "manualMaxPrice": 594.1278695607695,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 202.0034756506616,
             "maxPrice": 594.1278695607695,
@@ -59269,7 +59269,7 @@
           "manualMinPrice": 340.70643500321273,
           "manualMaxPrice": 1002.0777500094493,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 340.70643500321273,
             "maxPrice": 1002.0777500094493,
@@ -59532,7 +59532,7 @@
           "manualMinPrice": 460.3523978028444,
           "manualMaxPrice": 1353.977640596601,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 460.3523978028444,
             "maxPrice": 1353.977640596601,
@@ -59598,7 +59598,7 @@
           "manualMinPrice": 415.0191649295378,
           "manualMaxPrice": 1220.6446027339346,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -59766,7 +59766,7 @@
           "manualMinPrice": 2135.646606692696,
           "manualMaxPrice": 6281.313549096166,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 2135.646606692696,
             "maxPrice": 6281.313549096166,
@@ -60030,7 +60030,7 @@
           "manualMinPrice": 445.6284779502006,
           "manualMaxPrice": 1310.6719939711784,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 445.6284779502006,
             "maxPrice": 1310.6719939711784,
@@ -60228,7 +60228,7 @@
           "manualMinPrice": 416.0991742782061,
           "manualMaxPrice": 1223.821100818253,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 416.0991742782061,
             "maxPrice": 1223.821100818253,
@@ -60486,7 +60486,7 @@
           "manualMinPrice": 378.79561788273105,
           "manualMaxPrice": 1114.1047584786209,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -60626,7 +60626,7 @@
           "manualMinPrice": 330.5083178069156,
           "manualMaxPrice": 972.0832876673988,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -60860,7 +60860,7 @@
           "manualMinPrice": 376.82253566572075,
           "manualMaxPrice": 1108.3015754874139,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -60950,7 +60950,7 @@
           "manualMinPrice": 753.3790657263959,
           "manualMaxPrice": 2215.8207815482233,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -61202,7 +61202,7 @@
           "manualMinPrice": 430.77852792457395,
           "manualMaxPrice": 1266.995670366394,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -61288,7 +61288,7 @@
           "manualMinPrice": 864.6041503147493,
           "manualMaxPrice": 2542.953383278674,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -61504,7 +61504,7 @@
           "manualMinPrice": 380.6660825705403,
           "manualMaxPrice": 1119.6061252074715,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -61718,7 +61718,7 @@
           "manualMinPrice": 756.2071556618008,
           "manualMaxPrice": 2224.138693122943,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -61798,7 +61798,7 @@
           "manualMinPrice": 619.8744274860728,
           "manualMaxPrice": 1823.1600808413905,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -62062,7 +62062,7 @@
           "manualMinPrice": 340.01570093670614,
           "manualMaxPrice": 1000.0461792256062,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": 340.01570093670614,
             "maxPrice": 1000.0461792256062,
@@ -62102,7 +62102,7 @@
           "manualMinPrice": 1347.060240808744,
           "manualMaxPrice": 3961.9418847315997,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -62250,7 +62250,7 @@
           "manualMinPrice": 320.6542056586921,
           "manualMaxPrice": 943.1006048785063,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -62508,7 +62508,7 @@
           "manualMinPrice": 416.52728319062703,
           "manualMaxPrice": 1225.0802446783148,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -62554,7 +62554,7 @@
           "manualMinPrice": 914.6777608094536,
           "manualMaxPrice": 2690.2287082630983,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -62812,7 +62812,7 @@
           "manualMinPrice": 487.10009947719755,
           "manualMaxPrice": 1432.647351403522,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -62974,7 +62974,7 @@
           "manualMinPrice": 429.1632339439024,
           "manualMaxPrice": 1262.2448057173597,
           "minMaxSource": "Мин макс ВБ 01.06.xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.597Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.942Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63020,7 +63020,7 @@
           "manualMinPrice": 513,
           "manualMaxPrice": 590,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63118,7 +63118,7 @@
           "manualMinPrice": 511,
           "manualMaxPrice": 570,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63184,7 +63184,7 @@
           "manualMinPrice": 596,
           "manualMaxPrice": 2050,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63250,7 +63250,7 @@
           "manualMinPrice": 596,
           "manualMaxPrice": 850,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63340,7 +63340,7 @@
           "manualMinPrice": 1088,
           "manualMaxPrice": 1270,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63422,7 +63422,7 @@
           "manualMinPrice": 418,
           "manualMaxPrice": 700,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63472,7 +63472,7 @@
           "manualMinPrice": 418,
           "manualMaxPrice": 600,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63610,7 +63610,7 @@
           "manualMinPrice": 477,
           "manualMaxPrice": 1405,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63716,7 +63716,7 @@
           "manualMinPrice": 451,
           "manualMaxPrice": 850,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63782,7 +63782,7 @@
           "manualMinPrice": 451,
           "manualMaxPrice": 620,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63832,7 +63832,7 @@
           "manualMinPrice": 465,
           "manualMaxPrice": 500,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63930,7 +63930,7 @@
           "manualMinPrice": 737,
           "manualMaxPrice": 920,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -63972,7 +63972,7 @@
           "manualMinPrice": 572,
           "manualMaxPrice": 834,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64078,7 +64078,7 @@
           "manualMinPrice": 537,
           "manualMaxPrice": 1221,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64120,7 +64120,7 @@
           "manualMinPrice": 537,
           "manualMaxPrice": 580,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64210,7 +64210,7 @@
           "manualMinPrice": 544,
           "manualMaxPrice": 640,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64260,7 +64260,7 @@
           "manualMinPrice": 562,
           "manualMaxPrice": 600,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64326,7 +64326,7 @@
           "manualMinPrice": 756,
           "manualMaxPrice": 760,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64392,7 +64392,7 @@
           "manualMinPrice": 562,
           "manualMaxPrice": 790,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64434,7 +64434,7 @@
           "manualMinPrice": 562,
           "manualMaxPrice": 600,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64540,7 +64540,7 @@
           "manualMinPrice": 489,
           "manualMaxPrice": 1230,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64630,7 +64630,7 @@
           "manualMinPrice": 489,
           "manualMaxPrice": 680,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64720,7 +64720,7 @@
           "manualMinPrice": 489,
           "manualMaxPrice": 871,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64786,7 +64786,7 @@
           "manualMinPrice": 634,
           "manualMaxPrice": 790,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64860,7 +64860,7 @@
           "manualMinPrice": 627,
           "manualMaxPrice": 700,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -64934,7 +64934,7 @@
           "manualMinPrice": 627,
           "manualMaxPrice": 800,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65040,7 +65040,7 @@
           "manualMinPrice": 560,
           "manualMaxPrice": 800,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65090,7 +65090,7 @@
           "manualMinPrice": 844,
           "manualMaxPrice": 1115,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65180,7 +65180,7 @@
           "manualMinPrice": 566,
           "manualMaxPrice": 1010,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65278,7 +65278,7 @@
           "manualMinPrice": 563,
           "manualMaxPrice": 700,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65360,7 +65360,7 @@
           "manualMinPrice": 563,
           "manualMaxPrice": 830,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65410,7 +65410,7 @@
           "manualMinPrice": 468,
           "manualMaxPrice": 812,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65476,7 +65476,7 @@
           "manualMinPrice": 468,
           "manualMaxPrice": 500,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65542,7 +65542,7 @@
           "manualMinPrice": 722,
           "manualMaxPrice": 807,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65584,7 +65584,7 @@
           "manualMinPrice": 460,
           "manualMaxPrice": 780,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65722,7 +65722,7 @@
           "manualMinPrice": 412,
           "manualMaxPrice": 920,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65764,7 +65764,7 @@
           "manualMinPrice": 412,
           "manualMaxPrice": 520,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65854,7 +65854,7 @@
           "manualMinPrice": 379,
           "manualMaxPrice": 834,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65896,7 +65896,7 @@
           "manualMinPrice": 379,
           "manualMaxPrice": 427,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -65938,7 +65938,7 @@
           "manualMinPrice": 529,
           "manualMaxPrice": 626,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66036,7 +66036,7 @@
           "manualMinPrice": 437,
           "manualMaxPrice": 600,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66118,7 +66118,7 @@
           "manualMinPrice": 467,
           "manualMaxPrice": 500,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66168,7 +66168,7 @@
           "manualMinPrice": 508,
           "manualMaxPrice": 900,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66210,7 +66210,7 @@
           "manualMinPrice": 508,
           "manualMaxPrice": 770,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66284,7 +66284,7 @@
           "manualMinPrice": 998,
           "manualMaxPrice": 1300,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66366,7 +66366,7 @@
           "manualMinPrice": 687,
           "manualMaxPrice": 1150,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66432,7 +66432,7 @@
           "manualMinPrice": 687,
           "manualMaxPrice": 911,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66482,7 +66482,7 @@
           "manualMinPrice": 503,
           "manualMaxPrice": 1000,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66548,7 +66548,7 @@
           "manualMinPrice": 503,
           "manualMaxPrice": 650,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66670,7 +66670,7 @@
           "manualMinPrice": 549,
           "manualMaxPrice": 630,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66728,7 +66728,7 @@
           "manualMinPrice": 874,
           "manualMaxPrice": 1217,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66770,7 +66770,7 @@
           "manualMinPrice": 607,
           "manualMaxPrice": 1720,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66828,7 +66828,7 @@
           "manualMinPrice": 607,
           "manualMaxPrice": 690,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66934,7 +66934,7 @@
           "manualMinPrice": 749,
           "manualMaxPrice": 950,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -66992,7 +66992,7 @@
           "manualMinPrice": 660,
           "manualMaxPrice": 923,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -67074,7 +67074,7 @@
           "manualMinPrice": 646,
           "manualMaxPrice": 680,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -67116,7 +67116,7 @@
           "manualMinPrice": 486,
           "manualMaxPrice": 740,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -67158,7 +67158,7 @@
           "manualMinPrice": 486,
           "manualMaxPrice": 546,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -67248,7 +67248,7 @@
           "manualMinPrice": 751,
           "manualMaxPrice": 1047,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -67370,7 +67370,7 @@
           "manualMinPrice": 685,
           "manualMaxPrice": 1385,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -67508,7 +67508,7 @@
           "manualMinPrice": 500,
           "manualMaxPrice": 934,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -67622,7 +67622,7 @@
           "manualMinPrice": 551,
           "manualMaxPrice": 740,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -67760,7 +67760,7 @@
           "manualMinPrice": 665,
           "manualMaxPrice": 920,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -67858,7 +67858,7 @@
           "manualMinPrice": 691,
           "manualMaxPrice": 1011,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -67980,7 +67980,7 @@
           "manualMinPrice": 691,
           "manualMaxPrice": 1200,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68022,7 +68022,7 @@
           "manualMinPrice": 686,
           "manualMaxPrice": 850,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68064,7 +68064,7 @@
           "manualMinPrice": 561,
           "manualMaxPrice": 780,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68178,7 +68178,7 @@
           "manualMinPrice": 561,
           "manualMaxPrice": 1358,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68268,7 +68268,7 @@
           "manualMinPrice": 596,
           "manualMaxPrice": 770,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68366,7 +68366,7 @@
           "manualMinPrice": 581,
           "manualMaxPrice": 805,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68448,7 +68448,7 @@
           "manualMinPrice": 581,
           "manualMaxPrice": 660,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68538,7 +68538,7 @@
           "manualMinPrice": 645,
           "manualMaxPrice": 785,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68588,7 +68588,7 @@
           "manualMinPrice": 519,
           "manualMaxPrice": 730,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68686,7 +68686,7 @@
           "manualMinPrice": 519,
           "manualMaxPrice": 570,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68744,7 +68744,7 @@
           "manualMinPrice": 620,
           "manualMaxPrice": 700,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68834,7 +68834,7 @@
           "manualMinPrice": 350,
           "manualMaxPrice": 440,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -68932,7 +68932,7 @@
           "manualMinPrice": 500,
           "manualMaxPrice": 698,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69046,7 +69046,7 @@
           "manualMinPrice": 567,
           "manualMaxPrice": 1043,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69176,7 +69176,7 @@
           "manualMinPrice": 567,
           "manualMaxPrice": 819,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69226,7 +69226,7 @@
           "manualMinPrice": 533,
           "manualMaxPrice": 1044,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69308,7 +69308,7 @@
           "manualMinPrice": 533,
           "manualMaxPrice": 626,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69382,7 +69382,7 @@
           "manualMinPrice": 534,
           "manualMaxPrice": 680,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69496,7 +69496,7 @@
           "manualMinPrice": 534,
           "manualMaxPrice": 700,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69562,7 +69562,7 @@
           "manualMinPrice": 470,
           "manualMaxPrice": 890,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69612,7 +69612,7 @@
           "manualMinPrice": 420,
           "manualMaxPrice": 550,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69694,7 +69694,7 @@
           "manualMinPrice": 420,
           "manualMaxPrice": 526,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69736,7 +69736,7 @@
           "manualMinPrice": 548,
           "manualMaxPrice": 590,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69850,7 +69850,7 @@
           "manualMinPrice": 497,
           "manualMaxPrice": 820,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -69908,7 +69908,7 @@
           "manualMinPrice": 497,
           "manualMaxPrice": 869,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70014,7 +70014,7 @@
           "manualMinPrice": 554,
           "manualMaxPrice": 640,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70088,7 +70088,7 @@
           "manualMinPrice": 348,
           "manualMaxPrice": 700,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70138,7 +70138,7 @@
           "manualMinPrice": 348,
           "manualMaxPrice": 429,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70276,7 +70276,7 @@
           "manualMinPrice": 804,
           "manualMaxPrice": 1433,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70342,7 +70342,7 @@
           "manualMinPrice": 804,
           "manualMaxPrice": 1115,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70416,7 +70416,7 @@
           "manualMinPrice": 826,
           "manualMaxPrice": 1400,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70514,7 +70514,7 @@
           "manualMinPrice": 855,
           "manualMaxPrice": 1100,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70636,7 +70636,7 @@
           "manualMinPrice": 1027,
           "manualMaxPrice": 1230,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70734,7 +70734,7 @@
           "manualMinPrice": 877,
           "manualMaxPrice": 1546,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70784,7 +70784,7 @@
           "manualMinPrice": 756,
           "manualMaxPrice": 933,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70850,7 +70850,7 @@
           "manualMinPrice": 756,
           "manualMaxPrice": 910,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -70988,7 +70988,7 @@
           "manualMinPrice": 772,
           "manualMaxPrice": 1020,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71062,7 +71062,7 @@
           "manualMinPrice": 1025,
           "manualMaxPrice": 1246,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71112,7 +71112,7 @@
           "manualMinPrice": 1145,
           "manualMaxPrice": 2900,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71154,7 +71154,7 @@
           "manualMinPrice": 576,
           "manualMaxPrice": 790,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71236,7 +71236,7 @@
           "manualMinPrice": 576,
           "manualMaxPrice": 660,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71318,7 +71318,7 @@
           "manualMinPrice": 498,
           "manualMaxPrice": 960,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71376,7 +71376,7 @@
           "manualMinPrice": 498,
           "manualMaxPrice": 590,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71434,7 +71434,7 @@
           "manualMinPrice": 540,
           "manualMaxPrice": 700,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71500,7 +71500,7 @@
           "manualMinPrice": 564,
           "manualMaxPrice": 600,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71542,7 +71542,7 @@
           "manualMinPrice": 611,
           "manualMaxPrice": 870,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71584,7 +71584,7 @@
           "manualMinPrice": 597,
           "manualMaxPrice": 690,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71674,7 +71674,7 @@
           "manualMinPrice": 600,
           "manualMaxPrice": 740,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71740,7 +71740,7 @@
           "manualMinPrice": 781,
           "manualMaxPrice": 1997,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71838,7 +71838,7 @@
           "manualMinPrice": 674,
           "manualMaxPrice": 900,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71912,7 +71912,7 @@
           "manualMinPrice": 438,
           "manualMaxPrice": 780,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -71994,7 +71994,7 @@
           "manualMinPrice": 438,
           "manualMaxPrice": 910,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72036,7 +72036,7 @@
           "manualMinPrice": 493,
           "manualMaxPrice": 1300,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72094,7 +72094,7 @@
           "manualMinPrice": 493,
           "manualMaxPrice": 500,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72152,7 +72152,7 @@
           "manualMinPrice": 554,
           "manualMaxPrice": 800,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72210,7 +72210,7 @@
           "manualMinPrice": 607,
           "manualMaxPrice": 690,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72340,7 +72340,7 @@
           "manualMinPrice": 753,
           "manualMaxPrice": 1010,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72422,7 +72422,7 @@
           "manualMinPrice": 451,
           "manualMaxPrice": 900,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72480,7 +72480,7 @@
           "manualMinPrice": 451,
           "manualMaxPrice": 810,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72530,7 +72530,7 @@
           "manualMinPrice": 596,
           "manualMaxPrice": 820,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72588,7 +72588,7 @@
           "manualMinPrice": 597,
           "manualMaxPrice": 940,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72638,7 +72638,7 @@
           "manualMinPrice": 597,
           "manualMaxPrice": 600,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72752,7 +72752,7 @@
           "manualMinPrice": 483,
           "manualMaxPrice": 2372,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72826,7 +72826,7 @@
           "manualMinPrice": 407,
           "manualMaxPrice": 500,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -72940,7 +72940,7 @@
           "manualMinPrice": 576,
           "manualMaxPrice": 730,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73006,7 +73006,7 @@
           "manualMinPrice": 595,
           "manualMaxPrice": 789,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73120,7 +73120,7 @@
           "manualMinPrice": 595,
           "manualMaxPrice": 838,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73218,7 +73218,7 @@
           "manualMinPrice": 620,
           "manualMaxPrice": 1602,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73348,7 +73348,7 @@
           "manualMinPrice": 573,
           "manualMaxPrice": 850,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73486,7 +73486,7 @@
           "manualMinPrice": 573,
           "manualMaxPrice": 935,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73536,7 +73536,7 @@
           "manualMinPrice": 657,
           "manualMaxPrice": 730,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73626,7 +73626,7 @@
           "manualMinPrice": 760,
           "manualMaxPrice": 840,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73668,7 +73668,7 @@
           "manualMinPrice": 657,
           "manualMaxPrice": 660,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73718,7 +73718,7 @@
           "manualMinPrice": 557,
           "manualMaxPrice": 880,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73760,7 +73760,7 @@
           "manualMinPrice": 557,
           "manualMaxPrice": 578,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73850,7 +73850,7 @@
           "manualMinPrice": 495,
           "manualMaxPrice": 745,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73940,7 +73940,7 @@
           "manualMinPrice": 443,
           "manualMaxPrice": 460,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -73982,7 +73982,7 @@
           "manualMinPrice": 666,
           "manualMaxPrice": 908,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -74056,7 +74056,7 @@
           "manualMinPrice": 551,
           "manualMaxPrice": 838,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -74114,7 +74114,7 @@
           "manualMinPrice": 538,
           "manualMaxPrice": 600,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -74164,7 +74164,7 @@
           "manualMinPrice": 650,
           "manualMaxPrice": 700,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -74222,7 +74222,7 @@
           "manualMinPrice": 650,
           "manualMaxPrice": 760,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -74280,7 +74280,7 @@
           "manualMinPrice": 733,
           "manualMaxPrice": 864,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -74338,7 +74338,7 @@
           "manualMinPrice": 722,
           "manualMaxPrice": 1456,
           "minMaxSource": "Мин максы (1).xlsx",
-          "minMaxImportedAt": "2026-06-03T08:15:42.598Z",
+          "minMaxImportedAt": "2026-06-03T09:33:49.943Z",
           "minMaxPrevious": {
             "minPrice": null,
             "maxPrice": null,
@@ -74349,7 +74349,7 @@
       ]
     }
   },
-  "minMaxImportAppliedAt": "2026-06-03T08:15:42.598Z",
+  "minMaxImportAppliedAt": "2026-06-03T09:33:49.943Z",
   "minMaxImportSources": [
     "Мин макс ВБ.xlsx",
     "Озон мин_макс.xlsx",

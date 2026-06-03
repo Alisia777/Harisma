@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-06-03T08:15:43.132Z",
+  "generatedAt": "2026-06-03T09:33:50.571Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -13,14 +13,14 @@
     "status": "ok",
     "dataDate": "2026-06-02",
     "expectedFactDate": "2026-06-02",
-    "sourceGeneratedAt": "2026-06-03T08:15:02.513Z",
+    "sourceGeneratedAt": "2026-06-03T09:33:11.212Z",
     "message": "Данные свежие: факт до 2026-06-02.",
-    "orderProcurementGeneratedAt": "2026-06-03T08:15:02.513Z",
+    "orderProcurementGeneratedAt": "2026-06-03T09:33:11.212Z",
     "orderWindow": {
       "from": "2026-05-07",
       "to": "2026-06-03"
     },
-    "smartPriceGeneratedAt": "2026-06-03T08:15:28.424Z",
+    "smartPriceGeneratedAt": "2026-06-03T09:33:35.373Z",
     "sources": {
       "orderProcurement": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\order_procurement.json",
       "skus": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\skus.json",
@@ -38,16 +38,16 @@
     "oosSoonCount": 2,
     "watchCount": 0,
     "lostRevenueDay": 0,
-    "revenueAtRiskDay": 4997229,
+    "revenueAtRiskDay": 4996450,
     "monthKey": "2026-06",
     "lostRevenueMonth": 0,
-    "revenueAtRiskMonth": 14453942,
+    "revenueAtRiskMonth": 14453163,
     "newIssues": 0,
     "reopenedIssues": 0,
     "resolvedToday": 0,
     "owners": 2,
     "skuCount": 1,
-    "placeCount": 48,
+    "placeCount": 49,
     "dataStatus": "ok",
     "dataDate": "2026-06-02",
     "expectedFactDate": "2026-06-02"
@@ -62,7 +62,7 @@
       "risk": 1,
       "watch": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 4195640
+      "revenueAtRiskDay": 4194379
     },
     {
       "key": "ozon",
@@ -73,7 +73,7 @@
       "risk": 1,
       "watch": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 801589
+      "revenueAtRiskDay": 802071
     }
   ],
   "byOwner": [
@@ -86,7 +86,7 @@
       "risk": 1,
       "watch": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 4195640
+      "revenueAtRiskDay": 4194379
     },
     {
       "key": "Даша",
@@ -97,7 +97,7 @@
       "risk": 1,
       "watch": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 801589
+      "revenueAtRiskDay": 802071
     }
   ],
   "byDepartment": [
@@ -110,7 +110,7 @@
       "risk": 2,
       "watch": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 4997229
+      "revenueAtRiskDay": 4996450
     }
   ],
   "rows": [
@@ -119,7 +119,7 @@
       "taskId": "task-oos-13b9452a1634f5",
       "platform": "wb",
       "platformLabel": "WB",
-      "place": "19 кластеров <10 д",
+      "place": "20 кластеров <10 д",
       "article": "krovavii_piling_30ml",
       "articleKey": "krovavii_piling_30ml",
       "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
@@ -133,23 +133,23 @@
       "lifecycleStatus": "active",
       "lifecycleLabel": "Актуальный",
       "lifecycleSource": "status",
-      "inStock": 29902,
+      "inStock": 29893,
       "inTransit": 0,
       "inRequest": 0,
-      "avgDaily": 3509.6243,
+      "avgDaily": 3508.5681,
       "turnoverDays": 8.52,
-      "sales7": 24567.37,
-      "sales14": 49134.73,
-      "sales28": 98269.49,
+      "sales7": 24559.98,
+      "sales14": 49119.95,
+      "sales28": 98239.91,
       "targetNeed7": 0,
-      "targetNeed14": 19243,
-      "targetNeed28": 68379,
+      "targetNeed14": 19238,
+      "targetNeed28": 68358,
       "averagePrice": 1195,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 4195640,
-      "recommendation": "Проверить WB: 19 кластер(ов) с покрытием меньше 10 дней (Коледино, Екатеринбург - Перспективная 14, Невинномысск, Краснодар). Минимальное покрытие 8.5 д; нужен срок поставки, перемещение или лимит продаж.",
-      "clusterCount": 19,
+      "revenueAtRiskDay": 4194379,
+      "recommendation": "Проверить WB: 20 кластер(ов) с покрытием меньше 10 дней (Коледино, Екатеринбург - Перспективная 14, Невинномысск, Краснодар). Минимальное покрытие 8.5 д; нужен срок поставки, перемещение или лимит продаж.",
+      "clusterCount": 20,
       "placesAtRisk": [
         {
           "place": "Коледино",
@@ -163,22 +163,22 @@
         },
         {
           "place": "Екатеринбург - Перспективная 14",
-          "inStock": 3644,
+          "inStock": 3638,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 427.6995,
+          "avgDaily": 426.9953,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 511301,
+          "revenueAtRiskDay": 510459,
           "lostRevenueDay": 0
         },
         {
           "place": "Невинномысск",
-          "inStock": 3362,
+          "inStock": 3363,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 394.6009,
+          "avgDaily": 394.7183,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 471733,
+          "revenueAtRiskDay": 471873,
           "lostRevenueDay": 0
         },
         {
@@ -193,12 +193,12 @@
         },
         {
           "place": "Владивосток WB",
-          "inStock": 2302,
+          "inStock": 2299,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 270.1878,
+          "avgDaily": 269.8357,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 323001,
+          "revenueAtRiskDay": 322580,
           "lostRevenueDay": 0
         },
         {
@@ -223,62 +223,62 @@
         },
         {
           "place": "Сарапул WB",
-          "inStock": 1525,
+          "inStock": 1527,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 178.9906,
+          "avgDaily": 179.2254,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 213977,
+          "revenueAtRiskDay": 214258,
           "lostRevenueDay": 0
         },
         {
           "place": "Склад СПБ Шушары Московское",
-          "inStock": 1425,
+          "inStock": 1420,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 167.2535,
+          "avgDaily": 166.6667,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 199946,
+          "revenueAtRiskDay": 199245,
           "lostRevenueDay": 0
         },
         {
           "place": "Тула",
-          "inStock": 1090,
+          "inStock": 1089,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 127.9343,
+          "avgDaily": 127.8169,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 152941,
+          "revenueAtRiskDay": 152801,
           "lostRevenueDay": 0
         },
         {
           "place": "Новосемейкино",
-          "inStock": 1004,
+          "inStock": 1005,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 117.8404,
+          "avgDaily": 117.9577,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 140874,
+          "revenueAtRiskDay": 141015,
           "lostRevenueDay": 0
         },
         {
           "place": "Казань",
-          "inStock": 993,
+          "inStock": 992,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 116.5493,
+          "avgDaily": 116.4319,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 139331,
+          "revenueAtRiskDay": 139191,
           "lostRevenueDay": 0
         },
         {
           "place": "Пенза WB",
-          "inStock": 950,
+          "inStock": 951,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 111.5023,
+          "avgDaily": 111.6197,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 133297,
+          "revenueAtRiskDay": 133438,
           "lostRevenueDay": 0
         },
         {
@@ -312,13 +312,13 @@
           "lostRevenueDay": 0
         },
         {
-          "place": "Электросталь",
-          "inStock": 2,
+          "place": "Ташкент 1  WB",
+          "inStock": 3,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 0.2347,
+          "avgDaily": 0.3521,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 281,
+          "revenueAtRiskDay": 421,
           "lostRevenueDay": 0
         },
         {
@@ -333,6 +333,16 @@
         },
         {
           "place": "Калининград",
+          "inStock": 1,
+          "inTransit": 0,
+          "inRequest": 0,
+          "avgDaily": 0.1174,
+          "turnoverDays": 8.52,
+          "revenueAtRiskDay": 140,
+          "lostRevenueDay": 0
+        },
+        {
+          "place": "Электросталь",
           "inStock": 1,
           "inTransit": 0,
           "inRequest": 0,
@@ -367,21 +377,21 @@
       "lifecycleStatus": "active",
       "lifecycleLabel": "Актуальный",
       "lifecycleSource": "status",
-      "inStock": 6654,
+      "inStock": 6658,
       "inTransit": 0,
       "inRequest": 0,
-      "avgDaily": 780.9858,
+      "avgDaily": 781.4551,
       "turnoverDays": 8.52,
-      "sales7": 5466.89,
-      "sales14": 10933.81,
-      "sales28": 21867.6,
+      "sales7": 5470.19,
+      "sales14": 10940.36,
+      "sales28": 21880.74,
       "targetNeed7": 0,
-      "targetNeed14": 4294,
-      "targetNeed28": 15231,
+      "targetNeed14": 4296,
+      "targetNeed28": 15238,
       "averagePrice": 1026,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 801589,
+      "revenueAtRiskDay": 802071,
       "recommendation": "Проверить Ozon: 29 кластер(ов) с покрытием меньше 10 дней (Казахстан, Астана, Москва, МО и Дальние регионы, Новосибирск). Минимальное покрытие 8.5 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 29,
       "placesAtRisk": [
@@ -407,22 +417,22 @@
         },
         {
           "place": "Москва, МО и Дальние регионы",
-          "inStock": 591,
+          "inStock": 590,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 69.3663,
+          "avgDaily": 69.2489,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 71196,
+          "revenueAtRiskDay": 71076,
           "lostRevenueDay": 0
         },
         {
           "place": "Новосибирск",
-          "inStock": 503,
+          "inStock": 505,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 59.0376,
+          "avgDaily": 59.2723,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 60595,
+          "revenueAtRiskDay": 60836,
           "lostRevenueDay": 0
         },
         {
@@ -447,12 +457,12 @@
         },
         {
           "place": "Саратов",
-          "inStock": 278,
+          "inStock": 279,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 32.6291,
+          "avgDaily": 32.7464,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 33490,
+          "revenueAtRiskDay": 33610,
           "lostRevenueDay": 0
         },
         {
@@ -606,17 +616,17 @@
           "lostRevenueDay": 0
         },
         {
-          "place": "Омск",
-          "inStock": 71,
+          "place": "Сибирь",
+          "inStock": 73,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 8.3333,
+          "avgDaily": 8.568,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 8553,
+          "revenueAtRiskDay": 8794,
           "lostRevenueDay": 0
         },
         {
-          "place": "Сибирь",
+          "place": "Омск",
           "inStock": 71,
           "inTransit": 0,
           "inRequest": 0,
@@ -716,7 +726,7 @@
         "oosSoonCount": 2,
         "watchCount": 0,
         "lostRevenueDay": 0,
-        "revenueAtRiskDay": 4997229
+        "revenueAtRiskDay": 4996450
       }
     ],
     "latest": {
@@ -728,7 +738,7 @@
       "oosSoonCount": 2,
       "watchCount": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 4997229
+      "revenueAtRiskDay": 4996450
     },
     "issueStates": [
       {
@@ -736,7 +746,7 @@
         "taskId": "task-oos-13b9452a1634f5",
         "platform": "wb",
         "platformLabel": "WB",
-        "place": "19 кластеров <10 д",
+        "place": "20 кластеров <10 д",
         "article": "krovavii_piling_30ml",
         "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
         "owner": "Васильева Мария",

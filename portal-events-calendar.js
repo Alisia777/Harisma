@@ -322,6 +322,7 @@
         comment: [task.nextAction, task.reason].filter(Boolean).join('\n'),
         owner: String(task.owner || task.coOwner || '').trim(),
         status: taskStatusForCalendar(task),
+        priority: String(task.priority || '').trim(),
         rawStatus: String(task.status || '').trim(),
         taskSource: String(task.source || '').trim(),
         autoCode: String(task.autoCode || '').trim(),
@@ -698,11 +699,24 @@
     return 9;
   }
 
+  function eventPriorityRank(event = {}) {
+    const raw = String(event.priority || '').trim().toLowerCase();
+    if (raw === 'critical' || raw === 'urgent' || raw === 'crit' || raw === 'p0') return 0;
+    if (raw === 'high' || raw === 'p1') return 1;
+    if (raw === 'medium' || raw === 'normal' || raw === 'p2') return 2;
+    if (raw === 'low' || raw === 'p3') return 3;
+    if (eventTone(event) === 'active') return 1;
+    if (eventTone(event) === 'soon') return 2;
+    return 4;
+  }
+
   function sortCalendarEvents(left, right) {
     const dateOrder = String(left.startDate || '').localeCompare(String(right.startDate || ''));
     if (dateOrder) return dateOrder;
     const rankOrder = eventKindRank(left) - eventKindRank(right);
     if (rankOrder) return rankOrder;
+    const priorityOrder = eventPriorityRank(left) - eventPriorityRank(right);
+    if (priorityOrder) return priorityOrder;
     return String(left.title || '').localeCompare(String(right.title || ''));
   }
 
@@ -1188,9 +1202,8 @@
           <span>${dateFromKey(day).getDate()}</span>
           <em>${day === todayKey() ? 'сегодня' : dayEvents.length ? `${dayEvents.length} событ.` : ''}</em>
         </div>
-        <div class="promo-day-events">
-          ${dayEvents.slice(0, 4).map((event) => renderEventPill(event, true)).join('')}
-          ${dayEvents.length > 4 ? `<span class="promo-more">+${dayEvents.length - 4}</span>` : ''}
+        <div class="promo-day-events ${dayEvents.length > 4 ? 'scrollable' : ''}" aria-label="${html(`${formatDate(day)}: ${dayEvents.length} событий`)}">
+          ${dayEvents.map((event) => renderEventPill(event, true)).join('')}
         </div>
       </div>
     `;

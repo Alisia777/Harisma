@@ -226,7 +226,7 @@
 .promo-calendar-day {
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(82px, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   min-height: 138px;
   padding: 9px;
   border: 0;
@@ -306,6 +306,38 @@
   display: grid;
   align-content: start;
   gap: 5px;
+  max-height: 142px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 3px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--promo-color, #74a7ff) 58%, rgba(255, 255, 255, .18)) rgba(255, 255, 255, .035);
+}
+
+.promo-day-events::-webkit-scrollbar {
+  width: 6px;
+}
+
+.promo-day-events::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, .035);
+  border-radius: 999px;
+}
+
+.promo-day-events::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--promo-color, #74a7ff) 58%, rgba(255, 255, 255, .18));
+  border-radius: 999px;
+}
+
+.promo-day-events.scrollable::after {
+  content: "";
+  position: sticky;
+  bottom: -1px;
+  display: block;
+  height: 10px;
+  margin-top: -10px;
+  border-radius: 0 0 8px 8px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .42));
+  pointer-events: none;
 }
 
 .promo-event-pill {

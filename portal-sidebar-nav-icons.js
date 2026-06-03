@@ -48,16 +48,16 @@
     executive: { title: "\u0420\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044e", subtitle: "\u0420\u0438\u0441\u043a\u0438 \u00b7 \u0440\u0435\u0448\u0435\u043d\u0438\u044f \u00b7 \u0438\u0442\u043e\u0433", icon: "executive" },
     control: { title: "\u0417\u0430\u0434\u0430\u0447\u0438", subtitle: "\u0417\u0430\u0434\u0430\u0447\u0438 \u00b7 \u0420\u041e\u041f \u00b7 \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c", icon: "tasks" },
     "data-health": { title: "\u041a\u0430\u043b\u0435\u043d\u0434\u0430\u0440\u044c", subtitle: "\u0410\u043a\u0446\u0438\u0438 \u00b7 \u0441\u043e\u0431\u044b\u0442\u0438\u044f \u00b7 SKU", icon: "calendar" },
-    "sku-plan-fact": { title: "\u041f\u043b\u0430\u043d-\u0444\u0430\u043a\u0442 SKU", subtitle: "\u041f\u043b\u0430\u043d \u00b7 \u0444\u0430\u043a\u0442 \u00b7 \u0447\u0435\u043a \u00b7 \u0414\u0420\u0420", icon: "planfact" },
+    "sku-plan-fact": { title: "\u041f\u043b\u0430\u043d-\u0444\u0430\u043a\u0442", subtitle: "\u041f\u043b\u0430\u043d \u00b7 \u0444\u0430\u043a\u0442 \u00b7 \u0447\u0435\u043a \u00b7 \u0414\u0420\u0420", icon: "planfact" },
     repricer: { title: "\u0420\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440", subtitle: "\u0426\u0435\u043d\u0430 \u00b7 \u0440\u0438\u0441\u043a\u0438 \u00b7 \u0440\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0430\u0446\u0438\u0438", icon: "repricer" },
     prices: { title: "\u0426\u0435\u043d\u044b", subtitle: "\u041c\u0430\u0440\u0436\u0430 \u00b7 \u043e\u0431\u043e\u0440\u043e\u0442 \u00b7 \u0421\u041f\u041f", icon: "prices" },
-    order: { title: "\u0417\u0430\u043a\u0430\u0437 \u0442\u043e\u0432\u0430\u0440\u0430", subtitle: "\u041a\u043b\u0430\u0441\u0442\u0435\u0440\u044b \u00b7 \u0441\u043a\u043b\u0430\u0434\u044b \u00b7 \u043f\u043e\u0441\u0442\u0430\u0432\u043a\u0438", icon: "order" },
-    "oos-control": { title: "OOS \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c", subtitle: "\u041f\u0443\u0441\u0442\u044b\u0435 \u043f\u043e\u043b\u043a\u0438 \u00b7 \u043f\u043e\u0442\u0435\u0440\u0438 \u00b7 \u043c\u0435\u0440\u044b", icon: "oos" },
+    order: { title: "\u0417\u0430\u043a\u0430\u0437", subtitle: "\u041a\u043b\u0430\u0441\u0442\u0435\u0440\u044b \u00b7 \u0441\u043a\u043b\u0430\u0434\u044b \u00b7 \u043f\u043e\u0441\u0442\u0430\u0432\u043a\u0438", icon: "order" },
+    "oos-control": { title: "OOS", subtitle: "\u041f\u0443\u0441\u0442\u044b\u0435 \u043f\u043e\u043b\u043a\u0438 \u00b7 \u043f\u043e\u0442\u0435\u0440\u0438 \u00b7 \u043c\u0435\u0440\u044b", icon: "oos" },
     "ads-funnel": { title: "\u041a\u043e\u043d\u0442\u0440\u043e\u043b\u044c \u0420\u041a", subtitle: "WB \u00b7 Ozon \u00b7 \u0434\u043d\u0438 \u00b7 \u0441\u043e\u0431\u044b\u0442\u0438\u044f", icon: "ads" },
-    "sku-contour": { title: "SKU workspace", subtitle: "\u0420\u0435\u0435\u0441\u0442\u0440 \u00b7 API-\u043a\u043e\u043d\u0442\u0443\u0440 \u00b7 \u043f\u043b\u0430\u043d-\u0444\u0430\u043a\u0442", icon: "sku-workspace" },
+    "sku-contour": { title: "SKU", subtitle: "\u0420\u0435\u0435\u0441\u0442\u0440 \u00b7 API-\u043a\u043e\u043d\u0442\u0443\u0440 \u00b7 \u043f\u043b\u0430\u043d-\u0444\u0430\u043a\u0442", icon: "sku-workspace" },
     launches: { title: "\u041d\u043e\u0432\u0438\u043d\u043a\u0438", subtitle: "\u0422\u043e\u0432\u0430\u0440 \u00b7 \u043d\u043e\u0432\u0438\u043d\u043a\u0438 \u00b7 \u044d\u043a\u043e\u043d\u043e\u043c\u0438\u043a\u0430", icon: "launches" },
     "iu-drr": { title: "\u0418\u0423 / \u0414\u0420\u0420", subtitle: "\u0418\u0423 \u00b7 WB+Ozon \u00b7 \u0440\u0430\u0441\u0445\u043e\u0434\u044b WB", icon: "analytics" },
-    "wb-rating": { title: "\u0420\u0435\u0439\u0442\u0438\u043d\u0433 \u043a\u0430\u0440\u0442\u043e\u0447\u0435\u043a", subtitle: "WB \u00b7 \u043e\u0442\u0437\u044b\u0432\u044b \u00b7 \u0434\u0438\u043d\u0430\u043c\u0438\u043a\u0430", icon: "rating" },
+    "wb-rating": { title: "\u0420\u0435\u0439\u0442\u0438\u043d\u0433", subtitle: "WB \u00b7 \u043e\u0442\u0437\u044b\u0432\u044b \u00b7 \u0434\u0438\u043d\u0430\u043c\u0438\u043a\u0430", icon: "rating" },
     "product-leaderboard": { title: "\u041b\u0438\u0434\u0435\u0440\u0431\u043e\u0440\u0434", subtitle: "\u041a\u0417 \u00b7 \u0432\u043e\u0440\u043e\u043d\u043a\u0430 \u00b7 ROMI", icon: "leaderboard" }
   };
 
@@ -191,6 +191,7 @@
     btn.dataset.navGroup = VIEW_GROUP[view] || "";
     btn.setAttribute("aria-label", title);
     btn.title = subtitle ? title + " - " + subtitle : title;
+    btn.type = "button";
   }
 
   function isHidden(btn) {
@@ -231,6 +232,7 @@
       var lastGroup = "";
       orderedButtons.forEach(function (btn) {
         var group = btn.dataset.navGroup || "";
+        btn.dataset.navGroupStart = !isHidden(btn) && group && group !== lastGroup ? "true" : "false";
         if (!isHidden(btn) && group && group !== lastGroup) {
           var label = makeGroupLabel(group);
           if (label) nav.appendChild(label);
@@ -257,6 +259,28 @@
       syncSidebar();
     }, 40);
   }
+
+  function activateView(view) {
+    if (!view || HIDDEN_VIEWS[view]) return;
+    if (typeof window.setView === "function") {
+      window.setView(view);
+      return;
+    }
+    document.querySelectorAll(".nav-btn[data-view]").forEach(function (btn) {
+      btn.classList.toggle("active", btn.dataset.view === view);
+    });
+    document.querySelectorAll(".view").forEach(function (section) {
+      section.classList.toggle("active", section.id === "view-" + view);
+    });
+  }
+
+  document.addEventListener("click", function (event) {
+    var target = event.target && event.target.closest ? event.target.closest(".sidebar .nav-btn[data-view]") : null;
+    if (!target || isHidden(target)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    activateView(String(target.dataset.view || ""));
+  }, true);
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", syncSidebar, { once: true });

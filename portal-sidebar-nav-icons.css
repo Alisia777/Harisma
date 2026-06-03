@@ -8,7 +8,7 @@ body.v87-imperial .sidebar .nav,
 }
 
 .sidebar .nav-group-label {
-  display: flex;
+  display: none !important;
   align-items: center;
   gap: 7px;
   margin: 10px 6px 3px;
@@ -32,13 +32,18 @@ body.v87-imperial .sidebar .nav,
 body.v87-imperial .sidebar .nav-btn,
 .sidebar .nav-btn {
   display: grid !important;
-  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-columns: 42px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
-  min-height: 46px;
-  padding: 8px 10px !important;
+  gap: 12px;
+  min-height: 58px;
+  padding: 9px 12px !important;
   border-radius: 12px !important;
   text-align: left;
+}
+
+body.v87-imperial .sidebar .nav-btn[data-nav-group-start="true"],
+.sidebar .nav-btn[data-nav-group-start="true"] {
+  margin-top: 10px;
 }
 
 .sidebar .nav-btn[hidden],
@@ -53,8 +58,8 @@ body.v87-imperial .sidebar .nav-btn[data-nav-hidden="true"] {
 .sidebar .nav-btn .nav-icon {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   color: var(--text);
   background: color-mix(in srgb, var(--panel-strong) 84%, transparent);
@@ -65,8 +70,8 @@ body.v87-imperial .sidebar .nav-btn[data-nav-hidden="true"] {
 
 .sidebar .nav-btn .nav-icon svg {
   display: block;
-  width: 18px;
-  height: 18px;
+  width: 23px;
+  height: 23px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -85,16 +90,16 @@ body.v87-imperial .sidebar .nav-btn[data-nav-hidden="true"] {
   min-width: 0;
   overflow: hidden;
   color: var(--text);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: 0;
-  line-height: 1.15;
+  line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .sidebar .nav-btn small.nav-subtitle {
-  display: block !important;
+  display: none !important;
   min-width: 0;
   margin: 0;
   overflow: hidden;
@@ -156,12 +161,23 @@ body.v87-imperial .sidebar .nav-btn.active .nav-icon {
   body.v87-imperial .sidebar .nav-btn,
   .sidebar .nav-btn {
     width: 100%;
-    min-height: 44px;
-    grid-template-columns: 32px minmax(0, 1fr);
+    min-height: 54px;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 10px;
+    padding: 8px 10px !important;
   }
 
   .sidebar .nav-btn .nav-icon {
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .sidebar .nav-btn .nav-icon svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .sidebar .nav-btn .nav-title {
+    font-size: 14px;
   }
 }

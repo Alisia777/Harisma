@@ -97,8 +97,8 @@
       const button = document.querySelector(`.nav-btn[data-view="${view}"]`);
       const label = SIDEBAR_LABELS[view];
       if (!button || !label) return;
-      setText(button.querySelector('span'), label.title);
-      setText(button.querySelector('small'), label.subtitle);
+      setText(button.querySelector('.nav-title') || button.querySelector('span:not(.nav-icon):not(.nav-copy)'), label.title);
+      setText(button.querySelector('.nav-subtitle') || button.querySelector('small'), label.subtitle);
     });
   }
 

@@ -132,13 +132,23 @@ async function main() {
     await clickView(page, 'dashboard');
     await assertVisible(page, '#view-dashboard', 'dashboard');
     await waitForSkuData(page);
-    await page.waitForSelector('#view-dashboard .portal-calm-hero', { timeout: 30000 });
-    const dashboardCalmOk = await page.evaluate(() => Boolean(
-      document.querySelector('#view-dashboard .portal-calm-hero')
-      && document.querySelectorAll('#view-dashboard .portal-calm-chart').length >= 3
-      && document.querySelectorAll('#view-dashboard .portal-calm-platform-button').length >= 3
-    ));
-    if (!dashboardCalmOk) throw new Error('Calm dashboard did not render core blocks.');
+    await page.waitForSelector('#view-dashboard .portal-lux-shell, #view-dashboard .portal-calm-hero', { timeout: 30000 });
+    const dashboardCalmOk = await page.evaluate(() => {
+      const luxDashboard = document.querySelector('#view-dashboard .portal-lux-shell');
+      if (luxDashboard) {
+        return Boolean(
+          document.querySelectorAll('#view-dashboard .portal-calm-chart').length >= 2
+          && document.querySelectorAll('#view-dashboard [data-portal-exec-platform]').length >= 3
+          && document.querySelector('#view-dashboard .portal-lux-metric')
+        );
+      }
+      return Boolean(
+        document.querySelector('#view-dashboard .portal-calm-hero')
+        && document.querySelectorAll('#view-dashboard .portal-calm-chart').length >= 3
+        && document.querySelectorAll('#view-dashboard .portal-calm-platform-button').length >= 3
+      );
+    });
+    if (!dashboardCalmOk) throw new Error('Dashboard did not render core blocks.');
 
     const initial = await page.evaluate(() => ({
       skus: Array.isArray(window.__alteaAppState?.skus) ? window.__alteaAppState.skus.length : 0,

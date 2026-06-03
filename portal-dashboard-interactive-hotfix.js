@@ -1,6 +1,6 @@
 (function () {
-if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260603METRICSSOURCE1__) return;
-window.__ALTEA_DASHBOARD_INTERACTIVE_20260603METRICSSOURCE1__ = true;
+if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260603REVENUECOLOR1__) return;
+window.__ALTEA_DASHBOARD_INTERACTIVE_20260603REVENUECOLOR1__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE3__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE2__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE1__ = true;
@@ -16,7 +16,7 @@ window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260603metricssource1';
+  const VERSION = '20260603revenuecolor1';
 const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
@@ -229,22 +229,39 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   function dashboardPlatformRgb(platformKey) {
     return DASHBOARD_PLATFORM_RGB[canonicalDashboardPlatformKey(platformKey)] || DASHBOARD_PLATFORM_RGB.all;
   }
-  function dashboardChartStyle(platformKey, completion) {
-    const target = dashboardPlatformRgb(platformKey);
+  function dashboardCompletionRgb(completion) {
+    const value = Number(completion);
+    if (!Number.isFinite(value)) return [174, 151, 113];
+    if (value >= 1) return [104, 210, 143];
+    if (value >= 0.85) return [231, 188, 101];
+    return [231, 92, 68];
+  }
+  function dashboardChartVars(platformKey, completion) {
+    const platform = dashboardPlatformRgb(platformKey);
+    const target = dashboardCompletionRgb(completion);
     const neutral = [174, 151, 113];
     const rawCompletion = Number(completion);
     const completionRatio = Number.isFinite(rawCompletion) ? clampNumber(rawCompletion, 0, 1.12) : 0.72;
     const strength = clampNumber(0.34 + completionRatio * 0.58, 0.34, 1);
-    const mixed = target.map((channel, index) => Math.round(neutral[index] + (channel - neutral[index]) * strength));
+    const status = target.map((channel, index) => Math.round(platform[index] * 0.14 + channel * 0.86));
+    const mixed = status.map((channel, index) => Math.round(neutral[index] + (channel - neutral[index]) * strength));
+    const finish = status.map((channel) => Math.min(255, Math.round(channel + (255 - channel) * 0.22)));
     const line = `rgba(${mixed[0]}, ${mixed[1]}, ${mixed[2]}, .98)`;
-    const area = `rgba(${target[0]}, ${target[1]}, ${target[2]}, ${(0.055 + strength * 0.16).toFixed(3)})`;
+    const area = `rgba(${status[0]}, ${status[1]}, ${status[2]}, ${(0.055 + strength * 0.16).toFixed(3)})`;
     const dot = `rgba(${Math.min(255, mixed[0] + 28)}, ${Math.min(255, mixed[1] + 28)}, ${Math.min(255, mixed[2] + 28)}, 1)`;
-    const glow = `rgba(${target[0]}, ${target[1]}, ${target[2]}, ${(0.05 + strength * 0.14).toFixed(3)})`;
-    return ` style="--portal-calm-chart-line:${line};--portal-calm-chart-area:${area};--portal-calm-chart-dot:${dot};--portal-calm-chart-glow:${glow};--portal-calm-progress-fill:linear-gradient(90deg, rgba(${mixed[0]}, ${mixed[1]}, ${mixed[2]}, .78), rgba(${target[0]}, ${target[1]}, ${target[2]}, .98));"`;
+    const glow = `rgba(${status[0]}, ${status[1]}, ${status[2]}, ${(0.05 + strength * 0.14).toFixed(3)})`;
+    return `--portal-calm-chart-line:${line};--portal-calm-chart-area:${area};--portal-calm-chart-dot:${dot};--portal-calm-chart-glow:${glow};--portal-calm-progress-fill:linear-gradient(90deg, rgba(${mixed[0]}, ${mixed[1]}, ${mixed[2]}, .78), rgba(${finish[0]}, ${finish[1]}, ${finish[2]}, .98));`;
+  }
+  function dashboardChartStyle(platformKey, completion) {
+    return ` style="${dashboardChartVars(platformKey, completion)}"`;
   }
   function dashboardPlatformVarsAttr(platformKey) {
     const rgb = dashboardPlatformRgb(platformKey);
     return ` style="--portal-platform-rgb:${rgb[0]}, ${rgb[1]}, ${rgb[2]};"`;
+  }
+  function dashboardPlatformChartVarsAttr(platformKey, completion) {
+    const rgb = dashboardPlatformRgb(platformKey);
+    return ` style="--portal-platform-rgb:${rgb[0]}, ${rgb[1]}, ${rgb[2]};${dashboardChartVars(platformKey, completion)}"`;
   }
   const parseDate = (value) => {
     if (!value) return null;
@@ -399,7 +416,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   }
 
   function platformSeries(platformKey, anchor) {
-    const record = (current('platformTrends')?.platforms || []).find((item) => item.key === platformKey);
+    const platform = canonicalDashboardPlatformKey(platformKey);
+    const record = (current('platformTrends')?.platforms || []).find((item) => item.key === platform);
     return (record?.series || [])
       .map((point) => {
         const sellerSummary = point?.wbSellerSummary && typeof point.wbSellerSummary === 'object'
@@ -419,12 +437,27 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
         );
         const sellerTurnoverRaw = point?.wbSellerSummaryTurnoverDays ?? sellerSummary.turnoverDays;
         const sellerTurnoverDays = Number.isFinite(Number(sellerTurnoverRaw)) ? Number(sellerTurnoverRaw) : null;
-        const revenue = firstPositive(point?.ordersRevenue, point?.revenue, point?.financeTurnover);
+        const ordersRevenue = num(point?.ordersRevenue);
+        const platformRevenue = num(point?.revenue);
+        const rawRevenue = firstPositive(point?.ordersRevenue, point?.revenue, point?.financeTurnover);
+        let revenue = rawRevenue;
+        let revenueSource = ordersRevenue > 0
+          ? 'orders_revenue'
+          : (platformRevenue > 0 ? 'platform_revenue' : (financeTurnover > 0 ? 'finance_turnover' : ''));
+        if (platform === 'wb' && financeTurnover > 0) {
+          revenue = financeTurnover;
+          revenueSource = 'wb_finance_turnover';
+        }
+        if (platform === 'all' && rawRevenue > 0) {
+          revenueSource = 'company_revenue';
+        }
         return {
           date: resolveSeriesDate(point, anchor),
           units: num(point?.units),
           revenue,
-          ordersRevenue: num(point?.ordersRevenue),
+          rawRevenue,
+          revenueSource,
+          ordersRevenue,
           financeTurnover,
           financialResult,
           sellerTurnoverDays,
@@ -1870,6 +1903,22 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     return `${money(metric?.margin)} · ${label} ${money(base)}`;
   }
 
+  function dashboardRevenueSourceText(source, platformKey) {
+    const value = String(source || '').toLowerCase();
+    const platform = canonicalDashboardPlatformKey(platformKey);
+    if (value === 'wb_finance_turnover') return 'WB finance API';
+    if (value === 'company_revenue') return 'общий контур';
+    if (value === 'orders_revenue') return 'orders API';
+    if (value === 'platform_revenue') return 'API revenue';
+    if (value === 'finance_turnover') return 'finance turnover';
+    if (platform === 'all') return 'общий контур';
+    return 'API';
+  }
+
+  function metricRevenueSourceDisplay(metric) {
+    return `источник ${dashboardRevenueSourceText(metric?.revenueSource, metric?.key)}`;
+  }
+
   function dailyPlanDisplay(row, metric) {
     const planUnits = row?.planUnits !== undefined ? row.planUnits : row?.plan;
     return metricUsesCompanyPlan(metric) ? money(num(row?.planRevenue)) : int(planUnits);
@@ -2504,6 +2553,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
             fact_units: day.factUnits,
             completion_pct: day.completion != null ? Math.round(Number(day.completion) * 10000) / 100 : '',
             revenue: day.revenue,
+            revenue_source: dashboardRevenueSourceText(day.revenueSource, platformKey),
             margin: day.margin,
             margin_pct: day.marginPct != null ? Math.round(Number(day.marginPct) * 10000) / 100 : '',
             avg_price_mp: pricePoint?.avgPrice ?? '',
@@ -2555,6 +2605,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       ['fact_units', 'Факт, шт'],
       ['completion_pct', 'Выполнение, %'],
       ['revenue', 'Выручка'],
+      ['revenue_source', 'Источник выручки'],
       ['margin', 'Маржа'],
       ['margin_pct', 'Маржа, %'],
       ['avg_price_mp', 'Средняя цена MP'],
@@ -5505,6 +5556,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       const planRevenue = companyPlanDailyRevenue(date, platformKey);
       const factUnits = num(trend.units);
       const revenue = num(trend.revenue);
+      const rawRevenue = num(trend.rawRevenue);
+      const revenueSource = trend.revenueSource || '';
       const financeTurnover = num(trend.financeTurnover);
       const margin = num(trend.margin);
       const spend = num(ads.spend);
@@ -5518,6 +5571,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
         planRevenue,
         factUnits,
         financeTurnover,
+        rawRevenue,
+        revenueSource,
         completion: hasFact ? (useCompanyPlanForDay ? revenue / planRevenue : planUnits > 0 ? factUnits / planUnits : 0) : null,
         revenue,
         margin,
@@ -5547,6 +5602,10 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     const plan = usesCompanyPlan ? planRevenue : planUnits;
     const units = days.reduce((sum, row) => sum + row.factUnits, 0);
     const revenue = days.reduce((sum, row) => sum + row.revenue, 0);
+    const rawRevenue = days.reduce((sum, row) => sum + row.rawRevenue, 0);
+    const revenueSource = (observedRows.find((row) => row.revenueSource)?.revenueSource)
+      || (days.find((row) => row.revenueSource)?.revenueSource)
+      || '';
     const financeTurnover = days.reduce((sum, row) => sum + row.financeTurnover, 0);
     const margin = days.reduce((sum, row) => sum + row.margin, 0);
     const views = days.reduce((sum, row) => sum + row.views, 0);
@@ -5589,6 +5648,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       planDays: planFactDays.length,
       units,
       revenue,
+      rawRevenue,
+      revenueSource,
       financeTurnover,
       margin,
       completion,
@@ -6306,11 +6367,12 @@ function dashboardTaskStatusChip(task) {
         key: 'revenue',
         label: 'Выручка',
         value: money(metric.revenue),
-        sub: `${int(metric.units)} шт. · чек ${metric.avgCheck > 0 ? money(metric.avgCheck) : '—'}`,
+        sub: `${int(metric.units)} шт. · чек ${metric.avgCheck > 0 ? money(metric.avgCheck) : '—'} · ${metricRevenueSourceDisplay(metric)}`,
         tone: toneCompletion(metric.completion),
         open: 'revenue',
         openKey: metric.key || 'all',
         progress: Math.max(0.04, Math.min(1, num(metric.completion))),
+        chartCompletion: num(metric.completion),
         points: dashboardCalmPoints(metric.days, (row) => row.revenue),
         empty: 'Нет ряда выручки'
       },
@@ -6323,6 +6385,7 @@ function dashboardTaskStatusChip(task) {
         open: 'completion',
         openKey: metric.key || 'all',
         progress: Math.max(0.04, Math.min(1, num(metric.completion))),
+        chartCompletion: num(metric.completion),
         points: dashboardCalmPoints(metric.days, (row) => {
           const value = dailyCompletion(row, metric);
           return value === null ? NaN : value * 100;
@@ -6338,6 +6401,7 @@ function dashboardTaskStatusChip(task) {
         open: 'margin',
         openKey: metric.key || 'all',
         progress: Math.max(0.04, Math.min(1, num(metric.marginPct) / 0.35)),
+        chartCompletion: num(metric.completion),
         points: dashboardCalmPoints(metric.days, (row) => row.margin),
         empty: 'Нет ряда маржи'
       },
@@ -6350,6 +6414,7 @@ function dashboardTaskStatusChip(task) {
         open: 'ads',
         openKey: metric.key || 'all',
         progress: dashboardDrrProgress(metric),
+        chartCompletion: num(metric.completion),
         points: dashboardDrrPoints(metric),
         empty: 'Нет ряда ДРР'
       },
@@ -6364,6 +6429,7 @@ function dashboardTaskStatusChip(task) {
         progress: turnover.avgTurnoverDays !== null
           ? Math.max(0.08, Math.min(1, 1 - Math.min(120, turnover.avgTurnoverDays) / 140))
           : 0.18,
+        chartCompletion: num(metric.completion),
         points: dashboardTurnoverPoints(turnover),
         empty: 'Нет ряда запаса'
       }
@@ -6389,7 +6455,7 @@ function dashboardTaskStatusChip(task) {
                 <b>${esc(card.value)}</b>
               </div>
               <p>${esc(card.sub)}</p>
-              ${dashboardCalmChart(card.points, { tone: card.tone, platformKey: card.openKey, completion: card.progress, empty: card.empty })}
+              ${dashboardCalmChart(card.points, { tone: card.tone, platformKey: card.openKey, completion: card.chartCompletion ?? card.progress, empty: card.empty })}
             </article>
           `).join('')}
         </div>
@@ -6457,7 +6523,7 @@ function dashboardTaskStatusChip(task) {
             const marginWidth = dashboardBarWidth(Math.max(0, num(metric.margin)), maxMargin);
             const drrWidth = dashboardDrrProgress(metric) * 100;
             return `
-              <article class="portal-lux-network-card is-${esc(tone)}" data-platform="${esc(metric.key)}" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}" role="button" tabindex="0" aria-label="${esc(`${metric.label}: открыть план-факт`)}"${dashboardPlatformVarsAttr(metric.key)}>
+              <article class="portal-lux-network-card is-${esc(tone)}" data-platform="${esc(metric.key)}" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}" role="button" tabindex="0" aria-label="${esc(`${metric.label}: открыть план-факт`)}"${dashboardPlatformChartVarsAttr(metric.key, metric.completion)}>
                 <div class="portal-lux-network-head">
                   <div>
                     <span>${esc(metric.label)}</span>
@@ -7766,7 +7832,7 @@ function dashboardTaskStatusChip(task) {
       #view-dashboard .portal-lux-network-bar { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 8px; align-items: center; }
       #view-dashboard .portal-lux-network-bar span { color: rgba(255,244,229,.5); font-size: 10px; text-transform: uppercase; white-space: nowrap; }
       #view-dashboard .portal-lux-network-bar i { display: block; height: 7px; border-radius: 999px; background: rgba(255,255,255,.075); overflow: hidden; }
-      #view-dashboard .portal-lux-network-bar b { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, rgba(var(--portal-platform-rgb), .68), rgba(var(--portal-platform-rgb), .98)); }
+      #view-dashboard .portal-lux-network-bar b { display: block; height: 100%; border-radius: inherit; background: var(--portal-calm-progress-fill, linear-gradient(90deg, rgba(var(--portal-platform-rgb), .68), rgba(var(--portal-platform-rgb), .98))); }
       #view-dashboard .portal-lux-platform-row { border-color: rgba(var(--portal-platform-rgb), .11); background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .045), rgba(255,255,255,.018)); }
       #view-dashboard .portal-lux-platform-card,
       #view-dashboard .portal-lux-period-option { box-sizing: border-box; }
@@ -8029,11 +8095,12 @@ function dashboardTaskStatusChip(task) {
         icon: '₽',
         label: 'Выручка',
         value: money(metric.revenue),
-        sub: `${int(metric.units)} шт. · чек ${metric.avgCheck > 0 ? money(metric.avgCheck) : '—'}`,
+        sub: `${int(metric.units)} шт. · чек ${metric.avgCheck > 0 ? money(metric.avgCheck) : '—'} · ${metricRevenueSourceDisplay(metric)}`,
         tone: toneCompletion(metric.completion),
         open: 'revenue',
         openKey: metricKey,
         progress: Math.max(0.04, Math.min(1, completion)),
+        chartCompletion: completion,
         delta: deltaBadge('LFL', relativeDelta(metric.revenue, previous?.revenue)),
         points: dashboardCalmPoints(metric.days, (row) => row.revenue),
         empty: 'Нет выручки'
@@ -8048,6 +8115,7 @@ function dashboardTaskStatusChip(task) {
         open: 'completion',
         openKey: metricKey,
         progress: Math.max(0.04, Math.min(1, completion)),
+        chartCompletion: completion,
         delta: deltaBadge('LFL', percentagePointDelta(metric.completion, previous?.completion), false, 'pp'),
         points: dashboardCalmPoints(metric.days, (row) => {
           const value = dailyCompletion(row, metric);
@@ -8065,6 +8133,7 @@ function dashboardTaskStatusChip(task) {
         open: 'margin',
         openKey: metricKey,
         progress: Math.max(0.04, Math.min(1, marginPct / 0.35)),
+        chartCompletion: completion,
         delta: deltaBadge('LFL', relativeDelta(metric.margin, previous?.margin)),
         points: dashboardCalmPoints(metric.days, (row) => row.margin),
         empty: 'Нет маржи'
@@ -8079,6 +8148,7 @@ function dashboardTaskStatusChip(task) {
         open: 'stock',
         openKey: turnover.key,
         progress: turnoverProgress,
+        chartCompletion: completion,
         delta: deltaBadge('LFL', relativeDelta(turnover.avgTurnoverDays, previous?.avgTurnoverDays), true),
         points: dashboardCalmPoints(turnoverSource, (row) => row.avgTurnover ?? row.turnoverDays),
         empty: 'Нет ряда запаса'
@@ -8246,7 +8316,7 @@ function dashboardTaskStatusChip(task) {
               <span>${esc(activeMetric.label)}</span>
               <strong>${esc(activeMetric.value)}</strong>
               <em>${esc(activeMetric.sub)}</em>
-              <div class="portal-lux-progress"${dashboardChartStyle(activeMetric.openKey, activeMetric.progress)}><span style="width:${activeProgress}%"></span></div>
+              <div class="portal-lux-progress"${dashboardChartStyle(activeMetric.openKey, activeMetric.chartCompletion ?? activeMetric.progress)}><span style="width:${activeProgress}%"></span></div>
             </div>
           </div>
 
@@ -8298,7 +8368,7 @@ function dashboardTaskStatusChip(task) {
                 <span>${esc(item.label)}</span>
                 <strong>${esc(item.value)}</strong>
                 <em>${esc(item.sub)}</em>
-                <div class="portal-lux-metric-line"${dashboardChartStyle(item.openKey, item.progress)}><i style="width:${progress}%"></i></div>
+                <div class="portal-lux-metric-line"${dashboardChartStyle(item.openKey, item.chartCompletion ?? item.progress)}><i style="width:${progress}%"></i></div>
               </button>
             `;
           }).join('')}
@@ -8328,8 +8398,8 @@ function dashboardTaskStatusChip(task) {
             </div>
             <div class="portal-lux-chart-value">${esc(activeMetric.value)}</div>
             <div class="portal-lux-chart-sub">${esc(activeMetric.sub)}</div>
-            <div class="portal-lux-progress"${dashboardChartStyle(activeMetric.openKey, activeMetric.progress)}><span style="width:${progress}%"></span></div>
-            ${dashboardCalmChart(activeMetric.points, { tone: activeMetric.tone, platformKey: activeMetric.openKey, completion: activeMetric.progress, empty: activeMetric.empty })}
+            <div class="portal-lux-progress"${dashboardChartStyle(activeMetric.openKey, activeMetric.chartCompletion ?? activeMetric.progress)}><span style="width:${progress}%"></span></div>
+            ${dashboardCalmChart(activeMetric.points, { tone: activeMetric.tone, platformKey: activeMetric.openKey, completion: activeMetric.chartCompletion ?? activeMetric.progress, empty: activeMetric.empty })}
           </article>
           <div class="portal-lux-quest-stack">
             ${quests.map((item) => `
@@ -9325,6 +9395,7 @@ function dashboardTaskStatusChip(task) {
         fact: dailyFactDisplay(row, metric),
         completion: dailyCompletion(row, metric),
         revenue: row.revenue,
+        revenueSource: row.revenueSource,
         units: row.factUnits,
         avgCheck: row.factUnits > 0 ? row.revenue / row.factUnits : null,
         avgPrice: price?.avgPrice || 0
@@ -9355,11 +9426,12 @@ function dashboardTaskStatusChip(task) {
           <td class="portal-exec-num">${esc(row.fact)}</td>
           <td class="portal-exec-num">${dashboardCellChip(row.completion !== null ? pct(row.completion) : '—', tone)}</td>
           <td class="portal-exec-num">${esc(money(row.revenue))}</td>
+          <td>${esc(dashboardRevenueSourceText(row.revenueSource, metric.key))}</td>
           <td class="portal-exec-num">${esc(int(row.units))}</td>
           <td class="portal-exec-num">${esc(row.avgCheck ? money(row.avgCheck) : '—')}</td>
         </tr>
       `;
-    }).join('') : '<tr><td colspan="7">Нет дневного ряда в выбранном окне.</td></tr>';
+    }).join('') : '<tr><td colspan="8">Нет дневного ряда в выбранном окне.</td></tr>';
     return {
       platformKey: metric.key,
       title: `${metric.label} · оборот и продажи`,
@@ -9367,6 +9439,7 @@ function dashboardTaskStatusChip(task) {
       body: `
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('Выручка', money(metric.revenue))}
+          ${modalSummaryCard('Источник', dashboardRevenueSourceText(metric.revenueSource, metric.key))}
           ${modalSummaryCard('WoW', revenueDelta !== null ? pct(revenueDelta) : '—')}
           ${modalSummaryCard('Продано, шт.', int(metric.units))}
           ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
@@ -9383,7 +9456,7 @@ function dashboardTaskStatusChip(task) {
           ${dashboardTableCard(
             'Дни периода',
             'План, факт, выполнение и выручка по каждому дню выбранного окна.',
-            '<tr><th>Дата</th><th class="portal-exec-num">План</th><th class="portal-exec-num">Факт</th><th class="portal-exec-num">%</th><th class="portal-exec-num">Выручка</th><th class="portal-exec-num">Шт.</th><th class="portal-exec-num">Ср. чек</th></tr>',
+            '<tr><th>Дата</th><th class="portal-exec-num">План</th><th class="portal-exec-num">Факт</th><th class="portal-exec-num">%</th><th class="portal-exec-num">Выручка</th><th>Источник</th><th class="portal-exec-num">Шт.</th><th class="portal-exec-num">Ср. чек</th></tr>',
             dailyBody
           )}
         </div>

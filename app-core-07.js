@@ -3406,8 +3406,8 @@ function productLeaderboardWeeklyShareRows() {
       });
       const totalOrders = orders.kz + orders.digital + orders.organic || numberOrZero(summary.orders);
       const totalRevenue = revenue.kz + revenue.digital + revenue.organic || numberOrZero(summary.revenue);
-      const range = productLeaderboardWeekRange(snapshot);
-      const sortStamp = parseFreshStamp(range.fromIso || snapshot.sourceWeekFrom || snapshot.generatedAt || weekLabel);
+      const range = productLeaderboardWeekRange(weekLabel || snapshot.weekLabel || snapshot.sourceSheetName || '');
+      const sortStamp = parseFreshStamp(range?.fromIso || range?.startKey || snapshot.sourceWeekFrom || snapshot.generatedAt || weekLabel);
       return {
         weekLabel,
         snapshotKey,
@@ -3460,8 +3460,8 @@ function productLeaderboardWeeklyRowSnapshotMatch(row = {}, selectedKey = '') {
   return row.snapshotKey === cleanKey
     || row.generatedAt === cleanKey
     || row.weekLabel === cleanKey
-    || String(row.range?.fromIso || '') === cleanKey
-    || String(row.range?.toIso || '') === cleanKey;
+    || String(row.range?.fromIso || row.range?.startKey || '') === cleanKey
+    || String(row.range?.toIso || row.range?.endKey || '') === cleanKey;
 }
 
 function productLeaderboardWeeklyTrendCardHtml(config = {}) {
@@ -3503,28 +3503,110 @@ function productLeaderboardAdsPlatform(key = '') {
   )) || null;
 }
 
-function productLeaderboardMarketplaceAdsShareModel() {
-  const ads = state.adsSummary && typeof state.adsSummary === 'object' ? state.adsSummary : {};
-  const date = ads.asOfDate || ads.window?.to || ads.window?.from || '';
-  const daily = productLeaderboardLatestIuDailyRow(date);
-  const wbAds = productLeaderboardAdsPlatform('wb');
-  const ozonAds = productLeaderboardAdsPlatform('ozon');
-  const allAds = productLeaderboardAdsPlatform('all');
-  const wbAdsOrders = numberOrZero(wbAds?.orders) || numberOrZero(daily.adsOrders);
-  const ozonAdsOrders = numberOrZero(ozonAds?.orders) || numberOrZero(daily.ozonAdsOrders);
-  const adsOrders = numberOrZero(allAds?.orders) || wbAdsOrders + ozonAdsOrders;
-  const wbOrders = numberOrZero(daily.unitsWb);
-  const ozonOrders = numberOrZero(daily.ordersUnitsOzon) || numberOrZero(daily.unitsOzon);
-  const totalOrders = wbOrders + ozonOrders;
+function productLeaderboardAdsRowIsAggregate(row = {}) {
+  const key = String(row.articleKey || row.article || row.sellerArticle || row.vendorCode || row.name || '').trim().toLowerCase();
+  return !key || key.includes('-total') || key.includes(' total') || key === 'all' || key === 'wb' || key === 'ozon';
+}
+
+function productLeaderboardItemKeySet(items = []) {
+  const keys = new Set();
+  (Array.isArray(items) ? items : []).forEach((item = {}) => {
+    [
+      item.articleKey,
+      item.article,
+      item.sku,
+      item.vendorCode,
+      item.nmId,
+      item.productId
+    ].forEach((value) => {
+      const key = productLeaderboardSubstitutionKey(value);
+      if (key) keys.add(key);
+    });
+  });
+  return keys;
+}
+
+function productLeaderboardAdsRowMatchesItems(row = {}, itemKeys = new Set()) {
+  if (!itemKeys || itemKeys.size === 0 || productLeaderboardAdsRowIsAggregate(row)) return false;
+  return [
+    row.articleKey,
+    row.article,
+    row.sellerArticle,
+    row.vendorCode,
+    row.nmId,
+    row.productId
+  ].some((value) => itemKeys.has(productLeaderboardSubstitutionKey(value)));
+}
+
+function productLeaderboardItemTrafficAdsModel(items = []) {
+  const labels = new Set();
+  const model = {
+    adsOrders: 0,
+    wbAdsOrders: 0,
+    ozonAdsOrders: 0,
+    labels: []
+  };
+  (Array.isArray(items) ? items : []).forEach((item = {}) => {
+    if (productLeaderboardTrafficBucket(item.traffic) !== 'digital') return;
+    const orders = numberOrZero(item.orders);
+    const traffic = String(item.traffic || '').trim();
+    if (traffic) labels.add(traffic);
+    model.adsOrders += orders;
+    const cleanTraffic = traffic.toLowerCase();
+    if (cleanTraffic.includes('ozon') || cleanTraffic.includes('озон')) model.ozonAdsOrders += orders;
+    else if (cleanTraffic.includes('wb') || cleanTraffic.includes('wildberries') || cleanTraffic.includes('вб')) model.wbAdsOrders += orders;
+  });
+  model.labels = [...labels];
+  return model;
+}
+
+function productLeaderboardMarketplaceAdsShareModel(weekRow = {}, filters = {}) {
+  const items = Array.isArray(weekRow.items) ? weekRow.items : [];
+  const itemKeys = productLeaderboardItemKeySet(items);
+  const range = weekRow.range || {};
+  const fromIso = String(range.fromIso || range.startKey || '').slice(0, 10);
+  const toIso = String(range.toIso || range.endKey || fromIso || '').slice(0, 10);
+  const adsRows = Array.isArray(state.adsSummary?.itemSeries) ? state.adsSummary.itemSeries : [];
+  const weekAdsRows = adsRows.filter((row) => {
+    const date = String(row?.date || row?.dateKey || '').slice(0, 10);
+    if (!date) return false;
+    if (fromIso && date < fromIso) return false;
+    if (toIso && date > toIso) return false;
+    return true;
+  });
+  const matchedRows = weekAdsRows.filter((row) => productLeaderboardAdsRowMatchesItems(row, itemKeys));
+  const matched = matchedRows.reduce((model, row = {}) => {
+    const orders = numberOrZero(row.orders);
+    model.adsOrders += orders;
+    const platform = String(row.platformKey || row.key || '').trim().toLowerCase();
+    if (platform === 'wb') model.wbAdsOrders += orders;
+    if (platform === 'ozon') model.ozonAdsOrders += orders;
+    return model;
+  }, { adsOrders: 0, wbAdsOrders: 0, ozonAdsOrders: 0 });
+  const traffic = productLeaderboardItemTrafficAdsModel(items);
+  const useMatchedRows = matchedRows.length > 0;
+  const adsOrders = useMatchedRows ? matched.adsOrders : traffic.adsOrders;
+  const wbAdsOrders = useMatchedRows ? matched.wbAdsOrders : traffic.wbAdsOrders;
+  const ozonAdsOrders = useMatchedRows ? matched.ozonAdsOrders : traffic.ozonAdsOrders;
+  const totalOrders = numberOrZero(weekRow.totalOrders) || numberOrZero(productLeaderboardSummaryFromItems(items).orders);
+  const date = fromIso && toIso
+    ? `${productLeaderboardDateOnlyLabel(fromIso)} - ${productLeaderboardDateOnlyLabel(toIso)}`
+    : (weekRow.weekLabel || '');
+  const filterApplied = productLeaderboardHasActiveFilters(filters);
+  const trafficLabel = traffic.labels.length ? `traffic: ${traffic.labels.join(', ')}` : 'traffic-метка не найдена';
   return {
-    date: date || daily.date || '',
+    date,
     adsOrders,
     totalOrders,
     wbAdsOrders,
     ozonAdsOrders,
-    wbOrders,
-    ozonOrders,
-    share: productLeaderboardSafeRatio(adsOrders, totalOrders)
+    wbOrders: 0,
+    ozonOrders: 0,
+    share: totalOrders > 0 ? adsOrders / totalOrders : null,
+    source: useMatchedRows ? 'ads-series-sku' : 'leaderboard-traffic',
+    detail: useMatchedRows
+      ? `SKU-реклама ${fmt.int(matchedRows.length)} строк`
+      : `${filterApplied ? 'по текущим фильтрам' : 'по недельному срезу'} · ${trafficLabel}`
   };
 }
 
@@ -3896,7 +3978,7 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}, selectedPayl
   const kzMarkedOrders = numberOrZero(current.orders.kz);
   const digitalOrders = numberOrZero(current.orders.digital);
   const unmarkedOrganicOrders = numberOrZero(current.orders.organic);
-  const mpAds = productLeaderboardMarketplaceAdsShareModel();
+  const mpAds = productLeaderboardMarketplaceAdsShareModel(current, filters);
   const kzMarkedShare = weeklyTotalOrders > 0 ? kzMarkedOrders / weeklyTotalOrders : null;
   const digitalShare = weeklyTotalOrders > 0 ? digitalOrders / weeklyTotalOrders : null;
   const unmarkedOrganicShare = weeklyTotalOrders > 0 ? unmarkedOrganicOrders / weeklyTotalOrders : null;
@@ -3936,7 +4018,7 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}, selectedPayl
       value: mpAds.share == null ? '—' : fmt.pct(mpAds.share),
       meta: mpAds.totalOrders > 0 ? `${fmt.int(mpAds.adsOrders)} из ${fmt.int(mpAds.totalOrders)} заказов` : 'нет деноминатора МП',
       delta: null,
-      detail: `${mpAds.date ? productLeaderboardDateOnlyLabel(mpAds.date) : 'текущий срез'} · WB ${fmt.int(mpAds.wbAdsOrders)} · Ozon ${fmt.int(mpAds.ozonAdsOrders)}`,
+      detail: `${mpAds.date || 'текущий срез'} · ${mpAds.detail || `WB ${fmt.int(mpAds.wbAdsOrders)} · Ozon ${fmt.int(mpAds.ozonAdsOrders)}`}`,
       progress: mpAds.share,
       hue: 12
     }

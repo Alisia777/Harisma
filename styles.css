@@ -1755,6 +1755,12 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .launch-calendar-board .promo-event-pill.compact{min-height:56px}
 .launch-calendar-board .promo-event-pill .promo-event-sku-count{max-width:96px;overflow:hidden;text-overflow:ellipsis}
 .launch-calendar-board .promo-day-events{max-height:112px}
+.promo-event-pill[data-launch-status-tone],
+.promo-event-pill[data-calendar-launch-status]{border-left-width:4px}
+.promo-event-pill[data-launch-status-tone] .promo-event-kind-badge,
+.promo-event-pill[data-calendar-launch-status] .promo-event-kind-badge{border-color:color-mix(in srgb,var(--launch-status-color,var(--promo-color)) 70%,rgba(255,255,255,.2));background:color-mix(in srgb,var(--launch-status-color,var(--promo-color)) 28%,rgba(0,0,0,.36));color:#fff}
+.promo-event-pill[data-launch-status-tone] .promo-event-sku-count,
+.promo-event-pill[data-calendar-launch-status] .promo-event-sku-count{color:color-mix(in srgb,var(--launch-status-color,var(--promo-color)) 80%,white)}
 
 @media (max-width:1180px){
   .launch-project-board{grid-template-columns:repeat(3,minmax(150px,1fr))}

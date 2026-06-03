@@ -694,6 +694,14 @@
     return eventKindClass(event);
   }
 
+  function eventLaunchStatusTheme(event = {}) {
+    if (eventKindKey(event) !== 'launch') return null;
+    if (typeof launchStatusTheme === 'function') {
+      return launchStatusTheme(event.launchStatus || event.rawStatus || event.status || '');
+    }
+    return null;
+  }
+
   function eventKindRank(event) {
     const key = eventKindKey(event);
     if (key === 'launch') return 0;
@@ -1175,17 +1183,27 @@
     const mission = eventMission(event);
     const editable = isEditableEvent(event);
     const draggable = isDraggableEvent(event);
+    const launchTheme = eventLaunchStatusTheme(event);
     const riskLabel = mission.dangerCount
       ? `${formatInt(mission.dangerCount)} риск`
       : mission.warnCount
         ? `${formatInt(mission.warnCount)} watch`
         : `${formatInt(mission.score)} XP`;
     const fullMeta = editable ? statusLabel(event.status) : eventKindLabel(event);
+    const badgeText = launchTheme?.label || eventKindLabel(event);
+    const launchStatusLabel = event.launchStatus || launchTheme?.label || '';
+    const compactMeta = launchTheme
+      ? `${platformLabel(event.platform)} · ${launchStatusLabel}`
+      : `${platformLabel(event.platform)} · ${riskLabel}`;
+    const style = [
+      `--event-xp:${mission.score}%`,
+      launchTheme?.color ? `--promo-color:${launchTheme.color};--launch-status-color:${launchTheme.color}` : ''
+    ].filter(Boolean).join(';');
     return `
-      <button class="promo-event-pill ${compact ? 'compact' : ''} ${eventVisualClass(event)} ${eventTone(event)} mission-${mission.tone} ${editable ? '' : 'readonly'}" type="button" draggable="${draggable ? 'true' : 'false'}" data-calendar-event="${html(event.id)}" style="--event-xp:${mission.score}%">
-        <span class="promo-event-kind-badge">${html(eventKindLabel(event))}</span>
+      <button class="promo-event-pill ${compact ? 'compact' : ''} ${eventVisualClass(event)} ${eventTone(event)} mission-${mission.tone} ${editable ? '' : 'readonly'}" type="button" draggable="${draggable ? 'true' : 'false'}" data-calendar-event="${html(event.id)}" ${launchTheme ? `data-calendar-launch-status="${html(launchTheme.key)}"` : ''} style="${html(style)}">
+        <span class="promo-event-kind-badge">${html(badgeText)}</span>
         <strong>${html(event.title)}</strong>
-        <em class="promo-event-meta">${html(compact ? `${platformLabel(event.platform)} · ${riskLabel}` : `${platformLabel(event.platform)} · ${formatInt(mission.score)} XP · ${fullMeta}`)}</em>
+        <em class="promo-event-meta">${html(compact ? compactMeta : `${platformLabel(event.platform)} · ${formatInt(mission.score)} XP · ${launchStatusLabel || fullMeta}`)}</em>
         ${event.skus.length ? `<b class="promo-event-sku-count">${formatInt(event.skus.length)} SKU</b>` : ''}
       </button>
     `;

@@ -9909,6 +9909,41 @@ function launchStatusOptionsHtml(currentStatus = '') {
   return `${custom}${options.map((option) => `<option value="${escapeHtml(option)}" ${current === option ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('')}`;
 }
 
+function launchStatusTheme(value = '') {
+  const raw = String(value || '').trim();
+  const text = raw.toLowerCase().replace(/ё/g, 'е');
+  const themes = {
+    draft: { key: 'draft', label: 'черновик', color: '#9aa3af' },
+    brief: { key: 'brief', label: 'бриф', color: '#edce8a' },
+    supply: { key: 'supply', label: 'производство', color: '#56a7f2' },
+    content: { key: 'content', label: 'контент', color: '#62d5d1' },
+    economy: { key: 'economy', label: 'экономика', color: '#f5a96f' },
+    waiting: { key: 'waiting', label: 'ожидание', color: '#ffd166' },
+    sample: { key: 'sample', label: 'образец', color: '#8bd46e' },
+    ready: { key: 'ready', label: 'готово', color: '#5dcb94' },
+    live: { key: 'live', label: 'в продаже', color: '#6ec6a2' },
+    paused: { key: 'paused', label: 'пауза', color: '#ff6c6c' },
+    other: { key: 'other', label: raw || 'статус', color: '#edce8a' }
+  };
+  if (!text) return themes.draft;
+  if (/пауза|не запуска|стоп|отмен|блок|заморож|архив/.test(text)) return themes.paused;
+  if (/в продаже|масштаб|live|продаж/.test(text)) return themes.live;
+  if (/готов|согласован,\s*отдали|запуск разреш|можно запуск/.test(text)) return themes.ready;
+  if (/цен|эконом|себес|себест|счет|счёт|кп|оплат|марж/.test(text)) return themes.economy;
+  if (/производ|постав|завод|сырье|сырье|состав|коррект|флакон/.test(text)) return themes.supply;
+  if (/карточ|контент|тз|дизайн|маркет|презент|бренд/.test(text)) return themes.content;
+  if (/образец|тест|отдуш|пробник/.test(text)) return themes.sample;
+  if (/ждем|ждём|ожида|соглас|договор|брокер|серге|подпис|услов/.test(text)) return themes.waiting;
+  if (/бриф|заполнить|заполнен/.test(text)) return themes.brief;
+  if (/чернов|не нач|нужен owner|статус не указан/.test(text)) return themes.draft;
+  return themes.other;
+}
+
+function launchStatusInlineStyle(value = '') {
+  const theme = launchStatusTheme(value);
+  return `--promo-color:${theme.color};--launch-status-color:${theme.color}`;
+}
+
 function launchNegotiationStatusOptionsHtml(currentStatus = '') {
   const current = String(currentStatus || '').trim();
   const options = [
@@ -11890,13 +11925,14 @@ function launchCalendarStageLabel(item = {}) {
 function renderLaunchCalendarPill(item = {}) {
   const progress = launchCalendarProgressScore(item);
   const tone = launchCalendarMissionTone(item);
+  const statusTheme = launchStatusTheme(item.status);
   const meta = [
     item.articleKey || item.article || 'без SKU',
     launchCalendarStageLabel(item)
   ].filter(Boolean).join(' · ');
   return `
-    <button class="promo-event-pill compact promo-kind-launch mission-${escapeHtml(tone)}" type="button" draggable="true" data-launch-calendar-event="${escapeHtml(item.id)}" style="--event-xp:${progress}%">
-      <span class="promo-event-kind-badge">Новинка</span>
+    <button class="promo-event-pill compact promo-kind-launch mission-${escapeHtml(tone)}" type="button" draggable="true" data-launch-calendar-event="${escapeHtml(item.id)}" data-launch-status-tone="${escapeHtml(statusTheme.key)}" style="--event-xp:${progress}%;${launchStatusInlineStyle(item.status)}">
+      <span class="promo-event-kind-badge">${escapeHtml(statusTheme.label)}</span>
       <b class="promo-event-sku-count">${escapeHtml(item.status || 'старт')}</b>
       <strong>${escapeHtml(item.name || item.articleKey || 'Новая новинка')}</strong>
       <em class="promo-event-meta">${escapeHtml(meta)}</em>

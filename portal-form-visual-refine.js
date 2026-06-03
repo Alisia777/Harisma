@@ -429,6 +429,7 @@
           ${badge(`${fmt.int(items.length)} записей`, items.length ? 'info' : 'ok')}
         </div>
         <div class="ui-stack">
+          ${taskAttachmentsCard(taskItem, { embedded: true })}
           <div class="compact-history">${rows}</div>
           <div class="ui-group">
             <div class="ui-group-head"><strong>Новый апдейт</strong><span>Коротко зафиксируй факт, блокер или следующий шаг по задаче.</span></div>
@@ -458,8 +459,9 @@
     return '';
   }
 
-  function taskAttachmentsCard(taskItem) {
+  function taskAttachmentsCard(taskItem, options = {}) {
     const taskId = String(taskItem?.id || '').trim();
+    const embedded = options.embedded === true;
     const attachments = typeof getTaskAttachments === 'function' ? getTaskAttachments(taskId) : [];
     const allowed = typeof TASK_ATTACHMENT_ALLOWED_EXTENSIONS !== 'undefined' && Array.isArray(TASK_ATTACHMENT_ALLOWED_EXTENSIONS)
       ? TASK_ATTACHMENT_ALLOWED_EXTENSIONS.join(', ')
@@ -488,7 +490,7 @@
         </div>`;
     }).join('') : '<div class="empty compact">\u0424\u0430\u0439\u043b\u043e\u0432 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442</div>';
     return `
-      <div class="card task-attachments-card" data-task-attachments-card>
+      <div class="${embedded ? 'task-attachments-card task-attachments-panel' : 'card task-attachments-card'}" data-task-attachments-card>
         <div class="section-subhead">
           <div>
             <h3>\u0424\u0430\u0439\u043b\u044b \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u0430</h3>
@@ -1023,10 +1025,11 @@
     }
     if (cards[0]) cards[0].outerHTML = editCard(taskItem, owners());
     if (cards[1]) cards[1].outerHTML = updatesCard(taskItem, history(taskId));
-    body.querySelector('[data-task-attachments-card]')?.remove();
-    const attachmentHtml = taskAttachmentsCard(taskItem);
-    if (cardsRoot) cardsRoot.insertAdjacentHTML('afterend', attachmentHtml);
-    else if (summaryGrid) summaryGrid.insertAdjacentHTML('afterend', attachmentHtml);
+    if (!body.querySelector('[data-task-attachments-card]')) {
+      const attachmentHtml = taskAttachmentsCard(taskItem);
+      if (cardsRoot) cardsRoot.insertAdjacentHTML('afterend', attachmentHtml);
+      else if (summaryGrid) summaryGrid.insertAdjacentHTML('afterend', attachmentHtml);
+    }
     bindTaskModal(taskId, body);
   }
 

@@ -1,3 +1,60 @@
+function taskAttachmentSizeLabel(size = 0) {
+  const bytes = Number(size || 0);
+  if (!Number.isFinite(bytes) || bytes <= 0) return '';
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(bytes >= 10 * 1024 * 1024 ? 0 : 1)} МБ`;
+  if (bytes >= 1024) return `${Math.round(bytes / 1024)} КБ`;
+  return `${Math.round(bytes)} Б`;
+}
+
+function renderTaskAttachmentItem(item = {}) {
+  const attachment = normalizeTaskAttachment(item);
+  const sizeLabel = taskAttachmentSizeLabel(attachment.size);
+  const meta = [
+    attachment.createdBy || '',
+    attachment.createdAt ? fmt.date(attachment.createdAt) : '',
+    sizeLabel
+  ].filter(Boolean).join(' · ');
+  const openControl = attachment.publicUrl
+    ? `<a class="btn ghost small-btn" href="${escapeHtml(attachment.publicUrl)}" target="_blank" rel="noopener">Открыть</a>`
+    : `<button class="btn ghost small-btn" type="button" disabled>Нет ссылки</button>`;
+  return `
+    <div class="comment-item task-attachment-item">
+      <div class="head">
+        <div>
+          <strong>${escapeHtml(attachment.fileName || 'Файл')}</strong>
+          <div class="muted small">${escapeHtml(meta || 'Вложение к задаче')}</div>
+        </div>
+        <div class="badge-stack">
+          ${openControl}
+          <button class="btn ghost small-btn" type="button" data-delete-task-attachment="${escapeHtml(attachment.id)}">Удалить</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTaskAttachmentsBlock(taskId) {
+  const attachments = typeof getTaskAttachments === 'function' ? getTaskAttachments(taskId) : [];
+  const accept = '.xlsx,.xls,.csv,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  return `
+    <div class="task-attachments-block" style="margin:12px 0">
+      <div class="modal-section-title">
+        <div>
+          <h3>Файлы к задаче</h3>
+          <p class="small muted">Scorecard, выгрузка, расчет или другой артефакт, на который можно сослаться в отчете.</p>
+        </div>
+        ${badge(`${fmt.int(attachments.length)} файлов`, attachments.length ? 'info' : 'ok')}
+      </div>
+      <div class="list">${attachments.length ? attachments.map(renderTaskAttachmentItem).join('') : '<div class="empty">Файлов пока нет. Добавь XLSX, XLS или CSV прямо здесь.</div>'}</div>
+      <form id="taskAttachmentForm" class="form-grid compact" style="margin-top:12px">
+        <input id="taskAttachmentInput" name="file" type="file" accept="${accept}" required>
+        <button class="btn" type="submit">Прикрепить файл</button>
+        <div class="muted small">Разрешены XLSX, XLS, CSV до 20 МБ. Файл привяжется именно к этой задаче.</div>
+      </form>
+    </div>
+  `;
+}
+
 function renderTaskModal(taskId) {
   const task = getTask(taskId);
   if (!task) return;
@@ -86,6 +143,7 @@ function renderTaskModal(taskId) {
           </div>
           ${badge(`${fmt.int(history.length)} записей`, history.length ? 'info' : 'ok')}
         </div>
+        ${renderTaskAttachmentsBlock(taskId)}
         <div class="list">${historyHtml}</div>
         <form id="taskCommentForm" class="form-grid compact" style="margin-top:12px">
           <input name="author" value="${escapeHtml(state.team.member.name || task.owner || 'Команда')}" placeholder="Кто пишет" required>
@@ -141,6 +199,50 @@ function renderTaskModal(taskId) {
       team: teamMemberLabel()
     });
     renderTaskModal(taskId);
+  });
+
+  body.querySelector('#taskAttachmentForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const input = body.querySelector('#taskAttachmentInput');
+    const file = input?.files?.[0] || null;
+    if (!file) return;
+    const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Загружаем...';
+    }
+    try {
+      const attachment = await uploadTaskAttachment(taskId, file);
+      if (typeof createTaskHistoryEntry === 'function') {
+        await createTaskHistoryEntry(taskId, 'comment', `Прикреплен файл: ${attachment.fileName}`, {
+          author: state.team.member.name || task.owner || 'Команда',
+          team: teamMemberLabel()
+        });
+      }
+      renderTaskModal(taskId);
+    } catch (error) {
+      window.alert(error?.message || 'Не удалось прикрепить файл.');
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Прикрепить файл';
+      }
+    }
+  });
+
+  body.querySelectorAll('[data-delete-task-attachment]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const attachmentId = button.getAttribute('data-delete-task-attachment');
+      if (!attachmentId) return;
+      if (!window.confirm('Удалить файл из задачи?')) return;
+      button.disabled = true;
+      try {
+        await deleteTaskAttachment(attachmentId);
+        renderTaskModal(taskId);
+      } catch (error) {
+        window.alert(error?.message || 'Не удалось удалить файл.');
+        button.disabled = false;
+      }
+    });
   });
 
   body.querySelector('#taskCloseForm')?.addEventListener('submit', async (event) => {

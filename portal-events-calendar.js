@@ -258,6 +258,10 @@
     return !event.readonly && eventKindKey(event) === 'promo';
   }
 
+  function isDraggableEvent(event = {}) {
+    return isEditableEvent(event) || eventKindKey(event) === 'launch';
+  }
+
   function taskDoneStatus(value = '') {
     const status = String(value || '').trim().toLowerCase();
     return Boolean(status && /done|closed|complete|cancel|archive|deleted|removed|finish/.test(status));
@@ -1170,6 +1174,7 @@
   function renderEventPill(event, compact = false) {
     const mission = eventMission(event);
     const editable = isEditableEvent(event);
+    const draggable = isDraggableEvent(event);
     const riskLabel = mission.dangerCount
       ? `${formatInt(mission.dangerCount)} риск`
       : mission.warnCount
@@ -1177,7 +1182,7 @@
         : `${formatInt(mission.score)} XP`;
     const fullMeta = editable ? statusLabel(event.status) : eventKindLabel(event);
     return `
-      <button class="promo-event-pill ${compact ? 'compact' : ''} ${eventVisualClass(event)} ${eventTone(event)} mission-${mission.tone} ${editable ? '' : 'readonly'}" type="button" draggable="${editable ? 'true' : 'false'}" data-calendar-event="${html(event.id)}" style="--event-xp:${mission.score}%">
+      <button class="promo-event-pill ${compact ? 'compact' : ''} ${eventVisualClass(event)} ${eventTone(event)} mission-${mission.tone} ${editable ? '' : 'readonly'}" type="button" draggable="${draggable ? 'true' : 'false'}" data-calendar-event="${html(event.id)}" style="--event-xp:${mission.score}%">
         <span class="promo-event-kind-badge">${html(eventKindLabel(event))}</span>
         <strong>${html(event.title)}</strong>
         <em class="promo-event-meta">${html(compact ? `${platformLabel(event.platform)} · ${riskLabel}` : `${platformLabel(event.platform)} · ${formatInt(mission.score)} XP · ${fullMeta}`)}</em>
@@ -1601,7 +1606,28 @@
     }
   }
 
+  function moveLaunchEvent(id, day, rootId) {
+    const event = calendarEvents().find((item) => item.id === id);
+    if (!event || eventKindKey(event) !== 'launch') return false;
+    if (typeof getLaunchItems !== 'function' || typeof upsertLaunchDraft !== 'function') return false;
+    const launchId = String(event.sourceId || event.id || '').replace(/^launch:/, '');
+    const item = getLaunchItems({ skipTaskLookup: true }).find((entry) => entry.id === launchId);
+    if (!item) return false;
+    const monthLabel = typeof launchMonthKeyToLabel === 'function'
+      ? launchMonthKeyToLabel(String(day || '').slice(0, 7))
+      : item.launchMonth;
+    upsertLaunchDraft({
+      ...item,
+      launchDate: day,
+      launchMonth: monthLabel || item.launchMonth
+    });
+    CALENDAR_STATE.editingId = id;
+    renderEventCalendar(rootId);
+    return true;
+  }
+
   async function moveEvent(id, day, rootId) {
+    if (moveLaunchEvent(id, day, rootId)) return;
     const event = allEvents().find((item) => item.id === id);
     if (!event) return;
     const duration = daysBetween(event.startDate, event.endDate);

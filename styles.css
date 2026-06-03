@@ -1745,6 +1745,16 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .launch-secondary-details summary,.launch-ready-card summary{cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;list-style:none}
 .launch-secondary-details summary::-webkit-details-marker,.launch-ready-card summary::-webkit-details-marker{display:none}
 .launch-work-columns-secondary{margin-top:14px}
+.launch-calendar-shell{margin-top:12px}
+.launch-calendar-command{align-items:center;padding:14px}
+.launch-calendar-command .promo-calendar-command-copy{gap:2px}
+.launch-calendar-command .promo-calendar-command-copy h2{font-size:26px;line-height:1.12}
+.launch-calendar-toolbar{grid-template-columns:minmax(220px,1fr) minmax(150px,.42fr) minmax(150px,.42fr)}
+.launch-calendar-layout{grid-template-columns:minmax(0,1fr)}
+.launch-calendar-board .promo-calendar-day{min-height:154px}
+.launch-calendar-board .promo-event-pill.compact{min-height:56px}
+.launch-calendar-board .promo-event-pill .promo-event-sku-count{max-width:96px;overflow:hidden;text-overflow:ellipsis}
+.launch-calendar-board .promo-day-events{max-height:112px}
 
 @media (max-width:1180px){
   .launch-project-board{grid-template-columns:repeat(3,minmax(150px,1fr))}
@@ -1757,4 +1767,6 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
   .launch-sticky-calendar .launch-month-plan-grid{grid-template-columns:1fr}
   .launch-project-column{min-width:0}
   .launch-project-card__head{grid-template-columns:1fr}
+  .launch-calendar-toolbar{grid-template-columns:1fr}
+  .launch-calendar-board .promo-calendar-day{min-height:136px}
 }

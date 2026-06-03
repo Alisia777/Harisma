@@ -360,7 +360,8 @@ function normalizeLaunchMonthLabel(value) {
 }
 
 function launchMonthDateKey(label = '') {
-  const match = String(label || '').trim().toLowerCase().match(/^([а-яё]+)\s+(\d{4})$/i);
+  const normalized = String(label || '').trim().toLowerCase();
+  const match = normalized.match(/^([а-яё]+)\s+(\d{4})$/i) || normalized.match(/([а-яё]+)\s+(\d{4})/i);
   if (!match) return '';
   const monthMap = {
     январь: '01',
@@ -11761,9 +11762,310 @@ function bindLaunchProjectActions(root) {
   });
 }
 
+const LAUNCH_CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+function launchCalendarState() {
+  state.launchCalendar = state.launchCalendar || {};
+  const view = state.launchCalendar;
+  view.month = launchCalendarValidDateKey(view.month) ? launchCalendarStartOfMonth(view.month) : '';
+  view.search = String(view.search || '');
+  view.group = view.group || 'all';
+  view.status = view.status || 'all';
+  return view;
+}
+
+function launchCalendarValidDateKey(value = '') {
+  const key = String(value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return '';
+  const date = new Date(`${key}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? '' : key;
+}
+
+function launchCalendarDateFromKey(key = '') {
+  const valid = launchCalendarValidDateKey(key) || todayIso();
+  const date = new Date(`${valid}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+}
+
+function launchCalendarDateKey(date) {
+  const value = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(value.getTime())) return todayIso();
+  return [
+    value.getFullYear(),
+    String(value.getMonth() + 1).padStart(2, '0'),
+    String(value.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
+function launchCalendarStartOfMonth(key = '') {
+  const valid = launchCalendarValidDateKey(key) || todayIso();
+  return `${valid.slice(0, 7)}-01`;
+}
+
+function launchCalendarAddMonths(monthKey = '', delta = 0) {
+  const date = launchCalendarDateFromKey(launchCalendarStartOfMonth(monthKey));
+  date.setMonth(date.getMonth() + Number(delta || 0));
+  return launchCalendarStartOfMonth(launchCalendarDateKey(date));
+}
+
+function launchCalendarMonthDays(monthKey = '') {
+  const first = launchCalendarDateFromKey(launchCalendarStartOfMonth(monthKey));
+  const start = new Date(first);
+  const mondayOffset = (start.getDay() + 6) % 7;
+  start.setDate(start.getDate() - mondayOffset);
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    return launchCalendarDateKey(date);
+  });
+}
+
+function launchCalendarMonthLabel(monthKey = '') {
+  return launchCalendarDateFromKey(monthKey).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+}
+
+function launchCalendarShortDateLabel(dateKey = '') {
+  return launchCalendarDateFromKey(dateKey).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+}
+
+function launchCalendarDefaultMonth(items = []) {
+  const today = todayIso();
+  const dates = (items || [])
+    .map((item) => launchCalendarValidDateKey(launchDueDateKey(item)))
+    .filter(Boolean)
+    .sort((left, right) => left.localeCompare(right));
+  return launchCalendarStartOfMonth(dates.find((date) => date >= today) || dates[0] || today);
+}
+
+function launchCalendarUniqueOptions(items = [], getter = () => '') {
+  return [...new Set((items || []).map(getter).map((value) => String(value || '').trim()).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right, 'ru'));
+}
+
+function launchCalendarFilteredItems(items = []) {
+  const view = launchCalendarState();
+  const search = String(view.search || '').trim().toLowerCase();
+  return (items || []).filter((item) => {
+    if (view.group !== 'all' && String(item.reportGroup || '') !== view.group) return false;
+    if (view.status !== 'all' && String(item.status || '') !== view.status) return false;
+    if (!search) return true;
+    const haystack = [
+      item.name,
+      item.articleKey,
+      item.article,
+      item.reportGroup,
+      item.status,
+      item.launchDecision,
+      item.marketplaces,
+      item.productComment,
+      item.notes
+    ].join(' ').toLowerCase();
+    return haystack.includes(search);
+  });
+}
+
+function launchCalendarProgressScore(item = {}) {
+  try {
+    const readiness = launchReadinessState(item);
+    const total = readiness.checks?.length || 0;
+    if (!total) return 45;
+    return Math.max(8, Math.min(100, Math.round(((total - (readiness.missing?.length || 0)) / total) * 100)));
+  } catch (error) {
+    return launchIsReady(item) ? 100 : 45;
+  }
+}
+
+function launchCalendarMissionTone(item = {}) {
+  const days = launchDaysUntil(item);
+  if (Number.isFinite(days) && days < 0) return 'danger';
+  if ((item.blockers || []).length || (Number.isFinite(days) && days <= 14)) return 'warn';
+  return launchIsReady(item) ? 'ok' : 'warn';
+}
+
+function launchCalendarStageLabel(item = {}) {
+  const stage = launchCurrentStageEntry(item);
+  return stage?.config?.title || launchDirectorNextAction(item) || item.status || 'Запуск';
+}
+
+function renderLaunchCalendarPill(item = {}) {
+  const progress = launchCalendarProgressScore(item);
+  const tone = launchCalendarMissionTone(item);
+  const meta = [
+    item.articleKey || item.article || 'без SKU',
+    launchCalendarStageLabel(item)
+  ].filter(Boolean).join(' · ');
+  return `
+    <button class="promo-event-pill compact promo-kind-launch mission-${escapeHtml(tone)}" type="button" draggable="true" data-launch-calendar-event="${escapeHtml(item.id)}" style="--event-xp:${progress}%">
+      <span class="promo-event-kind-badge">Новинка</span>
+      <b class="promo-event-sku-count">${escapeHtml(item.status || 'старт')}</b>
+      <strong>${escapeHtml(item.name || item.articleKey || 'Новая новинка')}</strong>
+      <em class="promo-event-meta">${escapeHtml(meta)}</em>
+    </button>
+  `;
+}
+
+function renderLaunchCalendarDay(day, items = [], monthKey = '') {
+  const inMonth = launchCalendarStartOfMonth(day) === launchCalendarStartOfMonth(monthKey);
+  const today = todayIso();
+  const dayItems = (items || [])
+    .filter((item) => launchCalendarValidDateKey(launchDueDateKey(item)) === day)
+    .sort((left, right) => launchCalendarMissionTone(right).localeCompare(launchCalendarMissionTone(left)) || String(left.name || '').localeCompare(String(right.name || ''), 'ru'));
+  const className = [
+    'promo-calendar-day',
+    'promo-kind-launch',
+    inMonth ? '' : 'muted-day',
+    day === today ? 'today' : '',
+    dayItems.length ? 'has-events' : ''
+  ].filter(Boolean).join(' ');
+  return `
+    <div class="${className}" role="gridcell" data-launch-calendar-day="${escapeHtml(day)}" aria-label="${escapeHtml(launchCalendarShortDateLabel(day))}">
+      <div class="promo-day-head">
+        <span>${launchCalendarDateFromKey(day).getDate()}</span>
+        <em>${day === today ? 'сегодня' : dayItems.length ? `${fmt.int(dayItems.length)} нов.` : ''}</em>
+      </div>
+      <div class="promo-day-events ${dayItems.length > 4 ? 'scrollable' : ''}">
+        ${dayItems.map(renderLaunchCalendarPill).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderLaunchCalendarWorkspace(items = []) {
+  const view = launchCalendarState();
+  if (!view.month) view.month = launchCalendarDefaultMonth(items);
+  const groups = launchCalendarUniqueOptions(items, (item) => item.reportGroup);
+  const statuses = launchCalendarUniqueOptions(items, (item) => item.status);
+  if (view.group !== 'all' && !groups.includes(view.group)) view.group = 'all';
+  if (view.status !== 'all' && !statuses.includes(view.status)) view.status = 'all';
+  const filteredItems = launchCalendarFilteredItems(items);
+  const monthItems = filteredItems.filter((item) => launchCalendarStartOfMonth(launchDueDateKey(item)) === view.month);
+  const gridDays = launchCalendarMonthDays(view.month);
+  return `
+    <div class="promo-calendar-shell launch-calendar-shell">
+      <section class="promo-calendar-command launch-calendar-command">
+        <div class="promo-calendar-command-copy">
+          <span>Новинки</span>
+          <h2>Календарь запусков</h2>
+        </div>
+        <div class="promo-calendar-command-actions">
+          ${badge(`${fmt.int(filteredItems.length)} новинок`, filteredItems.length ? 'info' : 'warn')}
+          <button class="quick-chip" type="button" data-launch-calendar-today>Сегодня</button>
+          <button class="quick-chip portal-action-primary" type="button" data-launch-add>Новая</button>
+        </div>
+      </section>
+
+      <section class="promo-calendar-toolbar launch-calendar-toolbar">
+        <label>
+          <span>Поиск</span>
+          <input type="search" data-launch-calendar-search value="${escapeHtml(view.search)}" placeholder="товар, SKU, статус">
+        </label>
+        <label>
+          <span>Группа</span>
+          <select data-launch-calendar-group>
+            <option value="all">Все группы</option>
+            ${groups.map((group) => `<option value="${escapeHtml(group)}" ${view.group === group ? 'selected' : ''}>${escapeHtml(group)}</option>`).join('')}
+          </select>
+        </label>
+        <label>
+          <span>Статус</span>
+          <select data-launch-calendar-status>
+            <option value="all">Все статусы</option>
+            ${statuses.map((status) => `<option value="${escapeHtml(status)}" ${view.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}
+          </select>
+        </label>
+      </section>
+
+      <section class="promo-calendar-layout launch-calendar-layout">
+        <div class="promo-calendar-board launch-calendar-board">
+          <div class="promo-month-head">
+            <button type="button" data-launch-calendar-month="-1">‹</button>
+            <strong>${escapeHtml(launchCalendarMonthLabel(view.month))} · ${fmt.int(monthItems.length)} новинок</strong>
+            <button type="button" data-launch-calendar-month="1">›</button>
+          </div>
+          <div class="promo-weekdays">${LAUNCH_CALENDAR_WEEKDAYS.map((day) => `<span>${day}</span>`).join('')}</div>
+          <div class="promo-month-grid" role="grid">${gridDays.map((day) => renderLaunchCalendarDay(day, filteredItems, view.month)).join('')}</div>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function moveLaunchCalendarItem(launchId = '', day = '') {
+  const dateKey = launchCalendarValidDateKey(day);
+  if (!launchId || !dateKey) return;
+  const item = getLaunchItems({ skipTaskLookup: true }).find((entry) => entry.id === launchId);
+  if (!item) return;
+  upsertLaunchDraft({
+    ...item,
+    launchDate: dateKey,
+    launchMonth: launchMonthKeyToLabel(dateKey.slice(0, 7)) || item.launchMonth
+  });
+  launchCalendarState().month = launchCalendarStartOfMonth(dateKey);
+  if (typeof setAppError === 'function') setAppError(`Дата запуска обновлена: ${launchCalendarShortDateLabel(dateKey)}.`);
+  rerenderCurrentView();
+}
+
+function bindLaunchCalendar(root) {
+  const view = launchCalendarState();
+  root.querySelector('[data-launch-calendar-search]')?.addEventListener('input', (event) => {
+    view.search = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('[data-launch-calendar-group]')?.addEventListener('change', (event) => {
+    view.group = event.target.value || 'all';
+    rerenderCurrentView();
+  });
+  root.querySelector('[data-launch-calendar-status]')?.addEventListener('change', (event) => {
+    view.status = event.target.value || 'all';
+    rerenderCurrentView();
+  });
+  root.querySelectorAll('[data-launch-calendar-month]').forEach((button) => {
+    button.addEventListener('click', () => {
+      view.month = launchCalendarAddMonths(view.month, button.getAttribute('data-launch-calendar-month'));
+      rerenderCurrentView();
+    });
+  });
+  root.querySelector('[data-launch-calendar-today]')?.addEventListener('click', () => {
+    view.month = launchCalendarStartOfMonth(todayIso());
+    rerenderCurrentView();
+  });
+  root.querySelectorAll('[data-launch-add]').forEach((button) => {
+    button.addEventListener('click', () => openLaunchEditor());
+  });
+  root.querySelectorAll('[data-launch-calendar-day]').forEach((day) => {
+    day.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      day.classList.add('drag-over');
+    });
+    day.addEventListener('dragleave', () => day.classList.remove('drag-over'));
+    day.addEventListener('drop', (event) => {
+      event.preventDefault();
+      day.classList.remove('drag-over');
+      const id = event.dataTransfer?.getData('application/x-launch-item') || event.dataTransfer?.getData('text/plain');
+      moveLaunchCalendarItem(id, day.getAttribute('data-launch-calendar-day') || '');
+    });
+  });
+  root.querySelectorAll('[data-launch-calendar-event]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      openLaunchEditor(button.getAttribute('data-launch-calendar-event') || '');
+    });
+    button.addEventListener('dragstart', (event) => {
+      const id = button.getAttribute('data-launch-calendar-event') || '';
+      event.dataTransfer?.setData('text/plain', id);
+      event.dataTransfer?.setData('application/x-launch-item', id);
+    });
+  });
+}
+
 function renderLaunchesDirectorLite(rootId = 'view-launches') {
   const root = document.getElementById(rootId);
   if (!root) return;
+  const launchCalendarTaskCounts = launchTaskCountMap();
+  const launchCalendarItems = getLaunchItems({ skipTaskLookup: true }).map((item) => launchWithTaskCount(item, launchCalendarTaskCounts));
+  root.innerHTML = renderLaunchCalendarWorkspace(launchCalendarItems);
+  bindLaunchCalendar(root);
+  return;
   const model = getLaunchViewModel();
   const taskCounts = launchTaskCountMap();
   const filteredItems = model.filteredItems.map((item) => launchWithTaskCount(item, taskCounts));

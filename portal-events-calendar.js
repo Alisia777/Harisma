@@ -172,6 +172,85 @@
     return PLATFORMS.find(([item]) => item === key)?.[1] || key;
   }
 
+  function addPlatformKey(target, value) {
+    const raw = String(value || '').trim();
+    if (!raw) return;
+    const key = platformKey(raw);
+    if (!key || key === 'all') return;
+    if (!target.includes(key)) target.push(key);
+  }
+
+  const MARKETPLACE_PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+
+  function platformKeysFromText(text = '') {
+    const keys = [];
+    const push = (key) => addPlatformKey(keys, key);
+    const raw = String(text || '').toLowerCase();
+    if (!raw) return keys;
+    try {
+      if (typeof detectMarketplaceKeyList === 'function') detectMarketplaceKeyList(raw).forEach(push);
+    } catch {}
+    if (/(^|[^a-zа-я0-9])wb(?=$|[^a-zа-я0-9])|wildberries|(^|[^а-я0-9])вб(?=$|[^а-я0-9])/i.test(raw)) push('wb');
+    if (/ozon|озон/i.test(raw)) push('ozon');
+    if (/яндекс|я[.\s-]?маркет|yandex|(^|[^a-zа-я0-9])(ya|ym|ям)(?=$|[^a-zа-я0-9])/i.test(raw)) push('ya');
+    if (/золот|gold[\s_-]*apple|goldapple|golden\s*apple|(^|[^a-zа-я0-9])(zya|з\s*я)(?=$|[^a-zа-я0-9])/i.test(raw)) push('goldapple');
+    if (/лету|л[’'\s.-]*[еэ]туал|letual|letu|letoile|l[\s'`.-]*etoile/i.test(raw)) push('letu');
+    if (/магнит|magnit|magnet|(^|\W)mm($|\W)/i.test(raw)) push('magnit');
+    return keys;
+  }
+
+  function taskPlatformContextText(task = {}) {
+    try {
+      if (typeof taskMarketplaceContext === 'function') return taskMarketplaceContext(task);
+    } catch {}
+    return [
+      task.platform, task.marketplace, task.marketplaceKey, task.network, task.retailer, task.channel, task.market,
+      task.contour, task.direction, task.workstream, task.queue, task.project, task.topic,
+      task.title, task.name, task.subject, task.entityLabel, task.description, task.nextAction, task.reason,
+      task.context, task.comment, task.note, task.notes, task.details, task.message, task.text, task.body,
+      task.articleKey, task.sku, task.apiSku, task.tags, task.labels
+    ].filter(Boolean).join(' ');
+  }
+
+  function taskPlatformKeys(task = {}) {
+    const keys = [];
+    [
+      task.platform,
+      task.marketplace,
+      task.marketplaceKey,
+      task.network,
+      task.retailer,
+      task.channel,
+      task.market,
+      task.contour,
+      task.direction,
+      task.workstream,
+      task.queue,
+      task.project,
+      task.topic
+    ].forEach((value) => addPlatformKey(keys, value));
+    try {
+      if (typeof detectTaskPlatform === 'function') addPlatformKey(keys, detectTaskPlatform(task));
+    } catch {}
+    try {
+      if (typeof controlWorkstreamKey === 'function') addPlatformKey(keys, controlWorkstreamKey(task));
+    } catch {}
+    platformKeysFromText(taskPlatformContextText(task)).forEach((key) => addPlatformKey(keys, key));
+    const marketplaces = keys.filter((key) => MARKETPLACE_PLATFORM_KEYS.includes(key));
+    if (marketplaces.length > 1) addPlatformKey(keys, 'cross');
+    if (!keys.length) addPlatformKey(keys, 'cross');
+    return keys;
+  }
+
+  function primaryTaskPlatform(task = {}, platformKeys = []) {
+    const explicitValue = String(task.platform || task.marketplace || task.marketplaceKey || '').trim();
+    if (explicitValue) {
+      const explicit = platformKey(explicitValue);
+      if (explicit && explicit !== 'all') return explicit;
+    }
+    return platformKeys.find((key) => key && key !== 'all') || 'cross';
+  }
+
   function statusLabel(status) {
     return EVENT_STATUSES.find(([key]) => key === status)?.[1] || 'План';
   }
@@ -203,10 +282,16 @@
     const skus = Array.isArray(item.skus)
       ? item.skus.map((sku) => String(sku || '').trim()).filter(Boolean)
       : textLines(item.skuText || item.skusText || item.sku || '');
+    const platform = platformKey(item.platform || item.marketplace || 'cross');
+    const platforms = uniqueList([
+      platform,
+      ...(Array.isArray(item.platforms) ? item.platforms : textLines(item.platforms || item.platformList || ''))
+    ].map(platformKey)).filter((key) => key && key !== 'all');
     return {
       id: String(item.id || uidSafe('promo')).trim(),
       title: title || 'Промо без названия',
-      platform: platformKey(item.platform || item.marketplace || 'cross'),
+      platform,
+      platforms: platforms.length ? platforms : [platform],
       startDate,
       endDate,
       skus,
@@ -394,6 +479,8 @@
       const kind = taskEventKind(task);
       const skus = taskSkuKeys(task);
       const title = String(task.title || task.nextAction || task.entityLabel || 'Задача').trim();
+      const platforms = taskPlatformKeys(task);
+      const platform = primaryTaskPlatform(task, platforms);
       return {
         id: `task:${taskId}`,
         sourceId: taskId,
@@ -401,7 +488,8 @@
         calendarKind: kind,
         readonly: true,
         title,
-        platform: platformKey(task.platform || task.marketplace || 'cross'),
+        platform,
+        platforms,
         startDate: range.startDate,
         endDate: range.endDate,
         skus,
@@ -821,6 +909,11 @@
     const platform = platformKey(selected);
     if (platform === 'all') return true;
     const eventPlatform = platformKey(event.platform || 'all');
+    const eventPlatforms = uniqueList([
+      eventPlatform,
+      ...(Array.isArray(event.platforms) ? event.platforms : textLines(event.platforms || ''))
+    ].map(platformKey)).filter((key) => key && key !== 'all');
+    if (eventPlatforms.includes(platform)) return true;
     if (eventPlatform === platform) return true;
     if (eventKindKey(event) === 'launch') {
       if (platform === 'product') return true;
@@ -845,7 +938,8 @@
         event.owner,
         event.taskSource,
         event.autoCode,
-        event.launchStatus
+        event.launchStatus,
+        ...(Array.isArray(event.platforms) ? event.platforms.map(platformLabel) : [])
       ].join(' ').toLowerCase().includes(query);
     });
   }

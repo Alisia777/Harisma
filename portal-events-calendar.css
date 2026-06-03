@@ -227,8 +227,8 @@
   position: relative;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  min-height: 138px;
-  padding: 9px;
+  min-height: 178px;
+  padding: 9px 8px;
   border: 0;
   border-right: 1px solid rgba(255, 255, 255, .07);
   border-bottom: 1px solid rgba(255, 255, 255, .07);
@@ -305,8 +305,8 @@
   z-index: 1;
   display: grid;
   align-content: start;
-  gap: 5px;
-  max-height: 142px;
+  gap: 6px;
+  max-height: 132px;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-right: 3px;
@@ -356,6 +356,15 @@
   color: var(--text);
   text-align: left;
   cursor: grab;
+}
+
+.promo-event-pill.compact {
+  min-height: 58px;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-rows: auto auto auto 3px;
+  align-content: start;
+  gap: 4px 6px;
+  padding: 7px 7px 6px;
 }
 
 .promo-event-pill.readonly {
@@ -411,21 +420,29 @@
 .promo-event-pill .promo-event-kind-badge {
   justify-self: start;
   max-width: 100%;
+  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, .1);
   border-radius: 999px;
   background: rgba(0, 0, 0, .28);
   color: rgba(255, 255, 255, .72);
   padding: 2px 6px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .promo-event-pill .promo-event-meta {
   justify-self: start;
+  overflow: hidden;
+  max-width: 100%;
   color: color-mix(in srgb, var(--promo-color, #74a7ff) 68%, white);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .promo-event-pill .promo-event-sku-count {
   justify-self: end;
   color: color-mix(in srgb, var(--promo-color, #74a7ff) 82%, white);
+  white-space: nowrap;
 }
 
 .promo-event-pill strong {
@@ -435,6 +452,22 @@
   line-height: 1.15;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.promo-event-pill.compact strong {
+  display: -webkit-box;
+  min-height: 26px;
+  font-size: 11px;
+  line-height: 1.18;
+  text-overflow: clip;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.promo-event-pill.compact .promo-event-meta {
+  grid-column: 1 / -1;
+  font-size: 9px;
 }
 
 .promo-more {

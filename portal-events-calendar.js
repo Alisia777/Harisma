@@ -1177,7 +1177,7 @@
         : `${formatInt(mission.score)} XP`;
     const fullMeta = editable ? statusLabel(event.status) : eventKindLabel(event);
     return `
-      <button class="promo-event-pill ${eventVisualClass(event)} ${eventTone(event)} mission-${mission.tone} ${editable ? '' : 'readonly'}" type="button" draggable="${editable ? 'true' : 'false'}" data-calendar-event="${html(event.id)}" style="--event-xp:${mission.score}%">
+      <button class="promo-event-pill ${compact ? 'compact' : ''} ${eventVisualClass(event)} ${eventTone(event)} mission-${mission.tone} ${editable ? '' : 'readonly'}" type="button" draggable="${editable ? 'true' : 'false'}" data-calendar-event="${html(event.id)}" style="--event-xp:${mission.score}%">
         <span class="promo-event-kind-badge">${html(eventKindLabel(event))}</span>
         <strong>${html(event.title)}</strong>
         <em class="promo-event-meta">${html(compact ? `${platformLabel(event.platform)} · ${riskLabel}` : `${platformLabel(event.platform)} · ${formatInt(mission.score)} XP · ${fullMeta}`)}</em>

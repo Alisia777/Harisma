@@ -7546,9 +7546,9 @@ function dashboardTaskStatusChip(task) {
   }
 
   function ensureDashboardCalmStyles() {
-    if (document.getElementById('portalDashboardLuxStyles20260603')) return;
+    if (document.getElementById('portalDashboardLuxStyles20260603Premium1')) return;
     const style = document.createElement('style');
-    style.id = 'portalDashboardLuxStyles20260603';
+    style.id = 'portalDashboardLuxStyles20260603Premium1';
     style.textContent = `
       #view-dashboard [data-portal-dashboard-executive-root] { gap: 14px; }
       #view-dashboard .portal-lux-shell,
@@ -7702,17 +7702,110 @@ function dashboardTaskStatusChip(task) {
       #view-dashboard .portal-lux-network-bar i { display: block; height: 7px; border-radius: 999px; background: rgba(255,255,255,.075); overflow: hidden; }
       #view-dashboard .portal-lux-network-bar b { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, rgba(var(--portal-platform-rgb), .68), rgba(var(--portal-platform-rgb), .98)); }
       #view-dashboard .portal-lux-platform-row { border-color: rgba(var(--portal-platform-rgb), .11); background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .045), rgba(255,255,255,.018)); }
+      #view-dashboard .portal-lux-platform-card,
+      #view-dashboard .portal-lux-period-option { box-sizing: border-box; }
+      #view-dashboard [data-portal-dashboard-executive-root] { gap: 18px; }
+      #view-dashboard .portal-lux-shell { gap: 22px; padding: 26px; background: linear-gradient(180deg, rgba(30,30,30,.98), rgba(9,9,10,.995)); box-shadow: 0 24px 70px rgba(0,0,0,.28); }
+      #view-dashboard .portal-lux-top { gap: 18px; }
+      #view-dashboard .portal-lux-brand-copy { min-width: 0; }
+      #view-dashboard .portal-lux-overline { font-size: 12px; color: rgba(255,244,229,.64); }
+      #view-dashboard .portal-lux-title { margin-top: 7px; font-size: 46px; line-height: .98; font-weight: 780; }
+      #view-dashboard .portal-lux-sub { max-width: 980px; font-size: 16px; line-height: 1.52; color: rgba(255,244,229,.76); }
+      #view-dashboard .portal-lux-action { min-height: 40px; padding: 10px 13px; background: rgba(255,255,255,.028); font-size: 12px; }
+      #view-dashboard .portal-lux-action.primary { color: #fff8ea; background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .22), rgba(255,255,255,.028)); }
+      #view-dashboard .portal-lux-cockpit { grid-template-columns: minmax(420px, .9fr) minmax(520px, 1.1fr); gap: 16px; }
+      #view-dashboard .portal-lux-score-card { grid-template-columns: 156px minmax(0, 1fr); gap: 20px; padding: 20px; min-height: 176px; background: linear-gradient(180deg, rgba(255,255,255,.044), rgba(255,255,255,.022)); }
+      #view-dashboard .portal-lux-score-ring { width: 144px; height: 144px; }
+      #view-dashboard .portal-lux-score-core { width: 106px; height: 106px; }
+      #view-dashboard .portal-lux-score-core strong { font-size: 40px; font-weight: 780; }
+      #view-dashboard .portal-lux-score-core span { font-size: 11px; }
+      #view-dashboard .portal-lux-focus { gap: 9px; }
+      #view-dashboard .portal-lux-focus span,
+      #view-dashboard .portal-lux-label { font-size: 12px; color: rgba(255,244,229,.62); }
+      #view-dashboard .portal-lux-focus strong { font-size: 34px; }
+      #view-dashboard .portal-lux-focus em { font-size: 14px; color: rgba(255,244,229,.72); }
+      #view-dashboard .portal-lux-progress,
+      #view-dashboard .portal-lux-metric-line,
+      #view-dashboard .portal-lux-platform-card-line { height: 8px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; }
+      #view-dashboard .portal-lux-platform-card-line > i { display: block; height: 100%; border-radius: inherit; background: var(--portal-calm-progress-fill, linear-gradient(90deg, rgba(222,184,94,.78), rgba(245,218,157,.98))); }
+      #view-dashboard .portal-lux-control-card { gap: 14px; padding: 18px; background: linear-gradient(180deg, rgba(255,255,255,.038), rgba(255,255,255,.018)); }
+      #view-dashboard .portal-lux-control-head { display: flex; justify-content: space-between; gap: 14px; align-items: baseline; }
+      #view-dashboard .portal-lux-control-head strong { color: #fff6e8; font-size: 15px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-period-strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+      #view-dashboard .portal-lux-period-option { min-width: 0; min-height: 56px; display: grid; gap: 4px; align-content: center; padding: 10px 12px; border: 1px solid rgba(255,255,255,.09); border-radius: 8px; background: rgba(255,255,255,.026); color: rgba(255,246,232,.9); cursor: pointer; font: inherit; text-align: left; transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease; }
+      #view-dashboard .portal-lux-period-option:hover { transform: translateY(-1px); border-color: rgba(var(--portal-platform-rgb), .32); background: rgba(255,255,255,.042); }
+      #view-dashboard .portal-lux-period-option.active { border-color: rgba(var(--portal-platform-rgb), .46); background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .14), rgba(255,255,255,.025)); box-shadow: inset 0 0 0 1px rgba(var(--portal-platform-rgb), .1); }
+      #view-dashboard .portal-lux-period-option span { color: #fff7e9; font-size: 14px; line-height: 1.08; font-weight: 760; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-period-option b { color: rgba(255,244,229,.54); font-size: 11px; line-height: 1.1; font-weight: 560; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-date-strip { gap: 10px; }
+      #view-dashboard .portal-lux-date-chip { min-height: 52px; padding: 11px 13px; background: rgba(255,255,255,.026); }
+      #view-dashboard .portal-lux-date-chip b { font-size: 14px; }
+      #view-dashboard .portal-lux-platform-selector { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+      #view-dashboard .portal-lux-platform-card { position: relative; min-width: 0; min-height: 150px; display: grid; gap: 8px; align-content: start; padding: 15px; border: 1px solid rgba(var(--portal-platform-rgb), .16); border-radius: 8px; background: linear-gradient(180deg, rgba(255,255,255,.036), rgba(255,255,255,.018)); color: inherit; text-align: left; cursor: pointer; overflow: hidden; transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease; }
+      #view-dashboard .portal-lux-platform-card::before { content: ''; position: absolute; left: 14px; right: 14px; top: 0; height: 2px; border-radius: 999px; background: rgba(var(--portal-platform-rgb), .56); opacity: .35; }
+      #view-dashboard .portal-lux-platform-card:hover { transform: translateY(-2px); border-color: rgba(var(--portal-platform-rgb), .36); background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .08), rgba(255,255,255,.02)); box-shadow: 0 18px 38px rgba(0,0,0,.22); }
+      #view-dashboard .portal-lux-platform-card.active { border-color: rgba(var(--portal-platform-rgb), .58); background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .16), rgba(255,255,255,.024)); box-shadow: inset 0 0 0 1px rgba(var(--portal-platform-rgb), .12), 0 20px 48px rgba(0,0,0,.25); }
+      #view-dashboard .portal-lux-platform-card.active::before { opacity: 1; }
+      #view-dashboard .portal-lux-platform-top { display: flex; justify-content: space-between; gap: 10px; align-items: center; min-width: 0; }
+      #view-dashboard .portal-lux-platform-top b { min-height: 29px; color: rgba(255,246,232,.92); font-size: 13px; line-height: 1.12; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+      #view-dashboard .portal-lux-platform-top i { width: 32px; height: 32px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 999px; border: 1px solid rgba(var(--portal-platform-rgb), .24); background: rgba(var(--portal-platform-rgb), .09); color: #fff7e9; font-size: 12px; font-style: normal; font-weight: 760; }
+      #view-dashboard .portal-lux-platform-card strong { color: #fff7e9; font-size: 23px; line-height: 1.04; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-platform-caption { color: rgba(255,244,229,.52); font-size: 12px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-platform-meta { display: grid; gap: 3px; }
+      #view-dashboard .portal-lux-platform-meta em { min-width: 0; color: rgba(255,244,229,.66); font-size: 11px; line-height: 1.12; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-lux-metric-rail { gap: 12px; }
+      #view-dashboard .portal-lux-metric { min-height: 162px; padding: 18px; gap: 10px; background: linear-gradient(180deg, rgba(255,255,255,.036), rgba(255,255,255,.018)); }
+      #view-dashboard .portal-lux-icon { width: 34px; height: 34px; font-size: 13px; }
+      #view-dashboard .portal-lux-metric span:not(.portal-lux-icon) { font-size: 12px; color: rgba(255,244,229,.62); }
+      #view-dashboard .portal-lux-metric strong { font-size: 30px; }
+      #view-dashboard .portal-lux-metric em { min-height: 34px; font-size: 13px; line-height: 1.35; color: rgba(255,244,229,.7); }
+      #view-dashboard .portal-lux-section { gap: 18px; padding: 22px; }
+      #view-dashboard .portal-lux-section-head h3,
+      #view-dashboard .portal-lux-panel h3 { font-size: 23px; }
+      #view-dashboard .portal-lux-section-head p { font-size: 14px; color: rgba(255,244,229,.66); }
+      #view-dashboard .portal-lux-showcase-grid { grid-template-columns: minmax(0, 1.35fr) minmax(340px, .65fr); gap: 14px; }
+      #view-dashboard .portal-lux-chart-card { gap: 14px; padding: 20px; }
+      #view-dashboard .portal-lux-chart-value { font-size: 46px; }
+      #view-dashboard .portal-lux-chart-sub { font-size: 14px; color: rgba(255,244,229,.72); }
+      #view-dashboard .portal-calm-chart { height: 248px; background: linear-gradient(180deg, rgba(255,255,255,.024), rgba(0,0,0,.1)); }
+      #view-dashboard .portal-calm-chart-area { opacity: .82; }
+      #view-dashboard .portal-calm-chart-line { stroke-width: 3.5; filter: drop-shadow(0 8px 18px var(--portal-calm-chart-glow, rgba(236,203,123,.12))); }
+      #view-dashboard .portal-lux-quest { min-height: 70px; padding: 14px 15px; }
+      #view-dashboard .portal-lux-quest strong { font-size: 14px; }
+      #view-dashboard .portal-lux-quest span { font-size: 13px; }
+      #view-dashboard .portal-lux-quest b { font-size: 17px; }
+      #view-dashboard .portal-lux-graph-grid { grid-template-columns: repeat(3, minmax(260px, 1fr)); gap: 12px; }
+      #view-dashboard .portal-lux-graph-card { gap: 12px; min-height: 260px; padding: 18px; background: linear-gradient(180deg, rgba(255,255,255,.034), rgba(255,255,255,.016)); }
+      #view-dashboard .portal-lux-graph-top span { font-size: 12px; color: rgba(255,244,229,.62); }
+      #view-dashboard .portal-lux-graph-top b { font-size: 24px; }
+      #view-dashboard .portal-lux-graph-card p { min-height: 38px; font-size: 13px; color: rgba(255,244,229,.68); }
+      #view-dashboard .portal-lux-graph-card .portal-calm-chart { height: 164px; }
+      #view-dashboard .portal-lux-network-grid { grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 12px; }
+      #view-dashboard .portal-lux-network-card { gap: 14px; padding: 17px; background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .075), rgba(255,255,255,.018)); }
+      #view-dashboard .portal-lux-network-head { grid-template-columns: minmax(0, 1fr) 52px; }
+      #view-dashboard .portal-lux-network-head strong { font-size: 24px; }
+      #view-dashboard .portal-lux-network-head b { width: 48px; height: 48px; font-size: 16px; }
+      #view-dashboard .portal-lux-network-kpis span { padding: 8px 9px; font-size: 12px; }
+      #view-dashboard .portal-lux-platform-head,
+      #view-dashboard .portal-lux-platform-row { grid-template-columns: minmax(190px, 1.25fr) minmax(110px, .68fr) minmax(150px, .9fr) minmax(100px, .62fr) minmax(108px, .62fr) minmax(108px, .64fr); }
+      #view-dashboard .portal-lux-platform-row { padding: 15px; }
+      #view-dashboard .portal-lux-platform-name strong { font-size: 15px; }
+      #view-dashboard .portal-lux-platform-name span,
+      #view-dashboard .portal-lux-platform-cell { font-size: 13px; }
       @media (max-width: 1280px) {
         #view-dashboard .portal-lux-cockpit,
         #view-dashboard .portal-lux-showcase-grid { grid-template-columns: 1fr; }
         #view-dashboard .portal-lux-metric-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        #view-dashboard .portal-lux-graph-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        #view-dashboard .portal-lux-graph-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        #view-dashboard .portal-lux-platform-selector { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       }
       @media (max-width: 840px) {
         #view-dashboard .portal-lux-top,
         #view-dashboard .portal-lux-section-head,
         #view-dashboard .portal-lux-mission-grid { grid-template-columns: 1fr; }
         #view-dashboard .portal-lux-actions { justify-content: flex-start; }
+        #view-dashboard .portal-lux-title { font-size: 36px; }
+        #view-dashboard .portal-lux-platform-selector { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         #view-dashboard .portal-lux-platform-head { display: none; }
         #view-dashboard .portal-lux-platform-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         #view-dashboard .portal-lux-platform-cell { display: grid; gap: 3px; }
@@ -7722,13 +7815,21 @@ function dashboardTaskStatusChip(task) {
       @media (max-width: 620px) {
         #view-dashboard .portal-lux-shell,
         #view-dashboard .portal-lux-section { padding: 12px; }
-        #view-dashboard .portal-lux-title { font-size: 24px; }
+        #view-dashboard .portal-lux-title { font-size: 30px; }
+        #view-dashboard .portal-lux-sub { font-size: 14px; }
         #view-dashboard .portal-lux-score-card,
         #view-dashboard .portal-lux-date-strip,
+        #view-dashboard .portal-lux-period-strip,
+        #view-dashboard .portal-lux-platform-selector,
         #view-dashboard .portal-lux-metric-rail,
         #view-dashboard .portal-lux-platform-row,
         #view-dashboard .portal-lux-graph-grid,
         #view-dashboard .portal-lux-network-kpis { grid-template-columns: 1fr; }
+        #view-dashboard .portal-lux-score-card { gap: 14px; }
+        #view-dashboard .portal-lux-score-ring { width: 122px; height: 122px; }
+        #view-dashboard .portal-lux-score-core { width: 92px; height: 92px; }
+        #view-dashboard .portal-lux-focus strong,
+        #view-dashboard .portal-lux-metric strong { font-size: 26px; }
         #view-dashboard .portal-lux-chart-value { font-size: 26px; }
       }
     `;
@@ -7924,6 +8025,31 @@ function dashboardTaskStatusChip(task) {
     ];
   }
 
+  function dashboardPlatformSelectorItems(executive) {
+    const keys = ['all', ...PLATFORM_KEYS.filter((key) => key !== 'all')];
+    const visibleCount = Math.max(0, visibleMetrics(executive).length);
+    return keys.map((key) => {
+      const metric = key === 'all'
+        ? executive?.overall
+        : (executive?.byKey?.get ? executive.byKey.get(key) : null);
+      if (!metric) return null;
+      const turnover = buildTurnoverMetric(key, executive.range);
+      const score = dashboardNetworkScore(metric, turnover);
+      const progress = Math.max(4, Math.min(100, Math.round(num(metric.completion) * 100)));
+      return {
+        key,
+        active: executive.selectedPlatform === key,
+        label: key === 'all' ? 'Все площадки' : (metric.label || shortPlatformLabel(key)),
+        caption: key === 'all' ? `${int(visibleCount)} сетей` : `${int(metric.units)} шт.`,
+        revenue: money(metric.revenue),
+        completion: pct(metric.completion),
+        margin: pct(metric.marginPct),
+        score,
+        progress
+      };
+    }).filter(Boolean);
+  }
+
   function dashboardHeroSection(executive) {
     const metric = executive.focusMetric || executive.overall;
     const activeMetric = dashboardActiveMetric(executive);
@@ -7932,21 +8058,24 @@ function dashboardTaskStatusChip(task) {
     const level = dashboardScoreLevel(score);
     const selectedStart = parseDate(executive.range.state.start) || executive.range.effectiveStart;
     const selectedEnd = parseDate(executive.range.state.end) || executive.range.effectiveEnd;
-    const platformOptions = [
-      { key: 'all', label: 'Все' },
-      ...PLATFORM_KEYS.filter((key) => key !== 'all').map((key) => ({ key, label: shortPlatformLabel(key) }))
-    ];
+    const platformCards = dashboardPlatformSelectorItems(executive);
     const periodLabel = (key) => {
       if (key === 'yesterday') return shortDate(executive.range.max);
       if (key === 'prevweek') return 'Неделя';
       return `${key} дн.`;
+    };
+    const periodCaption = (key) => {
+      if (key === 'yesterday') return 'день';
+      if (key === 'prevweek') return 'прошлая';
+      if (key === '7') return 'неделя';
+      return `${key} дней`;
     };
     const activeProgress = Math.max(4, Math.min(100, Math.round(num(activeMetric.progress) * 100)));
     const scoreStyle = ` style="--score-pct:${score}%;"`;
     return `
       <section class="portal-lux-shell"${dashboardPlatformVarsAttr(executive.selectedPlatform)}>
         <div class="portal-lux-top">
-          <div>
+          <div class="portal-lux-brand-copy">
             <span class="portal-lux-overline">ALTEA · ${esc(currentFocusLabel(executive))}</span>
             <h2 class="portal-lux-title">Пульс бренда</h2>
             <p class="portal-lux-sub">${esc(dashboardCleanStatusSentence(metric, executive))}</p>
@@ -7970,13 +8099,16 @@ function dashboardTaskStatusChip(task) {
             </div>
           </div>
 
-          <div class="portal-lux-control-card">
+          <div class="portal-lux-control-card portal-lux-period-card">
             <div class="portal-lux-control-line">
-              <span class="portal-lux-label">Период</span>
-              <div class="portal-lux-pills">
+              <div class="portal-lux-control-head">
+                <span class="portal-lux-label">Период</span>
+                <strong>${esc(executive.range.effectiveLabel)}</strong>
+              </div>
+              <div class="portal-lux-period-strip">
                 ${PRESET_KEYS.map((key) => {
                   const active = executive.range.state.mode === 'preset' && executive.range.state.active === key;
-                  return `<button type="button" class="portal-lux-pill ${active ? 'active' : ''}" data-portal-exec-preset="${esc(key)}">${esc(periodLabel(key))}</button>`;
+                  return `<button type="button" class="portal-lux-period-option ${active ? 'active' : ''}" data-portal-exec-preset="${esc(key)}" aria-pressed="${active ? 'true' : 'false'}"><span>${esc(periodLabel(key))}</span><b>${esc(periodCaption(key))}</b></button>`;
                 }).join('')}
               </div>
             </div>
@@ -7990,16 +8122,19 @@ function dashboardTaskStatusChip(task) {
                 <input type="date" class="portal-exec-date-input ${executive.range.state.mode === 'custom' ? 'is-active' : ''}" data-portal-exec-end data-portal-exec-min="${esc(iso(executive.range.min))}" data-portal-exec-max="${esc(iso(executive.range.max))}" value="${esc(executive.range.state.end || '')}">
               </label>
             </div>
-            <div class="portal-lux-control-line">
-              <span class="portal-lux-label">Площадка</span>
-              <div class="portal-lux-pills">
-                ${platformOptions.map((platform) => {
-                  const active = executive.selectedPlatform === platform.key;
-                  return `<button type="button" class="portal-lux-pill portal-lux-platform-pill ${active ? 'active' : ''}" data-platform="${esc(platform.key)}" data-portal-exec-platform="${esc(platform.key)}">${esc(platform.label)}</button>`;
-                }).join('')}
-              </div>
-            </div>
           </div>
+        </div>
+
+        <div class="portal-lux-platform-selector" aria-label="Площадки">
+          ${platformCards.map((item) => `
+            <button type="button" class="portal-lux-platform-card ${item.active ? 'active' : ''}" data-platform="${esc(item.key)}" data-portal-exec-platform="${esc(item.key)}" aria-pressed="${item.active ? 'true' : 'false'}"${dashboardPlatformVarsAttr(item.key)}>
+              <span class="portal-lux-platform-top"><b>${esc(item.label)}</b><i>${esc(int(item.score))}</i></span>
+              <strong>${esc(item.revenue)}</strong>
+              <span class="portal-lux-platform-caption">${esc(item.caption)}</span>
+              <span class="portal-lux-platform-meta"><em>план ${esc(item.completion)}</em><em>маржа ${esc(item.margin)}</em></span>
+              <span class="portal-lux-platform-card-line"${dashboardChartStyle(item.key, item.progress / 100)}><i style="width:${item.progress}%"></i></span>
+            </button>
+          `).join('')}
         </div>
 
         <div class="portal-lux-metric-rail">

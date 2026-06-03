@@ -11809,6 +11809,7 @@ function launchCalendarState() {
   view.group = view.group || 'all';
   view.status = view.status || 'all';
   view.statusTheme = view.statusTheme || 'all';
+  view.focus = view.focus || 'all';
   return view;
 }
 
@@ -11880,13 +11881,62 @@ function launchCalendarUniqueOptions(items = [], getter = () => '') {
     .sort((left, right) => left.localeCompare(right, 'ru'));
 }
 
-function launchCalendarFilteredItems(items = []) {
+function launchCalendarRiskState(item = {}) {
+  const days = launchDaysUntil(item);
+  const blockers = Array.isArray(item.blockers) ? item.blockers.filter(Boolean) : [];
+  const overdue = Number.isFinite(days) && days < 0;
+  const dueSoon = Number.isFinite(days) && days >= 0 && days <= 14;
+  const staleStage = launchStageEntries(item).some((entry) => entry.stale);
+  const risk = overdue || staleStage || blockers.length > 0 || dueSoon;
+  if (overdue) return { risk, tone: 'danger', label: `просрочено ${Math.abs(days)} дн.` };
+  if (staleStage) return { risk, tone: 'danger', label: 'этап завис' };
+  if (blockers.length) return { risk, tone: 'warn', label: blockers[0] };
+  if (dueSoon) return { risk, tone: 'warn', label: `${days} дн. до запуска` };
+  return { risk: false, tone: 'ok', label: 'в норме' };
+}
+
+function launchCalendarShortActionLabel(text = '') {
+  const value = String(text || '').trim();
+  const lower = value.toLowerCase().replace(/ё/g, 'е');
+  if (!value) return 'описать шаг';
+  if (/owner|ответствен/.test(lower)) return 'owner';
+  if (/поставщик|завод|производ/.test(lower)) return 'поставщик';
+  if (/переговор/.test(lower)) return 'переговоры';
+  if (/образец|пробн/.test(lower)) return 'образец';
+  if (/упаков|документ|макет/.test(lower)) return 'упаковка';
+  if (/sku|реестр/.test(lower)) return 'SKU';
+  if (/контент|карточ/.test(lower)) return 'контент';
+  if (/площад/.test(lower)) return 'площадки';
+  if (/презентац|фото|тз/.test(lower)) return 'материалы';
+  if (/календар|план/.test(lower)) return 'план запуска';
+  if (/задач/.test(lower)) return 'задача';
+  if (/решени/.test(lower)) return 'решение';
+  if (/финальн|готов/.test(lower)) return 'готово';
+  return value.split(/\s+/).slice(0, 2).join(' ');
+}
+
+function launchCalendarActionChip(item = {}) {
+  const risk = launchCalendarRiskState(item);
+  if (risk.risk && risk.tone === 'danger') return { label: risk.label, tone: 'danger', full: risk.label };
+  if (risk.risk && risk.label) return { label: launchCalendarShortActionLabel(risk.label), tone: 'warn', full: risk.label };
+  const nextAction = launchDirectorNextAction(item);
+  const ready = launchIsReady(item);
+  return {
+    label: ready ? 'вести факт' : launchCalendarShortActionLabel(nextAction),
+    tone: ready ? 'ok' : 'info',
+    full: nextAction
+  };
+}
+
+function launchCalendarFilteredItems(items = [], options = {}) {
   const view = launchCalendarState();
   const search = String(view.search || '').trim().toLowerCase();
+  const applyFocus = options.applyFocus !== false;
   return (items || []).filter((item) => {
     if (view.group !== 'all' && String(item.reportGroup || '') !== view.group) return false;
     if (view.status !== 'all' && String(item.status || '') !== view.status) return false;
     if (view.statusTheme !== 'all' && launchStatusTheme(item.status).key !== view.statusTheme) return false;
+    if (applyFocus && view.focus === 'risk' && !launchCalendarRiskState(item).risk) return false;
     if (!search) return true;
     const haystack = [
       item.name,
@@ -11897,7 +11947,9 @@ function launchCalendarFilteredItems(items = []) {
       item.launchDecision,
       item.marketplaces,
       item.productComment,
-      item.notes
+      item.notes,
+      launchDirectorNextAction(item),
+      ...(Array.isArray(item.blockers) ? item.blockers : [])
     ].join(' ').toLowerCase();
     return haystack.includes(search);
   });
@@ -11930,16 +11982,17 @@ function renderLaunchCalendarPill(item = {}) {
   const progress = launchCalendarProgressScore(item);
   const tone = launchCalendarMissionTone(item);
   const statusTheme = launchStatusTheme(item.status);
+  const action = launchCalendarActionChip(item);
   const meta = [
     item.articleKey || item.article || 'без SKU',
     launchCalendarStageLabel(item)
   ].filter(Boolean).join(' · ');
   return `
-    <button class="promo-event-pill compact promo-kind-launch mission-${escapeHtml(tone)}" type="button" draggable="true" data-launch-calendar-event="${escapeHtml(item.id)}" data-launch-status-tone="${escapeHtml(statusTheme.key)}" style="--event-xp:${progress}%;${launchStatusInlineStyle(item.status)}">
+    <button class="promo-event-pill compact promo-kind-launch mission-${escapeHtml(tone)}" type="button" draggable="true" data-launch-calendar-event="${escapeHtml(item.id)}" data-launch-status-tone="${escapeHtml(statusTheme.key)}" style="--event-xp:${progress}%;${launchStatusInlineStyle(item.status)}" title="${escapeHtml(`${item.status || statusTheme.label} · ${action.full || action.label}`)}">
       <span class="promo-event-kind-badge">${escapeHtml(statusTheme.label)}</span>
       <strong>${escapeHtml(item.name || item.articleKey || 'Новая новинка')}</strong>
+      <span class="launch-action-chip launch-action-${escapeHtml(action.tone)}">${escapeHtml(action.label)}</span>
       <em class="promo-event-meta">${escapeHtml(meta)}</em>
-      <b class="promo-event-sku-count">${escapeHtml(item.status || 'старт')}</b>
     </button>
   `;
 }
@@ -11948,7 +12001,7 @@ function launchCalendarGameStats(monthItems = [], allItems = []) {
   const items = Array.isArray(monthItems) ? monthItems : [];
   const total = items.length;
   const ready = items.filter(launchIsReady).length;
-  const risk = items.filter((item) => (item.blockers || []).length || launchCalendarMissionTone(item) === 'danger').length;
+  const risk = items.filter((item) => launchCalendarRiskState(item).risk).length;
   const active = Math.max(0, total - ready - risk);
   const score = total
     ? Math.round(items.reduce((sum, item) => sum + launchCalendarProgressScore(item), 0) / total)
@@ -11973,10 +12026,10 @@ function renderLaunchCalendarGame(monthItems = [], allItems = []) {
         <i aria-hidden="true"></i>
       </div>
       <div class="launch-calendar-game__stats">
-        <span><b>${fmt.int(stats.total)}</b><em>в месяце</em></span>
+        <button type="button" class="${view.focus === 'all' ? 'active' : ''}" data-launch-calendar-focus="all"><b>${fmt.int(stats.total)}</b><em>в месяце</em></button>
         <span><b>${fmt.int(stats.ready)}</b><em>готово</em></span>
         <span><b>${fmt.int(stats.active)}</b><em>в работе</em></span>
-        <span class="${stats.risk ? 'is-risk' : ''}"><b>${fmt.int(stats.risk)}</b><em>риск</em></span>
+        <button type="button" class="${stats.risk ? 'is-risk' : ''} ${view.focus === 'risk' ? 'active' : ''}" data-launch-calendar-focus="risk"><b>${fmt.int(stats.risk)}</b><em>риски / просрочено</em></button>
       </div>
       <div class="launch-calendar-legend" aria-label="Легенда статусов новинок">
         ${stats.statusThemes.map((theme) => `
@@ -12024,8 +12077,11 @@ function renderLaunchCalendarWorkspace(items = []) {
   if (view.group !== 'all' && !groups.includes(view.group)) view.group = 'all';
   if (view.status !== 'all' && !statuses.includes(view.status)) view.status = 'all';
   const filteredItems = launchCalendarFilteredItems(items);
+  const baseFilteredItems = launchCalendarFilteredItems(items, { applyFocus: false });
   const monthItems = filteredItems.filter((item) => launchCalendarStartOfMonth(launchDueDateKey(item)) === view.month);
+  const baseMonthItems = baseFilteredItems.filter((item) => launchCalendarStartOfMonth(launchDueDateKey(item)) === view.month);
   const gridDays = launchCalendarMonthDays(view.month);
+  const monthCounterLabel = view.focus === 'risk' ? `${fmt.int(monthItems.length)} рисков` : `${fmt.int(monthItems.length)} новинок`;
   return `
     <div class="promo-calendar-shell launch-calendar-shell">
       <section class="promo-calendar-command launch-calendar-command">
@@ -12061,13 +12117,13 @@ function renderLaunchCalendarWorkspace(items = []) {
         </label>
       </section>
 
-      ${renderLaunchCalendarGame(monthItems, filteredItems)}
+      ${renderLaunchCalendarGame(baseMonthItems, baseFilteredItems)}
 
       <section class="promo-calendar-layout launch-calendar-layout">
         <div class="promo-calendar-board launch-calendar-board">
           <div class="promo-month-head">
             <button type="button" data-launch-calendar-month="-1">‹</button>
-            <strong>${escapeHtml(launchCalendarMonthLabel(view.month))} · ${fmt.int(monthItems.length)} новинок</strong>
+            <strong>${escapeHtml(launchCalendarMonthLabel(view.month))} · ${monthCounterLabel}</strong>
             <button type="button" data-launch-calendar-month="1">›</button>
           </div>
           <div class="promo-weekdays">${LAUNCH_CALENDAR_WEEKDAYS.map((day) => `<span>${day}</span>`).join('')}</div>
@@ -12123,6 +12179,13 @@ function bindLaunchCalendar(root) {
       const theme = button.getAttribute('data-launch-calendar-status-quick') || 'all';
       view.statusTheme = view.statusTheme === theme ? 'all' : theme;
       view.status = 'all';
+      rerenderCurrentView();
+    });
+  });
+  root.querySelectorAll('[data-launch-calendar-focus]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const focus = button.getAttribute('data-launch-calendar-focus') || 'all';
+      view.focus = focus === 'risk' && view.focus !== 'risk' ? 'risk' : 'all';
       rerenderCurrentView();
     });
   });

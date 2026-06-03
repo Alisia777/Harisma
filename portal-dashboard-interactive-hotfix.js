@@ -7853,6 +7853,58 @@ function dashboardTaskStatusChip(task) {
       #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-platform-card.is-preview { transform: translateY(-2px); }
       #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-network-card.is-preview,
       #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-platform-row.is-preview { transform: translateY(-1px); }
+      #view-dashboard [data-portal-dashboard-executive-root] { perspective: 1400px; }
+      #view-dashboard .portal-lux-shell,
+      #view-dashboard .portal-lux-section,
+      #view-dashboard .portal-lux-score-card,
+      #view-dashboard .portal-lux-control-card,
+      #view-dashboard .portal-lux-metric,
+      #view-dashboard .portal-lux-chart-card,
+      #view-dashboard .portal-lux-graph-card,
+      #view-dashboard .portal-lux-network-card,
+      #view-dashboard .portal-lux-platform-card,
+      #view-dashboard .portal-lux-platform-row { transform-style: preserve-3d; will-change: transform, box-shadow; }
+      #view-dashboard .portal-lux-shell { position: relative; isolation: isolate; border-color: rgba(var(--portal-platform-rgb), .28); background: linear-gradient(145deg, rgba(38,37,35,.985), rgba(14,14,15,.99) 42%, rgba(6,6,7,.998)); box-shadow: inset 0 1px 0 rgba(255,255,255,.07), inset 0 -56px 90px rgba(0,0,0,.26), 0 34px 96px rgba(0,0,0,.42), 0 2px 0 rgba(255,255,255,.035); }
+      #view-dashboard .portal-lux-shell::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0; background: linear-gradient(180deg, rgba(255,255,255,.075), transparent 22%), linear-gradient(115deg, rgba(255,255,255,.045), transparent 38%, rgba(0,0,0,.18)); opacity: .72; }
+      #view-dashboard .portal-lux-shell > * { position: relative; z-index: 1; }
+      #view-dashboard .portal-lux-section,
+      #view-dashboard .portal-lux-score-card,
+      #view-dashboard .portal-lux-control-card,
+      #view-dashboard .portal-lux-metric,
+      #view-dashboard .portal-lux-chart-card,
+      #view-dashboard .portal-lux-graph-card,
+      #view-dashboard .portal-lux-network-card,
+      #view-dashboard .portal-lux-platform-card,
+      #view-dashboard .portal-lux-platform-row { border-color: rgba(255,255,255,.105); background-image: linear-gradient(180deg, rgba(255,255,255,.058), rgba(255,255,255,.018)); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), inset 0 -18px 34px rgba(0,0,0,.16), 0 16px 34px rgba(0,0,0,.19); }
+      #view-dashboard .portal-lux-platform-card,
+      #view-dashboard .portal-lux-metric,
+      #view-dashboard .portal-lux-graph-card,
+      #view-dashboard .portal-lux-network-card { transform: translate3d(0, 0, 0); }
+      #view-dashboard .portal-lux-platform-card:hover,
+      #view-dashboard .portal-lux-platform-card:focus-visible { transform: translate3d(0, -4px, 18px); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), inset 0 -18px 34px rgba(0,0,0,.16), 0 28px 62px rgba(0,0,0,.34), 0 0 0 1px rgba(var(--portal-platform-rgb), .18); }
+      #view-dashboard .portal-lux-metric:hover,
+      #view-dashboard .portal-lux-metric:focus-visible,
+      #view-dashboard .portal-lux-graph-card:hover,
+      #view-dashboard .portal-lux-graph-card:focus-visible,
+      #view-dashboard .portal-lux-network-card:hover,
+      #view-dashboard .portal-lux-network-card:focus-visible { transform: translate3d(0, -3px, 14px); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), inset 0 -20px 36px rgba(0,0,0,.16), 0 26px 58px rgba(0,0,0,.32), 0 0 0 1px rgba(var(--portal-platform-rgb), .14); }
+      #view-dashboard .portal-lux-platform-card.active,
+      #view-dashboard .portal-lux-metric.is-active { box-shadow: inset 0 1px 0 rgba(255,255,255,.09), inset 0 -24px 42px rgba(0,0,0,.16), 0 30px 70px rgba(0,0,0,.36), 0 0 0 1px rgba(var(--portal-platform-rgb), .24); }
+      #view-dashboard .portal-lux-score-ring,
+      #view-dashboard .portal-lux-network-head b,
+      #view-dashboard .portal-lux-platform-top i,
+      #view-dashboard .portal-lux-icon { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 -10px 18px rgba(0,0,0,.26), 0 12px 26px rgba(0,0,0,.24); }
+      #view-dashboard .portal-lux-progress,
+      #view-dashboard .portal-lux-metric-line,
+      #view-dashboard .portal-lux-platform-card-line,
+      #view-dashboard .portal-lux-network-bar i { box-shadow: inset 0 1px 2px rgba(0,0,0,.42), inset 0 -1px 0 rgba(255,255,255,.05); }
+      #view-dashboard .portal-lux-progress > span,
+      #view-dashboard .portal-lux-metric-line > i,
+      #view-dashboard .portal-lux-platform-card-line > i,
+      #view-dashboard .portal-lux-network-bar b { box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 6px 16px rgba(var(--portal-platform-rgb), .18); }
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-platform-card.is-preview,
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-network-card.is-preview,
+      #view-dashboard [data-portal-dashboard-executive-root].is-platform-previewing .portal-lux-platform-row.is-preview { box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 -22px 40px rgba(0,0,0,.16), 0 32px 74px rgba(0,0,0,.36), 0 0 0 1px rgba(var(--portal-platform-rgb), .24); }
       @media (max-width: 1280px) {
         #view-dashboard .portal-lux-cockpit,
         #view-dashboard .portal-lux-showcase-grid { grid-template-columns: 1fr; }

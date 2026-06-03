@@ -316,8 +316,8 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--promo-color, #74a7ff) 25%, transparent), transparent 52%),
-    color-mix(in srgb, var(--promo-color, #74a7ff) 10%, transparent);
+    linear-gradient(90deg, color-mix(in srgb, var(--calendar-accent, #74a7ff) 18%, transparent), transparent 54%),
+    color-mix(in srgb, var(--calendar-accent, #74a7ff) 7%, transparent);
   pointer-events: none;
 }
 
@@ -376,7 +376,7 @@
   overscroll-behavior: contain;
   padding-right: 3px;
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--promo-color, #74a7ff) 58%, rgba(255, 255, 255, .18)) rgba(255, 255, 255, .035);
+  scrollbar-color: color-mix(in srgb, var(--calendar-accent, #74a7ff) 58%, rgba(255, 255, 255, .18)) rgba(255, 255, 255, .035);
 }
 
 .promo-day-events::-webkit-scrollbar {
@@ -389,7 +389,7 @@
 }
 
 .promo-day-events::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--promo-color, #74a7ff) 58%, rgba(255, 255, 255, .18));
+  background: color-mix(in srgb, var(--calendar-accent, #74a7ff) 58%, rgba(255, 255, 255, .18));
   border-radius: 999px;
 }
 

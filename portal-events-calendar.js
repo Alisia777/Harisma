@@ -687,7 +687,7 @@
   }
 
   function eventVisualClass(event) {
-    return `${eventClass(event)} ${eventKindClass(event)}`;
+    return eventKindClass(event);
   }
 
   function eventKindRank(event) {
@@ -1193,8 +1193,7 @@
       'promo-calendar-day',
       inMonth ? '' : 'muted-day',
       day === todayKey() ? 'today' : '',
-      dayEvents.length ? 'has-events' : '',
-      dayEvents[0] ? eventVisualClass(dayEvents[0]) : ''
+      dayEvents.length ? 'has-events' : ''
     ].filter(Boolean).join(' ');
     return `
       <div class="${className}" role="button" tabindex="0" data-calendar-day="${html(day)}" aria-label="${html(formatDate(day))}">

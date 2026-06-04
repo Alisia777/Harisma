@@ -1,12 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-04T08:49:27.464Z",
+  "generatedAt": "2026-06-04T12:28:03.504Z",
   "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
     "warnings": [],
-    "checkedAt": "2026-06-04T08:49:27.464Z"
+    "checkedAt": "2026-06-04T12:28:03.504Z"
   },
   "freshness": {
     "maxDate": "2026-06-03",
@@ -15,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-04T08:49:27.458Z",
+      "checkedAt": "2026-06-04T12:28:03.499Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-03",
       "maxDate": "2026-06-03",
@@ -62,7 +62,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-04T08:49:27.463Z",
+      "checkedAt": "2026-06-04T12:28:03.504Z",
       "expectedDate": "2026-06-03",
       "adsSummaryWindowTo": "2026-06-03",
       "iuDrrWindowTo": "2026-06-03",
@@ -102,7 +102,7 @@
         {
           "name": "iu-drr-expense-source",
           "status": "ok",
-          "checkedRows": 3
+          "checkedRows": 34
         }
       ]
     }
@@ -125,14 +125,14 @@
     "platform_trends": {
       "exists": true,
       "rows": 7,
-      "generatedAt": "2026-06-04T08:34:12.677Z",
+      "generatedAt": "2026-06-04T12:24:11.750Z",
       "asOfDate": "2026-06-03",
-      "revenue": 110617446
+      "revenue": 86487863
     },
     "ads_summary": {
       "exists": true,
       "rows": 5,
-      "generatedAt": "2026-06-04T08:46:34.977Z",
+      "generatedAt": "2026-06-04T10:30:44.589Z",
       "asOfDate": "2026-06-03",
       "revenue": 0
     },
@@ -243,8 +243,8 @@
     },
     "iu_drr_summary": {
       "exists": true,
-      "rows": 3,
-      "generatedAt": "2026-06-04T08:46:52.157Z",
+      "rows": 34,
+      "generatedAt": "2026-06-04T12:25:35.783Z",
       "asOfDate": "2026-06-03",
       "revenue": 0
     },
@@ -258,14 +258,14 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-04T08:04:36.571Z",
+      "generatedAt": "2026-06-04T12:28:03.118Z",
       "asOfDate": "2026-06-03",
       "revenue": 0
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-04T08:46:52.375Z",
+      "generatedAt": "2026-06-04T12:25:58.410Z",
       "asOfDate": "2026-06-04",
       "revenue": 0
     },
@@ -293,14 +293,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-04T08:05:42.871Z",
+      "generatedAt": "2026-06-04T12:28:02.817Z",
       "asOfDate": "2026-06-04",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-04T08:46:52.381Z",
+      "generatedAt": "2026-06-04T12:25:58.419Z",
       "asOfDate": "2026-06-04",
       "revenue": 0
     }
@@ -371,7 +371,7 @@
     "apiUnmappedActionRevenue": 0,
     "apiKnownOutsideRegistryRows": 31,
     "apiKnownOutsideRegistryUniqueSku": 31,
-    "apiKnownOutsideRegistryRevenue": 768605,
+    "apiKnownOutsideRegistryRevenue": 768607,
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
@@ -416,9 +416,9 @@
         "rows": 7,
         "previousRows": 7,
         "rowRatio": 1,
-        "revenue": 110617446,
+        "revenue": 86487863,
         "previousRevenue": 559539304,
-        "revenueRatio": 0.19769379060456493,
+        "revenueRatio": 0.15456977263566815,
         "revenueComparable": false
       },
       {
@@ -592,7 +592,7 @@
     {
       "name": "iu-drr-expense-source",
       "status": "ok",
-      "checkedRows": 3
+      "checkedRows": 34
     }
   ]
 }

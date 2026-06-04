@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-04T08:04:36.571Z",
+  "generatedAt": "2026-06-04T12:28:03.118Z",
   "status": "ok",
   "summary": {
     "issueCount": 80,
@@ -15,7 +15,7 @@
     "apiUnmappedActionRevenue": 0,
     "apiKnownOutsideRegistryRows": 31,
     "apiKnownOutsideRegistryUniqueSku": 31,
-    "apiKnownOutsideRegistryRevenue": 768605,
+    "apiKnownOutsideRegistryRevenue": 768607,
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
@@ -42,7 +42,7 @@
     {
       "dataset": "platform_trends",
       "asOfDate": "2026-06-03",
-      "generatedAt": "2026-06-04T07:47:42.327Z",
+      "generatedAt": "2026-06-04T12:24:11.750Z",
       "rows": 7,
       "referenceDate": "2026-06-03",
       "lagDays": 0,
@@ -71,7 +71,7 @@
     {
       "dataset": "ads_summary",
       "asOfDate": "2026-06-03",
-      "generatedAt": "2026-06-04T08:00:38.389Z",
+      "generatedAt": "2026-06-04T10:30:44.589Z",
       "rows": 5,
       "referenceDate": "2026-06-03",
       "lagDays": 0,
@@ -80,8 +80,8 @@
     {
       "dataset": "iu_drr_summary",
       "asOfDate": "2026-06-03",
-      "generatedAt": "2026-06-04T08:01:10.456Z",
-      "rows": 3,
+      "generatedAt": "2026-06-04T12:25:35.783Z",
+      "rows": 34,
       "referenceDate": "2026-06-03",
       "lagDays": 0,
       "status": "ok"
@@ -159,9 +159,9 @@
     "wb": {
       "label": "WB",
       "rows": 118,
-      "directRevenue": 27253846,
+      "directRevenue": 27259520,
       "directUnits": 19068,
-      "aggregateRevenue": 27253846,
+      "aggregateRevenue": 27259520,
       "aggregateDate": "2026-06-03",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
@@ -170,15 +170,15 @@
       "ignoredRevenue": 0,
       "ignoredUnits": 0,
       "knownOutsideRegistryCount": 2,
-      "knownOutsideRegistryRevenue": 6436,
+      "knownOutsideRegistryRevenue": 6438,
       "knownOutsideRegistryUnits": 3
     },
     "ya": {
       "label": "Я.Маркет",
-      "rows": 110,
-      "directRevenue": 989298,
-      "directUnits": 1209,
-      "aggregateRevenue": 1370418,
+      "rows": 130,
+      "directRevenue": 0,
+      "directUnits": 0,
+      "aggregateRevenue": 452590,
       "aggregateDate": "2026-06-03",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
@@ -520,7 +520,7 @@
       "platformLabel": "WB",
       "articleKey": "shampun_kudryavii_metod_500ml",
       "name": "shampun_kudryavii_metod_500ml",
-      "revenue": 6053,
+      "revenue": 6055,
       "units": 2,
       "firstDate": "2026-06-02",
       "lastDate": "2026-06-03",

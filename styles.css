@@ -28,9 +28,9 @@ body{min-height:100vh}
 .main{padding:18px 18px 26px;min-width:0}
 .sidebar-toggle{position:fixed;left:232px;top:18px;z-index:70;width:34px;height:34px;border:1px solid var(--line);border-radius:999px;background:rgba(13,20,37,.92);color:var(--text);display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow);transition:left .22s ease,background .18s ease,border-color .18s ease,transform .18s ease}
 .sidebar-toggle:hover{background:rgba(255,255,255,.08);border-color:var(--line-strong);transform:translateY(-1px)}
-.sidebar-toggle span{font-size:21px;line-height:1;transform:translateX(-1px)}
+.sidebar-toggle span{width:9px;height:9px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;font-size:0;line-height:0;transform:translateX(2px) rotate(45deg)}
 .app-shell.sidebar-collapsed .sidebar-toggle{left:12px}
-.app-shell.sidebar-collapsed .sidebar-toggle span{transform:translateX(1px) rotate(180deg)}
+.app-shell.sidebar-collapsed .sidebar-toggle span{transform:translateX(-2px) rotate(225deg)}
 
 .brand-block{display:flex;gap:12px;align-items:center;padding:10px 10px 14px;border-bottom:1px solid var(--line)}
 .logo-badge{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#1e3a8a,#172554);font-weight:800;letter-spacing:.04em}

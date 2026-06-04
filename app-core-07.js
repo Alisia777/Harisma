@@ -5324,11 +5324,11 @@ function normalizeAdsSummaryPayload(payload = {}) {
       ? platform.series.map((point) => ({
           dateKey: point?.date || point?.day || point?.label || '',
           dateStamp: parseFreshStamp(point?.date || point?.day || point?.label || ''),
-          views: numberOrZero(point?.views),
-          clicks: numberOrZero(point?.clicks),
-          spend: numberOrZero(point?.spend),
-          orders: numberOrZero(point?.orders),
-          revenue: numberOrZero(point?.revenue)
+          views: numberOrZero(point?.views ?? point?.adsImpressions ?? point?.shows),
+          clicks: numberOrZero(point?.clicks ?? point?.adsClicks),
+          spend: numberOrZero(point?.spend ?? point?.adsSpend),
+          orders: numberOrZero(point?.orders ?? point?.ordersUnits),
+          revenue: numberOrZero(point?.revenue ?? point?.deliveredRevenue ?? point?.ordersRevenue)
         }))
       : [];
     return {
@@ -5353,11 +5353,11 @@ function normalizeAdsSummaryPayload(payload = {}) {
       article: String(item?.article || item?.articleKey || item?.offer_id || item?.offerId || '').trim(),
       name: String(item?.name || item?.title || item?.productName || item?.articleKey || item?.offer_id || '').trim(),
       owner: String(item?.owner || item?.ownerName || '').trim(),
-      views: numberOrZero(item?.views),
-      clicks: numberOrZero(item?.clicks),
-      spend: numberOrZero(item?.spend),
-      orders: numberOrZero(item?.orders),
-      revenue: numberOrZero(item?.revenue)
+      views: numberOrZero(item?.views ?? item?.adsImpressions ?? item?.shows),
+      clicks: numberOrZero(item?.clicks ?? item?.adsClicks),
+      spend: numberOrZero(item?.spend ?? item?.adsSpend),
+      orders: numberOrZero(item?.orders ?? item?.ordersUnits),
+      revenue: numberOrZero(item?.revenue ?? item?.deliveredRevenue ?? item?.ordersRevenue)
     };
   });
   return {
@@ -5374,7 +5374,7 @@ function getAdsFunnelFilters() {
   state.adsFunnelFilters = state.adsFunnelFilters || {};
   state.adsFunnelFilters.search = state.adsFunnelFilters.search || '';
   state.adsFunnelFilters.platform = adsFunnelNormalizePlatformKey(state.adsFunnelFilters.platform || 'all');
-  if (!['wb', 'ozon'].includes(state.adsFunnelFilters.platform)) state.adsFunnelFilters.platform = 'wb';
+  if (!['wb', 'ozon', 'ya'].includes(state.adsFunnelFilters.platform)) state.adsFunnelFilters.platform = 'wb';
   state.adsFunnelFilters.horizon = String(state.adsFunnelFilters.horizon || '28');
   state.adsFunnelFilters.sort = state.adsFunnelFilters.sort || 'spend';
   state.adsFunnelFilters.sortDir = state.adsFunnelFilters.sortDir === 'asc' ? 'asc' : 'desc';
@@ -5421,11 +5421,17 @@ function adsFunnelDateShort(value = '') {
 }
 
 function adsFunnelPlatformRgb(key = 'wb') {
-  return adsFunnelNormalizePlatformKey(key) === 'ozon' ? [42, 139, 242] : [128, 86, 214];
+  const platformKey = adsFunnelNormalizePlatformKey(key);
+  if (platformKey === 'ozon') return [42, 139, 242];
+  if (platformKey === 'ya') return [236, 184, 49];
+  return [128, 86, 214];
 }
 
 function adsFunnelPlatformTone(key = 'wb') {
-  return adsFunnelNormalizePlatformKey(key) === 'ozon' ? 'info' : 'warn';
+  const platformKey = adsFunnelNormalizePlatformKey(key);
+  if (platformKey === 'ozon') return 'info';
+  if (platformKey === 'ya') return 'ok';
+  return 'warn';
 }
 
 function adsFunnelEmptyPoint(dateKey = '') {
@@ -5897,15 +5903,17 @@ function renderAdsFunnel(rootId = 'view-ads-funnel') {
   const scopeLabel = model.searchNeedle
     ? `${fmt.int(model.uniqueSkuCount)} SKU · ${fmt.int(model.matchedRows.length)} строк`
     : 'вся площадка';
-  const platformButtons = ['wb', 'ozon'].map((key) => {
+  const platformButtons = ['wb', 'ozon', 'ya'].map((key) => {
     const active = model.platformKey === key;
     const label = adsFunnelPlatformLabel(key);
     const tone = adsFunnelPlatformTone(key);
+    const subLabel = key === 'wb' ? 'Wildberries' : key === 'ozon' ? 'Ozon' : 'Funnel API';
+    const toneLabel = key === 'wb' ? 'фиолетовый контур' : key === 'ozon' ? 'синий контур' : 'воронка API';
     return `
       <button class="ads-control-platform ${active ? 'active' : ''}" type="button" data-ads-platform="${escapeHtml(key)}" aria-pressed="${active}">
         <span>${escapeHtml(label)}</span>
-        <strong>${escapeHtml(key === 'wb' ? 'Wildberries' : 'Ozon')}</strong>
-        ${badge(tone === 'info' ? 'синий контур' : 'фиолетовый контур', tone)}
+        <strong>${escapeHtml(subLabel)}</strong>
+        ${badge(toneLabel, tone)}
       </button>`;
   }).join('');
   const renderCell = (row, dateKey, index) => {

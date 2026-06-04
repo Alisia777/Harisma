@@ -569,6 +569,27 @@ function buildSteps(options, env) {
     });
   }
 
+  if (options.platforms.includes('ya') || options.platforms.includes('ym') || options.platforms.includes('yandex')) {
+    steps.push({
+      id: 'yandex-ads-summary',
+      name: 'Yandex Market ads summary bridge',
+      args: [
+        'scripts/portal-yandex-ads-summary-bridge.js',
+        'sync',
+        '--platform-trends',
+        trendsOutput,
+        '--ads-summary',
+        path.join(options.baseDataDir, 'ads_summary.json'),
+        '--output-file',
+        path.join(options.baseDataDir, 'ads_summary.json'),
+        '--from',
+        monthStart(options.to),
+        '--to',
+        options.to
+      ]
+    });
+  }
+
   if (!options.skipIuDrr) {
     steps.push({
       id: 'iu-drr',

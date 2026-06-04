@@ -291,6 +291,81 @@ function taskAttachmentSetupHint() {
   return 'Supabase setup is incomplete. Create table public.portal_task_attachments and bucket portal-task-files.';
 }
 
+const TASK_ATTACHMENT_UPLOAD_TIMEOUT_MS = 120000;
+const TASK_ATTACHMENT_UPLOAD_ATTEMPTS = 3;
+
+function taskAttachmentUploadErrorLabel() {
+  return '\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u044f';
+}
+
+function isRetriableTaskAttachmentUpload(error) {
+  const status = Number(error?.status || 0);
+  const message = String(error?.message || error || '');
+  return status === 408
+    || status === 429
+    || status >= 500
+    || /timeout|timed out|abort|network|fetch/i.test(message);
+}
+
+function taskAttachmentUploadDelay(attempt) {
+  return new Promise((resolve) => setTimeout(resolve, Math.max(800, attempt * 1500)));
+}
+
+async function fetchTaskAttachmentWithTimeout(url, options, timeoutMs, label) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error(`${label} \u043f\u0440\u0435\u0432\u044b\u0441\u0438\u043b ${Math.round(timeoutMs / 1000)} \u0441\u0435\u043a.`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function uploadTaskAttachmentObject(uploadUrl, cfg, file) {
+  const label = taskAttachmentUploadErrorLabel();
+  let lastError = null;
+  for (let attempt = 1; attempt <= TASK_ATTACHMENT_UPLOAD_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetchTaskAttachmentWithTimeout(uploadUrl, {
+        method: 'POST',
+        headers: {
+          apikey: cfg.anonKey,
+          Authorization: `Bearer ${cfg.accessToken}`,
+          'Content-Type': file.type || 'application/octet-stream',
+          'x-upsert': 'false'
+        },
+        body: file
+      }, TASK_ATTACHMENT_UPLOAD_TIMEOUT_MS, label);
+
+      if (response.ok) return response;
+
+      const body = await response.text();
+      if (isTaskAttachmentBucketMissingError(body)) {
+        throw new Error(taskAttachmentSetupHint());
+      }
+      const error = new Error(`${label}: ${body || response.status || 'request failed'}`);
+      error.status = response.status;
+      error.body = body;
+      throw error;
+    } catch (error) {
+      lastError = error;
+      if (attempt >= TASK_ATTACHMENT_UPLOAD_ATTEMPTS || !isRetriableTaskAttachmentUpload(error)) {
+        throw error;
+      }
+      await taskAttachmentUploadDelay(attempt);
+    }
+  }
+  throw lastError || new Error(`${label}: request failed`);
+}
+
 const REPRICER_CONTROLS_SNAPSHOT_KEY = 'repricer_controls';
 
 function buildRepricerControlsPayload() {
@@ -1233,24 +1308,7 @@ async function uploadTaskAttachment(taskId, file, options = {}) {
   const objectPath = taskAttachmentObjectPath(normalizedTaskId, file.name || 'file');
   const uploadUrl = `${cfg.baseUrl}/storage/v1/object/${encodeURIComponent(bucket)}/${encodeStoragePath(objectPath)}`;
 
-  const uploadResponse = await withTimeout(fetch(uploadUrl, {
-    method: 'POST',
-    headers: {
-      apikey: cfg.anonKey,
-      Authorization: `Bearer ${cfg.accessToken}`,
-      'Content-Type': file.type || 'application/octet-stream',
-      'x-upsert': 'false'
-    },
-    body: file
-  }), 30000, 'Загрузка вложения');
-
-  if (!uploadResponse.ok) {
-    const body = await uploadResponse.text();
-    if (isTaskAttachmentBucketMissingError(body)) {
-      throw new Error(taskAttachmentSetupHint());
-    }
-    throw new Error(`Загрузка вложения: ${body || uploadResponse.status || 'request failed'}`);
-  }
+  await uploadTaskAttachmentObject(uploadUrl, cfg, file);
 
   const attachment = normalizeTaskAttachment({
     id: uid('attach'),

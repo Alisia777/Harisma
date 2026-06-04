@@ -674,6 +674,9 @@ function buildHealth(options) {
       const currentRevenue = numberOrZero(current.revenue);
       const rowRatio = previousRows > 0 ? currentRows / previousRows : 1;
       const revenueRatio = previousRevenue > 0 ? currentRevenue / previousRevenue : 1;
+      const currentMonth = dateKey(current.asOfDate).slice(0, 7);
+      const previousMonth = dateKey(previous.asOfDate).slice(0, 7);
+      const revenueComparable = name !== 'platform_trends' || !currentMonth || !previousMonth || currentMonth === previousMonth;
       const comparison = {
         snapshot: name,
         rows: currentRows,
@@ -681,13 +684,14 @@ function buildHealth(options) {
         rowRatio,
         revenue: currentRevenue,
         previousRevenue,
-        revenueRatio
+        revenueRatio,
+        revenueComparable
       };
       comparisons.push(comparison);
       if (previousRows >= 20 && rowRatio < options.minRowsRatio) {
         blockingReasons.push(`Snapshot ${name} row count collapsed vs last good (${currentRows}/${previousRows}).`);
       }
-      if (previousRevenue >= 100000 && currentRevenue > 0 && revenueRatio < options.minRevenueRatio) {
+      if (revenueComparable && previousRevenue >= 100000 && currentRevenue > 0 && revenueRatio < options.minRevenueRatio) {
         blockingReasons.push(`Snapshot ${name} revenue collapsed vs last good (${currentRevenue}/${previousRevenue}).`);
       }
     });

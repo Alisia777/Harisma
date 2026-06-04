@@ -1759,6 +1759,9 @@ function buildPlatformDateMap(platformTrends, platformKey) {
       ordersRevenue: wbOrdersRevenue,
       revenue: wbFinanceTurnover > 0 ? wbFinanceTurnover : numberOrZero(point.revenue),
       margin: wbFinancialResult > 0 ? wbFinancialResult : numberOrZero(point.estimatedMargin || point.margin),
+      cashbackAmount: numberOrZero(point?.cashbackAmount || sellerSummary.cashbackAmount),
+      cashbackDiscount: numberOrZero(point?.cashbackDiscount || sellerSummary.cashbackDiscount),
+      cashbackCommissionChange: numberOrZero(point?.cashbackCommissionChange || sellerSummary.cashbackCommissionChange),
       source: wbFinanceTurnover > 0 ? 'wb-seller-summary-finance-turnover' : 'platform-trends-orders'
     });
   }
@@ -2024,11 +2027,16 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const channels = Object.fromEntries(CHANNEL_KEYS.map(([key]) => [key, 0]));
     for (const [key] of CHANNEL_KEYS) channels[key] = roundMoney(adsMaps.byDateChannel.get(`${date}|${key}`) || 0);
     const feedbackReviewPoints = reviewPointsMap.get(date) || { spend: 0, feedbacks: 0 };
+    const reviewPointsFromFinance = roundMoney(wb.cashbackAmount);
     const reviewPointsFromFeedbacks = roundMoney(feedbackReviewPoints.spend);
+    const reviewPointsFromAds = numberOrZero(channels.reviewPoints);
+    const selectedReviewPoints = reviewPointsFromFinance > 0
+      ? reviewPointsFromFinance
+      : Math.max(reviewPointsFromAds, reviewPointsFromFeedbacks);
     let reviewPointsAddedToSpend = 0;
-    if (reviewPointsFromFeedbacks > 0 && numberOrZero(channels.reviewPoints) <= 0) {
-      channels.reviewPoints = reviewPointsFromFeedbacks;
-      reviewPointsAddedToSpend = reviewPointsFromFeedbacks;
+    if (selectedReviewPoints > reviewPointsFromAds) {
+      channels.reviewPoints = selectedReviewPoints;
+      reviewPointsAddedToSpend = selectedReviewPoints - reviewPointsFromAds;
     }
     const externalSpend = numberOrZero(channels.externalAds);
     const apiSpendFactTotal = numberOrZero(ads.spend) + reviewPointsAddedToSpend;
@@ -2098,7 +2106,16 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
       factPctIu: adsPctBaseIu > 0 ? roundRate(spendFactIu / adsPctBaseIu) : null,
       ordersAdPct: ordersRevenueWb > 0 ? roundRate(spendFact / ordersRevenueWb) : null,
       ...channels,
-      reviewPointsSource: reviewPointsFromFeedbacks > 0 ? 'wb_feedbacks_api_supplierFeedbackValuation' : '',
+      wbCashbackAmount: roundMoney(wb.cashbackAmount),
+      wbCashbackDiscount: roundMoney(wb.cashbackDiscount),
+      wbCashbackCommissionChange: roundMoney(wb.cashbackCommissionChange),
+      reviewPointsSource: reviewPointsFromFinance > 0
+        ? 'wb_finance_api_cashbackAmountSum'
+        : reviewPointsFromAds > 0
+          ? 'wb_ads_financial_upd'
+          : reviewPointsFromFeedbacks > 0
+            ? 'wb_feedbacks_api_supplierFeedbackValuation'
+            : '',
       reviewPointsFeedbacks: Math.round(numberOrZero(feedbackReviewPoints.feedbacks)),
       spendDelta: roundMoney(spendDelta),
       spendDeltaPct: planSpendWb > 0 ? roundRate(spendDelta / planSpendWb) : null,
@@ -2252,6 +2269,9 @@ function buildMonthRows(dailyRows, iuPlan, companyPlan) {
       ozonAdsOrders: sumRows(rows, 'ozonAdsOrders'),
       ozonAdsRevenue: roundMoney(sumRows(rows, 'ozonAdsRevenue')),
       ozonAdsSourceRows: sumRows(rows, 'ozonAdsSourceRows'),
+      wbCashbackAmount: roundMoney(sumRows(rows, 'wbCashbackAmount')),
+      wbCashbackDiscount: roundMoney(sumRows(rows, 'wbCashbackDiscount')),
+      wbCashbackCommissionChange: roundMoney(sumRows(rows, 'wbCashbackCommissionChange')),
       channels: Object.fromEntries(CHANNEL_KEYS.map(([key, label]) => [key, {
         key,
         label,
@@ -2303,9 +2323,14 @@ function buildChannelRows(dailyRows, adsSummary = {}, wbFeedbacksSummary = {}) {
   const wbAdsSource = adsSourceMode.includes('google-sheets-fact-ads')
     ? 'Google Sheets fact_ads_daily_sku'
     : 'WB Promotion API';
-  const reviewPointsSource = numberOrZero(wbFeedbacksSummary?.reviewsForPoints?.spend) > 0
-    ? 'WB Feedbacks API'
-    : '';
+  const reviewPointSources = new Set(dailyRows.map((row) => row.reviewPointsSource).filter(Boolean));
+  const reviewPointsSource = reviewPointSources.has('wb_finance_api_cashbackAmountSum')
+    ? 'WB Finance API'
+    : reviewPointSources.has('wb_ads_financial_upd')
+      ? 'WB Promotion UPD'
+      : numberOrZero(wbFeedbacksSummary?.reviewsForPoints?.spend) > 0
+        ? 'WB Feedbacks API'
+        : '';
   return CHANNEL_KEYS.map(([key, label]) => ({
     key,
     label,
@@ -2435,14 +2460,16 @@ async function buildPayload(options) {
       adsDiagnostics: adsSummary.diagnostics || {},
       wbFeedbacksDiagnostics: wbFeedbacksSummary.diagnostics || {},
       ozonFinanceDiagnostics: ozonFinance.diagnostics || {},
-      reviewPointsSource: wbFeedbacksSummary?.reviewsForPoints?.sourceStatus || '',
+      reviewPointsSource: Array.from(new Set(dailyRows.map((row) => row.reviewPointsSource).filter(Boolean))).join('+')
+        || wbFeedbacksSummary?.reviewsForPoints?.sourceStatus
+        || '',
       noSourceChannels,
       unmatchedNmIds: adsSummary.diagnostics?.unmatchedNmIds || [],
       notes: [
         'Ozon ad spend comes from Google Sheets fact_ads_daily_sku when present; planPctOzon remains the plan benchmark.',
         'WB revenue plan is max(corporate WB plan, Smart-Sale IU WB plan); WB ad plan remains on the IU/DRR ad contour.',
         'Ozon revenue plan is max(corporate Ozon plan, Smart-Sale IU 40% share); ad plan scales from the selected revenue plan by Ozon benchmark DRR.',
-        'Review points are filled from WB Feedbacks API supplierFeedbackValuation when present.',
+        'WB points/loyalty spend uses WB Finance API cashbackAmountSum when present, then WB UPD, then WB Feedbacks API as a weak fallback.',
         'WB contract logic: factual turnover is sales minus returns, without WB deductions; it maps to revenueWb / finance turnover.',
         'WB marketing plan is 8% of factual turnover. ordersRevenueWb is retained as a report-control field, not as the contract DRR denominator.',
         'WB quarter summary combines report workbook sales/orders with March-April DRR rows and the current May daily IU/DRR layer. DRR by contract uses sales/buyouts; the control advertising percentage uses orders revenue.',

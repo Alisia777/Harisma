@@ -5,6 +5,8 @@ param(
   [string]$OutputDir = "",
   [string]$AdsWindowFrom = "",
   [string]$AdsWindowTo = "",
+  [string]$ApiWindowFrom = "",
+  [string]$ApiWindowTo = "",
   [string]$LiveHealthUrl = "https://xn--80aocfomk2b.xn--p1ai/data/portal_sync_health.json"
 )
 
@@ -201,6 +203,17 @@ function Set-ProcessEnvFallback {
   }
 }
 
+function Resolve-FirstExistingPath {
+  param([string[]]$Candidates = @())
+
+  foreach ($candidate in @($Candidates)) {
+    if (-not [string]::IsNullOrWhiteSpace($candidate) -and (Test-Path -LiteralPath $candidate)) {
+      return $candidate
+    }
+  }
+  return ""
+}
+
 $resolvedOutputDir = if ($OutputDir) { $OutputDir } else { ".altea-google-sheet-sync-output" }
 New-Item -ItemType Directory -Path $resolvedOutputDir -Force | Out-Null
 $script:retrySteps = @()
@@ -240,6 +253,34 @@ $portalAdsWindowTo = Format-DateOnly $portalAdsWindowToDate
 $portalOzonFinanceWindowFromDate = (Get-Date -Year $portalAdsWindowToDate.Year -Month $portalAdsWindowToDate.Month -Day 1).Date
 $portalOzonFinanceWindowFrom = Format-DateOnly $portalOzonFinanceWindowFromDate
 Write-Output "[sync] Ozon ads analytics window: $portalAdsWindowFrom..$portalAdsWindowTo; Ozon finance API window: $portalOzonFinanceWindowFrom..$portalAdsWindowTo"
+
+$portalApiWindowToDate = Resolve-DateOnly -Value $ApiWindowTo -Fallback ((Get-Date).Date.AddDays(-1))
+$portalApiWindowFromValue = $ApiWindowFrom
+if ([string]::IsNullOrWhiteSpace($portalApiWindowFromValue)) {
+  $portalApiWindowFromValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_API_WINDOW_FROM", "Process")
+}
+if ([string]::IsNullOrWhiteSpace($portalApiWindowFromValue)) {
+  $portalApiWindowFromValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_API_WINDOW_FROM", "User")
+}
+if ([string]::IsNullOrWhiteSpace($portalApiWindowFromValue)) {
+  $portalApiWindowFromDefault = (Get-Date -Year $portalApiWindowToDate.Year -Month $portalApiWindowToDate.Month -Day 1).Date
+  if ($portalApiWindowToDate.Day -le 3) {
+    $portalApiWindowFromDefault = $portalApiWindowFromDefault.AddMonths(-1)
+  }
+  $portalApiWindowFromValue = $portalApiWindowFromDefault.ToString("yyyy-MM-dd")
+}
+$portalApiWindowFromFallback = (Get-Date -Year $portalApiWindowToDate.Year -Month $portalApiWindowToDate.Month -Day 1).Date
+$portalApiWindowFromDate = Resolve-DateOnly -Value $portalApiWindowFromValue -Fallback $portalApiWindowFromFallback
+
+if ($portalApiWindowFromDate -gt $portalApiWindowToDate) {
+  throw "ApiWindowFrom must be before or equal ApiWindowTo. Got $($portalApiWindowFromDate.ToString("yyyy-MM-dd"))..$($portalApiWindowToDate.ToString("yyyy-MM-dd"))."
+}
+
+$portalApiWindowFrom = Format-DateOnly $portalApiWindowFromDate
+$portalApiWindowTo = Format-DateOnly $portalApiWindowToDate
+$env:ALTEA_PORTAL_API_WINDOW_FROM = $portalApiWindowFrom
+$env:ALTEA_PORTAL_API_WINDOW_TO = $portalApiWindowTo
+Write-Output "[sync] marketplace API refresh window: $portalApiWindowFrom..$portalApiWindowTo"
 
 function Write-SyncIssues {
   $payload = [ordered]@{
@@ -429,7 +470,11 @@ if ([string]::IsNullOrWhiteSpace($env:ALTEA_WB_API_TOKEN)) {
 Write-Output "[sync] WB analytics CSV refresh started"
 Invoke-NodeStep -StepName "WB analytics CSV refresh" -Arguments @(
   "scripts/portal-wb-orders-trends-sync.js",
-  "sync"
+  "sync",
+  "--from",
+  $portalApiWindowFrom,
+  "--to",
+  $portalApiWindowTo
 ) -Attempts 3 -RetryDelaySeconds 20
 Write-Output "[sync] WB analytics CSV refresh completed"
 
@@ -460,13 +505,27 @@ Set-ProcessEnvFallback -Name "ALTEA_LETUAL_LOCAL_EXPORT_XLSX"
 Set-ProcessEnvFallback -Name "ALTEA_LETUAL_PLAN_XLSX"
 Set-ProcessEnvFallback -Name "ALTEA_ZYA_SALES_ZIP" (Join-Path $env:LOCALAPPDATA "Temp\zya_sales.zip")
 Set-ProcessEnvFallback -Name "ALTEA_ZYA_ADS_XLSX" (Join-Path $env:LOCALAPPDATA "Temp\zya_ads.xlsx")
-Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SALES_CSV" (Join-Path $env:LOCALAPPDATA "Temp\magnit_sales.csv")
-Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SERVICES_CSV" (Join-Path $env:LOCALAPPDATA "Temp\magnit_services.csv")
+$magnitSalesCsvFallback = Resolve-FirstExistingPath @(
+  (Join-Path $repoRoot "data\external_sources\magnit_sales.csv"),
+  (Join-Path (Split-Path -Parent $repoRoot) "data\external_sources\magnit_sales.csv"),
+  (Join-Path $env:LOCALAPPDATA "Temp\magnit_sales.csv")
+)
+$magnitServicesCsvFallback = Resolve-FirstExistingPath @(
+  (Join-Path $repoRoot "data\external_sources\magnit_services.csv"),
+  (Join-Path (Split-Path -Parent $repoRoot) "data\external_sources\magnit_services.csv"),
+  (Join-Path $env:LOCALAPPDATA "Temp\magnit_services.csv")
+)
+Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SALES_CSV" $magnitSalesCsvFallback
+Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SERVICES_CSV" $magnitServicesCsvFallback
 
 Write-Output "[sync] Ozon marketplace analytics refresh started"
 Invoke-NodeStep -StepName "Ozon marketplace analytics refresh" -Arguments @(
   "scripts/portal-ozon-finance-trends-sync.js",
-  "sync"
+  "sync",
+  "--from",
+  $portalApiWindowFrom,
+  "--to",
+  $portalApiWindowTo
 ) -Attempts 3 -RetryDelaySeconds 20
 Write-Output "[sync] Ozon marketplace analytics refresh completed"
 Write-Output "[sync] waiting 30 sec before the next Ozon-backed step"
@@ -476,7 +535,11 @@ Write-Output "[sync] Yandex Market analytics refresh started"
 try {
   Invoke-NodeStep -StepName "Yandex Market analytics refresh" -Arguments @(
     "scripts/portal-yandex-market-trends-sync.js",
-    "sync"
+    "sync",
+    "--from",
+    $portalApiWindowFrom,
+    "--to",
+    $portalApiWindowTo
   ) -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 2700 -StreamOutput
   Write-Output "[sync] Yandex Market analytics refresh completed"
 } catch {
@@ -549,6 +612,25 @@ $buildArguments += "--mirror-local-fallback"
 Write-Output "[sync] build phase started (expected dryRun=true in JSON summary below; local fallback data will also be mirrored)"
 Invoke-NodeStep -StepName "Google sheet data build" -Arguments $buildArguments -Attempts 2 -RetryDelaySeconds 30
 Write-Output "[sync] build phase completed"
+
+$magnitDailyArguments = @(
+  "scripts/portal-magnit-market-sync.js",
+  "sync",
+  "--input-file",
+  (Join-Path $resolvedOutputDir "platform_trends.json"),
+  "--output-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--raw-output-dir",
+  (Join-Path $resolvedOutputDir "raw"),
+  "--mirror-local-fallback",
+  "--require-source"
+)
+
+Write-Output "[sync] Magnit Market daily normalization started"
+Invoke-NodeStep -StepName "Magnit Market daily normalization" -Arguments $magnitDailyArguments -Attempts 2 -RetryDelaySeconds 20
+Write-Output "[sync] Magnit Market daily normalization completed"
 
 Write-Output "[sync] WB owner distribution import started"
 try {

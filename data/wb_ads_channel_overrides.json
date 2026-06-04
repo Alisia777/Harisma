@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-06-04T00:00:00.000Z",
+  "source": "manual-control",
+  "note": "Manual WB advertising campaign-to-cost-article mapping for cases where WB API does not expose the management accounting article.",
+  "campaigns": {
+    "30216583": {
+      "channel": "ВБ Медиа",
+      "reason": "WB.Media cost article control: campaign 30216583, 2026-06-02 spend 12.8k RUB."
+    }
+  }
+}

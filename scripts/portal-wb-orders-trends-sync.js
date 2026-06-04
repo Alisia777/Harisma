@@ -891,6 +891,9 @@ async function fetchWbFinanceDetailedRows(options) {
         'penalty',
         'additionalPayment',
         'paidAcceptance',
+        'cashbackAmount',
+        'cashbackDiscount',
+        'cashbackCommissionChange',
         'rrDate'
       ]
     });
@@ -1003,7 +1006,10 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
       storage: 0,
       fines: 0,
       additionalPayments: 0,
-      acceptanceOperations: 0
+      acceptanceOperations: 0,
+      cashbackAmount: 0,
+      cashbackDiscount: 0,
+      cashbackCommissionChange: 0
     };
     current.payForGoods += numberOrZero(row?.forPaySum);
     current.logistics += numberOrZero(row?.deliveryServiceSum);
@@ -1011,6 +1017,9 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
     current.fines += numberOrZero(row?.penaltySum);
     current.additionalPayments += numberOrZero(row?.additionalPaymentSum);
     current.acceptanceOperations += numberOrZero(row?.paidAcceptanceSum);
+    current.cashbackAmount += numberOrZero(row?.cashbackAmountSum);
+    current.cashbackDiscount += numberOrZero(row?.cashbackDiscountSum);
+    current.cashbackCommissionChange += numberOrZero(row?.cashbackCommissionChangeSum);
     byDate.set(date, current);
   }
 
@@ -1026,6 +1035,9 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
     const fines = Math.round(numberOrZero(summary.fines));
     const additionalPayments = Math.round(numberOrZero(summary.additionalPayments));
     const acceptanceOperations = Math.round(numberOrZero(summary.acceptanceOperations));
+    const cashbackAmount = Math.round(numberOrZero(summary.cashbackAmount) * 100) / 100;
+    const cashbackDiscount = Math.round(numberOrZero(summary.cashbackDiscount) * 100) / 100;
+    const cashbackCommissionChange = Math.round(numberOrZero(summary.cashbackCommissionChange) * 100) / 100;
     const totalPay = payForGoods
       ? payForGoods - logistics - storage - fines - acceptanceOperations + additionalPayments
       : 0;
@@ -1040,6 +1052,9 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
       fines,
       additionalPayments,
       acceptanceOperations,
+      cashbackAmount,
+      cashbackDiscount,
+      cashbackCommissionChange,
       totalPay
     };
     result.set(date, {

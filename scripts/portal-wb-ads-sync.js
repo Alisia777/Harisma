@@ -205,6 +205,99 @@ function resolveExternalAdsXlsx(args) {
   return candidates.find((candidate) => fs.existsSync(candidate)) || '';
 }
 
+function resolveChannelOverridesPath(args, baseDataDir) {
+  const defaultPath = path.join(baseDataDir || path.join(process.cwd(), 'data'), 'wb_ads_channel_overrides.json');
+  return [
+    args['channel-overrides'],
+    args['channel-overrides-json'],
+    process.env.ALTEA_WB_ADS_CHANNEL_OVERRIDES,
+    defaultPath
+  ].filter(Boolean)[0] || '';
+}
+
+function normalizeCampaignId(value) {
+  const raw = normalizeText(value);
+  if (!raw) return '';
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? String(Math.trunc(parsed)) : raw;
+}
+
+function normalizeChannelLabel(value) {
+  const raw = normalizeKey(value);
+  if (!raw) return '';
+  const known = Object.entries(CHANNELS).find(([key, label]) => raw === key.toLowerCase() || raw === normalizeKey(label));
+  if (known) return known[1];
+  if (/media|медиа/.test(raw)) return CHANNELS.media;
+  if (/brand|брендзон/.test(raw)) return CHANNELS.brandzone;
+  if (/pvz|пвз/.test(raw)) return CHANNELS.pvz;
+  if (/review|отзыв/.test(raw)) return CHANNELS.reviews;
+  if (/overview|обзор/.test(raw)) return CHANNELS.overviews;
+  if (/influ|инфлю/.test(raw)) return CHANNELS.influencer;
+  if (/external|внеш/.test(raw)) return CHANNELS.external;
+  if (/promotion|продвиж/.test(raw)) return CHANNELS.promotion;
+  return normalizeText(value);
+}
+
+function readChannelOverrides(filePath) {
+  const diagnostics = {
+    path: filePath || '',
+    exists: false,
+    campaigns: 0,
+    invalidRows: 0,
+    appliedRows: 0,
+    appliedSpend: 0,
+    changedRows: 0,
+    changedSpend: 0,
+    errors: []
+  };
+  const map = new Map();
+  if (!filePath || !fs.existsSync(filePath)) return { map, diagnostics };
+  diagnostics.exists = true;
+  try {
+    const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const addEntry = (key, value) => {
+      const entry = value && typeof value === 'object' && !Array.isArray(value) ? value : { channel: value };
+      const campaignId = normalizeCampaignId(entry.campaignId || entry.advertId || entry.id || key);
+      const channel = normalizeChannelLabel(entry.channel || entry.label || entry.type || entry.article);
+      if (!campaignId || !channel) {
+        diagnostics.invalidRows += 1;
+        return;
+      }
+      map.set(campaignId, {
+        campaignId,
+        channel,
+        reason: normalizeText(entry.reason),
+        source: normalizeText(entry.source)
+      });
+    };
+    const addEntries = (value) => {
+      if (Array.isArray(value)) {
+        value.forEach((entry) => addEntry('', entry));
+        return;
+      }
+      if (value && typeof value === 'object') {
+        Object.entries(value).forEach(([key, entry]) => addEntry(key, entry));
+      }
+    };
+    if (Array.isArray(raw)) {
+      addEntries(raw);
+    } else if (raw && typeof raw === 'object') {
+      if (raw.campaigns) addEntries(raw.campaigns);
+      if (raw.overrides) addEntries(raw.overrides);
+      if (!raw.campaigns && !raw.overrides) {
+        const metaKeys = new Set(['generatedAt', 'source', 'note', 'version']);
+        Object.entries(raw)
+          .filter(([key]) => !metaKeys.has(key))
+          .forEach(([key, entry]) => addEntry(key, entry));
+      }
+    }
+  } catch (error) {
+    diagnostics.errors.push(error.message);
+  }
+  diagnostics.campaigns = map.size;
+  return { map, diagnostics };
+}
+
 function buildSkuLookups(skus) {
   const byArticle = new Map();
   const byArticleKey = new Map();
@@ -293,6 +386,8 @@ function resolveOptions(args) {
   const latest = platformLatestDate(platformTrends) || addDays(new Date().toISOString().slice(0, 10), -1);
   const to = isoDate(args.to || args['date-to'] || latest);
   const from = isoDate(args.from || args['date-from'] || monthStart(to));
+  const channelOverridesPath = resolveChannelOverridesPath(args, baseDataDir);
+  const { map: channelOverrides, diagnostics: channelOverridesDiagnostics } = readChannelOverrides(channelOverridesPath);
   return {
     command: args.command || 'sync',
     dryRun: Boolean(args.dryRun),
@@ -317,6 +412,9 @@ function resolveOptions(args) {
     requestTimeoutMs: Number.isFinite(Number(args['request-timeout-ms'])) ? Number(args['request-timeout-ms']) : 60000,
     skipCampaignDetails: asBool(args['skip-campaign-details'], asBool(process.env.ALTEA_WB_ADS_SKIP_CAMPAIGN_DETAILS, true)),
     skipUpd: asBool(args['skip-upd'], false),
+    channelOverridesPath,
+    channelOverrides,
+    channelOverridesDiagnostics,
     docsUrl: WB_PROMOTION_DOCS_URL
   };
 }
@@ -613,8 +711,11 @@ function attachSkuMeta(rows, nmMap, skus, diagnostics) {
 
 function reconcileWithUpd(fullstatRows, updRows, diagnostics) {
   const rows = [...fullstatRows];
-  const fullByDate = new Map();
-  for (const row of fullstatRows) fullByDate.set(row.date, (fullByDate.get(row.date) || 0) + numberOrZero(row.spend));
+  const fullByDateChannel = new Map();
+  for (const row of fullstatRows) {
+    const key = `${row.date}|${row.channel || CHANNELS.promotion}`;
+    fullByDateChannel.set(key, (fullByDateChannel.get(key) || 0) + numberOrZero(row.spend));
+  }
   const updDaily = new Map();
   for (const row of normalizeUpdRows(updRows)) {
     const key = `${row.date}|${row.channel}`;
@@ -624,7 +725,7 @@ function reconcileWithUpd(fullstatRows, updRows, diagnostics) {
   }
   const adjustments = [];
   for (const item of updDaily.values()) {
-    const fullSpend = fullByDate.get(item.date) || 0;
+    const fullSpend = fullByDateChannel.get(`${item.date}|${item.channel}`) || 0;
     if (item.spend <= fullSpend + 1) continue;
     const gap = item.spend - fullSpend;
     adjustments.push({
@@ -914,6 +1015,44 @@ function mergeAdsSummaryWithExisting(freshPayload, existingPayload) {
   return merged;
 }
 
+function applyChannelOverridesToAdsSummary(payload, options) {
+  const overrides = options.channelOverrides instanceof Map ? options.channelOverrides : new Map();
+  if (!payload || !overrides.size) return payload;
+  const diagnostics = {
+    ...(options.channelOverridesDiagnostics || {}),
+    ...(payload.diagnostics?.channelOverrides || {})
+  };
+  diagnostics.appliedRows = 0;
+  diagnostics.appliedSpend = 0;
+  diagnostics.changedRows = 0;
+  diagnostics.changedSpend = 0;
+  const itemSeries = (Array.isArray(payload.itemSeries) ? payload.itemSeries : []).map((row) => {
+    const campaignId = normalizeCampaignId(row?.campaignId || row?.advertId || row?.id);
+    const override = campaignId ? overrides.get(campaignId) : null;
+    if (!override?.channel) return row;
+    const spend = numberOrZero(row.spend);
+    diagnostics.appliedRows += 1;
+    diagnostics.appliedSpend += spend;
+    if (row.channel !== override.channel) {
+      diagnostics.changedRows += 1;
+      diagnostics.changedSpend += spend;
+      return {
+        ...row,
+        channel: override.channel
+      };
+    }
+    return row;
+  });
+  diagnostics.appliedSpend = Math.round(diagnostics.appliedSpend * 100) / 100;
+  diagnostics.changedSpend = Math.round(diagnostics.changedSpend * 100) / 100;
+  payload.itemSeries = aggregateRows(itemSeries);
+  payload.diagnostics = {
+    ...(payload.diagnostics || {}),
+    channelOverrides: diagnostics
+  };
+  return payload;
+}
+
 function parseExternalSheetPeriod(sheetName) {
   const match = String(sheetName || '').match(/(\d{1,2})\.(\d{1,2})\.(\d{4})\s*-\s*(\d{1,2})\.(\d{1,2})\.(\d{4})/);
   if (!match) return null;
@@ -1126,6 +1265,7 @@ async function buildPayload(options) {
     docsUrl: WB_PROMOTION_DOCS_URL,
     sourceWindow: { from: options.from, to: options.to },
     supplierGoods: supplierDiagnostics,
+    channelOverrides: deepClone(options.channelOverridesDiagnostics || {}),
     warnings: []
   };
   const externalRows = await buildExternalAdsRows(options, diagnostics);
@@ -1238,6 +1378,7 @@ async function main() {
   const payload = await buildPayload(options);
   const existingAdsSummary = readJson(path.join(options.baseDataDir, 'ads_summary.json'), null);
   const mergedPayload = mergeAdsSummaryWithExisting(payload, existingAdsSummary);
+  applyChannelOverridesToAdsSummary(mergedPayload, options);
   const writtenFiles = writeOutputs(mergedPayload, options);
   const spend = (mergedPayload.platforms || []).find((platform) => platform.key === 'wb')?.spend || 0;
   const summary = {

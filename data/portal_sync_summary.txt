@@ -1,12 +1,10 @@
-Portal sync health: blocked
-Generated: 2026-06-02T11:46:32.810Z
-Publish allowed: no
-Max data date: 2026-06-01
+Portal sync health: ok
+Generated: 2026-06-04T08:06:01.634Z
+Publish allowed: yes
+Max data date: 2026-06-03
 
 Blocking reasons:
-- IU/DRR daily rows are behind the expected cutoff date (2026-05-30 < 2026-06-01).
-- Snapshot platform_trends revenue collapsed vs last good (62029483/559539304).
+- none
 
 Warnings:
-- Marketplace completeness guard: not enough WB baseline revenue to validate 2026-06-01.
-- Marketplace completeness guard: not enough Ozon baseline revenue to validate 2026-06-01.
+- none

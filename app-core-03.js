@@ -293,9 +293,15 @@ function taskAttachmentSetupHint() {
 
 const TASK_ATTACHMENT_UPLOAD_TIMEOUT_MS = 120000;
 const TASK_ATTACHMENT_UPLOAD_ATTEMPTS = 3;
+const TASK_ATTACHMENT_PERSIST_TIMEOUT_MS = 120000;
+const TASK_ATTACHMENT_PERSIST_ATTEMPTS = 3;
 
 function taskAttachmentUploadErrorLabel() {
   return '\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u044f';
+}
+
+function taskAttachmentPersistErrorLabel() {
+  return '\u0417\u0430\u043f\u0438\u0441\u044c \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u044f';
 }
 
 function isRetriableTaskAttachmentUpload(error) {
@@ -304,7 +310,7 @@ function isRetriableTaskAttachmentUpload(error) {
   return status === 408
     || status === 429
     || status >= 500
-    || /timeout|timed out|abort|network|fetch/i.test(message);
+    || /timeout|timed out|abort|network|fetch|\u043f\u0440\u0435\u0432\u044b\u0441/i.test(message);
 }
 
 function taskAttachmentUploadDelay(attempt) {
@@ -1001,11 +1007,75 @@ async function upsertRemote(table, rows, onConflict) {
   if (response.error) throw response.error;
 }
 
+async function upsertTaskAttachmentRows(rows = [], timeoutMs = TASK_ATTACHMENT_PERSIST_TIMEOUT_MS) {
+  const preparedRows = Array.isArray(rows) ? rows.filter(Boolean) : [];
+  if (!hasRemoteStore() || !preparedRows.length) return [];
+  const label = taskAttachmentPersistErrorLabel();
+
+  if (state.team.accessToken) {
+    const cfg = teamRestConfig();
+    if (!cfg) return [];
+    const url = new URL(`${cfg.baseUrl}/rest/v1/${TEAM_TABLES.attachments}`);
+    url.searchParams.set('on_conflict', 'id');
+    const response = await fetchTaskAttachmentWithTimeout(url.toString(), {
+      method: 'POST',
+      headers: {
+        apikey: cfg.anonKey,
+        Authorization: `Bearer ${cfg.accessToken}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=representation'
+      },
+      body: JSON.stringify(preparedRows)
+    }, timeoutMs, label);
+    const bodyText = await response.text();
+    if (!response.ok) {
+      const error = new Error(`${label}: ${bodyText || response.status || 'request failed'}`);
+      error.status = response.status;
+      error.body = bodyText;
+      throw error;
+    }
+    return bodyText ? JSON.parse(bodyText) : [];
+  }
+
+  const response = await withTimeout(
+    state.team.client.from(TEAM_TABLES.attachments).upsert(preparedRows, { onConflict: 'id' }),
+    timeoutMs,
+    label
+  );
+  if (response.error) {
+    if (response.status) response.error.status = response.status;
+    throw response.error;
+  }
+  return response.data || [];
+}
+
+async function upsertTaskAttachmentRowsWithRetry(rows = []) {
+  const preparedRows = Array.isArray(rows) ? rows.filter(Boolean) : [];
+  if (!preparedRows.length) return [];
+  let lastError = null;
+  for (let attempt = 1; attempt <= TASK_ATTACHMENT_PERSIST_ATTEMPTS; attempt += 1) {
+    try {
+      return await upsertTaskAttachmentRows(preparedRows);
+    } catch (error) {
+      lastError = error;
+      if (isTaskAttachmentSchemaMissingError(error)) {
+        throw new Error(taskAttachmentSetupHint());
+      }
+      if (attempt >= TASK_ATTACHMENT_PERSIST_ATTEMPTS || !isRetriableTaskAttachmentUpload(error)) {
+        throw error;
+      }
+      await taskAttachmentUploadDelay(attempt);
+    }
+  }
+  throw lastError || new Error(`${taskAttachmentPersistErrorLabel()}: request failed`);
+}
+
 async function upsertTaskAttachmentsSafe(rows = []) {
   const preparedRows = Array.isArray(rows) ? rows : [];
   if (!preparedRows.length) return { skipped: false, warning: '' };
   try {
-    await upsertRemote(TEAM_TABLES.attachments, preparedRows, 'id');
+    await upsertTaskAttachmentRowsWithRetry(preparedRows);
     return { skipped: false, warning: '' };
   } catch (error) {
     if (isTaskAttachmentSchemaMissingError(error)) {
@@ -1078,7 +1148,13 @@ async function pullRemoteState(rerender = true) {
         normalizeOwnerOverride,
         (item) => item.articleKey
       );
-      if (attachmentsLoaded) state.storage.taskAttachments = attachmentRows.map(fromRemoteTaskAttachment).filter((item) => item.taskId && item.objectPath);
+      if (attachmentsLoaded) {
+        state.storage.taskAttachments = mergeRemoteListWithLocal(
+          state.storage.taskAttachments || [],
+          attachmentRows.map(fromRemoteTaskAttachment).filter((item) => item.taskId && item.objectPath),
+          normalizeTaskAttachment
+        );
+      }
       if (repricerControls) applyRepricerControlsPayload(repricerControls);
       applyOwnerOverridesToSkus();
       saveLocalStorage();
@@ -1185,14 +1261,7 @@ async function persistOwnerOverride(item) {
 
 async function persistTaskAttachment(item) {
   if (!hasRemoteStore()) return;
-  try {
-    await upsertRemote(TEAM_TABLES.attachments, [remoteTaskAttachmentRow(item)], 'id');
-  } catch (error) {
-    if (isTaskAttachmentSchemaMissingError(error)) {
-      throw new Error(taskAttachmentSetupHint());
-    }
-    throw error;
-  }
+  await upsertTaskAttachmentRowsWithRetry([remoteTaskAttachmentRow(item)]);
   state.team.lastSyncAt = new Date().toISOString();
   state.team.note = `Вложение синхронизировано · ${fmt.date(state.team.lastSyncAt)}`;
   state.team.mode = 'ready';
@@ -1331,6 +1400,22 @@ async function uploadTaskAttachment(taskId, file, options = {}) {
   try {
     await persistTaskAttachment(attachment);
   } catch (error) {
+    if (isRetriableTaskAttachmentUpload(error)) {
+      const pendingAttachment = {
+        ...attachment,
+        syncStatus: 'pending',
+        syncError: error?.message || String(error || 'request failed')
+      };
+      state.storage.taskAttachments = (state.storage.taskAttachments || []).filter((item) => item.id !== pendingAttachment.id);
+      state.storage.taskAttachments.unshift(pendingAttachment);
+      saveLocalStorage();
+      state.team.lastSyncAt = new Date().toISOString();
+      state.team.note = `\u0424\u0430\u0439\u043b \u043f\u0440\u0438\u043a\u0440\u0435\u043f\u043b\u0435\u043d, \u0437\u0430\u043f\u0438\u0441\u044c \u0432 \u0431\u0430\u0437\u0443 \u043f\u043e\u0439\u0434\u0435\u0442 \u0447\u0435\u0440\u0435\u0437 \u0441\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437\u0430\u0446\u0438\u044e - ${fmt.date(state.team.lastSyncAt)}`;
+      state.team.error = pendingAttachment.syncError;
+      state.team.mode = 'ready';
+      updateSyncBadge();
+      return pendingAttachment;
+    }
     try {
       await removeTaskAttachmentObject(attachment);
     } catch (cleanupError) {

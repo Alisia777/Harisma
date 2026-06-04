@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-04T07:47:42.327Z",
+  "generatedAt": "2026-06-04T08:34:12.677Z",
   "note": "Marketplace facts refreshed from API-backed platform_trends.json with Magnit Market daily source.",
   "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
   "googleSheetsSourceGid": "2003059667",
@@ -29,14 +29,17 @@
             "fines": 30,
             "additionalPayments": 0,
             "acceptanceOperations": 0,
-            "totalPay": 4523016,
+            "deduction": 130687.12,
+            "reviewDeduction": 24510.37,
+            "wbMediaDeduction": 12.8,
+            "otherDeduction": 106163.95,
+            "deductionRows": 186,
+            "reviewDeductionRows": 182,
+            "wbMediaDeductionRows": 1,
             "cashbackAmount": 25632,
             "cashbackDiscount": 6395.19,
             "cashbackCommissionChange": 2563.2,
-            "deduction": 130687.12,
-            "cashbackReportIds": [
-              10983120260601
-            ]
+            "totalPay": 4523016
           },
           "wbSellerSummaryReferenceRevenue": null,
           "wbSellerSummaryReferenceUnits": null,
@@ -44,18 +47,21 @@
           "wbSellerSummarySalesRevenue": 6935736,
           "wbSellerSummaryPayForGoods": 4523188,
           "wbSellerSummaryTotalPay": 4523016,
-          "financeTurnover": 6935736,
-          "financialResult": 4523188,
+          "deduction": 130687.12,
+          "reviewDeduction": 24510.37,
+          "wbMediaDeduction": 12.8,
           "cashbackAmount": 25632,
           "cashbackDiscount": 6395.19,
           "cashbackCommissionChange": 2563.2,
+          "financeTurnover": 6935736,
+          "financialResult": 4523188,
           "date": "2026-06-01"
         },
         {
           "dayOffset": 1,
           "label": "2026-06-02",
-          "units": 7979,
-          "revenue": 8765844,
+          "units": 7983,
+          "revenue": 8771518,
           "estimatedMargin": 4479235,
           "legacyEstimatedMargin": 4479235,
           "wbSellerSummary": {
@@ -69,14 +75,17 @@
             "fines": 1160,
             "additionalPayments": 0,
             "acceptanceOperations": 0,
-            "totalPay": 4478075,
+            "deduction": 29060.33,
+            "reviewDeduction": 19178.44,
+            "wbMediaDeduction": 0,
+            "otherDeduction": 9881.89,
+            "deductionRows": 148,
+            "reviewDeductionRows": 147,
+            "wbMediaDeductionRows": 0,
             "cashbackAmount": 24493,
             "cashbackDiscount": 7647.22,
             "cashbackCommissionChange": 2449.3,
-            "deduction": 29060.33,
-            "cashbackReportIds": [
-              10983120260602
-            ]
+            "totalPay": 4478075
           },
           "wbSellerSummaryReferenceRevenue": null,
           "wbSellerSummaryReferenceUnits": null,
@@ -84,11 +93,14 @@
           "wbSellerSummarySalesRevenue": 6870979,
           "wbSellerSummaryPayForGoods": 4479235,
           "wbSellerSummaryTotalPay": 4478075,
-          "financeTurnover": 6870979,
-          "financialResult": 4479235,
+          "deduction": 29060.33,
+          "reviewDeduction": 19178.44,
+          "wbMediaDeduction": null,
           "cashbackAmount": 24493,
           "cashbackDiscount": 7647.22,
           "cashbackCommissionChange": 2449.3,
+          "financeTurnover": 6870979,
+          "financialResult": 4479235,
           "date": "2026-06-02"
         },
         {
@@ -97,7 +109,7 @@
           "units": 8455,
           "revenue": 9463312,
           "estimatedMargin": 5394795,
-          "legacyEstimatedMargin": null,
+          "legacyEstimatedMargin": 5394795,
           "wbSellerSummary": {
             "source": "wb-finance-api",
             "salesRevenue": 8261120,
@@ -109,6 +121,13 @@
             "fines": 12940,
             "additionalPayments": 0,
             "acceptanceOperations": 0,
+            "deduction": 295659.7,
+            "reviewDeduction": 21752.17,
+            "wbMediaDeduction": 0,
+            "otherDeduction": 273907.53,
+            "deductionRows": 155,
+            "reviewDeductionRows": 153,
+            "wbMediaDeductionRows": 0,
             "cashbackAmount": 34371,
             "cashbackDiscount": 9888.56,
             "cashbackCommissionChange": 3437.1,
@@ -120,6 +139,12 @@
           "wbSellerSummarySalesRevenue": 8261120,
           "wbSellerSummaryPayForGoods": 5394795,
           "wbSellerSummaryTotalPay": 5184343,
+          "deduction": 295659.7,
+          "reviewDeduction": 21752.17,
+          "wbMediaDeduction": null,
+          "cashbackAmount": 34371,
+          "cashbackDiscount": 9888.56,
+          "cashbackCommissionChange": 3437.1,
           "financeTurnover": 8261120,
           "financialResult": 5394795,
           "date": "2026-06-03"
@@ -182391,8 +182416,8 @@
         {
           "date": "2026-06-02",
           "label": "2026-06-02",
-          "units": 11655,
-          "revenue": 11637410.96,
+          "units": 11659,
+          "revenue": 11643084.96,
           "financeTurnover": 9742545.96,
           "financialResult": 4921077.8271,
           "estimatedMargin": 4921077.8271,
@@ -182466,7 +182491,7 @@
     }
   },
   "extraMarketplace": {
-    "generatedAt": "2026-06-04T07:47:42.327Z",
+    "generatedAt": "2026-06-04T08:34:12.677Z",
     "workbook": "exports/altea_max_funnel_2025_2026.xlsx",
     "asOfDate": "2026-06-03",
     "platforms": {
@@ -367212,8 +367237,8 @@
             "currentPrice": 376,
             "currentClientPrice": 376,
             "currentFillPrice": 376,
-            "sourceRows": 8,
-            "matchedRows": 8,
+            "sourceRows": 24,
+            "matchedRows": 24,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367250,8 +367275,8 @@
             "currentPrice": 450.16,
             "currentClientPrice": 450.16,
             "currentFillPrice": 450.16,
-            "sourceRows": 5,
-            "matchedRows": 5,
+            "sourceRows": 14,
+            "matchedRows": 14,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367270,10 +367295,10 @@
                 "dayOffset": 1,
                 "units": 5,
                 "ordersUnits": 5,
-                "revenue": 2871.2405,
-                "ordersRevenue": 2871.2405,
+                "revenue": 2873.099,
+                "ordersRevenue": 2873.099,
                 "estimatedMargin": 0,
-                "price": 574.2481,
+                "price": 574.6198,
                 "label": "2026-06-02"
               },
               {
@@ -367296,9 +367321,9 @@
             "article": "alteya_beauty_brows_box",
             "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
             "owner": "Лапыгин Максим",
-            "currentPrice": 1014.2435,
-            "currentClientPrice": 1014.2435,
-            "currentFillPrice": 1014.2435,
+            "currentPrice": 795,
+            "currentClientPrice": 795,
+            "currentFillPrice": 795,
             "sourceRows": 4,
             "matchedRows": 4,
             "sourceMode": "wb-api-direct-sku",
@@ -367319,10 +367344,10 @@
                 "dayOffset": 0,
                 "units": 2,
                 "ordersUnits": 2,
-                "revenue": 2028.4871,
-                "ordersRevenue": 2028.4871,
-                "estimatedMargin": 937.7696,
-                "price": 1014.2435,
+                "revenue": 2029.8001,
+                "ordersRevenue": 2029.8001,
+                "estimatedMargin": 938.3766,
+                "price": 1014.9,
                 "label": "2026-06-02"
               }
             ]
@@ -367337,8 +367362,8 @@
             "currentPrice": 417.3643,
             "currentClientPrice": 417.3643,
             "currentFillPrice": 417.3643,
-            "sourceRows": 61,
-            "matchedRows": 61,
+            "sourceRows": 151,
+            "matchedRows": 151,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367357,10 +367382,10 @@
                 "dayOffset": 1,
                 "units": 39,
                 "ordersUnits": 39,
-                "revenue": 22844.0813,
-                "ordersRevenue": 22844.0813,
+                "revenue": 22858.8679,
+                "ordersRevenue": 22858.8679,
                 "estimatedMargin": 0,
-                "price": 585.7457,
+                "price": 586.1248,
                 "label": "2026-06-02"
               },
               {
@@ -367386,8 +367411,8 @@
             "currentPrice": 1080,
             "currentClientPrice": 1080,
             "currentFillPrice": 1080,
-            "sourceRows": 9,
-            "matchedRows": 9,
+            "sourceRows": 13,
+            "matchedRows": 13,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367406,10 +367431,10 @@
                 "dayOffset": 1,
                 "units": 3,
                 "ordersUnits": 3,
-                "revenue": 4133.5208,
-                "ordersRevenue": 4133.5208,
+                "revenue": 4136.1964,
+                "ordersRevenue": 4136.1964,
                 "estimatedMargin": 0,
-                "price": 1377.8403,
+                "price": 1378.7321,
                 "label": "2026-06-02"
               },
               {
@@ -367435,8 +367460,8 @@
             "currentPrice": 759.2,
             "currentClientPrice": 759.2,
             "currentFillPrice": 759.2,
-            "sourceRows": 15,
-            "matchedRows": 15,
+            "sourceRows": 34,
+            "matchedRows": 34,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367455,10 +367480,10 @@
                 "dayOffset": 1,
                 "units": 7,
                 "ordersUnits": 7,
-                "revenue": 6544.6392,
-                "ordersRevenue": 6544.6392,
+                "revenue": 6548.8754,
+                "ordersRevenue": 6548.8754,
                 "estimatedMargin": 0,
-                "price": 934.9485,
+                "price": 935.5536,
                 "label": "2026-06-02"
               },
               {
@@ -367484,8 +367509,8 @@
             "currentPrice": 1192.7056,
             "currentClientPrice": 1192.7056,
             "currentFillPrice": 1192.7056,
-            "sourceRows": 752,
-            "matchedRows": 752,
+            "sourceRows": 2055,
+            "matchedRows": 2055,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367504,10 +367529,10 @@
                 "dayOffset": 1,
                 "units": 636,
                 "ordersUnits": 636,
-                "revenue": 967489.1337,
-                "ordersRevenue": 967489.1337,
-                "estimatedMargin": 498643.8996,
-                "price": 1521.2093,
+                "revenue": 968115.375,
+                "ordersRevenue": 968115.375,
+                "estimatedMargin": 498966.6643,
+                "price": 1522.194,
                 "label": "2026-06-02"
               },
               {
@@ -367533,8 +367558,8 @@
             "currentPrice": 341,
             "currentClientPrice": 341,
             "currentFillPrice": 341,
-            "sourceRows": 15,
-            "matchedRows": 15,
+            "sourceRows": 25,
+            "matchedRows": 25,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367553,10 +367578,10 @@
                 "dayOffset": 1,
                 "units": 4,
                 "ordersUnits": 4,
-                "revenue": 2401.0142,
-                "ordersRevenue": 2401.0142,
+                "revenue": 2402.5684,
+                "ordersRevenue": 2402.5684,
                 "estimatedMargin": 0,
-                "price": 600.2536,
+                "price": 600.6421,
                 "label": "2026-06-02"
               },
               {
@@ -367582,8 +367607,8 @@
             "currentPrice": 680.6,
             "currentClientPrice": 680.6,
             "currentFillPrice": 680.6,
-            "sourceRows": 5,
-            "matchedRows": 5,
+            "sourceRows": 15,
+            "matchedRows": 15,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367602,10 +367627,10 @@
                 "dayOffset": 1,
                 "units": 6,
                 "ordersUnits": 6,
-                "revenue": 5173.7136,
-                "ordersRevenue": 5173.7136,
+                "revenue": 5177.0625,
+                "ordersRevenue": 5177.0625,
                 "estimatedMargin": 0,
-                "price": 862.2856,
+                "price": 862.8438,
                 "label": "2026-06-02"
               },
               {
@@ -367631,8 +367656,8 @@
             "currentPrice": 424,
             "currentClientPrice": 424,
             "currentFillPrice": 424,
-            "sourceRows": 7,
-            "matchedRows": 7,
+            "sourceRows": 13,
+            "matchedRows": 13,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367651,10 +367676,10 @@
                 "dayOffset": 1,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 500.105,
-                "ordersRevenue": 500.105,
+                "revenue": 500.4287,
+                "ordersRevenue": 500.4287,
                 "estimatedMargin": 0,
-                "price": 500.105,
+                "price": 500.4287,
                 "label": "2026-06-02"
               },
               {
@@ -367680,8 +367705,8 @@
             "currentPrice": 818.75,
             "currentClientPrice": 818.75,
             "currentFillPrice": 818.75,
-            "sourceRows": 4,
-            "matchedRows": 4,
+            "sourceRows": 8,
+            "matchedRows": 8,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367700,10 +367725,10 @@
                 "dayOffset": 1,
                 "units": 3,
                 "ordersUnits": 3,
-                "revenue": 3176.6873,
-                "ordersRevenue": 3176.6873,
+                "revenue": 3178.7435,
+                "ordersRevenue": 3178.7435,
                 "estimatedMargin": 0,
-                "price": 1058.8958,
+                "price": 1059.5812,
                 "label": "2026-06-02"
               },
               {
@@ -367729,8 +367754,8 @@
             "currentPrice": 414.6,
             "currentClientPrice": 414.6,
             "currentFillPrice": 414.6,
-            "sourceRows": 5,
-            "matchedRows": 5,
+            "sourceRows": 11,
+            "matchedRows": 11,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367749,10 +367774,10 @@
                 "dayOffset": 1,
                 "units": 3,
                 "ordersUnits": 3,
-                "revenue": 1686.5785,
-                "ordersRevenue": 1686.5785,
+                "revenue": 1687.6702,
+                "ordersRevenue": 1687.6702,
                 "estimatedMargin": 0,
-                "price": 562.1928,
+                "price": 562.5567,
                 "label": "2026-06-02"
               },
               {
@@ -367778,8 +367803,8 @@
             "currentPrice": 397.1667,
             "currentClientPrice": 397.1667,
             "currentFillPrice": 397.1667,
-            "sourceRows": 8,
-            "matchedRows": 8,
+            "sourceRows": 12,
+            "matchedRows": 12,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367787,10 +367812,10 @@
                 "dayOffset": 1,
                 "units": 4,
                 "ordersUnits": 4,
-                "revenue": 1807.7775,
-                "ordersRevenue": 1807.7775,
+                "revenue": 1808.9476,
+                "ordersRevenue": 1808.9476,
                 "estimatedMargin": 0,
-                "price": 451.9444,
+                "price": 452.2369,
                 "label": "2026-06-02"
               },
               {
@@ -367816,8 +367841,8 @@
             "currentPrice": 1042,
             "currentClientPrice": 1042,
             "currentFillPrice": 1042,
-            "sourceRows": 1,
-            "matchedRows": 1,
+            "sourceRows": 2,
+            "matchedRows": 2,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367854,8 +367879,8 @@
             "currentPrice": 439.1111,
             "currentClientPrice": 439.1111,
             "currentFillPrice": 439.1111,
-            "sourceRows": 9,
-            "matchedRows": 9,
+            "sourceRows": 42,
+            "matchedRows": 42,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367874,10 +367899,10 @@
                 "dayOffset": 1,
                 "units": 18,
                 "ordersUnits": 18,
-                "revenue": 10043.4477,
-                "ordersRevenue": 10043.4477,
+                "revenue": 10049.9486,
+                "ordersRevenue": 10049.9486,
                 "estimatedMargin": 0,
-                "price": 557.9693,
+                "price": 558.3305,
                 "label": "2026-06-02"
               },
               {
@@ -367903,8 +367928,8 @@
             "currentPrice": 822.5612,
             "currentClientPrice": 822.5612,
             "currentFillPrice": 822.5612,
-            "sourceRows": 73,
-            "matchedRows": 73,
+            "sourceRows": 163,
+            "matchedRows": 163,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367923,10 +367948,10 @@
                 "dayOffset": 1,
                 "units": 52,
                 "ordersUnits": 52,
-                "revenue": 54666.4376,
-                "ordersRevenue": 54666.4376,
-                "estimatedMargin": 28645.2134,
-                "price": 1051.2776,
+                "revenue": 54701.8224,
+                "ordersRevenue": 54701.8224,
+                "estimatedMargin": 28663.755,
+                "price": 1051.9581,
                 "label": "2026-06-02"
               },
               {
@@ -367952,8 +367977,8 @@
             "currentPrice": 403,
             "currentClientPrice": 403,
             "currentFillPrice": 403,
-            "sourceRows": 4,
-            "matchedRows": 4,
+            "sourceRows": 11,
+            "matchedRows": 11,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -367972,10 +367997,10 @@
                 "dayOffset": 1,
                 "units": 3,
                 "ordersUnits": 3,
-                "revenue": 1534.5696,
-                "ordersRevenue": 1534.5696,
+                "revenue": 1535.5629,
+                "ordersRevenue": 1535.5629,
                 "estimatedMargin": 0,
-                "price": 511.5232,
+                "price": 511.8543,
                 "label": "2026-06-02"
               },
               {
@@ -368001,8 +368026,8 @@
             "currentPrice": 729.33,
             "currentClientPrice": 729.33,
             "currentFillPrice": 729.33,
-            "sourceRows": 2,
-            "matchedRows": 2,
+            "sourceRows": 6,
+            "matchedRows": 6,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368021,10 +368046,10 @@
                 "dayOffset": 1,
                 "units": 2,
                 "ordersUnits": 2,
-                "revenue": 1860.0844,
-                "ordersRevenue": 1860.0844,
-                "estimatedMargin": 857.8709,
-                "price": 930.0422,
+                "revenue": 1861.2884,
+                "ordersRevenue": 1861.2884,
+                "estimatedMargin": 858.4262,
+                "price": 930.6442,
                 "label": "2026-06-02"
               },
               {
@@ -368050,8 +368075,8 @@
             "currentPrice": 548,
             "currentClientPrice": 548,
             "currentFillPrice": 548,
-            "sourceRows": 2,
-            "matchedRows": 2,
+            "sourceRows": 9,
+            "matchedRows": 9,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368070,10 +368095,10 @@
                 "dayOffset": 1,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 699.5856,
-                "ordersRevenue": 699.5856,
-                "estimatedMargin": 293.4761,
-                "price": 699.5856,
+                "revenue": 700.0385,
+                "ordersRevenue": 700.0385,
+                "estimatedMargin": 293.6661,
+                "price": 700.0385,
                 "label": "2026-06-02"
               },
               {
@@ -368096,9 +368121,9 @@
             "article": "gel_antiakne_20ml",
             "name": "Точечный крем от прыщей. Корректор точечный против прыщей, крем от акне. Салициловая кислота, азелаиновая кислота Алтея 20 мл",
             "owner": "Васильева Мария",
-            "currentPrice": 995.1069,
-            "currentClientPrice": 995.1069,
-            "currentFillPrice": 995.1069,
+            "currentPrice": 780,
+            "currentClientPrice": 780,
+            "currentFillPrice": 780,
             "sourceRows": 1,
             "matchedRows": 1,
             "sourceMode": "wb-api-direct-sku",
@@ -368108,10 +368133,10 @@
                 "dayOffset": 0,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 995.1069,
-                "ordersRevenue": 995.1069,
-                "estimatedMargin": 507.405,
-                "price": 995.1069,
+                "revenue": 995.751,
+                "ordersRevenue": 995.751,
+                "estimatedMargin": 507.7334,
+                "price": 995.751,
                 "label": "2026-06-02"
               }
             ]
@@ -368126,8 +368151,8 @@
             "currentPrice": 1139.4992,
             "currentClientPrice": 1139.4992,
             "currentFillPrice": 1139.4992,
-            "sourceRows": 791,
-            "matchedRows": 791,
+            "sourceRows": 2172,
+            "matchedRows": 2172,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368146,10 +368171,10 @@
                 "dayOffset": 1,
                 "units": 682,
                 "ordersUnits": 682,
-                "revenue": 991339.4466,
-                "ordersRevenue": 991339.4466,
-                "estimatedMargin": 517280.9232,
-                "price": 1453.5769,
+                "revenue": 991981.1259,
+                "ordersRevenue": 991981.1259,
+                "estimatedMargin": 517615.7514,
+                "price": 1454.5178,
                 "label": "2026-06-02"
               },
               {
@@ -368175,8 +368200,8 @@
             "currentPrice": 593.5,
             "currentClientPrice": 593.5,
             "currentFillPrice": 593.5,
-            "sourceRows": 6,
-            "matchedRows": 6,
+            "sourceRows": 12,
+            "matchedRows": 12,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368195,10 +368220,10 @@
                 "dayOffset": 1,
                 "units": 4,
                 "ordersUnits": 4,
-                "revenue": 3061.8673,
-                "ordersRevenue": 3061.8673,
-                "estimatedMargin": 943.0551,
-                "price": 765.4668,
+                "revenue": 3063.8492,
+                "ordersRevenue": 3063.8492,
+                "estimatedMargin": 943.6655,
+                "price": 765.9623,
                 "label": "2026-06-02"
               },
               {
@@ -368224,8 +368249,8 @@
             "currentPrice": 604,
             "currentClientPrice": 604,
             "currentFillPrice": 604,
-            "sourceRows": 11,
-            "matchedRows": 11,
+            "sourceRows": 20,
+            "matchedRows": 20,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368244,10 +368269,10 @@
                 "dayOffset": 1,
                 "units": 6,
                 "ordersUnits": 6,
-                "revenue": 4618.3164,
-                "ordersRevenue": 4618.3164,
-                "estimatedMargin": 461.8316,
-                "price": 769.7194,
+                "revenue": 4621.3058,
+                "ordersRevenue": 4621.3058,
+                "estimatedMargin": 462.1306,
+                "price": 770.2176,
                 "label": "2026-06-02"
               },
               {
@@ -368273,8 +368298,8 @@
             "currentPrice": 454.4118,
             "currentClientPrice": 454.4118,
             "currentFillPrice": 454.4118,
-            "sourceRows": 17,
-            "matchedRows": 17,
+            "sourceRows": 40,
+            "matchedRows": 40,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368293,10 +368318,10 @@
                 "dayOffset": 1,
                 "units": 11,
                 "ordersUnits": 11,
-                "revenue": 6401.8541,
-                "ordersRevenue": 6401.8541,
-                "estimatedMargin": 1482.6694,
-                "price": 581.9867,
+                "revenue": 6405.9979,
+                "ordersRevenue": 6405.9979,
+                "estimatedMargin": 1483.6291,
+                "price": 582.3634,
                 "label": "2026-06-02"
               },
               {
@@ -368322,8 +368347,8 @@
             "currentPrice": 445.6349,
             "currentClientPrice": 445.6349,
             "currentFillPrice": 445.6349,
-            "sourceRows": 59,
-            "matchedRows": 59,
+            "sourceRows": 148,
+            "matchedRows": 148,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368342,10 +368367,10 @@
                 "dayOffset": 1,
                 "units": 48,
                 "ordersUnits": 48,
-                "revenue": 27281.7093,
-                "ordersRevenue": 27281.7093,
-                "estimatedMargin": 6722.2132,
-                "price": 568.3689,
+                "revenue": 27299.3683,
+                "ordersRevenue": 27299.3683,
+                "estimatedMargin": 6726.5644,
+                "price": 568.7368,
                 "label": "2026-06-02"
               },
               {
@@ -368371,8 +368396,8 @@
             "currentPrice": 468,
             "currentClientPrice": 468,
             "currentFillPrice": 468,
-            "sourceRows": 9,
-            "matchedRows": 9,
+            "sourceRows": 42,
+            "matchedRows": 42,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368391,10 +368416,10 @@
                 "dayOffset": 1,
                 "units": 17,
                 "ordersUnits": 17,
-                "revenue": 10169.9155,
-                "ordersRevenue": 10169.9155,
-                "estimatedMargin": 1372.9386,
-                "price": 598.2303,
+                "revenue": 10176.4984,
+                "ordersRevenue": 10176.4984,
+                "estimatedMargin": 1373.8273,
+                "price": 598.6176,
                 "label": "2026-06-02"
               },
               {
@@ -368420,8 +368445,8 @@
             "currentPrice": 363.5714,
             "currentClientPrice": 363.5714,
             "currentFillPrice": 363.5714,
-            "sourceRows": 7,
-            "matchedRows": 7,
+            "sourceRows": 23,
+            "matchedRows": 23,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368440,10 +368465,10 @@
                 "dayOffset": 1,
                 "units": 10,
                 "ordersUnits": 10,
-                "revenue": 4550.7002,
-                "ordersRevenue": 4550.7002,
+                "revenue": 4553.6458,
+                "ordersRevenue": 4553.6458,
                 "estimatedMargin": 0,
-                "price": 455.07,
+                "price": 455.3646,
                 "label": "2026-06-02"
               },
               {
@@ -368469,8 +368494,8 @@
             "currentPrice": 907.5,
             "currentClientPrice": 907.5,
             "currentFillPrice": 907.5,
-            "sourceRows": 2,
-            "matchedRows": 2,
+            "sourceRows": 5,
+            "matchedRows": 5,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368478,10 +368503,10 @@
                 "dayOffset": 1,
                 "units": 3,
                 "ordersUnits": 3,
-                "revenue": 3435.6702,
-                "ordersRevenue": 3435.6702,
-                "estimatedMargin": 377.5802,
-                "price": 1145.2234,
+                "revenue": 3437.8941,
+                "ordersRevenue": 3437.8941,
+                "estimatedMargin": 377.8246,
+                "price": 1145.9647,
                 "label": "2026-06-02"
               },
               {
@@ -368507,8 +368532,8 @@
             "currentPrice": 791,
             "currentClientPrice": 791,
             "currentFillPrice": 791,
-            "sourceRows": 2,
-            "matchedRows": 2,
+            "sourceRows": 3,
+            "matchedRows": 3,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368516,10 +368541,10 @@
                 "dayOffset": 1,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 996.3826,
-                "ordersRevenue": 996.3826,
-                "estimatedMargin": -260.7533,
-                "price": 996.3826,
+                "revenue": 997.0276,
+                "ordersRevenue": 997.0276,
+                "estimatedMargin": -260.9221,
+                "price": 997.0276,
                 "label": "2026-06-02"
               },
               {
@@ -368545,8 +368570,8 @@
             "currentPrice": 800.3269,
             "currentClientPrice": 800.3269,
             "currentFillPrice": 800.3269,
-            "sourceRows": 16,
-            "matchedRows": 16,
+            "sourceRows": 34,
+            "matchedRows": 34,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368565,10 +368590,10 @@
                 "dayOffset": 1,
                 "units": 7,
                 "ordersUnits": 7,
-                "revenue": 7271.9347,
-                "ordersRevenue": 7271.9347,
-                "estimatedMargin": 3594.5173,
-                "price": 1038.8478,
+                "revenue": 7276.6417,
+                "ordersRevenue": 7276.6417,
+                "estimatedMargin": 3596.844,
+                "price": 1039.5202,
                 "label": "2026-06-02"
               },
               {
@@ -368594,8 +368619,8 @@
             "currentPrice": 877.25,
             "currentClientPrice": 877.25,
             "currentFillPrice": 877.25,
-            "sourceRows": 16,
-            "matchedRows": 16,
+            "sourceRows": 43,
+            "matchedRows": 43,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368614,10 +368639,10 @@
                 "dayOffset": 1,
                 "units": 11,
                 "ordersUnits": 11,
-                "revenue": 12594.4806,
-                "ordersRevenue": 12594.4806,
-                "estimatedMargin": 6517.6437,
-                "price": 1144.9528,
+                "revenue": 12602.6329,
+                "ordersRevenue": 12602.6329,
+                "estimatedMargin": 6521.8625,
+                "price": 1145.6939,
                 "label": "2026-06-02"
               },
               {
@@ -368643,8 +368668,8 @@
             "currentPrice": 371,
             "currentClientPrice": 371,
             "currentFillPrice": 371,
-            "sourceRows": 3,
-            "matchedRows": 3,
+            "sourceRows": 11,
+            "matchedRows": 11,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368663,10 +368688,10 @@
                 "dayOffset": 1,
                 "units": 3,
                 "ordersUnits": 3,
-                "revenue": 1419.6858,
-                "ordersRevenue": 1419.6858,
-                "estimatedMargin": -227.4337,
-                "price": 473.2286,
+                "revenue": 1420.6047,
+                "ordersRevenue": 1420.6047,
+                "estimatedMargin": -227.5809,
+                "price": 473.5349,
                 "label": "2026-06-02"
               },
               {
@@ -368692,8 +368717,8 @@
             "currentPrice": 512.1667,
             "currentClientPrice": 512.1667,
             "currentFillPrice": 512.1667,
-            "sourceRows": 6,
-            "matchedRows": 6,
+            "sourceRows": 19,
+            "matchedRows": 19,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368712,10 +368737,10 @@
                 "dayOffset": 1,
                 "units": 9,
                 "ordersUnits": 9,
-                "revenue": 5520.7508,
-                "ordersRevenue": 5520.7508,
-                "estimatedMargin": -562.5645,
-                "price": 613.4168,
+                "revenue": 5524.3243,
+                "ordersRevenue": 5524.3243,
+                "estimatedMargin": -562.9287,
+                "price": 613.8138,
                 "label": "2026-06-02"
               },
               {
@@ -368741,8 +368766,8 @@
             "currentPrice": 466.1667,
             "currentClientPrice": 466.1667,
             "currentFillPrice": 466.1667,
-            "sourceRows": 12,
-            "matchedRows": 12,
+            "sourceRows": 49,
+            "matchedRows": 49,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368761,10 +368786,10 @@
                 "dayOffset": 1,
                 "units": 13,
                 "ordersUnits": 13,
-                "revenue": 7409.7953,
-                "ordersRevenue": 7409.7953,
+                "revenue": 7414.5916,
+                "ordersRevenue": 7414.5916,
                 "estimatedMargin": 0,
-                "price": 569.9843,
+                "price": 570.3532,
                 "label": "2026-06-02"
               },
               {
@@ -368790,8 +368815,8 @@
             "currentPrice": 507,
             "currentClientPrice": 507,
             "currentFillPrice": 507,
-            "sourceRows": 41,
-            "matchedRows": 41,
+            "sourceRows": 155,
+            "matchedRows": 155,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368810,10 +368835,10 @@
                 "dayOffset": 1,
                 "units": 47,
                 "ordersUnits": 47,
-                "revenue": 29715.9192,
-                "ordersRevenue": 29715.9192,
+                "revenue": 29735.1539,
+                "ordersRevenue": 29735.1539,
                 "estimatedMargin": 0,
-                "price": 632.2536,
+                "price": 632.6628,
                 "label": "2026-06-02"
               },
               {
@@ -368836,9 +368861,9 @@
             "article": "khvoinitsa",
             "name": "Пищевая добавка Хвойница , CPA, 7 саше",
             "owner": "Васильева Мария",
-            "currentPrice": 469.4863,
-            "currentClientPrice": 469.4863,
-            "currentFillPrice": 469.4863,
+            "currentPrice": 368,
+            "currentClientPrice": 368,
+            "currentFillPrice": 368,
             "sourceRows": 5,
             "matchedRows": 5,
             "sourceMode": "wb-api-direct-sku",
@@ -368859,10 +368884,10 @@
                 "dayOffset": 0,
                 "units": 3,
                 "ordersUnits": 3,
-                "revenue": 1408.4589,
-                "ordersRevenue": 1408.4589,
+                "revenue": 1409.3706,
+                "ordersRevenue": 1409.3706,
                 "estimatedMargin": 0,
-                "price": 469.4863,
+                "price": 469.7902,
                 "label": "2026-06-02"
               }
             ]
@@ -368874,9 +368899,9 @@
             "article": "khvoinitsa_1_1",
             "name": "Пищевая добавка Хвойница , CPA, 7 саше",
             "owner": "Васильева Мария",
-            "currentPrice": 938.9726,
-            "currentClientPrice": 938.9726,
-            "currentFillPrice": 938.9726,
+            "currentPrice": 736,
+            "currentClientPrice": 736,
+            "currentFillPrice": 736,
             "sourceRows": 1,
             "matchedRows": 1,
             "sourceMode": "wb-api-direct-sku",
@@ -368886,10 +368911,10 @@
                 "dayOffset": 0,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 938.9726,
-                "ordersRevenue": 938.9726,
+                "revenue": 939.5804,
+                "ordersRevenue": 939.5804,
                 "estimatedMargin": 0,
-                "price": 938.9726,
+                "price": 939.5804,
                 "label": "2026-06-02"
               }
             ]
@@ -368904,8 +368929,8 @@
             "currentPrice": 971.7222,
             "currentClientPrice": 971.7222,
             "currentFillPrice": 971.7222,
-            "sourceRows": 18,
-            "matchedRows": 18,
+            "sourceRows": 42,
+            "matchedRows": 42,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368924,10 +368949,10 @@
                 "dayOffset": 1,
                 "units": 14,
                 "ordersUnits": 14,
-                "revenue": 17263.7517,
-                "ordersRevenue": 17263.7517,
-                "estimatedMargin": 5403.5542,
-                "price": 1233.1251,
+                "revenue": 17274.9262,
+                "ordersRevenue": 17274.9262,
+                "estimatedMargin": 5407.0519,
+                "price": 1233.9233,
                 "label": "2026-06-02"
               },
               {
@@ -368953,8 +368978,8 @@
             "currentPrice": 478.7217,
             "currentClientPrice": 478.7217,
             "currentFillPrice": 478.7217,
-            "sourceRows": 88,
-            "matchedRows": 88,
+            "sourceRows": 246,
+            "matchedRows": 246,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -368973,10 +368998,10 @@
                 "dayOffset": 1,
                 "units": 85,
                 "ordersUnits": 85,
-                "revenue": 51871.4248,
-                "ordersRevenue": 51871.4248,
-                "estimatedMargin": 27574.8495,
-                "price": 610.2521,
+                "revenue": 51905.0004,
+                "ordersRevenue": 51905.0004,
+                "estimatedMargin": 27592.6983,
+                "price": 610.6471,
                 "label": "2026-06-02"
               },
               {
@@ -369002,8 +369027,8 @@
             "currentPrice": 1155.2121,
             "currentClientPrice": 1155.2121,
             "currentFillPrice": 1155.2121,
-            "sourceRows": 33,
-            "matchedRows": 33,
+            "sourceRows": 79,
+            "matchedRows": 79,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369022,10 +369047,10 @@
                 "dayOffset": 1,
                 "units": 24,
                 "ordersUnits": 24,
-                "revenue": 35396.9843,
-                "ordersRevenue": 35396.9843,
-                "estimatedMargin": 16976.3936,
-                "price": 1474.8743,
+                "revenue": 35419.8962,
+                "ordersRevenue": 35419.8962,
+                "estimatedMargin": 16987.3822,
+                "price": 1475.829,
                 "label": "2026-06-02"
               },
               {
@@ -369051,8 +369076,8 @@
             "currentPrice": 869.3881,
             "currentClientPrice": 869.3881,
             "currentFillPrice": 869.3881,
-            "sourceRows": 90,
-            "matchedRows": 90,
+            "sourceRows": 219,
+            "matchedRows": 219,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369071,10 +369096,10 @@
                 "dayOffset": 1,
                 "units": 53,
                 "ordersUnits": 53,
-                "revenue": 58804.5002,
-                "ordersRevenue": 58804.5002,
-                "estimatedMargin": 24997.7931,
-                "price": 1109.5189,
+                "revenue": 58842.5634,
+                "ordersRevenue": 58842.5634,
+                "estimatedMargin": 25013.9738,
+                "price": 1110.237,
                 "label": "2026-06-02"
               },
               {
@@ -369100,8 +369125,8 @@
             "currentPrice": 1181.6098,
             "currentClientPrice": 1181.6098,
             "currentFillPrice": 1181.6098,
-            "sourceRows": 82,
-            "matchedRows": 82,
+            "sourceRows": 212,
+            "matchedRows": 212,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369120,10 +369145,10 @@
                 "dayOffset": 1,
                 "units": 71,
                 "ordersUnits": 71,
-                "revenue": 107106.5533,
-                "ordersRevenue": 107106.5533,
-                "estimatedMargin": 35141.6602,
-                "price": 1508.543,
+                "revenue": 107175.8817,
+                "ordersRevenue": 107175.8817,
+                "estimatedMargin": 35164.4068,
+                "price": 1509.5195,
                 "label": "2026-06-02"
               },
               {
@@ -369149,8 +369174,8 @@
             "currentPrice": 626.8823,
             "currentClientPrice": 626.8823,
             "currentFillPrice": 626.8823,
-            "sourceRows": 960,
-            "matchedRows": 960,
+            "sourceRows": 2443,
+            "matchedRows": 2443,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369169,10 +369194,10 @@
                 "dayOffset": 1,
                 "units": 756,
                 "ordersUnits": 756,
-                "revenue": 604684.5407,
-                "ordersRevenue": 604684.5407,
-                "estimatedMargin": 302644.6126,
-                "price": 799.8473,
+                "revenue": 605075.944,
+                "ordersRevenue": 605075.944,
+                "estimatedMargin": 302840.51,
+                "price": 800.365,
                 "label": "2026-06-02"
               },
               {
@@ -369198,8 +369223,8 @@
             "currentPrice": 1221.5906,
             "currentClientPrice": 1221.5906,
             "currentFillPrice": 1221.5906,
-            "sourceRows": 500,
-            "matchedRows": 500,
+            "sourceRows": 1336,
+            "matchedRows": 1336,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369218,10 +369243,10 @@
                 "dayOffset": 1,
                 "units": 411,
                 "ordersUnits": 411,
-                "revenue": 638819.704,
-                "ordersRevenue": 638819.704,
-                "estimatedMargin": 330014.2591,
-                "price": 1554.3058,
+                "revenue": 639233.2024,
+                "ordersRevenue": 639233.2024,
+                "estimatedMargin": 330227.8724,
+                "price": 1555.3119,
                 "label": "2026-06-02"
               },
               {
@@ -369247,8 +369272,8 @@
             "currentPrice": 1067.9149,
             "currentClientPrice": 1067.9149,
             "currentFillPrice": 1067.9149,
-            "sourceRows": 47,
-            "matchedRows": 47,
+            "sourceRows": 128,
+            "matchedRows": 128,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369267,10 +369292,10 @@
                 "dayOffset": 1,
                 "units": 38,
                 "ordersUnits": 38,
-                "revenue": 51767.2065,
-                "ordersRevenue": 51767.2065,
-                "estimatedMargin": 30837.7249,
-                "price": 1362.2949,
+                "revenue": 51800.7147,
+                "ordersRevenue": 51800.7147,
+                "estimatedMargin": 30857.6857,
+                "price": 1363.1767,
                 "label": "2026-06-02"
               },
               {
@@ -369296,8 +369321,8 @@
             "currentPrice": 1791.5813,
             "currentClientPrice": 1791.5813,
             "currentFillPrice": 1791.5813,
-            "sourceRows": 86,
-            "matchedRows": 86,
+            "sourceRows": 246,
+            "matchedRows": 246,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369316,10 +369341,10 @@
                 "dayOffset": 1,
                 "units": 74,
                 "ordersUnits": 74,
-                "revenue": 169254.5232,
-                "ordersRevenue": 169254.5232,
-                "estimatedMargin": 109863.111,
-                "price": 2287.2233,
+                "revenue": 169364.0791,
+                "ordersRevenue": 169364.0791,
+                "estimatedMargin": 109934.2238,
+                "price": 2288.7038,
                 "label": "2026-06-02"
               },
               {
@@ -369345,8 +369370,8 @@
             "currentPrice": 643.4444,
             "currentClientPrice": 643.4444,
             "currentFillPrice": 643.4444,
-            "sourceRows": 9,
-            "matchedRows": 9,
+            "sourceRows": 37,
+            "matchedRows": 37,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369365,10 +369390,10 @@
                 "dayOffset": 1,
                 "units": 10,
                 "ordersUnits": 10,
-                "revenue": 8228.7682,
-                "ordersRevenue": 8228.7682,
-                "estimatedMargin": 4368.6531,
-                "price": 822.8768,
+                "revenue": 8234.0946,
+                "ordersRevenue": 8234.0946,
+                "estimatedMargin": 4371.4808,
+                "price": 823.4095,
                 "label": "2026-06-02"
               },
               {
@@ -369394,8 +369419,8 @@
             "currentPrice": 894.2857,
             "currentClientPrice": 894.2857,
             "currentFillPrice": 894.2857,
-            "sourceRows": 7,
-            "matchedRows": 7,
+            "sourceRows": 14,
+            "matchedRows": 14,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369414,10 +369439,10 @@
                 "dayOffset": 1,
                 "units": 6,
                 "ordersUnits": 6,
-                "revenue": 6863.6858,
-                "ordersRevenue": 6863.6858,
-                "estimatedMargin": 4011.8243,
-                "price": 1143.9476,
+                "revenue": 6868.1285,
+                "ordersRevenue": 6868.1285,
+                "estimatedMargin": 4014.4211,
+                "price": 1144.6881,
                 "label": "2026-06-02"
               },
               {
@@ -369443,8 +369468,8 @@
             "currentPrice": 913.4615,
             "currentClientPrice": 913.4615,
             "currentFillPrice": 913.4615,
-            "sourceRows": 26,
-            "matchedRows": 26,
+            "sourceRows": 86,
+            "matchedRows": 86,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369463,10 +369488,10 @@
                 "dayOffset": 1,
                 "units": 34,
                 "ordersUnits": 34,
-                "revenue": 39437.6922,
-                "ordersRevenue": 39437.6922,
-                "estimatedMargin": 20511.5438,
-                "price": 1159.9321,
+                "revenue": 39463.2197,
+                "ordersRevenue": 39463.2197,
+                "estimatedMargin": 20524.8206,
+                "price": 1160.6829,
                 "label": "2026-06-02"
               },
               {
@@ -369492,8 +369517,8 @@
             "currentPrice": 584.9524,
             "currentClientPrice": 584.9524,
             "currentFillPrice": 584.9524,
-            "sourceRows": 21,
-            "matchedRows": 21,
+            "sourceRows": 60,
+            "matchedRows": 60,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369512,10 +369537,10 @@
                 "dayOffset": 1,
                 "units": 21,
                 "ordersUnits": 21,
-                "revenue": 15640.3496,
-                "ordersRevenue": 15640.3496,
-                "estimatedMargin": 2558.7613,
-                "price": 744.7786,
+                "revenue": 15650.4734,
+                "ordersRevenue": 15650.4734,
+                "estimatedMargin": 2560.4175,
+                "price": 745.2606,
                 "label": "2026-06-02"
               },
               {
@@ -369541,8 +369566,8 @@
             "currentPrice": 711.6,
             "currentClientPrice": 711.6,
             "currentFillPrice": 711.6,
-            "sourceRows": 5,
-            "matchedRows": 5,
+            "sourceRows": 15,
+            "matchedRows": 15,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369561,10 +369586,10 @@
                 "dayOffset": 1,
                 "units": 4,
                 "ordersUnits": 4,
-                "revenue": 2642.1363,
-                "ordersRevenue": 2642.1363,
-                "estimatedMargin": -97.759,
-                "price": 660.5341,
+                "revenue": 2643.8465,
+                "ordersRevenue": 2643.8465,
+                "estimatedMargin": -97.8223,
+                "price": 660.9616,
                 "label": "2026-06-02"
               },
               {
@@ -369590,8 +369615,8 @@
             "currentPrice": 870,
             "currentClientPrice": 870,
             "currentFillPrice": 870,
-            "sourceRows": 3,
-            "matchedRows": 3,
+            "sourceRows": 5,
+            "matchedRows": 5,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369599,10 +369624,10 @@
                 "dayOffset": 1,
                 "units": 2,
                 "ordersUnits": 2,
-                "revenue": 2219.8793,
-                "ordersRevenue": 2219.8793,
-                "estimatedMargin": 696.3762,
-                "price": 1109.9396,
+                "revenue": 2221.3162,
+                "ordersRevenue": 2221.3162,
+                "estimatedMargin": 696.8269,
+                "price": 1110.6581,
                 "label": "2026-06-02"
               },
               {
@@ -369628,8 +369653,8 @@
             "currentPrice": 904.5,
             "currentClientPrice": 904.5,
             "currentFillPrice": 904.5,
-            "sourceRows": 6,
-            "matchedRows": 6,
+            "sourceRows": 17,
+            "matchedRows": 17,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369648,10 +369673,10 @@
                 "dayOffset": 1,
                 "units": 6,
                 "ordersUnits": 6,
-                "revenue": 6924.9231,
-                "ordersRevenue": 6924.9231,
-                "estimatedMargin": 3650.127,
-                "price": 1154.1539,
+                "revenue": 6929.4055,
+                "ordersRevenue": 6929.4055,
+                "estimatedMargin": 3652.4896,
+                "price": 1154.9009,
                 "label": "2026-06-02"
               },
               {
@@ -369677,8 +369702,8 @@
             "currentPrice": 354.8333,
             "currentClientPrice": 354.8333,
             "currentFillPrice": 354.8333,
-            "sourceRows": 18,
-            "matchedRows": 18,
+            "sourceRows": 38,
+            "matchedRows": 38,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369697,10 +369722,10 @@
                 "dayOffset": 1,
                 "units": 2,
                 "ordersUnits": 2,
-                "revenue": 1094.6175,
-                "ordersRevenue": 1094.6175,
+                "revenue": 1095.3261,
+                "ordersRevenue": 1095.3261,
                 "estimatedMargin": 0,
-                "price": 547.3088,
+                "price": 547.663,
                 "label": "2026-06-02"
               },
               {
@@ -369726,8 +369751,8 @@
             "currentPrice": 916.6533,
             "currentClientPrice": 916.6533,
             "currentFillPrice": 916.6533,
-            "sourceRows": 6,
-            "matchedRows": 6,
+            "sourceRows": 15,
+            "matchedRows": 15,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369746,10 +369771,10 @@
                 "dayOffset": 1,
                 "units": 6,
                 "ordersUnits": 6,
-                "revenue": 5438.6417,
-                "ordersRevenue": 5438.6417,
+                "revenue": 5442.1621,
+                "ordersRevenue": 5442.1621,
                 "estimatedMargin": 0,
-                "price": 906.4403,
+                "price": 907.027,
                 "label": "2026-06-02"
               },
               {
@@ -369775,8 +369800,8 @@
             "currentPrice": 1556,
             "currentClientPrice": 1556,
             "currentFillPrice": 1556,
-            "sourceRows": 4,
-            "matchedRows": 4,
+            "sourceRows": 10,
+            "matchedRows": 10,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369795,10 +369820,10 @@
                 "dayOffset": 1,
                 "units": 4,
                 "ordersUnits": 4,
-                "revenue": 7851.1379,
-                "ordersRevenue": 7851.1379,
+                "revenue": 7856.2199,
+                "ordersRevenue": 7856.2199,
                 "estimatedMargin": 0,
-                "price": 1962.7845,
+                "price": 1964.055,
                 "label": "2026-06-02"
               },
               {
@@ -369824,8 +369849,8 @@
             "currentPrice": 379,
             "currentClientPrice": 379,
             "currentFillPrice": 379,
-            "sourceRows": 7,
-            "matchedRows": 7,
+            "sourceRows": 26,
+            "matchedRows": 26,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369844,10 +369869,10 @@
                 "dayOffset": 1,
                 "units": 8,
                 "ordersUnits": 8,
-                "revenue": 4222.8253,
-                "ordersRevenue": 4222.8253,
+                "revenue": 4225.5586,
+                "ordersRevenue": 4225.5586,
                 "estimatedMargin": 0,
-                "price": 527.8532,
+                "price": 528.1948,
                 "label": "2026-06-02"
               },
               {
@@ -369873,8 +369898,8 @@
             "currentPrice": 423.6805,
             "currentClientPrice": 423.6805,
             "currentFillPrice": 423.6805,
-            "sourceRows": 22,
-            "matchedRows": 22,
+            "sourceRows": 66,
+            "matchedRows": 66,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369893,10 +369918,10 @@
                 "dayOffset": 1,
                 "units": 20,
                 "ordersUnits": 20,
-                "revenue": 11074.1487,
-                "ordersRevenue": 11074.1487,
+                "revenue": 11081.3169,
+                "ordersRevenue": 11081.3169,
                 "estimatedMargin": 0,
-                "price": 553.7074,
+                "price": 554.0658,
                 "label": "2026-06-02"
               },
               {
@@ -369922,8 +369947,8 @@
             "currentPrice": 346.1814,
             "currentClientPrice": 346.1814,
             "currentFillPrice": 346.1814,
-            "sourceRows": 28,
-            "matchedRows": 28,
+            "sourceRows": 77,
+            "matchedRows": 77,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369942,10 +369967,10 @@
                 "dayOffset": 1,
                 "units": 21,
                 "ordersUnits": 21,
-                "revenue": 9285.6483,
-                "ordersRevenue": 9285.6483,
-                "estimatedMargin": -333.3548,
-                "price": 442.1737,
+                "revenue": 9291.6587,
+                "ordersRevenue": 9291.6587,
+                "estimatedMargin": -333.5706,
+                "price": 442.4599,
                 "label": "2026-06-02"
               },
               {
@@ -369971,8 +369996,8 @@
             "currentPrice": 593,
             "currentClientPrice": 593,
             "currentFillPrice": 593,
-            "sourceRows": 1,
-            "matchedRows": 1,
+            "sourceRows": 3,
+            "matchedRows": 3,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -369991,10 +370016,10 @@
                 "dayOffset": 1,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 756.5364,
-                "ordersRevenue": 756.5364,
-                "estimatedMargin": 276.968,
-                "price": 756.5364,
+                "revenue": 757.0261,
+                "ordersRevenue": 757.0261,
+                "estimatedMargin": 277.1472,
+                "price": 757.0261,
                 "label": "2026-06-02"
               },
               {
@@ -370020,8 +370045,8 @@
             "currentPrice": 556,
             "currentClientPrice": 556,
             "currentFillPrice": 556,
-            "sourceRows": 7,
-            "matchedRows": 7,
+            "sourceRows": 28,
+            "matchedRows": 28,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370040,10 +370065,10 @@
                 "dayOffset": 1,
                 "units": 10,
                 "ordersUnits": 10,
-                "revenue": 7076.7407,
-                "ordersRevenue": 7076.7407,
-                "estimatedMargin": 1892.3205,
-                "price": 707.6741,
+                "revenue": 7081.3214,
+                "ordersRevenue": 7081.3214,
+                "estimatedMargin": 1893.5453,
+                "price": 708.1321,
                 "label": "2026-06-02"
               },
               {
@@ -370069,8 +370094,8 @@
             "currentPrice": 482,
             "currentClientPrice": 482,
             "currentFillPrice": 482,
-            "sourceRows": 1,
-            "matchedRows": 1,
+            "sourceRows": 5,
+            "matchedRows": 5,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370089,10 +370114,10 @@
                 "dayOffset": 1,
                 "units": 2,
                 "ordersUnits": 2,
-                "revenue": 1241.332,
-                "ordersRevenue": 1241.332,
+                "revenue": 1242.1355,
+                "ordersRevenue": 1242.1355,
                 "estimatedMargin": 0,
-                "price": 620.666,
+                "price": 621.0678,
                 "label": "2026-06-02"
               },
               {
@@ -370115,9 +370140,9 @@
             "article": "otivin",
             "name": "Пищевая добавка Отивин , CPA, 10 мл",
             "owner": "Лапыгин Максим",
-            "currentPrice": 823.6514,
-            "currentClientPrice": 823.6514,
-            "currentFillPrice": 823.6514,
+            "currentPrice": 633,
+            "currentClientPrice": 633,
+            "currentFillPrice": 633,
             "sourceRows": 1,
             "matchedRows": 1,
             "sourceMode": "wb-api-direct-sku",
@@ -370142,9 +370167,9 @@
             "article": "otz_fbs3_curly_method_300ml",
             "name": "otz_fbs3_curly_method_300ml",
             "owner": "",
-            "currentPrice": 382.7334,
-            "currentClientPrice": 382.7334,
-            "currentFillPrice": 382.7334,
+            "currentPrice": 300,
+            "currentClientPrice": 300,
+            "currentFillPrice": 300,
             "sourceRows": 1,
             "matchedRows": 0,
             "sourceMode": "wb-api-direct-sku",
@@ -370154,10 +370179,10 @@
                 "dayOffset": 0,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 382.7334,
-                "ordersRevenue": 382.7334,
+                "revenue": 382.9811,
+                "ordersRevenue": 382.9811,
                 "estimatedMargin": 0,
-                "price": 382.7334,
+                "price": 382.9811,
                 "label": "2026-06-02"
               }
             ]
@@ -370199,8 +370224,8 @@
             "currentPrice": 1806.83,
             "currentClientPrice": 1806.83,
             "currentFillPrice": 1806.83,
-            "sourceRows": 64,
-            "matchedRows": 64,
+            "sourceRows": 120,
+            "matchedRows": 120,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370219,10 +370244,10 @@
                 "dayOffset": 1,
                 "units": 27,
                 "ordersUnits": 27,
-                "revenue": 92292.3337,
-                "ordersRevenue": 92292.3337,
-                "estimatedMargin": 52625.0887,
-                "price": 3418.2346,
+                "revenue": 92352.0731,
+                "ordersRevenue": 92352.0731,
+                "estimatedMargin": 52659.1521,
+                "price": 3420.4472,
                 "label": "2026-06-02"
               },
               {
@@ -370248,8 +370273,8 @@
             "currentPrice": 808.7143,
             "currentClientPrice": 808.7143,
             "currentFillPrice": 808.7143,
-            "sourceRows": 14,
-            "matchedRows": 14,
+            "sourceRows": 52,
+            "matchedRows": 52,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370268,10 +370293,10 @@
                 "dayOffset": 1,
                 "units": 15,
                 "ordersUnits": 15,
-                "revenue": 15477.739,
-                "ordersRevenue": 15477.739,
-                "estimatedMargin": 6526.9625,
-                "price": 1031.8493,
+                "revenue": 15487.7575,
+                "ordersRevenue": 15487.7575,
+                "estimatedMargin": 6531.1873,
+                "price": 1032.5172,
                 "label": "2026-06-02"
               },
               {
@@ -370297,8 +370322,8 @@
             "currentPrice": 382,
             "currentClientPrice": 382,
             "currentFillPrice": 382,
-            "sourceRows": 1,
-            "matchedRows": 1,
+            "sourceRows": 7,
+            "matchedRows": 7,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370317,10 +370342,10 @@
                 "dayOffset": 1,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 478.4168,
-                "ordersRevenue": 478.4168,
+                "revenue": 478.7264,
+                "ordersRevenue": 478.7264,
                 "estimatedMargin": 0,
-                "price": 478.4168,
+                "price": 478.7264,
                 "label": "2026-06-02"
               },
               {
@@ -370346,8 +370371,8 @@
             "currentPrice": 461,
             "currentClientPrice": 461,
             "currentFillPrice": 461,
-            "sourceRows": 1,
-            "matchedRows": 1,
+            "sourceRows": 6,
+            "matchedRows": 6,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370366,10 +370391,10 @@
                 "dayOffset": 1,
                 "units": 4,
                 "ordersUnits": 4,
-                "revenue": 2606.4145,
-                "ordersRevenue": 2606.4145,
+                "revenue": 2608.1016,
+                "ordersRevenue": 2608.1016,
                 "estimatedMargin": 0,
-                "price": 651.6036,
+                "price": 652.0254,
                 "label": "2026-06-02"
               },
               {
@@ -370395,8 +370420,8 @@
             "currentPrice": 548.3333,
             "currentClientPrice": 548.3333,
             "currentFillPrice": 548.3333,
-            "sourceRows": 9,
-            "matchedRows": 9,
+            "sourceRows": 34,
+            "matchedRows": 34,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370415,10 +370440,10 @@
                 "dayOffset": 1,
                 "units": 10,
                 "ordersUnits": 10,
-                "revenue": 6998.9182,
-                "ordersRevenue": 6998.9182,
-                "estimatedMargin": 2272.5487,
-                "price": 699.8918,
+                "revenue": 7003.4485,
+                "ordersRevenue": 7003.4485,
+                "estimatedMargin": 2274.0197,
+                "price": 700.3449,
                 "label": "2026-06-02"
               },
               {
@@ -370444,8 +370469,8 @@
             "currentPrice": 1389.4438,
             "currentClientPrice": 1389.4438,
             "currentFillPrice": 1389.4438,
-            "sourceRows": 607,
-            "matchedRows": 607,
+            "sourceRows": 1678,
+            "matchedRows": 1678,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370464,10 +370489,10 @@
                 "dayOffset": 1,
                 "units": 536,
                 "ordersUnits": 536,
-                "revenue": 951059.9961,
-                "ordersRevenue": 951059.9961,
-                "estimatedMargin": 557130.9457,
-                "price": 1774.3657,
+                "revenue": 951675.603,
+                "ordersRevenue": 951675.603,
+                "estimatedMargin": 557491.5683,
+                "price": 1775.5142,
                 "label": "2026-06-02"
               },
               {
@@ -370493,8 +370518,8 @@
             "currentPrice": 1168.4,
             "currentClientPrice": 1168.4,
             "currentFillPrice": 1168.4,
-            "sourceRows": 20,
-            "matchedRows": 20,
+            "sourceRows": 46,
+            "matchedRows": 46,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370513,10 +370538,10 @@
                 "dayOffset": 1,
                 "units": 11,
                 "ordersUnits": 11,
-                "revenue": 16416.4309,
-                "ordersRevenue": 16416.4309,
-                "estimatedMargin": 3639.5227,
-                "price": 1492.4028,
+                "revenue": 16427.057,
+                "ordersRevenue": 16427.057,
+                "estimatedMargin": 3641.8785,
+                "price": 1493.3688,
                 "label": "2026-06-02"
               },
               {
@@ -370542,8 +370567,8 @@
             "currentPrice": 1367.4722,
             "currentClientPrice": 1367.4722,
             "currentFillPrice": 1367.4722,
-            "sourceRows": 36,
-            "matchedRows": 36,
+            "sourceRows": 88,
+            "matchedRows": 88,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370562,10 +370587,10 @@
                 "dayOffset": 1,
                 "units": 26,
                 "ordersUnits": 26,
-                "revenue": 45471.2803,
-                "ordersRevenue": 45471.2803,
-                "estimatedMargin": 26896.2623,
-                "price": 1748.8954,
+                "revenue": 45500.7132,
+                "ordersRevenue": 45500.7132,
+                "estimatedMargin": 26913.6718,
+                "price": 1750.0274,
                 "label": "2026-06-02"
               },
               {
@@ -370591,8 +370616,8 @@
             "currentPrice": 1476.5254,
             "currentClientPrice": 1476.5254,
             "currentFillPrice": 1476.5254,
-            "sourceRows": 35,
-            "matchedRows": 35,
+            "sourceRows": 103,
+            "matchedRows": 103,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370611,10 +370636,10 @@
                 "dayOffset": 1,
                 "units": 32,
                 "ordersUnits": 32,
-                "revenue": 60312.6867,
-                "ordersRevenue": 60312.6867,
-                "estimatedMargin": 31181.659,
-                "price": 1884.7715,
+                "revenue": 60351.7262,
+                "ordersRevenue": 60351.7262,
+                "estimatedMargin": 31201.8424,
+                "price": 1885.9914,
                 "label": "2026-06-02"
               },
               {
@@ -370640,8 +370665,8 @@
             "currentPrice": 1912.0368,
             "currentClientPrice": 1912.0368,
             "currentFillPrice": 1912.0368,
-            "sourceRows": 76,
-            "matchedRows": 76,
+            "sourceRows": 234,
+            "matchedRows": 234,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370660,10 +370685,10 @@
                 "dayOffset": 1,
                 "units": 87,
                 "ordersUnits": 87,
-                "revenue": 212302.2207,
-                "ordersRevenue": 212302.2207,
-                "estimatedMargin": 109484.2552,
-                "price": 2440.2554,
+                "revenue": 212439.6408,
+                "ordersRevenue": 212439.6408,
+                "estimatedMargin": 109555.1227,
+                "price": 2441.835,
                 "label": "2026-06-02"
               },
               {
@@ -370689,8 +370714,8 @@
             "currentPrice": 2210.4861,
             "currentClientPrice": 2210.4861,
             "currentFillPrice": 2210.4861,
-            "sourceRows": 79,
-            "matchedRows": 79,
+            "sourceRows": 202,
+            "matchedRows": 202,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370709,10 +370734,10 @@
                 "dayOffset": 1,
                 "units": 57,
                 "ordersUnits": 57,
-                "revenue": 160960.3203,
-                "ordersRevenue": 160960.3203,
-                "estimatedMargin": 96447.4239,
-                "price": 2823.8653,
+                "revenue": 161064.5075,
+                "ordersRevenue": 161064.5075,
+                "estimatedMargin": 96509.8529,
+                "price": 2825.6931,
                 "label": "2026-06-02"
               },
               {
@@ -370738,8 +370763,8 @@
             "currentPrice": 947.678,
             "currentClientPrice": 947.678,
             "currentFillPrice": 947.678,
-            "sourceRows": 55,
-            "matchedRows": 55,
+            "sourceRows": 141,
+            "matchedRows": 141,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370758,10 +370783,10 @@
                 "dayOffset": 1,
                 "units": 41,
                 "ordersUnits": 41,
-                "revenue": 49572.4218,
-                "ordersRevenue": 49572.4218,
-                "estimatedMargin": 25529.7972,
-                "price": 1209.0835,
+                "revenue": 49604.5093,
+                "ordersRevenue": 49604.5093,
+                "estimatedMargin": 25546.3223,
+                "price": 1209.8661,
                 "label": "2026-06-02"
               },
               {
@@ -370787,8 +370812,8 @@
             "currentPrice": 1097.2651,
             "currentClientPrice": 1097.2651,
             "currentFillPrice": 1097.2651,
-            "sourceRows": 63,
-            "matchedRows": 63,
+            "sourceRows": 181,
+            "matchedRows": 181,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370807,10 +370832,10 @@
                 "dayOffset": 1,
                 "units": 46,
                 "ordersUnits": 46,
-                "revenue": 64315.7337,
-                "ordersRevenue": 64315.7337,
-                "estimatedMargin": 32389.4034,
-                "price": 1398.1681,
+                "revenue": 64357.3643,
+                "ordersRevenue": 64357.3643,
+                "estimatedMargin": 32410.3686,
+                "price": 1399.0731,
                 "label": "2026-06-02"
               },
               {
@@ -370836,8 +370861,8 @@
             "currentPrice": 1489.1973,
             "currentClientPrice": 1489.1973,
             "currentFillPrice": 1489.1973,
-            "sourceRows": 663,
-            "matchedRows": 663,
+            "sourceRows": 1647,
+            "matchedRows": 1647,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370856,10 +370881,10 @@
                 "dayOffset": 1,
                 "units": 493,
                 "ordersUnits": 493,
-                "revenue": 936377.9216,
-                "ordersRevenue": 936377.9216,
-                "estimatedMargin": 510794.1562,
-                "price": 1899.3467,
+                "revenue": 936984.025,
+                "ordersRevenue": 936984.025,
+                "estimatedMargin": 511124.7857,
+                "price": 1900.5761,
                 "label": "2026-06-02"
               },
               {
@@ -370885,8 +370910,8 @@
             "currentPrice": 1753.7128,
             "currentClientPrice": 1753.7128,
             "currentFillPrice": 1753.7128,
-            "sourceRows": 579,
-            "matchedRows": 579,
+            "sourceRows": 1577,
+            "matchedRows": 1577,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370905,10 +370930,10 @@
                 "dayOffset": 1,
                 "units": 519,
                 "ordersUnits": 519,
-                "revenue": 1161709.7908,
-                "ordersRevenue": 1161709.7908,
-                "estimatedMargin": 581900.4343,
-                "price": 2238.3618,
+                "revenue": 1162461.7482,
+                "ordersRevenue": 1162461.7482,
+                "estimatedMargin": 582277.0897,
+                "price": 2239.8107,
                 "label": "2026-06-02"
               },
               {
@@ -370961,8 +370986,8 @@
             "currentPrice": 2453,
             "currentClientPrice": 2453,
             "currentFillPrice": 2453,
-            "sourceRows": 1,
-            "matchedRows": 1,
+            "sourceRows": 5,
+            "matchedRows": 5,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -370981,10 +371006,10 @@
                 "dayOffset": 1,
                 "units": 3,
                 "ordersUnits": 3,
-                "revenue": 9568.3352,
-                "ordersRevenue": 9568.3352,
+                "revenue": 9574.5286,
+                "ordersRevenue": 9574.5286,
                 "estimatedMargin": 0,
-                "price": 3189.4451,
+                "price": 3191.5095,
                 "label": "2026-06-02"
               },
               {
@@ -371010,8 +371035,8 @@
             "currentPrice": 633,
             "currentClientPrice": 633,
             "currentFillPrice": 633,
-            "sourceRows": 2,
-            "matchedRows": 2,
+            "sourceRows": 14,
+            "matchedRows": 14,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371030,10 +371055,10 @@
                 "dayOffset": 1,
                 "units": 6,
                 "ordersUnits": 6,
-                "revenue": 3549.2145,
-                "ordersRevenue": 3549.2145,
+                "revenue": 3551.5118,
+                "ordersRevenue": 3551.5118,
                 "estimatedMargin": 0,
-                "price": 591.5357,
+                "price": 591.9186,
                 "label": "2026-06-02"
               },
               {
@@ -371059,8 +371084,8 @@
             "currentPrice": 2127.25,
             "currentClientPrice": 2127.25,
             "currentFillPrice": 2127.25,
-            "sourceRows": 4,
-            "matchedRows": 4,
+            "sourceRows": 5,
+            "matchedRows": 5,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371068,10 +371093,10 @@
                 "dayOffset": 1,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 2727.6134,
-                "ordersRevenue": 2727.6134,
+                "revenue": 2729.379,
+                "ordersRevenue": 2729.379,
                 "estimatedMargin": 0,
-                "price": 2727.6134,
+                "price": 2729.379,
                 "label": "2026-06-02"
               },
               {
@@ -371097,8 +371122,8 @@
             "currentPrice": 793.3,
             "currentClientPrice": 793.3,
             "currentFillPrice": 793.3,
-            "sourceRows": 10,
-            "matchedRows": 10,
+            "sourceRows": 20,
+            "matchedRows": 20,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371117,10 +371142,10 @@
                 "dayOffset": 1,
                 "units": 4,
                 "ordersUnits": 4,
-                "revenue": 4012.9343,
-                "ordersRevenue": 4012.9343,
-                "estimatedMargin": 1946.6743,
-                "price": 1003.2336,
+                "revenue": 4015.5318,
+                "ordersRevenue": 4015.5318,
+                "estimatedMargin": 1947.9344,
+                "price": 1003.8829,
                 "label": "2026-06-02"
               },
               {
@@ -371146,7 +371171,7 @@
             "currentPrice": 2500,
             "currentClientPrice": 2500,
             "currentFillPrice": 2500,
-            "sourceRows": 1,
+            "sourceRows": 2,
             "matchedRows": 0,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
@@ -371155,10 +371180,10 @@
                 "dayOffset": 1,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 3189.4451,
-                "ordersRevenue": 3189.4451,
+                "revenue": 3191.5095,
+                "ordersRevenue": 3191.5095,
                 "estimatedMargin": 0,
-                "price": 3189.4451,
+                "price": 3191.5095,
                 "label": "2026-06-02"
               },
               {
@@ -371184,8 +371209,8 @@
             "currentPrice": 766,
             "currentClientPrice": 766,
             "currentFillPrice": 766,
-            "sourceRows": 5,
-            "matchedRows": 5,
+            "sourceRows": 13,
+            "matchedRows": 13,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371204,10 +371229,10 @@
                 "dayOffset": 1,
                 "units": 6,
                 "ordersUnits": 6,
-                "revenue": 5841.5069,
-                "ordersRevenue": 5841.5069,
-                "estimatedMargin": 3044.0093,
-                "price": 973.5845,
+                "revenue": 5845.288,
+                "ordersRevenue": 5845.288,
+                "estimatedMargin": 3045.9796,
+                "price": 974.2147,
                 "label": "2026-06-02"
               },
               {
@@ -371233,8 +371258,8 @@
             "currentPrice": 1347.338,
             "currentClientPrice": 1347.338,
             "currentFillPrice": 1347.338,
-            "sourceRows": 15,
-            "matchedRows": 15,
+            "sourceRows": 50,
+            "matchedRows": 50,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371253,10 +371278,10 @@
                 "dayOffset": 1,
                 "units": 13,
                 "ordersUnits": 13,
-                "revenue": 22344.9331,
-                "ordersRevenue": 22344.9331,
-                "estimatedMargin": 9699.9355,
-                "price": 1718.841,
+                "revenue": 22359.3967,
+                "ordersRevenue": 22359.3967,
+                "estimatedMargin": 9706.2141,
+                "price": 1719.9536,
                 "label": "2026-06-02"
               },
               {
@@ -371282,8 +371307,8 @@
             "currentPrice": 884,
             "currentClientPrice": 884,
             "currentFillPrice": 884,
-            "sourceRows": 5,
-            "matchedRows": 5,
+            "sourceRows": 8,
+            "matchedRows": 8,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371302,10 +371327,10 @@
                 "dayOffset": 1,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 1104.8238,
-                "ordersRevenue": 1104.8238,
+                "revenue": 1105.5389,
+                "ordersRevenue": 1105.5389,
                 "estimatedMargin": 0,
-                "price": 1104.8238,
+                "price": 1105.5389,
                 "label": "2026-06-02"
               },
               {
@@ -371331,8 +371356,8 @@
             "currentPrice": 672.1071,
             "currentClientPrice": 672.1071,
             "currentFillPrice": 672.1071,
-            "sourceRows": 7,
-            "matchedRows": 7,
+            "sourceRows": 11,
+            "matchedRows": 11,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371351,10 +371376,10 @@
                 "dayOffset": 1,
                 "units": 2,
                 "ordersUnits": 2,
-                "revenue": 1722.3003,
-                "ordersRevenue": 1722.3003,
-                "estimatedMargin": -149.3234,
-                "price": 861.1502,
+                "revenue": 1723.4151,
+                "ordersRevenue": 1723.4151,
+                "estimatedMargin": -149.4201,
+                "price": 861.7076,
                 "label": "2026-06-02"
               },
               {
@@ -371380,8 +371405,8 @@
             "currentPrice": 802.7412,
             "currentClientPrice": 802.7412,
             "currentFillPrice": 802.7412,
-            "sourceRows": 25,
-            "matchedRows": 25,
+            "sourceRows": 91,
+            "matchedRows": 91,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371400,10 +371425,10 @@
                 "dayOffset": 1,
                 "units": 32,
                 "ordersUnits": 32,
-                "revenue": 32683.5193,
-                "ordersRevenue": 32683.5193,
-                "estimatedMargin": 8952.0159,
-                "price": 1021.36,
+                "revenue": 32704.6748,
+                "ordersRevenue": 32704.6748,
+                "estimatedMargin": 8957.8104,
+                "price": 1022.0211,
                 "label": "2026-06-02"
               },
               {
@@ -371429,8 +371454,8 @@
             "currentPrice": 1546,
             "currentClientPrice": 1546,
             "currentFillPrice": 1546,
-            "sourceRows": 1,
-            "matchedRows": 1,
+            "sourceRows": 7,
+            "matchedRows": 7,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371449,10 +371474,10 @@
                 "dayOffset": 1,
                 "units": 3,
                 "ordersUnits": 3,
-                "revenue": 6889.2013,
-                "ordersRevenue": 6889.2013,
+                "revenue": 6893.6606,
+                "ordersRevenue": 6893.6606,
                 "estimatedMargin": 0,
-                "price": 2296.4004,
+                "price": 2297.8869,
                 "label": "2026-06-02"
               },
               {
@@ -371478,8 +371503,8 @@
             "currentPrice": 1222.5085,
             "currentClientPrice": 1222.5085,
             "currentFillPrice": 1222.5085,
-            "sourceRows": 65,
-            "matchedRows": 65,
+            "sourceRows": 160,
+            "matchedRows": 160,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371498,10 +371523,10 @@
                 "dayOffset": 1,
                 "units": 43,
                 "ordersUnits": 43,
-                "revenue": 66934.7146,
-                "ordersRevenue": 66934.7146,
+                "revenue": 66978.0404,
+                "ordersRevenue": 66978.0404,
                 "estimatedMargin": 0,
-                "price": 1556.6213,
+                "price": 1557.6288,
                 "label": "2026-06-02"
               },
               {
@@ -371527,8 +371552,8 @@
             "currentPrice": 958.7233,
             "currentClientPrice": 958.7233,
             "currentFillPrice": 958.7233,
-            "sourceRows": 158,
-            "matchedRows": 158,
+            "sourceRows": 301,
+            "matchedRows": 301,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371547,10 +371572,10 @@
                 "dayOffset": 1,
                 "units": 75,
                 "ordersUnits": 75,
-                "revenue": 91557.5238,
-                "ordersRevenue": 91557.5238,
-                "estimatedMargin": 19043.9649,
-                "price": 1220.767,
+                "revenue": 91616.7876,
+                "ordersRevenue": 91616.7876,
+                "estimatedMargin": 19056.2918,
+                "price": 1221.5572,
                 "label": "2026-06-02"
               },
               {
@@ -371576,8 +371601,8 @@
             "currentPrice": 481.3882,
             "currentClientPrice": 481.3882,
             "currentFillPrice": 481.3882,
-            "sourceRows": 13,
-            "matchedRows": 13,
+            "sourceRows": 39,
+            "matchedRows": 39,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371596,10 +371621,10 @@
                 "dayOffset": 1,
                 "units": 14,
                 "ordersUnits": 14,
-                "revenue": 8196.8738,
-                "ordersRevenue": 8196.8738,
+                "revenue": 8202.1795,
+                "ordersRevenue": 8202.1795,
                 "estimatedMargin": 0,
-                "price": 585.491,
+                "price": 585.87,
                 "label": "2026-06-02"
               },
               {
@@ -371625,8 +371650,8 @@
             "currentPrice": 587.1019,
             "currentClientPrice": 587.1019,
             "currentFillPrice": 587.1019,
-            "sourceRows": 64,
-            "matchedRows": 64,
+            "sourceRows": 181,
+            "matchedRows": 181,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371645,10 +371670,10 @@
                 "dayOffset": 1,
                 "units": 58,
                 "ordersUnits": 58,
-                "revenue": 43914.6014,
-                "ordersRevenue": 43914.6014,
+                "revenue": 43943.0267,
+                "ordersRevenue": 43943.0267,
                 "estimatedMargin": 0,
-                "price": 757.1483,
+                "price": 757.6384,
                 "label": "2026-06-02"
               },
               {
@@ -371674,8 +371699,8 @@
             "currentPrice": 576.7778,
             "currentClientPrice": 576.7778,
             "currentFillPrice": 576.7778,
-            "sourceRows": 13,
-            "matchedRows": 13,
+            "sourceRows": 61,
+            "matchedRows": 61,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371694,10 +371719,10 @@
                 "dayOffset": 1,
                 "units": 22,
                 "ordersUnits": 22,
-                "revenue": 16309.5462,
-                "ordersRevenue": 16309.5462,
+                "revenue": 16320.1032,
+                "ordersRevenue": 16320.1032,
                 "estimatedMargin": 0,
-                "price": 741.343,
+                "price": 741.8229,
                 "label": "2026-06-02"
               },
               {
@@ -371723,8 +371748,8 @@
             "currentPrice": 2034.2831,
             "currentClientPrice": 2034.2831,
             "currentFillPrice": 2034.2831,
-            "sourceRows": 130,
-            "matchedRows": 130,
+            "sourceRows": 303,
+            "matchedRows": 303,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371743,10 +371768,10 @@
                 "dayOffset": 1,
                 "units": 83,
                 "ordersUnits": 83,
-                "revenue": 234655.3698,
-                "ordersRevenue": 234655.3698,
-                "estimatedMargin": 121950.3956,
-                "price": 2827.1731,
+                "revenue": 234807.2587,
+                "ordersRevenue": 234807.2587,
+                "estimatedMargin": 122029.3323,
+                "price": 2829.0031,
                 "label": "2026-06-02"
               },
               {
@@ -371772,8 +371797,8 @@
             "currentPrice": 593,
             "currentClientPrice": 593,
             "currentFillPrice": 593,
-            "sourceRows": 2,
-            "matchedRows": 2,
+            "sourceRows": 9,
+            "matchedRows": 9,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371792,10 +371817,10 @@
                 "dayOffset": 1,
                 "units": 4,
                 "ordersUnits": 4,
-                "revenue": 3061.8673,
-                "ordersRevenue": 3061.8673,
-                "estimatedMargin": 1804.9707,
-                "price": 765.4668,
+                "revenue": 3063.8492,
+                "ordersRevenue": 3063.8492,
+                "estimatedMargin": 1806.1391,
+                "price": 765.9623,
                 "label": "2026-06-02"
               },
               {
@@ -371821,8 +371846,8 @@
             "currentPrice": 388,
             "currentClientPrice": 388,
             "currentFillPrice": 388,
-            "sourceRows": 11,
-            "matchedRows": 11,
+            "sourceRows": 27,
+            "matchedRows": 27,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371841,10 +371866,10 @@
                 "dayOffset": 1,
                 "units": 7,
                 "ordersUnits": 7,
-                "revenue": 6887.3387,
-                "ordersRevenue": 6887.3387,
-                "estimatedMargin": 3302.4789,
-                "price": 983.9055,
+                "revenue": 6891.7968,
+                "ordersRevenue": 6891.7968,
+                "estimatedMargin": 3304.6165,
+                "price": 984.5424,
                 "label": "2026-06-02"
               },
               {
@@ -371870,8 +371895,8 @@
             "currentPrice": 694.1667,
             "currentClientPrice": 694.1667,
             "currentFillPrice": 694.1667,
-            "sourceRows": 18,
-            "matchedRows": 18,
+            "sourceRows": 47,
+            "matchedRows": 47,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371890,10 +371915,10 @@
                 "dayOffset": 1,
                 "units": 16,
                 "ordersUnits": 16,
-                "revenue": 14194.3063,
-                "ordersRevenue": 14194.3063,
-                "estimatedMargin": 5036.1399,
-                "price": 887.1441,
+                "revenue": 14203.494,
+                "ordersRevenue": 14203.494,
+                "estimatedMargin": 5039.3997,
+                "price": 887.7184,
                 "label": "2026-06-02"
               },
               {
@@ -371919,8 +371944,8 @@
             "currentPrice": 1241.9865,
             "currentClientPrice": 1241.9865,
             "currentFillPrice": 1241.9865,
-            "sourceRows": 161,
-            "matchedRows": 161,
+            "sourceRows": 514,
+            "matchedRows": 514,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -371939,10 +371964,10 @@
                 "dayOffset": 1,
                 "units": 173,
                 "ordersUnits": 173,
-                "revenue": 274712.8861,
-                "ordersRevenue": 274712.8861,
-                "estimatedMargin": 81617.1984,
-                "price": 1587.9358,
+                "revenue": 274890.7036,
+                "ordersRevenue": 274890.7036,
+                "estimatedMargin": 81670.028,
+                "price": 1588.9636,
                 "label": "2026-06-02"
               },
               {
@@ -371965,9 +371990,9 @@
             "article": "telomeras_60caps",
             "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
             "owner": "Васильева Мария",
-            "currentPrice": 2913.0265,
-            "currentClientPrice": 2913.0265,
-            "currentFillPrice": 2913.0265,
+            "currentPrice": 2283.3333,
+            "currentClientPrice": 2283.3333,
+            "currentFillPrice": 2283.3333,
             "sourceRows": 4,
             "matchedRows": 4,
             "sourceMode": "wb-api-direct-sku",
@@ -371988,10 +372013,10 @@
                 "dayOffset": 0,
                 "units": 3,
                 "ordersUnits": 3,
-                "revenue": 8739.0795,
-                "ordersRevenue": 8739.0795,
-                "estimatedMargin": 3246.568,
-                "price": 2913.0265,
+                "revenue": 8744.7361,
+                "ordersRevenue": 8744.7361,
+                "estimatedMargin": 3248.6695,
+                "price": 2914.912,
                 "label": "2026-06-02"
               }
             ]
@@ -372006,8 +372031,8 @@
             "currentPrice": 592.956,
             "currentClientPrice": 592.956,
             "currentFillPrice": 592.956,
-            "sourceRows": 15,
-            "matchedRows": 15,
+            "sourceRows": 39,
+            "matchedRows": 39,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372026,10 +372051,10 @@
                 "dayOffset": 1,
                 "units": 9,
                 "ordersUnits": 9,
-                "revenue": 6778.2086,
-                "ordersRevenue": 6778.2086,
-                "estimatedMargin": -186.4007,
-                "price": 753.1343,
+                "revenue": 6782.5961,
+                "ordersRevenue": 6782.5961,
+                "estimatedMargin": -186.5214,
+                "price": 753.6218,
                 "label": "2026-06-02"
               },
               {
@@ -372082,8 +372107,8 @@
             "currentPrice": 361.2813,
             "currentClientPrice": 361.2813,
             "currentFillPrice": 361.2813,
-            "sourceRows": 32,
-            "matchedRows": 32,
+            "sourceRows": 97,
+            "matchedRows": 97,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372102,10 +372127,10 @@
                 "dayOffset": 1,
                 "units": 39,
                 "ordersUnits": 39,
-                "revenue": 18433.3084,
-                "ordersRevenue": 18433.3084,
+                "revenue": 18445.24,
+                "ordersRevenue": 18445.24,
                 "estimatedMargin": 0,
-                "price": 472.6489,
+                "price": 472.9549,
                 "label": "2026-06-02"
               },
               {
@@ -372131,8 +372156,8 @@
             "currentPrice": 369.5,
             "currentClientPrice": 369.5,
             "currentFillPrice": 369.5,
-            "sourceRows": 2,
-            "matchedRows": 2,
+            "sourceRows": 5,
+            "matchedRows": 5,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372151,10 +372176,10 @@
                 "dayOffset": 1,
                 "units": 2,
                 "ordersUnits": 2,
-                "revenue": 757.8121,
-                "ordersRevenue": 757.8121,
+                "revenue": 758.3027,
+                "ordersRevenue": 758.3027,
                 "estimatedMargin": 0,
-                "price": 378.9061,
+                "price": 379.1513,
                 "label": "2026-06-02"
               },
               {
@@ -372180,8 +372205,8 @@
             "currentPrice": 338.7059,
             "currentClientPrice": 338.7059,
             "currentFillPrice": 338.7059,
-            "sourceRows": 17,
-            "matchedRows": 17,
+            "sourceRows": 32,
+            "matchedRows": 32,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372200,10 +372225,10 @@
                 "dayOffset": 1,
                 "units": 6,
                 "ordersUnits": 6,
-                "revenue": 2600.0356,
-                "ordersRevenue": 2600.0356,
+                "revenue": 2601.7186,
+                "ordersRevenue": 2601.7186,
                 "estimatedMargin": 0,
-                "price": 433.3393,
+                "price": 433.6198,
                 "label": "2026-06-02"
               },
               {
@@ -372229,8 +372254,8 @@
             "currentPrice": 1500,
             "currentClientPrice": 1500,
             "currentFillPrice": 1500,
-            "sourceRows": 1,
-            "matchedRows": 1,
+            "sourceRows": 2,
+            "matchedRows": 2,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372267,8 +372292,8 @@
             "currentPrice": 412.25,
             "currentClientPrice": 412.25,
             "currentFillPrice": 412.25,
-            "sourceRows": 8,
-            "matchedRows": 8,
+            "sourceRows": 19,
+            "matchedRows": 19,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372287,10 +372312,10 @@
                 "dayOffset": 1,
                 "units": 5,
                 "ordersUnits": 5,
-                "revenue": 2494.146,
-                "ordersRevenue": 2494.146,
+                "revenue": 2495.7605,
+                "ordersRevenue": 2495.7605,
                 "estimatedMargin": 0,
-                "price": 498.8292,
+                "price": 499.1521,
                 "label": "2026-06-02"
               },
               {
@@ -372316,8 +372341,8 @@
             "currentPrice": 786,
             "currentClientPrice": 786,
             "currentFillPrice": 786,
-            "sourceRows": 1,
-            "matchedRows": 1,
+            "sourceRows": 3,
+            "matchedRows": 3,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372336,10 +372361,10 @@
                 "dayOffset": 1,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 1594.7225,
-                "ordersRevenue": 1594.7225,
+                "revenue": 1595.7548,
+                "ordersRevenue": 1595.7548,
                 "estimatedMargin": 0,
-                "price": 1594.7225,
+                "price": 1595.7548,
                 "label": "2026-06-02"
               },
               {
@@ -372365,8 +372390,8 @@
             "currentPrice": 608,
             "currentClientPrice": 608,
             "currentFillPrice": 608,
-            "sourceRows": 2,
-            "matchedRows": 2,
+            "sourceRows": 6,
+            "matchedRows": 6,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372403,8 +372428,8 @@
             "currentPrice": 687,
             "currentClientPrice": 687,
             "currentFillPrice": 687,
-            "sourceRows": 1,
-            "matchedRows": 1,
+            "sourceRows": 5,
+            "matchedRows": 5,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372423,10 +372448,10 @@
                 "dayOffset": 1,
                 "units": 3,
                 "ordersUnits": 3,
-                "revenue": 2925.359,
-                "ordersRevenue": 2925.359,
+                "revenue": 2927.2525,
+                "ordersRevenue": 2927.2525,
                 "estimatedMargin": 0,
-                "price": 975.1197,
+                "price": 975.7508,
                 "label": "2026-06-02"
               },
               {
@@ -372452,8 +372477,8 @@
             "currentPrice": 537,
             "currentClientPrice": 537,
             "currentFillPrice": 537,
-            "sourceRows": 12,
-            "matchedRows": 12,
+            "sourceRows": 28,
+            "matchedRows": 28,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372472,10 +372497,10 @@
                 "dayOffset": 1,
                 "units": 8,
                 "ordersUnits": 8,
-                "revenue": 5446.2964,
-                "ordersRevenue": 5446.2964,
-                "estimatedMargin": 1913.2839,
-                "price": 680.787,
+                "revenue": 5449.8217,
+                "ordersRevenue": 5449.8217,
+                "estimatedMargin": 1914.5224,
+                "price": 681.2277,
                 "label": "2026-06-02"
               },
               {
@@ -372528,8 +372553,8 @@
             "currentPrice": 443.188,
             "currentClientPrice": 443.188,
             "currentFillPrice": 443.188,
-            "sourceRows": 5,
-            "matchedRows": 5,
+            "sourceRows": 37,
+            "matchedRows": 37,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372548,10 +372573,10 @@
                 "dayOffset": 1,
                 "units": 19,
                 "ordersUnits": 19,
-                "revenue": 11223.1596,
-                "ordersRevenue": 11223.1596,
+                "revenue": 11230.4242,
+                "ordersRevenue": 11230.4242,
                 "estimatedMargin": 0,
-                "price": 590.6926,
+                "price": 591.075,
                 "label": "2026-06-02"
               },
               {
@@ -372577,8 +372602,8 @@
             "currentPrice": 390,
             "currentClientPrice": 390,
             "currentFillPrice": 390,
-            "sourceRows": 1,
-            "matchedRows": 1,
+            "sourceRows": 4,
+            "matchedRows": 4,
             "sourceMode": "wb-api-direct-sku",
             "daily": [
               {
@@ -372597,10 +372622,10 @@
                 "dayOffset": 1,
                 "units": 1,
                 "ordersUnits": 1,
-                "revenue": 497.5534,
-                "ordersRevenue": 497.5534,
+                "revenue": 497.8755,
+                "ordersRevenue": 497.8755,
                 "estimatedMargin": 0,
-                "price": 497.5534,
+                "price": 497.8755,
                 "label": "2026-06-02"
               },
               {

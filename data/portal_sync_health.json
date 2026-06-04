@@ -1,12 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-04T08:06:01.634Z",
+  "generatedAt": "2026-06-04T08:49:27.464Z",
   "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
     "warnings": [],
-    "checkedAt": "2026-06-04T08:06:01.634Z"
+    "checkedAt": "2026-06-04T08:49:27.464Z"
   },
   "freshness": {
     "maxDate": "2026-06-03",
@@ -15,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-04T08:06:01.629Z",
+      "checkedAt": "2026-06-04T08:49:27.458Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-03",
       "maxDate": "2026-06-03",
@@ -37,11 +37,11 @@
           "expectedDate": "2026-06-03",
           "latestDate": "2026-06-03",
           "currentRevenue": 9463312,
-          "baselineRevenueMedian": 8895267,
-          "revenueRatio": 1.0639,
+          "baselineRevenueMedian": 8898104,
+          "revenueRatio": 1.0635,
           "currentUnits": 8455,
-          "baselineUnitsMedian": 7927.5,
-          "unitsRatio": 1.0665,
+          "baselineUnitsMedian": 7929.5,
+          "unitsRatio": 1.0663,
           "baselineDays": 2
         },
         {
@@ -62,7 +62,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-04T08:06:01.634Z",
+      "checkedAt": "2026-06-04T08:49:27.463Z",
       "expectedDate": "2026-06-03",
       "adsSummaryWindowTo": "2026-06-03",
       "iuDrrWindowTo": "2026-06-03",
@@ -93,6 +93,18 @@
           "expectedDate": "2026-06-03"
         }
       ]
+    },
+    "iuDrrExpenseGuard": {
+      "status": "ok",
+      "blockingReasons": [],
+      "warnings": [],
+      "checks": [
+        {
+          "name": "iu-drr-expense-source",
+          "status": "ok",
+          "checkedRows": 3
+        }
+      ]
     }
   },
   "sources": {
@@ -113,14 +125,14 @@
     "platform_trends": {
       "exists": true,
       "rows": 7,
-      "generatedAt": "2026-06-04T07:47:42.327Z",
+      "generatedAt": "2026-06-04T08:34:12.677Z",
       "asOfDate": "2026-06-03",
-      "revenue": 110606098
+      "revenue": 110617446
     },
     "ads_summary": {
       "exists": true,
       "rows": 5,
-      "generatedAt": "2026-06-04T08:00:38.389Z",
+      "generatedAt": "2026-06-04T08:46:34.977Z",
       "asOfDate": "2026-06-03",
       "revenue": 0
     },
@@ -232,7 +244,7 @@
     "iu_drr_summary": {
       "exists": true,
       "rows": 3,
-      "generatedAt": "2026-06-04T08:01:10.456Z",
+      "generatedAt": "2026-06-04T08:46:52.157Z",
       "asOfDate": "2026-06-03",
       "revenue": 0
     },
@@ -253,7 +265,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-04T08:04:47.683Z",
+      "generatedAt": "2026-06-04T08:46:52.375Z",
       "asOfDate": "2026-06-04",
       "revenue": 0
     },
@@ -288,7 +300,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-04T08:04:47.689Z",
+      "generatedAt": "2026-06-04T08:46:52.381Z",
       "asOfDate": "2026-06-04",
       "revenue": 0
     }
@@ -404,9 +416,9 @@
         "rows": 7,
         "previousRows": 7,
         "rowRatio": 1,
-        "revenue": 110606098,
+        "revenue": 110617446,
         "previousRevenue": 559539304,
-        "revenueRatio": 0.19767350963427585,
+        "revenueRatio": 0.19769379060456493,
         "revenueComparable": false
       },
       {
@@ -534,11 +546,11 @@
       "expectedDate": "2026-06-03",
       "latestDate": "2026-06-03",
       "currentRevenue": 9463312,
-      "baselineRevenueMedian": 8895267,
-      "revenueRatio": 1.0639,
+      "baselineRevenueMedian": 8898104,
+      "revenueRatio": 1.0635,
       "currentUnits": 8455,
-      "baselineUnitsMedian": 7927.5,
-      "unitsRatio": 1.0665,
+      "baselineUnitsMedian": 7929.5,
+      "unitsRatio": 1.0663,
       "baselineDays": 2
     },
     {
@@ -576,6 +588,11 @@
       "message": "IU/DRR WB ads window covers expected date 2026-06-03.",
       "iuAdsWindowTo": "2026-06-03",
       "expectedDate": "2026-06-03"
+    },
+    {
+      "name": "iu-drr-expense-source",
+      "status": "ok",
+      "checkedRows": 3
     }
   ]
 }

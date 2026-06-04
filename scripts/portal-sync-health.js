@@ -381,6 +381,49 @@ function buildFreshnessDependencyGuard(options, snapshots, expectedDate) {
   return guard;
 }
 
+function buildIuDrrExpenseGuard(snapshots) {
+  const iuDrr = snapshots.iu_drr_summary || {};
+  const daily = Array.isArray(iuDrr.daily) ? iuDrr.daily : [];
+  const guard = {
+    status: 'ok',
+    blockingReasons: [],
+    warnings: [],
+    checks: []
+  };
+  let checkedRows = 0;
+  for (const row of daily) {
+    const date = dateKey(row?.date);
+    if (!date) continue;
+    const reviewPoints = numberOrZero(row.reviewPoints);
+    const reviewDeduction = numberOrZero(row.wbReviewDeduction);
+    const cashbackControl = numberOrZero(row.reviewPointsCashbackControl || row.wbCashbackAmount);
+    const media = numberOrZero(row.wbMedia);
+    const mediaDeduction = numberOrZero(row.wbMediaFinanceDeduction);
+    const reviewSource = String(row.reviewPointsSource || '').trim();
+    checkedRows += 1;
+
+    if (reviewSource === 'wb_finance_api_cashbackAmountSum') {
+      guard.blockingReasons.push(`IU/DRR ${date}: reviewPoints uses cashbackAmountSum instead of WB detailed review deductions.`);
+    }
+    if (reviewDeduction > 0 && Math.abs(reviewPoints - reviewDeduction) > 0.01) {
+      guard.blockingReasons.push(`IU/DRR ${date}: reviewPoints ${reviewPoints} does not match WB review deduction ${reviewDeduction}.`);
+    }
+    if (reviewDeduction > 0 && cashbackControl > 0 && Math.abs(reviewPoints - cashbackControl) <= 0.01 && Math.abs(cashbackControl - reviewDeduction) > 0.01) {
+      guard.blockingReasons.push(`IU/DRR ${date}: reviewPoints still equals cashback control ${cashbackControl}, not review deduction ${reviewDeduction}.`);
+    }
+    if (mediaDeduction > 0 && media + 0.01 < mediaDeduction) {
+      guard.blockingReasons.push(`IU/DRR ${date}: WB Media ${media} is below finance media deduction ${mediaDeduction}.`);
+    }
+  }
+  guard.checks.push({
+    name: 'iu-drr-expense-source',
+    status: guard.blockingReasons.length ? 'blocked' : 'ok',
+    checkedRows
+  });
+  guard.status = guard.blockingReasons.length ? 'blocked' : (guard.warnings.length ? 'warning' : 'ok');
+  return guard;
+}
+
 function rowCount(payload) {
   if (Array.isArray(payload)) return payload.length;
   if (!payload || typeof payload !== 'object') return 0;
@@ -657,6 +700,12 @@ function buildHealth(options) {
   for (const check of dependencyGuard.checks) {
     checks.push({ name: `freshness-dependency:${check.name}`, status: check.status, ...check });
   }
+  const iuDrrExpenseGuard = buildIuDrrExpenseGuard(snapshots);
+  for (const reason of iuDrrExpenseGuard.blockingReasons) blockingReasons.push(reason);
+  for (const warning of iuDrrExpenseGuard.warnings) warnings.push(warning);
+  for (const check of iuDrrExpenseGuard.checks) {
+    checks.push({ name: `iu-drr-expense:${check.name}`, status: check.status, ...check });
+  }
   const maxDateAge = daysOld(maxDate, options.now);
   if (maxDateAge !== null && maxDateAge > options.staleWarnDays) {
     warnings.push(`Marketplace data looks stale: ${maxDate}, ${maxDateAge} day(s) old.`);
@@ -714,7 +763,8 @@ function buildHealth(options) {
       maxDateAgeDays: maxDateAge,
       expectedDate: completenessGuard.expectedDate,
       completenessGuard,
-      dependencyGuard
+      dependencyGuard,
+      iuDrrExpenseGuard
     },
     sources,
     syncIssues,

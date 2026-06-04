@@ -642,6 +642,12 @@ function applyWbSellerSummaryReference(series, referenceMap) {
       wbSellerSummaryPayForGoods: reference.payForGoods || point.wbSellerSummaryPayForGoods || null,
       wbSellerSummaryTotalPay: reference.totalPay || point.wbSellerSummaryTotalPay || null,
       wbSellerSummaryTurnoverDays: reference.turnoverDays,
+      deduction: reference.deduction || reference.sellerSummary?.deduction || point.deduction || null,
+      reviewDeduction: reference.reviewDeduction || reference.sellerSummary?.reviewDeduction || point.reviewDeduction || null,
+      wbMediaDeduction: reference.wbMediaDeduction || reference.sellerSummary?.wbMediaDeduction || point.wbMediaDeduction || null,
+      cashbackAmount: reference.sellerSummary?.cashbackAmount || point.cashbackAmount || null,
+      cashbackDiscount: reference.sellerSummary?.cashbackDiscount || point.cashbackDiscount || null,
+      cashbackCommissionChange: reference.sellerSummary?.cashbackCommissionChange || point.cashbackCommissionChange || null,
       financeTurnover: reference.financeTurnover || point.financeTurnover || null,
       financialResult: officialMargin || point.financialResult || null
     };
@@ -883,6 +889,7 @@ async function fetchWbFinanceDetailedRows(options) {
         'sku',
         'docTypeName',
         'sellerOperName',
+        'bonusTypeName',
         'quantity',
         'retailPriceWithDisc',
         'forPay',
@@ -891,6 +898,7 @@ async function fetchWbFinanceDetailedRows(options) {
         'penalty',
         'additionalPayment',
         'paidAcceptance',
+        'deduction',
         'cashbackAmount',
         'cashbackDiscount',
         'cashbackCommissionChange',
@@ -951,6 +959,51 @@ function buildFinanceTurnoverMap(rows) {
   return byDate;
 }
 
+function financeDeductionKind(row) {
+  const text = normalizeKey([
+    row?.sellerOperName,
+    row?.operationName,
+    row?.bonusTypeName,
+    row?.docTypeName
+  ].filter(Boolean).join(' '));
+  if (/\u0441\u043f\u0438\u0441\u0430\u043d\u0438\u0435\u0437\u0430\u043e\u0442\u0437\u044b\u0432|review/.test(text)) return 'review';
+  if (/\u0432\u0431\u043c\u0435\u0434\u0438\u0430|wbmedia|media/.test(text)) return 'wbMedia';
+  return 'other';
+}
+
+function buildFinanceDeductionMap(rows) {
+  const byDate = new Map();
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const date = isoDate(row?.rrDate || row?.dateFrom || row?.dateTo);
+    if (!date) continue;
+    const deduction = firstNumber(row?.deduction, row?.deductionSum);
+    if (!deduction) continue;
+    const current = byDate.get(date) || {
+      deduction: 0,
+      reviewDeduction: 0,
+      wbMediaDeduction: 0,
+      otherDeduction: 0,
+      deductionRows: 0,
+      reviewDeductionRows: 0,
+      wbMediaDeductionRows: 0
+    };
+    current.deduction += deduction;
+    current.deductionRows += 1;
+    const kind = financeDeductionKind(row);
+    if (kind === 'review') {
+      current.reviewDeduction += deduction;
+      current.reviewDeductionRows += 1;
+    } else if (kind === 'wbMedia') {
+      current.wbMediaDeduction += deduction;
+      current.wbMediaDeductionRows += 1;
+    } else {
+      current.otherDeduction += deduction;
+    }
+    byDate.set(date, current);
+  }
+  return byDate;
+}
+
 function buildFinanceArticles(rows, skus) {
   const { byArticle, byNmId } = skuMaps(skus);
   const articleMap = new Map();
@@ -996,6 +1049,7 @@ function buildFinanceArticles(rows, skus) {
 
 function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
   const turnoverByDate = buildFinanceTurnoverMap(detailedRows);
+  const deductionsByDate = buildFinanceDeductionMap(detailedRows);
   const byDate = new Map();
   for (const row of Array.isArray(summaryRows) ? summaryRows : []) {
     const date = isoDate(row?.dateFrom || row?.dateTo || row?.createDate);
@@ -1007,6 +1061,7 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
       fines: 0,
       additionalPayments: 0,
       acceptanceOperations: 0,
+      deduction: 0,
       cashbackAmount: 0,
       cashbackDiscount: 0,
       cashbackCommissionChange: 0
@@ -1017,6 +1072,7 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
     current.fines += numberOrZero(row?.penaltySum);
     current.additionalPayments += numberOrZero(row?.additionalPaymentSum);
     current.acceptanceOperations += numberOrZero(row?.paidAcceptanceSum);
+    current.deduction += numberOrZero(row?.deductionSum ?? row?.deduction);
     current.cashbackAmount += numberOrZero(row?.cashbackAmountSum);
     current.cashbackDiscount += numberOrZero(row?.cashbackDiscountSum);
     current.cashbackCommissionChange += numberOrZero(row?.cashbackCommissionChangeSum);
@@ -1024,17 +1080,22 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
   }
 
   const result = new Map();
-  const dates = new Set([...byDate.keys(), ...turnoverByDate.keys()]);
+  const dates = new Set([...byDate.keys(), ...turnoverByDate.keys(), ...deductionsByDate.keys()]);
   for (const date of dates) {
     const summary = byDate.get(date) || {};
+    const deductionDetails = deductionsByDate.get(date) || {};
     const salesRevenue = Math.round(numberOrZero(turnoverByDate.get(date)));
     const payForGoods = Math.round(numberOrZero(summary.payForGoods));
-    if (!(salesRevenue > 0 || payForGoods > 0)) continue;
+    if (!(salesRevenue > 0 || payForGoods > 0 || numberOrZero(deductionDetails.deduction) > 0)) continue;
     const logistics = Math.round(numberOrZero(summary.logistics));
     const storage = Math.round(numberOrZero(summary.storage));
     const fines = Math.round(numberOrZero(summary.fines));
     const additionalPayments = Math.round(numberOrZero(summary.additionalPayments));
     const acceptanceOperations = Math.round(numberOrZero(summary.acceptanceOperations));
+    const deduction = Math.round((numberOrZero(deductionDetails.deduction) || numberOrZero(summary.deduction)) * 100) / 100;
+    const reviewDeduction = Math.round(numberOrZero(deductionDetails.reviewDeduction) * 100) / 100;
+    const wbMediaDeduction = Math.round(numberOrZero(deductionDetails.wbMediaDeduction) * 100) / 100;
+    const otherDeduction = Math.round(numberOrZero(deductionDetails.otherDeduction) * 100) / 100;
     const cashbackAmount = Math.round(numberOrZero(summary.cashbackAmount) * 100) / 100;
     const cashbackDiscount = Math.round(numberOrZero(summary.cashbackDiscount) * 100) / 100;
     const cashbackCommissionChange = Math.round(numberOrZero(summary.cashbackCommissionChange) * 100) / 100;
@@ -1052,6 +1113,13 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
       fines,
       additionalPayments,
       acceptanceOperations,
+      deduction,
+      reviewDeduction,
+      wbMediaDeduction,
+      otherDeduction,
+      deductionRows: Math.round(numberOrZero(deductionDetails.deductionRows)),
+      reviewDeductionRows: Math.round(numberOrZero(deductionDetails.reviewDeductionRows)),
+      wbMediaDeductionRows: Math.round(numberOrZero(deductionDetails.wbMediaDeductionRows)),
       cashbackAmount,
       cashbackDiscount,
       cashbackCommissionChange,
@@ -1062,6 +1130,9 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
       financeTurnover: salesRevenue,
       salesRevenue,
       payForGoods,
+      deduction,
+      reviewDeduction,
+      wbMediaDeduction,
       totalPay,
       source: 'wb-finance-api',
       revenueField: 'finance sales-reports/detailed + sales-reports/list'
@@ -1190,8 +1261,8 @@ async function main() {
   const stagedWbPlatform = platformMap(stagedExisting).get('wb') || null;
   const financeReference = await fetchWbFinanceReferenceMap(options, skus);
   const wbReferenceMap = new Map([
-    ...financeReference.referenceMap,
-    ...wbSellerSummaryReferenceMap(existing, stagedExisting)
+    ...wbSellerSummaryReferenceMap(existing, stagedExisting),
+    ...financeReference.referenceMap
   ]);
   const marginFallbackSeries = seriesHasPositiveMargin(existingWbPlatform?.series)
     ? existingWbPlatform.series

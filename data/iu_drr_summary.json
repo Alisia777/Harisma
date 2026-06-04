@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-04T08:01:10.456Z",
+  "generatedAt": "2026-06-04T08:46:52.157Z",
   "asOfDate": "2026-06-03",
   "source": {
     "iuPlanGeneratedAt": "2026-06-03T09:33:53.170Z",
     "companyPlanGeneratedAt": "2026-05-29T19:18:00+03:00",
-    "platformTrendsGeneratedAt": "2026-06-04T07:47:42.327Z",
-    "adsSummaryGeneratedAt": "2026-06-04T08:00:38.389Z",
+    "platformTrendsGeneratedAt": "2026-06-04T08:34:12.677Z",
+    "adsSummaryGeneratedAt": "2026-06-04T08:46:34.977Z",
     "wbFeedbacksGeneratedAt": "2026-06-03T09:47:49.612Z",
     "ozonFinanceSourceMode": "api",
     "ozonFinanceEndpoint": "/v3/finance/transaction/list",
@@ -75,14 +75,14 @@
     "iuAdsOzonPlanToDate": 1500730.89,
     "iuAdsTotalPlan": 29678501.49,
     "iuAdsTotalPlanToDate": 2967850.14,
-    "iuAdsFactWbToDate": 1123259.01,
-    "iuAdsFactWbTotalToDate": 1123259.01,
+    "iuAdsFactWbToDate": 1104216.79,
+    "iuAdsFactWbTotalToDate": 1104216.79,
     "iuAdsFactOzonToDate": 1852893.9,
-    "iuAdsFactTotalToDate": 2976152.91,
-    "iuAdsFactTotalWithExternalToDate": 2976152.91,
-    "iuAdsCompletionToDate": 0.765622,
+    "iuAdsFactTotalToDate": 2957110.69,
+    "iuAdsFactTotalWithExternalToDate": 2957110.69,
+    "iuAdsCompletionToDate": 0.752643,
     "iuAdsCompletionOzonToDate": 1.234661,
-    "iuAdsCompletionTotalToDate": 1.002798,
+    "iuAdsCompletionTotalToDate": 0.996381,
     "targetRevenueWb": 21447649.8,
     "revenueWbDelta": 620185.2,
     "revenueWbDeltaPct": 0.028916,
@@ -94,29 +94,29 @@
     "planPctOzon": 0.24878,
     "planSpendOzon": 1500730.89,
     "revenueWb": 22067835,
-    "ordersRevenueWb": 27253846,
+    "ordersRevenueWb": 27259520,
     "adsPctBaseWb": 22067835,
     "revenueOzon": 7415413.96,
-    "spendFact": 1123259.01,
-    "spendFactDrr": 1123259.01,
-    "spendFactTotal": 1123259.01,
+    "spendFact": 1104216.79,
+    "spendFactDrr": 1104216.79,
+    "spendFactTotal": 1104216.79,
     "spendFactOzon": 1852893.9,
-    "spendFactIu": 2976152.91,
-    "spendFactTotalIu": 2976152.91,
+    "spendFactIu": 2957110.69,
+    "spendFactTotalIu": 2957110.69,
     "externalAds": 0,
     "planSpendWb": 1467119.25,
     "contractMarketingPlanWb": 1765426.8,
     "managementPlanSpendWb": 1467119.25,
-    "drrWb": 0.0509,
+    "drrWb": 0.050037,
     "drrOzon": 0.249871,
-    "drrIu": 0.100944,
-    "spendDelta": -343860.24,
-    "spendDeltaPct": -0.234378,
-    "ordersAdPct": 0.041215,
+    "drrIu": 0.100298,
+    "spendDelta": -362902.46,
+    "spendDeltaPct": -0.247357,
+    "ordersAdPct": 0.040508,
     "spendDeltaOzon": 352163.01,
     "spendDeltaOzonPct": 0.234661,
-    "spendDeltaIu": 8302.77,
-    "spendDeltaIuPct": 0.002798,
+    "spendDeltaIu": -10739.45,
+    "spendDeltaIuPct": -0.003619,
     "ozonAdsFactMode": "google_sheets_fact_ads_daily_sku+modeled_from_revenue_25pct_no_ozon_ads_fact",
     "planPct": 0.068405,
     "externalAdsExcludedFromDrr": true,
@@ -125,6 +125,9 @@
     "ozonAdsOrders": 6418,
     "ozonAdsRevenue": 4993663.97,
     "ozonAdsSourceRows": 0,
+    "wbDeduction": 455407.15,
+    "wbReviewDeduction": 65440.98,
+    "wbMediaFinanceDeduction": 12.8,
     "wbCashbackAmount": 84496,
     "wbCashbackDiscount": 23930.97,
     "wbCashbackCommissionChange": 8449.6,
@@ -137,7 +140,7 @@
       "wbMedia": {
         "key": "wbMedia",
         "label": "ВБ Медиа",
-        "spend": 37279.19
+        "spend": 37291.99
       },
       "wbInfluencer": {
         "key": "wbInfluencer",
@@ -162,7 +165,7 @@
       "reviewPoints": {
         "key": "reviewPoints",
         "label": "Отзывы за баллы",
-        "spend": 84496
+        "spend": 65440.98
       },
       "externalAds": {
         "key": "externalAds",
@@ -170,6 +173,7 @@
         "spend": 0
       }
     },
+    "reviewPointsCashbackControl": 84496,
     "reviewPointsFeedbacks": 73
   },
   "ozonPlan": {
@@ -8576,17 +8580,17 @@
     "days": 82,
     "targetRevenueWb": 472057770.22,
     "revenueWb": 347099783,
-    "ordersRevenueWb": 415337229,
+    "ordersRevenueWb": 415342903,
     "revenueDelta": -124957987.22,
     "revenueDeltaPct": -0.264709,
     "revenueCompletionPct": 0.735291,
     "planPct": 0.08,
     "planSpendWb": 27767982.64,
-    "spendFact": 17508248.01,
-    "factPct": 0.050442,
-    "ordersAdPct": 0.042154,
-    "spendDelta": -10259734.63,
-    "spendDeltaPct": -0.369481,
+    "spendFact": 17489205.79,
+    "factPct": 0.050387,
+    "ordersAdPct": 0.042108,
+    "spendDelta": -10278776.85,
+    "spendDeltaPct": -0.370166,
     "source": {
       "reportPath": "C:\\Users\\artiu\\Downloads\\report 2026-5-18.xlsx",
       "drrPath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\ДРР ВБ.xlsx",
@@ -8605,17 +8609,17 @@
     "days": 82,
     "targetRevenueWb": 472057770.22,
     "revenueWb": 347099783,
-    "ordersRevenueWb": 415337229,
+    "ordersRevenueWb": 415342903,
     "revenueDelta": -124957987.22,
     "revenueDeltaPct": -0.264709,
     "revenueCompletionPct": 0.735291,
     "planPct": 0.08,
     "planSpendWb": 27767982.64,
-    "spendFact": 17508248.01,
-    "factPct": 0.050442,
-    "ordersAdPct": 0.042154,
-    "spendDelta": -10259734.63,
-    "spendDeltaPct": -0.369481,
+    "spendFact": 17489205.79,
+    "factPct": 0.050387,
+    "ordersAdPct": 0.042108,
+    "spendDelta": -10278776.85,
+    "spendDeltaPct": -0.370166,
     "source": {
       "reportPath": "C:\\Users\\artiu\\Downloads\\report 2026-5-18.xlsx",
       "drrPath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\ДРР ВБ.xlsx",
@@ -8639,15 +8643,15 @@
       "stornoCancelRevenue": 594097126.4,
       "loadedTargetRevenue": 21447649.8,
       "factRevenue": 22067835,
-      "ordersRevenue": 27253846,
+      "ordersRevenue": 27259520,
       "revenueCompletionToLoadedTarget": 1.028916,
       "revenueCompletionToPeriodTarget": 0.036402,
       "marketingRate": 0.08,
       "marketingPlan": 1765426.8,
-      "marketingSpend": 1123259.01,
-      "marketingCompletion": 0.636254,
-      "drrWb": 0.0509,
-      "ordersAdPct": 0.041215
+      "marketingSpend": 1104216.79,
+      "marketingCompletion": 0.625467,
+      "drrWb": 0.050037,
+      "ordersAdPct": 0.040508
     },
     {
       "key": "2026-H2",
@@ -9047,14 +9051,14 @@
       "iuAdsOzonPlanToDate": 1500730.89,
       "iuAdsTotalPlan": 29678501.49,
       "iuAdsTotalPlanToDate": 2967850.14,
-      "iuAdsFactWbToDate": 1123259.01,
-      "iuAdsFactWbTotalToDate": 1123259.01,
+      "iuAdsFactWbToDate": 1104216.79,
+      "iuAdsFactWbTotalToDate": 1104216.79,
       "iuAdsFactOzonToDate": 1852893.9,
-      "iuAdsFactTotalToDate": 2976152.91,
-      "iuAdsFactTotalWithExternalToDate": 2976152.91,
-      "iuAdsCompletionToDate": 0.765622,
+      "iuAdsFactTotalToDate": 2957110.69,
+      "iuAdsFactTotalWithExternalToDate": 2957110.69,
+      "iuAdsCompletionToDate": 0.752643,
       "iuAdsCompletionOzonToDate": 1.234661,
-      "iuAdsCompletionTotalToDate": 1.002798,
+      "iuAdsCompletionTotalToDate": 0.996381,
       "targetRevenueWb": 21447649.8,
       "revenueWbDelta": 620185.2,
       "revenueWbDeltaPct": 0.028916,
@@ -9066,29 +9070,29 @@
       "planPctOzon": 0.24878,
       "planSpendOzon": 1500730.89,
       "revenueWb": 22067835,
-      "ordersRevenueWb": 27253846,
+      "ordersRevenueWb": 27259520,
       "adsPctBaseWb": 22067835,
       "revenueOzon": 7415413.96,
-      "spendFact": 1123259.01,
-      "spendFactDrr": 1123259.01,
-      "spendFactTotal": 1123259.01,
+      "spendFact": 1104216.79,
+      "spendFactDrr": 1104216.79,
+      "spendFactTotal": 1104216.79,
       "spendFactOzon": 1852893.9,
-      "spendFactIu": 2976152.91,
-      "spendFactTotalIu": 2976152.91,
+      "spendFactIu": 2957110.69,
+      "spendFactTotalIu": 2957110.69,
       "externalAds": 0,
       "planSpendWb": 1467119.25,
       "contractMarketingPlanWb": 1765426.8,
       "managementPlanSpendWb": 1467119.25,
-      "drrWb": 0.0509,
+      "drrWb": 0.050037,
       "drrOzon": 0.249871,
-      "drrIu": 0.100944,
-      "spendDelta": -343860.24,
-      "spendDeltaPct": -0.234378,
-      "ordersAdPct": 0.041215,
+      "drrIu": 0.100298,
+      "spendDelta": -362902.46,
+      "spendDeltaPct": -0.247357,
+      "ordersAdPct": 0.040508,
       "spendDeltaOzon": 352163.01,
       "spendDeltaOzonPct": 0.234661,
-      "spendDeltaIu": 8302.77,
-      "spendDeltaIuPct": 0.002798,
+      "spendDeltaIu": -10739.45,
+      "spendDeltaIuPct": -0.003619,
       "ozonAdsFactMode": "google_sheets_fact_ads_daily_sku+modeled_from_revenue_25pct_no_ozon_ads_fact",
       "planPct": 0.068405,
       "externalAdsExcludedFromDrr": true,
@@ -9097,6 +9101,9 @@
       "ozonAdsOrders": 6418,
       "ozonAdsRevenue": 4993663.97,
       "ozonAdsSourceRows": 0,
+      "wbDeduction": 455407.15,
+      "wbReviewDeduction": 65440.98,
+      "wbMediaFinanceDeduction": 12.8,
       "wbCashbackAmount": 84496,
       "wbCashbackDiscount": 23930.97,
       "wbCashbackCommissionChange": 8449.6,
@@ -9109,7 +9116,7 @@
         "wbMedia": {
           "key": "wbMedia",
           "label": "ВБ Медиа",
-          "spend": 37279.19
+          "spend": 37291.99
         },
         "wbInfluencer": {
           "key": "wbInfluencer",
@@ -9134,7 +9141,7 @@
         "reviewPoints": {
           "key": "reviewPoints",
           "label": "Отзывы за баллы",
-          "spend": 84496
+          "spend": 65440.98
         },
         "externalAds": {
           "key": "externalAds",
@@ -9142,6 +9149,7 @@
           "spend": 0
         }
       },
+      "reviewPointsCashbackControl": 84496,
       "reviewPointsFeedbacks": 73
     }
   ],
@@ -9155,14 +9163,14 @@
     {
       "key": "reviewPoints",
       "label": "Отзывы за баллы",
-      "spend": 84496,
-      "source": "WB Finance API"
+      "spend": 65440.98,
+      "source": "WB Finance API detailed deductions"
     },
     {
       "key": "wbMedia",
       "label": "ВБ Медиа",
-      "spend": 37279.19,
-      "source": "WB Promotion API"
+      "spend": 37291.99,
+      "source": "WB Promotion API + WB Finance API detailed deductions"
     },
     {
       "key": "brandZone",
@@ -9214,7 +9222,7 @@
       "wbIuFactSource": "",
       "wbIuFactMode": "platform_api_fallback",
       "wbApiRevenue": 6935736,
-      "wbApiSpendFact": 369991.9,
+      "wbApiSpendFact": 368883.07,
       "wbIuRevenueApiDelta": null,
       "wbIuAdsApiDelta": null,
       "wbRevenuePlanSource": "corporate_plan",
@@ -9246,37 +9254,42 @@
       "planSpendWb": 489039.75,
       "contractMarketingPlanWb": 554858.88,
       "managementPlanSpendWb": 489039.75,
-      "spendFact": 369991.9,
-      "spendFactDrr": 369991.9,
-      "spendFactTotal": 369991.9,
-      "spendFactIu": 995197.41,
-      "spendFactTotalIu": 995197.41,
-      "factPct": 0.053346,
-      "factPctIu": 0.104933,
-      "ordersAdPct": 0.040998,
+      "spendFact": 368883.07,
+      "spendFactDrr": 368883.07,
+      "spendFactTotal": 368883.07,
+      "spendFactIu": 994088.58,
+      "spendFactTotalIu": 994088.58,
+      "factPct": 0.053186,
+      "factPctIu": 0.104816,
+      "ordersAdPct": 0.040875,
       "wbPromotion": 332800.75,
-      "wbMedia": 11559.15,
+      "wbMedia": 11571.95,
       "wbInfluencer": 0,
       "pvzAds": 0,
       "brandZone": 0,
       "overviews": 0,
-      "reviewPoints": 25632,
+      "reviewPoints": 24510.37,
       "externalAds": 0,
+      "wbDeduction": 130687.12,
+      "wbReviewDeduction": 24510.37,
+      "wbMediaFinanceDeduction": 12.8,
       "wbCashbackAmount": 25632,
       "wbCashbackDiscount": 6395.19,
       "wbCashbackCommissionChange": 2563.2,
-      "reviewPointsSource": "wb_finance_api_cashbackAmountSum",
+      "reviewPointsSource": "wb_finance_api_detailed_deduction_review",
+      "reviewPointsCashbackControl": 25632,
+      "wbMediaSource": "wb_finance_api_detailed_deduction_media",
       "reviewPointsFeedbacks": 38,
-      "spendDelta": -119047.85,
-      "spendDeltaPct": -0.243432,
-      "spendDeltaIu": 5914.03,
-      "spendDeltaIuPct": 0.005978,
+      "spendDelta": -120156.68,
+      "spendDeltaPct": -0.245699,
+      "spendDeltaIu": 4805.2,
+      "spendDeltaIuPct": 0.004857,
       "externalAdsExcludedFromDrr": true,
       "adsViews": 1028538,
       "adsClicks": 19151,
       "adsOrders": 2977,
       "adsRevenue": 2291811,
-      "sourceRows": 871,
+      "sourceRows": 951,
       "ozonAdsViews": 1923683,
       "ozonAdsClicks": 53214,
       "ozonAdsOrders": 3261,
@@ -9301,12 +9314,12 @@
       "wbIuFactSource": "",
       "wbIuFactMode": "platform_api_fallback",
       "wbApiRevenue": 6870979,
-      "wbApiSpendFact": 364131.44,
+      "wbApiSpendFact": 358816.88,
       "wbIuRevenueApiDelta": null,
       "wbIuAdsApiDelta": null,
       "wbRevenuePlanSource": "corporate_plan",
       "revenueWb": 6870979,
-      "ordersRevenueWb": 8765844,
+      "ordersRevenueWb": 8771518,
       "adsPctBaseWb": 6870979,
       "revenueWbDelta": -278237.6,
       "revenueWbDeltaPct": -0.038919,
@@ -9325,7 +9338,7 @@
       "ozonAdsFactMode": "google_sheets_fact_ads_daily_sku",
       "revenueTotalIu": 9316215.96,
       "revenueWbSource": "wb-seller-summary-finance-turnover",
-      "unitsWb": 7979,
+      "unitsWb": 7983,
       "unitsOzon": 3157,
       "ordersUnitsOzon": 3157,
       "deliveredUnitsOzon": 2951,
@@ -9333,37 +9346,42 @@
       "planSpendWb": 489039.75,
       "contractMarketingPlanWb": 549678.32,
       "managementPlanSpendWb": 489039.75,
-      "spendFact": 364131.44,
-      "spendFactDrr": 364131.44,
-      "spendFactTotal": 364131.44,
-      "spendFactIu": 989336.95,
-      "spendFactTotalIu": 989336.95,
-      "factPct": 0.052996,
-      "factPctIu": 0.106195,
-      "ordersAdPct": 0.04154,
+      "spendFact": 358816.88,
+      "spendFactDrr": 358816.88,
+      "spendFactTotal": 358816.88,
+      "spendFactIu": 984022.39,
+      "spendFactTotalIu": 984022.39,
+      "factPct": 0.052222,
+      "factPctIu": 0.105625,
+      "ordersAdPct": 0.040907,
       "wbPromotion": 326785.37,
       "wbMedia": 12853.07,
       "wbInfluencer": 0,
       "pvzAds": 0,
       "brandZone": 0,
       "overviews": 0,
-      "reviewPoints": 24493,
+      "reviewPoints": 19178.44,
       "externalAds": 0,
+      "wbDeduction": 29060.33,
+      "wbReviewDeduction": 19178.44,
+      "wbMediaFinanceDeduction": 0,
       "wbCashbackAmount": 24493,
       "wbCashbackDiscount": 7647.22,
       "wbCashbackCommissionChange": 2449.3,
-      "reviewPointsSource": "wb_finance_api_cashbackAmountSum",
+      "reviewPointsSource": "wb_finance_api_detailed_deduction_review",
+      "reviewPointsCashbackControl": 24493,
+      "wbMediaSource": "wb_ads_channel",
       "reviewPointsFeedbacks": 35,
-      "spendDelta": -124908.31,
-      "spendDeltaPct": -0.255415,
-      "spendDeltaIu": 53.57,
-      "spendDeltaIuPct": 0.000054,
+      "spendDelta": -130222.87,
+      "spendDeltaPct": -0.266283,
+      "spendDeltaIu": -5260.99,
+      "spendDeltaIuPct": -0.005318,
       "externalAdsExcludedFromDrr": true,
       "adsViews": 925091,
       "adsClicks": 16760,
-      "adsOrders": 2566,
-      "adsRevenue": 1948422,
-      "sourceRows": 850,
+      "adsOrders": 2851,
+      "adsRevenue": 2329545,
+      "sourceRows": 933,
       "ozonAdsViews": 1729343,
       "ozonAdsClicks": 47962,
       "ozonAdsOrders": 3157,
@@ -9388,7 +9406,7 @@
       "wbIuFactSource": "",
       "wbIuFactMode": "platform_api_fallback",
       "wbApiRevenue": 8261120,
-      "wbApiSpendFact": 389135.67,
+      "wbApiSpendFact": 376516.84,
       "wbIuRevenueApiDelta": null,
       "wbIuAdsApiDelta": null,
       "wbRevenuePlanSource": "corporate_plan",
@@ -9420,37 +9438,42 @@
       "planSpendWb": 489039.75,
       "contractMarketingPlanWb": 660889.6,
       "managementPlanSpendWb": 489039.75,
-      "spendFact": 389135.67,
-      "spendFactDrr": 389135.67,
-      "spendFactTotal": 389135.67,
-      "spendFactIu": 991618.55,
-      "spendFactTotalIu": 991618.55,
-      "factPct": 0.047104,
-      "factPctIu": 0.092823,
-      "ordersAdPct": 0.04112,
+      "spendFact": 376516.84,
+      "spendFactDrr": 376516.84,
+      "spendFactTotal": 376516.84,
+      "spendFactIu": 978999.72,
+      "spendFactTotalIu": 978999.72,
+      "factPct": 0.045577,
+      "factPctIu": 0.091642,
+      "ordersAdPct": 0.039787,
       "wbPromotion": 341897.7,
       "wbMedia": 12866.97,
       "wbInfluencer": 0,
       "pvzAds": 0,
       "brandZone": 0,
       "overviews": 0,
-      "reviewPoints": 34371,
+      "reviewPoints": 21752.17,
       "externalAds": 0,
+      "wbDeduction": 295659.7,
+      "wbReviewDeduction": 21752.17,
+      "wbMediaFinanceDeduction": 0,
       "wbCashbackAmount": 34371,
       "wbCashbackDiscount": 9888.56,
       "wbCashbackCommissionChange": 3437.1,
-      "reviewPointsSource": "wb_finance_api_cashbackAmountSum",
+      "reviewPointsSource": "wb_finance_api_detailed_deduction_review",
+      "reviewPointsCashbackControl": 34371,
+      "wbMediaSource": "wb_ads_channel",
       "reviewPointsFeedbacks": 0,
-      "spendDelta": -99904.08,
-      "spendDeltaPct": -0.204286,
-      "spendDeltaIu": 2335.17,
-      "spendDeltaIuPct": 0.00236,
+      "spendDelta": -112522.91,
+      "spendDeltaPct": -0.230089,
+      "spendDeltaIu": -10283.66,
+      "spendDeltaIuPct": -0.010395,
       "externalAdsExcludedFromDrr": true,
       "adsViews": 998112,
       "adsClicks": 18932,
       "adsOrders": 2865,
       "adsRevenue": 2333710,
-      "sourceRows": 815,
+      "sourceRows": 966,
       "ozonAdsViews": 0,
       "ozonAdsClicks": 0,
       "ozonAdsOrders": 0,
@@ -9461,10 +9484,10 @@
   "diagnostics": {
     "adsSourceMode": "wb-api",
     "adsDiagnostics": {
-      "generatedAt": "2026-06-04T07:48:16.594Z",
+      "generatedAt": "2026-06-04T08:34:12.885Z",
       "docsUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
       "sourceWindow": {
-        "from": "2026-06-03",
+        "from": "2026-06-01",
         "to": "2026-06-03"
       },
       "supplierGoods": {
@@ -9479,10 +9502,10 @@
         "exists": true,
         "campaigns": 1,
         "invalidRows": 0,
-        "appliedRows": 39,
+        "appliedRows": 43,
         "appliedSpend": 37279.19,
-        "changedRows": 9,
-        "changedSpend": 12866.97,
+        "changedRows": 43,
+        "changedSpend": 37279.19,
         "errors": []
       },
       "warnings": [],
@@ -9507,12 +9530,32 @@
       "fullstatsRequests": 34,
       "fullstatsSucceededRequests": 34,
       "fullstatsFailedRequests": 0,
-      "fullstatsRows": 1671,
-      "updRequests": 1,
-      "updRows": 248,
-      "financialAdjustments": 1,
-      "financialAdjustmentSpend": 420,
+      "fullstatsRows": 5152,
+      "updRequests": 3,
+      "updRows": 739,
+      "financialAdjustments": 3,
+      "financialAdjustmentSpend": 1320,
       "financialDaily": [
+        {
+          "date": "2026-06-01",
+          "channel": "ВБ Продвижение",
+          "spend": 342179
+        },
+        {
+          "date": "2026-06-01",
+          "channel": "Отзывы за баллы",
+          "spend": 480
+        },
+        {
+          "date": "2026-06-02",
+          "channel": "ВБ Продвижение",
+          "spend": 339365
+        },
+        {
+          "date": "2026-06-02",
+          "channel": "Отзывы за баллы",
+          "spend": 420
+        },
         {
           "date": "2026-06-03",
           "channel": "ВБ Продвижение",
@@ -9527,308 +9570,308 @@
       "unmatchedNmIds": [
         {
           "nmId": "223764453",
-          "spend": 29467.469999999998,
-          "revenue": 149265,
-          "rows": 58
+          "spend": 89154.77,
+          "revenue": 449199,
+          "rows": 164
         },
         {
           "nmId": "484600035",
-          "spend": 28744.1,
-          "revenue": 201687,
-          "rows": 55
+          "spend": 83713.97,
+          "revenue": 802328,
+          "rows": 187
         },
         {
           "nmId": "399134789",
-          "spend": 25389.43,
-          "revenue": 276283,
-          "rows": 49
+          "spend": 76859.13,
+          "revenue": 800208,
+          "rows": 139
         },
         {
           "nmId": "307871378",
-          "spend": 25246.35,
-          "revenue": 165339,
-          "rows": 42
+          "spend": 74090.73999999999,
+          "revenue": 473636,
+          "rows": 134
         },
         {
           "nmId": "815466628",
-          "spend": 22336.72,
-          "revenue": 210100,
-          "rows": 70
-        },
-        {
-          "nmId": "825315621",
-          "spend": 16855.54,
-          "revenue": 89234,
-          "rows": 45
+          "spend": 65979.13,
+          "revenue": 640308,
+          "rows": 202
         },
         {
           "nmId": "260388016",
-          "spend": 13294.31,
-          "revenue": 47041,
-          "rows": 12
+          "spend": 37583.829999999994,
+          "revenue": 137647,
+          "rows": 47
+        },
+        {
+          "nmId": "825315621",
+          "spend": 35380.69,
+          "revenue": 247769,
+          "rows": 132
         },
         {
           "nmId": "205074596",
-          "spend": 10367.97,
-          "revenue": 76135,
-          "rows": 66
+          "spend": 28958.98,
+          "revenue": 220813,
+          "rows": 217
         },
         {
           "nmId": "727028589",
-          "spend": 8604.460000000001,
-          "revenue": 65280,
-          "rows": 35
-        },
-        {
-          "nmId": "344464243",
-          "spend": 7158.7,
-          "revenue": 11895,
-          "rows": 9
+          "spend": 24342.92,
+          "revenue": 190106,
+          "rows": 106
         },
         {
           "nmId": "471396076",
-          "spend": 6603.65,
-          "revenue": 8106,
-          "rows": 26
-        },
-        {
-          "nmId": "239888358",
-          "spend": 6324.38,
-          "revenue": 220016,
+          "spend": 22349.219999999998,
+          "revenue": 37056,
           "rows": 67
         },
         {
-          "nmId": "319397405",
-          "spend": 6139.57,
-          "revenue": 24138,
-          "rows": 14
-        },
-        {
-          "nmId": "526299109",
-          "spend": 5930.6,
-          "revenue": 82352,
-          "rows": 45
-        },
-        {
           "nmId": "668799528",
-          "spend": 5764.67,
-          "revenue": 69046,
-          "rows": 45
+          "spend": 20377.29,
+          "revenue": 211703,
+          "rows": 137
         },
         {
-          "nmId": "488959127",
-          "spend": 5713.38,
-          "revenue": 121382,
-          "rows": 53
+          "nmId": "344464243",
+          "spend": 19250.11,
+          "revenue": 41175,
+          "rows": 39
         },
         {
-          "nmId": "373703287",
-          "spend": 5654.37,
-          "revenue": 12600,
-          "rows": 23
+          "nmId": "239888358",
+          "spend": 18778.390000000003,
+          "revenue": 513094,
+          "rows": 154
         },
         {
-          "nmId": "480197142",
-          "spend": 4163.110000000001,
-          "revenue": 1554,
-          "rows": 11
-        },
-        {
-          "nmId": "266376150",
-          "spend": 4126.070000000001,
-          "revenue": 2132,
-          "rows": 6
-        },
-        {
-          "nmId": "418209838",
-          "spend": 4071.8300000000004,
-          "revenue": 4350,
-          "rows": 7
-        },
-        {
-          "nmId": "244342184",
-          "spend": 3927.5700000000006,
-          "revenue": 3857,
-          "rows": 11
-        },
-        {
-          "nmId": "484548663",
-          "spend": 3875.09,
-          "revenue": 6709,
-          "rows": 6
-        },
-        {
-          "nmId": "555457305",
-          "spend": 3669.58,
-          "revenue": 17760,
-          "rows": 30
-        },
-        {
-          "nmId": "899373456",
-          "spend": 3667.51,
-          "revenue": 44137,
+          "nmId": "319397405",
+          "spend": 16919.31,
+          "revenue": 66156,
           "rows": 40
         },
         {
-          "nmId": "302594163",
-          "spend": 3636.97,
-          "revenue": 4700,
-          "rows": 10
+          "nmId": "526299109",
+          "spend": 16488.92,
+          "revenue": 233393,
+          "rows": 132
         },
         {
-          "nmId": "399763000",
-          "spend": 3533.5300000000007,
-          "revenue": 54722,
-          "rows": 36
+          "nmId": "373703287",
+          "spend": 16298.01,
+          "revenue": 68400,
+          "rows": 88
         },
         {
-          "nmId": "831837304",
-          "spend": 3430.1000000000004,
-          "revenue": 24200,
-          "rows": 36
+          "nmId": "488959127",
+          "spend": 14578.18,
+          "revenue": 335541,
+          "rows": 176
         },
         {
-          "nmId": "835961714",
-          "spend": 3389.9,
-          "revenue": 29451,
-          "rows": 32
-        },
-        {
-          "nmId": "205072071",
-          "spend": 3378.87,
-          "revenue": 9120,
-          "rows": 26
-        },
-        {
-          "nmId": "312907312",
-          "spend": 3319.83,
-          "revenue": 4050,
-          "rows": 8
-        },
-        {
-          "nmId": "423392974",
-          "spend": 3303.69,
-          "revenue": 0,
-          "rows": 9
-        },
-        {
-          "nmId": "305018458",
-          "spend": 3252.84,
-          "revenue": 795,
-          "rows": 11
-        },
-        {
-          "nmId": "251796954",
-          "spend": 3194.46,
-          "revenue": 1668,
-          "rows": 6
-        },
-        {
-          "nmId": "734865504",
-          "spend": 3187.84,
-          "revenue": 0,
-          "rows": 12
-        },
-        {
-          "nmId": "399766297",
-          "spend": 3023.65,
-          "revenue": 8088,
-          "rows": 16
-        },
-        {
-          "nmId": "326913593",
-          "spend": 2799.8199999999997,
-          "revenue": 12864,
-          "rows": 17
-        },
-        {
-          "nmId": "280062078",
-          "spend": 2794.69,
-          "revenue": 5460,
-          "rows": 8
-        },
-        {
-          "nmId": "239879972",
-          "spend": 2687.3199999999997,
-          "revenue": 13477,
-          "rows": 6
-        },
-        {
-          "nmId": "538087651",
-          "spend": 2625.85,
-          "revenue": 3765,
-          "rows": 6
-        },
-        {
-          "nmId": "208745988",
-          "spend": 2556.67,
-          "revenue": 1532,
-          "rows": 9
-        },
-        {
-          "nmId": "256005551",
-          "spend": 2555.9199999999996,
-          "revenue": 3199,
-          "rows": 11
+          "nmId": "480197142",
+          "spend": 13275.259999999998,
+          "revenue": 9322,
+          "rows": 29
         },
         {
           "nmId": "913339130",
-          "spend": 2336.2,
-          "revenue": 4740,
-          "rows": 13
+          "spend": 13208.460000000001,
+          "revenue": 7900,
+          "rows": 43
         },
         {
-          "nmId": "456967436",
-          "spend": 2273.38,
-          "revenue": 675,
-          "rows": 11
+          "nmId": "266376150",
+          "spend": 13169.859999999995,
+          "revenue": 6932,
+          "rows": 23
         },
         {
-          "nmId": "174464512",
-          "spend": 1950.45,
-          "revenue": 8832,
-          "rows": 8
+          "nmId": "418209838",
+          "spend": 12442.320000000002,
+          "revenue": 8700,
+          "rows": 25
         },
         {
-          "nmId": "234145577",
-          "spend": 1869.03,
-          "revenue": 2052,
-          "rows": 8
+          "nmId": "484548663",
+          "spend": 12201.720000000003,
+          "revenue": 18298,
+          "rows": 21
         },
         {
-          "nmId": "547745952",
-          "spend": 1812.2600000000002,
-          "revenue": 16500,
-          "rows": 24
+          "nmId": "423392974",
+          "spend": 11743.859999999999,
+          "revenue": 6479,
+          "rows": 36
         },
         {
-          "nmId": "418228094",
-          "spend": 1806.33,
-          "revenue": 24049,
-          "rows": 41
+          "nmId": "244342184",
+          "spend": 11229.2,
+          "revenue": 3857,
+          "rows": 34
         },
         {
-          "nmId": "525496523",
-          "spend": 1763.06,
-          "revenue": 4500,
-          "rows": 7
+          "nmId": "302594163",
+          "spend": 10980.21,
+          "revenue": 18330,
+          "rows": 40
+        },
+        {
+          "nmId": "835961714",
+          "spend": 10398.57,
+          "revenue": 67451,
+          "rows": 107
+        },
+        {
+          "nmId": "831837304",
+          "spend": 10078.23,
+          "revenue": 82500,
+          "rows": 112
+        },
+        {
+          "nmId": "899373456",
+          "spend": 9989.070000000002,
+          "revenue": 88273,
+          "rows": 111
+        },
+        {
+          "nmId": "305018458",
+          "spend": 9845.140000000001,
+          "revenue": 3180,
+          "rows": 25
+        },
+        {
+          "nmId": "555457305",
+          "spend": 9837.66,
+          "revenue": 53283,
+          "rows": 86
+        },
+        {
+          "nmId": "399763000",
+          "spend": 9636.8,
+          "revenue": 231749,
+          "rows": 102
+        },
+        {
+          "nmId": "251796954",
+          "spend": 9544.420000000002,
+          "revenue": 7783,
+          "rows": 18
+        },
+        {
+          "nmId": "312907312",
+          "spend": 9212.669999999998,
+          "revenue": 13770,
+          "rows": 22
+        },
+        {
+          "nmId": "399766297",
+          "spend": 9086.42,
+          "revenue": 13480,
+          "rows": 54
+        },
+        {
+          "nmId": "205072071",
+          "spend": 8511.88,
+          "revenue": 36961,
+          "rows": 88
+        },
+        {
+          "nmId": "280062078",
+          "spend": 8340.869999999999,
+          "revenue": 14824,
+          "rows": 31
+        },
+        {
+          "nmId": "239879972",
+          "spend": 8295.69,
+          "revenue": 36919,
+          "rows": 20
+        },
+        {
+          "nmId": "326913593",
+          "spend": 8224.400000000001,
+          "revenue": 40200,
+          "rows": 67
         },
         {
           "nmId": "197804490",
-          "spend": 1728.0499999999997,
-          "revenue": 17548,
-          "rows": 12
+          "spend": 8019.639999999999,
+          "revenue": 58300,
+          "rows": 45
+        },
+        {
+          "nmId": "734865504",
+          "spend": 8002.070000000001,
+          "revenue": 3600,
+          "rows": 42
+        },
+        {
+          "nmId": "538087651",
+          "spend": 7946.720000000001,
+          "revenue": 10759,
+          "rows": 18
+        },
+        {
+          "nmId": "208745988",
+          "spend": 7846.03,
+          "revenue": 7660,
+          "rows": 25
+        },
+        {
+          "nmId": "256005551",
+          "spend": 7696.44,
+          "revenue": 10971,
+          "rows": 31
+        },
+        {
+          "nmId": "456967436",
+          "spend": 6357.539999999999,
+          "revenue": 8100,
+          "rows": 27
+        },
+        {
+          "nmId": "174464512",
+          "spend": 6240.229999999999,
+          "revenue": 25024,
+          "rows": 30
+        },
+        {
+          "nmId": "234145577",
+          "spend": 5471.67,
+          "revenue": 5814,
+          "rows": 22
         },
         {
           "nmId": "197560593",
-          "spend": 1607.35,
-          "revenue": 4511,
-          "rows": 12
+          "spend": 5235,
+          "revenue": 11797,
+          "rows": 38
+        },
+        {
+          "nmId": "547745952",
+          "spend": 5215.05,
+          "revenue": 37961,
+          "rows": 76
+        },
+        {
+          "nmId": "418228094",
+          "spend": 4747.4400000000005,
+          "revenue": 53871,
+          "rows": 112
+        },
+        {
+          "nmId": "525496523",
+          "spend": 4641.370000000001,
+          "revenue": 6000,
+          "rows": 20
         }
       ],
-      "unmatchedNmIdCount": 115,
-      "itemRows": 815,
-      "spend": 355184.67
+      "unmatchedNmIdCount": 117,
+      "itemRows": 2850,
+      "spend": 1040083.01
     },
     "wbFeedbacksDiagnostics": {
       "requests": 7,
@@ -9848,9 +9891,8 @@
       "warnings": [],
       "realizationWarnings": []
     },
-    "reviewPointsSource": "wb_finance_api_cashbackAmountSum",
+    "reviewPointsSource": "wb_finance_api_detailed_deduction_review",
     "noSourceChannels": [
-      "Отзывы за баллы",
       "Брендзона",
       "ВБ Инфлюенс",
       "Внешка",
@@ -9860,310 +9902,310 @@
     "unmatchedNmIds": [
       {
         "nmId": "223764453",
-        "spend": 29467.469999999998,
-        "revenue": 149265,
-        "rows": 58
+        "spend": 89154.77,
+        "revenue": 449199,
+        "rows": 164
       },
       {
         "nmId": "484600035",
-        "spend": 28744.1,
-        "revenue": 201687,
-        "rows": 55
+        "spend": 83713.97,
+        "revenue": 802328,
+        "rows": 187
       },
       {
         "nmId": "399134789",
-        "spend": 25389.43,
-        "revenue": 276283,
-        "rows": 49
+        "spend": 76859.13,
+        "revenue": 800208,
+        "rows": 139
       },
       {
         "nmId": "307871378",
-        "spend": 25246.35,
-        "revenue": 165339,
-        "rows": 42
+        "spend": 74090.73999999999,
+        "revenue": 473636,
+        "rows": 134
       },
       {
         "nmId": "815466628",
-        "spend": 22336.72,
-        "revenue": 210100,
-        "rows": 70
-      },
-      {
-        "nmId": "825315621",
-        "spend": 16855.54,
-        "revenue": 89234,
-        "rows": 45
+        "spend": 65979.13,
+        "revenue": 640308,
+        "rows": 202
       },
       {
         "nmId": "260388016",
-        "spend": 13294.31,
-        "revenue": 47041,
-        "rows": 12
+        "spend": 37583.829999999994,
+        "revenue": 137647,
+        "rows": 47
+      },
+      {
+        "nmId": "825315621",
+        "spend": 35380.69,
+        "revenue": 247769,
+        "rows": 132
       },
       {
         "nmId": "205074596",
-        "spend": 10367.97,
-        "revenue": 76135,
-        "rows": 66
+        "spend": 28958.98,
+        "revenue": 220813,
+        "rows": 217
       },
       {
         "nmId": "727028589",
-        "spend": 8604.460000000001,
-        "revenue": 65280,
-        "rows": 35
-      },
-      {
-        "nmId": "344464243",
-        "spend": 7158.7,
-        "revenue": 11895,
-        "rows": 9
+        "spend": 24342.92,
+        "revenue": 190106,
+        "rows": 106
       },
       {
         "nmId": "471396076",
-        "spend": 6603.65,
-        "revenue": 8106,
-        "rows": 26
-      },
-      {
-        "nmId": "239888358",
-        "spend": 6324.38,
-        "revenue": 220016,
+        "spend": 22349.219999999998,
+        "revenue": 37056,
         "rows": 67
       },
       {
-        "nmId": "319397405",
-        "spend": 6139.57,
-        "revenue": 24138,
-        "rows": 14
-      },
-      {
-        "nmId": "526299109",
-        "spend": 5930.6,
-        "revenue": 82352,
-        "rows": 45
-      },
-      {
         "nmId": "668799528",
-        "spend": 5764.67,
-        "revenue": 69046,
-        "rows": 45
+        "spend": 20377.29,
+        "revenue": 211703,
+        "rows": 137
       },
       {
-        "nmId": "488959127",
-        "spend": 5713.38,
-        "revenue": 121382,
-        "rows": 53
+        "nmId": "344464243",
+        "spend": 19250.11,
+        "revenue": 41175,
+        "rows": 39
       },
       {
-        "nmId": "373703287",
-        "spend": 5654.37,
-        "revenue": 12600,
-        "rows": 23
+        "nmId": "239888358",
+        "spend": 18778.390000000003,
+        "revenue": 513094,
+        "rows": 154
       },
       {
-        "nmId": "480197142",
-        "spend": 4163.110000000001,
-        "revenue": 1554,
-        "rows": 11
-      },
-      {
-        "nmId": "266376150",
-        "spend": 4126.070000000001,
-        "revenue": 2132,
-        "rows": 6
-      },
-      {
-        "nmId": "418209838",
-        "spend": 4071.8300000000004,
-        "revenue": 4350,
-        "rows": 7
-      },
-      {
-        "nmId": "244342184",
-        "spend": 3927.5700000000006,
-        "revenue": 3857,
-        "rows": 11
-      },
-      {
-        "nmId": "484548663",
-        "spend": 3875.09,
-        "revenue": 6709,
-        "rows": 6
-      },
-      {
-        "nmId": "555457305",
-        "spend": 3669.58,
-        "revenue": 17760,
-        "rows": 30
-      },
-      {
-        "nmId": "899373456",
-        "spend": 3667.51,
-        "revenue": 44137,
+        "nmId": "319397405",
+        "spend": 16919.31,
+        "revenue": 66156,
         "rows": 40
       },
       {
-        "nmId": "302594163",
-        "spend": 3636.97,
-        "revenue": 4700,
-        "rows": 10
+        "nmId": "526299109",
+        "spend": 16488.92,
+        "revenue": 233393,
+        "rows": 132
       },
       {
-        "nmId": "399763000",
-        "spend": 3533.5300000000007,
-        "revenue": 54722,
-        "rows": 36
+        "nmId": "373703287",
+        "spend": 16298.01,
+        "revenue": 68400,
+        "rows": 88
       },
       {
-        "nmId": "831837304",
-        "spend": 3430.1000000000004,
-        "revenue": 24200,
-        "rows": 36
+        "nmId": "488959127",
+        "spend": 14578.18,
+        "revenue": 335541,
+        "rows": 176
       },
       {
-        "nmId": "835961714",
-        "spend": 3389.9,
-        "revenue": 29451,
-        "rows": 32
-      },
-      {
-        "nmId": "205072071",
-        "spend": 3378.87,
-        "revenue": 9120,
-        "rows": 26
-      },
-      {
-        "nmId": "312907312",
-        "spend": 3319.83,
-        "revenue": 4050,
-        "rows": 8
-      },
-      {
-        "nmId": "423392974",
-        "spend": 3303.69,
-        "revenue": 0,
-        "rows": 9
-      },
-      {
-        "nmId": "305018458",
-        "spend": 3252.84,
-        "revenue": 795,
-        "rows": 11
-      },
-      {
-        "nmId": "251796954",
-        "spend": 3194.46,
-        "revenue": 1668,
-        "rows": 6
-      },
-      {
-        "nmId": "734865504",
-        "spend": 3187.84,
-        "revenue": 0,
-        "rows": 12
-      },
-      {
-        "nmId": "399766297",
-        "spend": 3023.65,
-        "revenue": 8088,
-        "rows": 16
-      },
-      {
-        "nmId": "326913593",
-        "spend": 2799.8199999999997,
-        "revenue": 12864,
-        "rows": 17
-      },
-      {
-        "nmId": "280062078",
-        "spend": 2794.69,
-        "revenue": 5460,
-        "rows": 8
-      },
-      {
-        "nmId": "239879972",
-        "spend": 2687.3199999999997,
-        "revenue": 13477,
-        "rows": 6
-      },
-      {
-        "nmId": "538087651",
-        "spend": 2625.85,
-        "revenue": 3765,
-        "rows": 6
-      },
-      {
-        "nmId": "208745988",
-        "spend": 2556.67,
-        "revenue": 1532,
-        "rows": 9
-      },
-      {
-        "nmId": "256005551",
-        "spend": 2555.9199999999996,
-        "revenue": 3199,
-        "rows": 11
+        "nmId": "480197142",
+        "spend": 13275.259999999998,
+        "revenue": 9322,
+        "rows": 29
       },
       {
         "nmId": "913339130",
-        "spend": 2336.2,
-        "revenue": 4740,
-        "rows": 13
+        "spend": 13208.460000000001,
+        "revenue": 7900,
+        "rows": 43
       },
       {
-        "nmId": "456967436",
-        "spend": 2273.38,
-        "revenue": 675,
-        "rows": 11
+        "nmId": "266376150",
+        "spend": 13169.859999999995,
+        "revenue": 6932,
+        "rows": 23
       },
       {
-        "nmId": "174464512",
-        "spend": 1950.45,
-        "revenue": 8832,
-        "rows": 8
+        "nmId": "418209838",
+        "spend": 12442.320000000002,
+        "revenue": 8700,
+        "rows": 25
       },
       {
-        "nmId": "234145577",
-        "spend": 1869.03,
-        "revenue": 2052,
-        "rows": 8
+        "nmId": "484548663",
+        "spend": 12201.720000000003,
+        "revenue": 18298,
+        "rows": 21
       },
       {
-        "nmId": "547745952",
-        "spend": 1812.2600000000002,
-        "revenue": 16500,
-        "rows": 24
+        "nmId": "423392974",
+        "spend": 11743.859999999999,
+        "revenue": 6479,
+        "rows": 36
       },
       {
-        "nmId": "418228094",
-        "spend": 1806.33,
-        "revenue": 24049,
-        "rows": 41
+        "nmId": "244342184",
+        "spend": 11229.2,
+        "revenue": 3857,
+        "rows": 34
       },
       {
-        "nmId": "525496523",
-        "spend": 1763.06,
-        "revenue": 4500,
-        "rows": 7
+        "nmId": "302594163",
+        "spend": 10980.21,
+        "revenue": 18330,
+        "rows": 40
+      },
+      {
+        "nmId": "835961714",
+        "spend": 10398.57,
+        "revenue": 67451,
+        "rows": 107
+      },
+      {
+        "nmId": "831837304",
+        "spend": 10078.23,
+        "revenue": 82500,
+        "rows": 112
+      },
+      {
+        "nmId": "899373456",
+        "spend": 9989.070000000002,
+        "revenue": 88273,
+        "rows": 111
+      },
+      {
+        "nmId": "305018458",
+        "spend": 9845.140000000001,
+        "revenue": 3180,
+        "rows": 25
+      },
+      {
+        "nmId": "555457305",
+        "spend": 9837.66,
+        "revenue": 53283,
+        "rows": 86
+      },
+      {
+        "nmId": "399763000",
+        "spend": 9636.8,
+        "revenue": 231749,
+        "rows": 102
+      },
+      {
+        "nmId": "251796954",
+        "spend": 9544.420000000002,
+        "revenue": 7783,
+        "rows": 18
+      },
+      {
+        "nmId": "312907312",
+        "spend": 9212.669999999998,
+        "revenue": 13770,
+        "rows": 22
+      },
+      {
+        "nmId": "399766297",
+        "spend": 9086.42,
+        "revenue": 13480,
+        "rows": 54
+      },
+      {
+        "nmId": "205072071",
+        "spend": 8511.88,
+        "revenue": 36961,
+        "rows": 88
+      },
+      {
+        "nmId": "280062078",
+        "spend": 8340.869999999999,
+        "revenue": 14824,
+        "rows": 31
+      },
+      {
+        "nmId": "239879972",
+        "spend": 8295.69,
+        "revenue": 36919,
+        "rows": 20
+      },
+      {
+        "nmId": "326913593",
+        "spend": 8224.400000000001,
+        "revenue": 40200,
+        "rows": 67
       },
       {
         "nmId": "197804490",
-        "spend": 1728.0499999999997,
-        "revenue": 17548,
-        "rows": 12
+        "spend": 8019.639999999999,
+        "revenue": 58300,
+        "rows": 45
+      },
+      {
+        "nmId": "734865504",
+        "spend": 8002.070000000001,
+        "revenue": 3600,
+        "rows": 42
+      },
+      {
+        "nmId": "538087651",
+        "spend": 7946.720000000001,
+        "revenue": 10759,
+        "rows": 18
+      },
+      {
+        "nmId": "208745988",
+        "spend": 7846.03,
+        "revenue": 7660,
+        "rows": 25
+      },
+      {
+        "nmId": "256005551",
+        "spend": 7696.44,
+        "revenue": 10971,
+        "rows": 31
+      },
+      {
+        "nmId": "456967436",
+        "spend": 6357.539999999999,
+        "revenue": 8100,
+        "rows": 27
+      },
+      {
+        "nmId": "174464512",
+        "spend": 6240.229999999999,
+        "revenue": 25024,
+        "rows": 30
+      },
+      {
+        "nmId": "234145577",
+        "spend": 5471.67,
+        "revenue": 5814,
+        "rows": 22
       },
       {
         "nmId": "197560593",
-        "spend": 1607.35,
-        "revenue": 4511,
-        "rows": 12
+        "spend": 5235,
+        "revenue": 11797,
+        "rows": 38
+      },
+      {
+        "nmId": "547745952",
+        "spend": 5215.05,
+        "revenue": 37961,
+        "rows": 76
+      },
+      {
+        "nmId": "418228094",
+        "spend": 4747.4400000000005,
+        "revenue": 53871,
+        "rows": 112
+      },
+      {
+        "nmId": "525496523",
+        "spend": 4641.370000000001,
+        "revenue": 6000,
+        "rows": 20
       }
     ],
     "notes": [
       "Ozon ad spend comes from Google Sheets fact_ads_daily_sku when present; planPctOzon remains the plan benchmark.",
       "WB revenue plan is max(corporate WB plan, Smart-Sale IU WB plan); WB ad plan remains on the IU/DRR ad contour.",
       "Ozon revenue plan is max(corporate Ozon plan, Smart-Sale IU 40% share); ad plan scales from the selected revenue plan by Ozon benchmark DRR.",
-      "WB points/loyalty spend uses WB Finance API cashbackAmountSum when present, then WB UPD, then WB Feedbacks API as a weak fallback.",
+      "WB review spend uses WB Finance API detailed deduction rows where sellerOperName is review write-off; cashbackAmount is retained only as a control field.",
       "WB contract logic: factual turnover is sales minus returns, without WB deductions; it maps to revenueWb / finance turnover.",
       "WB marketing plan is 8% of factual turnover. ordersRevenueWb is retained as a report-control field, not as the contract DRR denominator.",
       "WB quarter summary combines report workbook sales/orders with March-April DRR rows and the current May daily IU/DRR layer. DRR by contract uses sales/buyouts; the control advertising percentage uses orders revenue.",

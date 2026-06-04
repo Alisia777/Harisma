@@ -1,6 +1,6 @@
 (function () {
-if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260603EXPORTAUDIT2__) return;
-window.__ALTEA_DASHBOARD_INTERACTIVE_20260603EXPORTAUDIT2__ = true;
+if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260604METRICNULLS1__) return;
+window.__ALTEA_DASHBOARD_INTERACTIVE_20260604METRICNULLS1__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE3__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE2__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE1__ = true;
@@ -16,10 +16,11 @@ window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260603exportaudit2';
+  const VERSION = '20260604metricnulls1';
 const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
+  const DASHBOARD_RANGE_STORAGE_KEY = 'altea.portal.dashboardRange.v2';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
   const PRESET_KEYS = ['yesterday', '7', 'prevweek', '14', '30'];
   const DASHBOARD_FOCUS_METRICS = ['revenue', 'completion', 'margin', 'stock'];
@@ -175,6 +176,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     }
     return 0;
   };
+  const hasMetricNumber = (value) => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
   const avg = (values) => {
     const numbers = (Array.isArray(values) ? values : []).map((value) => Number(value)).filter((value) => Number.isFinite(value));
     return numbers.length ? numbers.reduce((sum, value) => sum + value, 0) / numbers.length : 0;
@@ -184,6 +186,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(Math.round(num(value)));
   };
   const pct = (value) => {
+    if (!hasMetricNumber(value)) return '—';
     if (typeof fmt === 'object' && fmt && typeof fmt.pct === 'function') return fmt.pct(value);
     return `${(num(value) * 100).toFixed(1)}%`;
   };
@@ -353,7 +356,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     return addDays(currentDay, 1 - day);
   };
   const toneCompletion = (value) => (num(value) >= 1 ? 'ok' : num(value) >= 0.85 ? 'warn' : 'danger');
-  const toneMargin = (value) => (num(value) >= 0.65 ? 'ok' : num(value) >= 0.45 ? 'warn' : 'danger');
+  const toneMargin = (value) => (!hasMetricNumber(value) ? 'info' : num(value) >= 0.65 ? 'ok' : num(value) >= 0.45 ? 'warn' : 'danger');
   const toneDrr = (value) => (num(value) <= 0.15 ? 'ok' : num(value) <= 0.22 ? 'warn' : 'danger');
 
   function repricerPayloadRows(payload) {
@@ -440,6 +443,11 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
         const ordersRevenue = num(point?.ordersRevenue);
         const platformRevenue = num(point?.revenue);
         const rawRevenue = firstPositive(point?.ordersRevenue, point?.revenue, point?.financeTurnover);
+        const estimatedMargin = hasMetricNumber(point?.estimatedMargin) && Number(point.estimatedMargin) > 0
+          ? Number(point.estimatedMargin)
+          : 0;
+        const hasMargin = financialResult > 0 || estimatedMargin > 0;
+        const margin = financialResult > 0 ? financialResult : estimatedMargin;
         let revenue = rawRevenue;
         let revenueSource = ordersRevenue > 0
           ? 'orders_revenue'
@@ -461,7 +469,9 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
           financeTurnover,
           financialResult,
           sellerTurnoverDays,
-          margin: financialResult > 0 ? financialResult : num(point?.estimatedMargin)
+          margin: hasMargin ? margin : 0,
+          hasMargin,
+          marginSource: financialResult > 0 ? 'financial_result' : estimatedMargin > 0 ? 'estimated_margin' : ''
         };
       })
       .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
@@ -1134,7 +1144,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     const stored = app.uiHotfix.dashboardRange;
     if ((!stored.start && !stored.end) || !stored.mode || !stored.active) {
       try {
-        const raw = window.localStorage?.getItem('altea.portal.dashboardRange.v1');
+        const raw = window.localStorage?.getItem(DASHBOARD_RANGE_STORAGE_KEY);
         if (raw) {
           const persisted = JSON.parse(raw);
           if (persisted && typeof persisted === 'object') {
@@ -1155,7 +1165,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
 
   function persistRangeState(stored) {
     try {
-      window.localStorage?.setItem('altea.portal.dashboardRange.v1', JSON.stringify({
+      window.localStorage?.setItem(DASHBOARD_RANGE_STORAGE_KEY, JSON.stringify({
         mode: stored?.mode === 'custom' ? 'custom' : 'preset',
         active: typeof stored?.active === 'string' && stored.active ? stored.active : '7',
         start: typeof stored?.start === 'string' ? stored.start : '',
@@ -1219,9 +1229,20 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     const stored = ensureRangeState();
     const bounds = dateBounds();
     const today = cleanDate(bounds.max || new Date());
+    const storedEnd = parseDate(stored.end);
+    const latestMonthStart = startOfMonth(today);
+    let resetStaleRange = false;
+    if (storedEnd && storedEnd < latestMonthStart) {
+      stored.mode = 'preset';
+      stored.active = '7';
+      stored.start = '';
+      stored.end = '';
+      resetStaleRange = true;
+    }
     if (stored.mode === 'preset' || !stored.start || !stored.end) {
       Object.assign(stored, presetRange(stored.active || '7', today));
     }
+    if (resetStaleRange) persistRangeState(stored);
     const requestedStart = parseDate(stored.start) || addDays(today, -6);
     const requestedEnd = parseDate(stored.end) || today;
     let effectiveStart = cleanDate(requestedStart);
@@ -1535,7 +1556,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   }
 
   function sparkline(values) {
-    const clean = values.map(num).filter((value) => Number.isFinite(value));
+    const clean = values.filter(hasMetricNumber).map(Number);
     if (!clean.length) return null;
     const width = 240;
     const height = 72;
@@ -1773,6 +1794,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       const spend = num(ads.spend);
       const adRevenue = num(ads.revenue);
       const marginBase = financeTurnover > 0 ? financeTurnover : revenue;
+      const hasMargin = trend.hasMargin === true && marginBase > 0;
       const useCompanyPlanForDay = planRevenue > 0;
       return {
         date,
@@ -1782,8 +1804,10 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
         financeTurnover,
         completion: useCompanyPlanForDay ? revenue / planRevenue : planUnits > 0 ? factUnits / planUnits : 0,
         revenue,
+        marginBase,
         margin,
-        marginPct: marginBase > 0 ? margin / marginBase : 0,
+        hasMargin,
+        marginPct: hasMargin ? margin / marginBase : null,
         views: num(ads.views),
         clicks: num(ads.clicks),
         orders: num(ads.orders),
@@ -1803,15 +1827,16 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     const units = days.reduce((sum, row) => sum + row.factUnits, 0);
     const revenue = days.reduce((sum, row) => sum + row.revenue, 0);
     const financeTurnover = days.reduce((sum, row) => sum + row.financeTurnover, 0);
-    const margin = days.reduce((sum, row) => sum + row.margin, 0);
+    const marginRows = days.filter((row) => row.hasMargin && row.marginBase > 0);
+    const margin = marginRows.reduce((sum, row) => sum + row.margin, 0);
+    const marginBase = marginRows.reduce((sum, row) => sum + row.marginBase, 0);
     const views = days.reduce((sum, row) => sum + row.views, 0);
     const clicks = days.reduce((sum, row) => sum + row.clicks, 0);
     const orders = days.reduce((sum, row) => sum + row.orders, 0);
     const spend = days.reduce((sum, row) => sum + row.spend, 0);
     const adRevenue = days.reduce((sum, row) => sum + row.adRevenue, 0);
     const completion = plan > 0 ? (usesCompanyPlan ? planFactRevenue / plan : units / plan) : 0;
-    const marginBase = financeTurnover > 0 ? financeTurnover : revenue;
-    const marginPct = marginBase > 0 ? margin / marginBase : 0;
+    const marginPct = marginRows.length && marginBase > 0 ? margin / marginBase : null;
     const avgCheck = units > 0 ? revenue / units : 0;
     const ctr = views > 0 ? clicks / views : null;
     const drr = adRevenue > 0 ? spend / adRevenue : null;
@@ -1841,6 +1866,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       revenue,
       financeTurnover,
       margin,
+      hasMargin: marginRows.length > 0,
+      marginDays: marginRows.length,
       completion,
       avgUnits: units / Math.max(1, rangeLike.days),
       avgPlan: plan / Math.max(1, rangeLike.days),
@@ -1857,7 +1884,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       issues,
       sparkUnits: sparkline(days.map((row) => row.factUnits)),
       sparkRevenue: sparkline(days.map((row) => row.revenue)),
-      sparkMargin: sparkline(days.map((row) => row.margin)),
+      sparkMargin: sparkline(days.map((row) => row.hasMargin ? row.margin : null)),
       sparkSpend: sparkline(days.map((row) => row.spend)),
       sparkAvgCheck: sparkline(days.map((row) => (row.factUnits > 0 ? row.revenue / row.factUnits : 0))),
       sparkAvgPrice: sparkline(priceSeries.map((row) => row.avgPrice)),
@@ -1875,6 +1902,10 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
 
   function metricUsesCompanyPlan(metric) {
     return metric?.planMode === 'company_revenue';
+  }
+
+  function metricHasMargin(metric) {
+    return Boolean(metric?.hasMargin) && hasMetricNumber(metric?.marginPct);
   }
 
   function metricPlanDisplay(metric) {
@@ -1898,6 +1929,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   }
 
   function metricMarginSubDisplay(metric) {
+    if (!metricHasMargin(metric)) return 'маржинальный источник не опубликован';
     const base = num(metric?.marginBase) || num(metric?.revenue);
     const label = metric?.marginBaseLabel === 'finance_turnover' ? 'от фин. оборота' : 'от выручки';
     return `${money(metric?.margin)} · ${label} ${money(base)}`;
@@ -2559,7 +2591,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
           fact_units: metric.units,
           completion_pct: Math.round(num(metric.completion) * 10000) / 100,
           margin: metric.margin,
-          margin_pct: Math.round(num(metric.marginPct) * 10000) / 100,
+          margin_pct: metricHasMargin(metric) ? Math.round(Number(metric.marginPct) * 10000) / 100 : '',
           avg_check: metric.avgCheck,
           spend: metric.spend,
           ad_revenue: metric.adRevenue,
@@ -4281,7 +4313,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. Справа последние 14 дней маржи и выручки.`,
       body: `
         <div class="portal-exec-modal-metrics">
-          ${modalSummaryCard('Маржа', money(metric.margin))}
+          ${modalSummaryCard('Маржа', metricHasMargin(metric) ? money(metric.margin) : '—')}
           ${modalSummaryCard('WoW', marginDelta !== null ? pct(marginDelta) : '—')}
           ${modalSummaryCard('Маржинальность', pct(metric.marginPct))}
           ${modalSummaryCard('Выручка', money(metric.revenue))}
@@ -4338,8 +4370,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
                     <tr>
                       <td>${esc(shortDate(row.date))}</td>
                       <td>${esc(money(row.revenue))}</td>
-                      <td>${esc(money(row.margin))}</td>
-                      <td>${esc(row.revenue > 0 ? pct(row.margin / row.revenue) : '—')}</td>
+                      <td>${esc(row.hasMargin ? money(row.margin) : '—')}</td>
+                      <td>${esc(row.hasMargin && row.marginBase > 0 ? pct(row.margin / row.marginBase) : '—')}</td>
                       <td>${esc(int(row.factUnits))}</td>
                     </tr>
                   `).join('') : `<tr><td colspan="5">Нет дневных данных по марже.</td></tr>`}
@@ -5636,6 +5668,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       const spend = num(ads.spend);
       const adRevenue = num(ads.revenue);
       const marginBase = revenue > 0 ? revenue : financeTurnover;
+      const hasMargin = trend.hasMargin === true && marginBase > 0;
       const useCompanyPlanForDay = planRevenue > 0;
       return {
         date,
@@ -5648,8 +5681,10 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
         revenueSource,
         completion: hasFact ? (useCompanyPlanForDay ? revenue / planRevenue : planUnits > 0 ? factUnits / planUnits : 0) : null,
         revenue,
+        marginBase,
         margin,
-        marginPct: hasFact && marginBase > 0 ? margin / marginBase : null,
+        hasMargin,
+        marginPct: hasFact && hasMargin ? margin / marginBase : null,
         views: num(ads.views),
         clicks: num(ads.clicks),
         orders: num(ads.orders),
@@ -5680,15 +5715,16 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       || (days.find((row) => row.revenueSource)?.revenueSource)
       || '';
     const financeTurnover = days.reduce((sum, row) => sum + row.financeTurnover, 0);
-    const margin = days.reduce((sum, row) => sum + row.margin, 0);
+    const marginRows = days.filter((row) => row.hasMargin && row.marginBase > 0);
+    const margin = marginRows.reduce((sum, row) => sum + row.margin, 0);
+    const marginBase = marginRows.reduce((sum, row) => sum + row.marginBase, 0);
     const views = days.reduce((sum, row) => sum + row.views, 0);
     const clicks = days.reduce((sum, row) => sum + row.clicks, 0);
     const orders = days.reduce((sum, row) => sum + row.orders, 0);
     const spend = days.reduce((sum, row) => sum + row.spend, 0);
     const adRevenue = days.reduce((sum, row) => sum + row.adRevenue, 0);
     const completion = plan > 0 ? (usesCompanyPlan ? planFactRevenue / plan : units / plan) : 0;
-    const marginBase = revenue > 0 ? revenue : financeTurnover;
-    const marginPct = marginBase > 0 ? margin / marginBase : 0;
+    const marginPct = marginRows.length && marginBase > 0 ? margin / marginBase : null;
     const avgCheck = units > 0 ? revenue / units : 0;
     const ctr = views > 0 ? clicks / views : null;
     const drr = adRevenue > 0 ? spend / adRevenue : null;
@@ -5725,6 +5761,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       revenueSource,
       financeTurnover,
       margin,
+      hasMargin: marginRows.length > 0,
+      marginDays: marginRows.length,
       completion,
       avgUnits: units / Math.max(1, observedDays || rangeLike.days),
       avgPlan: plan / Math.max(1, planFactDays.length || rangeLike.days),
@@ -5743,7 +5781,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       issues,
       sparkUnits: sparkline(days.map((row) => row.factUnits)),
       sparkRevenue: sparkline(days.map((row) => row.revenue)),
-      sparkMargin: sparkline(days.map((row) => row.margin)),
+      sparkMargin: sparkline(days.map((row) => row.hasMargin ? row.margin : null)),
       sparkSpend: sparkline(days.map((row) => row.spend)),
       sparkAvgCheck: sparkline(days.map((row) => (row.factUnits > 0 ? row.revenue / row.factUnits : 0))),
       sparkAvgPrice: sparkline(priceSeries.map((row) => row.avgPrice)),
@@ -6179,15 +6217,18 @@ function dashboardTaskStatusChip(task) {
 
   function dashboardStatusSentence(metric, issueCount, taskCount, executive) {
     const completion = num(metric?.completion);
-    const marginPct = num(metric?.marginPct);
+    const hasMargin = metricHasMargin(metric);
+    const marginPct = hasMargin ? num(metric?.marginPct) : null;
     if (executive?.range?.clamped) {
       return 'Период шире доступного факта, поэтому экран честно считает только опубликованные дни.';
     }
     if (completion >= 1 && issueCount <= 3 && taskCount === 0) {
       return 'План держится, явных ручных вмешательств на сегодня немного.';
     }
-    if (completion >= 0.9 && marginPct >= 0.25) {
-      return 'План, маржа, выручка и запас собраны в одном рабочем срезе.';
+    if (completion >= 0.9 && (!hasMargin || marginPct >= 0.25)) {
+      return hasMargin
+        ? 'План, маржа, выручка и запас собраны в одном рабочем срезе.'
+        : 'План, выручка и запас собраны в одном рабочем срезе; маржа по площадке не опубликована.';
     }
     if (completion < 0.75) {
       return 'Нужен фокус: план проседает, сначала смотрим задачи и проблемные SKU.';
@@ -6290,7 +6331,7 @@ function dashboardTaskStatusChip(task) {
       const value = dailyCompletion(row, metric);
       return value === null ? NaN : value * 100;
     });
-    const marginPoints = dashboardCalmPoints(metric.days, (row) => row.margin);
+    const marginPoints = dashboardCalmPoints(metric.days, (row) => row.hasMargin ? row.margin : NaN);
     const turnoverSource = turnover.turnoverPublishedSeries?.length
       ? turnover.turnoverPublishedSeries
       : (turnover.turnoverSeries?.length ? turnover.turnoverSeries : (turnover.rows || []).slice(0, 18));
@@ -6469,13 +6510,13 @@ function dashboardTaskStatusChip(task) {
         key: 'margin',
         label: 'Маржа',
         value: pct(metric.marginPct),
-        sub: `${money(metric.margin)} · ${pct(metric.marginPct)} от оборота`,
+        sub: metricMarginSubDisplay(metric),
         tone: toneMargin(metric.marginPct),
         open: 'margin',
         openKey: metric.key || 'all',
-        progress: Math.max(0.04, Math.min(1, num(metric.marginPct) / 0.35)),
+        progress: metricHasMargin(metric) ? Math.max(0.04, Math.min(1, num(metric.marginPct) / 0.35)) : 0.04,
         chartCompletion: num(metric.completion),
-        points: dashboardCalmPoints(metric.days, (row) => row.margin),
+        points: dashboardCalmPoints(metric.days, (row) => row.hasMargin ? row.margin : NaN),
         empty: 'Нет ряда маржи'
       },
       {
@@ -6537,14 +6578,15 @@ function dashboardTaskStatusChip(task) {
   }
 
   function dashboardNetworkTone(metric, turnover) {
-    if (num(metric.completion) < 0.78 || num(metric.marginPct) < 0.12) return 'danger';
-    if (num(metric.completion) < 0.94 || num(metric.marginPct) < 0.2 || (metric.drr !== null && metric.drr !== undefined && num(metric.drr) > 0.22) || (turnover.avgTurnoverDays !== null && turnover.avgTurnoverDays > 95)) return 'warn';
+    const hasMargin = metricHasMargin(metric);
+    if (num(metric.completion) < 0.78 || (hasMargin && num(metric.marginPct) < 0.12)) return 'danger';
+    if (num(metric.completion) < 0.94 || (hasMargin && num(metric.marginPct) < 0.2) || (metric.drr !== null && metric.drr !== undefined && num(metric.drr) > 0.22) || (turnover.avgTurnoverDays !== null && turnover.avgTurnoverDays > 95)) return 'warn';
     return 'ok';
   }
 
   function dashboardNetworkScore(metric, turnover) {
     const plan = Math.min(34, Math.max(0, num(metric.completion) / 1.08 * 34));
-    const margin = Math.min(28, Math.max(0, num(metric.marginPct) / 0.34 * 28));
+    const margin = metricHasMargin(metric) ? Math.min(28, Math.max(0, num(metric.marginPct) / 0.34 * 28)) : 14;
     const ads = metric.drr === null || metric.drr === undefined
       ? 12
       : num(metric.drr) <= 0.15
@@ -6771,7 +6813,7 @@ function dashboardTaskStatusChip(task) {
     const items = [];
     const turnover = turnoverMetric || buildTurnoverMetric(metric.key, executive.range);
     if (num(metric.completion) < 0.85) items.push(`План закрывается только на ${pct(metric.completion)}. Проверьте лидирующие и провальные SKU.`);
-    if (num(metric.marginPct) < 0.18) items.push(`Маржа просела до ${pct(metric.marginPct)}. Нужна проверка цены, скидки клиента и промо.`);
+    if (metricHasMargin(metric) && num(metric.marginPct) < 0.18) items.push(`Маржа просела до ${pct(metric.marginPct)}. Нужна проверка цены, скидки клиента и промо.`);
     if (turnover.avgTurnoverDays !== null && turnover.avgTurnoverDays > 60) items.push(`Оборачиваемость выросла до ${turnover.avgTurnoverDays.toFixed(1)} дн. Смотрите запас и спрос по SKU.`);
     if (num(metric.issues?.counters?.negativeMargin) > 0) items.push(`Есть ${int(metric.issues.counters.negativeMargin)} SKU с отрицательной маржой. Их стоит открыть во вкладке цен.`);
     if (num(metric.issues?.counters?.lowStock) > 0) items.push(`Есть ${int(metric.issues.counters.lowStock)} SKU с низким покрытием. Это риск просадки плана.`);
@@ -8158,7 +8200,8 @@ function dashboardTaskStatusChip(task) {
       ? turnover.turnoverPublishedSeries
       : (turnover.turnoverSeries?.length ? turnover.turnoverSeries : (turnover.rows || []).slice(0, 18));
     const completion = num(metric.completion);
-    const marginPct = num(metric.marginPct);
+    const hasMargin = metricHasMargin(metric);
+    const marginPct = hasMargin ? num(metric.marginPct) : null;
     const turnoverProgress = turnover.avgTurnoverDays !== null
       ? Math.max(0.08, Math.min(1, 1 - Math.min(120, turnover.avgTurnoverDays) / 140))
       : 0.18;
@@ -8205,10 +8248,10 @@ function dashboardTaskStatusChip(task) {
         tone: toneMargin(metric.marginPct),
         open: 'margin',
         openKey: metricKey,
-        progress: Math.max(0.04, Math.min(1, marginPct / 0.35)),
+        progress: hasMargin ? Math.max(0.04, Math.min(1, marginPct / 0.35)) : 0.04,
         chartCompletion: completion,
         delta: deltaBadge('LFL', relativeDelta(metric.margin, previous?.margin)),
-        points: dashboardCalmPoints(metric.days, (row) => row.margin),
+        points: dashboardCalmPoints(metric.days, (row) => row.hasMargin ? row.margin : NaN),
         empty: 'Нет маржи'
       },
       {
@@ -8239,7 +8282,7 @@ function dashboardTaskStatusChip(task) {
     const metric = executive?.focusMetric || executive?.overall || {};
     const turnover = buildTurnoverMetric(metric.key || 'all', executive.range);
     const completionScore = Math.min(36, Math.max(0, num(metric.completion) / 1.12 * 36));
-    const marginScore = Math.min(24, Math.max(0, num(metric.marginPct) / 0.34 * 24));
+    const marginScore = metricHasMargin(metric) ? Math.min(24, Math.max(0, num(metric.marginPct) / 0.34 * 24)) : 12;
     const stockScore = turnover.avgTurnoverDays === null
       ? 12
       : turnover.avgTurnoverDays <= 45
@@ -8268,18 +8311,21 @@ function dashboardTaskStatusChip(task) {
 
   function dashboardCleanStatusSentence(metric, executive) {
     const completion = num(metric?.completion);
-    const marginPct = num(metric?.marginPct);
+    const hasMargin = metricHasMargin(metric);
+    const marginPct = hasMargin ? num(metric?.marginPct) : null;
     const drr = metric?.drr === null || metric?.drr === undefined ? null : num(metric.drr);
     if (executive?.range?.clamped) {
       return 'Период шире опубликованного факта, поэтому экран честно считает только доступные дни.';
     }
-    if (completion >= 1 && marginPct >= 0.28 && (drr === null || drr <= 0.18)) {
-      return 'План держится, маржа выглядит здорово, рекламная нагрузка в спокойном коридоре.';
+    if (completion >= 1 && (!hasMargin || marginPct >= 0.28) && (drr === null || drr <= 0.18)) {
+      return hasMargin
+        ? 'План держится, маржа выглядит здорово, рекламная нагрузка в спокойном коридоре.'
+        : 'План держится, рекламная нагрузка в спокойном коридоре; маржинальный источник по этой площадке не опубликован.';
     }
     if (completion < 0.82) {
       return 'Главный акцент сейчас — темп продаж: план ниже нужной траектории, смотрим вклад площадок и дней.';
     }
-    if (marginPct < 0.18) {
+    if (hasMargin && marginPct < 0.18) {
       return 'Продажи есть, но экран подсвечивает давление на маржу: важно смотреть mix, цену и рекламный вклад.';
     }
     if (drr !== null && drr > 0.22) {
@@ -8302,7 +8348,7 @@ function dashboardTaskStatusChip(task) {
         label: 'Маржа',
         value: pct(metric.marginPct),
         hint: metricMarginSubDisplay(metric),
-        tone: toneMargin(metric.marginPct)
+        tone: metricHasMargin(metric) ? toneMargin(metric.marginPct) : 'info'
       },
       {
         label: 'ДРР',

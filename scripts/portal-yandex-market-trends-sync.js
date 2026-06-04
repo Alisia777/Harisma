@@ -316,6 +316,56 @@ function filterRowsByDate(rows, from, to) {
   });
 }
 
+function salesFunnelRowSignature(row = {}) {
+  const date = reportRowDate(row);
+  const offerId = normalizeKey(row.offerId || row.OFFER_ID || row.shopSku || row.SHOP_SKU || row.sku || row.SKU);
+  const metricKeys = [
+    'shows',
+    'clicks',
+    'toCart',
+    'orderItems',
+    'orderItemsTotalAmount',
+    'orderItemsDeliveredCount',
+    'orderItemsDeliveredTotalAmount',
+    'orderItemsCanceledCount',
+    'orderItemsReturnedCount',
+    'SHOWS',
+    'CLICKS',
+    'TO_CART',
+    'ORDER_ITEMS',
+    'ORDER_ITEMS_TOTAL_AMOUNT',
+    'ORDER_ITEMS_DELIVERED_COUNT',
+    'ORDER_ITEMS_DELIVERED_TOTAL_AMOUNT',
+    'ORDER_ITEMS_CANCELED_COUNT',
+    'ORDER_ITEMS_RETURNED_COUNT'
+  ];
+  const metrics = metricKeys
+    .filter((key) => row[key] !== undefined && row[key] !== null && row[key] !== '')
+    .map((key) => `${key}:${numberOrZero(row[key])}`)
+    .join('|');
+  return `${date}|${offerId}|${metrics}`;
+}
+
+function dedupeSalesFunnelRows(rows = []) {
+  const seen = new Set();
+  const deduped = [];
+  let duplicateRows = 0;
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const signature = salesFunnelRowSignature(row);
+    if (!signature || signature === '||') {
+      deduped.push(row);
+      continue;
+    }
+    if (seen.has(signature)) {
+      duplicateRows += 1;
+      continue;
+    }
+    seen.add(signature);
+    deduped.push(row);
+  }
+  return { rows: deduped, duplicateRows };
+}
+
 async function yandexRequest(options, apiPath, requestOptions = {}) {
   const url = new URL(`${options.apiBaseUrl}${apiPath}`);
   Object.entries(requestOptions.query || {}).forEach(([key, value]) => {
@@ -784,12 +834,19 @@ function buildYandexLayer(rows, skus, skuAliases = {}) {
     const ordersRevenue = numberOrZero(row.orderItemsTotalAmount ?? row.ORDER_ITEMS_TOTAL_AMOUNT);
     const deliveredUnits = numberOrZero(row.orderItemsDeliveredCount ?? row.ORDER_ITEMS_DELIVERED_COUNT);
     const deliveredRevenue = numberOrZero(row.orderItemsDeliveredTotalAmount ?? row.ORDER_ITEMS_DELIVERED_TOTAL_AMOUNT);
+    const cancellationsUnits = numberOrZero(row.orderItemsCanceledCount ?? row.ORDER_ITEMS_CANCELED_COUNT);
+    const returnsUnits = numberOrZero(row.orderItemsReturnedCount ?? row.ORDER_ITEMS_RETURNED_COUNT);
+    const adsImpressions = numberOrZero(row.shows ?? row.SHOWS);
+    const adsClicks = numberOrZero(row.clicks ?? row.CLICKS);
+    const addToCart = numberOrZero(row.toCart ?? row.TO_CART);
     const units = deliveredUnits;
     const revenue = deliveredRevenue;
     const hasBusinessMetric = ordersUnits || ordersRevenue || deliveredUnits || deliveredRevenue
-      || numberOrZero(row.shows ?? row.SHOWS)
-      || numberOrZero(row.clicks ?? row.CLICKS)
-      || numberOrZero(row.toCart ?? row.TO_CART);
+      || cancellationsUnits
+      || returnsUnits
+      || adsImpressions
+      || adsClicks
+      || addToCart;
     if (!hasBusinessMetric) {
       diagnostics.skippedRows += 1;
       continue;
@@ -810,17 +867,32 @@ function buildYandexLayer(rows, skus, skuAliases = {}) {
       revenue: 0,
       ordersRevenue: 0,
       deliveredRevenue: 0,
+      cancellationsUnits: 0,
+      returnsUnits: 0,
+      adsImpressions: 0,
+      adsClicks: 0,
+      addToCart: 0,
+      sourceRows: 0,
+      matchedRows: 0,
+      unmatchedRows: 0,
       estimatedMargin: 0
     };
+    point.sourceRows += 1;
     point.units += units;
     point.ordersUnits += ordersUnits;
     point.deliveredUnits += deliveredUnits;
     point.revenue += revenue;
     point.ordersRevenue += ordersRevenue;
     point.deliveredRevenue += deliveredRevenue;
+    point.cancellationsUnits += cancellationsUnits;
+    point.returnsUnits += returnsUnits;
+    point.adsImpressions += adsImpressions;
+    point.adsClicks += adsClicks;
+    point.addToCart += addToCart;
     seriesByDate.set(dateKey, point);
 
     if (!sku) {
+      point.unmatchedRows += 1;
       diagnostics.unmatchedRows += 1;
       diagnostics.unmatchedUnits += units;
       diagnostics.unmatchedOrdersUnits += ordersUnits;
@@ -839,6 +911,7 @@ function buildYandexLayer(rows, skus, skuAliases = {}) {
       }
       continue;
     }
+    point.matchedRows += 1;
     diagnostics.matchedRows += 1;
     diagnostics.matchedUnits += units;
     diagnostics.matchedOrdersUnits += ordersUnits;
@@ -860,6 +933,14 @@ function buildYandexLayer(rows, skus, skuAliases = {}) {
       revenue: Number(numberOrZero(point.revenue).toFixed(4)),
       ordersRevenue: Number(numberOrZero(point.ordersRevenue).toFixed(4)),
       deliveredRevenue: Number(numberOrZero(point.deliveredRevenue).toFixed(4)),
+      cancellationsUnits: Number(numberOrZero(point.cancellationsUnits).toFixed(4)),
+      returnsUnits: Number(numberOrZero(point.returnsUnits).toFixed(4)),
+      adsImpressions: Number(numberOrZero(point.adsImpressions).toFixed(4)),
+      adsClicks: Number(numberOrZero(point.adsClicks).toFixed(4)),
+      addToCart: Number(numberOrZero(point.addToCart).toFixed(4)),
+      sourceRows: Number(numberOrZero(point.sourceRows).toFixed(4)),
+      matchedRows: Number(numberOrZero(point.matchedRows).toFixed(4)),
+      unmatchedRows: Number(numberOrZero(point.unmatchedRows).toFixed(4)),
       estimatedMargin: Number(numberOrZero(point.estimatedMargin).toFixed(4)),
       price: numberOrZero(point.units) > 0 ? Number((numberOrZero(point.revenue) / numberOrZero(point.units)).toFixed(4)) : 0
     }));
@@ -980,9 +1061,10 @@ function updatePlatformTrends(existing, layer, options, identities, sourceInfo =
   const warnings = [];
   const revenueField = 'orderItemsDeliveredTotalAmount';
   const previousRevenueField = normalizeText(existing?.yandexMarketApiDirect?.revenueField);
+  const forceReplaceWindow = Boolean(sourceInfo.forceReplaceWindow || sourceInfo.duplicateRowsRemoved);
   const partialOptions = {
     ...options,
-    partialRefreshGuardEnabled: previousRevenueField === revenueField
+    partialRefreshGuardEnabled: previousRevenueField === revenueField && !forceReplaceWindow
   };
   platforms.set('ya', {
     ...existingYa,
@@ -1026,6 +1108,8 @@ function updatePlatformTrends(existing, layer, options, identities, sourceInfo =
       rowDateTo: sourceInfo.rowDateTo || '',
       identities: identities.length,
       sourceRows: layer.diagnostics.sourceRows,
+      rawSourceRows: sourceInfo.rawSourceRows || layer.diagnostics.sourceRows,
+      duplicateRowsRemoved: sourceInfo.duplicateRowsRemoved || 0,
       matchedRows: layer.diagnostics.matchedRows,
       unmatchedRows: layer.diagnostics.unmatchedRows,
       skippedRows: layer.diagnostics.skippedRows,
@@ -1060,6 +1144,7 @@ function updatePlatformTrends(existing, layer, options, identities, sourceInfo =
         minRatio: options.partialRefreshMinRatio,
         enabled: partialOptions.partialRefreshGuardEnabled
       },
+      forceReplaceWindow,
       warnings
     },
     extraMarketplace: {
@@ -1135,11 +1220,17 @@ async function main() {
     }
   }
 
+  const rawSourceRows = sourceRows.length;
+  const dedupeResult = dedupeSalesFunnelRows(sourceRows);
+  sourceRows = dedupeResult.rows;
   const sourceBounds = rowDateBounds(sourceRows);
   const rows = filterRowsByDate(sourceRows, options.from, options.to);
   const filteredBounds = rowDateBounds(rows);
   sourceInfo = {
     ...sourceInfo,
+    rawSourceRows,
+    duplicateRowsRemoved: dedupeResult.duplicateRows,
+    forceReplaceWindow: Boolean(options.localReportPath || dedupeResult.duplicateRows > 0),
     rowDateFrom: filteredBounds.earliest,
     rowDateTo: filteredBounds.latest,
     sourceRowDateFrom: sourceBounds.earliest,
@@ -1163,6 +1254,8 @@ async function main() {
     rowDateFrom: sourceInfo.rowDateFrom,
     rowDateTo: sourceInfo.rowDateTo,
     identities: identities.length,
+    rawSourceRows,
+    duplicateRowsRemoved: dedupeResult.duplicateRows,
     sourceRows: layer.diagnostics.sourceRows,
     matchedRows: layer.diagnostics.matchedRows,
     unmatchedRows: layer.diagnostics.unmatchedRows,

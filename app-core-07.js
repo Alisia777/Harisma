@@ -6253,6 +6253,29 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     spendDeltaOzon: numberOrZero(row?.spendDeltaOzon),
     spendDeltaOzonPct: Number.isFinite(Number(row?.spendDeltaOzonPct)) ? Number(row.spendDeltaOzonPct) : null,
     ozonAdsFactMode: String(row?.ozonAdsFactMode || ''),
+    targetRevenueYandex: numberOrZero(row?.targetRevenueYandex),
+    revenueYandex: numberOrZero(row?.revenueYandex),
+    ordersRevenueYandex: numberOrZero(row?.ordersRevenueYandex),
+    revenueYandexDelta: numberOrZero(row?.revenueYandexDelta),
+    revenueYandexDeltaPct: Number.isFinite(Number(row?.revenueYandexDeltaPct)) ? Number(row.revenueYandexDeltaPct) : null,
+    revenueYandexCompletionPct: Number.isFinite(Number(row?.revenueYandexCompletionPct)) ? Number(row.revenueYandexCompletionPct) : null,
+    planSpendYandex: numberOrZero(row?.planSpendYandex),
+    spendFactYandex: numberOrZero(row?.spendFactYandex),
+    factPctYandex: Number.isFinite(Number(row?.factPctYandex)) ? Number(row.factPctYandex) : null,
+    yandexAdsFactMode: String(row?.yandexAdsFactMode || ''),
+    unitsYandex: numberOrZero(row?.unitsYandex),
+    ordersUnitsYandex: numberOrZero(row?.ordersUnitsYandex),
+    deliveredUnitsYandex: numberOrZero(row?.deliveredUnitsYandex),
+    yandexShows: numberOrZero(row?.yandexShows),
+    yandexClicks: numberOrZero(row?.yandexClicks),
+    yandexToCart: numberOrZero(row?.yandexToCart),
+    yandexCtr: Number.isFinite(Number(row?.yandexCtr)) ? Number(row.yandexCtr) : null,
+    yandexCartRate: Number.isFinite(Number(row?.yandexCartRate)) ? Number(row.yandexCartRate) : null,
+    yandexOrderRate: Number.isFinite(Number(row?.yandexOrderRate)) ? Number(row.yandexOrderRate) : null,
+    yandexBuyoutRate: Number.isFinite(Number(row?.yandexBuyoutRate)) ? Number(row.yandexBuyoutRate) : null,
+    yandexCancellationsUnits: numberOrZero(row?.yandexCancellationsUnits),
+    yandexReturnsUnits: numberOrZero(row?.yandexReturnsUnits),
+    yandexSourceRows: numberOrZero(row?.yandexSourceRows),
     revenueTotalIu: numberOrZero(row?.revenueTotalIu),
     planPct: Number.isFinite(Number(row?.planPct)) ? Number(row.planPct) : 0,
     planSpendWb: numberOrZero(row?.planSpendWb),
@@ -6323,7 +6346,7 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
 function getIuDrrFilters() {
   state.iuDrrFilters = state.iuDrrFilters || {};
   state.iuDrrFilters.month = state.iuDrrFilters.month || 'latest';
-  state.iuDrrFilters.platform = ['wb', 'ozon'].includes(state.iuDrrFilters.platform) ? state.iuDrrFilters.platform : 'wb';
+  state.iuDrrFilters.platform = ['wb', 'ozon', 'ya'].includes(state.iuDrrFilters.platform) ? state.iuDrrFilters.platform : 'wb';
   return state.iuDrrFilters;
 }
 
@@ -6491,6 +6514,19 @@ function iuDrrQuarterFactBase(model = {}, platformKey = 'wb', context = {}) {
       sourceLabel: factFromPlanFact ? 'Smart-факт ИУ Ozon' : 'Факт Ozon'
     };
   }
+  if (platformKey === 'ya') {
+    const datedRows = sourceRows.filter((row) => row.date && (numberOrZero(row.revenueYandex) || numberOrZero(row.targetRevenueYandex)));
+    const fact = datedRows.reduce((sum, row) => sum + numberOrZero(row.revenueYandex), 0)
+      || numberOrZero(model.monthSummary?.iuRevenueYandexFactToDate || model.monthSummary?.revenueYandex);
+    const dates = datedRows.map((row) => row.date).filter(Boolean).sort();
+    return {
+      fact,
+      days: new Set(dates).size || numberOrZero(model.monthSummary?.daysInSummary),
+      from: dates[0] || '',
+      to: dates.at(-1) || '',
+      sourceLabel: 'Yandex Market sales funnel'
+    };
+  }
   const datedRows = sourceRows.filter((row) => row.date && (numberOrZero(row.wbApiRevenue || row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb) || numberOrZero(row.targetRevenueWb)));
   const fact = datedRows.reduce((sum, row) => sum + numberOrZero(row.wbApiRevenue || row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb), 0)
     || numberOrZero(model.monthSummary?.iuRevenueWbFactToDate || model.monthSummary?.revenueWb);
@@ -6521,7 +6557,7 @@ function iuDrrForecastStatusLabel(value) {
 }
 
 function iuDrrBuildQuarterForecast(model = {}, context = {}) {
-  const platformKey = model.selectedPlatform === 'ozon' ? 'ozon' : 'wb';
+  const platformKey = ['ozon', 'ya'].includes(model.selectedPlatform) ? model.selectedPlatform : 'wb';
   const quarter = iuDrrQuarterRange(model.selectedMonth);
   const factBase = iuDrrQuarterFactBase(model, platformKey, context);
   const daysTotal = quarter.days || quarter.months.reduce((sum, month) => sum + daysInMonthKey(month), 0);
@@ -6531,18 +6567,31 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
   const platformTruthKey = platformKey === 'ozon' ? 'ozon' : 'wb';
   const truthIuPlan = platformKey === 'ozon'
     ? iuDrrPlanTruthSum(model, quarter.months, 'ozon', 'iuPlan40')
-    : iuDrrPlanTruthSum(model, quarter.months, 'wb', 'iuPlan');
+    : platformKey === 'ya'
+      ? 0
+      : iuDrrPlanTruthSum(model, quarter.months, 'wb', 'iuPlan');
   const wbContractPlan = platformKey === 'wb' ? iuDrrContractTargetForRange(model, quarter.from, quarter.to) : 0;
   const iuPlan = platformKey === 'wb' ? (wbContractPlan || truthIuPlan) : truthIuPlan;
-  const corporatePlan = iuDrrPlanTruthSum(model, quarter.months, platformTruthKey, 'corporatePlan');
-  const selectedPlan = iuDrrPlanTruthSum(model, quarter.months, platformTruthKey, 'selectedRevenue');
+  const yandexQuarterPlan = platformKey === 'ya'
+    ? quarter.months.reduce((sum, monthKey) => {
+      const monthRow = (model.payload?.months || []).find((item) => item.monthKey === monthKey) || {};
+      const truthMonth = iuDrrPlanTruthMonth(model.payload || {}, monthKey);
+      return sum + numberOrZero(monthRow.iuRevenueYandexPlan || truthMonth.otherChannels?.ya);
+    }, 0)
+    : 0;
+  const corporatePlan = platformKey === 'ya' ? yandexQuarterPlan : iuDrrPlanTruthSum(model, quarter.months, platformTruthKey, 'corporatePlan');
+  const selectedPlan = platformKey === 'ya' ? yandexQuarterPlan : iuDrrPlanTruthSum(model, quarter.months, platformTruthKey, 'selectedRevenue');
   const workingPlan = Math.max(numberOrZero(selectedPlan), numberOrZero(iuPlan), numberOrZero(corporatePlan));
   const month = model.monthSummary || {};
   const monthDays = daysInMonthKey(model.selectedMonth);
-  const monthIuPlan = platformKey === 'ozon'
+  const monthIuPlan = platformKey === 'ya'
+    ? numberOrZero(month.iuRevenueYandexPlan)
+    : platformKey === 'ozon'
     ? numberOrZero(month.iuRevenueOzonContractMin)
     : numberOrZero(month.iuRevenueWbIuMin);
-  const monthPortalPlan = platformKey === 'ozon'
+  const monthPortalPlan = platformKey === 'ya'
+    ? numberOrZero(month.iuRevenueYandexPlan)
+    : platformKey === 'ozon'
     ? numberOrZero(month.iuRevenueOzonPlan)
     : numberOrZero(month.iuRevenueWbPlan);
   const monthProjectedFact = hasFactForTempo && monthDays ? dailyAverage * monthDays : null;
@@ -6561,7 +6610,7 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
   return {
     available: Boolean(quarter.months.length && daysTotal && (factBase.fact || iuPlan || workingPlan)),
     platformKey,
-    platformLabel: platformKey === 'ozon' ? 'Ozon' : 'WB',
+    platformLabel: platformKey === 'ya' ? 'Я.Маркет' : (platformKey === 'ozon' ? 'Ozon' : 'WB'),
     quarter,
     daysTotal,
     factToDate: factBase.fact,
@@ -6632,7 +6681,7 @@ function iuDrrPlanFactCardStyle(platformKey = 'wb', completion = null) {
   const ratio = completion === null || completion === undefined || !Number.isFinite(Number(completion))
     ? 0.12
     : Math.min(1.35, Math.max(0.05, Number(completion)));
-  const hue = platformKey === 'ozon' ? 212 : 272;
+  const hue = platformKey === 'ozon' ? 212 : platformKey === 'ya' ? 47 : 272;
   const fill = 0.08 + Math.min(0.34, ratio * 0.24);
   const rowFill = Math.min(0.12, fill * 0.32);
   const border = 0.18 + Math.min(0.5, ratio * 0.3);
@@ -6692,10 +6741,10 @@ function iuDrrForecastMetricHtml(label, value, detail = '', tip = '', tone = 'in
 }
 
 function iuDrrQuarterForecastHeroHtml(plan = {}, forecast = {}) {
-  const platformKey = forecast.platformKey === 'ozon' ? 'ozon' : 'wb';
+  const platformKey = ['ozon', 'ya'].includes(forecast.platformKey) ? forecast.platformKey : 'wb';
   const month = forecast.month || {};
-  const monthPlanLabel = platformKey === 'ozon' ? 'ИУ план месяца Ozon 40%' : 'ИУ план месяца WB';
-  const portalPlanLabel = platformKey === 'ozon' ? 'Рабочий план месяца' : 'План портала месяца';
+  const monthPlanLabel = platformKey === 'ya' ? 'ИУ план месяца Я.Маркет' : platformKey === 'ozon' ? 'ИУ план месяца Ozon 40%' : 'ИУ план месяца WB';
+  const portalPlanLabel = platformKey === 'ya' ? 'План портала месяца Я.Маркет' : platformKey === 'ozon' ? 'Рабочий план месяца' : 'План портала месяца';
   const displayPlan = plan.key === 'working'
     ? numberOrZero(month.portalPlan)
     : numberOrZero(month.iuPlan);
@@ -6814,7 +6863,7 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
   const filters = getIuDrrFilters();
   const latestMonth = iuDrrLatestMonth(normalized);
   const selectedMonth = filters.month === 'latest' || !filters.month ? latestMonth : filters.month;
-  const selectedPlatform = filters.platform === 'ozon' ? 'ozon' : 'wb';
+  const selectedPlatform = ['wb', 'ozon', 'ya'].includes(filters.platform) ? filters.platform : 'wb';
   const quarterSummary = normalized.quarterSummary || normalized.wbQuarter || {};
   const iuDailyRows = normalized.daily.filter((row) => row.monthKey === selectedMonth);
   const ozonFinanceDailyRows = (normalized.ozonFinance?.daily || []).filter((row) => row.monthKey === selectedMonth);
@@ -6823,9 +6872,10 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
   const planTruthMonth = iuDrrPlanTruthMonth(normalized, selectedMonth);
   const wbTruth = planTruthMonth.wb || {};
   const ozonTruth = planTruthMonth.ozon || {};
-  const truthSelectedRevenueTotal = numberOrZero(wbTruth.selectedRevenue) + numberOrZero(ozonTruth.selectedRevenue);
+  const yandexTruthRevenue = numberOrZero(rawMonthSummary.iuRevenueYandexPlan || planTruthMonth.otherChannels?.ya);
+  const truthSelectedRevenueTotal = numberOrZero(wbTruth.selectedRevenue) + numberOrZero(ozonTruth.selectedRevenue) + yandexTruthRevenue;
   const truthIuRevenueTotal = numberOrZero(wbTruth.iuPlan) + numberOrZero(ozonTruth.iuPlan40);
-  const truthCorporateRevenueTotal = numberOrZero(wbTruth.corporatePlan) + numberOrZero(ozonTruth.corporatePlan);
+  const truthCorporateRevenueTotal = numberOrZero(wbTruth.corporatePlan) + numberOrZero(ozonTruth.corporatePlan) + yandexTruthRevenue;
   const wbRevenueFactToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.wbApiRevenue || row.iuRevenueWb || row.iuOrdersRevenueWb), 0);
   const wbOrdersRevenueToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.ordersRevenueWb), 0);
   const wbTargetToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuTargetRevenueWb), 0);
@@ -6845,6 +6895,9 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
     iuRevenueOzonContractMin: iuDrrFirstPositive(rawMonthSummary.iuRevenueOzonContractMin, ozonTruth.iuPlan40),
     iuRevenueOzonCorporatePlan: iuDrrFirstPositive(rawMonthSummary.iuRevenueOzonCorporatePlan, ozonTruth.corporatePlan),
     iuRevenueOzonPlanSource: iuDrrFirstText(rawMonthSummary.iuRevenueOzonPlanSource, ozonTruth.source),
+    iuRevenueYandexPlan: iuDrrFirstPositive(rawMonthSummary.iuRevenueYandexPlan, yandexTruthRevenue),
+    iuRevenueYandexCorporatePlan: iuDrrFirstPositive(rawMonthSummary.iuRevenueYandexCorporatePlan, yandexTruthRevenue),
+    iuRevenueYandexPlanSource: iuDrrFirstText(rawMonthSummary.iuRevenueYandexPlanSource, yandexTruthRevenue ? 'corporate_plan' : ''),
     iuRevenuePlan: iuDrrFirstPositive(rawMonthSummary.iuRevenuePlan, truthSelectedRevenueTotal),
     iuRevenueIuMin: iuDrrFirstPositive(rawMonthSummary.iuRevenueIuMin, truthIuRevenueTotal),
     iuRevenueCorporatePlan: iuDrrFirstPositive(rawMonthSummary.iuRevenueCorporatePlan, truthCorporateRevenueTotal),
@@ -6946,37 +6999,41 @@ function iuDrrToneForRevenueDelta(value) {
 function iuDrrPlatformMeta(model) {
   const month = model.monthSummary || {};
   const isOzon = model.selectedPlatform === 'ozon';
+  const isYandex = model.selectedPlatform === 'ya';
   const finance = isOzon ? (month.ozonFinance || model.ozonFinanceMonth || {}) : {};
   const ozonPlanToDate = numberOrZero(month.iuRevenueOzonPlanToDate || month.targetRevenueOzon);
   const ozonRevenueFact = numberOrZero(month.iuRevenueOzonFactToDate || month.revenueOzon)
     || numberOrZero(finance.salesGross) + numberOrZero(finance.returnsGross)
     || numberOrZero(finance.accruedNet);
   const ozonAds = Math.abs(numberOrZero(month.spendFactOzon || month.iuAdsFactOzonToDate || finance.ads));
+  const yandexPlanToDate = numberOrZero(month.iuRevenueYandexPlanToDate || month.targetRevenueYandex);
+  const yandexRevenueFact = numberOrZero(month.iuRevenueYandexFactToDate || month.revenueYandex);
+  const yandexAds = numberOrZero(month.spendFactYandex || month.iuAdsFactYandexToDate);
   return {
-    key: isOzon ? 'ozon' : 'wb',
-    label: isOzon ? 'Ozon' : 'WB',
-    title: isOzon ? 'Ozon' : 'WB',
-    completion: isOzon ? month.iuRevenueOzonCompletionToDate : month.iuRevenueWbCompletionToDate,
-    fact: isOzon ? ozonRevenueFact : (month.iuRevenueWbFactToDate || month.revenueWb),
-    planToDate: isOzon ? ozonPlanToDate : month.iuRevenueWbPlanToDate,
-    targetRevenue: isOzon ? ozonPlanToDate : (month.targetRevenueWb || month.iuRevenueWbPlanToDate),
-    revenueDelta: isOzon ? (ozonRevenueFact - ozonPlanToDate) : month.revenueWbDelta,
-    revenueDeltaPct: isOzon ? month.revenueOzonDeltaPct : month.revenueWbDeltaPct,
-    sparkKey: isOzon ? 'accruedNet' : 'iuRevenueWb',
-    tableTargetKey: isOzon ? 'targetRevenueOzon' : 'iuTargetRevenueWb',
-    tableRevenueKey: isOzon ? 'accruedNet' : 'iuRevenueWb',
-    tableDeltaKey: isOzon ? 'revenueOzonDelta' : 'iuRevenueWbDelta',
-    tableDeltaPctKey: isOzon ? 'revenueOzonDeltaPct' : 'iuRevenueWbDeltaPct',
-    tableCompletionKey: isOzon ? 'revenueOzonCompletionPct' : 'iuRevenueWbCompletionPct',
-    adsPlanPct: isOzon ? month.planPctOzon : month.planPct,
-    adsPlan: isOzon ? month.iuAdsOzonPlanToDate : month.iuAdsPlanToDate,
-    adsPlanMonth: isOzon ? month.iuAdsOzonPlan : month.iuAdsPlan,
-    adsFact: isOzon ? ozonAds : month.spendFact,
-    adsFactPct: isOzon ? (numberOrZero(finance.salesGross) > 0 ? ozonAds / numberOrZero(finance.salesGross) : month.drrOzon) : month.drrWb,
-    adsCompletion: isOzon ? month.iuAdsCompletionOzonToDate : month.iuAdsCompletionToDate,
-    adsDelta: isOzon ? month.spendDeltaOzon : month.spendDelta,
-    adsDeltaPct: isOzon ? month.spendDeltaOzonPct : month.spendDeltaPct,
-    adsFactSource: isOzon ? 'расчетная реклама Ozon; API-факт Ozon Ads не подключен' : 'WB Promotion API без Внешки'
+    key: isYandex ? 'ya' : (isOzon ? 'ozon' : 'wb'),
+    label: isYandex ? 'Я.Маркет' : (isOzon ? 'Ozon' : 'WB'),
+    title: isYandex ? 'Я.Маркет' : (isOzon ? 'Ozon' : 'WB'),
+    completion: isYandex ? month.iuRevenueYandexCompletionToDate : (isOzon ? month.iuRevenueOzonCompletionToDate : month.iuRevenueWbCompletionToDate),
+    fact: isYandex ? yandexRevenueFact : (isOzon ? ozonRevenueFact : (month.iuRevenueWbFactToDate || month.revenueWb)),
+    planToDate: isYandex ? yandexPlanToDate : (isOzon ? ozonPlanToDate : month.iuRevenueWbPlanToDate),
+    targetRevenue: isYandex ? yandexPlanToDate : (isOzon ? ozonPlanToDate : (month.targetRevenueWb || month.iuRevenueWbPlanToDate)),
+    revenueDelta: isYandex ? (yandexRevenueFact - yandexPlanToDate) : (isOzon ? (ozonRevenueFact - ozonPlanToDate) : month.revenueWbDelta),
+    revenueDeltaPct: isYandex ? month.revenueYandexDeltaPct : (isOzon ? month.revenueOzonDeltaPct : month.revenueWbDeltaPct),
+    sparkKey: isYandex ? 'revenueYandex' : (isOzon ? 'accruedNet' : 'iuRevenueWb'),
+    tableTargetKey: isYandex ? 'targetRevenueYandex' : (isOzon ? 'targetRevenueOzon' : 'iuTargetRevenueWb'),
+    tableRevenueKey: isYandex ? 'revenueYandex' : (isOzon ? 'accruedNet' : 'iuRevenueWb'),
+    tableDeltaKey: isYandex ? 'revenueYandexDelta' : (isOzon ? 'revenueOzonDelta' : 'iuRevenueWbDelta'),
+    tableDeltaPctKey: isYandex ? 'revenueYandexDeltaPct' : (isOzon ? 'revenueOzonDeltaPct' : 'iuRevenueWbDeltaPct'),
+    tableCompletionKey: isYandex ? 'revenueYandexCompletionPct' : (isOzon ? 'revenueOzonCompletionPct' : 'iuRevenueWbCompletionPct'),
+    adsPlanPct: isYandex ? null : (isOzon ? month.planPctOzon : month.planPct),
+    adsPlan: isYandex ? 0 : (isOzon ? month.iuAdsOzonPlanToDate : month.iuAdsPlanToDate),
+    adsPlanMonth: isYandex ? 0 : (isOzon ? month.iuAdsOzonPlan : month.iuAdsPlan),
+    adsFact: isYandex ? yandexAds : (isOzon ? ozonAds : month.spendFact),
+    adsFactPct: isYandex ? null : (isOzon ? (numberOrZero(finance.salesGross) > 0 ? ozonAds / numberOrZero(finance.salesGross) : month.drrOzon) : month.drrWb),
+    adsCompletion: isYandex ? null : (isOzon ? month.iuAdsCompletionOzonToDate : month.iuAdsCompletionToDate),
+    adsDelta: isYandex ? null : (isOzon ? month.spendDeltaOzon : month.spendDelta),
+    adsDeltaPct: isYandex ? null : (isOzon ? month.spendDeltaOzonPct : month.spendDeltaPct),
+    adsFactSource: isYandex ? 'Yandex Market sales funnel: расход рекламы в рублях не передается' : (isOzon ? 'расчетная реклама Ozon; API-факт Ozon Ads не подключен' : 'WB Promotion API без Внешки')
   };
 }
 
@@ -7100,6 +7157,26 @@ const IU_DRR_FUNNEL_METRICS_OZON = [
   { key: 'financeAccrued', label: 'Начислено Ozon', formula: 'Ozon Finance', format: 'money', row: 43, hideIfEmpty: true }
 ];
 
+const IU_DRR_FUNNEL_METRICS_YANDEX = [
+  { key: 'planRevenue', label: 'План оборота', formula: 'company_plan.channels.ya', format: 'money', row: 1, keep: true },
+  { key: 'factRevenue', label: 'Факт доставлено', formula: 'Yandex sales funnel delivered', format: 'money', row: 2, keep: true },
+  { key: 'ordersRevenue', label: 'Заказано', formula: 'Yandex sales funnel orders', format: 'money', row: 3, keep: true },
+  { key: 'revenueCompletion', label: 'Выполнение оборота', formula: 'факт / план', format: 'pct', row: 4, keep: true },
+  { key: 'revenueDelta', label: 'Отклонение оборота', formula: 'факт - план', format: 'money', row: 5, keep: true },
+  { key: 'orders', label: 'Заказано, шт', formula: 'sales funnel', format: 'int', row: 6, keep: true },
+  { key: 'units', label: 'Доставлено, шт', formula: 'sales funnel', format: 'int', row: 7, keep: true },
+  { key: 'avgCheck', label: 'Средний чек доставки', formula: 'доставлено ₽ / шт', format: 'money', row: 8, keep: true },
+  { key: 'buyoutRate', label: 'Заказы → доставлено', formula: 'доставлено / заказано', format: 'pct', row: 9, keep: true },
+  { key: 'views', label: 'Показы', formula: 'sales funnel', format: 'int', row: 10, hideIfEmpty: true },
+  { key: 'clicks', label: 'Клики', formula: 'sales funnel', format: 'int', row: 11, hideIfEmpty: true },
+  { key: 'ctr', label: 'CTR', formula: 'клики / показы', format: 'pct', row: 12, hideIfEmpty: true },
+  { key: 'toCart', label: 'Корзина', formula: 'sales funnel', format: 'int', row: 13, hideIfEmpty: true },
+  { key: 'cartRate', label: 'Показ → корзина', formula: 'корзина / показы', format: 'pct', row: 14, hideIfEmpty: true },
+  { key: 'orderRate', label: 'Корзина → заказ', formula: 'заказы / корзина', format: 'pct', row: 15, hideIfEmpty: true },
+  { key: 'cancellations', label: 'Отмены и невыкупы, шт', formula: 'sales funnel', format: 'int', row: 16, hideIfEmpty: true },
+  { key: 'returns', label: 'Возвраты, шт', formula: 'sales funnel', format: 'int', row: 17, hideIfEmpty: true }
+];
+
 function iuDrrFunnelRate(numerator, denominator) {
   const base = numberOrZero(denominator);
   return base > 0 ? numberOrZero(numerator) / base : null;
@@ -7110,7 +7187,9 @@ function iuDrrFunnelFinite(value) {
 }
 
 function iuDrrFunnelPlatformRgb(platformKey = 'wb') {
-  return platformKey === 'ozon' ? [42, 139, 242] : [139, 92, 246];
+  if (platformKey === 'ozon') return [42, 139, 242];
+  if (platformKey === 'ya') return [234, 179, 8];
+  return [139, 92, 246];
 }
 
 function iuDrrFunnelToneRgb(tone = 'info', platformKey = 'wb') {
@@ -7182,6 +7261,39 @@ function iuDrrFunnelMetricValue(metric, row = {}, platformKey = 'wb', context = 
     if (key === 'financeSales') return numberOrZero(row.financeSales);
     if (key === 'financeDrr') return iuDrrFunnelRate(row.financeAds, row.financeSales);
     if (key === 'financeAccrued') return numberOrZero(row.financeAccrued);
+    return null;
+  }
+
+  if (platformKey === 'ya') {
+    const planRevenue = numberOrZero(row.targetRevenueYandex);
+    const factRevenue = numberOrZero(row.revenueYandex);
+    const ordersRevenue = numberOrZero(row.ordersRevenueYandex);
+    const orders = numberOrZero(row.ordersUnitsYandex);
+    const units = numberOrZero(row.deliveredUnitsYandex || row.unitsYandex);
+    const views = numberOrZero(row.yandexShows);
+    const clicks = numberOrZero(row.yandexClicks);
+    const toCart = numberOrZero(row.yandexToCart);
+    const cancellations = numberOrZero(row.yandexCancellationsUnits);
+    const returns = numberOrZero(row.yandexReturnsUnits);
+    if (key === 'planRevenue') return planRevenue;
+    if (key === 'factRevenue') return factRevenue;
+    if (key === 'ordersRevenue') return ordersRevenue;
+    if (key === 'revenueCompletion' || key === 'completion') return iuDrrFunnelRate(factRevenue, planRevenue);
+    if (key === 'revenueDelta') return factRevenue - planRevenue;
+    if (key === 'orders') return orders;
+    if (key === 'units') return units;
+    if (key === 'avgCheck') return iuDrrFunnelRate(factRevenue, units);
+    if (key === 'buyoutRate') return iuDrrFunnelRate(units, orders);
+    if (key === 'views') return views;
+    if (key === 'clicks') return clicks;
+    if (key === 'toCart') return toCart;
+    if (key === 'ctr') return row.yandexCtr != null ? row.yandexCtr : iuDrrFunnelRate(clicks, views);
+    if (key === 'cartRate') return row.yandexCartRate != null ? row.yandexCartRate : iuDrrFunnelRate(toCart, views);
+    if (key === 'orderRate') return row.yandexOrderRate != null ? row.yandexOrderRate : iuDrrFunnelRate(orders, toCart);
+    if (key === 'cancellations') return cancellations;
+    if (key === 'returns') return returns;
+    if (key === 'sourceRows') return numberOrZero(row.yandexSourceRows);
+    if (['planAds', 'factAds', 'adsCompletion', 'adsDelta', 'planDrr', 'factDrr', 'drrDelta', 'adRevenue', 'romi'].includes(key)) return null;
     return null;
   }
 
@@ -7389,7 +7501,7 @@ function iuDrrFunnelHeatStyle(metric = {}, value, stats = {}, platformKey = 'wb'
 }
 
 function iuDrrFunnelBuildModel(model = {}, context = {}) {
-  const platformKey = model.selectedPlatform === 'ozon' ? 'ozon' : 'wb';
+  const platformKey = ['ozon', 'ya'].includes(model.selectedPlatform) ? model.selectedPlatform : 'wb';
   const sourceRows = platformKey === 'ozon' ? (context.ozonPlanFactRows || []) : (model.dailyRows || []);
   const iuRowsByDate = new Map((model.payload?.daily || [])
     .filter((row) => row.monthKey === model.selectedMonth)
@@ -7400,7 +7512,11 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
     dateKey: String(row.date || '').slice(0, 10),
     label: row.period || `${String(row.date || '').slice(8, 10)}.${String(row.date || '').slice(5, 7)}`
   })).filter((row) => row.dateKey);
-  const baseMetrics = platformKey === 'ozon' ? IU_DRR_FUNNEL_METRICS_OZON : IU_DRR_FUNNEL_METRICS_WB;
+  const baseMetrics = platformKey === 'ozon'
+    ? IU_DRR_FUNNEL_METRICS_OZON
+    : platformKey === 'ya'
+      ? IU_DRR_FUNNEL_METRICS_YANDEX
+      : IU_DRR_FUNNEL_METRICS_WB;
   const metrics = baseMetrics.filter((metric) => {
     if (metric.keep || !metric.hideIfEmpty) return true;
     return rows.some((row) => {
@@ -7442,15 +7558,21 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
   const reserve = platformKey === 'ozon' ? iuDrrFunnelSummaryValue('adsReserve', rows, platformKey, context) : null;
   const month = model.monthSummary || {};
   const forecastMonth = context.quarterForecast?.month || {};
-  const monthPlanRevenue = platformKey === 'ozon'
-    ? numberOrZero(forecastMonth.iuPlan || month.iuRevenueOzonContractMin || month.iuRevenueOzonPlan)
-    : numberOrZero(forecastMonth.iuPlan || month.iuRevenueWbIuMin || month.iuRevenueWbPlan);
-  const monthFactRevenue = platformKey === 'ozon'
-    ? numberOrZero(forecastMonth.fact || month.iuRevenueOzonFactToDate || month.revenueOzon)
-    : numberOrZero(forecastMonth.fact || month.iuRevenueWbFactToDate || month.revenueWb);
-  const monthPlanAds = platformKey === 'ozon'
-    ? numberOrZero(month.iuAdsOzonPlan || month.planSpendOzon)
-    : numberOrZero(month.iuAdsPlan || month.planSpendWb);
+  const monthPlanRevenue = platformKey === 'ya'
+    ? numberOrZero(forecastMonth.iuPlan || month.iuRevenueYandexPlan)
+    : platformKey === 'ozon'
+      ? numberOrZero(forecastMonth.iuPlan || month.iuRevenueOzonContractMin || month.iuRevenueOzonPlan)
+      : numberOrZero(forecastMonth.iuPlan || month.iuRevenueWbIuMin || month.iuRevenueWbPlan);
+  const monthFactRevenue = platformKey === 'ya'
+    ? numberOrZero(forecastMonth.fact || month.iuRevenueYandexFactToDate || month.revenueYandex)
+    : platformKey === 'ozon'
+      ? numberOrZero(forecastMonth.fact || month.iuRevenueOzonFactToDate || month.revenueOzon)
+      : numberOrZero(forecastMonth.fact || month.iuRevenueWbFactToDate || month.revenueWb);
+  const monthPlanAds = platformKey === 'ya'
+    ? 0
+    : platformKey === 'ozon'
+      ? numberOrZero(month.iuAdsOzonPlan || month.planSpendOzon)
+      : numberOrZero(month.iuAdsPlan || month.planSpendWb);
   const ozonPlanFactLast = platformKey === 'ozon' && Array.isArray(context.ozonPlanFactRows)
     ? context.ozonPlanFactRows.filter((row) => (
       numberOrZero(row.factGmv)
@@ -7459,20 +7581,24 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
       || numberOrZero(row.cumulativeFactAds)
     )).at(-1) || {}
     : {};
-  const monthFactAds = platformKey === 'ozon'
-    ? numberOrZero(ozonPlanFactLast.cumulativeFactAds || month.iuAdsFactOzonToDate || month.spendFactOzon)
-    : numberOrZero(month.iuAdsFactWbToDate || month.spendFactDrr || month.spendFact);
+  const monthFactAds = platformKey === 'ya'
+    ? 0
+    : platformKey === 'ozon'
+      ? numberOrZero(ozonPlanFactLast.cumulativeFactAds || month.iuAdsFactOzonToDate || month.spendFactOzon)
+      : numberOrZero(month.iuAdsFactWbToDate || month.spendFactDrr || month.spendFact);
   const cardPlanRevenue = monthPlanRevenue || planRevenue;
   const cardFactRevenue = monthFactRevenue || factRevenue;
   const cardRevenueCompletion = iuDrrFunnelRate(cardFactRevenue, cardPlanRevenue);
   const cardPlanAds = monthPlanAds || planAds;
   const cardFactAds = monthFactAds || factAds;
   const cardAdsCompletion = iuDrrFunnelRate(cardFactAds, cardPlanAds);
-  const cardPlanDrr = numberOrZero(platformKey === 'ozon' ? month.planPctOzon : month.planPct)
+  const cardPlanDrr = platformKey === 'ya'
+    ? null
+    : numberOrZero(platformKey === 'ozon' ? month.planPctOzon : month.planPct)
     || (platformKey === 'ozon' ? numberOrZero(context.ozonTargetDrr) : 0)
     || iuDrrFunnelRate(cardPlanAds, cardPlanRevenue)
     || planDrr;
-  const cardFactDrr = cardFactRevenue > 0 ? cardFactAds / cardFactRevenue : factDrr;
+  const cardFactDrr = platformKey === 'ya' ? null : (cardFactRevenue > 0 ? cardFactAds / cardFactRevenue : factDrr);
   const cardReserve = platformKey === 'ozon' ? cardPlanAds - cardFactAds : reserve;
   const cardRevenueDelta = cardFactRevenue - cardPlanRevenue;
   const cardAdsDelta = cardFactAds - cardPlanAds;
@@ -7497,15 +7623,24 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
       ? { ...metric, summary: summaryOverrides[metric.key] }
       : metric
   ));
+  const yandexOrdersRevenue = iuDrrFunnelSummaryValue('ordersRevenue', rows, platformKey, context);
+  const yandexOrders = iuDrrFunnelSummaryValue('orders', rows, platformKey, context);
+  const yandexUnits = iuDrrFunnelSummaryValue('units', rows, platformKey, context);
+  const yandexBuyoutRate = iuDrrFunnelSummaryValue('buyoutRate', rows, platformKey, context);
   const revenueCards = [{
-    label: platformKey === 'ozon' ? 'Smart GMV за месяц' : 'Оборот WB за месяц',
+    label: platformKey === 'ya' ? 'Оборот Я.Маркет за месяц' : (platformKey === 'ozon' ? 'Smart GMV за месяц' : 'Оборот WB за месяц'),
     value: iuDrrFunnelFormat({ format: 'pct' }, cardRevenueCompletion),
     detail: `${fmt.money(cardFactRevenue)} / ${fmt.money(cardPlanRevenue)}`,
     progress: cardRevenueCompletion,
     tone: iuDrrFunnelCompletionTone(cardRevenueCompletion),
     status: 'месячный план'
   }];
-  const cards = platformKey === 'ozon' ? [
+  const cards = platformKey === 'ya' ? [
+    ...revenueCards,
+    { label: 'Заказано', value: iuDrrFunnelFormat({ format: 'money' }, yandexOrdersRevenue), detail: `${fmt.int(yandexOrders)} шт. заказано`, progress: yandexOrdersRevenue > 0 && cardFactRevenue > 0 ? cardFactRevenue / yandexOrdersRevenue : null, tone: 'info' },
+    { label: 'Доставлено', value: `${fmt.int(yandexUnits)} шт.`, detail: `выкуп ${iuDrrFunnelFormat({ format: 'pct' }, yandexBuyoutRate)}`, progress: yandexBuyoutRate, tone: yandexBuyoutRate == null ? 'info' : (yandexBuyoutRate >= 0.75 ? 'ok' : 'warn') },
+    { label: 'Расход рекламы', value: '—', detail: 'sales funnel API не передает spend', progress: null, tone: 'info' }
+  ] : platformKey === 'ozon' ? [
     ...revenueCards,
     { label: 'Smart реклама за месяц', value: iuDrrFunnelFormat({ format: 'pct' }, cardAdsCompletion), detail: `${fmt.money(cardFactAds)} / ${fmt.money(cardPlanAds)}`, progress: cardAdsCompletion, tone: iuDrrFunnelAdsCompletionTone(cardAdsCompletion), status: iuDrrAdsBudgetStatus(cardAdsCompletion) },
     { label: 'ДРР / цель', value: iuDrrFunnelFormat({ format: 'pct' }, cardFactDrr), detail: `цель ${iuDrrFunnelFormat({ format: 'pct' }, cardPlanDrr)}`, progress: cardPlanDrr > 0 ? cardFactDrr / cardPlanDrr : null, tone: iuDrrFunnelDrrTone(cardFactDrr, cardPlanDrr) },
@@ -7522,13 +7657,15 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
   ];
   return {
     platformKey,
-    platformLabel: platformKey === 'ozon' ? 'Ozon' : 'WB',
+    platformLabel: platformKey === 'ya' ? 'Я.Маркет' : (platformKey === 'ozon' ? 'Ozon' : 'WB'),
     rows,
     metricRows,
     cards,
-    note: platformKey === 'ozon'
-      ? 'Ozon сверяется по Smart-доле 40%, двум кабинетам, GMV, рекламе и ДРР без СПП.'
-      : 'WB показывает внутреннюю рекламу отдельно от внешнего трафика: внешка не попадает в ДРР и дельту ИУ.'
+    note: platformKey === 'ya'
+      ? 'Я.Маркет берется из sales funnel API: оборот и штуки считаем по delivered, заказанный оборот оставляем как контроль; рекламный spend этот источник не передает.'
+      : platformKey === 'ozon'
+        ? 'Ozon сверяется по Smart-доле 40%, двум кабинетам, GMV, рекламе и ДРР без СПП.'
+        : 'WB показывает внутреннюю рекламу отдельно от внешнего трафика: внешка не попадает в ДРР и дельту ИУ.'
   };
 }
 
@@ -9018,10 +9155,16 @@ function renderIuDrr(rootId = 'view-iu-drr') {
         <strong>Ozon</strong>
         <em>Smart 40%</em>
       </button>
+      <button type="button" class="iu-drr-platform-chip iu-drr-platform-chip--ya ${model.selectedPlatform === 'ya' ? 'active' : ''}" data-iu-drr-platform="ya" aria-pressed="${model.selectedPlatform === 'ya' ? 'true' : 'false'}">
+        <span>YA</span>
+        <strong>Я.Маркет</strong>
+        <em>funnel API</em>
+      </button>
     </div>
     <select id="iuDrrPlatform" class="iu-drr-platform-select-fallback" aria-label="Площадка">
       <option value="wb" ${model.selectedPlatform === 'wb' ? 'selected' : ''}>WB</option>
       <option value="ozon" ${model.selectedPlatform === 'ozon' ? 'selected' : ''}>Ozon</option>
+      <option value="ya" ${model.selectedPlatform === 'ya' ? 'selected' : ''}>Я.Маркет</option>
     </select>
   `;
   const quarter = model.quarterSummary || {};

@@ -298,6 +298,7 @@ tr:last-child td{border-bottom:none}
 .iu-drr-platform-chip em{grid-column:2;color:var(--muted);font-size:11px;line-height:1.15;font-style:normal;font-weight:800;text-transform:uppercase}
 .iu-drr-platform-chip--wb{--iu-drr-chip-rgb:139,92,246}
 .iu-drr-platform-chip--ozon{--iu-drr-chip-rgb:42,139,242}
+.iu-drr-platform-chip--ya{--iu-drr-chip-rgb:234,179,8}
 .iu-drr-platform-chip span{background:rgba(var(--iu-drr-chip-rgb),.78);box-shadow:0 0 16px rgba(var(--iu-drr-chip-rgb),.24)}
 .iu-drr-platform-chip:hover{border-color:rgba(var(--iu-drr-chip-rgb),.58);background:linear-gradient(180deg,rgba(var(--iu-drr-chip-rgb),.13),rgba(255,255,255,.025));transform:translateY(-1px)}
 .iu-drr-platform-chip.active{border-color:rgba(var(--iu-drr-chip-rgb),.86);box-shadow:0 0 0 1px rgba(var(--iu-drr-chip-rgb),.26) inset,0 14px 32px rgba(var(--iu-drr-chip-rgb),.15);background:linear-gradient(180deg,rgba(var(--iu-drr-chip-rgb),.27),rgba(255,255,255,.03))}

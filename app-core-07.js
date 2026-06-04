@@ -6593,12 +6593,12 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
   const month = model.monthSummary || {};
   const monthDays = daysInMonthKey(model.selectedMonth);
   const monthIuPlan = platformKey === 'ya'
-    ? numberOrZero(month.iuRevenueYandexPlan)
+    ? numberOrZero(month.iuRevenueYandexPlanToDate || month.targetRevenueYandex || month.iuRevenueYandexPlan)
     : platformKey === 'ozon'
     ? numberOrZero(month.iuRevenueOzonContractMin)
     : numberOrZero(month.iuRevenueWbIuMin);
   const monthPortalPlan = platformKey === 'ya'
-    ? numberOrZero(month.iuRevenueYandexPlan)
+    ? numberOrZero(month.iuRevenueYandexPlanToDate || month.targetRevenueYandex || month.iuRevenueYandexPlan)
     : platformKey === 'ozon'
     ? numberOrZero(month.iuRevenueOzonPlan)
     : numberOrZero(month.iuRevenueWbPlan);
@@ -6751,8 +6751,8 @@ function iuDrrForecastMetricHtml(label, value, detail = '', tip = '', tone = 'in
 function iuDrrQuarterForecastHeroHtml(plan = {}, forecast = {}) {
   const platformKey = ['ozon', 'ya'].includes(forecast.platformKey) ? forecast.platformKey : 'wb';
   const month = forecast.month || {};
-  const monthPlanLabel = platformKey === 'ya' ? 'ИУ план месяца Я.Маркет' : platformKey === 'ozon' ? 'ИУ план месяца Ozon 40%' : 'ИУ план месяца WB';
-  const portalPlanLabel = platformKey === 'ya' ? 'План портала месяца Я.Маркет' : platformKey === 'ozon' ? 'Рабочий план месяца' : 'План портала месяца';
+  const monthPlanLabel = platformKey === 'ya' ? 'ИУ план к дате Я.Маркет' : platformKey === 'ozon' ? 'ИУ план месяца Ozon 40%' : 'ИУ план месяца WB';
+  const portalPlanLabel = platformKey === 'ya' ? 'План портала к дате Я.Маркет' : platformKey === 'ozon' ? 'Рабочий план месяца' : 'План портала месяца';
   const displayPlan = plan.key === 'working'
     ? numberOrZero(month.portalPlan)
     : numberOrZero(month.iuPlan);
@@ -6844,12 +6844,19 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
   const extraPlansHtml = '';
   const showRuleNote = false;
   const primaryPlan = iuPlan || visiblePlans[0] || sourcePlans[0] || {};
+  const isYandexForecast = forecast.platformKey === 'ya';
+  const forecastTitle = isYandexForecast
+    ? `${forecast.platformLabel}: факт ИУ к плану на дату`
+    : `${forecast.platformLabel}: факт ИУ к месячному плану`;
+  const forecastNote = isYandexForecast
+    ? 'Верхняя плашка показывает факт из Я.Маркет против плана к текущей дате. Без прогнозного умножения и без подмешивания WB/Ozon.'
+    : 'Верхняя плашка показывает только факт из ИУ/кабинета против месячного ИУ-плана. Без прогнозного умножения. План портала показан отдельной месячной цифрой по правилу ИУ/корп.';
   return `
     <div class="card sku-plan-fact-card iu-drr-quarter-planfact-card" style="${iuDrrPlanFactCardStyle(forecast.platformKey, null)}">
       <div class="section-subhead">
         <div>
-          <h3>${escapeHtml(forecast.platformLabel)}: факт ИУ к месячному плану</h3>
-          <p class="small muted">Верхняя плашка показывает только факт из ИУ/кабинета против месячного ИУ-плана. Без прогнозного умножения. План портала показан отдельной месячной цифрой по правилу ИУ/корп.</p>
+          <h3>${escapeHtml(forecastTitle)}</h3>
+          <p class="small muted">${escapeHtml(forecastNote)}</p>
         </div>
       </div>
 
@@ -7373,6 +7380,7 @@ function iuDrrFunnelSummaryValue(metric, rows = [], platformKey = 'wb', context 
   const views = sum('views');
   const clicks = sum('clicks');
   const orders = sum('orders');
+  const toCart = sum('toCart');
   const adRevenue = sum('adRevenue');
   const marketplaceOrders = sum('marketplaceOrders');
   const units = sum('units');
@@ -7404,6 +7412,9 @@ function iuDrrFunnelSummaryValue(metric, rows = [], platformKey = 'wb', context 
   if (key === 'orders') return orders;
   if (key === 'adRevenue') return adRevenue;
   if (key === 'ctr') return iuDrrFunnelRate(clicks, views);
+  if (key === 'toCart') return toCart;
+  if (key === 'cartRate') return iuDrrFunnelRate(toCart, views);
+  if (key === 'orderRate') return iuDrrFunnelRate(orders, toCart);
   if (key === 'cpm') return views > 0 ? (factAds / views) * 1000 : null;
   if (key === 'cr') return iuDrrFunnelRate(orders, clicks);
   if (key === 'cpc') return iuDrrFunnelRate(factAds, clicks);
@@ -7567,7 +7578,7 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
   const month = model.monthSummary || {};
   const forecastMonth = context.quarterForecast?.month || {};
   const monthPlanRevenue = platformKey === 'ya'
-    ? numberOrZero(forecastMonth.iuPlan || month.iuRevenueYandexPlan)
+    ? numberOrZero(month.iuRevenueYandexPlanToDate || month.targetRevenueYandex || planRevenue)
     : platformKey === 'ozon'
       ? numberOrZero(forecastMonth.iuPlan || month.iuRevenueOzonContractMin || month.iuRevenueOzonPlan)
       : numberOrZero(forecastMonth.iuPlan || month.iuRevenueWbIuMin || month.iuRevenueWbPlan);
@@ -7636,12 +7647,12 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
   const yandexUnits = iuDrrFunnelSummaryValue('units', rows, platformKey, context);
   const yandexBuyoutRate = iuDrrFunnelSummaryValue('buyoutRate', rows, platformKey, context);
   const revenueCards = [{
-    label: platformKey === 'ya' ? 'Оборот Я.Маркет за месяц' : (platformKey === 'ozon' ? 'Smart GMV за месяц' : 'Оборот WB за месяц'),
+    label: platformKey === 'ya' ? 'Оборот Я.Маркет к плану на дату' : (platformKey === 'ozon' ? 'Smart GMV за месяц' : 'Оборот WB за месяц'),
     value: iuDrrFunnelFormat({ format: 'pct' }, cardRevenueCompletion),
     detail: `${fmt.money(cardFactRevenue)} / ${fmt.money(cardPlanRevenue)}`,
     progress: cardRevenueCompletion,
     tone: iuDrrFunnelCompletionTone(cardRevenueCompletion),
-    status: 'месячный план'
+    status: platformKey === 'ya' ? 'план к дате' : 'месячный план'
   }];
   const cards = platformKey === 'ya' ? [
     ...revenueCards,
@@ -8968,6 +8979,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const month = model.monthSummary || {};
   const platformMeta = iuDrrPlatformMeta(model);
   const isOzonView = model.selectedPlatform === 'ozon';
+  const isYandexView = model.selectedPlatform === 'ya';
   const factDrr = month.drrWb != null ? month.drrWb : null;
   const deltaTone = iuDrrToneForDelta(month.spendDelta);
   const ozonAdsDeltaTone = iuDrrToneForDelta(platformMeta.adsDelta);
@@ -9642,7 +9654,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
 
     ${isOzonView ? ozonReadableSummaryHtml : selectedKpisHtml}
     ${iuDrrFunnelHtml}
-    ${isOzonView ? ozonPlanFactTableHtml : dailyTableHtml}
+    ${isOzonView ? ozonPlanFactTableHtml : (isYandexView ? '' : dailyTableHtml)}
   `;
 
   root.querySelector('#iuDrrMonth')?.addEventListener('change', (event) => {

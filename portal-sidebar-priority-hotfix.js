@@ -13,6 +13,7 @@
     "repricer",
     "prices",
     "order",
+    "oos-control",
     "sku-contour",
     "skus",
     "launches",
@@ -46,6 +47,10 @@
     order: {
       title: "\u0417\u0430\u043a\u0430\u0437 \u0442\u043e\u0432\u0430\u0440\u0430",
       subtitle: "\u041a\u043b\u0430\u0441\u0442\u0435\u0440\u044b \u00b7 \u0441\u043a\u043b\u0430\u0434\u044b \u00b7 \u043f\u043e\u0441\u0442\u0430\u0432\u043a\u0438"
+    },
+    "oos-control": {
+      title: "OOS \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c",
+      subtitle: "\u041f\u0443\u0441\u0442\u044b\u0435 \u043f\u043e\u043b\u043a\u0438 \u00b7 \u043f\u043e\u0442\u0435\u0440\u0438 \u00b7 \u043c\u0435\u0440\u044b"
     },
     control: {
       title: "\u0417\u0430\u0434\u0430\u0447\u0438",

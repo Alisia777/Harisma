@@ -1,5 +1,6 @@
 const SKU_PLAN_FACT_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
 const SKU_PLAN_FACT_PAYROLL_PLATFORMS = ['wb', 'ozon', 'ya'];
+const SKU_PLAN_FACT_PAYROLL_ALIGNMENT_PLATFORMS = new Set(['wb', 'ozon']);
 const SKU_PLAN_FACT_PLATFORM_LABELS = {
   wb: 'WB',
   ozon: 'Ozon',
@@ -1471,13 +1472,17 @@ function skuPlanFactPayrollMetricTotals(model = {}, selectedPlatform = 'all', ro
 function skuPlanFactApplyPayrollKpiToModel(model = {}) {
   const payroll = skuPlanFactPayrollKpiForModel(model);
   if (!payroll) return model;
+  const selectedPlatform = String(payroll.selectedPlatform || model.filters?.platform || 'all').toLowerCase();
+  const skipPayrollAlignment = selectedPlatform !== 'all' && !SKU_PLAN_FACT_PAYROLL_ALIGNMENT_PLATFORMS.has(selectedPlatform);
   model.payrollKpi = {
     ...payroll,
+    salaryIncluded: skipPayrollAlignment ? false : payroll.salaryIncluded,
+    sourceAlignmentSkipped: skipPayrollAlignment,
     truthSource: 'company_plan',
     displayTitle: 'Месячный план и KPI',
     displayNote: 'Корпоративный план: оборот, заказы и рекламный бюджет по зарплатному контуру.'
   };
-  if (!payroll.salaryIncluded) {
+  if (skipPayrollAlignment || !payroll.salaryIncluded) {
     const scopedTotals = skuPlanFactPayrollMetricTotals(model, payroll.selectedPlatform || 'all', model.rows || []);
     model.totals.payrollOriginal = {
       planRevenue: model.totals.planRevenue,
@@ -1495,6 +1500,7 @@ function skuPlanFactApplyPayrollKpiToModel(model = {}) {
       completionMonth: model.totals.completionMonth,
       gapToDate: model.totals.gapToDate
     };
+    model.totals.sourceAlignmentSkipped = skipPayrollAlignment;
     model.totals.planRevenue = scopedTotals.planRevenue;
     model.totals.planToDateRevenue = scopedTotals.planToDateRevenue;
     model.totals.planUnits = scopedTotals.planUnits;
@@ -5552,7 +5558,10 @@ function skuPlanFactPlatformSummary(model = {}, platform = '', options = {}) {
   summary.apiMarginPct = summary.marginPct;
   summary.apiMarginRub = summary.marginRub;
   summary.apiAdSpend = summary.adSpend;
-  const payrollMetric = normalizedPlatform === 'all' ? model.payrollKpi : model.payrollKpi?.platforms?.[normalizedPlatform];
+  const payrollAlignmentAllowed = normalizedPlatform === 'all' || SKU_PLAN_FACT_PAYROLL_ALIGNMENT_PLATFORMS.has(normalizedPlatform);
+  const payrollMetric = payrollAlignmentAllowed
+    ? (normalizedPlatform === 'all' ? model.payrollKpi : model.payrollKpi?.platforms?.[normalizedPlatform])
+    : null;
   if (includePayroll && payrollMetric && !model.payrollKpi?.ownerScoped) {
     summary.payrollKpi = true;
     summary.salaryIncluded = true;

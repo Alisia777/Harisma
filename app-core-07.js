@@ -7657,7 +7657,7 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
   const cards = platformKey === 'ya' ? [
     ...revenueCards,
     { label: 'Заказано', value: iuDrrFunnelFormat({ format: 'money' }, yandexOrdersRevenue), detail: `${fmt.int(yandexOrders)} шт. заказано`, progress: yandexOrdersRevenue > 0 && cardFactRevenue > 0 ? cardFactRevenue / yandexOrdersRevenue : null, tone: 'info' },
-    { label: 'Доставлено', value: `${fmt.int(yandexUnits)} шт.`, detail: `выкуп ${iuDrrFunnelFormat({ format: 'pct' }, yandexBuyoutRate)}`, progress: yandexBuyoutRate, tone: yandexBuyoutRate == null ? 'info' : (yandexBuyoutRate >= 0.75 ? 'ok' : 'warn') },
+    { label: 'Доставлено', value: `${fmt.int(yandexUnits)} шт.`, detail: `к заказам периода ${iuDrrFunnelFormat({ format: 'pct' }, yandexBuyoutRate)}`, progress: null, tone: 'info', status: 'контроль' },
     { label: 'Расход рекламы', value: '—', detail: 'sales funnel API не передает spend', progress: null, tone: 'info' }
   ] : platformKey === 'ozon' ? [
     ...revenueCards,

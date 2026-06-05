@@ -20,7 +20,7 @@
     dashboard: [
       'portal-dashboard-calendar-stability-hotfix.js?v=20260521prod1',
       'portal-dashboard-prime-hotfix-20260422e.js?v=20260521prod1',
-      'portal-dashboard-interactive-hotfix.js?v=20260604metricnulls1'
+      'portal-dashboard-interactive-hotfix.js?v=20260603exportaudit2'
     ],
     control: [
       'portal-control-center-v2-hotfix.js?v=20260529taskzya1',
@@ -73,12 +73,12 @@
   /*
   const SIDEBAR_LABELS_OLD = {
     'iu-drr': {
-      title: 'Показатели площадок',
-      subtitle: 'WB · Ozon · план-факт'
+      title: 'РџРѕРєР°Р·Р°С‚РµР»Рё РїР»РѕС‰Р°РґРѕРє',
+      subtitle: 'WB В· Ozon В· РїР»Р°РЅ-С„Р°РєС‚'
     },
     'oos-control': {
-      title: 'OOS контроль',
-      subtitle: 'Ауты · потери · меры'
+      title: 'OOS РєРѕРЅС‚СЂРѕР»СЊ',
+      subtitle: 'РђСѓС‚С‹ В· РїРѕС‚РµСЂРё В· РјРµСЂС‹'
     }
   };
 
@@ -120,7 +120,7 @@
       script.src = src;
       script.async = false;
       script.onload = () => resolve(script);
-      script.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
+      script.onerror = () => reject(new Error(`РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ ${src}`));
       (document.head || document.body || document.documentElement).appendChild(script);
     });
     scriptPromises.set(src, promise);
@@ -160,17 +160,105 @@
     return chain;
   }
 
+  function installIuDrrOzonFallback() {
+    if (window.__ALTEA_IU_DRR_OZON_DAILY_FALLBACK_20260604__) return;
+    const original = window.ozonPlanFactDailyRows;
+    if (typeof original !== 'function') return;
+    window.__ALTEA_IU_DRR_OZON_DAILY_FALLBACK_20260604__ = true;
+    const num = (value) => {
+      const parsed = Number(String(value ?? '').replace(/\s+/g, '').replace(',', '.'));
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+    const daysInMonth = (monthKey) => {
+      const [year, month] = String(monthKey || '').split('-').map((part) => Number(part));
+      return year && month ? new Date(year, month, 0).getDate() : 0;
+    };
+    window.ozonPlanFactDailyRows = function patchedOzonPlanFactDailyRows(model, context = {}) {
+      const rows = original(model, context);
+      if (Array.isArray(rows) && rows.length) return rows;
+      const selectedMonth = model?.selectedMonth || '';
+      const dailyRows = (model?.payload?.daily || [])
+        .filter((row) => row?.monthKey === selectedMonth)
+        .filter((row) => (
+          num(row.revenueOzon)
+          || num(row.iuRevenueOzon)
+          || num(row.iuRevenueOzonFactToDate)
+          || num(row.ordersRevenueOzon)
+          || num(row.spendFactOzon)
+          || num(row.iuAdsFactOzonToDate)
+        ))
+        .sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')));
+      if (!dailyRows.length) return rows;
+      const targetDrr = num(context.targetDrr || 0.25);
+      const smartShare = num(context.smartShare || 0.4);
+      const monthTargetGmv = num(context.monthTargetGmv);
+      const dailyTargetGmv = daysInMonth(selectedMonth) > 0 ? monthTargetGmv / daysInMonth(selectedMonth) : 0;
+      const dailyTargetAds = dailyTargetGmv * targetDrr;
+      let cumulativeTargetGmv = 0;
+      let cumulativeFactGmv = 0;
+      let cumulativeTargetAds = 0;
+      let cumulativeFactAds = 0;
+      return dailyRows.map((row) => {
+        const factGmv = num(row.revenueOzon || row.iuRevenueOzon || row.iuRevenueOzonFactToDate || row.ordersRevenueOzon);
+        const factAds = num(row.spendFactOzon || row.iuAdsFactOzonToDate);
+        cumulativeTargetGmv += dailyTargetGmv;
+        cumulativeFactGmv += factGmv;
+        cumulativeTargetAds += dailyTargetAds;
+        cumulativeFactAds += factAds;
+        return {
+          date: row.date,
+          period: `${String(row.date || '').slice(8, 10)}.${String(row.date || '').slice(5, 7)}`,
+          dailyTargetGmv,
+          factGmv,
+          factRevenue: factGmv,
+          noSppBuyouts: factGmv,
+          noSppBuyoutsFact: 0,
+          planDeltaGmv: factGmv - dailyTargetGmv,
+          completion: dailyTargetGmv > 0 ? factGmv / dailyTargetGmv : null,
+          cumulativeTargetGmv,
+          cumulativeFactGmv,
+          cumulativeNoSppBuyouts: cumulativeFactGmv,
+          cumulativeNoSppBuyoutsFact: 0,
+          cumulativeGmvDelta: cumulativeFactGmv - cumulativeTargetGmv,
+          cumulativeGmvCompletion: cumulativeTargetGmv > 0 ? cumulativeFactGmv / cumulativeTargetGmv : null,
+          dailyTargetAds,
+          adsBoth: factAds,
+          noSppAds: factAds,
+          adsDeltaDaily: factAds - dailyTargetAds,
+          cumulativeTargetAds,
+          cumulativeFactAds,
+          cumulativeNoSppAds: cumulativeFactAds,
+          noSppDrr: factGmv > 0 ? factAds / factGmv : null,
+          cumulativeNoSppDrr: cumulativeFactGmv > 0 ? cumulativeFactAds / cumulativeFactGmv : null,
+          cumulativeAdsDelta: cumulativeFactAds - cumulativeTargetAds,
+          cumulativeAdsCompletion: cumulativeTargetAds > 0 ? cumulativeFactAds / cumulativeTargetAds : null,
+          targetAdsByFact: factGmv * targetDrr,
+          adsReserve: factGmv * targetDrr - factAds,
+          drr: factGmv > 0 ? factAds / factGmv : null,
+          smartShareAds: factAds * smartShare,
+          smartShareGmv: factGmv * smartShare,
+          ordersUnitsOzon: Math.round(num(row.ordersUnitsOzon || row.unitsOzon)),
+          deliveredUnitsOzon: Math.round(num(row.deliveredUnitsOzon)),
+          financeAds: 0,
+          source: 'iu_drr_daily',
+          sourceLabel: 'IU/DRR daily',
+          isPartial: true
+        };
+      });
+    };
+  }
+
   function loadViewHotfixes(view, options = {}) {
     syncSidebarLabels();
+    if (view === 'iu-drr') installIuDrrOzonFallback();
     const bundleKeys = VIEW_BUNDLES[view] || [];
-    const budgetScripts = VIEW_BUDGET_SCRIPTS[String(view || '')] || [];
     let chain = loadRenderBudget(view);
     bundleKeys.forEach((bundleKey) => {
       chain = chain.then(() => loadBundle(bundleKey));
     });
     return chain.then(() => {
       syncSidebarLabels();
-      if (options.rerender !== false && (bundleKeys.length || budgetScripts.length) && typeof rerenderCurrentView === 'function') {
+      if (options.rerender !== false && typeof rerenderCurrentView === 'function') {
         rerenderCurrentView();
       }
     }).catch((error) => console.warn('[portal-live-lazy-hotfixes]', view, error));

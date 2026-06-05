@@ -41,7 +41,10 @@ const SNAPSHOT_KEYS = [
   'portal_sync_health'
 ];
 const OPTIONAL_SNAPSHOT_KEYS = new Set([
+  'loyalty_system',
+  'order_procurement_ym',
   'product_leaderboard_history',
+  'portal_layer_freshness',
   'wb_substitution_traffic',
   'wb_substitution_traffic_history'
 ]);

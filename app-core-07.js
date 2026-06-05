@@ -7801,14 +7801,30 @@ function ozonPlanFactDailyRows(model, context = {}) {
   const selectedMonth = model.selectedMonth || '';
   const planRows = (model.payload.ozonPlan?.daily || []).filter((row) => row.monthKey === selectedMonth);
   const activePlanRows = planRows.filter((row) => numberOrZero(row.revenue) || numberOrZero(row.gmv) || numberOrZero(row.ads));
-  const financeRows = (model.ozonFinance?.daily || []).filter((row) => row.monthKey === selectedMonth);
+  const financeRows = [
+    ...(model.ozonFinance?.daily || []),
+    ...(model.payload?.ozonFinance?.daily || [])
+  ].filter((row, index, rows) => (
+    row?.monthKey === selectedMonth
+    && rows.findIndex((candidate) => candidate?.date === row?.date) === index
+  ));
   const financeByDate = new Map(financeRows.map((row) => [row.date, row]));
-  const iuDailyByDate = new Map((model.payload?.daily || [])
-    .filter((row) => row.monthKey === selectedMonth)
-    .map((row) => [row.date, row]));
+  const iuDailyRows = (model.payload?.daily || []).filter((row) => (
+    row?.monthKey === selectedMonth
+    && (
+      numberOrZero(row.revenueOzon)
+      || numberOrZero(row.iuRevenueOzon)
+      || numberOrZero(row.iuRevenueOzonFactToDate)
+      || numberOrZero(row.ordersRevenueOzon)
+      || numberOrZero(row.spendFactOzon)
+      || numberOrZero(row.iuAdsFactOzonToDate)
+    )
+  ));
+  const iuDailyByDate = new Map(iuDailyRows.map((row) => [row.date, row]));
   const dates = [...new Set([
     ...activePlanRows.map((row) => row.date),
-    ...financeRows.map((row) => row.date)
+    ...financeRows.map((row) => row.date),
+    ...iuDailyRows.map((row) => row.date)
   ].filter(Boolean))].sort();
   const monthTargetGmv = numberOrZero(context.monthTargetGmv);
   const targetDrr = numberOrZero(context.targetDrr || 0.25);
@@ -7866,17 +7882,25 @@ function ozonPlanFactDailyRows(model, context = {}) {
       || numberOrZero(finance.realizationRevenue) + numberOrZero(finance.discountBonus) + numberOrZero(finance.partnerPrograms);
     const financeSalesNet = numberOrZero(finance.salesGross) + numberOrZero(finance.returnsGross);
     const financeFactGmv = financeRealization || financeSalesNet;
+    const iuRevenueOzon = numberOrZero(
+      iuDaily.revenueOzon
+      || iuDaily.iuRevenueOzon
+      || iuDaily.iuRevenueOzonFactToDate
+      || iuDaily.ordersRevenueOzon
+    );
+    const iuAdsOzon = numberOrZero(iuDaily.spendFactOzon || iuDaily.iuAdsFactOzonToDate);
     const hasDashboardFact = rows.some((row) => numberOrZero(row.revenue) || numberOrZero(row.gmv) || numberOrZero(row.ads));
     const hasFinanceFact = numberOrZero(finance.rowCount) > 0 || financeFactGmv > 0 || financeAds > 0;
+    const hasIuDailyFact = iuRevenueOzon > 0 || iuAdsOzon > 0;
     const usesFinanceFallback = !hasDashboardFact && hasFinanceFact;
+    const usesIuDailyFallback = !hasDashboardFact && !hasFinanceFact && hasIuDailyFact;
     const isPartialFinanceDay = usesFinanceFallback && !financeRealization;
-    const iuRevenueOzon = numberOrZero(iuDaily.revenueOzon);
-    const iuAdsOzon = numberOrZero(iuDaily.spendFactOzon);
     const factGmv = smartRevenue || numberOrZero(total.revenue) || iuRevenueOzon || financeFactGmv;
     const factAds = smartAds || numberOrZero(total.ads) || iuAdsOzon || financeAds;
     const noSppBuyouts = numberOrZero(finance.realizationSalesGross)
       || numberOrZero(finance.realizationRevenue) + numberOrZero(finance.discountBonus) + numberOrZero(finance.partnerPrograms)
       || financeSalesNet
+      || iuRevenueOzon
       || smartGmv
       || numberOrZero(total.gmv);
     const noSppBuyoutsFact = financeFactGmv;
@@ -7942,9 +7966,9 @@ function ozonPlanFactDailyRows(model, context = {}) {
       financeDiscountBonus: numberOrZero(finance.discountBonus),
       financePartnerPrograms: numberOrZero(finance.partnerPrograms),
       financeAds: Math.abs(numberOrZero(finance.ads)),
-      source: usesFinanceFallback ? 'ozon_finance_api' : (hasDashboardFact ? 'ozon_dashboard' : 'missing'),
-      sourceLabel: usesFinanceFallback ? 'Ozon Finance API' : (hasDashboardFact ? 'Ozon dashboard' : ''),
-      isPartial: Boolean(isPartialFinanceDay)
+      source: usesFinanceFallback ? 'ozon_finance_api' : (hasDashboardFact ? 'ozon_dashboard' : (usesIuDailyFallback ? 'iu_drr_daily' : 'missing')),
+      sourceLabel: usesFinanceFallback ? 'Ozon Finance API' : (hasDashboardFact ? 'Ozon dashboard' : (usesIuDailyFallback ? 'IU/DRR daily' : '')),
+      isPartial: Boolean(isPartialFinanceDay || usesIuDailyFallback)
     };
   });
 }
@@ -8972,9 +8996,42 @@ function downloadIuDrrExcel(model) {
   ], rows, `iu-drr-wb-${model.selectedMonth || todayIso()}.xls`);
 }
 
+function iuDrrSummaryHasPayload(payload = {}) {
+  return Boolean(
+    Array.isArray(payload.daily) && payload.daily.length
+    || Array.isArray(payload.months) && payload.months.length
+    || payload.kpis?.monthKey
+  );
+}
+
+function reloadIuDrrSummaryFromFile(rootId = 'view-iu-drr') {
+  if (state.__iuDrrSummaryReloading) return true;
+  const lastEmptyReload = numberOrZero(state.__iuDrrSummaryEmptyReloadAt);
+  if (lastEmptyReload && Date.now() - lastEmptyReload < 10000) return false;
+  state.__iuDrrSummaryReloading = true;
+  if (typeof renderViewLoading === 'function') renderViewLoading(rootId, 'IU / DRR');
+  loadJsonOrFallback('data/iu_drr_summary.json', { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} }, 'IU / DRR')
+    .then((summary) => {
+      const normalized = normalizeIuDrrSummaryPayload(summary && typeof summary === 'object' ? summary : {});
+      state.iuDrrSummary = normalized;
+      if (state.boot?.lazyReady) state.boot.lazyReady.iuDrr = true;
+      if (!iuDrrSummaryHasPayload(normalized)) state.__iuDrrSummaryEmptyReloadAt = Date.now();
+    })
+    .catch((error) => {
+      state.__iuDrrSummaryEmptyReloadAt = Date.now();
+      console.warn('[iu-drr] local summary reload', error);
+    })
+    .finally(() => {
+      state.__iuDrrSummaryReloading = false;
+      renderIuDrr(rootId);
+    });
+  return true;
+}
+
 function renderIuDrr(rootId = 'view-iu-drr') {
   const root = document.getElementById(rootId);
   if (!root) return;
+  if (!iuDrrSummaryHasPayload(state.iuDrrSummary || {}) && reloadIuDrrSummaryFromFile(rootId)) return;
   const model = iuDrrBuildModel(state.iuDrrSummary || {});
   const month = model.monthSummary || {};
   const platformMeta = iuDrrPlatformMeta(model);

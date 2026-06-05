@@ -557,7 +557,8 @@
 }
 
 .promo-event-pill.readonly {
-  cursor: pointer;
+  cursor: default;
+  border-style: dashed;
 }
 
 .promo-event-pill::after {
@@ -592,7 +593,7 @@
 }
 
 .promo-event-pill.readonly:active {
-  cursor: pointer;
+  cursor: default;
 }
 
 .promo-event-pill span,
@@ -720,6 +721,10 @@
 
 .promo-agenda-item.mission-danger {
   border-color: rgba(255, 108, 108, .34);
+}
+
+.promo-agenda-item.readonly {
+  border-style: dashed;
 }
 
 .promo-agenda-item button {

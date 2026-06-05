@@ -25,7 +25,9 @@
     remoteSaving: false,
     dataLoaded: false,
     dataLoading: false,
-    taskSyncing: false
+    taskSyncing: false,
+    activityLoaded: false,
+    activityLoading: false
   };
   window.__ALTEA_PROMO_CALENDAR_STATE__ = CALENDAR_STATE;
   if (!CALENDAR_STATE.kind) CALENDAR_STATE.kind = 'all';
@@ -263,7 +265,33 @@
     return state.storage;
   }
 
+  function firstValue(item = {}, keys = []) {
+    for (const key of keys) {
+      const value = item?.[key];
+      if (value !== undefined && value !== null && String(value).trim() !== '') return value;
+    }
+    return '';
+  }
+
+  function normalizeDateKey(value, fallback = todayKey()) {
+    const raw = String(value || '').trim();
+    if (!raw) return fallback;
+    const iso = raw.match(/\d{4}-\d{2}-\d{2}/);
+    if (iso) return iso[0];
+    const ru = raw.match(/^(\d{1,2})[./](\d{1,2})[./](\d{2,4})$/);
+    if (ru) {
+      const year = ru[3].length === 2 ? `20${ru[3]}` : ru[3];
+      return `${year}-${ru[2].padStart(2, '0')}-${ru[1].padStart(2, '0')}`;
+    }
+    const parsed = new Date(raw);
+    return Number.isNaN(parsed.getTime()) ? fallback : dateKey(parsed);
+  }
+
   function normalizeDeleted(item) {
+    if (typeof item === 'string') {
+      const id = item.trim();
+      return id ? { id, deletedAt: new Date().toISOString() } : null;
+    }
     if (!item || typeof item !== 'object') return null;
     const id = String(item.id || '').trim();
     if (!id) return null;
@@ -275,14 +303,14 @@
 
   function normalizeEvent(item = {}) {
     const now = new Date().toISOString();
-    const title = String(item.title || item.name || '').trim();
-    const startDate = String(item.startDate || item.start_date || item.date || todayKey()).slice(0, 10);
-    const rawEnd = String(item.endDate || item.end_date || startDate).slice(0, 10);
+    const title = String(firstValue(item, ['title', 'name', 'promoName', 'eventName', 'campaignName'])).trim();
+    const startDate = normalizeDateKey(firstValue(item, ['startDate', 'start_date', 'date', 'dateFrom', 'from', 'promoFrom', 'start', 'beginDate']), todayKey());
+    const rawEnd = normalizeDateKey(firstValue(item, ['endDate', 'end_date', 'dateTo', 'to', 'promoTo', 'end', 'finishDate']) || startDate, startDate);
     const endDate = rawEnd && rawEnd >= startDate ? rawEnd : startDate;
     const skus = Array.isArray(item.skus)
       ? item.skus.map((sku) => String(sku || '').trim()).filter(Boolean)
       : textLines(item.skuText || item.skusText || item.sku || '');
-    const platform = platformKey(item.platform || item.marketplace || 'cross');
+    const platform = platformKey(firstValue(item, ['platform', 'marketplace', 'platformKey', 'marketplaceKey']) || 'cross');
     const platforms = uniqueList([
       platform,
       ...(Array.isArray(item.platforms) ? item.platforms : textLines(item.platforms || item.platformList || ''))
@@ -296,12 +324,14 @@
       endDate,
       skus,
       skuText: skus.join('\n'),
-      comment: String(item.comment || item.note || '').trim(),
+      comment: String(item.comment || item.note || item.description || '').trim(),
       owner: String(item.owner || '').trim(),
       status: String(item.status || 'planned').trim() || 'planned',
       taskId: String(item.taskId || item.task_id || '').trim(),
       calendarKind: 'promo',
-      readonly: false,
+      readonly: Boolean(item.readonly || item.readOnly),
+      source: String(item.source || '').trim(),
+      metrics: item.metrics && typeof item.metrics === 'object' ? { ...item.metrics } : undefined,
       createdAt: String(item.createdAt || item.created_at || now),
       updatedAt: String(item.updatedAt || item.updated_at || item.createdAt || now)
     };
@@ -625,10 +655,96 @@
     }).flat().filter(Boolean);
   }
 
+  function activitySummary() {
+    const state = appState();
+    return state.adsSummary || state.ads_summary || {};
+  }
+
+  function activityTopSkuMap(summary = {}) {
+    const map = new Map();
+    const rows = Array.isArray(summary.itemSeries) ? summary.itemSeries : [];
+    rows.forEach((row) => {
+      const platform = platformKey(firstValue(row, ['platformKey', 'platform', 'marketplace', 'marketplaceKey']));
+      const day = normalizeDateKey(firstValue(row, ['date', 'label', 'day']), '');
+      if (!platform || platform === 'all' || !day) return;
+      const key = `${platform}|${day}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(row);
+    });
+    map.forEach((items, key) => {
+      items.sort((a, b) => {
+        const spendDelta = number(b.spend) - number(a.spend);
+        if (spendDelta) return spendDelta;
+        const revenueDelta = number(b.revenue) - number(a.revenue);
+        if (revenueDelta) return revenueDelta;
+        return number(b.orders) - number(a.orders);
+      });
+      map.set(key, items.slice(0, 8));
+    });
+    return map;
+  }
+
+  function platformActivityEvents() {
+    const summary = activitySummary();
+    const platforms = Array.isArray(summary.platforms) ? summary.platforms : [];
+    if (!platforms.length) return [];
+    const topSkuByDay = activityTopSkuMap(summary);
+    const generatedAt = String(summary.generatedAt || summary.generated_at || new Date().toISOString());
+    return platforms.flatMap((platformItem) => {
+      const platform = platformKey(firstValue(platformItem, ['platformKey', 'key', 'platform', 'marketplace']));
+      if (!platform || platform === 'all') return [];
+      const label = String(platformItem.label || platformLabel(platform));
+      const series = Array.isArray(platformItem.series) ? platformItem.series : [];
+      return series.map((row) => {
+        const day = normalizeDateKey(firstValue(row, ['date', 'label', 'day']), '');
+        if (!day) return null;
+        const metrics = {
+          views: number(row.views),
+          clicks: number(row.clicks),
+          spend: number(row.spend),
+          orders: number(row.orders),
+          revenue: number(row.revenue),
+          addToCart: number(row.addToCart || row.add_to_cart),
+          sourceRows: number(row.sourceRows || row.source_rows)
+        };
+        if (!metrics.views && !metrics.clicks && !metrics.spend && !metrics.orders && !metrics.revenue) return null;
+        const skuRows = topSkuByDay.get(`${platform}|${day}`) || [];
+        const skus = uniqueList(skuRows.map((item) => firstValue(item, ['article', 'articleKey', 'sku', 'nmId', 'offerId']))).slice(0, 8);
+        const metricParts = [
+          metrics.spend ? `spend ${formatMoney(metrics.spend)}` : '',
+          metrics.orders ? `orders ${formatInt(metrics.orders)}` : '',
+          metrics.revenue ? `revenue ${formatMoney(metrics.revenue)}` : '',
+          metrics.clicks ? `clicks ${formatInt(metrics.clicks)}` : ''
+        ].filter(Boolean);
+        return {
+          id: `platform-activity-${platform}-${day}`,
+          title: `${label} activity`,
+          platform,
+          platforms: [platform],
+          startDate: day,
+          endDate: day,
+          skus,
+          skuText: skus.join('\n'),
+          comment: metricParts.join(' | '),
+          owner: 'platform',
+          status: day === todayKey() ? 'active' : 'done',
+          taskId: '',
+          calendarKind: 'promo',
+          readonly: true,
+          source: 'ads-summary',
+          metrics,
+          createdAt: generatedAt,
+          updatedAt: generatedAt
+        };
+      }).filter(Boolean);
+    });
+  }
+
   function calendarEvents() {
     const manualEvents = allEvents().map((event) => ({ ...event, calendarKind: 'promo', readonly: false }));
     return [
       ...manualEvents,
+      ...platformActivityEvents(),
       ...taskCalendarEvents(manualEvents),
       ...launchCalendarEvents()
     ];
@@ -638,11 +754,23 @@
     return storage().promoEventDeletedIds.map(normalizeDeleted).filter(Boolean);
   }
 
+  function payloadEvents(payload = {}) {
+    if (Array.isArray(payload.events)) return payload.events;
+    if (Array.isArray(payload.promoEvents)) return payload.promoEvents;
+    if (Array.isArray(payload.calendarEvents)) return payload.calendarEvents;
+    if (Array.isArray(payload.items)) return payload.items;
+    if (Array.isArray(payload.rows)) return payload.rows;
+    return [];
+  }
+
+  function payloadDeletedIds(payload = {}) {
+    const deleted = payload.deletedIds || payload.deleted || payload.promoEventDeletedIds || [];
+    return Array.isArray(deleted) ? deleted : [];
+  }
+
   function applyCalendarPayload(payload = {}) {
-    const events = Array.isArray(payload.events) ? payload.events.map(normalizeEvent) : [];
-    const deleted = Array.isArray(payload.deletedIds || payload.deleted)
-      ? (payload.deletedIds || payload.deleted).map(normalizeDeleted).filter(Boolean)
-      : [];
+    const events = payloadEvents(payload).map(normalizeEvent);
+    const deleted = payloadDeletedIds(payload).map(normalizeDeleted).filter(Boolean);
     const deletedMap = new Map(deleted.map((item) => [item.id, item]));
     storage().promoEvents = events
       .filter((event) => {
@@ -658,13 +786,14 @@
       generatedAt: new Date().toISOString(),
       updatedBy: appState().team?.member?.name || 'Команда',
       events: allEvents(),
+      promoEvents: allEvents(),
       deletedIds: deletedIds()
     };
   }
 
   function mergePayload(remotePayload, localPayload) {
     const mergedDeleted = new Map();
-    [...(remotePayload?.deletedIds || []), ...(localPayload?.deletedIds || [])]
+    [...payloadDeletedIds(remotePayload), ...payloadDeletedIds(localPayload)]
       .map(normalizeDeleted)
       .filter(Boolean)
       .forEach((item) => {
@@ -679,12 +808,14 @@
       const current = eventMap.get(event.id);
       if (!current || Date.parse(event.updatedAt || 0) >= Date.parse(current.updatedAt || 0)) eventMap.set(event.id, event);
     };
-    (remotePayload?.events || []).forEach(add);
-    (localPayload?.events || []).forEach(add);
+    payloadEvents(remotePayload).forEach(add);
+    payloadEvents(localPayload).forEach(add);
+    const events = [...eventMap.values()].sort((a, b) => `${a.startDate}|${a.title}`.localeCompare(`${b.startDate}|${b.title}`));
     return {
       generatedAt: new Date().toISOString(),
       updatedBy: localPayload?.updatedBy || remotePayload?.updatedBy || appState().team?.member?.name || 'Команда',
-      events: [...eventMap.values()].sort((a, b) => `${a.startDate}|${a.title}`.localeCompare(`${b.startDate}|${b.title}`)),
+      events,
+      promoEvents: events,
       deletedIds: [...mergedDeleted.values()]
     };
   }
@@ -779,6 +910,7 @@
       return merged;
     } catch (error) {
       console.warn('[promo-calendar] sync', error);
+      CALENDAR_STATE.remoteLoaded = true;
       return null;
     } finally {
       CALENDAR_STATE.remoteLoading = false;
@@ -843,13 +975,15 @@
     const needWarehouse = !payloadLooksLoaded(state.warehouseStockOverlay || state.warehouse_stock_overlay);
     const needOverlay = !payloadLooksLoaded(state.smartPriceOverlay);
     const needLaunches = !Array.isArray(state.launches) || !state.launches.length;
-    if (!needSkus && !needWarehouse && !needOverlay && !needLaunches) {
+    const needAds = !payloadLooksLoaded(state.adsSummary || state.ads_summary);
+    if (!needSkus && !needWarehouse && !needOverlay && !needLaunches && !needAds) {
       CALENDAR_STATE.dataLoaded = true;
       return;
     }
     CALENDAR_STATE.dataLoading = true;
     try {
-      const [skus, warehouse, overlay, launches] = await Promise.all([
+      const [adsSummary, skus, warehouse, overlay, launches] = await Promise.all([
+        needAds ? loadCalendarJson('data/ads_summary.json', { generatedAt: '', platforms: [], itemSeries: [] }, 'Ads summary') : Promise.resolve(state.adsSummary || state.ads_summary),
         needSkus ? loadCalendarJson('data/skus.json', [], 'SKU') : Promise.resolve(state.skus),
         needWarehouse ? loadCalendarJson('data/warehouse_stock_overlay.json', { generatedAt: '', rows: [] }, 'Склад/остатки') : Promise.resolve(state.warehouseStockOverlay || state.warehouse_stock_overlay),
         needOverlay ? loadCalendarJson('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт SKU') : Promise.resolve(state.smartPriceOverlay),
@@ -862,6 +996,10 @@
       }
       if (needOverlay) state.smartPriceOverlay = overlay && typeof overlay === 'object' ? overlay : { generatedAt: '', platforms: {} };
       if (needLaunches) state.launches = Array.isArray(launches) ? launches : [];
+      if (needAds) {
+        state.adsSummary = adsSummary && typeof adsSummary === 'object' ? adsSummary : { generatedAt: '', platforms: [], itemSeries: [] };
+        state.ads_summary = state.adsSummary;
+      }
       if (state.boot?.lazyReady && needLaunches) state.boot.lazyReady.launches = true;
       CALENDAR_STATE.dataLoaded = true;
       if (isCalendarActive()) {
@@ -1683,7 +1821,7 @@
     return sorted.slice(0, 10).map((event) => {
       const mission = eventMission(event);
       return `
-        <div class="promo-agenda-item ${eventVisualClass(event)} mission-${mission.tone}" style="--event-xp:${mission.score}%">
+        <div class="promo-agenda-item ${eventVisualClass(event)} mission-${mission.tone} ${event.readonly ? 'readonly' : ''}" style="--event-xp:${mission.score}%">
           <button type="button" data-calendar-edit="${html(event.id)}">
             <strong>${html(event.title)}</strong>
             <span>${html(formatDate(event.startDate))}${event.endDate !== event.startDate ? ` - ${html(formatDate(event.endDate))}` : ''}</span>
@@ -1807,7 +1945,7 @@
     const events = filteredEvents();
     const gridDays = monthDays(month);
     const shellClass = `promo-calendar-shell ${eventClass(CALENDAR_STATE.platform)}`;
-    root.innerHTML = `
+    const markup = `
       <div class="${shellClass}">
         <section class="promo-calendar-command">
           <div class="promo-calendar-command-copy">
@@ -1868,7 +2006,11 @@
         ${renderModal()}
       </div>
     `;
-    bindCalendar(root, rootId);
+    if (root.__alteaPromoCalendarMarkup !== markup || !root.querySelector('.promo-calendar-shell')) {
+      root.innerHTML = markup;
+      root.__alteaPromoCalendarMarkup = markup;
+      bindCalendar(root, rootId);
+    }
     if (!CALENDAR_STATE.dataLoaded && !CALENDAR_STATE.dataLoading) ensureCalendarData(rootId);
     if (!CALENDAR_STATE.remoteLoaded && !CALENDAR_STATE.remoteLoading) syncCalendarFromRemote({ rootId, rerender: true });
     if (!CALENDAR_STATE.taskSyncing && !CALENDAR_STATE.modalOpen) {
@@ -2357,6 +2499,39 @@
     }
   }
 
+  function activateCalendarFallback() {
+    const state = appState();
+    state.activeView = 'data-health';
+    document.querySelectorAll('.nav-btn[data-view]').forEach((button) => {
+      button.classList.toggle('active', button.dataset.view === 'data-health');
+    });
+    document.querySelectorAll('.view[id^="view-"]').forEach((view) => {
+      view.classList.toggle('active', view.id === 'view-data-health');
+    });
+    try { localStorage.setItem('altea:last-view', 'data-health'); } catch {}
+    if (window.location.hash !== '#data-health') {
+      try { history.replaceState(null, '', `${window.location.pathname}${window.location.search}#data-health`); } catch {}
+    }
+    renderEventCalendar('view-data-health');
+  }
+
+  function openCalendarFromNav(event) {
+    const button = event.target?.closest?.('.nav-btn[data-view="data-health"]');
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+    if (typeof setView === 'function') {
+      setView('data-health', { persist: true, syncHash: true });
+      window.setTimeout(() => {
+        if (!isCalendarActive()) activateCalendarFallback();
+        else renderEventCalendar('view-data-health');
+      }, 0);
+    } else {
+      activateCalendarFallback();
+    }
+  }
+
   function install() {
     patchCalendarChrome();
     window.renderPortalDataHealth = renderEventCalendar;
@@ -2368,4 +2543,5 @@
 
   install();
   window.addEventListener('DOMContentLoaded', install, { once: true });
+  document.addEventListener('click', openCalendarFromNav, true);
 })();

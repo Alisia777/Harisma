@@ -163,13 +163,14 @@
   function loadViewHotfixes(view, options = {}) {
     syncSidebarLabels();
     const bundleKeys = VIEW_BUNDLES[view] || [];
+    const budgetScripts = VIEW_BUDGET_SCRIPTS[String(view || '')] || [];
     let chain = loadRenderBudget(view);
     bundleKeys.forEach((bundleKey) => {
       chain = chain.then(() => loadBundle(bundleKey));
     });
     return chain.then(() => {
       syncSidebarLabels();
-      if (options.rerender !== false && typeof rerenderCurrentView === 'function') {
+      if (options.rerender !== false && (bundleKeys.length || budgetScripts.length) && typeof rerenderCurrentView === 'function') {
         rerenderCurrentView();
       }
     }).catch((error) => console.warn('[portal-live-lazy-hotfixes]', view, error));

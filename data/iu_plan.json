@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-06-05T09:00:50.536Z",
+  "generatedAt": "2026-06-05T12:13:00.894Z",
   "sourceWorkbook": "План ф.xlsx",
   "sourceSheet": "01_ДДС_ИУ",
   "planYear": 2026,
-  "ozonSourceWorkbook": "ИУ Смарт-Сейл.xlsx",
-  "ozonSourceSheet": "Лист1",
+  "ozonSourceWorkbook": "Дашборд _ ИУ по Оз.xlsx",
+  "ozonSourceSheet": "Условия Озон",
   "note": "IU WB plan comes from the plan workbook. Ozon GMV DR and AR rate come from the two-cabinet Smart-Sale IU plan when available; the portal salary/KPI contour uses the Smart-Sale 40% share. WB daily plan is parsed from the IU WB daily workbook at the marketplace contour without the old 40% reduction.",
   "assumptions": {
     "ozonIuAdsRate": 0.24877996681564674,
@@ -14,7 +14,7 @@
   "wbDailyPlan": {
     "status": "loaded",
     "sourceWorkbook": "иу_2026_h_1_продажи_+_реклама_по_дням_4.xlsx",
-    "sourcePath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\иу_2026_h_1_продажи_+_реклама_по_дням_4.xlsx",
+    "sourcePath": "C:\\Users\\artiu\\Downloads\\иу_2026_h_1_продажи_+_реклама_по_дням_4.xlsx",
     "sourceSheet": "sheet1",
     "share": 1,
     "rows": 95,

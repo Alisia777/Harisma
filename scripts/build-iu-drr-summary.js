@@ -1571,7 +1571,16 @@ function readQuarterDrrRows(filePath, from, to, yearHint) {
   return selected;
 }
 
-function mergeQuarterRows(reportRows, drrRows, dailyRows, from, to) {
+function wbDailyPlanQuarterRows(iuPlan) {
+  return (iuPlan?.wbDailyPlan?.daily || []).map((row) => ({
+    date: isoDate(row?.date),
+    ordersRevenueWb: numberOrZero(row?.revenueFactOur),
+    revenueWb: numberOrZero(row?.revenueFactOur),
+    spendFact: numberOrZero(row?.adsFactOur)
+  })).filter((row) => row.date && (row.revenueWb > 0 || row.spendFact > 0));
+}
+
+function mergeQuarterRows(reportRows, drrRows, wbDailyPlanRows, dailyRows, from, to) {
   const rows = new Map();
   const merge = (row, fields = []) => {
     if (!row?.date || row.date < from || row.date > to) return;
@@ -1589,13 +1598,16 @@ function mergeQuarterRows(reportRows, drrRows, dailyRows, from, to) {
   for (const row of drrRows || []) {
     merge(row, ['spendFact']);
   }
+  for (const row of wbDailyPlanRows || []) {
+    merge(row, ['ordersRevenueWb', 'revenueWb', 'spendFact']);
+  }
   for (const row of dailyRows || []) {
     merge(row, ['ordersRevenueWb', 'revenueWb', 'spendFact']);
   }
   return [...rows.values()].sort((left, right) => left.date.localeCompare(right.date));
 }
 
-function buildQuarterSummary(dailyRows, asOfDate) {
+function buildQuarterSummary(dailyRows, asOfDate, iuPlan) {
   const from = WB_CONTRACT.salesPeriodStart;
   const to = asOfDate || dailyRows[dailyRows.length - 1]?.date || '';
   if (!from || !to || from > to) {
@@ -1622,7 +1634,8 @@ function buildQuarterSummary(dailyRows, asOfDate) {
   const yearHint = Number(String(to).slice(0, 4)) || new Date().getFullYear();
   const reportRows = reportPath ? readQuarterReportRows(reportPath, from, to) : [];
   const drrRows = drrPath ? readQuarterDrrRows(drrPath, from, minDate(to, `${String(yearHint)}-04-30`), String(yearHint)) : [];
-  const mergedRows = mergeQuarterRows(reportRows, drrRows, dailyRows, from, to);
+  const wbDailyPlanRows = wbDailyPlanQuarterRows(iuPlan);
+  const mergedRows = mergeQuarterRows(reportRows, drrRows, wbDailyPlanRows, dailyRows, from, to);
   const revenueWb = roundMoney(sumRows(mergedRows, 'revenueWb'));
   const ordersRevenueWb = roundMoney(sumRows(mergedRows, 'ordersRevenueWb'));
   const spendFact = roundMoney(sumRows(mergedRows, 'spendFact'));
@@ -1630,12 +1643,25 @@ function buildQuarterSummary(dailyRows, asOfDate) {
   const planSpendWb = roundMoney(revenueWb * numberOrZero(WB_CONTRACT.marketingRate));
   const revenueDelta = roundMoney(revenueWb - targetRevenueWb);
   const spendDelta = roundMoney(spendFact - planSpendWb);
+  const hasWbDailyPlanRows = wbDailyPlanRows.length > 0;
   const sourceParts = [];
-  if (reportPath) sourceParts.push(path.basename(reportPath));
-  if (drrPath) sourceParts.push(path.basename(drrPath));
+  if (hasWbDailyPlanRows) {
+    sourceParts.push(iuPlan?.wbDailyPlan?.sourceWorkbook || 'WB IU daily workbook');
+  } else {
+    if (reportPath) sourceParts.push(path.basename(reportPath));
+    if (drrPath) sourceParts.push(path.basename(drrPath));
+  }
   sourceParts.push('iu_drr_summary.json');
+  const sourceWarnings = [
+    ...(!hasWbDailyPlanRows && !reportPath ? ['report workbook not found'] : []),
+    ...(!hasWbDailyPlanRows && !drrPath ? ['WB DRR workbook not found'] : [])
+  ];
+  const wbDailyPlanTo = isoDate(iuPlan?.wbDailyPlan?.to);
+  if (hasWbDailyPlanRows && wbDailyPlanTo && wbDailyPlanTo < to) {
+    sourceWarnings.push(`WB IU daily workbook ends at ${wbDailyPlanTo}; ${to} is filled from current WB API fallback`);
+  }
   return {
-    status: reportPath && drrPath ? 'ok' : 'partial',
+    status: hasWbDailyPlanRows || (reportPath && drrPath) ? 'ok' : 'partial',
     from,
     to,
     label: `${String(from).slice(8, 10)}.${String(from).slice(5, 7)}–${String(to).slice(8, 10)}.${String(to).slice(5, 7)}`,
@@ -1656,15 +1682,14 @@ function buildQuarterSummary(dailyRows, asOfDate) {
     source: {
       reportPath: reportPath || '',
       drrPath: drrPath || '',
+      wbDailyPlanSource: wbDailyPlanRows.length ? (iuPlan?.wbDailyPlan?.sourcePath || iuPlan?.wbDailyPlan?.sourceWorkbook || '') : '',
       reportRows: reportRows.length,
       drrRows: drrRows.length,
+      wbDailyPlanRows: wbDailyPlanRows.length,
       mergedRows: mergedRows.length
     },
     sourceLabel: sourceParts.join(' + '),
-    sourceWarnings: [
-      ...(!reportPath ? ['report workbook not found'] : []),
-      ...(!drrPath ? ['WB DRR workbook not found'] : [])
-    ]
+    sourceWarnings
   };
 }
 
@@ -2019,8 +2044,8 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const wbIuFactRevenue = numberOrZero(wbDailyPlan?.factRevenue);
     const wbIuFactSpend = numberOrZero(wbDailyPlan?.factSpend);
     const wbApiRevenue = numberOrZero(wb.revenue);
-    const revenueWb = wbApiRevenue || wbIuFactRevenue;
-    const ordersRevenueWb = numberOrZero(wb.ordersRevenue) || revenueWb || wbIuFactRevenue;
+    const revenueWb = wbIuFactRevenue || wbApiRevenue;
+    const ordersRevenueWb = wbIuFactRevenue || numberOrZero(wb.ordersRevenue) || revenueWb;
     const revenueOzon = numberOrZero(ozon.revenue);
     const revenueYandex = numberOrZero(yandex.revenue);
     const ordersRevenueYandex = numberOrZero(yandex.ordersRevenue);
@@ -2080,8 +2105,8 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const externalSpend = numberOrZero(channels.externalAds);
     const apiSpendFactTotal = numberOrZero(ads.spend) + reviewPointsAddedToSpend + wbMediaAddedToSpend;
     const wbApiSpendFact = Math.max(0, apiSpendFactTotal - externalSpend);
-    const spendFact = wbApiSpendFact || wbIuFactSpend;
-    const spendFactTotal = wbApiSpendFact ? apiSpendFactTotal : spendFact + externalSpend;
+    const spendFact = wbIuFactSpend || wbApiSpendFact;
+    const spendFactTotal = wbIuFactSpend ? spendFact + externalSpend : (wbApiSpendFact ? apiSpendFactTotal : spendFact + externalSpend);
     const spendFactIu = spendFact + spendFactOzon + spendFactYandex;
     const spendDelta = spendFact - planSpendWb;
     const spendDeltaOzon = spendFactOzon - planSpendOzon;
@@ -2137,7 +2162,7 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
       factPctYandex: null,
       yandexAdsFactMode,
       revenueTotalIu: roundMoney(revenueWb + revenueOzon + revenueYandex),
-      revenueWbSource: wbApiRevenue ? (wb.source || 'wb_api') : (wbDailyPlan?.source || 'wb_iu_daily_workbook'),
+      revenueWbSource: wbIuFactRevenue ? (wbDailyPlan?.source || 'wb_iu_daily_workbook') : (wbApiRevenue ? (wb.source || 'wb_api') : ''),
       unitsWb: Math.round(numberOrZero(wb.units)),
       unitsOzon: Math.round(numberOrZero(ozon.units)),
       ordersUnitsOzon: Math.round(numberOrZero(ozon.ordersUnits || ozon.units)),
@@ -2527,7 +2552,7 @@ async function buildPayload(options) {
   const currentMonth = months[months.length - 1] || null;
   const channels = buildChannelRows(dailyRows, adsSummary, wbFeedbacksSummary);
   const asOfDate = dailyRows.map((row) => row.date).filter(Boolean).sort().pop() || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || '';
-  const wbQuarter = buildQuarterSummary(dailyRows, asOfDate);
+  const wbQuarter = buildQuarterSummary(dailyRows, asOfDate, iuPlan);
   const noSourceChannels = channels
     .filter((channel) => channel.source !== 'Google Sheets fact_ads_daily_sku')
     .filter((channel) => !String(channel.source || '').startsWith('WB Promotion API'))

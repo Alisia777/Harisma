@@ -32,6 +32,7 @@ const SNAPSHOT_KEYS = [
   'warehouse_stock_overlay',
   'portal_data_quality',
   'portal_data_quarantine',
+  'portal_daily_guard',
   'sku_aliases',
   'sku_alias_ignore',
   'sku_alias_audit',

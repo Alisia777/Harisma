@@ -341,6 +341,7 @@ function Schedule-FailedStepRetry {
     outputDir = $resolvedOutputDir
     profileDir = $ProfileDir
     inputXlsx = $InputXlsx
+    expectedDate = $portalApiWindowTo
     steps = $script:retrySteps
   }
   $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
@@ -1043,6 +1044,26 @@ Write-Output "[sync] portal layer audit started"
 Invoke-NodeStep -StepName "portal layer audit" -Arguments $layerAuditArguments -Attempts 1 -RetryDelaySeconds 10
 Write-Output "[sync] portal layer audit completed"
 
+$dailyGuardArguments = @(
+  "scripts/portal-daily-layer-guard.js",
+  "--input-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--expected-date",
+  $portalApiWindowTo,
+  "--sync-issues",
+  $script:syncIssuesPath,
+  "--mirror-local-fallback",
+  "--no-fail"
+)
+
+Write-Output "[sync] daily layer guard started"
+Invoke-NodeStep -StepName "daily layer guard" -Arguments $dailyGuardArguments -Attempts 1 -RetryDelaySeconds 10
+Write-Output "[sync] daily layer guard completed"
+
 $metaPath = Join-Path $resolvedOutputDir "meta.json"
 if (Test-Path -LiteralPath $metaPath) {
   $meta = Get-Content -LiteralPath $metaPath -Raw | ConvertFrom-Json
@@ -1082,6 +1103,17 @@ if (Test-Path -LiteralPath $layerAuditPath) {
   Write-Output "[sync] layer audit publish allowed: $layerPublishAllowed"
 }
 
+$dailyGuardPath = Join-Path $resolvedOutputDir "portal_daily_guard.json"
+if (Test-Path -LiteralPath $dailyGuardPath) {
+  $dailyGuard = Get-Content -LiteralPath $dailyGuardPath -Raw | ConvertFrom-Json
+  $dailyGuardPublishAllowed = [bool]$dailyGuard.publish.allowed
+  if (-not $dailyGuardPublishAllowed) {
+    $publishAllowed = $false
+    $publishBlockReasons += @($dailyGuard.publish.blockingReasons)
+  }
+  Write-Output "[sync] daily layer guard publish allowed: $dailyGuardPublishAllowed"
+}
+
 if ($DryRun) {
   Remove-SyncLock
   exit 0
@@ -1100,6 +1132,9 @@ if (-not $publishAllowed) {
   if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_layer_freshness.json")) {
     $healthSnapshots += "portal_layer_freshness"
   }
+  if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_daily_guard.json")) {
+    $healthSnapshots += "portal_daily_guard"
+  }
   Invoke-NodeStep -StepName "sync health upload" -Arguments @(
     "scripts/portal-google-sheet-upload.js",
     "--input-dir",
@@ -1117,6 +1152,7 @@ $snapshotNames = @(
   "skus",
   "platform_trends",
   "platform_plan",
+  "logistics",
   "ads_summary",
   "iu_plan",
   "warehouse_stock_overlay",
@@ -1175,6 +1211,10 @@ if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_layer_freshness
   $snapshotNames += "portal_layer_freshness"
 }
 
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_daily_guard.json")) {
+  $snapshotNames += "portal_daily_guard"
+}
+
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_aliases.json")) {
   $snapshotNames += "sku_aliases"
 }
@@ -1204,12 +1244,6 @@ Invoke-NodeStep -StepName "dashboard/skus/platform_trends upload" -Arguments @(
   "--snapshot",
   $snapshotList
 )
-
-Invoke-NodeStep -StepName "logistics upload" -Arguments @(
-  "scripts/portal-google-sheet-logistics-upload.js",
-  "--input-dir",
-  $resolvedOutputDir
-) -Attempts 3 -RetryDelaySeconds 30
 
 $markLastGoodArguments = @($syncHealthArguments + "--mark-last-good")
 Write-Output "[sync] last-good mark started"

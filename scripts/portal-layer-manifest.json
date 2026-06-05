@@ -22,6 +22,7 @@
     { "name": "portal_data_quarantine", "file": "portal_data_quarantine.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt"] },
     { "name": "portal_sync_health", "file": "portal_sync_health.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["freshness.maxDate", "generatedAt"] },
     { "name": "portal_layer_freshness", "file": "portal_layer_freshness.json", "publish": true, "required": false, "freshnessPolicy": "daily", "freshnessPaths": ["expectedDate", "generatedAt"] },
+    { "name": "portal_daily_guard", "file": "portal_daily_guard.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["expectedDate", "generatedAt"] },
     { "name": "sku_aliases", "file": "sku_aliases.json", "publish": true, "required": true, "freshnessPolicy": "maxAge", "maxAgeDays": 2 },
     { "name": "sku_alias_ignore", "file": "sku_alias_ignore.json", "publish": true, "required": true, "freshnessPolicy": "none" },
     { "name": "sku_alias_audit", "file": "sku_alias_audit.json", "publish": true, "required": true, "freshnessPolicy": "none" },

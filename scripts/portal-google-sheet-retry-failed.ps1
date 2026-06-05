@@ -259,6 +259,27 @@ function Invoke-LayerAudit {
   ) -Attempts 1 -RetryDelaySeconds 10 -TimeoutSeconds 900
 }
 
+function Invoke-DailyGuard {
+  $arguments = @(
+    "scripts/portal-daily-layer-guard.js",
+    "--input-dir",
+    $resolvedOutputDir,
+    "--base-data-dir",
+    "data",
+    "--output-dir",
+    $resolvedOutputDir,
+    "--sync-issues",
+    (Join-Path $resolvedOutputDir "portal_sync_issues.json"),
+    "--mirror-local-fallback",
+    "--no-fail"
+  )
+  if (-not [string]::IsNullOrWhiteSpace($script:expectedDate)) {
+    $arguments += "--expected-date"
+    $arguments += $script:expectedDate
+  }
+  Invoke-NodeStep -StepName "daily layer retry guard" -Arguments $arguments -Attempts 1 -RetryDelaySeconds 10 -TimeoutSeconds 900
+}
+
 function Invoke-IuDrrBuild {
   Invoke-NodeStep -StepName "IU/DRR retry build" -Arguments @(
     "scripts/build-iu-drr-summary.js",
@@ -490,6 +511,7 @@ function Invoke-RetryStep {
     }
     "static-data-publish" {
       Invoke-LayerAudit
+      Invoke-DailyGuard
       Invoke-StaticDataPublish
     }
     default {
@@ -505,6 +527,7 @@ try {
 
   $manifestPayload = Get-Content -LiteralPath $Manifest -Raw | ConvertFrom-Json
   $resolvedOutputDir = Resolve-RetryPath -PathValue ([string]$manifestPayload.outputDir) -DefaultValue ".altea-google-sheet-sync-output"
+  $script:expectedDate = [string]$manifestPayload.expectedDate
   $profileDir = Resolve-RetryPath -PathValue ([string]$manifestPayload.profileDir) -DefaultValue ""
   if ([string]::IsNullOrWhiteSpace($profileDir) -or -not (Test-Path -LiteralPath $profileDir)) {
     $profileDir = ""
@@ -564,7 +587,8 @@ try {
   try {
     Invoke-HealthRefresh -MarkLastGood
     Invoke-LayerAudit
-    Invoke-Upload @("portal_sync_health", "portal_layer_freshness")
+    Invoke-DailyGuard
+    Invoke-Upload @("portal_sync_health", "portal_layer_freshness", "portal_daily_guard")
     Invoke-StaticDataPublish
   } catch {
     $failed += [ordered]@{

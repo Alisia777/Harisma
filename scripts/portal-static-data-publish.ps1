@@ -110,6 +110,23 @@ function Assert-LayerAuditAllowed {
   }
 }
 
+function Assert-DailyGuardAllowed {
+  param([string]$DailyGuardPath)
+  if (-not (Test-Path -LiteralPath $DailyGuardPath)) {
+    throw "portal_daily_guard is missing before static publish: $DailyGuardPath"
+  }
+  try {
+    $guard = Get-Content -LiteralPath $DailyGuardPath -Raw | ConvertFrom-Json
+    $publishAllowed = [bool]$guard.publish.allowed
+    if (-not $publishAllowed) {
+      $reasons = @($guard.publish.blockingReasons | Where-Object { $_ }) -join "; "
+      throw "portal_daily_guard blocks static publish: $reasons"
+    }
+  } catch {
+    throw "Failed to validate portal_daily_guard before static publish: $($_.Exception.Message)"
+  }
+}
+
 function Invoke-GitCommandResult {
   param([string[]]$Arguments)
 
@@ -246,6 +263,8 @@ New-Item -ItemType Directory -Path $deployDataDir -Force | Out-Null
 $healthMaxDate = Get-HealthMaxDate -HealthPath (Join-Path $resolvedSourceDir "portal_sync_health.json")
 $layerAuditPath = Join-Path $resolvedSourceDir "portal_layer_freshness.json"
 Assert-LayerAuditAllowed -LayerAuditPath $layerAuditPath
+$dailyGuardPath = Join-Path $resolvedSourceDir "portal_daily_guard.json"
+Assert-DailyGuardAllowed -DailyGuardPath $dailyGuardPath
 Sync-DeployBranch -Reason "before static data copy"
 
 if (-not (Test-Path -LiteralPath $manifestPath)) {

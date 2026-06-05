@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-06-05T10:34:06.884Z",
+  "generatedAt": "2026-06-05T13:10:16.522Z",
   "expectedDate": "2026-06-04",
   "publish": {
     "allowed": true,
     "blockingReasons": []
   },
   "summary": {
-    "layerCount": 33,
-    "requiredCount": 27,
-    "okCount": 33,
+    "layerCount": 34,
+    "requiredCount": 28,
+    "okCount": 34,
     "warningCount": 0
   },
   "warnings": [],
@@ -84,13 +84,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 15923,
-      "sourceMtime": "2026-04-17T19:31:24.682Z",
+      "sourceMtime": "2026-06-05T11:23:54.205Z",
       "rowCount": 0,
       "generatedAt": "2026-04-17T22:31:24",
       "freshness": {
-        "date": "2026-04-17",
+        "date": "2026-06-05",
         "source": "fileMtime",
-        "value": "2026-04-17T19:31:24.682Z"
+        "value": "2026-06-05T11:23:54.205Z"
       }
     },
     {
@@ -183,10 +183,10 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 350671,
-      "sourceMtime": "2026-06-05T09:25:47.650Z",
+      "sourceBytes": 338684,
+      "sourceMtime": "2026-06-05T12:21:00.990Z",
       "rowCount": 4,
-      "generatedAt": "2026-06-05T09:25:47.647Z",
+      "generatedAt": "2026-06-05T12:21:00.989Z",
       "freshness": {
         "date": "2026-06-04",
         "source": "asOfDate",
@@ -223,14 +223,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 53387,
-      "sourceMtime": "2026-06-05T09:00:50.573Z",
+      "sourceBytes": 55111,
+      "sourceMtime": "2026-06-05T13:03:50.695Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-05T09:00:50.536Z",
+      "generatedAt": "2026-06-05T12:13:00.894Z",
       "freshness": {
         "date": "2026-06-05",
         "source": "generatedAt",
-        "value": "2026-06-05T09:00:50.536Z"
+        "value": "2026-06-05T12:13:00.894Z"
       }
     },
     {
@@ -252,7 +252,7 @@
         "source": "generatedAt",
         "value": "2026-06-05T09:44:37.383Z"
       },
-      "ageDays": 0.03,
+      "ageDays": 0.14,
       "maxAgeDays": 10
     },
     {
@@ -274,7 +274,7 @@
         "source": "fileMtime",
         "value": "2026-06-05T07:15:04.602Z"
       },
-      "ageDays": 0.14,
+      "ageDays": 0.25,
       "maxAgeDays": 10
     },
     {
@@ -346,10 +346,16 @@
       "freshnessPolicy": "daily",
       "ok": true,
       "warnings": [],
-      "blockingReasons": [
-        "Missing source file order_procurement_ym.json"
-      ],
-      "missing": true
+      "blockingReasons": [],
+      "sourceBytes": 1142851,
+      "sourceMtime": "2026-06-05T11:23:54.192Z",
+      "rowCount": 936,
+      "generatedAt": "2026-06-02T08:49:19.983Z",
+      "freshness": {
+        "date": "2026-06-02",
+        "source": "generatedAt",
+        "value": "2026-06-02T08:49:19.983Z"
+      }
     },
     {
       "name": "oos_control",
@@ -401,14 +407,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 324,
-      "sourceMtime": "2026-06-05T10:34:06.681Z",
+      "sourceBytes": 337,
+      "sourceMtime": "2026-06-05T13:03:50.696Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-05T10:34:06.673Z",
+      "generatedAt": "2026-06-05T10:45:13.049Z",
       "freshness": {
         "date": "2026-06-05",
         "source": "generatedAt",
-        "value": "2026-06-05T10:34:06.673Z"
+        "value": "2026-06-05T10:45:13.049Z"
       }
     },
     {
@@ -421,10 +427,10 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 14667,
-      "sourceMtime": "2026-06-05T10:34:06.681Z",
+      "sourceBytes": 15292,
+      "sourceMtime": "2026-06-05T13:03:50.696Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-05T10:34:06.680Z",
+      "generatedAt": "2026-06-05T10:45:13.055Z",
       "freshness": {
         "date": "2026-06-04",
         "source": "freshness.maxDate",
@@ -441,10 +447,30 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 18963,
-      "sourceMtime": "2026-06-05T09:25:48.129Z",
+      "sourceBytes": 19648,
+      "sourceMtime": "2026-06-05T13:03:50.696Z",
       "rowCount": 33,
-      "generatedAt": "2026-06-05T09:25:48.128Z",
+      "generatedAt": "2026-06-05T10:34:06.884Z",
+      "freshness": {
+        "date": "2026-06-04",
+        "source": "expectedDate",
+        "value": "2026-06-04"
+      }
+    },
+    {
+      "name": "portal_daily_guard",
+      "sourceFile": "portal_daily_guard.json",
+      "deployFile": "portal_daily_guard.json",
+      "required": true,
+      "publish": true,
+      "freshnessPolicy": "daily",
+      "ok": true,
+      "warnings": [],
+      "blockingReasons": [],
+      "sourceBytes": 7876,
+      "sourceMtime": "2026-06-05T13:10:07.593Z",
+      "rowCount": 0,
+      "generatedAt": "2026-06-05T13:10:07.592Z",
       "freshness": {
         "date": "2026-06-04",
         "source": "expectedDate",
@@ -470,7 +496,7 @@
         "source": "fileMtime",
         "value": "2026-06-05T06:48:20.852Z"
       },
-      "ageDays": 0.16,
+      "ageDays": 0.27,
       "maxAgeDays": 2
     },
     {
@@ -632,7 +658,7 @@
         "source": "generatedAt",
         "value": "2026-05-18T14:34:19.064Z"
       },
-      "ageDays": 0.15,
+      "ageDays": 0.26,
       "maxAgeDays": 3
     },
     {
@@ -654,7 +680,7 @@
         "source": "generatedAt",
         "value": "2026-04-20T14:28:01.203171Z"
       },
-      "ageDays": 0.15,
+      "ageDays": 0.26,
       "maxAgeDays": 3
     },
     {

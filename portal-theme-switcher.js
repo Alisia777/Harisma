@@ -222,3 +222,17 @@
     boot();
   }
 })();
+
+(function () {
+  if (window.__ALTEA_CLOSED_TASK_DEDUPE_LOADER_20260605__) return;
+  window.__ALTEA_CLOSED_TASK_DEDUPE_LOADER_20260605__ = true;
+  var src = 'portal-control-closed-task-dedupe-hotfix.js?v=20260605closed-auto-signal1';
+  var base = src.split('?')[0];
+  if (window.__ALTEA_CONTROL_CLOSED_TASK_DEDUPE_20260605__) return;
+  var scripts = Array.prototype.slice.call(document.scripts || []);
+  if (scripts.some(function (script) { return String(script.src || '').indexOf(base) !== -1; })) return;
+  var node = document.createElement('script');
+  node.src = src;
+  node.async = false;
+  (document.head || document.body || document.documentElement).appendChild(node);
+})();

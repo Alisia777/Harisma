@@ -1082,41 +1082,141 @@ if (Test-Path -LiteralPath $metaPath) {
   }
 }
 
-$syncHealthPath = Join-Path $resolvedOutputDir "portal_sync_health.json"
-$publishAllowed = $true
-$publishBlockReasons = @()
-if (Test-Path -LiteralPath $syncHealthPath) {
-  $syncHealth = Get-Content -LiteralPath $syncHealthPath -Raw | ConvertFrom-Json
-  $publishAllowed = [bool]$syncHealth.publish.allowed
-  $publishBlockReasons = @($syncHealth.publish.blockingReasons)
-  Write-Output "[sync] health status: $($syncHealth.status); publish allowed: $publishAllowed"
+function Read-PublishGateState {
+  $allowed = $true
+  $blockReasons = @()
+  $repairSteps = @()
+
+  $syncHealthPath = Join-Path $resolvedOutputDir "portal_sync_health.json"
+  if (Test-Path -LiteralPath $syncHealthPath) {
+    $syncHealth = Get-Content -LiteralPath $syncHealthPath -Raw | ConvertFrom-Json
+    $allowed = [bool]$syncHealth.publish.allowed
+    $blockReasons = @($syncHealth.publish.blockingReasons)
+    Write-Output "[sync] health status: $($syncHealth.status); publish allowed: $allowed"
+  }
+
+  $layerAuditPath = Join-Path $resolvedOutputDir "portal_layer_freshness.json"
+  if (Test-Path -LiteralPath $layerAuditPath) {
+    $layerAudit = Get-Content -LiteralPath $layerAuditPath -Raw | ConvertFrom-Json
+    $layerPublishAllowed = [bool]$layerAudit.publish.allowed
+    if (-not $layerPublishAllowed) {
+      $allowed = $false
+      $blockReasons += @($layerAudit.publish.blockingReasons)
+    }
+    Write-Output "[sync] layer audit publish allowed: $layerPublishAllowed"
+  }
+
+  $dailyGuardPath = Join-Path $resolvedOutputDir "portal_daily_guard.json"
+  if (Test-Path -LiteralPath $dailyGuardPath) {
+    $dailyGuard = Get-Content -LiteralPath $dailyGuardPath -Raw | ConvertFrom-Json
+    $dailyGuardPublishAllowed = [bool]$dailyGuard.publish.allowed
+    if (-not $dailyGuardPublishAllowed) {
+      $allowed = $false
+      $blockReasons += @($dailyGuard.publish.blockingReasons)
+    }
+    $repairSteps = @($dailyGuard.repair.suggestedSteps | Where-Object { $_ -and -not [string]::IsNullOrWhiteSpace([string]$_.id) })
+    Write-Output "[sync] daily layer guard publish allowed: $dailyGuardPublishAllowed"
+    if ($repairSteps.Count -gt 0) {
+      Write-Output "[sync] daily layer guard suggested repair steps: $((@($repairSteps | ForEach-Object { [string]$_.id }) | Select-Object -Unique) -join ', ')"
+    }
+  }
+
+  [pscustomobject]@{
+    PublishAllowed = $allowed
+    BlockingReasons = @($blockReasons | Where-Object { $_ })
+    RepairSteps = @($repairSteps)
+  }
 }
 
-$layerAuditPath = Join-Path $resolvedOutputDir "portal_layer_freshness.json"
-if (Test-Path -LiteralPath $layerAuditPath) {
-  $layerAudit = Get-Content -LiteralPath $layerAuditPath -Raw | ConvertFrom-Json
-  $layerPublishAllowed = [bool]$layerAudit.publish.allowed
-  if (-not $layerPublishAllowed) {
-    $publishAllowed = $false
-    $publishBlockReasons += @($layerAudit.publish.blockingReasons)
+function Sync-RetryStepsFromIssuesFile {
+  if (-not (Test-Path -LiteralPath $script:syncIssuesPath)) {
+    return
   }
-  Write-Output "[sync] layer audit publish allowed: $layerPublishAllowed"
+
+  try {
+    $payload = Get-Content -LiteralPath $script:syncIssuesPath -Raw | ConvertFrom-Json
+    $script:retrySteps = @($payload.issues)
+  } catch {
+    Write-Warning "[sync] failed to reload sync issues after repair: $($_.Exception.Message)"
+  }
 }
 
-$dailyGuardPath = Join-Path $resolvedOutputDir "portal_daily_guard.json"
-if (Test-Path -LiteralPath $dailyGuardPath) {
-  $dailyGuard = Get-Content -LiteralPath $dailyGuardPath -Raw | ConvertFrom-Json
-  $dailyGuardPublishAllowed = [bool]$dailyGuard.publish.allowed
-  if (-not $dailyGuardPublishAllowed) {
-    $publishAllowed = $false
-    $publishBlockReasons += @($dailyGuard.publish.blockingReasons)
+function Invoke-DailyGuardRepair {
+  param([object[]]$RepairSteps)
+
+  $uniqueSteps = @($RepairSteps |
+    Where-Object { $_ -and -not [string]::IsNullOrWhiteSpace([string]$_.id) } |
+    Sort-Object -Property id -Unique)
+  if (-not $uniqueSteps.Count) {
+    return
   }
-  Write-Output "[sync] daily layer guard publish allowed: $dailyGuardPublishAllowed"
+
+  $retryScript = Join-Path $PSScriptRoot "portal-google-sheet-retry-failed.ps1"
+  if (-not (Test-Path -LiteralPath $retryScript)) {
+    Write-Warning "[sync] daily guard repair skipped: retry script is missing: $retryScript"
+    return
+  }
+
+  $script:dailyGuardRepairAttempted = $true
+  $repairDir = Join-Path $resolvedOutputDir "repair"
+  New-Item -ItemType Directory -Path $repairDir -Force | Out-Null
+  $runStamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+  $manifestPath = Join-Path $repairDir "daily-guard-repair-$runStamp.json"
+  $manifestSteps = @($uniqueSteps | ForEach-Object {
+    [ordered]@{
+      id = [string]$_.id
+      name = if ($_.name) { [string]$_.name } else { [string]$_.id }
+      message = if ($_.reason) { [string]$_.reason } else { "daily guard repair" }
+      failedAt = (Get-Date).ToString("o")
+    }
+  })
+
+  $manifest = [ordered]@{
+    schema = "portal-daily-guard-repair-v1"
+    generatedAt = (Get-Date).ToString("o")
+    cwd = $repoRoot
+    outputDir = $resolvedOutputDir
+    profileDir = $ProfileDir
+    inputXlsx = $InputXlsx
+    expectedDate = $portalApiWindowTo
+    steps = $manifestSteps
+  }
+  $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
+
+  Write-Output "[sync] daily guard repair started: $($manifestSteps.id -join ', ')"
+  $global:LASTEXITCODE = 0
+  & $retryScript -Manifest $manifestPath -LogDir $resolvedOutputDir -LiveHealthUrl $LiveHealthUrl -NoFinalPublish 2>&1 | ForEach-Object { Write-Output ([string]$_) }
+  $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
+  if ($exitCode -ne 0) {
+    Write-Warning "[sync] daily guard repair finished with exit code $exitCode; publish gates will be rebuilt before final decision."
+  } else {
+    Write-Output "[sync] daily guard repair completed"
+  }
+  Sync-RetryStepsFromIssuesFile
 }
+
+$gateState = Read-PublishGateState
+$publishAllowed = [bool]$gateState.PublishAllowed
+$publishBlockReasons = @($gateState.BlockingReasons)
+$dailyGuardRepairSteps = @($gateState.RepairSteps)
 
 if ($DryRun) {
   Remove-SyncLock
   exit 0
+}
+
+if (-not $publishAllowed -and $dailyGuardRepairSteps.Count -gt 0) {
+  $script:dailyGuardRepairAttempted = $false
+  Invoke-DailyGuardRepair -RepairSteps $dailyGuardRepairSteps
+  if ($script:dailyGuardRepairAttempted) {
+    Write-Output "[sync] rebuild publish gates after daily guard repair"
+    Invoke-NodeStep -StepName "sync health build after daily guard repair" -Arguments $syncHealthArguments -Attempts 1 -RetryDelaySeconds 10
+    Invoke-NodeStep -StepName "portal layer audit after daily guard repair" -Arguments $layerAuditArguments -Attempts 1 -RetryDelaySeconds 10
+    Invoke-NodeStep -StepName "daily layer guard after repair" -Arguments $dailyGuardArguments -Attempts 1 -RetryDelaySeconds 10
+    $gateState = Read-PublishGateState
+    $publishAllowed = [bool]$gateState.PublishAllowed
+    $publishBlockReasons = @($gateState.BlockingReasons)
+  }
 }
 
 if (-not $publishAllowed) {

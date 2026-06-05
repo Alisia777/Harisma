@@ -1,6 +1,6 @@
 {
   "schema": "portal-daily-layer-guard-v1",
-  "generatedAt": "2026-06-05T13:10:07.592Z",
+  "generatedAt": "2026-06-05T13:20:11.632Z",
   "expectedDate": "2026-06-04",
   "expectedRunDate": "2026-06-05",
   "publish": {
@@ -12,7 +12,11 @@
     "checkCount": 19,
     "okCount": 19,
     "warningCount": 0,
-    "blockedCount": 0
+    "blockedCount": 0,
+    "suggestedRepairStepCount": 0
+  },
+  "repair": {
+    "suggestedSteps": []
   },
   "checks": [
     {
@@ -116,7 +120,7 @@
       "warnings": [],
       "blockingReasons": [],
       "bytes": 55111,
-      "mtime": "2026-06-05T13:03:50.695Z",
+      "mtime": "2026-06-05T13:15:59.378Z",
       "generatedAt": "2026-06-05T12:13:00.894Z",
       "runDate": "2026-06-05",
       "runDatePath": "generatedAt",
@@ -227,7 +231,7 @@
       "warnings": [],
       "blockingReasons": [],
       "bytes": 337,
-      "mtime": "2026-06-05T13:03:50.696Z",
+      "mtime": "2026-06-05T13:15:59.379Z",
       "generatedAt": "2026-06-05T10:45:13.049Z",
       "runDate": "2026-06-05",
       "runDatePath": "generatedAt"

@@ -21,6 +21,42 @@ const DEFAULT_CRITICAL_SYNC_STEPS = new Set([
   'sku-matrix',
   'full-sync'
 ]);
+const REPAIR_STEP_LABELS = new Map([
+  ['marketplace-api', 'Marketplace API facts refresh'],
+  ['google-sheet-build', 'Google Sheet snapshot rebuild'],
+  ['extra-marketplace-merge', 'Extra marketplace merge'],
+  ['warehouse-stock', 'Warehouse stock overlay refresh'],
+  ['wb-ads', 'WB ads refresh'],
+  ['ozon-ads-finance', 'Ozon ads finance refresh'],
+  ['iu-plan', 'IU plan rebuild'],
+  ['iu-drr', 'IU/DRR summary rebuild'],
+  ['wb-feedbacks', 'WB feedbacks/questions sync'],
+  ['smart-price', 'Price and repricer rebuild'],
+  ['oos-control', 'OOS control rebuild'],
+  ['data-quality', 'Data quality report rebuild'],
+  ['sku-matrix', 'SKU matrix rebuild'],
+  ['wb-owner-distribution', 'WB owner distribution import']
+]);
+const REPAIR_STEP_BY_CHECK = new Map([
+  ['dashboard', 'google-sheet-build'],
+  ['platform_trends', 'marketplace-api'],
+  ['extra_marketplace', 'extra-marketplace-merge'],
+  ['logistics', 'google-sheet-build'],
+  ['warehouse_stock_overlay', 'warehouse-stock'],
+  ['ads_summary', 'wb-ads'],
+  ['iu_plan', 'iu-plan'],
+  ['iu_drr_summary', 'iu-drr'],
+  ['wb_feedbacks_summary', 'wb-feedbacks'],
+  ['prices', 'smart-price'],
+  ['repricer', 'smart-price'],
+  ['smart_price_overlay', 'smart-price'],
+  ['oos_control', 'oos-control'],
+  ['portal_data_quality', 'data-quality'],
+  ['portal_data_quarantine', 'data-quality'],
+  ['sku_matrix', 'sku-matrix'],
+  ['wb_owner_distribution_audit', 'wb-owner-distribution'],
+  ['google_sheet_sync_meta', 'google-sheet-build']
+]);
 
 function parseArgs(argv) {
   const args = {};
@@ -463,6 +499,7 @@ function buildGuard(options) {
 
   const blockingReasons = checks.flatMap((check) => check.blockingReasons || []);
   const warnings = checks.flatMap((check) => check.warnings || []);
+  const suggestedSteps = repairStepsForChecks(checks);
   return {
     schema: 'portal-daily-layer-guard-v1',
     generatedAt: new Date().toISOString(),
@@ -477,10 +514,54 @@ function buildGuard(options) {
       checkCount: checks.length,
       okCount: checks.filter((check) => check.status === 'ok').length,
       warningCount: checks.filter((check) => check.status === 'warning').length,
-      blockedCount: checks.filter((check) => check.status === 'blocked').length
+      blockedCount: checks.filter((check) => check.status === 'blocked').length,
+      suggestedRepairStepCount: suggestedSteps.length
+    },
+    repair: {
+      suggestedSteps
     },
     checks
   };
+}
+
+function repairStepsForChecks(checks) {
+  const steps = new Map();
+  const add = (id, reason) => {
+    if (!id) return;
+    if (!steps.has(id)) {
+      steps.set(id, {
+        id,
+        name: REPAIR_STEP_LABELS.get(id) || id,
+        reason
+      });
+      return;
+    }
+    const current = steps.get(id);
+    if (reason && !String(current.reason || '').includes(reason)) {
+      current.reason = [current.reason, reason].filter(Boolean).join('; ');
+    }
+  };
+
+  for (const check of checks) {
+    if (check.status !== 'blocked') continue;
+    if (check.name === 'sync_issues') {
+      for (const issue of Array.isArray(check.issues) ? check.issues : []) {
+        const id = String(issue?.id || '').trim();
+        const isCritical = DEFAULT_CRITICAL_SYNC_STEPS.has(id) || id.startsWith('repricer-minmax-') || id.startsWith('team-repricer-inputs');
+        if (isCritical && id !== 'full-sync' && id !== 'static-data-publish') {
+          add(id, issue.message || check.name);
+        }
+      }
+      continue;
+    }
+    add(REPAIR_STEP_BY_CHECK.get(check.name), (check.blockingReasons || []).join('; ') || check.name);
+  }
+
+  if (steps.has('marketplace-api') && steps.has('google-sheet-build')) {
+    const googleSheet = steps.get('google-sheet-build');
+    googleSheet.after = 'marketplace-api';
+  }
+  return Array.from(steps.values());
 }
 
 function main() {

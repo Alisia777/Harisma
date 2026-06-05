@@ -3,7 +3,8 @@ param(
   [string]$Manifest,
   [string]$LogDir = "",
   [string]$TaskName = "",
-  [string]$LiveHealthUrl = "https://xn--80aocfomk2b.xn--p1ai/data/portal_sync_health.json"
+  [string]$LiveHealthUrl = "https://xn--80aocfomk2b.xn--p1ai/data/portal_sync_health.json",
+  [switch]$NoFinalPublish
 )
 
 $ErrorActionPreference = "Stop"
@@ -175,6 +176,32 @@ function Copy-DataFilesToOutput {
   }
 }
 
+function Remove-RetriedSyncIssues {
+  param([string[]]$SucceededStepIds)
+  if (-not $SucceededStepIds.Count) {
+    return
+  }
+
+  $issuesPath = Join-Path $resolvedOutputDir "portal_sync_issues.json"
+  if (-not (Test-Path -LiteralPath $issuesPath)) {
+    return
+  }
+
+  try {
+    $payload = Get-Content -LiteralPath $issuesPath -Raw | ConvertFrom-Json
+    $remaining = @($payload.issues | Where-Object { $SucceededStepIds -notcontains ([string]$_.id) })
+    $next = [ordered]@{
+      schema = if ($payload.schema) { [string]$payload.schema } else { "portal-sync-issues-v1" }
+      generatedAt = (Get-Date).ToString("o")
+      issues = $remaining
+    }
+    $next | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $issuesPath -Encoding UTF8
+    Write-LogLine "[retry] removed succeeded sync issues: $($SucceededStepIds -join ', ')"
+  } catch {
+    Write-LogLine "[retry] failed to update portal_sync_issues.json after retry: $($_.Exception.Message)"
+  }
+}
+
 function Invoke-Upload {
   param([string[]]$Snapshots)
   $existing = @()
@@ -211,6 +238,58 @@ function Invoke-GoogleSheetBuild {
     $arguments += $profileDir
   }
   Invoke-NodeStep -StepName "Google sheet data retry build" -Arguments $arguments -Attempts 2 -RetryDelaySeconds 30 -TimeoutSeconds 1800
+}
+
+function Invoke-MarketplaceApiDailyRefresh {
+  $targetDate = if (-not [string]::IsNullOrWhiteSpace($script:expectedDate)) {
+    $script:expectedDate
+  } else {
+    (Get-Date).Date.AddDays(-1).ToString("yyyy-MM-dd")
+  }
+  $targetDateObject = [datetime]::ParseExact($targetDate, "yyyy-MM-dd", [System.Globalization.CultureInfo]::InvariantCulture)
+  $monthStart = (Get-Date -Year $targetDateObject.Year -Month $targetDateObject.Month -Day 1).ToString("yyyy-MM-dd")
+
+  Invoke-NodeStep -StepName "marketplace API daily retry refresh" -Arguments @(
+    "scripts/portal-api-max-sync.js",
+    "sync",
+    "--mode",
+    "recent",
+    "--from",
+    $monthStart,
+    "--to",
+    $targetDate,
+    "--platforms",
+    "wb,ozon,ya,magnit",
+    "--input-file",
+    (Join-Path "data" "platform_trends.json"),
+    "--output-file",
+    (Join-Path "data" "platform_trends.json"),
+    "--base-data-dir",
+    "data",
+    "--skip-health",
+    "--skip-data-guard",
+    "--skip-iu-drr"
+  ) -Attempts 1 -RetryDelaySeconds 30 -TimeoutSeconds 3600 -StreamOutput
+  Copy-DataFilesToOutput @("platform_trends.json", "ads_summary.json", "portal_api_max_sync.json")
+}
+
+function Invoke-WarehouseStockRefresh {
+  Invoke-NodeStep -StepName "warehouse stock retry refresh" -Arguments @(
+    "scripts/portal-warehouse-stock-sync.js",
+    "sync",
+    "--base-data-dir",
+    "data",
+    "--output-dir",
+    $resolvedOutputDir
+  ) -Attempts 2 -RetryDelaySeconds 30 -TimeoutSeconds 900
+  Copy-DataFilesToOutput @("warehouse_stock_overlay.json")
+}
+
+function Invoke-IuPlanBuild {
+  Invoke-NodeStep -StepName "IU plan retry build" -Arguments @(
+    "scripts/build-iu-plan-layer.js"
+  ) -Attempts 2 -RetryDelaySeconds 20 -TimeoutSeconds 900
+  Copy-DataFilesToOutput @("iu_plan.json", "platform_plan.json")
 }
 
 function Invoke-HealthRefresh {
@@ -369,11 +448,23 @@ function Invoke-RetryStep {
       Invoke-SkuMatrixBuild
       Invoke-Upload @("sku_aliases", "sku_alias_ignore", "sku_alias_audit", "sku_matrix")
     }
+    "google-sheet-build" {
+      Invoke-GoogleSheetBuild
+      Invoke-Upload @("dashboard", "skus", "platform_trends", "logistics", "loyalty_system", "google_sheet_sync_meta")
+    }
+    "marketplace-api" {
+      Invoke-MarketplaceApiDailyRefresh
+      Invoke-Upload @("platform_trends", "ads_summary")
+    }
     "yandex-market" {
       Invoke-NodeStep -StepName "Yandex Market analytics retry" -Arguments @("scripts/portal-yandex-market-trends-sync.js", "sync") -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 2700 -StreamOutput
       Copy-DataFilesToOutput @("platform_trends.json")
       Invoke-GoogleSheetBuild
       Invoke-Upload @("dashboard", "platform_trends")
+    }
+    "warehouse-stock" {
+      Invoke-WarehouseStockRefresh
+      Invoke-Upload @("warehouse_stock_overlay")
     }
     "extra-marketplace-merge" {
       Invoke-NodeStep -StepName "extra marketplace retry merge" -Arguments @(
@@ -417,6 +508,10 @@ function Invoke-RetryStep {
       Invoke-NodeStep -StepName "smart price retry build" -Arguments $arguments -Attempts 2 -RetryDelaySeconds 30 -TimeoutSeconds 1800
       Copy-DataFilesToOutput @("prices.json", "repricer.json", "smart_price_overlay.json", "smart_price_workbench.json", "price_workbench_support.json")
       Invoke-Upload @("prices", "repricer", "smart_price_overlay", "smart_price_workbench", "price_workbench_support")
+    }
+    "iu-plan" {
+      Invoke-IuPlanBuild
+      Invoke-Upload @("iu_plan", "platform_plan")
     }
     "oos-control" {
       Invoke-NodeStep -StepName "OOS control retry build" -Arguments @(
@@ -570,11 +665,13 @@ try {
   Write-LogLine "[retry] steps: $($steps -join ', ')"
 
   $failed = @()
+  $succeeded = @()
   foreach ($stepId in $steps) {
     try {
       Write-LogLine "[retry] step started: $stepId"
       Invoke-RetryStep -StepId $stepId
       Write-LogLine "[retry] step completed: $stepId"
+      $succeeded += $stepId
     } catch {
       $failed += [ordered]@{
         id = $stepId
@@ -584,12 +681,18 @@ try {
     }
   }
 
+  Remove-RetriedSyncIssues -SucceededStepIds $succeeded
+
   try {
     Invoke-HealthRefresh -MarkLastGood
     Invoke-LayerAudit
     Invoke-DailyGuard
     Invoke-Upload @("portal_sync_health", "portal_layer_freshness", "portal_daily_guard")
-    Invoke-StaticDataPublish
+    if ($NoFinalPublish) {
+      Write-LogLine "[retry] static publish skipped because -NoFinalPublish was set"
+    } else {
+      Invoke-StaticDataPublish
+    }
   } catch {
     $failed += [ordered]@{
       id = "portal-sync-health-or-static-publish"

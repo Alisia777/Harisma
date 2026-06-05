@@ -1,11 +1,11 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-06-04T12:28:02.817Z",
+  "generatedAt": "2026-06-05T09:23:20.369Z",
   "source": {
     "skus": 143,
     "aliases": 0,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-06-04T12:25:58.353Z"
+    "dataQualityGeneratedAt": "2026-06-05T09:23:20.320Z"
   },
   "summary": {
     "skuCount": 143,
@@ -17,7 +17,7 @@
     "duplicateRiskOverage": 0,
     "missingOwnerCount": 0,
     "issueCount": 0,
-    "infoIssueCount": 80,
+    "infoIssueCount": 78,
     "problemStateCounts": {
       "ok": 143
     }

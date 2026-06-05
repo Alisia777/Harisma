@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-03T09:31:41.309Z",
+  "generatedAt": "2026-06-05T06:50:00.010Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
   "sourceFormat": "google-csv-export",
   "sheetName": "Sheet1",
   "matchField": "Наименование как в ЛК -> article/articleKey",
-  "sheetRowCount": 299,
+  "sheetRowCount": 338,
   "matchedRowCount": 136,
   "matchedSkuCount": 134,
   "unmatchedSourceKeys": [
@@ -37,8 +37,8 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 397996,
-    "accepted": 3075967,
+    "stockWarehouse": 423436,
+    "accepted": 3101407,
     "shippedOzon": 1009807,
     "shippedWB": 1667629
   },
@@ -630,8 +630,8 @@
     },
     {
       "articleKey": "maska_dlya_lica_100ml",
-      "stockWarehouse": 2,
-      "accepted": 35705,
+      "stockWarehouse": 18242,
+      "accepted": 53945,
       "shippedOzon": 8875,
       "shippedWB": 26828,
       "sourceKeys": [
@@ -872,8 +872,8 @@
     },
     {
       "articleKey": "penka_kudryavii_metod_150ml",
-      "stockWarehouse": 21192,
-      "accepted": 45416,
+      "stockWarehouse": 28392,
+      "accepted": 52616,
       "shippedOzon": 3987,
       "shippedWB": 20237,
       "sourceKeys": [

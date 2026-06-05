@@ -1,14 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-05T09:25:47.904Z",
-  "status": "warning",
+  "generatedAt": "2026-06-05T10:34:06.680Z",
+  "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
-    "warnings": [
-      "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.."
-    ],
-    "checkedAt": "2026-06-05T09:25:47.904Z"
+    "warnings": [],
+    "checkedAt": "2026-06-05T10:34:06.680Z"
   },
   "freshness": {
     "maxDate": "2026-06-04",
@@ -17,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-05T09:25:47.898Z",
+      "checkedAt": "2026-06-05T10:34:06.674Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-04",
       "maxDate": "2026-06-04",
@@ -64,7 +62,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-05T09:25:47.903Z",
+      "checkedAt": "2026-06-05T10:34:06.679Z",
       "expectedDate": "2026-06-04",
       "adsSummaryWindowTo": "2026-06-04",
       "iuDrrWindowTo": "2026-06-04",
@@ -114,10 +112,10 @@
     },
     "platform_trends": {
       "exists": true,
-      "rows": 7,
-      "generatedAt": "2026-06-05T09:11:41.109Z",
+      "rows": 4,
+      "generatedAt": "2026-06-05T10:30:28.937Z",
       "asOfDate": "2026-06-04",
-      "revenue": 132654657
+      "revenue": 117242808
     },
     "ads_summary": {
       "exists": true,
@@ -170,8 +168,8 @@
     },
     "product_leaderboard": {
       "exists": true,
-      "rows": 50,
-      "generatedAt": "2026-06-05T09:20:52.030Z",
+      "rows": 51,
+      "generatedAt": "2026-06-05T09:44:37.383Z",
       "asOfDate": "2026-06-05",
       "revenue": 13962122
     },
@@ -234,14 +232,14 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-05T09:23:20.320Z",
+      "generatedAt": "2026-06-05T10:34:06.428Z",
       "asOfDate": "2026-06-04",
       "revenue": 0
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-05T09:24:03.065Z",
+      "generatedAt": "2026-06-05T09:25:47.898Z",
       "asOfDate": "2026-06-05",
       "revenue": 0
     },
@@ -269,28 +267,21 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-05T09:23:20.369Z",
+      "generatedAt": "2026-06-05T10:34:06.480Z",
       "asOfDate": "2026-06-05",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-05T09:24:03.075Z",
+      "generatedAt": "2026-06-05T09:25:47.904Z",
       "asOfDate": "2026-06-05",
       "revenue": 0
     }
   },
   "syncIssues": {
-    "generatedAt": "2026-06-05T11:12:26.8975178+03:00",
-    "issues": [
-      {
-        "id": "yandex-market",
-        "name": "Yandex Market analytics refresh",
-        "message": "[ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.",
-        "failedAt": "2026-06-05T09:49:57.6806427+03:00"
-      }
-    ]
+    "generatedAt": "2026-06-05T12:30:01.8842117+03:00",
+    "issues": []
   },
   "skuContour": {
     "status": "ok",
@@ -395,12 +386,12 @@
       },
       {
         "snapshot": "platform_trends",
-        "rows": 7,
+        "rows": 4,
         "previousRows": 7,
-        "rowRatio": 1,
-        "revenue": 132654657,
+        "rowRatio": 0.5714285714285714,
+        "revenue": 117242808,
         "previousRevenue": 87072425,
-        "revenueRatio": 1.5234979041872327
+        "revenueRatio": 1.3464975622305224
       },
       {
         "snapshot": "order_procurement",
@@ -442,12 +433,6 @@
   },
   "checks": [
     {
-      "name": "sync-step:yandex-market",
-      "status": "warning",
-      "message": "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3..",
-      "failedAt": "2026-06-05T09:49:57.6806427+03:00"
-    },
-    {
       "name": "required:dashboard",
       "status": "ok",
       "rows": 439
@@ -460,7 +445,7 @@
     {
       "name": "required:platform_trends",
       "status": "ok",
-      "rows": 7
+      "rows": 4
     },
     {
       "name": "required:order_procurement",

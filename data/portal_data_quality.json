@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-05T09:23:20.320Z",
+  "generatedAt": "2026-06-05T10:34:06.428Z",
   "status": "ok",
   "summary": {
     "issueCount": 78,
@@ -42,8 +42,8 @@
     {
       "dataset": "platform_trends",
       "asOfDate": "2026-06-04",
-      "generatedAt": "2026-06-05T09:11:41.109Z",
-      "rows": 7,
+      "generatedAt": "2026-06-05T10:30:28.937Z",
+      "rows": 4,
       "referenceDate": "2026-06-05",
       "lagDays": 1,
       "status": "ok"
@@ -80,7 +80,7 @@
     {
       "dataset": "iu_drr_summary",
       "asOfDate": "2026-06-04",
-      "generatedAt": "2026-06-05T09:23:20.128Z",
+      "generatedAt": "2026-06-05T09:25:47.647Z",
       "rows": 4,
       "referenceDate": "2026-06-05",
       "lagDays": 1,
@@ -175,11 +175,11 @@
     },
     "ya": {
       "label": "Я.Маркет",
-      "rows": 110,
-      "directRevenue": 691773,
-      "directUnits": 858,
-      "aggregateRevenue": 933816,
-      "aggregateDate": "2026-06-02",
+      "rows": 108,
+      "directRevenue": 539373,
+      "directUnits": 651,
+      "aggregateRevenue": 1728414,
+      "aggregateDate": "2026-06-04",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,

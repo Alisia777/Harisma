@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-05T09:25:48.128Z",
+  "generatedAt": "2026-06-05T10:34:06.884Z",
   "expectedDate": "2026-06-04",
   "publish": {
     "allowed": true,
@@ -63,10 +63,10 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 11433646,
-      "sourceMtime": "2026-06-05T09:11:42.975Z",
+      "sourceBytes": 6142335,
+      "sourceMtime": "2026-06-05T10:30:28.959Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-05T09:11:41.109Z",
+      "generatedAt": "2026-06-05T10:30:28.937Z",
       "freshness": {
         "date": "2026-06-04",
         "source": "latestMarketplaceDate",
@@ -243,16 +243,16 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 224768,
-      "sourceMtime": "2026-06-05T09:20:52.032Z",
-      "rowCount": 50,
-      "generatedAt": "2026-06-05T09:20:52.030Z",
+      "sourceBytes": 231292,
+      "sourceMtime": "2026-06-05T09:44:37.389Z",
+      "rowCount": 51,
+      "generatedAt": "2026-06-05T09:44:37.383Z",
       "freshness": {
         "date": "2026-06-05",
         "source": "generatedAt",
-        "value": "2026-06-05T09:20:52.030Z"
+        "value": "2026-06-05T09:44:37.383Z"
       },
-      "ageDays": 0,
+      "ageDays": 0.03,
       "maxAgeDays": 10
     },
     {
@@ -274,7 +274,7 @@
         "source": "fileMtime",
         "value": "2026-06-05T07:15:04.602Z"
       },
-      "ageDays": 0.09,
+      "ageDays": 0.14,
       "maxAgeDays": 10
     },
     {
@@ -381,14 +381,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 41113,
-      "sourceMtime": "2026-06-05T09:23:20.321Z",
+      "sourceBytes": 41114,
+      "sourceMtime": "2026-06-05T10:34:06.428Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-05T09:23:20.320Z",
+      "generatedAt": "2026-06-05T10:34:06.428Z",
       "freshness": {
         "date": "2026-06-05",
         "source": "generatedAt",
-        "value": "2026-06-05T09:23:20.320Z"
+        "value": "2026-06-05T10:34:06.428Z"
       }
     },
     {
@@ -402,13 +402,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 324,
-      "sourceMtime": "2026-06-05T09:25:47.905Z",
+      "sourceMtime": "2026-06-05T10:34:06.681Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-05T09:25:47.898Z",
+      "generatedAt": "2026-06-05T10:34:06.673Z",
       "freshness": {
         "date": "2026-06-05",
         "source": "generatedAt",
-        "value": "2026-06-05T09:25:47.898Z"
+        "value": "2026-06-05T10:34:06.673Z"
       }
     },
     {
@@ -421,10 +421,10 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 15431,
-      "sourceMtime": "2026-06-05T09:25:47.904Z",
+      "sourceBytes": 14667,
+      "sourceMtime": "2026-06-05T10:34:06.681Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-05T09:25:47.904Z",
+      "generatedAt": "2026-06-05T10:34:06.680Z",
       "freshness": {
         "date": "2026-06-04",
         "source": "freshness.maxDate",
@@ -441,10 +441,10 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 18944,
-      "sourceMtime": "2026-06-05T09:24:03.291Z",
+      "sourceBytes": 18963,
+      "sourceMtime": "2026-06-05T09:25:48.129Z",
       "rowCount": 33,
-      "generatedAt": "2026-06-05T09:24:03.290Z",
+      "generatedAt": "2026-06-05T09:25:48.128Z",
       "freshness": {
         "date": "2026-06-04",
         "source": "expectedDate",
@@ -470,7 +470,7 @@
         "source": "fileMtime",
         "value": "2026-06-05T06:48:20.852Z"
       },
-      "ageDays": 0.11,
+      "ageDays": 0.16,
       "maxAgeDays": 2
     },
     {
@@ -524,13 +524,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 116810,
-      "sourceMtime": "2026-06-05T09:23:20.370Z",
+      "sourceMtime": "2026-06-05T10:34:06.481Z",
       "rowCount": 143,
-      "generatedAt": "2026-06-05T09:23:20.369Z",
+      "generatedAt": "2026-06-05T10:34:06.480Z",
       "freshness": {
         "date": "2026-06-05",
         "source": "generatedAt",
-        "value": "2026-06-05T09:23:20.369Z"
+        "value": "2026-06-05T10:34:06.480Z"
       }
     },
     {
@@ -632,7 +632,7 @@
         "source": "generatedAt",
         "value": "2026-05-18T14:34:19.064Z"
       },
-      "ageDays": 0.1,
+      "ageDays": 0.15,
       "maxAgeDays": 3
     },
     {
@@ -654,7 +654,7 @@
         "source": "generatedAt",
         "value": "2026-04-20T14:28:01.203171Z"
       },
-      "ageDays": 0.1,
+      "ageDays": 0.15,
       "maxAgeDays": 3
     },
     {

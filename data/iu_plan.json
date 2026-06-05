@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-05T09:00:50.536Z",
+  "generatedAt": "2026-06-05T15:54:10.120Z",
   "sourceWorkbook": "План ф.xlsx",
   "sourceSheet": "01_ДДС_ИУ",
   "planYear": 2026,
@@ -14,7 +14,7 @@
   "wbDailyPlan": {
     "status": "loaded",
     "sourceWorkbook": "иу_2026_h_1_продажи_+_реклама_по_дням_4.xlsx",
-    "sourcePath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\иу_2026_h_1_продажи_+_реклама_по_дням_4.xlsx",
+    "sourcePath": "C:\\Users\\artiu\\Downloads\\иу_2026_h_1_продажи_+_реклама_по_дням_4.xlsx",
     "sourceSheet": "sheet1",
     "share": 1,
     "rows": 95,

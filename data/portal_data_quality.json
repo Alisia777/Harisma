@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-06-05T10:34:06.428Z",
+  "generatedAt": "2026-06-05T16:11:51.244Z",
   "status": "ok",
   "summary": {
-    "issueCount": 78,
+    "issueCount": 82,
     "criticalCount": 0,
     "warningCount": 0,
     "monthKey": "2026-06",
@@ -13,9 +13,9 @@
     "apiUnmappedActionRows": 0,
     "apiUnmappedActionUniqueSku": 0,
     "apiUnmappedActionRevenue": 0,
-    "apiKnownOutsideRegistryRows": 29,
-    "apiKnownOutsideRegistryUniqueSku": 29,
-    "apiKnownOutsideRegistryRevenue": 1012292,
+    "apiKnownOutsideRegistryRows": 33,
+    "apiKnownOutsideRegistryUniqueSku": 31,
+    "apiKnownOutsideRegistryRevenue": 1032402,
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
@@ -33,8 +33,8 @@
     {
       "dataset": "dashboard",
       "asOfDate": "2026-06-04",
-      "generatedAt": "2026-06-05T09:00:38.595Z",
-      "rows": 439,
+      "generatedAt": "2026-06-05T15:52:41.297Z",
+      "rows": 446,
       "referenceDate": "2026-06-05",
       "lagDays": 1,
       "status": "ok"
@@ -42,8 +42,8 @@
     {
       "dataset": "platform_trends",
       "asOfDate": "2026-06-04",
-      "generatedAt": "2026-06-05T10:30:28.937Z",
-      "rows": 4,
+      "generatedAt": "2026-06-05T15:52:41.123Z",
+      "rows": 7,
       "referenceDate": "2026-06-05",
       "lagDays": 1,
       "status": "ok"
@@ -51,8 +51,8 @@
     {
       "dataset": "order_procurement",
       "asOfDate": "2026-06-05",
-      "generatedAt": "2026-06-05T06:51:39.421Z",
-      "rows": 2689,
+      "generatedAt": "2026-06-05T15:52:41.465Z",
+      "rows": 2682,
       "referenceDate": "2026-06-05",
       "lagDays": 0,
       "status": "ok"
@@ -60,7 +60,7 @@
     {
       "dataset": "warehouse_stock_overlay",
       "asOfDate": "2026-06-05",
-      "generatedAt": "2026-06-05T06:50:00.010Z",
+      "generatedAt": "2026-06-05T15:50:42.798Z",
       "rows": 134,
       "matchedRows": 136,
       "unmatchedRows": 25,
@@ -71,8 +71,8 @@
     {
       "dataset": "ads_summary",
       "asOfDate": "2026-06-04",
-      "generatedAt": "2026-06-05T09:21:41.681Z",
-      "rows": 5,
+      "generatedAt": "2026-06-05T16:09:40.981Z",
+      "rows": 6,
       "referenceDate": "2026-06-05",
       "lagDays": 1,
       "status": "ok"
@@ -80,8 +80,8 @@
     {
       "dataset": "iu_drr_summary",
       "asOfDate": "2026-06-04",
-      "generatedAt": "2026-06-05T09:25:47.647Z",
-      "rows": 4,
+      "generatedAt": "2026-06-05T16:11:50.971Z",
+      "rows": 35,
       "referenceDate": "2026-06-05",
       "lagDays": 1,
       "status": "ok"
@@ -124,7 +124,7 @@
     },
     "magnit": {
       "label": "Магнит Маркет",
-      "rows": 0,
+      "rows": 35,
       "directRevenue": 0,
       "directUnits": 0,
       "aggregateRevenue": 0,
@@ -141,7 +141,7 @@
     },
     "ozon": {
       "label": "Ozon",
-      "rows": 208,
+      "rows": 224,
       "directRevenue": 9934890,
       "directUnits": 13963,
       "aggregateRevenue": 9934890,
@@ -158,10 +158,10 @@
     },
     "wb": {
       "label": "WB",
-      "rows": 0,
-      "directRevenue": 0,
-      "directUnits": 0,
-      "aggregateRevenue": 36517160,
+      "rows": 133,
+      "directRevenue": 36519841,
+      "directUnits": 25844,
+      "aggregateRevenue": 36519840,
       "aggregateDate": "2026-06-04",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
@@ -169,9 +169,9 @@
       "ignoredCount": 0,
       "ignoredRevenue": 0,
       "ignoredUnits": 0,
-      "knownOutsideRegistryCount": 0,
-      "knownOutsideRegistryRevenue": 0,
-      "knownOutsideRegistryUnits": 0
+      "knownOutsideRegistryCount": 4,
+      "knownOutsideRegistryRevenue": 20110,
+      "knownOutsideRegistryUnits": 9
     },
     "ya": {
       "label": "Я.Маркет",
@@ -192,26 +192,26 @@
     }
   },
   "orderSummary": {
-    "rows": 2689,
+    "rows": 2682,
     "noStockNeedRows": 0,
-    "lowTurnoverRows": 46,
+    "lowTurnoverRows": 47,
     "totalNeed7": 0,
-    "totalNeed14": 23708,
-    "totalNeed28": 105560
+    "totalNeed14": 23394,
+    "totalNeed28": 104096
   },
   "ownerSummary": {
     "totalSku": 143,
     "missingOwner": 0
   },
   "warehouseSummary": {
-    "sourceRows": 338,
+    "sourceRows": 299,
     "matchedRows": 136,
     "unmatchedRows": 25,
     "externalUnmatchedRows": 25,
     "warningUnmatchedRows": 0
   },
   "wbOwnerDistributionSummary": {
-    "sourceGeneratedAt": "2026-06-05T06:51:40.297Z",
+    "sourceGeneratedAt": "2026-06-05T15:52:42.926Z",
     "matchedSkuCount": 125,
     "updatedOwnerCount": 125,
     "missingInPortalCount": 6,
@@ -488,6 +488,20 @@
       "severity": "info",
       "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "shampun_kudryavii_metod_500ml",
+      "name": "shampun_kudryavii_metod_500ml",
+      "revenue": 15097,
+      "units": 5,
+      "firstDate": "2026-06-02",
+      "lastDate": "2026-06-04",
+      "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
+    },
+    {
+      "severity": "info",
+      "type": "api_sku_known_outside_registry",
+      "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
       "articleKey": "syvorotka_vit_C_30ml",
@@ -614,6 +628,20 @@
       "severity": "info",
       "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "syvorotka_vit_c_30ml",
+      "name": "syvorotka_vit_c_30ml",
+      "revenue": 3035,
+      "units": 1,
+      "firstDate": "2026-06-04",
+      "lastDate": "2026-06-04",
+      "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
+    },
+    {
+      "severity": "info",
+      "type": "api_sku_known_outside_registry",
+      "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
       "articleKey": "arterol_1_1",
@@ -636,6 +664,34 @@
       "units": 5,
       "firstDate": "2026-06-01",
       "lastDate": "2026-06-04",
+      "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
+    },
+    {
+      "severity": "info",
+      "type": "api_sku_known_outside_registry",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "kinzhal",
+      "name": "kinzhal",
+      "revenue": 1595,
+      "units": 2,
+      "firstDate": "2026-06-04",
+      "lastDate": "2026-06-04",
+      "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
+    },
+    {
+      "severity": "info",
+      "type": "api_sku_known_outside_registry",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "otz_fbs3_curly_method_300ml",
+      "name": "otz_fbs3_curly_method_300ml",
+      "revenue": 383,
+      "units": 1,
+      "firstDate": "2026-06-02",
+      "lastDate": "2026-06-02",
       "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
     },
     {

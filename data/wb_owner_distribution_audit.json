@@ -1,6 +1,6 @@
 {
   "schema": "portal-wb-owner-distribution-audit-v1",
-  "generatedAt": "2026-06-05T06:51:40.297Z",
+  "generatedAt": "2026-06-05T15:52:42.926Z",
   "source": {
     "file": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\распределение артикулов.xlsx",
     "sheetName": "Лист1",
@@ -1183,7 +1183,7 @@
       "ownerWb": "Лапыгин Максим",
       "revenue": 3189,
       "units": 1,
-      "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
+      "message": "SKU is present in WB owner distribution but absent in portal skus.json"
     },
     {
       "sourceRow": 131,

@@ -93,6 +93,39 @@ function compactRemoteError(error) {
   return firstLine.slice(0, 300) || 'unknown error';
 }
 
+function readJson(filePath, fallback = null) {
+  try {
+    if (!filePath || !fs.existsSync(filePath)) return fallback;
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (_error) {
+    return fallback;
+  }
+}
+
+function writeJson(filePath, payload) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf8');
+}
+
+function preserveExtraMarketplace(stagedOverlayPath, liveOverlayPath, previousOverlay) {
+  const extraMarketplace = previousOverlay?.extraMarketplace;
+  if (!extraMarketplace || typeof extraMarketplace !== 'object') return false;
+
+  const overlay = readJson(stagedOverlayPath, null);
+  if (!overlay || typeof overlay !== 'object') return false;
+
+  overlay.extraMarketplace = extraMarketplace;
+  if (!overlay.asOfDate && extraMarketplace.asOfDate) {
+    overlay.asOfDate = extraMarketplace.asOfDate;
+  }
+
+  writeJson(stagedOverlayPath, overlay);
+  if (path.resolve(stagedOverlayPath) !== path.resolve(liveOverlayPath)) {
+    writeJson(liveOverlayPath, overlay);
+  }
+  return true;
+}
+
 function normalizePathList(value) {
   return String(value || '')
     .split(';')
@@ -301,8 +334,10 @@ async function main() {
   }
 
   const stagedOverlayPath = path.join(options.outputDir, 'smart_price_overlay.json');
+  const previousOverlay = readJson(options.overlayOutputPath, null);
   const result = buildSmartPriceOverlay(workbookPath, stagedOverlayPath);
   fs.mkdirSync(path.dirname(options.overlayOutputPath), { recursive: true });
+  const extraMarketplacePreserved = preserveExtraMarketplace(stagedOverlayPath, options.overlayOutputPath, previousOverlay);
   if (path.resolve(stagedOverlayPath) !== path.resolve(options.overlayOutputPath)) {
     fs.copyFileSync(stagedOverlayPath, options.overlayOutputPath);
   }
@@ -332,6 +367,7 @@ async function main() {
     fallbackAgeHours: workbook.fallbackAgeHours ?? null,
     overlay: {
       ...result.summary,
+      extraMarketplacePreserved,
       stagedOutput: stagedOverlayPath,
       liveOutput: options.overlayOutputPath
     },

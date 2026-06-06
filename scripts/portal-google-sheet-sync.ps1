@@ -7,6 +7,7 @@ param(
   [string]$AdsWindowTo = "",
   [string]$ApiWindowFrom = "",
   [string]$ApiWindowTo = "",
+  [string]$HistoryFrom = "",
   [string]$LiveHealthUrl = "https://xn--80aocfomk2b.xn--p1ai/data/portal_sync_health.json"
 )
 
@@ -88,6 +89,19 @@ function Stop-ProcessTree {
   Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
 }
 
+function ConvertTo-ProcessArgumentList {
+  param([string[]]$Arguments)
+
+  return (($Arguments | ForEach-Object {
+    $value = [string]$_
+    if ($value -match '[\s"]') {
+      '"' + ($value -replace '"', '\"') + '"'
+    } else {
+      $value
+    }
+  }) -join " ")
+}
+
 function Invoke-NodeStep {
   param(
     [Parameter(Mandatory = $true)]
@@ -122,7 +136,8 @@ function Invoke-NodeStep {
     $tempStdout = [System.IO.Path]::GetTempFileName()
     $tempStderr = [System.IO.Path]::GetTempFileName()
     try {
-      $process = Start-Process -FilePath $nodeExe -ArgumentList $Arguments -NoNewWindow -PassThru -RedirectStandardOutput $tempStdout -RedirectStandardError $tempStderr
+      $processArguments = ConvertTo-ProcessArgumentList -Arguments $Arguments
+      $process = Start-Process -FilePath $nodeExe -ArgumentList $processArguments -NoNewWindow -PassThru -RedirectStandardOutput $tempStdout -RedirectStandardError $tempStderr
       if ($TimeoutSeconds -gt 0) {
         $timeoutMs = [int][Math]::Min([int]::MaxValue, [double]$TimeoutSeconds * 1000)
         $exited = $process.WaitForExit($timeoutMs)
@@ -237,12 +252,41 @@ function Format-DateOnly {
   return $Value.ToString("yyyy-MM-dd")
 }
 
-$portalAdsWindowToDate = Resolve-DateOnly -Value $AdsWindowTo -Fallback ((Get-Date).Date.AddDays(-1))
-$portalAdsWindowFromDefault = (Get-Date -Year $portalAdsWindowToDate.Year -Month $portalAdsWindowToDate.Month -Day 1).Date
-if ($portalAdsWindowToDate.Day -le 3) {
-  $portalAdsWindowFromDefault = $portalAdsWindowFromDefault.AddMonths(-1)
+function Resolve-HistoryStartDate {
+  param([datetime]$WindowToDate)
+
+  $historyValue = $HistoryFrom
+  if ([string]::IsNullOrWhiteSpace($historyValue)) {
+    $historyValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_HISTORY_FROM", "Process")
+  }
+  if ([string]::IsNullOrWhiteSpace($historyValue)) {
+    $historyValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_HISTORY_FROM", "User")
+  }
+  if ([string]::IsNullOrWhiteSpace($historyValue)) {
+    $historyValue = "2026-05-01"
+  }
+
+  $monthStartFallback = (Get-Date -Year $WindowToDate.Year -Month $WindowToDate.Month -Day 1).Date
+  $historyStartDate = Resolve-DateOnly -Value $historyValue -Fallback $monthStartFallback
+  if ($historyStartDate -gt $WindowToDate) {
+    return $monthStartFallback
+  }
+  return $historyStartDate
 }
-$portalAdsWindowFromDate = Resolve-DateOnly -Value $AdsWindowFrom -Fallback $portalAdsWindowFromDefault
+
+$portalAdsWindowToDate = Resolve-DateOnly -Value $AdsWindowTo -Fallback ((Get-Date).Date.AddDays(-1))
+$portalAdsHistoryFromDate = Resolve-HistoryStartDate -WindowToDate $portalAdsWindowToDate
+$portalAdsWindowFromValue = $AdsWindowFrom
+if ([string]::IsNullOrWhiteSpace($portalAdsWindowFromValue)) {
+  $portalAdsWindowFromValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_ADS_WINDOW_FROM", "Process")
+}
+if ([string]::IsNullOrWhiteSpace($portalAdsWindowFromValue)) {
+  $portalAdsWindowFromValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_ADS_WINDOW_FROM", "User")
+}
+if ([string]::IsNullOrWhiteSpace($portalAdsWindowFromValue)) {
+  $portalAdsWindowFromValue = Format-DateOnly $portalAdsHistoryFromDate
+}
+$portalAdsWindowFromDate = Resolve-DateOnly -Value $portalAdsWindowFromValue -Fallback $portalAdsHistoryFromDate
 
 if ($portalAdsWindowFromDate -gt $portalAdsWindowToDate) {
   throw "AdsWindowFrom must be before or equal AdsWindowTo. Got $($portalAdsWindowFromDate.ToString("yyyy-MM-dd"))..$($portalAdsWindowToDate.ToString("yyyy-MM-dd"))."
@@ -250,11 +294,12 @@ if ($portalAdsWindowFromDate -gt $portalAdsWindowToDate) {
 
 $portalAdsWindowFrom = Format-DateOnly $portalAdsWindowFromDate
 $portalAdsWindowTo = Format-DateOnly $portalAdsWindowToDate
-$portalOzonFinanceWindowFromDate = (Get-Date -Year $portalAdsWindowToDate.Year -Month $portalAdsWindowToDate.Month -Day 1).Date
+$portalOzonFinanceWindowFromDate = $portalAdsWindowFromDate
 $portalOzonFinanceWindowFrom = Format-DateOnly $portalOzonFinanceWindowFromDate
 Write-Output "[sync] Ozon ads analytics window: $portalAdsWindowFrom..$portalAdsWindowTo; Ozon finance API window: $portalOzonFinanceWindowFrom..$portalAdsWindowTo"
 
 $portalApiWindowToDate = Resolve-DateOnly -Value $ApiWindowTo -Fallback ((Get-Date).Date.AddDays(-1))
+$portalApiHistoryFromDate = Resolve-HistoryStartDate -WindowToDate $portalApiWindowToDate
 $portalApiWindowFromValue = $ApiWindowFrom
 if ([string]::IsNullOrWhiteSpace($portalApiWindowFromValue)) {
   $portalApiWindowFromValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_API_WINDOW_FROM", "Process")
@@ -263,13 +308,9 @@ if ([string]::IsNullOrWhiteSpace($portalApiWindowFromValue)) {
   $portalApiWindowFromValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_API_WINDOW_FROM", "User")
 }
 if ([string]::IsNullOrWhiteSpace($portalApiWindowFromValue)) {
-  $portalApiWindowFromDefault = (Get-Date -Year $portalApiWindowToDate.Year -Month $portalApiWindowToDate.Month -Day 1).Date
-  if ($portalApiWindowToDate.Day -le 3) {
-    $portalApiWindowFromDefault = $portalApiWindowFromDefault.AddMonths(-1)
-  }
-  $portalApiWindowFromValue = $portalApiWindowFromDefault.ToString("yyyy-MM-dd")
+  $portalApiWindowFromValue = Format-DateOnly $portalApiHistoryFromDate
 }
-$portalApiWindowFromFallback = (Get-Date -Year $portalApiWindowToDate.Year -Month $portalApiWindowToDate.Month -Day 1).Date
+$portalApiWindowFromFallback = $portalApiHistoryFromDate
 $portalApiWindowFromDate = Resolve-DateOnly -Value $portalApiWindowFromValue -Fallback $portalApiWindowFromFallback
 
 if ($portalApiWindowFromDate -gt $portalApiWindowToDate) {

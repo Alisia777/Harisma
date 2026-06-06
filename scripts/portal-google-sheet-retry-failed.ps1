@@ -33,6 +33,19 @@ function Stop-ProcessTree {
   Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
 }
 
+function ConvertTo-ProcessArgumentList {
+  param([string[]]$Arguments)
+
+  return (($Arguments | ForEach-Object {
+    $value = [string]$_
+    if ($value -match '[\s"]') {
+      '"' + ($value -replace '"', '\"') + '"'
+    } else {
+      $value
+    }
+  }) -join " ")
+}
+
 function Invoke-NodeStep {
   param(
     [Parameter(Mandatory = $true)]
@@ -67,7 +80,8 @@ function Invoke-NodeStep {
     $tempStdout = [System.IO.Path]::GetTempFileName()
     $tempStderr = [System.IO.Path]::GetTempFileName()
     try {
-      $process = Start-Process -FilePath $nodeExe -ArgumentList $Arguments -NoNewWindow -PassThru -RedirectStandardOutput $tempStdout -RedirectStandardError $tempStderr
+      $processArguments = ConvertTo-ProcessArgumentList -Arguments $Arguments
+      $process = Start-Process -FilePath $nodeExe -ArgumentList $processArguments -NoNewWindow -PassThru -RedirectStandardOutput $tempStdout -RedirectStandardError $tempStderr
       if ($TimeoutSeconds -gt 0) {
         $timeoutMs = [int][Math]::Min([int]::MaxValue, [double]$TimeoutSeconds * 1000)
         $exited = $process.WaitForExit($timeoutMs)
@@ -158,6 +172,46 @@ function Resolve-RetryPath {
     return $value
   }
   return Join-Path $repoRoot $value
+}
+
+function Resolve-DateOnly {
+  param([string]$Value, [datetime]$Fallback)
+
+  if (-not [string]::IsNullOrWhiteSpace($Value)) {
+    return ([datetime]::ParseExact($Value, "yyyy-MM-dd", [System.Globalization.CultureInfo]::InvariantCulture)).Date
+  }
+  return $Fallback.Date
+}
+
+function Format-DateOnly {
+  param([datetime]$Value)
+  return $Value.ToString("yyyy-MM-dd")
+}
+
+function Resolve-HistoryStartDate {
+  param([string]$TargetDate)
+
+  $targetDateObject = Resolve-DateOnly -Value $TargetDate -Fallback ((Get-Date).Date.AddDays(-1))
+  $historyValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_HISTORY_FROM", "Process")
+  if ([string]::IsNullOrWhiteSpace($historyValue)) {
+    $historyValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_HISTORY_FROM", "User")
+  }
+  if ([string]::IsNullOrWhiteSpace($historyValue)) {
+    $historyValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_API_WINDOW_FROM", "Process")
+  }
+  if ([string]::IsNullOrWhiteSpace($historyValue)) {
+    $historyValue = [Environment]::GetEnvironmentVariable("ALTEA_PORTAL_API_WINDOW_FROM", "User")
+  }
+  if ([string]::IsNullOrWhiteSpace($historyValue)) {
+    $historyValue = "2026-05-01"
+  }
+
+  $monthStartFallback = (Get-Date -Year $targetDateObject.Year -Month $targetDateObject.Month -Day 1).Date
+  $historyStartDate = Resolve-DateOnly -Value $historyValue -Fallback $monthStartFallback
+  if ($historyStartDate -gt $targetDateObject) {
+    return Format-DateOnly $monthStartFallback
+  }
+  return Format-DateOnly $historyStartDate
 }
 
 function Copy-IfExists {
@@ -349,7 +403,28 @@ function Invoke-RetryStep {
       Invoke-Upload @("sku_aliases", "sku_alias_ignore", "sku_alias_audit", "sku_matrix")
     }
     "yandex-market" {
-      Invoke-NodeStep -StepName "Yandex Market analytics retry" -Arguments @("scripts/portal-yandex-market-trends-sync.js", "sync") -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 2700 -StreamOutput
+      $targetDate = if (-not [string]::IsNullOrWhiteSpace($script:expectedDate)) {
+        $script:expectedDate
+      } else {
+        (Get-Date).Date.AddDays(-1).ToString("yyyy-MM-dd")
+      }
+      $historyStart = Resolve-HistoryStartDate -TargetDate $targetDate
+      Invoke-NodeStep -StepName "Yandex Market analytics retry" -Arguments @(
+        "scripts/portal-yandex-market-trends-sync.js",
+        "sync",
+        "--from",
+        $historyStart,
+        "--to",
+        $targetDate,
+        "--input-file",
+        (Join-Path "data" "platform_trends.json"),
+        "--output-file",
+        (Join-Path "data" "platform_trends.json"),
+        "--rate-limit-attempts",
+        "4",
+        "--rate-limit-extra-delay-ms",
+        "30000"
+      ) -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 2700 -StreamOutput
       Copy-DataFilesToOutput @("platform_trends.json")
       Invoke-GoogleSheetBuild
       Invoke-Upload @("dashboard", "platform_trends")

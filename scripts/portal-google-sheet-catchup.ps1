@@ -55,11 +55,25 @@ function Test-LiveHealthFreshEnough {
   }
 }
 
+function Test-AnyHealthFileFreshEnough {
+  param([string[]]$HealthPaths)
+
+  foreach ($healthPath in $HealthPaths) {
+    if (Test-HealthFileFreshEnough -HealthPath $healthPath) {
+      return $true
+    }
+  }
+  return $false
+}
+
 function Test-PortalDataFreshEnough {
   $localHealthPath = Join-Path $repoRoot "data\portal_sync_health.json"
-  $staticHealthPath = Join-Path $repoRoot ".codex-minmax-publish\data\portal_sync_health.json"
+  $staticHealthPaths = @(
+    (Join-Path $repoRoot ".codex-rollout-main\data\portal_sync_health.json"),
+    (Join-Path $repoRoot ".codex-minmax-publish\data\portal_sync_health.json")
+  )
   return (Test-HealthFileFreshEnough -HealthPath $localHealthPath) `
-    -and (Test-HealthFileFreshEnough -HealthPath $staticHealthPath) `
+    -and (Test-AnyHealthFileFreshEnough -HealthPaths $staticHealthPaths) `
     -and (Test-LiveHealthFreshEnough -Url $LiveHealthUrl)
 }
 

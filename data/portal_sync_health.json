@@ -1,12 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-06T09:59:36.943Z",
+  "generatedAt": "2026-06-06T11:08:12.782Z",
   "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
     "warnings": [],
-    "checkedAt": "2026-06-06T09:59:36.943Z"
+    "checkedAt": "2026-06-06T11:08:12.782Z"
   },
   "freshness": {
     "maxDate": "2026-06-05",
@@ -15,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-06T09:59:36.936Z",
+      "checkedAt": "2026-06-06T11:08:12.776Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-05",
       "maxDate": "2026-06-05",
@@ -62,7 +62,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-06T09:59:36.942Z",
+      "checkedAt": "2026-06-06T11:08:12.781Z",
       "expectedDate": "2026-06-05",
       "adsSummaryWindowTo": "2026-06-05",
       "iuDrrWindowTo": "2026-06-05",
@@ -239,7 +239,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-06T09:58:43.962Z",
+      "generatedAt": "2026-06-06T09:59:36.936Z",
       "asOfDate": "2026-06-06",
       "revenue": 0
     },
@@ -274,13 +274,13 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-06T09:58:43.968Z",
+      "generatedAt": "2026-06-06T09:59:36.943Z",
       "asOfDate": "2026-06-06",
       "revenue": 0
     }
   },
   "syncIssues": {
-    "generatedAt": "2026-06-06T13:00:00+03:00",
+    "generatedAt": "2026-06-06T13:15:14.2949012+03:00",
     "issues": []
   },
   "skuContour": {
@@ -373,7 +373,7 @@
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-06-06T09:58:44.119Z",
+    "generatedAt": "2026-06-06T09:59:37.090Z",
     "comparisons": [
       {
         "snapshot": "skus",
@@ -430,7 +430,7 @@
         "revenueRatio": 1
       }
     ],
-    "markedAt": "2026-06-06T09:59:37.090Z",
+    "markedAt": "2026-06-06T11:08:12.936Z",
     "copied": 26
   },
   "checks": [

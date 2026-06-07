@@ -7930,81 +7930,51 @@ function renderOosPlatformSwitch(allRows = [], filters = oosControlFilters()) {
   `;
 }
 
-function renderOosControlOperationalBriefing(payload = {}, rows = [], allRows = rows, filters = oosControlFilters()) {
+function renderOosStatusStrip(payload = {}, rows = [], allRows = rows) {
   const summary = oosControlSummarizeRows(rows, payload.summary || {});
   const pulse = oosControlPulseModel(rows);
-  const topPlaces = oosControlTopPlaces(rows, 4);
-  const causeGroups = oosControlCauseGroups(rows).slice(0, 4);
+  const allCount = Array.isArray(allRows) ? allRows.length : rows.length;
+  const watchOnly = Math.max(0, summary.watchCount || 0);
+  return `
+    <section class="oos-simple-strip">
+      <div class="oos-simple-strip__item danger">
+        <span>В OOS</span>
+        <strong>${fmt.int((summary.oosCount || 0) + (summary.criticalCount || 0))}</strong>
+        <small>нулевой или критичный остаток</small>
+      </div>
+      <div class="oos-simple-strip__item warn">
+        <span>Риск &lt;10 д</span>
+        <strong>${fmt.int(summary.riskCount || 0)}</strong>
+        <small>закончится скоро</small>
+      </div>
+      <div class="oos-simple-strip__item ok">
+        <span>Резко выросли</span>
+        <strong>${fmt.int(pulse.growthRows.length)}</strong>
+        <small>темп продаж выше на 25%+</small>
+      </div>
+      <div class="oos-simple-strip__item info">
+        <span>Замедлились</span>
+        <strong>${fmt.int(pulse.slowRows.length)}</strong>
+        <small>темп продаж ниже на 25%+</small>
+      </div>
+      <div class="oos-simple-strip__item info">
+        <span>Контроль до 28 д</span>
+        <strong>${fmt.int(watchOnly)}</strong>
+        <small>заранее держим на виду</small>
+      </div>
+      <div class="oos-simple-strip__item">
+        <span>Риск / день</span>
+        <strong>${fmt.money(summary.revenueAtRiskDay || 0)}</strong>
+        <small>${fmt.int(rows.length)} из ${fmt.int(allCount)} сигналов</small>
+      </div>
+    </section>
+  `;
+}
+
+function renderOosControlOperationalBriefing(payload = {}, rows = [], allRows = rows, filters = oosControlFilters()) {
   return `
     ${renderOosPlatformSwitch(allRows, filters)}
     ${renderOosSkuRiskShelf(rows)}
-    <section class="oos-pulse-grid" aria-label="OOS dashboard">
-      ${renderOosPulseCard({
-        title: 'В OOS',
-        kicker: 'красная зона',
-        subtitle: 'позиции уже без запаса или в критике',
-        count: pulse.oosRows.length,
-        rows: pulse.oosRows,
-        rawRows: pulse.oosRows,
-        mode: 'oos',
-        tone: 'danger',
-        empty: 'Сейчас OOS-позиций нет'
-      })}
-      ${renderOosPulseCard({
-        title: 'Зона риска',
-        kicker: 'закончится скоро',
-        subtitle: 'покрытие ниже 10 дней или активный риск',
-        count: pulse.riskRows.length,
-        rows: pulse.riskRows,
-        rawRows: pulse.riskRows,
-        mode: 'risk',
-        tone: 'warn',
-        limit: 6,
-        empty: 'Позиций в зоне риска нет'
-      })}
-      ${renderOosPulseCard({
-        title: 'Резко выросли',
-        kicker: 'темп продаж',
-        subtitle: '7 дней быстрее прошлого темпа на 25%+',
-        count: pulse.growthRows.length,
-        rows: pulse.growthRows,
-        rawRows: pulse.growthRows,
-        mode: 'growth',
-        tone: 'ok',
-        empty: 'Резкого роста темпа нет'
-      })}
-      ${renderOosPulseCard({
-        title: 'Резко замедлились',
-        kicker: 'темп продаж',
-        subtitle: '7 дней ниже прошлого темпа на 25%+',
-        count: pulse.slowRows.length,
-        rows: pulse.slowRows,
-        rawRows: pulse.slowRows,
-        mode: 'slow',
-        tone: 'info',
-        empty: 'Резкого замедления нет'
-      })}
-    </section>
-    <section class="oos-map-strip">
-      <article>
-        <div class="section-subhead">
-          <div><h3>Где болит</h3><p class="small muted">склады с самым дорогим риском в текущем фильтре</p></div>
-          ${badge(`${fmt.int(summary.placeCount || 0)} складов`, summary.placeCount ? 'warn' : 'ok')}
-        </div>
-        <div class="oos-briefing-list">
-          ${topPlaces.map(renderOosControlPlaceRow).join('') || '<div class="empty">Складов под риском нет</div>'}
-        </div>
-      </article>
-      <article>
-        <div class="section-subhead">
-          <div><h3>Почему попало</h3><p class="small muted">главные причины сигнала без ручного проваливания в таблицу</p></div>
-          ${badge(`${fmt.int(causeGroups.length)} фактора`)}
-        </div>
-        <div class="oos-cause-list">
-          ${causeGroups.map((group) => renderOosControlCauseRow(group, Math.max(1, ...causeGroups.map((item) => item.riskAmount)))).join('') || '<div class="empty">Причин по текущим фильтрам нет</div>'}
-        </div>
-      </article>
-    </section>
   `;
 }
 
@@ -8467,14 +8437,16 @@ function renderOosControl(rootId = 'view-oos-control') {
         <button class="quick-chip" type="button" data-oos-reload>Обновить экран</button>
       </div>
     </div>
-    ${renderOosControlHero(payload, filteredRows, rows)}
-    ${oosControlFreshnessNotice(payload)}
+    ${renderOosStatusStrip(payload, filteredRows, rows)}
     ${renderOosControlOperationalBriefing(payload, filteredRows, rows, filters)}
-    ${renderOosControlActionCards(filteredRows)}
-    ${renderOosControlCharts(payload, filteredRows)}
-    ${renderOosControlFilters(rows, filters)}
-    ${oosControlTeamNotice()}
-    <div class="card sku-plan-fact-card oos-detail-card" style="margin-top:14px">
+    <details class="oos-advanced-panel">
+      <summary>
+        <span>Фильтры, таблица и командные задачи</span>
+        ${badge(`${fmt.int(filteredRows.length)} строк`)}
+      </summary>
+      ${renderOosControlFilters(rows, filters)}
+      ${oosControlTeamNotice()}
+      <div class="card sku-plan-fact-card oos-detail-card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
           <h3>Детализация и комментарии</h3>
@@ -8503,7 +8475,8 @@ function renderOosControl(rootId = 'view-oos-control') {
           </tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </details>
   `;
   bindOosControl(root, rootId);
 }

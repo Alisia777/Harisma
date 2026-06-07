@@ -6872,9 +6872,14 @@ function renderOosControlKpis(summary = {}) {
 }
 
 function renderOosControlFilters(rows, filters) {
+  const platformMap = new Map([
+    ['wb', { key: 'wb', label: 'WB' }],
+    ['ozon', { key: 'ozon', label: 'Ozon' }]
+  ]);
+  summarizeOosControlPlatforms(rows).forEach((item) => platformMap.set(item.key, item));
   const platformOptions = [
     `<option value="all" ${filters.platform === 'all' ? 'selected' : ''}>Все площадки</option>`,
-    ...summarizeOosControlPlatforms(rows).map((item) => (
+    ...[...platformMap.values()].map((item) => (
       `<option value="${escapeHtml(item.key)}" ${filters.platform === item.key ? 'selected' : ''}>${escapeHtml(item.label)}</option>`
     ))
   ].join('');
@@ -7884,12 +7889,54 @@ function renderOosSkuRiskShelf(rows = []) {
   `;
 }
 
-function renderOosControlOperationalBriefing(payload = {}, rows = []) {
+function renderOosPlatformSwitch(allRows = [], filters = oosControlFilters()) {
+  const selected = filters.platform || 'all';
+  const platformMap = new Map([
+    ['wb', { key: 'wb', label: 'WB' }],
+    ['ozon', { key: 'ozon', label: 'Ozon' }]
+  ]);
+  summarizeOosControlPlatforms(allRows).forEach((platform) => platformMap.set(platform.key, platform));
+  const platforms = [...platformMap.values()];
+  const items = [
+    { key: 'all', label: 'Все площадки', caption: 'WB + Ozon + остальные', rows: allRows },
+    ...platforms.map((platform) => ({
+      key: platform.key,
+      label: platform.label || platform.key,
+      caption: platform.key === 'wb' ? 'Wildberries' : platform.key === 'ozon' ? 'Ozon' : (platform.label || platform.key),
+      rows: allRows.filter((row) => row.platform === platform.key)
+    }))
+  ];
+  return `
+    <section class="oos-platform-switch" aria-label="Фильтр по площадке">
+      <div>
+        <span>Площадка</span>
+        <strong>${escapeHtml(selected === 'all' ? 'Все площадки' : (items.find((item) => item.key === selected)?.label || selected))}</strong>
+      </div>
+      <div class="oos-platform-switch__buttons">
+        ${items.map((item) => {
+          const summary = oosControlSummarizeRows(item.rows, {});
+          const isActive = selected === item.key;
+          return `
+            <button class="oos-platform-chip ${isActive ? 'is-active' : ''}" type="button" data-oos-platform-chip="${escapeHtml(item.key)}" aria-pressed="${isActive ? 'true' : 'false'}">
+              <span>${escapeHtml(item.caption)}</span>
+              <strong>${escapeHtml(item.label)}</strong>
+              <em>${fmt.int(summary.totalIssues || 0)} сигналов · ${fmt.int(summary.skuCount || 0)} SKU · ${fmt.int(summary.placeCount || 0)} складов</em>
+              <b>${fmt.money(summary.revenueAtRiskDay || 0)} / день</b>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderOosControlOperationalBriefing(payload = {}, rows = [], allRows = rows, filters = oosControlFilters()) {
   const summary = oosControlSummarizeRows(rows, payload.summary || {});
   const pulse = oosControlPulseModel(rows);
   const topPlaces = oosControlTopPlaces(rows, 4);
   const causeGroups = oosControlCauseGroups(rows).slice(0, 4);
   return `
+    ${renderOosPlatformSwitch(allRows, filters)}
     ${renderOosSkuRiskShelf(rows)}
     <section class="oos-pulse-grid" aria-label="OOS dashboard">
       ${renderOosPulseCard({
@@ -8289,6 +8336,13 @@ function renderOosControlActionCard(row = {}) {
 }
 
 function bindOosControl(root, rootId) {
+  root.querySelectorAll('[data-oos-platform-chip]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.oosControlFilters = state.oosControlFilters || {};
+      state.oosControlFilters.platform = button.dataset.oosPlatformChip || 'all';
+      renderOosControl(rootId);
+    });
+  });
   root.querySelectorAll('[data-oos-filter]').forEach((control) => {
     const eventName = control.tagName === 'INPUT' ? 'input' : 'change';
     control.addEventListener(eventName, () => {
@@ -8415,7 +8469,7 @@ function renderOosControl(rootId = 'view-oos-control') {
     </div>
     ${renderOosControlHero(payload, filteredRows, rows)}
     ${oosControlFreshnessNotice(payload)}
-    ${renderOosControlOperationalBriefing(payload, filteredRows)}
+    ${renderOosControlOperationalBriefing(payload, filteredRows, rows, filters)}
     ${renderOosControlActionCards(filteredRows)}
     ${renderOosControlCharts(payload, filteredRows)}
     ${renderOosControlFilters(rows, filters)}

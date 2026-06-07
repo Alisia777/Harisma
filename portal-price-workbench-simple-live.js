@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES1__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES2__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES2__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEIMPACT1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260528_MINMAXIMPORT1__ = true;
@@ -32,6 +33,7 @@
   var ORDER_PROCUREMENT_OZON_URL = "data/order_procurement_ozon.json";
   var VIEW_ID = "view-prices";
   var STYLE_ID = "altea-price-simple-style";
+  var STYLE_VERSION = "20260607-price-badges2";
   var SNAPSHOT_WAIT_MS = 1800;
   var SNAPSHOT_HARD_WAIT_MS = 4500;
   var LOCAL_FETCH_TIMEOUT_MS = 3200;
@@ -157,6 +159,25 @@
       .toLowerCase()
       .replace(/\s+/g, "")
       .replace(/[^a-z\u0430-\u044f0-9_-]+/gi, "");
+  }
+
+  function stableHash(value) {
+    var text = String(value || "");
+    var hash = 2166136261;
+    for (var index = 0; index < text.length; index += 1) {
+      hash ^= text.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return String(hash >>> 0);
+  }
+
+  function priceRowsSignature(rows) {
+    var parts = [];
+    for (var index = 0; index < rows.length; index += 1) {
+      var row = rows[index] || {};
+      parts.push([row.articleKey, row.status, row.turnoverDays, row.currentFillPrice, row.owner].join(":"));
+    }
+    return parts.join("~");
   }
 
   function canonicalPriceMarket(value) {
@@ -1233,9 +1254,12 @@
   }
 
   function ensureStyles() {
-    if (document.getElementById(STYLE_ID)) return;
+    var existing = document.getElementById(STYLE_ID);
+    if (existing && existing.dataset.priceStyleVersion === STYLE_VERSION) return;
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
     var style = document.createElement("style");
     style.id = STYLE_ID;
+    style.dataset.priceStyleVersion = STYLE_VERSION;
     style.textContent = [
       "#view-prices{padding:24px 28px 36px;min-height:520px;}",
       ".pw-shell{display:grid;gap:16px;}",
@@ -1266,7 +1290,7 @@
       ".pw-ledger-summary span{display:grid;gap:2px;min-width:118px;padding:10px 12px;border:1px solid rgba(214,175,85,.12);border-radius:8px;background:rgba(9,7,5,.42);}",
       ".pw-ledger-summary b{font-size:18px;line-height:1.15;color:#fff0cf;}",
       ".pw-ledger-summary small{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#bda57a;}",
-      ".pw-game-panel{display:grid;gap:10px;}",
+      ".pw-game-panel{display:grid;gap:10px;margin-top:12px;}",
       ".pw-game-strip{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px;}",
       ".pw-game-card{position:relative;min-height:126px;border:1px solid hsl(var(--pw-hue,42) 78% 58% / .28);border-radius:8px;background:linear-gradient(180deg,hsl(var(--pw-hue,42) 72% 42% / .16),rgba(9,7,5,.72));box-shadow:0 16px 42px hsl(var(--pw-hue,42) 80% 42% / .10);padding:13px;display:grid;grid-template-rows:auto auto auto 1fr;gap:8px;overflow:hidden;}",
       ".pw-game-card:before{content:\"\";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 46%);pointer-events:none;}",
@@ -2425,6 +2449,7 @@
         if (boundary.tone === "danger") minMaxDanger += 1;
       }
     });
+    var periodDays = Math.max(1, diffDays(state.dateFrom || state.dateTo, state.dateTo || state.dateFrom) + 1);
     var summary = {
       count: rows.length,
       avgPrice: mean(price),
@@ -2432,6 +2457,7 @@
       avgTurnover: mean(turnover),
       belowAllowed: below,
       ordersUnits: ordersFound ? ordersUnits : null,
+      avgOrdersPerDay: ordersFound ? ordersUnits / periodDays : null,
       revenue: revenueFound ? revenue : null,
       priceChanges: priceChanges,
       changedRows: changedRows,
@@ -2462,6 +2488,21 @@
     var denominator = Number(total);
     if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return 0;
     return Math.max(0, Math.min(100, numerator / denominator * 100));
+  }
+
+  function formatOrdersPerDay(value) {
+    if (value == null || !Number.isFinite(Number(value))) return "\u2014";
+    return Number(value).toFixed(1).replace(".", ",") + " /\u0434\u043d.";
+  }
+
+  function orderLevelNote(impact) {
+    if (!impact || impact.ordersUnits == null) return "\u0437\u0430\u043a\u0430\u0437\u044b \u043f\u043e \u0434\u043d\u044f\u043c \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u044b";
+    var note = intf(impact.ordersUnits) + " \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434";
+    if (impact.change) {
+      note += "; \u043f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b " + (impact.afterOrders == null ? "\u2014" : intf(impact.afterOrders));
+      if (impact.orderDelta != null) note += ", \u0394 " + signedIntLabel(impact.orderDelta);
+    }
+    return note;
   }
 
   function priceBoundaryState(row) {
@@ -2545,11 +2586,11 @@
       }),
       renderPriceGameCard({
         tone: summary.orderDeltaTotal == null ? "info" : (summary.orderDeltaTotal >= 0 ? "ok" : "danger"),
-        label: "\u0417\u0430\u043a\u0430\u0437\u044b \u043f\u043e\u0441\u043b\u0435",
-        value: summary.afterOrders == null ? "\u2014" : intf(summary.afterOrders),
-        note: "\u0421\u0443\u043c\u043c\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u043f\u043e\u0441\u043b\u0435 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0439 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b",
-        foot: "\u0434\u0435\u043b\u044c\u0442\u0430 " + orderDeltaLabel,
-        progress: summary.afterOrders == null ? 0 : 100
+        label: "\u0423\u0440\u043e\u0432\u0435\u043d\u044c \u0437\u0430\u043a\u0430\u0437\u043e\u0432",
+        value: formatOrdersPerDay(summary.avgOrdersPerDay),
+        note: "\u0421\u0440\u0435\u0434\u043d\u0438\u0439 \u0442\u0435\u043c\u043f \u0437\u0430 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u0439 \u043f\u0435\u0440\u0438\u043e\u0434",
+        foot: "\u043f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b " + (summary.afterOrders == null ? "\u2014" : intf(summary.afterOrders)) + " \u00b7 \u0394 " + orderDeltaLabel,
+        progress: summary.avgOrdersPerDay == null ? 0 : 100
       }),
       renderPriceGameCard({
         tone: summary.priceChanges ? "violet" : "info",
@@ -2586,10 +2627,10 @@
       summary.worstDrop ? renderPriceGamePill("\u043f\u0440\u043e\u0441\u0430\u0434\u043a\u0430: " + (summary.worstDrop.articleKey || "\u2014") + " " + signedIntLabel(summary.worstDrop.delta), "danger", summary.worstDrop.name || "") : ""
     ].filter(Boolean);
     return [
-      '<section class="pw-game-panel" aria-label="\u0426\u0435\u043d\u043e\u0432\u044b\u0435 \u0441\u0438\u0433\u043d\u0430\u043b\u044b">',
+      '<div class="pw-game-panel" aria-label="\u0426\u0435\u043d\u043e\u0432\u044b\u0435 \u0441\u0438\u0433\u043d\u0430\u043b\u044b">',
       '<div class="pw-game-strip">', cards.join(""), '</div>',
       '<div class="pw-game-missions">', pills.join(""), '</div>',
-      '</section>'
+      '</div>'
     ].join("");
   }
 
@@ -2724,11 +2765,10 @@
   }
 
   function renderOrdersCell(impact) {
-    var avg = impact.avgOrdersPerDay != null ? Number(impact.avgOrdersPerDay).toFixed(1).replace(".", ",") + '/\u0434\u043d.' : "\u2014";
     return [
       '<div class="pw-impact-cell"><strong>', impact.ordersUnits == null ? "\u2014" : intf(impact.ordersUnits), '</strong>',
       '<small>\u0437\u0430\u043a\u0430\u0437\u044b \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434</small>',
-      '<small>', esc(avg), '</small></div>'
+      '<small>', esc(formatOrdersPerDay(impact.avgOrdersPerDay)), '</small></div>'
     ].join("");
   }
 
@@ -2750,6 +2790,50 @@
     return [
       '<div class="pw-impact-cell"><strong>', money(impact.revenue), '</strong>',
       '<small>\u0437\u0430 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u0439 \u043f\u0435\u0440\u0438\u043e\u0434</small></div>'
+    ].join("");
+  }
+
+  function turnoverHelpText(row) {
+    if (row && row.turnoverSource === "order_procurement") {
+      return "\u0424\u043e\u043b\u0431\u044d\u043a \u0438\u0437 \u0417\u0430\u043a\u0430\u0437\u0430: inStock / avgDaily \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0435.";
+    }
+    if (row && row.turnoverSource) {
+      var label = String(row.turnoverSource || "");
+      if (label === "prices") label = "prices-\u0441\u0440\u0435\u0437";
+      else if (label === "overlay") label = "overlay-\u0441\u0440\u0435\u0437";
+      else if (label === "workbench") label = "workbench";
+      return "\u0422\u0435\u043a\u0443\u0449\u0435\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u0438\u0437 " + label + ".";
+    }
+    return "\u041d\u0435\u0442 \u043e\u0441\u0442\u0430\u0442\u043a\u0430/avgDaily \u0434\u043b\u044f \u0440\u0430\u0441\u0447\u0435\u0442\u0430 \u0434\u043d\u0435\u0439 \u043e\u0431\u043e\u0440\u043e\u0442\u0430.";
+  }
+
+  function turnoverDisplay(row, impact) {
+    var value = num(row && row.turnoverDays);
+    if (value != null && value > 0) {
+      return {
+        value: days(value),
+        note: metricHelp(turnoverHelpText(row), row && row.turnoverFactDate, row && row.valueDate)
+      };
+    }
+    return {
+      value: "\u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445",
+      note: turnoverHelpText(row) + " \u0423\u0440\u043e\u0432\u0435\u043d\u044c \u0437\u0430\u043a\u0430\u0437\u043e\u0432: " + formatOrdersPerDay(impact && impact.avgOrdersPerDay) + "; " + orderLevelNote(impact) + "."
+    };
+  }
+
+  function renderTurnoverCell(row, impact) {
+    var display = turnoverDisplay(row, impact);
+    return [
+      '<div class="pw-impact-cell"><strong>', esc(display.value), '</strong>',
+      '<small>', esc(display.note), '</small></div>'
+    ].join("");
+  }
+
+  function renderOrderLevelMini(impact) {
+    return [
+      '<div class="pw-mini"><span class="pw-label">\u0423\u0440\u043e\u0432\u0435\u043d\u044c \u0437\u0430\u043a\u0430\u0437\u043e\u0432</span><strong>',
+      esc(formatOrdersPerDay(impact && impact.avgOrdersPerDay)),
+      '</strong><small>', esc(orderLevelNote(impact)), '</small></div>'
     ].join("");
   }
 
@@ -3084,7 +3168,7 @@ function downloadPriceSummaryExcel(rows) {
           '<td>', renderOrdersCell(impact), '</td>',
           '<td>', renderAfterChangeCell(impact), '</td>',
           '<td>', renderRevenueCell(impact), '</td>',
-          '<td>', days(row.turnoverDays), '</td>',
+          '<td>', renderTurnoverCell(row, impact), '</td>',
           '</tr>'
         ].join("");
       }).join(""),
@@ -3165,9 +3249,7 @@ function downloadPriceSummaryExcel(rows) {
     var bounds = row.repricerBounds || buildRepricerBounds(row.market, row.articleKey);
     var lifecycle = row.productLifecycle || priceProductLifecycleForRow(row) || {};
     var impact = row.priceImpact || rowPriceImpact(row);
-    var turnoverHelp = row.turnoverSource === "order_procurement"
-      ? "\u0424\u043e\u043b\u0431\u044d\u043a \u0438\u0437 \u0417\u0430\u043a\u0430\u0437\u0430: inStock / avgDaily \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0435."
-      : "\u0422\u0435\u043a\u0443\u0449\u0435\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.";
+    var turnover = turnoverDisplay(row, impact);
     return [
       '<div class="pw-modal ', state.selectedKey ? 'open' : '', '" id="priceSimpleModal">',
       '<div class="pw-modal-box">',
@@ -3179,13 +3261,14 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 MP \u0434\u043e \u0441\u043a\u0438\u0434\u043a\u0438</span><strong>', money(row.listPrice != null ? row.listPrice : row.currentFillPrice), '</strong><small>', esc(metricHelp(modalListPriceHelp(row), row.listPriceFactDate || row.priceFactDate, row.valueDate)), '</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 MP \u0441\u043e \u0441\u043a\u0438\u0434\u043a\u043e\u0439</span><strong>', money(row.currentFillPrice), '</strong><small>', esc(metricHelp(modalDiscountedPriceHelp(row), row.priceFactDate, row.valueDate)), '</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0417\u0430\u043a\u0430\u0437\u044b \u043f\u0435\u0440\u0438\u043e\u0434\u0430</span><strong>', impact.ordersUnits == null ? "\u2014" : intf(impact.ordersUnits), '</strong><small>\u0421\u0443\u043c\u043c\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0432 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0439 \u0434\u0430\u0442\u0435/\u043f\u0435\u0440\u0438\u043e\u0434\u0435.</small></div>',
+      renderOrderLevelMini(impact),
       '<div class="pw-mini"><span class="pw-label">\u0412\u044b\u0440\u0443\u0447\u043a\u0430 \u043f\u0435\u0440\u0438\u043e\u0434\u0430</span><strong>', money(impact.revenue), '</strong><small>\u0412\u044b\u0440\u0443\u0447\u043a\u0430 \u0432 \u0442\u0435 \u0436\u0435 \u0434\u043d\u0438, \u0433\u0434\u0435 \u0432\u0438\u0434\u0438\u043c \u0446\u0435\u043d\u0443.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b</span><strong>', impact.change ? (impact.afterOrders == null ? "\u2014" : intf(impact.afterOrders)) : "\u2014", '</strong><small>', impact.change ? ('\u0441 ' + esc(impact.change.date || "") + ', \u0434\u043e: ' + (impact.beforeOrders == null ? "\u2014" : intf(impact.beforeOrders)) + (impact.orderDelta != null ? ', \u0394 ' + esc(signedIntLabel(impact.orderDelta)) : '')) : '\u0432 \u043f\u0435\u0440\u0438\u043e\u0434\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b \u043d\u0435\u0442', '</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0421\u043a\u0438\u0434\u043a\u0430 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430</span><strong>', pct(row.sellerDiscountPct), '</strong><small>\u0421\u0447\u0438\u0442\u0430\u0435\u043c \u043a\u0430\u043a \u0440\u0430\u0437\u043d\u0438\u0446\u0443 \u043c\u0435\u0436\u0434\u0443 \u0446\u0435\u043d\u043e\u0439 \u0434\u043e \u0441\u043a\u0438\u0434\u043a\u0438 \u0438 \u0446\u0435\u043d\u043e\u0439 \u0441\u043e \u0441\u043a\u0438\u0434\u043a\u043e\u0439.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</span><strong>', money(row.currentClientPrice), '</strong><small>', esc(metricHelp("\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u043a\u043b\u0438\u0435\u043d\u0442\u0441\u043a\u0438\u0439 \u043a\u043e\u043d\u0442\u0443\u0440.", row.clientPriceFactDate, row.valueDate)), '</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f \u043c\u0430\u0440\u0436\u0430 3\u043c</span><strong>', pct(row.allowedMarginPct), '</strong><small>\u0411\u0435\u0440\u0435\u043c \u0438\u0437 smart/workbench \u0441\u043b\u043e\u044f \u0431\u0435\u0437 \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0438 \u043a \u043d\u043e\u043c\u0435\u0440\u0443 \u0441\u0442\u0440\u043e\u043a\u0438.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u043c\u0430\u0440\u0436\u0430</span><strong>', pct(row.marginTotalPct), '</strong><small>\u041e\u043f\u0435\u0440\u0430\u0446\u0438\u043e\u043d\u043d\u044b\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.</small></div>',
-      '<div class="pw-mini"><span class="pw-label">\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</span><strong>', days(row.turnoverDays), '</strong><small>', esc(metricHelp(turnoverHelp, row.turnoverFactDate, row.valueDate)), '</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</span><strong>', esc(turnover.value), '</strong><small>', esc(turnover.note), '</small></div>',
       '<div class="pw-mini"><span class="pw-label">Owner</span><strong>', esc(row.owner || "\u2014"), '</strong><small>\u0420\u0443\u0447\u043d\u043e\u0435 \u043f\u043e\u043b\u0435 \u043d\u0435 \u043f\u0435\u0440\u0435\u0442\u0438\u0440\u0430\u0435\u043c.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0421\u0442\u0430\u0442\u0443\u0441 \u0442\u043e\u0432\u0430\u0440\u0430</span><strong>', esc(row.status || "\u2014"), '</strong><small>\u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0442\u0440\u043e\u043a\u0438 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u043c\u0443 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0443.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043f\u043e \u043c\u0430\u0440\u0436\u0435</span><strong>', money(row.requiredPriceForMargin), '</strong><small>\u0415\u0441\u043b\u0438 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0438\u0435\u0445\u0430\u043b\u043e \u0432 smart-\u0441\u043b\u043e\u0435.</small></div>',
@@ -3503,6 +3586,34 @@ function downloadPriceSummaryExcel(rows) {
     var summary = stats(rows);
     var selected = state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : null;
     var filters = buildFilterOptions();
+    var renderKeyText = [
+      state.loaded ? "ready" : (state.loading ? "loading" : "idle"),
+      state.loaded ? "loaded" : "cold",
+      state.error || "",
+      activeMarket,
+      state.search || "",
+      state.ownerFilter || "",
+      state.statusFilter || "",
+      state.sortBy || "",
+      state.sortDir || "",
+      state.dateFrom || "",
+      state.dateTo || "",
+      state.latestFactDate || "",
+      state.sourceNote || "",
+      rows.length,
+      priceRowsSignature(rows),
+      summary.ordersUnits == null ? "" : summary.ordersUnits,
+      summary.revenue == null ? "" : Math.round(summary.revenue),
+      summary.priceChanges || 0,
+      summary.impactWins || 0,
+      summary.impactDrops || 0,
+      summary.minMaxRisk || 0,
+      state.selectedKey || "",
+      selected ? [selected.articleKey, selected.status, selected.turnoverDays, selected.currentFillPrice].join(":") : ""
+    ].join("|");
+    var renderKey = stableHash(renderKeyText);
+    if (root.dataset.priceRenderKey === renderKey && root.querySelector(".pw-shell")) return;
+    root.dataset.priceRenderKey = renderKey;
     root.innerHTML = [
       '<div class="pw-shell">',
       '<section class="pw-card">',
@@ -3543,9 +3654,9 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="pw-note">\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a: ', esc(state.sourceNote || DATA_URL), '</div>',
       '</div></div>',
       '</section>',
-      renderPriceGameStrip(rows, summary),
       '<section class="pw-card">',
       '<div class="pw-table-head"><div class="pw-label">\u0422\u0430\u0431\u043b\u0438\u0446\u0430</div><div class="pw-chip-row"><button type="button" class="pw-chip" data-price-export="summary">\u0421\u0432\u043e\u0434 \u0432 Excel</button><button type="button" class="pw-chip" data-price-export="daily">\u0414\u0438\u043d\u0430\u043c\u0438\u043a\u0430 \u043f\u043e \u0434\u043d\u044f\u043c</button><button type="button" class="pw-chip" data-price-minmax-template>\u0421\u043a\u0430\u0447\u0430\u0442\u044c MIN/MAX (TSV)</button><button type="button" class="pw-chip" data-price-minmax-import>\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c MIN/MAX</button></div></div>',
+      renderPriceGameStrip(rows, summary),
       '<div class="pw-ledger-summary"><span><b>', intf(summary.count), '</b><small>SKU</small></span><span><b>', summary.ordersUnits == null ? "\u2014" : intf(summary.ordersUnits), '</b><small>\u0417\u0430\u043a\u0430\u0437\u044b</small></span><span><b>', money(summary.revenue), '</b><small>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</small></span><span><b>', intf(summary.priceChanges), '</b><small>\u0421\u043c\u0435\u043d\u044b \u0446\u0435\u043d</small></span><span><b>', intf(summary.belowAllowed), '</b><small>\u041d\u0438\u0436\u0435 3\u043c</small></span></div>',
       '<div class="pw-note" style="margin-top:10px">\u041f\u0435\u0440\u0438\u043e\u0434: ', esc(state.dateFrom || "\u2014"), ' - ', esc(state.dateTo || "\u2014"), ' \u00b7 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a: ', esc(state.sourceNote || DATA_URL), '</div>',
       state.loading && !state.loaded ? '<div class="pw-empty">\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u044e \u0434\u0430\u043d\u043d\u044b\u0435 \u0432\u043a\u043b\u0430\u0434\u043a\u0438 \u0426\u0435\u043d\u044b...</div>' : renderTable(rows),

@@ -1736,6 +1736,11 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .oos-runway i b.danger,.oos-sku-card__riskbar i b.danger{background:linear-gradient(90deg,#c94b45,#ff9a8f)}
 .oos-runway i b.warn,.oos-sku-card__riskbar i b.warn{background:linear-gradient(90deg,#d99715,#ffd36d)}
 .oos-runway i b.info,.oos-sku-card__riskbar i b.info{background:linear-gradient(90deg,#3b82f6,#9fc2ff)}
+#view-oos-control .oos-runway i,#view-oos-control .oos-sku-card__riskbar i,#view-oos-control .oos-pulse-track,#view-oos-control .oos-coverage-track,#view-oos-control .oos-bar-track{background:rgba(var(--oos-platform-rgb),.12)}
+#view-oos-control .oos-runway i b,#view-oos-control .oos-sku-card__riskbar i b,#view-oos-control .oos-pulse-track i,#view-oos-control .oos-coverage-track i,#view-oos-control .oos-bar-fill{background:linear-gradient(90deg,rgba(var(--oos-platform-rgb),.44),rgba(var(--oos-platform-rgb),.74));box-shadow:0 0 14px rgba(var(--oos-platform-rgb),.16)}
+#view-oos-control .oos-runway i b.danger,#view-oos-control .oos-sku-card__riskbar i b.danger,#view-oos-control .oos-pulse-track i.danger,#view-oos-control .oos-coverage-track i.danger,#view-oos-control .oos-bar-fill.danger{background:linear-gradient(90deg,rgba(var(--oos-platform-rgb),.88),var(--oos-platform-strong));box-shadow:0 0 20px rgba(var(--oos-platform-rgb),.32)}
+#view-oos-control .oos-runway i b.warn,#view-oos-control .oos-sku-card__riskbar i b.warn,#view-oos-control .oos-pulse-track i.warn,#view-oos-control .oos-coverage-track i.warn,#view-oos-control .oos-bar-fill.warn{background:linear-gradient(90deg,rgba(var(--oos-platform-rgb),.62),rgba(var(--oos-platform-rgb),.9));box-shadow:0 0 16px rgba(var(--oos-platform-rgb),.22)}
+#view-oos-control .oos-runway i b.info,#view-oos-control .oos-sku-card__riskbar i b.info,#view-oos-control .oos-pulse-track i.info,#view-oos-control .oos-bar-fill.info{background:linear-gradient(90deg,rgba(var(--oos-platform-rgb),.34),rgba(var(--oos-platform-rgb),.62));box-shadow:0 0 10px rgba(var(--oos-platform-rgb),.12)}
 .oos-sku-card__riskbar{display:grid;grid-template-columns:auto minmax(120px,1fr)}
 .oos-sku-card__body{display:grid;gap:10px;padding:0 12px 12px;border-top:1px solid rgba(255,255,255,.07)}
 .oos-sku-card__totals{padding-top:10px}

@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260528_MINMAXIMPORT1__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEIMPACT1__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEIMPACT1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260528_MINMAXIMPORT1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_MINMAXQUEUE1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_STATUS_EDIT1__ = true;
@@ -66,7 +67,7 @@
     search: "",
     ownerFilter: "all",
     statusFilter: "all",
-    sortBy: "risk",
+    sortBy: "orders",
     sortDir: "desc",
     selectedKey: "",
     dateFrom: "",
@@ -1237,7 +1238,7 @@
     style.textContent = [
       "#view-prices{padding:24px 28px 36px;min-height:520px;}",
       ".pw-shell{display:grid;gap:16px;}",
-      ".pw-card,.pw-modal-box{background:rgba(21,17,12,.80);border:1px solid rgba(214,175,85,.16);border-radius:22px;box-shadow:0 18px 50px rgba(0,0,0,.24);}",
+      ".pw-card,.pw-modal-box{background:rgba(21,17,12,.80);border:1px solid rgba(214,175,85,.16);border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.18);}",
       ".pw-card{padding:18px 20px;}",
       ".pw-title{font-size:32px;line-height:1.05;font-weight:800;color:#f4ead6;}",
       ".pw-sub{font-size:14px;line-height:1.55;color:#d8c6a3;max-width:980px;margin-top:8px;}",
@@ -1245,7 +1246,7 @@
       ".pw-label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#bda57a;}",
       ".pw-chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}",
       ".pw-chip{border:1px solid rgba(214,175,85,.24);background:rgba(214,175,85,.06);color:#f3e3bf;border-radius:999px;padding:8px 12px;font-size:13px;cursor:pointer;}",
-      ".pw-chip.active{background:linear-gradient(135deg,#c49a37,#f2d48d);color:#23180b;border-color:transparent;}",
+      ".pw-chip.active{background:rgba(214,175,85,.20);color:#fff2d1;border-color:rgba(242,212,141,.46);}",
       ".pw-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;}",
       ".pw-grid2 input,.pw-grid2 select,.pw-search{width:100%;box-sizing:border-box;border-radius:14px;border:1px solid rgba(214,175,85,.18);background:rgba(9,7,5,.78);color:#f7ead1;padding:12px 14px;}",
       ".pw-help{display:grid;gap:10px;margin-top:12px;padding:14px 16px;border-radius:18px;border:1px solid rgba(214,175,85,.14);background:rgba(214,175,85,.05);}",
@@ -1260,11 +1261,15 @@
       ".pw-detail summary{cursor:pointer;color:#f5e6c2;font-weight:700;}",
       ".pw-detail-note{margin-top:8px;color:#cdb892;line-height:1.45;}",
       ".pw-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}",
+      ".pw-ledger-summary{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}",
+      ".pw-ledger-summary span{display:grid;gap:2px;min-width:118px;padding:10px 12px;border:1px solid rgba(214,175,85,.12);border-radius:8px;background:rgba(9,7,5,.42);}",
+      ".pw-ledger-summary b{font-size:18px;line-height:1.15;color:#fff0cf;}",
+      ".pw-ledger-summary small{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#bda57a;}",
       ".pw-stat strong{display:block;margin-top:8px;font-size:28px;color:#fff0cf;}",
       ".pw-stat small{display:block;margin-top:6px;color:#cdb892;line-height:1.45;}",
       ".pw-table-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}",
       ".pw-table-wrap{overflow:auto;max-height:72vh;border-radius:14px;}",
-      ".pw-table{width:100%;border-collapse:collapse;min-width:1180px;}",
+      ".pw-table{width:100%;border-collapse:collapse;min-width:1360px;}",
       ".pw-table th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#bda57a;text-align:left;padding:0 14px 10px;position:sticky;top:0;z-index:2;background:rgba(10,8,6,.96);backdrop-filter:blur(4px);}",
       ".pw-th-btn{border:0;background:transparent;color:inherit;text-transform:inherit;letter-spacing:inherit;font:inherit;cursor:pointer;padding:0;line-height:1.2;}",
       ".pw-th-btn:hover{color:#f4e6c6;}",
@@ -1283,6 +1288,14 @@
       ".pw-repricer-cell{display:grid;gap:4px;min-width:110px;}",
       ".pw-repricer-cell strong{color:#fff0cf;font-weight:700;}",
       ".pw-repricer-cell small{color:#cdb892;line-height:1.3;}",
+      ".pw-impact-cell,.pw-price-impact,.pw-range-cell{display:grid;gap:5px;min-width:120px;}",
+      ".pw-impact-cell strong,.pw-price-impact strong,.pw-range-cell strong{color:#fff0cf;font-weight:700;}",
+      ".pw-impact-cell small,.pw-price-impact small,.pw-range-cell small{color:#cdb892;line-height:1.3;}",
+      ".pw-delta{display:inline-flex;width:max-content;align-items:center;border-radius:8px;border:1px solid rgba(214,175,85,.16);padding:3px 7px;font-size:12px;line-height:1.2;color:#f3dfb6;background:rgba(214,175,85,.06);}",
+      ".pw-delta.up{border-color:rgba(115,205,144,.28);background:rgba(52,120,76,.18);color:#dff6dd;}",
+      ".pw-delta.down{border-color:rgba(255,136,136,.28);background:rgba(132,43,43,.24);color:#ffd5d5;}",
+      ".pw-delta.flat{border-color:rgba(114,176,231,.28);background:rgba(56,99,135,.18);color:#d7eaff;}",
+      ".pw-mini-note{margin-top:6px;color:#cdb892;font-size:12px;line-height:1.35;}",
       ".pw-danger{color:#ffb7b7;}",
       ".pw-empty{padding:32px 10px;color:#cdb892;text-align:center;}",
       ".pw-error{padding:22px;color:#ffb7b7;background:rgba(120,28,28,.18);border:1px solid rgba(255,120,120,.22);border-radius:18px;}",
@@ -1308,9 +1321,10 @@
       ".pw-badge.pw-badge-warn{background:rgba(138,98,29,.22);border-color:rgba(240,188,82,.32);color:#ffe7b1;}",
       ".pw-badge.pw-badge-danger{background:rgba(132,43,43,.24);border-color:rgba(255,136,136,.28);color:#ffd5d5;}",
       ".pw-history-wrap{overflow:auto;}",
-      ".pw-history{width:100%;border-collapse:collapse;min-width:760px;}",
+      ".pw-history{width:100%;border-collapse:collapse;min-width:980px;}",
       ".pw-history th,.pw-history td{padding:10px 12px;border-top:1px solid rgba(214,175,85,.1);text-align:left;}",
       ".pw-history th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#bda57a;}",
+      ".pw-history-change td{background:rgba(214,175,85,.055);}",
       "@media (max-width:1080px){.pw-grid,.pw-stats,.pw-kpis{grid-template-columns:1fr 1fr;}}",
       "@media (max-width:720px){#view-prices{padding:18px 14px 28px;}.pw-grid,.pw-stats,.pw-kpis,.pw-grid2{grid-template-columns:1fr;}.pw-title{font-size:28px;}}"
     ].join("");
@@ -2140,6 +2154,85 @@
     return baseText;
   }
 
+  function sumHistoryMetric(items, key) {
+    var total = 0;
+    var found = false;
+    (items || []).forEach(function (item) {
+      var value = num(item && item[key]);
+      if (value == null) return;
+      total += value;
+      found = true;
+    });
+    return found ? total : null;
+  }
+
+  function roundedHistoryPrice(item) {
+    var price = num(item && item.price);
+    return price == null ? null : moneyRound(price);
+  }
+
+  function rowPriceImpact(row) {
+    var items = historyItemsForRow(row)
+      .filter(function (item) { return item && isoDate(item.date); })
+      .slice()
+      .sort(function (left, right) { return String(left.date || "").localeCompare(String(right.date || "")); });
+    var ordersUnits = sumHistoryMetric(items, "ordersUnits");
+    var deliveredUnits = sumHistoryMetric(items, "deliveredUnits");
+    var revenue = sumHistoryMetric(items, "revenue");
+    var lastPrice = null;
+    var lastPriceDate = "";
+    var change = null;
+    var changesCount = 0;
+    items.forEach(function (item, index) {
+      var price = roundedHistoryPrice(item);
+      var date = isoDate(item && item.date);
+      if (price == null) return;
+      if (lastPrice != null && price !== lastPrice) {
+        changesCount += 1;
+        change = {
+          date: date,
+          index: index,
+          beforePrice: lastPrice,
+          beforeDate: lastPriceDate,
+          afterPrice: price,
+          deltaRub: price - lastPrice,
+          deltaPct: lastPrice > 0 ? (price - lastPrice) / lastPrice : null
+        };
+      }
+      lastPrice = price;
+      lastPriceDate = date;
+    });
+    var result = {
+      itemsCount: items.length,
+      ordersUnits: ordersUnits,
+      deliveredUnits: deliveredUnits,
+      revenue: revenue,
+      avgOrdersPerDay: ordersUnits != null && items.length ? ordersUnits / items.length : null,
+      priceChanges: changesCount,
+      change: change,
+      afterOrders: null,
+      beforeOrders: null,
+      afterRevenue: null,
+      beforeRevenue: null,
+      afterDays: 0,
+      beforeDays: 0,
+      orderDelta: null,
+      revenueDelta: null
+    };
+    if (!change) return result;
+    var afterItems = items.slice(change.index);
+    var beforeItems = items.slice(Math.max(0, change.index - afterItems.length), change.index);
+    result.afterDays = afterItems.length;
+    result.beforeDays = beforeItems.length;
+    result.afterOrders = sumHistoryMetric(afterItems, "ordersUnits");
+    result.beforeOrders = sumHistoryMetric(beforeItems, "ordersUnits");
+    result.afterRevenue = sumHistoryMetric(afterItems, "revenue");
+    result.beforeRevenue = sumHistoryMetric(beforeItems, "revenue");
+    if (result.afterOrders != null && result.beforeOrders != null) result.orderDelta = result.afterOrders - result.beforeOrders;
+    if (result.afterRevenue != null && result.beforeRevenue != null) result.revenueDelta = result.afterRevenue - result.beforeRevenue;
+    return result;
+  }
+
   function buildDisplayRow(row) {
     if (!row) return null;
     var next = Object.assign({}, row);
@@ -2152,7 +2245,10 @@
     next.rangeHasPoint = Boolean(point);
     next.repricerDisplay = buildRepricerDisplay(next.market, next.articleKey);
     next.repricerBounds = mergeRowPriceBounds(buildRepricerBounds(next.market, next.articleKey), next);
-    if (!point) return next;
+    if (!point) {
+      next.priceImpact = rowPriceImpact(next);
+      return next;
+    }
 
     var priceMetric = latestPositiveRangeMetric(row, "price");
     var clientMetric = latestPositiveRangeMetric(row, "clientPrice");
@@ -2184,6 +2280,7 @@
     } else {
       next.sellerDiscountPct = null;
     }
+    next.priceImpact = rowPriceImpact(next);
     return next;
   }
 
@@ -2245,19 +2342,37 @@
     var margin = [];
     var turnover = [];
     var below = 0;
+    var ordersUnits = 0;
+    var ordersFound = false;
+    var revenue = 0;
+    var revenueFound = false;
+    var priceChanges = 0;
     rows.forEach(function (row) {
+      var impact = row.priceImpact || rowPriceImpact(row);
       if (row.listPrice != null) price.push(row.listPrice);
       else if (row.currentFillPrice != null) price.push(row.currentFillPrice);
       if (row.marginTotalPct != null) margin.push(row.marginTotalPct);
       if (row.turnoverDays != null && row.turnoverDays > 0) turnover.push(row.turnoverDays);
       if (row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct) below += 1;
+      if (impact.ordersUnits != null) {
+        ordersUnits += impact.ordersUnits;
+        ordersFound = true;
+      }
+      if (impact.revenue != null) {
+        revenue += impact.revenue;
+        revenueFound = true;
+      }
+      if (impact.priceChanges) priceChanges += impact.priceChanges;
     });
     var summary = {
       count: rows.length,
       avgPrice: mean(price),
       avgMargin: mean(margin),
       avgTurnover: mean(turnover),
-      belowAllowed: below
+      belowAllowed: below,
+      ordersUnits: ordersFound ? ordersUnits : null,
+      revenue: revenueFound ? revenue : null,
+      priceChanges: priceChanges
     };
     derived.stats.rowsRef = rows;
     derived.stats.value = summary;
@@ -2312,6 +2427,103 @@
     return '<div class="pw-repricer-cell"><strong>' + money(value) + '</strong><small>' + esc(noteParts.join(" · ")) + '</small></div>';
   }
 
+  function deltaTone(value) {
+    if (value > 0) return "up";
+    if (value < 0) return "down";
+    return "flat";
+  }
+
+  function signedMoneyLabel(value) {
+    if (value == null || !Number.isFinite(Number(value))) return "\u2014";
+    var number = Number(value);
+    var sign = number > 0 ? "+" : (number < 0 ? "-" : "");
+    return sign + money(Math.abs(number));
+  }
+
+  function signedIntLabel(value) {
+    if (value == null || !Number.isFinite(Number(value))) return "\u2014";
+    var number = Number(value);
+    var sign = number > 0 ? "+" : (number < 0 ? "-" : "");
+    return sign + intf(Math.abs(number));
+  }
+
+  function signedPctLabel(value) {
+    if (value == null || !Number.isFinite(Number(value))) return "";
+    var number = Number(value);
+    var sign = number > 0 ? "+" : (number < 0 ? "-" : "");
+    return sign + (Math.abs(number) * 100).toFixed(1) + "%";
+  }
+
+  function renderPriceImpactCell(row) {
+    var impact = row.priceImpact || rowPriceImpact(row);
+    var change = impact.change;
+    var html = ['<div class="pw-price-impact">', renderPriceCell(row.currentFillPrice, row.currentFillPriceSource, row.currentFillPriceMode, row.priceFactDate || row.valueDate)];
+    if (change) {
+      html.push(
+        '<span class="pw-delta ', deltaTone(change.deltaRub), '">',
+        esc(signedMoneyLabel(change.deltaRub)),
+        change.deltaPct != null ? ' / ' + esc(signedPctLabel(change.deltaPct)) : '',
+        '</span>',
+        '<small>', esc(change.date || ""), ': ', esc(money(change.beforePrice)), ' -> ', esc(money(change.afterPrice)), '</small>'
+      );
+    } else {
+      html.push('<small>\u0431\u0435\u0437 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b \u0432 \u043f\u0435\u0440\u0438\u043e\u0434\u0435</small>');
+    }
+    html.push('</div>');
+    return html.join("");
+  }
+
+  function renderClientSppCell(row) {
+    return [
+      '<div class="pw-impact-cell"><strong>', money(row.currentClientPrice), '</strong>',
+      '<small>\u0421\u041f\u041f: ', pct(row.currentSppPct), '</small>',
+      '<small>\u0441\u043a\u0438\u0434\u043a\u0430: ', pct(row.sellerDiscountPct), '</small></div>'
+    ].join("");
+  }
+
+  function renderBoundsCell(row) {
+    var bounds = row.repricerBounds || {};
+    var repricer = row.repricerDisplay && moneyRound(row.repricerDisplay.price) != null
+      ? '<small>\u0440\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440: ' + esc(money(row.repricerDisplay.price)) + '</small>'
+      : '';
+    return [
+      '<div class="pw-range-cell"><strong>MIN ', money(bounds.effectiveMin), '</strong>',
+      '<small>MAX ', money(bounds.effectiveMax), '</small>',
+      repricer,
+      '</div>'
+    ].join("");
+  }
+
+  function renderOrdersCell(impact) {
+    var avg = impact.avgOrdersPerDay != null ? Number(impact.avgOrdersPerDay).toFixed(1).replace(".", ",") + '/\u0434\u043d.' : "\u2014";
+    return [
+      '<div class="pw-impact-cell"><strong>', impact.ordersUnits == null ? "\u2014" : intf(impact.ordersUnits), '</strong>',
+      '<small>\u0437\u0430\u043a\u0430\u0437\u044b \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434</small>',
+      '<small>', esc(avg), '</small></div>'
+    ].join("");
+  }
+
+  function renderAfterChangeCell(impact) {
+    if (!impact.change) {
+      return '<div class="pw-impact-cell"><strong>\u2014</strong><small>\u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b \u0432 \u043f\u0435\u0440\u0438\u043e\u0434\u0435 \u043d\u0435\u0442</small></div>';
+    }
+    var delta = impact.orderDelta;
+    return [
+      '<div class="pw-impact-cell"><strong>', impact.afterOrders == null ? "\u2014" : intf(impact.afterOrders), '</strong>',
+      '<small>\u043f\u043e\u0441\u043b\u0435 ', esc(impact.change.date || ""), ' \u00b7 ', intf(impact.afterDays), ' \u0434\u043d.</small>',
+      '<small>\u0434\u043e: ', impact.beforeOrders == null ? "\u2014" : intf(impact.beforeOrders),
+      delta != null ? ' \u00b7 <span class="pw-delta ' + deltaTone(delta) + '">&Delta; ' + esc(signedIntLabel(delta)) + '</span>' : '',
+      '</small></div>'
+    ].join("");
+  }
+
+  function renderRevenueCell(impact) {
+    return [
+      '<div class="pw-impact-cell"><strong>', money(impact.revenue), '</strong>',
+      '<small>\u0437\u0430 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u0439 \u043f\u0435\u0440\u0438\u043e\u0434</small></div>'
+    ].join("");
+  }
+
   function modalListPriceHelp(row) {
     if (priceModeLabel(row && row.listPriceMode) === "факт продаж (средняя)") {
       return "По этому SKU в слое нет кабинетной полки; показываем факт продаж по срезу.";
@@ -2348,6 +2560,10 @@
     if (sortKey === "margin") return num(row && row.marginTotalPct);
     if (sortKey === "turnover") return num(row && row.turnoverDays);
     if (sortKey === "seller_discount") return num(row && row.sellerDiscountPct);
+    if (sortKey === "orders") return num(row && row.priceImpact && row.priceImpact.ordersUnits);
+    if (sortKey === "revenue") return num(row && row.priceImpact && row.priceImpact.revenue);
+    if (sortKey === "after_orders") return num(row && row.priceImpact && row.priceImpact.afterOrders);
+    if (sortKey === "price_change") return Math.abs(num(row && row.priceImpact && row.priceImpact.change && row.priceImpact.change.deltaRub) || 0);
     return null;
   }
 
@@ -2445,12 +2661,25 @@
 
   function priceSummaryExportRows(rows) {
     return sortedVisiblePriceRows(rows).map(function (row) {
+      var impact = row.priceImpact || rowPriceImpact(row);
+      var change = impact.change || {};
       return {
         marketplace: priceMarketLabel(row.market),
         article_key: row.articleKey || "",
         name: row.name || "",
         owner: row.owner || "",
         status: row.status || "",
+        orders_units_range: impact.ordersUnits,
+        revenue_range: moneyRound(impact.revenue),
+        price_changes_range: impact.priceChanges,
+        last_price_change_date: change.date || "",
+        price_before_change: moneyRound(change.beforePrice),
+        price_after_change: moneyRound(change.afterPrice),
+        price_change_rub: moneyRound(change.deltaRub),
+        price_change_pct: change.deltaPct != null ? Math.round(Number(change.deltaPct) * 10000) / 100 : "",
+        orders_after_change: impact.afterOrders,
+        orders_before_change_window: impact.beforeOrders,
+        orders_delta_after_change: impact.orderDelta,
         current_price_mp_before_discount: moneyRound(row.listPrice),
         current_price_mp_before_discount_date: row.listPriceFactDate || row.priceFactDate || row.currentPriceDate || row.valueDate || "",
         current_price_mp_before_discount_source: row.listPriceSource || "",
@@ -2484,7 +2713,11 @@
 
   function priceDailyExportRows(rows) {
     return sortedVisiblePriceRows(rows).flatMap(function (row) {
+      var previousPrice = null;
       return historyItemsForRow(row).map(function (item) {
+        var price = roundedHistoryPrice(item);
+        var delta = previousPrice != null && price != null ? price - previousPrice : null;
+        if (price != null) previousPrice = price;
         return {
           marketplace: priceMarketLabel(row.market),
           article_key: row.articleKey || "",
@@ -2492,7 +2725,8 @@
           owner: row.owner || "",
           status: row.status || "",
           date: item && item.date || "",
-          price_mp: moneyRound(num(item && item.price)),
+          price_mp: price,
+          price_change_rub: moneyRound(delta),
           client_price: moneyRound(num(item && item.clientPrice)),
           spp_pct: num(item && item.sppPct) != null ? Math.round(Number(num(item && item.sppPct)) * 10000) / 100 : "",
           turnover_days: moneyRound(num(item && item.turnoverDays)),
@@ -2512,6 +2746,17 @@ function downloadPriceSummaryExcel(rows) {
     ["article_key", "Артикул"],
     ["name", "Название"],
     ["owner", "Owner"],
+    ["orders_units_range", "\u0417\u0430\u043a\u0430\u0437\u044b \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434"],
+    ["revenue_range", "\u0412\u044b\u0440\u0443\u0447\u043a\u0430 \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434"],
+    ["price_changes_range", "\u0421\u043c\u0435\u043d\u044b \u0446\u0435\u043d \u0432 \u043f\u0435\u0440\u0438\u043e\u0434\u0435"],
+    ["last_price_change_date", "\u0414\u0430\u0442\u0430 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0439 \u0441\u043c\u0435\u043d\u044b"],
+    ["price_before_change", "\u0426\u0435\u043d\u0430 \u0434\u043e \u0441\u043c\u0435\u043d\u044b"],
+    ["price_after_change", "\u0426\u0435\u043d\u0430 \u043f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b"],
+    ["price_change_rub", "\u0418\u0437\u043c. \u0446\u0435\u043d\u044b, \u0440\u0443\u0431."],
+    ["price_change_pct", "\u0418\u0437\u043c. \u0446\u0435\u043d\u044b, %"],
+    ["orders_after_change", "\u0417\u0430\u043a\u0430\u0437\u044b \u043f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b"],
+    ["orders_before_change_window", "\u0417\u0430\u043a\u0430\u0437\u044b \u0434\u043e \u0441\u043c\u0435\u043d\u044b"],
+    ["orders_delta_after_change", "\u0414\u0435\u043b\u044c\u0442\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432"],
     ["status", "Статус"],
     ["current_price_mp_before_discount", "Цена MP до скидки"],
     ["current_price_mp_before_discount_date", "Дата цены MP до скидки"],
@@ -2552,6 +2797,7 @@ function downloadPriceSummaryExcel(rows) {
       ["status", "Статус"],
       ["date", "Дата"],
       ["price_mp", "Цена MP"],
+      ["price_change_rub", "\u0418\u0437\u043c. \u0446\u0435\u043d\u044b, \u0440\u0443\u0431."],
       ["client_price", "Цена клиента"],
       ["spp_pct", "СПП, %"],
       ["turnover_days", "Оборачиваемость, дн"],
@@ -2581,21 +2827,17 @@ function downloadPriceSummaryExcel(rows) {
       sortableHead("article", "\u0410\u0440\u0442\u0438\u043a\u0443\u043b"),
       sortableHead("owner", "Owner"),
       sortableHead("status", "\u0421\u0442\u0430\u0442\u0443\u0441"),
-      sortableHead("price_mp", "\u0426\u0435\u043d\u0430 MP (\u0434\u043e \u0441\u043a\u0438\u0434\u043a\u0438)"),
-      sortableHead("discount_price", "\u0426\u0435\u043d\u0430 MP (\u0441\u043e \u0441\u043a\u0438\u0434\u043a\u043e\u0439 / \u0444\u0430\u043a\u0442)"),
-      sortableHead("seller_discount", "\u0421\u043a\u0438\u0434\u043a\u0430 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430"),
-      sortableHead("repricer_price", "\u0426\u0435\u043d\u0430 \u0440\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440\u0430"),
-      sortableHead("min", "MIN"),
-      sortableHead("max", "MAX"),
-      sortableHead("client_price", "\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430"),
-      sortableHead("spp", "\u0421\u041f\u041f"),
-      sortableHead("allowed_margin", "\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f 3\u043c"),
-      sortableHead("margin", "\u041c\u0430\u0440\u0436\u0430"),
-      sortableHead("turnover", "\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c"),
+      sortableHead("price_change", "\u0426\u0435\u043d\u0430 / \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u0435"),
+      sortableHead("client_price", "\u041a\u043b\u0438\u0435\u043d\u0442 / \u0421\u041f\u041f"),
+      sortableHead("min", "MIN / MAX"),
+      sortableHead("orders", "\u0417\u0430\u043a\u0430\u0437\u044b"),
+      sortableHead("after_orders", "\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b"),
+      sortableHead("revenue", "\u0412\u044b\u0440\u0443\u0447\u043a\u0430"),
+      sortableHead("turnover", "\u041e\u0431\u043e\u0440\u0430\u0447."),
       '</tr></thead><tbody>',
       sorted.map(function (row) {
-        var danger = row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct;
         var lifecycle = row.productLifecycle || priceProductLifecycleForRow(row) || {};
+        var impact = row.priceImpact || rowPriceImpact(row);
         return [
           '<tr class="pw-row" data-open-price="', esc(row.articleKey), '" data-price-market="', esc(row.market), '">',
           '<td><div class="pw-sku">', esc(row.articleKey), '</div><div class="pw-note">', esc(row.name), '</div>',
@@ -2606,16 +2848,12 @@ function downloadPriceSummaryExcel(rows) {
           row.matrixProblemLabel ? '<div class="pw-mini-note"><span class="pw-badge ' + esc(row.matrixProblemTone || "warn") + '">' + esc(row.matrixProblemLabel) + '</span></div>' : '',
           renderPriceLifecycleEditor(row, true),
           '</td>',
-          '<td>', renderPriceCell(row.listPrice, row.listPriceSource, row.listPriceMode, row.listPriceFactDate || row.valueDate), '</td>',
-          '<td>', renderPriceCell(row.currentFillPrice, row.currentFillPriceSource, row.currentFillPriceMode, row.priceFactDate || row.valueDate), '</td>',
-          '<td>', pct(row.sellerDiscountPct), '</td>',
-          '<td>', renderRepricerCell(row.repricerDisplay), '</td>',
-          '<td>', renderBoundCell(row.repricerBounds && row.repricerBounds.effectiveMin, row.repricerBounds && row.repricerBounds.minSource), '</td>',
-          '<td>', renderBoundCell(row.repricerBounds && row.repricerBounds.effectiveMax, row.repricerBounds && row.repricerBounds.maxSource), '</td>',
-          '<td>', money(row.currentClientPrice), '</td>',
-          '<td>', pct(row.currentSppPct), '</td>',
-          '<td>', pct(row.allowedMarginPct), '</td>',
-          '<td class="', danger ? 'pw-danger' : '', '">', pct(row.marginTotalPct), '</td>',
+          '<td>', renderPriceImpactCell(row), '</td>',
+          '<td>', renderClientSppCell(row), '</td>',
+          '<td>', renderBoundsCell(row), '</td>',
+          '<td>', renderOrdersCell(impact), '</td>',
+          '<td>', renderAfterChangeCell(impact), '</td>',
+          '<td>', renderRevenueCell(impact), '</td>',
           '<td>', days(row.turnoverDays), '</td>',
           '</tr>'
         ].join("");
@@ -2655,34 +2893,35 @@ function downloadPriceSummaryExcel(rows) {
   }
 
   function renderHistory(row) {
-    var items = historyItemsForRow(row).slice(-14);
+    var items = historyItemsForRow(row);
     if (!items.length) {
       return '<div class="pw-empty">\u0412\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430 \u043d\u0435\u0442 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u0434\u043d\u0435\u0432\u043d\u044b\u0445 \u0442\u043e\u0447\u0435\u043a.</div>';
     }
-    var hasSalesHistory = items.some(function (item) {
-      return num(item && item.ordersUnits) != null || num(item && item.revenue) != null;
-    });
     var note = '\u0417\u0434\u0435\u0441\u044c \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0442\u043e\u0447\u043a\u0438 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430. \u0415\u0441\u043b\u0438 \u0441\u0435\u0433\u043e\u0434\u043d\u044f\u0448\u043d\u0435\u0439 \u0442\u043e\u0447\u043a\u0438 \u0435\u0449\u0451 \u043d\u0435\u0442, \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u0430\u043a\u0430\u043d\u0447\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u043d\u0430 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u043c \u0441\u0440\u0435\u0437\u0435.';
-    if (!hasSalesHistory) {
-      note += ' \u0414\u043d\u0435\u0432\u043d\u044b\u0435 \u0437\u0430\u043a\u0430\u0437\u044b \u0438 \u0432\u044b\u0440\u0443\u0447\u043a\u0430 \u0432 \u0442\u0435\u043a\u0443\u0449\u0435\u043c smart_price_workbench \u043f\u043e\u043a\u0430 \u043d\u0435 \u043f\u0440\u0438\u0435\u0445\u0430\u043b\u0438, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u0442\u043e\u043b\u044c\u043a\u043e \u0446\u0435\u043d\u0443, SPP \u0438 \u043e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c.';
-    }
     if (row.market === "wb") {
       note += ' \u041f\u043e WB \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u043f\u043e \u0434\u043d\u044f\u043c \u0441\u0442\u0440\u043e\u0438\u0442\u0441\u044f \u0438\u0437 daily market-facts. \u042d\u0442\u043e \u043d\u0435 \u0436\u0443\u0440\u043d\u0430\u043b \u0440\u0443\u0447\u043d\u044b\u0445 \u0441\u043c\u0435\u043d \u0446\u0435\u043d\u044b, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043f\u043e\u0440\u0442\u0430\u043b \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442 \u043f\u0435\u0440\u0432\u044b\u0439 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0434\u043d\u0435\u0432\u043d\u043e\u0439 \u0444\u0430\u043a\u0442 \u043f\u043e\u0441\u043b\u0435 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f.';
     }
+    var previousPrice = null;
     return [
-      '<details class="pw-detail"><summary>\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0439 \u043f\u043e \u0434\u043d\u044f\u043c</summary>',
+      '<details class="pw-detail" open><summary>\u0414\u0438\u043d\u0430\u043c\u0438\u043a\u0430 \u0446\u0435\u043d\u044b \u0438 \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u043f\u043e \u0434\u043d\u044f\u043c</summary>',
       '<div class="pw-detail-note">', esc(note), '</div>',
       '<div class="pw-history-wrap"><table class="pw-history"><thead><tr>',
-      '<th>\u0414\u0430\u0442\u0430</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0421\u041f\u041f</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th>',
-      hasSalesHistory ? '<th>\u0417\u0430\u043a\u0430\u0437\u044b</th><th>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</th>' : '',
+      '<th>\u0414\u0430\u0442\u0430</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0418\u0437\u043c.</th><th>\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</th><th>\u0421\u041f\u041f</th><th>\u0417\u0430\u043a\u0430\u0437\u044b</th><th>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</th><th>\u041e\u0431\u043e\u0440\u0430\u0447.</th>',
       '</tr></thead><tbody>',
       items.map(function (item) {
+        var price = roundedHistoryPrice(item);
+        var delta = previousPrice != null && price != null ? price - previousPrice : null;
+        var changed = delta != null && delta !== 0;
+        if (price != null) previousPrice = price;
         return [
-          '<tr><td>', esc(item.date || ""), '</td>',
-          '<td>', money(num(item.price)), '</td>',
+          '<tr class="', changed ? 'pw-history-change' : '', '"><td>', esc(item.date || ""), '</td>',
+          '<td>', money(price), '</td>',
+          '<td>', delta == null ? "\u2014" : '<span class="pw-delta ' + deltaTone(delta) + '">' + esc(signedMoneyLabel(delta)) + '</span>', '</td>',
+          '<td>', money(num(item.clientPrice)), '</td>',
           '<td>', pct(num(item.sppPct)), '</td>',
+          '<td>', intf(num(item.ordersUnits)), '</td>',
+          '<td>', money(num(item.revenue)), '</td>',
           '<td>', days(num(item.turnoverDays)), '</td>',
-          hasSalesHistory ? '<td>' + intf(num(item.ordersUnits)) + '</td><td>' + money(num(item.revenue)) + '</td>' : '',
           '</tr>'
         ].join("");
       }).join(""),
@@ -2695,6 +2934,7 @@ function downloadPriceSummaryExcel(rows) {
     var leaderboardEntry = row.productLeaderboard || findProductLeaderboardEntry(row.articleKey);
     var bounds = row.repricerBounds || buildRepricerBounds(row.market, row.articleKey);
     var lifecycle = row.productLifecycle || priceProductLifecycleForRow(row) || {};
+    var impact = row.priceImpact || rowPriceImpact(row);
     var turnoverHelp = row.turnoverSource === "order_procurement"
       ? "\u0424\u043e\u043b\u0431\u044d\u043a \u0438\u0437 \u0417\u0430\u043a\u0430\u0437\u0430: inStock / avgDaily \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0435."
       : "\u0422\u0435\u043a\u0443\u0449\u0435\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.";
@@ -2708,6 +2948,9 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="pw-kpis">',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 MP \u0434\u043e \u0441\u043a\u0438\u0434\u043a\u0438</span><strong>', money(row.listPrice != null ? row.listPrice : row.currentFillPrice), '</strong><small>', esc(metricHelp(modalListPriceHelp(row), row.listPriceFactDate || row.priceFactDate, row.valueDate)), '</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 MP \u0441\u043e \u0441\u043a\u0438\u0434\u043a\u043e\u0439</span><strong>', money(row.currentFillPrice), '</strong><small>', esc(metricHelp(modalDiscountedPriceHelp(row), row.priceFactDate, row.valueDate)), '</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u0417\u0430\u043a\u0430\u0437\u044b \u043f\u0435\u0440\u0438\u043e\u0434\u0430</span><strong>', impact.ordersUnits == null ? "\u2014" : intf(impact.ordersUnits), '</strong><small>\u0421\u0443\u043c\u043c\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0432 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0439 \u0434\u0430\u0442\u0435/\u043f\u0435\u0440\u0438\u043e\u0434\u0435.</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u0412\u044b\u0440\u0443\u0447\u043a\u0430 \u043f\u0435\u0440\u0438\u043e\u0434\u0430</span><strong>', money(impact.revenue), '</strong><small>\u0412\u044b\u0440\u0443\u0447\u043a\u0430 \u0432 \u0442\u0435 \u0436\u0435 \u0434\u043d\u0438, \u0433\u0434\u0435 \u0432\u0438\u0434\u0438\u043c \u0446\u0435\u043d\u0443.</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b</span><strong>', impact.change ? (impact.afterOrders == null ? "\u2014" : intf(impact.afterOrders)) : "\u2014", '</strong><small>', impact.change ? ('\u0441 ' + esc(impact.change.date || "") + ', \u0434\u043e: ' + (impact.beforeOrders == null ? "\u2014" : intf(impact.beforeOrders)) + (impact.orderDelta != null ? ', \u0394 ' + esc(signedIntLabel(impact.orderDelta)) : '')) : '\u0432 \u043f\u0435\u0440\u0438\u043e\u0434\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b \u043d\u0435\u0442', '</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0421\u043a\u0438\u0434\u043a\u0430 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430</span><strong>', pct(row.sellerDiscountPct), '</strong><small>\u0421\u0447\u0438\u0442\u0430\u0435\u043c \u043a\u0430\u043a \u0440\u0430\u0437\u043d\u0438\u0446\u0443 \u043c\u0435\u0436\u0434\u0443 \u0446\u0435\u043d\u043e\u0439 \u0434\u043e \u0441\u043a\u0438\u0434\u043a\u0438 \u0438 \u0446\u0435\u043d\u043e\u0439 \u0441\u043e \u0441\u043a\u0438\u0434\u043a\u043e\u0439.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</span><strong>', money(row.currentClientPrice), '</strong><small>', esc(metricHelp("\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u043a\u043b\u0438\u0435\u043d\u0442\u0441\u043a\u0438\u0439 \u043a\u043e\u043d\u0442\u0443\u0440.", row.clientPriceFactDate, row.valueDate)), '</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f \u043c\u0430\u0440\u0436\u0430 3\u043c</span><strong>', pct(row.allowedMarginPct), '</strong><small>\u0411\u0435\u0440\u0435\u043c \u0438\u0437 smart/workbench \u0441\u043b\u043e\u044f \u0431\u0435\u0437 \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0438 \u043a \u043d\u043e\u043c\u0435\u0440\u0443 \u0441\u0442\u0440\u043e\u043a\u0438.</small></div>',
@@ -3034,7 +3277,7 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="pw-shell">',
       '<section class="pw-card">',
       '<div class="pw-title">\u0426\u0435\u043d\u044b</div>',
-      '<div class="pw-sub">\u0417\u0434\u0435\u0441\u044c \u043a\u043e\u043c\u0430\u043d\u0434\u0430 \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u0441 \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u0446\u0435\u043d\u043e\u0439, \u0440\u0430\u0431\u043e\u0447\u0438\u043c MIN/MAX, \u043c\u0430\u0440\u0436\u043e\u0439 \u0438 \u0441\u0432\u044f\u0437\u043a\u043e\u0439 \u0441 \u0440\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440\u043e\u043c. \u0415\u0441\u043b\u0438 \u0441\u0440\u0435\u0437 \u043d\u0435 \u0437\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f, \u043f\u043e\u0440\u0442\u0430\u043b \u043f\u043e\u043a\u0430\u0436\u0435\u0442 \u044d\u0442\u043e \u0432\u044b\u0448\u0435 \u0442\u0430\u0431\u043b\u0438\u0446\u044b.</div>',
+      '<div class="pw-sub">\u0416\u0443\u0440\u043d\u0430\u043b \u043f\u043e SKU: \u0446\u0435\u043d\u0430 \u043f\u043e \u0434\u043d\u044f\u043c, \u0421\u041f\u041f, MIN/MAX, \u0437\u0430\u043a\u0430\u0437\u044b \u0438 \u044d\u0444\u0444\u0435\u043a\u0442 \u043f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b.</div>',
       state.error ? '<div class="pw-error">' + esc(state.error) + '</div>' : '',
       state.loaded ? '<div class="pw-alert ' + (state.dataLagDays > 1 ? 'warn' : '') + '"><strong>\u0414\u0430\u0442\u0430 \u0441\u0440\u0435\u0437\u0430: ' + esc(state.latestFactDate || "\u2014") + '</strong><div>' + esc(dataFreshnessLabel()) + '</div>' + (state.overlayGeneratedAt ? '<div style="margin-top:6px">' + esc(overlayFreshnessLabel()) + '</div>' : '') + '<div style="margin-top:6px">\u0412 \u0442\u0430\u0431\u043b\u0438\u0446\u0435 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u044e\u044e \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u0443\u044e \u0442\u043e\u0447\u043a\u0443 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0430, \u0430 \u043d\u0435 \u043f\u0440\u043e\u0441\u0442\u043e \u0437\u0430\u0441\u0442\u044b\u0432\u0448\u0438\u0439 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 row.</div></div>' : '',
       '<div class="pw-grid" style="margin-top:14px;">',
@@ -3068,20 +3311,12 @@ function downloadPriceSummaryExcel(rows) {
       '</select>',
       '</div>',
       '<div class="pw-note">\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a: ', esc(state.sourceNote || DATA_URL), '</div>',
-      '<div class="pw-note">\u0415\u0441\u043b\u0438 \u043d\u0430 \u043f\u0440\u043e\u0434\u0435 \u043d\u0435\u0442 fresh overlay \u0438\u043b\u0438 order-procurement \u0444\u0430\u0439\u043b\u043e\u0432, \u0432\u043a\u043b\u0430\u0434\u043a\u0430 \u0447\u0435\u0441\u0442\u043d\u043e \u043f\u0430\u0434\u0430\u0435\u0442 \u043d\u0430 \u043f\u043e\u0441\u0442\u0430\u0440\u0435\u0432\u0448\u0438\u0439 \u0441\u0440\u0435\u0437.</div>',
       '</div></div>',
-      renderControlGuide(),
-      '</section>',
-      '<section class="pw-stats">',
-      '<div class="pw-card pw-stat"><span class="pw-label">SKU \u0432 \u0440\u0430\u0431\u043e\u0442\u0435</span><strong>', intf(summary.count), '</strong><small>\u041f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0435 \u0438 \u0444\u0438\u043b\u044c\u0442\u0440\u0430\u043c.</small></div>',
-      '<div class="pw-card pw-stat"><span class="pw-label">\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u0446\u0435\u043d\u0430 MP</span><strong>', money(summary.avgPrice), '</strong><small>\u041f\u043e \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0439 \u0442\u043e\u0447\u043a\u0435 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430.</small></div>',
-      '<div class="pw-card pw-stat"><span class="pw-label">\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u043c\u0430\u0440\u0436\u0430</span><strong>', pct(summary.avgMargin), '</strong><small>\u041f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u0432\u044b\u0431\u043e\u0440\u043a\u0435 SKU.</small></div>',
-      '<div class="pw-card pw-stat"><span class="pw-label">\u041d\u0438\u0436\u0435 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0439</span><strong>', intf(summary.belowAllowed), '</strong><small>\u0421\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u0435\u043c \u043c\u0430\u0440\u0436\u0443 \u0441\u0440\u0435\u0437\u0430 \u0441 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0439 3\u043c.</small></div>',
       '</section>',
       '<section class="pw-card">',
       '<div class="pw-table-head"><div class="pw-label">\u0422\u0430\u0431\u043b\u0438\u0446\u0430</div><div class="pw-chip-row"><button type="button" class="pw-chip" data-price-export="summary">\u0421\u0432\u043e\u0434 \u0432 Excel</button><button type="button" class="pw-chip" data-price-export="daily">\u0414\u0438\u043d\u0430\u043c\u0438\u043a\u0430 \u043f\u043e \u0434\u043d\u044f\u043c</button><button type="button" class="pw-chip" data-price-minmax-template>\u0421\u043a\u0430\u0447\u0430\u0442\u044c MIN/MAX (TSV)</button><button type="button" class="pw-chip" data-price-minmax-import>\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c MIN/MAX</button></div></div>',
-      '<div class="pw-note" style="margin-top:10px">\u0428\u0430\u0431\u043b\u043e\u043d MIN/MAX \u0442\u0435\u043f\u0435\u0440\u044c \u0432\u044b\u0433\u0440\u0443\u0436\u0430\u0435\u0442\u0441\u044f \u0432 TSV, \u0447\u0442\u043e\u0431\u044b Excel / Google Sheets \u0434\u0430\u0432\u0430\u043b\u0438 \u0447\u0435\u0441\u0442\u043d\u044b\u0439 round-trip \u0431\u0435\u0437 fake .xls.</div>',
-      '<div class="pw-note" style="margin-top:6px">Нажмите на заголовок столбца для сортировки (как в Excel). Под суммой цены показан источник: если видите “факт продаж (средняя)”, это не кабинетная полка, а средняя цена по факту продаж за срез.</div>',
+      '<div class="pw-ledger-summary"><span><b>', intf(summary.count), '</b><small>SKU</small></span><span><b>', summary.ordersUnits == null ? "\u2014" : intf(summary.ordersUnits), '</b><small>\u0417\u0430\u043a\u0430\u0437\u044b</small></span><span><b>', money(summary.revenue), '</b><small>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</small></span><span><b>', intf(summary.priceChanges), '</b><small>\u0421\u043c\u0435\u043d\u044b \u0446\u0435\u043d</small></span><span><b>', intf(summary.belowAllowed), '</b><small>\u041d\u0438\u0436\u0435 3\u043c</small></span></div>',
+      '<div class="pw-note" style="margin-top:10px">\u041f\u0435\u0440\u0438\u043e\u0434: ', esc(state.dateFrom || "\u2014"), ' - ', esc(state.dateTo || "\u2014"), ' \u00b7 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a: ', esc(state.sourceNote || DATA_URL), '</div>',
       state.loading && !state.loaded ? '<div class="pw-empty">\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u044e \u0434\u0430\u043d\u043d\u044b\u0435 \u0432\u043a\u043b\u0430\u0434\u043a\u0438 \u0426\u0435\u043d\u044b...</div>' : renderTable(rows),
       '</section>',
       '<input type="file" id="pwMinMaxFile" accept=".tsv,.csv,.txt,.html" style="display:none">',

@@ -2567,6 +2567,9 @@ async function main() {
   let outputFiles = [];
   if (options.outputDir) {
     outputFiles = writeSnapshotSet(options.outputDir, snapshots, meta, { metaFileName: 'meta.json' });
+    const outputMetaCompatPath = path.join(options.outputDir, 'google_sheet_sync_meta.json');
+    writeJson(outputMetaCompatPath, meta);
+    outputFiles.push(outputMetaCompatPath);
   }
 
   let mirroredFiles = [];

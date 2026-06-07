@@ -8424,6 +8424,11 @@ function renderOosControl(rootId = 'view-oos-control') {
   const filters = oosControlFilters();
   const filteredRows = oosControlFilteredRows();
   const summary = oosControlSummarizeRows(filteredRows, payload.summary || {});
+  root.dataset.oosPlatform = filters.platform === 'wb' || filters.platform === 'ozon'
+    ? filters.platform
+    : filters.platform === 'all'
+      ? 'all'
+      : 'market';
   root.innerHTML = `
     <div class="page-head">
       <div>

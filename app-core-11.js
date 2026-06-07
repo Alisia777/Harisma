@@ -7433,7 +7433,8 @@ function oosControlRowSignals(row = {}) {
   const places = oosControlPlaceCount(row);
   const task = oosControlTaskFor(row);
   const signals = [];
-  if (status === 'oos' || status === 'critical' || numberOrZero(row.inStock || 0) <= 0) {
+  const hasStockValue = row.inStock !== null && row.inStock !== undefined && String(row.inStock).trim() !== '';
+  if (status === 'oos' || status === 'critical' || (hasStockValue && numberOrZero(row.inStock || 0) <= 0)) {
     signals.push({ key: 'zero-stock', label: 'нулевой или критичный остаток', tone: 'danger' });
   }
   if (days && days < 5) {
@@ -7572,59 +7573,200 @@ function renderOosControlCauseRow(group = {}, maxRisk = 1) {
   `;
 }
 
+function oosControlSalesMomentum(row = {}) {
+  const sales7 = numberOrZero(row.sales7 || 0);
+  const sales14 = numberOrZero(row.sales14 || 0);
+  const sales28 = numberOrZero(row.sales28 || 0);
+  const currentDaily = sales7 > 0 ? sales7 / 7 : numberOrZero(row.avgDaily || 0);
+  const prev7Raw = Math.max(0, sales14 - sales7);
+  const prev21Raw = Math.max(0, sales28 - sales7);
+  const baselineDaily = prev7Raw > 0
+    ? prev7Raw / 7
+    : prev21Raw > 0
+      ? prev21Raw / 21
+      : numberOrZero(row.avgDaily || 0);
+  const changePct = baselineDaily > 0
+    ? ((currentDaily - baselineDaily) / baselineDaily) * 100
+    : 0;
+  const tone = changePct >= 25 ? 'ok' : changePct <= -25 ? 'danger' : 'info';
+  const sign = changePct > 0 ? '+' : '';
+  return {
+    currentDaily,
+    baselineDaily,
+    changePct,
+    absChangePct: Math.abs(changePct),
+    label: `${sign}${fmt.num(changePct, 0)}%`,
+    tone
+  };
+}
+
+function oosControlPulseModel(rows = []) {
+  const withMomentum = rows.map((row) => ({ row, momentum: oosControlSalesMomentum(row) }));
+  const isOosRow = (row) => {
+    const status = String(row.status || '').toLowerCase();
+    const hasStockValue = row.inStock !== null && row.inStock !== undefined && String(row.inStock).trim() !== '';
+    return status === 'oos' || status === 'critical' || (hasStockValue && numberOrZero(row.inStock || 0) <= 0);
+  };
+  const isRiskRow = (row) => {
+    const status = String(row.status || '').toLowerCase();
+    const days = numberOrZero(row.turnoverDays || 0);
+    return !isOosRow(row) && (status === 'risk' || status === 'watch' || (days > 0 && days < 10));
+  };
+  const byRisk = (left, right) => oosControlRiskAmount(right) - oosControlRiskAmount(left)
+    || numberOrZero(left.turnoverDays || 0) - numberOrZero(right.turnoverDays || 0);
+  return {
+    oosRows: rows.filter(isOosRow).sort(byRisk),
+    riskRows: rows.filter(isRiskRow).sort(byRisk),
+    growthRows: withMomentum
+      .filter((item) => item.momentum.changePct >= 25)
+      .sort((left, right) => right.momentum.changePct - left.momentum.changePct || oosControlRiskAmount(right.row) - oosControlRiskAmount(left.row)),
+    slowRows: withMomentum
+      .filter((item) => item.momentum.changePct <= -25)
+      .sort((left, right) => left.momentum.changePct - right.momentum.changePct || oosControlRiskAmount(right.row) - oosControlRiskAmount(left.row))
+  };
+}
+
+function renderOosPulseRow(item = {}, mode = 'risk') {
+  const row = item.row || item;
+  const momentum = item.momentum || oosControlSalesMomentum(row);
+  const days = numberOrZero(row.turnoverDays || 0);
+  const need14 = numberOrZero(row.targetNeed14 || 0);
+  const places = oosControlPlaceCount(row);
+  const riskAmount = oosControlRiskAmount(row);
+  const coverageTone = oosControlCoverageTone(days);
+  const progress = mode === 'growth' || mode === 'slow'
+    ? Math.min(100, Math.max(8, momentum.absChangePct))
+    : oosControlBarPercent(days, 10, riskAmount ? 8 : 0);
+  const tone = mode === 'growth'
+    ? 'ok'
+    : mode === 'slow'
+      ? 'danger'
+      : mode === 'oos'
+        ? 'danger'
+        : coverageTone;
+  const value = mode === 'growth' || mode === 'slow'
+    ? momentum.label
+    : mode === 'oos'
+      ? fmt.money(row.lostRevenueDay || riskAmount || 0)
+      : `${days ? fmt.num(days, 1) : '0'} д`;
+  const detail = mode === 'growth' || mode === 'slow'
+    ? `${fmt.num(momentum.currentDaily, 1)} шт/день сейчас · было ${fmt.num(momentum.baselineDaily, 1)}`
+    : need14 > 0
+      ? `нужно +${fmt.int(need14)} шт до 14 д`
+      : `${fmt.money(riskAmount)} / день`;
+  return `
+    <div class="oos-pulse-row ${tone}">
+      <div class="oos-pulse-row__head">
+        <div>
+          <strong>${linkToSku(row.articleKey || row.article, row.article || row.articleKey || 'SKU')}</strong>
+          <small>${escapeHtml(row.platformLabel || row.platform || '')} · ${escapeHtml(row.owner || 'Без owner')} · ${fmt.int(places)} складов</small>
+        </div>
+        <b>${escapeHtml(value)}</b>
+      </div>
+      <div class="oos-pulse-track"><i class="${tone}" style="--oos-bar:${progress}%"></i></div>
+      <div class="oos-pulse-row__foot">
+        <span>${escapeHtml(detail)}</span>
+        <span>${escapeHtml(row.statusLabel || row.status || 'контроль')}</span>
+      </div>
+      <div class="oos-trigger-tags">
+        ${oosControlRowTriggerTags(row).slice(0, 3).map((tag) => `<span class="oos-trigger-tag ${escapeHtml(tag.tone || '')}">${escapeHtml(tag.label)}</span>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderOosPulseCard(config = {}) {
+  const rows = Array.isArray(config.rows) ? config.rows.slice(0, config.limit || 4) : [];
+  const totalRisk = (config.rawRows || rows).reduce((sum, item) => sum + oosControlRiskAmount(item.row || item), 0);
+  return `
+    <article class="oos-pulse-card ${escapeHtml(config.tone || '')}">
+      <div class="oos-pulse-card__top">
+        <div>
+          <span>${escapeHtml(config.kicker || 'контроль')}</span>
+          <h3>${escapeHtml(config.title || '')}</h3>
+        </div>
+        <strong>${fmt.int(config.count ?? rows.length)}</strong>
+      </div>
+      <div class="oos-pulse-card__meta">
+        <span>${escapeHtml(config.subtitle || '')}</span>
+        <b>${fmt.money(totalRisk)} / день</b>
+      </div>
+      <div class="oos-pulse-list">
+        ${rows.map((row) => renderOosPulseRow(row, config.mode)).join('') || `<div class="oos-pulse-empty">${escapeHtml(config.empty || 'Нет позиций')}</div>`}
+      </div>
+    </article>
+  `;
+}
+
 function renderOosControlOperationalBriefing(payload = {}, rows = []) {
   const summary = oosControlSummarizeRows(rows, payload.summary || {});
-  const platforms = oosControlGroupBy(rows, (row) => row.platform || '', (row) => row.platformLabel || row.platform || '').slice(0, 4);
-  const topPlaces = oosControlTopPlaces(rows, 5);
-  const criticalRows = oosControlCriticalRows(rows, 5);
-  const causeGroups = oosControlCauseGroups(rows).slice(0, 5);
-  const maxPlatformRisk = Math.max(1, ...platforms.map((item) => item.riskAmount));
-  const maxCauseRisk = Math.max(1, ...causeGroups.map((item) => item.riskAmount));
-  const topPlace = topPlaces[0] || null;
-  const topCritical = criticalRows[0] || null;
-  const topCause = causeGroups[0] || null;
+  const pulse = oosControlPulseModel(rows);
+  const topPlaces = oosControlTopPlaces(rows, 4);
+  const causeGroups = oosControlCauseGroups(rows).slice(0, 4);
   return `
-    <section class="oos-briefing-grid">
-      <article class="oos-briefing-card oos-briefing-card--where">
+    <section class="oos-pulse-grid" aria-label="OOS dashboard">
+      ${renderOosPulseCard({
+        title: 'В OOS',
+        kicker: 'красная зона',
+        subtitle: 'позиции уже без запаса или в критике',
+        count: pulse.oosRows.length,
+        rows: pulse.oosRows,
+        rawRows: pulse.oosRows,
+        mode: 'oos',
+        tone: 'danger',
+        empty: 'Сейчас OOS-позиций нет'
+      })}
+      ${renderOosPulseCard({
+        title: 'Зона риска',
+        kicker: 'закончится скоро',
+        subtitle: 'покрытие ниже 10 дней или активный риск',
+        count: pulse.riskRows.length,
+        rows: pulse.riskRows,
+        rawRows: pulse.riskRows,
+        mode: 'risk',
+        tone: 'warn',
+        empty: 'Позиций в зоне риска нет'
+      })}
+      ${renderOosPulseCard({
+        title: 'Резко выросли',
+        kicker: 'темп продаж',
+        subtitle: '7 дней быстрее прошлого темпа на 25%+',
+        count: pulse.growthRows.length,
+        rows: pulse.growthRows,
+        rawRows: pulse.growthRows,
+        mode: 'growth',
+        tone: 'ok',
+        empty: 'Резкого роста темпа нет'
+      })}
+      ${renderOosPulseCard({
+        title: 'Резко замедлились',
+        kicker: 'темп продаж',
+        subtitle: '7 дней ниже прошлого темпа на 25%+',
+        count: pulse.slowRows.length,
+        rows: pulse.slowRows,
+        rawRows: pulse.slowRows,
+        mode: 'slow',
+        tone: 'info',
+        empty: 'Резкого замедления нет'
+      })}
+    </section>
+    <section class="oos-map-strip">
+      <article>
         <div class="section-subhead">
-          <div><h3>Где возникает OOS</h3><p class="small muted">Площадка, склад и SKU с максимальным риском по выбранным фильтрам</p></div>
+          <div><h3>Где болит</h3><p class="small muted">склады с самым дорогим риском в текущем фильтре</p></div>
           ${badge(`${fmt.int(summary.placeCount || 0)} складов`, summary.placeCount ? 'warn' : 'ok')}
-        </div>
-        <div class="oos-briefing-metrics">
-          <span><em>Главная точка</em><strong>${escapeHtml(topPlace?.place || 'нет риска')}</strong><small>${topPlace ? `${fmt.money(topPlace.riskAmount)} / день` : 'активных сигналов нет'}</small></span>
-          <span><em>SKU в очереди</em><strong>${fmt.int(summary.skuCount || 0)}</strong><small>${fmt.int(summary.totalIssues || 0)} сигнал(а)</small></span>
-        </div>
-        <div class="oos-bar-list">
-          ${platforms.map((item) => renderOosControlBarRow({
-            label: item.label,
-            value: item.riskAmount,
-            valueLabel: fmt.money(item.riskAmount),
-            meta: `${fmt.int(item.total)} сигнал(а) · ${fmt.int(item.placeCount)} складов`,
-            tone: item.key === 'wb' ? 'purple' : item.key === 'ozon' ? 'info' : 'warn'
-          }, maxPlatformRisk, { minWhenPositive: 7 })).join('') || '<div class="empty">Нет активных OOS-сигналов</div>'}
         </div>
         <div class="oos-briefing-list">
           ${topPlaces.map(renderOosControlPlaceRow).join('') || '<div class="empty">Складов под риском нет</div>'}
         </div>
       </article>
-
-      <article class="oos-briefing-card oos-briefing-card--critical">
+      <article>
         <div class="section-subhead">
-          <div><h3>Критичные моменты</h3><p class="small muted">Сначала закрываем строки с самым дорогим риском и минимальным покрытием</p></div>
-          ${badge(topCritical ? fmt.money(oosControlRiskAmount(topCritical)) : fmt.money(0), topCritical ? oosControlCoverageTone(topCritical.turnoverDays) : 'ok')}
-        </div>
-        <div class="oos-critical-list">
-          ${criticalRows.map(renderOosControlCriticalRow).join('') || '<div class="empty">Критичных строк нет</div>'}
-        </div>
-      </article>
-
-      <article class="oos-briefing-card oos-briefing-card--cause">
-        <div class="section-subhead">
-          <div><h3>Что провоцирует</h3><p class="small muted">Факторы, из-за которых строка попала в контроль</p></div>
-          ${badge(topCause?.label || 'без причины', topCause?.tone || 'ok')}
+          <div><h3>Почему попало</h3><p class="small muted">главные причины сигнала без ручного проваливания в таблицу</p></div>
+          ${badge(`${fmt.int(causeGroups.length)} фактора`)}
         </div>
         <div class="oos-cause-list">
-          ${causeGroups.map((group) => renderOosControlCauseRow(group, maxCauseRisk)).join('') || '<div class="empty">Причин по текущим фильтрам нет</div>'}
+          ${causeGroups.map((group) => renderOosControlCauseRow(group, Math.max(1, ...causeGroups.map((item) => item.riskAmount)))).join('') || '<div class="empty">Причин по текущим фильтрам нет</div>'}
         </div>
       </article>
     </section>
@@ -8086,9 +8228,8 @@ function renderOosControl(rootId = 'view-oos-control') {
     ${renderOosControlHero(payload, filteredRows, rows)}
     ${oosControlFreshnessNotice(payload)}
     ${renderOosControlOperationalBriefing(payload, filteredRows)}
-    ${renderOosControlCharts(payload, filteredRows)}
     ${renderOosControlActionCards(filteredRows)}
-    ${renderOosControlGame(payload, filteredRows)}
+    ${renderOosControlCharts(payload, filteredRows)}
     ${renderOosControlFilters(rows, filters)}
     ${oosControlTeamNotice()}
     <div class="card sku-plan-fact-card oos-detail-card" style="margin-top:14px">

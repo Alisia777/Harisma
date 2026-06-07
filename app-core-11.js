@@ -7425,6 +7425,212 @@ function renderOosControlHero(payload = {}, rows = [], allRows = rows) {
   `;
 }
 
+function oosControlRowSignals(row = {}) {
+  const status = String(row.status || '').toLowerCase();
+  const days = numberOrZero(row.turnoverDays || 0);
+  const need14 = numberOrZero(row.targetNeed14 || 0);
+  const transit = numberOrZero(row.inTransit || 0) + numberOrZero(row.inRequest || 0);
+  const places = oosControlPlaceCount(row);
+  const task = oosControlTaskFor(row);
+  const signals = [];
+  if (status === 'oos' || status === 'critical' || numberOrZero(row.inStock || 0) <= 0) {
+    signals.push({ key: 'zero-stock', label: 'нулевой или критичный остаток', tone: 'danger' });
+  }
+  if (days && days < 5) {
+    signals.push({ key: 'coverage-5', label: 'покрытие меньше 5 дней', tone: 'danger' });
+  } else if (days && days < 10) {
+    signals.push({ key: 'coverage-10', label: 'покрытие меньше 10 дней', tone: 'warn' });
+  }
+  if (need14 > 0) {
+    signals.push({ key: 'need-14', label: 'не хватает до 14 дней', tone: 'warn' });
+  }
+  if (need14 > 0 && transit <= 0) {
+    signals.push({ key: 'no-supply-road', label: 'нет запаса в пути или заявке', tone: 'danger' });
+  }
+  if (places >= 10) {
+    signals.push({ key: 'many-places', label: 'риск размазан по складам', tone: 'info' });
+  }
+  if (!task) {
+    signals.push({ key: 'no-task', label: 'нет закрепленной контрмеры', tone: 'warn' });
+  }
+  return signals.length ? signals : [{ key: 'manual-check', label: 'нужна ручная проверка', tone: 'info' }];
+}
+
+function oosControlRowTriggerTags(row = {}) {
+  const days = numberOrZero(row.turnoverDays || 0);
+  const need14 = numberOrZero(row.targetNeed14 || 0);
+  const transit = numberOrZero(row.inTransit || 0) + numberOrZero(row.inRequest || 0);
+  const tags = [];
+  oosControlRowSignals(row).slice(0, 3).forEach((signal) => tags.push(signal));
+  if (days) tags.push({ label: `${fmt.num(days, 1)} д покрытия`, tone: oosControlCoverageTone(days) });
+  if (need14 > 0) tags.push({ label: `+${fmt.int(need14)} шт до 14 д`, tone: 'warn' });
+  if (need14 > 0 && transit <= 0) tags.push({ label: '0 в пути/заявке', tone: 'danger' });
+  return tags.slice(0, 5);
+}
+
+function oosControlCauseGroups(rows = []) {
+  const map = new Map();
+  rows.forEach((row) => {
+    const riskAmount = oosControlRiskAmount(row);
+    const days = numberOrZero(row.turnoverDays || 0);
+    const placeCount = oosControlPlaceCount(row);
+    const example = row.article || row.articleKey || row.platformLabel || row.platform || '';
+    oosControlRowSignals(row).forEach((signal) => {
+      if (!map.has(signal.key)) {
+        map.set(signal.key, {
+          key: signal.key,
+          label: signal.label,
+          tone: signal.tone || 'warn',
+          total: 0,
+          riskAmount: 0,
+          placeCount: 0,
+          minDays: null,
+          examples: new Set()
+        });
+      }
+      const group = map.get(signal.key);
+      group.total += 1;
+      group.riskAmount += riskAmount;
+      group.placeCount += placeCount;
+      if (days > 0) group.minDays = group.minDays === null ? days : Math.min(group.minDays, days);
+      if (example) group.examples.add(example);
+    });
+  });
+  return [...map.values()]
+    .map((group) => ({ ...group, examples: [...group.examples].slice(0, 3) }))
+    .sort((left, right) => right.riskAmount - left.riskAmount || right.total - left.total);
+}
+
+function oosControlCriticalRows(rows = [], limit = 5) {
+  const statusWeight = { oos: 4, critical: 4, risk: 3, watch: 1 };
+  return [...rows]
+    .sort((left, right) => {
+      const leftStatus = statusWeight[String(left.status || '').toLowerCase()] || 0;
+      const rightStatus = statusWeight[String(right.status || '').toLowerCase()] || 0;
+      if (rightStatus !== leftStatus) return rightStatus - leftStatus;
+      const riskDiff = oosControlRiskAmount(right) - oosControlRiskAmount(left);
+      if (riskDiff) return riskDiff;
+      return numberOrZero(left.turnoverDays || 0) - numberOrZero(right.turnoverDays || 0);
+    })
+    .slice(0, limit);
+}
+
+function renderOosControlPlaceRow(place = {}, index = 0) {
+  const days = numberOrZero(place.turnoverDays || 0);
+  return `
+    <div class="oos-place-row">
+      <span class="oos-place-rank">${index + 1}</span>
+      <div>
+        <strong>${escapeHtml(place.place || 'Склад')}</strong>
+        <small>${escapeHtml(place.platformLabel || place.platform || '')} · ${escapeHtml(place.article || '')} · ${days ? `${fmt.num(days, 1)} д` : 'покрытие не задано'}</small>
+      </div>
+      <b>${fmt.money(place.riskAmount || 0)}</b>
+    </div>
+  `;
+}
+
+function renderOosControlCriticalRow(row = {}, index = 0) {
+  const days = numberOrZero(row.turnoverDays || 0);
+  const need14 = numberOrZero(row.targetNeed14 || 0);
+  const tone = oosControlCoverageTone(days);
+  const placeCount = oosControlPlaceCount(row);
+  return `
+    <div class="oos-critical-row ${tone}">
+      <span class="oos-critical-rank">${index + 1}</span>
+      <div class="oos-critical-main">
+        <strong>${linkToSku(row.articleKey || row.article, row.article || row.articleKey || 'SKU')}</strong>
+        <small>${escapeHtml(row.platformLabel || row.platform || '')} · ${escapeHtml(row.owner || 'Без owner')} · ${fmt.int(placeCount)} складов</small>
+        <div class="oos-trigger-tags">
+          ${oosControlRowTriggerTags(row).map((tag) => `<span class="oos-trigger-tag ${escapeHtml(tag.tone || '')}">${escapeHtml(tag.label)}</span>`).join('')}
+        </div>
+      </div>
+      <div class="oos-critical-metrics">
+        <b>${fmt.money(oosControlRiskAmount(row))}</b>
+        <span>${days ? `${fmt.num(days, 1)} д` : '0 д'} · ${need14 > 0 ? `+${fmt.int(need14)} шт` : 'проверить поставку'}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderOosControlCauseRow(group = {}, maxRisk = 1) {
+  const percent = oosControlBarPercent(group.riskAmount || 0, maxRisk, 6);
+  const details = [
+    `${fmt.int(group.total || 0)} сигнал(а)`,
+    `${fmt.int(group.placeCount || 0)} складов`,
+    group.minDays ? `минимум ${fmt.num(group.minDays, 1)} д` : '',
+    group.examples?.length ? `SKU: ${group.examples.join(', ')}` : ''
+  ].filter(Boolean).join(' · ');
+  return `
+    <div class="oos-cause-row ${escapeHtml(group.tone || '')}">
+      <div class="oos-cause-row__head">
+        <strong>${escapeHtml(group.label || 'Причина')}</strong>
+        <span>${fmt.money(group.riskAmount || 0)}</span>
+      </div>
+      <div class="oos-bar-track"><i class="oos-bar-fill ${escapeHtml(group.tone || 'warn')}" style="--oos-bar:${percent}%"></i></div>
+      <small>${escapeHtml(details)}</small>
+    </div>
+  `;
+}
+
+function renderOosControlOperationalBriefing(payload = {}, rows = []) {
+  const summary = oosControlSummarizeRows(rows, payload.summary || {});
+  const platforms = oosControlGroupBy(rows, (row) => row.platform || '', (row) => row.platformLabel || row.platform || '').slice(0, 4);
+  const topPlaces = oosControlTopPlaces(rows, 5);
+  const criticalRows = oosControlCriticalRows(rows, 5);
+  const causeGroups = oosControlCauseGroups(rows).slice(0, 5);
+  const maxPlatformRisk = Math.max(1, ...platforms.map((item) => item.riskAmount));
+  const maxCauseRisk = Math.max(1, ...causeGroups.map((item) => item.riskAmount));
+  const topPlace = topPlaces[0] || null;
+  const topCritical = criticalRows[0] || null;
+  const topCause = causeGroups[0] || null;
+  return `
+    <section class="oos-briefing-grid">
+      <article class="oos-briefing-card oos-briefing-card--where">
+        <div class="section-subhead">
+          <div><h3>Где возникает OOS</h3><p class="small muted">Площадка, склад и SKU с максимальным риском по выбранным фильтрам</p></div>
+          ${badge(`${fmt.int(summary.placeCount || 0)} складов`, summary.placeCount ? 'warn' : 'ok')}
+        </div>
+        <div class="oos-briefing-metrics">
+          <span><em>Главная точка</em><strong>${escapeHtml(topPlace?.place || 'нет риска')}</strong><small>${topPlace ? `${fmt.money(topPlace.riskAmount)} / день` : 'активных сигналов нет'}</small></span>
+          <span><em>SKU в очереди</em><strong>${fmt.int(summary.skuCount || 0)}</strong><small>${fmt.int(summary.totalIssues || 0)} сигнал(а)</small></span>
+        </div>
+        <div class="oos-bar-list">
+          ${platforms.map((item) => renderOosControlBarRow({
+            label: item.label,
+            value: item.riskAmount,
+            valueLabel: fmt.money(item.riskAmount),
+            meta: `${fmt.int(item.total)} сигнал(а) · ${fmt.int(item.placeCount)} складов`,
+            tone: item.key === 'wb' ? 'purple' : item.key === 'ozon' ? 'info' : 'warn'
+          }, maxPlatformRisk, { minWhenPositive: 7 })).join('') || '<div class="empty">Нет активных OOS-сигналов</div>'}
+        </div>
+        <div class="oos-briefing-list">
+          ${topPlaces.map(renderOosControlPlaceRow).join('') || '<div class="empty">Складов под риском нет</div>'}
+        </div>
+      </article>
+
+      <article class="oos-briefing-card oos-briefing-card--critical">
+        <div class="section-subhead">
+          <div><h3>Критичные моменты</h3><p class="small muted">Сначала закрываем строки с самым дорогим риском и минимальным покрытием</p></div>
+          ${badge(topCritical ? fmt.money(oosControlRiskAmount(topCritical)) : fmt.money(0), topCritical ? oosControlCoverageTone(topCritical.turnoverDays) : 'ok')}
+        </div>
+        <div class="oos-critical-list">
+          ${criticalRows.map(renderOosControlCriticalRow).join('') || '<div class="empty">Критичных строк нет</div>'}
+        </div>
+      </article>
+
+      <article class="oos-briefing-card oos-briefing-card--cause">
+        <div class="section-subhead">
+          <div><h3>Что провоцирует</h3><p class="small muted">Факторы, из-за которых строка попала в контроль</p></div>
+          ${badge(topCause?.label || 'без причины', topCause?.tone || 'ok')}
+        </div>
+        <div class="oos-cause-list">
+          ${causeGroups.map((group) => renderOosControlCauseRow(group, maxCauseRisk)).join('') || '<div class="empty">Причин по текущим фильтрам нет</div>'}
+        </div>
+      </article>
+    </section>
+  `;
+}
+
 function renderOosControlPlatformChart(rows = []) {
   const groups = oosControlGroupBy(rows, (row) => row.platform || '', (row) => row.platformLabel || row.platform || '');
   const maxRisk = Math.max(1, ...groups.map((item) => item.riskAmount));
@@ -7879,9 +8085,10 @@ function renderOosControl(rootId = 'view-oos-control') {
     </div>
     ${renderOosControlHero(payload, filteredRows, rows)}
     ${oosControlFreshnessNotice(payload)}
-    ${renderOosControlGame(payload, filteredRows)}
+    ${renderOosControlOperationalBriefing(payload, filteredRows)}
     ${renderOosControlCharts(payload, filteredRows)}
     ${renderOosControlActionCards(filteredRows)}
+    ${renderOosControlGame(payload, filteredRows)}
     ${renderOosControlFilters(rows, filters)}
     ${oosControlTeamNotice()}
     <div class="card sku-plan-fact-card oos-detail-card" style="margin-top:14px">

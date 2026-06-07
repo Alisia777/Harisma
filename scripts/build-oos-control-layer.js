@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const DEFAULT_SOON_DAYS = 10;
+const DEFAULT_WATCH_DAYS = 28;
 const HISTORY_DAY_LIMIT = 370;
 const ISSUE_STATE_LIMIT = 5000;
 const SIGNAL_LIFECYCLE_KEYS = new Set(['active', 'new']);
@@ -41,6 +42,7 @@ function resolveOptions(args) {
     outputDir,
     mirrorLocalFallback: Boolean(args['mirror-local-fallback']),
     soonDays: positiveNumber(args['soon-days'], DEFAULT_SOON_DAYS),
+    watchDays: positiveNumber(args['watch-days'], DEFAULT_WATCH_DAYS),
     now: args.now ? new Date(args.now) : new Date()
   };
 }
@@ -273,12 +275,16 @@ function classifyRow(row, rules, lifecycle) {
   const inStock = numberOrZero(row?.inStock);
   const avgDaily = numberOrZero(row?.avgDaily);
   const turnoverDays = finiteOrNull(row?.turnoverDays);
+  const targetNeed28 = numberOrZero(row?.targetNeed28);
 
   if (inStock <= 0 && avgDaily > 0) {
     return { status: 'oos', severity: 'critical', statusLabel: 'OOS', rank: 4, signalRule: 'oos_now_active_or_new' };
   }
   if (turnoverDays !== null && turnoverDays > 0 && turnoverDays < rules.soonDays) {
     return { status: 'risk', severity: 'high', statusLabel: `OOS скоро <${rules.soonDays} д`, rank: 2, signalRule: 'oos_soon_turnover_active_or_new' };
+  }
+  if ((turnoverDays !== null && turnoverDays > 0 && turnoverDays < rules.watchDays) || targetNeed28 > 0) {
+    return { status: 'watch', severity: 'medium', statusLabel: `Контроль запаса <${rules.watchDays} д`, rank: 1, signalRule: 'oos_watch_turnover_active_or_new' };
   }
   return null;
 }
@@ -356,10 +362,11 @@ function signalIssueKey(platform, signalRule, articleKey) {
   return `${normalizePlatform(platform)}|${signalRule}|${normalizeKey(articleKey)}`;
 }
 
-function compactPlaceLabel(places, rules) {
+function compactPlaceLabel(places, rules, status = '') {
   const rows = Array.isArray(places) ? places : [];
   if (rows.length <= 1) return rows[0]?.place || 'Без склада';
-  return `${rows.length} кластеров <${rules.soonDays} д`;
+  const threshold = status === 'watch' ? rules.watchDays : rules.soonDays;
+  return `${rows.length} кластеров <${threshold} д`;
 }
 
 function topPlaceNames(places, limit = 4) {
@@ -380,7 +387,9 @@ function recommendationForAggregate(row, rules) {
   if (row.status === 'oos') {
     return `Проверить ${platform}: есть OOS по ${places.length || 1} кластеру(ам). Восстановить наличие или зафиксировать причину простоя.`;
   }
-  return `Проверить ${platform}: ${places.length || 1} кластер(ов) с покрытием меньше ${rules.soonDays} дней (${placeText}). Минимальное покрытие ${minDays === null ? '—' : `${minDays.toFixed(1)} д`}; нужен срок поставки, перемещение или лимит продаж.`;
+  const threshold = row.status === 'watch' ? rules.watchDays : rules.soonDays;
+  const prefix = row.status === 'watch' ? 'Поставить в контроль' : 'Проверить';
+  return `${prefix} ${platform}: ${places.length || 1} кластер(ов) с покрытием меньше ${threshold} дней (${placeText}). Минимальное покрытие ${minDays === null ? '—' : `${minDays.toFixed(1)} д`}; нужен срок поставки, перемещение или лимит продаж.`;
 }
 
 function aggregateSignalRows(rawRows, rules) {
@@ -414,7 +423,7 @@ function aggregateSignalRows(rawRows, rules) {
       ...base,
       issueKey,
       taskId: `task-oos-${hashShort(issueKey)}`,
-      place: compactPlaceLabel(placesAtRisk, rules),
+      place: compactPlaceLabel(placesAtRisk, rules, base.status),
       clusterCount: placesAtRisk.length,
       placesAtRisk,
       inStock: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.inStock), 0)),
@@ -694,6 +703,7 @@ function main() {
 
   const rules = {
     soonDays: options.soonDays,
+    watchDays: options.watchDays,
     lifecycle: [...SIGNAL_LIFECYCLE_KEYS]
   };
   const today = options.now.toISOString().slice(0, 10);

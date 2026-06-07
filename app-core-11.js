@@ -7698,6 +7698,91 @@ function renderOosPulseCard(config = {}) {
   `;
 }
 
+function oosControlSkuRiskGroups(rows = []) {
+  const map = new Map();
+  rows.forEach((row) => {
+    const article = String(row.articleKey || row.article || '').trim();
+    if (!article) return;
+    if (!map.has(article)) {
+      map.set(article, {
+        article,
+        label: row.article || row.articleKey || article,
+        riskAmount: 0,
+        placeCount: 0,
+        minDays: null,
+        platforms: new Set(),
+        owners: new Set(),
+        oosCount: 0,
+        riskCount: 0,
+        watchCount: 0,
+        targetNeed28: 0
+      });
+    }
+    const item = map.get(article);
+    const days = numberOrZero(row.turnoverDays || 0);
+    item.riskAmount += oosControlRiskAmount(row);
+    item.placeCount += oosControlPlaceCount(row);
+    if (days > 0) item.minDays = item.minDays === null ? days : Math.min(item.minDays, days);
+    if (row.platformLabel || row.platform) item.platforms.add(row.platformLabel || row.platform);
+    if (row.owner) item.owners.add(row.owner);
+    if (row.status === 'oos' || row.status === 'critical') item.oosCount += 1;
+    else if (row.status === 'risk') item.riskCount += 1;
+    else item.watchCount += 1;
+    item.targetNeed28 += numberOrZero(row.targetNeed28 || 0);
+  });
+  return [...map.values()]
+    .map((item) => ({
+      ...item,
+      platforms: [...item.platforms],
+      owners: [...item.owners]
+    }))
+    .sort((left, right) => right.riskAmount - left.riskAmount || numberOrZero(left.minDays || 999) - numberOrZero(right.minDays || 999));
+}
+
+function renderOosSkuRiskShelf(rows = []) {
+  const groups = oosControlSkuRiskGroups(rows);
+  const maxRisk = Math.max(1, ...groups.map((item) => item.riskAmount));
+  return `
+    <section class="oos-sku-shelf">
+      <div class="section-subhead">
+        <div>
+          <h3>SKU в риске</h3>
+          <p class="small muted">все позиции, попавшие в OOS, риск или контроль до 28 дней</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(groups.length)} SKU`, groups.length ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(rows.reduce((sum, row) => sum + oosControlPlaceCount(row), 0))} складов`)}
+        </div>
+      </div>
+      <div class="oos-sku-shelf__grid">
+        ${groups.map((item) => {
+          const tone = item.oosCount ? 'danger' : item.riskCount ? 'warn' : 'info';
+          const percent = oosControlBarPercent(item.riskAmount, maxRisk, 8);
+          const daysText = item.minDays ? `${fmt.num(item.minDays, 1)} д` : 'нет дней';
+          const platformText = item.platforms.slice(0, 3).join(' · ');
+          return `
+            <article class="oos-sku-chip ${tone}">
+              <div class="oos-sku-chip__head">
+                <strong>${linkToSku(item.article, item.label)}</strong>
+                ${badge(daysText, oosControlCoverageTone(item.minDays))}
+              </div>
+              <div class="oos-sku-chip__meta">
+                <span>${escapeHtml(platformText || 'площадка')}</span>
+                <b>${fmt.money(item.riskAmount)}</b>
+              </div>
+              <div class="oos-pulse-track"><i class="${tone}" style="--oos-bar:${percent}%"></i></div>
+              <div class="oos-sku-chip__foot">
+                <span>${fmt.int(item.placeCount)} складов</span>
+                <span>до 28 д: +${fmt.int(item.targetNeed28)} шт</span>
+              </div>
+            </article>
+          `;
+        }).join('') || '<div class="oos-pulse-empty">SKU в риске нет</div>'}
+      </div>
+    </section>
+  `;
+}
+
 function renderOosControlOperationalBriefing(payload = {}, rows = []) {
   const summary = oosControlSummarizeRows(rows, payload.summary || {});
   const pulse = oosControlPulseModel(rows);
@@ -7725,6 +7810,7 @@ function renderOosControlOperationalBriefing(payload = {}, rows = []) {
         rawRows: pulse.riskRows,
         mode: 'risk',
         tone: 'warn',
+        limit: 6,
         empty: 'Позиций в зоне риска нет'
       })}
       ${renderOosPulseCard({
@@ -7750,6 +7836,7 @@ function renderOosControlOperationalBriefing(payload = {}, rows = []) {
         empty: 'Резкого замедления нет'
       })}
     </section>
+    ${renderOosSkuRiskShelf(rows)}
     <section class="oos-map-strip">
       <article>
         <div class="section-subhead">

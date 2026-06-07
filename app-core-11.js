@@ -2649,14 +2649,14 @@ function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
   const iuDrrControl = { applied: false, platforms: {}, source: 'company_plan_scope' };
   rows.forEach((row) => skuPlanFactFinalizeRow(row, monthKey, elapsedDays, periodStart, selectedDate));
   skuPlanFactApplySingleOwnerFallback(rows, selectedOwnerPlatform);
-  const ownerFilterRows = rows.filter((row) => skuPlanFactRowMatchesFilters(row, { ...filters, owner: 'all' }));
+  const ownerFilterRows = rows.filter((row) => skuPlanFactRowMatchesFilters(row, { ...filters, owner: 'all', status: 'all', search: '' }));
   const owners = [...new Set(ownerFilterRows
     .filter((row) => skuPlanFactOwnerOptionHasMetricSignal(row, selectedOwnerPlatform))
     .map((row) => row.owner)
     .filter(skuPlanFactOwnerIsFilterOption))].sort((a, b) => a.localeCompare(b, 'ru'));
-  if (filters.owner !== 'all' && !owners.includes(filters.owner)) {
-    filters.owner = 'all';
-    if (persistFilters && state.skuPlanFactFilters) state.skuPlanFactFilters.owner = 'all';
+  if (filters.owner !== 'all' && skuPlanFactOwnerIsFilterOption(filters.owner) && !owners.includes(filters.owner)) {
+    owners.push(filters.owner);
+    owners.sort((a, b) => a.localeCompare(b, 'ru'));
   }
   const platformBaseRows = rows.filter((row) => skuPlanFactRowMatchesFilters(row, filters, { platform: false }));
   const filteredRows = platformBaseRows.filter((row) => skuPlanFactRowMatchesFilters(row, filters));

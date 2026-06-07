@@ -83,7 +83,7 @@
 
   function resetAutoDate() {
     const current = filters();
-    if (current.dateMode === 'manual') return;
+    if (current.dateMode === 'manual' || current.dateMode === 'month') return;
     current.date = '';
     current.dateFrom = '';
     current.dateTo = '';
@@ -435,7 +435,7 @@
         if (minDate) rangeTo.min = minDate;
         if (maxDate) rangeTo.max = maxDate;
       }
-      if (current.dateMode !== 'manual') {
+      if (current.dateMode !== 'manual' && current.dateMode !== 'month') {
         current.dateFrom = start;
         current.dateTo = latest;
         current.date = latest;
@@ -445,7 +445,7 @@
       return;
     }
     if (!oldMonth && existingDate) {
-      if (current.dateMode !== 'manual') {
+      if (current.dateMode !== 'manual' && current.dateMode !== 'month') {
         current.dateMode = 'latest';
         const latest = latestDateFromModel(model);
         if (latest) {
@@ -663,7 +663,6 @@
       const wrappedRerender = function wrappedRerenderCurrentView() {
         const host = root();
         if (!forceRender && activeSkuPlanFact() && host?.querySelector('#skuPlanFactSearch')) {
-          resetAutoDate();
           renderStableBody();
           enhance();
           return;

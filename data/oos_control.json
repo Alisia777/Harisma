@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-06-06T09:35:00.734Z",
+  "generatedAt": "2026-06-07T17:20:58.271Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -11,16 +11,16 @@
   },
   "dataFreshness": {
     "status": "ok",
-    "dataDate": "2026-06-05",
-    "expectedFactDate": "2026-06-05",
-    "sourceGeneratedAt": "2026-06-06T09:34:10.178Z",
-    "message": "Данные свежие: факт до 2026-06-05.",
-    "orderProcurementGeneratedAt": "2026-06-06T09:34:10.178Z",
+    "dataDate": "2026-06-06",
+    "expectedFactDate": "2026-06-06",
+    "sourceGeneratedAt": "2026-06-07T17:20:20.446Z",
+    "message": "Данные свежие: факт до 2026-06-06.",
+    "orderProcurementGeneratedAt": "2026-06-07T17:20:20.446Z",
     "orderWindow": {
-      "from": "2026-05-10",
-      "to": "2026-06-06"
+      "from": "2026-05-11",
+      "to": "2026-06-07"
     },
-    "smartPriceGeneratedAt": "2026-06-06T09:34:45.656Z",
+    "smartPriceGeneratedAt": "2026-06-07T17:17:29.970Z",
     "sources": {
       "orderProcurement": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\order_procurement.json",
       "skus": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\skus.json",
@@ -30,7 +30,7 @@
     }
   },
   "summary": {
-    "date": "2026-06-06",
+    "date": "2026-06-07",
     "totalIssues": 2,
     "oosCount": 0,
     "criticalCount": 0,
@@ -38,10 +38,10 @@
     "oosSoonCount": 2,
     "watchCount": 0,
     "lostRevenueDay": 0,
-    "revenueAtRiskDay": 4766260,
+    "revenueAtRiskDay": 4589704,
     "monthKey": "2026-06",
     "lostRevenueMonth": 0,
-    "revenueAtRiskMonth": 28936163,
+    "revenueAtRiskMonth": 33525867,
     "newIssues": 0,
     "reopenedIssues": 0,
     "resolvedToday": 0,
@@ -49,8 +49,8 @@
     "skuCount": 1,
     "placeCount": 46,
     "dataStatus": "ok",
-    "dataDate": "2026-06-05",
-    "expectedFactDate": "2026-06-05"
+    "dataDate": "2026-06-06",
+    "expectedFactDate": "2026-06-06"
   },
   "byPlatform": [
     {
@@ -62,7 +62,7 @@
       "risk": 1,
       "watch": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 3989624
+      "revenueAtRiskDay": 3858249
     },
     {
       "key": "ozon",
@@ -73,7 +73,7 @@
       "risk": 1,
       "watch": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 776636
+      "revenueAtRiskDay": 731455
     }
   ],
   "byOwner": [
@@ -86,7 +86,7 @@
       "risk": 1,
       "watch": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 3989624
+      "revenueAtRiskDay": 3858249
     },
     {
       "key": "Даша",
@@ -97,7 +97,7 @@
       "risk": 1,
       "watch": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 776636
+      "revenueAtRiskDay": 731455
     }
   ],
   "byDepartment": [
@@ -110,7 +110,7 @@
       "risk": 2,
       "watch": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 4766260
+      "revenueAtRiskDay": 4589704
     }
   ],
   "rows": [
@@ -133,192 +133,192 @@
       "lifecycleStatus": "active",
       "lifecycleLabel": "Актуальный",
       "lifecycleSource": "status",
-      "inStock": 28281,
+      "inStock": 27484,
       "inTransit": 0,
       "inRequest": 0,
-      "avgDaily": 3319.3663,
+      "avgDaily": 3225.8216,
       "turnoverDays": 8.52,
-      "sales7": 23235.57,
-      "sales14": 46471.11,
-      "sales28": 92942.27,
+      "sales7": 22580.74,
+      "sales14": 45161.48,
+      "sales28": 90323,
       "targetNeed7": 0,
-      "targetNeed14": 18200,
-      "targetNeed28": 64670,
-      "averagePrice": 1202,
+      "targetNeed14": 17688,
+      "targetNeed28": 62849,
+      "averagePrice": 1196,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 3989624,
+      "revenueAtRiskDay": 3858249,
       "recommendation": "Проверить WB: 18 кластер(ов) с покрытием меньше 10 дней (Коледино, Екатеринбург - Перспективная 14, Невинномысск, Краснодар). Минимальное покрытие 8.5 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 18,
       "placesAtRisk": [
         {
           "place": "Коледино",
-          "inStock": 5714,
+          "inStock": 5592,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 670.6573,
+          "avgDaily": 656.338,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 806078,
+          "revenueAtRiskDay": 785014,
           "lostRevenueDay": 0
         },
         {
           "place": "Екатеринбург - Перспективная 14",
-          "inStock": 3368,
+          "inStock": 3241,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 395.3052,
+          "avgDaily": 380.3991,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 475126,
+          "revenueAtRiskDay": 454977,
           "lostRevenueDay": 0
         },
         {
           "place": "Невинномысск",
-          "inStock": 3231,
+          "inStock": 3172,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 379.2254,
+          "avgDaily": 372.3005,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 455800,
+          "revenueAtRiskDay": 445291,
           "lostRevenueDay": 0
         },
         {
           "place": "Краснодар",
-          "inStock": 2410,
+          "inStock": 2312,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 282.8638,
+          "avgDaily": 271.3615,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 339981,
+          "revenueAtRiskDay": 324562,
           "lostRevenueDay": 0
         },
         {
           "place": "Владивосток WB",
-          "inStock": 2127,
+          "inStock": 2053,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 249.6479,
+          "avgDaily": 240.9624,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 300058,
+          "revenueAtRiskDay": 288203,
           "lostRevenueDay": 0
         },
         {
           "place": "Рязань (Тюшевское)",
-          "inStock": 1992,
+          "inStock": 1981,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 233.8028,
+          "avgDaily": 232.5117,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 281013,
+          "revenueAtRiskDay": 278096,
           "lostRevenueDay": 0
         },
         {
           "place": "Владимир WB",
-          "inStock": 1538,
+          "inStock": 1516,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 180.5164,
+          "avgDaily": 177.9343,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 216967,
+          "revenueAtRiskDay": 212819,
           "lostRevenueDay": 0
         },
         {
           "place": "Сарапул WB",
-          "inStock": 1444,
+          "inStock": 1409,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 169.4836,
+          "avgDaily": 165.3756,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 203706,
+          "revenueAtRiskDay": 197798,
           "lostRevenueDay": 0
         },
         {
           "place": "Склад СПБ Шушары Московское",
-          "inStock": 1315,
+          "inStock": 1260,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 154.3427,
+          "avgDaily": 147.8873,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 185508,
-          "lostRevenueDay": 0
-        },
-        {
-          "place": "Тула",
-          "inStock": 991,
-          "inTransit": 0,
-          "inRequest": 0,
-          "avgDaily": 116.3146,
-          "turnoverDays": 8.52,
-          "revenueAtRiskDay": 139801,
+          "revenueAtRiskDay": 176881,
           "lostRevenueDay": 0
         },
         {
           "place": "Новосемейкино",
-          "inStock": 969,
+          "inStock": 966,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 113.7324,
+          "avgDaily": 113.3803,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 136698,
+          "revenueAtRiskDay": 135609,
+          "lostRevenueDay": 0
+        },
+        {
+          "place": "Тула",
+          "inStock": 903,
+          "inTransit": 0,
+          "inRequest": 0,
+          "avgDaily": 105.9859,
+          "turnoverDays": 8.52,
+          "revenueAtRiskDay": 126765,
           "lostRevenueDay": 0
         },
         {
           "place": "Пенза WB",
-          "inStock": 913,
+          "inStock": 894,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 107.1596,
+          "avgDaily": 104.9296,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 128798,
+          "revenueAtRiskDay": 125501,
           "lostRevenueDay": 0
         },
         {
           "place": "Казань",
-          "inStock": 890,
+          "inStock": 850,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 104.4601,
+          "avgDaily": 99.7653,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 125553,
+          "revenueAtRiskDay": 119324,
           "lostRevenueDay": 0
         },
         {
           "place": "Котовск",
-          "inStock": 833,
+          "inStock": 823,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 97.77,
+          "avgDaily": 96.5962,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 117512,
+          "revenueAtRiskDay": 115534,
           "lostRevenueDay": 0
         },
         {
           "place": "Волгоград",
-          "inStock": 435,
+          "inStock": 422,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 51.0563,
+          "avgDaily": 49.5305,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 61366,
+          "revenueAtRiskDay": 59241,
           "lostRevenueDay": 0
         },
         {
           "place": "Воронеж WB",
-          "inStock": 107,
+          "inStock": 88,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 12.5587,
+          "avgDaily": 10.3286,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 15095,
+          "revenueAtRiskDay": 12354,
           "lostRevenueDay": 0
         },
         {
           "place": "Актобе",
-          "inStock": 3,
+          "inStock": 1,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 0.3521,
+          "avgDaily": 0.1174,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 423,
+          "revenueAtRiskDay": 140,
           "lostRevenueDay": 0
         },
         {
@@ -328,13 +328,13 @@
           "inRequest": 0,
           "avgDaily": 0.1174,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 141,
+          "revenueAtRiskDay": 140,
           "lostRevenueDay": 0
         }
       ],
       "firstSeenDate": "2026-06-01",
-      "lastSeenDate": "2026-06-06",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-06-07",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -357,21 +357,21 @@
       "lifecycleStatus": "active",
       "lifecycleLabel": "Актуальный",
       "lifecycleSource": "status",
-      "inStock": 6222,
+      "inStock": 6152,
       "inTransit": 0,
       "inRequest": 0,
-      "avgDaily": 730.2815,
+      "avgDaily": 722.0658,
       "turnoverDays": 8.52,
-      "sales7": 5111.96,
-      "sales14": 10223.95,
-      "sales28": 20447.87,
+      "sales7": 5054.46,
+      "sales14": 10108.91,
+      "sales28": 20217.85,
       "targetNeed7": 0,
-      "targetNeed14": 4013,
-      "targetNeed28": 14241,
-      "averagePrice": 1063,
+      "targetNeed14": 3974,
+      "targetNeed28": 14084,
+      "averagePrice": 1013,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 776636,
+      "revenueAtRiskDay": 731455,
       "recommendation": "Проверить Ozon: 28 кластер(ов) с покрытием меньше 10 дней (Казахстан, Астана, Москва, МО и Дальние регионы, Новосибирск). Минимальное покрытие 8.5 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 28,
       "placesAtRisk": [
@@ -382,27 +382,27 @@
           "inRequest": 0,
           "avgDaily": 91.9014,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 97735,
+          "revenueAtRiskDay": 93096,
           "lostRevenueDay": 0
         },
         {
           "place": "Астана",
-          "inStock": 743,
+          "inStock": 742,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 87.2066,
+          "avgDaily": 87.0892,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 92742,
+          "revenueAtRiskDay": 88221,
           "lostRevenueDay": 0
         },
         {
           "place": "Москва, МО и Дальние регионы",
-          "inStock": 559,
+          "inStock": 554,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 65.6104,
+          "avgDaily": 65.0235,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 69775,
+          "revenueAtRiskDay": 65869,
           "lostRevenueDay": 0
         },
         {
@@ -412,197 +412,197 @@
           "inRequest": 0,
           "avgDaily": 58.5681,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 62286,
+          "revenueAtRiskDay": 59329,
           "lostRevenueDay": 0
         },
         {
           "place": "Кавказ",
-          "inStock": 331,
+          "inStock": 329,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 38.8497,
+          "avgDaily": 38.615,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 41316,
+          "revenueAtRiskDay": 39117,
           "lostRevenueDay": 0
         },
         {
           "place": "Ярославль",
-          "inStock": 306,
+          "inStock": 304,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 35.9155,
+          "avgDaily": 35.6808,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 38195,
+          "revenueAtRiskDay": 36145,
           "lostRevenueDay": 0
         },
         {
           "place": "Санкт-Петербург и СЗО",
-          "inStock": 297,
+          "inStock": 291,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 34.8591,
+          "avgDaily": 34.1549,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 37072,
+          "revenueAtRiskDay": 34599,
           "lostRevenueDay": 0
         },
         {
           "place": "Саратов",
-          "inStock": 277,
+          "inStock": 276,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 32.5118,
+          "avgDaily": 32.3944,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 34575,
+          "revenueAtRiskDay": 32816,
           "lostRevenueDay": 0
         },
         {
           "place": "Красноярск",
-          "inStock": 250,
+          "inStock": 243,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 29.3427,
+          "avgDaily": 28.5211,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 31205,
-          "lostRevenueDay": 0
-        },
-        {
-          "place": "Юг",
-          "inStock": 248,
-          "inTransit": 0,
-          "inRequest": 0,
-          "avgDaily": 29.108,
-          "turnoverDays": 8.52,
-          "revenueAtRiskDay": 30956,
+          "revenueAtRiskDay": 28892,
           "lostRevenueDay": 0
         },
         {
           "place": "Уфа",
-          "inStock": 242,
+          "inStock": 241,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 28.4038,
+          "avgDaily": 28.2864,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 30207,
+          "revenueAtRiskDay": 28654,
+          "lostRevenueDay": 0
+        },
+        {
+          "place": "Юг",
+          "inStock": 238,
+          "inTransit": 0,
+          "inRequest": 0,
+          "avgDaily": 27.9342,
+          "turnoverDays": 8.52,
+          "revenueAtRiskDay": 28297,
           "lostRevenueDay": 0
         },
         {
           "place": "Невинномысск",
-          "inStock": 208,
+          "inStock": 207,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 24.4131,
+          "avgDaily": 24.2958,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 25963,
+          "revenueAtRiskDay": 24612,
           "lostRevenueDay": 0
         },
         {
           "place": "Казань",
-          "inStock": 177,
+          "inStock": 176,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 20.7746,
+          "avgDaily": 20.6573,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 22093,
+          "revenueAtRiskDay": 20926,
           "lostRevenueDay": 0
         },
         {
           "place": "Урал",
-          "inStock": 167,
+          "inStock": 160,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 19.6009,
+          "avgDaily": 18.7794,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 20845,
+          "revenueAtRiskDay": 19024,
           "lostRevenueDay": 0
         },
         {
           "place": "Воронеж",
-          "inStock": 130,
+          "inStock": 131,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 15.2582,
+          "avgDaily": 15.3756,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 16227,
-          "lostRevenueDay": 0
-        },
-        {
-          "place": "Екатеринбург",
-          "inStock": 127,
-          "inTransit": 0,
-          "inRequest": 0,
-          "avgDaily": 14.9061,
-          "turnoverDays": 8.52,
-          "revenueAtRiskDay": 15852,
-          "lostRevenueDay": 0
-        },
-        {
-          "place": "Ростов",
-          "inStock": 127,
-          "inTransit": 0,
-          "inRequest": 0,
-          "avgDaily": 14.9061,
-          "turnoverDays": 8.52,
-          "revenueAtRiskDay": 15852,
+          "revenueAtRiskDay": 15575,
           "lostRevenueDay": 0
         },
         {
           "place": "Махачкала",
-          "inStock": 123,
+          "inStock": 122,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 14.4366,
+          "avgDaily": 14.3192,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 15353,
+          "revenueAtRiskDay": 14505,
           "lostRevenueDay": 0
         },
         {
-          "place": "Краснодар",
+          "place": "Екатеринбург",
           "inStock": 121,
           "inTransit": 0,
           "inRequest": 0,
           "avgDaily": 14.2019,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 15103,
+          "revenueAtRiskDay": 14387,
           "lostRevenueDay": 0
         },
         {
-          "place": "Тюмень",
+          "place": "Краснодар",
           "inStock": 119,
           "inTransit": 0,
           "inRequest": 0,
           "avgDaily": 13.9671,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 14854,
+          "revenueAtRiskDay": 14149,
+          "lostRevenueDay": 0
+        },
+        {
+          "place": "Ростов",
+          "inStock": 119,
+          "inTransit": 0,
+          "inRequest": 0,
+          "avgDaily": 13.9671,
+          "turnoverDays": 8.52,
+          "revenueAtRiskDay": 14149,
+          "lostRevenueDay": 0
+        },
+        {
+          "place": "Тюмень",
+          "inStock": 116,
+          "inTransit": 0,
+          "inRequest": 0,
+          "avgDaily": 13.615,
+          "turnoverDays": 8.52,
+          "revenueAtRiskDay": 13792,
           "lostRevenueDay": 0
         },
         {
           "place": "Омск",
-          "inStock": 72,
+          "inStock": 70,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 8.4507,
+          "avgDaily": 8.216,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 8987,
+          "revenueAtRiskDay": 8323,
           "lostRevenueDay": 0
         },
         {
           "place": "Сибирь",
-          "inStock": 72,
+          "inStock": 70,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 8.4507,
+          "avgDaily": 8.216,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 8987,
+          "revenueAtRiskDay": 8323,
           "lostRevenueDay": 0
         },
         {
           "place": "Самара",
-          "inStock": 65,
+          "inStock": 61,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 7.6291,
+          "avgDaily": 7.1596,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 8113,
+          "revenueAtRiskDay": 7253,
           "lostRevenueDay": 0
         },
         {
@@ -612,37 +612,37 @@
           "inRequest": 0,
           "avgDaily": 5.8685,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 6241,
+          "revenueAtRiskDay": 5945,
           "lostRevenueDay": 0
         },
         {
           "place": "Оренбург",
-          "inStock": 48,
+          "inStock": 49,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 5.6338,
+          "avgDaily": 5.7512,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 5991,
+          "revenueAtRiskDay": 5826,
           "lostRevenueDay": 0
         },
         {
           "place": "Алматы",
-          "inStock": 40,
+          "inStock": 41,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 4.6948,
+          "avgDaily": 4.8122,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 4993,
+          "revenueAtRiskDay": 4875,
           "lostRevenueDay": 0
         },
         {
           "place": "Пермь",
-          "inStock": 40,
+          "inStock": 39,
           "inTransit": 0,
           "inRequest": 0,
-          "avgDaily": 4.6948,
+          "avgDaily": 4.5775,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 4993,
+          "revenueAtRiskDay": 4637,
           "lostRevenueDay": 0
         },
         {
@@ -652,13 +652,13 @@
           "inRequest": 0,
           "avgDaily": 0.1174,
           "turnoverDays": 8.52,
-          "revenueAtRiskDay": 125,
+          "revenueAtRiskDay": 119,
           "lostRevenueDay": 0
         }
       ],
       "firstSeenDate": "2026-06-01",
-      "lastSeenDate": "2026-06-06",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-06-07",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     }
@@ -730,10 +730,21 @@
         "watchCount": 0,
         "lostRevenueDay": 0,
         "revenueAtRiskDay": 4766260
+      },
+      {
+        "date": "2026-06-07",
+        "totalIssues": 2,
+        "oosCount": 0,
+        "criticalCount": 0,
+        "riskCount": 2,
+        "oosSoonCount": 2,
+        "watchCount": 0,
+        "lostRevenueDay": 0,
+        "revenueAtRiskDay": 4589704
       }
     ],
     "latest": {
-      "date": "2026-06-06",
+      "date": "2026-06-07",
       "totalIssues": 2,
       "oosCount": 0,
       "criticalCount": 0,
@@ -741,7 +752,7 @@
       "oosSoonCount": 2,
       "watchCount": 0,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 4766260
+      "revenueAtRiskDay": 4589704
     },
     "issueStates": [
       {
@@ -757,8 +768,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-06-01",
-        "lastSeenDate": "2026-06-06",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-06-07",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -774,8 +785,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-06-01",
-        "lastSeenDate": "2026-06-06",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-06-07",
+        "daysOpen": 7,
         "resolvedDate": ""
       }
     ]

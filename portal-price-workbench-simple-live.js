@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEIMPACT1__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES1__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEIMPACT1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260528_MINMAXIMPORT1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_MINMAXQUEUE1__ = true;
@@ -1265,6 +1266,22 @@
       ".pw-ledger-summary span{display:grid;gap:2px;min-width:118px;padding:10px 12px;border:1px solid rgba(214,175,85,.12);border-radius:8px;background:rgba(9,7,5,.42);}",
       ".pw-ledger-summary b{font-size:18px;line-height:1.15;color:#fff0cf;}",
       ".pw-ledger-summary small{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#bda57a;}",
+      ".pw-game-panel{display:grid;gap:10px;}",
+      ".pw-game-strip{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px;}",
+      ".pw-game-card{position:relative;min-height:126px;border:1px solid hsl(var(--pw-hue,42) 78% 58% / .28);border-radius:8px;background:linear-gradient(180deg,hsl(var(--pw-hue,42) 72% 42% / .16),rgba(9,7,5,.72));box-shadow:0 16px 42px hsl(var(--pw-hue,42) 80% 42% / .10);padding:13px;display:grid;grid-template-rows:auto auto auto 1fr;gap:8px;overflow:hidden;}",
+      ".pw-game-card:before{content:\"\";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 46%);pointer-events:none;}",
+      ".pw-game-card>*{position:relative;}",
+      ".pw-game-card.ok{--pw-hue:142;}.pw-game-card.info{--pw-hue:202;}.pw-game-card.warn{--pw-hue:42;}.pw-game-card.danger{--pw-hue:3;}.pw-game-card.violet{--pw-hue:268;}",
+      ".pw-game-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;color:#d8c6a3;font-size:11px;text-transform:uppercase;letter-spacing:.06em;line-height:1.25;}",
+      ".pw-game-top em{font-style:normal;color:#fff0cf;white-space:nowrap;}",
+      ".pw-game-card strong{font-size:28px;line-height:1;color:#fff4d6;font-weight:900;overflow-wrap:anywhere;}",
+      ".pw-game-card small{color:#d2bd98;line-height:1.35;font-size:12px;}",
+      ".pw-game-foot{align-self:end;display:flex;justify-content:space-between;gap:8px;align-items:center;color:#f3dfb6;font-size:12px;line-height:1.25;}",
+      ".pw-game-meter{display:block;height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;}",
+      ".pw-game-meter i{display:block;width:var(--pw-progress,0%);height:100%;border-radius:999px;background:hsl(var(--pw-hue,42) 90% 66% / .96);}",
+      ".pw-game-missions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}",
+      ".pw-game-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;border:1px solid hsl(var(--pw-hue,42) 78% 58% / .28);background:hsl(var(--pw-hue,42) 72% 42% / .12);color:#f5e4bf;padding:7px 10px;font-size:12px;line-height:1.2;}",
+      ".pw-game-pill.ok{--pw-hue:142;}.pw-game-pill.info{--pw-hue:202;}.pw-game-pill.warn{--pw-hue:42;}.pw-game-pill.danger{--pw-hue:3;}.pw-game-pill.violet{--pw-hue:268;}",
       ".pw-stat strong{display:block;margin-top:8px;font-size:28px;color:#fff0cf;}",
       ".pw-stat small{display:block;margin-top:6px;color:#cdb892;line-height:1.45;}",
       ".pw-table-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}",
@@ -1320,13 +1337,15 @@
       ".pw-badge.pw-badge-info{background:rgba(56,99,135,.18);border-color:rgba(114,176,231,.28);color:#d7eaff;}",
       ".pw-badge.pw-badge-warn{background:rgba(138,98,29,.22);border-color:rgba(240,188,82,.32);color:#ffe7b1;}",
       ".pw-badge.pw-badge-danger{background:rgba(132,43,43,.24);border-color:rgba(255,136,136,.28);color:#ffd5d5;}",
+      ".pw-row-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;max-width:360px;}",
       ".pw-history-wrap{overflow:auto;}",
       ".pw-history{width:100%;border-collapse:collapse;min-width:980px;}",
       ".pw-history th,.pw-history td{padding:10px 12px;border-top:1px solid rgba(214,175,85,.1);text-align:left;}",
       ".pw-history th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#bda57a;}",
       ".pw-history-change td{background:rgba(214,175,85,.055);}",
+      "@media (max-width:1180px){.pw-game-strip{grid-template-columns:repeat(3,minmax(0,1fr));}}",
       "@media (max-width:1080px){.pw-grid,.pw-stats,.pw-kpis{grid-template-columns:1fr 1fr;}}",
-      "@media (max-width:720px){#view-prices{padding:18px 14px 28px;}.pw-grid,.pw-stats,.pw-kpis,.pw-grid2{grid-template-columns:1fr;}.pw-title{font-size:28px;}}"
+      "@media (max-width:720px){#view-prices{padding:18px 14px 28px;}.pw-grid,.pw-stats,.pw-kpis,.pw-grid2,.pw-game-strip{grid-template-columns:1fr;}.pw-title{font-size:28px;}}"
     ].join("");
     document.head.appendChild(style);
   }
@@ -2347,6 +2366,20 @@
     var revenue = 0;
     var revenueFound = false;
     var priceChanges = 0;
+    var changedRows = 0;
+    var priceRaises = 0;
+    var priceDrops = 0;
+    var afterOrders = 0;
+    var afterOrdersFound = false;
+    var impactWins = 0;
+    var impactDrops = 0;
+    var impactFlat = 0;
+    var orderDeltaTotal = 0;
+    var orderDeltaFound = false;
+    var minMaxRisk = 0;
+    var minMaxDanger = 0;
+    var bestWin = null;
+    var worstDrop = null;
     rows.forEach(function (row) {
       var impact = row.priceImpact || rowPriceImpact(row);
       if (row.listPrice != null) price.push(row.listPrice);
@@ -2363,6 +2396,34 @@
         revenueFound = true;
       }
       if (impact.priceChanges) priceChanges += impact.priceChanges;
+      if (impact.change) {
+        changedRows += 1;
+        if (Number(impact.change.deltaRub) > 0) priceRaises += 1;
+        else if (Number(impact.change.deltaRub) < 0) priceDrops += 1;
+      }
+      if (impact.afterOrders != null) {
+        afterOrders += impact.afterOrders;
+        afterOrdersFound = true;
+      }
+      if (impact.orderDelta != null && Number.isFinite(Number(impact.orderDelta))) {
+        var delta = Number(impact.orderDelta);
+        orderDeltaTotal += delta;
+        orderDeltaFound = true;
+        if (delta > 0) {
+          impactWins += 1;
+          if (!bestWin || delta > bestWin.delta) bestWin = { articleKey: row.articleKey || "", name: row.name || "", delta: delta };
+        } else if (delta < 0) {
+          impactDrops += 1;
+          if (!worstDrop || delta < worstDrop.delta) worstDrop = { articleKey: row.articleKey || "", name: row.name || "", delta: delta };
+        } else {
+          impactFlat += 1;
+        }
+      }
+      var boundary = priceBoundaryState(row);
+      if (boundary) {
+        minMaxRisk += 1;
+        if (boundary.tone === "danger") minMaxDanger += 1;
+      }
     });
     var summary = {
       count: rows.length,
@@ -2372,7 +2433,19 @@
       belowAllowed: below,
       ordersUnits: ordersFound ? ordersUnits : null,
       revenue: revenueFound ? revenue : null,
-      priceChanges: priceChanges
+      priceChanges: priceChanges,
+      changedRows: changedRows,
+      priceRaises: priceRaises,
+      priceDrops: priceDrops,
+      afterOrders: afterOrdersFound ? afterOrders : null,
+      impactWins: impactWins,
+      impactDrops: impactDrops,
+      impactFlat: impactFlat,
+      orderDeltaTotal: orderDeltaFound ? orderDeltaTotal : null,
+      minMaxRisk: minMaxRisk,
+      minMaxDanger: minMaxDanger,
+      bestWin: bestWin,
+      worstDrop: worstDrop
     };
     derived.stats.rowsRef = rows;
     derived.stats.value = summary;
@@ -2382,6 +2455,162 @@
   function findRow(key) {
     var wanted = norm(key);
     return state.rows.find(function (row) { return norm(row.articleKey) === wanted; }) || null;
+  }
+
+  function priceProgress(part, total) {
+    var numerator = Number(part);
+    var denominator = Number(total);
+    if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return 0;
+    return Math.max(0, Math.min(100, numerator / denominator * 100));
+  }
+
+  function priceBoundaryState(row) {
+    var bounds = row && row.repricerBounds || {};
+    var price = num(row && row.currentFillPrice);
+    var min = num(bounds.effectiveMin);
+    var max = num(bounds.effectiveMax);
+    if (price == null) return null;
+    if (min != null && min > 0 && price < min) {
+      return {
+        tone: "danger",
+        label: "\u043d\u0438\u0436\u0435 MIN",
+        title: "\u0426\u0435\u043d\u0430 " + money(price) + " \u043d\u0438\u0436\u0435 MIN " + money(min)
+      };
+    }
+    if (max != null && max > 0 && price > max) {
+      return {
+        tone: "warn",
+        label: "\u0432\u044b\u0448\u0435 MAX",
+        title: "\u0426\u0435\u043d\u0430 " + money(price) + " \u0432\u044b\u0448\u0435 MAX " + money(max)
+      };
+    }
+    return null;
+  }
+
+  function priceBadgeToneClass(tone) {
+    var key = String(tone || "").toLowerCase();
+    if (key === "ok" || key === "up") return "pw-badge-ok";
+    if (key === "danger" || key === "down") return "pw-badge-danger";
+    if (key === "warn") return "pw-badge-warn";
+    return "pw-badge-info";
+  }
+
+  function renderPriceBadge(label, tone, title) {
+    if (!label) return "";
+    return '<span class="pw-badge ' + priceBadgeToneClass(tone) + '"' + (title ? ' title="' + esc(title) + '"' : "") + '>' + esc(label) + '</span>';
+  }
+
+  function renderPriceGamePill(label, tone, title) {
+    if (!label) return "";
+    return '<span class="pw-game-pill ' + esc(tone || "info") + '"' + (title ? ' title="' + esc(title) + '"' : "") + '>' + esc(label) + '</span>';
+  }
+
+  function renderPriceGameCard(config) {
+    var progress = Number(config && config.progress);
+    if (!Number.isFinite(progress)) progress = 0;
+    progress = Math.max(0, Math.min(100, progress));
+    return [
+      '<article class="pw-game-card ', esc(config.tone || "info"), '" style="--pw-progress:', progress.toFixed(1), '%;"',
+      config.title ? ' title="' + esc(config.title) + '"' : '',
+      '>',
+      '<span class="pw-game-top"><span>', esc(config.label || ""), '</span>', config.badge ? '<em>' + esc(config.badge) + '</em>' : '', '</span>',
+      '<strong>', esc(config.value || "\u2014"), '</strong>',
+      '<small>', esc(config.note || ""), '</small>',
+      '<span class="pw-game-meter"><i></i></span>',
+      '<span class="pw-game-foot"><span>', esc(config.foot || ""), '</span></span>',
+      '</article>'
+    ].join("");
+  }
+
+  function renderPriceGameStrip(rows, summary) {
+    if (!summary || !summary.count) return "";
+    var deltaRows = summary.impactWins + summary.impactDrops + summary.impactFlat;
+    var winTone = summary.impactDrops > summary.impactWins ? "danger" : (summary.impactWins ? "ok" : "info");
+    var riskTone = summary.minMaxDanger ? "danger" : (summary.minMaxRisk ? "warn" : "ok");
+    var orderDeltaLabel = summary.orderDeltaTotal == null ? "\u2014" : signedIntLabel(summary.orderDeltaTotal);
+    var changeFoot = "+ " + intf(summary.priceRaises) + " / - " + intf(summary.priceDrops);
+    var minMaxWarn = Math.max(0, summary.minMaxRisk - summary.minMaxDanger);
+    var riskFoot = "\u043a\u043e\u0440\u0438\u0434\u043e\u0440 \u0440\u043e\u0432\u043d\u044b\u0439";
+    if (summary.minMaxDanger && minMaxWarn) riskFoot = intf(summary.minMaxDanger) + " \u043d\u0438\u0436\u0435 MIN / " + intf(minMaxWarn) + " \u0432\u044b\u0448\u0435 MAX";
+    else if (summary.minMaxDanger) riskFoot = intf(summary.minMaxDanger) + " \u043d\u0438\u0436\u0435 MIN";
+    else if (minMaxWarn) riskFoot = intf(minMaxWarn) + " \u0432\u044b\u0448\u0435 MAX";
+    var cards = [
+      renderPriceGameCard({
+        tone: winTone,
+        label: "\u0426\u0435\u043d\u0430 \u0441\u0440\u0430\u0431\u043e\u0442\u0430\u043b\u0430",
+        value: intf(summary.impactWins),
+        note: "SKU \u0441 \u0440\u043e\u0441\u0442\u043e\u043c \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u043f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b",
+        foot: intf(summary.impactDrops) + " \u043f\u0440\u043e\u0441\u0430\u0434\u043e\u043a",
+        progress: priceProgress(summary.impactWins, deltaRows)
+      }),
+      renderPriceGameCard({
+        tone: summary.orderDeltaTotal == null ? "info" : (summary.orderDeltaTotal >= 0 ? "ok" : "danger"),
+        label: "\u0417\u0430\u043a\u0430\u0437\u044b \u043f\u043e\u0441\u043b\u0435",
+        value: summary.afterOrders == null ? "\u2014" : intf(summary.afterOrders),
+        note: "\u0421\u0443\u043c\u043c\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u043f\u043e\u0441\u043b\u0435 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0439 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b",
+        foot: "\u0434\u0435\u043b\u044c\u0442\u0430 " + orderDeltaLabel,
+        progress: summary.afterOrders == null ? 0 : 100
+      }),
+      renderPriceGameCard({
+        tone: summary.priceChanges ? "violet" : "info",
+        label: "\u0421\u043c\u0435\u043d\u044b \u0446\u0435\u043d",
+        value: intf(summary.priceChanges),
+        note: intf(summary.changedRows) + " SKU \u043c\u0435\u043d\u044f\u043b\u0438 \u0446\u0435\u043d\u0443 \u0432 \u043f\u0435\u0440\u0438\u043e\u0434\u0435",
+        foot: changeFoot,
+        progress: priceProgress(summary.changedRows, summary.count)
+      }),
+      renderPriceGameCard({
+        tone: riskTone,
+        label: "MIN/MAX \u0440\u0438\u0441\u043a",
+        value: intf(summary.minMaxRisk),
+        note: "\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u0446\u0435\u043d\u0430 \u0432\u044b\u0448\u0435 \u0438\u043b\u0438 \u043d\u0438\u0436\u0435 \u043a\u043e\u0440\u0438\u0434\u043e\u0440\u0430",
+        foot: riskFoot,
+        progress: priceProgress(summary.minMaxRisk, summary.count)
+      }),
+      renderPriceGameCard({
+        tone: "warn",
+        label: "\u0412\u044b\u0440\u0443\u0447\u043a\u0430",
+        value: money(summary.revenue),
+        note: "\u0412 \u0442\u0435 \u0436\u0435 \u0434\u043d\u0438, \u0433\u0434\u0435 \u0432\u0438\u0434\u0438\u043c \u0446\u0435\u043d\u0443 \u0438 \u0437\u0430\u043a\u0430\u0437\u044b",
+        foot: summary.ordersUnits == null ? "\u0437\u0430\u043a\u0430\u0437\u044b \u043d\u0435\u0442" : intf(summary.ordersUnits) + " \u0437\u0430\u043a\u0430\u0437\u043e\u0432",
+        progress: summary.revenue == null ? 0 : 100
+      })
+    ];
+    var pills = [
+      renderPriceGamePill("SKU: " + intf(summary.count), "info"),
+      renderPriceGamePill("\u0440\u043e\u0441\u0442: " + intf(summary.impactWins) + " SKU", "ok"),
+      renderPriceGamePill("\u043f\u0440\u043e\u0441\u0430\u0434\u043a\u0430: " + intf(summary.impactDrops) + " SKU", summary.impactDrops ? "danger" : "info"),
+      renderPriceGamePill("\u0446\u0435\u043d\u0443 \u043c\u0435\u043d\u044f\u043b\u0438: " + intf(summary.changedRows) + " SKU", summary.changedRows ? "violet" : "info"),
+      renderPriceGamePill("MIN/MAX: " + intf(summary.minMaxRisk) + " \u0440\u0438\u0441\u043a", riskTone),
+      summary.bestWin ? renderPriceGamePill("\u043b\u0443\u0447\u0448\u0438\u0439 \u043e\u0442\u043a\u043b\u0438\u043a: " + (summary.bestWin.articleKey || "\u2014") + " " + signedIntLabel(summary.bestWin.delta), "ok", summary.bestWin.name || "") : "",
+      summary.worstDrop ? renderPriceGamePill("\u043f\u0440\u043e\u0441\u0430\u0434\u043a\u0430: " + (summary.worstDrop.articleKey || "\u2014") + " " + signedIntLabel(summary.worstDrop.delta), "danger", summary.worstDrop.name || "") : ""
+    ].filter(Boolean);
+    return [
+      '<section class="pw-game-panel" aria-label="\u0426\u0435\u043d\u043e\u0432\u044b\u0435 \u0441\u0438\u0433\u043d\u0430\u043b\u044b">',
+      '<div class="pw-game-strip">', cards.join(""), '</div>',
+      '<div class="pw-game-missions">', pills.join(""), '</div>',
+      '</section>'
+    ].join("");
+  }
+
+  function renderPriceRowBadges(row, impact) {
+    var badges = [];
+    var change = impact && impact.change;
+    if (change) {
+      badges.push(renderPriceBadge("\u0446\u0435\u043d\u0430 " + signedMoneyLabel(change.deltaRub), deltaTone(change.deltaRub), "\u0421\u043c\u0435\u043d\u0430 \u0446\u0435\u043d\u044b " + (change.date || "")));
+    }
+    if (impact && impact.orderDelta != null && Number.isFinite(Number(impact.orderDelta))) {
+      var delta = Number(impact.orderDelta);
+      if (delta > 0) badges.push(renderPriceBadge("\u0437\u0430\u043a\u0430\u0437\u044b " + signedIntLabel(delta), "ok", "\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b"));
+      else if (delta < 0) badges.push(renderPriceBadge("\u043f\u0440\u043e\u0441\u0430\u0434\u043a\u0430 " + signedIntLabel(delta), "danger", "\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b"));
+      else badges.push(renderPriceBadge("\u0437\u0430\u043a\u0430\u0437\u044b \u0440\u043e\u0432\u043d\u043e", "info", "\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b"));
+    }
+    var boundary = priceBoundaryState(row);
+    if (boundary) badges.push(renderPriceBadge(boundary.label, boundary.tone, boundary.title));
+    if (!badges.length && impact && impact.ordersUnits != null && impact.ordersUnits > 0) {
+      badges.push(renderPriceBadge("\u0437\u0430\u043a\u0430\u0437\u044b " + intf(impact.ordersUnits), "info", "\u0417\u0430\u043a\u0430\u0437\u044b \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434"));
+    }
+    return badges.length ? '<div class="pw-row-badges">' + badges.slice(0, 4).join("") + '</div>' : "";
   }
 
   function renderRepricerCell(display) {
@@ -2842,6 +3071,7 @@ function downloadPriceSummaryExcel(rows) {
           '<tr class="pw-row" data-open-price="', esc(row.articleKey), '" data-price-market="', esc(row.market), '">',
           '<td><div class="pw-sku">', esc(row.articleKey), '</div><div class="pw-note">', esc(row.name), '</div>',
           row.productLeaderboard ? '<div class="pw-kz-stack">' + renderProductLeaderboardBadge(row.productLeaderboard, row.articleKey) + renderProductLeaderboardAlerts(row.productLeaderboard, 1) + '</div>' : '',
+          renderPriceRowBadges(row, impact),
           '</td>',
           '<td>', esc(row.owner || "\u2014"), '</td>',
           '<td><span class="pw-badge', priceLifecycleBadgeClass(lifecycle), '">', esc(row.status || "\u2014"), '</span>',
@@ -2942,7 +3172,7 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="pw-modal ', state.selectedKey ? 'open' : '', '" id="priceSimpleModal">',
       '<div class="pw-modal-box">',
       '<div class="pw-modal-head">',
-      '<div><h3>', esc(row.articleKey), '</h3><div class="pw-sub">', esc(row.name), '</div></div>',
+      '<div><h3>', esc(row.articleKey), '</h3><div class="pw-sub">', esc(row.name), '</div>', renderPriceRowBadges(row, impact), '</div>',
       '<button class="pw-close" type="button" data-close-price-modal>\u0417\u0430\u043a\u0440\u044b\u0442\u044c</button>',
       '</div>',
       '<div class="pw-kpis">',
@@ -3313,6 +3543,7 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="pw-note">\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a: ', esc(state.sourceNote || DATA_URL), '</div>',
       '</div></div>',
       '</section>',
+      renderPriceGameStrip(rows, summary),
       '<section class="pw-card">',
       '<div class="pw-table-head"><div class="pw-label">\u0422\u0430\u0431\u043b\u0438\u0446\u0430</div><div class="pw-chip-row"><button type="button" class="pw-chip" data-price-export="summary">\u0421\u0432\u043e\u0434 \u0432 Excel</button><button type="button" class="pw-chip" data-price-export="daily">\u0414\u0438\u043d\u0430\u043c\u0438\u043a\u0430 \u043f\u043e \u0434\u043d\u044f\u043c</button><button type="button" class="pw-chip" data-price-minmax-template>\u0421\u043a\u0430\u0447\u0430\u0442\u044c MIN/MAX (TSV)</button><button type="button" class="pw-chip" data-price-minmax-import>\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c MIN/MAX</button></div></div>',
       '<div class="pw-ledger-summary"><span><b>', intf(summary.count), '</b><small>SKU</small></span><span><b>', summary.ordersUnits == null ? "\u2014" : intf(summary.ordersUnits), '</b><small>\u0417\u0430\u043a\u0430\u0437\u044b</small></span><span><b>', money(summary.revenue), '</b><small>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</small></span><span><b>', intf(summary.priceChanges), '</b><small>\u0421\u043c\u0435\u043d\u044b \u0446\u0435\u043d</small></span><span><b>', intf(summary.belowAllowed), '</b><small>\u041d\u0438\u0436\u0435 3\u043c</small></span></div>',

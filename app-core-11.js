@@ -7698,6 +7698,12 @@ function renderOosPulseCard(config = {}) {
   `;
 }
 
+function oosControlFiniteOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function oosControlSkuRiskGroups(rows = []) {
   const map = new Map();
   rows.forEach((row) => {
@@ -7715,7 +7721,13 @@ function oosControlSkuRiskGroups(rows = []) {
         oosCount: 0,
         riskCount: 0,
         watchCount: 0,
-        targetNeed28: 0
+        targetNeed14: 0,
+        targetNeed28: 0,
+        inStock: 0,
+        inTransit: 0,
+        inRequest: 0,
+        avgDaily: 0,
+        clusters: []
       });
     }
     const item = map.get(article);
@@ -7728,56 +7740,145 @@ function oosControlSkuRiskGroups(rows = []) {
     if (row.status === 'oos' || row.status === 'critical') item.oosCount += 1;
     else if (row.status === 'risk') item.riskCount += 1;
     else item.watchCount += 1;
+    item.inStock += numberOrZero(row.inStock || 0);
+    item.inTransit += numberOrZero(row.inTransit || 0);
+    item.inRequest += numberOrZero(row.inRequest || 0);
+    item.avgDaily += numberOrZero(row.avgDaily || 0);
+    item.targetNeed14 += numberOrZero(row.targetNeed14 || 0);
     item.targetNeed28 += numberOrZero(row.targetNeed28 || 0);
+    const rowPlaces = Array.isArray(row.placesAtRisk) && row.placesAtRisk.length
+      ? row.placesAtRisk
+      : [{
+          place: row.place,
+          inStock: row.inStock,
+          inTransit: row.inTransit,
+          inRequest: row.inRequest,
+          avgDaily: row.avgDaily,
+          turnoverDays: row.turnoverDays,
+          revenueAtRiskDay: row.revenueAtRiskDay,
+          lostRevenueDay: row.lostRevenueDay
+    }];
+    rowPlaces.forEach((place) => {
+      const placeDays = oosControlFiniteOrNull(place.turnoverDays ?? row.turnoverDays);
+      item.clusters.push({
+        place: place.place || row.place || 'Склад',
+        platform: row.platform || '',
+        platformLabel: row.platformLabel || row.platform || '',
+        status: row.status || '',
+        inStock: numberOrZero(place.inStock ?? row.inStock),
+        inTransit: numberOrZero(place.inTransit ?? row.inTransit),
+        inRequest: numberOrZero(place.inRequest ?? row.inRequest),
+        avgDaily: numberOrZero(place.avgDaily ?? row.avgDaily),
+        turnoverDays: placeDays,
+        revenueAtRiskDay: numberOrZero(place.revenueAtRiskDay ?? row.revenueAtRiskDay),
+        lostRevenueDay: numberOrZero(place.lostRevenueDay ?? row.lostRevenueDay)
+      });
+    });
   });
   return [...map.values()]
     .map((item) => ({
       ...item,
       platforms: [...item.platforms],
-      owners: [...item.owners]
+      owners: [...item.owners],
+      clusters: item.clusters
+        .map((cluster) => ({ ...cluster, riskAmount: numberOrZero(cluster.revenueAtRiskDay || 0) + numberOrZero(cluster.lostRevenueDay || 0) }))
+        .sort((left, right) => right.riskAmount - left.riskAmount || numberOrZero(left.turnoverDays || 999) - numberOrZero(right.turnoverDays || 999))
     }))
     .sort((left, right) => right.riskAmount - left.riskAmount || numberOrZero(left.minDays || 999) - numberOrZero(right.minDays || 999));
+}
+
+function renderOosSkuClusterRow(cluster = {}) {
+  const days = oosControlFiniteOrNull(cluster.turnoverDays);
+  const tone = oosControlCoverageTone(days);
+  return `
+    <div class="oos-cluster-row ${tone}">
+      <div class="oos-cluster-row__place">
+        <strong>${escapeHtml(cluster.place || 'Склад')}</strong>
+        <small>${escapeHtml(cluster.platformLabel || cluster.platform || '')} · ${days ? `закончится через ${fmt.num(days, 1)} д` : 'срок не рассчитан'}</small>
+      </div>
+      <div class="oos-cluster-row__metric">
+        <b>${fmt.int(cluster.inStock || 0)}</b>
+        <span>остаток</span>
+      </div>
+      <div class="oos-cluster-row__metric">
+        <b>${fmt.num(cluster.avgDaily || 0, 1)}</b>
+        <span>шт/день</span>
+      </div>
+      <div class="oos-cluster-row__metric">
+        <b>${fmt.money(cluster.riskAmount || 0)}</b>
+        <span>${cluster.lostRevenueDay ? 'потери/день' : 'риск/день'}</span>
+      </div>
+    </div>
+  `;
 }
 
 function renderOosSkuRiskShelf(rows = []) {
   const groups = oosControlSkuRiskGroups(rows);
   const maxRisk = Math.max(1, ...groups.map((item) => item.riskAmount));
   return `
-    <section class="oos-sku-shelf">
+    <section class="oos-sku-board">
       <div class="section-subhead">
         <div>
-          <h3>SKU в риске</h3>
-          <p class="small muted">все позиции, попавшие в OOS, риск или контроль до 28 дней</p>
+          <h3>Артикулы под контролем</h3>
+          <p class="small muted">карточка показывает, когда закончится запас; клик раскрывает кластера, остатки и риск</p>
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(groups.length)} SKU`, groups.length ? 'warn' : 'ok')}
           ${badge(`${fmt.int(rows.reduce((sum, row) => sum + oosControlPlaceCount(row), 0))} складов`)}
         </div>
       </div>
-      <div class="oos-sku-shelf__grid">
-        ${groups.map((item) => {
+      <div class="oos-sku-board__grid">
+        ${groups.map((item, index) => {
           const tone = item.oosCount ? 'danger' : item.riskCount ? 'warn' : 'info';
-          const percent = oosControlBarPercent(item.riskAmount, maxRisk, 8);
-          const daysText = item.minDays ? `${fmt.num(item.minDays, 1)} д` : 'нет дней';
+          const riskPercent = oosControlBarPercent(item.riskAmount, maxRisk, 8);
+          const runwayPercent = oosControlBarPercent(item.minDays || 0, 28, item.minDays ? 6 : 0);
+          const daysText = item.minDays ? `закончится через ${fmt.num(item.minDays, 1)} д` : 'срок не рассчитан';
           const platformText = item.platforms.slice(0, 3).join(' · ');
+          const statusText = item.oosCount ? 'OOS' : item.riskCount ? 'риск <10 д' : 'контроль до 28 д';
+          const visibleClusters = item.clusters.slice(0, 10);
           return `
-            <article class="oos-sku-chip ${tone}">
-              <div class="oos-sku-chip__head">
-                <strong>${linkToSku(item.article, item.label)}</strong>
-                ${badge(daysText, oosControlCoverageTone(item.minDays))}
+            <details class="oos-sku-card ${tone}" ${index === 0 ? 'open' : ''}>
+              <summary class="oos-sku-card__summary">
+                <div class="oos-sku-card__head">
+                  <div>
+                    <span>${escapeHtml(statusText)} · ${escapeHtml(platformText || 'площадка')}</span>
+                    <strong>${escapeHtml(item.label)}</strong>
+                  </div>
+                  ${badge(daysText, oosControlCoverageTone(item.minDays))}
+                </div>
+                <div class="oos-sku-card__metrics">
+                  <span><b>${fmt.money(item.riskAmount)}</b><em>риск выручки/день</em></span>
+                  <span><b>${fmt.int(item.placeCount)}</b><em>кластеров</em></span>
+                  <span><b>${fmt.int(item.inStock)}</b><em>остаток</em></span>
+                  <span><b>+${fmt.int(item.targetNeed28)}</b><em>нужно до 28 д</em></span>
+                </div>
+                <div class="oos-runway">
+                  <div>
+                    <span>когда закончится</span>
+                    <b>${escapeHtml(daysText)}</b>
+                  </div>
+                  <i><b class="${tone}" style="--oos-bar:${runwayPercent}%"></b></i>
+                </div>
+                <div class="oos-sku-card__riskbar">
+                  <span>вес риска среди артикулов</span>
+                  <i><b class="${tone}" style="--oos-bar:${riskPercent}%"></b></i>
+                </div>
+              </summary>
+              <div class="oos-sku-card__body">
+                <div class="oos-sku-card__totals">
+                  <span><b>${fmt.num(item.avgDaily, 1)}</b><em>шт/день</em></span>
+                  <span><b>${fmt.int(item.inTransit)}</b><em>в пути</em></span>
+                  <span><b>${fmt.int(item.inRequest)}</b><em>в заявке</em></span>
+                  <span><b>+${fmt.int(item.targetNeed14)}</b><em>до 14 д</em></span>
+                </div>
+                <div class="oos-cluster-list">
+                  ${visibleClusters.map(renderOosSkuClusterRow).join('')}
+                  ${item.clusters.length > visibleClusters.length ? `<div class="oos-cluster-more">Еще ${fmt.int(item.clusters.length - visibleClusters.length)} кластеров ниже по риску</div>` : ''}
+                </div>
               </div>
-              <div class="oos-sku-chip__meta">
-                <span>${escapeHtml(platformText || 'площадка')}</span>
-                <b>${fmt.money(item.riskAmount)}</b>
-              </div>
-              <div class="oos-pulse-track"><i class="${tone}" style="--oos-bar:${percent}%"></i></div>
-              <div class="oos-sku-chip__foot">
-                <span>${fmt.int(item.placeCount)} складов</span>
-                <span>до 28 д: +${fmt.int(item.targetNeed28)} шт</span>
-              </div>
-            </article>
+            </details>
           `;
-        }).join('') || '<div class="oos-pulse-empty">SKU в риске нет</div>'}
+        }).join('') || '<div class="oos-pulse-empty">Артикулов под контролем нет</div>'}
       </div>
     </section>
   `;
@@ -7789,6 +7890,7 @@ function renderOosControlOperationalBriefing(payload = {}, rows = []) {
   const topPlaces = oosControlTopPlaces(rows, 4);
   const causeGroups = oosControlCauseGroups(rows).slice(0, 4);
   return `
+    ${renderOosSkuRiskShelf(rows)}
     <section class="oos-pulse-grid" aria-label="OOS dashboard">
       ${renderOosPulseCard({
         title: 'В OOS',
@@ -7836,7 +7938,6 @@ function renderOosControlOperationalBriefing(payload = {}, rows = []) {
         empty: 'Резкого замедления нет'
       })}
     </section>
-    ${renderOosSkuRiskShelf(rows)}
     <section class="oos-map-strip">
       <article>
         <div class="section-subhead">

@@ -1165,9 +1165,10 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
 
   function persistRangeState(stored) {
     try {
+      const mode = stored?.mode === 'custom' ? 'custom' : 'preset';
       window.localStorage?.setItem(DASHBOARD_RANGE_STORAGE_KEY, JSON.stringify({
-        mode: stored?.mode === 'custom' ? 'custom' : 'preset',
-        active: typeof stored?.active === 'string' && stored.active ? stored.active : '7',
+        mode,
+        active: mode === 'custom' ? '' : (typeof stored?.active === 'string' && stored.active ? stored.active : '7'),
         start: typeof stored?.start === 'string' ? stored.start : '',
         end: typeof stored?.end === 'string' ? stored.end : ''
       }));
@@ -1216,6 +1217,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   function presetRange(key, today) {
     const end = cleanDate(today);
     if (key === 'yesterday') return { mode: 'preset', active: 'yesterday', start: iso(end), end: iso(end) };
+    if (key === '7') return { mode: 'preset', active: '7', start: iso(startOfWeek(end)), end: iso(end) };
     if (key === 'prevweek') {
       const previousWeekEnd = addDays(startOfWeek(today), -1);
       const previousWeekStart = addDays(previousWeekEnd, -6);
@@ -7496,6 +7498,7 @@ function dashboardTaskStatusChip(task) {
       button.addEventListener('click', () => {
         const stored = ensureRangeState();
         Object.assign(stored, presetRange(button.dataset.portalExecPreset || '7', cleanDate(selectedRange().max || new Date())));
+        persistRangeState(stored);
         scheduleLocalApply(160);
       });
     });
@@ -7545,6 +7548,7 @@ function dashboardTaskStatusChip(task) {
       const nextStart = event.target.value || stored.start;
       stored.start = nextStart;
       if (stored.end && nextStart && stored.end < nextStart) stored.end = nextStart;
+      persistRangeState(stored);
       scheduleLocalApply(180);
     });
 
@@ -7555,6 +7559,7 @@ function dashboardTaskStatusChip(task) {
       const nextEnd = event.target.value || stored.end;
       stored.end = nextEnd;
       if (stored.start && nextEnd && stored.start > nextEnd) stored.start = nextEnd;
+      persistRangeState(stored);
       scheduleLocalApply(180);
     });
 

@@ -726,6 +726,24 @@ async function main() {
       : materializePoint(dateKey, bucket, selectedMode, fallbackPoint, 0);
     return { dateKey, point };
   }).filter(Boolean);
+  if (!sourceRows && !rawSeries.length) {
+    console.warn('Ozon marketplace refresh returned no effective rows. Preserve existing platform_trends.json.');
+    console.log(JSON.stringify({
+      outputPath: options.outputPath,
+      skipped: true,
+      reason: 'no-effective-ozon-marketplace-rows',
+      from: options.from,
+      to: options.to,
+      sourceRows,
+      matchedRows,
+      articleRows: 0,
+      productInfoRequested: productInfo.requested,
+      productInfoMatchedKeys: productInfo.matched,
+      sourceMode: selectedMode,
+      warnings: Array.from(new Set(warnings))
+    }, null, 2));
+    return;
+  }
   const series = rawSeries.map(({ dateKey, point }, index) => {
     const dayOffset = rawSeries.length - 1 - index;
     return {

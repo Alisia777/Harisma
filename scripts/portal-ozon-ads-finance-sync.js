@@ -410,6 +410,27 @@ async function main() {
     }
   }
   const { effectiveDaily, pendingDaily } = splitPendingTrailingDays(daily);
+  if (!effectiveDaily.length) {
+    const pendingDates = pendingDaily.map((day) => day.date).filter(Boolean);
+    console.warn('Ozon ads finance refresh returned no effective days. Preserve existing ads_summary.json.');
+    console.log(JSON.stringify({
+      dryRun: options.dryRun,
+      skipped: true,
+      reason: 'no-effective-ozon-finance-days',
+      inputPath: options.inputPath,
+      outputPath: options.outputPath,
+      mirrorPath: options.mirrorPath,
+      from: options.from,
+      to: options.to,
+      effectiveTo: payload?.diagnostics?.ozonAdsFinance?.effectiveTo || '',
+      days: 0,
+      pendingDates,
+      sourceRows: 0,
+      spend: 0,
+      warnings
+    }, null, 2));
+    return;
+  }
   const patched = patchPayload(payload, options, effectiveDaily, pendingDaily);
   if (warnings.length) patched.diagnostics.ozonAdsFinance.warnings = warnings;
   if (!options.dryRun) {

@@ -2,11 +2,12 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260602ratingreport17';
+  const VERSION = '20260608wbfunnel1';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
     leaderboardHistory: null,
+    wbFunnel: null,
     ozonFeedbacks: null,
     pending: null
   };
@@ -363,6 +364,17 @@
       }));
     }
 
+    if (st.wbSalesFunnel && typeof st.wbSalesFunnel === 'object' && Array.isArray(st.wbSalesFunnel.items)) {
+      auxCache.wbFunnel = st.wbSalesFunnel;
+    } else if (!auxCache.wbFunnel) {
+      tasks.push(fetchJson('data/wb_sales_funnel_report.json').then((payload) => {
+        auxCache.wbFunnel = payload && typeof payload === 'object' ? payload : { items: [], period: {} };
+        st.wbSalesFunnel = auxCache.wbFunnel;
+      }).catch(() => {
+        auxCache.wbFunnel = { items: [], period: {} };
+      }));
+    }
+
     if (!tasks.length || auxCache.pending) return;
     auxCache.pending = Promise.allSettled(tasks).finally(() => {
       auxCache.pending = null;
@@ -462,6 +474,50 @@
     return { map, label: latest?.weekLabel || st.productLeaderboard?.weekLabel || 'последняя неделя' };
   }
 
+  function latestWbFunnelMap(st) {
+    const payload = st.wbSalesFunnel && typeof st.wbSalesFunnel === 'object'
+      ? st.wbSalesFunnel
+      : auxCache.wbFunnel;
+    const map = new Map();
+    (Array.isArray(payload?.items) ? payload.items : []).forEach((item) => {
+      const keys = [item?.articleKey, item?.article, item?.supplierArticle, item?.nmId, item?.wbNmId];
+      keys.map(normalizeKey).filter(Boolean).forEach((key) => {
+        if (!map.has(key)) map.set(key, item);
+      });
+    });
+    return {
+      map,
+      period: payload?.period || {},
+      source: payload?.source || '',
+      generatedAt: payload?.generatedAt || ''
+    };
+  }
+
+  function periodDays(period, fallback = 7) {
+    const direct = num(period?.days);
+    if (direct > 0) return direct;
+    const from = isoDate(period?.from);
+    const to = isoDate(period?.to);
+    if (from && to) return Math.max(1, Math.round((dateValue(to) - dateValue(from)) / 86400000) + 1);
+    return fallback;
+  }
+
+  function wbFunnelRevenueModel(key, wbFunnel) {
+    const item = wbFunnel?.map?.get(key);
+    if (!item) return null;
+    const week = hasNumber(item.ordersRevenue) ? num(item.ordersRevenue) : num(item.revenue || item.orderedRevenue);
+    if (!(week > 0)) return null;
+    const days = periodDays(wbFunnel.period, 7);
+    const label = wbFunnel.period?.label ? ` ${wbFunnel.period.label}` : '';
+    return {
+      revenue7: week,
+      revenue3: week * Math.min(3, days) / days,
+      revenue1: week / days,
+      units7: num(item.ordersUnits),
+      source: `WB воронка${label}`
+    };
+  }
+
   function skuRevenueMonth(sku) {
     return num(
       sku?.planFact?.factApr16Revenue
@@ -472,7 +528,10 @@
     );
   }
 
-  function revenueModel(key, leaderboard, skuMap) {
+  function revenueModel(key, leaderboard, skuMap, wbFunnel) {
+    const wbFunnelRevenue = wbFunnelRevenueModel(key, wbFunnel);
+    if (wbFunnelRevenue) return wbFunnelRevenue;
+
     const leader = leaderboard.map.get(key);
     if (leader && hasNumber(leader.revenue)) {
       const week = num(leader.revenue);
@@ -516,6 +575,40 @@
       low,
       rating: periodRating(active, base),
       negativePct: reviews > 0 ? low / reviews : null
+    };
+  }
+
+  function historyPeriod(active, activeDate, days, fallback) {
+    const history = Array.isArray(active?.ratingHistory) ? active.ratingHistory : [];
+    const to = dateValue(activeDate);
+    if (!history.length || !to) return fallback;
+    const from = to - ((days - 1) * 86400000);
+    let reviews = 0;
+    let low = 0;
+    let ratingWeight = 0;
+    let ratingSum = 0;
+
+    history.forEach((point) => {
+      const value = dateValue(point?.date);
+      if (!value || value < from || value > to) return;
+      const dailyReviews = num(point.feedbacks ?? point.feedbackCount ?? point.ratingFeedbacks);
+      const dailyRatingCount = num(point.ratingFeedbacks ?? point.feedbacks ?? point.feedbackCount);
+      const dailyLow = num(point.lowRatingFeedbacks ?? point.lowRatingCount ?? point.lowFeedbacks);
+      const dailyRating = num(point.avgRating ?? point.rating ?? point.cumulativeAvgRating);
+      reviews += dailyReviews;
+      low += dailyLow;
+      if (dailyRatingCount > 0 && dailyRating >= 1 && dailyRating <= 5) {
+        ratingWeight += dailyRatingCount;
+        ratingSum += dailyRating * dailyRatingCount;
+      }
+    });
+
+    if (reviews <= 0 && ratingWeight <= 0) return fallback;
+    return {
+      reviews: reviews > 0 ? reviews : fallback.reviews,
+      low: reviews > 0 ? low : fallback.low,
+      rating: ratingWeight > 0 ? ratingSum / ratingWeight : fallback.rating,
+      negativePct: reviews > 0 ? low / reviews : fallback.negativePct
     };
   }
 
@@ -568,6 +661,7 @@
     };
     const skuMap = buildSkuMap(st);
     const leaderboard = latestLeaderboardMap(st);
+    const wbFunnel = latestWbFunnelMap(st);
 
     const rows = active.cards.map((card, index) => {
       const key = cardKey(card);
@@ -575,13 +669,16 @@
       const base3 = maps.p3.get(key);
       const base1 = maps.p1.get(key);
       const historyCard = maps.history.get(key);
-      const p7 = buildPeriod(card, base7);
-      const p3 = buildPeriod(card, base3);
-      const p1 = buildPeriod(card, base1);
+      let p7 = buildPeriod(card, base7);
+      let p3 = buildPeriod(card, base3);
+      let p1 = buildPeriod(card, base1);
+      p7 = historyPeriod(card, active.date, 7, p7);
+      p3 = historyPeriod(card, active.date, 3, p3);
+      p1 = historyPeriod(card, active.date, 1, p1);
       const q7 = buildQuestionPeriod(card, base7);
       const q3 = buildQuestionPeriod(card, base3);
       const q1 = buildQuestionPeriod(card, base1);
-      const revenue = revenueModel(key, leaderboard, skuMap);
+      const revenue = revenueModel(key, leaderboard, skuMap, wbFunnel);
       const rating = num(card.avgRating || card.ratingTrendLatestRating);
       const ratingDelta1 = rating - num(base1?.avgRating || base1?.ratingTrendLatestRating || rating);
       const unanswered = num(card.unansweredFeedbackCount);

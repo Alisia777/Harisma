@@ -1,12 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-08T10:30:52.352Z",
+  "generatedAt": "2026-06-08T10:36:41.242Z",
   "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
     "warnings": [],
-    "checkedAt": "2026-06-08T10:30:52.352Z"
+    "checkedAt": "2026-06-08T10:36:41.242Z"
   },
   "freshness": {
     "maxDate": "2026-06-07",
@@ -15,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-08T10:30:52.346Z",
+      "checkedAt": "2026-06-08T10:36:41.237Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-07",
       "maxDate": "2026-06-07",
@@ -36,12 +36,12 @@
           "status": "ok",
           "expectedDate": "2026-06-07",
           "latestDate": "2026-06-07",
-          "currentRevenue": 10305178,
+          "currentRevenue": 10304727,
           "baselineRevenueMedian": 9470316,
-          "revenueRatio": 1.0882,
-          "currentUnits": 8616,
+          "revenueRatio": 1.0881,
+          "currentUnits": 8615,
           "baselineUnitsMedian": 8099,
-          "unitsRatio": 1.0638,
+          "unitsRatio": 1.0637,
           "baselineDays": 7
         },
         {
@@ -62,7 +62,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-08T10:30:52.352Z",
+      "checkedAt": "2026-06-08T10:36:41.242Z",
       "expectedDate": "2026-06-07",
       "adsSummaryWindowTo": "2026-06-07",
       "iuDrrWindowTo": "2026-06-07",
@@ -112,10 +112,10 @@
     },
     "platform_trends": {
       "exists": true,
-      "rows": 4,
-      "generatedAt": "2026-06-08T10:27:39.334Z",
+      "rows": 7,
+      "generatedAt": "2026-06-08T10:36:25.357Z",
       "asOfDate": "2026-06-07",
-      "revenue": 623700455
+      "revenue": 687237473
     },
     "ads_summary": {
       "exists": true,
@@ -239,7 +239,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-08T10:30:39.845Z",
+      "generatedAt": "2026-06-08T10:30:52.345Z",
       "asOfDate": "2026-06-08",
       "revenue": 0
     },
@@ -274,7 +274,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-08T10:30:39.852Z",
+      "generatedAt": "2026-06-08T10:30:52.352Z",
       "asOfDate": "2026-06-08",
       "revenue": 0
     }
@@ -373,7 +373,7 @@
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-06-08T09:57:31.446Z",
+    "generatedAt": "2026-06-08T10:30:52.563Z",
     "comparisons": [
       {
         "snapshot": "skus",
@@ -386,18 +386,18 @@
       },
       {
         "snapshot": "platform_trends",
-        "rows": 4,
-        "previousRows": 7,
-        "rowRatio": 0.5714285714285714,
-        "revenue": 623700455,
-        "previousRevenue": 733256092,
-        "revenueRatio": 0.8505902123483483
+        "rows": 7,
+        "previousRows": 4,
+        "rowRatio": 1.75,
+        "revenue": 687237473,
+        "previousRevenue": 623700455,
+        "revenueRatio": 1.1018710464144201
       },
       {
         "snapshot": "order_procurement",
         "rows": 2618,
-        "previousRows": 2634,
-        "rowRatio": 0.9939255884586181,
+        "previousRows": 2618,
+        "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
         "revenueRatio": 1
@@ -430,7 +430,7 @@
         "revenueRatio": 1
       }
     ],
-    "markedAt": "2026-06-08T10:30:52.563Z",
+    "markedAt": "2026-06-08T10:36:41.470Z",
     "copied": 26
   },
   "checks": [
@@ -447,7 +447,7 @@
     {
       "name": "required:platform_trends",
       "status": "ok",
-      "rows": 4
+      "rows": 7
     },
     {
       "name": "required:order_procurement",
@@ -515,12 +515,12 @@
       "label": "WB",
       "expectedDate": "2026-06-07",
       "latestDate": "2026-06-07",
-      "currentRevenue": 10305178,
+      "currentRevenue": 10304727,
       "baselineRevenueMedian": 9470316,
-      "revenueRatio": 1.0882,
-      "currentUnits": 8616,
+      "revenueRatio": 1.0881,
+      "currentUnits": 8615,
       "baselineUnitsMedian": 8099,
-      "unitsRatio": 1.0638,
+      "unitsRatio": 1.0637,
       "baselineDays": 7
     },
     {

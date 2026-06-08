@@ -82,6 +82,7 @@ const CHANNEL_KEYS = [
   ['reviewPoints', 'Отзывы за баллы'],
   ['externalAds', 'Внешка']
 ];
+const CHANNEL_LABEL_BY_KEY = Object.fromEntries(CHANNEL_KEYS);
 const DOWNLOADS_ROOT = path.resolve(process.env.USERPROFILE || process.cwd(), 'Downloads');
 const QUARTER_REPORT_CANDIDATES = [
   path.join(DOWNLOADS_ROOT, 'report 2026-5-18.xlsx'),
@@ -387,6 +388,14 @@ function normalizeTextKey(value) {
     .toLowerCase()
     .replace(/ё/g, 'е')
     .replace(/\s+/g, ' ');
+}
+
+function normalizeCampaignId(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) return String(Math.trunc(value));
+  const raw = String(value || '').trim().replace(/\s+/g, '');
+  if (!raw) return '';
+  if (/^\d+(?:\.0+)?$/.test(raw)) return String(Math.trunc(Number(raw)));
+  return raw;
 }
 
 function decodeOzonLowByteText(value) {
@@ -1687,6 +1696,14 @@ function resolveOptions(args) {
       [DOWNLOADS_ROOT, path.join(DOWNLOADS_ROOT, 'Telegram Desktop')],
       (name) => /^Дашборд.*ИУ.*Оз.*\.xlsx$/i.test(name)
     );
+  const wbAdsChannelOverridesPath = path.resolve(
+    args['wb-ads-channel-overrides']
+    || args['channel-overrides']
+    || args['channel-overrides-json']
+    || process.env.ALTEA_WB_ADS_CHANNEL_OVERRIDES
+    || path.join(baseDataDir, 'wb_ads_channel_overrides.json')
+  );
+  const wbAdsChannelOverrides = readWbAdsChannelOverrides(wbAdsChannelOverridesPath);
   return {
     dryRun: Boolean(args.dryRun),
     inputDir,
@@ -1707,7 +1724,10 @@ function resolveOptions(args) {
     ozonApiBaseUrl: String(args['ozon-api-base-url'] || process.env.ALTEA_OZON_API_BASE_URL || OZON_API_BASE_URL).replace(/\/+$/, ''),
     ozonFinanceApiFrom: apiFrom,
     ozonFinanceApiTo: apiTo,
-    ozonFinanceApiPageSize: Math.max(1, Math.min(1000, Math.trunc(numberOrZero(args['ozon-finance-api-page-size'] || OZON_FINANCE_TRANSACTION_PAGE_SIZE))))
+    ozonFinanceApiPageSize: Math.max(1, Math.min(1000, Math.trunc(numberOrZero(args['ozon-finance-api-page-size'] || OZON_FINANCE_TRANSACTION_PAGE_SIZE)))),
+    wbAdsChannelOverridesPath,
+    wbAdsChannelOverrides: wbAdsChannelOverrides.map,
+    wbAdsChannelOverridesDiagnostics: wbAdsChannelOverrides.diagnostics
   };
 }
 
@@ -1720,6 +1740,67 @@ function normalizePlatformKey(value) {
   if (raw === 'wildberries' || raw === 'вб') return 'wb';
   if (raw === 'ym' || raw === 'yandex') return 'ya';
   return raw || 'all';
+}
+
+function normalizeChannelOverrideLabel(value) {
+  const raw = String(value || '').trim();
+  const normalized = normalizeTextKey(raw);
+  const compact = normalized.replace(/[\s_-]+/g, '');
+  if (!raw) return '';
+  if (compact === 'wbmedia' || compact === 'media' || /медиа|media/.test(normalized)) return CHANNEL_LABEL_BY_KEY.wbMedia;
+  if (compact === 'wbinfluencer' || /инфлю|influ/.test(normalized)) return CHANNEL_LABEL_BY_KEY.wbInfluencer;
+  if (compact === 'pvz' || /пвз|pvz/.test(normalized)) return CHANNEL_LABEL_BY_KEY.pvzAds;
+  if (/брендзон|brand/.test(normalized)) return CHANNEL_LABEL_BY_KEY.brandZone;
+  if (/обзор/.test(normalized)) return CHANNEL_LABEL_BY_KEY.overviews;
+  if (compact === 'reviewpoints' || /отзыв|review/.test(normalized)) return CHANNEL_LABEL_BY_KEY.reviewPoints;
+  if (/внеш|external/.test(normalized)) return CHANNEL_LABEL_BY_KEY.externalAds;
+  if (compact === 'wbpromotion' || compact === 'promotion' || /продвиж/.test(normalized)) return CHANNEL_LABEL_BY_KEY.wbPromotion;
+  return raw;
+}
+
+function readWbAdsChannelOverrides(filePath) {
+  const diagnostics = {
+    path: filePath || '',
+    exists: false,
+    campaigns: 0,
+    invalidRows: 0
+  };
+  const map = new Map();
+  const raw = readJson(filePath, null);
+  if (!raw) return { map, diagnostics };
+  diagnostics.exists = true;
+
+  const addEntry = (key, value) => {
+    const entry = value && typeof value === 'object' && !Array.isArray(value) ? value : { channel: value };
+    const campaignId = normalizeCampaignId(entry.campaignId || entry.advertId || entry.id || key);
+    const channel = normalizeChannelOverrideLabel(entry.channel || entry.label || entry.type || entry.article);
+    if (!campaignId || !channel) {
+      diagnostics.invalidRows += 1;
+      return;
+    }
+    map.set(campaignId, {
+      campaignId,
+      channel,
+      channelKey: channelKey(channel),
+      reason: String(entry.reason || entry.note || '').trim()
+    });
+  };
+
+  if (Array.isArray(raw)) {
+    raw.forEach((entry, index) => addEntry(index, entry));
+  } else if (raw && typeof raw === 'object') {
+    if (raw.campaigns) Object.entries(raw.campaigns).forEach(([key, value]) => addEntry(key, value));
+    if (raw.overrides) Object.entries(raw.overrides).forEach(([key, value]) => addEntry(key, value));
+    if (!raw.campaigns && !raw.overrides) {
+      const metaKeys = new Set(['generatedAt', 'source', 'note', 'version']);
+      Object.entries(raw)
+        .filter(([key]) => !metaKeys.has(key))
+        .forEach(([key, value]) => addEntry(key, value));
+    }
+  }
+
+  diagnostics.campaigns = map.size;
+  return { map, diagnostics };
 }
 
 function buildPlatformDateMap(platformTrends, platformKey) {
@@ -1783,13 +1864,14 @@ function buildPlatformDateMap(platformTrends, platformKey) {
 }
 
 function channelKey(channel) {
-  const raw = String(channel || '').trim().toLowerCase();
-  if (/медиа|media/.test(raw)) return 'wbMedia';
-  if (/инфлю|influ/.test(raw)) return 'wbInfluencer';
-  if (/пвз|pvz/.test(raw)) return 'pvzAds';
+  const raw = normalizeTextKey(channel);
+  const compact = raw.replace(/[\s_-]+/g, '');
+  if (compact === 'wbmedia' || compact === 'media' || /медиа|media/.test(raw)) return 'wbMedia';
+  if (compact === 'wbinfluencer' || /инфлю|influ/.test(raw)) return 'wbInfluencer';
+  if (compact === 'pvz' || /пвз|pvz/.test(raw)) return 'pvzAds';
   if (/брендзон|brand/.test(raw)) return 'brandZone';
   if (/обзор/.test(raw)) return 'overviews';
-  if (/отзыв/.test(raw)) return 'reviewPoints';
+  if (compact === 'reviewpoints' || /отзыв|review/.test(raw)) return 'reviewPoints';
   if (/внеш|external/.test(raw)) return 'externalAds';
   return 'wbPromotion';
 }
@@ -1808,6 +1890,17 @@ function addAdsBucket(map, date, row) {
   current.rows += 1;
   map.set(date, current);
   return current;
+}
+
+function resolveAdsRowChannel(row, channelOverrides, diagnostics) {
+  const fallback = row?.channel || '';
+  const campaignId = normalizeCampaignId(row?.campaignId || row?.advertId || row?.id);
+  const override = campaignId && channelOverrides instanceof Map ? channelOverrides.get(campaignId) : null;
+  if (!override?.channel) return fallback;
+  diagnostics.channelOverridesAppliedRows += 1;
+  diagnostics.channelOverridesAppliedSpend = roundMoney(diagnostics.channelOverridesAppliedSpend + numberOrZero(row?.spend));
+  diagnostics.channelOverridesAppliedCampaigns.add(campaignId);
+  return override.channel;
 }
 
 function mergePlatformAdsSeries(adsSummary, platformKey, targetMap, onSpendGap) {
@@ -1833,10 +1926,16 @@ function mergePlatformAdsSeries(adsSummary, platformKey, targetMap, onSpendGap) 
   }
 }
 
-function buildAdsDailyMaps(adsSummary) {
+function buildAdsDailyMaps(adsSummary, channelOverrides = new Map()) {
   const byDate = new Map();
   const byDateChannel = new Map();
   const ozonByDate = new Map();
+  const diagnostics = {
+    channelOverridesLoaded: channelOverrides instanceof Map ? channelOverrides.size : 0,
+    channelOverridesAppliedRows: 0,
+    channelOverridesAppliedSpend: 0,
+    channelOverridesAppliedCampaigns: new Set()
+  };
   for (const row of adsSummary?.itemSeries || []) {
     const platformKey = normalizePlatformKey(row?.platformKey || row?.platform || row?.marketplace || row?.data_source);
     if (!['wb', 'ozon'].includes(platformKey)) continue;
@@ -1846,7 +1945,8 @@ function buildAdsDailyMaps(adsSummary) {
     const targetMap = platformKey === 'ozon' ? ozonByDate : byDate;
     addAdsBucket(targetMap, date, row);
 
-    const key = `${date}|${channelKey(row.channel)}`;
+    const resolvedChannel = resolveAdsRowChannel(row, channelOverrides, diagnostics);
+    const key = `${date}|${channelKey(resolvedChannel)}`;
     const channelCurrent = byDateChannel.get(key) || 0;
     byDateChannel.set(key, channelCurrent + numberOrZero(row.spend));
   }
@@ -1857,7 +1957,15 @@ function buildAdsDailyMaps(adsSummary) {
   });
   mergePlatformAdsSeries(adsSummary, 'ozon', ozonByDate);
 
-  return { byDate, byDateChannel, ozonByDate };
+  return {
+    byDate,
+    byDateChannel,
+    ozonByDate,
+    diagnostics: {
+      ...diagnostics,
+      channelOverridesAppliedCampaigns: [...diagnostics.channelOverridesAppliedCampaigns].sort()
+    }
+  };
 }
 
 function buildReviewPointsMap(wbFeedbacksSummary) {
@@ -1992,7 +2100,8 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
   const wbMap = buildPlatformDateMap(platformTrends, 'wb');
   const ozonMap = buildPlatformDateMap(platformTrends, 'ozon');
   const yandexMap = buildPlatformDateMap(platformTrends, 'ya');
-  const adsMaps = buildAdsDailyMaps(adsSummary);
+  const adsMaps = buildAdsDailyMaps(adsSummary, options.wbAdsChannelOverrides);
+  options.wbAdsChannelOverrideRuntime = adsMaps.diagnostics;
   const reviewPointsMap = buildReviewPointsMap(wbFeedbacksSummary);
   const wbDailyPlanMap = buildWbDailyPlanMap(iuPlan);
   const range = dateRange(platformTrends, adsSummary, options.from, options.to);
@@ -2548,7 +2657,8 @@ async function buildPayload(options) {
       ozonFinanceFile: ozonFinance.source?.financeFile || '',
       ozonProductsFile: ozonFinance.source?.productsFile || '',
       ozonPlanFile: ozonPlan.source?.planFile || '',
-      adsSourceMode: adsSummary.sourceMode || adsSummary.source || ''
+      adsSourceMode: adsSummary.sourceMode || adsSummary.source || '',
+      wbAdsChannelOverridesFile: options.wbAdsChannelOverridesPath || ''
     },
     window: {
       from: dailyRows[0]?.date || '',
@@ -2581,6 +2691,10 @@ async function buildPayload(options) {
     diagnostics: {
       adsSourceMode: adsSummary.sourceMode || adsSummary.source || '',
       adsDiagnostics: adsSummary.diagnostics || {},
+      wbAdsChannelOverrides: {
+        ...(options.wbAdsChannelOverridesDiagnostics || {}),
+        ...(options.wbAdsChannelOverrideRuntime || {})
+      },
       wbFeedbacksDiagnostics: wbFeedbacksSummary.diagnostics || {},
       ozonFinanceDiagnostics: ozonFinance.diagnostics || {},
       reviewPointsSource: Array.from(new Set(dailyRows.map((row) => row.reviewPointsSource).filter(Boolean))).join('+')

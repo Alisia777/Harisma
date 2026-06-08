@@ -452,10 +452,6 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
         let revenueSource = ordersRevenue > 0
           ? 'orders_revenue'
           : (platformRevenue > 0 ? 'platform_revenue' : (financeTurnover > 0 ? 'finance_turnover' : ''));
-        if (platform === 'wb' && financeTurnover > 0) {
-          revenue = financeTurnover;
-          revenueSource = 'wb_finance_turnover';
-        }
         if (platform === 'all' && rawRevenue > 0) {
           revenueSource = 'company_revenue';
         }
@@ -1795,7 +1791,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       const margin = num(trend.margin);
       const spend = num(ads.spend);
       const adRevenue = num(ads.revenue);
-      const marginBase = financeTurnover > 0 ? financeTurnover : revenue;
+      const marginBase = revenue > 0 ? revenue : financeTurnover;
       const hasMargin = trend.hasMargin === true && marginBase > 0;
       const useCompanyPlanForDay = planRevenue > 0;
       return {

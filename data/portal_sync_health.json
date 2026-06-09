@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-09T11:46:13.300Z",
+  "generatedAt": "2026-06-09T13:37:19.916Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -8,7 +8,7 @@
     "warnings": [
       "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.."
     ],
-    "checkedAt": "2026-06-09T11:46:13.300Z"
+    "checkedAt": "2026-06-09T13:37:19.916Z"
   },
   "freshness": {
     "maxDate": "2026-06-08",
@@ -17,7 +17,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-09T11:46:13.294Z",
+      "checkedAt": "2026-06-09T13:37:19.910Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-08",
       "maxDate": "2026-06-08",
@@ -64,7 +64,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-09T11:46:13.300Z",
+      "checkedAt": "2026-06-09T13:37:19.916Z",
       "expectedDate": "2026-06-08",
       "adsSummaryWindowTo": "2026-06-08",
       "iuDrrWindowTo": "2026-06-08",
@@ -241,7 +241,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-09T11:41:47.582Z",
+      "generatedAt": "2026-06-09T11:46:13.293Z",
       "asOfDate": "2026-06-09",
       "revenue": 0
     },
@@ -276,7 +276,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-09T11:41:47.591Z",
+      "generatedAt": "2026-06-09T11:46:13.300Z",
       "asOfDate": "2026-06-09",
       "revenue": 0
     }
@@ -382,7 +382,7 @@
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-06-09T11:41:47.840Z",
+    "generatedAt": "2026-06-09T11:46:13.558Z",
     "comparisons": [
       {
         "snapshot": "skus",
@@ -439,7 +439,7 @@
         "revenueRatio": 1
       }
     ],
-    "markedAt": "2026-06-09T11:46:13.558Z",
+    "markedAt": "2026-06-09T13:37:20.147Z",
     "copied": 26
   },
   "checks": [

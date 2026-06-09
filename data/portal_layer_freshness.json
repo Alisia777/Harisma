@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T11:41:47.577Z",
+  "generatedAt": "2026-06-09T11:46:28.102Z",
   "expectedDate": "2026-06-08",
   "publish": {
     "allowed": true,
@@ -347,14 +347,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 1126005,
-      "sourceMtime": "2026-06-08T10:29:43.451Z",
-      "rowCount": 949,
-      "generatedAt": "2026-06-08T10:29:43.439Z",
+      "sourceBytes": 1120642,
+      "sourceMtime": "2026-06-09T11:45:54.028Z",
+      "rowCount": 954,
+      "generatedAt": "2026-06-09T11:45:54.019Z",
       "freshness": {
-        "date": "2026-06-08",
+        "date": "2026-06-09",
         "source": "generatedAt",
-        "value": "2026-06-08T10:29:43.439Z"
+        "value": "2026-06-09T11:45:54.019Z"
       }
     },
     {
@@ -408,13 +408,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 324,
-      "sourceMtime": "2026-06-09T11:33:46.446Z",
+      "sourceMtime": "2026-06-09T11:46:13.560Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-09T11:33:46.438Z",
+      "generatedAt": "2026-06-09T11:46:13.293Z",
       "freshness": {
         "date": "2026-06-09",
         "source": "generatedAt",
-        "value": "2026-06-09T11:33:46.438Z"
+        "value": "2026-06-09T11:46:13.293Z"
       }
     },
     {
@@ -427,10 +427,10 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 15474,
-      "sourceMtime": "2026-06-09T11:33:46.445Z",
+      "sourceBytes": 15536,
+      "sourceMtime": "2026-06-09T11:46:13.560Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-09T11:33:46.445Z",
+      "generatedAt": "2026-06-09T11:46:13.300Z",
       "freshness": {
         "date": "2026-06-08",
         "source": "freshness.maxDate",
@@ -448,9 +448,9 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 19737,
-      "sourceMtime": "2026-06-09T11:33:46.748Z",
+      "sourceMtime": "2026-06-09T11:41:47.578Z",
       "rowCount": 34,
-      "generatedAt": "2026-06-09T11:33:46.747Z",
+      "generatedAt": "2026-06-09T11:41:47.577Z",
       "freshness": {
         "date": "2026-06-08",
         "source": "expectedDate",
@@ -467,10 +467,10 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 9095,
-      "sourceMtime": "2026-06-09T11:33:46.995Z",
+      "sourceBytes": 8701,
+      "sourceMtime": "2026-06-09T11:46:13.426Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-09T11:33:46.994Z",
+      "generatedAt": "2026-06-09T11:46:13.425Z",
       "freshness": {
         "date": "2026-06-08",
         "source": "expectedDate",

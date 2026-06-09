@@ -9482,6 +9482,67 @@ function dashboardTaskStatusChip(task) {
     return '—';
   }
 
+  function dashboardPlatformFreshness(platformKey, range) {
+    const key = canonicalDashboardPlatformKey(platformKey);
+    const keys = key === 'all' ? PLATFORM_KEYS.filter((item) => item !== 'all') : [key];
+    const anchor = range?.anchor || anchorDate();
+    const rowsByKey = keys.map((item) => {
+      let latest = null;
+      const remember = (value) => {
+        const date = value instanceof Date ? cleanDate(value) : parseDate(value);
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return;
+        if (!latest || date > latest) latest = date;
+      };
+      platformSeries(item, anchor).forEach((point) => remember(point?.date));
+      rowsForPlatform(current('platformTrends'), item).forEach((row) => {
+        (Array.isArray(row?.daily) ? row.daily : []).forEach((point) => remember(point?.date || point?.label));
+      });
+      return {
+        key: item,
+        label: shortPlatformLabel(item),
+        latest
+      };
+    });
+    const latestDates = rowsByKey.map((item) => item.latest).filter(Boolean);
+    const latest = latestDates.length ? latestDates.reduce((best, item) => (item > best ? item : best)) : null;
+    const effectiveEnd = range?.effectiveEnd ? cleanDate(range.effectiveEnd) : null;
+    const staleRows = effectiveEnd
+      ? rowsByKey.filter((item) => !item.latest || item.latest < effectiveEnd)
+      : [];
+    return {
+      key,
+      latest,
+      rows: rowsByKey,
+      staleRows,
+      isPartial: key === 'all' && staleRows.length > 0,
+      isStale: key !== 'all' && staleRows.length > 0
+    };
+  }
+
+  function dashboardFreshnessNote(freshness) {
+    if (!freshness || (!freshness.isStale && !freshness.isPartial)) return '';
+    const staleText = (freshness.staleRows || [])
+      .map((item) => `${item.label}: ${item.latest ? `до ${shortDate(item.latest)}` : 'нет daily'}`)
+      .join('; ');
+    if (freshness.key === 'all') {
+      return staleText
+        ? `В доп. слое часть площадок отстает от выбранной даты: ${staleText}. Эти дни показаны как отсутствующий daily, чтобы старый источник не выглядел свежим фактом.`
+        : '';
+    }
+    const row = freshness.rows?.[0] || null;
+    return row?.latest
+      ? `Daily по ${row.label} сейчас есть до ${shortDate(row.latest)}. Дни после этой даты показаны как отсутствующий daily, чтобы старый источник не выглядел свежим фактом.`
+      : `По ${row?.label || 'площадке'} сейчас нет daily в доп. слое для выбранного окна.`;
+  }
+
+  function dashboardDayMissesFreshness(date, freshness) {
+    if (!freshness?.isStale || freshness.key === 'all') return false;
+    const day = date instanceof Date ? cleanDate(date) : parseDate(date);
+    if (!(day instanceof Date) || Number.isNaN(day.getTime())) return false;
+    const latest = freshness.rows?.[0]?.latest || null;
+    return !latest || day > latest;
+  }
+
   function dashboardTableCard(title, subtitle, headHtml, bodyHtml, className = '') {
     const extraClass = className ? ` ${esc(className)}` : '';
     return `
@@ -9503,12 +9564,15 @@ function dashboardTaskStatusChip(task) {
   function buildRevenueDetailStructured(metric, executive) {
     const previous = executive.compareByKey.get(metric.key);
     const revenueDelta = relativeDelta(metric.revenue, previous?.revenue);
+    const freshness = dashboardPlatformFreshness(metric.key, executive.range);
+    const freshnessNote = dashboardFreshnessNote(freshness);
     const allRows = articleRowsForPlatform(metric.key, executive.range)
       .sort((left, right) => num(right.actualRevenueSelected) - num(left.actualRevenueSelected) || num(right.actualUnitsSelected) - num(left.actualUnitsSelected))
       .slice(0, 36);
     const priceDailyMap = new Map((metric.priceMatrixSeries || []).map((row) => [iso(row.date), row]));
     const dailyRows = metric.days.map((row) => {
       const price = priceDailyMap.get(iso(row.date));
+      const missingDaily = dashboardDayMissesFreshness(row.date, freshness);
       return {
         date: row.date,
         plan: dailyPlanDisplay(row, metric),
@@ -9518,7 +9582,8 @@ function dashboardTaskStatusChip(task) {
         revenueSource: row.revenueSource,
         units: row.factUnits,
         avgCheck: row.factUnits > 0 ? row.revenue / row.factUnits : null,
-        avgPrice: price?.avgPrice || 0
+        avgPrice: price?.avgPrice || 0,
+        missingDaily
       };
     });
     const skuBody = allRows.length ? allRows.map((row) => {
@@ -9538,17 +9603,17 @@ function dashboardTaskStatusChip(task) {
       `;
     }).join('') : '<tr><td colspan="8">Нет SKU с выручкой в выбранном окне.</td></tr>';
     const dailyBody = dailyRows.length ? dailyRows.map((row) => {
-      const tone = dashboardCompletionTone(row.completion);
+      const tone = row.missingDaily ? 'muted' : dashboardCompletionTone(row.completion);
       return `
         <tr class="portal-exec-row-${esc(tone)}">
           <td>${esc(shortDate(row.date))}</td>
           <td class="portal-exec-num">${esc(row.plan)}</td>
-          <td class="portal-exec-num">${esc(row.fact)}</td>
-          <td class="portal-exec-num">${dashboardCellChip(row.completion !== null ? pct(row.completion) : '—', tone)}</td>
-          <td class="portal-exec-num">${esc(money(row.revenue))}</td>
-          <td>${esc(dashboardRevenueSourceText(row.revenueSource, metric.key))}</td>
-          <td class="portal-exec-num">${esc(int(row.units))}</td>
-          <td class="portal-exec-num">${esc(row.avgCheck ? money(row.avgCheck) : '—')}</td>
+          <td class="portal-exec-num">${row.missingDaily ? dashboardCellChip('нет daily', 'muted') : esc(row.fact)}</td>
+          <td class="portal-exec-num">${dashboardCellChip(!row.missingDaily && row.completion !== null ? pct(row.completion) : '—', tone)}</td>
+          <td class="portal-exec-num">${esc(row.missingDaily ? '—' : money(row.revenue))}</td>
+          <td>${esc(row.missingDaily ? 'нет daily' : dashboardRevenueSourceText(row.revenueSource, metric.key))}</td>
+          <td class="portal-exec-num">${esc(row.missingDaily ? '—' : int(row.units))}</td>
+          <td class="portal-exec-num">${esc(!row.missingDaily && row.avgCheck ? money(row.avgCheck) : '—')}</td>
         </tr>
       `;
     }).join('') : '<tr><td colspan="8">Нет дневного ряда в выбранном окне.</td></tr>';
@@ -9560,12 +9625,14 @@ function dashboardTaskStatusChip(task) {
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('Выручка', money(metric.revenue))}
           ${modalSummaryCard('Источник', dashboardRevenueSourceText(metric.revenueSource, metric.key))}
+          ${freshness.isStale ? modalSummaryCard('Последний daily', freshness.rows?.[0]?.latest ? shortDate(freshness.rows[0].latest) : 'нет') : ''}
           ${modalSummaryCard('WoW', revenueDelta !== null ? pct(revenueDelta) : '—')}
           ${modalSummaryCard('Продано, шт.', int(metric.units))}
           ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
           ${modalSummaryCard('% к плану', pct(metric.completion))}
           ${modalSummaryCard('Средний чек', metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}
         </div>
+        ${freshnessNote ? `<div class="portal-exec-freshness-note">${esc(freshnessNote)}</div>` : ''}
         <div class="portal-exec-modal-grid portal-exec-structured-grid">
           ${dashboardTableCard(
             'Артикулы: деньги, факт, план',
@@ -9587,6 +9654,8 @@ function dashboardTaskStatusChip(task) {
   }
 
   function buildCompletionDetailStructured(metric, executive) {
+    const freshness = dashboardPlatformFreshness(metric.key, executive.range);
+    const freshnessNote = dashboardFreshnessNote(freshness);
     const allRows = articleRowsForPlatform(metric.key, executive.range);
     const summary = completionDetailArticleSummary(metric, allRows, executive.range);
     const previousRows = executive.compareRange ? articleRowsForPlatform(metric.key, executive.compareRange) : [];
@@ -9602,7 +9671,10 @@ function dashboardTaskStatusChip(task) {
       .map((row) => ({ ...row, planGap: num(row.actualUnitsSelected) - num(row.planUnitsSelected) }))
       .sort((left, right) => Math.abs(num(right.planGap)) - Math.abs(num(left.planGap)) || num(right.actualRevenueSelected) - num(left.actualRevenueSelected))
       .slice(0, 36);
-    const dailyRows = metric.days || [];
+    const dailyRows = (metric.days || []).map((row) => ({
+      ...row,
+      missingDaily: dashboardDayMissesFreshness(row.date, freshness)
+    }));
     const skuBody = rows.length ? rows.map((row) => {
       const tone = dashboardCompletionTone(row.completionPct);
       const gapTone = num(row.planGap) >= 0 ? 'ok' : 'danger';
@@ -9621,15 +9693,15 @@ function dashboardTaskStatusChip(task) {
     }).join('') : '<tr><td colspan="8">Нет SKU для план-факта в выбранном окне.</td></tr>';
     const dailyBody = dailyRows.length ? dailyRows.map((row) => {
       const completion = dailyCompletion(row, metric);
-      const tone = dashboardCompletionTone(completion);
+      const tone = row.missingDaily ? 'muted' : dashboardCompletionTone(completion);
       return `
         <tr class="portal-exec-row-${esc(tone)}">
           <td>${esc(shortDate(row.date))}</td>
           <td class="portal-exec-num">${esc(dailyPlanDisplay(row, metric))}</td>
-          <td class="portal-exec-num">${esc(dailyFactDisplay(row, metric))}</td>
-          <td class="portal-exec-num">${dashboardCellChip(completion !== null ? pct(completion) : '—', tone)}</td>
-          <td class="portal-exec-num">${esc(money(row.revenue))}</td>
-          <td class="portal-exec-num">${esc(int(row.factUnits))}</td>
+          <td class="portal-exec-num">${row.missingDaily ? dashboardCellChip('нет daily', 'muted') : esc(dailyFactDisplay(row, metric))}</td>
+          <td class="portal-exec-num">${dashboardCellChip(!row.missingDaily && completion !== null ? pct(completion) : '—', tone)}</td>
+          <td class="portal-exec-num">${esc(row.missingDaily ? '—' : money(row.revenue))}</td>
+          <td class="portal-exec-num">${esc(row.missingDaily ? '—' : int(row.factUnits))}</td>
         </tr>
       `;
     }).join('') : '<tr><td colspan="6">Нет дневного план-факта в выбранном окне.</td></tr>';
@@ -9640,12 +9712,14 @@ function dashboardTaskStatusChip(task) {
       body: `
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('% выполнения', pct(metric.completion))}
+          ${freshness.isStale ? modalSummaryCard('Последний daily', freshness.rows?.[0]?.latest ? shortDate(freshness.rows[0].latest) : 'нет') : ''}
           ${modalSummaryCard('WoW', metricCompletionDelta !== null ? `${metricCompletionDelta >= 0 ? '+' : ''}${(metricCompletionDelta * 100).toFixed(1)} pp` : '—')}
           ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
           ${modalSummaryCard('Факт периода', metricFactDisplay(metric))}
           ${modalSummaryCard('Факт / день', metricFactPerDay)}
           ${modalSummaryCard('Выручка', money(metricFactRevenue))}
         </div>
+        ${freshnessNote ? `<div class="portal-exec-freshness-note">${esc(freshnessNote)}</div>` : ''}
         <div class="portal-exec-modal-grid portal-exec-structured-grid">
           ${dashboardTableCard(
             'Артикулы: план, факт, отклонение',
@@ -9667,6 +9741,8 @@ function dashboardTaskStatusChip(task) {
   }
 
   function buildStockDetailStructured(platformKey, executive) {
+    const freshness = dashboardPlatformFreshness(platformKey, executive.range);
+    const freshnessNote = dashboardFreshnessNote(freshness);
     const stockMetric = buildTurnoverMetric(platformKey, executive.range);
     const rows = articleRowsForPlatform(platformKey, executive.range)
       .sort((left, right) => num(right.avgTurnoverDays) - num(left.avgTurnoverDays) || num(right.stock) - num(left.stock))
@@ -9688,6 +9764,7 @@ function dashboardTaskStatusChip(task) {
     const dailyLag = latestDaily && latestDaily < executive.range.effectiveEnd
       ? `Daily по оборачиваемости сейчас есть до ${shortDate(latestDaily)}. Дни после этой даты оставлены пустыми, чтобы старый ряд не выглядел как свежий.`
       : '';
+    const combinedFreshnessNote = [freshnessNote, dailyLag].filter(Boolean).join(' ');
     const skuBody = rows.length ? rows.map((row) => {
       const tone = dashboardStockTone(row);
       const status = tone === 'danger' ? 'риск' : tone === 'warn' ? 'избыток' : tone === 'ok' ? 'норма' : 'нет daily';
@@ -9743,7 +9820,7 @@ function dashboardTaskStatusChip(task) {
               '<tr><th>Дата</th><th class="portal-exec-num">Средняя обор.</th><th class="portal-exec-num">SKU с daily</th><th class="portal-exec-num">Средняя цена</th></tr>',
               dailyBody
             )}
-            ${dailyLag ? `<div class="portal-exec-freshness-note">${esc(dailyLag)}</div>` : ''}
+            ${combinedFreshnessNote ? `<div class="portal-exec-freshness-note">${esc(combinedFreshnessNote)}</div>` : ''}
             ${renderActionBullets([
               stockMetric.lowCoverage > 0 ? `Есть ${int(stockMetric.lowCoverage)} SKU с низким покрытием. Сначала проверяйте, где товар может закончиться.` : '',
               stockMetric.overstock > 0 ? `Есть ${int(stockMetric.overstock)} SKU с медленной оборачиваемостью. Проверяйте цену, спрос и промо.` : '',

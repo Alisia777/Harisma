@@ -1,6 +1,6 @@
 {
   "schema": "portal-daily-layer-guard-v1",
-  "generatedAt": "2026-06-10T09:06:39.056Z",
+  "generatedAt": "2026-06-10T09:11:44.383Z",
   "expectedDate": "2026-06-09",
   "expectedRunDate": "2026-06-10",
   "publish": {
@@ -233,8 +233,8 @@
       "warnings": [],
       "blockingReasons": [],
       "bytes": 324,
-      "mtime": "2026-06-10T09:06:38.404Z",
-      "generatedAt": "2026-06-10T09:06:38.396Z",
+      "mtime": "2026-06-10T09:11:43.730Z",
+      "generatedAt": "2026-06-10T09:11:43.722Z",
       "runDate": "2026-06-10",
       "runDatePath": "generatedAt"
     },

@@ -2738,5 +2738,7 @@
     "note"
   ],
   "description": "Local API SKU mappings imported from team SKU files and review files.",
-  "updatedAt": "2026-06-08T09:59:38.421Z"
+  "updatedAt": "2026-06-08T09:59:38.421Z",
+  "refreshedAt": "2026-06-11T08:09:31.123Z",
+  "refreshNote": "Supabase snapshot pull returned HTTP 522 on 2026-06-11; existing local snapshot was revalidated without changing mapping rows."
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-10T09:01:15.299Z",
+  "generatedAt": "2026-06-11T07:11:50.490Z",
   "dataFreshness": {
     "planFactMonth": "май 2026 - marketplace salary contour",
     "ordersSnapshot": "orders (40).csv",
@@ -12,7 +12,7 @@
       "Для Анны (2).xlsx",
       "Рабочий _ Спецификации v2.xlsx"
     ],
-    "asOfDate": "2026-06-09",
+    "asOfDate": "2026-06-10",
     "googleSheetsMonth": "2026-06",
     "googleSheetsBridge": "scripts/portal-google-sheet-sync.js",
     "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
@@ -3550,19 +3550,9 @@
       "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
     },
     {
-      "label": "Остатки MP, шт.",
-      "value": 0,
-      "hint": "WB + Ozon по API-�резу platform_trends на 2026-06-09"
-    },
-    {
       "label": "План ����, шт.",
       "value": 173171,
       "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Факт 01-09.06, шт.",
-      "value": 108282,
-      "hint": "Факт по API-�резу platform_trends на 2026-06-09."
     },
     {
       "label": "Выполнение к плану на дату",
@@ -3588,13 +3578,183 @@
       "format": "pct",
       "hint": "Факт выручки / линейный общий план компании на дату.",
       "valuePct": 1.2887
+    },
+    {
+      "label": "SKU в базе",
+      "value": 143,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 143,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ����, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 2.0843,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 2.0843
+    },
+    {
+      "label": "План компании ���� 2026, ₽",
+      "value": 285818670,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-09.06, ₽",
+      "value": 110496223.09,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 1.2887,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 1.2887
+    },
+    {
+      "label": "SKU в базе",
+      "value": 143,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 143,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ����, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 2.0843,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 2.0843
+    },
+    {
+      "label": "План компании ���� 2026, ₽",
+      "value": 285818670,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-09.06, ₽",
+      "value": 110496223.09,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 1.2887,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 1.2887
+    },
+    {
+      "label": "SKU в базе",
+      "value": 143,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 143,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ����, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 2.0843,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 2.0843
+    },
+    {
+      "label": "План компании ���� 2026, ₽",
+      "value": 285818670,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-09.06, ₽",
+      "value": 110496223.09,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 1.2887,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 1.2887
+    },
+    {
+      "label": "SKU в базе",
+      "value": 143,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 143,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "Остатки MP, шт.",
+      "value": 968109,
+      "hint": "WB + Ozon по API-�резу platform_trends на 2026-06-10"
+    },
+    {
+      "label": "План ����, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Факт 01-10.06, шт.",
+      "value": 119989,
+      "hint": "Факт по API-�резу platform_trends на 2026-06-10."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 2.0787,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 2.0787
+    },
+    {
+      "label": "План компании ���� 2026, ₽",
+      "value": 285818670,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-10.06, ₽",
+      "value": 123402285.5,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 1.2953,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 1.2953
     }
   ],
   "brandSummary": [
     {
       "brand": "Алтея",
       "sku_count": 143,
-      "total_stock": 0,
+      "total_stock": 968109,
       "orders_value": 161631197.21,
       "feb_plan_units": 127838,
       "feb_fact_units": 48829,
@@ -3608,12 +3768,12 @@
       "google_sheets_plan_field": "planApr26Units",
       "google_sheets_month_key": "2026-06",
       "plan_units": 173171,
-      "fact_units_to_date": 108282,
-      "fact_revenue_to_date": 110496223.08999999,
-      "plan_completion_to_date_pct": 2.0843,
+      "fact_units_to_date": 119989,
+      "fact_revenue_to_date": 123402285.49999999,
+      "plan_completion_to_date_pct": 2.0787,
       "apr_plan_units": 173171,
       "apr_fact_units_to_date": 152328,
-      "asOfDate": "2026-06-09",
+      "asOfDate": "2026-06-10",
       "plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms | marketplace salary contour",
       "apr_plan_revenue": 253796998,
       "apr_fact_revenue_to_date": 234755850.89,
@@ -3629,12 +3789,12 @@
       "company_plan_month_key": "2026-06",
       "company_plan_month_label": "июнь 2026",
       "company_plan_revenue": 285818670,
-      "company_fact_revenue_to_date": 110496223.09,
-      "company_plan_to_date_revenue": 85745601,
-      "company_plan_completion_month_pct": 0.3866,
-      "company_plan_completion_to_date_pct": 1.2887,
-      "company_forecast_revenue": 368320743.63,
-      "company_forecast_pct": 1.2887,
+      "company_fact_revenue_to_date": 123402285.5,
+      "company_plan_to_date_revenue": 95272890,
+      "company_plan_completion_month_pct": 0.4318,
+      "company_plan_completion_to_date_pct": 1.2953,
+      "company_forecast_revenue": 370206856.5,
+      "company_forecast_pct": 1.2953,
       "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
       "may_company_plan_revenue": 253796998,
       "may_company_fact_revenue_to_date": 270625014.72,
@@ -3644,18 +3804,18 @@
       "may_company_forecast_revenue": 270625014.72,
       "may_company_forecast_pct": 1.0663,
       "google_sheets_company_plan_field": "company_revenue_plan",
-      "latestMarketplaceDate": "2026-06-09",
+      "latestMarketplaceDate": "2026-06-10",
       "jun_plan_units": 173171,
-      "jun_fact_units_to_date": 108282,
-      "jun_fact_revenue_to_date": 110496223.08999999,
-      "jun_plan_completion_to_date_pct": 2.0843,
+      "jun_fact_units_to_date": 119989,
+      "jun_fact_revenue_to_date": 123402285.49999999,
+      "jun_plan_completion_to_date_pct": 2.0787,
       "jun_company_plan_revenue": 285818670,
-      "jun_company_fact_revenue_to_date": 110496223.09,
-      "jun_company_plan_to_date_revenue": 85745601,
-      "jun_company_plan_completion_month_pct": 0.3866,
-      "jun_company_plan_completion_to_date_pct": 1.2887,
-      "jun_company_forecast_revenue": 368320743.63,
-      "jun_company_forecast_pct": 1.2887
+      "jun_company_fact_revenue_to_date": 123402285.5,
+      "jun_company_plan_to_date_revenue": 95272890,
+      "jun_company_plan_completion_month_pct": 0.4318,
+      "jun_company_plan_completion_to_date_pct": 1.2953,
+      "jun_company_forecast_revenue": 370206856.5,
+      "jun_company_forecast_pct": 1.2953
     }
   ],
   "focusTop": [
@@ -4575,7 +4735,7 @@
       "ozon_margin_pct": 0.2158
     }
   ],
-  "asOfDate": "2026-06-09",
+  "asOfDate": "2026-06-10",
   "apr_plan_revenue": 253796998,
   "apr_fact_revenue_to_date": 234755850.89,
   "apr_plan_to_date_revenue": 229235998.19,
@@ -4595,14 +4755,14 @@
       "monthKey": "2026-06",
       "label": "июнь 2026",
       "days": 30,
-      "dayOfMonth": 9,
+      "dayOfMonth": 10,
       "planRevenueMonth": 285818670,
-      "planRevenueToDate": 85745601,
-      "factRevenueToDate": 110496223.09,
-      "completionMonthPct": 0.3866,
-      "completionToDatePct": 1.2887,
-      "forecastRevenue": 368320743.63,
-      "forecastPct": 1.2887,
+      "planRevenueToDate": 95272890,
+      "factRevenueToDate": 123402285.5,
+      "completionMonthPct": 0.4318,
+      "completionToDatePct": 1.2953,
+      "forecastRevenue": 370206856.5,
+      "forecastPct": 1.2953,
       "channels": {
         "wb": {
           "label": "WB",
@@ -5279,13 +5439,13 @@
   "company_plan_month_key": "2026-06",
   "company_plan_month_label": "июнь 2026",
   "company_plan_revenue": 285818670,
-  "company_fact_revenue_to_date": 110496223.09,
-  "company_plan_to_date_revenue": 85745601,
-  "company_plan_completion_month_pct": 0.3866,
-  "company_plan_completion_to_date_pct": 1.2887,
-  "company_forecast_revenue": 368320743.63,
-  "company_forecast_pct": 1.2887,
+  "company_fact_revenue_to_date": 123402285.5,
+  "company_plan_to_date_revenue": 95272890,
+  "company_plan_completion_month_pct": 0.4318,
+  "company_plan_completion_to_date_pct": 1.2953,
+  "company_forecast_revenue": 370206856.5,
+  "company_forecast_pct": 1.2953,
   "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
-  "latestMarketplaceDate": "2026-06-09",
+  "latestMarketplaceDate": "2026-06-10",
   "marketplaceFactSource": "platform_trends.json (API-backed)"
 }

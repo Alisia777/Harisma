@@ -569,6 +569,23 @@ Invoke-NodeStep -StepName "Ozon marketplace analytics refresh" -Arguments @(
   $portalApiWindowTo
 ) -Attempts 3 -RetryDelaySeconds 20
 Write-Output "[sync] Ozon marketplace analytics refresh completed"
+
+Write-Output "[sync] Ozon feedbacks/questions sync started"
+try {
+  Invoke-NodeStep -StepName "Ozon feedbacks/questions sync" -Arguments @(
+    "scripts/portal-ozon-feedback-sync.js",
+    "--output-dir",
+    $resolvedOutputDir,
+    "--date-to",
+    $portalApiWindowTo
+  ) -Attempts 2 -RetryDelaySeconds 60 -TimeoutSeconds 1200
+  Copy-Item -LiteralPath (Join-Path $resolvedOutputDir "ozon_feedbacks_summary.json") -Destination (Join-Path "data" "ozon_feedbacks_summary.json") -Force
+  Write-Output "[sync] Ozon feedbacks/questions sync completed"
+} catch {
+  Add-RetryStep -Id "ozon-feedbacks" -Name "Ozon feedbacks/questions sync" -Message ([string]$_.Exception.Message)
+  Write-Warning "[sync] Ozon feedbacks/questions sync failed, but the portal sync will continue with the last usable Ozon feedback layer if present: $($_.Exception.Message)"
+}
+
 Write-Output "[sync] waiting 30 sec before the next Ozon-backed step"
 Start-Sleep -Seconds 30
 
@@ -998,6 +1015,24 @@ if ($wbFeedbackRefreshSucceeded) {
   Write-Warning "[sync] IU/DRR summary rebuild with WB feedbacks skipped because WB feedbacks/questions sync did not refresh."
 }
 
+$wbSalesFunnelArguments = @(
+  "scripts/build-wb-sales-funnel-from-platform-trends.js",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--mirror-local-fallback"
+)
+
+Write-Output "[sync] WB sales funnel report build started"
+try {
+  Invoke-NodeStep -StepName "WB sales funnel report build" -Arguments $wbSalesFunnelArguments -Attempts 2 -RetryDelaySeconds 20
+  Write-Output "[sync] WB sales funnel report build completed"
+} catch {
+  Add-RetryStep -Id "wb-sales-funnel" -Name "WB sales funnel report build" -Message ([string]$_.Exception.Message)
+  Write-Warning "[sync] WB sales funnel report build failed, but the portal sync will continue with the last usable report if present: $($_.Exception.Message)"
+}
+
 $dataQualityArguments = @(
   "scripts/build-portal-data-quality-report.js",
   "--input-dir",
@@ -1196,6 +1231,18 @@ foreach ($optionalSnapshot in @("iu_drr_summary", "wb_feedbacks_summary")) {
   } else {
     Write-Warning "[sync] optional snapshot $optionalSnapshot is absent and will not be uploaded."
   }
+}
+
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "wb_sales_funnel_report.json")) {
+  $snapshotNames += "wb_sales_funnel_report"
+} else {
+  Write-Warning "[sync] optional snapshot wb_sales_funnel_report is absent and will not be uploaded."
+}
+
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "ozon_feedbacks_summary.json")) {
+  $snapshotNames += "ozon_feedbacks_summary"
+} else {
+  Write-Warning "[sync] optional snapshot ozon_feedbacks_summary is absent and will not be uploaded."
 }
 
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_data_quality.json")) {

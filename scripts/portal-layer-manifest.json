@@ -10,6 +10,8 @@
     { "name": "ads_summary", "file": "ads_summary.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["asOfDate", "window.to", "generatedAt"] },
     { "name": "iu_drr_summary", "file": "iu_drr_summary.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["asOfDate", "window.to", "latest_date", "generatedAt"] },
     { "name": "wb_feedbacks_summary", "file": "wb_feedbacks_summary.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["window.to", "asOfDate", "generatedAt"] },
+    { "name": "wb_sales_funnel_report", "file": "wb_sales_funnel_report.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["period.to", "generatedAt"] },
+    { "name": "ozon_feedbacks_summary", "file": "ozon_feedbacks_summary.json", "publish": true, "required": false, "freshnessPolicy": "daily", "freshnessPaths": ["window.to", "generatedAt"] },
     { "name": "iu_plan", "file": "iu_plan.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt"] },
     { "name": "product_leaderboard", "file": "product_leaderboard.json", "publish": true, "required": true, "freshnessPolicy": "maxAge", "maxAgeDays": 10, "freshnessPaths": ["generatedAt", "sourceMtime"] },
     { "name": "product_leaderboard_history", "file": "product_leaderboard_history.json", "publish": true, "required": true, "freshnessPolicy": "maxAge", "maxAgeDays": 10, "freshnessPaths": ["generatedAt"] },

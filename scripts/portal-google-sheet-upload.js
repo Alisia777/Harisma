@@ -22,6 +22,8 @@ const SNAPSHOT_KEYS = [
   'iu_drr_summary',
   'loyalty_system',
   'wb_feedbacks_summary',
+  'wb_sales_funnel_report',
+  'ozon_feedbacks_summary',
   'wb_substitution_traffic',
   'wb_substitution_traffic_history',
   'order_procurement',
@@ -32,6 +34,7 @@ const SNAPSHOT_KEYS = [
   'warehouse_stock_overlay',
   'portal_data_quality',
   'portal_data_quarantine',
+  'portal_daily_guard',
   'sku_aliases',
   'sku_alias_ignore',
   'sku_alias_audit',
@@ -42,9 +45,12 @@ const SNAPSHOT_KEYS = [
 ];
 const OPTIONAL_SNAPSHOT_KEYS = new Set([
   'loyalty_system',
+  'ozon_feedbacks_summary',
   'order_procurement_ym',
   'product_leaderboard_history',
   'portal_layer_freshness',
+  'portal_daily_guard',
+  'wb_sales_funnel_report',
   'wb_substitution_traffic',
   'wb_substitution_traffic_history'
 ]);

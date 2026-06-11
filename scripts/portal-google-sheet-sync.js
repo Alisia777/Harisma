@@ -26,6 +26,8 @@ const SNAPSHOT_KEYS = [
   'ads_summary',
   'iu_drr_summary',
   'wb_feedbacks_summary',
+  'wb_sales_funnel_report',
+  'ozon_feedbacks_summary',
   'wb_substitution_traffic',
   'wb_substitution_traffic_history'
 ];

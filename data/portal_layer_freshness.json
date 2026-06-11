@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-06-11T08:10:24.846Z",
+  "generatedAt": "2026-06-11T12:00:28.941Z",
   "expectedDate": "2026-06-10",
   "publish": {
     "allowed": true,
     "blockingReasons": []
   },
   "summary": {
-    "layerCount": 34,
-    "requiredCount": 28,
-    "okCount": 34,
+    "layerCount": 36,
+    "requiredCount": 29,
+    "okCount": 36,
     "warningCount": 0
   },
   "warnings": [],
@@ -214,6 +214,46 @@
       }
     },
     {
+      "name": "wb_sales_funnel_report",
+      "sourceFile": "wb_sales_funnel_report.json",
+      "deployFile": "wb_sales_funnel_report.json",
+      "required": true,
+      "publish": true,
+      "freshnessPolicy": "daily",
+      "ok": true,
+      "warnings": [],
+      "blockingReasons": [],
+      "sourceBytes": 256912,
+      "sourceMtime": "2026-06-11T11:58:05.691Z",
+      "rowCount": 121,
+      "generatedAt": "2026-06-11T11:58:05.689Z",
+      "freshness": {
+        "date": "2026-06-10",
+        "source": "period.to",
+        "value": "2026-06-10"
+      }
+    },
+    {
+      "name": "ozon_feedbacks_summary",
+      "sourceFile": "ozon_feedbacks_summary.json",
+      "deployFile": "ozon_feedbacks_summary.json",
+      "required": false,
+      "publish": true,
+      "freshnessPolicy": "daily",
+      "ok": true,
+      "warnings": [],
+      "blockingReasons": [],
+      "sourceBytes": 4343428,
+      "sourceMtime": "2026-06-11T12:00:13.261Z",
+      "rowCount": 199,
+      "generatedAt": "2026-06-11T12:00:13.235Z",
+      "freshness": {
+        "date": "2026-06-10",
+        "source": "window.to",
+        "value": "2026-06-10"
+      }
+    },
+    {
       "name": "iu_plan",
       "sourceFile": "iu_plan.json",
       "deployFile": "iu_plan.json",
@@ -252,7 +292,7 @@
         "source": "generatedAt",
         "value": "2026-06-11T07:12:39.430Z"
       },
-      "ageDays": 0.04,
+      "ageDays": 0.2,
       "maxAgeDays": 10
     },
     {
@@ -274,7 +314,7 @@
         "source": "fileMtime",
         "value": "2026-06-11T07:12:40.255Z"
       },
-      "ageDays": 0.04,
+      "ageDays": 0.2,
       "maxAgeDays": 10
     },
     {
@@ -408,13 +448,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 324,
-      "sourceMtime": "2026-06-11T08:10:24.525Z",
+      "sourceMtime": "2026-06-11T12:00:28.616Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-11T08:10:24.516Z",
+      "generatedAt": "2026-06-11T12:00:28.607Z",
       "freshness": {
         "date": "2026-06-11",
         "source": "generatedAt",
-        "value": "2026-06-11T08:10:24.516Z"
+        "value": "2026-06-11T12:00:28.607Z"
       }
     },
     {
@@ -428,9 +468,9 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 15508,
-      "sourceMtime": "2026-06-11T08:10:24.524Z",
+      "sourceMtime": "2026-06-11T12:00:28.616Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-11T08:10:24.523Z",
+      "generatedAt": "2026-06-11T12:00:28.615Z",
       "freshness": {
         "date": "2026-06-10",
         "source": "freshness.maxDate",
@@ -448,9 +488,9 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 19735,
-      "sourceMtime": "2026-06-11T08:09:31.800Z",
+      "sourceMtime": "2026-06-11T08:10:24.846Z",
       "rowCount": 34,
-      "generatedAt": "2026-06-11T08:09:31.798Z",
+      "generatedAt": "2026-06-11T08:10:24.846Z",
       "freshness": {
         "date": "2026-06-10",
         "source": "expectedDate",
@@ -468,9 +508,9 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 8701,
-      "sourceMtime": "2026-06-11T08:09:32.155Z",
+      "sourceMtime": "2026-06-11T08:10:25.209Z",
       "rowCount": 0,
-      "generatedAt": "2026-06-11T08:09:32.154Z",
+      "generatedAt": "2026-06-11T08:10:25.208Z",
       "freshness": {
         "date": "2026-06-10",
         "source": "expectedDate",
@@ -496,7 +536,7 @@
         "source": "fileMtime",
         "value": "2026-06-11T08:09:31.125Z"
       },
-      "ageDays": 0,
+      "ageDays": 0.16,
       "maxAgeDays": 2
     },
     {
@@ -658,7 +698,7 @@
         "source": "generatedAt",
         "value": "2026-05-18T14:34:19.064Z"
       },
-      "ageDays": 2.92,
+      "ageDays": 3.08,
       "maxAgeDays": 3
     },
     {
@@ -680,7 +720,7 @@
         "source": "generatedAt",
         "value": "2026-04-20T14:28:01.203171Z"
       },
-      "ageDays": 2.92,
+      "ageDays": 3.08,
       "maxAgeDays": 3
     },
     {

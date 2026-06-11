@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-11T08:10:24.523Z",
+  "generatedAt": "2026-06-11T12:00:28.615Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -8,7 +8,7 @@
     "warnings": [
       "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.."
     ],
-    "checkedAt": "2026-06-11T08:10:24.523Z"
+    "checkedAt": "2026-06-11T12:00:28.615Z"
   },
   "freshness": {
     "maxDate": "2026-06-10",
@@ -17,7 +17,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-11T08:10:24.518Z",
+      "checkedAt": "2026-06-11T12:00:28.609Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-10",
       "maxDate": "2026-06-10",
@@ -64,7 +64,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-11T08:10:24.523Z",
+      "checkedAt": "2026-06-11T12:00:28.614Z",
       "expectedDate": "2026-06-10",
       "adsSummaryWindowTo": "2026-06-10",
       "iuDrrWindowTo": "2026-06-10",
@@ -241,7 +241,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-11T08:09:31.475Z",
+      "generatedAt": "2026-06-11T08:10:24.516Z",
       "asOfDate": "2026-06-11",
       "revenue": 0
     },
@@ -276,7 +276,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-11T08:09:31.483Z",
+      "generatedAt": "2026-06-11T08:10:24.523Z",
       "asOfDate": "2026-06-11",
       "revenue": 0
     }

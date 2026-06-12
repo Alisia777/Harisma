@@ -1,11 +1,11 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-06-11T08:09:31.181Z",
+  "generatedAt": "2026-06-12T10:05:27.579Z",
   "source": {
     "skus": 143,
     "aliases": 341,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-06-11T08:08:49.755Z"
+    "dataQualityGeneratedAt": "2026-06-12T10:05:27.423Z"
   },
   "summary": {
     "skuCount": 143,

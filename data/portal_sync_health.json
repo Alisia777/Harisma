@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-13T10:50:27.167Z",
+  "generatedAt": "2026-06-13T12:09:46.636Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -8,7 +8,7 @@
     "warnings": [
       "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.."
     ],
-    "checkedAt": "2026-06-13T10:50:27.167Z"
+    "checkedAt": "2026-06-13T12:09:46.636Z"
   },
   "freshness": {
     "maxDate": "2026-06-12",
@@ -17,7 +17,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-13T10:50:27.162Z",
+      "checkedAt": "2026-06-13T12:09:46.629Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-12",
       "maxDate": "2026-06-12",
@@ -64,7 +64,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-13T10:50:27.167Z",
+      "checkedAt": "2026-06-13T12:09:46.634Z",
       "expectedDate": "2026-06-12",
       "adsSummaryWindowTo": "2026-06-12",
       "iuDrrWindowTo": "2026-06-12",
@@ -241,7 +241,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-13T10:24:52.784Z",
+      "generatedAt": "2026-06-13T10:50:27.161Z",
       "asOfDate": "2026-06-13",
       "revenue": 0
     },
@@ -276,7 +276,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-13T10:24:52.791Z",
+      "generatedAt": "2026-06-13T10:50:27.167Z",
       "asOfDate": "2026-06-13",
       "revenue": 0
     }
@@ -382,7 +382,7 @@
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-06-13T08:43:47.662Z",
+    "generatedAt": "2026-06-13T10:50:27.387Z",
     "comparisons": [
       {
         "snapshot": "skus",
@@ -399,14 +399,14 @@
         "previousRows": 7,
         "rowRatio": 1,
         "revenue": 837911018,
-        "previousRevenue": 837052632,
-        "revenueRatio": 1.0010254862922408
+        "previousRevenue": 837911018,
+        "revenueRatio": 1
       },
       {
         "snapshot": "order_procurement",
         "rows": 2497,
-        "previousRows": 2513,
-        "rowRatio": 0.993633107839236,
+        "previousRows": 2497,
+        "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
         "revenueRatio": 1
@@ -439,7 +439,7 @@
         "revenueRatio": 1
       }
     ],
-    "markedAt": "2026-06-13T10:50:27.387Z",
+    "markedAt": "2026-06-13T12:09:46.856Z",
     "copied": 26
   },
   "checks": [

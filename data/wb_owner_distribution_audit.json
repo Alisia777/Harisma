@@ -1,6 +1,6 @@
 {
   "schema": "portal-wb-owner-distribution-audit-v1",
-  "generatedAt": "2026-06-12T09:46:30.740Z",
+  "generatedAt": "2026-06-13T09:47:03.807Z",
   "source": {
     "file": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\распределение артикулов.xlsx",
     "sheetName": "Лист1",
@@ -1181,8 +1181,8 @@
       "sourceArticle": "shampun_kudryavii_metod_500ml",
       "articleKey": "shampun_kudryavii_metod_500ml",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 30759,
-      "units": 12,
+      "revenue": 32239,
+      "units": 13,
       "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
     },
     {

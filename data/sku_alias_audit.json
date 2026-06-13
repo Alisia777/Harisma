@@ -2,6 +2,6 @@
   "events": [],
   "schema": "sku-alias-audit-v1",
   "generatedAt": "",
-  "refreshedAt": "2026-06-11T08:09:31.123Z",
-  "refreshNote": "Supabase snapshot pull returned HTTP 522 on 2026-06-11; existing local snapshot was revalidated without changing mapping rows."
+  "refreshedAt": "2026-06-13T10:24:42.450Z",
+  "refreshNote": "Supabase snapshot pull returned HTTP 522 on 2026-06-13; existing local snapshot was revalidated without changing mapping rows."
 }

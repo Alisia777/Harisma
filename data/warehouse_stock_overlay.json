@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-13T09:45:21.007Z",
+  "generatedAt": "2026-06-14T07:15:28.521Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
   "sourceFormat": "google-csv-export",
   "sheetName": "Sheet1",
   "matchField": "Наименование как в ЛК -> article/articleKey",
-  "sheetRowCount": 300,
+  "sheetRowCount": 302,
   "matchedRowCount": 136,
   "matchedSkuCount": 134,
   "unmatchedSourceKeys": [
@@ -37,8 +37,8 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 374242,
-    "accepted": 3140241,
+    "stockWarehouse": 418113,
+    "accepted": 3184112,
     "shippedOzon": 1030512,
     "shippedWB": 1734952
   },
@@ -542,8 +542,8 @@
     },
     {
       "articleKey": "krem_dlya_ruk_75ml",
-      "stockWarehouse": 1816,
-      "accepted": 27761,
+      "stockWarehouse": 21816,
+      "accepted": 47761,
       "shippedOzon": 17005,
       "shippedWB": 8940,
       "sourceKeys": [
@@ -938,8 +938,8 @@
     },
     {
       "articleKey": "retiderm_50ml",
-      "stockWarehouse": 6898,
-      "accepted": 305718,
+      "stockWarehouse": 10850,
+      "accepted": 309670,
       "shippedOzon": 46525,
       "shippedWB": 252295,
       "sourceKeys": [
@@ -1037,8 +1037,8 @@
     },
     {
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
-      "stockWarehouse": 382,
-      "accepted": 44616,
+      "stockWarehouse": 20301,
+      "accepted": 64535,
       "shippedOzon": 8794,
       "shippedWB": 35440,
       "sourceKeys": [

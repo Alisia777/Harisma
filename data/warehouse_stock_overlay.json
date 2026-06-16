@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-15T07:08:41.556Z",
+  "generatedAt": "2026-06-16T09:00:52.048Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
@@ -37,8 +37,8 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 418113,
-    "accepted": 3184112,
+    "stockWarehouse": 432113,
+    "accepted": 3198112,
     "shippedOzon": 1030512,
     "shippedWB": 1734952
   },
@@ -817,8 +817,8 @@
     },
     {
       "articleKey": "nabor_remuver_kremovii",
-      "stockWarehouse": 3076,
-      "accepted": 54358,
+      "stockWarehouse": 18076,
+      "accepted": 69358,
       "shippedOzon": 26616,
       "shippedWB": 24666,
       "sourceKeys": [
@@ -1092,8 +1092,8 @@
     },
     {
       "articleKey": "shampun_protiv_perhoti_250ml",
-      "stockWarehouse": 1275,
-      "accepted": 14674,
+      "stockWarehouse": 275,
+      "accepted": 13674,
       "shippedOzon": 10031,
       "shippedWB": 3368,
       "sourceKeys": [

@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-16T09:26:14.477Z",
+  "generatedAt": "2026-06-16T10:31:55.334Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -9,7 +9,7 @@
       "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3..",
       "Non-blocking sync step failed: product leaderboard sync: exit code 1."
     ],
-    "checkedAt": "2026-06-16T09:26:14.477Z"
+    "checkedAt": "2026-06-16T10:31:55.334Z"
   },
   "freshness": {
     "maxDate": "2026-06-15",
@@ -18,7 +18,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-16T09:26:14.471Z",
+      "checkedAt": "2026-06-16T10:31:55.312Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-15",
       "maxDate": "2026-06-15",
@@ -65,7 +65,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-16T09:26:14.477Z",
+      "checkedAt": "2026-06-16T10:31:55.333Z",
       "expectedDate": "2026-06-15",
       "adsSummaryWindowTo": "2026-06-15",
       "iuDrrWindowTo": "2026-06-15",
@@ -242,7 +242,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-16T09:21:58.499Z",
+      "generatedAt": "2026-06-16T09:26:14.470Z",
       "asOfDate": "2026-06-16",
       "revenue": 0
     },
@@ -277,7 +277,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-16T09:21:58.506Z",
+      "generatedAt": "2026-06-16T09:26:14.477Z",
       "asOfDate": "2026-06-16",
       "revenue": 0
     }
@@ -389,7 +389,7 @@
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-06-15T10:08:27.397Z",
+    "generatedAt": "2026-06-16T09:26:14.734Z",
     "comparisons": [
       {
         "snapshot": "skus",
@@ -403,17 +403,17 @@
       {
         "snapshot": "platform_trends",
         "rows": 7,
-        "previousRows": 4,
-        "rowRatio": 1.75,
+        "previousRows": 7,
+        "rowRatio": 1,
         "revenue": 919090362,
-        "previousRevenue": 893285335,
-        "revenueRatio": 1.0288877763788655
+        "previousRevenue": 919090362,
+        "revenueRatio": 1
       },
       {
         "snapshot": "order_procurement",
         "rows": 2388,
-        "previousRows": 2403,
-        "rowRatio": 0.9937578027465668,
+        "previousRows": 2388,
+        "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
         "revenueRatio": 1
@@ -446,7 +446,7 @@
         "revenueRatio": 1
       }
     ],
-    "markedAt": "2026-06-16T09:26:14.734Z",
+    "markedAt": "2026-06-16T10:31:55.581Z",
     "copied": 26
   },
   "checks": [

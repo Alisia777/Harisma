@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-17T14:07:28.591Z",
+  "generatedAt": "2026-06-17T14:26:36.730Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -9,7 +9,7 @@
       "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 420 sec before retry 2/6..",
       "Non-blocking sync step failed: product leaderboard sync: exit code 1."
     ],
-    "checkedAt": "2026-06-17T14:07:28.591Z"
+    "checkedAt": "2026-06-17T14:26:36.730Z"
   },
   "freshness": {
     "maxDate": "2026-06-16",
@@ -18,7 +18,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-17T14:07:28.586Z",
+      "checkedAt": "2026-06-17T14:26:36.724Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-16",
       "maxDate": "2026-06-16",
@@ -65,7 +65,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-17T14:07:28.591Z",
+      "checkedAt": "2026-06-17T14:26:36.730Z",
       "expectedDate": "2026-06-16",
       "adsSummaryWindowTo": "2026-06-16",
       "iuDrrWindowTo": "2026-06-16",
@@ -137,21 +137,21 @@
     "prices": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-17T13:07:35.945Z",
+      "generatedAt": "2026-06-17T14:25:50.481Z",
       "asOfDate": "2026-06-17",
       "revenue": 0
     },
     "repricer": {
       "exists": true,
       "rows": 201,
-      "generatedAt": "2026-06-17T13:07:35.945Z",
+      "generatedAt": "2026-06-17T14:25:50.481Z",
       "asOfDate": "2026-06-17",
       "revenue": 0
     },
     "smart_price_overlay": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-17T13:07:35.945Z",
+      "generatedAt": "2026-06-17T14:25:50.481Z",
       "asOfDate": "2026-06-16",
       "revenue": 0
     },
@@ -242,7 +242,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-17T14:06:55.085Z",
+      "generatedAt": "2026-06-17T14:07:28.584Z",
       "asOfDate": "2026-06-17",
       "revenue": 0
     },
@@ -277,7 +277,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-17T14:06:55.092Z",
+      "generatedAt": "2026-06-17T14:07:28.591Z",
       "asOfDate": "2026-06-17",
       "revenue": 0
     }
@@ -389,7 +389,7 @@
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-06-17T13:55:26.227Z",
+    "generatedAt": "2026-06-17T14:07:28.804Z",
     "comparisons": [
       {
         "snapshot": "skus",
@@ -403,11 +403,11 @@
       {
         "snapshot": "platform_trends",
         "rows": 4,
-        "previousRows": 7,
-        "rowRatio": 0.5714285714285714,
+        "previousRows": 4,
+        "rowRatio": 1,
         "revenue": 943040727,
-        "previousRevenue": 943134524,
-        "revenueRatio": 0.9999005475914484
+        "previousRevenue": 943040727,
+        "revenueRatio": 1
       },
       {
         "snapshot": "order_procurement",
@@ -446,7 +446,7 @@
         "revenueRatio": 1
       }
     ],
-    "markedAt": "2026-06-17T14:07:28.804Z",
+    "markedAt": "2026-06-17T14:26:36.939Z",
     "copied": 26
   },
   "checks": [

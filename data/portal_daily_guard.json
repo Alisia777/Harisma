@@ -1,6 +1,6 @@
 {
   "schema": "portal-daily-layer-guard-v1",
-  "generatedAt": "2026-06-17T14:07:29.393Z",
+  "generatedAt": "2026-06-17T14:26:47.926Z",
   "expectedDate": "2026-06-16",
   "expectedRunDate": "2026-06-17",
   "publish": {
@@ -167,8 +167,8 @@
       "warnings": [],
       "blockingReasons": [],
       "bytes": 3071129,
-      "mtime": "2026-06-17T13:07:49.769Z",
-      "generatedAt": "2026-06-17T13:07:35.945Z",
+      "mtime": "2026-06-17T14:26:04.711Z",
+      "generatedAt": "2026-06-17T14:25:50.481Z",
       "runDate": "2026-06-17",
       "runDatePath": "generatedAt",
       "platformsCount": 3
@@ -180,8 +180,8 @@
       "warnings": [],
       "blockingReasons": [],
       "bytes": 739209,
-      "mtime": "2026-06-17T13:07:50.076Z",
-      "generatedAt": "2026-06-17T13:07:35.945Z",
+      "mtime": "2026-06-17T14:26:05.067Z",
+      "generatedAt": "2026-06-17T14:25:50.481Z",
       "runDate": "2026-06-17",
       "runDatePath": "generatedAt",
       "rowsCount": 201
@@ -193,8 +193,8 @@
       "warnings": [],
       "blockingReasons": [],
       "bytes": 1803956,
-      "mtime": "2026-06-17T13:07:49.461Z",
-      "generatedAt": "2026-06-17T13:07:35.945Z",
+      "mtime": "2026-06-17T14:26:04.401Z",
+      "generatedAt": "2026-06-17T14:25:50.481Z",
       "dataDate": "2026-06-16",
       "dataDatePath": "asOfDate",
       "runDate": "2026-06-17",
@@ -234,8 +234,8 @@
       "warnings": [],
       "blockingReasons": [],
       "bytes": 324,
-      "mtime": "2026-06-17T14:07:28.805Z",
-      "generatedAt": "2026-06-17T14:07:28.584Z",
+      "mtime": "2026-06-17T14:26:36.941Z",
+      "generatedAt": "2026-06-17T14:26:36.704Z",
       "runDate": "2026-06-17",
       "runDatePath": "generatedAt"
     },

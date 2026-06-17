@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-17T15:36:05.122Z",
+  "generatedAt": "2026-06-17T16:01:59.443Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -9,7 +9,7 @@
       "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 420 sec before retry 2/6..",
       "Non-blocking sync step failed: product leaderboard sync: exit code 1."
     ],
-    "checkedAt": "2026-06-17T15:36:05.122Z"
+    "checkedAt": "2026-06-17T16:01:59.443Z"
   },
   "freshness": {
     "maxDate": "2026-06-16",
@@ -18,7 +18,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-17T15:36:05.116Z",
+      "checkedAt": "2026-06-17T16:01:59.437Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-16",
       "maxDate": "2026-06-16",
@@ -65,7 +65,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-17T15:36:05.122Z",
+      "checkedAt": "2026-06-17T16:01:59.442Z",
       "expectedDate": "2026-06-16",
       "adsSummaryWindowTo": "2026-06-16",
       "iuDrrWindowTo": "2026-06-16",
@@ -242,7 +242,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-17T15:34:24.507Z",
+      "generatedAt": "2026-06-17T15:36:05.115Z",
       "asOfDate": "2026-06-17",
       "revenue": 0
     },
@@ -277,7 +277,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-17T15:34:24.514Z",
+      "generatedAt": "2026-06-17T15:36:05.122Z",
       "asOfDate": "2026-06-17",
       "revenue": 0
     }
@@ -389,7 +389,7 @@
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-06-17T15:34:24.769Z",
+    "generatedAt": "2026-06-17T15:36:05.383Z",
     "comparisons": [
       {
         "snapshot": "skus",
@@ -446,7 +446,7 @@
         "revenueRatio": 1
       }
     ],
-    "markedAt": "2026-06-17T15:36:05.383Z",
+    "markedAt": "2026-06-17T16:01:59.703Z",
     "copied": 26
   },
   "checks": [

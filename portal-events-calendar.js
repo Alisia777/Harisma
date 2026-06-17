@@ -337,8 +337,19 @@
     };
   }
 
+  function isGeneratedPlatformActivityEvent(event = {}) {
+    const id = String(event.id || '').trim().toLowerCase();
+    const source = String(event.source || '').trim().toLowerCase();
+    return source === 'ads-summary'
+      || source === 'platform-activity'
+      || id.startsWith('platform-activity-')
+      || id.startsWith('platform-activity:');
+  }
+
   function allEvents() {
-    return storage().promoEvents.map(normalizeEvent).filter((event) => event.id && event.title);
+    return storage().promoEvents
+      .map(normalizeEvent)
+      .filter((event) => event.id && event.title && !isGeneratedPlatformActivityEvent(event));
   }
 
   function validDateKey(value = '') {
@@ -822,7 +833,9 @@
   }
 
   function applyCalendarPayload(payload = {}) {
-    const events = payloadEvents(payload).map(normalizeEvent);
+    const events = payloadEvents(payload)
+      .map(normalizeEvent)
+      .filter((event) => !isGeneratedPlatformActivityEvent(event));
     const deleted = payloadDeletedIds(payload).map(normalizeDeleted).filter(Boolean);
     const deletedMap = new Map(deleted.map((item) => [item.id, item]));
     storage().promoEvents = events
@@ -856,6 +869,7 @@
     const eventMap = new Map();
     const add = (item) => {
       const event = normalizeEvent(item);
+      if (isGeneratedPlatformActivityEvent(event)) return;
       const deleted = mergedDeleted.get(event.id);
       if (deleted && Date.parse(deleted.deletedAt || 0) >= Date.parse(event.updatedAt || 0)) return;
       const current = eventMap.get(event.id);

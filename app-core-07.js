@@ -4707,6 +4707,8 @@ function renderProductLeaderboardInsightTilesHtml(payload = {}, summary = {}, ow
   const substitutionSummary = productLeaderboardSubstitutionSummary(substitutionModel.rows);
   const likeForLike = productLeaderboardExternalLikeForLikeModel(filters, items);
   const activePanel = String(filters.expandedPanel || '');
+  const lflCurrentRowsCount = Array.isArray(likeForLike.currentRows) ? likeForLike.currentRows.length : 0;
+  const lflCurrentOrders = numberOrZero(likeForLike.currentSummary?.orders);
   const substitutionCompletion = substitutionSummary.orderRate
     ? Math.min(1.35, substitutionSummary.orderRate / 0.06)
     : null;
@@ -4742,15 +4744,15 @@ function renderProductLeaderboardInsightTilesHtml(payload = {}, summary = {}, ow
     {
       panel: 'likeforlike',
       title: 'Like for like',
-      kicker: likeForLike.previousLabel ? `внешние к ${likeForLike.previousLabel}` : 'нужен второй срез внешки',
-      value: likeForLike.hasComparison ? productLeaderboardSignedInt(likeForLike.ordersDelta) : '—',
+      kicker: likeForLike.previousLabel ? `внешние к ${likeForLike.previousLabel}` : (lflCurrentRowsCount ? 'текущий срез подменников' : 'нужен второй срез внешки'),
+      value: likeForLike.hasComparison ? productLeaderboardSignedInt(likeForLike.ordersDelta) : (lflCurrentRowsCount ? fmt.int(lflCurrentRowsCount) : '—'),
       meta: likeForLike.hasComparison
         ? `${fmt.int(likeForLike.rows.length)} связок · просмотры ${productLeaderboardSignedInt(likeForLike.viewsDelta)}`
-        : `${fmt.int(likeForLike.options.length)} срез · ждём историю`,
+        : (lflCurrentRowsCount ? `${fmt.int(lflCurrentOrders)} заказов · ${fmt.int(likeForLike.options.length)} срез ANS` : `${fmt.int(likeForLike.options.length)} срез · ждём историю`),
       completion: likeForLike.hasComparison ? lflCompletion : null,
       footer: likeForLike.hasComparison
         ? `растут ${fmt.int(likeForLike.growingRows)} · падают ${fmt.int(likeForLike.fallingRows)}`
-        : 'сравнение появится со 2-го среза',
+        : (lflCurrentRowsCount ? 'связки уже ниже · LFL после 2-го ANS-среза' : 'сравнение появится со 2-го среза'),
       deltaClass: likeForLike.ordersDelta >= 0 ? 'ok-text' : 'danger-text',
       active: activePanel === 'likeforlike',
       actionLabel: 'Показать LFL',
@@ -4909,20 +4911,30 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
   const rows = model.rows;
   const controlsHtml = renderProductLeaderboardExternalLikeForLikeControls(model, filters);
   if (!model.hasComparison) {
+    const currentPairCount = Array.isArray(model.currentRows) ? model.currentRows.length : 0;
+    const currentOrders = numberOrZero(model.currentSummary?.orders);
+    const currentViews = numberOrZero(model.currentSummary?.views);
+    const currentNoteHtml = currentPairCount
+      ? `
+        <div class="product-leaderboard-lfl-current-note" style="margin-top:12px;padding:12px;border:1px solid rgba(91,192,190,.28);border-radius:8px;background:rgba(91,192,190,.08)">
+          Текущий ANS-срез уже загружен: ${fmt.int(currentPairCount)} связок, ${fmt.int(currentOrders)} заказов, ${fmt.int(currentViews)} просмотров. Сравнение Like for like включится после второго ANS-среза; недельные срезы КЗ остаются в BI-блоке продуктового лидерборда.
+        </div>
+      `
+      : '<div class="empty" style="margin-top:12px">В текущем ANS-срезе нет связок подменников по артикулам.</div>';
     return `
       <div class="card product-leaderboard-likeforlike-panel lfl-flat" data-product-leaderboard-expanded-panel="likeforlike" style="margin-top:14px;--lfl-hue:212;--lfl-bright:.42;--lfl-growth:0%;--lfl-drop:0%">
         <div class="section-subhead">
           <div>
             <h3>Like for like: подменники по артикулам</h3>
-            <p class="small muted">Сравнение строится по связке наш артикул -> WB-подменник. Сейчас в истории доступен только ${fmt.int(model.options.length)} срез, поэтому базу сравнения нужно накопить следующим импортом.</p>
+            <p class="small muted">Сравнение строится по связке наш артикул -> WB-подменник. Сейчас доступен ${fmt.int(model.options.length)} ANS-срез; текущие связки показываем ниже, а базу сравнения накопим следующим импортом ANS.</p>
           </div>
           <div class="badge-stack">
             ${badge(`${fmt.int(model.currentSummary.articles)} связок`, model.currentSummary.articles ? 'info' : 'warn')}
-            ${badge('нет второго среза', 'warn')}
+            ${badge('нет второго ANS-среза', 'warn')}
           </div>
         </div>
         ${controlsHtml}
-        <div class="empty" style="margin-top:12px">После следующей выгрузки ANS здесь можно будет выбрать две даты и увидеть рост или просадку по каждой связке: наш артикул -> подменник.</div>
+        ${currentNoteHtml}
         ${renderProductLeaderboardExternalCurrentPairsTable(model)}
       </div>
     `;

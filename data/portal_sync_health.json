@@ -1,15 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-17T17:00:54.531Z",
-  "status": "warning",
+  "generatedAt": "2026-06-17T17:56:01.174Z",
+  "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
-    "warnings": [
-      "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 420 sec before retry 2/6..",
-      "Non-blocking sync step failed: product leaderboard sync: exit code 1."
-    ],
-    "checkedAt": "2026-06-17T17:00:54.531Z"
+    "warnings": [],
+    "checkedAt": "2026-06-17T17:56:01.174Z"
   },
   "freshness": {
     "maxDate": "2026-06-16",
@@ -18,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-17T17:00:54.525Z",
+      "checkedAt": "2026-06-17T17:56:01.164Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-16",
       "maxDate": "2026-06-16",
@@ -65,7 +62,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-17T17:00:54.531Z",
+      "checkedAt": "2026-06-17T17:56:01.174Z",
       "expectedDate": "2026-06-16",
       "adsSummaryWindowTo": "2026-06-16",
       "iuDrrWindowTo": "2026-06-16",
@@ -96,6 +93,18 @@
           "expectedDate": "2026-06-16"
         }
       ]
+    },
+    "iuDrrExpenseGuard": {
+      "status": "ok",
+      "blockingReasons": [],
+      "warnings": [],
+      "checks": [
+        {
+          "name": "iu-drr-expense-source",
+          "status": "ok",
+          "checkedRows": 47
+        }
+      ]
     }
   },
   "sources": {
@@ -116,14 +125,14 @@
     "platform_trends": {
       "exists": true,
       "rows": 7,
-      "generatedAt": "2026-06-17T17:00:17.750Z",
+      "generatedAt": "2026-06-17T17:55:11.141Z",
       "asOfDate": "2026-06-16",
-      "revenue": 963768597
+      "revenue": 979641738
     },
     "ads_summary": {
       "exists": true,
       "rows": 7,
-      "generatedAt": "2026-06-17T17:00:17.790Z",
+      "generatedAt": "2026-06-17T17:55:12.743Z",
       "asOfDate": "2026-06-16",
       "revenue": 0
     },
@@ -151,7 +160,7 @@
     "smart_price_overlay": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-17T17:00:17.926Z",
+      "generatedAt": "2026-06-17T17:55:13.014Z",
       "asOfDate": "2026-06-16",
       "revenue": 0
     },
@@ -180,7 +189,21 @@
       "exists": true,
       "rows": 57,
       "generatedAt": "",
-      "asOfDate": "",
+      "asOfDate": "2026-06-15",
+      "revenue": 0
+    },
+    "wb_substitution_traffic": {
+      "exists": true,
+      "rows": 5191,
+      "generatedAt": "2026-06-01T15:40:56.803Z",
+      "asOfDate": "2026-06-01",
+      "revenue": 0
+    },
+    "wb_substitution_traffic_history": {
+      "exists": true,
+      "rows": 1,
+      "generatedAt": "",
+      "asOfDate": "2026-06-01",
       "revenue": 0
     },
     "order_procurement": {
@@ -242,7 +265,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-17T16:36:13.937Z",
+      "generatedAt": "2026-06-17T17:00:54.524Z",
       "asOfDate": "2026-06-17",
       "revenue": 0
     },
@@ -277,27 +300,14 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-17T16:36:13.944Z",
+      "generatedAt": "2026-06-17T17:00:54.531Z",
       "asOfDate": "2026-06-17",
       "revenue": 0
     }
   },
   "syncIssues": {
-    "generatedAt": "2026-06-17T16:07:51.1719746+03:00",
-    "issues": [
-      {
-        "id": "yandex-market",
-        "name": "Yandex Market analytics refresh",
-        "message": "[ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 420 sec before retry 2/6.",
-        "failedAt": "2026-06-17T16:03:57.4115442+03:00"
-      },
-      {
-        "id": "product-leaderboard",
-        "name": "product leaderboard sync",
-        "message": "exit code 1",
-        "failedAt": "2026-06-17T16:07:51.1719746+03:00"
-      }
-    ]
+    "generatedAt": "",
+    "issues": []
   },
   "skuContour": {
     "status": "ok",
@@ -389,7 +399,7 @@
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-06-17T16:36:14.191Z",
+    "generatedAt": "2026-06-01T19:26:45.110Z",
     "comparisons": [
       {
         "snapshot": "skus",
@@ -398,25 +408,28 @@
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
-        "revenueRatio": 1
+        "revenueRatio": 1,
+        "revenueComparable": true
       },
       {
         "snapshot": "platform_trends",
         "rows": 7,
         "previousRows": 7,
         "rowRatio": 1,
-        "revenue": 963768597,
-        "previousRevenue": 963668924,
-        "revenueRatio": 1.0001034307504555
+        "revenue": 979641738,
+        "previousRevenue": 559539304,
+        "revenueRatio": 1.750800580042899,
+        "revenueComparable": false
       },
       {
         "snapshot": "order_procurement",
         "rows": 2318,
-        "previousRows": 2318,
-        "rowRatio": 1,
+        "previousRows": 2741,
+        "rowRatio": 0.8456767603064574,
         "revenue": 0,
         "previousRevenue": 0,
-        "revenueRatio": 1
+        "revenueRatio": 1,
+        "revenueComparable": true
       },
       {
         "snapshot": "warehouse_stock_overlay",
@@ -425,7 +438,8 @@
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
-        "revenueRatio": 1
+        "revenueRatio": 1,
+        "revenueComparable": true
       },
       {
         "snapshot": "sku_matrix",
@@ -434,7 +448,8 @@
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
-        "revenueRatio": 1
+        "revenueRatio": 1,
+        "revenueComparable": true
       },
       {
         "snapshot": "oos_control",
@@ -443,25 +458,12 @@
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
-        "revenueRatio": 1
+        "revenueRatio": 1,
+        "revenueComparable": true
       }
-    ],
-    "markedAt": "2026-06-17T17:00:54.799Z",
-    "copied": 26
+    ]
   },
   "checks": [
-    {
-      "name": "sync-step:yandex-market",
-      "status": "warning",
-      "message": "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 420 sec before retry 2/6..",
-      "failedAt": "2026-06-17T16:03:57.4115442+03:00"
-    },
-    {
-      "name": "sync-step:product-leaderboard",
-      "status": "warning",
-      "message": "Non-blocking sync step failed: product leaderboard sync: exit code 1.",
-      "failedAt": "2026-06-17T16:07:51.1719746+03:00"
-    },
     {
       "name": "required:dashboard",
       "status": "ok",
@@ -586,6 +588,11 @@
       "message": "IU/DRR WB ads window covers expected date 2026-06-16.",
       "iuAdsWindowTo": "2026-06-16",
       "expectedDate": "2026-06-16"
+    },
+    {
+      "name": "iu-drr-expense-source",
+      "status": "ok",
+      "checkedRows": 47
     }
   ]
 }

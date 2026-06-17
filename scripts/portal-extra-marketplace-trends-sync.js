@@ -1226,6 +1226,97 @@ function trimSeriesToDate(series, cutoffDate) {
   }));
 }
 
+function mergeSeriesFillMissing(existingSeries, fallbackSeries, cutoffDate) {
+  const result = new Map();
+  for (const point of trimSeriesToDate(existingSeries, cutoffDate)) {
+    if (point.date) result.set(point.date, point);
+  }
+  for (const point of trimSeriesToDate(fallbackSeries, cutoffDate)) {
+    if (!point.date) continue;
+    const hasFallbackFacts = numberOrZero(point.units) > 0
+      || numberOrZero(point.revenue) > 0
+      || numberOrZero(point.estimatedMargin) > 0;
+    if (!hasFallbackFacts) continue;
+    const existing = result.get(point.date);
+    const hasExistingFacts = existing && (
+      numberOrZero(existing.units) > 0
+      || numberOrZero(existing.revenue) > 0
+      || numberOrZero(existing.estimatedMargin) > 0
+    );
+    if (!hasExistingFacts) result.set(point.date, existing ? { ...existing, ...point } : point);
+  }
+  const list = [...result.values()].sort((left, right) => left.date.localeCompare(right.date));
+  const latestIndex = list.length - 1;
+  return list.map((point, index) => ({
+    ...point,
+    dayOffset: latestIndex - index
+  }));
+}
+
+function monthlyFactKey(point) {
+  return normalizeText(point?.monthKey || String(point?.date || '').slice(0, 7));
+}
+
+function hasMonthlyFacts(point) {
+  return numberOrZero(point?.units) > 0
+    || numberOrZero(point?.ordersUnits) > 0
+    || numberOrZero(point?.deliveredUnits) > 0
+    || numberOrZero(point?.revenue) > 0
+    || numberOrZero(point?.ordersRevenue) > 0
+    || numberOrZero(point?.deliveredRevenue) > 0
+    || numberOrZero(point?.buyoutRevenue) > 0
+    || numberOrZero(point?.estimatedMargin) > 0;
+}
+
+function mergeMonthlyFillMissing(existingMonthly, fallbackMonthly, cutoffDate) {
+  const cutoffMonth = isoDate(cutoffDate)?.slice(0, 7) || '';
+  const result = new Map();
+  for (const point of Array.isArray(existingMonthly) ? existingMonthly : []) {
+    const key = monthlyFactKey(point);
+    if (key && (!cutoffMonth || key <= cutoffMonth)) result.set(key, point);
+  }
+  for (const point of Array.isArray(fallbackMonthly) ? fallbackMonthly : []) {
+    const key = monthlyFactKey(point);
+    if (!key || (cutoffMonth && key > cutoffMonth) || !hasMonthlyFacts(point)) continue;
+    const existing = result.get(key);
+    if (!existing || !hasMonthlyFacts(existing)) result.set(key, existing ? { ...existing, ...point } : point);
+  }
+  return [...result.values()].sort((left, right) => monthlyFactKey(left).localeCompare(monthlyFactKey(right)));
+}
+
+function articleMergeKey(article) {
+  return normalizeSkuToken(article?.articleKey || article?.article || article?.sourceArticleKey || article?.name);
+}
+
+function mergeArticlesFillMissing(existingArticles, fallbackArticles, cutoffDate) {
+  const existingByKey = new Map();
+  for (const article of Array.isArray(existingArticles) ? existingArticles : []) {
+    const key = articleMergeKey(article);
+    if (key) existingByKey.set(key, article);
+  }
+  const result = [];
+  const seen = new Set();
+  for (const article of Array.isArray(fallbackArticles) ? fallbackArticles : []) {
+    const key = articleMergeKey(article);
+    const existing = key ? existingByKey.get(key) : null;
+    if (key) seen.add(key);
+    if (!existing) {
+      result.push(trimArticleDailyToDate(article, cutoffDate));
+      continue;
+    }
+    result.push(trimArticleDailyToDate({
+      ...existing,
+      ...article,
+      daily: mergeSeriesFillMissing(existing.daily, article.daily, cutoffDate),
+      monthly: mergeMonthlyFillMissing(existing.monthly, article.monthly, cutoffDate)
+    }, cutoffDate));
+  }
+  for (const [key, article] of existingByKey.entries()) {
+    if (!seen.has(key)) result.push(trimArticleDailyToDate(article, cutoffDate));
+  }
+  return result.sort((left, right) => articleMergeKey(left).localeCompare(articleMergeKey(right)));
+}
+
 function trimArticleDailyToDate(article, cutoffDate) {
   const daily = trimSeriesToDate(article?.daily || [], cutoffDate);
   const latestPoint = daily[daily.length - 1] || {};
@@ -1297,6 +1388,19 @@ function articleDiagnostics(articles) {
   summary.matchedRevenue = Number(summary.matchedRevenue.toFixed(4));
   summary.unmatchedRevenue = Number(summary.unmatchedRevenue.toFixed(4));
   return summary;
+}
+
+function preservedExtraDiagnostics(articles, existingDiagnostics, sourceInfo) {
+  const existing = existingDiagnostics && typeof existingDiagnostics === 'object' ? existingDiagnostics : {};
+  return {
+    ...articleDiagnostics(articles),
+    ...existing,
+    preservedLastKnown: true,
+    preservedReason: 'fresh_source_empty',
+    preservedFromAsOfDate: existing.preservedFromAsOfDate || sourceInfo.asOfDate || '',
+    preservedFromGeneratedAt: existing.preservedFromGeneratedAt || sourceInfo.generatedAt || '',
+    warning: 'Fresh marketplace workbook/API returned no articles for this platform; preserved last known non-empty detail.'
+  };
 }
 
 function buildAllSeries(platformSeriesMap) {
@@ -1447,10 +1551,26 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
   }
 
   for (const key of EXTRA_PLATFORM_ORDER) {
-    const series = buildPlatformSeriesFromMonthly(platformTotals.get(key) || new Map(), asOfDate);
+    const newSeries = buildPlatformSeriesFromMonthly(platformTotals.get(key) || new Map(), asOfDate);
     const existing = platformMap.get(key) || {};
-    const articles = (extraArticleMap.get(key) || []).sort((left, right) => left.articleKey.localeCompare(right.articleKey));
-    const diagnostics = articleDiagnostics(articles);
+    let series = mergeSeriesFillMissing(existing.series, newSeries, cutoffDate);
+    const incomingArticles = (extraArticleMap.get(key) || []).sort((left, right) => left.articleKey.localeCompare(right.articleKey));
+    const preservedBucket = trimExtraPlatformToDate(existingExtraPlatforms[key], cutoffDate);
+    const preservedArticles = Array.isArray(preservedBucket?.articles) ? preservedBucket.articles : [];
+    let articles = mergeArticlesFillMissing(preservedArticles, incomingArticles, cutoffDate);
+    let diagnostics = articleDiagnostics(articles);
+    if (!incomingArticles.length && preservedArticles.length) {
+      articles = preservedArticles;
+      series = trimSeriesToDate(existing.series || [], cutoffDate);
+      diagnostics = preservedExtraDiagnostics(
+        articles,
+        preservedBucket?.diagnostics,
+        {
+          asOfDate: existingExtraMarketplace.asOfDate || preservedBucket?.asOfDate || '',
+          generatedAt: existingExtraMarketplace.generatedAt || preservedBucket?.generatedAt || ''
+        }
+      );
+    }
     resultPlatforms.push({
       ...existing,
       key,
@@ -1460,6 +1580,7 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
       diagnostics
     });
     extraMarketplace.platforms[key] = {
+      ...(preservedArticles.length && articles === preservedArticles ? preservedBucket : {}),
       key,
       label: platformLabel(key),
       supportKey: supportKeyForPlatform(key),
@@ -1472,7 +1593,14 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
     const key = canonicalPlatformKey(platform?.key);
     if (EXTRA_PLATFORM_ORDER.includes(key) || key === 'all') continue;
     const platformNext = key === 'ya'
-      ? { ...platform, series: trimSeriesToDate(platform.series, cutoffDate) }
+      ? {
+          ...platform,
+          series: mergeSeriesFillMissing(
+            platform.series,
+            buildPlatformSeriesFromMonthly(platformTotals.get(key) || new Map(), asOfDate),
+            cutoffDate
+          )
+        }
       : platform;
     resultPlatforms.push(platformNext);
   }
@@ -1483,7 +1611,13 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
   }
   for (const [key, platform] of platformMap.entries()) {
     if (EXTRA_PLATFORM_ORDER.includes(key) || key === 'all') continue;
-    const series = key === 'ya' ? trimSeriesToDate(platform.series, cutoffDate) : platform.series;
+    const series = key === 'ya'
+      ? mergeSeriesFillMissing(
+          platform.series,
+          buildPlatformSeriesFromMonthly(platformTotals.get(key) || new Map(), asOfDate),
+          cutoffDate
+        )
+      : platform.series;
     allSeriesMap.set(key, Array.isArray(series) ? series : []);
   }
   const allSeriesCutoff = completeSeriesDate(allSeriesMap);

@@ -740,11 +740,64 @@
     });
   }
 
+  function mergePlatformActivityRanges(events = []) {
+    const byPlatform = new Map();
+    events.forEach((event) => {
+      const key = platformKey(event.platform || 'cross');
+      if (!byPlatform.has(key)) byPlatform.set(key, []);
+      byPlatform.get(key).push(event);
+    });
+    const merged = [];
+    byPlatform.forEach((items, platform) => {
+      const sorted = items.slice().sort((a, b) => String(a.startDate || '').localeCompare(String(b.startDate || '')));
+      let current = null;
+      const flush = () => {
+        if (!current) return;
+        const metrics = current.days.reduce((acc, item) => {
+          Object.entries(item.metrics || {}).forEach(([key, value]) => {
+            acc[key] = number(acc[key]) + number(value);
+          });
+          return acc;
+        }, {});
+        const skus = uniqueList(current.days.flatMap((item) => item.skus || [])).slice(0, 8);
+        const metricParts = [
+          metrics.spend ? `spend ${formatMoney(metrics.spend)}` : '',
+          metrics.orders ? `orders ${formatInt(metrics.orders)}` : '',
+          metrics.revenue ? `revenue ${formatMoney(metrics.revenue)}` : '',
+          metrics.clicks ? `clicks ${formatInt(metrics.clicks)}` : ''
+        ].filter(Boolean);
+        merged.push({
+          ...current.days[current.days.length - 1],
+          id: `platform-activity-${platform}-${current.startDate}-${current.endDate}`,
+          startDate: current.startDate,
+          endDate: current.endDate,
+          skus,
+          skuText: skus.join('\n'),
+          comment: metricParts.join(' | '),
+          status: current.endDate < todayKey() ? 'done' : (current.startDate <= todayKey() ? 'active' : 'planned'),
+          metrics
+        });
+      };
+      sorted.forEach((event) => {
+        const day = event.startDate;
+        if (!current || day !== addDays(current.endDate, 1)) {
+          flush();
+          current = { startDate: day, endDate: day, days: [event] };
+          return;
+        }
+        current.endDate = day;
+        current.days.push(event);
+      });
+      flush();
+    });
+    return merged;
+  }
+
   function calendarEvents() {
     const manualEvents = allEvents().map((event) => ({ ...event, calendarKind: 'promo', readonly: false }));
     return [
       ...manualEvents,
-      ...platformActivityEvents(),
+      ...mergePlatformActivityRanges(platformActivityEvents()),
       ...taskCalendarEvents(manualEvents),
       ...launchCalendarEvents()
     ];

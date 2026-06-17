@@ -133,7 +133,7 @@ function resolveOptions(args) {
   const from = mode === 'daily' || mode === 'recent'
     ? isoDate(args.from || args['date-from']) || addDays(to, -recentDays + 1)
     : maxFrom;
-  const platforms = normalizeText(args.platforms || envValue(process.env, 'ALTEA_PORTAL_API_PLATFORMS') || 'wb,ozon,ya,magnit')
+  const platforms = normalizeText(args.platforms || envValue(process.env, 'ALTEA_PORTAL_API_PLATFORMS') || 'wb,ozon,ya,goldapple,letu,magnit')
     .split(',')
     .map((item) => normalizeText(item).toLowerCase())
     .filter(Boolean);
@@ -460,6 +460,7 @@ function buildSteps(options, env) {
   const steps = [];
   const trendsInput = options.inputFile;
   const trendsOutput = options.outputFile;
+  const extraRequested = options.platforms.some((platform) => ['goldapple', 'zya', 'ga', 'letu', 'letual', 'magnit', 'magnitmarket', 'mm'].includes(platform));
 
   if (options.platforms.includes('wb')) {
     ensureEnv(env, 'ALTEA_WB_API_TOKEN', ['ALTEA_WB_PROMOTION_TOKEN']);
@@ -506,7 +507,82 @@ function buildSteps(options, env) {
     });
   }
 
-  if (options.platforms.includes('magnit') && !options.skipMagnitCsv) {
+  if (extraRequested) {
+    [
+      'ALTEA_ZYA_API_TOKEN',
+      'ALTEA_ZYA_API_KEY',
+      'ALTEA_ZYA_API_BASE_URL',
+      'ALTEA_ZYA_SALES_PATH',
+      'ALTEA_ZYA_CLIENT_ID',
+      'ALTEA_ZYA_API_METHOD',
+      'ALTEA_ZYA_API_BODY_JSON',
+      'ALTEA_ZYA_GRAPHQL_QUERY',
+      'ALTEA_GOLDAPPLE_API_TOKEN',
+      'ALTEA_GOLDAPPLE_API_KEY',
+      'ALTEA_GOLDAPPLE_API_BASE_URL',
+      'ALTEA_GOLDAPPLE_SALES_PATH',
+      'ALTEA_GOLDAPPLE_CLIENT_ID',
+      'ALTEA_GOLDAPPLE_API_METHOD',
+      'ALTEA_GOLDAPPLE_API_BODY_JSON',
+      'ALTEA_GOLDAPPLE_GRAPHQL_QUERY',
+      'ALTEA_LETUAL_API_TOKEN',
+      'ALTEA_LETUAL_API_BASE_URL',
+      'ALTEA_LETUAL_SALES_PATH',
+      'ALTEA_LETUAL_CLIENT_ID',
+      'ALTEA_LETUAL_API_METHOD',
+      'ALTEA_LETUAL_API_BODY_JSON',
+      'ALTEA_LETUAL_GRAPHQL_QUERY',
+      'ALTEA_MAGNIT_API_TOKEN',
+      'ALTEA_MAGNIT_API_KEY',
+      'ALTEA_MAGNIT_API_BASE_URL',
+      'ALTEA_MAGNIT_SALES_PATH',
+      'ALTEA_MAGNIT_CLIENT_ID',
+      'ALTEA_MAGNIT_API_METHOD',
+      'ALTEA_MAGNIT_API_BODY_JSON',
+      'ALTEA_MAGNIT_GRAPHQL_QUERY',
+      'ALTEA_MAGNIT_MARKET_API_TOKEN',
+      'ALTEA_MAGNIT_MARKET_API_KEY',
+      'ALTEA_MAGNIT_MARKET_API_BASE_URL',
+      'ALTEA_MAGNIT_MARKET_SALES_PATH',
+      'ALTEA_MAGNIT_MARKET_CLIENT_ID',
+      'ALTEA_MAGNIT_MARKET_API_METHOD',
+      'ALTEA_MAGNIT_MARKET_API_BODY_JSON',
+      'ALTEA_MAGNIT_MARKET_GRAPHQL_QUERY',
+      'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+    ].forEach((name) => ensureEnv(env, name));
+    const extraWorkbook = path.join(process.cwd(), '.altea-google-sheet-sync-output', 'api_max_extra_marketplaces.xlsx');
+    steps.push({
+      id: 'extra-marketplace-workbook',
+      name: 'Extra marketplace API workbook build',
+      args: [
+        'scripts/build-altea-funnel-workbook.js',
+        'build',
+        '--skip-ozon-api',
+        '--skip-wb-funnel',
+        '--output',
+        extraWorkbook
+      ]
+    });
+    steps.push({
+      id: 'extra-marketplace-merge',
+      name: 'Extra marketplace API merge',
+      args: [
+        'scripts/portal-extra-marketplace-trends-sync.js',
+        'sync',
+        '--workbook',
+        extraWorkbook,
+        '--base-data-dir',
+        options.baseDataDir,
+        '--output-dir',
+        path.dirname(trendsOutput),
+        '--mirror-local-fallback',
+        '--ozon-daily-funnel',
+        '0'
+      ]
+    });
+  }
+
+  if (options.platforms.includes('magnit') && !options.skipMagnitCsv && !extraRequested) {
     const salesCsv = firstExistingPath([
       envValue(env, 'ALTEA_MAGNIT_SALES_CSV'),
       path.join(options.baseDataDir, 'external_sources', 'magnit_sales.csv'),

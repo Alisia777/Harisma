@@ -25,6 +25,8 @@ const LETUAL_DEFAULT_BASE_URL = 'https://partner.letu.ru';
 const LETUAL_DEFAULT_GRAPHQL_PATH = '/api/graphql';
 const LETUAL_DEFAULT_LOCAL_EXPORT_XLSX = 'C:/Users/artiu/Downloads/Letu.xlsx';
 const LETUAL_DEFAULT_PLAN_XLSX = 'C:/Users/artiu/OneDrive/Рабочий стол/План/Лэтуаль.xlsx';
+const ZYA_DEFAULT_SALES_XLSX = path.join('data', 'external_sources', 'zya_plan.xlsx');
+const RETAIL_NETWORK_SALES_DEFAULT_XLSX = path.join('data', 'external_sources', 'retail_network_sales.xlsx');
 const LETUAL_CPC_STATS_QUERY = `
   query getCpcStats($where: CpcStatsFilter!, $limit: Int!, $offset: Int!) {
     cpcStats(where: $where, limit: $limit, offset: $offset) {
@@ -262,6 +264,10 @@ function resolveOptions(args) {
     ymCampaignId: String(args['ym-campaign-id'] || process.env.ALTEA_YM_CAMPAIGN_ID || '').trim(),
     ymBusinessId: String(args['ym-business-id'] || process.env.ALTEA_YM_BUSINESS_ID || '').trim(),
     ymUseShowsSales: asBool(args['ym-use-shows-sales'] ?? process.env.ALTEA_YM_USE_SHOWS_SALES, false),
+    zyaApiToken: String(args['zya-token'] || args['zya-api-token'] || process.env.ALTEA_ZYA_API_TOKEN || process.env.ALTEA_ZYA_API_KEY || process.env.ALTEA_GOLDAPPLE_API_TOKEN || process.env.ALTEA_GOLDAPPLE_API_KEY || '').trim(),
+    zyaApiBaseUrl: String(args['zya-base-url'] || process.env.ALTEA_ZYA_API_BASE_URL || process.env.ALTEA_GOLDAPPLE_API_BASE_URL || '').trim(),
+    zyaSalesPath: String(args['zya-sales-path'] || process.env.ALTEA_ZYA_SALES_PATH || process.env.ALTEA_GOLDAPPLE_SALES_PATH || '').trim(),
+    zyaClientId: String(args['zya-client-id'] || process.env.ALTEA_ZYA_CLIENT_ID || process.env.ALTEA_GOLDAPPLE_CLIENT_ID || '').trim(),
     letualApiToken: String(args['letual-token'] || process.env.ALTEA_LETUAL_API_TOKEN || '').trim(),
     letualApiBaseUrl: String(args['letual-base-url'] || process.env.ALTEA_LETUAL_API_BASE_URL || LETUAL_DEFAULT_BASE_URL).trim(),
     letualSalesPath: String(args['letual-sales-path'] || process.env.ALTEA_LETUAL_SALES_PATH || LETUAL_DEFAULT_GRAPHQL_PATH).trim(),
@@ -270,7 +276,13 @@ function resolveOptions(args) {
     letualLocalExportXlsx: String(args['letual-local-export-xlsx'] || process.env.ALTEA_LETUAL_LOCAL_EXPORT_XLSX || LETUAL_DEFAULT_LOCAL_EXPORT_XLSX).trim(),
     letualPlanXlsx: String(args['letual-plan-xlsx'] || process.env.ALTEA_LETUAL_PLAN_XLSX || LETUAL_DEFAULT_PLAN_XLSX).trim(),
     zyaSalesZip: String(args['zya-sales-zip'] || process.env.ALTEA_ZYA_SALES_ZIP || '').trim(),
+    zyaSalesXlsx: String(args['zya-sales-xlsx'] || process.env.ALTEA_ZYA_SALES_XLSX || ZYA_DEFAULT_SALES_XLSX).trim(),
     zyaAdsXlsx: String(args['zya-ads-xlsx'] || process.env.ALTEA_ZYA_ADS_XLSX || '').trim(),
+    retailNetworkSalesXlsx: String(args['retail-network-sales-xlsx'] || process.env.ALTEA_RETAIL_NETWORK_SALES_XLSX || RETAIL_NETWORK_SALES_DEFAULT_XLSX).trim(),
+    magnitApiToken: String(args['magnit-token'] || args['magnit-api-token'] || process.env.ALTEA_MAGNIT_API_TOKEN || process.env.ALTEA_MAGNIT_API_KEY || process.env.ALTEA_MAGNIT_MARKET_API_TOKEN || process.env.ALTEA_MAGNIT_MARKET_API_KEY || '').trim(),
+    magnitApiBaseUrl: String(args['magnit-base-url'] || process.env.ALTEA_MAGNIT_API_BASE_URL || process.env.ALTEA_MAGNIT_MARKET_API_BASE_URL || '').trim(),
+    magnitSalesPath: String(args['magnit-sales-path'] || process.env.ALTEA_MAGNIT_SALES_PATH || process.env.ALTEA_MAGNIT_MARKET_SALES_PATH || '').trim(),
+    magnitClientId: String(args['magnit-client-id'] || process.env.ALTEA_MAGNIT_CLIENT_ID || process.env.ALTEA_MAGNIT_MARKET_CLIENT_ID || '').trim(),
     magnitSalesCsv: String(args['magnit-sales-csv'] || process.env.ALTEA_MAGNIT_SALES_CSV || '').trim(),
     magnitServicesCsv: String(args['magnit-services-csv'] || process.env.ALTEA_MAGNIT_SERVICES_CSV || '').trim(),
     from: '2025-01-01',
@@ -899,7 +911,7 @@ function collectObjects(value, result = []) {
   }
   if (typeof value !== 'object') return result;
   const keys = Object.keys(value);
-  if (keys.some((key) => /offer|sku|year|month|day|order|show|click|revenue|amount|quantity/i.test(key))) {
+  if (keys.some((key) => /offer|sku|year|month|day|date|order|sale|show|click|revenue|amount|quantity|vendor|article|дата|месяц|год|артикул|выруч|сумм|колич|заказ|продаж|шт/i.test(key))) {
     result.push(value);
   }
   for (const nested of Object.values(value)) {
@@ -1570,36 +1582,333 @@ function addLetualLocalExport(store, options, notes) {
 }
 
 function addGenericLetualRows(store, rows, notes, sourceLabel) {
-  const metricCandidates = {
-    orders_units: ['ordersUnits', 'orderItems', 'quantity', 'qty', 'count', 'sales_qty', 'ordered_units'],
-    orders_revenue: ['ordersRevenue', 'revenue', 'amount', 'sum', 'total', 'sales_sum', 'ordered_amount'],
-    delivered_units: ['deliveredUnits', 'delivered_count', 'delivered'],
-    delivered_revenue: ['deliveredRevenue', 'delivered_amount'],
-    returns_units: ['returns', 'returnsUnits', 'returned_count'],
-    cancellations_units: ['cancellations', 'cancelled', 'canceled_count']
-  };
+  return addGenericMarketplaceRows(store, rows, notes, {
+    platformKey: 'letu',
+    sourceLabel,
+    defaultArticle: 'letu-unmapped'
+  });
+}
+
+const GENERIC_MARKETPLACE_FIELDS = {
+  date: ['date', 'day', 'month', 'period', 'createdAt', 'orderDate', 'saleDate', 'salesDate', 'deliveryDate', 'Дата', 'День', 'Месяц', 'Период', 'Дата заказа', 'Дата продажи', 'Дата начисления'],
+  year: ['year', 'год', 'Год'],
+  month: ['monthNumber', 'month_num', 'monthNo', 'month', 'Месяц', 'Номер месяца'],
+  article: ['article', 'offerId', 'offer_id', 'sku', 'vendorCode', 'vendor_code', 'item_code', 'sellerSku', 'seller_sku', 'Seller SKU ID', 'Артикул', 'Артикул продавца', 'Код товара', 'SKU', 'Штрихкод'],
+  name: ['name', 'offerName', 'productName', 'itemName', 'title', 'Название', 'Наименование', 'Наименование товара', 'Название товара'],
+  orders_units: ['ordersUnits', 'orderItems', 'quantity', 'qty', 'count', 'sales_qty', 'ordered_units', 'units', 'items', 'Заказы шт', 'Заказано шт', 'Продано шт', 'Количество', 'Шт', 'Июнь шт', 'Май шт', 'Апрель шт'],
+  orders_revenue: ['ordersRevenue', 'revenue', 'amount', 'sum', 'total', 'sales_sum', 'ordered_amount', 'salesAmount', 'grossRevenue', 'Заказы руб', 'Заказано руб', 'Продано руб', 'Выручка', 'Сумма', 'Итого', 'Июнь руб', 'Май руб', 'Апрель руб'],
+  delivered_units: ['deliveredUnits', 'delivered_count', 'delivered', 'buyoutUnits', 'Выкуплено шт', 'Доставлено шт'],
+  delivered_revenue: ['deliveredRevenue', 'delivered_amount', 'buyoutRevenue', 'Выкуплено руб', 'Доставлено руб'],
+  returns_units: ['returns', 'returnsUnits', 'returned_count', 'Возвраты', 'Возвраты шт'],
+  cancellations_units: ['cancellations', 'cancelled', 'canceled_count', 'Отмены', 'Отмены шт']
+};
+
+function rowFieldValue(row, aliases) {
+  if (!row || typeof row !== 'object') return '';
+  for (const alias of aliases) {
+    if (Object.prototype.hasOwnProperty.call(row, alias)) {
+      const value = row[alias];
+      if (value !== undefined && value !== null && value !== '') return value;
+    }
+  }
+  const byKey = new Map(Object.keys(row).map((key) => [normalizeKey(key), row[key]]));
+  for (const alias of aliases) {
+    const value = byKey.get(normalizeKey(alias));
+    if (value !== undefined && value !== null && value !== '') return value;
+  }
+  return '';
+}
+
+function monthKeyFromMarketplaceRow(row) {
+  const direct = rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.date);
+  const year = normalizeYear(rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.year)) || TODAY.slice(0, 4);
+  let month = monthKey(direct) || monthKeyFromRussianText(direct, year);
+  if (month) return month;
+  const rawMonth = rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.month);
+  month = monthKey(rawMonth) || monthKeyFromRussianText(rawMonth, year);
+  if (month) return month;
+  const monthNumber = Number(String(rawMonth).replace(/\D+/g, ''));
+  if (year && monthNumber >= 1 && monthNumber <= 12) return `${year}-${String(monthNumber).padStart(2, '0')}`;
+  return '';
+}
+
+function addGenericMarketplaceRows(store, rows, notes, config) {
   let count = 0;
+  const months = new Set();
+  const skuSet = new Set();
+  const platformKey = config.platformKey;
+  const sourceLabel = config.sourceLabel;
   for (const row of rows) {
-    const month = monthKey(row.date || row.day || row.month || row.period || row.createdAt || row.orderDate);
+    const month = monthKeyFromMarketplaceRow(row);
     if (!month) continue;
-    const article = normalizeText(row.article || row.offerId || row.sku || row.vendorCode || row.item_code);
-    const name = normalizeText(row.name || row.offerName || row.productName);
-    const commonTotal = { level: 'total', platformKey: 'letu', source: sourceLabel };
-    const commonSku = { level: 'sku', platformKey: 'letu', articleKey: article || 'letu-unmapped', article, name, source: sourceLabel };
+    const article = normalizeText(rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.article));
+    const name = normalizeText(rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.name)) || article;
+    const commonTotal = { level: 'total', platformKey, source: sourceLabel };
+    const commonSku = { level: 'sku', platformKey, articleKey: article || config.defaultArticle || `${platformKey}-unmapped`, article, name, source: sourceLabel };
     let hasMetric = false;
-    for (const [metricKey, candidates] of Object.entries(metricCandidates)) {
-      const raw = candidates.map((key) => row[key]).find((value) => value !== undefined && value !== null && value !== '');
+    for (const [metricKey, candidates] of Object.entries(GENERIC_MARKETPLACE_FIELDS)) {
+      if (!METRICS[metricKey]) continue;
+      const raw = rowFieldValue(row, candidates);
       if (raw === undefined || raw === null || raw === '') continue;
       store.add({ ...commonTotal, metricKey }, month, raw);
       if (article) store.add({ ...commonSku, metricKey }, month, raw);
       hasMetric = true;
     }
-    if (hasMetric) count += 1;
+    const units = numberOrZero(rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.orders_units));
+    const revenue = numberOrZero(rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.orders_revenue));
+    if (hasMetric && (units || revenue)) {
+      if (!numberOrZero(rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.delivered_units))) {
+        store.add({ ...commonTotal, metricKey: 'delivered_units' }, month, units);
+        store.add({ ...commonTotal, metricKey: 'buyout_units' }, month, units);
+        if (article) {
+          store.add({ ...commonSku, metricKey: 'delivered_units' }, month, units);
+          store.add({ ...commonSku, metricKey: 'buyout_units' }, month, units);
+        }
+      }
+      if (!numberOrZero(rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.delivered_revenue))) {
+        store.add({ ...commonTotal, metricKey: 'delivered_revenue' }, month, revenue);
+        store.add({ ...commonTotal, metricKey: 'buyout_revenue' }, month, revenue);
+        if (article) {
+          store.add({ ...commonSku, metricKey: 'delivered_revenue' }, month, revenue);
+          store.add({ ...commonSku, metricKey: 'buyout_revenue' }, month, revenue);
+        }
+      }
+    }
+    if (hasMetric) {
+      count += 1;
+      months.add(month);
+      if (article) skuSet.add(article);
+    }
   }
-  sourceNote(notes, sourceLabel, count ? 'loaded' : 'empty', `${count} Letual rows parsed`);
+  const orderedMonths = Array.from(months).sort();
+  sourceNote(notes, sourceLabel, count ? 'loaded' : 'empty', `${count} rows, ${skuSet.size} SKU${orderedMonths.length ? `, ${orderedMonths[0]}..${orderedMonths[orderedMonths.length - 1]}` : ''}`);
+  return count;
+}
+
+function envAny(names) {
+  return names.map((name) => process.env[name]).find((value) => normalizeText(value)) || '';
+}
+
+function applyApiTemplate(value, options) {
+  return String(value || '')
+    .replace(/\{dateFrom\}|\{from\}/g, options.from)
+    .replace(/\{dateTo\}|\{to\}/g, options.to)
+    .replace(/\{today\}/g, TODAY);
+}
+
+function buildGenericApiUrl(baseUrl, apiPath, options) {
+  const pathWithDates = applyApiTemplate(apiPath, options);
+  if (/^https?:\/\//i.test(pathWithDates)) return pathWithDates;
+  if (!baseUrl || !pathWithDates) return '';
+  const url = new URL(`${String(baseUrl).replace(/\/+$/, '')}/${String(pathWithDates).replace(/^\/+/, '')}`);
+  const originalPath = String(apiPath || '');
+  if (!/\{dateFrom\}|\{from\}/.test(originalPath) && !url.searchParams.has('dateFrom') && !url.searchParams.has('from')) {
+    url.searchParams.set('dateFrom', options.from);
+  }
+  if (!/\{dateTo\}|\{to\}/.test(originalPath) && !url.searchParams.has('dateTo') && !url.searchParams.has('to')) {
+    url.searchParams.set('dateTo', options.to);
+  }
+  return url.toString();
+}
+
+function genericApiHeaders(token, clientId) {
+  return {
+    Authorization: `Bearer ${token}`,
+    'Api-Key': token,
+    'X-API-Key': token,
+    'X-Client-Id': clientId || '',
+    'Content-Type': 'application/json',
+    Accept: 'application/json, text/csv;q=0.9, */*;q=0.8'
+  };
+}
+
+async function addGenericMarketplaceApi(store, options, notes, config) {
+  const token = normalizeText(config.token);
+  const baseUrl = normalizeText(config.baseUrl);
+  const salesPath = normalizeText(config.salesPath);
+  if (!token) {
+    sourceNote(notes, config.sourceLabel, 'missing credentials', config.tokenHelp);
+    return 0;
+  }
+  if (!baseUrl && !/^https?:\/\//i.test(salesPath)) {
+    sourceNote(notes, config.sourceLabel, 'missing endpoint', config.endpointHelp);
+    return 0;
+  }
+  if (!salesPath) {
+    sourceNote(notes, config.sourceLabel, 'missing endpoint', config.endpointHelp);
+    return 0;
+  }
+  try {
+    const url = buildGenericApiUrl(baseUrl, salesPath, options);
+    const method = normalizeText(envAny(config.methodEnv || []) || (isLetualGraphqlUrl(url) ? 'POST' : 'GET')).toUpperCase();
+    let body = null;
+    const bodyTemplate = envAny(config.bodyEnv || []);
+    const graphqlQuery = envAny(config.graphqlQueryEnv || []);
+    if (graphqlQuery) {
+      body = {
+        query: applyApiTemplate(graphqlQuery, options),
+        variables: {
+          dateFrom: options.from,
+          dateTo: options.to,
+          from: options.from,
+          to: options.to,
+          clientId: config.clientId || ''
+        }
+      };
+    } else if (bodyTemplate) {
+      body = JSON.parse(applyApiTemplate(bodyTemplate, options));
+    } else if (isLetualGraphqlUrl(url)) {
+      sourceNote(notes, config.sourceLabel, 'missing query', `${config.graphqlQueryHelp} for GraphQL sales rows`);
+      return 0;
+    }
+    const response = await fetch(url, {
+      method,
+      headers: genericApiHeaders(token, config.clientId),
+      body: method === 'GET' || !body ? undefined : JSON.stringify(body)
+    });
+    const text = await response.text();
+    if (!response.ok) throw new Error(`HTTP ${response.status} ${text.slice(0, 700)}`);
+    let rows = [];
+    try {
+      rows = collectObjects(JSON.parse(text));
+    } catch {
+      rows = parseCsv(text);
+    }
+    return addGenericMarketplaceRows(store, rows, notes, {
+      platformKey: config.platformKey,
+      sourceLabel: config.sourceLabel,
+      defaultArticle: config.defaultArticle
+    });
+  } catch (error) {
+    sourceNote(notes, config.sourceLabel, 'failed', error.message);
+    return 0;
+  }
+}
+
+function addRetailMonthlyMetric(store, commonTotal, commonSku, month, units, revenue) {
+  const values = {
+    orders_units: units,
+    orders_revenue: revenue,
+    delivered_units: units,
+    delivered_revenue: revenue,
+    buyout_units: units,
+    buyout_revenue: revenue
+  };
+  for (const [metricKey, value] of Object.entries(values)) {
+    if (commonSku.article) store.set({ ...commonSku, metricKey }, month, value);
+  }
+}
+
+function addRetailNetworkSalesXlsx(store, filePath, notes, options = {}) {
+  const skipPlatforms = options.skipPlatforms || new Set();
+  if (!filePath) {
+    sourceNote(notes, 'Retail network sales XLSX fallback', 'missing file', 'ALTEA_RETAIL_NETWORK_SALES_XLSX');
+    return 0;
+  }
+  if (!fs.existsSync(filePath)) {
+    sourceNote(notes, 'Retail network sales XLSX fallback', 'missing file', filePath);
+    return 0;
+  }
+  const configs = [
+    {
+      sheet: 'ЗЯ',
+      platformKey: 'goldapple',
+      source: 'Retail network sales XLSX fallback / ZYA',
+      article: 'Артикул',
+      name: 'Наименование',
+      months: [
+        ['2026-04', 'Апрель шт', 'Апрель руб'],
+        ['2026-05', 'Май шт', 'Май руб'],
+        ['2026-06', 'Июнь шт', 'Июнь руб']
+      ]
+    },
+    {
+      sheet: 'Лету',
+      platformKey: 'letu',
+      source: 'Retail network sales XLSX fallback / Letual',
+      article: 'Артикул',
+      months: [
+        ['2026-04', 'Апрель шт', 'Апрель руб'],
+        ['2026-05', 'Май шт', 'Май руб.'],
+        ['2026-06', 'Июнь шт.', 'Июнь руб']
+      ]
+    },
+    {
+      sheet: 'МагнитМаркет',
+      platformKey: 'magnitmarket',
+      source: 'Retail network sales XLSX fallback / Magnit Market',
+      article: 'Артикул',
+      months: [
+        ['2026-04', 'Апрель руб', 'Апрель шт'],
+        ['2026-05', 'Май руб.', 'Май шт'],
+        ['2026-06', 'Июнь руб', 'Июнь шт.']
+      ]
+    }
+  ];
+  try {
+    const workbook = readWorkbook(filePath);
+    let totalRows = 0;
+    const details = [];
+    for (const config of configs) {
+      if (skipPlatforms.has(config.platformKey) || (config.platformKey === 'magnitmarket' && skipPlatforms.has('magnit'))) {
+        details.push(`${config.sheet}: skipped because API loaded`);
+        continue;
+      }
+      const sheetName = workbook?.SheetNames?.find((name) => normalizeKey(name) === normalizeKey(config.sheet));
+      if (!sheetName) {
+        details.push(`${config.sheet}: missing`);
+        continue;
+      }
+      const rows = sheetRows(workbook, sheetName, { raw: true });
+      const totals = new Map();
+      let rowCount = 0;
+      for (const row of rows) {
+        const article = normalizeText(row[config.article]);
+        if (!article) continue;
+        const name = normalizeText(config.name ? row[config.name] : '') || article;
+        const commonTotal = { level: 'total', platformKey: config.platformKey, source: config.source };
+        const commonSku = { level: 'sku', platformKey: config.platformKey, articleKey: article, article, name, source: config.source };
+        let rowHasValue = false;
+        for (const [month, unitsColumn, revenueColumn] of config.months) {
+          const units = numberOrZero(row[unitsColumn]);
+          const revenue = numberOrZero(row[revenueColumn]);
+          if (!units && !revenue) continue;
+          addRetailMonthlyMetric(store, commonTotal, commonSku, month, units, revenue);
+          const bucket = totals.get(month) || { units: 0, revenue: 0 };
+          bucket.units += units;
+          bucket.revenue += revenue;
+          totals.set(month, bucket);
+          rowHasValue = true;
+        }
+        if (rowHasValue) rowCount += 1;
+      }
+      for (const [month, bucket] of totals.entries()) {
+        const totalCommon = { level: 'total', platformKey: config.platformKey, source: config.source };
+        const metricValues = {
+          orders_units: bucket.units,
+          orders_revenue: bucket.revenue,
+          delivered_units: bucket.units,
+          delivered_revenue: bucket.revenue,
+          buyout_units: bucket.units,
+          buyout_revenue: bucket.revenue
+        };
+        for (const [metricKey, value] of Object.entries(metricValues)) {
+          store.set({ ...totalCommon, metricKey }, month, value);
+        }
+      }
+      totalRows += rowCount;
+      details.push(`${config.sheet}: ${rowCount} SKU`);
+    }
+    sourceNote(notes, 'Retail network sales XLSX fallback', totalRows ? 'loaded' : 'empty', withFileMtime(filePath, `${totalRows} SKU rows (${details.join('; ')})`));
+    return totalRows;
+  } catch (error) {
+    sourceNote(notes, 'Retail network sales XLSX fallback', 'failed', error.message);
+    return 0;
+  }
 }
 
 async function addLetualApi(store, options, notes) {
+  let salesApiRows = 0;
   if (!options.letualApiToken) {
     sourceNote(notes, 'Letual API', 'missing credentials', 'ALTEA_LETUAL_API_TOKEN');
   } else {
@@ -1607,6 +1916,21 @@ async function addLetualApi(store, options, notes) {
     if (!url) {
       sourceNote(notes, 'Letual API', 'saved token only', 'Need a Letual endpoint to pull data.');
     } else if (isLetualGraphqlUrl(url)) {
+      salesApiRows = await addGenericMarketplaceApi(store, options, notes, {
+        platformKey: 'letu',
+        sourceLabel: 'Letual API sales',
+        defaultArticle: 'letu-unmapped',
+        token: options.letualApiToken,
+        baseUrl: options.letualApiBaseUrl,
+        salesPath: options.letualSalesPath,
+        clientId: options.letualClientId,
+        tokenHelp: 'ALTEA_LETUAL_API_TOKEN',
+        endpointHelp: 'ALTEA_LETUAL_API_BASE_URL / ALTEA_LETUAL_SALES_PATH',
+        methodEnv: ['ALTEA_LETUAL_API_METHOD'],
+        bodyEnv: ['ALTEA_LETUAL_API_BODY_JSON'],
+        graphqlQueryEnv: ['ALTEA_LETUAL_GRAPHQL_QUERY'],
+        graphqlQueryHelp: 'ALTEA_LETUAL_GRAPHQL_QUERY'
+      });
       let loadedMonths = 0;
       try {
         const months = options.letualFullHistory ? months2025And2026() : trailingMonths(TODAY, 2);
@@ -1636,14 +1960,15 @@ async function addLetualApi(store, options, notes) {
         } catch {
           rows = parseCsv(text);
         }
-        addGenericLetualRows(store, rows, notes, 'Letual API');
+        salesApiRows = addGenericLetualRows(store, rows, notes, 'Letual API sales');
       } catch (error) {
         sourceNote(notes, 'Letual API', 'failed', error.message);
       }
     }
   }
 
-  addLetualLocalExport(store, options, notes);
+  if (!salesApiRows) addLetualLocalExport(store, options, notes);
+  return salesApiRows > 0;
 }
 
 function loadBestWorkbookRowsFromZip(zipPath, requiredHeaders = []) {
@@ -1713,6 +2038,123 @@ function addZyaSalesZip(store, zipPath, notes) {
     sourceNote(notes, 'ZYA sales ZIP', count ? 'loaded' : 'empty', withFileMtime(zipPath, `${count} rows from ${path.basename(selection.filePath)} / ${selection.sheetName}`));
   } catch (error) {
     sourceNote(notes, 'ZYA sales ZIP', 'failed', error.message);
+  }
+}
+
+const ZYA_HEADERS = {
+  saleDate: '\u0414\u0430\u0442\u0430 \u043f\u0440\u043e\u0434\u0430\u0436\u0438',
+  productCode: '\u041a\u043e\u0434 \u0442\u043e\u0432\u0430\u0440\u0430',
+  productName: '\u041d\u0430\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u043d\u0438\u0435 \u0442\u043e\u0432\u0430\u0440\u0430',
+  soldUnits: '\u0418\u0442\u043e\u0433\u043e \u0440\u0435\u0430\u043b\u0438\u0437\u043e\u0432\u0430\u043d\u043e (\u0448\u0442.)',
+  soldRevenue: '\u0418\u0442\u043e\u0433\u043e \u0440\u0435\u0430\u043b\u0438\u0437\u043e\u0432\u0430\u043d\u043e (\u0441\u0443\u043c\u043c\u0430, \u0434\u043b\u044f \u0440\u0430\u0441\u0447\u0435\u0442\u0430 \u0430\u0433\u0435\u043d\u0442\u0441\u043a\u043e\u0433\u043e \u0432\u043e\u0437\u043d\u0430\u0433\u0440\u0430\u0436\u0434\u0435\u043d\u0438\u044f)',
+  salePrice: '\u0426\u0435\u043d\u0430 \u0440\u0435\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u0438',
+  finalRevenue: '\u0424\u0430\u043a\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u0441\u0443\u043c\u043c\u0430 \u043f\u0440\u043e\u0434\u0430\u0436',
+  nomenclatureCode: '\u041a\u043e\u0434 \u043d\u043e\u043c\u0435\u043d\u043a\u043b\u0430\u0442\u0443\u0440\u044b',
+  article: '\u0410\u0440\u0442\u0438\u043a\u0443\u043b',
+  name: '\u041d\u0430\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u043d\u0438\u0435'
+};
+
+function rowValue(row, keys) {
+  for (const key of keys) {
+    if (row[key] !== undefined && row[key] !== null && row[key] !== '') return row[key];
+  }
+  return '';
+}
+
+function normalizeZyaCode(value) {
+  return normalizeText(value).replace(/\D+/g, '');
+}
+
+function findWorkbookRowsByHeaders(workbook, requiredHeaders) {
+  if (!workbook || !Array.isArray(workbook.SheetNames)) return null;
+  for (const sheetName of workbook.SheetNames) {
+    const rows = sheetRows(workbook, sheetName);
+    if (!rows.length) continue;
+    const headers = new Set(Object.keys(rows[0] || {}));
+    if (requiredHeaders.every((header) => headers.has(header))) {
+      return { sheetName, rows };
+    }
+  }
+  return null;
+}
+
+function buildZyaArticleLookup(workbook) {
+  const selection = findWorkbookRowsByHeaders(workbook, [ZYA_HEADERS.nomenclatureCode, ZYA_HEADERS.article]);
+  const lookup = new Map();
+  if (!selection) return lookup;
+  for (const row of selection.rows) {
+    const code = normalizeZyaCode(row[ZYA_HEADERS.nomenclatureCode]);
+    const article = normalizeText(row[ZYA_HEADERS.article]);
+    if (!code || !article) continue;
+    lookup.set(code, {
+      article,
+      name: normalizeText(row[ZYA_HEADERS.name]) || article
+    });
+  }
+  return lookup;
+}
+
+function addZyaSalesXlsx(store, filePath, notes) {
+  if (!filePath) {
+    sourceNote(notes, 'ZYA sales XLSX', 'missing file', 'ALTEA_ZYA_SALES_XLSX');
+    return;
+  }
+  if (!fs.existsSync(filePath)) {
+    sourceNote(notes, 'ZYA sales XLSX', 'missing file', filePath);
+    return;
+  }
+  try {
+    const workbook = readWorkbook(filePath);
+    const selection = findWorkbookRowsByHeaders(workbook, [ZYA_HEADERS.saleDate, ZYA_HEADERS.productCode, ZYA_HEADERS.soldUnits]);
+    if (!selection) {
+      sourceNote(notes, 'ZYA sales XLSX', 'empty', `${path.basename(filePath)} has no daily sales sheet`);
+      return;
+    }
+    const articleLookup = buildZyaArticleLookup(workbook);
+    const skuSet = new Set();
+    const months = new Set();
+    let count = 0;
+
+    for (const row of selection.rows) {
+      const month = monthKey(row[ZYA_HEADERS.saleDate]);
+      if (!month) continue;
+      const units = numberOrZero(row[ZYA_HEADERS.soldUnits]);
+      const revenue = numberOrZero(rowValue(row, [ZYA_HEADERS.finalRevenue, ZYA_HEADERS.soldRevenue, ZYA_HEADERS.salePrice]));
+      if (!units && !revenue) continue;
+
+      const code = normalizeZyaCode(row[ZYA_HEADERS.productCode]);
+      const mapped = articleLookup.get(code);
+      const article = mapped?.article || code || `zya-${count}`;
+      const name = mapped?.name || normalizeText(row[ZYA_HEADERS.productName]) || article;
+      const totalCommon = { level: 'total', platformKey: 'goldapple', source: 'ZYA sales XLSX' };
+      const skuCommon = { level: 'sku', platformKey: 'goldapple', articleKey: article, article, name, source: 'ZYA sales XLSX' };
+      const metricValues = {
+        orders_units: units,
+        orders_revenue: revenue,
+        delivered_units: units,
+        delivered_revenue: revenue,
+        buyout_units: units,
+        buyout_revenue: revenue
+      };
+
+      for (const [metricKey, value] of Object.entries(metricValues)) {
+        store.add({ ...totalCommon, ...metricParts(metricKey) }, month, value);
+        store.add({ ...skuCommon, ...metricParts(metricKey) }, month, value);
+      }
+      skuSet.add(article);
+      months.add(month);
+      count += 1;
+    }
+
+    const orderedMonths = Array.from(months).sort();
+    sourceNote(
+      notes,
+      'ZYA sales XLSX',
+      count ? 'loaded' : 'empty',
+      withFileMtime(filePath, `${count} daily rows, ${skuSet.size} SKU, ${orderedMonths[0] || ''}..${orderedMonths[orderedMonths.length - 1] || ''} from ${path.basename(filePath)} / ${selection.sheetName}`)
+    );
+  } catch (error) {
+    sourceNote(notes, 'ZYA sales XLSX', 'failed', error.message);
   }
 }
 
@@ -2080,14 +2522,54 @@ async function main() {
     sourceNote(notes, 'Google source workbook', 'missing', options.sourceWorkbook);
   }
 
-  addZyaSalesZip(store, options.zyaSalesZip, notes);
+  const apiLoadedPlatforms = new Set();
+  const zyaApiRows = await addGenericMarketplaceApi(store, options, notes, {
+    platformKey: 'goldapple',
+    sourceLabel: 'ZYA API sales',
+    defaultArticle: 'zya-unmapped',
+    token: options.zyaApiToken,
+    baseUrl: options.zyaApiBaseUrl,
+    salesPath: options.zyaSalesPath,
+    clientId: options.zyaClientId,
+    tokenHelp: 'ALTEA_ZYA_API_TOKEN / ALTEA_ZYA_API_KEY / ALTEA_GOLDAPPLE_API_TOKEN',
+    endpointHelp: 'ALTEA_ZYA_API_BASE_URL + ALTEA_ZYA_SALES_PATH',
+    methodEnv: ['ALTEA_ZYA_API_METHOD', 'ALTEA_GOLDAPPLE_API_METHOD'],
+    bodyEnv: ['ALTEA_ZYA_API_BODY_JSON', 'ALTEA_GOLDAPPLE_API_BODY_JSON'],
+    graphqlQueryEnv: ['ALTEA_ZYA_GRAPHQL_QUERY', 'ALTEA_GOLDAPPLE_GRAPHQL_QUERY'],
+    graphqlQueryHelp: 'ALTEA_ZYA_GRAPHQL_QUERY / ALTEA_GOLDAPPLE_GRAPHQL_QUERY'
+  });
+  if (zyaApiRows) apiLoadedPlatforms.add('goldapple');
+  if (!zyaApiRows) {
+    const zyaSalesZipExists = Boolean(options.zyaSalesZip && fs.existsSync(options.zyaSalesZip));
+    addZyaSalesZip(store, options.zyaSalesZip, notes);
+    if (!zyaSalesZipExists) addZyaSalesXlsx(store, options.zyaSalesXlsx, notes);
+  }
   addZyaAdsXlsx(store, options.zyaAdsXlsx, notes);
-  addMagnitSalesCsv(store, options.magnitSalesCsv, notes);
-  addMagnitServicesCsv(store, options.magnitServicesCsv, notes);
+  const magnitApiRows = await addGenericMarketplaceApi(store, options, notes, {
+    platformKey: 'magnitmarket',
+    sourceLabel: 'Magnit Market API sales',
+    defaultArticle: 'magnit-unmapped',
+    token: options.magnitApiToken,
+    baseUrl: options.magnitApiBaseUrl,
+    salesPath: options.magnitSalesPath,
+    clientId: options.magnitClientId,
+    tokenHelp: 'ALTEA_MAGNIT_API_TOKEN / ALTEA_MAGNIT_API_KEY / ALTEA_MAGNIT_MARKET_API_TOKEN',
+    endpointHelp: 'ALTEA_MAGNIT_API_BASE_URL + ALTEA_MAGNIT_SALES_PATH',
+    methodEnv: ['ALTEA_MAGNIT_API_METHOD', 'ALTEA_MAGNIT_MARKET_API_METHOD'],
+    bodyEnv: ['ALTEA_MAGNIT_API_BODY_JSON', 'ALTEA_MAGNIT_MARKET_API_BODY_JSON'],
+    graphqlQueryEnv: ['ALTEA_MAGNIT_GRAPHQL_QUERY', 'ALTEA_MAGNIT_MARKET_GRAPHQL_QUERY'],
+    graphqlQueryHelp: 'ALTEA_MAGNIT_GRAPHQL_QUERY / ALTEA_MAGNIT_MARKET_GRAPHQL_QUERY'
+  });
+  if (magnitApiRows) apiLoadedPlatforms.add('magnitmarket');
+  if (!magnitApiRows) {
+    addMagnitSalesCsv(store, options.magnitSalesCsv, notes);
+    addMagnitServicesCsv(store, options.magnitServicesCsv, notes);
+  }
   await addOzonApi(store, options, notes);
   await addWbFunnelApi(store, options, notes);
   await addYandexMarketApi(store, options, notes);
-  await addLetualApi(store, options, notes);
+  if (await addLetualApi(store, options, notes)) apiLoadedPlatforms.add('letu');
+  addRetailNetworkSalesXlsx(store, options.retailNetworkSalesXlsx, notes, { skipPlatforms: apiLoadedPlatforms });
   sourceNote(
     notes,
     'Ozon LTV в заказах',

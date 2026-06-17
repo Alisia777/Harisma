@@ -2,10 +2,7 @@ param(
   [string]$LogDir = "",
   [string]$From = "",
   [string]$To = "",
-  [string]$Platforms = "wb,ozon,ya,magnit",
-  [ValidateSet("max", "recent", "daily")]
-  [string]$Mode = "recent",
-  [int]$RecentDays = 14,
+  [string]$Platforms = "wb,ozon,ya,goldapple,letu,magnit",
   [switch]$Strict
 )
 
@@ -53,9 +50,7 @@ try {
     "scripts/portal-api-max-sync.js",
     "sync",
     "--mode",
-    $Mode,
-    "--recent-days",
-    ([string]$RecentDays),
+    "max",
     "--platforms",
     $Platforms
   )

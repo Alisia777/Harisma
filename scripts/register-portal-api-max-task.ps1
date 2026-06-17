@@ -6,10 +6,7 @@ param(
   [ValidateSet("Highest", "Limited")]
   [string]$RunLevel = "Limited",
   [string]$From = "",
-  [string]$Platforms = "wb,ozon,ya,magnit",
-  [ValidateSet("max", "recent", "daily")]
-  [string]$Mode = "recent",
-  [int]$RecentDays = 14,
+  [string]$Platforms = "wb,ozon,ya,goldapple,letu,magnit",
   [switch]$Strict
 )
 
@@ -51,7 +48,7 @@ $triggerTime = [DateTime]::Today.Add([TimeSpan]::Parse($RunAt))
 $scriptPathForTask = Resolve-ShortPath -Path $scheduledRun
 $repoPathForTask = Resolve-ShortPath -Path $repoRoot
 
-$actionArgs = "-WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$scriptPathForTask`" -Platforms `"$Platforms`" -Mode `"$Mode`" -RecentDays `"$RecentDays`""
+$actionArgs = "-WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$scriptPathForTask`" -Platforms `"$Platforms`""
 if ($From) {
   $actionArgs += " -From `"$From`""
 }
@@ -78,8 +75,6 @@ Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force -ErrorActio
   workingDirectory = $repoRoot
   script = $scheduledRun
   platforms = $Platforms
-  mode = $Mode
-  recentDays = $RecentDays
   from = $From
   strict = [bool]$Strict
 } | ConvertTo-Json -Depth 4

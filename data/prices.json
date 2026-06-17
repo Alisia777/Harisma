@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-17T14:25:50.481Z",
+  "generatedAt": "2026-06-17T14:38:16.309Z",
   "month": {
     "key": "2026-06",
     "label": "Июнь 2026"
@@ -7,9 +7,9 @@
   "note": "Legacy compatibility layer rebuilt from merged smart-price contour (smart_price_workbench + smart_price_overlay + свежий live при наличии). Текущая цена и дневная история теперь не должны залипать на старом мартовском prices.json.",
   "sourceFreshness": {
     "workbench": "2026-05-18T14:34:19.064Z",
-    "overlay": "2026-06-17T14:25:50.481Z",
+    "overlay": "2026-06-17T14:38:16.309Z",
     "live": "2026-05-12T11:58:47.377Z",
-    "merged": "2026-06-17T14:25:50.481Z"
+    "merged": "2026-06-17T14:38:16.309Z"
   },
   "dates": [
     {

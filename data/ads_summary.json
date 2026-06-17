@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-17T16:35:42.869Z",
+  "generatedAt": "2026-06-17T17:00:17.790Z",
   "asOfDate": "2026-06-16",
   "source": "wb-promotion-api",
   "sourceUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
@@ -1127,8 +1127,8 @@
       "views": 0,
       "clicks": 0,
       "spend": 0,
-      "orders": 613,
-      "revenue": 508455,
+      "orders": 715,
+      "revenue": 594984,
       "series": [
         {
           "date": "2026-06-01",
@@ -1136,8 +1136,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-02",
@@ -1145,8 +1145,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-03",
@@ -1154,8 +1154,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-04",
@@ -1163,8 +1163,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-05",
@@ -1172,8 +1172,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-06",
@@ -1181,8 +1181,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-07",
@@ -1190,8 +1190,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-08",
@@ -1199,8 +1199,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-09",
@@ -1208,8 +1208,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-10",
@@ -1217,8 +1217,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-11",
@@ -1226,8 +1226,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-12",
@@ -1235,8 +1235,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-13",
@@ -1244,8 +1244,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-14",
@@ -1253,8 +1253,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-15",
@@ -1262,8 +1262,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         },
         {
           "date": "2026-06-16",
@@ -1271,8 +1271,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 38.3125,
-          "revenue": 31778.4375
+          "orders": 44.6875,
+          "revenue": 37186.5
         }
       ]
     },
@@ -1283,8 +1283,8 @@
       "views": 0,
       "clicks": 0,
       "spend": 0,
-      "orders": 1454,
-      "revenue": 689766,
+      "orders": 727,
+      "revenue": 344883,
       "series": [
         {
           "date": "2026-06-01",
@@ -1292,8 +1292,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-02",
@@ -1301,8 +1301,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-03",
@@ -1310,8 +1310,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-04",
@@ -1319,8 +1319,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-05",
@@ -1328,8 +1328,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-06",
@@ -1337,8 +1337,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-07",
@@ -1346,8 +1346,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-08",
@@ -1355,8 +1355,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-09",
@@ -1364,8 +1364,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-10",
@@ -1373,8 +1373,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-11",
@@ -1382,8 +1382,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-12",
@@ -1391,8 +1391,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-13",
@@ -1400,8 +1400,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-14",
@@ -1409,8 +1409,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-15",
@@ -1418,8 +1418,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         },
         {
           "date": "2026-06-16",
@@ -1427,8 +1427,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 90.875,
-          "revenue": 43110.375
+          "orders": 45.4375,
+          "revenue": 21555.1875
         }
       ]
     },
@@ -1439,8 +1439,8 @@
       "views": 0,
       "clicks": 0,
       "spend": 0,
-      "orders": 106,
-      "revenue": 51311.84,
+      "orders": 53,
+      "revenue": 25655.92,
       "series": [
         {
           "date": "2026-06-01",
@@ -1448,8 +1448,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-02",
@@ -1457,8 +1457,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-03",
@@ -1466,8 +1466,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-04",
@@ -1475,8 +1475,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-05",
@@ -1484,8 +1484,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-06",
@@ -1493,8 +1493,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-07",
@@ -1502,8 +1502,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-08",
@@ -1511,8 +1511,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-09",
@@ -1520,8 +1520,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-10",
@@ -1529,8 +1529,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-11",
@@ -1538,8 +1538,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-12",
@@ -1547,8 +1547,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-13",
@@ -1556,8 +1556,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-14",
@@ -1565,8 +1565,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-15",
@@ -1574,8 +1574,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         },
         {
           "date": "2026-06-16",
@@ -1583,8 +1583,8 @@
           "views": 0,
           "clicks": 0,
           "spend": 0,
-          "orders": 6.625,
-          "revenue": 3206.9900000000002
+          "orders": 3.3125,
+          "revenue": 1603.4950000000001
         }
       ]
     },
@@ -1595,8 +1595,8 @@
       "views": 19914776,
       "clicks": 348999,
       "spend": 6941520.879999998,
-      "orders": 51697,
-      "revenue": 41278444.84000002,
+      "orders": 51019,
+      "revenue": 40994434.92,
       "series": [
         {
           "date": "2026-06-01",
@@ -1604,8 +1604,8 @@
           "views": 1060671.25,
           "clicks": 20080.25,
           "spend": 361332.3375,
-          "orders": 3194.6875,
-          "revenue": 2433963.74
+          "orders": 3152.3125,
+          "revenue": 2416213.12
         },
         {
           "date": "2026-06-02",
@@ -1613,8 +1613,8 @@
           "views": 957224.25,
           "clicks": 17689.25,
           "spend": 356610.8775,
-          "orders": 3068.6875,
-          "revenue": 2471697.74
+          "orders": 3026.3125,
+          "revenue": 2453947.12
         },
         {
           "date": "2026-06-03",
@@ -1622,8 +1622,8 @@
           "views": 1030245.25,
           "clicks": 19861.25,
           "spend": 371737.1075,
-          "orders": 3225.6875,
-          "revenue": 2613597.74
+          "orders": 3183.3125,
+          "revenue": 2595847.12
         },
         {
           "date": "2026-06-04",
@@ -1631,8 +1631,8 @@
           "views": 1037821.25,
           "clicks": 19526.25,
           "spend": 361804.6475,
-          "orders": 3200.6875,
-          "revenue": 2563312.74
+          "orders": 3158.3125,
+          "revenue": 2545562.12
         },
         {
           "date": "2026-06-05",
@@ -1640,8 +1640,8 @@
           "views": 1042750.25,
           "clicks": 18615.25,
           "spend": 345219.8375,
-          "orders": 3021.6875,
-          "revenue": 2498451.74
+          "orders": 2979.3125,
+          "revenue": 2480701.12
         },
         {
           "date": "2026-06-06",
@@ -1649,8 +1649,8 @@
           "views": 1182686.25,
           "clicks": 20290.25,
           "spend": 382465.0775,
-          "orders": 2963.6875,
-          "revenue": 2235222.74
+          "orders": 2921.3125,
+          "revenue": 2217472.12
         },
         {
           "date": "2026-06-07",
@@ -1658,8 +1658,8 @@
           "views": 1287985.25,
           "clicks": 22769.25,
           "spend": 426251.4875,
-          "orders": 3457.6875,
-          "revenue": 2867562.74
+          "orders": 3415.3125,
+          "revenue": 2849812.12
         },
         {
           "date": "2026-06-08",
@@ -1667,8 +1667,8 @@
           "views": 1486656.25,
           "clicks": 22207.25,
           "spend": 440705.9275,
-          "orders": 2945.6875,
-          "revenue": 2269640.74
+          "orders": 2903.3125,
+          "revenue": 2251890.12
         },
         {
           "date": "2026-06-09",
@@ -1676,8 +1676,8 @@
           "views": 1426460.25,
           "clicks": 23549.25,
           "spend": 456374.9675,
-          "orders": 3000.6875,
-          "revenue": 2398534.74
+          "orders": 2958.3125,
+          "revenue": 2380784.12
         },
         {
           "date": "2026-06-10",
@@ -1685,8 +1685,8 @@
           "views": 1905458.25,
           "clicks": 27153.25,
           "spend": 576431.7375,
-          "orders": 3753.6875,
-          "revenue": 3083163.74
+          "orders": 3711.3125,
+          "revenue": 3065413.12
         },
         {
           "date": "2026-06-11",
@@ -1694,8 +1694,8 @@
           "views": 1188159.25,
           "clicks": 20374.25,
           "spend": 448920.2475,
-          "orders": 3041.6875,
-          "revenue": 2542081.74
+          "orders": 2999.3125,
+          "revenue": 2524331.12
         },
         {
           "date": "2026-06-12",
@@ -1703,8 +1703,8 @@
           "views": 1268116.25,
           "clicks": 22709.25,
           "spend": 462007.2075,
-          "orders": 3235.6875,
-          "revenue": 2501436.74
+          "orders": 3193.3125,
+          "revenue": 2483686.12
         },
         {
           "date": "2026-06-13",
@@ -1712,8 +1712,8 @@
           "views": 1227189.25,
           "clicks": 23819.25,
           "spend": 480286.4875,
-          "orders": 3510.6875,
-          "revenue": 2972574.74
+          "orders": 3468.3125,
+          "revenue": 2954824.12
         },
         {
           "date": "2026-06-14",
@@ -1721,8 +1721,8 @@
           "views": 1391265.25,
           "clicks": 27231.25,
           "spend": 533137.6174999999,
-          "orders": 4165.6875,
-          "revenue": 3576242.74
+          "orders": 4123.3125,
+          "revenue": 3558492.12
         },
         {
           "date": "2026-06-15",
@@ -1730,8 +1730,8 @@
           "views": 1236176.25,
           "clicks": 21951.25,
           "spend": 478924.2775,
-          "orders": 3079.6875,
-          "revenue": 2316136.74
+          "orders": 3037.3125,
+          "revenue": 2298386.12
         },
         {
           "date": "2026-06-16",
@@ -1739,8 +1739,8 @@
           "views": 1185911.25,
           "clicks": 21172.25,
           "spend": 459311.0375,
-          "orders": 2830.6875,
-          "revenue": 1934823.74
+          "orders": 2788.3125,
+          "revenue": 1917073.12
         }
       ]
     }
@@ -6024,6 +6024,21 @@
     {
       "date": "2026-05-01",
       "platformKey": "goldapple",
+      "articleKey": "retinait_krem_01_50ml",
+      "article": "retinait_krem_01_50ml",
+      "name": "retinait_krem_01_50ml",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 1192,
+      "revenue": 871766,
+      "campaignId": "marketplace-workbook",
+      "campaignName": "Marketplace workbook",
+      "channel": "marketplace-workbook"
+    },
+    {
+      "date": "2026-05-01",
+      "platformKey": "goldapple",
       "articleKey": "retinait_krem_025_50",
       "article": "retinait_krem_025_50",
       "name": "Крем с липомосомальным ретинолом (0,1% - 3%), торговая марка Алтея",
@@ -6222,6 +6237,21 @@
       "articleKey": "Общий итог",
       "article": "Общий итог",
       "name": "Общий итог",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 1700,
+      "revenue": 794448,
+      "campaignId": "marketplace-workbook",
+      "campaignName": "Marketplace workbook",
+      "channel": "marketplace-workbook"
+    },
+    {
+      "date": "2026-05-01",
+      "platformKey": "letu",
+      "articleKey": "balzam_kudryavii_metod_500ml",
+      "article": "balzam_kudryavii_metod_500ml",
+      "name": "balzam_kudryavii_metod_500ml",
       "views": 0,
       "clicks": 0,
       "spend": 0,
@@ -12926,6 +12956,21 @@
       "spend": 0,
       "orders": 9,
       "revenue": 6280,
+      "campaignId": "marketplace-workbook",
+      "campaignName": "Marketplace workbook",
+      "channel": "marketplace-workbook"
+    },
+    {
+      "date": "2026-06-01",
+      "platformKey": "goldapple",
+      "articleKey": "penka_kudryavii_meto",
+      "article": "penka_kudryavii_meto",
+      "name": "Пенка для укладки кудрявых волос, кудрявый метод, супер фиксация без склеивания, Алтея 150 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 100,
+      "revenue": 85400,
       "campaignId": "marketplace-workbook",
       "campaignName": "Marketplace workbook",
       "channel": "marketplace-workbook"
@@ -350956,15 +351001,15 @@
     }
   ],
   "extraMarketplace": {
-    "generatedAt": "2026-06-17T16:35:42.988Z",
-    "workbook": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\altea_max_funnel_extra_networks_20260617_api_first.xlsx",
+    "generatedAt": "2026-06-17T17:00:17.906Z",
+    "workbook": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\altea_max_funnel_extra_networks_20260617_validation.xlsx",
     "asOfDate": "2026-06-16",
     "platforms": {
       "goldapple": {
         "key": "goldapple",
         "label": "ЗЯ",
         "supportKey": "ga",
-        "articleCount": 35
+        "articleCount": 37
       },
       "letu": {
         "key": "letu",
@@ -350976,7 +351021,7 @@
         "key": "magnit",
         "label": "Магнит Маркет",
         "supportKey": "mm",
-        "articleCount": 34
+        "articleCount": 33
       }
     }
   }

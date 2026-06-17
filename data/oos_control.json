@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-06-17T13:07:50.267Z",
+  "generatedAt": "2026-06-17T14:32:47.777Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -10,17 +10,17 @@
     ]
   },
   "dataFreshness": {
-    "status": "stale",
-    "dataDate": "2026-06-15",
+    "status": "ok",
+    "dataDate": "2026-06-16",
     "expectedFactDate": "2026-06-16",
     "sourceGeneratedAt": "2026-06-17T13:07:12.224Z",
-    "message": "Данные отстают: факт до 2026-06-15, ожидается минимум 2026-06-16.",
+    "message": "Данные свежие: факт до 2026-06-16.",
     "orderProcurementGeneratedAt": "2026-06-17T13:07:12.224Z",
     "orderWindow": {
       "from": "2026-05-21",
       "to": "2026-06-17"
     },
-    "smartPriceGeneratedAt": "2026-06-17T13:07:35.945Z",
+    "smartPriceGeneratedAt": "2026-06-17T14:25:50.481Z",
     "sources": {
       "orderProcurement": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\order_procurement.json",
       "skus": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\skus.json",
@@ -48,8 +48,8 @@
     "owners": 2,
     "skuCount": 1,
     "placeCount": 47,
-    "dataStatus": "stale",
-    "dataDate": "2026-06-15",
+    "dataStatus": "ok",
+    "dataDate": "2026-06-16",
     "expectedFactDate": "2026-06-16"
   },
   "byPlatform": [

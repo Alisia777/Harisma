@@ -6295,21 +6295,166 @@ function skuPlanFactSubstitutionHtml(metric = {}) {
   });
 }
 
+function skuPlanFactContextNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function skuPlanFactContextAttr(name, value) {
+  if (value === null || value === undefined || value === '') return '';
+  return ` ${name}="${escapeHtml(String(value))}"`;
+}
+
+function skuPlanFactContextPeriodLabel(periodStart = '', periodEnd = '', monthKey = '') {
+  if (periodStart && periodEnd && periodStart !== periodEnd) return `${periodStart} - ${periodEnd}`;
+  if (periodEnd) return `по ${periodEnd}`;
+  return monthKey || '';
+}
+
+function skuPlanFactArticleMatches(row = {}, articleKey = '') {
+  const target = skuPlanFactToken(articleKey);
+  if (!target) return false;
+  return [
+    row.articleKey,
+    row.article,
+    row.sku,
+    row.vendorCode,
+    row.offerId,
+    row.offer_id,
+    row.nmId
+  ].some((value) => skuPlanFactToken(value) === target);
+}
+
+function skuPlanFactMetricContext(row = {}, model = {}, metric = null) {
+  const displayMetric = metric || skuPlanFactDisplayMetric(row, model);
+  const platform = displayMetric.platform || model.filters?.platform || 'all';
+  const periodStart = model.periodStart || model.dateMin || '';
+  const periodEnd = model.periodEnd || model.maxFactDate || model.selectedDate || '';
+  return {
+    source: 'sku-plan-fact',
+    articleKey: row.articleKey || row.article || '',
+    article: row.article || row.articleKey || '',
+    name: row.name || '',
+    owner: row.owner || '',
+    platform,
+    platformLabel: displayMetric.label || skuPlanFactPlatformLabel(platform),
+    monthKey: model.monthKey || '',
+    monthLabel: model.monthLabel || model.monthKey || '',
+    periodStart,
+    periodEnd,
+    periodLabel: skuPlanFactContextPeriodLabel(periodStart, periodEnd, model.monthKey || ''),
+    planRevenue: numberOrZero(displayMetric.planRevenue),
+    planToDateRevenue: numberOrZero(displayMetric.planToDateRevenue),
+    factRevenue: numberOrZero(displayMetric.factRevenue),
+    planUnits: numberOrZero(displayMetric.planUnits),
+    planToDateUnits: numberOrZero(displayMetric.planToDateUnits),
+    factUnits: numberOrZero(displayMetric.factUnits),
+    completionToDate: skuPlanFactContextNumber(displayMetric.completionToDate),
+    gapToDate: numberOrZero(displayMetric.gapToDate),
+    marginPct: skuPlanFactNormalizeRatio(displayMetric.marginPct),
+    marginRub: displayMetric.marginRub ?? null,
+    drr: displayMetric.drr ?? null,
+    adSpend: numberOrZero(displayMetric.adSpend),
+    tonePlatform: displayMetric.tonePlatform || platform
+  };
+}
+
+function skuPlanFactContextAttrs(context = {}) {
+  if (!context.articleKey) return '';
+  return [
+    skuPlanFactContextAttr('data-open-sku', context.articleKey),
+    ' data-sku-plan-context="1"',
+    skuPlanFactContextAttr('data-sku-plan-article', context.articleKey),
+    skuPlanFactContextAttr('data-sku-plan-platform', context.platform),
+    skuPlanFactContextAttr('data-sku-plan-platform-label', context.platformLabel),
+    skuPlanFactContextAttr('data-sku-plan-month', context.monthKey),
+    skuPlanFactContextAttr('data-sku-plan-month-label', context.monthLabel),
+    skuPlanFactContextAttr('data-sku-plan-period-start', context.periodStart),
+    skuPlanFactContextAttr('data-sku-plan-period-end', context.periodEnd),
+    skuPlanFactContextAttr('data-sku-plan-period-label', context.periodLabel),
+    skuPlanFactContextAttr('data-sku-plan-plan-revenue', context.planRevenue),
+    skuPlanFactContextAttr('data-sku-plan-plan-to-date-revenue', context.planToDateRevenue),
+    skuPlanFactContextAttr('data-sku-plan-fact-revenue', context.factRevenue),
+    skuPlanFactContextAttr('data-sku-plan-plan-units', context.planUnits),
+    skuPlanFactContextAttr('data-sku-plan-plan-to-date-units', context.planToDateUnits),
+    skuPlanFactContextAttr('data-sku-plan-fact-units', context.factUnits),
+    skuPlanFactContextAttr('data-sku-plan-completion-to-date', context.completionToDate),
+    skuPlanFactContextAttr('data-sku-plan-gap-to-date', context.gapToDate),
+    skuPlanFactContextAttr('data-sku-plan-margin-pct', context.marginPct),
+    skuPlanFactContextAttr('data-sku-plan-margin-rub', context.marginRub),
+    skuPlanFactContextAttr('data-sku-plan-drr', context.drr),
+    skuPlanFactContextAttr('data-sku-plan-ad-spend', context.adSpend)
+  ].join('');
+}
+
+function skuPlanFactOpenAttrs(row = {}, model = {}, metric = null) {
+  if (row.syntheticUnmapped) return '';
+  return skuPlanFactContextAttrs(skuPlanFactMetricContext(row, model, metric));
+}
+
+function skuPlanFactDatasetContext(element = null) {
+  const data = element?.dataset || {};
+  const articleKey = String(data.skuPlanArticle || data.openSku || '').trim();
+  if (!articleKey || data.skuPlanContext !== '1') return null;
+  return {
+    source: 'sku-plan-fact',
+    articleKey,
+    article: articleKey,
+    platform: data.skuPlanPlatform || 'all',
+    platformLabel: data.skuPlanPlatformLabel || skuPlanFactPlatformLabel(data.skuPlanPlatform || 'all'),
+    monthKey: data.skuPlanMonth || '',
+    monthLabel: data.skuPlanMonthLabel || data.skuPlanMonth || '',
+    periodStart: data.skuPlanPeriodStart || '',
+    periodEnd: data.skuPlanPeriodEnd || '',
+    periodLabel: data.skuPlanPeriodLabel || skuPlanFactContextPeriodLabel(data.skuPlanPeriodStart || '', data.skuPlanPeriodEnd || '', data.skuPlanMonth || ''),
+    planRevenue: numberOrZero(data.skuPlanPlanRevenue),
+    planToDateRevenue: numberOrZero(data.skuPlanPlanToDateRevenue),
+    factRevenue: numberOrZero(data.skuPlanFactRevenue),
+    planUnits: numberOrZero(data.skuPlanPlanUnits),
+    planToDateUnits: numberOrZero(data.skuPlanPlanToDateUnits),
+    factUnits: numberOrZero(data.skuPlanFactUnits),
+    completionToDate: skuPlanFactContextNumber(data.skuPlanCompletionToDate),
+    gapToDate: numberOrZero(data.skuPlanGapToDate),
+    marginPct: skuPlanFactNormalizeRatio(data.skuPlanMarginPct),
+    marginRub: skuPlanFactContextNumber(data.skuPlanMarginRub),
+    drr: skuPlanFactContextNumber(data.skuPlanDrr),
+    adSpend: numberOrZero(data.skuPlanAdSpend),
+    tonePlatform: data.skuPlanPlatform || 'all'
+  };
+}
+
+function skuPlanFactSetActiveContextFromElement(element = null) {
+  const context = skuPlanFactDatasetContext(element);
+  state.activeSkuPlanFactContext = context || null;
+  return context;
+}
+
+function skuPlanFactContextForArticle(articleKey = '', preferredContext = null) {
+  if (preferredContext?.articleKey && skuPlanFactToken(preferredContext.articleKey) === skuPlanFactToken(articleKey)) {
+    return preferredContext;
+  }
+  if (!articleKey) return null;
+  const model = skuPlanFactBuildModel();
+  const rows = Array.isArray(model.allRows) ? model.allRows : (model.rows || []);
+  const row = rows.find((item) => !item.syntheticUnmapped && skuPlanFactArticleMatches(item, articleKey));
+  return row ? skuPlanFactMetricContext(row, model, skuPlanFactDisplayMetric(row, model)) : null;
+}
+
 function skuPlanFactRowHtml(row, model) {
   const metric = skuPlanFactDisplayMetric(row, model);
   const totalTone = skuPlanFactTone(metric.completionToDate);
   const articleTitle = row.article || row.articleKey;
+  const openAttrs = skuPlanFactOpenAttrs(row, model, metric);
   const problemMeta = row.matrixProblemMeta || (typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(row.matrixProblemState || 'ok') : null);
   const problemBadge = problemMeta && row.matrixProblemState && row.matrixProblemState !== 'ok'
     ? badge(problemMeta.label, problemMeta.tone || 'warn')
     : '';
   const articleHtml = row.syntheticUnmapped
     ? `<strong>${escapeHtml(articleTitle)}</strong><div class="badge-stack" style="margin-top:6px">${badge(row.status || SKU_PLAN_FACT_UNMAPPED_STATUS, 'warn')}</div>`
-    : linkToSku(row.articleKey, articleTitle);
-  const openAttr = row.syntheticUnmapped ? '' : ` data-open-sku="${escapeHtml(row.articleKey)}"`;
+    : `<button class="link-btn" type="button"${openAttrs}>${escapeHtml(articleTitle)}</button>`;
   const attention = skuPlanFactAttentionScore(row) > 0 || (metric.completionToDate !== null && (metric.completionToDate < 0.9 || metric.completionToDate > 1.2));
   return `
-    <tr class="sku-plan-fact-row ${row.syntheticUnmapped ? 'is-unmapped' : ''} ${attention ? 'is-attention' : ''}" style="${skuPlanFactCardStyle(metric.tonePlatform || metric.platform, metric.completionToDate)}"${openAttr}>
+    <tr class="sku-plan-fact-row ${row.syntheticUnmapped ? 'is-unmapped' : ''} ${attention ? 'is-attention' : ''}" style="${skuPlanFactCardStyle(metric.tonePlatform || metric.platform, metric.completionToDate)}"${openAttrs}>
       <td>${articleHtml}<div class="muted small">${escapeHtml(row.name)}</div></td>
       <td><strong>${escapeHtml(row.owner)}</strong><div class="muted small">${escapeHtml(row.status)}</div>${problemBadge ? `<div class="badge-stack" style="margin-top:6px">${problemBadge}</div>` : ''}</td>
       <td>${skuPlanFactPlatformScopeHtml(row, model)}</td>
@@ -6321,7 +6466,7 @@ function skuPlanFactRowHtml(row, model) {
       <td>
         ${row.syntheticUnmapped
           ? '<span class="muted small">нет карточки</span>'
-          : `<button class="sku-plan-open-card ${attention ? 'danger' : ''}" type="button" data-open-sku="${escapeHtml(row.articleKey)}" title="Открыть карточку SKU" aria-label="Открыть карточку SKU"><span aria-hidden="true">→</span></button>`}
+          : `<button class="sku-plan-open-card ${attention ? 'danger' : ''}" type="button"${openAttrs} title="Открыть карточку SKU" aria-label="Открыть карточку SKU"><span aria-hidden="true">→</span></button>`}
       </td>
     </tr>
   `;
@@ -9771,6 +9916,9 @@ window.skuContourRollbackableEvents = skuContourRollbackableEvents;
 window.skuPlanFactCreateNewSkuTasks = skuPlanFactCreateNewSkuTasks;
 window.skuPlanFactBuildNewSkuTask = skuPlanFactBuildNewSkuTask;
 window.skuPlanFactBuildModel = skuPlanFactBuildModel;
+window.skuPlanFactDisplayMetric = skuPlanFactDisplayMetric;
+window.skuPlanFactContextForArticle = skuPlanFactContextForArticle;
+window.skuPlanFactSetActiveContextFromElement = skuPlanFactSetActiveContextFromElement;
 window.skuPlanFactExportRows = skuPlanFactExportRows;
 window.skuPlanFactExportColumns = skuPlanFactExportColumns;
 window.skuPlanFactQualityExportRows = skuPlanFactQualityExportRows;

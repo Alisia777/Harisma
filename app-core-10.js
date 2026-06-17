@@ -2639,6 +2639,12 @@ function attachGlobalListeners() {
     if (openBtn) {
       event.preventDefault();
       event.stopPropagation();
+      const planFactNode = openBtn.closest('[data-sku-plan-context]');
+      if (planFactNode && typeof window.skuPlanFactSetActiveContextFromElement === 'function') {
+        window.skuPlanFactSetActiveContextFromElement(planFactNode);
+      } else {
+        state.activeSkuPlanFactContext = null;
+      }
       const opened = openSkuModal(openBtn.dataset.openSku || openBtn.getAttribute('data-open-sku'));
       if (opened && document.getElementById('taskModal')?.classList.contains('open')) closeTaskModal();
       return;

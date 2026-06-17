@@ -1,3 +1,80 @@
+function skuModalArticleToken(value = '') {
+  if (typeof skuPlanFactToken === 'function') return skuPlanFactToken(value);
+  return String(value || '').trim().toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
+}
+
+function skuModalPlanFactContextForArticle(articleKey = '') {
+  const preferredContext = state.activeSkuPlanFactContext || null;
+  if (typeof window.skuPlanFactContextForArticle === 'function') {
+    try {
+      return window.skuPlanFactContextForArticle(articleKey, preferredContext);
+    } catch (error) {
+      console.warn('SKU plan-fact modal context failed', error);
+    }
+  }
+  if (preferredContext?.articleKey && skuModalArticleToken(preferredContext.articleKey) === skuModalArticleToken(articleKey)) {
+    return preferredContext;
+  }
+  return null;
+}
+
+function skuModalMetricNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function skuModalPlanFactResultRows(context = {}) {
+  const completion = skuModalMetricNumber(context.completionToDate);
+  const gap = skuModalMetricNumber(context.gapToDate);
+  const margin = skuModalMetricNumber(context.marginPct);
+  const scope = [context.platformLabel || '', context.periodLabel || context.monthLabel || context.monthKey || '']
+    .filter(Boolean)
+    .join(' · ');
+  const rows = [
+    metricRow('Срез план-факта', escapeHtml(scope || 'Актуальный')),
+    metricRow('План периода', `${fmt.int(context.planToDateUnits)} шт. · ${fmt.money(context.planToDateRevenue)}`),
+    metricRow('Факт периода', `${fmt.int(context.factUnits)} шт. · ${fmt.money(context.factRevenue)}`)
+  ];
+  if (completion !== null) {
+    rows.push(metricRow('Выполнение', fmt.pct(completion), completion < 0.9 ? 'danger-text' : (completion > 1.2 ? 'warn-text' : 'ok-text')));
+  }
+  if (gap !== null) {
+    rows.push(metricRow('Разница к плану', fmt.money(gap), gap < 0 ? 'danger-text' : 'ok-text'));
+  }
+  if (margin !== null) {
+    rows.push(metricRow(`${context.platformLabel || 'Площадка'} маржа`, fmt.pct(margin), margin < 0 ? 'danger-text' : ''));
+  }
+  return rows;
+}
+
+function skuModalLegacyResultRows(sku = {}, completion = {}) {
+  const currentPlanUnits = firstFiniteValue(sku?.planFact?.planApr26Units);
+  const currentFactUnits = firstFiniteValue(
+    sku?.planFact?.factApr16Units,
+    sku?.planFact?.factAprToDateUnits
+  );
+  const rows = [
+    currentPlanUnits !== null
+      ? metricRow('План Apr 26', fmt.int(currentPlanUnits))
+      : metricRow('План Feb 26', fmt.int(sku.planFact?.planFeb26Units)),
+    currentFactUnits !== null
+      ? metricRow('Факт Apr to date', fmt.int(currentFactUnits))
+      : metricRow('Факт Feb 26', fmt.int(sku.planFact?.factFeb26Units))
+  ];
+
+  if (completion.monthPct !== null) {
+    rows.push(metricRow('Выполнение месяца', fmt.pct(completion.monthPct), completion.monthPct < 0.8 ? 'danger-text' : ''));
+  } else if (completion.legacyPct !== null) {
+    rows.push(metricRow('Выполнение Feb 26', fmt.pct(completion.legacyPct), completion.legacyPct < 0.8 ? 'danger-text' : ''));
+  }
+
+  if (completion.toDatePct !== null) {
+    rows.push(metricRow('К плану на дату', fmt.pct(completion.toDatePct), completion.toDatePct < 0.85 ? 'warn-text' : ''));
+  }
+
+  return rows;
+}
+
 function renderSkuModal(articleKey) {
   const previousActiveSku = state.activeSku || '';
   const sku = getSku(articleKey);
@@ -44,29 +121,10 @@ function renderSkuModal(articleKey) {
   const ownerSelectOptions = [...new Set([currentOwner, ...owners].filter(Boolean))]
     .sort((a, b) => a.localeCompare(b, 'ru'));
   const completion = currentCompletionSnapshot(sku);
-  const currentPlanUnits = firstFiniteValue(sku?.planFact?.planApr26Units);
-  const currentFactUnits = firstFiniteValue(
-    sku?.planFact?.factApr16Units,
-    sku?.planFact?.factAprToDateUnits
-  );
-  const resultRows = [
-    currentPlanUnits !== null
-      ? metricRow('План Apr 26', fmt.int(currentPlanUnits))
-      : metricRow('План Feb 26', fmt.int(sku.planFact?.planFeb26Units)),
-    currentFactUnits !== null
-      ? metricRow('Факт Apr to date', fmt.int(currentFactUnits))
-      : metricRow('Факт Feb 26', fmt.int(sku.planFact?.factFeb26Units))
-  ];
-
-  if (completion.monthPct !== null) {
-    resultRows.push(metricRow('Выполнение месяца', fmt.pct(completion.monthPct), completion.monthPct < 0.8 ? 'danger-text' : ''));
-  } else if (completion.legacyPct !== null) {
-    resultRows.push(metricRow('Выполнение Feb 26', fmt.pct(completion.legacyPct), completion.legacyPct < 0.8 ? 'danger-text' : ''));
-  }
-
-  if (completion.toDatePct !== null) {
-    resultRows.push(metricRow('К плану на дату', fmt.pct(completion.toDatePct), completion.toDatePct < 0.85 ? 'warn-text' : ''));
-  }
+  const planFactContext = skuModalPlanFactContextForArticle(resolvedArticleKey);
+  const resultRows = planFactContext
+    ? skuModalPlanFactResultRows(planFactContext)
+    : skuModalLegacyResultRows(sku, completion);
 
   const modalMarkup = `
     <div class="modal-head">

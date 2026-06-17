@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-16T09:04:47.646Z",
+  "generatedAt": "2026-06-17T14:06:38.978Z",
   "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
   "sourceMode": "google-csv-tabs",
   "sourceGids": {
@@ -22,18 +22,18 @@
     "unmatchedTargets": []
   },
   "dashboard": {
-    "latest_marketplace_date": "2026-06-15",
+    "latest_marketplace_date": "2026-06-16",
     "month_plan_units": 173171,
-    "month_fact_units": 178952,
-    "month_fact_revenue": 188273440.51,
-    "completion_to_date_pct": 2.0668,
+    "month_fact_units": 190550,
+    "month_fact_revenue": 200570531.54999998,
+    "completion_to_date_pct": 2.0632,
     "company_plan_revenue": 285818670,
-    "company_plan_to_date_revenue": 142909335,
-    "company_completion_to_date_pct": 1.3174
+    "company_plan_to_date_revenue": 152436624,
+    "company_completion_to_date_pct": 1.3158
   },
   "platformTrends": {
-    "latest_marketplace_date": "2026-06-15",
-    "points": 0
+    "latest_marketplace_date": "2026-06-16",
+    "points": 47
   },
   "loyaltySystem": {
     "sheet_name": "",
@@ -42,17 +42,17 @@
     "spend": 0
   },
   "iuDrr": {
-    "latest_date": "2026-06-15",
-    "rows": 15,
-    "latest_daily_date": "2026-06-15",
-    "generated_at": "2026-06-16T08:03:22.718Z"
+    "latest_date": "2026-06-16",
+    "rows": 47,
+    "latest_daily_date": "2026-06-16",
+    "generated_at": "2026-06-17T13:24:41.593Z"
   },
   "logistics": {
-    "latest_logistics_date": "2026-06-16",
+    "latest_logistics_date": "2026-06-17",
     "ozon_cluster_count": 31,
     "ozon_warehouse_count": 61,
     "wb_warehouse_count": 29,
-    "central_warehouse_stock": 432113,
+    "central_warehouse_stock": 440341,
     "warehouse_stock_overlay_rows": 134
   }
 }

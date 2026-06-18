@@ -88,7 +88,9 @@
       'k.labin@qeep.life': { role: 'employee' },
       'a.zarovskaya@qeep.life': { role: 'employee' },
       'v.klimov@qeep.life': { role: 'employee' },
-      'e.sai@qeep.life': { role: 'employee' }
+      'e.sai@qeep.life': { role: 'employee' },
+      's.v.stal@ya.qeep.life': { role: 'employee' },
+      's.v.stal@qeep.life': { role: 'employee' }
     }
   };
 })();

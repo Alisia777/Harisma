@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-06-18T08:12:48.572Z",
+  "generatedAt": "2026-06-18T09:04:26.837Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -11,11 +11,11 @@
     ]
   },
   "dataFreshness": {
-    "status": "stale",
-    "dataDate": "2026-06-16",
+    "status": "ok",
+    "dataDate": "2026-06-17",
     "expectedFactDate": "2026-06-17",
     "sourceGeneratedAt": "2026-06-18T08:12:09.855Z",
-    "message": "Данные отстают: факт до 2026-06-16, ожидается минимум 2026-06-17.",
+    "message": "Данные свежие: факт до 2026-06-17.",
     "orderProcurementGeneratedAt": "2026-06-18T08:12:09.855Z",
     "orderWindow": {
       "from": "2026-05-22",
@@ -26,8 +26,8 @@
       "orderProcurement": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\.altea-google-sheet-sync-output\\order_procurement.json",
       "skus": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\.altea-google-sheet-sync-output\\skus.json",
       "smartPriceOverlay": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\.altea-google-sheet-sync-output\\smart_price_overlay.json",
-      "syncHealth": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\data\\portal_sync_health.json",
-      "portalDataQuality": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\data\\portal_data_quality.json"
+      "syncHealth": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\.altea-google-sheet-sync-output\\portal_sync_health.json",
+      "portalDataQuality": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\.altea-google-sheet-sync-output\\portal_data_quality.json"
     }
   },
   "summary": {
@@ -43,14 +43,14 @@
     "monthKey": "2026-06",
     "lostRevenueMonth": 0,
     "revenueAtRiskMonth": 83557666,
-    "newIssues": 10,
+    "newIssues": 0,
     "reopenedIssues": 0,
     "resolvedToday": 0,
     "owners": 5,
     "skuCount": 6,
     "placeCount": 215,
-    "dataStatus": "stale",
-    "dataDate": "2026-06-16",
+    "dataStatus": "ok",
+    "dataDate": "2026-06-17",
     "expectedFactDate": "2026-06-17"
   },
   "byPlatform": [
@@ -967,7 +967,7 @@
       "firstSeenDate": "2026-06-18",
       "lastSeenDate": "2026-06-18",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -1091,7 +1091,7 @@
       "firstSeenDate": "2026-06-18",
       "lastSeenDate": "2026-06-18",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -1245,7 +1245,7 @@
       "firstSeenDate": "2026-06-18",
       "lastSeenDate": "2026-06-18",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -1439,7 +1439,7 @@
       "firstSeenDate": "2026-06-18",
       "lastSeenDate": "2026-06-18",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -1613,7 +1613,7 @@
       "firstSeenDate": "2026-06-18",
       "lastSeenDate": "2026-06-18",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -1877,7 +1877,7 @@
       "firstSeenDate": "2026-06-18",
       "lastSeenDate": "2026-06-18",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -2091,7 +2091,7 @@
       "firstSeenDate": "2026-06-18",
       "lastSeenDate": "2026-06-18",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -2385,7 +2385,7 @@
       "firstSeenDate": "2026-06-18",
       "lastSeenDate": "2026-06-18",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -2679,7 +2679,7 @@
       "firstSeenDate": "2026-06-18",
       "lastSeenDate": "2026-06-18",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -2823,7 +2823,7 @@
       "firstSeenDate": "2026-06-18",
       "lastSeenDate": "2026-06-18",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     }
   ],

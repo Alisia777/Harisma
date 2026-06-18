@@ -5,7 +5,7 @@
   window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260425C__ = true;
 
   var SNAPSHOT_TABLE = "portal_data_snapshots";
-  var SNAPSHOT_REQUEST_TIMEOUT_MS = 3500;
+  var SNAPSHOT_REQUEST_TIMEOUT_MS = 10000;
   var PATH_MAP = {
     "data/dashboard.json": "dashboard",
     "data/skus.json": "skus",
@@ -117,6 +117,10 @@
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
+  }
+
+  function isAbortError(error) {
+    return error && (error.name === "AbortError" || /aborted/i.test(String(error.message || "")));
   }
 
   function parseFreshStamp(value) {
@@ -570,7 +574,7 @@
         return cache.rows;
       })
       .catch(function (error) {
-        console.warn("[portal-snapshot-refresh-hotfix]", error);
+        if (!isAbortError(error)) console.warn("[portal-snapshot-refresh-hotfix]", error);
         cache.rows = {};
         cache.promise = null;
         return {};

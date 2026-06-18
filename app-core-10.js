@@ -2302,17 +2302,46 @@ function syncHashWithView(view) {
 }
 
 function resolveInitialView() {
-  return readViewFromHash() || readPersistedView() || normalizeViewName(state.activeView || 'dashboard');
+  const candidate = readViewFromHash() || readPersistedView() || normalizeViewName(state.activeView || 'dashboard');
+  return isPortalViewAllowed(candidate) ? candidate : firstAllowedPortalView();
+}
+
+function portalAccessApi() {
+  return window.alteaPortalAccess || null;
+}
+
+function isPortalViewAllowed(view) {
+  const normalized = normalizeViewName(view || 'dashboard');
+  const api = portalAccessApi();
+  if (api?.isViewAllowed) return api.isViewAllowed(normalized);
+  const access = window.__ALTEA_PORTAL_ACCESS__;
+  if (!Array.isArray(access?.allowedViews) || !access.allowedViews.length) return true;
+  return access.allowedViews.includes(normalized);
+}
+
+function firstAllowedPortalView() {
+  const api = portalAccessApi();
+  if (api?.firstView) return normalizeViewName(api.firstView() || 'dashboard');
+  const access = window.__ALTEA_PORTAL_ACCESS__;
+  if (Array.isArray(access?.allowedViews) && access.allowedViews.length) return normalizeViewName(access.allowedViews[0]);
+  return 'dashboard';
+}
+
+function applyPortalAccessToNavigation() {
+  const api = portalAccessApi();
+  if (api?.apply) api.apply();
 }
 
 function setView(view, options = {}) {
   view = normalizeViewName(view);
+  if (!isPortalViewAllowed(view)) view = firstAllowedPortalView();
   const persist = options.persist !== false;
   const syncHash = options.syncHash !== false;
   state.activeView = view;
   if (view === 'sku-contour' && options.preserveSkuWorkspaceMode !== true) state.skuWorkspaceMode = 'contour';
   if (persist) persistActiveView(view);
   if (syncHash) syncHashWithView(view);
+  applyPortalAccessToNavigation();
   document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
   document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
   window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view } }));
@@ -2441,6 +2470,7 @@ function ensureSkuContourShell() {
     const planSection = document.getElementById('view-sku-plan-fact');
     main.insertBefore(section, planSection?.nextSibling || main.querySelector('.view') || null);
   }
+  applyPortalAccessToNavigation();
 }
 
 function portalAttrSelector(name, value) {
@@ -2582,6 +2612,10 @@ function rerenderCurrentView() {
   const activeView = typeof normalizePortalView === 'function'
     ? normalizePortalView(state.activeView || 'dashboard')
     : (state.activeView || 'dashboard');
+  if (!isPortalViewAllowed(activeView)) {
+    setView(firstAllowedPortalView());
+    return;
+  }
   if (state.activeView !== activeView) state.activeView = activeView;
   const activeRootId = `view-${activeView}`;
   const activeEntry = renderPlan.find(([rootId]) => rootId === activeRootId) || renderPlan[0];
@@ -2619,6 +2653,11 @@ function attachGlobalListeners() {
   state.boot.listenersAttached = true;
   initSidebarToggle();
   ensureTaskModal();
+  applyPortalAccessToNavigation();
+  window.addEventListener('altea:accesschange', () => {
+    applyPortalAccessToNavigation();
+    if (!isPortalViewAllowed(state.activeView || 'dashboard')) setView(firstAllowedPortalView());
+  });
   const sidebarNav = document.querySelector('.sidebar .nav');
   if (sidebarNav) {
     sidebarNav.addEventListener('click', (event) => {

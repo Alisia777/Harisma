@@ -438,46 +438,331 @@
     return input;
   }
 
+  function createLogo(className, variant, alt) {
+    var image = document.createElement('img');
+    image.className = className;
+    image.src = variant === 'black' ? 'assets/altea-logo-exact-black.png' : 'assets/altea-logo-exact-white.png';
+    image.alt = alt || '';
+    image.decoding = 'async';
+    return image;
+  }
+
+  function iconMarkup(name) {
+    if (name === 'mail') {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m4 7 8 6 8-6"></path></svg>';
+    }
+    if (name === 'eye') {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.6"></circle></svg>';
+    }
+    return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>';
+  }
+
+  function appendIcon(parent, className, name) {
+    var icon = append(parent, 'span', className);
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = iconMarkup(name);
+    return icon;
+  }
+
+  function appendSource(video, src, type) {
+    var source = document.createElement('source');
+    source.src = src;
+    source.type = type;
+    video.appendChild(source);
+  }
+
+  function appendVideoBackground(screen) {
+    var video = append(screen, 'video', 'portal-auth-motion');
+    video.autoplay = true;
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.tabIndex = -1;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('aria-hidden', 'true');
+    appendSource(video, 'assets/altea-login-luxury-motion.webm', 'video/webm');
+    appendSource(video, 'assets/altea-login-luxury-motion.mp4', 'video/mp4');
+    try {
+      var playPromise = video.play && video.play();
+      if (playPromise && playPromise.catch) playPromise.catch(function () {});
+    } catch (_) {}
+    return video;
+  }
+
+  function buildField(form, id, name, type, autocomplete, labelText, placeholder, iconName) {
+    var field = append(form, 'div', 'portal-auth-field');
+    var label = append(field, 'label', '', labelText);
+    var shell = append(field, 'div', 'portal-auth-field-shell');
+    var input = createInput(id, name, type, autocomplete);
+    label.setAttribute('for', id);
+    input.placeholder = placeholder || '';
+    input.setAttribute('aria-describedby', 'portalAuthStatus');
+    shell.appendChild(input);
+    if (iconName) appendIcon(shell, 'portal-auth-field-icon', iconName);
+    return { field: field, shell: shell, input: input };
+  }
+
+  function initPasswordToggle(passwordInput) {
+    var toggle = document.getElementById('portalAuthTogglePassword');
+    if (!toggle || !passwordInput) return;
+    toggle.addEventListener('click', function () {
+      var show = passwordInput.type === 'password';
+      passwordInput.type = show ? 'text' : 'password';
+      toggle.setAttribute('aria-label', show ? '\u0421\u043a\u0440\u044b\u0442\u044c \u043f\u0430\u0440\u043e\u043b\u044c' : '\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u043f\u0430\u0440\u043e\u043b\u044c');
+    });
+  }
+
+  function initLuxuryMotion(screen) {
+    var canvas;
+    var ctx;
+    var reduced = false;
+    var raf = window.requestAnimationFrame || function (callback) {
+      return window.setTimeout(function () { callback(now()); }, 16);
+    };
+    var w = 0;
+    var h = 0;
+    var dpr = 1;
+    var t0 = now();
+    var pearls = [];
+    var index;
+
+    if (!screen || screen.getAttribute('data-luxury-motion-ready') === '1') return;
+    screen.setAttribute('data-luxury-motion-ready', '1');
+
+    try {
+      reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    } catch (_) {}
+
+    screen.addEventListener('pointermove', function (event) {
+      var x = ((event.clientX || 0) / Math.max(1, window.innerWidth) - 0.5) * 2;
+      var y = ((event.clientY || 0) / Math.max(1, window.innerHeight) - 0.5) * 2;
+      screen.style.setProperty('--mx', x.toFixed(3));
+      screen.style.setProperty('--my', y.toFixed(3));
+    }, { passive: true });
+
+    var intro = document.getElementById('portalAuthIntro');
+    if (intro) {
+      intro.addEventListener('click', function () {
+        intro.style.display = 'none';
+      });
+    }
+
+    canvas = document.getElementById('portalAuthSilk');
+    if (!canvas || !canvas.getContext) return;
+
+    try {
+      ctx = canvas.getContext('2d', { alpha: false });
+    } catch (_) {
+      ctx = canvas.getContext('2d');
+    }
+    if (!ctx) return;
+
+    for (index = 0; index < 38; index += 1) {
+      pearls.push({
+        x: Math.random(),
+        y: Math.random(),
+        r: 0.5 + Math.random() * 1.9,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.1 + Math.random() * 0.22,
+        drift: (Math.random() - 0.5) * 0.015,
+        a: 0.08 + Math.random() * 0.24
+      });
+    }
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 1.6);
+      w = Math.max(1, window.innerWidth || document.documentElement.clientWidth || 1);
+      h = Math.max(1, window.innerHeight || document.documentElement.clientHeight || 1);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      if (ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function addColorStop(gradient, stop, value) {
+      try {
+        gradient.addColorStop(stop, value);
+      } catch (_) {}
+    }
+
+    function ribbon(time, baseY, amp, width, phase, alpha, warm) {
+      var points = [];
+      var steps = 42;
+      var i;
+      var u;
+      var x;
+      var y;
+      var gradient;
+      for (i = 0; i <= steps; i += 1) {
+        u = i / steps;
+        x = -w * 0.12 + (w * 1.24) * u;
+        y = baseY + Math.sin(u * 6.1 + time * 0.31 + phase) * amp + Math.sin(u * 13.7 - time * 0.18 + phase * 0.7) * amp * 0.28 + (u - 0.5) * h * 0.06;
+        points.push([x, y]);
+      }
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(points[0][0], points[0][1] - width / 2);
+      for (i = 1; i < points.length; i += 1) ctx.lineTo(points[i][0], points[i][1] - width / 2);
+      for (i = points.length - 1; i >= 0; i -= 1) ctx.lineTo(points[i][0], points[i][1] + width / 2);
+      ctx.closePath();
+      gradient = ctx.createLinearGradient(0, baseY - width, w, baseY + width);
+      if (warm) {
+        addColorStop(gradient, 0, 'rgba(89,78,65,0)');
+        addColorStop(gradient, 0.28, 'rgba(203,185,156,' + (alpha * 0.28) + ')');
+        addColorStop(gradient, 0.5, 'rgba(255,250,239,' + alpha + ')');
+        addColorStop(gradient, 0.72, 'rgba(163,145,121,' + (alpha * 0.23) + ')');
+        addColorStop(gradient, 1, 'rgba(20,18,16,0)');
+      } else {
+        addColorStop(gradient, 0, 'rgba(80,86,92,0)');
+        addColorStop(gradient, 0.3, 'rgba(188,196,202,' + (alpha * 0.2) + ')');
+        addColorStop(gradient, 0.5, 'rgba(245,247,248,' + alpha + ')');
+        addColorStop(gradient, 0.7, 'rgba(142,150,157,' + (alpha * 0.18) + ')');
+        addColorStop(gradient, 1, 'rgba(20,22,24,0)');
+      }
+      ctx.fillStyle = gradient;
+      if ('filter' in ctx) ctx.filter = 'blur(' + Math.max(18, width * 0.18) + 'px)';
+      ctx.fill();
+      if ('filter' in ctx) ctx.filter = 'none';
+      ctx.restore();
+    }
+
+    function drawFrame(timestamp) {
+      var t = (timestamp - t0) / 1000;
+      var bg = ctx.createRadialGradient(w * 0.26, h * 0.43, 0, w * 0.26, h * 0.43, Math.max(w, h) * 0.86);
+      var light = ctx.createLinearGradient(0, 0, w, 0);
+      var scale = Math.max(0.75, Math.min(1.2, w / 1600));
+      var i;
+      var p;
+      var px;
+      var py;
+      var pulse;
+
+      addColorStop(bg, 0, '#1a1918');
+      addColorStop(bg, 0.37, '#101010');
+      addColorStop(bg, 1, '#050505');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      addColorStop(light, 0, 'rgba(255,255,255,0)');
+      addColorStop(light, 0.28, 'rgba(255,255,255,.025)');
+      addColorStop(light, 0.48, 'rgba(203,185,156,.038)');
+      addColorStop(light, 0.72, 'rgba(255,255,255,0)');
+      ctx.fillStyle = light;
+      ctx.fillRect(0, 0, w, h);
+
+      ribbon(t, h * 0.28, 45 * scale, 130 * scale, 0.4, 0.11, true);
+      ribbon(t, h * 0.54, 64 * scale, 185 * scale, 2.1, 0.09, false);
+      ribbon(t, h * 0.76, 38 * scale, 105 * scale, 4.0, 0.075, true);
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      for (i = 0; i < pearls.length; i += 1) {
+        p = pearls[i];
+        px = (p.x + Math.sin(t * p.speed + p.phase) * 0.02 + p.drift * t) % 1;
+        py = (p.y + Math.cos(t * p.speed * 0.8 + p.phase) * 0.025 + 1) % 1;
+        if (px < 0) px += 1;
+        if (py < 0) py += 1;
+        pulse = 0.55 + 0.45 * Math.sin(t * 0.7 + p.phase);
+        ctx.beginPath();
+        ctx.arc(px * w, py * h, p.r * scale, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + (i % 5 === 0 ? '220,200,169' : '235,239,241') + ',' + (p.a * pulse) + ')';
+        ctx.fill();
+      }
+      ctx.restore();
+
+      if (!reduced && screen.parentNode) raf(drawFrame);
+    }
+
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+    drawFrame(now());
+  }
+
   function renderGate() {
     document.body.classList.add('portal-auth-locked');
     var screen = document.getElementById('portalAuthScreen');
     if (screen) {
       screen.hidden = false;
+      initLuxuryMotion(screen);
       return screen;
     }
 
-    screen = append(document.body, 'div', 'portal-auth-screen');
+    screen = append(document.body, 'div', 'portal-auth-screen portal-auth-luxury');
     screen.id = 'portalAuthScreen';
+    screen.style.setProperty('--mx', '0');
+    screen.style.setProperty('--my', '0');
 
-    var card = append(screen, 'div', 'portal-auth-card');
+    var intro = append(screen, 'div', 'portal-auth-intro');
+    intro.id = 'portalAuthIntro';
+    intro.setAttribute('aria-hidden', 'true');
+    var introInner = append(intro, 'div', 'portal-auth-intro-inner');
+    introInner.appendChild(createLogo('portal-auth-intro-logo', 'white', '\u0410\u043b\u0442\u0435\u044f'));
+    append(introInner, 'div', 'portal-auth-intro-kicker', 'PRIVATE WORKSPACE');
+    append(introInner, 'div', 'portal-auth-intro-line');
+
+    appendVideoBackground(screen);
+    var canvas = append(screen, 'canvas', 'portal-auth-silk');
+    canvas.id = 'portalAuthSilk';
+    canvas.setAttribute('aria-hidden', 'true');
+    append(screen, 'div', 'portal-auth-noise').setAttribute('aria-hidden', 'true');
+    append(screen, 'div', 'portal-auth-vignette').setAttribute('aria-hidden', 'true');
+    var giantMark = createLogo('portal-auth-giant-mark', 'white', '');
+    giantMark.setAttribute('aria-hidden', 'true');
+    screen.appendChild(giantMark);
+    append(screen, 'div', 'portal-auth-orbital').setAttribute('aria-hidden', 'true');
+
+    var topbar = append(screen, 'header', 'portal-auth-topbar');
+    var lockup = append(topbar, 'div', 'portal-auth-brand-lockup');
+    lockup.appendChild(createLogo('portal-auth-brand-logo', 'white', '\u0410\u043b\u0442\u0435\u044f'));
+    append(lockup, 'div', 'portal-auth-hairline');
+    append(lockup, 'div', 'portal-auth-brand-meta', '\u0412\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0439 \u043f\u043e\u0440\u0442\u0430\u043b\u000a\u043a\u043e\u043c\u0430\u043d\u0434\u044b \u0431\u0440\u0435\u043d\u0434\u0430');
+    var systemPill = append(topbar, 'div', 'portal-auth-system-pill');
+    append(systemPill, 'i');
+    append(systemPill, 'span', '', '\u0421\u0438\u0441\u0442\u0435\u043c\u044b \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b');
+
+    var layout = append(screen, 'main', 'portal-auth-layout');
+    var story = append(layout, 'section', 'portal-auth-story');
+    append(story, 'div', 'portal-auth-eyebrow', 'ALTEA PRIVATE WORKSPACE');
+    var heroTitle = append(story, 'h1', 'portal-auth-hero-title');
+    heroTitle.appendChild(document.createTextNode('\u041f\u0440\u0435\u043e\u0431\u0440\u0430\u0436\u0430\u0435\u043c \u0432\u0430\u0448\u0443 '));
+    append(heroTitle, 'em', '', '\u0438\u043d\u0434\u0438\u0432\u0438\u0434\u0443\u0430\u043b\u044c\u043d\u043e\u0441\u0442\u044c');
+    append(story, 'p', 'portal-auth-lead', '\u0415\u0434\u0438\u043d\u043e\u0435 \u043f\u0440\u043e\u0441\u0442\u0440\u0430\u043d\u0441\u0442\u0432\u043e \u043a\u043e\u043c\u0430\u043d\u0434\u044b \u0410\u043b\u0442\u0435\u044f: \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u044b, \u043f\u0440\u043e\u0434\u0430\u0436\u0438, \u0437\u0430\u043f\u0443\u0441\u043a\u0438, \u0430\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0430 \u0438 \u0440\u0435\u0448\u0435\u043d\u0438\u044f \u2014 \u0432 \u043e\u0434\u043d\u043e\u043c \u0441\u043e\u0431\u0440\u0430\u043d\u043d\u043e\u043c \u043a\u043e\u043d\u0442\u0443\u0440\u0435.');
+    append(story, 'div', 'portal-auth-signature', 'BEAUTY \u00b7 INTELLIGENCE \u00b7 PRECISION');
+
+    var cardWrap = append(layout, 'div', 'portal-auth-card-wrap');
+    append(cardWrap, 'div', 'portal-auth-card-aura').setAttribute('aria-hidden', 'true');
+    var card = append(cardWrap, 'section', 'portal-auth-card');
     card.setAttribute('role', 'dialog');
     card.setAttribute('aria-modal', 'true');
     card.setAttribute('aria-labelledby', 'portalAuthTitle');
 
-    var brand = append(card, 'div', 'portal-auth-brand');
-    var mark = document.createElement('img');
-    mark.src = 'assets/altea-imperial-mark.svg';
-    mark.alt = '';
-    brand.appendChild(mark);
-    var brandText = append(brand, 'div');
-    var title = append(brandText, 'strong', '', '\u0412\u0445\u043e\u0434 \u0432 \u043f\u043e\u0440\u0442\u0430\u043b');
+    var cardTop = append(card, 'div', 'portal-auth-card-top');
+    cardTop.appendChild(createLogo('portal-auth-card-logo', 'black', '\u0410\u043b\u0442\u0435\u044f'));
+    append(cardTop, 'span', 'portal-auth-private-tag', 'PRIVATE ACCESS');
+    append(card, 'div', 'portal-auth-welcome-kicker', '\u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c');
+    var title = append(card, 'h2', 'portal-auth-title', '\u0412\u0445\u043e\u0434 \u0432 \u043f\u043e\u0440\u0442\u0430\u043b');
     title.id = 'portalAuthTitle';
-    append(brandText, 'span', '', '\u0414\u043e\u043c \u0431\u0440\u0435\u043d\u0434\u0430 \u0410\u043b\u0442\u0435\u044f');
+    append(card, 'p', 'portal-auth-card-copy', '\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0439\u0442\u0435 \u043a\u043e\u0440\u043f\u043e\u0440\u0430\u0442\u0438\u0432\u043d\u044b\u0435 \u0434\u0430\u043d\u043d\u044b\u0435 \u0434\u043b\u044f \u0432\u0445\u043e\u0434\u0430 \u0432 \u0440\u0430\u0431\u043e\u0447\u0435\u0435 \u043f\u0440\u043e\u0441\u0442\u0440\u0430\u043d\u0441\u0442\u0432\u043e.');
 
     var form = append(card, 'form', 'portal-auth-form');
     form.id = 'portalAuthForm';
     form.noValidate = true;
 
-    var emailLabel = append(form, 'label', '', '\u0420\u0430\u0431\u043e\u0447\u0430\u044f \u043f\u043e\u0447\u0442\u0430');
-    var emailInput = createInput('portalAuthEmail', 'email', 'email', 'username');
+    var emailField = buildField(form, 'portalAuthEmail', 'email', 'email', 'username', '\u041a\u043e\u0440\u043f\u043e\u0440\u0430\u0442\u0438\u0432\u043d\u0430\u044f \u043f\u043e\u0447\u0442\u0430', 'name@qeep.life', 'mail');
+    var emailInput = emailField.input;
     emailInput.inputMode = 'email';
     emailInput.maxLength = MAX_EMAIL_LENGTH;
-    emailLabel.appendChild(emailInput);
 
-    var passwordLabel = append(form, 'label', '', '\u041f\u0430\u0440\u043e\u043b\u044c');
-    var passwordInput = createInput('portalAuthPassword', 'password', 'password', 'current-password');
+    var passwordField = buildField(form, 'portalAuthPassword', 'password', 'password', 'current-password', '\u041f\u0430\u0440\u043e\u043b\u044c', '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043f\u0430\u0440\u043e\u043b\u044c', '');
+    var passwordInput = passwordField.input;
     passwordInput.maxLength = MAX_PASSWORD_LENGTH;
-    passwordLabel.appendChild(passwordInput);
+    var toggle = append(passwordField.shell, 'button', 'portal-auth-eye');
+    toggle.id = 'portalAuthTogglePassword';
+    toggle.type = 'button';
+    toggle.setAttribute('aria-label', '\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u043f\u0430\u0440\u043e\u043b\u044c');
+    toggle.innerHTML = iconMarkup('eye');
 
     var honey = document.createElement('input');
     honey.id = 'portalAuthWebsite';
@@ -489,16 +774,43 @@
     honey.setAttribute('aria-hidden', 'true');
     form.appendChild(honey);
 
-    var submit = append(form, 'button', 'portal-auth-submit', '\u0412\u043e\u0439\u0442\u0438');
+    var options = append(form, 'div', 'portal-auth-options');
+    var remember = append(options, 'label', 'portal-auth-remember');
+    var rememberInput = document.createElement('input');
+    rememberInput.type = 'checkbox';
+    rememberInput.checked = true;
+    rememberInput.tabIndex = -1;
+    rememberInput.setAttribute('aria-hidden', 'true');
+    remember.appendChild(rememberInput);
+    append(remember, 'span', '', '\u0417\u0430\u043f\u043e\u043c\u043d\u0438\u0442\u044c \u043c\u0435\u043d\u044f');
+    append(options, 'span', 'portal-auth-muted-link', '\u041f\u0430\u0440\u043e\u043b\u044c \u0432\u044b\u0434\u0430\u0435\u0442 \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440');
+
+    var submit = append(form, 'button', 'portal-auth-submit');
     submit.id = 'portalAuthSubmit';
     submit.type = 'submit';
+    append(submit, 'span', '', '\u0412\u043e\u0439\u0442\u0438 \u0432 \u043f\u043e\u0440\u0442\u0430\u043b');
+    appendIcon(submit, 'portal-auth-submit-icon', 'arrow');
 
     var status = append(form, 'div', 'portal-auth-status', DEFAULT_STATUS);
     status.id = 'portalAuthStatus';
     status.setAttribute('role', 'status');
     status.setAttribute('aria-live', 'polite');
 
+    append(form, 'div', 'portal-auth-divider', '\u0438\u043b\u0438');
+    var sso = append(form, 'button', 'portal-auth-sso', '\u041a\u043e\u0440\u043f\u043e\u0440\u0430\u0442\u0438\u0432\u043d\u044b\u0439 \u0432\u0445\u043e\u0434 SSO');
+    sso.type = 'button';
+    sso.disabled = true;
+    sso.setAttribute('aria-disabled', 'true');
+
+    var cardBottom = append(card, 'div', 'portal-auth-card-bottom');
+    var secure = append(cardBottom, 'span', 'portal-auth-secure');
+    append(secure, 'i');
+    append(secure, 'span', '', '\u0417\u0430\u0449\u0438\u0449\u0435\u043d\u043d\u043e\u0435 \u0441\u043e\u0435\u0434\u0438\u043d\u0435\u043d\u0438\u0435');
+    append(cardBottom, 'span', 'portal-auth-powered', 'QHARISMA WORKSPACE');
+
     form.addEventListener('submit', handleLogin);
+    initPasswordToggle(passwordInput);
+    initLuxuryMotion(screen);
     window.setTimeout(function () { emailInput.focus(); }, 80);
     return screen;
   }

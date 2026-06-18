@@ -22,6 +22,26 @@
     'documents'
   ];
 
+  var EMPLOYEE_VIEWS = [
+    'dashboard',
+    'data-health',
+    'control',
+    'executive',
+    'sku-plan-fact',
+    'repricer',
+    'prices',
+    'order',
+    'oos-control',
+    'sku-contour',
+    'launches',
+    'launch-control',
+    'iu-drr',
+    'wb-rating',
+    'product-leaderboard',
+    'meetings',
+    'documents'
+  ];
+
   window.ALTEA_PORTAL_ACCESS_RULES = window.ALTEA_PORTAL_ACCESS_RULES || {
     version: '2026-06-18',
     allViews: ALL_VIEWS,
@@ -45,27 +65,30 @@
       operations: {
         views: ['dashboard', 'control', 'order', 'oos-control', 'sku-plan-fact']
       },
+      employee: {
+        views: EMPLOYEE_VIEWS
+      },
       readonly: {
         views: ['dashboard']
       }
     },
 
     users: {
-      // Start employees with readonly access, then assign a role or exact views.
-      'm.v.pekhova@qeep.life': { role: 'readonly', name: '\u041c\u0430\u0440\u0438\u044f \u041f\u0435\u0445\u043e\u0432\u0430' },
-      'm.a.vasilyeva@qeep.life': { role: 'readonly' },
-      'm.a.lapygin@qeep.life': { role: 'readonly' },
-      'a.v.sporov@qeep.life': { role: 'readonly' },
-      'd.v.molodyakova@qeep.life': { role: 'readonly' },
-      'd.a.pitaykin@qeep.life': { role: 'readonly' },
-      'm.a.pavlenko@qeep.life': { role: 'readonly' },
-      'a.v.pirogova@qeep.life': { role: 'readonly' },
-      'e.a.domozhirova@qeep.life': { role: 'readonly' },
-      's.s.artyukhin@qeep.life': { role: 'readonly' },
-      'k.labin@qeep.life': { role: 'readonly' },
-      'a.zarovskaya@qeep.life': { role: 'readonly' },
-      'v.klimov@qeep.life': { role: 'readonly' },
-      'e.sai@qeep.life': { role: 'readonly' }
+      // Employees can see the portal workspace; exact tab sets can still be narrowed per user.
+      'm.v.pekhova@qeep.life': { role: 'employee', name: '\u041c\u0430\u0440\u0438\u044f \u041f\u0435\u0445\u043e\u0432\u0430' },
+      'm.a.vasilyeva@qeep.life': { role: 'employee' },
+      'm.a.lapygin@qeep.life': { role: 'employee' },
+      'a.v.sporov@qeep.life': { role: 'employee' },
+      'd.v.molodyakova@qeep.life': { role: 'employee' },
+      'd.a.pitaykin@qeep.life': { role: 'employee' },
+      'm.a.pavlenko@qeep.life': { role: 'employee' },
+      'a.v.pirogova@qeep.life': { role: 'employee' },
+      'e.a.domozhirova@qeep.life': { role: 'employee' },
+      's.s.artyukhin@qeep.life': { role: 'owner' },
+      'k.labin@qeep.life': { role: 'employee' },
+      'a.zarovskaya@qeep.life': { role: 'employee' },
+      'v.klimov@qeep.life': { role: 'employee' },
+      'e.sai@qeep.life': { role: 'employee' }
     }
   };
 })();

@@ -1,0 +1,263 @@
+:root {
+  --altea-motion-ease: cubic-bezier(.22, 1, .36, 1);
+  --altea-motion-ease-strong: cubic-bezier(.65, 0, .18, 1);
+  --altea-motion-ivory: #f4f0e8;
+  --altea-motion-champagne: #cfb996;
+}
+
+.altea-motion-stage[hidden] {
+  display: none !important;
+}
+
+.altea-motion-stage {
+  --altea-motion-screen: url("assets/altea-motion/screens/02-workspace.png");
+  position: fixed;
+  inset: 0;
+  z-index: 2147482600;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  background: #070707;
+  color: var(--altea-motion-ivory);
+  isolation: isolate;
+  transition: opacity .62s var(--altea-motion-ease), visibility 0s linear .62s;
+}
+
+body.portal-auth-locked .altea-motion-stage {
+  display: none !important;
+}
+
+.altea-motion-stage.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity .62s var(--altea-motion-ease), visibility 0s linear 0s;
+}
+
+.altea-motion-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--altea-motion-screen);
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  transform: scale(1.018);
+  opacity: .98;
+  animation: alteaMotionImageBreath 5.8s ease-in-out infinite;
+}
+
+.altea-motion-stage::after {
+  content: "";
+  position: absolute;
+  inset: -24% -34%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 38%, rgba(255,255,255,.035) 46%, rgba(207,185,150,.18) 51%, rgba(255,255,255,.04) 56%, transparent 66%);
+  mix-blend-mode: screen;
+  opacity: .7;
+  transform: translateX(-48%) skewX(-10deg);
+  animation: alteaMotionSweep 4.8s var(--altea-motion-ease-strong) infinite;
+}
+
+.altea-motion-stage[data-scene="boot"] {
+  --altea-motion-screen: url("assets/altea-motion/screens/01-boot.png");
+}
+
+.altea-motion-stage[data-scene="workspace"] {
+  --altea-motion-screen: url("assets/altea-motion/screens/02-workspace.png");
+}
+
+.altea-motion-stage[data-scene="skeleton"] {
+  --altea-motion-screen: url("assets/altea-motion/screens/03-skeleton.png");
+}
+
+.altea-motion-stage[data-scene="transition"] {
+  --altea-motion-screen: url("assets/altea-motion/screens/04-transition.png");
+}
+
+.altea-motion-stage[data-scene="import"] {
+  --altea-motion-screen: url("assets/altea-motion/screens/05-import.png");
+}
+
+.altea-motion-stage[data-scene="success"] {
+  --altea-motion-screen: url("assets/altea-motion/screens/06-success.png");
+}
+
+.altea-motion-stage[data-scene="empty"] {
+  --altea-motion-screen: url("assets/altea-motion/screens/07-empty.png");
+}
+
+.altea-motion-stage[data-scene="reconnect"] {
+  --altea-motion-screen: url("assets/altea-motion/screens/08-reconnect.png");
+}
+
+.altea-motion-stage[data-scene="micro"] {
+  --altea-motion-screen: url("assets/altea-motion/screens/09-micro.png");
+}
+
+.altea-motion-grain,
+.altea-motion-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.altea-motion-vignette {
+  z-index: 1;
+  background: radial-gradient(circle at 50% 42%, transparent 0 38%, rgba(0,0,0,.18) 72%, rgba(0,0,0,.55) 120%);
+}
+
+.altea-motion-grain {
+  z-index: 3;
+  opacity: .14;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+}
+
+.altea-motion-stage[data-scene="transition"]::before {
+  animation: alteaMotionRouteIn 1.2s var(--altea-motion-ease) both;
+}
+
+.altea-motion-stage[data-scene="transition"]::after {
+  animation-duration: 1.4s;
+  opacity: .95;
+}
+
+.altea-motion-stage[data-scene="success"]::before,
+.altea-motion-stage[data-scene="import"]::before,
+.altea-motion-stage[data-scene="micro"]::before {
+  animation: alteaMotionLightFloat 5.6s ease-in-out infinite;
+}
+
+.altea-runtime-toast {
+  position: fixed;
+  z-index: 2147482700;
+  right: 28px;
+  bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 300px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 15px 17px;
+  border: 1px solid rgba(255,255,255,.68);
+  border-radius: 18px;
+  background: rgba(244,240,232,.9);
+  color: #0b0b0b;
+  box-shadow: 0 22px 60px rgba(0,0,0,.18);
+  backdrop-filter: blur(22px);
+  opacity: 0;
+  transform: translateY(18px) scale(.98);
+  transition: .45s var(--altea-motion-ease);
+}
+
+.altea-runtime-toast.show {
+  opacity: 1;
+  transform: none;
+}
+
+.altea-runtime-toast .art-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #0b0b0b;
+  color: #fff;
+}
+
+.altea-runtime-toast b {
+  display: block;
+  font: 600 12px Arial, sans-serif;
+}
+
+.altea-runtime-toast small {
+  display: block;
+  margin-top: 4px;
+  color: #827a70;
+  font: 10px Arial, sans-serif;
+}
+
+.altea-is-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.altea-is-loading::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  border: 1px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: alteaMotionSpin 1s linear infinite;
+}
+
+.altea-motion-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes alteaMotionImageBreath {
+  0%, 100% { transform: scale(1.018); filter: brightness(.96) saturate(1.02); }
+  50% { transform: scale(1.032); filter: brightness(1.04) saturate(1.05); }
+}
+
+@keyframes alteaMotionSweep {
+  0%, 18% { transform: translateX(-52%) skewX(-10deg); opacity: 0; }
+  42% { opacity: .72; }
+  76%, 100% { transform: translateX(48%) skewX(-10deg); opacity: 0; }
+}
+
+@keyframes alteaMotionRouteIn {
+  from { transform: scale(1.05); filter: blur(8px) brightness(.82); }
+  to { transform: scale(1.012); filter: blur(0) brightness(1); }
+}
+
+@keyframes alteaMotionLightFloat {
+  0%, 100% { transform: scale(1.014) translateY(-4px); }
+  50% { transform: scale(1.026) translateY(6px); }
+}
+
+@keyframes alteaMotionSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 720px) {
+  .altea-motion-stage[data-scene="workspace"] {
+    --altea-motion-screen: url("assets/altea-motion/screens/mobile-workspace.png");
+  }
+
+  .altea-runtime-toast {
+    right: 16px;
+    bottom: 16px;
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .altea-motion-stage,
+  .altea-motion-stage::before,
+  .altea-motion-stage::after,
+  .altea-runtime-toast,
+  .altea-is-loading::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}

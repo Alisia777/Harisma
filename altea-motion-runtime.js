@@ -4,7 +4,7 @@
 
   var BOOT_MIN_MS = 2200;
   var BOOT_MAX_MS = 5600;
-  var ROUTE_MS = 980;
+  var ROUTE_MS = 760;
   var stage = null;
   var live = null;
   var canvas = null;
@@ -25,6 +25,189 @@
   var canvasW = 0;
   var canvasH = 0;
   var canvasDpr = 1;
+
+  var ROUTE_LOADERS = {
+    dashboard: {
+      index: "01",
+      section: "Главное",
+      label: "Дашборд",
+      kicker: "Пульс портала",
+      title: "Собираем <em>картину дня</em>",
+      note: "Сводим продажи, планы, остатки и командные сигналы в один спокойный экран.",
+      steps: ["Синхронизируем каналы", "Пересчитываем ключевые показатели", "Выстраиваем приоритеты дня"],
+      accent: "#d8c6a4",
+      accentRgb: "216,198,164",
+      art: "dashboard"
+    },
+    "data-health": {
+      index: "02",
+      section: "Главное",
+      label: "Календарь",
+      kicker: "Ритм команды",
+      title: "Выстраиваем <em>календарь событий</em>",
+      note: "Собираем акции, встречи, дедлайны и привязки SKU в единую временную сетку.",
+      steps: ["Загружаем события", "Сверяем даты", "Подсвечиваем активные окна"],
+      accent: "#c0cfd3",
+      accentRgb: "192,207,211",
+      art: "calendar"
+    },
+    control: {
+      index: "03",
+      section: "Главное",
+      label: "Задачи",
+      kicker: "Контроль исполнения",
+      title: "Наводим <em>порядок в задачах</em>",
+      note: "Подтягиваем владельцев, сроки, статусы и контрольные точки по команде.",
+      steps: ["Получаем статусы", "Проверяем сроки", "Собираем рабочую очередь"],
+      accent: "#caa795",
+      accentRgb: "202,167,149",
+      art: "tasks"
+    },
+    executive: {
+      index: "04",
+      section: "Главное",
+      label: "Руководителю",
+      kicker: "Управленческий контур",
+      title: "Готовим <em>решение для руководителя</em>",
+      note: "Сводим ключевые отклонения, командные KPI и итоги без информационного шума.",
+      steps: ["Сверяем план и факт", "Подсвечиваем отклонения", "Формируем сигналы"],
+      accent: "#e2cfaf",
+      accentRgb: "226,207,175",
+      art: "executive"
+    },
+    "sku-plan-fact": {
+      index: "05",
+      section: "Деньги и товар",
+      label: "План-факт SKU",
+      kicker: "Точность планирования",
+      title: "Сверяем <em>план и факт SKU</em>",
+      note: "Находим разрывы по SKU и показываем вклад каждой позиции в общий результат.",
+      steps: ["Подтягиваем продажи", "Сопоставляем план", "Считаем отклонения"],
+      accent: "#d3b57c",
+      accentRgb: "211,181,124",
+      art: "planfact"
+    },
+    repricer: {
+      index: "06",
+      section: "Деньги и товар",
+      label: "Репрайсер",
+      kicker: "Динамическое управление",
+      title: "Готовим <em>ценовые решения</em>",
+      note: "Проверяем коридоры, маржу и ограничения перед публикацией рекомендаций.",
+      steps: ["Получаем срезы маркетплейсов", "Проверяем коридоры", "Готовим рекомендации"],
+      accent: "#bba3c6",
+      accentRgb: "187,163,198",
+      art: "table"
+    },
+    prices: {
+      index: "07",
+      section: "Деньги и товар",
+      label: "Цены",
+      kicker: "Ценовой контур",
+      title: "Открываем <em>ценовую матрицу</em>",
+      note: "Сверяем РРЦ, скидки, СПП и итоговую маржу в отдельном рабочем разделе.",
+      steps: ["Сверяем РРЦ", "Пересчитываем комиссии", "Проверяем итоговую маржу"],
+      accent: "#d29880",
+      accentRgb: "210,152,128",
+      art: "prices"
+    },
+    order: {
+      index: "08",
+      section: "Операции",
+      label: "Заказ товара",
+      kicker: "Поставка и склад",
+      title: "Строим <em>маршрут поставки</em>",
+      note: "Считаем потребность по кластерам, остатки и будущий план движения товара.",
+      steps: ["Считаем потребность", "Сверяем остатки", "Строим план поставки"],
+      accent: "#a4b9a0",
+      accentRgb: "164,185,160",
+      art: "supply"
+    },
+    "oos-control": {
+      index: "09",
+      section: "Операции",
+      label: "OOS контроль",
+      kicker: "Доступность товара",
+      title: "Сканируем <em>риски OOS</em>",
+      note: "Проверяем остатки, дни до дефицита и риск потерь по ключевым позициям.",
+      steps: ["Сканируем остатки", "Считаем дни до OOS", "Подсвечиваем риски"],
+      accent: "#cd7e78",
+      accentRgb: "205,126,120",
+      art: "oos"
+    },
+    "sku-contour": {
+      index: "10",
+      section: "Операции",
+      label: "SKU workspace",
+      kicker: "Единый паспорт SKU",
+      title: "Собираем <em>контур SKU</em>",
+      note: "Связываем карточки, идентификаторы, API-источники и рабочие статусы.",
+      steps: ["Сверяем карточки", "Проверяем источники", "Собираем паспорт SKU"],
+      accent: "#81b29e",
+      accentRgb: "129,178,158",
+      art: "workspace"
+    },
+    launches: {
+      index: "11",
+      section: "Продукт",
+      label: "Новинки",
+      kicker: "Продуктовый портфель",
+      title: "Поднимаем <em>витрину новинок</em>",
+      note: "Собираем продуктовые гипотезы, готовность карточек и ограничения запуска.",
+      steps: ["Получаем гипотезы", "Сверяем готовность", "Оцениваем потенциал"],
+      accent: "#e1ccbe",
+      accentRgb: "225,204,190",
+      art: "cards"
+    },
+    "launch-control": {
+      index: "12",
+      section: "Продукт",
+      label: "Запуск новинок",
+      kicker: "Критический путь",
+      title: "Прокладываем <em>путь запуска</em>",
+      note: "Собираем чек-листы, фазы и контрольные точки от идеи до старта.",
+      steps: ["Сверяем чек-листы", "Проверяем критический путь", "Готовим прогноз старта"],
+      accent: "#ddb76f",
+      accentRgb: "221,183,111",
+      art: "timeline"
+    },
+    "iu-drr": {
+      index: "13",
+      section: "Аналитика",
+      label: "Показатели площадок",
+      kicker: "Эффективность каналов",
+      title: "Собираем <em>показатели площадок</em>",
+      note: "Нормализуем расходы, выручку, возвраты и эффективность в одном разрезе.",
+      steps: ["Подтягиваем расходы", "Нормализуем выручку", "Рассчитываем эффективность"],
+      accent: "#c1898b",
+      accentRgb: "193,137,139",
+      art: "analytics"
+    },
+    "wb-rating": {
+      index: "14",
+      section: "Аналитика",
+      label: "Рейтинг карточек",
+      kicker: "Качество контента",
+      title: "Проверяем <em>рейтинг карточек</em>",
+      note: "Собираем оценки, отзывы и динамику качества карточек.",
+      steps: ["Получаем рейтинг", "Проверяем контент", "Строим динамику"],
+      accent: "#b1c4cf",
+      accentRgb: "177,196,207",
+      art: "rating"
+    },
+    "product-leaderboard": {
+      index: "15",
+      section: "Аналитика",
+      label: "Продуктовый лидерборд",
+      kicker: "Рейтинг результата",
+      title: "Формируем <em>лидерборд</em>",
+      note: "Сверяем вклад, баллы, воронку и итоговый рейтинг продуктовых направлений.",
+      steps: ["Сверяем KPI", "Нормализуем вклад", "Формируем рейтинг"],
+      accent: "#dcc495",
+      accentRgb: "220,196,149",
+      art: "leaderboard"
+    }
+  };
 
   function ready(fn) {
     if (document.readyState === "loading") {
@@ -85,6 +268,123 @@
     ].join("");
   }
 
+  function routeForView(view, label) {
+    var key = String(view || "").trim();
+    var route = ROUTE_LOADERS[key] || ROUTE_LOADERS.dashboard;
+    if (!route && label) {
+      route = {
+        index: "00",
+        section: "Портал",
+        label: label,
+        kicker: "Рабочий раздел",
+        title: "Открываем <em>раздел</em>",
+        note: "Подготавливаем рабочую область портала.",
+        steps: ["Собираем данные", "Проверяем доступ", "Открываем экран"],
+        accent: "#cfb996",
+        accentRgb: "207,185,150",
+        art: "dashboard"
+      };
+    }
+    return route || ROUTE_LOADERS.dashboard;
+  }
+
+  function routeFromOptions(options) {
+    options = options || {};
+    if (options.route) return options.route;
+    var view = options.view || options.routeId || "";
+    return routeForView(view, options.label);
+  }
+
+  function routeSidebarOffset() {
+    var shell = document.querySelector(".app-shell");
+    if (!shell || shell.classList.contains("sidebar-collapsed")) return 0;
+    if ((window.innerWidth || document.documentElement.clientWidth || 0) <= 1100) return 0;
+    var sidebar = document.querySelector(".sidebar");
+    return sidebar ? Math.max(0, Math.round(sidebar.getBoundingClientRect().width)) : 250;
+  }
+
+  function applyRouteVars(route, scene) {
+    if (!stage) return;
+    if (scene === "transition" && route) {
+      stage.style.setProperty("--altea-route-left", routeSidebarOffset() + "px");
+      stage.style.setProperty("--altea-route-accent", route.accent || "#cfb996");
+      stage.style.setProperty("--altea-route-accent-rgb", route.accentRgb || "207,185,150");
+      stage.style.setProperty("--altea-route-accent-2", route.accent2 || "#f5efe2");
+    } else {
+      stage.style.setProperty("--altea-route-left", "0px");
+    }
+  }
+
+  function routeLine(width, cls) {
+    return '<i class="altea-route-line ' + (cls || "") + '" style="--w:' + width + '%"></i>';
+  }
+
+  function routeArtMarkup(route) {
+    var art = route.art || "dashboard";
+    if (art === "dashboard") {
+      return [
+        '<div class="altea-route-art-card altea-route-art-dashboard">',
+        '<div class="altea-route-metrics"><b>57</b><span>level C</span></div>',
+        '<svg class="altea-route-chart" viewBox="0 0 420 180" preserveAspectRatio="none" aria-hidden="true">',
+        '<path class="area" d="M0 160 C55 148 80 105 128 116 S205 77 252 89 S315 36 356 52 S390 42 420 28 L420 180 L0 180Z"></path>',
+        '<path class="line" d="M0 160 C55 148 80 105 128 116 S205 77 252 89 S315 36 356 52 S390 42 420 28"></path>',
+        '</svg>',
+        '<div class="altea-route-mini-bars">' + [42, 70, 56, 86, 62, 92].map(function (h) { return '<i style="--h:' + h + '%"></i>'; }).join("") + '</div>',
+        '</div>'
+      ].join("");
+    }
+    if (art === "executive") {
+      return '<div class="altea-route-art-card altea-route-art-grid">' + ["План", "Риски", "Команда", "Итог"].map(function (name, index) {
+        return '<div><strong>' + [94, 18, 7, 43][index] + (index === 2 ? "/7" : "%") + '</strong><span>' + name + '</span>' + routeLine(78 - index * 8, index === 1 ? "warn" : "") + '</div>';
+      }).join("") + '</div>';
+    }
+    if (art === "tasks") {
+      return '<div class="altea-route-art-card altea-route-art-kanban">' + [4, 3, 2].map(function (count, col) {
+        return '<div><b>' + count + '</b>' + Array.from({ length: count }, function (_, i) {
+          return '<span>' + routeLine(78 - i * 8, col === 1 ? "warn" : "") + routeLine(54 + i * 4, "small") + '</span>';
+        }).join("") + '</div>';
+      }).join("") + '</div>';
+    }
+    if (art === "calendar") {
+      return '<div class="altea-route-art-card altea-route-art-calendar">' + Array.from({ length: 28 }, function (_, i) {
+        return '<i class="' + (i % 6 === 0 || i % 11 === 0 ? "live" : "") + '">' + String(i + 1).padStart(2, "0") + '</i>';
+      }).join("") + '</div>';
+    }
+    if (art === "planfact" || art === "table") {
+      return '<div class="altea-route-art-card altea-route-art-table">' + Array.from({ length: 7 }, function (_, i) {
+        return '<div class="altea-route-table-row"><span>' + routeLine(78 - i * 3) + '</span><span>' + routeLine(48 + i * 4, "small") + '</span><span>' + routeLine(38 + i * 5, "accent") + '</span><b>' + (art === "table" ? (i % 2 ? "↘" : "↗") : (i % 2 ? "+" : "-")) + '</b></div>';
+      }).join("") + '</div>';
+    }
+    if (art === "prices") {
+      return '<div class="altea-route-art-card altea-route-art-prices"><div class="altea-route-price-ring"><b>₽</b></div><div class="altea-route-price-stack"><span>РРЦ</span><span>СПП</span><span>Маржа</span></div></div>';
+    }
+    if (art === "supply") {
+      return '<div class="altea-route-art-card altea-route-art-supply"><svg viewBox="0 0 420 220" preserveAspectRatio="none"><path d="M42 122 C118 28 253 30 347 82 C433 132 346 213 214 190 C104 171 23 186 42 122"></path></svg>' + [1, 2, 3, 4, 5].map(function (n) { return '<i class="node n' + n + '"></i>'; }).join("") + '</div>';
+    }
+    if (art === "oos") {
+      return '<div class="altea-route-art-card altea-route-art-radar"><div class="radar"></div><div class="risk-list"><span>3 дн.</span><span>5 дн.</span><span>8 дн.</span></div></div>';
+    }
+    if (art === "workspace") {
+      return '<div class="altea-route-art-card altea-route-art-workspace">' + ["a", "b", "c", "d"].map(function (n) { return '<span class="api ' + n + '">' + routeLine(70) + routeLine(46, "small") + '</span>'; }).join("") + '<div class="cube"></div></div>';
+    }
+    if (art === "cards") {
+      return '<div class="altea-route-art-card altea-route-art-cards">' + [1, 2, 3].map(function (_, i) { return '<div><b></b>' + routeLine(82 - i * 6) + routeLine(58 + i * 5, "small") + '</div>'; }).join("") + '</div>';
+    }
+    if (art === "timeline") {
+      return '<div class="altea-route-art-card altea-route-art-timeline">' + ["Идея", "Карточка", "Контент", "Поставка", "Старт"].map(function (step, i) { return '<span><b>' + String(i + 1).padStart(2, "0") + '</b><small>' + step + '</small></span>'; }).join("") + '</div>';
+    }
+    if (art === "analytics") {
+      return '<div class="altea-route-art-card altea-route-art-analytics"><svg viewBox="0 0 430 210" preserveAspectRatio="none"><path class="area" d="M0 185 C58 170 88 116 144 134 S242 66 292 88 S360 36 430 46 L430 210 L0 210Z"></path><path class="line" d="M0 185 C58 170 88 116 144 134 S242 66 292 88 S360 36 430 46"></path><path class="line secondary" d="M0 150 C90 132 130 154 194 98 S282 128 340 76 S388 82 430 62"></path></svg></div>';
+    }
+    if (art === "rating") {
+      return '<div class="altea-route-art-card altea-route-art-rating"><strong>4.86</strong><div class="stars">★★★★★</div>' + [94, 86, 72, 64].map(function (w) { return routeLine(w); }).join("") + '</div>';
+    }
+    if (art === "leaderboard") {
+      return '<div class="altea-route-art-card altea-route-art-leaderboard"><div class="podium"><i class="second">2</i><i class="first">1</i><i class="third">3</i></div>' + [92, 86, 79].map(function (w) { return routeLine(w); }).join("") + '</div>';
+    }
+    return routeArtMarkup(ROUTE_LOADERS.dashboard);
+  }
+
   function workspaceMarkup() {
     return [
       '<section class="altea-motion-scene altea-workspace-scene dark">',
@@ -94,7 +394,7 @@
       '<div class="altea-workspace-copy">',
       '<div class="altea-workspace-kicker">Altea private workspace</div>',
       '<h1 class="serif">Собираем ваше<br><em>рабочее пространство</em></h1>',
-      '<p>Загружаем товары, цены, остатки и аналитику. Свет и движение показывают процесс — без ощущения технического экрана.</p>',
+      '<p>Загружаем товары, остатки, задачи и аналитику. Свет и движение показывают процесс — без ощущения технического экрана.</p>',
       "</div>",
       '<div class="altea-loader-cluster">',
       '<div class="altea-loader-aura"></div>',
@@ -118,16 +418,22 @@
     ].join("");
   }
 
-  function transitionMarkup() {
+  function transitionMarkup(options) {
+    var route = routeFromOptions(options);
     return [
-      '<section class="altea-motion-scene altea-route-scene dark">',
+      '<section class="altea-motion-scene altea-route-scene dark" data-route-art="' + (route.art || "dashboard") + '">',
       '<div class="altea-motion-inner">',
       '<img class="altea-motion-logo altea-route-logo" src="' + logo("white") + '" alt="Алтея">',
-      '<div class="altea-route-center">',
-      '<div class="altea-route-index">Раздел · Рабочее пространство</div>',
-      '<h1 class="altea-route-title serif" data-altea-route-title>Открываем <em>раздел</em></h1>',
+      '<div class="altea-route-shell">',
+      '<div class="altea-route-copy">',
+      '<div class="altea-route-index">' + route.index + ' / ' + route.section + '</div>',
+      '<h1 class="altea-route-title serif" data-altea-route-title>' + route.title + '</h1>',
+      '<p class="altea-route-note">' + route.note + '</p>',
+      '<div class="altea-route-steps">' + route.steps.map(function (step, index) { return '<span class="' + (index === 0 ? "is-live" : "") + '"><i>' + String(index + 1).padStart(2, "0") + '</i>' + step + '</span>'; }).join("") + '</div>',
       '<div class="altea-route-rule"></div>',
-      '<div class="altea-route-sub">Переходим к рабочему пространству</div>',
+      '<div class="altea-route-sub">' + route.kicker + '</div>',
+      '</div>',
+      '<div class="altea-route-visual" aria-hidden="true">' + routeArtMarkup(route) + '</div>',
       "</div>",
       "</div>",
       "</section>"
@@ -153,7 +459,7 @@
       '<div class="altea-process-top"><div><h3>Обновление каталога</h3><p>Проверяем структуру и изменения</p></div><span class="altea-file-pill">XLSX · 12,8 MB</span></div>',
       '<div class="altea-process-row done"><div class="altea-process-icon">✓</div><div><div class="altea-process-name">Файл загружен</div><div class="altea-process-desc">Соединение проверено</div></div><div class="altea-process-state">Готово</div></div>',
       '<div class="altea-process-row done"><div class="altea-process-icon">✓</div><div><div class="altea-process-name">Структура распознана</div><div class="altea-process-desc">4 286 товарных строк</div></div><div class="altea-process-state">Готово</div></div>',
-      '<div class="altea-process-row live"><div class="altea-process-icon">03</div><div><div class="altea-process-name">Сверяем изменения</div><div class="altea-process-desc">Цены, остатки и статусы</div></div><div class="altea-process-state">В процессе</div></div>',
+      '<div class="altea-process-row live"><div class="altea-process-icon">03</div><div><div class="altea-process-name">Сверяем изменения</div><div class="altea-process-desc">Данные, остатки и статусы</div></div><div class="altea-process-state">В процессе</div></div>',
       '<div class="altea-process-row"><div class="altea-process-icon">04</div><div><div class="altea-process-name">Публикация</div><div class="altea-process-desc">Применим после проверки</div></div><div class="altea-process-state">Ожидает</div></div>',
       '<div class="altea-process-bar"></div>',
       "</div>",
@@ -220,8 +526,8 @@
     ].join("");
   }
 
-  function sceneMarkup(scene) {
-    if (scene === "transition") return transitionMarkup();
+  function sceneMarkup(scene, options) {
+    if (scene === "transition") return transitionMarkup(options);
     if (scene === "import") return importMarkup();
     if (scene === "success") return successMarkup();
     if (scene === "reconnect") return reconnectMarkup();
@@ -233,18 +539,13 @@
     ensureStage();
     options = options || {};
     var theme = themeForScene(scene);
+    var route = scene === "transition" ? routeFromOptions(options) : null;
     stage.classList.remove("is-complete");
     stage.setAttribute("data-scene", scene || "workspace");
+    applyRouteVars(route, scene);
     live.setAttribute("data-theme", theme);
     live.className = "altea-motion-live is-" + (scene || "workspace");
-    live.innerHTML = sceneMarkup(scene || "workspace");
-    if (scene === "transition") {
-      var titleNode = live.querySelector("[data-altea-route-title]");
-      if (titleNode) {
-        titleNode.textContent = "";
-        titleNode.appendChild(document.createTextNode(options.label || "Открываем раздел"));
-      }
-    }
+    live.innerHTML = sceneMarkup(scene || "workspace", options);
     startCanvas(theme);
   }
 
@@ -273,6 +574,7 @@
   function hide() {
     if (!stage) return;
     window.clearTimeout(hideTimer);
+    var settleMs = stage.getAttribute("data-scene") === "transition" ? 360 : 720;
     stage.classList.remove("is-visible");
     stopProgress();
     hideTimer = window.setTimeout(function () {
@@ -281,7 +583,7 @@
         stage.classList.remove("is-complete");
         stopCanvas();
       }
-    }, 720);
+    }, settleMs);
   }
 
   function statusReady() {
@@ -387,8 +689,7 @@
       if (!target || typeof target.closest !== "function") return;
       var button = target.closest(".nav-btn[data-view]");
       if (!button || document.body.classList.contains("portal-auth-locked")) return;
-      if (statusPending() && !statusReady()) return;
-      show("transition", { duration: ROUTE_MS, label: routeTitle(button) });
+      show("transition", { duration: ROUTE_MS, label: routeTitle(button), view: button.dataset.view });
     }, true);
   }
 
@@ -587,14 +888,23 @@
     bindConnectionState();
   }
 
+  function routeTransition(label, view) {
+    var options = typeof label === "object" && label ? Object.assign({}, label) : {
+      label: label || "Открываем раздел",
+      view: view
+    };
+    options.duration = options.duration || ROUTE_MS;
+    show("transition", options);
+  }
+
   window.AlteaMotion = {
     show: show,
     hide: hide,
     boot: function () { show("workspace", { duration: 1800, label: "Загрузка бренда", progressStart: 12, progressTarget: 76 }); },
     workspace: function () { show("workspace", { label: "Собираем рабочее пространство", progressStart: 12, progressTarget: 92 }); },
     skeleton: function () { show("skeleton", { label: "Обновляем аналитику" }); },
-    transition: function (label) { show("transition", { duration: ROUTE_MS, label: label || "Открываем раздел" }); },
-    pageTransition: function (label) { show("transition", { duration: ROUTE_MS, label: label || "Открываем раздел" }); },
+    transition: routeTransition,
+    pageTransition: routeTransition,
     importing: function () { show("import", { label: "Обрабатываем данные", progressStart: 24, progressTarget: 78 }); },
     success: function () { show("success", { duration: 1800, label: "Все обновлено" }); },
     empty: function () { show("skeleton", { label: "Раздел пока пустой" }); },

@@ -2931,12 +2931,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   }
 
   function priceWorkbenchOpenAttrs(platformKey, article, executive) {
-    const articleKey = String(article || '').trim();
-    if (!articleKey) return '';
-    const market = platformKey === 'ya' ? 'ym' : (platformKey || 'wb');
-    const dateFrom = executive?.range?.effectiveStart ? iso(executive.range.effectiveStart) : '';
-    const dateTo = executive?.range?.effectiveEnd ? iso(executive.range.effectiveEnd) : '';
-    return ` data-open-price-article="${esc(articleKey)}" data-open-price-market="${esc(market)}"${dateFrom ? ` data-open-price-from="${esc(dateFrom)}"` : ''}${dateTo ? ` data-open-price-to="${esc(dateTo)}"` : ''}`;
+    return '';
   }
 
   function renderSparkline(series) {
@@ -4977,7 +4972,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
           return;
         }
         if (kind === 'price') {
-          openModal(buildPriceDetail(metric, executive));
+          openModal(buildRevenueDetail(metric, executive));
           return;
         }
         if (kind === 'platform') {
@@ -5801,12 +5796,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   }
 
   function priceWorkbenchOpenAttrs(platformKey, article, executive) {
-    const articleKey = String(article || '').trim();
-    if (!articleKey) return '';
-    const market = supportPlatformKey(platformKey);
-    const dateFrom = executive?.range?.effectiveStart ? iso(executive.range.effectiveStart) : '';
-    const dateTo = executive?.range?.effectiveEnd ? iso(executive.range.effectiveEnd) : '';
-    return ` data-open-price-article="${esc(articleKey)}" data-open-price-market="${esc(market)}"${dateFrom ? ` data-open-price-from="${esc(dateFrom)}"` : ''}${dateTo ? ` data-open-price-to="${esc(dateTo)}"` : ''}`;
+    return '';
   }
 
   function dashboardMarketplaceKeyFromText(text = '') {
@@ -5843,6 +5833,65 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     if (selected === 'all') return true;
     const workstream = dashboardTaskWorkstreamKey(task);
     return workstream === selected || workstream === 'cross';
+  }
+
+  function dashboardItemLooksPrice(item = {}) {
+    const text = [
+      item.type,
+      item.autoCode,
+      item.code,
+      item.title,
+      item.nextAction,
+      item.reason,
+      item.reasons,
+      item.name,
+      item.entityLabel,
+      item.category
+    ].filter(Boolean).join(' ').toLowerCase();
+    if (!text) return false;
+    return text.includes('price_margin')
+      || /(^|[_\s-])price([_\s-]|$)|discount|promo|min\s*price|repricer|priceworkbench|\u0446\u0435\u043d|\u0441\u043a\u0438\u0434|\u043f\u0440\u043e\u043c\u043e/.test(text);
+  }
+
+  function dashboardSurfaceTextHasPrice(text = '') {
+    return /(^|[_\s-])price([_\s-]|$)|discount|promo|min\s*price|repricer|\u0446\u0435\u043d|\u0441\u043a\u0438\u0434|\u043f\u0440\u043e\u043c\u043e/i.test(String(text || ''));
+  }
+
+  function sanitizeDashboardNoPriceSurface(root) {
+    const scope = root && typeof root.querySelectorAll === 'function' ? root : document;
+    scope.querySelectorAll('[data-portal-exec-open="price"]').forEach((node) => {
+      const card = node.closest('article, .portal-exec-card, .portal-calm-row, .portal-lux-row, .portal-lux-graph-card') || node;
+      card.remove();
+    });
+    scope.querySelectorAll('[data-open-price-article], [data-portal-open-price-article]').forEach((node) => {
+      Array.from(node.attributes || []).forEach((attr) => {
+        if (/^(data-open-price-|data-portal-open-price-)/.test(attr.name)) node.removeAttribute(attr.name);
+      });
+      node.removeAttribute('role');
+      node.removeAttribute('tabindex');
+    });
+    scope.querySelectorAll('.portal-exec-modal-card > small:first-child').forEach((label) => {
+      if (dashboardSurfaceTextHasPrice(label.textContent)) label.closest('.portal-exec-modal-card')?.remove();
+    });
+    scope.querySelectorAll('.portal-exec-card, .portal-lux-graph-card, .portal-calm-row, .portal-lux-row, .portal-exec-issue-row, .portal-exec-leader-row, .portal-exec-modal-card').forEach((node) => {
+      const heading = node.querySelector('h2, h3, h4, strong, small, .portal-exec-card-title, .portal-lux-card-title, .portal-calm-title');
+      if (heading && dashboardSurfaceTextHasPrice(heading.textContent)) node.remove();
+    });
+    scope.querySelectorAll('table').forEach((table) => {
+      const headerRow = table.tHead?.rows?.[0] || table.querySelector('thead tr');
+      if (!headerRow) return;
+      const removeIndexes = Array.from(headerRow.cells || [])
+        .map((cell, index) => dashboardSurfaceTextHasPrice(cell.textContent) ? index : -1)
+        .filter((index) => index >= 0);
+      if (!removeIndexes.length || removeIndexes.length >= headerRow.cells.length) return;
+      Array.from(table.rows || []).forEach((row) => {
+        removeIndexes.slice().reverse().forEach((index) => row.cells?.[index]?.remove());
+        Array.from(row.cells || []).forEach((cell) => {
+          const span = Number(cell.getAttribute('colspan') || 0);
+          if (span > 1) cell.setAttribute('colspan', String(Math.max(1, span - removeIndexes.length)));
+        });
+      });
+    });
   }
 
   function dashboardTaskIsActive(task) {
@@ -5911,6 +5960,7 @@ function dashboardTaskStatusChip(task) {
       .filter((task) => task.source !== 'auto')
       .filter(dashboardTaskIsActive)
       .filter((task) => dashboardTaskMatchesPlatform(task, executive.selectedPlatform))
+      .filter((task) => !dashboardItemLooksPrice(task))
       .sort(dashboardTaskSort);
     const fallbackPool = Array.isArray(snapshot?.todayList) && snapshot.todayList.length
       ? snapshot.todayList
@@ -5921,6 +5971,7 @@ function dashboardTaskStatusChip(task) {
       .filter(Boolean)
       .filter(dashboardTaskIsActive)
       .filter((task) => dashboardTaskMatchesPlatform(task, executive.selectedPlatform))
+      .filter((task) => !dashboardItemLooksPrice(task))
       .sort(dashboardTaskSort);
     const usingFallback = manualRows.length === 0;
     return {
@@ -6385,6 +6436,7 @@ function dashboardTaskStatusChip(task) {
         platformKey: metric.key,
         platformLabel: metric.label
       })))
+      .filter((row) => !dashboardItemLooksPrice(row))
       .sort((left, right) => num(right.score) - num(left.score) || String(left.article || '').localeCompare(String(right.article || ''), 'ru'));
   }
 
@@ -6811,9 +6863,9 @@ function dashboardTaskStatusChip(task) {
     const items = [];
     const turnover = turnoverMetric || buildTurnoverMetric(metric.key, executive.range);
     if (num(metric.completion) < 0.85) items.push(`План закрывается только на ${pct(metric.completion)}. Проверьте лидирующие и провальные SKU.`);
-    if (metricHasMargin(metric) && num(metric.marginPct) < 0.18) items.push(`Маржа просела до ${pct(metric.marginPct)}. Нужна проверка цены, скидки клиента и промо.`);
+    if (metricHasMargin(metric) && num(metric.marginPct) < 0.18) items.push(`Маржа просела до ${pct(metric.marginPct)}. Проверьте структуру продаж и вклад площадок.`);
     if (turnover.avgTurnoverDays !== null && turnover.avgTurnoverDays > 60) items.push(`Оборачиваемость выросла до ${turnover.avgTurnoverDays.toFixed(1)} дн. Смотрите запас и спрос по SKU.`);
-    if (num(metric.issues?.counters?.negativeMargin) > 0) items.push(`Есть ${int(metric.issues.counters.negativeMargin)} SKU с отрицательной маржой. Их стоит открыть во вкладке цен.`);
+    if (num(metric.issues?.counters?.negativeMargin) > 0) items.push(`Есть ${int(metric.issues.counters.negativeMargin)} SKU с отрицательной маржой. Их стоит разобрать в отдельной операционной вкладке.`);
     if (num(metric.issues?.counters?.lowStock) > 0) items.push(`Есть ${int(metric.issues.counters.lowStock)} SKU с низким покрытием. Это риск просадки плана.`);
     if (!items.length) items.push('Сильных отклонений по окну не видно. Используйте левый список как короткий чек-лист.');
     return items.slice(0, 4);
@@ -7422,7 +7474,7 @@ function dashboardTaskStatusChip(task) {
         <div class="portal-exec-head">
           <div class="portal-exec-copy">
             <h3>Что разобрать первым</h3>
-            <p>Это короткая очередь решений для РОПа. Карточка сразу открывает выбранный артикул во вкладке цен с тем же диапазоном дат.</p>
+            <p>Это короткая очередь решений для РОПа. Карточка ведет в задачник с тем же контуром и диапазоном дат.</p>
           </div>
           ${sectionMetaHtml(executive, [badgeHtml(`${int(rows.length)} SKU в очереди`, rows.length ? 'warn' : 'ok')])}
         </div>
@@ -7490,6 +7542,7 @@ function dashboardTaskStatusChip(task) {
   }
 
   function bindDashboard(root, executive) {
+    sanitizeDashboardNoPriceSurface(root);
     root.querySelectorAll('[data-portal-exec-preset]').forEach((button) => {
       button.addEventListener('click', () => {
         const stored = ensureRangeState();
@@ -7635,7 +7688,7 @@ function dashboardTaskStatusChip(task) {
           return;
         }
         if (kind === 'price') {
-          openModal(buildPriceDetail(metric, executive));
+          openModal(buildRevenueDetail(metric, executive));
           return;
         }
         if (kind === 'platform') {
@@ -9198,11 +9251,6 @@ function dashboardTaskStatusChip(task) {
     }
     const publishedStart = focusDays[0]?.date || null;
     const publishedEnd = focusDays[focusDays.length - 1]?.date || null;
-    const priceSeriesRange = (stockMetric.turnoverHistoryScope === 'published' || stockMetric.turnoverHistoryScope === 'freshness') && publishedStart && publishedEnd
-      ? { effectiveStart: publishedStart, effectiveEnd: publishedEnd }
-      : executive.range;
-    const priceDailyMap = new Map(priceMatrixSeries(platformKey, priceSeriesRange).map((row) => [iso(row.date), row]));
-
     const publishedScopeHint = stockMetric.turnoverHistoryScope === 'published' && stockMetric.turnoverPublishedLabel
       ? ` Daily за выбранный интервал не приехал — показываем последний опубликованный ряд: ${stockMetric.turnoverPublishedLabel}.`
       : '';
@@ -9225,7 +9273,7 @@ function dashboardTaskStatusChip(task) {
         <div class="portal-exec-modal-grid">
           <div class="portal-exec-modal-card">
             <h4 class="portal-exec-table-title">Слева артикула</h4>
-            <p class="portal-exec-table-sub">Список SKU по запасу и оборачиваемости. Это главный слой для решения: распродавать, поднимать цену или дозаказывать.</p>
+            <p class="portal-exec-table-sub">Список SKU по запасу и оборачиваемости. Это главный слой для решения: ускорять продажи, перераспределять остатки или дозаказывать.</p>
             <table class="portal-exec-modal-table">
               <thead>
                 <tr>
@@ -9263,7 +9311,6 @@ function dashboardTaskStatusChip(task) {
                     <th>Дата</th>
                     <th>Средняя обор.</th>
                     <th>SKU с daily</th>
-                    <th>Средняя цена</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -9272,7 +9319,6 @@ function dashboardTaskStatusChip(task) {
                       <td>${esc(shortDate(row.date))}</td>
                       <td>${esc(row.avgTurnover !== null ? `${row.avgTurnover.toFixed(1)} дн.` : '—')}</td>
                       <td>${esc(int(row.skuCount))}</td>
-                      <td>${esc(priceDailyMap.get(iso(row.date))?.avgPrice > 0 ? money(priceDailyMap.get(iso(row.date)).avgPrice) : '—')}</td>
                     </tr>
                   `).join('') : `<tr><td colspan="4">${esc(noHistoryHint)}</td></tr>`}
                 </tbody>
@@ -9636,7 +9682,7 @@ function dashboardTaskStatusChip(task) {
         <div class="portal-exec-modal-grid portal-exec-structured-grid">
           ${dashboardTableCard(
             'Артикулы: деньги, факт, план',
-            'Отсортировано по выручке. Клик по строке открывает карточку цены этого SKU.',
+            'Отсортировано по выручке. Таблица показывает вклад SKU без перехода в ценовой контур.',
             '<tr><th class="portal-exec-sku-cell">SKU</th><th>Owner</th><th class="portal-exec-num">Выручка</th><th class="portal-exec-num">Факт</th><th class="portal-exec-num">План</th><th class="portal-exec-num">%</th><th class="portal-exec-num">Ср. чек</th><th class="portal-exec-num">Остаток</th></tr>',
             skuBody
           )}
@@ -9755,10 +9801,9 @@ function dashboardTaskStatusChip(task) {
     (stockMetric.turnoverSeries || []).forEach((point) => {
       if (point?.date instanceof Date) turnoverByDate.set(iso(point.date), point);
     });
-    const priceDailyMap = new Map(priceMatrixSeries(platformKey, executive.range).map((row) => [iso(row.date), row]));
     const dailyRows = selectedDates.map((date) => {
       const key = iso(date);
-      return { date, point: turnoverByDate.get(key) || null, price: priceDailyMap.get(key) || null };
+      return { date, point: turnoverByDate.get(key) || null };
     });
     const latestDaily = dailyRows.map((row) => row.point?.date).filter(Boolean).sort((left, right) => left - right).pop() || null;
     const dailyLag = latestDaily && latestDaily < executive.range.effectiveEnd
@@ -9776,11 +9821,10 @@ function dashboardTaskStatusChip(task) {
           <td class="portal-exec-num">${esc(int(row.inTransit))}</td>
           <td class="portal-exec-num">${esc(row.avgTurnoverDays !== null ? `${row.avgTurnoverDays.toFixed(1)} дн.` : '—')}</td>
           <td class="portal-exec-num">${esc(row.marginPct !== null ? pct(row.marginPct) : '—')}</td>
-          <td class="portal-exec-num">${esc(row.currentPrice > 0 ? money(row.currentPrice) : row.avgPrice > 0 ? money(row.avgPrice) : '—')}</td>
           <td class="portal-exec-owner">${esc(row.owner || 'Без owner')}</td>
         </tr>
       `;
-    }).join('') : '<tr><td colspan="8">По площадке нет рабочего списка по запасу.</td></tr>';
+    }).join('') : '<tr><td colspan="7">По площадке нет рабочего списка по запасу.</td></tr>';
     const dailyBody = dailyRows.length ? dailyRows.map((row) => {
       const point = row.point;
       const tone = point ? 'ok' : 'muted';
@@ -9789,10 +9833,9 @@ function dashboardTaskStatusChip(task) {
           <td>${esc(shortDate(row.date))}</td>
           <td class="portal-exec-num">${point ? esc(`${Number(point.avgTurnover).toFixed(1)} дн.`) : dashboardCellChip('нет daily', 'muted')}</td>
           <td class="portal-exec-num">${point ? esc(int(point.skuCount)) : '—'}</td>
-          <td class="portal-exec-num">${esc(row.price?.avgPrice > 0 ? money(row.price.avgPrice) : '—')}</td>
         </tr>
       `;
-    }).join('') : '<tr><td colspan="4">Нет дат в выбранном периоде.</td></tr>';
+    }).join('') : '<tr><td colspan="3">Нет дат в выбранном периоде.</td></tr>';
     return {
       platformKey: platformKey || 'all',
       title: `${stockMetric.label} · оборачиваемость и запас`,
@@ -9810,20 +9853,20 @@ function dashboardTaskStatusChip(task) {
           ${dashboardTableCard(
             'Артикулы: запас и решение',
             'Красный — риск выпадения, зеленый — нормальная оборачиваемость, желтый — возможный избыток.',
-            '<tr><th class="portal-exec-sku-cell">SKU</th><th>Статус</th><th class="portal-exec-num">Остаток</th><th class="portal-exec-num">В пути</th><th class="portal-exec-num">Обор.</th><th class="portal-exec-num">Маржа</th><th class="portal-exec-num">Цена</th><th>Owner</th></tr>',
+            '<tr><th class="portal-exec-sku-cell">SKU</th><th>Статус</th><th class="portal-exec-num">Остаток</th><th class="portal-exec-num">В пути</th><th class="portal-exec-num">Обор.</th><th class="portal-exec-num">Маржа</th><th>Owner</th></tr>',
             skuBody
           )}
           <div class="portal-exec-side-stack">
             ${dashboardTableCard(
               'Дни периода',
               'Daily-ряд по оборачиваемости строго в выбранном окне. Пустые дни означают, что обновление по ним еще не приехало.',
-              '<tr><th>Дата</th><th class="portal-exec-num">Средняя обор.</th><th class="portal-exec-num">SKU с daily</th><th class="portal-exec-num">Средняя цена</th></tr>',
+              '<tr><th>Дата</th><th class="portal-exec-num">Средняя обор.</th><th class="portal-exec-num">SKU с daily</th></tr>',
               dailyBody
             )}
             ${combinedFreshnessNote ? `<div class="portal-exec-freshness-note">${esc(combinedFreshnessNote)}</div>` : ''}
             ${renderActionBullets([
               stockMetric.lowCoverage > 0 ? `Есть ${int(stockMetric.lowCoverage)} SKU с низким покрытием. Сначала проверяйте, где товар может закончиться.` : '',
-              stockMetric.overstock > 0 ? `Есть ${int(stockMetric.overstock)} SKU с медленной оборачиваемостью. Проверяйте цену, спрос и промо.` : '',
+              stockMetric.overstock > 0 ? `Есть ${int(stockMetric.overstock)} SKU с медленной оборачиваемостью. Проверяйте спрос, остатки и темп продаж.` : '',
               stockMetric.avgTurnoverDays !== null && stockMetric.avgTurnoverDays > 60 ? `Средняя оборачиваемость ${stockMetric.avgTurnoverDays.toFixed(1)} дн. Это зона ручного решения.` : ''
             ], 'По запасу сильных отклонений не видно.')}
           </div>
@@ -9843,6 +9886,7 @@ function dashboardTaskStatusChip(task) {
     ensureDashboardStructuredModalStyles();
     openModalStructuredBase(detail);
     applyDashboardModalTheme(ensureModal(), detail);
+    sanitizeDashboardNoPriceSurface(ensureModal());
   };
 
   function dashboardTaskRenderSignature(platformKey) {

@@ -1,6 +1,6 @@
 {
   "schema": "portal-last-good-manifest-v1",
-  "generatedAt": "2026-06-01T19:26:45.110Z",
+  "generatedAt": "2026-06-18T08:52:30.977Z",
   "healthStatus": "warning",
   "copied": [
     "dashboard.json",
@@ -15,6 +15,8 @@
     "loyalty_system.json",
     "product_leaderboard.json",
     "product_leaderboard_history.json",
+    "wb_substitution_traffic.json",
+    "wb_substitution_traffic_history.json",
     "order_procurement.json",
     "order_procurement_wb.json",
     "order_procurement_ozon.json",
@@ -32,9 +34,9 @@
   "metrics": {
     "dashboard": {
       "exists": true,
-      "rows": 369,
-      "generatedAt": "2026-06-01T19:10:39.054Z",
-      "asOfDate": "2026-05-31",
+      "rows": 915,
+      "generatedAt": "2026-06-18T08:50:14.117Z",
+      "asOfDate": "2026-06-17",
       "revenue": 0
     },
     "skus": {
@@ -47,92 +49,106 @@
     "platform_trends": {
       "exists": true,
       "rows": 7,
-      "generatedAt": "2026-06-01T19:10:38.888Z",
-      "asOfDate": "2026-05-31",
-      "revenue": 559539304
+      "generatedAt": "2026-06-18T08:50:14.021Z",
+      "asOfDate": "2026-06-17",
+      "revenue": 100968408
     },
     "ads_summary": {
       "exists": true,
-      "rows": 6,
-      "generatedAt": "2026-06-01T19:25:04.656Z",
-      "asOfDate": "2026-05-31",
+      "rows": 7,
+      "generatedAt": "2026-06-18T08:25:49.003Z",
+      "asOfDate": "2026-06-17",
       "revenue": 0
     },
     "iu_plan": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-01T19:11:23.352Z",
-      "asOfDate": "2026-06-01",
+      "generatedAt": "2026-06-17T13:07:51.386Z",
+      "asOfDate": "2026-06-17",
       "revenue": 0
     },
     "prices": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-01T19:11:06.026Z",
-      "asOfDate": "2026-06-01",
+      "generatedAt": "2026-06-18T08:12:42.108Z",
+      "asOfDate": "2026-06-18",
       "revenue": 0
     },
     "repricer": {
       "exists": true,
       "rows": 201,
-      "generatedAt": "2026-06-01T19:11:06.026Z",
-      "asOfDate": "2026-06-01",
+      "generatedAt": "2026-06-18T08:12:42.108Z",
+      "asOfDate": "2026-06-18",
       "revenue": 0
     },
     "smart_price_overlay": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-01T19:11:06.026Z",
-      "asOfDate": "2026-05-31",
+      "generatedAt": "2026-06-18T08:12:42.108Z",
+      "asOfDate": "2026-06-17",
       "revenue": 0
     },
     "warehouse_stock_overlay": {
       "exists": true,
       "rows": 134,
-      "generatedAt": "2026-06-01T19:09:19.075Z",
-      "asOfDate": "2026-06-01",
+      "generatedAt": "2026-06-18T08:11:07.673Z",
+      "asOfDate": "2026-06-18",
       "revenue": 0
     },
     "loyalty_system": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-01T19:10:39.214Z",
-      "asOfDate": "2026-06-01",
+      "generatedAt": "2026-06-18T08:50:14.212Z",
+      "asOfDate": "2026-06-18",
       "revenue": 0
     },
     "product_leaderboard": {
       "exists": true,
       "rows": 50,
-      "generatedAt": "2026-06-01T19:11:22.815Z",
-      "asOfDate": "2026-06-01",
-      "revenue": 13961847
+      "generatedAt": "2026-06-18T08:31:12.203Z",
+      "asOfDate": "2026-06-18",
+      "revenue": 18603355
     },
     "product_leaderboard_history": {
       "exists": true,
-      "rows": 30,
+      "rows": 1,
       "generatedAt": "",
-      "asOfDate": "",
+      "asOfDate": "2026-06-18",
+      "revenue": 0
+    },
+    "wb_substitution_traffic": {
+      "exists": true,
+      "rows": 5191,
+      "generatedAt": "2026-06-01T15:40:56.803Z",
+      "asOfDate": "2026-06-01",
+      "revenue": 0
+    },
+    "wb_substitution_traffic_history": {
+      "exists": true,
+      "rows": 1,
+      "generatedAt": "",
+      "asOfDate": "2026-06-01",
       "revenue": 0
     },
     "order_procurement": {
       "exists": true,
-      "rows": 2741,
-      "generatedAt": "2026-06-01T19:10:39.214Z",
-      "asOfDate": "2026-06-01",
+      "rows": 2286,
+      "generatedAt": "2026-06-18T08:12:09.855Z",
+      "asOfDate": "2026-06-18",
       "revenue": 0
     },
     "order_procurement_wb": {
       "exists": true,
-      "rows": 726,
-      "generatedAt": "2026-06-01T19:10:39.214Z",
-      "asOfDate": "2026-06-01",
+      "rows": 676,
+      "generatedAt": "2026-06-18T08:12:09.855Z",
+      "asOfDate": "2026-06-18",
       "revenue": 0
     },
     "order_procurement_ozon": {
       "exists": true,
-      "rows": 2015,
-      "generatedAt": "2026-06-01T19:10:39.214Z",
-      "asOfDate": "2026-06-01",
+      "rows": 1610,
+      "generatedAt": "2026-06-18T08:12:09.855Z",
+      "asOfDate": "2026-06-18",
       "revenue": 0
     },
     "order_procurement_ym": {
@@ -144,44 +160,44 @@
     },
     "oos_control": {
       "exists": true,
-      "rows": 2,
-      "generatedAt": "2026-06-01T19:11:20.384Z",
-      "asOfDate": "2026-05-31",
+      "rows": 12,
+      "generatedAt": "2026-06-18T08:12:48.572Z",
+      "asOfDate": "2026-06-16",
       "revenue": 0
     },
     "iu_drr_summary": {
       "exists": true,
-      "rows": 31,
-      "generatedAt": "2026-06-01T19:25:28.501Z",
-      "asOfDate": "2026-05-31",
+      "rows": 2,
+      "generatedAt": "2026-06-18T08:26:12.627Z",
+      "asOfDate": "2026-06-17",
       "revenue": 0
     },
     "wb_feedbacks_summary": {
       "exists": true,
-      "rows": 166,
-      "generatedAt": "2026-06-01T19:25:24.780Z",
-      "asOfDate": "2026-06-01",
+      "rows": 163,
+      "generatedAt": "2026-06-18T08:26:07.834Z",
+      "asOfDate": "2026-06-18",
       "revenue": 0
     },
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-01T19:25:28.833Z",
-      "asOfDate": "2026-05-31",
-      "revenue": 5938732
+      "generatedAt": "2026-06-18T08:26:13.029Z",
+      "asOfDate": "2026-06-17",
+      "revenue": 90424
     },
     "portal_data_quarantine": {
       "exists": true,
-      "rows": 20,
-      "generatedAt": "2026-06-01T19:25:29.425Z",
-      "asOfDate": "2026-06-01",
-      "revenue": 5363397
+      "rows": 0,
+      "generatedAt": "2026-06-18T08:50:49.004Z",
+      "asOfDate": "2026-06-18",
+      "revenue": 0
     },
     "sku_aliases": {
       "exists": true,
-      "rows": 0,
-      "generatedAt": "",
-      "asOfDate": "",
+      "rows": 341,
+      "generatedAt": "2026-06-08T09:59:38.421Z",
+      "asOfDate": "2026-06-08",
       "revenue": 0
     },
     "sku_alias_ignore": {
@@ -201,15 +217,15 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-01T19:25:28.993Z",
-      "asOfDate": "2026-06-01",
+      "generatedAt": "2026-06-18T08:50:48.745Z",
+      "asOfDate": "2026-06-18",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-01T19:25:29.438Z",
-      "asOfDate": "2026-06-01",
+      "generatedAt": "2026-06-18T08:50:49.011Z",
+      "asOfDate": "2026-06-18",
       "revenue": 0
     }
   }

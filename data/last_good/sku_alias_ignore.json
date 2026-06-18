@@ -7,5 +7,7 @@
     "note"
   ],
   "ignored": [],
-  "description": "API SKU values intentionally excluded from alias cleanup. Use for rows that should not be mapped to skus.json."
+  "description": "API SKU values intentionally excluded from alias cleanup. Use for rows that should not be mapped to skus.json.",
+  "refreshedAt": "2026-06-11T08:09:31.123Z",
+  "refreshNote": "Supabase snapshot pull returned HTTP 522 on 2026-06-11; existing local snapshot was revalidated without changing mapping rows."
 }

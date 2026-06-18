@@ -18,6 +18,8 @@
     editingId: '',
     selectedDate: '',
     modalOpen: false,
+    readonlyEventId: '',
+    readonlyEvent: null,
     skuQuery: '',
     draftSkus: [],
     remoteLoaded: false,
@@ -31,6 +33,8 @@
   };
   window.__ALTEA_PROMO_CALENDAR_STATE__ = CALENDAR_STATE;
   if (!CALENDAR_STATE.kind) CALENDAR_STATE.kind = 'all';
+  if (!('readonlyEventId' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEventId = '';
+  if (!('readonlyEvent' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEvent = null;
 
   const PLATFORMS = [
     ['all', 'Все площадки'],
@@ -1264,6 +1268,14 @@
     return allEvents().find((event) => event.id === CALENDAR_STATE.editingId) || null;
   }
 
+  function activeReadonlyEvent() {
+    const id = String(CALENDAR_STATE.readonlyEventId || '').trim();
+    if (!id) return null;
+    const cached = CALENDAR_STATE.readonlyEvent;
+    if (cached && String(cached.id || '').trim() === id) return cached;
+    return calendarEvents().find((event) => event.id === id) || null;
+  }
+
   function blankEvent() {
     const date = CALENDAR_STATE.selectedDate || CALENDAR_STATE.dateFrom || todayKey();
     return {
@@ -1906,8 +1918,101 @@
     }).join('');
   }
 
+  function readonlyMetricRows(event = {}) {
+    const metrics = event.metrics && typeof event.metrics === 'object' ? event.metrics : {};
+    return [
+      ['spend', '\u0420\u0430\u0441\u0445\u043e\u0434', formatMoney(metrics.spend)],
+      ['orders', '\u0417\u0430\u043a\u0430\u0437\u044b', formatInt(metrics.orders)],
+      ['revenue', '\u0412\u044b\u0440\u0443\u0447\u043a\u0430', formatMoney(metrics.revenue)],
+      ['clicks', '\u041a\u043b\u0438\u043a\u0438', formatInt(metrics.clicks)],
+      ['views', '\u041f\u043e\u043a\u0430\u0437\u044b', formatInt(metrics.views)],
+      ['addToCart', '\u041a\u043e\u0440\u0437\u0438\u043d\u044b', formatInt(metrics.addToCart)]
+    ].filter(([key]) => number(metrics[key]) > 0);
+  }
+
+  function renderReadonlyEventModal(event) {
+    const selectedRows = selectedSkuRows(event.platform);
+    const signalTotals = selectedRows.reduce((acc, row) => {
+      acc.warehouse += number(row.signals.warehouse);
+      acc.shipped += number(row.signals.shipped);
+      acc.orders7 += number(row.signals.orders7);
+      return acc;
+    }, { warehouse: 0, shipped: 0, orders7: 0 });
+    const metrics = readonlyMetricRows(event);
+    const period = event.endDate !== event.startDate
+      ? `${formatDate(event.startDate)} - ${formatDate(event.endDate)}`
+      : formatDate(event.startDate);
+    return `
+      <div class="promo-modal-backdrop" data-calendar-modal-close>
+        <section class="promo-event-modal ${eventClass(event)}" role="dialog" aria-modal="true" aria-label="${html(event.title)}" data-calendar-modal>
+          <div class="promo-event-form">
+            <header class="promo-modal-head">
+              <div>
+                <span>${html(eventKindLabel(event))} / ${html(platformLabel(event.platform))}</span>
+                <strong>${html(event.title)}</strong>
+              </div>
+              <button type="button" data-calendar-modal-close aria-label="\u0417\u0430\u043a\u0440\u044b\u0442\u044c">x</button>
+            </header>
+
+            <div class="promo-modal-grid">
+              <section class="promo-modal-main">
+                <div class="promo-field-wide">
+                  <span>\u041f\u0435\u0440\u0438\u043e\u0434</span>
+                  <strong>${html(period)}</strong>
+                </div>
+                <div class="promo-form-row">
+                  <div>
+                    <span>\u041f\u043b\u043e\u0449\u0430\u0434\u043a\u0430</span>
+                    <strong>${html(platformLabel(event.platform))}</strong>
+                  </div>
+                  <div>
+                    <span>\u0421\u0442\u0430\u0442\u0443\u0441</span>
+                    <strong>${html(event.status || 'planned')}</strong>
+                  </div>
+                </div>
+                ${event.comment ? `<div class="promo-field-wide"><span>\u041c\u0435\u0442\u0440\u0438\u043a\u0438</span><p>${html(event.comment)}</p></div>` : ''}
+                ${metrics.length ? `
+                  <div class="promo-field-wide">
+                    <span>\u0421\u0440\u0435\u0437 \u043f\u043e \u0430\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442\u0438</span>
+                    <div class="badge-stack">${metrics.map(([, label, value]) => `<span>${html(label)}: ${html(value)}</span>`).join('')}</div>
+                  </div>
+                ` : ''}
+                <div class="promo-field-wide">
+                  <span>SKU</span>
+                  <p>${event.skus.length ? html(event.skus.join(', ')) : '\u0412 \u0430\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442\u0438 SKU \u043d\u0435 \u0443\u043a\u0430\u0437\u0430\u043d\u044b'}</p>
+                </div>
+              </section>
+
+              <aside class="promo-modal-side">
+                ${renderMissionPanel(event, selectedRows, signalTotals)}
+                <div class="promo-sku-top">
+                  <div>
+                    <span>SKU \u0432 \u0441\u043e\u0431\u044b\u0442\u0438\u0438</span>
+                    <strong data-calendar-selected-count>${formatInt(event.skus.length)} SKU</strong>
+                  </div>
+                  <div class="promo-sku-totals" data-calendar-sku-totals>
+                    <span>\u0441\u043a\u043b\u0430\u0434 ${formatInt(signalTotals.warehouse)}</span>
+                    <span>\u043e\u0442\u0433\u0440. ${formatInt(signalTotals.shipped)}</span>
+                    <span>\u0437\u0430\u043a\u0430\u0437\u044b 7\u0434 ${formatInt(signalTotals.orders7)}</span>
+                  </div>
+                </div>
+              </aside>
+            </div>
+
+            <footer class="promo-modal-actions">
+              <button class="quick-chip primary" type="button" data-calendar-create-task="${html(event.id)}">${event.taskId ? '\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0437\u0430\u0434\u0430\u0447\u0443' : '\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0437\u0430\u0434\u0430\u0447\u0443'}</button>
+              <button class="quick-chip" type="button" data-calendar-modal-close>\u0417\u0430\u043a\u0440\u044b\u0442\u044c</button>
+            </footer>
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
   function renderModal() {
     if (!CALENDAR_STATE.modalOpen) return '';
+    const readonlyEvent = activeReadonlyEvent();
+    if (readonlyEvent) return renderReadonlyEventModal(readonlyEvent);
     const event = activeEvent() || blankEvent();
     const isEdit = Boolean(event.id);
     const selectedRows = selectedSkuRows(event.platform);
@@ -2095,6 +2200,8 @@
 
   function openEventModal(eventId = '', date = '') {
     CALENDAR_STATE.editingId = String(eventId || '').trim();
+    CALENDAR_STATE.readonlyEventId = '';
+    CALENDAR_STATE.readonlyEvent = null;
     CALENDAR_STATE.selectedDate = date || CALENDAR_STATE.selectedDate || todayKey();
     const event = activeEvent();
     CALENDAR_STATE.draftSkus = event ? [...event.skus] : [];
@@ -2102,8 +2209,22 @@
     CALENDAR_STATE.modalOpen = true;
   }
 
+  function openReadonlyEventModal(event, rootId) {
+    const normalized = normalizeEvent(event);
+    CALENDAR_STATE.editingId = '';
+    CALENDAR_STATE.readonlyEventId = normalized.id;
+    CALENDAR_STATE.readonlyEvent = normalized;
+    CALENDAR_STATE.selectedDate = normalized.startDate || CALENDAR_STATE.selectedDate || todayKey();
+    CALENDAR_STATE.draftSkus = [...(normalized.skus || [])];
+    CALENDAR_STATE.skuQuery = '';
+    CALENDAR_STATE.modalOpen = true;
+    renderEventCalendar(rootId);
+  }
+
   function closeEventModal() {
     CALENDAR_STATE.modalOpen = false;
+    CALENDAR_STATE.readonlyEventId = '';
+    CALENDAR_STATE.readonlyEvent = null;
     CALENDAR_STATE.skuQuery = '';
   }
 
@@ -2159,6 +2280,11 @@
     renderEventCalendar(rootId);
   }
 
+  function promoTaskDueDate(event = {}) {
+    const start = validDateKey(event.startDate) || todayKey();
+    return addDays(start, -2);
+  }
+
   function taskPayload(event) {
     const firstSku = event.skus[0] || '';
     const skuRows = event.skus.map((key) => {
@@ -2169,6 +2295,7 @@
     const visibleSkuRows = skuRows.slice(0, MAX_TASK_SKU_LINES);
     const hiddenSkuRows = Math.max(0, skuRows.length - visibleSkuRows.length);
     const period = event.endDate !== event.startDate ? `${event.startDate} - ${event.endDate}` : event.startDate;
+    const dueDate = promoTaskDueDate(event);
     return {
       articleKey: firstSku,
       entityLabel: event.title,
@@ -2177,7 +2304,7 @@
       priority: eventTone(event) === 'soon' || eventTone(event) === 'active' ? 'high' : 'medium',
       platform: event.platform,
       owner: event.owner || appState().team?.member?.name || '',
-      due: event.startDate,
+      due: dueDate,
       startDate: event.startDate,
       endDate: event.endDate,
       nextAction: `Проверить старт промо ${platformLabel(event.platform)}: ${event.title}.`,
@@ -2217,6 +2344,7 @@
     const payloadTitle = comparableTaskText(payload.title);
     const payloadEntity = comparableTaskText(payload.entityLabel || normalized.title);
     const payloadDate = String(payload.due || payload.startDate || normalized.startDate || '').slice(0, 10);
+    const normalizedStartDate = String(normalized.startDate || payload.startDate || '').slice(0, 10);
     const payloadPlatform = platformKey(payload.platform || normalized.platform || 'cross');
     const firstSku = String(payload.articleKey || '').trim().toLowerCase();
     return tasks.find((task) => {
@@ -2227,7 +2355,11 @@
       const taskEntity = comparableTaskText(task.entityLabel || '');
       const sameTitle = taskTitle === payloadTitle || (payloadEntity && taskEntity === payloadEntity && taskTitle.includes('старт'));
       if (!sameTitle) return false;
-      const sameDate = taskDateKey(task) === payloadDate;
+      const taskDates = uniqueList([
+        taskDateKey(task),
+        firstValidDate(task.startDate, task.start_date, task.date, task.due, task.deadline)
+      ]);
+      const sameDate = taskDates.includes(payloadDate) || (normalizedStartDate && taskDates.includes(normalizedStartDate));
       if (!sameDate) return false;
       const samePlatform = platformKey(task.platform || task.marketplace || 'cross') === payloadPlatform;
       if (!samePlatform) return false;
@@ -2384,10 +2516,26 @@
       openTaskForEvent(event);
       return;
     }
-    if (eventKindKey(event) === 'launch') openLaunchForEvent(event);
+    if (eventKindKey(event) === 'launch') {
+      openLaunchForEvent(event);
+      return;
+    }
+    openReadonlyEventModal(event, rootId);
   }
 
   function bindCalendar(root, rootId) {
+    if (!root.dataset.calendarItemDelegate) {
+      root.dataset.calendarItemDelegate = '1';
+      root.addEventListener('click', (event) => {
+        const button = event.target?.closest?.('[data-calendar-event], [data-calendar-edit]');
+        if (!button || !root.contains(button)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+        openCalendarItem(button.dataset.calendarEvent || button.dataset.calendarEdit || '', rootId);
+      }, true);
+    }
+
     root.querySelector('[data-calendar-date-from]')?.addEventListener('change', (event) => {
       CALENDAR_STATE.dateFrom = event.target.value || startOfMonth(CALENDAR_STATE.month);
       if (CALENDAR_STATE.dateFrom) CALENDAR_STATE.month = startOfMonth(CALENDAR_STATE.dateFrom);
@@ -2430,7 +2578,8 @@
       if (typeof setAppError === 'function') setAppError('Календарь синхронизирован.');
     });
     root.querySelectorAll('[data-calendar-day]').forEach((day) => {
-      const open = () => {
+      const open = (event) => {
+        if (event?.target?.closest?.('[data-calendar-event], [data-calendar-edit]')) return;
         openEventModal('', day.dataset.calendarDay || todayKey());
         renderEventCalendar(rootId);
       };
@@ -2544,15 +2693,21 @@
     });
     root.querySelector('[data-calendar-create-task]')?.addEventListener('click', async (event) => {
       const id = event.currentTarget.dataset.calendarCreateTask;
-      const calendarEvent = allEvents().find((item) => item.id === id);
+      const calendarEvent = allEvents().find((item) => item.id === id) || calendarEvents().find((item) => item.id === id);
       if (!calendarEvent) return;
       const updated = await ensureEventTask(calendarEvent, 'updated');
-      storage().promoEvents = allEvents().map((item) => item.id === updated.id ? updated : item);
-      if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason: 'promo-calendar-task-manual' });
-      await persistPromoCalendarEvents({ rootId });
+      if (!isGeneratedPlatformActivityEvent(updated)) {
+        storage().promoEvents = allEvents().map((item) => item.id === updated.id ? updated : item);
+        if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason: 'promo-calendar-task-manual' });
+        await persistPromoCalendarEvents({ rootId });
+      }
       closeEventModal();
       renderEventCalendar(rootId);
-      openTaskForEvent(updated.id);
+      if (updated.taskId) {
+        openTaskForEvent(updated);
+      } else if (typeof setAppError === 'function') {
+        setAppError('\u0417\u0430\u0434\u0430\u0447\u0443 \u043f\u043e \u0430\u043a\u0446\u0438\u0438 \u043f\u043e\u043a\u0430 \u043d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0437\u0434\u0430\u0442\u044c.');
+      }
     });
   }
 

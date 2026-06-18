@@ -34,6 +34,7 @@
     { key: 'product', label: 'Продукт', platform: 'product', text: 'новинки' }
   ];
   const CONTROL_ROLE_KEYS = CONTROL_ROLE_PRESETS.map((item) => item.key);
+  const RETAIL_ROP_WORKSTREAMS = new Set(['ya', 'goldapple', 'letu', 'magnit']);
 
   const originalRenderControlCenter = typeof renderControlCenter === 'function' ? renderControlCenter : null;
   const originalGetAllTasks = typeof getAllTasks === 'function' ? getAllTasks : null;
@@ -1434,6 +1435,10 @@
     return ['now', 'mine', 'urgent', 'waiting', 'no_owner', 'general', 'all'].includes(raw) ? raw : 'now';
   }
 
+  function preferredLazyQueueForWorkstream(workstream = 'all') {
+    return RETAIL_ROP_WORKSTREAMS.has(String(workstream || '').trim().toLowerCase()) ? 'all' : 'now';
+  }
+
   function taskFilterValue(key, fallback = 'all') {
     state.controlFilters = state.controlFilters || {};
     const raw = state.controlFilters[key];
@@ -1722,11 +1727,20 @@
 
   function renderTaskLazyPanel(tasks, owners) {
     const buckets = lazyTaskBuckets(tasks);
-    const queue = currentLazyQueue();
-    const selected = buckets[queue] || buckets.mine;
-    const meta = lazyQueueMeta(queue);
     const selectedWorkstream = selectedTaskWorkstream();
     const selectedWorkstreamMeta = controlWorkstreamMeta(selectedWorkstream);
+    let queue = currentLazyQueue();
+    if (queue === 'now' && RETAIL_ROP_WORKSTREAMS.has(selectedWorkstream)) queue = 'all';
+    let selected = buckets[queue] || buckets.mine;
+    let meta = lazyQueueMeta(queue);
+    if (!selected.length && selectedWorkstream !== 'all' && buckets.all.length) {
+      queue = 'all';
+      selected = buckets.all;
+      meta = {
+        title: `${selectedWorkstreamMeta.label}: \u0432\u0441\u0435 \u0430\u043a\u0442\u0438\u0432\u043d\u044b\u0435`,
+        text: '\u0412 \u043e\u0447\u0435\u0440\u0435\u0434\u0438 "\u0441\u0435\u0439\u0447\u0430\u0441" \u043f\u0443\u0441\u0442\u043e, \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u0432\u0441\u0435 \u0430\u043a\u0442\u0438\u0432\u043d\u044b\u0435 \u0437\u0430\u0434\u0430\u0447\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043a\u043e\u043d\u0442\u0443\u0440\u0430.'
+      };
+    }
     const defaultPlatform = 'cross';
     const rawCount = controlTasksRawCount();
     const duplicatesHidden = Math.max(0, rawCount - (tasks || []).length);
@@ -1944,13 +1958,14 @@
       const roleMeta = CONTROL_ROLE_PRESETS.find((item) => item.key === role) || CONTROL_ROLE_PRESETS[0];
       state.controlFilters.peopleRole = roleMeta.key;
       state.controlFilters.platform = roleMeta.platform;
-      state.controlFilters.lazyQueue = 'now';
+      state.controlFilters.lazyQueue = preferredLazyQueueForWorkstream(roleMeta.platform);
       renderControlCenter();
     }));
 
     root.querySelectorAll('[data-task-platform-filter]').forEach((button) => button.addEventListener('click', () => {
       state.controlFilters.peopleRole = '';
       state.controlFilters.platform = button.dataset.taskPlatformFilter || 'all';
+      state.controlFilters.lazyQueue = preferredLazyQueueForWorkstream(state.controlFilters.platform);
       renderControlCenter();
     }));
 

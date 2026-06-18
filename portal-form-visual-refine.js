@@ -1121,6 +1121,7 @@
   const CONTROL_SIMPLE_META = Object.fromEntries(CONTROL_SIMPLE_DIRECTIONS.map(([key, label, hint]) => [key, { label, hint }]));
   const CONTROL_SIMPLE_WORKSPACE_ORDER = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
   const CONTROL_SIMPLE_DIRECTION_RENDER_ORDER = ['all', ...CONTROL_SIMPLE_WORKSPACE_ORDER];
+  const CONTROL_SIMPLE_RETAIL_ROP_DIRECTIONS = new Set(['ya', 'goldapple', 'letu', 'magnit']);
   const CONTROL_SIMPLE_QUEUES = [
     ['new', 'Новые задачи', 'Что взять в работу сейчас'],
     ['signals', 'Автосигналы', 'Портал нашёл риск сам'],
@@ -1347,17 +1348,25 @@
       counts[key] = (counts[key] || 0) + 1;
     });
     const selected = controlSimpleSelectedDirection(counts);
-    const tasks = allTasks
-      .filter((taskItem) => selected === 'all' || controlSimpleDirectionKey(taskItem) === selected)
+    const selectedTasks = allTasks
+      .filter((taskItem) => selected === 'all' || controlSimpleDirectionKey(taskItem) === selected);
+    let tasks = selectedTasks
       .filter((taskItem) => controlSimpleMatchesTaskFilters(taskItem, filters))
       .filter((taskItem) => {
         if (!filters.search) return true;
         return `${taskItem?.title || ''} ${taskItem?.entityLabel || ''} ${taskItem?.articleKey || ''} ${taskItem?.owner || ''} ${taskItem?.nextAction || ''} ${taskItem?.reason || ''}`.toLowerCase().includes(filters.search);
       });
+    let queueFilter = controlSimpleNormalizeQueue(state?.controlFilters?.taskSimpleQueue);
+    if (!tasks.length && selected !== 'all' && CONTROL_SIMPLE_RETAIL_ROP_DIRECTIONS.has(selected) && selectedTasks.length) {
+      tasks = selectedTasks.filter(controlSimpleIsActive);
+      if (!tasks.length) tasks = selectedTasks;
+      queueFilter = 'all';
+      state.controlFilters = state.controlFilters || {};
+      state.controlFilters.taskSimpleQueue = 'all';
+    }
     const buckets = Object.fromEntries(CONTROL_SIMPLE_QUEUES.map(([key]) => [key, []]));
     tasks.forEach((taskItem) => buckets[controlSimpleQueueKey(taskItem)]?.push(taskItem));
     Object.keys(buckets).forEach((key) => { buckets[key] = controlSimpleSort(buckets[key]); });
-    const queueFilter = controlSimpleNormalizeQueue(state?.controlFilters?.taskSimpleQueue);
     const displayTasks = queueFilter === 'all' ? tasks : (buckets[queueFilter] || []);
     const active = tasks.filter(controlSimpleIsActive);
     const game = controlSimpleGameModel(tasks, buckets, active);
@@ -1843,6 +1852,10 @@
       state.controlFilters.status = 'active';
       state.controlFilters.horizon = 'all';
       state.controlFilters.source = 'all';
+      state.controlFilters.search = '';
+      state.controlFilters.owner = 'all';
+      state.controlFilters.priority = 'all';
+      state.controlFilters.type = 'all';
       controlRefined();
     }));
     root.querySelector('[data-control-simple-create-toggle]')?.addEventListener('click', () => {
@@ -1924,7 +1937,12 @@
         state.controlFilters.status = 'active';
         state.controlFilters.horizon = 'all';
         state.controlFilters.source = 'all';
-        state.controlFilters.lazyQueue = 'now';
+        state.controlFilters.search = '';
+        state.controlFilters.owner = 'all';
+        state.controlFilters.priority = 'all';
+        state.controlFilters.type = 'all';
+        state.controlFilters.taskSimpleQueue = 'all';
+        state.controlFilters.lazyQueue = CONTROL_SIMPLE_RETAIL_ROP_DIRECTIONS.has(key) ? 'all' : 'now';
         if (typeof setView === 'function') setView('control');
       });
     });

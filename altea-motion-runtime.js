@@ -3,8 +3,11 @@
   window.__ALTEA_MOTION_RUNTIME__ = true;
 
   var BOOT_MIN_MS = 2200;
-  var BOOT_MAX_MS = 5600;
+  var BOOT_MAX_MS = 12000;
+  var BOOT_HARD_MAX_MS = 24000;
   var ROUTE_MS = 760;
+  var ROUTE_MIN_MS = 980;
+  var ROUTE_MAX_MS = 12000;
   var stage = null;
   var live = null;
   var canvas = null;
@@ -25,6 +28,8 @@
   var canvasW = 0;
   var canvasH = 0;
   var canvasDpr = 1;
+  var readinessTimer = 0;
+  var readinessObserver = null;
 
   var ROUTE_LOADERS = {
     dashboard: {
@@ -549,12 +554,102 @@
     startCanvas(theme);
   }
 
+  function activeViewName() {
+    if (typeof window.state === "object" && window.state && window.state.activeView) {
+      return String(window.state.activeView || "");
+    }
+    var active = document.querySelector(".view.active[id^='view-']");
+    if (active && active.id) return active.id.replace(/^view-/, "");
+    var hash = String(window.location.hash || "").replace(/^#/, "").trim();
+    return hash || "dashboard";
+  }
+
+  function viewRoot(view) {
+    var id = "view-" + String(view || activeViewName() || "dashboard");
+    return document.getElementById(id);
+  }
+
+  function viewRootVisible(root) {
+    if (!root) return false;
+    if (root.classList && root.classList.contains("active")) return true;
+    return !!(root.offsetWidth || root.offsetHeight || root.getClientRects().length);
+  }
+
+  function viewHasLoadingSurface(root) {
+    if (!root) return true;
+    if (root.querySelector(".dashboard-lux-loader")) return true;
+    var text = String(root.textContent || "").replace(/\s+/g, " ").trim();
+    if (!text) return true;
+    return /Собираем актуальный cockpit|legacy-слоя|Подгружаем данные только для этого раздела|Загружаю данные вкладки|Loading\b/i.test(text)
+      || /(^|\s)загрузка($|\s)/i.test(text);
+  }
+
+  function viewIsReady(view) {
+    var key = String(view || activeViewName() || "dashboard");
+    var root = viewRoot(key);
+    if (!viewRootVisible(root)) return false;
+    if (key === "dashboard") {
+      if (viewHasLoadingSurface(root)) return false;
+      return !!root.querySelector(".portal-lux-shell, .portal-calm-hero, [data-portal-dashboard-executive-root]");
+    }
+    if (viewHasLoadingSurface(root)) return false;
+    return String(root.textContent || "").replace(/\s+/g, "").length > 12 || root.children.length > 0;
+  }
+
+  function cancelReadinessWait() {
+    if (readinessTimer) window.clearTimeout(readinessTimer);
+    readinessTimer = 0;
+    if (readinessObserver) readinessObserver.disconnect();
+    readinessObserver = null;
+  }
+
+  function waitForViewReady(view, options) {
+    cancelReadinessWait();
+    options = options || {};
+    var targetView = String(view || activeViewName() || "dashboard");
+    var startedAt = Date.now();
+    var minMs = Number(options.minDuration || ROUTE_MIN_MS);
+    var maxMs = Number(options.maxDuration || ROUTE_MAX_MS);
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      cancelReadinessWait();
+      hide();
+    }
+    function tick() {
+      if (done || !stage || stage.hidden || !stage.classList.contains("is-visible")) return;
+      var elapsed = Date.now() - startedAt;
+      if (elapsed >= minMs && viewIsReady(targetView)) {
+        finish();
+        return;
+      }
+      if (elapsed >= maxMs) {
+        finish();
+        return;
+      }
+      readinessTimer = window.setTimeout(tick, 140);
+    }
+    var root = viewRoot(targetView) || document.querySelector("main") || document.body;
+    if (window.MutationObserver && root) {
+      readinessObserver = new MutationObserver(tick);
+      readinessObserver.observe(root, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["class", "style", "data-ready"]
+      });
+    }
+    tick();
+  }
+
   function show(scene, options) {
     options = options || {};
     if (document.body.classList.contains("portal-auth-locked")) return;
     if (motionReduced() && !options.force) return;
     var node = ensureStage();
     window.clearTimeout(hideTimer);
+    cancelReadinessWait();
     renderScene(scene || "workspace", options);
     node.hidden = false;
     setLabel(options.label || "Загружаем рабочее пространство");
@@ -566,7 +661,9 @@
     } else {
       stopProgress();
     }
-    if (options.duration) {
+    if (options.waitForView) {
+      waitForViewReady(options.waitForView, options);
+    } else if (options.duration) {
       hideTimer = window.setTimeout(hide, options.duration);
     }
   }
@@ -574,16 +671,19 @@
   function hide() {
     if (!stage) return;
     window.clearTimeout(hideTimer);
+    cancelReadinessWait();
     var settleMs = stage.getAttribute("data-scene") === "transition" ? 360 : 720;
     stage.classList.remove("is-visible");
     stopProgress();
-    hideTimer = window.setTimeout(function () {
+    function finalizeHidden() {
       if (stage && !stage.classList.contains("is-visible")) {
         stage.hidden = true;
         stage.classList.remove("is-complete");
         stopCanvas();
       }
-    }, settleMs);
+    }
+    hideTimer = window.setTimeout(finalizeHidden, settleMs);
+    window.setTimeout(finalizeHidden, settleMs + 160);
   }
 
   function statusReady() {
@@ -600,13 +700,18 @@
     if (!bootOverlayShown || finishingBoot) return;
     var elapsed = Date.now() - bootStartedAt;
     if (elapsed < BOOT_MIN_MS) return;
-    if (statusReady()) {
+    if (viewIsReady(activeViewName()) && (statusReady() || elapsed >= 3600)) {
       finishBoot();
     }
   }
 
   function forceHideBoot() {
     if (!bootOverlayShown || finishingBoot) return;
+    if (!viewIsReady(activeViewName()) && Date.now() - bootStartedAt < BOOT_HARD_MAX_MS) {
+      window.clearTimeout(bootTimer);
+      bootTimer = window.setTimeout(forceHideBoot, 1500);
+      return;
+    }
     finishBoot();
   }
 
@@ -689,7 +794,13 @@
       if (!target || typeof target.closest !== "function") return;
       var button = target.closest(".nav-btn[data-view]");
       if (!button || document.body.classList.contains("portal-auth-locked")) return;
-      show("transition", { duration: ROUTE_MS, label: routeTitle(button), view: button.dataset.view });
+      show("transition", {
+        waitForView: button.dataset.view,
+        minDuration: ROUTE_MIN_MS,
+        maxDuration: ROUTE_MAX_MS,
+        label: routeTitle(button),
+        view: button.dataset.view
+      });
     }, true);
   }
 
@@ -893,7 +1004,13 @@
       label: label || "Открываем раздел",
       view: view
     };
-    options.duration = options.duration || ROUTE_MS;
+    if (options.view || options.waitForView) {
+      options.waitForView = options.waitForView || options.view;
+      options.minDuration = options.minDuration || ROUTE_MIN_MS;
+      options.maxDuration = options.maxDuration || ROUTE_MAX_MS;
+    } else {
+      options.duration = options.duration || ROUTE_MS;
+    }
     show("transition", options);
   }
 

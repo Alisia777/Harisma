@@ -404,16 +404,23 @@ function executiveFunnelSortRows(rows = [], sort = 'completionAsc') {
 function executiveFunnelBuildPlanModel(selectedPlatform = 'all') {
   if (typeof skuPlanFactBuildModel !== 'function') return null;
   const platform = EXECUTIVE_FUNNEL_PLATFORMS.includes(selectedPlatform) ? selectedPlatform : 'all';
+  const activeDate = executiveFunnelDateKey(
+    state.dashboard?.dataFreshness?.asOfDate
+    || state.dashboard?.latestMarketplaceDate
+    || state.dashboard?.brandSummary?.[0]?.latestMarketplaceDate
+    || state.dashboard?.asOfDate
+    || ''
+  );
   try {
     return skuPlanFactBuildModel({
       search: '',
       owner: 'all',
       status: 'all',
       platform,
-      month: 'latest',
-      date: '',
-      dateFrom: '',
-      dateTo: '',
+      month: activeDate ? activeDate.slice(0, 7) : 'latest',
+      date: activeDate,
+      dateFrom: activeDate ? `${activeDate.slice(0, 7)}-01` : '',
+      dateTo: activeDate,
       sort: 'gap',
       sortDir: 'asc'
     }, { persistFilters: false });

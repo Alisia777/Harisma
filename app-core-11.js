@@ -1419,14 +1419,40 @@ function skuPlanFactPayrollKpiForModel(model = {}) {
   };
 }
 
-function skuPlanFactPayrollMetricTotals(model = {}, selectedPlatform = 'all', rowsOverride = null) {
-  const rows = Array.isArray(rowsOverride) ? rowsOverride : (Array.isArray(model.allRows) ? model.allRows : []);
+function skuPlanFactMetricMatchesOwner(row = {}, platform = '', owner = 'all') {
+  const target = skuPlanFactCanonicalOwner(owner);
+  if (!target || target === 'all') return true;
+  const directOwner = skuPlanFactCanonicalOwner(row.owner || '');
+  const baseOwner = skuPlanFactCanonicalOwner(row.ownerBase || '');
+  if (!SKU_PLAN_FACT_PLATFORMS.includes(platform)) {
+    return directOwner === target || baseOwner === target;
+  }
+  const scopedOwner = skuPlanFactCanonicalOwner(skuPlanFactScopedOwner(row, platform));
+  if (scopedOwner === target) return true;
+  return (!scopedOwner || scopedOwner === 'Без owner') && (directOwner === target || baseOwner === target);
+}
+
+function skuPlanFactMetricScopeRows(model = {}, rowsOverride = null) {
+  if (Array.isArray(rowsOverride)) return rowsOverride;
+  const sourceRows = Array.isArray(model.allRows) ? model.allRows : [];
+  const filters = model.filters || {};
+  return sourceRows.filter((row) => skuPlanFactRowMatchesFilters(row, {
+    ...filters,
+    owner: 'all',
+    platform: 'all'
+  }, { platform: false }));
+}
+
+function skuPlanFactPayrollMetricTotals(model = {}, selectedPlatform = 'all', rowsOverride = null, options = {}) {
+  const rows = skuPlanFactMetricScopeRows(model, rowsOverride);
+  const ownerFilter = options.owner !== undefined ? options.owner : (model.filters?.owner || 'all');
   const totals = { planRevenue: 0, planToDateRevenue: 0, planUnits: 0, planToDateUnits: 0, factRevenue: 0, factUnits: 0, adSpend: 0, planAdSpend: 0, planMonthAdSpend: 0, planPeriodAdSpend: 0, adForecastSpend: 0, hasPlanAdSpend: false, hasPlanMonthAdSpend: false, hasPlanPeriodAdSpend: false, hasAdForecastSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0 };
   const platforms = selectedPlatform && selectedPlatform !== 'all'
     ? [selectedPlatform].filter((platform) => SKU_PLAN_FACT_PLATFORMS.includes(platform))
     : SKU_PLAN_FACT_PAYROLL_PLATFORMS;
   rows.forEach((row) => {
     platforms.forEach((platform) => {
+      if (!skuPlanFactMetricMatchesOwner(row, platform, ownerFilter)) return;
       const metric = row.platforms?.[platform] || row[platform] || null;
       if (!metric) return;
       totals.planRevenue += numberOrZero(metric.planRevenue);
@@ -1484,6 +1510,32 @@ function skuPlanFactPayrollMetricTotals(model = {}, selectedPlatform = 'all', ro
   return totals;
 }
 
+function skuPlanFactApplyScopedPayrollValues(model = {}, scopedTotals = {}, options = {}) {
+  if (!model.payrollKpi) return;
+  if (options.truthSource === 'sku_scope') {
+    model.totals.apiFactRevenue = 0;
+    model.totals.kpiFactDelta = 0;
+  }
+  model.payrollKpi = {
+    ...model.payrollKpi,
+    truthSource: options.truthSource || 'sku_scope',
+    ownerScoped: options.ownerScoped === true || model.payrollKpi.ownerScoped,
+    salaryIncluded: options.salaryIncluded !== undefined ? options.salaryIncluded : model.payrollKpi.salaryIncluded,
+    planRevenue: scopedTotals.planRevenue,
+    planToDateRevenue: scopedTotals.planToDateRevenue,
+    factRevenue: scopedTotals.factRevenue,
+    completionToDate: scopedTotals.completionToDate,
+    completionMonth: scopedTotals.completionMonth,
+    gapToDate: scopedTotals.gapToDate,
+    adSpend: scopedTotals.adSpend,
+    planAdSpend: scopedTotals.planAdSpend,
+    planAdSpendToDate: scopedTotals.planAdSpendToDate,
+    planMonthAdSpend: scopedTotals.planMonthAdSpend,
+    planPeriodAdSpend: scopedTotals.planPeriodAdSpend,
+    adForecastSpend: scopedTotals.adForecastSpend
+  };
+}
+
 function skuPlanFactApplyPayrollKpiToModel(model = {}) {
   const payroll = skuPlanFactPayrollKpiForModel(model);
   if (!payroll) return model;
@@ -1498,7 +1550,7 @@ function skuPlanFactApplyPayrollKpiToModel(model = {}) {
     displayNote: 'Корпоративный план: оборот, заказы и рекламный бюджет по зарплатному контуру.'
   };
   if (skipPayrollAlignment || !payroll.salaryIncluded) {
-    const scopedTotals = skuPlanFactPayrollMetricTotals(model, payroll.selectedPlatform || 'all', model.rows || []);
+    const scopedTotals = skuPlanFactPayrollMetricTotals(model, payroll.selectedPlatform || 'all');
     model.totals.payrollOriginal = {
       planRevenue: model.totals.planRevenue,
       planToDateRevenue: model.totals.planToDateRevenue,
@@ -1541,11 +1593,15 @@ function skuPlanFactApplyPayrollKpiToModel(model = {}) {
     model.totals.planDrr = model.totals.planToDateRevenue > 0 && model.totals.planAdSpend !== null && model.totals.planAdSpend !== undefined
       ? numberOrZero(model.totals.planAdSpend) / model.totals.planToDateRevenue
       : null;
+    skuPlanFactApplyScopedPayrollValues(model, scopedTotals, {
+      salaryIncluded: false,
+      truthSource: 'sku_scope'
+    });
     return model;
   }
   const ownerScoped = Boolean(model.filters?.owner && model.filters.owner !== 'all');
   if (ownerScoped) {
-    const scopedTotals = skuPlanFactPayrollMetricTotals(model, payroll.selectedPlatform || 'all', model.rows || []);
+    const scopedTotals = skuPlanFactPayrollMetricTotals(model, payroll.selectedPlatform || 'all');
     model.payrollKpi.ownerScoped = true;
     model.totals.payrollOriginal = {
       planRevenue: model.totals.planRevenue,
@@ -1588,6 +1644,10 @@ function skuPlanFactApplyPayrollKpiToModel(model = {}) {
     model.totals.planDrr = model.totals.planToDateRevenue > 0 && model.totals.planAdSpend !== null && model.totals.planAdSpend !== undefined
       ? numberOrZero(model.totals.planAdSpend) / model.totals.planToDateRevenue
       : null;
+    skuPlanFactApplyScopedPayrollValues(model, scopedTotals, {
+      ownerScoped: true,
+      truthSource: 'sku_scope'
+    });
     return model;
   }
   const rawFactRevenue = numberOrZero(model.totals.factRevenue);
@@ -5525,19 +5585,30 @@ function skuPlanFactCardStyle(platform = '', completion = null) {
 
 function skuPlanFactPlatformSummary(model = {}, platform = '', options = {}) {
   const includePayroll = options.includePayroll === true;
+  const respectFilters = options.respectFilters === true;
   const normalizedPlatform = String(platform || 'all').toLowerCase();
   const payrollAllScope = includePayroll && normalizedPlatform === 'all' && model.payrollKpi;
   const aggregatePlatforms = normalizedPlatform === 'all'
     ? (payrollAllScope ? SKU_PLAN_FACT_PAYROLL_PLATFORMS : SKU_PLAN_FACT_PLATFORMS)
     : [normalizedPlatform].filter((item) => SKU_PLAN_FACT_PLATFORMS.includes(item));
-  const rows = options.scope === 'allRows'
+  const sourceRows = options.scope === 'allRows'
     ? (model.allRows || [])
     : (model.platformBaseRows || model.allRows || []);
+  const filters = model.filters || {};
+  const ownerFilter = respectFilters ? (filters.owner || 'all') : (options.owner || 'all');
+  const rows = respectFilters
+    ? sourceRows.filter((row) => skuPlanFactRowMatchesFilters(row, {
+        ...filters,
+        owner: 'all',
+        platform: 'all'
+      }, { platform: false }))
+    : sourceRows;
   const summary = rows.reduce((acc, row) => {
     let rowHasSignal = false;
     let rowFactRevenue = 0;
     let rowPlanToDateRevenue = 0;
     aggregatePlatforms.forEach((currentPlatform) => {
+      if (!skuPlanFactMetricMatchesOwner(row, currentPlatform, ownerFilter)) return;
       const metric = row.platforms?.[currentPlatform] || row[currentPlatform] || null;
       if (!skuPlanFactPlatformHasActivity(metric)) return;
       rowHasSignal = true;
@@ -5747,7 +5818,7 @@ function skuPlanFactPlatformBoardHtml(model = {}) {
   return `
     <div class="sku-plan-platform-board">
       ${(model.platforms || SKU_PLAN_FACT_PLATFORMS).map((platform) => {
-        const summary = skuPlanFactPlatformSummary(model, platform, { scope: 'allRows' });
+        const summary = skuPlanFactPlatformSummary(model, platform, { scope: 'allRows', respectFilters: true });
         const level = skuPlanFactCompletionLevel(summary.completionToDate);
         const active = activePlatform === platform;
         return `

@@ -2145,7 +2145,16 @@ function wbDailyPlanRange(iuPlan) {
   };
 }
 
-function dateRange(platformTrends, adsSummary, explicitFrom, explicitTo, iuPlan) {
+function lastCompleteOzonFinanceDate(ozonFinance) {
+  return (Array.isArray(ozonFinance?.daily) ? ozonFinance.daily : [])
+    .filter((row) => String(row?.ozonGmvMode || '') === 'realization_by_day_sales_minus_returns')
+    .map((row) => isoDate(row?.date || row?.key || row?.label))
+    .filter(Boolean)
+    .sort()
+    .pop() || '';
+}
+
+function dateRange(platformTrends, adsSummary, explicitFrom, explicitTo, iuPlan, ozonFinance) {
   const wbWorkbookRange = wbDailyPlanRange(iuPlan);
   const dates = [];
   for (const platform of platformTrends?.platforms || []) {
@@ -2172,7 +2181,9 @@ function dateRange(platformTrends, adsSummary, explicitFrom, explicitTo, iuPlan)
     : '';
   const sorted = dates.sort();
   const adsWindowTo = isoDate(adsSummary?.window?.to || adsSummary?.asOfDate);
+  const ozonFinanceCompleteTo = lastCompleteOzonFinanceDate(ozonFinance);
   const latestReliableTo = [latestCompleteMarketplaceDate, adsWindowTo]
+    .concat(ozonFinanceCompleteTo ? [ozonFinanceCompleteTo] : [])
     .filter(Boolean)
     .sort()[0] || '';
   const to = explicitTo || latestReliableTo || wbWorkbookRange.to || sorted[sorted.length - 1] || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || new Date().toISOString().slice(0, 10);
@@ -2188,6 +2199,7 @@ function dateRange(platformTrends, adsSummary, explicitFrom, explicitTo, iuPlan)
     sourceDays: wbWorkbookRange.days,
     controlFrom: wbWorkbookRange.from,
     controlTo: wbWorkbookRange.to,
+    ozonFinanceCompleteTo,
     requestedFrom: explicitFrom || '',
     requestedTo: explicitTo || ''
   };
@@ -2406,7 +2418,7 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
   options.wbAdsChannelOverrideRuntime = adsMaps.diagnostics;
   const reviewPointsMap = buildReviewPointsMap(wbFeedbacksSummary);
   const wbDailyPlanMap = buildWbDailyPlanMap(iuPlan);
-  const range = dateRange(platformTrends, adsSummary, options.from, options.to, iuPlan);
+  const range = dateRange(platformTrends, adsSummary, options.from, options.to, iuPlan, options.ozonFinance);
   options.effectiveIuDrrWindow = range;
   const wbIuApiCalibration = buildWbIuApiCalibration(range, wbMap, adsMaps, reviewPointsMap, wbDailyPlanMap);
   options.wbIuApiCalibration = wbIuApiCalibration;

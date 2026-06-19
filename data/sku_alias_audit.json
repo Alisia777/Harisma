@@ -1,7 +1,5 @@
 {
   "events": [],
   "schema": "sku-alias-audit-v1",
-  "generatedAt": "",
-  "refreshedAt": "2026-06-15T08:13:13.572Z",
-  "refreshNote": "Local SKU alias snapshot revalidated during portal refresh on 2026-06-15; mappings unchanged."
+  "generatedAt": ""
 }

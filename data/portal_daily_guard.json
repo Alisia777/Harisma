@@ -1,20 +1,17 @@
 {
   "schema": "portal-daily-layer-guard-v1",
-  "generatedAt": "2026-06-17T17:00:54.980Z",
-  "expectedDate": "2026-06-16",
-  "expectedRunDate": "2026-06-17",
+  "generatedAt": "2026-06-19T10:52:29.421Z",
+  "expectedDate": "2026-06-18",
+  "expectedRunDate": "2026-06-19",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
-    "warnings": [
-      "sync_issues: yandex-market retry failed after data reached expected date: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 420 sec before retry 2/6.",
-      "sync_issues: non-critical step failed: product leaderboard sync: exit code 1"
-    ]
+    "warnings": []
   },
   "summary": {
     "checkCount": 19,
-    "okCount": 18,
-    "warningCount": 1,
+    "okCount": 19,
+    "warningCount": 0,
     "blockedCount": 0,
     "suggestedRepairStepCount": 0
   },
@@ -28,14 +25,14 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 263109,
-      "mtime": "2026-06-17T14:06:38.995Z",
-      "generatedAt": "2026-06-17T14:06:38.813Z",
-      "dataDate": "2026-06-16",
+      "bytes": 270445,
+      "mtime": "2026-06-19T10:51:50.751Z",
+      "generatedAt": "2026-06-19T10:51:50.575Z",
+      "dataDate": "2026-06-18",
       "dataDatePath": "latestMarketplaceDate",
-      "runDate": "2026-06-17",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
-      "cardsCount": 901
+      "cardsCount": 936
     },
     {
       "name": "platform_trends",
@@ -43,12 +40,12 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 20277021,
-      "mtime": "2026-06-17T17:00:18.136Z",
-      "generatedAt": "2026-06-17T17:00:17.750Z",
-      "dataDate": "2026-06-16",
+      "bytes": 22823377,
+      "mtime": "2026-06-19T10:51:51.060Z",
+      "generatedAt": "2026-06-19T10:51:50.388Z",
+      "dataDate": "2026-06-18",
       "dataDatePath": "latestMarketplaceDate",
-      "runDate": "2026-06-17",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
       "platformsCount": 7,
       "series_wb": true,
@@ -62,15 +59,15 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 20277021,
-      "mtime": "2026-06-17T17:00:18.136Z",
-      "generatedAt": "2026-06-17T17:00:17.750Z",
-      "dataDate": "2026-06-16",
+      "bytes": 22823377,
+      "mtime": "2026-06-19T10:51:51.060Z",
+      "generatedAt": "2026-06-19T10:51:50.388Z",
+      "dataDate": "2026-06-18",
       "dataDatePath": "asOfDate",
-      "runDate": "2026-06-17",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
       "extraMarketplace_platformsCount": 6,
-      "extra_letu_articleCount": 55
+      "extra_letu_articleCount": 56
     },
     {
       "name": "logistics",
@@ -78,10 +75,10 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 1158425,
-      "mtime": "2026-06-17T14:06:39.230Z",
-      "generatedAt": "2026-06-17T14:06:38.977Z",
-      "runDate": "2026-06-17",
+      "bytes": 1147045,
+      "mtime": "2026-06-19T10:51:51.085Z",
+      "generatedAt": "2026-06-19T10:51:50.734Z",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
       "summaryCardsCount": 7,
       "statusCardsCount": 5
@@ -92,10 +89,10 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 34071,
-      "mtime": "2026-06-17T14:06:39.232Z",
-      "generatedAt": "2026-06-17T13:03:58.211Z",
-      "runDate": "2026-06-17",
+      "bytes": 34075,
+      "mtime": "2026-06-19T10:51:51.087Z",
+      "generatedAt": "2026-06-19T09:47:04.716Z",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
       "matchedSkuCount": 134,
       "rowsCount": 134
@@ -106,15 +103,15 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 11762963,
-      "mtime": "2026-06-17T17:00:18.176Z",
-      "generatedAt": "2026-06-17T17:00:17.790Z",
-      "dataDate": "2026-06-16",
+      "bytes": 15206994,
+      "mtime": "2026-06-19T10:51:51.513Z",
+      "generatedAt": "2026-06-19T10:00:37.030Z",
+      "dataDate": "2026-06-18",
       "dataDatePath": "window.to",
-      "runDate": "2026-06-17",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
       "platformsCount": 7,
-      "itemSeriesCount": 20624
+      "itemSeriesCount": 26744
     },
     {
       "name": "iu_plan",
@@ -122,12 +119,12 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 58331,
-      "mtime": "2026-06-17T13:07:51.420Z",
-      "generatedAt": "2026-06-17T13:07:51.386Z",
-      "runDate": "2026-06-17",
+      "bytes": 59692,
+      "mtime": "2026-06-19T09:49:08.932Z",
+      "generatedAt": "2026-06-19T09:49:08.897Z",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
-      "wbDailyPlanCount": 106
+      "wbDailyPlanCount": 109
     },
     {
       "name": "iu_drr_summary",
@@ -135,14 +132,14 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 387808,
-      "mtime": "2026-06-17T14:06:39.577Z",
-      "generatedAt": "2026-06-17T13:24:41.593Z",
-      "dataDate": "2026-06-16",
+      "bytes": 398604,
+      "mtime": "2026-06-19T10:51:51.521Z",
+      "generatedAt": "2026-06-19T10:00:53.880Z",
+      "dataDate": "2026-06-18",
       "dataDatePath": "asOfDate",
-      "runDate": "2026-06-17",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
-      "dailyRows": 47,
+      "dailyRows": 49,
       "expectedDateRow": true
     },
     {
@@ -151,12 +148,12 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 7935190,
-      "mtime": "2026-06-17T14:06:39.672Z",
-      "generatedAt": "2026-06-17T13:24:40.883Z",
-      "dataDate": "2026-06-17",
+      "bytes": 8123241,
+      "mtime": "2026-06-19T10:51:51.621Z",
+      "generatedAt": "2026-06-19T10:00:53.087Z",
+      "dataDate": "2026-06-19",
       "dataDatePath": "window.to",
-      "runDate": "2026-06-17",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
       "dailyCount": 31
     },
@@ -166,10 +163,10 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 3071129,
-      "mtime": "2026-06-17T14:38:29.886Z",
-      "generatedAt": "2026-06-17T14:38:16.309Z",
-      "runDate": "2026-06-17",
+      "bytes": 3118671,
+      "mtime": "2026-06-19T09:49:06.409Z",
+      "generatedAt": "2026-06-19T09:48:50.219Z",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
       "platformsCount": 3
     },
@@ -179,10 +176,10 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 739209,
-      "mtime": "2026-06-17T14:38:30.203Z",
-      "generatedAt": "2026-06-17T14:38:16.309Z",
-      "runDate": "2026-06-17",
+      "bytes": 738803,
+      "mtime": "2026-06-19T09:49:07.075Z",
+      "generatedAt": "2026-06-19T09:48:50.219Z",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
       "rowsCount": 201
     },
@@ -192,15 +189,15 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 7298739,
-      "mtime": "2026-06-17T17:00:18.200Z",
-      "generatedAt": "2026-06-17T17:00:17.926Z",
-      "dataDate": "2026-06-16",
+      "bytes": 1805327,
+      "mtime": "2026-06-19T09:49:05.378Z",
+      "generatedAt": "2026-06-19T09:48:50.219Z",
+      "dataDate": "2026-06-18",
       "dataDatePath": "asOfDate",
-      "runDate": "2026-06-17",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
-      "platformsCount": 5,
-      "extraMarketplaceDate": "2026-06-16"
+      "platformsCount": 2,
+      "extraMarketplaceDate": "2026-06-18"
     },
     {
       "name": "oos_control",
@@ -208,10 +205,10 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 26176,
-      "mtime": "2026-06-17T14:32:47.779Z",
-      "generatedAt": "2026-06-17T14:32:47.777Z",
-      "runDate": "2026-06-17",
+      "bytes": 26185,
+      "mtime": "2026-06-19T09:49:07.460Z",
+      "generatedAt": "2026-06-19T09:49:07.459Z",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
       "rowsCount": 2
     },
@@ -221,10 +218,10 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 43992,
-      "mtime": "2026-06-17T13:24:42.017Z",
-      "generatedAt": "2026-06-17T13:24:42.015Z",
-      "runDate": "2026-06-17",
+      "bytes": 44689,
+      "mtime": "2026-06-19T10:00:54.360Z",
+      "generatedAt": "2026-06-19T10:00:54.358Z",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt"
     },
     {
@@ -234,9 +231,9 @@
       "warnings": [],
       "blockingReasons": [],
       "bytes": 324,
-      "mtime": "2026-06-17T17:00:54.801Z",
-      "generatedAt": "2026-06-17T17:00:54.524Z",
-      "runDate": "2026-06-17",
+      "mtime": "2026-06-19T10:52:28.832Z",
+      "generatedAt": "2026-06-19T10:52:28.582Z",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt"
     },
     {
@@ -245,10 +242,10 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 204881,
-      "mtime": "2026-06-17T14:06:54.826Z",
-      "generatedAt": "2026-06-17T14:06:54.824Z",
-      "runDate": "2026-06-17",
+      "bytes": 117215,
+      "mtime": "2026-06-19T10:00:54.483Z",
+      "generatedAt": "2026-06-19T10:00:54.481Z",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt"
     },
     {
@@ -257,10 +254,10 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 51838,
-      "mtime": "2026-06-17T13:07:14.011Z",
-      "generatedAt": "2026-06-17T13:07:14.006Z",
-      "runDate": "2026-06-17",
+      "bytes": 51826,
+      "mtime": "2026-06-19T09:48:29.260Z",
+      "generatedAt": "2026-06-19T09:48:29.254Z",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt"
     },
     {
@@ -269,38 +266,22 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "bytes": 1646,
-      "mtime": "2026-06-17T14:06:39.674Z",
-      "generatedAt": "2026-06-17T14:06:38.978Z",
-      "runDate": "2026-06-17",
+      "bytes": 1642,
+      "mtime": "2026-06-19T10:51:51.624Z",
+      "generatedAt": "2026-06-19T10:51:50.735Z",
+      "runDate": "2026-06-19",
       "runDatePath": "generatedAt",
-      "dashboardLatestMarketplaceDate": "2026-06-16"
+      "dashboardLatestMarketplaceDate": "2026-06-18"
     },
     {
       "name": "sync_issues",
       "file": "portal_sync_issues.json",
-      "status": "warning",
-      "warnings": [
-        "sync_issues: yandex-market retry failed after data reached expected date: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 420 sec before retry 2/6.",
-        "sync_issues: non-critical step failed: product leaderboard sync: exit code 1"
-      ],
+      "status": "ok",
+      "warnings": [],
       "blockingReasons": [],
-      "issueCount": 2,
+      "issueCount": 0,
       "criticalIssueCount": 0,
-      "issues": [
-        {
-          "id": "yandex-market",
-          "name": "Yandex Market analytics refresh",
-          "message": "[ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 420 sec before retry 2/6.",
-          "failedAt": "2026-06-17T16:03:57.4115442+03:00"
-        },
-        {
-          "id": "product-leaderboard",
-          "name": "product leaderboard sync",
-          "message": "exit code 1",
-          "failedAt": "2026-06-17T16:07:51.1719746+03:00"
-        }
-      ]
+      "issues": []
     }
   ]
 }

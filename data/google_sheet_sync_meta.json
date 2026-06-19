@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-18T08:50:14.212Z",
+  "generatedAt": "2026-06-19T10:51:50.735Z",
   "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
   "sourceMode": "google-csv-tabs",
   "sourceGids": {
@@ -15,25 +15,25 @@
   "updatedSkus": 143,
   "skuAliases": {
     "sheetRows": 0,
-    "localRows": 341,
-    "normalizedRows": 341,
+    "localRows": 0,
+    "normalizedRows": 0,
     "appliedRows": 0,
     "unmatchedTargetRows": 0,
     "unmatchedTargets": []
   },
   "dashboard": {
-    "latest_marketplace_date": "2026-06-17",
+    "latest_marketplace_date": "2026-06-18",
     "month_plan_units": 173171,
-    "month_fact_units": 29395,
-    "month_fact_revenue": 29340568.729999997,
-    "completion_to_date_pct": 0.2996,
+    "month_fact_units": 212636,
+    "month_fact_revenue": 223391296.27999997,
+    "completion_to_date_pct": 2.0465,
     "company_plan_revenue": 285818670,
-    "company_plan_to_date_revenue": 161963913,
-    "company_completion_to_date_pct": 0.1812
+    "company_plan_to_date_revenue": 171491202,
+    "company_completion_to_date_pct": 1.3026
   },
   "platformTrends": {
-    "latest_marketplace_date": "2026-06-17",
-    "points": 2
+    "latest_marketplace_date": "2026-06-18",
+    "points": 49
   },
   "loyaltySystem": {
     "sheet_name": "",
@@ -42,17 +42,17 @@
     "spend": 0
   },
   "iuDrr": {
-    "latest_date": "2026-06-17",
-    "rows": 2,
-    "latest_daily_date": "2026-06-17",
-    "generated_at": "2026-06-18T08:26:12.627Z"
+    "latest_date": "2026-06-18",
+    "rows": 49,
+    "latest_daily_date": "2026-06-18",
+    "generated_at": "2026-06-19T10:00:53.880Z"
   },
   "logistics": {
-    "latest_logistics_date": "2026-06-18",
+    "latest_logistics_date": "2026-06-19",
     "ozon_cluster_count": 31,
     "ozon_warehouse_count": 61,
     "wb_warehouse_count": 29,
-    "central_warehouse_stock": 440341,
+    "central_warehouse_stock": 494128,
     "warehouse_stock_overlay_rows": 134
   }
 }

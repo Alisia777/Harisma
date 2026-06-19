@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-18T08:31:12.203Z",
+  "generatedAt": "2026-06-19T10:31:04.079Z",
   "sourceFile": "C:\\Users\\artiu\\Downloads\\Продуктовый_лидерборд Июнь 01.06.2026 -  28.06.2026.xlsx",
   "sourceGid": "",
   "sourceSheetName": "08.06.2026 - 14.06.2026",
@@ -18,25 +18,25 @@
     "unmatchedRows": 2
   },
   "summary": {
-    "skuCount": 50,
+    "skuCount": 52,
     "ownerCount": 2,
-    "reach": 51352082,
-    "reactions": 539401,
-    "posts": 5840,
-    "clicks": 397344,
-    "carts": 136114,
+    "reach": 51357758,
+    "reactions": 539525,
+    "posts": 5848,
+    "clicks": 397370,
+    "carts": 136115,
     "orders": 22839,
     "buys": 21322,
-    "contentCost": 4777097.43,
-    "revenue": 18603354.73039274,
-    "income": 14139166.273256999,
-    "ctrPct": 0.007737641484526372,
-    "cartRatePct": 0.3425595957155513,
-    "orderRatePct": 0.05747916163324474,
-    "buyRatePct": 0.05366131110574213,
+    "contentCost": 4788479.149999999,
+    "revenue": 18604132.48,
+    "income": 13815653.33,
+    "ctrPct": 0.007737292581969797,
+    "cartRatePct": 0.34253969851775423,
+    "orderRatePct": 0.05747540075999698,
+    "buyRatePct": 0.05365780003523165,
     "buyoutPct": 0.9335785279565655,
-    "romiPct": 2.959781850892038,
-    "drrPct": 0.256786880604687
+    "romiPct": 2.8851860678979886,
+    "drrPct": 0.25738793008208033
   },
   "baselines": {
     "erviewPct": 0.0086,
@@ -51,14 +51,14 @@
     "grossEcpm": 43.44
   },
   "alertCounts": {
-    "critical": 67,
+    "critical": 73,
     "high": 38,
     "medium": 10,
     "info": 0
   },
   "owners": [
-    "Васильева Мария",
-    "Лапыгин Максим"
+    "Максим",
+    "Мария"
   ],
   "categories": [
     "БАДы и витамины",
@@ -78,7 +78,7 @@
       "articleKey": "retinait_syvorotka_1_30ml",
       "article": "484600035",
       "name": "Ретинайт Сыворотка",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 1455.2,
       "priceWb": 1455.2,
       "priceOzon": 2000,
@@ -94,8 +94,8 @@
       "buys": 3911,
       "itemCost": 1190.206696,
       "contentCost": 854664.15,
-      "revenue": 4655033.496732026,
-      "income": 3800264.1429749997,
+      "revenue": 4654898.39,
+      "income": 3800234.24,
       "erviewPct": 0.0054,
       "ctrPct": 0.0101,
       "conversionPct": 0.041100000000000005,
@@ -197,7 +197,7 @@
       "articleKey": "gel_antiakne_20ml_v2",
       "article": "488959127",
       "name": "Крем корректор антиакне",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 652.28,
       "priceWb": 652.28,
       "priceOzon": 846,
@@ -213,8 +213,8 @@
       "buys": 3442,
       "itemCost": 842.3331542,
       "contentCost": 657157.84,
-      "revenue": 2898799.4706660784,
-      "income": 2242156.834296,
+      "revenue": 2899310.72,
+      "income": 2242152.88,
       "erviewPct": 0.0051,
       "ctrPct": 0.0054,
       "conversionPct": 0.056600000000000004,
@@ -328,7 +328,7 @@
       "articleKey": "krovavii_piling_30ml",
       "article": "307871378",
       "name": "Кровавый пилинг",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 883.08,
       "priceWb": 883.08,
       "priceOzon": 1185,
@@ -344,8 +344,8 @@
       "buys": 2346,
       "itemCost": 779.0883358,
       "contentCost": 446828.01,
-      "revenue": 1827517.4233128836,
-      "income": 1380921.964905,
+      "revenue": 1827741.32,
+      "income": 1380913.31,
       "erviewPct": 0.0091,
       "ctrPct": 0.0074,
       "conversionPct": 0.0667,
@@ -434,7 +434,7 @@
       "articleKey": "curly_method_300ml",
       "article": "399134789",
       "name": "Крем для кудрявых волос",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 1176.21,
       "priceWb": 1176.21,
       "priceOzon": 1488,
@@ -450,8 +450,8 @@
       "buys": 2137,
       "itemCost": 793.942468,
       "contentCost": 366673.04,
-      "revenue": 1696774.8264692272,
-      "income": 1329996.450688,
+      "revenue": 1696655.04,
+      "income": 1329982,
       "erviewPct": 0.022099999999999998,
       "ctrPct": 0.0046,
       "conversionPct": 0.084,
@@ -553,7 +553,7 @@
       "articleKey": "spiculboost_30ml",
       "article": "899373456",
       "name": "Сыворотка для лица с микроиглами и коллагеном",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 2000,
       "priceWb": 2000,
       "priceOzon": 2000,
@@ -569,8 +569,8 @@
       "buys": 1298,
       "itemCost": 779.403872,
       "contentCost": 201951.89,
-      "revenue": 1011783.0160320642,
-      "income": 809705.9077660001,
+      "revenue": 1011666.2,
+      "income": 809714.31,
       "erviewPct": 0.0175,
       "ctrPct": 0.011699999999999999,
       "conversionPct": 0.0604,
@@ -659,7 +659,7 @@
       "articleKey": "kremshelk_100ml",
       "article": "205074596",
       "name": "Крем от трещин",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 658.8,
       "priceWb": 658.8,
       "priceOzon": 1105,
@@ -675,8 +675,8 @@
       "buys": 1298,
       "itemCost": 449.7237206,
       "contentCost": 155857.04,
-      "revenue": 583734.2322097379,
-      "income": 427889.91761600005,
+      "revenue": 583741.36,
+      "income": 427884.32,
       "erviewPct": 0.023799999999999998,
       "ctrPct": 0.0076,
       "conversionPct": 0.053200000000000004,
@@ -765,7 +765,7 @@
       "articleKey": "enzim_pudra_80gr_v2",
       "article": "547745952",
       "name": "Энзимная пудра 2",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 960,
       "priceWb": 960,
       "priceOzon": 1204,
@@ -781,8 +781,8 @@
       "buys": 963,
       "itemCost": 585.7215448,
       "contentCost": 172552.57,
-      "revenue": 564081.627983001,
-      "income": 391504.526073,
+      "revenue": 564049.81,
+      "income": 391497.24,
       "erviewPct": 0.005,
       "ctrPct": 0.0049,
       "conversionPct": 0.0944,
@@ -896,7 +896,7 @@
       "articleKey": "syvorotka_dlya_lica_30ml",
       "article": "239888358",
       "name": "Сыворотка для лица",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 1494,
       "priceWb": 1494,
       "priceOzon": 2210,
@@ -912,8 +912,8 @@
       "buys": 923,
       "itemCost": 1045.269035,
       "contentCost": 281478,
-      "revenue": 964626.456477039,
-      "income": 683315.9928,
+      "revenue": 964783.33,
+      "income": 683305.33,
       "erviewPct": 0.0111,
       "ctrPct": 0.0084,
       "conversionPct": 0.0351,
@@ -1002,7 +1002,7 @@
       "articleKey": "penka_kudryavii_metod_150ml",
       "article": "399763000",
       "name": "Пенка для укладки",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 1334.16,
       "priceWb": 1334.16,
       "priceOzon": 1452,
@@ -1018,8 +1018,8 @@
       "buys": 867,
       "itemCost": 954.9669307,
       "contentCost": 180969.24,
-      "revenue": 827855.6267154621,
-      "income": 646983.129924,
+      "revenue": 827956.34,
+      "income": 646987.1,
       "erviewPct": 0.0165,
       "ctrPct": 0.006,
       "conversionPct": 0.0874,
@@ -1121,7 +1121,7 @@
       "articleKey": "maska_dlya_lica_100ml",
       "article": "373703287",
       "name": "Маска для лица",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 7200,
       "priceWb": 7200,
       "priceOzon": 3800,
@@ -1137,8 +1137,8 @@
       "buys": 851,
       "itemCost": 1136.413626,
       "contentCost": 208381.77,
-      "revenue": 966968.7703016241,
-      "income": 758697.186393,
+      "revenue": 967087.97,
+      "income": 758706.2,
       "erviewPct": 0.0049,
       "ctrPct": 0.0173,
       "conversionPct": 0.0472,
@@ -1240,7 +1240,7 @@
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
       "article": "815466628",
       "name": "Крем для век с ретинолом",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 1471.46,
       "priceWb": 1471.46,
       "priceOzon": 1843,
@@ -1256,8 +1256,8 @@
       "buys": 639,
       "itemCost": 1126.305415,
       "contentCost": 185088.21,
-      "revenue": 719627.5660964231,
-      "income": 534627.294585,
+      "revenue": 719709.23,
+      "income": 534621.02,
       "erviewPct": 0.0055000000000000005,
       "ctrPct": 0.0104,
       "conversionPct": 0.0325,
@@ -1371,7 +1371,7 @@
       "articleKey": "sprei_buster_100ml",
       "article": "418228094",
       "name": "Спрей сыворотка для роста волос",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 972.4,
       "priceWb": 972.4,
       "priceOzon": 1407,
@@ -1387,8 +1387,8 @@
       "buys": 567,
       "itemCost": 645.6593688,
       "contentCost": 111767.39,
-      "revenue": 366090.37012774317,
-      "income": 254326.695945,
+      "revenue": 366088.87,
+      "income": 254321.48,
       "erviewPct": 0.0062,
       "ctrPct": 0.0078000000000000005,
       "conversionPct": 0.0795,
@@ -1477,7 +1477,7 @@
       "articleKey": "krem_ot_rastyazhek",
       "article": "260388016",
       "name": "Крем от растяжек",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 910,
       "priceWb": 910,
       "priceOzon": 1420,
@@ -1493,8 +1493,8 @@
       "buys": 445,
       "itemCost": 568.0144785,
       "contentCost": 48238.78,
-      "revenue": 252823.79454926628,
-      "income": 204527.603322,
+      "revenue": 252766.44,
+      "income": 204527.66,
       "erviewPct": 0.0049,
       "ctrPct": 0.006999999999999999,
       "conversionPct": 0.081,
@@ -1596,7 +1596,7 @@
       "articleKey": "krem_spf50_50ml",
       "article": "668799528",
       "name": "СПФ 50",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 1200.1,
       "priceWb": 1200.1,
       "priceOzon": 1710,
@@ -1612,8 +1612,8 @@
       "buys": 376,
       "itemCost": 766.3024968,
       "contentCost": 124164.51,
-      "revenue": 288151.56648874446,
-      "income": 163959.235455,
+      "revenue": 288129.73,
+      "income": 163965.22,
       "erviewPct": 0.0042,
       "ctrPct": 0.0852,
       "conversionPct": 0.0374,
@@ -1727,7 +1727,7 @@
       "articleKey": "limfaks_BAD_30caps",
       "article": "276258805",
       "name": "ЛИМФАКС",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 1045.1,
       "priceWb": 1045.1,
       "priceOzon": 977,
@@ -1743,8 +1743,8 @@
       "buys": 343,
       "itemCost": 754.258625,
       "contentCost": 85750.3,
-      "revenue": 258673.60482654604,
-      "income": 172958.3551,
+      "revenue": 258710.71,
+      "income": 172960.41,
       "erviewPct": 0.0042,
       "ctrPct": 0.008,
       "conversionPct": 0.0581,
@@ -1846,7 +1846,7 @@
       "articleKey": "retinait_krem_05_50ml",
       "article": "555457305",
       "name": "Ретинайт крем 0,5",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 1600,
       "priceWb": 1600,
       "priceOzon": 2250,
@@ -1862,8 +1862,8 @@
       "buys": 151,
       "itemCost": 917.9713016,
       "contentCost": 51298.92,
-      "revenue": 138608.26803566603,
-      "income": 87315.891732,
+      "revenue": 138613.66,
+      "income": 87314.74,
       "erviewPct": 0.0039000000000000003,
       "ctrPct": 0.0036,
       "conversionPct": 0.053099999999999994,
@@ -1977,7 +1977,7 @@
       "articleKey": "retiderm_50ml",
       "article": "223764453",
       "name": "Ретидерм",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 1504,
       "priceWb": 1504,
       "priceOzon": 2146,
@@ -1993,8 +1993,8 @@
       "buys": 104,
       "itemCost": 858.5929417,
       "contentCost": 33899.66,
-      "revenue": 89303.6354056902,
-      "income": 55395.434406,
+      "revenue": 89293.66,
+      "income": 55394,
       "erviewPct": 0.006500000000000001,
       "ctrPct": 0.0512,
       "conversionPct": 0.0223,
@@ -2096,7 +2096,7 @@
       "articleKey": "retinait_krem_1_50ml",
       "article": "526299109",
       "name": "Ретинайт крем 1",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 2270.25,
       "priceWb": 2270.25,
       "priceOzon": 3175,
@@ -2112,8 +2112,8 @@
       "buys": 96,
       "itemCost": 1274.735903,
       "contentCost": 34249.14,
-      "revenue": 122362.05787781351,
-      "income": 88126.462134,
+      "revenue": 122374.64,
+      "income": 88125.5,
       "erviewPct": 0.0077,
       "ctrPct": 0.006,
       "conversionPct": 0.0482,
@@ -2215,7 +2215,7 @@
       "articleKey": "shampun_dlya_rosta_250ml",
       "article": "214976664",
       "name": "Шампунь для роста волос",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 794.5,
       "priceWb": 794.5,
       "priceOzon": 1089,
@@ -2231,8 +2231,8 @@
       "buys": 91,
       "itemCost": 539.2240625,
       "contentCost": 8438.2,
-      "revenue": 49059.302325581404,
-      "income": 40630.77682000001,
+      "revenue": 49069.39,
+      "income": 40631.19,
       "erviewPct": 0,
       "ctrPct": 0,
       "conversionPct": 0.1524,
@@ -2321,7 +2321,7 @@
       "articleKey": "retinait_syvorotka_05_30ml",
       "article": "831837304",
       "name": "Сыворотка ретинайт 0,5",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 1140,
       "priceWb": 1140,
       "priceOzon": 1485,
@@ -2337,8 +2337,8 @@
       "buys": 77,
       "itemCost": 726.9164823,
       "contentCost": 19582.77,
-      "revenue": 55966.76193198056,
-      "income": 36390.661491,
+      "revenue": 55972.57,
+      "income": 36389.8,
       "erviewPct": 0.0079,
       "ctrPct": 0.0333,
       "conversionPct": 0.0387,
@@ -2427,7 +2427,7 @@
       "articleKey": "krem_dlya_vek_30ml",
       "article": "471396076",
       "name": "Крем для век",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 1199.85,
       "priceWb": 1199.85,
       "priceOzon": 1842,
@@ -2443,8 +2443,8 @@
       "buys": 74,
       "itemCost": 717.8217714,
       "contentCost": 46403.85,
-      "revenue": 53117.96016483516,
-      "income": 6714.637094999999,
+      "revenue": 53118.8,
+      "income": 6714.95,
       "erviewPct": 0.0070999999999999995,
       "ctrPct": 0.0113,
       "conversionPct": 0.0783,
@@ -2558,7 +2558,7 @@
       "articleKey": "syvorotka_niacin_05_30ml",
       "article": "825315621",
       "name": "Cыворотка для лица 0,5",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 1260,
       "priceWb": 1260,
       "priceOzon": 1284,
@@ -2574,8 +2574,8 @@
       "buys": 62,
       "itemCost": 1053.506819,
       "contentCost": 70171.41,
-      "revenue": 65318.26305501257,
-      "income": 0,
+      "revenue": 65317.43,
+      "income": -4853.98,
       "erviewPct": 0.0060999999999999995,
       "ctrPct": 0.0137,
       "conversionPct": 0.024,
@@ -2598,7 +2598,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -4853.98,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -2725,7 +2725,7 @@
       "articleKey": "krem_buster_250ml",
       "article": "418262202",
       "name": "Крем антицеллюлитный",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 779.48,
       "priceWb": 779.48,
       "priceOzon": 1358,
@@ -2741,8 +2741,8 @@
       "buys": 60,
       "itemCost": 618.5433043,
       "contentCost": 14355.12,
-      "revenue": 37112.512926577045,
-      "income": 22757.171736,
+      "revenue": 37112.58,
+      "income": 22757.46,
       "erviewPct": 0.006,
       "ctrPct": 0.0246,
       "conversionPct": 0.0659,
@@ -2844,7 +2844,7 @@
       "articleKey": "solevoy_sprei_200ml",
       "article": "326913593",
       "name": "Солевой спрей для укладки",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 804,
       "priceWb": 804,
       "priceOzon": 1193,
@@ -2860,8 +2860,8 @@
       "buys": 42,
       "itemCost": 509.1152683,
       "contentCost": 62552.83,
-      "revenue": 21382.658781705064,
-      "income": 0,
+      "revenue": 21382.85,
+      "income": -41169.98,
       "erviewPct": 0.0256,
       "ctrPct": 0.0077,
       "conversionPct": 0.0755,
@@ -2884,7 +2884,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -41169.98,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -2987,7 +2987,7 @@
       "articleKey": "relaksinol_BAD_60caps",
       "article": "244342184",
       "name": "Магний цитрат В6 Релаксинол",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 550.76,
       "priceWb": 550.76,
       "priceOzon": 699,
@@ -3003,8 +3003,8 @@
       "buys": 40,
       "itemCost": 379.296875,
       "contentCost": 40111.36,
-      "revenue": 15171.858688251757,
-      "income": 0,
+      "revenue": 15171.87,
+      "income": -24939.49,
       "erviewPct": 0.07200000000000001,
       "ctrPct": 0.0015,
       "conversionPct": 0.0642,
@@ -3027,7 +3027,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -24939.49,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -3142,7 +3142,7 @@
       "articleKey": "silk_hair_300ml",
       "article": "399766297",
       "name": "Крем для волос разглаживающий",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 903,
       "priceWb": 903,
       "priceOzon": 1118,
@@ -3158,8 +3158,8 @@
       "buys": 27,
       "itemCost": 797.2662162,
       "contentCost": 38583.94,
-      "revenue": 21526.411515286767,
-      "income": 0,
+      "revenue": 21526.2,
+      "income": -17057.74,
       "erviewPct": 0.013300000000000001,
       "ctrPct": 0.033,
       "conversionPct": 0.057800000000000004,
@@ -3182,7 +3182,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -17057.74,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -3285,7 +3285,7 @@
       "articleKey": "maska-batter_dlya_rosta_500ml",
       "article": "344464243",
       "name": "Маска с перцем для роста волос",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 960,
       "priceWb": 960,
       "priceOzon": 1475,
@@ -3301,8 +3301,8 @@
       "buys": 20,
       "itemCost": 629.4698851,
       "contentCost": 31191.61,
-      "revenue": 12589.44543106232,
-      "income": 0,
+      "revenue": 12589.4,
+      "income": -18602.21,
       "erviewPct": 0.0197,
       "ctrPct": 0.0098,
       "conversionPct": 0.0528,
@@ -3325,7 +3325,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -18602.21,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -3428,7 +3428,7 @@
       "articleKey": "shampun_protiv_perhoti_250ml",
       "article": "208745988",
       "name": "Шампунь от перхоти",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 825.55,
       "priceWb": 825.55,
       "priceOzon": 1250,
@@ -3444,8 +3444,8 @@
       "buys": 16,
       "itemCost": 541.0433333,
       "contentCost": 16776.95,
-      "revenue": 8656.836945304438,
-      "income": 0,
+      "revenue": 8656.7,
+      "income": -8120.25,
       "erviewPct": 0.0271,
       "ctrPct": 0.0009,
       "conversionPct": 0.078,
@@ -3468,7 +3468,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -8120.25,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -3583,7 +3583,7 @@
       "articleKey": "syvorotka_dlya_rosta_6ml_v2",
       "article": "455797764",
       "name": "Сыворотка для роста бровей и ресниц",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 899.85,
       "priceWb": 899.85,
       "priceOzon": 960,
@@ -3599,8 +3599,8 @@
       "buys": 14,
       "itemCost": 577.5923333,
       "contentCost": 11412.79,
-      "revenue": 8086.148505030468,
-      "income": 0,
+      "revenue": 8086.29,
+      "income": -3326.5,
       "erviewPct": 0.0054,
       "ctrPct": 0.0907,
       "conversionPct": 0.0167,
@@ -3623,7 +3623,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -3326.5,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -3738,7 +3738,7 @@
       "articleKey": "maska-batter_250ml",
       "article": "260383031",
       "name": "Маска-баттер",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 860.4,
       "priceWb": 860.4,
       "priceOzon": 1407,
@@ -3754,8 +3754,8 @@
       "buys": 14,
       "itemCost": 437.2505882,
       "contentCost": 26972.3,
-      "revenue": 6121.44251282284,
-      "income": 0,
+      "revenue": 6121.51,
+      "income": -20850.79,
       "erviewPct": 0.0371,
       "ctrPct": 0.0044,
       "conversionPct": 0.11289999999999999,
@@ -3778,7 +3778,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -20850.79,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -3881,7 +3881,7 @@
       "articleKey": "indolakt_BAD_60caps",
       "article": "280062078",
       "name": "Индолакт",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 1095,
       "priceWb": 1095,
       "priceOzon": 1199,
@@ -3897,8 +3897,8 @@
       "buys": 9,
       "itemCost": 581.4275949,
       "contentCost": 7883.56,
-      "revenue": 5232.682862073543,
-      "income": 0,
+      "revenue": 5232.85,
+      "income": -2650.71,
       "erviewPct": 0.004,
       "ctrPct": 0.0012,
       "conversionPct": 0.041100000000000005,
@@ -3921,7 +3921,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -2650.71,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -4048,7 +4048,7 @@
       "articleKey": "maska-batter_500ml",
       "article": "734865504",
       "name": "Маска для волос с кератином",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 1690.5,
       "priceWb": 1690.5,
       "priceOzon": 1793,
@@ -4064,8 +4064,8 @@
       "buys": 6,
       "itemCost": 602.3355,
       "contentCost": 31433.39,
-      "revenue": 3614.0303072111847,
-      "income": 0,
+      "revenue": 3614.02,
+      "income": -27819.37,
       "erviewPct": 0.0183,
       "ctrPct": 0.0004,
       "conversionPct": 0.052199999999999996,
@@ -4088,7 +4088,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -27819.37,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -4203,7 +4203,7 @@
       "articleKey": "skrab_babl_gam_200ml",
       "article": "456967436",
       "name": "Скраб-пиллинг для головы",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 795,
       "priceWb": 795,
       "priceOzon": 1443,
@@ -4219,8 +4219,8 @@
       "buys": 5,
       "itemCost": 437.2777778,
       "contentCost": 19853.07,
-      "revenue": 2186.3892162153234,
-      "income": 0,
+      "revenue": 2186.4,
+      "income": -17666.67,
       "erviewPct": 0.0134,
       "ctrPct": 0.0346,
       "conversionPct": 0.0472,
@@ -4243,7 +4243,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -17666.67,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -4346,7 +4346,7 @@
       "articleKey": "retinait_krem_025_50ml",
       "article": "526620725",
       "name": "Ретинайт крем 0,25",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 1625,
       "priceWb": 1625,
       "priceOzon": 2300,
@@ -4362,8 +4362,8 @@
       "buys": 4,
       "itemCost": 853.6057746,
       "contentCost": 15898.38,
-      "revenue": 3414.453846484257,
-      "income": 0,
+      "revenue": 3414.43,
+      "income": -12483.95,
       "erviewPct": 0.0253,
       "ctrPct": 0.012199999999999999,
       "conversionPct": 0.019799999999999998,
@@ -4386,7 +4386,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -12483.95,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -4489,7 +4489,7 @@
       "articleKey": "retinait_syvorotka_025_30ml",
       "article": "835961714",
       "name": "Сыворотка для лица с ретинолом увлажняющая",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 1880,
       "priceWb": 1880,
       "priceOzon": 1684,
@@ -4505,8 +4505,8 @@
       "buys": 1,
       "itemCost": 605.0344607,
       "contentCost": 3388.21,
-      "revenue": 605.026695951858,
-      "income": 0,
+      "revenue": 605.03,
+      "income": -2783.18,
       "erviewPct": 0.023399999999999997,
       "ctrPct": 0.1484,
       "conversionPct": 0.0526,
@@ -4529,7 +4529,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -2783.18,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -4632,7 +4632,7 @@
       "articleKey": "frutaksa_BAD_200gr",
       "article": "223762749",
       "name": "Фрутакса",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 745.2,
       "priceWb": 745.2,
       "priceOzon": 868,
@@ -4648,8 +4648,8 @@
       "buys": 1,
       "itemCost": 522.83,
       "contentCost": 2942.99,
-      "revenue": 522.8264345354414,
-      "income": 0,
+      "revenue": 522.83,
+      "income": -2420.16,
       "erviewPct": 0,
       "ctrPct": 0.057,
       "conversionPct": 0.11109999999999999,
@@ -4672,7 +4672,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -2420.16,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -4775,7 +4775,7 @@
       "articleKey": "alteya_beauty_brows_box",
       "article": "305018458",
       "name": "Набор для бровей и ресниц",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 825,
       "priceWb": 825,
       "priceOzon": 1100,
@@ -4791,8 +4791,8 @@
       "buys": 1,
       "itemCost": 514.625625,
       "contentCost": 5630.45,
-      "revenue": 514.6287291605732,
-      "income": 0,
+      "revenue": 514.63,
+      "income": -5115.82,
       "erviewPct": 0,
       "ctrPct": 0.5861999999999999,
       "conversionPct": 0.0196,
@@ -4815,7 +4815,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -5115.82,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -4918,7 +4918,7 @@
       "articleKey": "vosk_stik_15ml",
       "article": "538087651",
       "name": "Воск для волос",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 716.8,
       "priceWb": 716.8,
       "priceOzon": 1160,
@@ -4934,8 +4934,8 @@
       "buys": 1,
       "itemCost": 339.2765574,
       "contentCost": 6856.29,
-      "revenue": 339.2792106252846,
-      "income": 0,
+      "revenue": 339.28,
+      "income": -6517.01,
       "erviewPct": 0.0067,
       "ctrPct": 0.1167,
       "conversionPct": 0.0286,
@@ -4958,7 +4958,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -6517.01,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -5055,57 +5055,45 @@
       "signal": "risk"
     },
     {
-      "id": "product-leaderboard-be954f397a3d",
+      "id": "product-leaderboard-7f4796fbdb04",
       "brand": "АЛТЕЯ",
       "weekLabel": "08.06.2026 - 14.06.2026",
-      "articleKey": "spicul_gel_mask_75ml",
-      "article": "913339130",
-      "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
-      "owner": "Васильева Мария",
-      "price": null,
-      "priceWb": null,
-      "priceOzon": null,
-      "category": "Маска косметическая",
+      "articleKey": "intimvita_300ml",
+      "article": "480197142",
+      "name": "Гель для интимной гигиены с молочной кислотой ИнтимВита",
+      "owner": "Максим",
+      "price": 650.1,
+      "priceWb": 650.1,
+      "priceOzon": 1080,
+      "category": "Средства для гигиены тела",
       "traffic": "",
       "inPortal": true,
-      "reach": 6694,
-      "reactions": 54,
-      "posts": 9,
-      "clicks": 34,
-      "carts": 2,
+      "reach": 0,
+      "reactions": 0,
+      "posts": 0,
+      "clicks": 0,
+      "carts": 0,
       "orders": 0,
       "buys": 0,
-      "itemCost": 1060.374242,
-      "contentCost": 15247.37,
+      "itemCost": 359.7386667,
+      "contentCost": 0,
       "revenue": 0,
       "income": 0,
-      "erviewPct": 0.008100000000000001,
-      "ctrPct": 0.0051,
+      "erviewPct": 0,
+      "ctrPct": 0,
       "conversionPct": 0,
-      "ecpm": -2277.77,
-      "grossEcpm": -3416.65,
-      "romiPct": -1,
+      "ecpm": 0,
+      "grossEcpm": 0,
+      "romiPct": 0,
       "drrPct": 0,
-      "cartRatePct": 0.058823529411764705,
+      "cartRatePct": 0,
       "buyRatePct": 0,
       "buyoutPct": 0,
       "diagnostics": {
-        "healthScore": 0,
+        "healthScore": 60,
         "highestSeverity": "critical",
-        "alertCount": 3,
+        "alertCount": 1,
         "alerts": [
-          {
-            "code": "negative_income",
-            "family": "economics",
-            "severity": "critical",
-            "title": "КЗ уводит доход в минус",
-            "label": "Доход <= 0",
-            "metricKey": "income",
-            "value": 0,
-            "baseline": 0,
-            "deltaPct": null,
-            "hint": "Нужно разбирать связку контент / оффер / карточка."
-          },
           {
             "code": "no_sales",
             "family": "sales",
@@ -5114,42 +5102,30 @@
             "label": "Нет выкупов",
             "metricKey": "buys",
             "value": 0,
-            "baseline": 0,
+            "baseline": null,
             "deltaPct": null,
             "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
-          },
-          {
-            "code": "romi_below_payback",
-            "family": "economics",
-            "severity": "critical",
-            "title": "ROMI ниже окупаемости",
-            "label": "ROMI < 100%",
-            "metricKey": "romiPct",
-            "value": -1,
-            "baseline": 2.65925,
-            "deltaPct": -1.3760458775970668,
-            "hint": "Расход на контент пока не отбивается доходом."
           }
         ],
-        "summary": "Доход <= 0 · Нет выкупов",
+        "summary": "Нет выкупов",
         "metrics": {
           "erviewPct": {
-            "value": 0.008100000000000001,
+            "value": 0,
             "baseline": 0.0086,
             "lowerIsBetter": false,
-            "deltaPct": -0.05813953488372081
+            "deltaPct": -1
           },
           "ctrPct": {
-            "value": 0.0051,
+            "value": 0,
             "baseline": 0.0101,
             "lowerIsBetter": false,
-            "deltaPct": -0.49504950495049505
+            "deltaPct": -1
           },
           "cartRatePct": {
-            "value": 0.058823529411764705,
+            "value": 0,
             "baseline": 0.2968036529680365,
             "lowerIsBetter": false,
-            "deltaPct": -0.8018099547511313
+            "deltaPct": -1
           },
           "conversionPct": {
             "value": 0,
@@ -5170,10 +5146,10 @@
             "deltaPct": -1
           },
           "romiPct": {
-            "value": -1,
+            "value": 0,
             "baseline": 2.65925,
             "lowerIsBetter": false,
-            "deltaPct": -1.3760458775970668
+            "deltaPct": -1
           },
           "drrPct": {
             "value": 0,
@@ -5182,51 +5158,182 @@
             "deltaPct": -1
           },
           "ecpm": {
-            "value": -2277.77,
+            "value": 0,
             "baseline": 277.92,
             "lowerIsBetter": false,
-            "deltaPct": -9.195775762809442
+            "deltaPct": -1
           },
           "grossEcpm": {
-            "value": -3416.65,
+            "value": 0,
             "baseline": 43.44,
             "lowerIsBetter": false,
-            "deltaPct": -79.65216390423574
+            "deltaPct": -1
           }
         }
       },
       "signal": "no_sales"
     },
     {
-      "id": "product-leaderboard-b02efeb0cb48",
+      "id": "product-leaderboard-ea9adcc9bc99",
       "brand": "АЛТЕЯ",
       "weekLabel": "08.06.2026 - 14.06.2026",
-      "articleKey": "gel_brows_5ml",
-      "article": "348575805",
-      "name": "Гель для бровей 5мл",
-      "owner": "Лапыгин Максим",
-      "price": 615,
-      "priceWb": 615,
-      "priceOzon": 780,
-      "category": "Декоративная косметика",
+      "articleKey": "chudofrukt_BAD_60caps_new",
+      "article": "167208205",
+      "name": "ЧУДОФРУКТ",
+      "owner": "",
+      "price": null,
+      "priceWb": null,
+      "priceOzon": null,
+      "category": "",
       "traffic": "",
-      "inPortal": true,
-      "reach": 25,
-      "reactions": 1,
+      "inPortal": false,
+      "reach": 0,
+      "reactions": 0,
       "posts": 0,
-      "clicks": 0,
+      "clicks": 8,
       "carts": 0,
       "orders": 0,
       "buys": 0,
-      "itemCost": 398.9045161,
-      "contentCost": 3151.76,
+      "itemCost": 215,
+      "contentCost": 0,
       "revenue": 0,
       "income": 0,
-      "erviewPct": 0.04,
+      "erviewPct": 0,
       "ctrPct": 0,
       "conversionPct": 0,
-      "ecpm": -126070.4,
-      "grossEcpm": -189105.6,
+      "ecpm": 0,
+      "grossEcpm": 0,
+      "romiPct": 0,
+      "drrPct": 0,
+      "cartRatePct": 0,
+      "buyRatePct": 0,
+      "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 20,
+        "highestSeverity": "critical",
+        "alertCount": 2,
+        "alerts": [
+          {
+            "code": "no_owner",
+            "family": "ownership",
+            "severity": "critical",
+            "title": "Нет owner по SKU",
+            "label": "Нет owner",
+            "metricKey": "",
+            "value": null,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "КЗ уже льётся, а ответственный по карточке не назначен."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
+          }
+        ],
+        "summary": "Нет owner · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0,
+            "baseline": 0.0086,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "ctrPct": {
+            "value": 0,
+            "baseline": 0.0101,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.2968036529680365,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.05315,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.053133491731869514,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.96181143281366,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": 0,
+            "baseline": 2.65925,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 0.3832,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": 0,
+            "baseline": 277.92,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "grossEcpm": {
+            "value": 0,
+            "baseline": 43.44,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          }
+        }
+      },
+      "signal": "no_owner"
+    },
+    {
+      "id": "product-leaderboard-dab4647d8f2b",
+      "brand": "АЛТЕЯ",
+      "weekLabel": "08.06.2026 - 14.06.2026",
+      "articleKey": "b_kompleks_BAD_60tabl",
+      "article": "283835152",
+      "name": "B - комплекс",
+      "owner": "Максим",
+      "price": 419.72,
+      "priceWb": 419.72,
+      "priceOzon": 637,
+      "category": "БАДы и витамины",
+      "traffic": "",
+      "inPortal": true,
+      "reach": 8,
+      "reactions": 0,
+      "posts": 0,
+      "clicks": 4,
+      "carts": 0,
+      "orders": 0,
+      "buys": 0,
+      "itemCost": 270.05,
+      "contentCost": 544.5,
+      "revenue": 0,
+      "income": -544.5,
+      "erviewPct": 0,
+      "ctrPct": 0.5,
+      "conversionPct": 0,
+      "ecpm": -68062.5,
+      "grossEcpm": -102093.75,
       "romiPct": -1,
       "drrPct": 0,
       "cartRatePct": 0,
@@ -5244,7 +5351,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -544.5,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -5257,7 +5364,7 @@
             "label": "Нет выкупов",
             "metricKey": "buys",
             "value": 0,
-            "baseline": 0,
+            "baseline": null,
             "deltaPct": null,
             "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
           },
@@ -5277,16 +5384,16 @@
         "summary": "Доход <= 0 · Нет выкупов",
         "metrics": {
           "erviewPct": {
-            "value": 0.04,
+            "value": 0,
             "baseline": 0.0086,
             "lowerIsBetter": false,
-            "deltaPct": 3.6511627906976747
+            "deltaPct": -1
           },
           "ctrPct": {
-            "value": 0,
+            "value": 0.5,
             "baseline": 0.0101,
             "lowerIsBetter": false,
-            "deltaPct": -1
+            "deltaPct": 48.504950495049506
           },
           "cartRatePct": {
             "value": 0,
@@ -5325,16 +5432,16 @@
             "deltaPct": -1
           },
           "ecpm": {
-            "value": -126070.4,
+            "value": -68062.5,
             "baseline": 277.92,
             "lowerIsBetter": false,
-            "deltaPct": -454.62118595279213
+            "deltaPct": -245.8996113989637
           },
           "grossEcpm": {
-            "value": -189105.6,
+            "value": -102093.75,
             "baseline": 43.44,
             "lowerIsBetter": false,
-            "deltaPct": -4354.259668508288
+            "deltaPct": -2351.2244475138123
           }
         }
       },
@@ -5347,7 +5454,7 @@
       "articleKey": "gel_dlya_brovei_6ml",
       "article": "256005551",
       "name": "Гель для бровей 6 мл",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 399.84,
       "priceWb": 399.84,
       "priceOzon": 650,
@@ -5364,7 +5471,7 @@
       "itemCost": 274.144127,
       "contentCost": 1477.23,
       "revenue": 0,
-      "income": 0,
+      "income": -1477.23,
       "erviewPct": 0,
       "ctrPct": 1.5,
       "conversionPct": 0,
@@ -5387,7 +5494,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -1477.23,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -5400,7 +5507,7 @@
             "label": "Нет выкупов",
             "metricKey": "buys",
             "value": 0,
-            "baseline": 0,
+            "baseline": null,
             "deltaPct": null,
             "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
           },
@@ -5484,163 +5591,44 @@
       "signal": "no_sales"
     },
     {
-      "id": "product-leaderboard-7f4796fbdb04",
+      "id": "product-leaderboard-9c4872e98e86",
       "brand": "АЛТЕЯ",
       "weekLabel": "08.06.2026 - 14.06.2026",
-      "articleKey": "intimvita_300ml",
-      "article": "480197142",
-      "name": "Гель для интимной гигиены с молочной кислотой ИнтимВита",
-      "owner": "Лапыгин Максим",
-      "price": 650.1,
-      "priceWb": 650.1,
-      "priceOzon": 1080,
-      "category": "Средства для гигиены тела",
+      "articleKey": "nabor_remuver_kremovii",
+      "article": "251796954",
+      "name": "Кремовый ремувер",
+      "owner": "Максим",
+      "price": 625.52,
+      "priceWb": 625.52,
+      "priceOzon": 870,
+      "category": "Декоративная косметика",
       "traffic": "",
       "inPortal": true,
-      "reach": 0,
-      "reactions": 0,
+      "reach": 307,
+      "reactions": 2,
       "posts": 0,
-      "clicks": 0,
+      "clicks": 1,
       "carts": 0,
       "orders": 0,
       "buys": 0,
-      "itemCost": 359.7386667,
-      "contentCost": 0,
+      "itemCost": 310.6919259,
+      "contentCost": 2234.67,
       "revenue": 0,
-      "income": 0,
-      "erviewPct": 0,
-      "ctrPct": 0,
+      "income": -2234.67,
+      "erviewPct": 0.006500000000000001,
+      "ctrPct": 0.0033,
       "conversionPct": 0,
-      "ecpm": 0,
-      "grossEcpm": 0,
-      "romiPct": 0,
+      "ecpm": -7279.06,
+      "grossEcpm": -10918.58,
+      "romiPct": -1,
       "drrPct": 0,
       "cartRatePct": 0,
       "buyRatePct": 0,
       "buyoutPct": 0,
       "diagnostics": {
-        "healthScore": 60,
-        "highestSeverity": "critical",
-        "alertCount": 1,
-        "alerts": [
-          {
-            "code": "no_sales",
-            "family": "sales",
-            "severity": "critical",
-            "title": "Трафик не дошёл до выкупов",
-            "label": "Нет выкупов",
-            "metricKey": "buys",
-            "value": 0,
-            "baseline": 0,
-            "deltaPct": null,
-            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
-          }
-        ],
-        "summary": "Нет выкупов",
-        "metrics": {
-          "erviewPct": {
-            "value": 0,
-            "baseline": 0.0086,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "ctrPct": {
-            "value": 0,
-            "baseline": 0.0101,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "cartRatePct": {
-            "value": 0,
-            "baseline": 0.2968036529680365,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "conversionPct": {
-            "value": 0,
-            "baseline": 0.05315,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyRatePct": {
-            "value": 0,
-            "baseline": 0.053133491731869514,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyoutPct": {
-            "value": 0,
-            "baseline": 0.96181143281366,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "romiPct": {
-            "value": 0,
-            "baseline": 2.65925,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "drrPct": {
-            "value": 0,
-            "baseline": 0.3832,
-            "lowerIsBetter": true,
-            "deltaPct": -1
-          },
-          "ecpm": {
-            "value": 0,
-            "baseline": 277.92,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "grossEcpm": {
-            "value": 0,
-            "baseline": 43.44,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          }
-        }
-      },
-      "signal": "no_sales"
-    },
-    {
-      "id": "product-leaderboard-9945a0c349c9",
-      "brand": "АЛТЕЯ",
-      "weekLabel": "08.06.2026 - 14.06.2026",
-      "articleKey": "pink_pepper_50ml",
-      "article": "484586518",
-      "name": "Крем для лица",
-      "owner": "Васильева Мария",
-      "price": 840,
-      "priceWb": 840,
-      "priceOzon": 1500,
-      "category": "Косметика для ухода",
-      "traffic": "КЗ",
-      "inPortal": true,
-      "reach": 9404,
-      "reactions": 132,
-      "posts": 0,
-      "clicks": 895,
-      "carts": 10,
-      "orders": 0,
-      "buys": 0,
-      "itemCost": 548.32,
-      "contentCost": 34089.08,
-      "revenue": 0,
-      "income": 0,
-      "erviewPct": 0.013999999999999999,
-      "ctrPct": 0.09519999999999999,
-      "conversionPct": 0,
-      "ecpm": -3624.96,
-      "grossEcpm": -5437.43,
-      "romiPct": -1,
-      "drrPct": 0,
-      "cartRatePct": 0.0111731843575419,
-      "buyRatePct": 0,
-      "buyoutPct": 0,
-      "diagnostics": {
         "healthScore": 0,
         "highestSeverity": "critical",
-        "alertCount": 5,
+        "alertCount": 3,
         "alerts": [
           {
             "code": "negative_income",
@@ -5649,7 +5637,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -2234.67,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -5662,7 +5650,7 @@
             "label": "Нет выкупов",
             "metricKey": "buys",
             "value": 0,
-            "baseline": 0,
+            "baseline": null,
             "deltaPct": null,
             "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
           },
@@ -5677,51 +5665,27 @@
             "baseline": 2.65925,
             "deltaPct": -1.3760458775970668,
             "hint": "Расход на контент пока не отбивается доходом."
-          },
-          {
-            "code": "low_conversion",
-            "family": "card",
-            "severity": "high",
-            "title": "Конверсия в заказ ниже нормы",
-            "label": "Конверсия просела",
-            "metricKey": "conversionPct",
-            "value": 0,
-            "baseline": 0.05315,
-            "deltaPct": -1,
-            "hint": "Трафик приходит, но карточка не дожимает до заказа."
-          },
-          {
-            "code": "low_cart_rate",
-            "family": "card",
-            "severity": "high",
-            "title": "Корзина отстаёт от кликов",
-            "label": "Корзина просела",
-            "metricKey": "cartRatePct",
-            "value": 0.0111731843575419,
-            "baseline": 0.2968036529680365,
-            "deltaPct": -0.9623549634722819,
-            "hint": "Нужно смотреть оффер, цену и первый экран карточки."
           }
         ],
         "summary": "Доход <= 0 · Нет выкупов",
         "metrics": {
           "erviewPct": {
-            "value": 0.013999999999999999,
+            "value": 0.006500000000000001,
             "baseline": 0.0086,
             "lowerIsBetter": false,
-            "deltaPct": 0.6279069767441858
+            "deltaPct": -0.2441860465116279
           },
           "ctrPct": {
-            "value": 0.09519999999999999,
+            "value": 0.0033,
             "baseline": 0.0101,
             "lowerIsBetter": false,
-            "deltaPct": 8.425742574257425
+            "deltaPct": -0.6732673267326732
           },
           "cartRatePct": {
-            "value": 0.0111731843575419,
+            "value": 0,
             "baseline": 0.2968036529680365,
             "lowerIsBetter": false,
-            "deltaPct": -0.9623549634722819
+            "deltaPct": -1
           },
           "conversionPct": {
             "value": 0,
@@ -5754,16 +5718,445 @@
             "deltaPct": -1
           },
           "ecpm": {
-            "value": -3624.96,
+            "value": -7279.06,
             "baseline": 277.92,
             "lowerIsBetter": false,
-            "deltaPct": -14.043177892918825
+            "deltaPct": -27.191206102475533
           },
           "grossEcpm": {
-            "value": -5437.43,
+            "value": -10918.58,
             "baseline": 43.44,
             "lowerIsBetter": false,
-            "deltaPct": -126.17104051565379
+            "deltaPct": -252.3485267034991
+          }
+        }
+      },
+      "signal": "no_sales"
+    },
+    {
+      "id": "product-leaderboard-b02efeb0cb48",
+      "brand": "АЛТЕЯ",
+      "weekLabel": "08.06.2026 - 14.06.2026",
+      "articleKey": "gel_brows_5ml",
+      "article": "348575805",
+      "name": "Гель для бровей 5мл",
+      "owner": "Максим",
+      "price": 615,
+      "priceWb": 615,
+      "priceOzon": 780,
+      "category": "Декоративная косметика",
+      "traffic": "",
+      "inPortal": true,
+      "reach": 25,
+      "reactions": 1,
+      "posts": 0,
+      "clicks": 0,
+      "carts": 0,
+      "orders": 0,
+      "buys": 0,
+      "itemCost": 398.9045161,
+      "contentCost": 3151.76,
+      "revenue": 0,
+      "income": -3151.76,
+      "erviewPct": 0.04,
+      "ctrPct": 0,
+      "conversionPct": 0,
+      "ecpm": -126070.4,
+      "grossEcpm": -189105.6,
+      "romiPct": -1,
+      "drrPct": 0,
+      "cartRatePct": 0,
+      "buyRatePct": 0,
+      "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -3151.76,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 2.65925,
+            "deltaPct": -1.3760458775970668,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.04,
+            "baseline": 0.0086,
+            "lowerIsBetter": false,
+            "deltaPct": 3.6511627906976747
+          },
+          "ctrPct": {
+            "value": 0,
+            "baseline": 0.0101,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.2968036529680365,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.05315,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.053133491731869514,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.96181143281366,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 2.65925,
+            "lowerIsBetter": false,
+            "deltaPct": -1.3760458775970668
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 0.3832,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -126070.4,
+            "baseline": 277.92,
+            "lowerIsBetter": false,
+            "deltaPct": -454.62118595279213
+          },
+          "grossEcpm": {
+            "value": -189105.6,
+            "baseline": 43.44,
+            "lowerIsBetter": false,
+            "deltaPct": -4354.259668508288
+          }
+        }
+      },
+      "signal": "no_sales"
+    },
+    {
+      "id": "product-leaderboard-88d360a01ab8",
+      "brand": "АЛТЕЯ",
+      "weekLabel": "08.06.2026 - 14.06.2026",
+      "articleKey": "nabor_remuver_40ml",
+      "article": "197560593",
+      "name": "Ремувер для кутикул",
+      "owner": "Максим",
+      "price": 440,
+      "priceWb": 440,
+      "priceOzon": null,
+      "category": "Косметика для ухода",
+      "traffic": "",
+      "inPortal": true,
+      "reach": 26,
+      "reactions": 2,
+      "posts": 0,
+      "clicks": 9,
+      "carts": 0,
+      "orders": 0,
+      "buys": 0,
+      "itemCost": 220.0406048,
+      "contentCost": 3336.85,
+      "revenue": 0,
+      "income": -3336.85,
+      "erviewPct": 0.07690000000000001,
+      "ctrPct": 0.34619999999999995,
+      "conversionPct": 0,
+      "ecpm": -128340.38,
+      "grossEcpm": -192510.58,
+      "romiPct": -1,
+      "drrPct": 0,
+      "cartRatePct": 0,
+      "buyRatePct": 0,
+      "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -3336.85,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 2.65925,
+            "deltaPct": -1.3760458775970668,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.07690000000000001,
+            "baseline": 0.0086,
+            "lowerIsBetter": false,
+            "deltaPct": 7.94186046511628
+          },
+          "ctrPct": {
+            "value": 0.34619999999999995,
+            "baseline": 0.0101,
+            "lowerIsBetter": false,
+            "deltaPct": 33.277227722772274
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.2968036529680365,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.05315,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.053133491731869514,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.96181143281366,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 2.65925,
+            "lowerIsBetter": false,
+            "deltaPct": -1.3760458775970668
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 0.3832,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -128340.38,
+            "baseline": 277.92,
+            "lowerIsBetter": false,
+            "deltaPct": -462.7889320667818
+          },
+          "grossEcpm": {
+            "value": -192510.58,
+            "baseline": 43.44,
+            "lowerIsBetter": false,
+            "deltaPct": -4432.643186003683
+          }
+        }
+      },
+      "signal": "no_sales"
+    },
+    {
+      "id": "product-leaderboard-49a62991a341",
+      "brand": "АЛТЕЯ",
+      "weekLabel": "08.06.2026 - 14.06.2026",
+      "articleKey": "penka_160ml",
+      "article": "244341711",
+      "name": "Пенка для умывания",
+      "owner": "Мария",
+      "price": 717.6,
+      "priceWb": 717.6,
+      "priceOzon": 810,
+      "category": "Косметика для ухода",
+      "traffic": "КЗ",
+      "inPortal": true,
+      "reach": 41,
+      "reactions": 1,
+      "posts": 0,
+      "clicks": 27,
+      "carts": 0,
+      "orders": 0,
+      "buys": 0,
+      "itemCost": 453.6,
+      "contentCost": 4590.93,
+      "revenue": 0,
+      "income": -4590.93,
+      "erviewPct": 0.024399999999999998,
+      "ctrPct": 0.6585,
+      "conversionPct": 0,
+      "ecpm": -111973.9,
+      "grossEcpm": -167960.85,
+      "romiPct": -1,
+      "drrPct": 0,
+      "cartRatePct": 0,
+      "buyRatePct": 0,
+      "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -4590.93,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 2.65925,
+            "deltaPct": -1.3760458775970668,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.024399999999999998,
+            "baseline": 0.0086,
+            "lowerIsBetter": false,
+            "deltaPct": 1.837209302325581
+          },
+          "ctrPct": {
+            "value": 0.6585,
+            "baseline": 0.0101,
+            "lowerIsBetter": false,
+            "deltaPct": 64.1980198019802
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.2968036529680365,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.05315,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.053133491731869514,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.96181143281366,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 2.65925,
+            "lowerIsBetter": false,
+            "deltaPct": -1.3760458775970668
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 0.3832,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -111973.9,
+            "baseline": 277.92,
+            "lowerIsBetter": false,
+            "deltaPct": -403.8997553252734
+          },
+          "grossEcpm": {
+            "value": -167960.85,
+            "baseline": 43.44,
+            "lowerIsBetter": false,
+            "deltaPct": -3867.502071823205
           }
         }
       },
@@ -5776,7 +6169,7 @@
       "articleKey": "gel_antiakne_20ml",
       "article": "381392982",
       "name": "Крем от АКНЕ, старая упаковка сток",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "price": 585,
       "priceWb": 585,
       "priceOzon": 1450,
@@ -5793,7 +6186,7 @@
       "itemCost": 530,
       "contentCost": 6124.67,
       "revenue": 0,
-      "income": 0,
+      "income": -6124.67,
       "erviewPct": 0.0067,
       "ctrPct": 0.0378,
       "conversionPct": 0,
@@ -5816,7 +6209,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -6124.67,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -5829,7 +6222,7 @@
             "label": "Нет выкупов",
             "metricKey": "buys",
             "value": 0,
-            "baseline": 0,
+            "baseline": null,
             "deltaPct": null,
             "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
           },
@@ -5937,330 +6330,44 @@
       "signal": "no_sales"
     },
     {
-      "id": "product-leaderboard-9c4872e98e86",
+      "id": "product-leaderboard-1e521a850a6d",
       "brand": "АЛТЕЯ",
       "weekLabel": "08.06.2026 - 14.06.2026",
-      "articleKey": "nabor_remuver_kremovii",
-      "article": "251796954",
-      "name": "Кремовый ремувер",
-      "owner": "Лапыгин Максим",
-      "price": 625.52,
-      "priceWb": 625.52,
-      "priceOzon": 870,
-      "category": "Декоративная косметика",
-      "traffic": "",
-      "inPortal": true,
-      "reach": 307,
-      "reactions": 2,
-      "posts": 0,
-      "clicks": 1,
-      "carts": 0,
-      "orders": 0,
-      "buys": 0,
-      "itemCost": 310.6919259,
-      "contentCost": 2234.67,
-      "revenue": 0,
-      "income": 0,
-      "erviewPct": 0.006500000000000001,
-      "ctrPct": 0.0033,
-      "conversionPct": 0,
-      "ecpm": -7279.06,
-      "grossEcpm": -10918.58,
-      "romiPct": -1,
-      "drrPct": 0,
-      "cartRatePct": 0,
-      "buyRatePct": 0,
-      "buyoutPct": 0,
-      "diagnostics": {
-        "healthScore": 0,
-        "highestSeverity": "critical",
-        "alertCount": 3,
-        "alerts": [
-          {
-            "code": "negative_income",
-            "family": "economics",
-            "severity": "critical",
-            "title": "КЗ уводит доход в минус",
-            "label": "Доход <= 0",
-            "metricKey": "income",
-            "value": 0,
-            "baseline": 0,
-            "deltaPct": null,
-            "hint": "Нужно разбирать связку контент / оффер / карточка."
-          },
-          {
-            "code": "no_sales",
-            "family": "sales",
-            "severity": "critical",
-            "title": "Трафик не дошёл до выкупов",
-            "label": "Нет выкупов",
-            "metricKey": "buys",
-            "value": 0,
-            "baseline": 0,
-            "deltaPct": null,
-            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
-          },
-          {
-            "code": "romi_below_payback",
-            "family": "economics",
-            "severity": "critical",
-            "title": "ROMI ниже окупаемости",
-            "label": "ROMI < 100%",
-            "metricKey": "romiPct",
-            "value": -1,
-            "baseline": 2.65925,
-            "deltaPct": -1.3760458775970668,
-            "hint": "Расход на контент пока не отбивается доходом."
-          }
-        ],
-        "summary": "Доход <= 0 · Нет выкупов",
-        "metrics": {
-          "erviewPct": {
-            "value": 0.006500000000000001,
-            "baseline": 0.0086,
-            "lowerIsBetter": false,
-            "deltaPct": -0.2441860465116279
-          },
-          "ctrPct": {
-            "value": 0.0033,
-            "baseline": 0.0101,
-            "lowerIsBetter": false,
-            "deltaPct": -0.6732673267326732
-          },
-          "cartRatePct": {
-            "value": 0,
-            "baseline": 0.2968036529680365,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "conversionPct": {
-            "value": 0,
-            "baseline": 0.05315,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyRatePct": {
-            "value": 0,
-            "baseline": 0.053133491731869514,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyoutPct": {
-            "value": 0,
-            "baseline": 0.96181143281366,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "romiPct": {
-            "value": -1,
-            "baseline": 2.65925,
-            "lowerIsBetter": false,
-            "deltaPct": -1.3760458775970668
-          },
-          "drrPct": {
-            "value": 0,
-            "baseline": 0.3832,
-            "lowerIsBetter": true,
-            "deltaPct": -1
-          },
-          "ecpm": {
-            "value": -7279.06,
-            "baseline": 277.92,
-            "lowerIsBetter": false,
-            "deltaPct": -27.191206102475533
-          },
-          "grossEcpm": {
-            "value": -10918.58,
-            "baseline": 43.44,
-            "lowerIsBetter": false,
-            "deltaPct": -252.3485267034991
-          }
-        }
-      },
-      "signal": "no_sales"
-    },
-    {
-      "id": "product-leaderboard-49a62991a341",
-      "brand": "АЛТЕЯ",
-      "weekLabel": "08.06.2026 - 14.06.2026",
-      "articleKey": "penka_160ml",
-      "article": "244341711",
-      "name": "Пенка для умывания",
-      "owner": "Васильева Мария",
-      "price": 717.6,
-      "priceWb": 717.6,
-      "priceOzon": 810,
-      "category": "Косметика для ухода",
-      "traffic": "КЗ",
-      "inPortal": true,
-      "reach": 41,
-      "reactions": 1,
-      "posts": 0,
-      "clicks": 27,
-      "carts": 0,
-      "orders": 0,
-      "buys": 0,
-      "itemCost": 453.6,
-      "contentCost": 4590.93,
-      "revenue": 0,
-      "income": 0,
-      "erviewPct": 0.024399999999999998,
-      "ctrPct": 0.6585,
-      "conversionPct": 0,
-      "ecpm": -111973.9,
-      "grossEcpm": -167960.85,
-      "romiPct": -1,
-      "drrPct": 0,
-      "cartRatePct": 0,
-      "buyRatePct": 0,
-      "buyoutPct": 0,
-      "diagnostics": {
-        "healthScore": 0,
-        "highestSeverity": "critical",
-        "alertCount": 3,
-        "alerts": [
-          {
-            "code": "negative_income",
-            "family": "economics",
-            "severity": "critical",
-            "title": "КЗ уводит доход в минус",
-            "label": "Доход <= 0",
-            "metricKey": "income",
-            "value": 0,
-            "baseline": 0,
-            "deltaPct": null,
-            "hint": "Нужно разбирать связку контент / оффер / карточка."
-          },
-          {
-            "code": "no_sales",
-            "family": "sales",
-            "severity": "critical",
-            "title": "Трафик не дошёл до выкупов",
-            "label": "Нет выкупов",
-            "metricKey": "buys",
-            "value": 0,
-            "baseline": 0,
-            "deltaPct": null,
-            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
-          },
-          {
-            "code": "romi_below_payback",
-            "family": "economics",
-            "severity": "critical",
-            "title": "ROMI ниже окупаемости",
-            "label": "ROMI < 100%",
-            "metricKey": "romiPct",
-            "value": -1,
-            "baseline": 2.65925,
-            "deltaPct": -1.3760458775970668,
-            "hint": "Расход на контент пока не отбивается доходом."
-          }
-        ],
-        "summary": "Доход <= 0 · Нет выкупов",
-        "metrics": {
-          "erviewPct": {
-            "value": 0.024399999999999998,
-            "baseline": 0.0086,
-            "lowerIsBetter": false,
-            "deltaPct": 1.837209302325581
-          },
-          "ctrPct": {
-            "value": 0.6585,
-            "baseline": 0.0101,
-            "lowerIsBetter": false,
-            "deltaPct": 64.1980198019802
-          },
-          "cartRatePct": {
-            "value": 0,
-            "baseline": 0.2968036529680365,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "conversionPct": {
-            "value": 0,
-            "baseline": 0.05315,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyRatePct": {
-            "value": 0,
-            "baseline": 0.053133491731869514,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyoutPct": {
-            "value": 0,
-            "baseline": 0.96181143281366,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "romiPct": {
-            "value": -1,
-            "baseline": 2.65925,
-            "lowerIsBetter": false,
-            "deltaPct": -1.3760458775970668
-          },
-          "drrPct": {
-            "value": 0,
-            "baseline": 0.3832,
-            "lowerIsBetter": true,
-            "deltaPct": -1
-          },
-          "ecpm": {
-            "value": -111973.9,
-            "baseline": 277.92,
-            "lowerIsBetter": false,
-            "deltaPct": -403.8997553252734
-          },
-          "grossEcpm": {
-            "value": -167960.85,
-            "baseline": 43.44,
-            "lowerIsBetter": false,
-            "deltaPct": -3867.502071823205
-          }
-        }
-      },
-      "signal": "no_sales"
-    },
-    {
-      "id": "product-leaderboard-88d360a01ab8",
-      "brand": "АЛТЕЯ",
-      "weekLabel": "08.06.2026 - 14.06.2026",
-      "articleKey": "nabor_remuver_40ml",
-      "article": "197560593",
-      "name": "Ремувер для кутикул",
-      "owner": "Лапыгин Максим",
-      "price": 440,
-      "priceWb": 440,
+      "articleKey": "shampun_kudryavii_metod_500m",
+      "article": "971199351",
+      "name": "Шампунь для кудрявых волос, Алтея, 500 мл",
+      "owner": "",
+      "price": null,
+      "priceWb": null,
       "priceOzon": null,
-      "category": "Косметика для ухода",
+      "category": "",
       "traffic": "",
-      "inPortal": true,
-      "reach": 26,
-      "reactions": 2,
-      "posts": 0,
-      "clicks": 9,
-      "carts": 0,
+      "inPortal": false,
+      "reach": 5676,
+      "reactions": 124,
+      "posts": 8,
+      "clicks": 18,
+      "carts": 1,
       "orders": 0,
       "buys": 0,
-      "itemCost": 220.0406048,
-      "contentCost": 3336.85,
+      "itemCost": 1165.272727,
+      "contentCost": 11381.72,
       "revenue": 0,
-      "income": 0,
-      "erviewPct": 0.07690000000000001,
-      "ctrPct": 0.34619999999999995,
+      "income": -11381.72,
+      "erviewPct": 0.0218,
+      "ctrPct": 0.0032,
       "conversionPct": 0,
-      "ecpm": -128340.38,
-      "grossEcpm": -192510.58,
+      "ecpm": -2005.24,
+      "grossEcpm": -3007.85,
       "romiPct": -1,
       "drrPct": 0,
-      "cartRatePct": 0,
+      "cartRatePct": 0.05555555555555555,
       "buyRatePct": 0,
       "buyoutPct": 0,
       "diagnostics": {
         "healthScore": 0,
         "highestSeverity": "critical",
-        "alertCount": 3,
+        "alertCount": 4,
         "alerts": [
           {
             "code": "negative_income",
@@ -6269,10 +6376,22 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -11381.72,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_owner",
+            "family": "ownership",
+            "severity": "critical",
+            "title": "Нет owner по SKU",
+            "label": "Нет owner",
+            "metricKey": "",
+            "value": null,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "КЗ уже льётся, а ответственный по карточке не назначен."
           },
           {
             "code": "no_sales",
@@ -6282,7 +6401,7 @@
             "label": "Нет выкупов",
             "metricKey": "buys",
             "value": 0,
-            "baseline": 0,
+            "baseline": null,
             "deltaPct": null,
             "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
           },
@@ -6299,25 +6418,25 @@
             "hint": "Расход на контент пока не отбивается доходом."
           }
         ],
-        "summary": "Доход <= 0 · Нет выкупов",
+        "summary": "Доход <= 0 · Нет owner",
         "metrics": {
           "erviewPct": {
-            "value": 0.07690000000000001,
+            "value": 0.0218,
             "baseline": 0.0086,
             "lowerIsBetter": false,
-            "deltaPct": 7.94186046511628
+            "deltaPct": 1.5348837209302326
           },
           "ctrPct": {
-            "value": 0.34619999999999995,
+            "value": 0.0032,
             "baseline": 0.0101,
             "lowerIsBetter": false,
-            "deltaPct": 33.277227722772274
+            "deltaPct": -0.6831683168316831
           },
           "cartRatePct": {
-            "value": 0,
+            "value": 0.05555555555555555,
             "baseline": 0.2968036529680365,
             "lowerIsBetter": false,
-            "deltaPct": -1
+            "deltaPct": -0.8128205128205128
           },
           "conversionPct": {
             "value": 0,
@@ -6350,163 +6469,20 @@
             "deltaPct": -1
           },
           "ecpm": {
-            "value": -128340.38,
+            "value": -2005.24,
             "baseline": 277.92,
             "lowerIsBetter": false,
-            "deltaPct": -462.7889320667818
+            "deltaPct": -8.21516983304548
           },
           "grossEcpm": {
-            "value": -192510.58,
+            "value": -3007.85,
             "baseline": 43.44,
             "lowerIsBetter": false,
-            "deltaPct": -4432.643186003683
+            "deltaPct": -70.24148250460405
           }
         }
       },
-      "signal": "no_sales"
-    },
-    {
-      "id": "product-leaderboard-e005a8bb46ae",
-      "brand": "АЛТЕЯ",
-      "weekLabel": "08.06.2026 - 14.06.2026",
-      "articleKey": "termo_sprei_200ml",
-      "article": "268373587",
-      "name": "Термозащита для волос",
-      "owner": "Лапыгин Максим",
-      "price": 810,
-      "priceWb": 810,
-      "priceOzon": 1250,
-      "category": "Косметика для ухода за волосами",
-      "traffic": "",
-      "inPortal": true,
-      "reach": 2178,
-      "reactions": 145,
-      "posts": 5,
-      "clicks": 16,
-      "carts": 2,
-      "orders": 0,
-      "buys": 0,
-      "itemCost": 376.6261905,
-      "contentCost": 12524.39,
-      "revenue": 0,
-      "income": 0,
-      "erviewPct": 0.0666,
-      "ctrPct": 0.0073,
-      "conversionPct": 0,
-      "ecpm": -5750.41,
-      "grossEcpm": -8625.61,
-      "romiPct": -1,
-      "drrPct": 0,
-      "cartRatePct": 0.125,
-      "buyRatePct": 0,
-      "buyoutPct": 0,
-      "diagnostics": {
-        "healthScore": 0,
-        "highestSeverity": "critical",
-        "alertCount": 3,
-        "alerts": [
-          {
-            "code": "negative_income",
-            "family": "economics",
-            "severity": "critical",
-            "title": "КЗ уводит доход в минус",
-            "label": "Доход <= 0",
-            "metricKey": "income",
-            "value": 0,
-            "baseline": 0,
-            "deltaPct": null,
-            "hint": "Нужно разбирать связку контент / оффер / карточка."
-          },
-          {
-            "code": "no_sales",
-            "family": "sales",
-            "severity": "critical",
-            "title": "Трафик не дошёл до выкупов",
-            "label": "Нет выкупов",
-            "metricKey": "buys",
-            "value": 0,
-            "baseline": 0,
-            "deltaPct": null,
-            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
-          },
-          {
-            "code": "romi_below_payback",
-            "family": "economics",
-            "severity": "critical",
-            "title": "ROMI ниже окупаемости",
-            "label": "ROMI < 100%",
-            "metricKey": "romiPct",
-            "value": -1,
-            "baseline": 2.65925,
-            "deltaPct": -1.3760458775970668,
-            "hint": "Расход на контент пока не отбивается доходом."
-          }
-        ],
-        "summary": "Доход <= 0 · Нет выкупов",
-        "metrics": {
-          "erviewPct": {
-            "value": 0.0666,
-            "baseline": 0.0086,
-            "lowerIsBetter": false,
-            "deltaPct": 6.744186046511628
-          },
-          "ctrPct": {
-            "value": 0.0073,
-            "baseline": 0.0101,
-            "lowerIsBetter": false,
-            "deltaPct": -0.27722772277227714
-          },
-          "cartRatePct": {
-            "value": 0.125,
-            "baseline": 0.2968036529680365,
-            "lowerIsBetter": false,
-            "deltaPct": -0.5788461538461538
-          },
-          "conversionPct": {
-            "value": 0,
-            "baseline": 0.05315,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyRatePct": {
-            "value": 0,
-            "baseline": 0.053133491731869514,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyoutPct": {
-            "value": 0,
-            "baseline": 0.96181143281366,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "romiPct": {
-            "value": -1,
-            "baseline": 2.65925,
-            "lowerIsBetter": false,
-            "deltaPct": -1.3760458775970668
-          },
-          "drrPct": {
-            "value": 0,
-            "baseline": 0.3832,
-            "lowerIsBetter": true,
-            "deltaPct": -1
-          },
-          "ecpm": {
-            "value": -5750.41,
-            "baseline": 277.92,
-            "lowerIsBetter": false,
-            "deltaPct": -21.69088226827864
-          },
-          "grossEcpm": {
-            "value": -8625.61,
-            "baseline": 43.44,
-            "lowerIsBetter": false,
-            "deltaPct": -199.5637661141805
-          }
-        }
-      },
-      "signal": "no_sales"
+      "signal": "no_owner"
     },
     {
       "id": "product-leaderboard-6209910a9519",
@@ -6515,7 +6491,7 @@
       "articleKey": "enzim_pudra_80gr",
       "article": "276289241",
       "name": "Энзимная пудра",
-      "owner": "Лапыгин Максим",
+      "owner": "Максим",
       "price": 745,
       "priceWb": 745,
       "priceOzon": 779,
@@ -6532,7 +6508,7 @@
       "itemCost": 567.38,
       "contentCost": 12366.05,
       "revenue": 0,
-      "income": 0,
+      "income": -12366.05,
       "erviewPct": 0.0374,
       "ctrPct": 0.0025,
       "conversionPct": 0,
@@ -6555,7 +6531,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -12366.05,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -6568,7 +6544,7 @@
             "label": "Нет выкупов",
             "metricKey": "buys",
             "value": 0,
-            "baseline": 0,
+            "baseline": null,
             "deltaPct": null,
             "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
           },
@@ -6652,38 +6628,38 @@
       "signal": "no_sales"
     },
     {
-      "id": "product-leaderboard-dab4647d8f2b",
+      "id": "product-leaderboard-e005a8bb46ae",
       "brand": "АЛТЕЯ",
       "weekLabel": "08.06.2026 - 14.06.2026",
-      "articleKey": "b_kompleks_BAD_60tabl",
-      "article": "283835152",
-      "name": "B - комплекс",
-      "owner": "Лапыгин Максим",
-      "price": 419.72,
-      "priceWb": 419.72,
-      "priceOzon": 637,
-      "category": "БАДы и витамины",
+      "articleKey": "termo_sprei_200ml",
+      "article": "268373587",
+      "name": "Термозащита для волос",
+      "owner": "Максим",
+      "price": 810,
+      "priceWb": 810,
+      "priceOzon": 1250,
+      "category": "Косметика для ухода за волосами",
       "traffic": "",
       "inPortal": true,
-      "reach": 8,
-      "reactions": 0,
-      "posts": 0,
-      "clicks": 4,
-      "carts": 0,
+      "reach": 2178,
+      "reactions": 145,
+      "posts": 5,
+      "clicks": 16,
+      "carts": 2,
       "orders": 0,
       "buys": 0,
-      "itemCost": 270.05,
-      "contentCost": 544.5,
+      "itemCost": 376.6261905,
+      "contentCost": 12524.39,
       "revenue": 0,
-      "income": 0,
-      "erviewPct": 0,
-      "ctrPct": 0.5,
+      "income": -12524.39,
+      "erviewPct": 0.0666,
+      "ctrPct": 0.0073,
       "conversionPct": 0,
-      "ecpm": -68062.5,
-      "grossEcpm": -102093.75,
+      "ecpm": -5750.41,
+      "grossEcpm": -8625.61,
       "romiPct": -1,
       "drrPct": 0,
-      "cartRatePct": 0,
+      "cartRatePct": 0.125,
       "buyRatePct": 0,
       "buyoutPct": 0,
       "diagnostics": {
@@ -6698,7 +6674,7 @@
             "title": "КЗ уводит доход в минус",
             "label": "Доход <= 0",
             "metricKey": "income",
-            "value": 0,
+            "value": -12524.39,
             "baseline": 0,
             "deltaPct": null,
             "hint": "Нужно разбирать связку контент / оффер / карточка."
@@ -6711,7 +6687,7 @@
             "label": "Нет выкупов",
             "metricKey": "buys",
             "value": 0,
-            "baseline": 0,
+            "baseline": null,
             "deltaPct": null,
             "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
           },
@@ -6731,22 +6707,22 @@
         "summary": "Доход <= 0 · Нет выкупов",
         "metrics": {
           "erviewPct": {
-            "value": 0,
+            "value": 0.0666,
             "baseline": 0.0086,
             "lowerIsBetter": false,
-            "deltaPct": -1
+            "deltaPct": 6.744186046511628
           },
           "ctrPct": {
-            "value": 0.5,
+            "value": 0.0073,
             "baseline": 0.0101,
             "lowerIsBetter": false,
-            "deltaPct": 48.504950495049506
+            "deltaPct": -0.27722772277227714
           },
           "cartRatePct": {
-            "value": 0,
+            "value": 0.125,
             "baseline": 0.2968036529680365,
             "lowerIsBetter": false,
-            "deltaPct": -1
+            "deltaPct": -0.5788461538461538
           },
           "conversionPct": {
             "value": 0,
@@ -6779,16 +6755,326 @@
             "deltaPct": -1
           },
           "ecpm": {
-            "value": -68062.5,
+            "value": -5750.41,
             "baseline": 277.92,
             "lowerIsBetter": false,
-            "deltaPct": -245.8996113989637
+            "deltaPct": -21.69088226827864
           },
           "grossEcpm": {
-            "value": -102093.75,
+            "value": -8625.61,
             "baseline": 43.44,
             "lowerIsBetter": false,
-            "deltaPct": -2351.2244475138123
+            "deltaPct": -199.5637661141805
+          }
+        }
+      },
+      "signal": "no_sales"
+    },
+    {
+      "id": "product-leaderboard-be954f397a3d",
+      "brand": "АЛТЕЯ",
+      "weekLabel": "08.06.2026 - 14.06.2026",
+      "articleKey": "spicul_gel_mask_75ml",
+      "article": "913339130",
+      "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+      "owner": "Мария",
+      "price": null,
+      "priceWb": null,
+      "priceOzon": null,
+      "category": "Маска косметическая",
+      "traffic": "",
+      "inPortal": true,
+      "reach": 6694,
+      "reactions": 54,
+      "posts": 9,
+      "clicks": 34,
+      "carts": 2,
+      "orders": 0,
+      "buys": 0,
+      "itemCost": 1060.374242,
+      "contentCost": 15247.37,
+      "revenue": 0,
+      "income": -15247.37,
+      "erviewPct": 0.008100000000000001,
+      "ctrPct": 0.0051,
+      "conversionPct": 0,
+      "ecpm": -2277.77,
+      "grossEcpm": -3416.65,
+      "romiPct": -1,
+      "drrPct": 0,
+      "cartRatePct": 0.058823529411764705,
+      "buyRatePct": 0,
+      "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -15247.37,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 2.65925,
+            "deltaPct": -1.3760458775970668,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.008100000000000001,
+            "baseline": 0.0086,
+            "lowerIsBetter": false,
+            "deltaPct": -0.05813953488372081
+          },
+          "ctrPct": {
+            "value": 0.0051,
+            "baseline": 0.0101,
+            "lowerIsBetter": false,
+            "deltaPct": -0.49504950495049505
+          },
+          "cartRatePct": {
+            "value": 0.058823529411764705,
+            "baseline": 0.2968036529680365,
+            "lowerIsBetter": false,
+            "deltaPct": -0.8018099547511313
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.05315,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.053133491731869514,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.96181143281366,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 2.65925,
+            "lowerIsBetter": false,
+            "deltaPct": -1.3760458775970668
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 0.3832,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -2277.77,
+            "baseline": 277.92,
+            "lowerIsBetter": false,
+            "deltaPct": -9.195775762809442
+          },
+          "grossEcpm": {
+            "value": -3416.65,
+            "baseline": 43.44,
+            "lowerIsBetter": false,
+            "deltaPct": -79.65216390423574
+          }
+        }
+      },
+      "signal": "no_sales"
+    },
+    {
+      "id": "product-leaderboard-9945a0c349c9",
+      "brand": "АЛТЕЯ",
+      "weekLabel": "08.06.2026 - 14.06.2026",
+      "articleKey": "pink_pepper_50ml",
+      "article": "484586518",
+      "name": "Крем для лица",
+      "owner": "Мария",
+      "price": 840,
+      "priceWb": 840,
+      "priceOzon": 1500,
+      "category": "Косметика для ухода",
+      "traffic": "КЗ",
+      "inPortal": true,
+      "reach": 9404,
+      "reactions": 132,
+      "posts": 0,
+      "clicks": 895,
+      "carts": 10,
+      "orders": 0,
+      "buys": 0,
+      "itemCost": 548.32,
+      "contentCost": 34089.08,
+      "revenue": 0,
+      "income": -34089.08,
+      "erviewPct": 0.013999999999999999,
+      "ctrPct": 0.09519999999999999,
+      "conversionPct": 0,
+      "ecpm": -3624.96,
+      "grossEcpm": -5437.43,
+      "romiPct": -1,
+      "drrPct": 0,
+      "cartRatePct": 0.0111731843575419,
+      "buyRatePct": 0,
+      "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 5,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -34089.08,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 2.65925,
+            "deltaPct": -1.3760458775970668,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "low_conversion",
+            "family": "card",
+            "severity": "high",
+            "title": "Конверсия в заказ ниже нормы",
+            "label": "Конверсия просела",
+            "metricKey": "conversionPct",
+            "value": 0,
+            "baseline": 0.05315,
+            "deltaPct": -1,
+            "hint": "Трафик приходит, но карточка не дожимает до заказа."
+          },
+          {
+            "code": "low_cart_rate",
+            "family": "card",
+            "severity": "high",
+            "title": "Корзина отстаёт от кликов",
+            "label": "Корзина просела",
+            "metricKey": "cartRatePct",
+            "value": 0.0111731843575419,
+            "baseline": 0.2968036529680365,
+            "deltaPct": -0.9623549634722819,
+            "hint": "Нужно смотреть оффер, цену и первый экран карточки."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.013999999999999999,
+            "baseline": 0.0086,
+            "lowerIsBetter": false,
+            "deltaPct": 0.6279069767441858
+          },
+          "ctrPct": {
+            "value": 0.09519999999999999,
+            "baseline": 0.0101,
+            "lowerIsBetter": false,
+            "deltaPct": 8.425742574257425
+          },
+          "cartRatePct": {
+            "value": 0.0111731843575419,
+            "baseline": 0.2968036529680365,
+            "lowerIsBetter": false,
+            "deltaPct": -0.9623549634722819
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.05315,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.053133491731869514,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.96181143281366,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 2.65925,
+            "lowerIsBetter": false,
+            "deltaPct": -1.3760458775970668
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 0.3832,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -3624.96,
+            "baseline": 277.92,
+            "lowerIsBetter": false,
+            "deltaPct": -14.043177892918825
+          },
+          "grossEcpm": {
+            "value": -5437.43,
+            "baseline": 43.44,
+            "lowerIsBetter": false,
+            "deltaPct": -126.17104051565379
           }
         }
       },
@@ -6830,7 +7116,102 @@
       "drrPct": 0,
       "cartRatePct": 0,
       "buyRatePct": 0,
-      "buyoutPct": 0
+      "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 20,
+        "highestSeverity": "critical",
+        "alertCount": 2,
+        "alerts": [
+          {
+            "code": "no_owner",
+            "family": "ownership",
+            "severity": "critical",
+            "title": "Нет owner по SKU",
+            "label": "Нет owner",
+            "metricKey": "",
+            "value": null,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "КЗ уже льётся, а ответственный по карточке не назначен."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
+          }
+        ],
+        "summary": "Нет owner · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0,
+            "baseline": 0.0086,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "ctrPct": {
+            "value": 0,
+            "baseline": 0.0101,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.2968036529680365,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.05315,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.053133491731869514,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.96181143281366,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": 0,
+            "baseline": 2.65925,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 0.3832,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": 0,
+            "baseline": 277.92,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "grossEcpm": {
+            "value": 0,
+            "baseline": 43.44,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          }
+        }
+      },
+      "signal": "no_owner"
     },
     {
       "id": "product-leaderboard-1e521a850a6d",
@@ -6856,7 +7237,7 @@
       "itemCost": 1165.272727,
       "contentCost": 11381.72,
       "revenue": 0,
-      "income": 0,
+      "income": -11381.72,
       "erviewPct": 0.0218,
       "ctrPct": 0.0032,
       "conversionPct": 0,
@@ -6866,7 +7247,126 @@
       "drrPct": 0,
       "cartRatePct": 0.05555555555555555,
       "buyRatePct": 0,
-      "buyoutPct": 0
+      "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 4,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -11381.72,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_owner",
+            "family": "ownership",
+            "severity": "critical",
+            "title": "Нет owner по SKU",
+            "label": "Нет owner",
+            "metricKey": "",
+            "value": null,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "КЗ уже льётся, а ответственный по карточке не назначен."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 2.65925,
+            "deltaPct": -1.3760458775970668,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет owner",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0218,
+            "baseline": 0.0086,
+            "lowerIsBetter": false,
+            "deltaPct": 1.5348837209302326
+          },
+          "ctrPct": {
+            "value": 0.0032,
+            "baseline": 0.0101,
+            "lowerIsBetter": false,
+            "deltaPct": -0.6831683168316831
+          },
+          "cartRatePct": {
+            "value": 0.05555555555555555,
+            "baseline": 0.2968036529680365,
+            "lowerIsBetter": false,
+            "deltaPct": -0.8128205128205128
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.05315,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.053133491731869514,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.96181143281366,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 2.65925,
+            "lowerIsBetter": false,
+            "deltaPct": -1.3760458775970668
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 0.3832,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -2005.24,
+            "baseline": 277.92,
+            "lowerIsBetter": false,
+            "deltaPct": -8.21516983304548
+          },
+          "grossEcpm": {
+            "value": -3007.85,
+            "baseline": 43.44,
+            "lowerIsBetter": false,
+            "deltaPct": -70.24148250460405
+          }
+        }
+      },
+      "signal": "no_owner"
     }
   ]
 }

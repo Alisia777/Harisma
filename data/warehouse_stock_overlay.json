@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-18T08:11:07.673Z",
+  "generatedAt": "2026-06-19T09:47:04.716Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
   "sourceFormat": "google-csv-export",
   "sheetName": "Sheet1",
   "matchField": "Наименование как в ЛК -> article/articleKey",
-  "sheetRowCount": 302,
+  "sheetRowCount": 304,
   "matchedRowCount": 136,
   "matchedSkuCount": 134,
   "unmatchedSourceKeys": [
@@ -37,8 +37,8 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 440341,
-    "accepted": 3206340,
+    "stockWarehouse": 494128,
+    "accepted": 3260127,
     "shippedOzon": 1030512,
     "shippedWB": 1734952
   },
@@ -177,8 +177,8 @@
     },
     {
       "articleKey": "curly_method_300ml",
-      "stockWarehouse": 2665,
-      "accepted": 94898,
+      "stockWarehouse": 7465,
+      "accepted": 99698,
       "shippedOzon": 21621,
       "shippedWB": 70612,
       "sourceKeys": [
@@ -608,8 +608,8 @@
     },
     {
       "articleKey": "krovavii_piling_30ml",
-      "stockWarehouse": 12279,
-      "accepted": 127290,
+      "stockWarehouse": 25279,
+      "accepted": 140290,
       "shippedOzon": 22948,
       "shippedWB": 92063,
       "sourceKeys": [
@@ -630,8 +630,8 @@
     },
     {
       "articleKey": "maska_dlya_lica_100ml",
-      "stockWarehouse": 19571,
-      "accepted": 56585,
+      "stockWarehouse": 32483,
+      "accepted": 69497,
       "shippedOzon": 8906,
       "shippedWB": 28108,
       "sourceKeys": [
@@ -872,8 +872,8 @@
     },
     {
       "articleKey": "penka_kudryavii_metod_150ml",
-      "stockWarehouse": 25987,
-      "accepted": 59816,
+      "stockWarehouse": 27792,
+      "accepted": 61621,
       "shippedOzon": 5792,
       "shippedWB": 28037,
       "sourceKeys": [
@@ -1026,8 +1026,8 @@
     },
     {
       "articleKey": "retinait_syvorotka_1_30ml",
-      "stockWarehouse": 5496,
-      "accepted": 73233,
+      "stockWarehouse": 14206,
+      "accepted": 81943,
       "shippedOzon": 7545,
       "shippedWB": 60192,
       "sourceKeys": [
@@ -1136,8 +1136,8 @@
     },
     {
       "articleKey": "solevoy_sprei_200ml",
-      "stockWarehouse": 412,
-      "accepted": 26712,
+      "stockWarehouse": 5676,
+      "accepted": 31976,
       "shippedOzon": 8632,
       "shippedWB": 17668,
       "sourceKeys": [
@@ -1169,8 +1169,8 @@
     },
     {
       "articleKey": "sprei_buster_100ml",
-      "stockWarehouse": 757,
-      "accepted": 29592,
+      "stockWarehouse": 2053,
+      "accepted": 30888,
       "shippedOzon": 10287,
       "shippedWB": 18548,
       "sourceKeys": [
@@ -1246,8 +1246,8 @@
     },
     {
       "articleKey": "syvorotka_dlya_lica_30ml_v2",
-      "stockWarehouse": 8638,
-      "accepted": 49367,
+      "stockWarehouse": 14638,
+      "accepted": 55367,
       "shippedOzon": 9201,
       "shippedWB": 31528,
       "sourceKeys": [

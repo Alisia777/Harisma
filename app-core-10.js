@@ -2789,11 +2789,12 @@ async function init() {
       }
     };
     const local = loadLocalStorage();
-    const [dashboard, skus, seed, productLeaderboard, skuAliases, skuAliasIgnore, skuAliasAudit, skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine] = await Promise.all([
+    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory, skuAliases, skuAliasIgnore, skuAliasAudit, skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine] = await Promise.all([
       loadBootJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
       loadBootJsonOrFallback('data/skus.json', [], 'SKU'),
       loadBootJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments'),
       loadBootJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
+      loadBootJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
       loadBootJsonOrFallback('data/sku_aliases.json', { schema: 'sku-api-aliases-v1', aliases: [] }, 'SKU aliases'),
       loadBootJsonOrFallback('data/sku_alias_ignore.json', { schema: 'sku-api-ignore-v1', ignored: [] }, 'SKU alias ignore'),
       loadBootJsonOrFallback('data/sku_alias_audit.json', { schema: 'sku-alias-audit-v1', events: [] }, 'SKU alias audit'),
@@ -2811,7 +2812,7 @@ async function init() {
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
       ? normalizeProductLeaderboardPayload(productLeaderboard)
       : (productLeaderboard || { generatedAt: '', items: [], summary: {} });
-    state.productLeaderboardHistory = [];
+    state.productLeaderboardHistory = Array.isArray(productLeaderboardHistory) ? productLeaderboardHistory : [];
     state.skuAliases = skuAliases && typeof skuAliases === 'object'
       ? skuAliases
       : { schema: 'sku-api-aliases-v1', aliases: [] };
@@ -2833,7 +2834,7 @@ async function init() {
     state.portalDataQuarantine = portalDataQuarantine && typeof portalDataQuarantine === 'object'
       ? portalDataQuarantine
       : { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] };
-    state.boot.lazyReady.productLeaderboard = false;
+    state.boot.lazyReady.productLeaderboard = Array.isArray(productLeaderboardHistory) && productLeaderboardHistory.length > 1;
     state.repricer = { generatedAt: '', summary: {}, rows: [] };
     if (!state.orderCalc.articleKey) state.orderCalc.articleKey = state.skus[0]?.articleKey || '';
     if (!state.orderCalc.daysToNextReceipt) state.orderCalc.daysToNextReceipt = String(Math.round(numberOrZero(state.skus[0]?.leadTimeDays) || 30));
@@ -2879,6 +2880,16 @@ async function init() {
         ensureViewData(viewKey).catch((error) => console.warn('[portal-prefetch]', viewKey, error));
       });
     }, 800);
+    window.setTimeout(() => {
+      if (typeof window.__alteaRefreshProductLeaderboardSnapshotFast !== 'function') return;
+      window.__alteaRefreshProductLeaderboardSnapshotFast({ reason: 'portal-prefetch', rerender: false })
+        .catch((error) => console.warn('[portal-prefetch]', 'product-leaderboard:fast-history', error));
+    }, 900);
+    window.setTimeout(() => {
+      if (typeof loadProductLeaderboardSupplementalData !== 'function') return;
+      loadProductLeaderboardSupplementalData({ rerender: false })
+        .catch((error) => console.warn('[portal-prefetch]', 'product-leaderboard:supplementals', error));
+    }, 1200);
     if (state.boot.dataWarnings.length) setAppError(`Часть данных загружена с исправлениями: ${state.boot.dataWarnings[0]}`);
     else setAppError('');
   } catch (error) {

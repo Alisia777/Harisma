@@ -699,6 +699,135 @@
     return payloadLooksUsable(snapshotKey, payload) ? clone(payload) : null;
   };
 
+  var productLeaderboardFastPromise = null;
+
+  function withProductLeaderboardFastTimeout(promise, label) {
+    return new Promise(function (resolve, reject) {
+      var settled = false;
+      var timer = window.setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        reject(new Error(label + " fast snapshot timeout"));
+      }, 4500);
+
+      Promise.resolve(promise)
+        .then(function (value) {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timer);
+          resolve(value);
+        })
+        .catch(function (error) {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timer);
+          reject(error);
+        });
+    });
+  }
+
+  async function fetchProductLeaderboardFastRows(force) {
+    if (force) resetLocalCache();
+
+    var cfg = currentCfg();
+    if (!cfg || !cfg.supabase || !cfg.supabase.url || !cfg.supabase.anonKey || typeof fetch !== "function") {
+      return {};
+    }
+
+    var brand = currentPortalBrand();
+    var baseUrl = String(cfg.supabase.url || "").replace(/\/+$/, "");
+    var rows = [];
+    rows = rows.concat(await withProductLeaderboardFastTimeout(
+      fetchRowsForKey(cfg, baseUrl, brand, "product_leaderboard"),
+      "product_leaderboard"
+    ));
+    rows = rows.concat(await withProductLeaderboardFastTimeout(
+      fetchRowsForKey(cfg, baseUrl, brand, "product_leaderboard_history"),
+      "product_leaderboard_history"
+    ));
+    return decodeChunkedRows(rows);
+  }
+
+  function applyProductLeaderboardFastRows(rows, options) {
+    if (typeof state !== "object" || !state || !rows) return false;
+
+    var changed = false;
+    var productPayload = rows.product_leaderboard;
+    var historyPayload = rows.product_leaderboard_history;
+    var currentHistory = Array.isArray(state.productLeaderboardHistory) ? state.productLeaderboardHistory : [];
+
+    if (payloadLooksUsable("product_leaderboard", productPayload)) {
+      var nextProduct = typeof normalizeProductLeaderboardPayload === "function"
+        ? normalizeProductLeaderboardPayload(productPayload)
+        : productPayload;
+      if (payloadChanged("productLeaderboard", state.productLeaderboard, nextProduct)) {
+        state.productLeaderboard = nextProduct;
+        changed = true;
+      }
+    }
+
+    if (payloadLooksUsable("product_leaderboard_history", historyPayload) && historyPayload.length >= currentHistory.length) {
+      if (payloadChanged("productLeaderboardHistory", currentHistory, historyPayload)) {
+        state.productLeaderboardHistory = clone(historyPayload) || [];
+        changed = true;
+      }
+    }
+
+    if (state.boot && state.boot.lazyReady) state.boot.lazyReady.productLeaderboard = true;
+
+    if (changed && options && options.rerender !== false && state.activeView === "product-leaderboard" && typeof rerenderCurrentView === "function") {
+      try {
+        rerenderCurrentView();
+      } catch (error) {
+        console.warn("[portal-snapshot-refresh-hotfix] product leaderboard fast rerender", error);
+      }
+    }
+
+    return changed;
+  }
+
+  window.__alteaRefreshProductLeaderboardSnapshotFast = function refreshProductLeaderboardSnapshotFast(options) {
+    options = options || {};
+    if (productLeaderboardFastPromise && !options.force) return productLeaderboardFastPromise;
+
+    productLeaderboardFastPromise = fetchProductLeaderboardFastRows(Boolean(options.force))
+      .then(function (rows) {
+        return applyProductLeaderboardFastRows(rows, options);
+      })
+      .catch(function (error) {
+        if (!isAbortError(error)) console.warn("[portal-snapshot-refresh-hotfix] product leaderboard fast", error);
+        return false;
+      })
+      .finally(function () {
+        productLeaderboardFastPromise = null;
+      });
+
+    return productLeaderboardFastPromise;
+  };
+
+  function scheduleProductLeaderboardFastRefresh(reason) {
+    window.setTimeout(function () {
+      if (typeof window.__alteaRefreshProductLeaderboardSnapshotFast !== "function") return;
+      window.__alteaRefreshProductLeaderboardSnapshotFast({
+        reason: reason,
+        rerender: typeof state === "object" && state && state.activeView === "product-leaderboard"
+      });
+    }, 0);
+  }
+
+  window.addEventListener("altea:viewchange", function (event) {
+    if (String(event && event.detail && event.detail.view || "") === "product-leaderboard") {
+      scheduleProductLeaderboardFastRefresh("viewchange");
+    }
+  });
+
+  window.setTimeout(function () {
+    var activeView = typeof state === "object" && state && state.activeView;
+    if (activeView === "product-leaderboard" || String(location && location.hash || "").indexOf("product-leaderboard") !== -1) {
+      scheduleProductLeaderboardFastRefresh("boot-product-leaderboard");
+    }
+  }, 600);
+
   var LIGHT_REFRESH_KEYS = [
     "dashboard",
     "skus",

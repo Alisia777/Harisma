@@ -233,6 +233,102 @@ const VIEW_DATA_REQUIREMENTS = {
   documents: 'documents',
   repricer: 'repricer'
 };
+
+async function loadProductLeaderboardLocalData(path, fallback, label) {
+  try {
+    return await loadJson(path);
+  } catch (error) {
+    console.error(error);
+    registerDataWarning(`${label}: ${error.message || 'Не удалось загрузить данные'}`);
+    return cloneFallback(fallback);
+  }
+}
+
+async function loadProductLeaderboardSupplementalData(options = {}) {
+  const cacheKey = 'productLeaderboardSupplementals';
+  if (state.boot?.lazyLoads?.[cacheKey]) return state.boot.lazyLoads[cacheKey];
+
+  const pending = Promise.all([
+    loadProductLeaderboardLocalData(
+      'data/wb_substitution_traffic.json',
+      { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
+      'WB подменные артикулы'
+    ),
+    loadProductLeaderboardLocalData(
+      'data/wb_substitution_traffic_history.json',
+      [],
+      'История WB подменных артикулов'
+    ),
+    loadProductLeaderboardLocalData(
+      'data/iu_drr_summary.json',
+      { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
+      'Показатели площадок'
+    ),
+    loadProductLeaderboardLocalData(
+      'data/ads_summary.json',
+      { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
+      'Реклама МП'
+    )
+  ])
+    .then(([wbSubstitutionTraffic, wbSubstitutionTrafficHistory, iuDrrSummary, adsSummary]) => {
+      state.wbSubstitutionTraffic = wbSubstitutionTraffic && typeof wbSubstitutionTraffic === 'object'
+        ? wbSubstitutionTraffic
+        : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
+      state.wbSubstitutionTrafficHistory = Array.isArray(wbSubstitutionTrafficHistory) ? wbSubstitutionTrafficHistory : [];
+      state.iuDrrSummary = iuDrrSummary && typeof iuDrrSummary === 'object'
+        ? iuDrrSummary
+        : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
+      state.adsSummary = adsSummary && typeof adsSummary === 'object'
+        ? adsSummary
+        : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
+
+      if (options.rerender !== false && state.activeView === 'product-leaderboard' && typeof rerenderCurrentView === 'function') {
+        window.setTimeout(() => {
+          if (state.activeView === 'product-leaderboard') rerenderCurrentView();
+        }, 0);
+      }
+    })
+    .finally(() => {
+      if (state.boot?.lazyLoads) delete state.boot.lazyLoads[cacheKey];
+    });
+
+  if (state.boot?.lazyLoads) state.boot.lazyLoads[cacheKey] = pending;
+  return pending;
+}
+
+window.loadProductLeaderboardSupplementalData = loadProductLeaderboardSupplementalData;
+
+function waitForProductLeaderboardFastSnapshot(options = {}, timeoutMs = 4500) {
+  if (typeof window.__alteaRefreshProductLeaderboardSnapshotFast !== 'function') {
+    return Promise.resolve(false);
+  }
+
+  return new Promise((resolve) => {
+    let settled = false;
+    const timer = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      resolve(false);
+    }, timeoutMs);
+
+    window.__alteaRefreshProductLeaderboardSnapshotFast(options)
+      .then((value) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((error) => {
+        if (!settled) {
+          settled = true;
+          window.clearTimeout(timer);
+          console.warn('[product-leaderboard:fast-snapshot]', error);
+          resolve(false);
+        }
+      });
+  });
+}
+
 const DISABLED_VIEWS = new Set(['meetings', 'documents', 'ads-funnel', 'launch-control']);
 const VIEW_REDIRECTS = {
   meetings: 'dashboard',
@@ -2963,55 +3059,21 @@ const LAZY_DATA_LOADERS = {
       : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
   },
   productLeaderboard: async () => {
-    const loadLocalProductData = async (path, fallback, label) => {
-      try {
-        return await loadJson(path);
-      } catch (error) {
-        console.error(error);
-        registerDataWarning(`${label}: ${error.message || 'Не удалось загрузить данные'}`);
-        return cloneFallback(fallback);
-      }
-    };
-    const [payload, history, wbSubstitutionTraffic, wbSubstitutionTrafficHistory, iuDrrSummary, adsSummary] = await Promise.all([
+    const [payload, history] = await Promise.all([
       Array.isArray(state.productLeaderboard?.items) && state.productLeaderboard.items.length
         ? Promise.resolve(state.productLeaderboard)
-        : loadLocalProductData('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
-      loadLocalProductData('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
-      loadLocalProductData(
-        'data/wb_substitution_traffic.json',
-        { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
-        'WB подменные артикулы'
-      ),
-      loadLocalProductData(
-        'data/wb_substitution_traffic_history.json',
-        [],
-        'История WB подменных артикулов'
-      ),
-      loadLocalProductData(
-        'data/iu_drr_summary.json',
-        { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
-        'Показатели площадок'
-      ),
-      loadLocalProductData(
-        'data/ads_summary.json',
-        { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
-        'Реклама МП'
-      )
+        : loadProductLeaderboardLocalData('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
+      loadProductLeaderboardLocalData('data/product_leaderboard_history.json', [], 'История продуктового лидерборда')
     ]);
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
       ? normalizeProductLeaderboardPayload(payload)
       : (payload || { generatedAt: '', items: [], summary: {} });
     state.productLeaderboardHistory = Array.isArray(history) ? history : [];
-    state.wbSubstitutionTraffic = wbSubstitutionTraffic && typeof wbSubstitutionTraffic === 'object'
-      ? wbSubstitutionTraffic
-      : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
-    state.wbSubstitutionTrafficHistory = Array.isArray(wbSubstitutionTrafficHistory) ? wbSubstitutionTrafficHistory : [];
-    state.iuDrrSummary = iuDrrSummary && typeof iuDrrSummary === 'object'
-      ? iuDrrSummary
-      : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
-    state.adsSummary = adsSummary && typeof adsSummary === 'object'
-      ? adsSummary
-      : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
+    if (state.productLeaderboardHistory.length < 2) {
+      await waitForProductLeaderboardFastSnapshot({ reason: 'view-loader', rerender: false, force: true });
+    }
+    loadProductLeaderboardSupplementalData({ rerender: true })
+      .catch((error) => console.warn('[product-leaderboard:supplementals]', error));
   },
   meetings: async () => {
     const meetings = await loadJsonOrFallback('data/meetings.json', [], 'Ритм работы');

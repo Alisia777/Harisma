@@ -30,6 +30,7 @@
   var canvasDpr = 1;
   var readinessTimer = 0;
   var readinessObserver = null;
+  var lastRouteMotionAt = 0;
 
   var ROUTE_LOADERS = {
     dashboard: {
@@ -593,6 +594,13 @@
       return !!root.querySelector(".portal-lux-shell, .portal-calm-hero, [data-portal-dashboard-executive-root]");
     }
     if (viewHasLoadingSurface(root)) return false;
+    if (key === "control") {
+      return !!root.querySelector(".control-simple-title, [data-control-center-v2-block], [data-control-center-v2-form-card]");
+    }
+    if (key === "executive") {
+      if (root.querySelector("[data-rop-strategic-launch]")) return false;
+      return !!root.querySelector("[data-executive-lite-panel], .executive-lite-title");
+    }
     return String(root.textContent || "").replace(/\s+/g, "").length > 12 || root.children.length > 0;
   }
 
@@ -789,19 +797,34 @@
   }
 
   function bindRouteTransitions() {
+    function showForView(view, label) {
+      if (!view) return;
+      lastRouteMotionAt = Date.now();
+      routeTransition({
+        waitForView: view,
+        minDuration: ROUTE_MIN_MS,
+        maxDuration: ROUTE_MAX_MS,
+        label: label || routeForView(view).label,
+        view: view
+      });
+    }
+
     document.addEventListener("click", function (event) {
       var target = event.target;
       if (!target || typeof target.closest !== "function") return;
       var button = target.closest(".nav-btn[data-view]");
       if (!button || document.body.classList.contains("portal-auth-locked")) return;
-      show("transition", {
-        waitForView: button.dataset.view,
-        minDuration: ROUTE_MIN_MS,
-        maxDuration: ROUTE_MAX_MS,
-        label: routeTitle(button),
-        view: button.dataset.view
-      });
+      showForView(button.dataset.view, routeTitle(button));
     }, true);
+
+    window.addEventListener("altea:viewchange", function (event) {
+      var view = event && event.detail && event.detail.view;
+      if (!view || document.body.classList.contains("portal-auth-locked")) return;
+      if (bootOverlayShown && !bootOverlayDone) return;
+      if (Date.now() - lastRouteMotionAt < 220) return;
+      if (stage && !stage.hidden && stage.classList.contains("is-visible")) return;
+      showForView(view);
+    });
   }
 
   function bindConnectionState() {

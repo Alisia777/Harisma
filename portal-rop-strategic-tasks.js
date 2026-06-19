@@ -724,21 +724,19 @@
     `;
   }
 
+  function removeLaunchBlock(root) {
+    if (!root) return;
+    root.querySelectorAll('[data-rop-strategic-launch]').forEach((node) => node.remove());
+  }
+
   function insertLaunchBlock(root) {
-    if (!root || root.querySelector('[data-rop-strategic-launch]')) return;
-    const sectionTitle = root.querySelector('.section-title');
-    if (!sectionTitle) return;
-    sectionTitle.insertAdjacentHTML('afterend', renderLaunchBlock(ropData || { summary: { taskCount: 23, criticalCount: 8 } }));
+    removeLaunchBlock(root);
+    // The dated ROP presentation entrypoint is retired from the default Tasks view.
   }
 
   function insertExecutiveLaunchBlock(root) {
-    if (!root || root.querySelector('[data-rop-strategic-launch]')) return;
-    const sectionTitle = root.querySelector('.section-title');
-    if (sectionTitle) {
-      sectionTitle.insertAdjacentHTML('afterend', renderLaunchBlock(ropData || { summary: { taskCount: 23, criticalCount: 8 } }));
-      return;
-    }
-    root.insertAdjacentHTML('afterbegin', renderLaunchBlock(ropData || { summary: { taskCount: 23, criticalCount: 8 } }));
+    removeLaunchBlock(root);
+    // Executive lite owns this screen; dated ROP presentation blocks stay out of the shell.
   }
 
   function patchRenderControlCenter() {

@@ -23,14 +23,14 @@
       'portal-dashboard-interactive-hotfix.js?v=20260619dashboard-noprice1'
     ],
     control: [
-      'portal-control-center-v2-hotfix.js?v=20260529taskzya1',
-      'portal-control-marketplace-scope-hotfix.js?v=20260529taskzya1',
-      'portal-form-visual-refine.js?v=20260529taskfilters1'
+      'portal-form-visual-refine.js?v=20260619task-v2-order1',
+      'portal-control-center-v2-hotfix.js?v=20260619task-v2-order1',
+      'portal-control-marketplace-scope-hotfix.js?v=20260529taskzya1'
     ],
     executive: [
-      'portal-executive-lite-guard.js?v=20260530executiveowner1',
+      'portal-executive-lite-guard.js?v=20260619exec-layer1',
       'portal-control-marketplace-scope-hotfix.js?v=20260529taskzya1',
-      'portal-form-visual-refine.js?v=20260529taskfilters1'
+      'portal-form-visual-refine.js?v=20260619task-v2-order1'
     ],
     workflow: [
       'portal-loyalty-system-hotfix.js?v=20260521prod1'
@@ -284,7 +284,45 @@
       window.setTimeout(run, 0);
       return;
     }
+    if (!portalRenderApiReady()) {
+      const waits = scheduleForView._coreWaits || (scheduleForView._coreWaits = {});
+      const waitCount = Number(waits[view] || 0);
+      if (waitCount < 24) {
+        waits[view] = waitCount + 1;
+        window.setTimeout(() => scheduleForView(view), 250);
+      }
+      return;
+    }
+    if (scheduleForView._coreWaits) scheduleForView._coreWaits[view] = 0;
     loadViewHotfixes(view);
+  }
+
+  function portalRenderApiReady() {
+    return typeof window.rerenderCurrentView === 'function' || typeof rerenderCurrentView === 'function';
+  }
+
+  function warmPriorityViews() {
+    if (window.__ALTEA_LIVE_LAZY_WARM_PRIORITY_VIEWS__) return;
+    window.__ALTEA_LIVE_LAZY_WARM_PRIORITY_VIEWS__ = true;
+    let attempts = 0;
+    const waitForCore = () => {
+      attempts += 1;
+      if (!portalRenderApiReady()) {
+        if (attempts < 24) window.setTimeout(waitForCore, 250);
+        return;
+      }
+      const warm = () => {
+        const current = activeView();
+        if (current !== 'control') loadViewHotfixes('control', { rerender: false });
+        if (current !== 'executive') loadViewHotfixes('executive', { rerender: false });
+      };
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(warm, { timeout: 1800 });
+      } else {
+        window.setTimeout(warm, 900);
+      }
+    };
+    window.setTimeout(waitForCore, 350);
   }
 
   window.__alteaLoadLiveHotfixes = loadViewHotfixes;
@@ -297,6 +335,7 @@
   syncSidebarLabels();
   window.setTimeout(syncSidebarLabels, 300);
   window.setTimeout(syncSidebarLabels, 1200);
+  warmPriorityViews();
 
   if (requestedView()) scheduleForView(requestedView());
 

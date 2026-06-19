@@ -190,6 +190,16 @@ function roundRate(value) {
   return Number.isFinite(parsed) ? Math.round(parsed * 1000000) / 1000000 : null;
 }
 
+function medianNumber(values) {
+  const sorted = values
+    .map(Number)
+    .filter((value) => Number.isFinite(value) && value > 0)
+    .sort((left, right) => left - right);
+  if (!sorted.length) return 0;
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
 function isoDate(value) {
   if (!value && value !== 0) return '';
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
@@ -1912,6 +1922,7 @@ function buildPlatformDateMap(platformTrends, platformKey) {
       sourceRows: numberOrZero(point.sourceRows || point.rows),
       margin: wbFinancialResult > 0 ? wbFinancialResult : numberOrZero(point.estimatedMargin || point.margin),
       deduction: numberOrZero(point?.deduction || sellerSummary.deduction),
+      wbPromotionDeduction: numberOrZero(point?.wbPromotionDeduction || sellerSummary.wbPromotionDeduction),
       reviewDeduction: numberOrZero(point?.reviewDeduction || sellerSummary.reviewDeduction),
       wbMediaDeduction: numberOrZero(point?.wbMediaDeduction || sellerSummary.wbMediaDeduction),
       cashbackAmount: numberOrZero(point?.cashbackAmount || sellerSummary.cashbackAmount),
@@ -2164,15 +2175,15 @@ function dateRange(platformTrends, adsSummary, explicitFrom, explicitTo, iuPlan)
   const latestReliableTo = [latestCompleteMarketplaceDate, adsWindowTo]
     .filter(Boolean)
     .sort()[0] || '';
-  const controlBoundedTo = wbWorkbookRange.to && latestReliableTo
-    ? minDate(wbWorkbookRange.to, latestReliableTo)
-    : (wbWorkbookRange.to || latestReliableTo);
-  const to = explicitTo || controlBoundedTo || sorted[sorted.length - 1] || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || new Date().toISOString().slice(0, 10);
+  const to = explicitTo || latestReliableTo || wbWorkbookRange.to || sorted[sorted.length - 1] || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || new Date().toISOString().slice(0, 10);
   const from = explicitFrom || `${to.slice(0, 7)}-01`;
+  const extendsBeyondControl = Boolean(wbWorkbookRange.to && latestReliableTo && latestReliableTo > wbWorkbookRange.to);
   return {
     from,
     to,
-    source: wbWorkbookRange.from && wbWorkbookRange.to ? 'wb_iu_control_bounded_api_window' : 'api_window',
+    source: wbWorkbookRange.from && wbWorkbookRange.to
+      ? (extendsBeyondControl ? 'api_window_with_wb_iu_control_calibration' : 'wb_iu_control_bounded_api_window')
+      : 'api_window',
     sourceWorkbook: wbWorkbookRange.source,
     sourceDays: wbWorkbookRange.days,
     controlFrom: wbWorkbookRange.from,
@@ -2183,7 +2194,7 @@ function dateRange(platformTrends, adsSummary, explicitFrom, explicitTo, iuPlan)
 }
 
 function wbRawRevenueForIu(wb) {
-  return numberOrZero(wb?.ordersRevenue) || numberOrZero(wb?.revenue);
+  return numberOrZero(wb?.revenue) || numberOrZero(wb?.ordersRevenue);
 }
 
 function emptyChannelSpendMap() {
@@ -2197,6 +2208,10 @@ function computeWbApiSpendSelection(date, wb, ads, adsMaps, reviewPointsMap) {
   }
 
   const feedbackReviewPoints = reviewPointsMap.get(date) || { spend: 0, feedbacks: 0 };
+  const wbPromotionFromFinanceDeductions = roundMoney(wb.wbPromotionDeduction);
+  const wbPromotionFromAds = numberOrZero(channels.wbPromotion);
+  let wbPromotionAddedToSpend = 0;
+
   const reviewPointsFromFinanceDeductions = roundMoney(wb.reviewDeduction);
   const reviewPointsFromCashback = roundMoney(wb.cashbackAmount);
   const reviewPointsFromFeedbacks = roundMoney(feedbackReviewPoints.spend);
@@ -2219,11 +2234,14 @@ function computeWbApiSpendSelection(date, wb, ads, adsMaps, reviewPointsMap) {
   }
 
   const externalSpend = numberOrZero(channels.externalAds);
-  const apiSpendFactTotal = numberOrZero(ads.spend) + reviewPointsAddedToSpend + wbMediaAddedToSpend;
+  const apiSpendFactTotal = numberOrZero(ads.spend) + wbPromotionAddedToSpend + reviewPointsAddedToSpend + wbMediaAddedToSpend;
   const wbApiSpendFact = Math.max(0, apiSpendFactTotal - externalSpend);
   return {
     channels,
     feedbackReviewPoints,
+    wbPromotionFromFinanceDeductions,
+    wbPromotionFromAds,
+    wbPromotionAddedToSpend,
     reviewPointsFromFinanceDeductions,
     reviewPointsFromCashback,
     reviewPointsFromFeedbacks,
@@ -2248,6 +2266,8 @@ function buildWbIuApiCalibration(range, wbMap, adsMaps, reviewPointsMap, wbDaily
     sourceWorkbook: range.sourceWorkbook || '',
     revenueFactor: 1,
     spendFactor: 1,
+    recentSpendFactor: 1,
+    recentSpendFactorDays: 0,
     controlDays: 0,
     revenueDays: 0,
     spendDays: 0,
@@ -2321,6 +2341,13 @@ function buildWbIuApiCalibration(range, wbMap, adsMaps, reviewPointsMap, wbDaily
   diagnostics.spendFactor = diagnostics.controlSpend > 0 && diagnostics.rawApiSpend > 0
     ? diagnostics.controlSpend / diagnostics.rawApiSpend
     : 1;
+  const recentSpendFactors = Object.entries(diagnostics.dateFactors)
+    .filter(([, value]) => numberOrZero(value.spendFactor) > 0)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .slice(-5)
+    .map(([, value]) => value.spendFactor);
+  diagnostics.recentSpendFactor = medianNumber(recentSpendFactors) || diagnostics.spendFactor || 1;
+  diagnostics.recentSpendFactorDays = recentSpendFactors.length;
   diagnostics.normalizedApiRevenue = diagnostics.rawApiRevenue * diagnostics.revenueFactor;
   diagnostics.normalizedApiSpend = diagnostics.rawApiSpend * diagnostics.spendFactor;
   diagnostics.revenueMatchPct = diagnostics.controlRevenue > 0
@@ -2345,6 +2372,7 @@ function buildWbIuApiCalibration(range, wbMap, adsMaps, reviewPointsMap, wbDaily
   diagnostics.normalizedApiSpend = roundMoney(diagnostics.normalizedApiSpend);
   diagnostics.revenueFactorRounded = roundRate(diagnostics.revenueFactor);
   diagnostics.spendFactorRounded = roundRate(diagnostics.spendFactor);
+  diagnostics.recentSpendFactorRounded = roundRate(diagnostics.recentSpendFactor);
   diagnostics.dateFactors = Object.fromEntries(
     Object.entries(diagnostics.dateFactors).map(([date, value]) => [date, {
       revenueFactor: value.revenueFactor || null,
@@ -2458,11 +2486,19 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
       reviewPointsFromAds,
       wbMediaFromFinanceDeductions,
       wbMediaFromAds,
+      wbPromotionFromFinanceDeductions,
+      wbPromotionFromAds,
+      wbPromotionAddedToSpend,
       externalSpend,
       apiSpendFactTotal,
       wbApiSpendFact: wbRawApiSpendFact
     } = spendSelection;
     const wbSpendCalibrationFactor = numberOrZero(wbIuApiCalibration.dateFactors?.[date]?.spendFactor)
+      || (
+        wbIuApiCalibration.controlTo
+        && date > wbIuApiCalibration.controlTo
+        && numberOrZero(wbIuApiCalibration.recentSpendFactor)
+      )
       || numberOrZero(wbIuApiCalibration.spendFactor || 1);
     const wbApiSpendFact = wbRawApiSpendFact > 0
       ? wbRawApiSpendFact * wbSpendCalibrationFactor
@@ -2590,6 +2626,10 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
       ordersAdPct: ordersRevenueWb > 0 ? roundRate(spendFact / ordersRevenueWb) : null,
       ...channels,
       wbDeduction: roundMoney(wb.deduction),
+      wbPromotionFinanceDeduction: roundMoney(wbPromotionFromFinanceDeductions),
+      wbPromotionFromAds: roundMoney(wbPromotionFromAds),
+      wbPromotionAddedToSpend: roundMoney(wbPromotionAddedToSpend),
+      wbPromotionSource: wbPromotionFromAds > 0 ? 'wb_ads_channel' : '',
       wbReviewDeduction: roundMoney(wb.reviewDeduction),
       wbMediaFinanceDeduction: roundMoney(wb.wbMediaDeduction),
       wbCashbackAmount: roundMoney(wb.cashbackAmount),
@@ -3073,6 +3113,7 @@ async function buildPayload(options) {
         'WB revenue plan is max(corporate WB plan, Smart-Sale IU WB plan); WB ad plan remains on the IU/DRR ad contour.',
         'Ozon revenue plan is max(corporate Ozon plan, Smart-Sale IU 40% share); ad plan scales from the selected revenue plan by Ozon benchmark DRR.',
         'WB review spend uses WB Finance API detailed deduction rows where sellerOperName is review write-off; cashbackAmount is retained only as a control field.',
+        'WB Promotion finance deduction rows are retained as audit fields only; daily Smart-Sale advertising fact uses WB Promotion API plus the IU control/external correction layer because finance deductions are accrual rows and do not match daily cabinet facts.',
         'WB IU/DRR logic: raw WB API sales and ad spend are audited against the IU control workbook; when a control date exists, the rendered WB metric uses the Smart-Sale control workbook values.',
         'WB marketing plan uses the uploaded control workbook plan spend/rate when available; the contract fallback is used only when the workbook has no control row. ordersRevenueWb is retained as a report-control field, not as a separate contract denominator.',
         'WB quarter summary combines report workbook sales/orders with March-April DRR rows and the current May daily IU/DRR layer. DRR by contract uses sales/buyouts; the control advertising percentage uses orders revenue.',

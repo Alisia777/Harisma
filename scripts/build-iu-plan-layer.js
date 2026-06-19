@@ -384,6 +384,7 @@ function buildWbDailyPlanResult(workbookPath, sourceSheet, dailyRows, options = 
     accounts: options.accounts || [],
     availableAccounts: options.availableAccounts || options.accounts || [],
     selectedAccountRule: options.selectedAccountRule || '',
+    staleDuplicateControlRows: options.staleDuplicateControlRows || [],
     daily,
     monthly
   };
@@ -392,6 +393,29 @@ function buildWbDailyPlanResult(workbookPath, sourceSheet, dailyRows, options = 
 function isSelectedWbIuDashboardAccount(account) {
   const normalized = String(account || '').trim().toLowerCase();
   return normalized.includes('\u0441\u043c\u0430\u0440\u0442') || normalized.includes('smart');
+}
+
+function sameMoney(left, right) {
+  return Math.abs(money(left) - money(right)) < 0.005;
+}
+
+function isTrailingDuplicateWbDailyRow(current, previous) {
+  if (!current || !previous) return false;
+  if (!current.date || !previous.date || current.date <= previous.date) return false;
+  if (!(money(current.revenueFactGross) > 0 || money(current.adsFactGross) > 0)) return false;
+  return sameMoney(current.revenueFactGross, previous.revenueFactGross)
+    && sameMoney(current.adsFactGross, previous.adsFactGross)
+    && sameMoney(current.gmvPlanGross, previous.gmvPlanGross)
+    && sameMoney(current.adsPlanGross, previous.adsPlanGross);
+}
+
+function trimTrailingDuplicateWbDailyRows(dailyRows) {
+  const daily = [...dailyRows].sort((left, right) => left.date.localeCompare(right.date));
+  const dropped = [];
+  while (daily.length >= 2 && isTrailingDuplicateWbDailyRow(daily[daily.length - 1], daily[daily.length - 2])) {
+    dropped.unshift(daily.pop());
+  }
+  return { daily, dropped };
 }
 
 function addWbDashboardAccountStats(map, account, date, values) {
@@ -516,12 +540,18 @@ function parseWbFixedRateDashboard(workbook, workbookPath) {
     });
 
     if (!daily.length) continue;
+    const trimmedDaily = trimTrailingDuplicateWbDailyRows(daily);
 
     const accounts = finalizeWbDashboardAccountStats(accountStats);
     const availableAccounts = finalizeWbDashboardAccountStats(availableAccountStats);
 
-    return buildWbDailyPlanResult(workbookPath, sheetName, daily, {
+    return buildWbDailyPlanResult(workbookPath, sheetName, trimmedDaily.daily, {
       sourceFormat: 'wb_dashboard_fixed_rate',
+      staleDuplicateControlRows: trimmedDaily.dropped.map((point) => ({
+        date: point.date,
+        revenueFactGross: roundMoney(point.revenueFactGross),
+        adsFactGross: roundMoney(point.adsFactGross)
+      })),
       accounts,
       availableAccounts,
       selectedAccountRule: 'smart_sale_only'

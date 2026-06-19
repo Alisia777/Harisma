@@ -643,6 +643,7 @@ function applyWbSellerSummaryReference(series, referenceMap) {
       wbSellerSummaryTotalPay: reference.totalPay || point.wbSellerSummaryTotalPay || null,
       wbSellerSummaryTurnoverDays: reference.turnoverDays,
       deduction: reference.deduction || reference.sellerSummary?.deduction || point.deduction || null,
+      wbPromotionDeduction: reference.wbPromotionDeduction || reference.sellerSummary?.wbPromotionDeduction || point.wbPromotionDeduction || null,
       reviewDeduction: reference.reviewDeduction || reference.sellerSummary?.reviewDeduction || point.reviewDeduction || null,
       wbMediaDeduction: reference.wbMediaDeduction || reference.sellerSummary?.wbMediaDeduction || point.wbMediaDeduction || null,
       cashbackAmount: reference.sellerSummary?.cashbackAmount || point.cashbackAmount || null,
@@ -966,6 +967,7 @@ function financeDeductionKind(row) {
     row?.bonusTypeName,
     row?.docTypeName
   ].filter(Boolean).join(' '));
+  if (/\u043f\u0440\u043e\u0434\u0432\u0438\u0436|wbpromotion|promotion/.test(text)) return 'wbPromotion';
   if (/\u0441\u043f\u0438\u0441\u0430\u043d\u0438\u0435\u0437\u0430\u043e\u0442\u0437\u044b\u0432|review/.test(text)) return 'review';
   if (/\u0432\u0431\u043c\u0435\u0434\u0438\u0430|wbmedia|media/.test(text)) return 'wbMedia';
   return 'other';
@@ -980,17 +982,22 @@ function buildFinanceDeductionMap(rows) {
     if (!deduction) continue;
     const current = byDate.get(date) || {
       deduction: 0,
+      wbPromotionDeduction: 0,
       reviewDeduction: 0,
       wbMediaDeduction: 0,
       otherDeduction: 0,
       deductionRows: 0,
+      wbPromotionDeductionRows: 0,
       reviewDeductionRows: 0,
       wbMediaDeductionRows: 0
     };
     current.deduction += deduction;
     current.deductionRows += 1;
     const kind = financeDeductionKind(row);
-    if (kind === 'review') {
+    if (kind === 'wbPromotion') {
+      current.wbPromotionDeduction += deduction;
+      current.wbPromotionDeductionRows += 1;
+    } else if (kind === 'review') {
       current.reviewDeduction += deduction;
       current.reviewDeductionRows += 1;
     } else if (kind === 'wbMedia') {
@@ -1093,6 +1100,7 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
     const additionalPayments = Math.round(numberOrZero(summary.additionalPayments));
     const acceptanceOperations = Math.round(numberOrZero(summary.acceptanceOperations));
     const deduction = Math.round((numberOrZero(deductionDetails.deduction) || numberOrZero(summary.deduction)) * 100) / 100;
+    const wbPromotionDeduction = Math.round(numberOrZero(deductionDetails.wbPromotionDeduction) * 100) / 100;
     const reviewDeduction = Math.round(numberOrZero(deductionDetails.reviewDeduction) * 100) / 100;
     const wbMediaDeduction = Math.round(numberOrZero(deductionDetails.wbMediaDeduction) * 100) / 100;
     const otherDeduction = Math.round(numberOrZero(deductionDetails.otherDeduction) * 100) / 100;
@@ -1114,10 +1122,12 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
       additionalPayments,
       acceptanceOperations,
       deduction,
+      wbPromotionDeduction,
       reviewDeduction,
       wbMediaDeduction,
       otherDeduction,
       deductionRows: Math.round(numberOrZero(deductionDetails.deductionRows)),
+      wbPromotionDeductionRows: Math.round(numberOrZero(deductionDetails.wbPromotionDeductionRows)),
       reviewDeductionRows: Math.round(numberOrZero(deductionDetails.reviewDeductionRows)),
       wbMediaDeductionRows: Math.round(numberOrZero(deductionDetails.wbMediaDeductionRows)),
       cashbackAmount,
@@ -1131,6 +1141,7 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
       salesRevenue,
       payForGoods,
       deduction,
+      wbPromotionDeduction,
       reviewDeduction,
       wbMediaDeduction,
       totalPay,
@@ -1304,7 +1315,10 @@ async function main() {
     series: mergeAllSeries(platforms)
   });
 
-  const ordered = ['wb', 'ozon', 'ya', 'all']
+  const pinnedPlatformKeys = ['wb', 'ozon', 'ya'];
+  const extraPlatformKeys = Array.from(platforms.keys())
+    .filter((key) => !pinnedPlatformKeys.includes(key) && key !== 'all');
+  const ordered = [...pinnedPlatformKeys, ...extraPlatformKeys, 'all']
     .map((key) => platforms.get(key) || { key, label: PLATFORM_LABELS[key] || key, series: [] });
   const wbLatestMarketplaceDate = [...wbSeriesFinal]
     .reverse()

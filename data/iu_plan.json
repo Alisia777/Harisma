@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-19T14:16:26.185Z",
+  "generatedAt": "2026-06-19T15:49:35.645Z",
   "sourceWorkbook": "План ф.xlsx",
   "sourceSheet": "01_ДДС_ИУ",
   "planYear": 2026,
@@ -18,9 +18,9 @@
     "sourceSheet": "Фиксированная ставка",
     "sourceFormat": "wb_dashboard_fixed_rate",
     "share": 1,
-    "rows": 111,
+    "rows": 110,
     "from": "2026-03-01",
-    "to": "2026-06-19",
+    "to": "2026-06-18",
     "accounts": [
       {
         "account": "Смарт-Сэйл",
@@ -65,6 +65,13 @@
       }
     ],
     "selectedAccountRule": "smart_sale_only",
+    "staleDuplicateControlRows": [
+      {
+        "date": "2026-06-19",
+        "revenueFactGross": 8090439,
+        "adsFactGross": 1671148
+      }
+    ],
     "daily": [
       {
         "date": "2026-03-01",
@@ -2595,29 +2602,6 @@
         "share": 1,
         "gmvCompletion": 1.353682,
         "adsCompletion": 2.58198
-      },
-      {
-        "date": "2026-06-19",
-        "monthKey": "2026-06",
-        "revenueFactGross": 8090439,
-        "gmvPlanGross": 5976618,
-        "adsFactGross": 1671148,
-        "adsPlanGross": 647235,
-        "accounts": {
-          "Смарт-Сэйл": {
-            "revenueFactGross": 8090439,
-            "gmvPlanGross": 5976618,
-            "adsFactGross": 1671148,
-            "adsPlanGross": 647235
-          }
-        },
-        "revenueFactOur": 8090439,
-        "gmvPlanOur": 5976618,
-        "adsFactOur": 1671148,
-        "adsPlanOur": 647235,
-        "share": 1,
-        "gmvCompletion": 1.353682,
-        "adsCompletion": 2.58198
       }
     ],
     "monthly": {
@@ -2674,20 +2658,20 @@
       },
       "2026-06": {
         "monthKey": "2026-06",
-        "days": 19,
+        "days": 18,
         "from": "2026-06-01",
-        "to": "2026-06-19",
-        "revenueFactGross": 150461609,
-        "gmvPlanGross": 113555754,
-        "adsFactGross": 13955104,
-        "adsPlanGross": 12036929,
-        "revenueFactOur": 150461609,
-        "gmvPlanOur": 113555754,
-        "adsFactOur": 13955104,
-        "adsPlanOur": 12036929,
+        "to": "2026-06-18",
+        "revenueFactGross": 142371170,
+        "gmvPlanGross": 107579136,
+        "adsFactGross": 12283956,
+        "adsPlanGross": 11389694,
+        "revenueFactOur": 142371170,
+        "gmvPlanOur": 107579136,
+        "adsFactOur": 12283956,
+        "adsPlanOur": 11389694,
         "adsPlanRate": 0.08,
-        "gmvCompletion": 1.325002,
-        "adsCompletion": 1.159358
+        "gmvCompletion": 1.323409,
+        "adsCompletion": 1.078515
       }
     }
   },

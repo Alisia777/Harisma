@@ -9,6 +9,10 @@ const DEFAULT_OZON_PLAN_PCT = 0.25;
 const DEFAULT_OZON_SMART_SHARE = 0.4;
 const OZON_API_BASE_URL = 'https://api-seller.ozon.ru';
 const OZON_FINANCE_TRANSACTION_PAGE_SIZE = 1000;
+const OZON_FINANCE_DRR_EXCLUSION_FIELDS = [
+  'drrExcludedPremiumPlus',
+  'drrExcludedOriginalBadge'
+];
 const OZON_FINANCE_FIELDS = [
   'salesGross',
   'realizationRevenue',
@@ -20,10 +24,13 @@ const OZON_FINANCE_FIELDS = [
   'partnerServices',
   'fboServices',
   'ads',
+  ...OZON_FINANCE_DRR_EXCLUSION_FIELDS,
   'otherServices',
   'compensations',
   'accruedNet'
 ];
+const OZON_FINANCE_GROUP_FIELDS = OZON_FINANCE_FIELDS
+  .filter((field) => !OZON_FINANCE_DRR_EXCLUSION_FIELDS.includes(field));
 const OZON_REALIZATION_FIELDS = [
   'realizationRevenue',
   'discountBonus',
@@ -43,6 +50,8 @@ const OZON_FINANCE_GROUP_LABELS = {
   partnerServices: 'Услуги партнеров',
   fboServices: 'Услуги FBO',
   ads: 'Продвижение и реклама',
+  drrExcludedPremiumPlus: 'Исключено из ДРР: Premium Plus',
+  drrExcludedOriginalBadge: 'Исключено из ДРР: Бейдж Оригинал',
   otherServices: 'Другие услуги и штрафы',
   compensations: 'Компенсации и декомпенсации',
   accruedNet: 'Начислено'
@@ -523,6 +532,8 @@ function emptyOzonFinanceBucket(key = '', label = '') {
     partnerServices: 0,
     fboServices: 0,
     ads: 0,
+    drrExcludedPremiumPlus: 0,
+    drrExcludedOriginalBadge: 0,
     otherServices: 0,
     compensations: 0,
     accruedNet: 0
@@ -542,6 +553,25 @@ function materializeOzonFinanceBucket(bucket) {
   const result = { ...bucket };
   for (const key of OZON_FINANCE_FIELDS) result[key] = roundMoney(result[key]);
   result.quantity = roundMoney(result.quantity);
+  const excludedFromDrr = OZON_FINANCE_DRR_EXCLUSION_FIELDS
+    .reduce((sum, field) => sum + numberOrZero(result[field]), 0);
+  const grossPromotionExpense = Math.max(0, -numberOrZero(result.ads));
+  result.drrExcludedTotal = roundMoney(excludedFromDrr);
+  result.drrSpendGross = roundMoney(grossPromotionExpense);
+  result.drrSpend = roundMoney(Math.max(0, grossPromotionExpense - excludedFromDrr));
+
+  const realizationGross = numberOrZero(result.realizationSalesGross);
+  const financeGross = numberOrZero(result.salesGross);
+  const gmvGross = realizationGross > 0 ? realizationGross : financeGross;
+  const realizationReturns = numberOrZero(result.realizationReturnRevenue) + numberOrZero(result.realizationReturnBonus);
+  const financeReturns = Math.abs(Math.min(0, numberOrZero(result.returnsGross)));
+  const gmvReturns = realizationReturns > 0 ? realizationReturns : financeReturns;
+  result.ozonGmvGross = roundMoney(gmvGross);
+  result.ozonReturns = roundMoney(gmvReturns);
+  result.ozonGmv = roundMoney(Math.max(0, gmvGross - gmvReturns));
+  result.ozonGmvMode = realizationGross > 0
+    ? 'realization_by_day_sales_minus_returns'
+    : (financeGross > 0 ? 'finance_transactions_sales_minus_returns' : '');
   return result;
 }
 
@@ -573,6 +603,28 @@ function ozonFinanceLeftoverGroup(type) {
     return 'partnerServices';
   }
   return 'otherServices';
+}
+
+function ozonFinanceDrrExclusionField(type) {
+  const raw = normalizeTextKey(type);
+  const decoded = normalizeTextKey(decodeOzonLowByteText(type));
+  const text = `${raw} ${decoded}`;
+  if (/operationsubscriptionpremiumplus|premium\s*plus|premiumplus|подписк.*premium/.test(text)) {
+    return 'drrExcludedPremiumPlus';
+  }
+  if (/operationlabeloriginal|labeloriginal|original.*badge|badge.*original|бейдж.*оригинал|оригинал.*бейдж/.test(text)) {
+    return 'drrExcludedOriginalBadge';
+  }
+  return '';
+}
+
+function applyOzonFinanceLeftover(parts, type, leftover) {
+  const group = ozonFinanceLeftoverGroup(type);
+  parts[group] += leftover;
+  const exclusionField = group === 'ads' ? ozonFinanceDrrExclusionField(type) : '';
+  if (exclusionField) {
+    parts[exclusionField] += -leftover;
+  }
 }
 
 function ozonFinanceIndexes(headers) {
@@ -628,11 +680,13 @@ function ozonFinancePartsFromRow(row, indexes) {
     partnerServices: 0,
     fboServices: 0,
     ads: 0,
+    drrExcludedPremiumPlus: 0,
+    drrExcludedOriginalBadge: 0,
     otherServices: 0,
     compensations: 0,
     accruedNet: total
   };
-  parts[ozonFinanceLeftoverGroup(type)] += leftover;
+  applyOzonFinanceLeftover(parts, type, leftover);
   return parts;
 }
 
@@ -692,7 +746,7 @@ function buildOzonFinanceSummary(options) {
         addOzonFinanceParts(monthBucket, parts);
         months.set(month, monthBucket);
       }
-      for (const key of OZON_FINANCE_FIELDS.filter((field) => field !== 'accruedNet')) {
+      for (const key of OZON_FINANCE_GROUP_FIELDS.filter((field) => field !== 'accruedNet')) {
         const value = numberOrZero(parts[key]);
         if (!value) continue;
         const groupBucket = groups.get(key) || emptyOzonFinanceBucket(key, OZON_FINANCE_GROUP_LABELS[key] || key);
@@ -853,11 +907,13 @@ function ozonFinancePartsFromApiOperation(operation = {}) {
     partnerServices: 0,
     fboServices: 0,
     ads: 0,
+    drrExcludedPremiumPlus: 0,
+    drrExcludedOriginalBadge: 0,
     otherServices: 0,
     compensations: 0,
     accruedNet: total
   };
-  parts[ozonFinanceLeftoverGroup(type)] += leftover;
+  applyOzonFinanceLeftover(parts, type, leftover);
   return parts;
 }
 
@@ -885,7 +941,7 @@ function materializeOzonFinanceSummaryFromParts(options, partsRows, source, warn
       addOzonFinanceParts(monthBucket, parts);
       months.set(month, monthBucket);
     }
-    for (const key of OZON_FINANCE_FIELDS.filter((field) => field !== 'accruedNet')) {
+    for (const key of OZON_FINANCE_GROUP_FIELDS.filter((field) => field !== 'accruedNet')) {
       const value = numberOrZero(parts[key]);
       if (!value) continue;
       const groupBucket = groups.get(key) || emptyOzonFinanceBucket(key, OZON_FINANCE_GROUP_LABELS[key] || key);
@@ -1193,7 +1249,7 @@ function mergeOzonRealizationIntoFinance(summary, realization) {
   if (!realization || !Array.isArray(realization.daily) || !realization.daily.length) return summary;
   const next = deepClone(summary);
   const byDate = new Map(realization.daily.map((row) => [row.date, row]));
-  const apply = (bucket = {}, source = {}) => ({
+  const apply = (bucket = {}, source = {}) => materializeOzonFinanceBucket({
     ...bucket,
     realizationRevenue: roundMoney(source.realizationRevenue),
     discountBonus: roundMoney(source.discountBonus),
@@ -2287,6 +2343,10 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
   const ozonMap = buildPlatformDateMap(platformTrends, 'ozon');
   const yandexMap = buildPlatformDateMap(platformTrends, 'ya');
   const adsMaps = buildAdsDailyMaps(adsSummary, options.wbAdsChannelOverrides);
+  const ozonFinanceDailyRows = Array.isArray(options.ozonFinance?.daily) ? options.ozonFinance.daily : [];
+  const ozonFinanceDailyMap = new Map(ozonFinanceDailyRows
+    .map((row) => [isoDate(row.date || row.key || row.label), row])
+    .filter(([date]) => Boolean(date)));
   options.wbAdsChannelOverrideRuntime = adsMaps.diagnostics;
   const reviewPointsMap = buildReviewPointsMap(wbFeedbacksSummary);
   const wbDailyPlanMap = buildWbDailyPlanMap(iuPlan);
@@ -2310,6 +2370,8 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const wb = wbMap.get(date) || {};
     const wbDailyPlan = wbDailyPlanMap.get(date) || null;
     const ozon = ozonMap.get(date) || {};
+    const ozonFinance = ozonFinanceDailyMap.get(date) || {};
+    const hasOzonFinanceDay = ozonFinanceDailyMap.has(date);
     const yandex = yandexMap.get(date) || {};
     const ads = adsMaps.byDate.get(date) || {};
     const ozonAds = adsMaps.ozonByDate.get(date) || {};
@@ -2325,7 +2387,9 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
       : 0;
     const revenueWb = wbApiRevenue || wbIuFactRevenue;
     const ordersRevenueWb = revenueWb || numberOrZero(wb.ordersRevenue) || wbIuFactRevenue;
-    const revenueOzon = numberOrZero(ozon.revenue);
+    const revenueOzonApiRaw = numberOrZero(ozon.revenue);
+    const ozonFinanceGmv = numberOrZero(ozonFinance.ozonGmv);
+    const revenueOzon = hasOzonFinanceDay ? ozonFinanceGmv : revenueOzonApiRaw;
     const revenueYandex = numberOrZero(yandex.revenue);
     const ordersRevenueYandex = numberOrZero(yandex.ordersRevenue);
     const adsPctBaseWb = revenueWb;
@@ -2349,8 +2413,12 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const planSpendWb = contractMarketingPlanWb;
     const selectedPlanPct = contractPlanPct;
     const planSpendOzon = numberOrZero(plan.dailyIuAdsOzon) || (targetRevenueOzon * planPctOzon);
-    const spendFactOzon = hasOzonAdsFact ? numberOrZero(ozonAds.spend) : revenueOzon * planPctOzon;
-    const ozonAdsFactMode = hasOzonAdsFact
+    const spendFactOzon = hasOzonFinanceDay
+      ? numberOrZero(ozonFinance.drrSpend)
+      : (hasOzonAdsFact ? numberOrZero(ozonAds.spend) : revenueOzon * planPctOzon);
+    const ozonAdsFactMode = hasOzonFinanceDay
+      ? 'ozon_finance_balance_gmv_drr_excluding_premium_plus_original_badge'
+      : hasOzonAdsFact
       ? ozonAdsFactSourceMode
       : 'modeled_from_revenue_25pct_no_ozon_ads_fact';
     const spendFactYandex = 0;
@@ -2429,12 +2497,22 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
       revenueWbCompletionPct: targetRevenueWb > 0 ? roundRate(revenueWb / targetRevenueWb) : null,
       targetRevenueOzon: roundMoney(targetRevenueOzon),
       revenueOzon: roundMoney(revenueOzon),
+      revenueOzonApiRaw: roundMoney(revenueOzonApiRaw),
+      ozonGmv: roundMoney(ozonFinanceGmv),
+      ozonGmvGross: roundMoney(ozonFinance.ozonGmvGross),
+      ozonReturns: roundMoney(ozonFinance.ozonReturns),
+      ozonGmvMode: ozonFinance.ozonGmvMode || (hasOzonFinanceDay ? 'ozon_finance_unknown' : 'seller_analytics_fallback'),
       revenueOzonDelta: roundMoney(revenueOzonDelta),
       revenueOzonDeltaPct: targetRevenueOzon > 0 ? roundRate(revenueOzonDelta / targetRevenueOzon) : null,
       revenueOzonCompletionPct: targetRevenueOzon > 0 ? roundRate(revenueOzon / targetRevenueOzon) : null,
       planPctOzon: roundRate(planPctOzon),
       planSpendOzon: roundMoney(planSpendOzon),
       spendFactOzon: roundMoney(spendFactOzon),
+      ozonDrrSpendGross: roundMoney(ozonFinance.drrSpendGross),
+      ozonDrrExcludedPremiumPlus: roundMoney(ozonFinance.drrExcludedPremiumPlus),
+      ozonDrrExcludedOriginalBadge: roundMoney(ozonFinance.drrExcludedOriginalBadge),
+      ozonDrrExcludedTotal: roundMoney(ozonFinance.drrExcludedTotal),
+      ozonFinanceSourceRows: Math.round(numberOrZero(ozonFinance.rowCount)),
       factPctOzon: revenueOzon > 0 ? roundRate(spendFactOzon / revenueOzon) : null,
       spendDeltaOzon: roundMoney(spendDeltaOzon),
       spendDeltaOzonPct: planSpendOzon > 0 ? roundRate(spendDeltaOzon / planSpendOzon) : null,
@@ -2537,12 +2615,20 @@ function buildMonthRows(dailyRows, iuPlan, companyPlan) {
     const ordersRevenueWb = sumRows(rows, 'ordersRevenueWb');
     const adsPctBaseWb = sumRows(rows, 'adsPctBaseWb') || revenueWb;
     const revenueOzon = sumRows(rows, 'revenueOzon');
+    const revenueOzonApiRaw = sumRows(rows, 'revenueOzonApiRaw');
+    const ozonGmv = sumRows(rows, 'ozonGmv');
+    const ozonGmvGross = sumRows(rows, 'ozonGmvGross');
+    const ozonReturns = sumRows(rows, 'ozonReturns');
     const revenueYandex = sumRows(rows, 'revenueYandex');
     const ordersRevenueYandex = sumRows(rows, 'ordersRevenueYandex');
     const revenueTotalIu = sumRows(rows, 'revenueTotalIu');
     const adsPctBaseIu = adsPctBaseWb + revenueOzon + revenueYandex;
     const spendFact = sumRows(rows, 'spendFact');
     const spendFactOzon = sumRows(rows, 'spendFactOzon');
+    const ozonDrrSpendGross = sumRows(rows, 'ozonDrrSpendGross');
+    const ozonDrrExcludedPremiumPlus = sumRows(rows, 'ozonDrrExcludedPremiumPlus');
+    const ozonDrrExcludedOriginalBadge = sumRows(rows, 'ozonDrrExcludedOriginalBadge');
+    const ozonDrrExcludedTotal = sumRows(rows, 'ozonDrrExcludedTotal');
     const spendFactYandex = sumRows(rows, 'spendFactYandex');
     const spendFactIu = sumRows(rows, 'spendFactIu');
     const spendFactTotal = sumRows(rows, 'spendFactTotal');
@@ -2645,12 +2731,20 @@ function buildMonthRows(dailyRows, iuPlan, companyPlan) {
       ordersRevenueWb: roundMoney(ordersRevenueWb),
       adsPctBaseWb: roundMoney(adsPctBaseWb),
       revenueOzon: roundMoney(revenueOzon),
+      revenueOzonApiRaw: roundMoney(revenueOzonApiRaw),
+      ozonGmv: roundMoney(ozonGmv),
+      ozonGmvGross: roundMoney(ozonGmvGross),
+      ozonReturns: roundMoney(ozonReturns),
       revenueYandex: roundMoney(revenueYandex),
       ordersRevenueYandex: roundMoney(ordersRevenueYandex),
       spendFact: roundMoney(spendFact),
       spendFactDrr: roundMoney(spendFact),
       spendFactTotal: roundMoney(spendFactTotal),
       spendFactOzon: roundMoney(spendFactOzon),
+      ozonDrrSpendGross: roundMoney(ozonDrrSpendGross),
+      ozonDrrExcludedPremiumPlus: roundMoney(ozonDrrExcludedPremiumPlus),
+      ozonDrrExcludedOriginalBadge: roundMoney(ozonDrrExcludedOriginalBadge),
+      ozonDrrExcludedTotal: roundMoney(ozonDrrExcludedTotal),
       spendFactYandex: roundMoney(spendFactYandex),
       spendFactIu: roundMoney(spendFactIu),
       spendFactTotalIu: roundMoney(spendFactTotalIu),
@@ -2835,6 +2929,7 @@ async function buildPayload(options) {
   const wbFeedbacksSummary = readLayer(options, 'wb_feedbacks_summary.json', { reviewsForPoints: {}, daily: [], cards: [] });
   const ozonPlan = buildOzonPlanDashboardSummary(options);
   const ozonFinance = await buildOzonFinanceSummaryAuto(options);
+  options.ozonFinance = ozonFinance;
   const dailyRows = buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedbacksSummary, options);
   const months = buildMonthRows(dailyRows, iuPlan, companyPlan);
   const planTruth = buildPlanTruthRows(iuPlan, companyPlan);
@@ -2916,14 +3011,15 @@ async function buildPayload(options) {
       noSourceChannels,
       unmatchedNmIds: adsSummary.diagnostics?.unmatchedNmIds || [],
       notes: [
-        'Ozon ad spend comes from Google Sheets fact_ads_daily_sku when present; planPctOzon remains the plan benchmark.',
+        'Ozon IU fact is calculated from Ozon Finance balance GMV: sales/revenue minus returns. Seller analytics revenue is retained as revenueOzonApiRaw for audit and used only when finance data is missing.',
+        'Ozon DRR fact is calculated from Ozon Finance promotion/expense rows divided by GMV; Premium Plus and Бейдж Оригинал are excluded from the numerator.',
         'WB revenue plan is max(corporate WB plan, Smart-Sale IU WB plan); WB ad plan remains on the IU/DRR ad contour.',
         'Ozon revenue plan is max(corporate Ozon plan, Smart-Sale IU 40% share); ad plan scales from the selected revenue plan by Ozon benchmark DRR.',
         'WB review spend uses WB Finance API detailed deduction rows where sellerOperName is review write-off; cashbackAmount is retained only as a control field.',
         'WB IU/DRR logic: raw WB API sales and ad spend are normalized to the IU control workbook metric on the loaded API window; raw API values remain in wbRawApiRevenue/wbRawApiSpendFact for audit.',
         'WB marketing plan is 8.5% of normalized factual turnover. ordersRevenueWb is retained as a report-control field, not as a separate contract denominator.',
         'WB quarter summary combines report workbook sales/orders with March-April DRR rows and the current May daily IU/DRR layer. DRR by contract uses sales/buyouts; the control advertising percentage uses orders revenue.',
-        'ИУ по обороту в workbook сверяется по WB; Ozon ведётся отдельным контуром.',
+        'ИУ по обороту в workbook сверяется по WB; Ozon ведётся отдельным финансовым контуром по логике workbook "Расчет показателей ИУ.xlsx".',
         'Yandex Market revenue and funnel are taken from platform_trends sales funnel; ad spend is not present in that source and remains separate until a spend API/source is connected.',
         'ДРР и каналы рекламы считаются по WB; Ozon and Yandex are shown as platform contours with their own source availability.',
         'Каналы без источника показываются нулем до подключения отдельного источника.'

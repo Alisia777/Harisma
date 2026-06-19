@@ -1198,15 +1198,31 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     });
   }
 
+  function dashboardPointHasSalesFact(point = {}) {
+    return Boolean(
+      num(point.revenue) > 0
+      || num(point.rawRevenue) > 0
+      || num(point.ordersRevenue) > 0
+      || num(point.financeTurnover) > 0
+      || num(point.units) > 0
+      || num(point.factUnits) > 0
+    );
+  }
+
   function dateBounds() {
     const anchor = anchorDate();
     const dates = [];
+    const factDates = [];
     PLATFORM_KEYS.forEach((key) => {
-      platformSeries(key, anchor).forEach((point) => dates.push(point.date));
+      platformSeries(key, anchor).forEach((point) => {
+        dates.push(point.date);
+        if (dashboardPointHasSalesFact(point)) factDates.push(point.date);
+      });
       adsSeries(key, parseDate(current('adsSummary')?.asOfDate) || anchor).forEach((point) => dates.push(point.date));
     });
     const min = dates.length ? dates.reduce((best, item) => (item < best ? item : best)) : startOfMonth(anchor);
-    const max = dates.length ? dates.reduce((best, item) => (item > best ? item : best)) : cleanDate(anchor);
+    const maxSource = factDates.length ? factDates : dates;
+    const max = maxSource.length ? maxSource.reduce((best, item) => (item > best ? item : best)) : cleanDate(anchor);
     return { min, max, anchor };
   }
 
@@ -1237,10 +1253,14 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       stored.end = '';
       resetStaleRange = true;
     }
+    let rangeStateChanged = resetStaleRange;
     if (stored.mode === 'preset' || !stored.start || !stored.end) {
+      const beforePreset = `${stored.mode}|${stored.active}|${stored.start}|${stored.end}`;
       Object.assign(stored, presetRange(stored.active || '7', today));
+      const afterPreset = `${stored.mode}|${stored.active}|${stored.start}|${stored.end}`;
+      if (beforePreset !== afterPreset) rangeStateChanged = true;
     }
-    if (resetStaleRange) persistRangeState(stored);
+    if (rangeStateChanged) persistRangeState(stored);
     const requestedStart = parseDate(stored.start) || addDays(today, -6);
     const requestedEnd = parseDate(stored.end) || today;
     let effectiveStart = cleanDate(requestedStart);
@@ -3888,8 +3908,12 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     const contentSummary = contentSliceSummary();
     const contentReady = contentSummary.rows.length > 0;
     const activePlatformLabel = currentFocusLabel(executive);
-    const selectedStart = parseDate(executive.range.state.start) || executive.range.effectiveStart;
-    const selectedEnd = parseDate(executive.range.state.end) || executive.range.effectiveEnd;
+    const selectedStart = executive.range.clamped
+      ? executive.range.effectiveStart
+      : (parseDate(executive.range.state.start) || executive.range.effectiveStart);
+    const selectedEnd = executive.range.clamped
+      ? executive.range.effectiveEnd
+      : (parseDate(executive.range.state.end) || executive.range.effectiveEnd);
     const clampAlert = executive.range.clamped
       ? `<div class="portal-exec-period-alert"><strong>Внимание:</strong> выбранный период шире доступного факта. Карточки ниже сейчас считаются только по ${esc(executive.range.effectiveLabel)}, потому что в источнике опубликованы данные за ${esc(executive.range.availableLabel)}.</div>`
       : '';
@@ -6294,8 +6318,12 @@ function dashboardTaskStatusChip(task) {
     const taskPanel = dashboardTaskPanel(executive);
     const issueCount = dashboardIssueTotal(metric);
     const status = dashboardStatusSentence(metric, issueCount, taskPanel.rows.length, executive);
-    const selectedStart = parseDate(executive.range.state.start) || executive.range.effectiveStart;
-    const selectedEnd = parseDate(executive.range.state.end) || executive.range.effectiveEnd;
+    const selectedStart = executive.range.clamped
+      ? executive.range.effectiveStart
+      : (parseDate(executive.range.state.start) || executive.range.effectiveStart);
+    const selectedEnd = executive.range.clamped
+      ? executive.range.effectiveEnd
+      : (parseDate(executive.range.state.end) || executive.range.effectiveEnd);
     const presetLabel = (key) => key === 'yesterday' ? 'Вчера' : key === 'prevweek' ? 'Прошлая неделя' : `${key} дней`;
     const platformOptions = [
       { key: 'all', label: 'Все' },
@@ -8450,8 +8478,12 @@ function dashboardTaskStatusChip(task) {
     const metricCards = dashboardMetricDefinitions(executive);
     const score = dashboardScoreValue(executive);
     const level = dashboardScoreLevel(score);
-    const selectedStart = parseDate(executive.range.state.start) || executive.range.effectiveStart;
-    const selectedEnd = parseDate(executive.range.state.end) || executive.range.effectiveEnd;
+    const selectedStart = executive.range.clamped
+      ? executive.range.effectiveStart
+      : (parseDate(executive.range.state.start) || executive.range.effectiveStart);
+    const selectedEnd = executive.range.clamped
+      ? executive.range.effectiveEnd
+      : (parseDate(executive.range.state.end) || executive.range.effectiveEnd);
     const platformCards = dashboardPlatformSelectorItems(executive);
     const periodLabel = (key) => {
       if (key === 'yesterday') return shortDate(executive.range.max);

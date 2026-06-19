@@ -3,9 +3,40 @@ const path = require('path');
 
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, 'data');
-const HISTORY_ROOT = path.join(ROOT, '.altea-google-sheet-sync-output', 'history');
 const CURRENT_PATH = path.join(DATA_DIR, 'product_leaderboard.json');
 const OUTPUT_PATH = path.join(DATA_DIR, 'product_leaderboard_history.json');
+
+function uniqueExistingPaths(paths) {
+  const seen = new Set();
+  return paths
+    .map((item) => path.resolve(item))
+    .filter((item) => {
+      if (seen.has(item)) return false;
+      seen.add(item);
+      return fs.existsSync(item);
+    });
+}
+
+const HISTORY_ROOTS = uniqueExistingPaths([
+  path.join(ROOT, '.altea-google-sheet-sync-output', 'history'),
+  path.join(ROOT, '..', '.altea-google-sheet-sync-output', 'history')
+]);
+
+const HISTORY_FILES = uniqueExistingPaths([
+  OUTPUT_PATH,
+  path.join(DATA_DIR, 'last_good', 'product_leaderboard_history.json'),
+  path.join(ROOT, '.altea-google-sheet-sync-output', 'product_leaderboard_history.json'),
+  path.join(ROOT, '..', 'data', 'product_leaderboard_history.json'),
+  path.join(ROOT, '..', 'data', 'last_good', 'product_leaderboard_history.json'),
+  path.join(ROOT, '..', '.altea-google-sheet-sync-output', 'product_leaderboard_history.json')
+]);
+
+const CURRENT_FILES = uniqueExistingPaths([
+  CURRENT_PATH,
+  path.join(ROOT, '.altea-google-sheet-sync-output', 'product_leaderboard.json'),
+  path.join(ROOT, '..', 'data', 'product_leaderboard.json'),
+  path.join(ROOT, '..', '.altea-google-sheet-sync-output', 'product_leaderboard.json')
+]);
 
 function walk(dir, visit) {
   if (!fs.existsSync(dir)) return;
@@ -46,26 +77,33 @@ function payloadStamp(payload, fallbackPath = '') {
 
 function collectSnapshots() {
   const snapshots = [];
-
-  walk(HISTORY_ROOT, (filePath) => {
-    if (path.basename(filePath) !== 'product_leaderboard.json') return;
-    const payload = readJsonSafe(filePath);
+  const addPayload = (payload, filePath) => {
     if (!payload || !Array.isArray(payload.items)) return;
     snapshots.push({
       ...payload,
       __path: filePath,
       __stamp: payloadStamp(payload, filePath)
     });
+  };
+
+  HISTORY_ROOTS.forEach((historyRoot) => {
+    walk(historyRoot, (filePath) => {
+      if (path.basename(filePath) !== 'product_leaderboard.json') return;
+      addPayload(readJsonSafe(filePath), filePath);
+    });
   });
 
-  const current = readJsonSafe(CURRENT_PATH);
-  if (current && Array.isArray(current.items)) {
-    snapshots.push({
-      ...current,
-      __path: CURRENT_PATH,
-      __stamp: payloadStamp(current, CURRENT_PATH)
+  HISTORY_FILES.forEach((filePath) => {
+    const payload = readJsonSafe(filePath);
+    if (!Array.isArray(payload)) return;
+    payload.forEach((snapshot) => {
+      addPayload(snapshot, filePath);
     });
-  }
+  });
+
+  CURRENT_FILES.forEach((filePath) => {
+    addPayload(readJsonSafe(filePath), filePath);
+  });
 
   const deduped = new Map();
   snapshots.forEach((payload) => {

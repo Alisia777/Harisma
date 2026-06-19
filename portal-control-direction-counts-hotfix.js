@@ -96,6 +96,11 @@
   }
 
   function refreshCounters() {
+    const simpleRoot = document.querySelector('[data-control-simple]');
+    if (simpleRoot && !window.state?.controlFilters?.taskSimpleFullMode) {
+      window.__alteaControlDirectionCountsSkipped = 'simple';
+      return;
+    }
     const buttons = Array.from(document.querySelectorAll('button.control-simple-direction[data-platform]'));
     if (!buttons.length) return;
     const counts = Object.fromEntries(TARGETS.map((key) => [key, 0]));

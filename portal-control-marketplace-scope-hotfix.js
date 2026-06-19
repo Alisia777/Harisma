@@ -140,7 +140,7 @@
   }
 
   function loadDirectionCounts() {
-    const src = 'portal-control-direction-counts-hotfix.js?v=20260529taskzya1';
+    const src = 'portal-control-direction-counts-hotfix.js?v=20260619task-noise3';
     const base = src.split('?')[0];
     if (Array.from(document.scripts || []).some((script) => String(script.src || '').includes(base))) return;
     const script = document.createElement('script');

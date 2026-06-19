@@ -1341,25 +1341,27 @@
   function controlSimpleModel() {
     const filters = controlSimpleFilterState();
     const allTasks = controlSimpleAllTasks().filter((taskItem) => !controlSimpleIsCancelled(taskItem));
+    const matchesCurrentFilters = (taskItem) => {
+      if (!controlSimpleMatchesTaskFilters(taskItem, filters)) return false;
+      if (!filters.search) return true;
+      return `${taskItem?.title || ''} ${taskItem?.entityLabel || ''} ${taskItem?.articleKey || ''} ${taskItem?.owner || ''} ${taskItem?.nextAction || ''} ${taskItem?.reason || ''}`.toLowerCase().includes(filters.search);
+    };
+    const filteredAllTasks = allTasks.filter(matchesCurrentFilters);
     const counts = Object.fromEntries(CONTROL_SIMPLE_DIRECTIONS.map(([key]) => [key, 0]));
-    counts.all = allTasks.length;
-    allTasks.forEach((taskItem) => {
+    counts.all = filteredAllTasks.length;
+    filteredAllTasks.forEach((taskItem) => {
       const key = controlSimpleDirectionKey(taskItem);
       counts[key] = (counts[key] || 0) + 1;
     });
     const selected = controlSimpleSelectedDirection(counts);
-    const selectedTasks = allTasks
+    const rawSelectedTasks = allTasks
       .filter((taskItem) => selected === 'all' || controlSimpleDirectionKey(taskItem) === selected);
-    let tasks = selectedTasks
-      .filter((taskItem) => controlSimpleMatchesTaskFilters(taskItem, filters))
-      .filter((taskItem) => {
-        if (!filters.search) return true;
-        return `${taskItem?.title || ''} ${taskItem?.entityLabel || ''} ${taskItem?.articleKey || ''} ${taskItem?.owner || ''} ${taskItem?.nextAction || ''} ${taskItem?.reason || ''}`.toLowerCase().includes(filters.search);
-      });
+    let tasks = filteredAllTasks
+      .filter((taskItem) => selected === 'all' || controlSimpleDirectionKey(taskItem) === selected);
     let queueFilter = controlSimpleNormalizeQueue(state?.controlFilters?.taskSimpleQueue);
-    if (!tasks.length && selected !== 'all' && CONTROL_SIMPLE_RETAIL_ROP_DIRECTIONS.has(selected) && selectedTasks.length) {
-      tasks = selectedTasks.filter(controlSimpleIsActive);
-      if (!tasks.length) tasks = selectedTasks;
+    if (!tasks.length && selected !== 'all' && CONTROL_SIMPLE_RETAIL_ROP_DIRECTIONS.has(selected) && rawSelectedTasks.length) {
+      tasks = rawSelectedTasks.filter(controlSimpleIsActive);
+      if (!tasks.length) tasks = rawSelectedTasks;
       queueFilter = 'all';
       state.controlFilters = state.controlFilters || {};
       state.controlFilters.taskSimpleQueue = 'all';
@@ -1460,20 +1462,22 @@
   function controlSimpleGameHero(data) {
     const game = data.game || {};
     const selectedMeta = CONTROL_SIMPLE_META[data.selected] || CONTROL_SIMPLE_META.cross;
-    const tone = game.score >= 86 ? 'ok' : game.score >= 68 ? 'warn' : 'danger';
+    const activeCount = Array.isArray(data.active) ? data.active.length : 0;
+    const filteredCount = Array.isArray(data.tasks) ? data.tasks.length : activeCount;
+    const activeShare = filteredCount ? Math.round((activeCount / filteredCount) * 100) : 0;
     return `
       <section class="control-simple-game" data-platform="${escapeHtml(data.selected || 'all')}">
         <div class="control-simple-game-main">
-          <span>Уровень задач</span>
-          <strong>${fmt.int(game.score || 0)}</strong>
-          <em>${escapeHtml(game.level || 'рабочий фокус')} · ${escapeHtml(selectedMeta.label || 'контур')}</em>
-          <div class="control-simple-game-meter"><i style="width:${Math.max(0, Math.min(100, game.score || 0))}%"></i></div>
+          <span>Активные задачи</span>
+          <strong>${fmt.int(activeCount)}</strong>
+          <em>${escapeHtml(selectedMeta.label || 'контур')} · ${fmt.int(filteredCount)} в текущем фильтре</em>
+          <div class="control-simple-game-meter"><i style="width:${Math.max(0, Math.min(100, activeShare))}%"></i></div>
         </div>
         <div class="control-simple-game-grid">
-          <div class="control-simple-game-cell is-xp"><span>XP команды</span><strong>${fmt.int(game.xp || 0)}</strong><em>за активность и закрытия</em></div>
-          <div class="control-simple-game-cell ${game.overdue ? 'is-danger' : 'is-ok'}"><span>Срочно</span><strong>${fmt.int(game.overdue || 0)}</strong><em>просрочено</em></div>
-          <div class="control-simple-game-cell ${game.ownerCoverage < 90 ? 'is-warn' : 'is-ok'}"><span>Owner</span><strong>${fmt.int(game.ownerCoverage || 0)}%</strong><em>покрытие задач</em></div>
-          <div class="control-simple-game-cell ${tone ? `is-${tone}` : ''}"><span>Фокус</span><strong>${escapeHtml(game.focus || 'контур')}</strong><em>${fmt.int(game.signals || 0)} авто · ${fmt.int(game.sent || 0)} ждут</em></div>
+          <div class="control-simple-game-cell ${game.overdue ? 'is-danger' : 'is-ok'}"><span>Просрочено</span><strong>${fmt.int(game.overdue || 0)}</strong><em>нужен новый срок</em></div>
+          <div class="control-simple-game-cell ${game.noOwner ? 'is-warn' : 'is-ok'}"><span>Без owner</span><strong>${fmt.int(game.noOwner || 0)}</strong><em>назначить ответственного</em></div>
+          <div class="control-simple-game-cell ${game.sent ? 'is-warn' : 'is-ok'}"><span>Ждут решения</span><strong>${fmt.int(game.sent || 0)}</strong><em>РОП, отдел или финал</em></div>
+          <div class="control-simple-game-cell ${game.signals ? 'is-info' : 'is-ok'}"><span>Автосигналы</span><strong>${fmt.int(game.signals || 0)}</strong><em>портал нашёл риск сам</em></div>
         </div>
       </section>`;
   }
@@ -1736,8 +1740,10 @@
 
   function controlSimpleDirectionButton(key, data) {
     const meta = CONTROL_SIMPLE_META[key] || CONTROL_SIMPLE_META.cross;
-    const count = Number(data?.counts?.[key] || 0);
     const active = data?.selected === key;
+    const count = active
+      ? (Array.isArray(data?.tasks) ? data.tasks.length : Number(data?.counts?.[key] || 0))
+      : Number(data?.counts?.[key] || 0);
     const manager = key === 'all';
     return `<button class="control-simple-direction ${active ? 'active' : ''} ${manager ? 'is-manager' : ''}" type="button" data-platform="${escapeHtml(key)}" data-control-simple-direction="${escapeHtml(key)}"><strong>${escapeHtml(meta.label)}</strong><span>${escapeHtml(manager ? 'обзор по всем' : meta.hint)}</span><b>${fmt.int(count)}</b></button>`;
   }

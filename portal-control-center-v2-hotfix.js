@@ -2159,6 +2159,7 @@
       if (typeof originalRenderControlCenter === 'function') originalRenderControlCenter();
       const root = document.getElementById('view-control');
       if (!root) return;
+      if (root.dataset.controlSimple && !state?.controlFilters?.taskSimpleFullMode) return;
       renderGeneralTaskEnhancements(root);
     };
 

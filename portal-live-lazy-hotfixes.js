@@ -23,14 +23,14 @@
       'portal-dashboard-interactive-hotfix.js?v=20260619dashboard-noprice1'
     ],
     control: [
-      'portal-form-visual-refine.js?v=20260619task-v2-order1',
-      'portal-control-center-v2-hotfix.js?v=20260619task-v2-order1',
-      'portal-control-marketplace-scope-hotfix.js?v=20260529taskzya1'
+      'portal-form-visual-refine.js?v=20260619task-noise3',
+      'portal-control-center-v2-hotfix.js?v=20260619task-noise3',
+      'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3'
     ],
     executive: [
       'portal-executive-lite-guard.js?v=20260619exec-layer1',
-      'portal-control-marketplace-scope-hotfix.js?v=20260529taskzya1',
-      'portal-form-visual-refine.js?v=20260619task-v2-order1'
+      'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3',
+      'portal-form-visual-refine.js?v=20260619task-noise3'
     ],
     workflow: [
       'portal-loyalty-system-hotfix.js?v=20260521prod1'

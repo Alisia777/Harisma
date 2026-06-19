@@ -385,6 +385,100 @@ function executiveFunnelPlanBucketHasSignal(row = {}) {
     || executiveFunnelNumber(row.externalExcludedSpend) > 0;
 }
 
+function executiveFunnelPlanBucketHasKpiPlan(row = {}) {
+  return executiveFunnelNumber(row.planToDateRevenue) > 0
+    || executiveFunnelNumber(row.planRevenue) > 0;
+}
+
+function executiveFunnelSourcePlatformRows(row = {}) {
+  if (Array.isArray(row.platformRows) && row.platformRows.length) return row.platformRows;
+  if (row.platforms instanceof Map) return [...row.platforms.values()];
+  return [];
+}
+
+function executiveFunnelMergePlanBucket(target = {}, source = {}) {
+  if (!target || !source) return target;
+  [
+    'planRevenue',
+    'planToDateRevenue',
+    'factRevenue',
+    'planUnits',
+    'factUnits',
+    'marginRub',
+    'marginWeight',
+    'planMarginValue',
+    'planMarginWeight',
+    'adSpend',
+    'apiFactRevenue',
+    'apiPlanToDateRevenue',
+    'apiMarginRub',
+    'externalExcludedSpend',
+    'externalExcludedOrders'
+  ].forEach((key) => {
+    target[key] = executiveFunnelNumber(target[key]) + executiveFunnelNumber(source[key]);
+  });
+  if (source.planAdSpend !== null && source.planAdSpend !== undefined) {
+    target.planAdSpend = executiveFunnelNumber(target.planAdSpend) + executiveFunnelNumber(source.planAdSpend);
+    target.hasPlanAdSpend = true;
+  }
+  if (source.payrollKpi || source.payrollControlScaled) target.payrollKpi = true;
+  if (source.salaryIncluded !== undefined) target.salaryIncluded = source.salaryIncluded;
+  const skuKeys = source.skuKeys instanceof Set
+    ? [...source.skuKeys]
+    : (Array.isArray(source.skuKeys) ? source.skuKeys : []);
+  skuKeys.forEach((key) => target.skuKeys?.add(key));
+  return target;
+}
+
+function executiveFunnelKpiOwnerRow(row = {}, selectedPlatform = 'all') {
+  const platformRows = executiveFunnelSourcePlatformRows(row)
+    .filter((metric) => {
+      const platform = metric.platform || '';
+      if (selectedPlatform !== 'all' && platform !== selectedPlatform) return false;
+      return executiveFunnelPlanBucketHasKpiPlan(metric);
+    });
+  if (!platformRows.length) return null;
+
+  const bucket = executiveFunnelOwnerPlanBucket(row.owner || '');
+  bucket.externalExcludedSpend = executiveFunnelNumber(row.externalExcludedSpend);
+  bucket.externalExcludedOrders = executiveFunnelNumber(row.externalExcludedOrders);
+  platformRows.forEach((metric) => {
+    const platform = metric.platform || selectedPlatform || 'all';
+    const platformBucket = executiveFunnelOwnerPlatformBucket(platform);
+    executiveFunnelMergePlanBucket(platformBucket, metric);
+    executiveFunnelFinalizePlanBucket(platformBucket);
+    bucket.platforms.set(platform, platformBucket);
+    executiveFunnelMergePlanBucket(bucket, platformBucket);
+  });
+  bucket.platformRows = [...bucket.platforms.values()]
+    .map(executiveFunnelFinalizePlanBucket)
+    .filter(executiveFunnelPlanBucketHasKpiPlan)
+    .sort((left, right) => right.factRevenue - left.factRevenue);
+  bucket.primaryPlatform = bucket.platformRows[0]?.platform || selectedPlatform || 'all';
+  return executiveFunnelFinalizePlanBucket(bucket);
+}
+
+function executiveFunnelBuildKpiPlatformRows(ownerRows = [], selectedPlatform = 'all') {
+  const rows = new Map(EXECUTIVE_FUNNEL_PLATFORMS.map((platform) => [platform, executiveFunnelOwnerPlatformBucket(platform)]));
+  ownerRows.forEach((ownerRow) => {
+    executiveFunnelSourcePlatformRows(ownerRow).forEach((metric) => {
+      const platform = metric.platform || '';
+      if (!rows.has(platform)) return;
+      if (selectedPlatform !== 'all' && platform !== selectedPlatform) return;
+      if (!executiveFunnelPlanBucketHasKpiPlan(metric)) return;
+      executiveFunnelMergePlanBucket(rows.get(platform), metric);
+    });
+  });
+  return [...rows.values()]
+    .map((row) => {
+      const finalized = executiveFunnelFinalizePlanBucket(row);
+      finalized.articleCount = finalized.skuKeys?.size || 0;
+      return finalized;
+    })
+    .filter((row) => selectedPlatform === 'all' || row.platform === selectedPlatform)
+    .filter(executiveFunnelPlanBucketHasKpiPlan);
+}
+
 function executiveFunnelSortRows(rows = [], sort = 'completionAsc') {
   const list = [...rows];
   const cmpNum = (getter, dir = 'desc') => (left, right) => {
@@ -534,7 +628,7 @@ function executiveFunnelApplyMissingPayrollFacts(ownerMap = new Map(), platform 
       owner: ownerBucket.owner,
       metric: ownerBucket.platforms?.get(platform) || null
     }))
-    .filter(({ metric }) => metric && executiveFunnelPlanBucketHasSignal(metric));
+    .filter(({ metric }) => metric && executiveFunnelPlanBucketHasKpiPlan(metric));
   if (!entries.length) return null;
 
   const revenueWeightSum = entries.reduce((sum, { metric }) => sum + executiveFunnelPlanControlWeight(metric), 0) || entries.length;
@@ -682,13 +776,16 @@ function executiveFunnelApplyPayrollOwnerControls(ownerMap = new Map(), planMode
 
 function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
   const filters = { ...EXECUTIVE_FUNNEL_DEFAULT_FILTERS, ...executiveFunnelFilters };
+  if (filters.status === 'noPlan') {
+    filters.status = 'all';
+    executiveFunnelFilters.status = 'all';
+  }
   const selectedPlatform = EXECUTIVE_FUNNEL_PLATFORMS.includes(filters.platform) ? filters.platform : 'all';
   const planModel = funnel.planModel || executiveFunnelBuildPlanModel(selectedPlatform);
   if (!planModel) return null;
   const periodStart = executiveFunnelDateKey(planModel.periodStart || funnel.periodStart || `${planModel.monthKey || ''}-01`);
   const periodEnd = executiveFunnelDateKey(planModel.periodEnd || funnel.periodEnd || planModel.selectedDate || planModel.maxFactDate);
   const ownerMap = new Map();
-  const platformTotals = new Map(EXECUTIVE_FUNNEL_PLATFORMS.map((platform) => [platform, executiveFunnelOwnerPlatformBucket(platform)]));
   const sourceRows = Array.isArray(planModel.allRows) ? planModel.allRows : [];
   const excluded = { rows: 0, revenue: 0, planToDateRevenue: 0 };
 
@@ -697,7 +794,6 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
       if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
       const metric = row.platforms?.[platform] || row[platform] || null;
       if (!executiveFunnelPlanMetricActive(metric)) return;
-      if (platformTotals.has(platform)) executiveFunnelAddPlanMetric(platformTotals.get(platform), metric, platform, row);
       const owner = executiveFunnelOwner(row, platform);
       if (executiveFunnelOwnerIsNoise(owner, row) || !executiveFunnelOwnerAllowedForPlatform(owner, platform)) {
         excluded.rows += 1;
@@ -732,7 +828,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
 
   const payrollOwnerControls = executiveFunnelApplyPayrollOwnerControls(ownerMap, planModel, selectedPlatform);
 
-  const ownerRows = [...ownerMap.values()]
+  const rawOwnerRows = [...ownerMap.values()]
     .map((row) => {
       row.platformRows = [...row.platforms.values()]
         .map(executiveFunnelFinalizePlanBucket)
@@ -742,17 +838,12 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
       return executiveFunnelFinalizePlanBucket(row);
     })
     .filter(executiveFunnelPlanBucketHasSignal);
+  const noPlanOwnerRows = rawOwnerRows.filter((row) => !executiveFunnelPlanBucketHasKpiPlan(row));
+  const ownerRows = rawOwnerRows
+    .map((row) => executiveFunnelKpiOwnerRow(row, selectedPlatform))
+    .filter(Boolean);
 
-  const platformRows = [...platformTotals.values()]
-    .map((row) => {
-      const finalized = executiveFunnelFinalizePlanBucket(row);
-      finalized.articleCount = finalized.skuKeys?.size || 0;
-      return finalized;
-    })
-    .filter((row) => selectedPlatform === 'all' || row.platform === selectedPlatform)
-    .filter((row) => row.factRevenue > 0 || row.planToDateRevenue > 0 || row.adSpend > 0 || row.hasPlanAdSpend);
-
-  executiveFunnelApplyPayrollPlatformRows(platformRows, planModel, selectedPlatform);
+  const platformRows = executiveFunnelBuildKpiPlatformRows(ownerRows, selectedPlatform);
 
   const totals = executiveFunnelFinalizePlanBucket(platformRows.reduce((acc, row) => {
     acc.planRevenue += row.planRevenue;
@@ -777,15 +868,6 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     row.skuKeys.forEach((key) => acc.skuKeys.add(key));
     return acc;
   }, executiveFunnelOwnerPlanBucket('Итого')));
-  const payrollTotalMetric = selectedPlatform === 'all'
-    ? (typeof skuPlanFactPlatformSummary === 'function'
-      ? skuPlanFactPlatformSummary(planModel, 'all', { scope: 'allRows', includePayroll: true })
-      : planModel.payrollKpi)
-    : null;
-  if (payrollTotalMetric?.payrollKpi) {
-    executiveFunnelApplyPayrollPlatformMetric(totals, payrollTotalMetric || planModel.payrollKpi);
-  }
-
   totals.employeeCount = ownerRows.length;
   totals.underPlanCount = ownerRows.filter((row) => row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue).length;
   totals.okCount = ownerRows.filter((row) => row.completionToDate !== null && row.completionToDate >= 1).length;
@@ -796,7 +878,6 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     if (filters.status === 'danger' && !(row.completionToDate !== null && row.completionToDate < 0.9)) return false;
     if (filters.status === 'watch' && !(row.completionToDate !== null && row.completionToDate >= 0.9 && row.completionToDate < 1)) return false;
     if (filters.status === 'ok' && !(row.completionToDate !== null && row.completionToDate >= 1)) return false;
-    if (filters.status === 'noPlan' && row.planToDateRevenue > 0) return false;
     return true;
   });
   visibleRows = executiveFunnelSortRows(visibleRows, filters.sort);
@@ -813,6 +894,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     platformRows,
     totals,
     excluded,
+    noPlanOwnerRows,
     payrollOwnerControls,
     planModel
   };
@@ -1634,8 +1716,7 @@ function renderExecutiveOwnerFilters(model = {}) {
     ['all', 'Все'],
     ['danger', '< 90%'],
     ['watch', '90-100%'],
-    ['ok', 'OK'],
-    ['noPlan', 'Без плана']
+    ['ok', 'OK']
   ].map(([value, label]) => renderExecutiveOwnerFilterButton('status', value, label, filters.status === value)).join('');
   return `
     <div class="executive-owner-toolbar">

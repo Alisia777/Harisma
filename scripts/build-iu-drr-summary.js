@@ -2211,6 +2211,10 @@ function computeWbApiSpendSelection(date, wb, ads, adsMaps, reviewPointsMap) {
   const wbPromotionFromFinanceDeductions = roundMoney(wb.wbPromotionDeduction);
   const wbPromotionFromAds = numberOrZero(channels.wbPromotion);
   let wbPromotionAddedToSpend = 0;
+  if (wbPromotionFromFinanceDeductions > 0) {
+    channels.wbPromotion = roundMoney(wbPromotionFromAds + wbPromotionFromFinanceDeductions);
+    wbPromotionAddedToSpend = wbPromotionFromFinanceDeductions;
+  }
 
   const reviewPointsFromFinanceDeductions = roundMoney(wb.reviewDeduction);
   const reviewPointsFromCashback = roundMoney(wb.cashbackAmount);
@@ -2234,7 +2238,7 @@ function computeWbApiSpendSelection(date, wb, ads, adsMaps, reviewPointsMap) {
   }
 
   const externalSpend = numberOrZero(channels.externalAds);
-  const apiSpendFactTotal = numberOrZero(ads.spend) + wbPromotionAddedToSpend + reviewPointsAddedToSpend + wbMediaAddedToSpend;
+  const apiSpendFactTotal = numberOrZero(ads.spend) + wbPromotionAddedToSpend + wbMediaAddedToSpend;
   const wbApiSpendFact = Math.max(0, apiSpendFactTotal - externalSpend);
   return {
     channels,
@@ -2247,6 +2251,8 @@ function computeWbApiSpendSelection(date, wb, ads, adsMaps, reviewPointsMap) {
     reviewPointsFromFeedbacks,
     reviewPointsFromAds,
     selectedReviewPoints,
+    reviewPointsAddedToSpend,
+    reviewPointsIncludedInIuDrr: false,
     wbMediaFromFinanceDeductions,
     wbMediaFromAds,
     externalSpend,
@@ -2283,9 +2289,11 @@ function buildWbIuApiCalibration(range, wbMap, adsMaps, reviewPointsMap, wbDaily
     rawApiSpend: 0,
     normalizedApiSpend: 0,
     spendMatchPct: null,
+    recentSpendMedianFactor: 1,
+    recentSpendFactorMethod: 'aggregate_control_to_raw_ratio',
     dateFactors: {},
     targetMarketingRate: roundRate(WB_CONTRACT.marketingRate),
-    rule: 'WB IU/DRR renders the uploaded IU control workbook when a control date exists; API rows are retained for audit deltas only.'
+    rule: 'WB IU/DRR uses WB finance turnover for revenue and WB Promotion API plus finance WB Promotion deductions for ad spend; uploaded IU control rows remain the exact daily truth when present.'
   };
 
   if (!range.from || !range.to) return diagnostics;
@@ -2346,7 +2354,8 @@ function buildWbIuApiCalibration(range, wbMap, adsMaps, reviewPointsMap, wbDaily
     .sort(([left], [right]) => left.localeCompare(right))
     .slice(-5)
     .map(([, value]) => value.spendFactor);
-  diagnostics.recentSpendFactor = medianNumber(recentSpendFactors) || diagnostics.spendFactor || 1;
+  diagnostics.recentSpendMedianFactor = medianNumber(recentSpendFactors) || diagnostics.spendFactor || 1;
+  diagnostics.recentSpendFactor = diagnostics.spendFactor || diagnostics.recentSpendMedianFactor || 1;
   diagnostics.recentSpendFactorDays = recentSpendFactors.length;
   diagnostics.normalizedApiRevenue = diagnostics.rawApiRevenue * diagnostics.revenueFactor;
   diagnostics.normalizedApiSpend = diagnostics.rawApiSpend * diagnostics.spendFactor;
@@ -2372,6 +2381,7 @@ function buildWbIuApiCalibration(range, wbMap, adsMaps, reviewPointsMap, wbDaily
   diagnostics.normalizedApiSpend = roundMoney(diagnostics.normalizedApiSpend);
   diagnostics.revenueFactorRounded = roundRate(diagnostics.revenueFactor);
   diagnostics.spendFactorRounded = roundRate(diagnostics.spendFactor);
+  diagnostics.recentSpendMedianFactorRounded = roundRate(diagnostics.recentSpendMedianFactor);
   diagnostics.recentSpendFactorRounded = roundRate(diagnostics.recentSpendFactor);
   diagnostics.dateFactors = Object.fromEntries(
     Object.entries(diagnostics.dateFactors).map(([date, value]) => [date, {
@@ -3112,9 +3122,9 @@ async function buildPayload(options) {
         'Ozon DRR fact is calculated from Ozon Finance promotion/expense rows divided by GMV; Premium Plus and Бейдж Оригинал are excluded from the numerator.',
         'WB revenue plan is max(corporate WB plan, Smart-Sale IU WB plan); WB ad plan remains on the IU/DRR ad contour.',
         'Ozon revenue plan is max(corporate Ozon plan, Smart-Sale IU 40% share); ad plan scales from the selected revenue plan by Ozon benchmark DRR.',
-        'WB review spend uses WB Finance API detailed deduction rows where sellerOperName is review write-off; cashbackAmount is retained only as a control field.',
-        'WB Promotion finance deduction rows are retained as audit fields only; daily Smart-Sale advertising fact uses WB Promotion API plus the IU control/external correction layer because finance deductions are accrual rows and do not match daily cabinet facts.',
-        'WB IU/DRR logic: raw WB API sales and ad spend are audited against the IU control workbook; when a control date exists, the rendered WB metric uses the Smart-Sale control workbook values.',
+        'WB Promotion spend combines WB Promotion API rows with WB Finance detailed WB Promotion deductions, closing the API gap against the Smart-Sale IU control contour.',
+        'WB review/feedback write-off rows are retained as channel audit and are not included in the core IU/DRR numerator unless the IU control workbook explicitly carries them; this avoids double counting finance accrual rows.',
+        'WB IU/DRR logic: raw WB API sales and ad spend are audited against the IU control workbook; when a control date exists, the rendered WB metric uses the Smart-Sale control workbook values, and future API-only days use the MTD control/raw ratio instead of the unstable last-day accrual ratio.',
         'WB marketing plan uses the uploaded control workbook plan spend/rate when available; the contract fallback is used only when the workbook has no control row. ordersRevenueWb is retained as a report-control field, not as a separate contract denominator.',
         'WB quarter summary combines report workbook sales/orders with March-April DRR rows and the current May daily IU/DRR layer. DRR by contract uses sales/buyouts; the control advertising percentage uses orders revenue.',
         'ИУ по обороту в workbook сверяется по WB; Ozon ведётся отдельным финансовым контуром по логике workbook "Расчет показателей ИУ.xlsx".',

@@ -8135,13 +8135,21 @@ function ozonPlanFactDailyRows(model, context = {}) {
       || numberOrZero(total.gmv);
     const noSppBuyoutsFact = financeFactGmv;
     const noSppAds = financeAds || factAds;
-    cumulativeTargetGmv += dailyTargetGmv;
-    cumulativeFactGmv += factGmv;
-    cumulativeNoSppBuyouts += noSppBuyouts;
-    cumulativeNoSppBuyoutsFact += noSppBuyoutsFact;
-    cumulativeTargetAds += dailyTargetAds;
-    cumulativeFactAds += factAds;
-    cumulativeNoSppAds += noSppAds;
+    const countsTowardCumulative = !isPartialFinanceDay;
+    const cumulativeDailyTargetGmv = countsTowardCumulative ? dailyTargetGmv : 0;
+    const cumulativeDailyFactGmv = countsTowardCumulative ? factGmv : 0;
+    const cumulativeDailyNoSppBuyouts = countsTowardCumulative ? noSppBuyouts : 0;
+    const cumulativeDailyNoSppBuyoutsFact = countsTowardCumulative ? noSppBuyoutsFact : 0;
+    const cumulativeDailyTargetAds = countsTowardCumulative ? dailyTargetAds : 0;
+    const cumulativeDailyFactAds = countsTowardCumulative ? factAds : 0;
+    const cumulativeDailyNoSppAds = countsTowardCumulative ? noSppAds : 0;
+    cumulativeTargetGmv += cumulativeDailyTargetGmv;
+    cumulativeFactGmv += cumulativeDailyFactGmv;
+    cumulativeNoSppBuyouts += cumulativeDailyNoSppBuyouts;
+    cumulativeNoSppBuyoutsFact += cumulativeDailyNoSppBuyoutsFact;
+    cumulativeTargetAds += cumulativeDailyTargetAds;
+    cumulativeFactAds += cumulativeDailyFactAds;
+    cumulativeNoSppAds += cumulativeDailyNoSppAds;
     return {
       date,
       period: `${String(date).slice(8, 10)}.${String(date).slice(5, 7)}`,
@@ -8198,7 +8206,8 @@ function ozonPlanFactDailyRows(model, context = {}) {
       financeAds: Math.abs(numberOrZero(finance.ads)),
       source: usesFinanceFallback ? 'ozon_finance_api' : (hasDashboardFact ? 'ozon_dashboard' : (usesIuDailyFallback ? 'iu_drr_daily' : 'missing')),
       sourceLabel: usesFinanceFallback ? 'Ozon Finance API' : (hasDashboardFact ? 'Ozon dashboard' : (usesIuDailyFallback ? 'IU/DRR daily' : '')),
-      isPartial: Boolean(isPartialFinanceDay || usesIuDailyFallback)
+      isPartial: Boolean(isPartialFinanceDay || usesIuDailyFallback),
+      countsTowardCumulative
     };
   });
 }

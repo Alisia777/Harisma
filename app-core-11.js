@@ -31,6 +31,7 @@ let skuPlanFactSearchTimer = 0;
 let skuPlanFactExcelDownloadLockUntil = 0;
 let skuPlanFactTruthWarmupPromise = null;
 let skuPlanFactWbSubstitutionIndexCache = { payload: null, index: null };
+let skuPlanFactLazyRenderPromise = null;
 
 function skuPlanFactPlatformLabel(platform = '') {
   return SKU_PLAN_FACT_PLATFORM_LABELS[platform] || String(platform || '').toUpperCase();
@@ -107,6 +108,20 @@ function skuPlanFactApplyOwnerScope(rows = [], platform = 'all') {
 function skuPlanFactOwnerIsFilterOption(owner = '') {
   const normalized = skuPlanFactCanonicalOwner(owner);
   return Boolean(normalized && normalized !== 'Без owner' && normalized !== SKU_PLAN_FACT_UNMAPPED_OWNER);
+}
+
+function skuPlanFactOwnerOptionsFromRows(rows = []) {
+  const owners = new Set();
+  const addOwner = (value) => {
+    const owner = skuPlanFactCanonicalOwner(value);
+    if (skuPlanFactOwnerIsFilterOption(owner)) owners.add(owner);
+  };
+  (rows || []).forEach((row) => {
+    addOwner(row.ownerBase);
+    addOwner(row.owner);
+    Object.values(row.ownerByPlatform || row.ownersByPlatform || {}).forEach(addOwner);
+  });
+  return [...owners].sort((a, b) => a.localeCompare(b, 'ru'));
 }
 
 function skuPlanFactOwnerOptionHasMetricSignal(row = {}, platform = 'all') {
@@ -2066,6 +2081,37 @@ function skuPlanFactApplyPlannedAdSpend(rows = [], monthKey = '', periodStart = 
   });
 }
 
+function skuPlanFactApplyAggregateAdSpend(rows = [], monthKey = '', platform = '', elapsedDays = 0, periodStart = '', periodEnd = '') {
+  if (platform !== 'ozon') return;
+  const sourceTotals = skuPlanFactAdSourceTotals(monthKey, periodEnd, periodStart, platform);
+  const sourceSpend = numberOrZero(sourceTotals.spend);
+  if (!(sourceSpend > 0)) return;
+  const metrics = (rows || [])
+    .map((row) => row.platforms?.[platform] || row[platform] || null)
+    .filter((metric) => metric && skuPlanFactPlatformHasActivity(metric));
+  if (!metrics.length) return;
+  const rowSpend = metrics.reduce((sum, metric) => sum + numberOrZero(metric.adSpend), 0);
+  if (rowSpend > sourceSpend * 0.05) return;
+  const weights = metrics.map((metric) => (
+    numberOrZero(metric.factRevenue)
+    || numberOrZero(metric.planToDateRevenue)
+    || numberOrZero(metric.planRevenue)
+    || numberOrZero(metric.factUnits)
+    || numberOrZero(metric.planUnits)
+    || 0
+  ));
+  const weightSum = weights.reduce((sum, value) => sum + value, 0);
+  if (!(weightSum > 0)) return;
+  metrics.forEach((metric, index) => {
+    const allocated = sourceSpend * weights[index] / weightSum;
+    metric.adSpend = allocated;
+    metric.aggregateAdSpendAllocated = true;
+    metric.aggregateAdSpendSource = 'ozon_seller_finance_api';
+    metric.drr = numberOrZero(metric.factRevenue) > 0 ? metric.adSpend / numberOrZero(metric.factRevenue) : null;
+    skuPlanFactFinalizePlatformMetric(metric, monthKey, elapsedDays, periodStart, periodEnd);
+  });
+}
+
 function skuPlanFactPlatformPriceProxy(metric = {}) {
   const values = [
     metric.planAvgCheck,
@@ -2645,15 +2691,21 @@ function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
   skuPlanFactApplyCorporateRevenuePlan(rows, monthKey, periodStart, selectedDate);
   skuPlanFactApplyCompanyPlanZeroChannels(rows, monthKey);
   skuPlanFactApplyPlannedAdSpend(rows, monthKey, periodStart, selectedDate);
+  SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
+    skuPlanFactApplyAggregateAdSpend(rows, monthKey, platform, elapsedDays, periodStart, selectedDate);
+  });
   skuPlanFactRedistributePayrollPlansToOwners(rows, selectedOwnerPlatform);
   const iuDrrControl = { applied: false, platforms: {}, source: 'company_plan_scope' };
   rows.forEach((row) => skuPlanFactFinalizeRow(row, monthKey, elapsedDays, periodStart, selectedDate));
   skuPlanFactApplySingleOwnerFallback(rows, selectedOwnerPlatform);
-  const ownerFilterRows = rows.filter((row) => skuPlanFactRowMatchesFilters(row, { ...filters, owner: 'all', status: 'all', search: '' }));
-  const owners = [...new Set(ownerFilterRows
-    .filter((row) => skuPlanFactOwnerOptionHasMetricSignal(row, selectedOwnerPlatform))
-    .map((row) => row.owner)
-    .filter(skuPlanFactOwnerIsFilterOption))].sort((a, b) => a.localeCompare(b, 'ru'));
+  const ownerFilterRows = rows.filter((row) => skuPlanFactRowMatchesFilters(row, {
+    ...filters,
+    owner: 'all',
+    status: 'all',
+    search: '',
+    platform: 'all'
+  }));
+  const owners = skuPlanFactOwnerOptionsFromRows(ownerFilterRows);
   if (filters.owner !== 'all' && skuPlanFactOwnerIsFilterOption(filters.owner) && !owners.includes(filters.owner)) {
     owners.push(filters.owner);
     owners.sort((a, b) => a.localeCompare(b, 'ru'));
@@ -9720,9 +9772,55 @@ function portalStartOperationalAutoRefresh() {
   portalOperationalAutoRefreshStarted = true;
 }
 
+function skuPlanFactLazyDataReady() {
+  return Boolean(state.boot?.dataReady && state.boot?.lazyReady?.skuPlanFact);
+}
+
+function skuPlanFactRenderLoading(rootId = 'view-sku-plan-fact') {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  if (typeof renderViewLoading === 'function') {
+    renderViewLoading(rootId, 'План-факт SKU');
+  } else {
+    root.innerHTML = `
+      <div class="card">
+        <div class="head">
+          <div>
+            <h3>План-факт SKU</h3>
+            <div class="muted small">Подгружаем план, факт и рекламный слой.</div>
+          </div>
+          ${typeof badge === 'function' ? badge('загрузка', 'info') : ''}
+        </div>
+      </div>
+    `;
+  }
+  if (!state.boot?.dataReady || typeof ensureViewData !== 'function') return;
+  if (!skuPlanFactLazyRenderPromise) {
+    skuPlanFactLazyRenderPromise = Promise.resolve(ensureViewData('sku-plan-fact'))
+      .catch((error) => {
+        console.warn('[sku-plan-fact-lazy-render]', error);
+        if (typeof renderViewFailure === 'function') {
+          renderViewFailure(rootId, 'План-факт SKU', error);
+        }
+      })
+      .finally(() => {
+        skuPlanFactLazyRenderPromise = null;
+      });
+  }
+  skuPlanFactLazyRenderPromise.then(() => {
+    if (state.activeView === 'sku-plan-fact' && typeof rerenderCurrentView === 'function') {
+      rerenderCurrentView();
+    }
+  });
+}
+
 function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
   const root = document.getElementById(rootId);
   if (!root) return;
+  if (options.force !== true && !skuPlanFactLazyDataReady()) {
+    skuPlanFactRenderLoading(rootId);
+    return;
+  }
   const model = skuPlanFactBuildModel();
   const filters = model.filters;
   const totals = model.totals;

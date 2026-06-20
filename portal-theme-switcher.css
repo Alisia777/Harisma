@@ -1514,3 +1514,353 @@ body.v87-imperial.altea-premium-shell[data-theme] .portal-theme-switcher__toggle
     scroll-behavior: auto !important;
   }
 }
+
+/* Premium shell v2: replace legacy visual layer instead of stacking over it. */
+body.v87-imperial.altea-premium-shell[data-theme] {
+  --sidebar: 254px;
+  --topbar: 72px;
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 18px;
+  --route-accent: var(--theme-accent);
+  --route-rgb: var(--platform-rgb, 216, 198, 164);
+  background: var(--app-background) fixed !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme].theme-sand-dark {
+  background: var(--app-background) fixed !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .app-shell {
+  --sidebar-track: var(--sidebar);
+  display: grid !important;
+  grid-template-columns: var(--sidebar-track) minmax(0, 1fr) !important;
+  min-height: 100vh !important;
+  background: var(--app-background) fixed !important;
+  color: var(--text) !important;
+  isolation: isolate;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .app-shell::before,
+body.v87-imperial.altea-premium-shell[data-theme] .app-shell::after {
+  content: none !important;
+  display: none !important;
+  animation: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .sidebar {
+  position: sticky !important;
+  top: 0 !important;
+  width: auto !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  padding: 24px 15px 18px !important;
+  gap: 12px !important;
+  overflow-y: auto !important;
+  border-right: 1px solid color-mix(in srgb, var(--line) 70%, transparent) !important;
+  background: color-mix(in srgb, var(--bg) 88%, transparent) !important;
+  box-shadow: inset -1px 0 0 color-mix(in srgb, var(--text) 2.5%, transparent) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .brand-block {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  margin: 0 0 12px !important;
+  padding: 0 9px 21px !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent) !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .logo-badge {
+  width: 42px !important;
+  height: 42px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .logo-badge img {
+  width: 42px !important;
+  height: 42px !important;
+  object-fit: contain !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .brand-title {
+  margin: 0 !important;
+  color: var(--text) !important;
+  font: 500 24px/1.08 Georgia, "Times New Roman", serif !important;
+  letter-spacing: 0 !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .brand-sub {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .main {
+  min-width: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .topbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 40 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 18px !important;
+  min-height: var(--topbar) !important;
+  height: var(--topbar) !important;
+  margin: 0 !important;
+  padding: 0 30px !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 58%, transparent) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 91%, transparent), color-mix(in srgb, var(--bg) 65%, transparent)) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .topbar > div:first-child {
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  gap: 12px !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .topbar h1 {
+  margin: 0 !important;
+  max-width: 320px !important;
+  overflow: hidden !important;
+  color: var(--text) !important;
+  font: 500 17px/1 Georgia, "Times New Roman", serif !important;
+  letter-spacing: 0 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .topbar h1::after {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .topbar p {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .top-actions,
+body.v87-imperial.altea-premium-shell[data-theme] .top-actions-wrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  flex-wrap: wrap !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .sync-status,
+body.v87-imperial.altea-premium-shell[data-theme] .topbar .btn {
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 0 13px !important;
+  border-radius: 999px !important;
+  font-size: 9px !important;
+  font-weight: 750 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .view.active {
+  padding: 28px 31px 64px !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .view > :first-child {
+  margin-top: 0 !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .view h2 {
+  margin: 0 0 10px !important;
+  color: var(--text) !important;
+  font: 500 clamp(24px, 2.1vw, 36px)/1.04 Georgia, "Times New Roman", serif !important;
+  letter-spacing: 0 !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .view h3 {
+  color: var(--text) !important;
+  font: 500 17px/1.15 Georgia, "Times New Roman", serif !important;
+  letter-spacing: 0 !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .sidebar .nav {
+  gap: 0 !important;
+  min-height: 0 !important;
+  padding-right: 3px !important;
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .sidebar .nav::-webkit-scrollbar {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .sidebar .nav-btn {
+  grid-template-columns: 30px minmax(0, 1fr) 4px !important;
+  min-height: 47px !important;
+  margin: 0 0 4px !important;
+  padding: 6px 8px !important;
+  border-radius: 13px !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .sidebar .nav-btn:hover,
+body.v87-imperial.altea-premium-shell[data-theme] .sidebar .nav-btn.active {
+  border-color: color-mix(in srgb, var(--route-accent) 34%, var(--line)) !important;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--route-accent) 13%, var(--surface)), color-mix(in srgb, var(--surface) 86%, transparent)) !important;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--bg) 26%, transparent) !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .sidebar .nav-btn .nav-icon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 9px !important;
+  color: var(--muted) !important;
+  border-color: color-mix(in srgb, var(--line) 78%, transparent) !important;
+  background: color-mix(in srgb, var(--surface2) 76%, transparent) !important;
+  box-shadow: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .sidebar .nav-btn.active .nav-icon {
+  color: var(--route-accent) !important;
+  border-color: color-mix(in srgb, var(--route-accent) 38%, var(--line)) !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] :where(
+  .card,
+  .panel,
+  .portal-panel,
+  .portal-card,
+  .portal-surface,
+  .portal-exec-card,
+  .dashboard-card,
+  .metric-card,
+  .kpi-card,
+  .hero-panel,
+  .summary-card,
+  .mini-kpi,
+  .task-card,
+  .task-mini,
+  .board-col,
+  .list-item,
+  .note-box,
+  .table-wrap,
+  .repricer-card,
+  .launch-card,
+  .launch-audit-card,
+  .executive-card,
+  .leaderboard-card,
+  .sku-plan-fact-card,
+  .product-leaderboard-date-card,
+  .product-leaderboard-order-hero,
+  .product-leaderboard-weekly-bi,
+  .product-leaderboard-weekly-bi-card,
+  .iu-drr-funnel-panel,
+  .iu-drr-funnel-card,
+  .iu-drr-score-card,
+  .iu-drr-quarter-card,
+  .iu-drr-forecast-hero,
+  .ads-control-table-card
+) {
+  border: 1px solid color-mix(in srgb, var(--line) 78%, transparent) !important;
+  border-radius: var(--radius) !important;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--surface) 94%, transparent), color-mix(in srgb, var(--surface2) 84%, transparent)) !important;
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--bg) 24%, transparent) !important;
+  transform: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] :where(
+  .card,
+  .panel,
+  .portal-panel,
+  .portal-card,
+  .portal-surface,
+  .portal-exec-card,
+  .dashboard-card,
+  .metric-card,
+  .kpi-card,
+  .hero-panel,
+  .summary-card,
+  .mini-kpi,
+  .task-card,
+  .task-mini,
+  .board-col,
+  .list-item,
+  .note-box,
+  .table-wrap,
+  .repricer-card,
+  .launch-card,
+  .launch-audit-card,
+  .executive-card,
+  .leaderboard-card
+):hover {
+  border-color: color-mix(in srgb, var(--route-accent) 34%, var(--line)) !important;
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--bg) 30%, transparent) !important;
+  transform: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] :where(button, .btn, .chip, .pill, input, select, textarea) {
+  border-color: color-mix(in srgb, var(--line) 76%, transparent) !important;
+  background: color-mix(in srgb, var(--surface) 76%, transparent) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] :where(button, .btn, .chip, .pill):hover {
+  border-color: color-mix(in srgb, var(--route-accent) 46%, var(--line)) !important;
+  background: color-mix(in srgb, var(--route-accent) 10%, var(--surface)) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] :where(.bar, .progress, .progress-track, .meter, .track) {
+  background: color-mix(in srgb, var(--line) 46%, transparent) !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] :where(.bar i, .fill, .bar-fill, .progress-fill, .meter-fill) {
+  background: linear-gradient(90deg, var(--route-accent), color-mix(in srgb, var(--route-accent) 40%, var(--theme-accent-2))) !important;
+  box-shadow: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .view.active.altea-premium-route-enter {
+  animation-duration: 520ms !important;
+  filter: none !important;
+}
+
+body.v87-imperial.altea-premium-shell[data-theme] .view.active.altea-premium-route-enter > * {
+  animation: none !important;
+}
+
+@media (max-width: 820px) {
+  body.v87-imperial.altea-premium-shell[data-theme] .app-shell {
+    display: block !important;
+  }
+
+  body.v87-imperial.altea-premium-shell[data-theme] .sidebar {
+    position: static !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  body.v87-imperial.altea-premium-shell[data-theme] .topbar {
+    height: auto !important;
+    min-height: 62px !important;
+    padding: 10px 14px !important;
+  }
+
+  body.v87-imperial.altea-premium-shell[data-theme] .view.active {
+    padding: 20px 14px 100px !important;
+  }
+}

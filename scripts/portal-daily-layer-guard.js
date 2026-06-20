@@ -847,6 +847,56 @@ function inspectExecutiveTruthCode(loaded, policy, checks, passports) {
   return addCheck(checks, check);
 }
 
+function inspectOosTaskCode(loaded, policy, checks, passports) {
+  const check = { id: 'contract:oos-auto-task-code', scope: 'oos', source: 'app-core-11.js', warnings: [], blockingReasons: [] };
+  const filePath = path.resolve(__dirname, '..', 'app-core-11.js');
+  try {
+    const text = fs.readFileSync(filePath, 'utf8');
+    const saveStart = text.indexOf('async function oosControlSaveTask');
+    const saveEnd = text.indexOf('function oosControlRiskAmount', saveStart);
+    const taskForStart = text.indexOf('function oosControlTaskFor');
+    const taskForEnd = text.indexOf('function oosControlTaskStatusLabel', taskForStart);
+    const storageStart = fs.existsSync(path.resolve(__dirname, '..', 'app-core-02.js'))
+      ? fs.readFileSync(path.resolve(__dirname, '..', 'app-core-02.js'), 'utf8')
+      : '';
+    const saveBlock = saveStart >= 0 && saveEnd > saveStart ? text.slice(saveStart, saveEnd) : '';
+    const taskForBlock = taskForStart >= 0 && taskForEnd > taskForStart ? text.slice(taskForStart, taskForEnd) : '';
+    check.markers = {
+      hasStableIssueKey: text.includes('function oosControlStableIssueKey'),
+      hasStableMarker: saveBlock.includes('[oos-stable:'),
+      hasLegacyMarker: saveBlock.includes('[oos:'),
+      taskSourceAuto: /source:\s*['"]auto['"]/.test(saveBlock),
+      taskNormalizeAuto: /normalizeTask\([^]*,\s*['"]auto['"]\)/.test(saveBlock),
+      taskForStableMarker: taskForBlock.includes('oosControlTaskMarkers'),
+      localAutoOosPersistent: storageStart.includes("autoCode || '').trim().toLowerCase() === 'oos_control'")
+    };
+    if (!check.markers.hasStableIssueKey || !check.markers.hasStableMarker) {
+      check.blockingReasons.push('oos task: stable platform+article marker is absent');
+    }
+    if (!check.markers.hasLegacyMarker) check.blockingReasons.push('oos task: legacy issue marker is absent for backward compatibility');
+    if (!check.markers.taskSourceAuto || !check.markers.taskNormalizeAuto) {
+      check.blockingReasons.push('oos task: task must be created as source=auto');
+    }
+    if (/id:\s*row\.taskId\s*\|\|/.test(saveBlock)) {
+      check.blockingReasons.push('oos task: legacy row.taskId is used before stable/existing id');
+    }
+    if (!check.markers.taskForStableMarker) check.blockingReasons.push('oos task: lookup does not check stable markers');
+    if (!check.markers.localAutoOosPersistent) {
+      check.blockingReasons.push('oos task: local storage normalization would drop auto OOS tasks');
+    }
+  } catch (error) {
+    check.blockingReasons.push(`oos task: cannot inspect runtime code: ${error.message}`);
+  }
+  passports.push({
+    key: 'oos.autoTaskContract',
+    source: 'app-core-11.js',
+    period: '',
+    value: check.blockingReasons.length ? 'blocked' : 'ok',
+    formula: 'OOS task identity is stable by platform+article; task source is auto; local fallback keeps OOS auto tasks'
+  });
+  return addCheck(checks, check);
+}
+
 function inspectCrossDates(loaded, expectedDate, checks) {
   const check = { id: 'contract:cutoff-date', scope: 'period', source: 'cross-layer', warnings: [], blockingReasons: [] };
   const keyDates = ['platform_fact', 'dashboard_projection', 'ads_fact', 'warehouse_fact', 'data_quality']
@@ -977,6 +1027,7 @@ function run(options) {
   inspectDataQuality(loaded, manifest.policy, contractChecks, passports);
   inspectOrderProcurement(loaded, manifest.policy, contractChecks, passports);
   inspectOosControl(loaded, manifest.policy, contractChecks, passports);
+  inspectOosTaskCode(loaded, manifest.policy, contractChecks, passports);
   inspectSkuMatrix(loaded, manifest.policy, contractChecks, passports);
   inspectExecutiveTruthCode(loaded, manifest.policy, contractChecks, passports);
   inspectCrossDates(loaded, expectedDate, contractChecks);

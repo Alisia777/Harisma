@@ -74,14 +74,6 @@
 
   function guardSandDarkClass() {
     if (!document.body) return;
-    if (document.body.classList.contains('altea-premium-shell')) {
-      document.body.classList.remove('theme-sand-dark');
-      return;
-    }
-    if (currentTheme === 'dark') {
-      document.body.classList.add('theme-sand-dark');
-      return;
-    }
     document.body.classList.remove('theme-sand-dark');
   }
 

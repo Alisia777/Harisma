@@ -180,7 +180,7 @@ body{min-height:100vh}
 .repricer-operator-stats,.repricer-operator-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .repricer-advanced-toggle{justify-self:start;padding:7px 10px;font-size:12px;opacity:.86}
 .repricer-top-admin-hidden{display:none!important}
-body.v87-imperial.theme-sand-dark .repricer-top-admin-hidden{display:none!important}
+body.v87-imperial.altea-premium-shell .repricer-top-admin-hidden{display:none!important}
 body.repricer-operator-active .topbar{margin-bottom:8px}
 body.repricer-operator-active .top-actions-wrap{align-items:flex-start}
 body.repricer-operator-active #syncStatusBadge{max-width:360px;white-space:normal}

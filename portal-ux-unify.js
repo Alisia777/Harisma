@@ -517,12 +517,20 @@
     return addedNodes.concat(removedNodes).some(mutationTouchesDecoratedSurface);
   }
 
+  function ensurePremiumShell() {
+    if (!document.body) return;
+    document.body.classList.add("altea-premium-shell");
+    document.body.classList.remove("theme-sand-dark");
+    if (!document.body.dataset.theme) document.body.dataset.theme = document.body.dataset.portalTheme || "dark";
+    if (!document.body.dataset.platform) document.body.dataset.platform = "all";
+  }
+
   function scheduleApply() {
     if (queued) return;
     queued = true;
     window.requestAnimationFrame(function () {
       queued = false;
-      if (document.body) document.body.classList.add("theme-sand-dark");
+      ensurePremiumShell();
       var root = activeViewRoot();
       if (root) {
         applyRoles(root);
@@ -533,7 +541,7 @@
   }
 
   function boot() {
-    if (document.body) document.body.classList.add("theme-sand-dark");
+    ensurePremiumShell();
     applyRoles(document);
     decorateView(activeViewRoot());
     decorateFloatingPanels();

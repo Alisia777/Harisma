@@ -2,7 +2,7 @@
   "generatedAt": "2026-06-19T10:00:37.030Z",
   "asOfDate": "2026-06-18",
   "source": "wb-promotion-api",
-  "sourceUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
+  "sourceUrl": "httppromotion",
   "sourceMode": "wb-api+ozon-seller-finance-api",
   "window": {
     "from": "2026-05-01",
@@ -12,13 +12,13 @@
   "note": "WB Promotion API daily facts plus marketplace workbook extras. Ozon ad spend replaced by daily Seller Finance API advertising operations.",
   "diagnostics": {
     "generatedAt": "2026-06-19T07:11:49.339Z",
-    "docsUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
+    "docsUrl": "httppromotion",
     "sourceWindow": {
       "from": "2026-06-01",
       "to": "2026-06-18"
     },
     "supplierGoods": {
-      "supplierGoodsPath": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\supplier-goods-109831-2026-01-01-2026-05-05-ynubxvgyi.XLSX",
+      "supplierGoodsPath": "supplier-goods-109831-2026-01-01-2026-05-05-ynubxvgyi.XLSX",
       "mappedNmIds": 134,
       "sellerArticles": 183,
       "unmatchedSellerArticles": 49,
@@ -30,7 +30,7 @@
     "externalAds": {
       "enabled": true,
       "brand": "АЛТЕЯ",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1_WNHliH2-7E17H8J6BvYTSBWVD7cuDDBpn0GJ5Crxdg/edit?gid=349075746#gid=349075746",
+      "sourceUrl": "httpedit?gid=349075746#gid=349075746",
       "sheets": 0,
       "rows": 0,
       "matchedRows": 0,
@@ -451071,7 +451071,7 @@
   ],
   "extraMarketplace": {
     "generatedAt": "2026-06-19T09:48:03.801Z",
-    "workbook": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\exports\\altea_max_funnel_2025_2026.xlsx",
+    "workbook": "altea_max_funnel_2025_2026.xlsx",
     "asOfDate": "2026-06-18",
     "platforms": {
       "goldapple": {

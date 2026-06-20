@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-06-20T12:06:32.486Z",
+  "generatedAt": "2026-06-20T21:13:01.811Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -13,9 +13,9 @@
   "dataFreshness": {
     "status": "stale",
     "dataDate": "2026-06-18",
-    "expectedFactDate": "2026-06-19",
+    "expectedFactDate": "2026-06-20",
     "sourceGeneratedAt": "2026-06-20T09:09:08.076Z",
-    "message": "Данные отстают: факт до 2026-06-18, ожидается минимум 2026-06-19.",
+    "message": "Данные отстают: факт до 2026-06-18, ожидается минимум 2026-06-20.",
     "orderProcurementGeneratedAt": "2026-06-20T09:09:08.076Z",
     "orderWindow": {
       "from": "2026-05-24",
@@ -23,18 +23,18 @@
     },
     "smartPriceGeneratedAt": "2026-06-19T09:48:50.219Z",
     "sources": {
-      "orderProcurement": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-harisma-data-truth-guard\\data\\order_procurement.json",
-      "skus": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-harisma-data-truth-guard\\data\\skus.json",
-      "smartPriceOverlay": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-harisma-data-truth-guard\\data\\smart_price_overlay.json",
-      "syncHealth": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-harisma-data-truth-guard\\data\\portal_sync_health.json",
-      "portalDataQuality": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-harisma-data-truth-guard\\data\\portal_data_quality.json"
+      "orderProcurement": "order_procurement.json",
+      "skus": "skus.json",
+      "smartPriceOverlay": "smart_price_overlay.json",
+      "syncHealth": "portal_sync_health.json",
+      "portalDataQuality": "portal_data_quality.json"
     }
   },
   "summary": {
     "date": "2026-06-20",
     "totalIssues": 124,
     "oosCount": 77,
-    "criticalCount": 0,
+    "criticalCount": 77,
     "riskCount": 10,
     "oosSoonCount": 10,
     "watchCount": 37,
@@ -51,7 +51,7 @@
     "placeCount": 379,
     "dataStatus": "stale",
     "dataDate": "2026-06-18",
-    "expectedFactDate": "2026-06-19"
+    "expectedFactDate": "2026-06-20"
   },
   "byPlatform": [
     {
@@ -81,7 +81,7 @@
       "label": "Я.Маркет",
       "total": 112,
       "oos": 77,
-      "critical": 0,
+      "critical": 77,
       "risk": 8,
       "watch": 27,
       "lostRevenueDay": 55983,
@@ -149,7 +149,7 @@
       "label": "Анна",
       "total": 108,
       "oos": 75,
-      "critical": 0,
+      "critical": 75,
       "risk": 8,
       "watch": 25,
       "lostRevenueDay": 52320,
@@ -160,7 +160,7 @@
       "label": "Мария",
       "total": 3,
       "oos": 2,
-      "critical": 0,
+      "critical": 2,
       "risk": 0,
       "watch": 1,
       "lostRevenueDay": 3663,
@@ -195,7 +195,7 @@
       "label": "Маркетплейс / логистика",
       "total": 77,
       "oos": 77,
-      "critical": 0,
+      "critical": 77,
       "risk": 0,
       "watch": 0,
       "lostRevenueDay": 55983,
@@ -11167,7 +11167,7 @@
         "date": "2026-06-20",
         "totalIssues": 124,
         "oosCount": 77,
-        "criticalCount": 0,
+        "criticalCount": 77,
         "riskCount": 10,
         "oosSoonCount": 10,
         "watchCount": 37,
@@ -11179,7 +11179,7 @@
       "date": "2026-06-20",
       "totalIssues": 124,
       "oosCount": 77,
-      "criticalCount": 0,
+      "criticalCount": 77,
       "riskCount": 10,
       "oosSoonCount": 10,
       "watchCount": 37,
@@ -13296,5 +13296,6 @@
         "resolvedDate": ""
       }
     ]
-  }
+  },
+  "runId": "portal-9eb2a64e2b39942050e6"
 }

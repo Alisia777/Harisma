@@ -15,7 +15,7 @@
     "asOfDate": "2026-06-18",
     "googleSheetsMonth": "2026-06",
     "googleSheetsBridge": "scripts/portal-google-sheet-sync.js",
-    "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
+    "googleSheetsSourceUrl": "httpedit?gid=2003059667#gid=2003059667",
     "googleSheetsSourceGid": "2003059667",
     "googleSheetsRefreshTimeLocal": "09:00 Europe/Moscow",
     "planFactSource": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms | marketplace salary contour",
@@ -55,31 +55,36 @@
       "id": "sku-registry-total",
       "label": "SKU в базе",
       "value": 143,
-      "hint": "Канонический SKU/owner-реестр."
+      "hint": "Канонический SKU/owner-реестр.",
+      "metricId": "sku-registry-total"
     },
     {
       "id": "owner-assigned",
       "label": "Закреплено за owner",
       "value": 143,
-      "hint": "Owner берется из канонического SKU/owner-реестра."
+      "hint": "Owner берется из канонического SKU/owner-реестра.",
+      "metricId": "owner-assigned"
     },
     {
       "id": "owner-unassigned",
       "label": "Без owner",
       "value": 0,
-      "hint": "Неразнесенные SKU остаются видимыми в quarantine/unallocated."
+      "hint": "Неразнесенные SKU остаются видимыми в quarantine/unallocated.",
+      "metricId": "owner-unassigned"
     },
     {
       "id": "marketplace-stock-total",
       "label": "Остатки MP, шт.",
       "value": 346547,
-      "hint": "Складской слой WB/Ozon/Yandex на 2026-06-18."
+      "hint": "Складской слой WB/Ozon/Yandex на 2026-06-18.",
+      "metricId": "marketplace-stock-total"
     },
     {
       "id": "marketplace-fact-units",
       "label": "Факт 01-18.06, шт.",
       "value": 212636,
-      "hint": "Факт WB/Ozon/Yandex из platform_trends.json на 2026-06-18."
+      "hint": "Факт WB/Ozon/Yandex из platform_trends.json на 2026-06-18.",
+      "metricId": "marketplace-fact-units"
     },
     {
       "id": "company-plan-revenue",
@@ -87,7 +92,8 @@
       "value": 285818670,
       "format": "money",
       "period": "2026-06",
-      "hint": "План выручки берется только из company_plan.json."
+      "hint": "План выручки берется только из company_plan.json.",
+      "metricId": "company-plan-revenue"
     },
     {
       "id": "company-fact-revenue",
@@ -95,7 +101,8 @@
       "value": 223391296.28,
       "format": "money",
       "period": "2026-06-18",
-      "hint": "Факт выручки берется только из platform_trends.json."
+      "hint": "Факт выручки берется только из platform_trends.json.",
+      "metricId": "company-fact-revenue"
     },
     {
       "id": "company-plan-completion",
@@ -104,7 +111,8 @@
       "valuePct": 1.3026,
       "format": "pct",
       "period": "2026-06-18",
-      "hint": "Факт из platform_trends.json / линейный план из company_plan.json."
+      "hint": "Факт из platform_trends.json / линейный план из company_plan.json.",
+      "metricId": "company-plan-completion"
     },
     {
       "id": "company-forecast-vs-plan",
@@ -113,7 +121,8 @@
       "valuePct": 1.3026,
       "format": "pct",
       "period": "2026-06",
-      "hint": "Прогноз построен из факта platform_trends.json и месячного плана company_plan.json."
+      "hint": "Прогноз построен из факта platform_trends.json и месячного плана company_plan.json.",
+      "metricId": "company-forecast-vs-plan"
     }
   ],
   "brandSummary": [
@@ -1114,7 +1123,7 @@
     "generatedAt": "2026-05-29T19:18:00+03:00",
     "sourceWorkbook": "codex_portal_altea_plan_fact_v2_review.xlsx",
     "sourceSheet": "02_Platforms + salary_contour_review",
-    "sourcePath": "C:\\Users\\artiu\\Downloads\\codex_portal_altea_plan_fact_v2_review.xlsx",
+    "sourcePath": "codex_portal_altea_plan_fact_v2_review.xlsx",
     "planType": "marketplace_salary_revenue",
     "activeMonthKey": "2026-06",
     "activeMonth": {
@@ -1813,5 +1822,6 @@
   "company_forecast_pct": 1.3026,
   "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
   "latestMarketplaceDate": "2026-06-18",
-  "marketplaceFactSource": "platform_trends.json (API-backed)"
+  "marketplaceFactSource": "platform_trends.json (API-backed)",
+  "runId": "portal-9eb2a64e2b39942050e6"
 }

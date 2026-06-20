@@ -80,6 +80,19 @@ function mirrorOutput(options, filePath) {
   return targetPath;
 }
 
+function publicSourcePath(filePath, options) {
+  const raw = String(filePath || '').trim();
+  if (!raw) return '';
+  const normalized = path.resolve(raw);
+  for (const baseDir of [options.inputDir, options.baseDataDir, process.cwd()]) {
+    const relative = path.relative(baseDir, normalized);
+    if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
+      return relative.split(path.sep).join('/');
+    }
+  }
+  return path.basename(raw);
+}
+
 function numberOrZero(value) {
   if (value === null || value === undefined || value === '') return 0;
   const parsed = Number(value);
@@ -561,7 +574,7 @@ function summarizeGroup(rows, keyFn, labelFn) {
     const item = map.get(key);
     item.total += 1;
     if (row.status === 'oos') item.oos += 1;
-    if (row.status === 'critical') item.critical += 1;
+    if (row.severity === 'critical') item.critical += 1;
     if (row.status === 'risk') item.risk += 1;
     if (row.status === 'watch') item.watch += 1;
     item.lostRevenueDay += numberOrZero(row.lostRevenueDay);
@@ -648,7 +661,7 @@ function buildSummary(rows, historyResult, freshnessStatus, previousPayload, tod
     date: today,
     totalIssues: rows.length,
     oosCount: rows.filter((row) => row.status === 'oos').length,
-    criticalCount: rows.filter((row) => row.status === 'critical').length,
+    criticalCount: rows.filter((row) => row.severity === 'critical').length,
     riskCount: rows.filter((row) => row.status === 'risk').length,
     oosSoonCount: rows.filter((row) => row.signalRule === 'oos_soon_turnover_active_or_new').length,
     watchCount: rows.filter((row) => row.status === 'watch').length,
@@ -743,11 +756,11 @@ function main() {
       orderWindow: orderLayer.payload?.window || {},
       smartPriceGeneratedAt: smartPriceLayer.payload?.generatedAt || '',
       sources: {
-        orderProcurement: orderLayer.sourcePath,
-        skus: skusLayer.sourcePath,
-        smartPriceOverlay: smartPriceLayer.sourcePath,
-        syncHealth: syncHealthLayer.sourcePath,
-        portalDataQuality: qualityLayer.sourcePath
+        orderProcurement: publicSourcePath(orderLayer.sourcePath, options),
+        skus: publicSourcePath(skusLayer.sourcePath, options),
+        smartPriceOverlay: publicSourcePath(smartPriceLayer.sourcePath, options),
+        syncHealth: publicSourcePath(syncHealthLayer.sourcePath, options),
+        portalDataQuality: publicSourcePath(qualityLayer.sourcePath, options)
       }
     },
     summary,

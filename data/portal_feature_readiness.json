@@ -9,7 +9,7 @@
       "publish_allowed": false,
       "report_status": "warning",
       "runtime_path": "data/canonical_repricer.json",
-      "checksum": "40527e54cdabd886058fb2e23e2c4c3c64a537dee6e5e5969838130b663193ba",
+      "checksum": "24daf953803918fb9f54b9c6f1c703fcb69bbdaf3b3ea05ff5c1668a48a4d1b1",
       "eligible_rows": 339,
       "publishable_rows": 0,
       "blocked_rows": 339,
@@ -22,7 +22,7 @@
       "status": "ok",
       "publish_allowed": true,
       "runtime_path": "data/portal_dashboard_metrics.json",
-      "checksum": "ef0c8713fd9af1bcc155288155879624c42b7487f341d6e18250f1cbcee6c8b2",
+      "checksum": "c215f1d88ca4cccf3cff888d7575f8c3ecd327b3364c2a7612cfb8b77163f274",
       "metricCount": 9,
       "warnings": []
     },

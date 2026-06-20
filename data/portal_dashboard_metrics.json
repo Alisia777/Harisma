@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-metrics-v1",
   "generatedAt": "2026-06-20T09:09:07.740Z",
-  "snapshot_id": "dashboard:40fbb49d1f0d1f59",
+  "snapshot_id": "dashboard:c26ee58c940a284f",
   "metric_registry_version": "2026-06-20.1",
   "indicator_policy_version": "2026-06-20.1",
   "cutoffDate": "2026-06-18",
@@ -9,23 +9,23 @@
   "source_checksums": {
     "platform_trends.json": {
       "exists": true,
-      "sha256": "bf2168f58cfe690e4576ede4e3d6f74539e520c86a9e85f97bc6460bf199ef73"
+      "sha256": "91b0eb11a8ea9ad28da6a67e409992fa1137008fa99f912e455f83ac3d0c731d"
     },
     "company_plan.json": {
       "exists": true,
-      "sha256": "a819a8406fafd0fdac503f7456c253a8ace452899888726cb9daa7f1255086e7"
+      "sha256": "bdcfb1f38b310bce65d032e2f27671759a64745ee3e66eee16b9ba94d8dd07ea"
     },
     "ads_summary.json": {
       "exists": true,
-      "sha256": "e57dbd264ea389b71e61d4b8766545d1314f13e6e4b0824d1fd1d269bbc4c4f7"
+      "sha256": "6a15c80d023127b19b5a3b65701dee31547f545c3bf96723be3cd316971eefe2"
     },
     "portal_metric_registry.json": {
       "exists": true,
-      "sha256": "527e2ad85bc234ab99865ec3f8bc3902f02cc1b28c73af46027ebc3337bfc453"
+      "sha256": "daf66be869709acfc996bd577e72b723264d0b506497a11dc65e4999eea750b0"
     },
     "portal_indicator_policy.json": {
       "exists": true,
-      "sha256": "12b32cda2419dead4429f129e79aa4e2f0a03ab2958bf0038a8cbb1de688bfda"
+      "sha256": "2014a57bfca0f46efbcd4a4d2fb4234460397d1ef37aadd21bf4a5d2ece56609"
     }
   },
   "summary": {

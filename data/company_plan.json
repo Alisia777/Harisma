@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-05-29T19:18:00+03:00",
   "sourceWorkbook": "codex_portal_altea_plan_fact_v2_review.xlsx",
-  "sourcePath": "C:\\Users\\artiu\\Downloads\\codex_portal_altea_plan_fact_v2_review.xlsx",
+  "sourcePath": "codex_portal_altea_plan_fact_v2_review.xlsx",
   "sourceSheet": "02_Platforms + salary_contour_review",
   "planType": "marketplace_salary_revenue",
   "note": "Marketplace salary revenue contour. B2B and Site are separate; v46 is benchmark only; small channels are manual decision/recovery, not automatic salary KPI.",

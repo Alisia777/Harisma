@@ -456,7 +456,7 @@ function buildCanonicalDashboardCards({
     const id = normalizeKey(card.id || card.key || card.label);
     if (!id || seen.has(id)) return;
     seen.add(id);
-    cards.push(card);
+    cards.push({ ...card, id, metricId: card.metricId || id });
   };
 
   add({

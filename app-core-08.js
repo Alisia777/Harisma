@@ -480,8 +480,37 @@ function repricerHasSkuProfile(profile) {
   return Boolean(String(profile.status || '').trim() || String(profile.role || '').trim() || String(profile.launchReady || '').trim());
 }
 
+function repricerRecordNotExpired(record) {
+  const expiresAt = String(record?.expiresAt || record?.expires_at || '').trim();
+  if (!expiresAt) return true;
+  const stamp = Date.parse(expiresAt);
+  return Number.isNaN(stamp) || stamp >= Date.now();
+}
+
+function repricerOverrideIsApprovedBusinessRecord(record) {
+  if (!record || typeof record !== 'object') return false;
+  const localDraftMarker = 'local_storage_draft_only';
+  const status = String(record.approvalStatus || record.approval_status || record.status || '').trim().toLowerCase();
+  const approved = !status || ['approved', 'active'].includes(status);
+  const sourceStore = String(record.sourceStore || record.source_store || record.source || localDraftMarker).trim().toLowerCase();
+  const serverBacked = Boolean(sourceStore && sourceStore !== localDraftMarker);
+  const metadataComplete = Boolean(
+    String(record.author || record.createdBy || record.created_by || '').trim()
+    && String(record.role || record.authorRole || record.author_role || '').trim()
+    && String(record.reason || record.note || '').trim()
+    && String(record.createdAt || record.created_at || '').trim()
+    && String(record.approvedBy || record.approved_by || '').trim()
+    && String(record.approvedAt || record.approved_at || '').trim()
+  );
+  return approved && serverBacked && metadataComplete && repricerRecordNotExpired(record);
+}
+
+function repricerApprovedBusinessRecords(pool = []) {
+  return (Array.isArray(pool) ? pool : []).filter(repricerOverrideIsApprovedBusinessRecord);
+}
+
 function repricerFindCorridor(articleKey, platform) {
-  const pool = state.storage?.repricerCorridors || [];
+  const pool = repricerApprovedBusinessRecords(state.storage?.repricerCorridors || []);
   return pool.find((item) => item.articleKey === articleKey && item.platform === platform)
     || pool.find((item) => item.articleKey === articleKey && item.platform === 'all')
     || null;
@@ -498,7 +527,7 @@ function repricerHasCorridor(corridor) {
 }
 
 function repricerFindOverride(articleKey, platform) {
-  const pool = state.storage?.repricerOverrides || [];
+  const pool = repricerApprovedBusinessRecords(state.storage?.repricerOverrides || []);
   return pool.find((item) => item.articleKey === articleKey && item.platform === platform)
     || pool.find((item) => item.articleKey === articleKey && item.platform === 'all')
     || null;

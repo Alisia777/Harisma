@@ -31,15 +31,22 @@ jobs:
         with:
           node-version: '20'
       - name: Syntax and negative-path self-test
-        run: node scripts/portal-daily-layer-guard.selftest.js
-      - name: Audit current portal snapshot
+        run: |
+          node scripts/portal-daily-layer-guard.selftest.js
+          node scripts/audit-repricer-dashboard-plan.selftest.js
+      - name: Build phase 3 truth artifacts
         run: |
           mkdir -p .portal-truth-output
+          node scripts/audit-source-workbooks.js --manifest data/portal_source_registry.json --output-dir .portal-truth-output
+          node scripts/build-canonical-repricer.js --input-dir data --output-dir .portal-truth-output
+          node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir .portal-truth-output
+          node scripts/audit-repricer-dashboard-plan.js --input-dir .portal-truth-output --base-data-dir data --output-dir .portal-truth-output
+      - name: Audit current portal snapshot
+        run: |
           node scripts/portal-daily-layer-guard.js \
-            --input-dir data \
+            --input-dir .portal-truth-output \
             --base-data-dir data \
-            --output-dir .portal-truth-output \
-            --no-fail
+            --output-dir .portal-truth-output
       - name: Upload audit reports
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,0 +1,56 @@
+{
+  "schema": "portal-indicator-policy-v1",
+  "version": "2026-06-20.1",
+  "effective_from": "2026-06-20",
+  "data_status_priority": ["blocked", "incomplete", "stale", "estimated", "warning", "trusted"],
+  "visual_rules": {
+    "blocked": {"color": "technical-red", "business_status": "neutral", "label": "Расчёт заблокирован"},
+    "incomplete": {"color": "gray", "business_status": "neutral", "label": "Нет данных"},
+    "stale": {"color": "gray-amber", "business_status": "neutral", "label": "Данные устарели"},
+    "estimated": {"color": "blue", "business_status": "neutral", "label": "Оценка"},
+    "warning": {"color": "amber", "business_status": "neutral", "label": "Требует проверки"},
+    "trusted": {"color": "by_business_status", "business_status": null, "label": "Проверено"}
+  },
+  "policies": {
+    "completion_default": {
+      "metric_kind": "ratio",
+      "requires": ["trusted_fact", "trusted_plan", "same_scope", "same_unit", "same_period"],
+      "bands": [
+        {"business_status": "red", "lt": 0.9},
+        {"business_status": "amber", "gte": 0.9, "lt": 1.0},
+        {"business_status": "green", "gte": 1.0}
+      ]
+    },
+    "drr_default": {
+      "metric_kind": "ratio",
+      "requires": ["trusted_fact", "trusted_target"],
+      "rule": "compare_to_platform_plan_target",
+      "missing_target": "neutral"
+    },
+    "margin_default": {
+      "metric_kind": "ratio",
+      "requires": ["trusted_economics", "trusted_price"],
+      "rule": "compare_to_sku_platform_target_margin",
+      "missing_target": "neutral"
+    },
+    "turnover_default": {
+      "metric_kind": "days",
+      "target_days": 30,
+      "requires": ["trusted_stock", "trusted_sales_velocity"],
+      "shortage_bands": [
+        {"business_status": "red", "lt": 14},
+        {"business_status": "amber", "gte": 14, "lt": 30},
+        {"business_status": "green", "gte": 30, "lte": 45}
+      ],
+      "overstock_bands": [
+        {"business_status": "amber", "gt": 45, "lte": 90},
+        {"business_status": "red", "gt": 90}
+      ]
+    },
+    "price_default": {
+      "requires": ["trusted_current_price", "complete_economics", "approved_corridor"],
+      "green_rule": "approved_price_inside_corridor_and_margin_ok",
+      "missing_input": "blocked"
+    }
+  }
+}

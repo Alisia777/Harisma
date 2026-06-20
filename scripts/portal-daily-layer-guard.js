@@ -7,6 +7,12 @@ const crypto = require('crypto');
 
 const REPORT_FILE = 'portal_daily_guard.json';
 const RECONCILIATION_FILE = 'portal_metric_reconciliation.json';
+const PHASE3_REQUIRED_REPORTS = [
+  'portal_repricing_reconciliation.json',
+  'portal_dashboard_reconciliation.json',
+  'portal_plan_reconciliation.json',
+  'portal_indicator_audit.json'
+];
 const DEFAULT_MANIFEST = path.join(__dirname, 'portal-truth-manifest.json');
 const MOJIBAKE_MARKERS = ['Рџ', 'РЎ', 'Р°С', 'РµС', 'РёС', 'Р»С', 'РЅС', 'Р”', 'Рќ', 'Р’', '���', '\uFFFD'];
 
@@ -159,6 +165,10 @@ function resolveOptions(args) {
 function resolveSourceFile(source, options) {
   const inputPath = path.join(options.inputDir, source.file);
   const basePath = path.join(options.baseDataDir, source.file);
+  if (path.basename(options.inputDir) === '.portal-truth-output') {
+    if (fs.existsSync(basePath)) return { filePath: basePath, origin: 'base-data' };
+    if (fs.existsSync(inputPath)) return { filePath: inputPath, origin: 'truth-output-fallback' };
+  }
   if (fs.existsSync(inputPath)) return { filePath: inputPath, origin: 'input' };
   if (fs.existsSync(basePath)) return { filePath: basePath, origin: 'base-fallback' };
   return { filePath: inputPath, origin: 'missing' };
@@ -212,7 +222,8 @@ function loadSources(manifest, options) {
       check.generatedAt = payload?.generatedAt || payload?.meta?.generatedAt || '';
       if (source.required && sizeOf(payload) === 0) check.blockingReasons.push(`${source.key}: JSON payload is empty`);
       const stagedRun = path.resolve(options.inputDir) !== path.resolve(options.baseDataDir);
-      if (stagedRun && resolved.origin === 'base-fallback' && source.required && ['daily', 'daily-build'].includes(source.freshness)) {
+      const reportOutputRun = path.basename(options.inputDir) === '.portal-truth-output';
+      if (stagedRun && !reportOutputRun && resolved.origin === 'base-fallback' && source.required && ['daily', 'daily-build'].includes(source.freshness)) {
         check.blockingReasons.push(`${source.key}: staged output is missing; only the previous base snapshot is available`);
       }
       if (options.explicitExpectedDate && source.freshness === 'daily' && (!freshness.date || freshness.date < options.expectedDate)) {
@@ -933,6 +944,66 @@ function inspectSyncIssues(options, manifest, checks) {
   return addCheck(checks, check);
 }
 
+function resolvePhase3ReportPath(options, fileName) {
+  const candidates = [
+    path.join(options.inputDir, fileName),
+    path.join(options.outputDir, fileName),
+    path.join(options.baseDataDir, fileName)
+  ];
+  return candidates.find((candidate) => fs.existsSync(candidate)) || candidates[0];
+}
+
+function inspectPhase3Reports(options, checks, passports) {
+  const check = { id: 'contract:phase3-publish-reports', scope: 'phase3', source: 'phase3-reconciliation', warnings: [], blockingReasons: [], reports: [] };
+  PHASE3_REQUIRED_REPORTS.forEach((fileName) => {
+    const reportPath = resolvePhase3ReportPath(options, fileName);
+    const item = { file: fileName, path: path.relative(process.cwd(), reportPath), status: 'missing' };
+    if (!fs.existsSync(reportPath)) {
+      check.blockingReasons.push(`phase3: required report is missing: ${fileName}`);
+      check.reports.push(item);
+      return;
+    }
+    try {
+      const payload = readJson(reportPath);
+      const reportStatus = normalizedText(payload?.status || (payload?.publish_allowed === false ? 'blocked' : 'ok'));
+      item.status = reportStatus || 'ok';
+      item.publish_allowed = payload?.publish_allowed !== false;
+      item.business_fingerprint = payload?.business_fingerprint || payload?.snapshot_id || '';
+      item.summary = payload?.summary || {};
+      if (reportStatus === 'blocked' || payload?.publish_allowed === false) {
+        const reasons = Array.isArray(payload?.blockingReasons) && payload.blockingReasons.length
+          ? payload.blockingReasons
+          : [`${fileName}: status=${reportStatus || 'blocked'}`];
+        reasons.forEach((reason) => check.blockingReasons.push(`phase3:${fileName}: ${reason}`));
+      } else if (reportStatus === 'warning') {
+        const warnings = Array.isArray(payload?.warnings) && payload.warnings.length
+          ? payload.warnings
+          : [`${fileName}: warning`];
+        warnings.forEach((warning) => check.warnings.push(`phase3:${fileName}: ${warning}`));
+      }
+      passports.push({
+        key: `phase3.${fileName.replace(/\.json$/, '')}`,
+        source: fileName,
+        period: payload?.cutoffDate || payload?.snapshot_id || '',
+        value: reportStatus || 'ok',
+        formula: 'required phase 3 publish-gate reconciliation report',
+        diagnostics: { publish_allowed: item.publish_allowed, business_fingerprint: item.business_fingerprint }
+      });
+    } catch (error) {
+      check.blockingReasons.push(`phase3:${fileName}: cannot read report: ${error.message}`);
+      item.status = 'blocked';
+    }
+    check.reports.push(item);
+  });
+  check.businessFingerprint = crypto.createHash('sha256').update(stableStringify(check.reports.map((item) => ({
+    file: item.file,
+    status: item.status,
+    publish_allowed: item.publish_allowed,
+    business_fingerprint: item.business_fingerprint || ''
+  })))).digest('hex');
+  return addCheck(checks, check);
+}
+
 function viewStatuses(manifest, sourceChecks, contractChecks) {
   const sourceStatus = new Map(sourceChecks.map((check) => [check.source, check.status]));
   const globalContracts = contractChecks.filter((check) => check.status === 'blocked');
@@ -948,6 +1019,7 @@ function viewStatuses(manifest, sourceChecks, contractChecks) {
       if (check.scope === 'mapping') return ['executive', 'control', 'data-health', 'sku-plan-fact', 'sku-contour', 'skus', 'launch-control'].includes(view);
       if (check.scope === 'order') return view === 'order';
       if (check.scope === 'oos') return view === 'oos-control';
+      if (check.scope === 'phase3') return ['dashboard', 'executive', 'sku-plan-fact', 'repricer', 'prices'].includes(view);
       if (check.scope === 'plan' || check.scope === 'fact' || check.scope === 'period') return ['dashboard', 'executive', 'sku-plan-fact', 'ads-funnel', 'order', 'oos-control', 'product-leaderboard'].includes(view);
       if (check.scope === 'quality') return Boolean(config.critical);
       if (check.scope === 'pipeline') return Boolean(config.critical);
@@ -984,6 +1056,7 @@ function repairSteps(manifest, sourceChecks, contractChecks) {
     else if (check.scope === 'mapping') add('sku-matrix', check.blockingReasons[0], check.source);
     else if (check.scope === 'order') add('order-procurement', check.blockingReasons[0], check.source);
     else if (check.scope === 'oos') add('oos-control', check.blockingReasons[0], check.source);
+    else if (check.scope === 'phase3') add('repricer-dashboard-plan-audit', check.blockingReasons[0], check.source);
     else if (check.scope === 'quality') add('data-quality', check.blockingReasons[0], check.source);
     else if (check.scope === 'pipeline') add('retry-failed-sync-steps', check.blockingReasons[0], check.source);
   });
@@ -1032,6 +1105,7 @@ function run(options) {
   inspectExecutiveTruthCode(loaded, manifest.policy, contractChecks, passports);
   inspectCrossDates(loaded, expectedDate, contractChecks);
   inspectSyncIssues(options, manifest, contractChecks);
+  inspectPhase3Reports(options, contractChecks, passports);
 
   const views = viewStatuses(manifest, sourceChecks, contractChecks);
   const repairs = repairSteps(manifest, sourceChecks, contractChecks);
@@ -1040,6 +1114,13 @@ function run(options) {
   const warningReasons = allChecks.flatMap((check) => check.warnings || []);
   const allowed = blockingReasons.length === 0;
   const reconciliation = buildReconciliation(manifest, expectedDate, sourceChecks, contractChecks, passports, views);
+  const fingerprintSeed = [
+    ...sourceChecks.map((check) => `${check.source}:${check.sha256 || 'missing'}`).sort(),
+    ...contractChecks
+      .filter((check) => check.scope === 'phase3')
+      .map((check) => `${check.source}:${check.businessFingerprint || check.status || 'unknown'}`)
+      .sort()
+  ];
   const report = {
     schema: 'portal-daily-guard-v2',
     generatedAt: new Date().toISOString(),
@@ -1060,7 +1141,7 @@ function run(options) {
       views: Object.keys(manifest.views || {}).filter((view) => !isExcluded(view, manifest)).length,
       blockingChecks: allChecks.filter((check) => check.status === 'blocked').length,
       warningChecks: allChecks.filter((check) => check.status === 'warning').length,
-      fingerprint: crypto.createHash('sha256').update(sourceChecks.map((check) => `${check.source}:${check.sha256 || 'missing'}`).sort().join('|')).digest('hex')
+      fingerprint: crypto.createHash('sha256').update(fingerprintSeed.join('|')).digest('hex')
     },
     views,
     checks: allChecks,

@@ -20,6 +20,24 @@ function minimalPayload(source) {
   return { generatedAt, asOfDate: date, rows: [{ id: 1 }] };
 }
 
+function writePhase3Reports(dir) {
+  const base = {
+    generatedAt,
+    snapshot_id: 'selftest:phase3',
+    status: 'ok',
+    publish_allowed: true,
+    business_fingerprint: 'selftest-phase3-fingerprint',
+    blockingReasons: [],
+    warnings: [],
+    summary: { checks: 1, blockingChecks: 0, warningChecks: 0 },
+    checks: [{ id: 'selftest', status: 'ok', blockingReasons: [], warnings: [] }]
+  };
+  write(dir, 'portal_repricing_reconciliation.json', { schema: 'portal-repricing-reconciliation-v1', ...base });
+  write(dir, 'portal_dashboard_reconciliation.json', { schema: 'portal-dashboard-reconciliation-v1', ...base });
+  write(dir, 'portal_plan_reconciliation.json', { schema: 'portal-plan-reconciliation-v1', ...base });
+  write(dir, 'portal_indicator_audit.json', { schema: 'portal-indicator-audit-v1', ...base, rows: [] });
+}
+
 function buildFixture(dir) {
   for (const source of manifest.sources) {
     if ((manifest.policy.excludedScopes || []).some((scope) => source.key.includes(scope))) continue;
@@ -106,6 +124,7 @@ function buildFixture(dir) {
     skuTokenConflicts: []
   });
   write(dir, 'sku_aliases.json', { generatedAt, aliases: [{ target_sku: 'A', platform: 'wb', api_sku: 'A-WB-ALIAS' }] });
+  writePhase3Reports(dir);
 }
 
 function options(dir) {

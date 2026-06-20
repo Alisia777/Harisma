@@ -1,0 +1,198 @@
+{
+  "schema": "portal-source-registry-v1",
+  "version": "2026-06-20.1",
+  "generatedAt": "2026-06-20T00:00:00.000Z",
+  "timezone": "Europe/Moscow",
+  "policy": {
+    "no_local_absolute_paths": true,
+    "iu_scope_is_separate": true,
+    "local_storage_business_truth_allowed": false,
+    "authoritative_workbook_formula_errors_block": true
+  },
+  "sources": [
+    {
+      "source_id": "company_plan",
+      "layer": "plan",
+      "confidentiality": "internal",
+      "owner": "finance",
+      "authoritative_for": ["plan.corporate_revenue_monthly", "plan.salary_kpi_marketplaces"],
+      "kind": "json",
+      "file": "company_plan.json",
+      "freshness_sla": "monthly",
+      "expected_schema": "company-plan-json",
+      "snapshot_id_path": "generatedAt",
+      "checksum": null,
+      "allowed_consumers": ["dashboard", "executive", "sku-plan-fact", "audit"],
+      "forbidden_consumers": ["iu-drr"]
+    },
+    {
+      "source_id": "marketplace_sales_fact",
+      "layer": "fact",
+      "confidentiality": "internal",
+      "owner": "marketplace-api",
+      "authoritative_for": ["sales.raw_revenue", "plan.completion_revenue"],
+      "kind": "json",
+      "file": "platform_trends.json",
+      "freshness_sla": "daily",
+      "expected_schema": "portal-platform-trends-json",
+      "snapshot_id_path": "latestMarketplaceDate",
+      "checksum": null,
+      "allowed_consumers": ["dashboard", "executive", "sku-plan-fact", "ads-funnel", "audit"],
+      "reconciliation": "platform_components_equal_all_plus_unallocated"
+    },
+    {
+      "source_id": "marketplace_current_price",
+      "layer": "fact",
+      "confidentiality": "internal",
+      "owner": "marketplace-api",
+      "authoritative_for": ["repricer.current_seller_price"],
+      "kind": "json",
+      "file": "smart_price_workbench.json",
+      "supplemental_files": ["smart_price_overlay.json"],
+      "freshness_sla": "daily",
+      "expected_schema": "smart-price-contour-json",
+      "snapshot_id_path": "generatedAt",
+      "checksum": null,
+      "allowed_consumers": ["repricer", "prices", "audit"],
+      "forbidden_fields_as_current_price": [
+        "price_workbench_support.platforms.ozon.rows.currentExportPrice",
+        "price_workbench_support.platforms.ozon.rows.buyerCurrentExportMinPrice",
+        "price_workbench_support.platforms.ozon.rows.buyerCurrentExportMaxPrice"
+      ]
+    },
+    {
+      "source_id": "repricer_policy_json",
+      "layer": "policy",
+      "confidentiality": "internal",
+      "owner": "pricing",
+      "authoritative_for": ["repricer.floor", "repricer.cap", "repricer.target_margin_pct"],
+      "kind": "json",
+      "file": "price_workbench_support.json",
+      "freshness_sla": "daily-build",
+      "expected_schema": "price-workbench-support-json",
+      "snapshot_id_path": "generatedAt",
+      "checksum": null,
+      "allowed_consumers": ["repricer", "prices", "audit"],
+      "manual_policy_requires_approval": true
+    },
+    {
+      "source_id": "sku_owner_registry",
+      "layer": "dimension",
+      "confidentiality": "internal",
+      "owner": "operations",
+      "authoritative_for": ["sku.article_key", "sku.aliases", "sku.owner", "sku.platform_owner"],
+      "kind": "json",
+      "file": "skus.json",
+      "freshness_sla": "daily-build",
+      "expected_schema": "portal-sku-registry-json",
+      "snapshot_id_path": "generatedAt",
+      "checksum": null,
+      "allowed_consumers": ["dashboard", "executive", "sku-plan-fact", "repricer", "audit"]
+    },
+    {
+      "source_id": "order_procurement_stock",
+      "layer": "fact",
+      "confidentiality": "internal",
+      "owner": "supply",
+      "authoritative_for": ["stock.in_stock", "stock.inbound", "stock.turnover_days"],
+      "kind": "json",
+      "file": "order_procurement.json",
+      "supplemental_files": ["order_procurement_wb.json", "order_procurement_ozon.json", "order_procurement_ym.json"],
+      "freshness_sla": "daily-build",
+      "expected_schema": "order-procurement-v2",
+      "snapshot_id_path": "generatedAt",
+      "checksum": null,
+      "allowed_consumers": ["repricer", "order", "oos-control", "audit"],
+      "stock_missing_policy": "stock_unknown_not_oos"
+    },
+    {
+      "source_id": "ads_fact",
+      "layer": "fact",
+      "confidentiality": "internal",
+      "owner": "marketing-api",
+      "authoritative_for": ["ads.drr"],
+      "kind": "json",
+      "file": "ads_summary.json",
+      "freshness_sla": "daily",
+      "expected_schema": "ads-summary-json",
+      "snapshot_id_path": "window.to",
+      "checksum": null,
+      "allowed_consumers": ["dashboard", "ads-funnel", "audit"]
+    },
+    {
+      "source_id": "retail_network_sales_workbook",
+      "layer": "fact",
+      "confidentiality": "internal",
+      "owner": "retail",
+      "authoritative_for": ["sales.retail_network"],
+      "kind": "workbook",
+      "file": "external_sources/retail_network_sales.xlsx",
+      "freshness_sla": "monthly",
+      "expected_schema": "workbook",
+      "snapshot_id_path": "mtime",
+      "checksum": null,
+      "allowed_consumers": ["dashboard", "audit"],
+      "used_for": ["sales"],
+      "authoritative": true
+    },
+    {
+      "source_id": "repricer_2026_04_15_forensic_workbook",
+      "layer": "forensic",
+      "confidentiality": "restricted",
+      "owner": "pricing",
+      "authoritative_for": [],
+      "kind": "workbook",
+      "file": "forensics/repricer_2026_04_15.xlsx",
+      "freshness_sla": "none",
+      "expected_schema": "workbook",
+      "snapshot_id_path": "mtime",
+      "checksum": null,
+      "allowed_consumers": ["audit"],
+      "used_for": ["price", "economics", "policy"],
+      "authoritative": false,
+      "may_contain_broken_formulas": true,
+      "publish_allowed": false
+    }
+  ],
+  "plan_namespaces": [
+    {
+      "plan_id": "corporate_revenue_monthly",
+      "source_id": "company_plan",
+      "unit": "RUB",
+      "grain": "month",
+      "included_platforms": ["wb", "ozon", "ya"],
+      "iu_allowed": false
+    },
+    {
+      "plan_id": "sku_platform_operational",
+      "source_id": "company_plan",
+      "unit": "units",
+      "grain": "sku-platform-month",
+      "iu_allowed": false
+    },
+    {
+      "plan_id": "salary_kpi_marketplaces",
+      "source_id": "company_plan",
+      "unit": "RUB",
+      "grain": "month-platform",
+      "included_platforms": ["wb", "ozon", "ya"],
+      "iu_allowed": false
+    },
+    {
+      "plan_id": "wb_contract_turnover",
+      "source_id": "company_plan",
+      "unit": "RUB",
+      "grain": "contract-period",
+      "included_platforms": ["wb"],
+      "iu_allowed": false
+    },
+    {
+      "plan_id": "iu",
+      "source_id": "iu_plan",
+      "unit": "separate",
+      "grain": "iu-only",
+      "iu_allowed": true,
+      "excluded_from_phase3_guard": true
+    }
+  ]
+}

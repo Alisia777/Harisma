@@ -1,0 +1,60 @@
+{
+  "schema": "portal-metric-registry-v1",
+  "version": "2026-06-20.1",
+  "metrics": [
+    {
+      "metric_id": "sales.raw_revenue",
+      "label": "Фактическая выручка",
+      "unit": "RUB",
+      "scope_dimensions": ["platform", "article_key", "legal_entity", "period"],
+      "fact_source": "marketplace_sales_fact",
+      "fallback": null,
+      "formula": "sum(source_sales_revenue)",
+      "reconciliation": "sku_plus_unmapped_equals_platform",
+      "indicator_policy_id": null
+    },
+    {
+      "metric_id": "plan.completion_revenue",
+      "label": "Выполнение плана по выручке",
+      "unit": "ratio",
+      "scope_dimensions": ["plan_id", "platform", "period"],
+      "formula": "sales.raw_revenue / plan.revenue",
+      "requires": ["same_scope", "same_period", "same_unit"],
+      "indicator_policy_id": "completion_default"
+    },
+    {
+      "metric_id": "repricer.current_seller_price",
+      "label": "Текущая цена продавца",
+      "unit": "RUB_PER_UNIT",
+      "scope_dimensions": ["platform", "article_key", "as_of"],
+      "fact_source": "marketplace_current_price",
+      "fallback": null,
+      "indicator_policy_id": "price_default"
+    },
+    {
+      "metric_id": "repricer.proposed_margin_pct",
+      "label": "Маржа после изменения цены",
+      "unit": "ratio",
+      "scope_dimensions": ["platform", "article_key", "snapshot_id"],
+      "formula": "recalculate_unit_economics(proposed_price)",
+      "requires": ["cost", "commission", "logistics", "tax", "proposed_price"],
+      "indicator_policy_id": "margin_default"
+    },
+    {
+      "metric_id": "ads.drr",
+      "label": "ДРР",
+      "unit": "ratio",
+      "scope_dimensions": ["platform", "period"],
+      "formula": "ad_spend / attributed_revenue",
+      "indicator_policy_id": "drr_default"
+    },
+    {
+      "metric_id": "stock.turnover_days",
+      "label": "Оборачиваемость",
+      "unit": "days",
+      "scope_dimensions": ["platform", "article_key", "warehouse", "as_of"],
+      "formula": "trusted_stock / trusted_daily_sales_velocity",
+      "indicator_policy_id": "turnover_default"
+    }
+  ]
+}

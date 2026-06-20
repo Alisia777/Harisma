@@ -2377,6 +2377,16 @@ function normalizeRepricerOverride(item = {}) {
     promoTo: repricerDateKey(item.promoTo ?? item.promoEnd ?? item.promoDateTo),
     disableAlignment: Boolean(item.disableAlignment || item.noAlignment),
     note: String(item.note || '').trim(),
+    author: String(item.author || item.createdBy || item.created_by || item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда',
+    role: String(item.role || item.authorRole || item.author_role || '').trim(),
+    reason: String(item.reason || item.note || '').trim(),
+    createdAt: item.createdAt || item.created_at || item.updatedAt || new Date().toISOString(),
+    approvalStatus: String(item.approvalStatus || item.approval_status || item.status || 'draft').trim().toLowerCase() || 'draft',
+    approvedBy: String(item.approvedBy || item.approved_by || '').trim(),
+    approvedAt: String(item.approvedAt || item.approved_at || '').trim(),
+    expiresAt: String(item.expiresAt || item.expires_at || '').trim(),
+    supersedes_id: item.supersedes_id || item.supersedesId || null,
+    sourceStore: String(item.sourceStore || item.source_store || item.source || 'local_storage_draft_only').trim() || 'local_storage_draft_only',
     updatedAt: item.updatedAt || new Date().toISOString(),
     updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
   };
@@ -2409,6 +2419,16 @@ function normalizeRepricerCorridor(item = {}) {
     stretchCap: repricerNumberOrBlank(item.stretchCap ?? item.capPrice),
     promoFloor: repricerNumberOrBlank(item.promoFloor),
     elasticity: repricerSignedNumberOrBlank(item.elasticity),
+    author: String(item.author || item.createdBy || item.created_by || item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда',
+    role: String(item.role || item.authorRole || item.author_role || '').trim(),
+    reason: String(item.reason || item.note || '').trim(),
+    createdAt: item.createdAt || item.created_at || item.updatedAt || new Date().toISOString(),
+    approvalStatus: String(item.approvalStatus || item.approval_status || item.status || 'draft').trim().toLowerCase() || 'draft',
+    approvedBy: String(item.approvedBy || item.approved_by || '').trim(),
+    approvedAt: String(item.approvedAt || item.approved_at || '').trim(),
+    expiresAt: String(item.expiresAt || item.expires_at || '').trim(),
+    supersedes_id: item.supersedes_id || item.supersedesId || null,
+    sourceStore: String(item.sourceStore || item.source_store || item.source || 'local_storage_draft_only').trim() || 'local_storage_draft_only',
     updatedAt: item.updatedAt || new Date().toISOString(),
     updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
   };

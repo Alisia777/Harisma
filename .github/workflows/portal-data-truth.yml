@@ -1,0 +1,61 @@
+name: Portal data truth
+
+on:
+  pull_request:
+    paths:
+      - 'data/**'
+      - 'scripts/**'
+      - 'app-core-*.js'
+      - 'portal-*.js'
+      - 'package.json'
+      - '.github/workflows/portal-data-truth.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+      - 'scripts/**'
+      - 'package.json'
+  schedule:
+    - cron: '15 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  truth-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Syntax and negative-path self-test
+        run: node scripts/portal-daily-layer-guard.selftest.js
+      - name: Audit current portal snapshot
+        run: |
+          mkdir -p .portal-truth-output
+          node scripts/portal-daily-layer-guard.js \
+            --input-dir data \
+            --base-data-dir data \
+            --output-dir .portal-truth-output \
+            --no-fail
+      - name: Upload audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-data-truth-${{ github.run_id }}
+          path: .portal-truth-output/*.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Enforce publish gate
+        run: |
+          node - <<'NODE'
+          const report = require('./.portal-truth-output/portal_daily_guard.json');
+          if (!report.publish || report.publish.allowed !== true) {
+            console.error('Portal publish gate is blocked.');
+            (report.publish?.blockingReasons || []).forEach((reason) => console.error(`- ${reason}`));
+            process.exit(1);
+          }
+          console.log('Portal publish gate is open.');
+          NODE

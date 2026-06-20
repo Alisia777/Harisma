@@ -4,6 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
+const CANONICAL_ORDER_DAYS = 30;
+const LEGACY_COMPAT_DAYS = 28;
+const NEED_HORIZONS = [7, 14, LEGACY_COMPAT_DAYS, CANONICAL_ORDER_DAYS];
+const BLOCKED_LIFECYCLE_RE = /вывод|на вывод|вывед|снят|снимаем|spa|архив|archive|paused|pause|freeze|hold|под вопрос|question/i;
+
 const OWNER_CANONICAL_NAMES = new Map([
   ['алексей', 'Алексей'],
   ['александр', 'Питайкин Артём'],
@@ -151,41 +156,123 @@ function projectedUnits(avgDaily, days) {
   return Number((avgDaily * days).toFixed(2));
 }
 
-function projectedNeed(avgDaily, stock, days) {
+function projectedNeedRaw(avgDaily, available, days, safetyStock = 0) {
   if (!(avgDaily > 0) || !(days > 0)) return 0;
-  return Math.max(0, Math.ceil((avgDaily * days) - numberOrZero(stock)));
+  return Math.ceil((avgDaily * days) + numberOrZero(safetyStock) - numberOrZero(available));
+}
+
+function targetNeedFromRaw(rawNeed, blocked = false) {
+  if (blocked) return 0;
+  return Math.max(0, numberOrZero(rawNeed));
+}
+
+function turnoverDays(inStock, avgDaily) {
+  return avgDaily > 0 ? Number((numberOrZero(inStock) / avgDaily).toFixed(2)) : null;
+}
+
+function lifecycleStatus(sku = {}) {
+  const candidates = [
+    sku?.status,
+    sku?.lifecycleStatus,
+    sku?.lifecycle,
+    sku?.productLifecycle,
+    sku?.registryStatus,
+    sku?.owner?.registryStatus
+  ].map(normalizeText).filter(Boolean);
+  const label = candidates[0] || '';
+  return {
+    label,
+    blocked: candidates.some((item) => BLOCKED_LIFECYCLE_RE.test(item))
+  };
 }
 
 function buildRow(sourceRow, sku, monthField) {
   const platform = normalizePlatform(sourceRow?.platform);
-  if (!platform || platform === 'ym') return null;
+  if (!platform) return null;
 
   const article = normalizeText(sourceRow?.articleKey || sourceRow?.article || sourceRow?.sku);
   if (!article) return null;
 
   const avgDaily = numberOrZero(sourceRow?.avgDaily);
   const inStock = numberOrZero(sourceRow?.inStock);
+  const inTransit = numberOrZero(sourceRow?.inTransit);
+  const inRequest = numberOrZero(sourceRow?.inRequest);
+  const available = inStock + inTransit + inRequest;
+  const safetyStock = numberOrZero(sourceRow?.safetyStock);
   const planMonth = numberOrNull(sourceRow?.planMonth ?? sku?.planFact?.[monthField]);
+  const lifecycle = lifecycleStatus(sku || {});
+  const needs = Object.fromEntries(NEED_HORIZONS.map((days) => {
+    const raw = projectedNeedRaw(avgDaily, available, days, safetyStock);
+    return [days, { raw, target: targetNeedFromRaw(raw, lifecycle.blocked) }];
+  }));
 
   return {
     platform: platformLabel(platform),
+    platformKey: platform,
     place: normalizeText(sourceRow?.place) || 'Без кластера',
     article,
+    articleKey: normalizeKey(article),
     name: normalizeText(sourceRow?.name || sku?.name || article) || article,
     owner: skuOwnerForPlatform(sku, platform),
     inStock,
-    inTransit: numberOrZero(sourceRow?.inTransit),
-    inRequest: numberOrZero(sourceRow?.inRequest),
+    inTransit,
+    inRequest,
+    available,
+    safetyStock,
     avgDaily,
-    turnoverDays: numberOrNull(sourceRow?.turnoverDays),
-    sales7: numberOrZero(sourceRow?.sales7 ?? projectedUnits(avgDaily, 7)),
-    sales14: numberOrZero(sourceRow?.sales14 ?? projectedUnits(avgDaily, 14)),
-    sales28: numberOrZero(sourceRow?.sales28 ?? projectedUnits(avgDaily, 28)),
-    targetNeed7: numberOrZero(sourceRow?.targetNeed7 ?? projectedNeed(avgDaily, inStock, 7)),
-    targetNeed14: numberOrZero(sourceRow?.targetNeed14 ?? projectedNeed(avgDaily, inStock, 14)),
-    targetNeed28: numberOrZero(sourceRow?.targetNeed28 ?? projectedNeed(avgDaily, inStock, 28)),
+    turnoverDays: turnoverDays(inStock, avgDaily),
+    sales7: projectedUnits(avgDaily, 7),
+    sales14: projectedUnits(avgDaily, 14),
+    sales28: projectedUnits(avgDaily, LEGACY_COMPAT_DAYS),
+    sales30: projectedUnits(avgDaily, CANONICAL_ORDER_DAYS),
+    rawNeed7: needs[7].raw,
+    rawNeed14: needs[14].raw,
+    rawNeed28: needs[LEGACY_COMPAT_DAYS].raw,
+    rawNeed30: needs[CANONICAL_ORDER_DAYS].raw,
+    targetNeed7: needs[7].target,
+    targetNeed14: needs[14].target,
+    targetNeed28: needs[LEGACY_COMPAT_DAYS].target,
+    targetNeed30: needs[CANONICAL_ORDER_DAYS].target,
+    targetHorizonDays: CANONICAL_ORDER_DAYS,
+    needFormula: 'max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))',
+    lifecycleStatus: lifecycle.label,
+    needSuppressedByLifecycle: lifecycle.blocked,
     planMonth
   };
+}
+
+function normalizeExistingYandexRows(payload) {
+  return (Array.isArray(payload?.rows) ? payload.rows : [])
+    .map((row) => {
+      const avgDaily = numberOrZero(row?.avgDaily);
+      const inStock = numberOrZero(row?.inStock);
+      const inTransit = numberOrZero(row?.inTransit);
+      const inRequest = numberOrZero(row?.inRequest);
+      const available = inStock + inTransit + inRequest;
+      const safetyStock = numberOrZero(row?.safetyStock);
+      const rawNeed28 = projectedNeedRaw(avgDaily, available, LEGACY_COMPAT_DAYS, safetyStock);
+      const rawNeed30 = projectedNeedRaw(avgDaily, available, CANONICAL_ORDER_DAYS, safetyStock);
+      return {
+        ...row,
+        platform: platformLabel('ym'),
+        platformKey: 'ym',
+        articleKey: normalizeText(row?.articleKey || row?.article || row?.sku),
+        inStock,
+        inTransit,
+        inRequest,
+        available,
+        safetyStock,
+        turnoverDays: turnoverDays(inStock, avgDaily),
+        sales28: projectedUnits(avgDaily, LEGACY_COMPAT_DAYS),
+        sales30: projectedUnits(avgDaily, CANONICAL_ORDER_DAYS),
+        rawNeed28,
+        rawNeed30,
+        targetNeed28: targetNeedFromRaw(rawNeed28),
+        targetNeed30: targetNeedFromRaw(rawNeed30),
+        targetHorizonDays: CANONICAL_ORDER_DAYS,
+        needFormula: 'max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))'
+      };
+    });
 }
 
 function main() {
@@ -210,14 +297,33 @@ function main() {
       return buildRow(row, sku, monthField);
     })
     .filter(Boolean);
+  const yandexPayload = (() => {
+    try {
+      return readJson(path.join(dataDir, 'order_procurement_ym.json'));
+    } catch {
+      return null;
+    }
+  })();
+  const yandexRows = normalizeExistingYandexRows(yandexPayload);
+  const combinedRows = rows.concat(yandexRows);
 
   const combinedPayload = {
     generatedAt: logistics?.generatedAt || new Date().toISOString(),
+    schema: 'portal-order-procurement-combined-v2',
+    formulaPassport: {
+      targetHorizonDays: CANONICAL_ORDER_DAYS,
+      legacyCompatHorizonDays: LEGACY_COMPAT_DAYS,
+      available: 'inStock + inTransit + inRequest',
+      rawNeedD: 'ceil(avgDaily * D + safetyStock - available)',
+      targetNeedD: 'max(0, rawNeedD), or 0 when lifecycle is exit/paused/question/archived'
+    },
     sourceFreshness: {
       logistics: logistics?.generatedAt || '',
       logisticsFileMtime: logisticsMeta.mtime,
       logisticsFileSize: logisticsMeta.size,
       logisticsRows: Array.isArray(logistics?.allRows) ? logistics.allRows.length : 0,
+      yandexOrderProcurement: yandexPayload?.generatedAt || '',
+      yandexRows: yandexRows.length,
       skusFileMtime: skusMeta.mtime,
       skusFileSize: skusMeta.size,
       skuRows: Array.isArray(skus) ? skus.length : 0
@@ -228,7 +334,7 @@ function main() {
           to: normalizeText(logistics.window.to)
         }
       : {},
-    rows
+    rows: combinedRows
   };
 
   const wbPayload = {
@@ -247,9 +353,20 @@ function main() {
     rows: rows.filter((row) => normalizePlatform(row.platform) === 'ozon')
   };
 
+  const ymPayload = {
+    generatedAt: yandexPayload?.generatedAt || combinedPayload.generatedAt,
+    schema: 'portal-order-procurement-ym-v2',
+    formulaPassport: combinedPayload.formulaPassport,
+    sourceFreshness: combinedPayload.sourceFreshness,
+    window: combinedPayload.window,
+    platform: platformLabel('ym'),
+    rows: yandexRows
+  };
+
   writeJson(path.join(dataDir, 'order_procurement.json'), combinedPayload);
   writeJson(path.join(dataDir, 'order_procurement_wb.json'), wbPayload);
   writeJson(path.join(dataDir, 'order_procurement_ozon.json'), ozonPayload);
+  writeJson(path.join(dataDir, 'order_procurement_ym.json'), ymPayload);
   writeGzip(path.join(dataDir, 'order_procurement_wb.json.gz'), wbPayload);
   writeGzip(path.join(dataDir, 'order_procurement_ozon.json.gz'), ozonPayload);
 
@@ -257,7 +374,9 @@ function main() {
     generatedAt: combinedPayload.generatedAt,
     rows: combinedPayload.rows.length,
     wbRows: wbPayload.rows.length,
-    ozonRows: ozonPayload.rows.length
+    ozonRows: ozonPayload.rows.length,
+    yandexRows: yandexRows.length,
+    targetHorizonDays: CANONICAL_ORDER_DAYS
   }, null, 2));
 }
 

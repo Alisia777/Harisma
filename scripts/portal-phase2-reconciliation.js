@@ -240,12 +240,49 @@ function checkExecutiveCode() {
   };
 }
 
+function checkOosTaskCode() {
+  const app11Path = path.resolve(__dirname, '..', 'app-core-11.js');
+  const app02Path = path.resolve(__dirname, '..', 'app-core-02.js');
+  const text = fs.readFileSync(app11Path, 'utf8');
+  const storageText = fs.readFileSync(app02Path, 'utf8');
+  const saveStart = text.indexOf('async function oosControlSaveTask');
+  const saveEnd = text.indexOf('function oosControlRiskAmount', saveStart);
+  const taskForStart = text.indexOf('function oosControlTaskFor');
+  const taskForEnd = text.indexOf('function oosControlTaskStatusLabel', taskForStart);
+  const saveBlock = saveStart >= 0 && saveEnd > saveStart ? text.slice(saveStart, saveEnd) : '';
+  const taskForBlock = taskForStart >= 0 && taskForEnd > taskForStart ? text.slice(taskForStart, taskForEnd) : '';
+  const blockingReasons = [];
+  const markers = {
+    hasStableIssueKey: text.includes('function oosControlStableIssueKey'),
+    hasStableMarker: saveBlock.includes('[oos-stable:'),
+    hasLegacyMarker: saveBlock.includes('[oos:'),
+    taskSourceAuto: /source:\s*['"]auto['"]/.test(saveBlock),
+    taskNormalizeAuto: /normalizeTask\([^]*,\s*['"]auto['"]\)/.test(saveBlock),
+    taskForStableMarker: taskForBlock.includes('oosControlTaskMarkers'),
+    localAutoOosPersistent: storageText.includes("autoCode || '').trim().toLowerCase() === 'oos_control'")
+  };
+  if (!markers.hasStableIssueKey || !markers.hasStableMarker) blockingReasons.push('stable OOS task marker is absent');
+  if (!markers.hasLegacyMarker) blockingReasons.push('legacy OOS issue marker is absent');
+  if (!markers.taskSourceAuto || !markers.taskNormalizeAuto) blockingReasons.push('OOS task is not created as source=auto');
+  if (/id:\s*row\.taskId\s*\|\|/.test(saveBlock)) blockingReasons.push('legacy row.taskId is used before stable/existing id');
+  if (!markers.taskForStableMarker) blockingReasons.push('OOS task lookup does not check stable markers');
+  if (!markers.localAutoOosPersistent) blockingReasons.push('local storage normalization drops auto OOS tasks');
+  return {
+    status: blockingReasons.length ? 'blocked' : 'ok',
+    blockingReasons,
+    warnings: [],
+    source: app11Path,
+    markers
+  };
+}
+
 function main() {
   const options = resolveOptions(parseArgs(process.argv));
   const checks = {
     orderProcurement: checkOrder(options),
     skuMatrix: checkSkuMatrix(options),
-    executiveDirectFact: checkExecutiveCode()
+    executiveDirectFact: checkExecutiveCode(),
+    oosAutoTask: checkOosTaskCode()
   };
   const blockingReasons = Object.values(checks).flatMap((check) => check.blockingReasons || []);
   const warnings = Object.values(checks).flatMap((check) => check.warnings || []);

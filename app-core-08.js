@@ -1097,9 +1097,11 @@ function repricerApplyConfidence(side) {
   const freshAge = repricerAgeDays(side.historyFreshnessDate);
   const cooldownAge = repricerAgeDays(side.lastPriceChangeDate);
   const hasReliableCost = Boolean(side.rawCostPresent) || side.economicFloorSource === 'fee_stack' || side.economicFloorSource === 'snapshot_guard';
+  const dependencyStatus = String(side.decisionStatus || 'unknown').trim().toLowerCase();
 
   if (side.outOfSpec || side.criticalGate === 'SKIP') repricerAddReason(red, 'строка вне спецификации');
   if (side.criticalGate === 'BLOCK') repricerAddReason(red, 'нет обязательных входов');
+  if (dependencyStatus !== 'verified') repricerAddReason(red, `зависимости рекомендации: ${dependencyStatus || 'unknown'}`);
   if (side.stockGateBlocksAutoprice) repricerAddReason(red, side.marketplaceUnavailable ? 'товар не продаётся или нет на складе' : 'нет актуального остатка и поставок');
   if (currentPrice <= 0) repricerAddReason(red, 'нет текущей цены');
   if (finalPrice <= 0) repricerAddReason(red, 'нет финальной цены');
@@ -1133,8 +1135,8 @@ function repricerApplyConfidence(side) {
   side.confidence = level;
   side.confidenceScore = score;
   side.confidenceReasons = [...red, ...yellow];
-  side.safeToExport = level !== 'red' && side.changed && !side.promoActive;
-  side.promoSafeToExport = level !== 'red' && side.changed && side.promoActive;
+  side.safeToExport = level !== 'red' && dependencyStatus === 'verified' && side.changed && !side.promoActive;
+  side.promoSafeToExport = level !== 'red' && dependencyStatus === 'verified' && side.changed && side.promoActive;
   side.floorRaiseSafeToExport = Boolean(floorRaiseReady && side.safeToExport);
   side.decisionText = repricerBuildDecisionText(side, side.confidenceReasons);
   return side;

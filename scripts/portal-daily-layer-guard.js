@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { inspectFreshnessReports } = require('./portal-freshness-guard');
 
 const REPORT_FILE = 'portal_daily_guard.json';
 const RECONCILIATION_FILE = 'portal_metric_reconciliation.json';
@@ -986,6 +987,7 @@ function repairSteps(manifest, sourceChecks, contractChecks) {
     else if (check.scope === 'oos') add('oos-control', check.blockingReasons[0], check.source);
     else if (check.scope === 'quality') add('data-quality', check.blockingReasons[0], check.source);
     else if (check.scope === 'pipeline') add('retry-failed-sync-steps', check.blockingReasons[0], check.source);
+    else if (check.scope === 'freshness') add('freshness-uploaders', check.blockingReasons[0], check.source);
   });
   return [...repairs.values()];
 }
@@ -1031,6 +1033,7 @@ function run(options) {
   inspectSkuMatrix(loaded, manifest.policy, contractChecks, passports);
   inspectExecutiveTruthCode(loaded, manifest.policy, contractChecks, passports);
   inspectCrossDates(loaded, expectedDate, contractChecks);
+  inspectFreshnessReports(options, expectedDate, contractChecks);
   inspectSyncIssues(options, manifest, contractChecks);
 
   const views = viewStatuses(manifest, sourceChecks, contractChecks);

@@ -1,0 +1,788 @@
+{
+  "schema": "portal-dashboard-metric-reconciliation-v1",
+  "generatedAt": "2026-06-18T00:00:00.000Z",
+  "status": "ok",
+  "metricPassportFile": "portal_metric_passports.json",
+  "metricPassportFingerprint": "7437c565555219846e8525d68cb72fbfa4d1c831b7afc1f61fabe09a4767c064",
+  "summary": {
+    "metricCount": 83,
+    "missingPassportMetrics": 0,
+    "blockingChecks": 0
+  },
+  "chartCutoff": {
+    "effectiveTo": "2026-06-18",
+    "sourceDates": {
+      "dashboard": "2026-06-18",
+      "platform_trends": "2026-06-18"
+    },
+    "watermark": "sourceAsOf 2026-06-18"
+  },
+  "blockingReasons": [],
+  "metrics": [
+    {
+      "metricId": "dashboard.brandSummary.apr_fact_revenue_to_date",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_fact_units_to_date",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_forecast_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_forecast_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_plan_completion_month_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_plan_completion_to_date_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_plan_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_plan_to_date_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_plan_units",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.assigned_sku",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.avg_romi",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_fact_revenue_to_date",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_forecast_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_forecast_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_plan_completion_month_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_plan_completion_to_date_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_plan_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_plan_to_date_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.external_any_sku",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.fact_revenue_to_date",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.fact_units_to_date",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.feb_fact_units",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.feb_plan_units",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_fact_revenue_to_date",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_forecast_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_forecast_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_plan_completion_month_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_plan_completion_to_date_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_plan_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_plan_to_date_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_fact_revenue_to_date",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_fact_units_to_date",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_plan_completion_to_date_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_plan_units",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_fact_revenue_to_date",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_forecast_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_forecast_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_plan_completion_month_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_plan_completion_to_date_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_plan_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_plan_to_date_revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_fact_revenue_to_date",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_fact_units_to_date",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_plan_completion_to_date_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_plan_units",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.negative_margin_sku",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.orders_value",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.plan_completion_feb26_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.plan_completion_to_date_pct",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.plan_units",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.returns_units",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.sku_count",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.to_work_sku",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.brandSummary.total_stock",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ]
+    },
+    {
+      "metricId": "dashboard.card.company-fact-revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ]
+    },
+    {
+      "metricId": "dashboard.card.company-forecast-vs-plan",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ]
+    },
+    {
+      "metricId": "dashboard.card.company-plan-completion",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ]
+    },
+    {
+      "metricId": "dashboard.card.company-plan-revenue",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ]
+    },
+    {
+      "metricId": "dashboard.card.marketplace-fact-units",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ]
+    },
+    {
+      "metricId": "dashboard.card.marketplace-stock-total",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ]
+    },
+    {
+      "metricId": "dashboard.card.owner-assigned",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ]
+    },
+    {
+      "metricId": "dashboard.card.owner-unassigned",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ]
+    },
+    {
+      "metricId": "dashboard.card.sku-registry-total",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.b2b.revenue",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.d2c.revenue",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.goldapple.revenue",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.letu.revenue",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.magnit.revenue",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.ozon.revenue",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.revenue",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.wb.revenue",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.ya.revenue",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.ozonBelowMinCount",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.ozonChangeCount",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.ozonEqualizeCount",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.ozonMarginRiskCount",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.ozonTurnoverCount",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.skuCount",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.wbBelowMinCount",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.wbChangeCount",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.wbEqualizeCount",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.wbMarginRiskCount",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.wbTurnoverCount",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ]
+    }
+  ]
+}

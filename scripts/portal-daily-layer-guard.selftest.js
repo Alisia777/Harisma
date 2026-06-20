@@ -6,6 +6,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { run } = require('./portal-daily-layer-guard');
+const { buildPortalLayerPassports } = require('./portal-layer-passport');
+const { buildMetricPassports } = require('./build-portal-metric-passports');
 
 const manifestPath = path.join(__dirname, 'portal-truth-manifest.json');
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
@@ -77,8 +79,18 @@ function buildFixture(dir) {
     ]
   });
   write(dir, 'ads_summary.json', { generatedAt, asOfDate: date, window: { to: date }, itemSeries: [{ date, spend: 1 }], platforms: { wb: {}, ozon: {} } });
-  write(dir, 'warehouse_stock_overlay.json', { generatedAt, asOfDate: date, rows: [{ articleKey: 'A', stock: 1 }], matchedSkuCount: 1 });
-  write(dir, 'portal_data_quality.json', { generatedAt, maxDate: date, status: 'ok', summary: { totalApiRevenue: 600, apiUnmappedRevenue: 0, criticalIssues: 0 } });
+  write(dir, 'warehouse_stock_overlay.json', { generatedAt, sourceAsOf: date, asOfDate: date, rows: [{ articleKey: 'A', stock: 1 }], matchedSkuCount: 1, matchedRowCount: 1, sheetRowCount: 1 });
+  write(dir, 'portal_data_quality.json', {
+    generatedAt,
+    maxDate: date,
+    status: 'ok',
+    summary: { totalApiRevenue: 600, apiUnmappedRevenue: 0, criticalIssues: 0, maxDate: date },
+    freshness: [
+      { dataset: 'warehouse_stock_overlay', asOfDate: date, rows: 1, status: 'ok' },
+      { dataset: 'sku_matrix', asOfDate: date, rows: 2, status: 'ok' },
+      { dataset: 'wb_owner_distribution_audit', asOfDate: date, rows: 1, status: 'ok' }
+    ]
+  });
   write(dir, 'portal_data_quarantine.json', { generatedAt, rows: [] });
   const orderRows = [
     { platform: 'WB', platformKey: 'wb', article: 'A', articleKey: 'A', inStock: 5, inTransit: 3, inRequest: 2, available: 10, safetyStock: 0, avgDaily: 1, rawNeed30: 20, targetNeed30: 20, targetHorizonDays: 30 },
@@ -96,6 +108,7 @@ function buildFixture(dir) {
   });
   write(dir, 'sku_matrix.json', {
     generatedAt,
+    sourceAsOf: date,
     schema: 'portal-sku-matrix-v2',
     summary: { skuCount: 2, aliasCount: 1, aliasConflictCount: 0, skuTokenConflictCount: 0, ownerConflictCount: 0 },
     items: [
@@ -105,7 +118,32 @@ function buildFixture(dir) {
     aliasConflicts: [],
     skuTokenConflicts: []
   });
-  write(dir, 'sku_aliases.json', { generatedAt, aliases: [{ target_sku: 'A', platform: 'wb', api_sku: 'A-WB-ALIAS' }] });
+  write(dir, 'sku_aliases.json', { generatedAt, sourceAsOf: date, aliases: [{ target_sku: 'A', platform: 'wb', api_sku: 'A-WB-ALIAS' }] });
+  write(dir, 'wb_owner_distribution_audit.json', { generatedAt, sourceAsOf: date, matched: [{ articleKey: 'A' }] });
+  write(dir, 'prices.json', { generatedAt, asOfDate: date, platforms: { wb: { rows: [{ articleKey: 'A', currentPrice: 100 }] } } });
+  write(dir, 'repricer.json', { generatedAt, sourceFreshness: { merged: date }, summary: { skuCount: 1 }, rows: [{ articleKey: 'A', cost: 10, wb: { currentPrice: 100, minPrice: 80, requiredPriceForProfitability: 50, recPrice: 110, stockGateBlocksAutoprice: false } }] });
+  write(dir, 'smart_price_overlay.json', { generatedAt, asOfDate: date, platforms: { wb: { rows: [{ articleKey: 'A' }] } } });
+  write(dir, 'smart_price_workbench.json', { generatedAt, sourceAsOf: date, platforms: { wb: { rows: [{ articleKey: 'A' }] } } });
+  write(dir, 'price_workbench_support.json', { generatedAt, sourceAsOf: date, platforms: { wb: { rows: [{ articleKey: 'A' }] } } });
+  write(dir, 'min_max_registry.json', { generatedAt, sourceAsOf: date, batchId: 'minmax-fixture', rows: [{ platform: 'wb', articleKey: 'A', effectiveFrom: date, minPrice: 80, maxPrice: 120, status: 'verified' }] });
+  write(dir, 'cost_registry.json', { generatedAt, sourceAsOf: date, batchId: 'cost-fixture', rows: [{ legalEntity: 'IP A', articleKey: 'A', effectiveFrom: date, cost: 10, currency: 'RUB', unit: 'piece', status: 'verified' }] });
+}
+
+function buildPhase4Reports(dir) {
+  buildPortalLayerPassports({
+    inputDir: dir,
+    outputDir: dir,
+    slaPath: path.join(__dirname, 'portal-layer-sla.json'),
+    referenceDate: date,
+    runDate: date,
+    noWrite: false
+  });
+  buildMetricPassports({
+    inputDir: dir,
+    passportDir: dir,
+    outputDir: dir,
+    noWrite: false
+  });
 }
 
 function options(dir) {
@@ -127,6 +165,7 @@ function options(dir) {
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'portal-truth-'));
 try {
   buildFixture(dir);
+  buildPhase4Reports(dir);
   const clean = run(options(dir));
   assert.strictEqual(clean.report.publish.allowed, true, JSON.stringify(clean.report.publish.blockingReasons, null, 2));
 
@@ -139,6 +178,7 @@ try {
   assert.ok(broken.report.publish.blockingReasons.some((reason) => reason.includes('mojibake')));
 
   buildFixture(dir);
+  buildPhase4Reports(dir);
   const ownerConflict = JSON.parse(fs.readFileSync(path.join(dir, 'skus.json'), 'utf8'));
   ownerConflict.skus[0].ownersByPlatform = { wb: 'Анна' };
   ownerConflict.skus[0].owner = { name: 'Анна', byPlatform: { wb: 'Ксения' } };
@@ -148,6 +188,7 @@ try {
   assert.ok(ownerBroken.report.publish.blockingReasons.some((reason) => reason.includes('conflicting canonical owners')));
 
   buildFixture(dir);
+  buildPhase4Reports(dir);
   const mixedDates = JSON.parse(fs.readFileSync(path.join(dir, 'platform_trends.json'), 'utf8'));
   mixedDates.platforms.ozon.series[0].date = '2026-06-18';
   mixedDates.platforms.ozon.series[0].label = '2026-06-18';
@@ -157,6 +198,7 @@ try {
   assert.ok(dateBroken.report.publish.blockingReasons.some((reason) => reason.includes('do not share one cutoff date')));
 
   buildFixture(dir);
+  buildPhase4Reports(dir);
   const badOrder = JSON.parse(fs.readFileSync(path.join(dir, 'order_procurement.json'), 'utf8'));
   badOrder.rows[0].available = badOrder.rows[0].inStock;
   badOrder.rows[0].rawNeed30 = 25;
@@ -167,6 +209,7 @@ try {
   assert.ok(orderBroken.report.publish.blockingReasons.some((reason) => reason.includes('available=inStock+inTransit+inRequest')));
 
   buildFixture(dir);
+  buildPhase4Reports(dir);
   const aliasCollision = JSON.parse(fs.readFileSync(path.join(dir, 'sku_matrix.json'), 'utf8'));
   aliasCollision.summary.aliasConflictCount = 1;
   aliasCollision.aliasConflicts = [{ platform: 'wb', api_sku: 'A-WB-ALIAS', articles: ['A', 'B'] }];

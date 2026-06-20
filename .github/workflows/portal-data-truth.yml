@@ -31,10 +31,25 @@ jobs:
         with:
           node-version: '20'
       - name: Syntax and negative-path self-test
-        run: node scripts/portal-daily-layer-guard.selftest.js
+        run: |
+          node scripts/portal-daily-layer-guard.selftest.js
+          node scripts/portal-upload-pipeline.selftest.js
+          node scripts/portal-freshness-guard.selftest.js
       - name: Audit current portal snapshot
         run: |
           mkdir -p .portal-truth-output
+          node scripts/portal-layer-passport.js \
+            --input-dir data \
+            --output-dir .portal-truth-output
+          node scripts/build-portal-metric-passports.js \
+            --input-dir data \
+            --passport-dir .portal-truth-output \
+            --output-dir .portal-truth-output
+          node scripts/portal-freshness-guard.js \
+            --input-dir .portal-truth-output \
+            --base-data-dir data \
+            --output-dir .portal-truth-output \
+            --no-fail
           node scripts/portal-daily-layer-guard.js \
             --input-dir data \
             --base-data-dir data \

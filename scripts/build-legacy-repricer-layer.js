@@ -10,6 +10,11 @@ const {
   parseFreshStamp,
   safeReadJson
 } = require('./smart-price-contour');
+const {
+  readJson: readFreshnessJson,
+  passportMap,
+  dateKey: freshnessDateKey
+} = require('./portal-freshness-core');
 
 const ROOT = process.cwd();
 const PLATFORM_KEYS = ['wb', 'ozon'];
@@ -40,6 +45,9 @@ function resolveOptions(args = {}) {
     pricesPath: path.resolve(args['prices-file'] || path.join(ROOT, 'data', 'prices.json')),
     procurementWbPath: path.resolve(args['procurement-wb-file'] || path.join(ROOT, 'data', 'order_procurement_wb.json')),
     procurementOzonPath: path.resolve(args['procurement-ozon-file'] || path.join(ROOT, 'data', 'order_procurement_ozon.json')),
+    minMaxRegistryPath: path.resolve(args['min-max-registry-file'] || path.join(ROOT, 'data', 'min_max_registry.json')),
+    costRegistryPath: path.resolve(args['cost-registry-file'] || path.join(ROOT, 'data', 'cost_registry.json')),
+    layerPassportsPath: path.resolve(args['layer-passports-file'] || path.join(ROOT, 'data', 'portal_layer_passports.json')),
     outputPath: path.resolve(args['output-file'] || path.join(ROOT, 'data', 'repricer.json'))
   };
 }
@@ -564,6 +572,92 @@ function buildSummary(rows = []) {
   return summary;
 }
 
+function minDate(values = []) {
+  const dates = values.map(freshnessDateKey).filter(Boolean).sort();
+  return dates[0] || '';
+}
+
+function dependencyPassport(passports, layer) {
+  const passport = passports.get(layer);
+  if (!passport) return { status: 'unknown', batchId: null, sourceAsOf: null };
+  return {
+    status: passport.status || 'unknown',
+    batchId: passport.batchId || null,
+    sourceAsOf: passport.sourceAsOf || null
+  };
+}
+
+function loadDependencyContext(options) {
+  const passports = passportMap(readFreshnessJson(options.layerPassportsPath, { passports: [] }));
+  const minMaxRegistry = readFreshnessJson(options.minMaxRegistryPath, { rows: [] });
+  const costRegistry = readFreshnessJson(options.costRegistryPath, { rows: [] });
+  return {
+    passports,
+    minMaxRegistry,
+    costRegistry
+  };
+}
+
+function sideDependencyStatus(row, platform, side, context) {
+  const deps = {
+    prices: dependencyPassport(context.passports, 'prices'),
+    min_max_registry: dependencyPassport(context.passports, 'min_max_registry'),
+    cost_registry: dependencyPassport(context.passports, 'cost_registry'),
+    sku_matrix: dependencyPassport(context.passports, 'sku_matrix'),
+    warehouse_stock_overlay: dependencyPassport(context.passports, 'warehouse_stock_overlay')
+  };
+  if (!deps.min_max_registry.batchId && Array.isArray(context.minMaxRegistry?.rows) && context.minMaxRegistry.rows.length) {
+    deps.min_max_registry = { status: 'manual_review', batchId: context.minMaxRegistry.batchId || null, sourceAsOf: context.minMaxRegistry.sourceAsOf || null };
+  }
+  if (!deps.cost_registry.batchId && Array.isArray(context.costRegistry?.rows) && context.costRegistry.rows.length) {
+    deps.cost_registry = { status: 'manual_review', batchId: context.costRegistry.batchId || null, sourceAsOf: context.costRegistry.sourceAsOf || null };
+  }
+
+  const reasons = [];
+  if (!(Number(side?.currentPrice) > 0)) reasons.push('missing_current_seller_price');
+  if (!(Number(side?.minPrice) > 0 || Number(side?.workingZoneFrom) > 0)) reasons.push('missing_min_max_floor');
+  if (!(Number(row?.cost) > 0 || Number(side?.requiredPriceForProfitability) > 0 || Number(side?.requiredPriceForMargin) > 0)) reasons.push('missing_cost_or_economic_floor');
+  if (!row?.articleKey) reasons.push('missing_sku_mapping');
+  if (side?.stockGateBlocksAutoprice) reasons.push('stock_gate_blocks_autoprice');
+  Object.entries(deps).forEach(([layer, dep]) => {
+    if (dep.status !== 'verified') reasons.push(`${layer}_${dep.status || 'unknown'}`);
+  });
+
+  const decisionStatus = reasons.length
+    ? (reasons.some((reason) => reason.includes('stale')) ? 'stale' : (reasons.some((reason) => reason.includes('unknown') || reason.includes('missing')) ? 'unknown' : 'blocked'))
+    : 'verified';
+  return {
+    decisionStatus,
+    blockingReasons: reasons,
+    dependencyBatchIds: Object.fromEntries(Object.entries(deps).map(([layer, dep]) => [layer, dep.batchId])),
+    sourceAsOf: minDate(Object.values(deps).map((dep) => dep.sourceAsOf)) || null,
+    formulaVersion: 'repricer-dependency-gate-v1',
+    executable: decisionStatus === 'verified'
+  };
+}
+
+function annotateRepricerDependencies(rows, context) {
+  rows.forEach((row) => {
+    PLATFORM_KEYS.forEach((platform) => {
+      const side = row?.[platform];
+      if (!side) return;
+      Object.assign(side, sideDependencyStatus(row, platform, side, context));
+    });
+  });
+  return rows;
+}
+
+function dependencyStatusCounts(rows = []) {
+  const counts = { verified: 0, manual_review: 0, blocked: 0, stale: 0, unknown: 0 };
+  rows.forEach((row) => {
+    PLATFORM_KEYS.forEach((platform) => {
+      const status = row?.[platform]?.decisionStatus;
+      if (status && Object.prototype.hasOwnProperty.call(counts, status)) counts[status] += 1;
+    });
+  });
+  return counts;
+}
+
 function buildLegacyRepricerLayer(options = {}) {
   const workbench = safeReadJson(options.workbenchPath, { generatedAt: '', platforms: {} });
   const overlay = safeReadJson(options.overlayPath, { generatedAt: '', platforms: {} });
@@ -581,6 +675,7 @@ function buildLegacyRepricerLayer(options = {}) {
     numberOption(options.liveRepricerMaxAgeDays, 7)
   );
   const liveRepricerRows = liveRepricerFreshness.usable && Array.isArray(liveRepricer?.rows) ? liveRepricer.rows : [];
+  const dependencyContext = loadDependencyContext(options);
   const liveRepricerMap = buildMap(liveRepricerRows);
   const supportMaps = Object.fromEntries(PLATFORM_KEYS.map((platform) => [platform, buildMap(supportRows(support, platform))]));
   const pricesMaps = Object.fromEntries(PLATFORM_KEYS.map((platform) => [platform, buildMap(platformRows(prices, platform))]));
@@ -653,6 +748,10 @@ function buildLegacyRepricerLayer(options = {}) {
       );
       return rightChange - leftChange || String(left.article || left.articleKey).localeCompare(String(right.article || right.articleKey), 'ru');
     });
+  annotateRepricerDependencies(rows, dependencyContext);
+  const summary = buildSummary(rows);
+  summary.dependencyStatusCounts = dependencyStatusCounts(rows);
+  summary.executableRecommendationCount = summary.dependencyStatusCounts.verified;
 
   const payload = {
     generatedAt: merged?.generatedAt || new Date().toISOString(),
@@ -671,7 +770,7 @@ function buildLegacyRepricerLayer(options = {}) {
       prices: prices?.generatedAt || '',
       merged: merged?.generatedAt || ''
     },
-    summary: buildSummary(rows),
+    summary,
     rows
   };
 

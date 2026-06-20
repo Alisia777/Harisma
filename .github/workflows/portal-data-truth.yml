@@ -60,6 +60,7 @@ jobs:
         with:
           name: portal-data-truth-${{ github.run_id }}
           path: .portal-truth-output/*.json
+          include-hidden-files: true
           if-no-files-found: warn
           retention-days: 30
       - name: Enforce publish gate

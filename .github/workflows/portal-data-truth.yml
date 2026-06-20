@@ -44,7 +44,7 @@ jobs:
           node scripts/portal-runtime-promote.selftest.js
           node scripts/portal-atomic-snapshot-finalize.selftest.js
       - name: Enforce non-IU scope
-        run: python scripts/verify_non_iu_scope.py --base origin/main --head HEAD --working-tree
+        run: python scripts/verify_non_iu_scope.py --base HEAD^ --head HEAD --working-tree
       - name: Build phase 3 truth artifacts
         run: |
           mkdir -p .portal-truth-output

@@ -1,0 +1,17 @@
+:root{--wb:#A855F7;--ozon:#4F86FF;--ym:#F2C84B;--goldapple:#72C86A;--letu:#D96AA9;--magnit:#E85B55;}
+[data-platform="all"]{--platform:#D8C6A4;--platform-rgb:216,198,164;--platform-text-dark:#251B0C;}
+[data-platform="wb"]{--platform:#A855F7;--platform-rgb:168,85,247;--platform-text-dark:#2B0B43;}
+[data-platform="ozon"]{--platform:#4F86FF;--platform-rgb:79,134,255;--platform-text-dark:#061B4A;}
+[data-platform="ym"]{--platform:#F2C84B;--platform-rgb:242,200,75;--platform-text-dark:#3F3102;}
+[data-platform="goldapple"]{--platform:#72C86A;--platform-rgb:114,200,106;--platform-text-dark:#0B3210;}
+[data-platform="letu"]{--platform:#D96AA9;--platform-rgb:217,106,169;--platform-text-dark:#41102D;}
+[data-platform="magnit"]{--platform:#E85B55;--platform-rgb:232,91,85;--platform-text-dark:#470B09;}
+[data-marketplace]{--mp:var(--platform);--mp-rgb:var(--platform-rgb)}
+[data-marketplace="wb"]{--mp:var(--wb);--mp-rgb:168,85,247}
+[data-marketplace="ozon"]{--mp:var(--ozon);--mp-rgb:79,134,255}
+[data-marketplace="ym"]{--mp:var(--ym);--mp-rgb:242,200,75}
+[data-marketplace="goldapple"]{--mp:var(--goldapple);--mp-rgb:114,200,106}
+[data-marketplace="letu"]{--mp:var(--letu);--mp-rgb:217,106,169}
+[data-marketplace="magnit"]{--mp:var(--magnit);--mp-rgb:232,91,85}
+.altea-mp-dot{width:7px;height:7px;border-radius:50%;background:var(--mp);box-shadow:0 0 10px rgba(var(--mp-rgb),.35)}
+.altea-mp-line{position:relative}.altea-mp-line::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--mp)}

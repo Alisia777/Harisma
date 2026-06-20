@@ -1,0 +1,842 @@
+{
+  "package": "Altea Premium Portal — All Themes Pack",
+  "themes": 7,
+  "routes": 15,
+  "desktopReferences": 105,
+  "mobileReferences": 14,
+  "marketplaceGuides": 7,
+  "files": 166,
+  "totalBytes": 39735944,
+  "items": [
+    {
+      "path": "CODEX-START-HERE.md",
+      "bytes": 2118,
+      "sha256": "ad0f52efe16f374da8629b201c05e323dec93d946d4f0d546ca6507c00a930b8"
+    },
+    {
+      "path": "README.md",
+      "bytes": 726,
+      "sha256": "ce59858362f79beed328fa1c3f40c9b06149e60e5d6caa5225dd0b5786b6b711"
+    },
+    {
+      "path": "altea-all-themes-overview.png",
+      "bytes": 1337559,
+      "sha256": "961044c0aed43f65b71af989400d8e3d8fd26f2817ef233b491746514b54b59c"
+    },
+    {
+      "path": "altea-mobile-themes-overview.jpg",
+      "bytes": 590617,
+      "sha256": "55a13705b09c259fedbcc18bd73b03385395e79efb76feedfa82fcdb628ca916"
+    },
+    {
+      "path": "altea-premium-portal-all-themes-standalone.html",
+      "bytes": 194483,
+      "sha256": "6d2d80c5dea2eab7dc49a0efe15fdbe48a91a19808a6a85ee51841ecd4dd6df3"
+    },
+    {
+      "path": "altea-premium-portal-all-themes.html",
+      "bytes": 1788,
+      "sha256": "2b1ad6e124bfce8d9649f4953074419e7dd39482a0a53014b55268ce3debfd42"
+    },
+    {
+      "path": "assets/logos/altea-logo-black.png",
+      "bytes": 16061,
+      "sha256": "350e1e0c0955f2c5576ab09a23f591f1a93ef73f9fa1ef7afeb18bd7b3c0d1ff"
+    },
+    {
+      "path": "assets/logos/altea-logo-champagne.png",
+      "bytes": 15858,
+      "sha256": "0163aa1f5d74ebea54c6014aff86ef25bb5e94df579d6f66449fd0ec65425e68"
+    },
+    {
+      "path": "assets/logos/altea-logo-emerald.png",
+      "bytes": 15867,
+      "sha256": "f97c25a026014132dc51cbc910c72205e3bc0b574a3c8aa0be5a86ce7b0a3b66"
+    },
+    {
+      "path": "assets/logos/altea-logo-white.png",
+      "bytes": 15875,
+      "sha256": "28591f30f7cd7dcb3cd276bee2d185e54e54541ccb38dbf97da2d9fe2e4ab9fb"
+    },
+    {
+      "path": "docs/CODEX-PROMPT.md",
+      "bytes": 1884,
+      "sha256": "c73ca38e4467ee5be66fd2cab6d000642b3d341ff60a9962ea9b4169ecd39d2e"
+    },
+    {
+      "path": "docs/CONTRAST-QA.md",
+      "bytes": 940,
+      "sha256": "7419dd7aae9b41aff45c1878e3680fcdef3097a0bf7bf5b41f10d78f32d24a94"
+    },
+    {
+      "path": "docs/FILE-MAP.md",
+      "bytes": 1054,
+      "sha256": "2c9c6a31d6528c3d8e20029fe84e5165243040c1c86695c18d18fd7254bdd755"
+    },
+    {
+      "path": "docs/IMPLEMENTATION-CHECKLIST.md",
+      "bytes": 796,
+      "sha256": "acb4576b75c7f9310891087e078c1246fc1529c6a70649ddc9defb0b82dda59e"
+    },
+    {
+      "path": "docs/MARKETPLACE-ACCENTS.md",
+      "bytes": 882,
+      "sha256": "ddc43932cd602000927911c3bd4b8bac0dd1670ce42e8990381de5f65e578d51"
+    },
+    {
+      "path": "docs/MOTION-SPECS.md",
+      "bytes": 720,
+      "sha256": "bcad514b136e6b7d64152504786bcccae56158eff29b0100233715c56f1fb26e"
+    },
+    {
+      "path": "docs/ROUTE-SPECS.md",
+      "bytes": 3989,
+      "sha256": "790dc904d6632befef4dabb6e1ae8715ba18b04f368bdd9e42ba504db3320dd6"
+    },
+    {
+      "path": "docs/THEME-SPECS.md",
+      "bytes": 1990,
+      "sha256": "f7f8d587f4de2b77bb9a056424fdfd7ab392cdcd8f9a37c290bf0255b43953a4"
+    },
+    {
+      "path": "docs/contrast-qa.json",
+      "bytes": 2960,
+      "sha256": "f430e73c60736d2a012ed3e322cd33b39c32a0c01a3061e20c1e477adf7fc20c"
+    },
+    {
+      "path": "docs/marketplace-tokens.json",
+      "bytes": 1206,
+      "sha256": "1373e20b72ebc391b92924e951ad7285008688f3f764f8ec0e08b1f3413bf3f8"
+    },
+    {
+      "path": "docs/route-manifest.json",
+      "bytes": 5881,
+      "sha256": "3fee03a6bfab42652615344b25d196697ff12a3e03b03eab25dc4559d8237d4a"
+    },
+    {
+      "path": "docs/theme-tokens.json",
+      "bytes": 5041,
+      "sha256": "138594cf80a5bf1c70ca1964b52a58479c2b2940fa39c1fbb02de07eb873b03a"
+    },
+    {
+      "path": "mobile/dark-dashboard.jpg",
+      "bytes": 56458,
+      "sha256": "a64b5b79507c9c26d7fbd5431f3419cc6ee002cdac380905d2679cc1b7ccc225"
+    },
+    {
+      "path": "mobile/dark-repricer.jpg",
+      "bytes": 55458,
+      "sha256": "d95ea469ee648d80db94760c06ea708f99c686af685334a655b5391a65e3691c"
+    },
+    {
+      "path": "mobile/emerald-dashboard.jpg",
+      "bytes": 58542,
+      "sha256": "22329e53d9be950953cc28a5eba7dcd192233bc07dd00785d359cb3af04543a2"
+    },
+    {
+      "path": "mobile/emerald-repricer.jpg",
+      "bytes": 57159,
+      "sha256": "30b307c6d18d95f4be0217792147acb18fb56eddca95c4e0129bede330966b42"
+    },
+    {
+      "path": "mobile/gray-dashboard.jpg",
+      "bytes": 52439,
+      "sha256": "590a80f0816710ae383639196a2b4cd996d081817cbde9eae202b949dd987aa2"
+    },
+    {
+      "path": "mobile/gray-repricer.jpg",
+      "bytes": 55729,
+      "sha256": "17a3338e4575218cc49f3ecbe8d1a258a6f41bd086356a88b082b2371965288f"
+    },
+    {
+      "path": "mobile/hellforge-dashboard.jpg",
+      "bytes": 59781,
+      "sha256": "5531b44280e70290c0b761cccfd2530e32843d52b38ddad90455eb50b0081d11"
+    },
+    {
+      "path": "mobile/hellforge-repricer.jpg",
+      "bytes": 58847,
+      "sha256": "717f95bd1a21cfcfec2355f3090387201545d66b6874b9b1eec79f6494f853f0"
+    },
+    {
+      "path": "mobile/light-dashboard.jpg",
+      "bytes": 49312,
+      "sha256": "151bf06e27b894c4cbd82d449c21965a5495222274117eda048536a934130642"
+    },
+    {
+      "path": "mobile/light-repricer.jpg",
+      "bytes": 54064,
+      "sha256": "0f25e03c4e5e3ca0b13fdae33981137d449cdbb26a109403ccbb99aaa07458bf"
+    },
+    {
+      "path": "mobile/redalert-dashboard.jpg",
+      "bytes": 61954,
+      "sha256": "680c9cbb0eb09185947ef30d2baf96d27f68ba1b9bfdbb429b3939fcb4c0dfc0"
+    },
+    {
+      "path": "mobile/redalert-repricer.jpg",
+      "bytes": 60347,
+      "sha256": "cb8fffb26ea35820963a93f17ad67d78178cfcfb35ac29924d0a6ac5ed8c6d76"
+    },
+    {
+      "path": "mobile/terminal-dashboard.jpg",
+      "bytes": 69013,
+      "sha256": "08cb29f8910dc7f9997dab266f5c40ca28429c23f7369e465f711152b39a61d2"
+    },
+    {
+      "path": "mobile/terminal-repricer.jpg",
+      "bytes": 68651,
+      "sha256": "e4ca15ce6209e721de266f689a710bfbeee712d578b3647bcc6df2e36ba92381"
+    },
+    {
+      "path": "motion/altea-theme-route-motion-poster.jpg",
+      "bytes": 77413,
+      "sha256": "55c0a98d365394111d834e455e85fdd5d8c0588a8a70adc57378957529e08c9b"
+    },
+    {
+      "path": "motion/altea-theme-route-motion-source.webm",
+      "bytes": 2638671,
+      "sha256": "5d82b4345fa631031291e1568ead5b226f6f5866b83aaf8d4e95da6c9a3aec7c"
+    },
+    {
+      "path": "motion/altea-theme-route-motion.mp4",
+      "bytes": 2861447,
+      "sha256": "980505523f6a0132868047a1fca56bfd18e570ddce2de9630c0e2597e1a29f60"
+    },
+    {
+      "path": "platform-guides/dark-marketplace-accents.jpg",
+      "bytes": 157306,
+      "sha256": "65fd84d0a2bd950cee367e56b407df3f295988dee024f8350da6f68c1087c5a4"
+    },
+    {
+      "path": "platform-guides/emerald-marketplace-accents.jpg",
+      "bytes": 165748,
+      "sha256": "a2c8cf71920490d2b1036f44955ff79945aa06b12685b10b3ee79f8e40a94ebc"
+    },
+    {
+      "path": "platform-guides/gray-marketplace-accents.jpg",
+      "bytes": 163710,
+      "sha256": "0d10a5a20cb4c1b33f8753f3dda2a3186c78a3c6e368c27fb404a4cdd8f59897"
+    },
+    {
+      "path": "platform-guides/hellforge-marketplace-accents.jpg",
+      "bytes": 164674,
+      "sha256": "69a54d0680d97e47478d2bd46f21af822122d31fcc150d21550533df54f9ed3d"
+    },
+    {
+      "path": "platform-guides/light-marketplace-accents.jpg",
+      "bytes": 162024,
+      "sha256": "3d8ff03bc1478c7b45b4c178aa33bd8f9075a8663f43dfdcc259f54720cf6a5a"
+    },
+    {
+      "path": "platform-guides/redalert-marketplace-accents.jpg",
+      "bytes": 197299,
+      "sha256": "f3a9e0ba66b2cc4237c6b08b59bb72a2102add59a1d2ccf56f5829e177de47e8"
+    },
+    {
+      "path": "platform-guides/terminal-marketplace-accents.jpg",
+      "bytes": 245153,
+      "sha256": "c961788485df5ef57c1415122905698d6f8870d33e39d5a81ed070c6b09a2591"
+    },
+    {
+      "path": "scripts/render-references.py",
+      "bytes": 1059,
+      "sha256": "e24c7e28434d2bad2ca1a0d4f4032f81530f3315081da8528872e9ef2382af37"
+    },
+    {
+      "path": "src/altea-marketplace-accents.css",
+      "bytes": 1517,
+      "sha256": "2c98c7c86115c5a9d3fd3713d37c4cd16843c5af1e487350b3082d1eb06a8425"
+    },
+    {
+      "path": "src/altea-motion-system.css",
+      "bytes": 1046,
+      "sha256": "5d426c2c6814508832c4b4435adc9a3cd4205118a4ac11e4dc7e7f1711523e30"
+    },
+    {
+      "path": "src/altea-premium-all-themes.css",
+      "bytes": 35347,
+      "sha256": "62048203c4c471d8072f18660da5171b39e0c09a8d4d95069878e14c85fde835"
+    },
+    {
+      "path": "src/altea-premium-runtime.js",
+      "bytes": 136274,
+      "sha256": "65b84bad266d43890348f364040ed241e3afc535455aee23fe535179643b5338"
+    },
+    {
+      "path": "src/altea-theme-integration.js",
+      "bytes": 957,
+      "sha256": "136b19320dea4e7c0c9392d44d3ba114dceb04b2e04174c1fc2a476b3de6ff13"
+    },
+    {
+      "path": "src/altea-theme-tokens.css",
+      "bytes": 3812,
+      "sha256": "96beac8d891ac139010cddcd530804bdc4ac2f4c630221ce0871749311a97196"
+    },
+    {
+      "path": "tests/visual-smoke.spec.js",
+      "bytes": 814,
+      "sha256": "b9239079747b7e3705a371465d212426d553d8ee65dfa03857280312a92395dc"
+    },
+    {
+      "path": "themes/dark/overview.png",
+      "bytes": 1255342,
+      "sha256": "18488a907081547b515f04b69e7e54f613cfa3e0cf75708daf19550fa58a2ca4"
+    },
+    {
+      "path": "themes/dark/routes/01-dashboard.jpg",
+      "bytes": 183706,
+      "sha256": "e9021033564ab30ddd9642a7e3baab073032535c1778e9685b2575809dfe44c6"
+    },
+    {
+      "path": "themes/dark/routes/02-executive.jpg",
+      "bytes": 175937,
+      "sha256": "9c5f105a9edd133d3c381058f1db337afa4c3c95bed440ac07460d9489f9f146"
+    },
+    {
+      "path": "themes/dark/routes/03-control.jpg",
+      "bytes": 151349,
+      "sha256": "e5237737ebf02b1bf8c1716e2c6cc2b89b6676df2a62a110798cd8e8ac038520"
+    },
+    {
+      "path": "themes/dark/routes/04-data-health.jpg",
+      "bytes": 139613,
+      "sha256": "c24320dcbb1dbe4f44fb60f733106b19d2560fc5d4e138d0280dcb309f936654"
+    },
+    {
+      "path": "themes/dark/routes/05-sku-plan-fact.jpg",
+      "bytes": 168965,
+      "sha256": "b2d99189010fa4ac6b5361f8538e1c09dc9725c786431415535ca35971b6ea6d"
+    },
+    {
+      "path": "themes/dark/routes/06-repricer.jpg",
+      "bytes": 170309,
+      "sha256": "c642a9018c112fce6f44e89b945548db06c625bd077f4ead63e7b8b911cb96ea"
+    },
+    {
+      "path": "themes/dark/routes/07-prices.jpg",
+      "bytes": 170866,
+      "sha256": "2cec048a454729211d8f2450b1b20985f0a51a072efaaf696f5f2da5e131e2aa"
+    },
+    {
+      "path": "themes/dark/routes/08-order.jpg",
+      "bytes": 167627,
+      "sha256": "57bb8c17bedcf816d2bc14a7d98551208f04b5dfdbeaf77ba5a55799acd867df"
+    },
+    {
+      "path": "themes/dark/routes/09-oos-control.jpg",
+      "bytes": 157211,
+      "sha256": "bdb049f12dc1a99d6339f3d1dc4a2be18972708694f42b10cd74b21e0fcdf969"
+    },
+    {
+      "path": "themes/dark/routes/10-sku-contour.jpg",
+      "bytes": 152444,
+      "sha256": "3ffdc81386300c6809d9aca876aa172f3656582c1a2e795b4721ac8430e45de2"
+    },
+    {
+      "path": "themes/dark/routes/11-launches.jpg",
+      "bytes": 162188,
+      "sha256": "070a1190cf618258c98eff0f9da6469320b9664deab1e5580f2fb010eeac8ee6"
+    },
+    {
+      "path": "themes/dark/routes/12-launch-control.jpg",
+      "bytes": 153440,
+      "sha256": "11c36d52b2a948e99981b84ec1a1370d4db078d99bd56f15044e263cbec01db5"
+    },
+    {
+      "path": "themes/dark/routes/13-iu-drr.jpg",
+      "bytes": 165597,
+      "sha256": "772aa20d5909558459c88728a47e1636b6d0e9074b8a51e6600d14d8e03f91a5"
+    },
+    {
+      "path": "themes/dark/routes/14-wb-rating.jpg",
+      "bytes": 171582,
+      "sha256": "0d2f7f9865dc8c15d6f4bd3e2ad9942fb7b45961c5cafefa510bc4d3024934d8"
+    },
+    {
+      "path": "themes/dark/routes/15-product-leaderboard.jpg",
+      "bytes": 166701,
+      "sha256": "f5468db5a93b4a59ba3ae9b8fe4079464452de18a0e1d67f57ac8cfcb50ed15e"
+    },
+    {
+      "path": "themes/emerald/overview.png",
+      "bytes": 1493628,
+      "sha256": "d8aa2201d9a727990e34704c6d67b57161a58a6cd924e93246b6e15d3c530eb0"
+    },
+    {
+      "path": "themes/emerald/routes/01-dashboard.jpg",
+      "bytes": 194892,
+      "sha256": "a928d7a548faff634d1d9c398520e4c79c682ea14f52c2314fcf85c6770639d4"
+    },
+    {
+      "path": "themes/emerald/routes/02-executive.jpg",
+      "bytes": 187002,
+      "sha256": "ffa4ac22d6d87dde1c2f4faff3c8f90dc63be4ced84a67f364c0ee5f979dc33b"
+    },
+    {
+      "path": "themes/emerald/routes/03-control.jpg",
+      "bytes": 160243,
+      "sha256": "3260c21f573267270ff4246427caec9febc19ee7e7a67ab80cde4fd762a493ee"
+    },
+    {
+      "path": "themes/emerald/routes/04-data-health.jpg",
+      "bytes": 147132,
+      "sha256": "c05db658e456d93dc3d904462d169c522b0c5db98ca0f32f5c143ef037f26bdf"
+    },
+    {
+      "path": "themes/emerald/routes/05-sku-plan-fact.jpg",
+      "bytes": 179001,
+      "sha256": "e3073567077419136e2d1c15b61277a1c9c0249f79f0dc6829995ca9fc52de89"
+    },
+    {
+      "path": "themes/emerald/routes/06-repricer.jpg",
+      "bytes": 180201,
+      "sha256": "fb65d0aa8682aefc605138d5f84a808bd1edbee393bdb4ee4da39c936f64ea28"
+    },
+    {
+      "path": "themes/emerald/routes/07-prices.jpg",
+      "bytes": 181093,
+      "sha256": "3669765c7c2d06459ebfa21d92a6e63721d8d91aded1d3be36c7b0b76301d2c0"
+    },
+    {
+      "path": "themes/emerald/routes/08-order.jpg",
+      "bytes": 177185,
+      "sha256": "c207a0594418fe6beb8e139b96a980450bec330e9c99aea14b28b923384c332c"
+    },
+    {
+      "path": "themes/emerald/routes/09-oos-control.jpg",
+      "bytes": 166963,
+      "sha256": "58b2f21ca1ed2d51944d3ac8540afe1046644c225ecfb01190a183f0756056fa"
+    },
+    {
+      "path": "themes/emerald/routes/10-sku-contour.jpg",
+      "bytes": 161412,
+      "sha256": "2d306628c9ba883d85911fa933d349b70f8b1115e9e27917e49a192ed6511a94"
+    },
+    {
+      "path": "themes/emerald/routes/11-launches.jpg",
+      "bytes": 171046,
+      "sha256": "690fa779d6e249d350b2cb63d278aee2d13f74e207afd4c3a34479239c5202f5"
+    },
+    {
+      "path": "themes/emerald/routes/12-launch-control.jpg",
+      "bytes": 163094,
+      "sha256": "9c2c8a7033d8b871d2d364dc179ad62b0fe8d9eec222aac12aca85aa629bbacf"
+    },
+    {
+      "path": "themes/emerald/routes/13-iu-drr.jpg",
+      "bytes": 173864,
+      "sha256": "41d92c6cadeb056332cefb113be8e84fe0d4d7ec057ac589e44b952948850d69"
+    },
+    {
+      "path": "themes/emerald/routes/14-wb-rating.jpg",
+      "bytes": 181387,
+      "sha256": "37075a35c3713641f69d1728c9d51c009de391b04610b67704dd18fb0fc4d985"
+    },
+    {
+      "path": "themes/emerald/routes/15-product-leaderboard.jpg",
+      "bytes": 177334,
+      "sha256": "f7129f14aa30ed74aafed32922335d467ed97ca335e55a9b6df79c254a23f039"
+    },
+    {
+      "path": "themes/gray/overview.png",
+      "bytes": 1442357,
+      "sha256": "04dd9c164f0d0664e1308a9c3bb4887d73ff22648a6000c86bbac4ce5f5fdde8"
+    },
+    {
+      "path": "themes/gray/routes/01-dashboard.jpg",
+      "bytes": 172734,
+      "sha256": "f0be534854a7cf337918d4dcedd4cda9235a9c2cc418dc909adb44743f41522e"
+    },
+    {
+      "path": "themes/gray/routes/02-executive.jpg",
+      "bytes": 181605,
+      "sha256": "aa310edfa558e2a1b3ee61dc94ba21b8266e165469280611e802714ffdb2a3c7"
+    },
+    {
+      "path": "themes/gray/routes/03-control.jpg",
+      "bytes": 156627,
+      "sha256": "c2c3018a69df6074bbebf67649e69b4d7aa3a62ec4145d8f31aba54d43f8ae94"
+    },
+    {
+      "path": "themes/gray/routes/04-data-health.jpg",
+      "bytes": 144101,
+      "sha256": "c152bef763d079ee66c78f28a093826212f92dc5d8da239788ed809f6c07ee7f"
+    },
+    {
+      "path": "themes/gray/routes/05-sku-plan-fact.jpg",
+      "bytes": 173781,
+      "sha256": "8540a71bf6225c35219b6c03e1286bded25d4cc195d667eeaddb3c06386b1694"
+    },
+    {
+      "path": "themes/gray/routes/06-repricer.jpg",
+      "bytes": 174718,
+      "sha256": "c6c92b6fdadce4bee26c2d104f80c7f36e8055b00ac1f77d2adc5f3f675e343e"
+    },
+    {
+      "path": "themes/gray/routes/07-prices.jpg",
+      "bytes": 175885,
+      "sha256": "558fdc4ae6081e5ee54beb9f9c57008fab51fc2e637926ab081e6f0066e84b81"
+    },
+    {
+      "path": "themes/gray/routes/08-order.jpg",
+      "bytes": 172205,
+      "sha256": "13d31f7ce4277f62974b2382ebc22b915b4eb1de07023982721130c0d54f0a35"
+    },
+    {
+      "path": "themes/gray/routes/09-oos-control.jpg",
+      "bytes": 162520,
+      "sha256": "dd50b36c87f04032a9c338a0d727eb86a1975a2587e9458c221b82b44103863c"
+    },
+    {
+      "path": "themes/gray/routes/10-sku-contour.jpg",
+      "bytes": 157103,
+      "sha256": "50136a61e4a43b7398d823e2c13c391f8145b797469504ea12e7846865ca8b31"
+    },
+    {
+      "path": "themes/gray/routes/11-launches.jpg",
+      "bytes": 166572,
+      "sha256": "de77df995780407c15990ac5b330d363bc6ced9ba0c716e4986801dd5f3c74a8"
+    },
+    {
+      "path": "themes/gray/routes/12-launch-control.jpg",
+      "bytes": 158695,
+      "sha256": "bb7904ea1b34b9a8213fe2d31e7d7b068d67f11fc0400c05b779d77b0ab52408"
+    },
+    {
+      "path": "themes/gray/routes/13-iu-drr.jpg",
+      "bytes": 169538,
+      "sha256": "66e63b3d061eb8b59ddab807e0a384ba59d6a13374fe288d53d187fb7a345ca9"
+    },
+    {
+      "path": "themes/gray/routes/14-wb-rating.jpg",
+      "bytes": 175859,
+      "sha256": "46ed7fed426de75005048af5ce214ec413b7b8946109cefb4108dd70b2d1d0f5"
+    },
+    {
+      "path": "themes/gray/routes/15-product-leaderboard.jpg",
+      "bytes": 172525,
+      "sha256": "40dc4a0f67d9b8d9efd46d064bde643d3aad298ca160c6661e77e3f635774120"
+    },
+    {
+      "path": "themes/hellforge/overview.png",
+      "bytes": 1398574,
+      "sha256": "fd7d409b63758364657a99bbbdb59ab2bba864551dcb9f5a3f104ff52d494a4b"
+    },
+    {
+      "path": "themes/hellforge/routes/01-dashboard.jpg",
+      "bytes": 194646,
+      "sha256": "ac6be817d0aacbd4af11734160686500f5f12386fc7059e1f52a91bee1d26503"
+    },
+    {
+      "path": "themes/hellforge/routes/02-executive.jpg",
+      "bytes": 187464,
+      "sha256": "73c4c803d6a0b740228a7828c8a1549234cd37d230b762e5b91845b0a86a64af"
+    },
+    {
+      "path": "themes/hellforge/routes/03-control.jpg",
+      "bytes": 161313,
+      "sha256": "36a50a4099e92cccb0e971a69718369e82ddf0a35f2ce73297915c0da236ea7d"
+    },
+    {
+      "path": "themes/hellforge/routes/04-data-health.jpg",
+      "bytes": 148067,
+      "sha256": "cdff7f78beb7d22f8185df8b65f8fc5c566e93b2dbdf35267fc51096a9bfa9a1"
+    },
+    {
+      "path": "themes/hellforge/routes/05-sku-plan-fact.jpg",
+      "bytes": 180695,
+      "sha256": "282fbc59c54b2cd509bfc2b0fdbe7dedc62f8455f32c743125b16b81dfc3ee1e"
+    },
+    {
+      "path": "themes/hellforge/routes/06-repricer.jpg",
+      "bytes": 181231,
+      "sha256": "0959159ec36ed0809a95f6cdb143c4f45cf3bac45535e1e23abafd856b03c1e7"
+    },
+    {
+      "path": "themes/hellforge/routes/07-prices.jpg",
+      "bytes": 182112,
+      "sha256": "b8e4d6ecf691680b946a1222e5a198ae8f9f1d5d628732e010b09fd1bdaf5ebe"
+    },
+    {
+      "path": "themes/hellforge/routes/08-order.jpg",
+      "bytes": 178810,
+      "sha256": "9196b3513d7f6935c3ad6b0f90f16dec79c30475a8741281007940979c8b358e"
+    },
+    {
+      "path": "themes/hellforge/routes/09-oos-control.jpg",
+      "bytes": 167964,
+      "sha256": "64018d17f7ea340f975ef6810a850696ba0826de15158dacd5dd4d6020be23b1"
+    },
+    {
+      "path": "themes/hellforge/routes/10-sku-contour.jpg",
+      "bytes": 162126,
+      "sha256": "f61177bad38d8d9ca1b22ade6f6fcb676a8b05512fc468a93ae285acd857fab2"
+    },
+    {
+      "path": "themes/hellforge/routes/11-launches.jpg",
+      "bytes": 172214,
+      "sha256": "4c30d2ee719f9d9e1cc3156109b7a62a6e44be59f7fb12c740b17ca68f23654c"
+    },
+    {
+      "path": "themes/hellforge/routes/12-launch-control.jpg",
+      "bytes": 162753,
+      "sha256": "924741635ca30b40a54768f4e77d976308d05a58dfc4493532c8ce2dbc37246b"
+    },
+    {
+      "path": "themes/hellforge/routes/13-iu-drr.jpg",
+      "bytes": 175050,
+      "sha256": "92c16186801e75c4707f371218b86aa18b45ac4706d1ae4af3bc5f387117f22b"
+    },
+    {
+      "path": "themes/hellforge/routes/14-wb-rating.jpg",
+      "bytes": 183668,
+      "sha256": "5bd14270db03509a2c976fa43748495dba67d988bca59904f89e02ec9972c163"
+    },
+    {
+      "path": "themes/hellforge/routes/15-product-leaderboard.jpg",
+      "bytes": 178272,
+      "sha256": "b73c99378b28175a7caf475c7f8aec368396c2a8f39a83cf0b452bfb1a511df7"
+    },
+    {
+      "path": "themes/light/overview.png",
+      "bytes": 1470233,
+      "sha256": "3e092d6751aabba0586e646266032774e2695bd3f29544cb415240160638eade"
+    },
+    {
+      "path": "themes/light/routes/01-dashboard.jpg",
+      "bytes": 177836,
+      "sha256": "48544a52b5d9e16abc1eb1c9147ddfb187064113dfab43bdc95cb5ff709f6523"
+    },
+    {
+      "path": "themes/light/routes/02-executive.jpg",
+      "bytes": 177817,
+      "sha256": "17f545599f2bf4f4686f0e2588c83b20c4182b62b0dbaf886a855f4a57159c43"
+    },
+    {
+      "path": "themes/light/routes/03-control.jpg",
+      "bytes": 161499,
+      "sha256": "98a1e6db00505d70f079d5a397b198e00927cbfa35706b3ae271041ffbbf5bfb"
+    },
+    {
+      "path": "themes/light/routes/04-data-health.jpg",
+      "bytes": 150771,
+      "sha256": "339f0a76c6b601002167998bfc1f03a27da75a7621df164ace495d5d4ee2aa52"
+    },
+    {
+      "path": "themes/light/routes/05-sku-plan-fact.jpg",
+      "bytes": 177919,
+      "sha256": "f30264cea4a1637d87ccd112b3b70597df76b546c0788a39c10974aba4087096"
+    },
+    {
+      "path": "themes/light/routes/06-repricer.jpg",
+      "bytes": 177902,
+      "sha256": "15a921292b0cd9492decd63c3e8c7549085f0ae1da6be7db872973556d9765a3"
+    },
+    {
+      "path": "themes/light/routes/07-prices.jpg",
+      "bytes": 179288,
+      "sha256": "1f4c80b7e71da235637aa8b2b2110615bd4eb861ce30eae56a555f7ea4205c50"
+    },
+    {
+      "path": "themes/light/routes/08-order.jpg",
+      "bytes": 175015,
+      "sha256": "72b25685aef449ed02e515fb980a2d7c15ae6991f53a00f71ce2e92578937479"
+    },
+    {
+      "path": "themes/light/routes/09-oos-control.jpg",
+      "bytes": 167255,
+      "sha256": "28f13d70817016d1dec11fc42bba13e7fa50661657e1a219a7947f02eca87a78"
+    },
+    {
+      "path": "themes/light/routes/10-sku-contour.jpg",
+      "bytes": 159665,
+      "sha256": "bbe6b61f638e74ddbda085667c0a8bb3fa5d613c645332d8bf135189acd62879"
+    },
+    {
+      "path": "themes/light/routes/11-launches.jpg",
+      "bytes": 166553,
+      "sha256": "91fc1cd08553d05dfe825e2cee3912006841063bd3d92f28691bdb7875205c98"
+    },
+    {
+      "path": "themes/light/routes/12-launch-control.jpg",
+      "bytes": 161003,
+      "sha256": "51ac032b277f2f92468cb3b139ca6bab239cfeb1aa3ec62919394fd0ecec7b4d"
+    },
+    {
+      "path": "themes/light/routes/13-iu-drr.jpg",
+      "bytes": 174943,
+      "sha256": "e7c6149e263fb61c58ac21a29ad8d33323484659b60b4b45ef6c704a6274e877"
+    },
+    {
+      "path": "themes/light/routes/14-wb-rating.jpg",
+      "bytes": 176729,
+      "sha256": "7fe084f6ca82cdf04bb9637d02d29b33dcf94ced8d3c5aea48a2f4ad93e395cb"
+    },
+    {
+      "path": "themes/light/routes/15-product-leaderboard.jpg",
+      "bytes": 174041,
+      "sha256": "b3141197371fd39c654395795ce7ad9808849c563495025a4c977e3db44e385a"
+    },
+    {
+      "path": "themes/redalert/overview.png",
+      "bytes": 1875883,
+      "sha256": "81a55a1ae745768a43291d63e1928b7e804bfdaa6c8d4ddae30443db7b118fd0"
+    },
+    {
+      "path": "themes/redalert/routes/01-dashboard.jpg",
+      "bytes": 212998,
+      "sha256": "6275d3419b4b33b6551d39e2e18243ba292cb7e8fc570763854fddd8cdacdb1a"
+    },
+    {
+      "path": "themes/redalert/routes/02-executive.jpg",
+      "bytes": 200871,
+      "sha256": "8491456fcca04ac815d7a967463fa4f6f26b1f89ae2c93f7feace637333e34d2"
+    },
+    {
+      "path": "themes/redalert/routes/03-control.jpg",
+      "bytes": 187222,
+      "sha256": "588c49f7affbda1f9193112ccc45e631caed91b23f9c953a242e2459ddd9cda6"
+    },
+    {
+      "path": "themes/redalert/routes/04-data-health.jpg",
+      "bytes": 181261,
+      "sha256": "7cd3106f8103dd5f08a8d8dc0cf05125a72a6d01f3f9313ffb71aea251b365dc"
+    },
+    {
+      "path": "themes/redalert/routes/05-sku-plan-fact.jpg",
+      "bytes": 197781,
+      "sha256": "77e7260df1e9f4c1affc112f361ed721ce487820c4caea8c562d607c20ed4c09"
+    },
+    {
+      "path": "themes/redalert/routes/06-repricer.jpg",
+      "bytes": 194324,
+      "sha256": "c3dade34dbf098ef703c845b31b3683167d51dc66e3313fdd5dfc49622b52893"
+    },
+    {
+      "path": "themes/redalert/routes/07-prices.jpg",
+      "bytes": 198610,
+      "sha256": "30c343f3549cfe3c71c03bed7ee3222f6402a1c564a696870d9088affec5b916"
+    },
+    {
+      "path": "themes/redalert/routes/08-order.jpg",
+      "bytes": 193173,
+      "sha256": "57d69801761d1d058e504deaaa778b54a93df3aafedd5b5819c83fb238abd41e"
+    },
+    {
+      "path": "themes/redalert/routes/09-oos-control.jpg",
+      "bytes": 185484,
+      "sha256": "f1c0f9c55fbbf8d1b36b8d991816d7e7dbf9ccaa841a65b58fd00197c696864d"
+    },
+    {
+      "path": "themes/redalert/routes/10-sku-contour.jpg",
+      "bytes": 177542,
+      "sha256": "b302e5be04691f5f338dbeff3aa5e99cbc7090e66e546467cd2b8d66abc91092"
+    },
+    {
+      "path": "themes/redalert/routes/11-launches.jpg",
+      "bytes": 190642,
+      "sha256": "41c56eb738db6cc2809a5af1965af32f7011edf5de67753574bbd2ec513c8473"
+    },
+    {
+      "path": "themes/redalert/routes/12-launch-control.jpg",
+      "bytes": 184097,
+      "sha256": "6f59d9e7f249e0a48fbda205b8e29b97240a22ad497d3f4d8dc3672732ad4a71"
+    },
+    {
+      "path": "themes/redalert/routes/13-iu-drr.jpg",
+      "bytes": 198354,
+      "sha256": "078080f19deb1917e26a716edd2b5760b4e5afb0fdf3c98573708ba1eb0a833c"
+    },
+    {
+      "path": "themes/redalert/routes/14-wb-rating.jpg",
+      "bytes": 196657,
+      "sha256": "de5fe021fbab5136d840550ff30d989004113dae879a098e5edf9dcee7c47a91"
+    },
+    {
+      "path": "themes/redalert/routes/15-product-leaderboard.jpg",
+      "bytes": 190390,
+      "sha256": "d426989a0efa86d06c9df5c74f2a86b34bd680037d32a384e5f245917d0a4b71"
+    },
+    {
+      "path": "themes/terminal/overview.png",
+      "bytes": 1625715,
+      "sha256": "3c9a05a335a0588ca10447a92030c04014fb8f46bb841700228cafb46aba3d93"
+    },
+    {
+      "path": "themes/terminal/routes/01-dashboard.jpg",
+      "bytes": 252265,
+      "sha256": "a2ee342ad919c6a0b5598338d0767af1c9400505d64bc35f585b4c860392b0b9"
+    },
+    {
+      "path": "themes/terminal/routes/02-executive.jpg",
+      "bytes": 245291,
+      "sha256": "bb188bf1a29a2f07863b25a8dc8d303b11cc3281ab34d0d5e680cde33cc905bf"
+    },
+    {
+      "path": "themes/terminal/routes/03-control.jpg",
+      "bytes": 220076,
+      "sha256": "72f42991486a5b6d99ce8c247f4348132113ef6f7877f741003cb6224d192e24"
+    },
+    {
+      "path": "themes/terminal/routes/04-data-health.jpg",
+      "bytes": 208390,
+      "sha256": "9810d04a0fb897b7561f82c8dd1e36aec5bf14c5700e2409f8d11a8f2da26034"
+    },
+    {
+      "path": "themes/terminal/routes/05-sku-plan-fact.jpg",
+      "bytes": 238819,
+      "sha256": "28580e8dc3a82d76b44004b3f44fdb66161123208ea1f7a321a85cd7f99bab43"
+    },
+    {
+      "path": "themes/terminal/routes/06-repricer.jpg",
+      "bytes": 238106,
+      "sha256": "e8e649b5b75a6c0e2f3d520b5ad8a6640530a25903d857e54899f455f46e9792"
+    },
+    {
+      "path": "themes/terminal/routes/07-prices.jpg",
+      "bytes": 237423,
+      "sha256": "60b3fa0d9e45364ce1296440e68c65bb711a3835841b5a1c242f3ce1da914ee0"
+    },
+    {
+      "path": "themes/terminal/routes/08-order.jpg",
+      "bytes": 235724,
+      "sha256": "0e8e79de2acf42dd2e77046e2604caaa47b81c030bf8ed987c32c9239f0cd55d"
+    },
+    {
+      "path": "themes/terminal/routes/09-oos-control.jpg",
+      "bytes": 226115,
+      "sha256": "f111f10a8f68e91850e48a6205b88add5daea511a3d728c41c84230a2705307c"
+    },
+    {
+      "path": "themes/terminal/routes/10-sku-contour.jpg",
+      "bytes": 221352,
+      "sha256": "b9be29c54475ac22268f3261de8292a14ca84db24803b60ea94d9c5d27ad0752"
+    },
+    {
+      "path": "themes/terminal/routes/11-launches.jpg",
+      "bytes": 230906,
+      "sha256": "a86110b6cdbac6cecf25f9c4383ad61cb3e6c931e4c24aa7646ef36ea29c50ec"
+    },
+    {
+      "path": "themes/terminal/routes/12-launch-control.jpg",
+      "bytes": 222016,
+      "sha256": "73cf1c4b43ff4887f6fa5763055e12afa176c96f17d745e37a69a32adeecd889"
+    },
+    {
+      "path": "themes/terminal/routes/13-iu-drr.jpg",
+      "bytes": 236306,
+      "sha256": "11f97ad1efacff5c70a792b04a62d2497ba059277434c46c44c1ebb2a6c86e74"
+    },
+    {
+      "path": "themes/terminal/routes/14-wb-rating.jpg",
+      "bytes": 239671,
+      "sha256": "ebcace28f5c1fe41ac04105f18128c57e4452901c1ab73d1dee2f47818b32aef"
+    },
+    {
+      "path": "themes/terminal/routes/15-product-leaderboard.jpg",
+      "bytes": 233553,
+      "sha256": "dfbd22c678461f3325a5d5e7312c4a0019adbe0ee77aff4d12d346174c9cef76"
+    }
+  ]
+}

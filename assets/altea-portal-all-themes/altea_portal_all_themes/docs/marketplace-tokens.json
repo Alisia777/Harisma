@@ -1,0 +1,58 @@
+{
+  "all": {
+    "label": "Все",
+    "long": "Все площадки",
+    "color": "#D8C6A4",
+    "rgb": "216,198,164",
+    "textDark": "#251B0C",
+    "abbr": "ALL"
+  },
+  "wb": {
+    "label": "WB",
+    "long": "Wildberries",
+    "color": "#A855F7",
+    "rgb": "168,85,247",
+    "textDark": "#2B0B43",
+    "abbr": "WB"
+  },
+  "ozon": {
+    "label": "Ozon",
+    "long": "Ozon",
+    "color": "#4F86FF",
+    "rgb": "79,134,255",
+    "textDark": "#061B4A",
+    "abbr": "OZ"
+  },
+  "ym": {
+    "label": "Я.Маркет",
+    "long": "Яндекс Маркет",
+    "color": "#F2C84B",
+    "rgb": "242,200,75",
+    "textDark": "#3F3102",
+    "abbr": "YM"
+  },
+  "goldapple": {
+    "label": "ЗЯ",
+    "long": "Золотое Яблоко",
+    "color": "#72C86A",
+    "rgb": "114,200,106",
+    "textDark": "#0B3210",
+    "abbr": "ЗЯ"
+  },
+  "letu": {
+    "label": "Л’Этуаль",
+    "long": "Л’Этуаль",
+    "color": "#D96AA9",
+    "rgb": "217,106,169",
+    "textDark": "#41102D",
+    "abbr": "ЛЭ"
+  },
+  "magnit": {
+    "label": "Магнит",
+    "long": "Магнит Маркет",
+    "color": "#E85B55",
+    "rgb": "232,91,85",
+    "textDark": "#470B09",
+    "abbr": "ММ"
+  }
+}

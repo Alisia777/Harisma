@@ -36,6 +36,11 @@ function writePhase3Reports(dir) {
   write(dir, 'portal_dashboard_reconciliation.json', { schema: 'portal-dashboard-reconciliation-v1', ...base });
   write(dir, 'portal_plan_reconciliation.json', { schema: 'portal-plan-reconciliation-v1', ...base });
   write(dir, 'portal_indicator_audit.json', { schema: 'portal-indicator-audit-v1', ...base, rows: [] });
+  write(dir, 'portal_upload_apply_e2e.json', { schema: 'portal-upload-apply-e2e-v1', ...base });
+  write(dir, 'portal_minmax_upload_reconciliation.json', { schema: 'portal-minmax-upload-reconciliation-v1', ...base });
+  write(dir, 'portal_cost_upload_reconciliation.json', { schema: 'portal-cost-upload-reconciliation-v1', ...base });
+  write(dir, 'portal_runtime_wiring_reconciliation.json', { schema: 'portal-runtime-wiring-reconciliation-v1', ...base, artifacts: [] });
+  write(dir, 'portal_feature_readiness.json', { schema: 'portal-feature-readiness-v1', ...base, features: { repricer: { status: 'ok' } } });
 }
 
 function buildFixture(dir) {

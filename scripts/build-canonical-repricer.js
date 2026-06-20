@@ -47,6 +47,7 @@ function resolveOptions(args = {}) {
     outputDir: path.resolve(args['output-dir'] || path.join(root, '.portal-truth-output')),
     policyPath: path.resolve(args['policy'] || path.join(root, 'data', 'portal_indicator_policy.json')),
     metricRegistryPath: path.resolve(args['metric-registry'] || path.join(root, 'data', 'portal_metric_registry.json')),
+    featurePolicyPath: path.resolve(args['feature-policy'] || path.join(root, 'data', 'portal_feature_policy.json')),
     noFail: Boolean(args['no-fail']),
     noWrite: Boolean(args['no-write'])
   };
@@ -181,6 +182,87 @@ function approvalFor(map, articleKey, platform) {
   return map.get(`${platform}|${key}`) || map.get(`all|${key}`) || null;
 }
 
+function registryRows(payload = {}) {
+  if (Array.isArray(payload?.rows)) return payload.rows;
+  if (Array.isArray(payload?.records)) return payload.records;
+  if (Array.isArray(payload)) return payload;
+  return [];
+}
+
+function serverApprovedRegistryRecord(row = {}) {
+  const status = String(row.approvalStatus || row.status || '').trim().toLowerCase();
+  const sourceStore = String(row.sourceStore || row.source_store || row.source || '').trim().toLowerCase();
+  const metadataComplete = Boolean(
+    sourceStore
+    && sourceStore !== 'local_storage_draft_only'
+    && String(row.id || '').trim()
+    && String(row.batchId || row.batch_id || '').trim()
+    && String(row.author || row.createdBy || row.created_by || '').trim()
+    && String(row.role || row.authorRole || row.author_role || '').trim()
+    && String(row.reason || row.note || '').trim()
+    && String(row.createdAt || row.created_at || '').trim()
+    && String(row.approvedBy || row.approved_by || '').trim()
+    && String(row.approvedAt || row.approved_at || '').trim()
+    && String(row.sourceFile || row.source_file || '').trim()
+    && String(row.sourceChecksum || row.source_checksum || '').trim()
+  );
+  return metadataComplete && ['approved', 'active', 'verified'].includes(status);
+}
+
+function latestEffectiveRecord(rows = [], articleKey = '', platform = '') {
+  const normalized = normalizeKey(articleKey || '');
+  const platformKey = String(platform || '').trim().toLowerCase();
+  return rows
+    .filter((row) => normalizeKey(row?.articleKey || row?.article || row?.sku || '') === normalized)
+    .filter((row) => !platformKey || !row?.platform || String(row.platform).trim().toLowerCase() === platformKey)
+    .filter(serverApprovedRegistryRecord)
+    .sort((left, right) => String(right.effectiveFrom || right.createdAt || '').localeCompare(String(left.effectiveFrom || left.createdAt || '')))
+    [0] || null;
+}
+
+function minMaxRegistry(inputDir) {
+  return registryRows(readJsonFile(file(inputDir, 'repricer_minmax_registry.json'), { rows: [] }));
+}
+
+function costRegistry(inputDir) {
+  return registryRows(readJsonFile(file(inputDir, 'repricer_cost_registry.json'), { rows: [] }));
+}
+
+function featureReadiness(rows = [], featurePolicy = {}) {
+  const eligibleRows = rows.length;
+  const publishableRows = rows.filter((row) => row?.recommendation?.status === 'ready').length;
+  const blockedRows = Math.max(eligibleRows - publishableRows, 0);
+  const policy = featurePolicy?.features?.repricer || {};
+  const requiredCoverage = Number.isFinite(Number(policy.required_publishable_coverage))
+    ? Number(policy.required_publishable_coverage)
+    : 0.01;
+  const publishableCoverage = eligibleRows ? Number((publishableRows / eligibleRows).toFixed(6)) : 0;
+  const maintenance = policy.maintenance_mode === true && Boolean(String(policy.maintenance_reason || '').trim());
+  let featureStatus = 'ok';
+  const warnings = [];
+  if (maintenance) {
+    featureStatus = 'maintenance';
+    warnings.push(`repricer maintenance mode: ${policy.maintenance_reason}`);
+  } else if (eligibleRows > 0 && publishableRows === 0) {
+    featureStatus = 'blocked';
+    warnings.push(`repricer feature blocked: 0/${eligibleRows} publishable recommendations`);
+  } else if (eligibleRows > 0 && publishableCoverage + 1e-9 < requiredCoverage) {
+    featureStatus = 'degraded';
+    warnings.push(`repricer feature degraded: ${publishableRows}/${eligibleRows} publishable recommendations below required coverage ${requiredCoverage}`);
+  }
+  return {
+    feature_status: featureStatus,
+    eligible_rows: eligibleRows,
+    publishable_rows: publishableRows,
+    blocked_rows: blockedRows,
+    publishable_coverage: publishableCoverage,
+    required_publishable_coverage: requiredCoverage,
+    feature_publish_allowed: featureStatus === 'ok',
+    maintenance_mode: maintenance,
+    warnings
+  };
+}
+
 function normalizePct(value) {
   const parsed = firstNumber(value);
   if (parsed === null) return null;
@@ -206,10 +288,10 @@ function resolveCurrentPrice(row = {}) {
   };
 }
 
-function resolveEconomics(sourceRow = {}, supportRow = {}) {
+function resolveEconomics(sourceRow = {}, supportRow = {}, costRecord = null) {
   sourceRow = sourceRow || {};
   supportRow = supportRow || {};
-  const cost = firstPositive(sourceRow.costRub, sourceRow.cost, sourceRow.costPrice);
+  const cost = firstPositive(costRecord?.cost, sourceRow.costRub, sourceRow.cost, sourceRow.costPrice);
   const commissionPct = normalizePct(sourceRow.commissionPct ?? sourceRow.commission_pct ?? supportRow.commissionPct);
   const logisticsPerUnit = firstNumber(sourceRow.logisticsPerUnit, sourceRow.logisticsRub, supportRow.logisticsPerUnit);
   const taxPct = normalizePct(sourceRow.taxPct ?? sourceRow.tax_pct ?? supportRow.taxPct);
@@ -221,7 +303,13 @@ function resolveEconomics(sourceRow = {}, supportRow = {}) {
     tax_pct: taxPct,
     complete,
     sources: {
-      cost: sourceRow.costSource || (cost !== null ? 'smart_price_workbench' : ''),
+      cost: costRecord ? {
+        sourceStore: costRecord.sourceStore || 'server_upload',
+        sourceFile: costRecord.sourceFile || '',
+        sourceChecksum: costRecord.sourceChecksum || '',
+        batchId: costRecord.batchId || '',
+        id: costRecord.id || ''
+      } : (sourceRow.costSource || (cost !== null ? 'smart_price_workbench' : '')),
       commission: commissionPct !== null ? 'smart_price_workbench' : '',
       logistics: logisticsPerUnit !== null ? 'smart_price_workbench' : '',
       tax: taxPct !== null ? 'smart_price_workbench' : ''
@@ -229,11 +317,12 @@ function resolveEconomics(sourceRow = {}, supportRow = {}) {
   };
 }
 
-function resolvePolicy(sourceRow = {}, supportRow = {}, policyPayload = {}) {
+function resolvePolicy(sourceRow = {}, supportRow = {}, policyPayload = {}, minMaxRecord = null) {
   sourceRow = sourceRow || {};
   supportRow = supportRow || {};
   const turnoverPolicy = policyPayload?.policies?.turnover_default || {};
   const floor = firstPositive(
+    minMaxRecord?.minPrice,
     sourceRow.manualMinPrice,
     supportRow.manualMinPrice,
     sourceRow.minPrice,
@@ -244,6 +333,7 @@ function resolvePolicy(sourceRow = {}, supportRow = {}, policyPayload = {}) {
     supportRow.workingZoneFrom
   );
   const cap = firstPositive(
+    minMaxRecord?.maxPrice,
     sourceRow.manualMaxPrice,
     supportRow.manualMaxPrice,
     sourceRow.workingZoneTo,
@@ -260,8 +350,20 @@ function resolvePolicy(sourceRow = {}, supportRow = {}, policyPayload = {}) {
     target_turnover_days: Number(turnoverPolicy.target_days || 30),
     version: policyPayload?.version || '',
     sources: {
-      floor: firstPositive(sourceRow.manualMinPrice, supportRow.manualMinPrice) !== null ? 'approved_min_max_import' : 'price_policy_json',
-      cap: firstPositive(sourceRow.manualMaxPrice, supportRow.manualMaxPrice) !== null ? 'approved_min_max_import' : 'price_policy_json',
+      floor: minMaxRecord ? {
+        sourceStore: minMaxRecord.sourceStore || 'server_upload',
+        sourceFile: minMaxRecord.sourceFile || '',
+        sourceChecksum: minMaxRecord.sourceChecksum || '',
+        batchId: minMaxRecord.batchId || '',
+        id: minMaxRecord.id || ''
+      } : (firstPositive(sourceRow.manualMinPrice, supportRow.manualMinPrice) !== null ? 'approved_min_max_import' : 'price_policy_json'),
+      cap: minMaxRecord ? {
+        sourceStore: minMaxRecord.sourceStore || 'server_upload',
+        sourceFile: minMaxRecord.sourceFile || '',
+        sourceChecksum: minMaxRecord.sourceChecksum || '',
+        batchId: minMaxRecord.batchId || '',
+        id: minMaxRecord.id || ''
+      } : (firstPositive(sourceRow.manualMaxPrice, supportRow.manualMaxPrice) !== null ? 'approved_min_max_import' : 'price_policy_json'),
       margin: targetMargin !== null ? 'price_policy_json' : ''
     }
   };
@@ -320,7 +422,9 @@ function buildCanonicalSide({
   snapshotId,
   policyPayload,
   metricRegistry,
-  approval
+  approval,
+  minMaxRecord,
+  costRecord
 }) {
   const articleKey = String(sourceRow?.articleKey || sourceRow?.article || '').trim();
   const normalizedArticle = normalizeKey(articleKey);
@@ -330,8 +434,8 @@ function buildCanonicalSide({
   const stockTrusted = Boolean(stockSnapshotAvailable && procurement);
   const stock = stockTrusted ? firstNumber(procurement.inStock, 0) : null;
   const inbound = stockTrusted ? (firstNumber(procurement.inTransit, 0) || 0) + (firstNumber(procurement.inRequest, 0) || 0) : null;
-  const economics = resolveEconomics(sourceRow, supportRow);
-  const policy = resolvePolicy(sourceRow, supportRow, policyPayload);
+  const economics = resolveEconomics(sourceRow, supportRow, costRecord);
+  const policy = resolvePolicy(sourceRow, supportRow, policyPayload, minMaxRecord);
   const reasonCodes = [];
   const price = current.value;
   if (price === null) reasonCodes.push('missing_current_seller_price');
@@ -450,7 +554,10 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     'order_procurement_ym.json',
     'skus.json',
     'portal_metric_registry.json',
-    'portal_indicator_policy.json'
+    'portal_indicator_policy.json',
+    'portal_feature_policy.json',
+    'repricer_minmax_registry.json',
+    'repricer_cost_registry.json'
   ];
   const workbench = safeReadJson(file(options.inputDir, 'smart_price_workbench.json'), { generatedAt: '', platforms: {} });
   const overlay = safeReadJson(file(options.inputDir, 'smart_price_overlay.json'), { generatedAt: '', platforms: {} });
@@ -463,6 +570,9 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
   };
   const policyPayload = readPolicyJson(options.policyPath, {});
   const metricRegistry = readJsonFile(options.metricRegistryPath, {});
+  const featurePolicy = readJsonFile(options.featurePolicyPath, {});
+  const minMaxRows = minMaxRegistry(options.inputDir);
+  const costRows = costRegistry(options.inputDir);
   const approvals = approvalMap(options.inputDir);
   const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, live || {});
   const supportMaps = Object.fromEntries(PLATFORM_KEYS.map((platform) => [platform, buildMap(platformRows(support, platform))]));
@@ -499,6 +609,8 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
       if (!collisionKeys.has(normalizedArticle)) collisionKeys.set(normalizedArticle, new Set());
       collisionKeys.get(normalizedArticle).add(articleKey);
       const supportRow = supportMaps[platform]?.get(normalizedArticle) || null;
+      const minMaxRecord = latestEffectiveRecord(minMaxRows, articleKey, platform);
+      const costRecord = latestEffectiveRecord(costRows, articleKey, '');
       rows.push(buildCanonicalSide({
         sourceRow,
         supportRow,
@@ -507,7 +619,9 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
         snapshotId,
         policyPayload,
         metricRegistry,
-        approval: approvalFor(approvals, articleKey, platform)
+        approval: approvalFor(approvals, articleKey, platform),
+        minMaxRecord,
+        costRecord
       }));
     });
   });
@@ -523,6 +637,21 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
   if (normalizedCollisions.length) blockingReasons.push(`normalized article collisions: ${normalizedCollisions.length}`);
   const publishableRows = rows.filter((row) => row.recommendation.status === 'ready');
   const blockedRows = rows.length - publishableRows.length;
+  const readiness = featureReadiness(rows, featurePolicy);
+  const summary = {
+    rows: rows.length,
+    eligible_rows: readiness.eligible_rows,
+    publishable_rows: readiness.publishable_rows,
+    blocked_rows: readiness.blocked_rows,
+    publishable_coverage: readiness.publishable_coverage,
+    required_publishable_coverage: readiness.required_publishable_coverage,
+    feature_status: readiness.feature_status,
+    publishable_recommendations: publishableRows.length,
+    blocked_recommendations: blockedRows,
+    duplicate_platform_keys: duplicatePlatformKeys.length,
+    normalized_article_collisions: normalizedCollisions.length,
+    deduped_exact_duplicates: dedupedExactDuplicates.length
+  };
   const payload = {
     schema: 'canonical-repricer-v1',
     generatedAt,
@@ -530,27 +659,26 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     source_checksums: sources,
     policy_version: policyPayload?.version || '',
     metric_registry_version: metricRegistry?.version || '',
-    summary: {
-      rows: rows.length,
-      publishable_recommendations: publishableRows.length,
-      blocked_recommendations: blockedRows,
-      duplicate_platform_keys: duplicatePlatformKeys.length,
-      normalized_article_collisions: normalizedCollisions.length,
-      deduped_exact_duplicates: dedupedExactDuplicates.length
-    },
+    feature_policy: featurePolicy,
+    feature_status: readiness.feature_status,
+    summary,
     rows
   };
   const businessFingerprint = crypto.createHash('sha256').update(stableStringify(rows)).digest('hex');
+  const reportStatus = blockingReasons.length ? 'blocked' : (readiness.feature_status === 'ok' ? 'ok' : 'warning');
   const reconciliation = {
     schema: 'portal-repricing-reconciliation-v1',
     generatedAt,
     snapshot_id: snapshotId,
-    status: blockingReasons.length ? 'blocked' : 'ok',
+    status: reportStatus,
     publish_allowed: blockingReasons.length === 0,
+    feature_publish_allowed: readiness.feature_publish_allowed,
+    feature_status: readiness.feature_status,
     business_fingerprint: businessFingerprint,
-    summary: payload.summary,
+    summary,
     blockingReasons,
     warnings: [
+      ...readiness.warnings,
       ...(blockedRows ? [`${blockedRows} repricer rows are present but not publishable because required facts/economics/policy are incomplete`] : []),
       ...(dedupedExactDuplicates.length ? [`${dedupedExactDuplicates.length} exact duplicate source rows were deterministically deduped`] : [])
     ],
@@ -567,6 +695,20 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
         id: 'repricer:no-normalized-article-collisions',
         status: normalizedCollisions.length ? 'blocked' : 'ok',
         blockingReasons: normalizedCollisions.length ? ['normalized article collisions'] : []
+      },
+      {
+        id: 'repricer:feature-readiness',
+        status: readiness.feature_status === 'ok' ? 'ok' : 'warning',
+        blockingReasons: [],
+        warnings: readiness.warnings,
+        details: {
+          eligible_rows: readiness.eligible_rows,
+          publishable_rows: readiness.publishable_rows,
+          blocked_rows: readiness.blocked_rows,
+          publishable_coverage: readiness.publishable_coverage,
+          required_publishable_coverage: readiness.required_publishable_coverage,
+          feature_status: readiness.feature_status
+        }
       },
       {
         id: 'repricer:local-storage-not-business-truth',
@@ -588,7 +730,9 @@ function main() {
   const options = resolveOptions(parseArgs(process.argv));
   try {
     const { payload, reconciliation } = buildCanonicalRepricer(options);
-    const prefix = reconciliation.publish_allowed ? '[canonical-repricer] OK' : '[canonical-repricer] BLOCKED';
+    const prefix = reconciliation.status === 'ok'
+      ? '[canonical-repricer] OK'
+      : (reconciliation.publish_allowed ? '[canonical-repricer] WARNING' : '[canonical-repricer] BLOCKED');
     console.log(`${prefix}: ${payload.summary.rows} rows, ${payload.summary.publishable_recommendations} publishable, ${payload.summary.blocked_recommendations} blocked recommendations`);
     if (!reconciliation.publish_allowed && !options.noFail) process.exitCode = 1;
   } catch (error) {
@@ -605,5 +749,6 @@ module.exports = {
   parseArgs,
   stableStringify,
   approvedRecord,
-  marginAtPrice
+  marginAtPrice,
+  featureReadiness
 };

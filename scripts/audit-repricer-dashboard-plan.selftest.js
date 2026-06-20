@@ -227,10 +227,25 @@ function runPayloadSabotage(name, mutate) {
   return { name, blocked, reports };
 }
 
+function runZeroPublishableFeatureTest() {
+  const payloads = baselinePayloads();
+  payloads.canonicalRepricer.rows.forEach((row) => {
+    row.recommendation.price = null;
+    row.recommendation.margin_pct = null;
+    row.recommendation.status = 'blocked';
+    row.recommendation.reason_codes = ['economics_incomplete'];
+    row.data_status = 'blocked';
+  });
+  const reports = auditPayloads(payloads, path.join(process.cwd(), 'data'));
+  const blocked = reports.repricing?.feature_status === 'blocked' && reports.repricing?.status !== 'ok';
+  return { name: 'zero publishable repricer feature', blocked, reports };
+}
+
 function main() {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'portal-phase3-selftest-'));
   const cases = [
     { name: 'broken #REF workbook formula', run: () => runBrokenWorkbookTest(tmpDir) },
+    { name: 'zero publishable repricer feature', run: runZeroPublishableFeatureTest },
     { name: 'missing cost', mutate: (p) => { p.canonicalRepricer.rows[0].economics.cost = null; p.canonicalRepricer.rows[0].economics.complete = false; } },
     { name: 'missing commission', mutate: (p) => { p.canonicalRepricer.rows[0].economics.commission_pct = null; p.canonicalRepricer.rows[0].economics.complete = false; } },
     { name: 'price below floor', mutate: (p) => { p.canonicalRepricer.rows[0].recommendation.price = 70; } },

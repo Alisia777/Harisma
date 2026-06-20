@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { marginAtPrice, stableStringify } = require('./build-canonical-repricer');
+const { featureReadiness, marginAtPrice, stableStringify } = require('./build-canonical-repricer');
 
 const REPORTS = {
   repricing: 'portal_repricing_reconciliation.json',
@@ -95,6 +95,7 @@ function addCheck(checks, check) {
 function reportBase(schema, generatedAt, snapshotId, checks, extra = {}) {
   const blockingReasons = checks.flatMap((check) => check.blockingReasons || []);
   const warnings = checks.flatMap((check) => check.warnings || []);
+  const { summary: extraSummary = {}, ...rest } = extra;
   return {
     schema,
     generatedAt,
@@ -106,10 +107,11 @@ function reportBase(schema, generatedAt, snapshotId, checks, extra = {}) {
     summary: {
       checks: checks.length,
       blockingChecks: checks.filter((check) => check.status === 'blocked').length,
-      warningChecks: checks.filter((check) => check.status === 'warning').length
+      warningChecks: checks.filter((check) => check.status === 'warning').length,
+      ...extraSummary
     },
     checks,
-    ...extra
+    ...rest
   };
 }
 
@@ -201,6 +203,19 @@ function auditRepricer(canonical = {}, baseDataDir = process.cwd(), cutoffDate =
     blockingReasons: localOverrideViolations.length ? [`${localOverrideViolations.length} rows used localStorage override as final truth`] : [],
     samples: localOverrideViolations.slice(0, 25)
   });
+  const readiness = featureReadiness(rows, canonical.feature_policy || {});
+  addCheck(checks, {
+    id: 'repricer:feature-readiness',
+    warnings: readiness.warnings,
+    details: {
+      eligible_rows: readiness.eligible_rows,
+      publishable_rows: readiness.publishable_rows,
+      blocked_rows: readiness.blocked_rows,
+      publishable_coverage: readiness.publishable_coverage,
+      required_publishable_coverage: readiness.required_publishable_coverage,
+      feature_status: readiness.feature_status
+    }
+  });
   const guardFile = path.join(baseDataDir, '..', 'portal-repricer-price-guard-hotfix.js');
   const appCore08 = path.join(baseDataDir, '..', 'app-core-08.js');
   const guardText = fs.existsSync(guardFile) ? fs.readFileSync(guardFile, 'utf8') : '';
@@ -221,7 +236,18 @@ function auditRepricer(canonical = {}, baseDataDir = process.cwd(), cutoffDate =
   });
   return reportBase('portal-repricing-reconciliation-v1', canonical.generatedAt || '', canonical.snapshot_id || '', checks, {
     business_fingerprint: crypto.createHash('sha256').update(stableStringify(rows)).digest('hex'),
-    rowCount: rows.length
+    rowCount: rows.length,
+    feature_status: readiness.feature_status,
+    feature_publish_allowed: readiness.feature_publish_allowed,
+    summary: {
+      rowCount: rows.length,
+      eligible_rows: readiness.eligible_rows,
+      publishable_rows: readiness.publishable_rows,
+      blocked_rows: readiness.blocked_rows,
+      publishable_coverage: readiness.publishable_coverage,
+      required_publishable_coverage: readiness.required_publishable_coverage,
+      feature_status: readiness.feature_status
+    }
   });
 }
 

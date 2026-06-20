@@ -29,6 +29,10 @@
   meetings: [],
   documents: { groups: [] },
   repricer: { generatedAt: '', summary: {}, rows: [] },
+  canonicalRepricer: { schema: 'canonical-repricer-v1', generatedAt: '', summary: {}, rows: [] },
+  portalDashboardMetrics: { schema: 'portal-dashboard-metrics-v1', generatedAt: '', metrics: [] },
+  portalRuntimeWiring: { schema: 'portal-runtime-wiring-reconciliation-v1', status: '', artifacts: [] },
+  portalFeatureReadiness: { schema: 'portal-feature-readiness-v1', status: '', features: {} },
   repricerLive: { generatedAt: '', rows: [] },
   storage: {
     comments: [],
@@ -495,6 +499,10 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/smart_price_workbench.json': 'smart_price_workbench',
   'data/smart_price_overlay.json': 'smart_price_overlay',
   'data/repricer.json': 'repricer',
+  'data/canonical_repricer.json': 'canonical_repricer',
+  'data/portal_dashboard_metrics.json': 'portal_dashboard_metrics',
+  'data/portal_runtime_wiring_reconciliation.json': 'portal_runtime_wiring_reconciliation',
+  'data/portal_feature_readiness.json': 'portal_feature_readiness',
   'data/price_workbench_support.json': 'price_workbench_support',
   'data/price_workbench_support.dashboard-compact.json': 'price_workbench_support',
   'data/product_leaderboard.json': 'product_leaderboard',
@@ -3104,8 +3112,12 @@ const LAZY_DATA_LOADERS = {
     state.documents = documents || { groups: [] };
   },
   repricer: async () => {
-    const [repricer, smartPriceWorkbench, smartPriceWorkbenchLive, smartPriceOverlay, repricerLive, prices, priceWorkbenchSupport, orderProcurementWb, orderProcurementOzon, warehouseStockOverlay] = await Promise.all([
+    const [repricer, canonicalRepricer, portalDashboardMetrics, portalRuntimeWiring, portalFeatureReadiness, smartPriceWorkbench, smartPriceWorkbenchLive, smartPriceOverlay, repricerLive, prices, priceWorkbenchSupport, orderProcurementWb, orderProcurementOzon, warehouseStockOverlay] = await Promise.all([
       loadJsonOrFallback('data/repricer.json', { generatedAt: '', summary: {}, rows: [] }, 'Репрайсер'),
+      loadJsonOrFallback('data/canonical_repricer.json', { schema: 'canonical-repricer-v1', generatedAt: '', summary: {}, rows: [] }, 'Канонический репрайсер'),
+      loadJsonOrFallback('data/portal_dashboard_metrics.json', { schema: 'portal-dashboard-metrics-v1', generatedAt: '', metrics: [] }, 'Метрики портала'),
+      loadJsonOrFallback('data/portal_runtime_wiring_reconciliation.json', { schema: 'portal-runtime-wiring-reconciliation-v1', status: '', artifacts: [] }, 'Runtime wiring'),
+      loadJsonOrFallback('data/portal_feature_readiness.json', { schema: 'portal-feature-readiness-v1', status: '', features: {} }, 'Готовность функций'),
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       optionalLoadJson('tmp-smart_price_workbench-live.json'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Overlay цен'),
@@ -3117,6 +3129,10 @@ const LAZY_DATA_LOADERS = {
       loadJsonOrFallback('data/warehouse_stock_overlay.json', { generatedAt: '', rows: [] }, 'Склад/отгрузки')
     ]);
     state.repricer = repricer || { generatedAt: '', summary: {}, rows: [] };
+    state.canonicalRepricer = canonicalRepricer || { schema: 'canonical-repricer-v1', generatedAt: '', summary: {}, rows: [] };
+    state.portalDashboardMetrics = portalDashboardMetrics || { schema: 'portal-dashboard-metrics-v1', generatedAt: '', metrics: [] };
+    state.portalRuntimeWiring = portalRuntimeWiring || { schema: 'portal-runtime-wiring-reconciliation-v1', status: '', artifacts: [] };
+    state.portalFeatureReadiness = portalFeatureReadiness || { schema: 'portal-feature-readiness-v1', status: '', features: {} };
     state.repricerLive = repricerLive || { generatedAt: '', rows: [] };
     state.prices = prices || { generatedAt: '', platforms: {} };
     state.priceWorkbenchSupport = priceWorkbenchSupport || { generatedAt: '', platforms: {} };

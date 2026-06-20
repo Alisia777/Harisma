@@ -1,0 +1,37 @@
+{
+  "schema": "portal-feature-readiness-v1",
+  "generatedAt": "1970-01-01T00:00:00.000Z",
+  "status": "warning",
+  "publish_allowed": true,
+  "features": {
+    "repricer": {
+      "status": "blocked",
+      "publish_allowed": false,
+      "report_status": "warning",
+      "runtime_path": "data/canonical_repricer.json",
+      "checksum": "40527e54cdabd886058fb2e23e2c4c3c64a537dee6e5e5969838130b663193ba",
+      "eligible_rows": 339,
+      "publishable_rows": 0,
+      "blocked_rows": 339,
+      "publishable_coverage": 0,
+      "warnings": [
+        "repricer feature blocked: 0/339 publishable recommendations"
+      ]
+    },
+    "dashboard": {
+      "status": "ok",
+      "publish_allowed": true,
+      "runtime_path": "data/portal_dashboard_metrics.json",
+      "checksum": "ef0c8713fd9af1bcc155288155879624c42b7487f341d6e18250f1cbcee6c8b2",
+      "metricCount": 9,
+      "warnings": []
+    },
+    "uploads": {
+      "status": "ok",
+      "publish_allowed": true,
+      "minmax_status": "ok",
+      "cost_status": "ok",
+      "warnings": []
+    }
+  }
+}

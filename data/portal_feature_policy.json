@@ -1,0 +1,11 @@
+{
+  "schema": "portal-feature-policy-v1",
+  "version": "2026-06-20.1",
+  "features": {
+    "repricer": {
+      "required_publishable_coverage": 0.01,
+      "maintenance_mode": false,
+      "maintenance_reason": ""
+    }
+  }
+}

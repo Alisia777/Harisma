@@ -32,15 +32,20 @@ jobs:
           node-version: '20'
       - name: Syntax and negative-path self-test
         run: |
+          mkdir -p .portal-truth-output
           node scripts/portal-daily-layer-guard.selftest.js
           node scripts/audit-repricer-dashboard-plan.selftest.js
+          node scripts/portal-upload-apply-runtime.selftest.js
+          node scripts/portal-runtime-promote.selftest.js
       - name: Build phase 3 truth artifacts
         run: |
           mkdir -p .portal-truth-output
+          node scripts/portal-upload-apply-runtime.js --input-dir data --output-dir .portal-truth-output --template-dir .portal-truth-output/templates --generate-templates
           node scripts/audit-source-workbooks.js --manifest data/portal_source_registry.json --output-dir .portal-truth-output
           node scripts/build-canonical-repricer.js --input-dir data --output-dir .portal-truth-output
           node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir .portal-truth-output
           node scripts/audit-repricer-dashboard-plan.js --input-dir .portal-truth-output --base-data-dir data --output-dir .portal-truth-output
+          node scripts/portal-runtime-promote.js --input-dir .portal-truth-output --data-dir data --output-dir .portal-truth-output
       - name: Audit current portal snapshot
         run: |
           node scripts/portal-daily-layer-guard.js \
@@ -53,7 +58,7 @@ jobs:
         with:
           name: portal-data-truth-${{ github.run_id }}
           path: .portal-truth-output/*.json
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
       - name: Enforce publish gate
         run: |

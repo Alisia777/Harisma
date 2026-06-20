@@ -11,7 +11,12 @@ const PHASE3_REQUIRED_REPORTS = [
   'portal_repricing_reconciliation.json',
   'portal_dashboard_reconciliation.json',
   'portal_plan_reconciliation.json',
-  'portal_indicator_audit.json'
+  'portal_indicator_audit.json',
+  'portal_upload_apply_e2e.json',
+  'portal_minmax_upload_reconciliation.json',
+  'portal_cost_upload_reconciliation.json',
+  'portal_runtime_wiring_reconciliation.json',
+  'portal_feature_readiness.json'
 ];
 const DEFAULT_MANIFEST = path.join(__dirname, 'portal-truth-manifest.json');
 const MOJIBAKE_MARKERS = ['Рџ', 'РЎ', 'Р°С', 'РµС', 'РёС', 'Р»С', 'РЅС', 'Р”', 'Рќ', 'Р’', '���', '\uFFFD'];
@@ -1063,7 +1068,7 @@ function repairSteps(manifest, sourceChecks, contractChecks) {
   return [...repairs.values()];
 }
 
-function buildReconciliation(manifest, expectedDate, sourceChecks, contractChecks, passports, views) {
+function buildReconciliation(manifest, expectedDate, sourceChecks, contractChecks, passports, views, fingerprint) {
   const blocking = [...sourceChecks, ...contractChecks].filter((check) => check.status === 'blocked');
   const warnings = [...sourceChecks, ...contractChecks].filter((check) => check.status === 'warning');
   return {
@@ -1073,12 +1078,14 @@ function buildReconciliation(manifest, expectedDate, sourceChecks, contractCheck
     scope: { included: 'all portal views and layers', excluded: manifest.policy.excludedScopes },
     cutoffDate: expectedDate,
     status: blocking.length ? 'blocked' : (warnings.length ? 'warning' : 'ok'),
+    business_fingerprint: fingerprint,
     summary: {
       sourceCount: sourceChecks.length,
       contractCount: contractChecks.length,
       metricPassportCount: passports.length,
       blockingChecks: blocking.length,
-      warningChecks: warnings.length
+      warningChecks: warnings.length,
+      fingerprint
     },
     metricPassports: passports,
     views,
@@ -1113,7 +1120,6 @@ function run(options) {
   const blockingReasons = allChecks.flatMap((check) => check.blockingReasons || []);
   const warningReasons = allChecks.flatMap((check) => check.warnings || []);
   const allowed = blockingReasons.length === 0;
-  const reconciliation = buildReconciliation(manifest, expectedDate, sourceChecks, contractChecks, passports, views);
   const fingerprintSeed = [
     ...sourceChecks.map((check) => `${check.source}:${check.sha256 || 'missing'}`).sort(),
     ...contractChecks
@@ -1121,6 +1127,8 @@ function run(options) {
       .map((check) => `${check.source}:${check.businessFingerprint || check.status || 'unknown'}`)
       .sort()
   ];
+  const fingerprint = crypto.createHash('sha256').update(fingerprintSeed.join('|')).digest('hex');
+  const reconciliation = buildReconciliation(manifest, expectedDate, sourceChecks, contractChecks, passports, views, fingerprint);
   const report = {
     schema: 'portal-daily-guard-v2',
     generatedAt: new Date().toISOString(),
@@ -1141,7 +1149,7 @@ function run(options) {
       views: Object.keys(manifest.views || {}).filter((view) => !isExcluded(view, manifest)).length,
       blockingChecks: allChecks.filter((check) => check.status === 'blocked').length,
       warningChecks: allChecks.filter((check) => check.status === 'warning').length,
-      fingerprint: crypto.createHash('sha256').update(fingerprintSeed.join('|')).digest('hex')
+      fingerprint
     },
     views,
     checks: allChecks,

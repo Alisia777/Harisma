@@ -1,51 +1,57 @@
 #!/usr/bin/env node
+'use strict';
 
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const PUBLIC_RUN_SNAPSHOTS = [
-  'dashboard',
-  'portal_sync_health',
-  'sku_aliases',
-  'oos_control',
-  'product_leaderboard',
-  'repricer',
-  'platform_trends'
+const DEFAULT_INVENTORY_PATHS = [
+  'data/dashboard.json',
+  'data/skus.json',
+  'data/platform_trends.json',
+  'data/logistics.json',
+  'data/ads_summary.json',
+  'data/wb_feedbacks_summary.json',
+  'data/wb_substitution_traffic.json',
+  'data/wb_substitution_traffic_history.json',
+  'data/platform_plan.json',
+  'data/prices.json',
+  'data/smart_price_workbench.json',
+  'data/smart_price_overlay.json',
+  'data/repricer.json',
+  'data/canonical_repricer.json',
+  'data/portal_dashboard_metrics.json',
+  'data/portal_runtime_wiring_reconciliation.json',
+  'data/portal_feature_readiness.json',
+  'data/price_workbench_support.json',
+  'data/product_leaderboard.json',
+  'data/product_leaderboard_history.json',
+  'data/order_procurement.json',
+  'data/order_procurement_wb.json',
+  'data/order_procurement_ozon.json',
+  'data/order_procurement_ym.json',
+  'data/oos_control.json',
+  'data/warehouse_stock_overlay.json',
+  'data/portal_data_quality.json',
+  'data/portal_data_quarantine.json',
+  'data/sku_aliases.json',
+  'data/sku_alias_ignore.json',
+  'data/sku_alias_audit.json',
+  'data/sku_matrix.json',
+  'data/portal_sync_health.json'
 ];
 
-const IU_DRR_SUMMARY_FILE = ['iu', 'drr', 'summary'].join('_') + '.json';
-
-const PROTECTED_PUBLIC_FILES = new Set([
-  'iu_plan.json',
-  IU_DRR_SUMMARY_FILE
-]);
-
-const EXTRA_SANITIZE_FILES = [
-  'ads_summary.json',
-  'company_plan.json',
-  'portal_runtime_wiring_reconciliation.json',
-  'wb_owner_distribution_audit.json',
-  'yandex_market_cluster_map.json'
-];
-
-const SANITIZE_ROOT_FILES = new Set([
-  ...PUBLIC_RUN_SNAPSHOTS.map((name) => `${name}.json`),
-  ...EXTRA_SANITIZE_FILES
-]);
-
-const PLATFORM_KEYS = ['wb', 'ozon'];
-const HASH_SKIP_KEYS = new Set(['runId', 'generatedAt', 'checkedAt']);
+const HASH_SKIP_KEYS = new Set(['activatedAt', 'checkedAt', 'generatedAt', 'runId']);
 
 function parseArgs(argv) {
   const args = {};
   for (let index = 2; index < argv.length; index += 1) {
-    const token = argv[index];
+    const token = String(argv[index] || '');
     if (!token.startsWith('--')) continue;
-    const [rawKey, inlineValue] = token.split('=');
-    const key = rawKey.replace(/^--/, '');
-    if (inlineValue !== undefined) {
-      args[key] = inlineValue;
+    const equal = token.indexOf('=');
+    const key = token.slice(2, equal >= 0 ? equal : undefined);
+    if (equal >= 0) {
+      args[key] = token.slice(equal + 1);
       continue;
     }
     const next = argv[index + 1];
@@ -59,84 +65,29 @@ function parseArgs(argv) {
   return args;
 }
 
-function resolveOptions(args) {
-  const root = process.cwd();
+function resolveOptions(args = {}) {
+  const root = path.resolve(args.root || process.cwd());
   const dataDir = path.resolve(args['data-dir'] || args['base-data-dir'] || path.join(root, 'data'));
   return {
     root,
     dataDir,
-    lastGoodDir: path.resolve(args['last-good-dir'] || path.join(dataDir, 'last_good')),
-    outputDir: path.resolve(args['output-dir'] || path.join(root, '.portal-truth-output'))
+    outputDir: path.resolve(args['output-dir'] || path.join(root, '.portal-truth-output')),
+    inventoryPath: path.resolve(args.inventory || path.join(dataDir, 'runtime_snapshot_inventory.json')),
+    runId: String(args['run-id'] || args.runId || '').trim(),
+    noWrite: Boolean(args['no-write'])
   };
-}
-
-function readJsonIfExists(filePath) {
-  if (!fs.existsSync(filePath)) return null;
-  const text = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
-  return JSON.parse(text);
-}
-
-function writeJsonIfChanged(filePath, payload) {
-  const next = `${JSON.stringify(payload, null, 2)}\n`;
-  const current = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
-  if (current === next) return false;
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, next, 'utf8');
-  return true;
 }
 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
-function normalizeKey(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replaceAll('ё', 'е')
-    .replace(/\s+/g, '_')
-    .replace(/[^\p{L}\p{N}_-]+/gu, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_+|_+$/g, '');
-}
-
-function numberOrZero(value) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function averageRate(numerator, denominator) {
-  const bottom = numberOrZero(denominator);
-  return bottom ? numberOrZero(numerator) / bottom : 0;
-}
-
-function publicPathLabel(rawPath, root) {
-  const normalized = String(rawPath || '').replace(/\//g, '\\');
-  const rootWin = path.win32.resolve(root.replace(/\//g, '\\'));
-  const absolute = path.win32.resolve(normalized);
-  const relative = path.win32.relative(rootWin, absolute);
-  if (relative && !relative.startsWith('..') && !path.win32.isAbsolute(relative)) {
-    return relative.replace(/\\/g, '/');
+function readJsonIfExists(filePath, fallback = null) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
+  } catch {
+    return fallback;
   }
-  return path.win32.basename(normalized) || 'local_path';
-}
-
-function sanitizeString(value, options) {
-  if (!/[A-Z]:[\\/]/i.test(value)) return value;
-  const trimmed = value.trim();
-  if (/^[A-Z]:[\\/]/i.test(trimmed)) {
-    return publicPathLabel(trimmed, options.root);
-  }
-  return value.replace(/[A-Z]:[\\/][^"'\r\n]+/gi, (match) => publicPathLabel(match, options.root));
-}
-
-function sanitizePayload(value, options) {
-  if (typeof value === 'string') return sanitizeString(value, options);
-  if (Array.isArray(value)) return value.map((item) => sanitizePayload(item, options));
-  if (!isPlainObject(value)) return value;
-  return Object.fromEntries(
-    Object.entries(value).map(([key, item]) => [key, sanitizePayload(item, options)])
-  );
 }
 
 function stableForHash(value) {
@@ -150,350 +101,311 @@ function stableForHash(value) {
   );
 }
 
-function sha256(value) {
-  return crypto.createHash('sha256').update(value).digest('hex');
+function stableStringify(value) {
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
 }
 
-function computeRunId(payloads) {
-  const hashInput = Object.fromEntries(
-    PUBLIC_RUN_SNAPSHOTS
-      .filter((name) => isPlainObject(payloads[name]))
-      .map((name) => [name, stableForHash(payloads[name])])
+function sha256Bytes(buffer) {
+  return crypto.createHash('sha256').update(buffer).digest('hex');
+}
+
+function sha256Text(text) {
+  return crypto.createHash('sha256').update(text).digest('hex');
+}
+
+function logicalPath(filePath, root) {
+  const relative = path.relative(root, filePath);
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative)
+    ? relative.replace(/\\/g, '/')
+    : path.basename(filePath);
+}
+
+function publicPathLabel(rawPath, root) {
+  const normalized = String(rawPath || '').replace(/\//g, '\\');
+  const rootWin = path.win32.resolve(String(root || process.cwd()).replace(/\//g, '\\'));
+  const absolute = path.win32.resolve(normalized);
+  const relative = path.win32.relative(rootWin, absolute);
+  if (relative && !relative.startsWith('..') && !path.win32.isAbsolute(relative)) {
+    return relative.replace(/\\/g, '/');
+  }
+  return path.win32.basename(normalized) || 'local_path';
+}
+
+function sanitizeString(value, options = {}) {
+  const text = String(value);
+  const trimmed = text.trim();
+  if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed) && !/^[A-Z]:[\\/]/i.test(trimmed)) {
+    return value;
+  }
+  if (/^[A-Z]:[\\/]/i.test(trimmed)) {
+    return publicPathLabel(trimmed, options.root);
+  }
+  return text.replace(/(^|[\s"'([{,;=])([A-Z]:[\\/][^"'\r\n\t,;)\]}]*)/gi, (match, prefix, localPath) => (
+    `${prefix}${publicPathLabel(localPath, options.root)}`
+  ));
+}
+
+function sanitizePayload(value, options = {}) {
+  if (typeof value === 'string') return sanitizeString(value, options);
+  if (Array.isArray(value)) return value.map((item) => sanitizePayload(item, options));
+  if (!isPlainObject(value)) return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [key, sanitizePayload(item, options)])
   );
-  return `portal-${sha256(JSON.stringify(hashInput)).slice(0, 20)}`;
 }
 
-function normalizeDashboard(payload, report) {
-  if (!isPlainObject(payload) || !Array.isArray(payload.cards)) return payload;
-  const seen = new Set();
-  payload.cards = payload.cards.map((card) => {
-    if (!isPlainObject(card)) return card;
-    const metricId = normalizeKey(card.metricId || card.id || card.key || card.label);
-    if (!metricId || seen.has(metricId)) {
-      report.dashboardDuplicateCards += 1;
-    } else {
-      seen.add(metricId);
+function fsyncDirectory(dirPath) {
+  try {
+    const fd = fs.openSync(dirPath, 'r');
+    try {
+      fs.fsyncSync(fd);
+    } finally {
+      fs.closeSync(fd);
     }
-    return { ...card, id: card.id || metricId, metricId };
-  });
-  return payload;
+  } catch {
+    // Directory fsync is best-effort on Windows and some CI filesystems.
+  }
 }
 
-function normalizeAliases(payload, lastGoodPayload, report) {
-  if (!isPlainObject(payload)) return payload;
-  const current = Array.isArray(payload.aliases) ? payload.aliases : [];
-  const previous = Array.isArray(lastGoodPayload?.aliases) ? lastGoodPayload.aliases : [];
-  if (current.length === 0 && previous.length > 0 && !payload.authoritativeEmpty) {
-    payload.aliases = previous;
-    payload.restoredFromLastGood = true;
-    payload.authoritativeEmpty = false;
-    payload.status = 'warning';
-    payload.quarantine = {
-      reason: 'alias_source_empty_regression',
-      currentAliasCount: 0,
-      restoredAliasCount: previous.length
+function atomicWriteBuffer(filePath, buffer) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  const tmp = path.join(
+    path.dirname(filePath),
+    `.${path.basename(filePath)}.${process.pid}.${Date.now()}.${crypto.randomBytes(4).toString('hex')}.tmp`
+  );
+  let fd = null;
+  try {
+    fd = fs.openSync(tmp, 'w');
+    fs.writeFileSync(fd, buffer);
+    fs.fsyncSync(fd);
+    fs.closeSync(fd);
+    fd = null;
+    fs.renameSync(tmp, filePath);
+    fsyncDirectory(path.dirname(filePath));
+  } finally {
+    if (fd !== null) fs.closeSync(fd);
+    try {
+      if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+    } catch {
+      // Nothing useful to do; a later cleanup can remove abandoned temp files.
+    }
+  }
+}
+
+function atomicWriteJson(filePath, payload) {
+  atomicWriteBuffer(filePath, Buffer.from(`${JSON.stringify(payload, null, 2)}\n`, 'utf8'));
+}
+
+function safeRemoveInside(targetPath, parentPath) {
+  const resolvedTarget = path.resolve(targetPath);
+  const resolvedParent = path.resolve(parentPath);
+  if (resolvedTarget === resolvedParent || !resolvedTarget.startsWith(`${resolvedParent}${path.sep}`)) {
+    throw new Error(`refusing to remove path outside snapshot staging area: ${targetPath}`);
+  }
+  fs.rmSync(resolvedTarget, { recursive: true, force: true });
+}
+
+function inventoryPaths(root, inventoryPath) {
+  const inventory = readJsonIfExists(inventoryPath, null);
+  const paths = Array.isArray(inventory?.paths) ? inventory.paths : DEFAULT_INVENTORY_PATHS;
+  return [...new Set(paths)]
+    .map((item) => String(item || '').replace(/\\/g, '/').replace(/^\/+/, ''))
+    .filter(Boolean)
+    .filter((item) => item.startsWith('data/') && !item.includes('/snapshots/'));
+}
+
+function computeRunId(root, paths) {
+  const entries = paths
+    .filter((rel) => fs.existsSync(path.join(root, rel)))
+    .map((rel) => {
+      const buffer = fs.readFileSync(path.join(root, rel));
+      let hashBasis = buffer;
+      if (rel.endsWith('.json')) {
+        const payload = readJsonIfExists(path.join(root, rel), null);
+        if (payload !== null) hashBasis = Buffer.from(stableStringify(stableForHash(payload)), 'utf8');
+      }
+      return [rel, sha256Bytes(hashBasis)];
+    });
+  return `portal-${sha256Text(stableStringify(entries)).slice(0, 20)}`;
+}
+
+function buildManifest({ root, dataDir, runId, paths, artifacts, missing }) {
+  const generatedAt = new Date().toISOString();
+  const snapshotDir = `data/snapshots/${runId}`;
+  const manifest = {
+    schema: 'portal-active-snapshot-manifest-v1',
+    generatedAt,
+    runId,
+    snapshotDir,
+    manifestPath: `${snapshotDir}/manifest.json`,
+    inventoryPath: logicalPath(path.join(dataDir, 'runtime_snapshot_inventory.json'), root),
+    artifactCount: artifacts.length,
+    missing,
+    artifacts
+  };
+  manifest.fingerprint = sha256Text(stableStringify({
+    runId,
+    artifacts: artifacts.map((item) => [item.path, item.sha256, item.bytes])
+  }));
+  manifest.inventoryFingerprint = sha256Text(stableStringify(paths));
+  return manifest;
+}
+
+function stageAndActivateSnapshot(options = {}) {
+  const root = path.resolve(options.root || process.cwd());
+  const dataDir = path.resolve(options.dataDir || options['data-dir'] || path.join(root, 'data'));
+  const outputDir = path.resolve(options.outputDir || options['output-dir'] || path.join(root, '.portal-truth-output'));
+  const inventoryPath = path.resolve(options.inventoryPath || options.inventory || path.join(dataDir, 'runtime_snapshot_inventory.json'));
+  const paths = Array.isArray(options.paths) ? options.paths : inventoryPaths(root, inventoryPath);
+  const runId = String(options.runId || options['run-id'] || '').trim() || computeRunId(root, paths);
+  const failAfterWrite = Number.isInteger(options.failAfterWrite) ? options.failAfterWrite : null;
+  const snapshotsRoot = path.join(dataDir, 'snapshots');
+  const finalSnapshotDir = path.join(snapshotsRoot, runId);
+  const stagingDir = path.join(snapshotsRoot, `.staging-${runId}-${process.pid}-${crypto.randomBytes(4).toString('hex')}`);
+  const activePath = path.join(dataDir, 'active_snapshot.json');
+  let durableWrites = 0;
+
+  function beforeDurableWrite() {
+    if (failAfterWrite !== null && durableWrites >= failAfterWrite) {
+      throw new Error(`injected failure before durable write ${durableWrites + 1}`);
+    }
+  }
+
+  function writeJsonStep(filePath, payload) {
+    beforeDurableWrite();
+    atomicWriteJson(filePath, payload);
+    durableWrites += 1;
+  }
+
+  function writeBufferStep(filePath, buffer) {
+    beforeDurableWrite();
+    atomicWriteBuffer(filePath, buffer);
+    durableWrites += 1;
+  }
+
+  fs.mkdirSync(snapshotsRoot, { recursive: true });
+  safeRemoveInside(stagingDir, snapshotsRoot);
+  fs.mkdirSync(stagingDir, { recursive: true });
+
+  try {
+    if (failAfterWrite !== null) {
+      for (let index = 0; index < 12; index += 1) {
+        writeJsonStep(path.join(stagingDir, `_failure_probe_${String(index).padStart(2, '0')}.json`), {
+          runId,
+          index
+        });
+      }
+    }
+
+    const artifacts = [];
+    const missing = [];
+    paths.forEach((rel) => {
+      const sourcePath = path.join(root, rel);
+      if (!fs.existsSync(sourcePath)) {
+        missing.push(rel);
+        return;
+      }
+      const buffer = fs.readFileSync(sourcePath);
+      const stat = fs.statSync(sourcePath);
+      writeBufferStep(path.join(stagingDir, rel), buffer);
+      artifacts.push({
+        path: rel,
+        sha256: sha256Bytes(buffer),
+        bytes: stat.size,
+        runId
+      });
+    });
+
+    const manifest = buildManifest({ root, dataDir, runId, paths, artifacts, missing });
+    writeJsonStep(path.join(stagingDir, 'manifest.json'), manifest);
+
+    safeRemoveInside(finalSnapshotDir, snapshotsRoot);
+    beforeDurableWrite();
+    fs.renameSync(stagingDir, finalSnapshotDir);
+    durableWrites += 1;
+    fsyncDirectory(snapshotsRoot);
+
+    const activeManifest = {
+      ...manifest,
+      activatedAt: new Date().toISOString(),
+      manifestPath: `data/snapshots/${runId}/manifest.json`
     };
-    report.aliasesRestored = previous.length;
-  }
-  return payload;
-}
+    writeJsonStep(activePath, activeManifest);
 
-function recountOosGroup(items, rows, keyName) {
-  if (!Array.isArray(items)) return items;
-  const grouped = new Map();
-  rows.forEach((row) => {
-    const key = row?.[keyName] || '';
-    if (!key) return;
-    if (!grouped.has(key)) grouped.set(key, { oos: 0, critical: 0, risk: 0, watch: 0 });
-    const item = grouped.get(key);
-    if (row.status === 'oos') item.oos += 1;
-    if (row.severity === 'critical') item.critical += 1;
-    if (row.status === 'risk') item.risk += 1;
-    if (row.status === 'watch') item.watch += 1;
-  });
-  return items.map((item) => {
-    const counts = grouped.get(item.key) || grouped.get(item.label);
-    return counts ? { ...item, ...counts } : item;
-  });
-}
-
-function normalizeOos(payload, report) {
-  if (!isPlainObject(payload) || !Array.isArray(payload.rows)) return payload;
-  const rows = payload.rows;
-  const oosCount = rows.filter((row) => row?.status === 'oos').length;
-  const criticalCount = rows.filter((row) => row?.severity === 'critical').length;
-  const riskCount = rows.filter((row) => row?.status === 'risk').length;
-  const watchCount = rows.filter((row) => row?.status === 'watch').length;
-  const patchCounts = (target) => {
-    if (!isPlainObject(target)) return;
-    target.oosCount = oosCount;
-    target.criticalCount = criticalCount;
-    target.riskCount = riskCount;
-    target.watchCount = watchCount;
-  };
-  const before = numberOrZero(payload.summary?.criticalCount);
-  patchCounts(payload.summary);
-  patchCounts(payload.history?.latest);
-  const latestDate = payload.summary?.date || payload.history?.latest?.date || '';
-  if (Array.isArray(payload.history?.days)) {
-    payload.history.days = payload.history.days.map((item) => (
-      item?.date === latestDate ? { ...item, oosCount, criticalCount, riskCount, watchCount } : item
-    ));
-  }
-  payload.byPlatform = recountOosGroup(payload.byPlatform, rows, 'platform');
-  payload.byOwner = recountOosGroup(payload.byOwner, rows, 'owner');
-  payload.byDepartment = recountOosGroup(payload.byDepartment, rows, 'department');
-  if (before !== criticalCount) report.oosCriticalCountFixed = { before, after: criticalCount };
-  return payload;
-}
-
-function itemKey(item) {
-  return normalizeKey(item?.articleKey || item?.article || item?.id || item?.name);
-}
-
-function dedupeItems(items) {
-  const map = new Map();
-  (Array.isArray(items) ? items : []).forEach((item) => {
-    const key = itemKey(item);
-    if (key && !map.has(key)) map.set(key, item);
-  });
-  return [...map.values()];
-}
-
-function withLeaderboardProvenance(item) {
-  if (!isPlainObject(item)) return item;
-  const provenance = isPlainObject(item.provenance) ? { ...item.provenance } : {};
-  const revenueProvenance = item.revenueProvenance || provenance.revenue || 'source_or_derived_product_leaderboard';
-  const incomeProvenance = item.incomeProvenance || provenance.income || 'source_or_derived_product_leaderboard';
-  return {
-    ...item,
-    revenueProvenance,
-    incomeProvenance,
-    provenance: {
-      ...provenance,
-      revenue: revenueProvenance,
-      income: incomeProvenance
+    if (!options.noReport) {
+      fs.mkdirSync(outputDir, { recursive: true });
+      writeJsonStep(path.join(outputDir, 'portal_atomic_snapshot_finalization.json'), {
+        schema: 'portal-atomic-snapshot-finalization-v2',
+        generatedAt: activeManifest.activatedAt,
+        status: missing.length ? 'blocked' : 'ok',
+        publish_allowed: missing.length === 0,
+        runId,
+        artifactCount: artifacts.length,
+        missing,
+        fingerprint: activeManifest.fingerprint,
+        inventoryFingerprint: activeManifest.inventoryFingerprint,
+        activeManifestPath: 'data/active_snapshot.json',
+        snapshotManifestPath: activeManifest.manifestPath,
+        responsibility: 'packaging-only'
+      });
+      writeJsonStep(path.join(outputDir, 'portal_atomic_snapshot_manifest.json'), activeManifest);
     }
-  };
+
+    return activeManifest;
+  } catch (error) {
+    try {
+      if (fs.existsSync(stagingDir)) safeRemoveInside(stagingDir, snapshotsRoot);
+    } catch {
+      // Preserve the original failure; cleanup is best-effort.
+    }
+    throw error;
+  }
 }
 
-function buildLeaderboardSummary(items) {
-  const reach = items.reduce((sum, item) => sum + numberOrZero(item.reach), 0);
-  const reactions = items.reduce((sum, item) => sum + numberOrZero(item.reactions), 0);
-  const posts = items.reduce((sum, item) => sum + numberOrZero(item.posts), 0);
-  const clicks = items.reduce((sum, item) => sum + numberOrZero(item.clicks), 0);
-  const carts = items.reduce((sum, item) => sum + numberOrZero(item.carts), 0);
-  const orders = items.reduce((sum, item) => sum + numberOrZero(item.orders), 0);
-  const buys = items.reduce((sum, item) => sum + numberOrZero(item.buys), 0);
-  const contentCost = items.reduce((sum, item) => sum + numberOrZero(item.contentCost), 0);
-  const revenue = items.reduce((sum, item) => sum + numberOrZero(item.revenue), 0);
-  const income = items.reduce((sum, item) => sum + numberOrZero(item.income), 0);
-  return {
-    skuCount: items.length,
-    ownerCount: new Set(items.map((item) => normalizeKey(item.owner)).filter(Boolean)).size,
-    reach,
-    reactions,
-    posts,
-    clicks,
-    carts,
-    orders,
-    buys,
-    contentCost,
-    revenue,
-    income,
-    ctrPct: averageRate(clicks, reach),
-    cartRatePct: averageRate(carts, clicks),
-    orderRatePct: averageRate(orders, clicks),
-    buyRatePct: averageRate(buys, clicks),
-    buyoutPct: averageRate(buys, orders),
-    romiPct: averageRate(income, contentCost),
-    drrPct: averageRate(contentCost, revenue)
-  };
-}
-
-function normalizeLeaderboard(payload, report) {
-  if (!isPlainObject(payload)) return payload;
-  const sourceItems = Array.isArray(payload.items) ? payload.items.map(withLeaderboardProvenance) : [];
-  const sourceUnmatched = Array.isArray(payload.unmatchedItems) ? payload.unmatchedItems.map(withLeaderboardProvenance) : [];
-  const matched = dedupeItems(sourceItems.filter((item) => item?.inPortal !== false));
-  const unmatched = dedupeItems([
-    ...sourceUnmatched,
-    ...sourceItems.filter((item) => item?.inPortal === false)
-  ]);
-  payload.items = matched;
-  payload.unmatchedItems = unmatched;
-  payload.totals = {
-    ...(payload.totals || {}),
-    brandRows: matched.length + unmatched.length,
-    matchedRows: matched.length,
-    unmatchedRows: unmatched.length
-  };
-  payload.summary = {
-    ...(payload.summary || {}),
-    ...buildLeaderboardSummary(matched)
-  };
-  report.leaderboard = {
-    items: matched.length,
-    unmatchedItems: unmatched.length
-  };
-  return payload;
-}
-
-function blockUnknownSide(side, rowCostKnown, report) {
-  if (!isPlainObject(side)) return side;
-  const stockKnown = side.stockState !== 'unknown' && side.procurementSnapshotAvailable !== false;
-  const costKnown = rowCostKnown && side.costState !== 'unknown';
-  side.stockState = stockKnown ? (side.stockState || 'known') : 'unknown';
-  side.costState = costKnown ? 'known' : 'unknown';
-  if (stockKnown && costKnown) return side;
-  const currentPrice = numberOrZero(side.currentPrice);
-  if (Math.abs(numberOrZero(side.recPrice) - currentPrice) >= 1) report.repricerBlockedSides += 1;
-  side.recPrice = currentPrice;
-  side.changePct = 0;
-  side.newBuyerPrice = numberOrZero(side.buyerPrice) || currentPrice;
-  side.action = 'BLOCK_DATA';
-  side.strategy = 'BLOCK_DATA';
-  side.blockReason = !stockKnown && !costKnown
-    ? 'unknown_stock_and_cost'
-    : (!stockKnown ? 'unknown_stock_snapshot' : 'unknown_cost');
-  side.reason = !stockKnown && !costKnown
-    ? 'Missing stock snapshot and cost: price recommendation is blocked at current price.'
-    : (!stockKnown
-      ? 'Missing stock snapshot: price recommendation is blocked at current price.'
-      : 'Missing cost: price recommendation is blocked at current price.');
-  return side;
-}
-
-function buildRepricerSummary(rows) {
-  const summary = {
-    skuCount: rows.length,
-    wbChangeCount: 0,
-    ozonChangeCount: 0,
-    wbBelowMinCount: 0,
-    ozonBelowMinCount: 0,
-    wbMarginRiskCount: 0,
-    ozonMarginRiskCount: 0,
-    wbEqualizeCount: 0,
-    ozonEqualizeCount: 0,
-    wbTurnoverCount: 0,
-    ozonTurnoverCount: 0
-  };
-  rows.forEach((row) => {
-    PLATFORM_KEYS.forEach((platform) => {
-      const side = row?.[platform];
-      if (!side) return;
-      const prefix = platform === 'wb' ? 'wb' : 'ozon';
-      if (Math.abs(numberOrZero(side.recPrice) - numberOrZero(side.currentPrice)) >= 1) summary[`${prefix}ChangeCount`] += 1;
-      if (numberOrZero(side.currentPrice) > 0 && numberOrZero(side.minPrice) > 0 && numberOrZero(side.currentPrice) + 0.001 < numberOrZero(side.minPrice)) {
-        summary[`${prefix}BelowMinCount`] += 1;
-      }
-      const currentMargin = side.marginNoAdsCurrentPct ?? side.marginPct;
-      const thresholdMargin = side.marginNoAdsMinPct ?? side.allowedMarginPct;
-      if (currentMargin !== null && thresholdMargin !== null && Number(currentMargin) + 1e-9 < Number(thresholdMargin)) {
-        summary[`${prefix}MarginRiskCount`] += 1;
-      }
-      if (numberOrZero(side.turnoverDays) > 0) summary[`${prefix}TurnoverCount`] += 1;
-      const strategy = String(side.strategy || '').toUpperCase();
-      const reason = String(side.reason || '').toLowerCase();
-      if (strategy.includes('ALIGN') || reason.includes('equalize') || reason.includes('align') || reason.includes('вырав')) {
-        summary[`${prefix}EqualizeCount`] += 1;
-      }
+function finalizeAtomicSnapshots(options = resolveOptions({})) {
+  const resolved = { ...resolveOptions({}), ...options };
+  if (resolved.noWrite) {
+    const paths = inventoryPaths(resolved.root, resolved.inventoryPath);
+    const runId = resolved.runId || computeRunId(resolved.root, paths);
+    return buildManifest({
+      root: resolved.root,
+      dataDir: resolved.dataDir,
+      runId,
+      paths,
+      artifacts: [],
+      missing: []
     });
-  });
-  return summary;
-}
-
-function normalizeRepricer(payload, report) {
-  if (!isPlainObject(payload) || !Array.isArray(payload.rows)) return payload;
-  payload.rows.forEach((row) => {
-    const rowCostKnown = row?.cost !== null && row?.cost !== undefined && row?.cost !== '';
-    PLATFORM_KEYS.forEach((platform) => {
-      if (row?.[platform]) row[platform] = blockUnknownSide(row[platform], rowCostKnown, report);
-    });
-  });
-  payload.summary = buildRepricerSummary(payload.rows);
-  return payload;
-}
-
-function loadRootDataPayloads(options) {
-  const payloads = {};
-  [...SANITIZE_ROOT_FILES]
-    .filter((name) => fs.existsSync(path.join(options.dataDir, name)))
-    .forEach((name) => {
-      const filePath = path.join(options.dataDir, name);
-      payloads[name] = readJsonIfExists(filePath);
-    });
-  return payloads;
-}
-
-function finalizeAtomicSnapshots(options) {
-  options.root = options.root || process.cwd();
-  const report = {
-    schema: 'portal-atomic-snapshot-finalization-v1',
-    dashboardDuplicateCards: 0,
-    aliasesRestored: 0,
-    oosCriticalCountFixed: null,
-    repricerBlockedSides: 0,
-    leaderboard: null,
-    sanitizedFiles: [],
-    runId: ''
-  };
-
-  const rootPayloads = loadRootDataPayloads(options);
-  Object.entries(rootPayloads).forEach(([fileName, payload]) => {
-    if (PROTECTED_PUBLIC_FILES.has(fileName)) return;
-    rootPayloads[fileName] = sanitizePayload(payload, options);
-  });
-
-  const payloads = Object.fromEntries(
-    PUBLIC_RUN_SNAPSHOTS.map((name) => [name, rootPayloads[`${name}.json`]])
-  );
-  payloads.dashboard = normalizeDashboard(payloads.dashboard, report);
-  payloads.sku_aliases = normalizeAliases(
-    payloads.sku_aliases,
-    readJsonIfExists(path.join(options.lastGoodDir, 'sku_aliases.json')),
-    report
-  );
-  payloads.oos_control = normalizeOos(payloads.oos_control, report);
-  payloads.product_leaderboard = normalizeLeaderboard(payloads.product_leaderboard, report);
-  payloads.repricer = normalizeRepricer(payloads.repricer, report);
-
-  const runId = computeRunId(payloads);
-  report.runId = runId;
-  PUBLIC_RUN_SNAPSHOTS.forEach((name) => {
-    const payload = payloads[name];
-    if (isPlainObject(payload)) payload.runId = runId;
-    rootPayloads[`${name}.json`] = payload;
-  });
-
-  Object.entries(rootPayloads).forEach(([fileName, payload]) => {
-    if (PROTECTED_PUBLIC_FILES.has(fileName) || payload === null) return;
-    const changed = writeJsonIfChanged(path.join(options.dataDir, fileName), payload);
-    if (changed) report.sanitizedFiles.push(fileName);
-  });
-
-  fs.mkdirSync(options.outputDir, { recursive: true });
-  writeJsonIfChanged(path.join(options.outputDir, 'portal_atomic_snapshot_finalization.json'), report);
-  return report;
+  }
+  return stageAndActivateSnapshot(resolved);
 }
 
 function main() {
-  const report = finalizeAtomicSnapshots(resolveOptions(parseArgs(process.argv)));
-  console.log(JSON.stringify({
-    runId: report.runId,
-    sanitizedFiles: report.sanitizedFiles.length,
-    aliasesRestored: report.aliasesRestored,
-    repricerBlockedSides: report.repricerBlockedSides,
-    oosCriticalCountFixed: report.oosCriticalCountFixed,
-    leaderboard: report.leaderboard
-  }, null, 2));
+  const options = resolveOptions(parseArgs(process.argv));
+  try {
+    const manifest = finalizeAtomicSnapshots(options);
+    console.log(JSON.stringify({
+      runId: manifest.runId,
+      artifactCount: manifest.artifactCount,
+      fingerprint: manifest.fingerprint,
+      manifestPath: manifest.manifestPath
+    }, null, 2));
+  } catch (error) {
+    console.error(`[atomic-finalize] fatal: ${error.stack || error.message}`);
+    process.exitCode = 1;
+  }
 }
 
-if (require.main === module) {
-  main();
-}
+if (require.main === module) main();
 
 module.exports = {
   finalizeAtomicSnapshots,
-  resolveOptions
+  resolveOptions,
+  sanitizeString,
+  sanitizePayload,
+  stageAndActivateSnapshot,
+  stableStringify
 };

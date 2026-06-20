@@ -2,7 +2,7 @@
   "generatedAt": "2026-06-19T10:00:37.030Z",
   "asOfDate": "2026-06-18",
   "source": "wb-promotion-api",
-  "sourceUrl": "httppromotion",
+  "sourceUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
   "sourceMode": "wb-api+ozon-seller-finance-api",
   "window": {
     "from": "2026-05-01",
@@ -12,7 +12,7 @@
   "note": "WB Promotion API daily facts plus marketplace workbook extras. Ozon ad spend replaced by daily Seller Finance API advertising operations.",
   "diagnostics": {
     "generatedAt": "2026-06-19T07:11:49.339Z",
-    "docsUrl": "httppromotion",
+    "docsUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
     "sourceWindow": {
       "from": "2026-06-01",
       "to": "2026-06-18"
@@ -30,7 +30,7 @@
     "externalAds": {
       "enabled": true,
       "brand": "АЛТЕЯ",
-      "sourceUrl": "httpedit?gid=349075746#gid=349075746",
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1_WNHliH2-7E17H8J6BvYTSBWVD7cuDDBpn0GJ5Crxdg/edit?gid=349075746#gid=349075746",
       "sheets": 0,
       "rows": 0,
       "matchedRows": 0,

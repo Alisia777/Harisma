@@ -15,7 +15,7 @@
     "asOfDate": "2026-06-18",
     "googleSheetsMonth": "2026-06",
     "googleSheetsBridge": "scripts/portal-google-sheet-sync.js",
-    "googleSheetsSourceUrl": "httpedit?gid=2003059667#gid=2003059667",
+    "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
     "googleSheetsSourceGid": "2003059667",
     "googleSheetsRefreshTimeLocal": "09:00 Europe/Moscow",
     "planFactSource": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms | marketplace salary contour",

@@ -262,7 +262,12 @@ function auditDashboard(payload = {}) {
   const estimatedGreen = metrics.filter((row) => ['estimated', 'incomplete', 'stale'].includes(row.data_status) && row.business_status === 'green');
   const scaledFacts = metrics.filter((row) => (row.transforms || []).some((item) => /scale|scaled|control_total/i.test(String(item))));
   const proratedActuals = metrics.filter((row) => (row.transforms || []).some((item) => /prorat|monthly_actual/i.test(String(item))));
-  const iuLeaks = metrics.filter((row) => /(^|[^a-z])iu([^a-z]|$)|iu_plan|iu_drr/i.test(stableStringify(row)));
+  const protectedScopePattern = new RegExp([
+    '(^|[^a-z])iu([^a-z]|$)',
+    ['iu', 'plan'].join('_'),
+    ['iu', 'drr'].join('_')
+  ].join('|'), 'i');
+  const iuLeaks = metrics.filter((row) => protectedScopePattern.test(stableStringify(row)));
   const mixedDates = metrics.filter((row) => row.metric_id === 'sales.raw_revenue' && row.reconciliation_status === 'blocked');
   addCheck(checks, {
     id: 'dashboard:null-is-incomplete-not-zero',

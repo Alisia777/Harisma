@@ -15,10 +15,19 @@ on:
     paths:
       - 'data/**'
       - 'scripts/**'
+      - 'app-core-*.js'
+      - 'portal-*.js'
+      - 'index.html'
       - 'package.json'
+      - '.github/workflows/portal-data-truth.yml'
   schedule:
     - cron: '15 4 * * *'
   workflow_dispatch:
+    inputs:
+      base-ref:
+        description: 'Base ref/SHA for full-range protected scope verification'
+        required: false
+        default: 'origin/main'
 
 permissions:
   contents: read
@@ -44,35 +53,39 @@ jobs:
           node scripts/portal-upload-apply-runtime.selftest.js
           node scripts/portal-runtime-promote.selftest.js
           node scripts/portal-atomic-snapshot-finalize.selftest.js
+          node scripts/sanitizer_url_contract.test.js
+          node scripts/atomic_publish_failure_injection.test.js
       - name: Enforce non-IU scope
-        run: python scripts/verify_non_iu_scope.py --base HEAD^ --head HEAD --working-tree
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_REF="origin/${{ github.base_ref }}"
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]]; then
+            BASE_REF="${{ github.event.before }}"
+          elif [[ -n "${{ inputs.base-ref }}" ]]; then
+            BASE_REF="${{ inputs.base-ref }}"
+          else
+            BASE_REF="origin/main"
+          fi
+          python scripts/verify_full_pr_non_iu_scope.py --base-ref "$BASE_REF" --head HEAD
       - name: Build phase 3 truth artifacts
         run: |
           mkdir -p .portal-truth-output
           node scripts/portal-upload-apply-runtime.js --input-dir data --output-dir .portal-truth-output --template-dir .portal-truth-output/templates --generate-templates
+          node scripts/portal-upload-apply-runtime.js --fixture-e2e --output-dir .portal-truth-output
           node scripts/audit-source-workbooks.js --manifest data/portal_source_registry.json --output-dir .portal-truth-output
           node scripts/build-canonical-repricer.js --input-dir data --output-dir .portal-truth-output
           node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir .portal-truth-output
           node scripts/audit-repricer-dashboard-plan.js --input-dir .portal-truth-output --base-data-dir data --output-dir .portal-truth-output
-          node scripts/portal-runtime-promote.js --input-dir .portal-truth-output --data-dir data --output-dir .portal-truth-output
-          node scripts/portal-atomic-snapshot-finalize.js --data-dir data --output-dir .portal-truth-output
+          node scripts/portal-runtime-promote.js --input-dir .portal-truth-output --data-dir data --output-dir .portal-truth-output --no-data-write
       - name: Audit current portal snapshot
         run: |
           node scripts/portal-daily-layer-guard.js \
             --input-dir .portal-truth-output \
             --base-data-dir data \
             --output-dir .portal-truth-output
-      - name: Post-patch numeric/runtime acceptance
-        run: python scripts/post_patch_acceptance.py --repo .
-      - name: Upload audit reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: portal-data-truth-${{ github.run_id }}
-          path: .portal-truth-output/*.json
-          include-hidden-files: true
-          if-no-files-found: warn
-          retention-days: 30
+      - name: Audit truth artifact
+        run: python scripts/audit_truth_artifact.py --artifact-dir .portal-truth-output
       - name: Enforce publish gate
         run: |
           node - <<'NODE'
@@ -84,3 +97,19 @@ jobs:
           }
           console.log('Portal publish gate is open.');
           NODE
+      - name: Promote and activate runtime snapshot
+        run: |
+          node scripts/portal-runtime-promote.js --input-dir .portal-truth-output --data-dir data --output-dir .portal-truth-output
+          node scripts/portal-atomic-snapshot-finalize.js --data-dir data --output-dir .portal-truth-output
+          python scripts/verify_snapshot_manifest.py --repo . --manifest data/active_snapshot.json --inventory data/runtime_snapshot_inventory.json
+      - name: Post-patch numeric/runtime acceptance
+        run: python scripts/post_patch_acceptance.py --repo .
+      - name: Upload audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-data-truth-${{ github.run_id }}
+          path: .portal-truth-output/*.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

@@ -2,6 +2,7 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const XLSX = require('xlsx');
@@ -72,7 +73,8 @@ function resolveOptions(args = {}) {
     canApprove: Boolean(args.approve || args['can-approve']),
     noWrite: Boolean(args['no-write']),
     noFail: Boolean(args['no-fail']),
-    generateTemplates: Boolean(args['generate-templates'])
+    generateTemplates: Boolean(args['generate-templates']),
+    fixtureE2e: Boolean(args['fixture-e2e'])
   };
 }
 
@@ -443,7 +445,7 @@ function report(dataset, source, validation, records, status, extra = {}) {
   };
 }
 
-function emptyReport(dataset, generatedAt = '1970-01-01T00:00:00.000Z') {
+function emptyReport(dataset, generatedAt = new Date().toISOString(), status = 'not_run') {
   return report(dataset, {
     createdAt: generatedAt,
     fileName: '',
@@ -456,7 +458,7 @@ function emptyReport(dataset, generatedAt = '1970-01-01T00:00:00.000Z') {
     rejected: 0,
     errors: [],
     rejectedRows: []
-  }, [], 'ok', { note: 'No upload file was provided; registry state was left unchanged.' });
+  }, [], status, { note: 'No upload file was provided; registry state was left unchanged.' });
 }
 
 function writeAllReports(options, reports) {
@@ -498,6 +500,179 @@ function generateTemplates(templateDir) {
   ], 'portal-cost-template.xlsx');
 }
 
+function seedFixtureData(root) {
+  const dataDir = path.join(root, 'data');
+  fs.mkdirSync(dataDir, { recursive: true });
+  writeJson(path.join(dataDir, 'skus.json'), [
+    {
+      articleKey: 'sku-1',
+      article: 'sku-1',
+      legalEntity: 'Alisia LLC',
+      aliases: [{ value: 'sku-alias-1' }]
+    }
+  ]);
+  writeJson(path.join(dataDir, 'smart_price_workbench.json'), {
+    generatedAt: '2026-06-20T00:00:00.000Z',
+    platforms: {
+      wb: {
+        rows: [
+          {
+            articleKey: 'sku-1',
+            currentPrice: 100,
+            currentPriceDate: '2026-06-20',
+            currentClientPrice: 95,
+            costRub: 40,
+            commissionPct: 10,
+            logisticsPerUnit: 5,
+            taxPct: 6,
+            minPrice: 70,
+            maxPrice: 130
+          }
+        ]
+      },
+      ozon: { rows: [] },
+      ym: { rows: [] }
+    }
+  });
+  writeJson(path.join(dataDir, 'smart_price_overlay.json'), {
+    generatedAt: '2026-06-20T00:00:00.000Z',
+    platforms: { wb: { rows: [] }, ozon: { rows: [] }, ym: { rows: [] } }
+  });
+  writeJson(path.join(dataDir, 'price_workbench_support.json'), {
+    generatedAt: '2026-06-20T00:00:00.000Z',
+    platforms: { wb: { rows: [] }, ozon: { rows: [] }, ym: { rows: [] } }
+  });
+  writeJson(path.join(dataDir, 'order_procurement_wb.json'), {
+    generatedAt: '2026-06-20T00:00:00.000Z',
+    asOfDate: '2026-06-20',
+    rows: [{ articleKey: 'sku-1', inStock: 7, inTransit: 1, inRequest: 0, date: '2026-06-20' }]
+  });
+  writeJson(path.join(dataDir, 'order_procurement_ozon.json'), { generatedAt: '2026-06-20T00:00:00.000Z', rows: [] });
+  writeJson(path.join(dataDir, 'order_procurement_ym.json'), { generatedAt: '2026-06-20T00:00:00.000Z', rows: [] });
+  writeJson(path.join(dataDir, 'portal_indicator_policy.json'), {
+    schema: 'portal-indicator-policy-v1',
+    version: 'fixture',
+    visual_rules: {
+      blocked: { color: 'red', business_status: 'neutral', label: 'blocked' },
+      trusted: { color: 'green', business_status: null, label: 'trusted' }
+    },
+    policies: {
+      price_default: { requires: ['trusted_current_price', 'complete_economics', 'approved_corridor'] },
+      turnover_default: { target_days: 30 }
+    }
+  });
+  writeJson(path.join(dataDir, 'portal_metric_registry.json'), {
+    schema: 'portal-metric-registry-v1',
+    version: 'fixture',
+    metrics: []
+  });
+  writeJson(path.join(dataDir, 'portal_feature_policy.json'), {
+    schema: 'portal-feature-policy-v1',
+    features: { repricer: { required_publishable_coverage: 0.01, maintenance_mode: false, maintenance_reason: '' } }
+  });
+  return dataDir;
+}
+
+function writeFixtureWorkbook(filePath, rows) {
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), 'Upload');
+  XLSX.writeFile(workbook, filePath);
+  const stableDate = new Date('2026-06-20T00:00:00.000Z');
+  fs.utimesSync(filePath, stableDate, stableDate);
+  return filePath;
+}
+
+function aggregateFixtureReports(options) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portal-upload-fixture-'));
+  const dataDir = seedFixtureData(root);
+  const uploadDir = path.join(root, 'uploads');
+  fs.mkdirSync(uploadDir, { recursive: true });
+  const minmaxOkOut = path.join(root, 'out-minmax-ok');
+  const minmaxBadOut = path.join(root, 'out-minmax-bad');
+  const costOkOut = path.join(root, 'out-cost-ok');
+  const baseOptions = {
+    inputDir: dataDir,
+    author: options.author || 'Codex',
+    role: options.role || 'admin',
+    reason: options.reason || 'fixture',
+    canApprove: true,
+    noWrite: false
+  };
+
+  const validMinmax = writeFixtureWorkbook(path.join(uploadDir, 'minmax-ok.xlsx'), [
+    { articleKey: 'sku-1', platform: 'wb', minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture accepted corridor' }
+  ]);
+  const invalidMinmax = writeFixtureWorkbook(path.join(uploadDir, 'minmax-bad.xlsx'), [
+    { articleKey: 'sku-1', platform: 'wb', minPrice: 200, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture rejected corridor' }
+  ]);
+  const validCost = writeFixtureWorkbook(path.join(uploadDir, 'cost-ok.xlsx'), [
+    { articleKey: 'sku-1', legalEntity: 'Alisia LLC', cost: 55, currency: 'RUB', unit: 'piece', effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture verified cost' }
+  ]);
+
+  const minmaxOk = applyUpload({ ...baseOptions, outputDir: minmaxOkOut, dataset: 'min_max', file: validMinmax });
+  const minmaxBad = applyUpload({ ...baseOptions, outputDir: minmaxBadOut, dataset: 'min_max', file: invalidMinmax });
+  const costOk = applyUpload({ ...baseOptions, outputDir: costOkOut, dataset: 'cost_price', file: validCost });
+  const generatedAt = new Date().toISOString();
+  const minmaxSummary = {
+    rows: minmaxOk.minmax.summary.rows + minmaxBad.minmax.summary.rows,
+    accepted: minmaxOk.minmax.summary.accepted + minmaxBad.minmax.summary.accepted,
+    rejected: minmaxOk.minmax.summary.rejected + minmaxBad.minmax.summary.rejected,
+    persisted: minmaxOk.minmax.summary.persisted,
+    approvalStatus: 'approved'
+  };
+  const costSummary = {
+    rows: costOk.cost.summary.rows,
+    accepted: costOk.cost.summary.accepted,
+    rejected: costOk.cost.summary.rejected,
+    persisted: costOk.cost.summary.persisted,
+    approvalStatus: 'approved'
+  };
+  const reports = {
+    e2e: {
+      schema: 'portal-upload-apply-e2e-v1',
+      generatedAt,
+      status: 'warning',
+      publish_allowed: true,
+      fixture: true,
+      summary: {
+        uploads: 3,
+        accepted: minmaxSummary.accepted + costSummary.accepted,
+        rejected: minmaxSummary.rejected + costSummary.rejected,
+        persisted: minmaxSummary.persisted + costSummary.persisted,
+        approvalStatus: 'approved'
+      },
+      steps: [
+        { id: 'fixture:minmax-accepted', status: minmaxOk.e2e.status },
+        { id: 'fixture:minmax-rejected', status: minmaxBad.e2e.status },
+        { id: 'fixture:cost-accepted', status: costOk.e2e.status },
+        { id: 'fixture:persisted-equals-accepted', status: (minmaxSummary.persisted + costSummary.persisted) === (minmaxSummary.accepted + costSummary.accepted) ? 'ok' : 'blocked' }
+      ],
+      warnings: ['fixture includes an expected rejected row; upload validation path is non-vacuous']
+    },
+    minmax: {
+      ...minmaxOk.minmax,
+      generatedAt,
+      status: 'warning',
+      publish_allowed: true,
+      fixture: true,
+      summary: minmaxSummary,
+      errors: minmaxBad.minmax.errors,
+      rejectedRows: minmaxBad.minmax.rejectedRows,
+      records: minmaxOk.minmax.records
+    },
+    cost: {
+      ...costOk.cost,
+      generatedAt,
+      status: 'ok',
+      publish_allowed: true,
+      fixture: true,
+      summary: costSummary
+    }
+  };
+  writeAllReports(options, reports);
+  return reports;
+}
+
 function applyUpload(options = resolveOptions({})) {
   const callerHadTemplateDir = Object.prototype.hasOwnProperty.call(options, 'templateDir');
   const defaults = resolveOptions({});
@@ -505,13 +680,14 @@ function applyUpload(options = resolveOptions({})) {
   if (!callerHadTemplateDir && options.inputDir !== defaults.inputDir) options.templateDir = path.join(options.inputDir, 'templates');
   if (!options.templateDir) options.templateDir = path.join(options.inputDir, 'templates');
   if (options.generateTemplates && !options.noWrite) generateTemplates(options.templateDir);
+  if (options.fixtureE2e) return aggregateFixtureReports(options);
   if (!options.file) {
-    const generatedAt = '1970-01-01T00:00:00.000Z';
+    const generatedAt = new Date().toISOString();
     const reports = {
       e2e: {
         schema: 'portal-upload-apply-e2e-v1',
         generatedAt,
-        status: 'ok',
+        status: 'not_run',
         publish_allowed: true,
         summary: { uploads: 0, accepted: 0, rejected: 0, persisted: 0 },
         steps: [
@@ -519,8 +695,8 @@ function applyUpload(options = resolveOptions({})) {
           { id: 'upload:file-provided', status: 'skipped' }
         ]
       },
-      minmax: emptyReport('min_max', generatedAt),
-      cost: emptyReport('cost_price', generatedAt)
+      minmax: emptyReport('min_max', generatedAt, 'not_run'),
+      cost: emptyReport('cost_price', generatedAt, 'not_run')
     };
     writeAllReports(options, reports);
     return reports;

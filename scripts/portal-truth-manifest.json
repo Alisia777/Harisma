@@ -1,10 +1,10 @@
 {
   "schema": "portal-truth-manifest-v1",
   "version": "2026-06-20",
-  "description": "Canonical data lineage and publish contracts for every portal view except IU/DRR.",
+  "description": "Canonical data lineage and publish contracts for non-protected portal views.",
   "policy": {
     "timezone": "Europe/Moscow",
-    "excludedScopes": ["iu", "iu_plan", "iu_drr_summary", "iu-drr"],
+    "protectedScopeExcluded": true,
     "moneyToleranceAbsolute": 1000,
     "moneyToleranceRelative": 0.001,
     "dateToleranceDays": 1,

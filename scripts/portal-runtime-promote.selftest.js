@@ -64,10 +64,16 @@ function main() {
   const dirs = seedInput(root);
   const first = promoteRuntimeArtifacts(dirs);
   assert.strictEqual(first.runtimeReport.publish_allowed, true);
+  assert.strictEqual(first.runtimeReport.artifacts.find((artifact) => artifact.id === 'canonical_repricer').promoted, false);
+  assert.strictEqual(first.runtimeReport.artifacts.find((artifact) => artifact.id === 'canonical_repricer').diagnosticOnly, true);
   assert.strictEqual(first.featureReport.features.repricer.status, 'blocked');
-  const runtimeCanonical = readJson(path.join(dirs.dataDir, 'canonical_repricer.json'));
-  const lastGoodCanonical = readJson(path.join(dirs.lastGoodDir, 'canonical_repricer.json'));
-  assert.strictEqual(stableStringify(runtimeCanonical), stableStringify(lastGoodCanonical));
+  assert.strictEqual(first.featureReport.features.repricer.activation_allowed, false);
+  assert.strictEqual(fs.existsSync(path.join(dirs.dataDir, 'canonical_repricer.json')), false);
+  assert.strictEqual(fs.existsSync(path.join(dirs.lastGoodDir, 'canonical_repricer.json')), false);
+  assert.strictEqual(fs.existsSync(path.join(dirs.dataDir, 'portal_dashboard_metrics.json')), true);
+  const runtimeDashboard = readJson(path.join(dirs.dataDir, 'portal_dashboard_metrics.json'));
+  const lastGoodDashboard = readJson(path.join(dirs.lastGoodDir, 'portal_dashboard_metrics.json'));
+  assert.strictEqual(stableStringify(runtimeDashboard), stableStringify(lastGoodDashboard));
 
   writeJson(path.join(dirs.inputDir, 'canonical_repricer.json'), {
     schema: 'canonical-repricer-v1',
@@ -84,11 +90,11 @@ function main() {
   });
   const second = promoteRuntimeArtifacts(dirs);
   assert.strictEqual(second.runtimeReport.publish_allowed, true);
-  assert.strictEqual(second.runtimeReport.artifacts.find((artifact) => artifact.id === 'canonical_repricer').fallback, true);
-  const restored = readJson(path.join(dirs.dataDir, 'canonical_repricer.json'));
-  assert.strictEqual(stableStringify(restored), stableStringify(lastGoodCanonical));
+  assert.strictEqual(second.runtimeReport.artifacts.find((artifact) => artifact.id === 'canonical_repricer').promoted, false);
+  assert.strictEqual(second.runtimeReport.artifacts.find((artifact) => artifact.id === 'canonical_repricer').diagnosticOnly, true);
+  assert.strictEqual(fs.existsSync(path.join(dirs.dataDir, 'canonical_repricer.json')), false);
 
-  console.log('[runtime-promote-selftest] OK: promote, last_good, fallback, and feature readiness passed');
+  console.log('[runtime-promote-selftest] OK: feature-gated runtime promotion and readiness passed');
 }
 
 if (require.main === module) main();

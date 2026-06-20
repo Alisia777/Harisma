@@ -830,16 +830,22 @@ function inspectSkuMatrix(loaded, policy, checks, passports) {
 }
 
 function inspectExecutiveTruthCode(loaded, policy, checks, passports) {
-  const check = { id: 'contract:executive-direct-fact', scope: 'executive-code', source: 'app-core-10.js', warnings: [], blockingReasons: [] };
-  const filePath = path.resolve(__dirname, '..', 'app-core-10.js');
+  const sourceFile = 'portal-executive-direct-fact-guard.js';
+  const check = { id: 'contract:executive-direct-fact', scope: 'executive-code', source: sourceFile, warnings: [], blockingReasons: [] };
+  const filePath = path.resolve(__dirname, '..', sourceFile);
+  const indexPath = path.resolve(__dirname, '..', 'index.html');
   try {
     const text = fs.readFileSync(filePath, 'utf8');
+    const indexText = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '';
     const scalePlanCalls = (text.match(/executiveFunnelScalePlanBucket\(/g) || []).length;
     const scaleFinancialCalls = (text.match(/executiveFunnelScaleBucketFinancials\(/g) || []).length;
+    const appCoreIndex = indexText.indexOf('app-core-10.js');
+    const guardIndex = indexText.indexOf(sourceFile);
     check.modeMarkers = {
       directFactOnly: text.includes('direct_fact_only'),
       scalePlanCalls,
-      scaleFinancialCalls
+      scaleFinancialCalls,
+      loadedAfterProtectedCore: appCoreIndex >= 0 && guardIndex > appCoreIndex
     };
     if (/payrollFactAllocationBasis\s*=\s*['"]plan_share['"]/.test(text) || /payrollFactAllocated\s*=\s*true/.test(text)) {
       check.blockingReasons.push('executive: plan_share employee fact allocation is still present');
@@ -850,12 +856,13 @@ function inspectExecutiveTruthCode(loaded, policy, checks, passports) {
     if (scalePlanCalls > 1) check.blockingReasons.push('executive: executiveFunnelScalePlanBucket is called outside its guarded definition');
     if (scaleFinancialCalls > 1) check.blockingReasons.push('executive: executiveFunnelScaleBucketFinancials is called outside its guarded definition');
     if (!text.includes('direct_fact_only')) check.blockingReasons.push('executive: direct_fact_only marker is absent');
+    if (!check.modeMarkers.loadedAfterProtectedCore) check.blockingReasons.push('executive: direct fact guard is not loaded after protected executive core');
   } catch (error) {
-    check.blockingReasons.push(`executive: cannot inspect app-core-10.js: ${error.message}`);
+    check.blockingReasons.push(`executive: cannot inspect ${sourceFile}: ${error.message}`);
   }
   passports.push({
     key: 'executive.factAllocationMode',
-    source: 'app-core-10.js',
+    source: sourceFile,
     period: '',
     value: check.modeMarkers?.directFactOnly ? 'direct_fact_only' : 'unknown',
     formula: 'employee facts must remain direct; control deltas stay unallocated'

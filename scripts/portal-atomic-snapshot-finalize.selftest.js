@@ -1,11 +1,17 @@
 #!/usr/bin/env node
+'use strict';
 
 const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const crypto = require('crypto');
 
-const { finalizeAtomicSnapshots } = require('./portal-atomic-snapshot-finalize');
+const {
+  finalizeAtomicSnapshots,
+  sanitizeString,
+  stageAndActivateSnapshot
+} = require('./portal-atomic-snapshot-finalize');
 
 function writeJson(filePath, payload) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -16,11 +22,14 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-function makeFixture(dir) {
-  const dataDir = path.join(dir, 'data');
-  const lastGoodDir = path.join(dataDir, 'last_good');
-  fs.mkdirSync(lastGoodDir, { recursive: true });
+function sha256(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
 
+function makeFixture(root) {
+  const dataDir = path.join(root, 'data');
+  const outputDir = path.join(root, 'out');
+  fs.mkdirSync(dataDir, { recursive: true });
   writeJson(path.join(dataDir, 'dashboard.json'), {
     generatedAt: '2026-06-20T01:00:00.000Z',
     cards: [
@@ -28,91 +37,58 @@ function makeFixture(dir) {
       { id: 'sales', label: 'Duplicate sales', value: 11 }
     ]
   });
-  writeJson(path.join(dataDir, 'portal_sync_health.json'), { generatedAt: '2026-06-20T01:00:00.000Z', status: 'ok' });
-  writeJson(path.join(dataDir, 'sku_aliases.json'), { schema: 'sku-api-aliases-v1', aliases: [] });
-  writeJson(path.join(lastGoodDir, 'sku_aliases.json'), {
-    schema: 'sku-api-aliases-v1',
-    aliases: [{ target_sku: 'a', platform: 'wb', api_sku: 'A-1', status: 'active' }]
-  });
-  writeJson(path.join(dataDir, 'oos_control.json'), {
-    summary: { oosCount: 1, criticalCount: 0, riskCount: 0, watchCount: 0, date: '2026-06-20' },
-    byPlatform: [{ key: 'wb', label: 'WB', oos: 1, critical: 0, risk: 0, watch: 0 }],
-    rows: [{ platform: 'wb', owner: 'Ann', department: 'Ops', status: 'oos', severity: 'critical' }],
-    history: {
-      latest: { date: '2026-06-20', oosCount: 1, criticalCount: 0, riskCount: 0, watchCount: 0 },
-      days: [{ date: '2026-06-20', oosCount: 1, criticalCount: 0, riskCount: 0, watchCount: 0 }]
-    }
-  });
-  writeJson(path.join(dataDir, 'product_leaderboard.json'), {
-    sourceFile: 'C:\\Users\\artiu\\Downloads\\leaderboard.xlsx',
-    totals: { sourceRows: 2, brandRows: 1, matchedRows: 1, unmatchedRows: 1 },
-    summary: { skuCount: 2 },
-    items: [
-      { id: 'm1', articleKey: 'matched', inPortal: true, revenue: 100, income: 50, contentCost: 10, clicks: 5, reach: 10, orders: 2, buys: 1, carts: 3 },
-      { id: 'u1', articleKey: 'unmatched', inPortal: false, revenue: 20, income: 5 }
-    ],
-    unmatchedItems: [{ id: 'u1', articleKey: 'unmatched', inPortal: false, revenue: 20, income: 5 }]
-  });
   writeJson(path.join(dataDir, 'repricer.json'), {
-    summary: {},
-    rows: [{
-      articleKey: 'a',
-      cost: null,
-      wb: { currentPrice: 100, recPrice: 80, procurementSnapshotAvailable: false },
-      ozon: { currentPrice: 120, recPrice: 130, procurementSnapshotAvailable: true }
-    }]
+    generatedAt: '2026-06-20T01:00:00.000Z',
+    rows: [{ articleKey: 'sku-1', wb: { currentPrice: 100, recPrice: 80 } }]
   });
-  writeJson(path.join(dataDir, 'platform_trends.json'), { generatedAt: '2026-06-20T01:00:00.000Z', platforms: [] });
-  writeJson(path.join(dataDir, 'company_plan.json'), { sourcePath: 'C:\\Users\\artiu\\Downloads\\plan.xlsx' });
-  writeJson(path.join(dataDir, 'iu_plan.json'), { sourcePath: 'C:\\Users\\artiu\\Downloads\\iu.xlsx' });
-
-  return { dataDir, lastGoodDir, outputDir: path.join(dir, 'out') };
+  writeJson(path.join(dataDir, 'runtime_snapshot_inventory.json'), {
+    schema: 'portal-runtime-snapshot-inventory-v1',
+    paths: ['data/dashboard.json', 'data/repricer.json']
+  });
+  return { dataDir, outputDir, inventoryPath: path.join(dataDir, 'runtime_snapshot_inventory.json') };
 }
 
-function run() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'portal-finalize-selftest-'));
-  const options = makeFixture(dir);
-  const protectedBefore = fs.readFileSync(path.join(options.dataDir, 'iu_plan.json'), 'utf8');
+function main() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portal-finalize-selftest-'));
+  const options = makeFixture(root);
+  const dashboardBefore = fs.readFileSync(path.join(options.dataDir, 'dashboard.json'), 'utf8');
+  const repricerBefore = fs.readFileSync(path.join(options.dataDir, 'repricer.json'), 'utf8');
 
-  const first = finalizeAtomicSnapshots(options);
-  const second = finalizeAtomicSnapshots(options);
-  assert.strictEqual(second.runId, first.runId);
+  const first = finalizeAtomicSnapshots({ root, ...options });
+  const second = finalizeAtomicSnapshots({ root, ...options });
+  assert.strictEqual(second.runId, first.runId, 'same inputs must keep the same runId');
+  assert.strictEqual(second.fingerprint, first.fingerprint, 'same inputs must keep the same manifest fingerprint');
 
-  const dashboard = readJson(path.join(options.dataDir, 'dashboard.json'));
-  assert.strictEqual(dashboard.cards.length, 2);
-  assert.strictEqual(dashboard.cards[0].metricId, 'sales');
-  assert.strictEqual(first.dashboardDuplicateCards, 1);
+  assert.strictEqual(fs.readFileSync(path.join(options.dataDir, 'dashboard.json'), 'utf8'), dashboardBefore);
+  assert.strictEqual(fs.readFileSync(path.join(options.dataDir, 'repricer.json'), 'utf8'), repricerBefore);
 
-  const aliases = readJson(path.join(options.dataDir, 'sku_aliases.json'));
-  assert.strictEqual(aliases.aliases.length, 1);
-  assert.strictEqual(aliases.restoredFromLastGood, true);
+  const active = readJson(path.join(options.dataDir, 'active_snapshot.json'));
+  assert.strictEqual(active.runId, first.runId);
+  assert.strictEqual(active.artifacts.length, 2);
+  assert.strictEqual(active.artifacts.find((item) => item.path === 'data/dashboard.json').sha256, sha256(path.join(options.dataDir, 'dashboard.json')));
+  assert.strictEqual(active.artifacts.find((item) => item.path === 'data/repricer.json').sha256, sha256(path.join(options.dataDir, 'repricer.json')));
 
-  const oos = readJson(path.join(options.dataDir, 'oos_control.json'));
-  assert.strictEqual(oos.summary.criticalCount, 1);
-  assert.strictEqual(oos.history.latest.criticalCount, 1);
+  const stagedDashboard = fs.readFileSync(path.join(options.dataDir, 'snapshots', first.runId, 'data', 'dashboard.json'), 'utf8');
+  assert.strictEqual(stagedDashboard, dashboardBefore);
 
-  const leaderboard = readJson(path.join(options.dataDir, 'product_leaderboard.json'));
-  assert.strictEqual(leaderboard.items.length, 1);
-  assert.strictEqual(leaderboard.unmatchedItems.length, 1);
-  assert.strictEqual(leaderboard.totals.brandRows, 2);
-  assert.ok(leaderboard.items[0].provenance.revenue);
-  assert.strictEqual(leaderboard.sourceFile, 'leaderboard.xlsx');
+  assert.strictEqual(
+    sanitizeString('https://docs.google.com/spreadsheets/d/x/edit?gid=1', { root }),
+    'https://docs.google.com/spreadsheets/d/x/edit?gid=1'
+  );
+  assert.ok(!/^[A-Z]:[\\/]/i.test(sanitizeString('C:\\Users\\user\\Downloads\\plan.xlsx', { root })));
 
-  const repricer = readJson(path.join(options.dataDir, 'repricer.json'));
-  assert.strictEqual(repricer.rows[0].wb.strategy, 'BLOCK_DATA');
-  assert.strictEqual(repricer.rows[0].wb.recPrice, 100);
-  assert.strictEqual(repricer.rows[0].ozon.strategy, 'BLOCK_DATA');
-  assert.strictEqual(repricer.rows[0].ozon.recPrice, 120);
+  writeJson(path.join(options.dataDir, 'active_snapshot.json'), { runId: 'previous' });
+  for (let failAfterWrite = 0; failAfterWrite < 6; failAfterWrite += 1) {
+    writeJson(path.join(options.dataDir, 'active_snapshot.json'), { runId: 'previous' });
+    try {
+      stageAndActivateSnapshot({ root, dataDir: options.dataDir, inventoryPath: options.inventoryPath, failAfterWrite });
+    } catch (_error) {
+      // Expected injected failure.
+    }
+    assert.strictEqual(readJson(path.join(options.dataDir, 'active_snapshot.json')).runId, 'previous');
+  }
 
-  const companyPlan = readJson(path.join(options.dataDir, 'company_plan.json'));
-  assert.strictEqual(companyPlan.sourcePath, 'plan.xlsx');
-  assert.strictEqual(fs.readFileSync(path.join(options.dataDir, 'iu_plan.json'), 'utf8'), protectedBefore);
-
-  const runIds = ['dashboard', 'portal_sync_health', 'sku_aliases', 'oos_control', 'product_leaderboard', 'repricer', 'platform_trends']
-    .map((name) => readJson(path.join(options.dataDir, `${name}.json`)).runId);
-  assert.strictEqual(new Set(runIds).size, 1);
-  assert.ok(runIds[0]);
+  console.log('OK: portal atomic snapshot finalizer selftest passed');
 }
 
-run();
-console.log('OK: portal atomic snapshot finalizer selftest passed');
+if (require.main === module) main();

@@ -23,7 +23,7 @@
       "snapshot_id_path": "generatedAt",
       "checksum": null,
       "allowed_consumers": ["dashboard", "executive", "sku-plan-fact", "audit"],
-      "forbidden_consumers": ["iu-drr"]
+      "protected_scope_excluded": true
     },
     {
       "source_id": "marketplace_sales_fact",

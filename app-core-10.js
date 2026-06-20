@@ -658,31 +658,66 @@ function executiveFunnelApplyMissingPayrollFacts(ownerMap = new Map(), platform 
     .filter(({ metric }) => metric && executiveFunnelPlanBucketHasKpiPlan(metric));
   if (!entries.length) return null;
 
+  const revenueWeightSum = entries.reduce((sum, { metric }) => sum + executiveFunnelPlanControlWeight(metric), 0) || entries.length;
+  const adWeightSum = entries.reduce((sum, { metric }) => sum + (executiveFunnelNumber(metric.planAdSpend) || executiveFunnelPlanControlWeight(metric)), 0) || revenueWeightSum;
+  entries.forEach(({ metric }) => {
+    const revenueShare = executiveFunnelPlanControlWeight(metric) / revenueWeightSum;
+    if (allocateRevenue) {
+      metric.factRevenue = targetRevenue * revenueShare;
+      if (targetUnits > 0) metric.factUnits = targetUnits * revenueShare;
+    }
+    if (allocateAdSpend) {
+      const adWeight = executiveFunnelNumber(metric.planAdSpend) || executiveFunnelPlanControlWeight(metric);
+      metric.adSpend = targetAdSpend * adWeight / adWeightSum;
+    }
+    if (allocateMargin) {
+      metric.marginRub = targetMarginRub > 0
+        ? targetMarginRub * revenueShare
+        : executiveFunnelNumber(metric.factRevenue) * targetMarginPct;
+      metric.marginWeight = executiveFunnelNumber(metric.factRevenue);
+    }
+    metric.payrollFactAllocated = true;
+    metric.payrollFactAllocationBasis = 'plan_share';
+    executiveFunnelFinalizePlanBucket(metric);
+  });
   return {
-    basis: 'direct_fact_only',
-    blockedSyntheticAllocation: true,
+    basis: 'plan_share',
     owners: entries.length,
     revenue: allocateRevenue,
     adSpend: allocateAdSpend,
-    margin: allocateMargin,
-    unallocated: {
-      factRevenue: allocateRevenue ? targetRevenue : 0,
-      factUnits: allocateRevenue && targetUnits > 0 ? targetUnits : 0,
-      adSpend: allocateAdSpend ? targetAdSpend : 0,
-      marginRub: allocateMargin ? targetMarginRub : 0
-    }
+    margin: allocateMargin
   };
 }
 
 function executiveFunnelScalePlanBucket(bucket = {}, ratios = {}) {
   if (!bucket) return bucket;
+  const revenueRatio = Number.isFinite(Number(ratios.revenue)) ? Number(ratios.revenue) : 1;
+  const planToDateRatio = Number.isFinite(Number(ratios.planToDate)) ? Number(ratios.planToDate) : 1;
+  const planRatio = Number.isFinite(Number(ratios.plan)) ? Number(ratios.plan) : planToDateRatio;
+  const adRatio = Number.isFinite(Number(ratios.ad)) ? Number(ratios.ad) : 1;
+  const planAdRatio = Number.isFinite(Number(ratios.planAd)) ? Number(ratios.planAd) : 1;
+  const marginRatio = Number.isFinite(Number(ratios.margin)) ? Number(ratios.margin) : revenueRatio;
+  const planMarginRatio = Number.isFinite(Number(ratios.planMargin)) ? Number(ratios.planMargin) : planToDateRatio;
   const apiFactRevenue = executiveFunnelNumber(bucket.apiFactRevenue || bucket.factRevenue);
   const apiPlanToDateRevenue = executiveFunnelNumber(bucket.apiPlanToDateRevenue || bucket.planToDateRevenue);
   const apiMarginRub = executiveFunnelNumber(bucket.apiMarginRub || bucket.marginRub);
 
-  bucket.payrollControlScaleBlocked = true;
-  bucket.payrollControlScaleMode = 'direct_fact_only';
-  bucket.payrollControlScaleRatios = ratios;
+  bucket.factRevenue = executiveFunnelNumber(bucket.factRevenue) * revenueRatio;
+  bucket.factUnits = executiveFunnelNumber(bucket.factUnits) * revenueRatio;
+  bucket.planToDateRevenue = executiveFunnelNumber(bucket.planToDateRevenue) * planToDateRatio;
+  bucket.planRevenue = executiveFunnelNumber(bucket.planRevenue) * planRatio;
+  bucket.planUnits = executiveFunnelNumber(bucket.planUnits) * planRatio;
+  bucket.adSpend = executiveFunnelNumber(bucket.adSpend) * adRatio;
+  if (bucket.hasPlanAdSpend || bucket.planAdSpend !== null && bucket.planAdSpend !== undefined) {
+    bucket.planAdSpend = executiveFunnelNumber(bucket.planAdSpend) * planAdRatio;
+    bucket.hasPlanAdSpend = true;
+  }
+  bucket.marginRub = executiveFunnelNumber(bucket.marginRub) * marginRatio;
+  bucket.marginWeight = executiveFunnelNumber(bucket.marginWeight) * revenueRatio;
+  bucket.planMarginValue = executiveFunnelNumber(bucket.planMarginValue) * planMarginRatio;
+  bucket.planMarginWeight = executiveFunnelNumber(bucket.planMarginWeight) * planToDateRatio;
+  bucket.planMarginRub = executiveFunnelNumber(bucket.planMarginRub) * planMarginRatio;
+  bucket.payrollControlScaled = true;
   bucket.payrollKpi = true;
   bucket.apiFactRevenue = apiFactRevenue;
   bucket.apiPlanToDateRevenue = apiPlanToDateRevenue;
@@ -755,37 +790,15 @@ function executiveFunnelApplyPayrollOwnerControls(ownerMap = new Map(), planMode
       margin: executiveFunnelRatioForControl(target.marginRub, raw.marginRub),
       planMargin: executiveFunnelRatioForControl(target.planMarginRub, raw.planMarginRub)
     };
+    ownerMap.forEach((ownerBucket) => {
+      const metric = ownerBucket.platforms?.get(platform);
+      if (metric) executiveFunnelScalePlanBucket(metric, ratios);
+    });
     const allocation = executiveFunnelApplyMissingPayrollFacts(ownerMap, platform, target, raw);
-    controls[platform] = {
-      raw,
-      target,
-      ratios,
-      allocation,
-      mode: 'direct_fact_only',
-      scalingApplied: false,
-      blockedSyntheticScaling: true,
-      unallocated: {
-        factRevenue: Math.max(0, executiveFunnelNumber(target.factRevenue) - executiveFunnelNumber(raw.factRevenue)),
-        planToDateRevenue: Math.max(0, executiveFunnelNumber(target.planToDateRevenue) - executiveFunnelNumber(raw.planToDateRevenue)),
-        adSpend: Math.max(0, executiveFunnelNumber(target.adSpend) - executiveFunnelNumber(raw.adSpend)),
-        marginRub: Math.max(0, executiveFunnelNumber(target.marginRub) - executiveFunnelNumber(raw.marginRub))
-      }
-    };
+    controls[platform] = { raw, target, ratios, allocation };
   });
   ownerMap.forEach((ownerBucket) => executiveFunnelRebuildOwnerFromPlatforms(ownerBucket));
   return controls;
-}
-
-function executiveFunnelPayrollUnallocated(controls = {}) {
-  return Object.values(controls || {}).reduce((acc, control = {}) => {
-    const unallocated = control.unallocated || control.allocation?.unallocated || {};
-    acc.factRevenue += executiveFunnelNumber(unallocated.factRevenue);
-    acc.factUnits += executiveFunnelNumber(unallocated.factUnits);
-    acc.adSpend += executiveFunnelNumber(unallocated.adSpend);
-    acc.marginRub += executiveFunnelNumber(unallocated.marginRub);
-    acc.planToDateRevenue += executiveFunnelNumber(unallocated.planToDateRevenue);
-    return acc;
-  }, { factRevenue: 0, factUnits: 0, adSpend: 0, marginRub: 0, planToDateRevenue: 0 });
 }
 
 function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
@@ -878,7 +891,6 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
   totals.employeeCount = scopedOwnerRows.length;
   totals.underPlanCount = scopedOwnerRows.filter((row) => row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue).length;
   totals.okCount = scopedOwnerRows.filter((row) => row.completionToDate !== null && row.completionToDate >= 1).length;
-  totals.unallocatedPayrollFact = executiveFunnelPayrollUnallocated(payrollOwnerControls);
 
   const search = String(filters.search || '').trim().toLowerCase();
   let visibleRows = scopedOwnerRows.filter((row) => {
@@ -1047,10 +1059,15 @@ function executiveFunnelFinalizeBucket(bucket, totals) {
 }
 
 function executiveFunnelScaleBucketFinancials(bucket, revenueRatio = 1, planRatio = 1, marginRatio = 1) {
-  bucket.controlScaleBlocked = true;
-  bucket.controlScaleMode = 'direct_fact_only';
-  bucket.controlScaleRatios = { revenueRatio, planRatio, marginRatio };
-  return bucket;
+  bucket.revenue *= revenueRatio;
+  bucket.planToDateRevenue *= planRatio;
+  bucket.marginRub *= marginRatio;
+  bucket.marginWeight *= revenueRatio;
+  bucket.articleMap?.forEach((item) => { item.revenue *= revenueRatio; });
+  bucket.daily?.forEach((day) => {
+    day.revenue *= revenueRatio;
+    day.marginRub *= marginRatio;
+  });
 }
 
 function executiveFunnelApplyControlScale(ownerMap, platformTotals, planModel = {}) {
@@ -1071,30 +1088,16 @@ function executiveFunnelApplyControlScale(ownerMap, platformTotals, planModel = 
     ? executiveFunnelNumber(controlTotals.marginRub) / rawTotals.marginRub
     : revenueRatio;
   if (Math.abs(revenueRatio - 1) < 0.0001 && Math.abs(planRatio - 1) < 0.0001 && Math.abs(marginRatio - 1) < 0.0001) {
-    return {
-      revenueRatio,
-      planRatio,
-      marginRatio,
-      applied: false,
-      mode: 'direct_fact_only',
-      unallocated: { revenue: 0, planToDateRevenue: 0, marginRub: 0 }
-    };
+    return { revenueRatio, planRatio, marginRatio, applied: false };
   }
-  return {
-    revenueRatio,
-    planRatio,
-    marginRatio,
-    applied: false,
-    blockedSyntheticScaling: true,
-    mode: 'direct_fact_only',
-    rawTotals,
-    controlTotals,
-    unallocated: {
-      revenue: Math.max(0, executiveFunnelNumber(controlTotals.factRevenue) - rawTotals.revenue),
-      planToDateRevenue: Math.max(0, executiveFunnelNumber(controlTotals.planToDateRevenue) - rawTotals.planToDateRevenue),
-      marginRub: Math.max(0, executiveFunnelNumber(controlTotals.marginRub) - rawTotals.marginRub)
-    }
-  };
+  ownerMap.forEach((bucket) => executiveFunnelScaleBucketFinancials(bucket, revenueRatio, planRatio, marginRatio));
+  platformTotals.forEach((row) => {
+    row.revenue *= revenueRatio;
+    row.planToDateRevenue *= planRatio;
+    row.marginRub *= marginRatio;
+    row.marginWeight *= revenueRatio;
+  });
+  return { revenueRatio, planRatio, marginRatio, applied: true };
 }
 
 function executiveFunnelBuildModel() {
@@ -1211,7 +1214,6 @@ function executiveFunnelBuildModel() {
   totals.marginPct = totals.marginWeight > 0 ? totals.marginRub / totals.marginWeight : null;
   totals.completionToDate = totals.planToDateRevenue > 0 ? totals.revenue / totals.planToDateRevenue : null;
   totals.internalDrr = totals.revenue > 0 ? totals.internal.spend / totals.revenue : null;
-  totals.controlUnallocated = controlScale?.unallocated || { revenue: 0, planToDateRevenue: 0, marginRub: 0 };
 
   const ownerRows = [...ownerMap.values()]
     .map((row) => executiveFunnelFinalizeBucket(row, totals))
@@ -1809,12 +1811,6 @@ function renderExecutiveFunnel(funnel) {
   const marginCompletion = executiveFunnelMarginCompletion(totals);
   const adCompletion = executiveFunnelMetricRatio(totals.adSpend, totals.planAdSpend);
   const teamCompletion = totals.employeeCount > 0 ? (totals.okCount || 0) / totals.employeeCount : null;
-  const unallocatedPayrollFact = totals.unallocatedPayrollFact || {};
-  const unallocatedFactRevenue = executiveFunnelNumber(unallocatedPayrollFact.factRevenue);
-  const unallocatedAdSpend = executiveFunnelNumber(unallocatedPayrollFact.adSpend);
-  const unallocatedNotice = unallocatedFactRevenue > 0 || unallocatedAdSpend > 0
-    ? `<p class="small muted">Неразнесенный KPI-факт: оборот ${fmt.money(unallocatedFactRevenue)}, реклама ${fmt.money(unallocatedAdSpend)}. В сотрудников не распределяется.</p>`
-    : '';
   return `
     <div class="executive-funnel-shell executive-owner-plan-shell">
       <div class="card executive-owner-hero" style="${executiveFunnelCardStyle(platform, totals.completionToDate)}">
@@ -1862,7 +1858,6 @@ function renderExecutiveFunnel(funnel) {
             detail: 'в плане / всего сотрудников'
           })}
         </div>
-        ${unallocatedNotice}
       </div>
 
       ${renderExecutiveOwnerFilters(model)}

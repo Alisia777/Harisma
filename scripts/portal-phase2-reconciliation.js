@@ -217,11 +217,14 @@ function checkSkuMatrix(options) {
 }
 
 function checkExecutiveCode() {
-  const filePath = path.resolve(__dirname, '..', 'app-core-10.js');
+  const filePath = path.resolve(__dirname, '..', 'portal-executive-direct-fact-guard.js');
+  const indexPath = path.resolve(__dirname, '..', 'index.html');
   const text = fs.readFileSync(filePath, 'utf8');
+  const indexText = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '';
   const blockingReasons = [];
   const scalePlanCalls = (text.match(/executiveFunnelScalePlanBucket\(/g) || []).length;
   const scaleFinancialCalls = (text.match(/executiveFunnelScaleBucketFinancials\(/g) || []).length;
+  const loadedAfterProtectedCore = indexText.indexOf('portal-executive-direct-fact-guard.js') > indexText.indexOf('app-core-10.js');
   if (/payrollFactAllocationBasis\s*=\s*['"]plan_share['"]/.test(text) || /payrollFactAllocated\s*=\s*true/.test(text)) {
     blockingReasons.push('plan_share employee fact allocation is present');
   }
@@ -229,12 +232,14 @@ function checkExecutiveCode() {
   if (scalePlanCalls > 1) blockingReasons.push('scale plan bucket is called outside guarded definition');
   if (scaleFinancialCalls > 1) blockingReasons.push('scale bucket financials is called outside guarded definition');
   if (!text.includes('direct_fact_only')) blockingReasons.push('direct_fact_only marker is absent');
+  if (!loadedAfterProtectedCore) blockingReasons.push('direct fact guard is not loaded after protected executive core');
   return {
     status: blockingReasons.length ? 'blocked' : 'ok',
     blockingReasons,
     warnings: [],
     source: filePath,
     directFactOnly: text.includes('direct_fact_only'),
+    loadedAfterProtectedCore,
     scalePlanCalls,
     scaleFinancialCalls
   };

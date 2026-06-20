@@ -56,6 +56,22 @@
     magnit: { label: 'Магнит', color: '#E85B55', rgb: '232,91,85' }
   };
 
+  var MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
+  var MARKETPLACE_IDS = ['all', 'wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit'];
+  var MARKETPLACE_TO_INTERNAL = { ym: 'ya' };
+  var INTERNAL_TO_MARKETPLACE = { ya: 'ym' };
+
+  Object.assign(ROUTES.dashboard, {
+    title: 'Дашборд',
+    kicker: 'CEO контур',
+    headline: 'Пульс бренда без операционного шума',
+    caption: 'Заказы, выкупы, маржа и реклама: сверху итог, ниже площадки и SKU.'
+  });
+  Object.assign(NAV_BY_ID.dashboard, {
+    title: 'Дашборд',
+    caption: 'CEO · заказы · маржа · реклама'
+  });
+
   var renderFrame = 0;
   var observer = null;
   var renderLock = false;
@@ -104,18 +120,185 @@
     return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(Number(value) * 100) + '%';
   }
 
+  function normalizeMarketplace(value) {
+    var key = String(value || 'all').trim().toLowerCase();
+    if (!key || key === 'undefined' || key === 'null') key = 'all';
+    if (key === 'ya' || key === 'yandex' || key === 'yandexmarket' || key === 'yamarket') key = 'ym';
+    if (key === 'goldenapple' || key === 'gold-apple' || key === 'gold_apple' || key === 'зя') key = 'goldapple';
+    if (key === 'letual' || key === 'letuall' || key === 'летуаль') key = 'letu';
+    if (key === 'magnitmarket' || key === 'magnit-market') key = 'magnit';
+    return MARKETPLACE_IDS.indexOf(key) >= 0 ? key : 'all';
+  }
+
+  function internalPlatform(value) {
+    var marketplace = normalizeMarketplace(value);
+    return MARKETPLACE_TO_INTERNAL[marketplace] || marketplace;
+  }
+
+  function marketplaceFromInternal(value) {
+    var key = String(value || 'all').trim().toLowerCase();
+    return normalizeMarketplace(INTERNAL_TO_MARKETPLACE[key] || key);
+  }
+
+  function readMarketplace() {
+    try {
+      return normalizeMarketplace(window.localStorage.getItem(MARKETPLACE_STORAGE_KEY));
+    } catch (error) {
+      return 'all';
+    }
+  }
+
+  function currentMarketplace() {
+    return normalizeMarketplace(
+      document.documentElement.getAttribute('data-marketplace')
+      || document.body.getAttribute('data-marketplace')
+      || readMarketplace()
+    );
+  }
+
   function platformMeta(key) {
-    return PLATFORM[key] || PLATFORM.all;
+    var marketplace = normalizeMarketplace(key);
+    return PLATFORM[marketplace] || PLATFORM[internalPlatform(marketplace)] || PLATFORM.all;
   }
 
   function platformStyle(key) {
     var meta = platformMeta(key);
-    return '--platform:' + meta.color + ';--platform-rgb:' + meta.rgb + ';--pc:' + meta.color;
+    return '--platform:' + meta.color + ';--platform-rgb:' + meta.rgb + ';--pc:' + meta.color + ';--pc-rgb:' + meta.rgb;
   }
 
   function routeStyle(route, platform) {
-    var meta = platformMeta(platform || 'all');
+    var meta = platformMeta(platform || currentMarketplace());
     return '--route-accent:' + route.accent + ';--route-rgb:' + route.rgb + ';--platform:' + meta.color + ';--platform-rgb:' + meta.rgb;
+  }
+
+  function setMarketplaceVars(element, marketplace) {
+    if (!element) return;
+    var next = normalizeMarketplace(marketplace);
+    var meta = platformMeta(next);
+    element.dataset.marketplace = next;
+    element.dataset.platform = next;
+    element.style.setProperty('--platform', meta.color);
+    element.style.setProperty('--platform-rgb', meta.rgb);
+    element.style.setProperty('--pc', meta.color);
+    element.style.setProperty('--pc-rgb', meta.rgb);
+  }
+
+  function syncMarketplaceControls() {
+    var active = currentMarketplace();
+    Array.prototype.forEach.call(document.querySelectorAll('[data-altea-marketplace]'), function (button) {
+      var key = normalizeMarketplace(button.getAttribute('data-altea-marketplace'));
+      var selected = key === active;
+      button.classList.toggle('is-active', selected);
+      button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+  }
+
+  function syncGlobalFilterState(marketplace) {
+    var s = state();
+    if (!s || typeof s !== 'object') return;
+    var platform = internalPlatform(marketplace);
+    s.filters = s.filters || {};
+    s.filters.market = platform;
+    s.filters.platform = platform;
+    if (s.skuPlanFactFilters) s.skuPlanFactFilters.platform = platform;
+    if (s.iuDrrFilters && platform !== 'all') s.iuDrrFilters.platform = platform === 'ym' ? 'ya' : platform;
+    if (s.adsFunnelFilters) s.adsFunnelFilters.platform = platform;
+    if (window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__) {
+      window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__.platform = platform;
+    }
+  }
+
+  function applyMarketplaceToVisibleRoute(marketplace) {
+    var active = activeRoute();
+    if (!active || premiumRoute(active.id)) return;
+    var platform = internalPlatform(marketplace);
+    var scopedSelectors = [
+      '[data-executive-funnel-platform]',
+      '[data-market-filter]',
+      '[data-sku-plan-fact-platform-card]',
+      '[data-oos-platform-chip]',
+      '[data-iu-drr-platform]',
+      '[data-ads-platform]',
+      '[data-rating-platform]',
+      '[data-altea-order-platform]',
+      '[data-calendar-platform-chip]',
+      '[data-task-platform-filter]'
+    ];
+    scopedSelectors.some(function (selector) {
+      var buttons = Array.prototype.slice.call(active.root.querySelectorAll(selector));
+      var target = buttons.find(function (button) {
+        var attr = button.getAttribute('data-executive-funnel-platform')
+          || button.getAttribute('data-market-filter')
+          || button.getAttribute('data-sku-plan-fact-platform-card')
+          || button.getAttribute('data-oos-platform-chip')
+          || button.getAttribute('data-iu-drr-platform')
+          || button.getAttribute('data-ads-platform')
+          || button.getAttribute('data-rating-platform')
+          || button.getAttribute('data-altea-order-platform')
+          || button.getAttribute('data-calendar-platform-chip')
+          || button.getAttribute('data-task-platform-filter');
+        return marketplaceFromInternal(attr) === marketplace || String(attr || '').toLowerCase() === platform;
+      });
+      if (target && !target.classList.contains('active') && !target.classList.contains('is-active')) {
+        target.click();
+        return true;
+      }
+      return false;
+    });
+  }
+
+  function applyMarketplace(value, options) {
+    var opts = options || {};
+    var next = normalizeMarketplace(value);
+    setMarketplaceVars(document.documentElement, next);
+    setMarketplaceVars(document.body, next);
+    setMarketplaceVars(document.getElementById('altea-premium-app'), next);
+    if (opts.persist !== false) {
+      try {
+        window.localStorage.setItem(MARKETPLACE_STORAGE_KEY, next);
+      } catch (error) {}
+    }
+    syncGlobalFilterState(next);
+    syncMarketplaceControls();
+    if (!opts.silent) {
+      var detail = { marketplace: next, platform: next, internalPlatform: internalPlatform(next) };
+      window.dispatchEvent(new CustomEvent('altea:marketplacechange', { detail: detail }));
+      window.dispatchEvent(new CustomEvent('altea:platformchange', { detail: detail }));
+    }
+    if (opts.rerender) {
+      applyMarketplaceToVisibleRoute(next);
+      if (typeof window.rerenderCurrentView === 'function') window.rerenderCurrentView();
+      else if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
+      scheduleRender(80);
+    }
+    return next;
+  }
+
+  function marketplaceButtonsHtml() {
+    return MARKETPLACE_IDS.map(function (key) {
+      var meta = platformMeta(key);
+      return [
+        '<button type="button" class="altea-marketplace-chip" data-altea-marketplace="' + escapeHtml(key) + '" aria-pressed="false" style="' + platformStyle(key) + '">',
+        '<i aria-hidden="true"></i><span>' + escapeHtml(meta.label) + '</span>',
+        '</button>'
+      ].join('');
+    }).join('');
+  }
+
+  function marketplaceSelectorHtml(extraClass, kind) {
+    return '<div class="altea-global-marketplace ' + escapeHtml(extraClass || '') + '" data-altea-marketplace-selector="' + escapeHtml(kind || 'premium') + '">' + marketplaceButtonsHtml() + '</div>';
+  }
+
+  function ensureLegacyMarketplaceSelector() {
+    if (document.querySelector('[data-altea-marketplace-selector="legacy"]')) return;
+    var actions = document.querySelector('.app-shell .top-actions') || document.querySelector('.top-actions');
+    if (!actions) return;
+    var node = document.createElement('div');
+    node.className = 'altea-global-marketplace altea-global-marketplace--legacy';
+    node.setAttribute('data-altea-marketplace-selector', 'legacy');
+    node.innerHTML = marketplaceButtonsHtml();
+    actions.insertBefore(node, actions.firstChild);
+    syncMarketplaceControls();
   }
 
   function icon(name) {
@@ -437,44 +620,314 @@
     ].join('');
   }
 
-  function buildDashboardModel() {
-    var s = state();
-    var cards = Array.isArray(s.dashboard && s.dashboard.cards) ? s.dashboard.cards : [];
-    var brand = Array.isArray(s.dashboard && s.dashboard.brandSummary) ? s.dashboard.brandSummary[0] || {} : {};
-    var activeMonth = s.dashboard && s.dashboard.companyPlan && s.dashboard.companyPlan.activeMonth || {};
-    var platformRows = [];
-    if (s.platformTrends && Array.isArray(s.platformTrends.platforms)) {
-      platformRows = s.platformTrends.platforms.map(function (row) {
-        return {
-          platform: row.platformKey || row.platform || row.key || '',
-          label: row.label || row.name || row.platform || '',
-          revenue: finite(row.revenue || row.factRevenue || row.totalRevenue),
-          plan: finite(row.planRevenue || row.planToDateRevenue),
-          marginPct: ratio(row.marginPct),
-          drr: ratio(row.drr)
-        };
-      }).filter(function (row) { return row.revenue || row.plan; });
+  function dashboardMonthKey(s) {
+    var dashboard = s.dashboard || {};
+    var activeMonth = dashboard.companyPlan && dashboard.companyPlan.activeMonth || {};
+    var month = activeMonth.monthKey || activeMonth.key || dashboard.company_plan_month_key || dashboard.monthKey || '';
+    if (month) return String(month).slice(0, 7);
+    var asOf = dashboard.asOfDate || dashboard.dataFreshness && dashboard.dataFreshness.asOfDate || s.platformTrends && s.platformTrends.latestMarketplaceDate || '';
+    return String(asOf || '').slice(0, 7);
+  }
+
+  function dashboardSeriesInMonth(series, monthKey) {
+    return (Array.isArray(series) ? series : []).filter(function (row) {
+      var date = String(row.date || row.label || '');
+      return !monthKey || date.indexOf(monthKey) === 0;
+    });
+  }
+
+  function rowFirstNumber(row, fields) {
+    for (var index = 0; index < fields.length; index += 1) {
+      var value = Number(row && row[fields[index]]);
+      if (Number.isFinite(value)) return value;
     }
-    var revenue = finite(activeMonth.factRevenueToDate || brand.fact_revenue_to_date || s.dashboard && s.dashboard.fact_revenue_to_date);
-    var plan = finite(activeMonth.planRevenueToDate || brand.plan_to_date_revenue || s.dashboard && s.dashboard.plan_to_date_revenue);
+    return 0;
+  }
+
+  function dashboardAdsByPlatform(s) {
+    var map = {};
+    var rows = s.adsSummary && Array.isArray(s.adsSummary.platforms) ? s.adsSummary.platforms : [];
+    rows.forEach(function (row) {
+      var key = marketplaceFromInternal(row.platformKey || row.platform || row.key || 'all');
+      map[key] = row;
+    });
+    var summedAll = rows.filter(function (row) {
+        return marketplaceFromInternal(row.platformKey || row.platform || row.key || '') !== 'all';
+      }).reduce(function (acc, row) {
+        acc.spend += finite(row.spend);
+        acc.orders += finite(row.orders);
+        acc.revenue += finite(row.revenue);
+        return acc;
+      }, { key: 'all', platformKey: 'all', label: 'Все', spend: 0, orders: 0, revenue: 0 });
+    if (!map.all || !finite(map.all.spend)) map.all = summedAll;
+    return map;
+  }
+
+  function aggregateTrendPlatform(platform, monthKey) {
+    var key = marketplaceFromInternal(platform.platformKey || platform.platform || platform.key || 'all');
+    var rows = dashboardSeriesInMonth(platform.series, monthKey);
+    var revenue = rows.reduce(function (sum, row) { return sum + rowFirstNumber(row, ['revenue', 'factRevenue', 'financeTurnover']); }, 0);
+    var units = rows.reduce(function (sum, row) { return sum + rowFirstNumber(row, ['units', 'ordersUnits', 'factUnits']); }, 0);
+    var margin = rows.reduce(function (sum, row) { return sum + rowFirstNumber(row, ['estimatedMargin', 'financialResult', 'marginRub']); }, 0);
     return {
-      generatedAt: s.dashboard && s.dashboard.generatedAt || '',
-      asOf: s.dashboard && (s.dashboard.asOfDate || s.dashboard.dataFreshness && s.dashboard.dataFreshness.asOfDate) || '',
-      cards: cards,
-      platformRows: platformRows,
+      platform: key,
+      label: platform.label || platformMeta(key).label,
       revenue: revenue,
-      plan: plan,
-      completion: plan > 0 ? revenue / plan : ratio(activeMonth.planCompletionToDatePct)
+      units: units,
+      marginRub: margin,
+      marginPct: revenue > 0 ? margin / revenue : null,
+      series: rows
     };
   }
 
-  function dashboardCardMetric(card) {
-    var value = card && (card.valueFormatted || card.value || card.amount || card.metricValue);
-    var label = card && (card.label || card.title || 'Показатель');
-    var hint = card && (card.hint || card.subtitle || card.caption || '');
-    var progress = ratio(card && (card.progress || card.pct || card.percent));
-    if (progress != null && progress > 1.5) progress = progress / 100;
-    return metric(label, value == null || value === '' ? '—' : String(value), hint, progress == null ? 62 : progress * 100);
+  function dashboardIuPlatformRows(s, monthKey) {
+    var daily = Array.isArray(s.iuDrrSummary && s.iuDrrSummary.daily) ? s.iuDrrSummary.daily : [];
+    var rows = dashboardSeriesInMonth(daily, monthKey);
+    function build(key, label, fields) {
+      var revenue = rows.reduce(function (sum, row) { return sum + rowFirstNumber(row, fields.revenue); }, 0);
+      var units = rows.reduce(function (sum, row) { return sum + rowFirstNumber(row, fields.units); }, 0);
+      var adSpend = rows.reduce(function (sum, row) { return sum + rowFirstNumber(row, fields.adSpend); }, 0);
+      var plan = rows.reduce(function (sum, row) { return sum + rowFirstNumber(row, fields.plan); }, 0);
+      return {
+        platform: key,
+        label: label,
+        revenue: revenue,
+        units: units,
+        marginRub: 0,
+        marginPct: null,
+        adSpend: adSpend,
+        adRevenue: 0,
+        adOrders: 0,
+        drr: revenue > 0 ? adSpend / revenue : null,
+        romi: null,
+        plan: plan,
+        completion: plan > 0 ? revenue / plan : null,
+        series: rows.map(function (row) {
+          return {
+            date: row.date,
+            label: row.period || row.date,
+            revenue: rowFirstNumber(row, fields.revenue),
+            units: rowFirstNumber(row, fields.units),
+            adSpend: rowFirstNumber(row, fields.adSpend)
+          };
+        })
+      };
+    }
+    return [
+      build('wb', 'WB', {
+        revenue: ['revenueWb', 'wbIuFactRevenueGross', 'ordersRevenueWb'],
+        units: ['unitsWb'],
+        adSpend: ['spendFact', 'wbApiSpendFact', 'wbIuFactAdsGross'],
+        plan: ['targetRevenueWb', 'selectedDailyRevenueWb', 'contractTargetRevenueWb']
+      }),
+      build('ozon', 'Ozon', {
+        revenue: ['revenueOzon', 'ozonGmv', 'ozonGmvGross'],
+        units: ['deliveredUnitsOzon', 'unitsOzon', 'ordersUnitsOzon'],
+        adSpend: ['spendFactOzon', 'ozonDrrSpendGross'],
+        plan: ['targetRevenueOzon']
+      }),
+      build('ym', 'Я.Маркет', {
+        revenue: ['revenueYandex', 'ordersRevenueYandex'],
+        units: ['deliveredUnitsYandex', 'unitsYandex', 'ordersUnitsYandex'],
+        adSpend: ['spendFactYandex'],
+        plan: ['targetRevenueYandex']
+      })
+    ].filter(function (row) { return finite(row.revenue) || finite(row.units) || finite(row.adSpend); });
+  }
+
+  function dashboardSkuRows(s, selectedMarketplace, monthKey) {
+    var selected = normalizeMarketplace(selectedMarketplace);
+    var rows = [];
+    var smart = s.smartPriceOverlay && s.smartPriceOverlay.platforms || {};
+    var priceSupport = s.priceWorkbenchSupport && s.priceWorkbenchSupport.platforms || {};
+    function collectSmart(platformKey) {
+      var platform = smart[internalPlatform(platformKey)] || smart[platformKey];
+      (platform && Array.isArray(platform.rows) ? platform.rows : []).forEach(function (row) {
+        var daily = dashboardSeriesInMonth(row.daily, monthKey);
+        var revenue = daily.reduce(function (sum, item) { return sum + rowFirstNumber(item, ['revenue']); }, 0);
+        var units = daily.reduce(function (sum, item) { return sum + rowFirstNumber(item, ['ordersUnits', 'units']); }, 0);
+        rows.push({
+          article: row.article || row.articleKey,
+          owner: row.owner || '—',
+          platform: platformKey,
+          revenue: revenue,
+          units: units,
+          marginPct: ratio(row.marginPct || row.estimatedMarginPct || row.marginTotalPct),
+          status: row.status || ''
+        });
+      });
+    }
+    function collectSupport(platformKey) {
+      var platform = priceSupport[internalPlatform(platformKey)] || priceSupport[platformKey];
+      var supportRows = platform && platform.rows || {};
+      Object.keys(supportRows || {}).forEach(function (articleKey) {
+        if (!articleKey || articleKey === '0' || /^total|итого$/i.test(articleKey)) return;
+        var row = supportRows[articleKey] || {};
+        var month = (row.actualMonths || []).concat(row.planMonths || []).find(function (item) { return item.monthKey === monthKey; }) || {};
+        rows.push({
+          article: row.article || row.name || articleKey,
+          owner: row.owner || '—',
+          platform: platformKey,
+          revenue: finite(month.revenue),
+          units: finite(month.units),
+          marginPct: ratio(month.marginPct || row.marginPct),
+          status: row.status || ''
+        });
+      });
+    }
+    var platformKeys = selected === 'all' ? ['wb', 'ozon', 'ym'] : [selected];
+    platformKeys.forEach(function (platformKey) {
+      collectSmart(platformKey);
+      collectSupport(platformKey);
+    });
+    var byArticle = {};
+    rows.forEach(function (row) {
+      var key = row.platform + ':' + String(row.article || '').toLowerCase();
+      if (!byArticle[key] || finite(row.revenue) > finite(byArticle[key].revenue)) byArticle[key] = row;
+    });
+    return Object.keys(byArticle).map(function (key) { return byArticle[key]; })
+      .filter(function (row) { return finite(row.revenue) || finite(row.units); })
+      .sort(function (left, right) { return finite(right.revenue) - finite(left.revenue); })
+      .slice(0, 10);
+  }
+
+  function buildDashboardModel() {
+    var s = state();
+    var dashboard = s.dashboard || {};
+    var brand = Array.isArray(dashboard.brandSummary) ? dashboard.brandSummary[0] || {} : {};
+    var activeMonth = dashboard.companyPlan && dashboard.companyPlan.activeMonth || {};
+    var monthKey = dashboardMonthKey(s);
+    var selected = currentMarketplace();
+    var adsByPlatform = dashboardAdsByPlatform(s);
+    var trendPlatforms = s.platformTrends && Array.isArray(s.platformTrends.platforms) ? s.platformTrends.platforms : [];
+    var iuPlatformRows = dashboardIuPlatformRows(s, monthKey);
+    var platformRows = trendPlatforms
+      .map(function (platform) { return aggregateTrendPlatform(platform, monthKey); })
+      .filter(function (row) { return row.platform !== 'all'; })
+      .map(function (row) {
+        var ad = adsByPlatform[row.platform] || {};
+        row.adSpend = finite(ad.spend);
+        row.adOrders = finite(ad.orders);
+        row.adRevenue = finite(ad.revenue);
+        row.drr = row.revenue > 0 ? row.adSpend / row.revenue : null;
+        row.romi = row.adSpend > 0 ? (row.adRevenue - row.adSpend) / row.adSpend : null;
+        return row;
+      });
+    if (!platformRows.length) {
+      platformRows = iuPlatformRows;
+    } else {
+      iuPlatformRows.forEach(function (iuRow) {
+        var existing = platformRows.find(function (row) { return row.platform === iuRow.platform; });
+        if (!existing) {
+          platformRows.push(iuRow);
+          return;
+        }
+        if (!finite(existing.revenue) && finite(iuRow.revenue)) existing.revenue = finite(iuRow.revenue);
+        if (!finite(existing.units) && finite(iuRow.units)) existing.units = finite(iuRow.units);
+        if (!finite(existing.adSpend) && finite(iuRow.adSpend)) existing.adSpend = finite(iuRow.adSpend);
+        if (!existing.series || !existing.series.length) existing.series = iuRow.series || [];
+        existing.drr = existing.revenue > 0 ? finite(existing.adSpend) / existing.revenue : existing.drr;
+      });
+    }
+    var allTrend = trendPlatforms.map(function (platform) { return aggregateTrendPlatform(platform, monthKey); }).find(function (row) { return row.platform === 'all'; });
+    var visiblePlatformRows = selected === 'all'
+      ? platformRows
+      : platformRows.filter(function (row) { return row.platform === selected; });
+    var adsTotal = adsByPlatform[selected] || adsByPlatform.all || {};
+    var total = visiblePlatformRows.reduce(function (acc, row) {
+      acc.revenue += finite(row.revenue);
+      acc.units += finite(row.units);
+      acc.marginRub += finite(row.marginRub);
+      acc.adSpend += finite(row.adSpend);
+      acc.adRevenue += finite(row.adRevenue);
+      return acc;
+    }, { revenue: 0, units: 0, marginRub: 0, adSpend: 0, adRevenue: 0 });
+    if (selected === 'all' && allTrend && finite(allTrend.revenue)) {
+      total.revenue = finite(brand.company_fact_revenue_to_date || brand.fact_revenue_to_date || allTrend.revenue);
+      total.units = finite(brand.fact_units_to_date || allTrend.units);
+      total.marginRub = finite(allTrend.marginRub);
+      total.adSpend = finite(adsTotal.spend);
+      total.adRevenue = finite(adsTotal.revenue);
+    }
+    if (selected === 'all') {
+      var brandRevenue = finite(brand.company_fact_revenue_to_date || brand.fact_revenue_to_date || dashboard.company_fact_revenue_to_date);
+      var brandUnits = finite(brand.fact_units_to_date);
+      if (brandRevenue) total.revenue = brandRevenue;
+      if (brandUnits) total.units = brandUnits;
+      if (finite(adsTotal.spend)) total.adSpend = finite(adsTotal.spend);
+      if (finite(adsTotal.revenue)) total.adRevenue = finite(adsTotal.revenue);
+    }
+    total.plan = selected === 'all'
+      ? finite(activeMonth.planRevenueToDate || brand.company_plan_to_date_revenue || brand.plan_to_date_revenue)
+      : 0;
+    total.completion = total.plan > 0 ? total.revenue / total.plan : null;
+    total.marginPct = total.revenue > 0 && total.marginRub > 0 ? total.marginRub / total.revenue : null;
+    total.drr = total.revenue > 0 ? total.adSpend / total.revenue : null;
+    total.romi = total.adSpend > 0 ? (total.adRevenue - total.adSpend) / total.adSpend : null;
+    var leaderboard = s.productLeaderboard && s.productLeaderboard.summary || {};
+    var orders = finite(total.units) || finite(adsTotal.orders) || finite(leaderboard.orders);
+    var buys = finite(total.units);
+    var buyoutPct = orders > 0 && buys > 0 && buys <= orders ? buys / orders : null;
+    if (selected === 'wb' && finite(leaderboard.orders) && finite(leaderboard.buys)) {
+      orders = finite(leaderboard.orders);
+      buys = finite(leaderboard.buys);
+      buyoutPct = orders > 0 ? buys / orders : null;
+    }
+    return {
+      generatedAt: dashboard.generatedAt || '',
+      asOf: dashboard.asOfDate || dashboard.dataFreshness && dashboard.dataFreshness.asOfDate || s.platformTrends && s.platformTrends.latestMarketplaceDate || '',
+      monthKey: monthKey,
+      selected: selected,
+      total: total,
+      orders: orders,
+      buys: buys,
+      buyoutPct: buyoutPct,
+      platformRows: visiblePlatformRows,
+      allPlatformRows: platformRows,
+      skuRows: dashboardSkuRows(s, selected, monthKey),
+      dailyRevenue: (selected === 'all'
+        ? (allTrend && allTrend.series || [])
+        : (visiblePlatformRows[0] && visiblePlatformRows[0].series || [])
+      ).map(function (row) { return rowFirstNumber(row, ['revenue', 'factRevenue', 'financeTurnover']); })
+    };
+  }
+
+  function dashboardPlatformCards(model) {
+    var rows = model.allPlatformRows || [];
+    return '<div class="grid g6 section-gap ceo-platform-grid">' + rows.map(function (row) {
+      return metric(
+        row.label || platformMeta(row.platform).label,
+        money(row.revenue),
+        'маржа ' + pct(row.marginPct) + ' · ДРР ' + pct(row.drr),
+        row.revenue && model.total.revenue ? row.revenue / model.total.revenue * 100 : 4,
+        'platform-metric platform-card ceo-platform-card' + (model.selected === row.platform ? ' is-selected' : ''),
+        platformStyle(row.platform)
+      );
+    }).join('') + '</div>';
+  }
+
+  function dashboardSkuTable(model) {
+    var rows = model.skuRows || [];
+    if (!rows.length) return panel('SKU детализация', '<div class="premium-empty">По выбранной площадке нет строк SKU в рабочем срезе.</div>', 'panel-pad section-gap');
+    return panel('SKU детализация', [
+      '<div class="premium-table-wrap ceo-table-wrap"><table class="premium-table ceo-table">',
+      '<thead><tr><th>SKU</th><th>Площадка</th><th>Owner</th><th>Выручка</th><th>Шт.</th><th>Маржа</th><th>Статус</th></tr></thead>',
+      '<tbody>',
+      rows.map(function (row) {
+        return [
+          '<tr>',
+          '<td><strong>' + escapeHtml(row.article || '—') + '</strong></td>',
+          '<td><span class="platform-pill" style="' + platformStyle(row.platform) + '"><i></i>' + escapeHtml(platformMeta(row.platform).label) + '</span></td>',
+          '<td>' + escapeHtml(row.owner || '—') + '</td>',
+          '<td>' + money(row.revenue) + '</td>',
+          '<td>' + int(row.units) + '</td>',
+          '<td>' + pct(row.marginPct) + '</td>',
+          '<td>' + escapeHtml(row.status || '—') + '</td>',
+          '</tr>'
+        ].join('');
+      }).join(''),
+      '</tbody></table></div>'
+    ].join(''), 'panel-pad section-gap', rows.length + ' строк');
   }
 
   function renderDashboard(root) {
@@ -483,11 +936,14 @@
     var stage = ensureStage(route.id);
     var signature = JSON.stringify({
       route: route.id,
+      selected: model.selected,
       generatedAt: model.generatedAt,
       asOf: model.asOf,
-      cards: model.cards.slice(0, 8),
-      revenue: model.revenue,
-      plan: model.plan
+      total: model.total,
+      orders: model.orders,
+      buys: model.buys,
+      platforms: model.allPlatformRows.map(function (row) { return [row.platform, row.revenue, row.adSpend, row.marginRub]; }),
+      sku: model.skuRows.map(function (row) { return [row.article, row.platform, row.revenue, row.units]; })
     });
     if (root.dataset.premiumSignature === signature && stage.dataset.premiumSignature === signature && stage.querySelector('.altea-premium-route')) {
       pruneLegacyChildren(root);
@@ -500,37 +956,37 @@
     root.style.setProperty('--route-accent', route.accent);
     root.style.setProperty('--route-rgb', route.rgb);
     pruneLegacyChildren(root);
-    var focusRows = [
-      ['План-факт', model.completion == null ? 'данные обновляются' : pct(model.completion), model.completion == null ? 'ждем' : 'сейчас'],
-      ['Сборка данных', model.generatedAt || '—', 'обновлено'],
-      ['Факт на дату', model.asOf || '—', 'срез'],
-      ['Площадки', int(model.platformRows.length), 'контуры']
-    ];
-    var cardHtml = model.cards.length
-      ? model.cards.slice(0, 8).map(dashboardCardMetric).join('')
-      : metric('Пульс бренда', model.revenue ? money(model.revenue) : '—', model.plan ? 'план ' + money(model.plan) : 'данные собираются', clampPct(model.completion));
-    var platformHtml = model.platformRows.length
-      ? '<div class="grid g5 section-gap">' + model.platformRows.slice(0, 5).map(function (row) {
-        var key = String(row.platform || '').toLowerCase();
-        return metric(row.label || platformMeta(key).label, money(row.revenue), row.plan ? 'план ' + money(row.plan) : 'маржа ' + pct(row.marginPct), row.plan ? row.revenue / row.plan * 100 : 58, 'platform-metric platform-card', platformStyle(key));
-      }).join('') + '</div>'
-      : '';
     stage.dataset.premiumSignature = signature;
     positionStage(root, stage);
+    var selectedLabel = platformMeta(model.selected).label;
+    var total = model.total || {};
+    var marginText = total.marginRub > 0 ? money(total.marginRub) : '—';
+    var marginHint = total.marginPct == null ? 'маржинальный источник не опубликован' : pct(total.marginPct) + ' от выручки ' + money(total.revenue);
+    var buyoutHint = model.buyoutPct == null ? 'факт продаж/выкупов' : 'выкуп ' + pct(model.buyoutPct);
+    var kpis = [
+      metric('Заказы', int(model.orders || total.units), 'контур ' + selectedLabel + ' · источник текущих данных', model.orders ? 100 : 8, 'ceo-kpi'),
+      metric('Выкупы', int(model.buys || total.units), buyoutHint, model.buyoutPct == null ? 18 : clampPct(model.buyoutPct), 'ceo-kpi'),
+      metric('Маржа', marginText, marginHint, total.marginPct == null ? 10 : clampPct(total.marginPct), 'ceo-kpi'),
+      metric('Реклама', money(total.adSpend), 'ДРР ' + pct(total.drr) + ' · ROMI ' + pct(total.romi), clampPct(total.drr), 'ceo-kpi')
+    ].join('');
+    var focusRows = [
+      ['Контур', selectedLabel, model.monthKey || 'месяц'],
+      ['Факт выручки', money(total.revenue), model.asOf || 'срез'],
+      ['План к дате', total.plan ? money(total.plan) : 'по площадке без общего плана', total.completion == null ? '—' : pct(total.completion)],
+      ['Сборка', model.generatedAt || '—', 'данные']
+    ];
     stage.innerHTML = [
-      '<section class="altea-premium-route altea-premium-route--dashboard" style="' + routeStyle(route, 'all') + '">',
+      '<section class="altea-premium-route altea-premium-route--dashboard altea-ceo-dashboard" style="' + routeStyle(route, model.selected) + '">',
       '<div class="premium-route-body">',
-      head(route, '<button class="btn" type="button" data-premium-navigate="executive">Руководителю</button><button class="btn primary" type="button" data-premium-navigate="sku-plan-fact">План-факт</button>'),
-      '<div class="grid g3">',
-      '<section class="panel hero route-glow span2"><div class="hero-grid"><div class="hero-copy"><div class="micro">Пульс бренда</div><h2>Сейчас важное помещается в один взгляд</h2><p>Выручка, выполнение плана и риски собраны в спокойной иерархии; цвет площадки остается только в точках сравнения.</p><div class="hero-number"><div class="value lg">' + escapeHtml(model.completion == null ? '—' : pct(model.completion)) + '</div><small>выполнение плана</small></div></div><div class="hero-orbit"><div class="core">' + escapeHtml(model.completion == null ? '—' : pct(model.completion)) + '</div></div></div></section>',
-      panel('Фокус дня', list(focusRows), 'panel-pad platform-focus', '4 сигнала'),
-      '</div>',
-      '<div class="grid g4 section-gap">' + cardHtml + '</div>',
-      platformHtml,
+      head(route, '<button class="btn" type="button" data-premium-navigate="iu-drr">ИУ / ДРР</button><button class="btn primary" type="button" data-premium-navigate="sku-plan-fact">План-факт SKU</button>'),
+      '<section class="panel hero route-glow ceo-hero"><div class="hero-grid"><div class="hero-copy"><div class="micro">CEO · ' + escapeHtml(selectedLabel) + '</div><h2>' + escapeHtml(money(total.revenue)) + '</h2><p>Продажи, выкупы, маржа и реклама собраны в одном порядке. Операционные задачи вынесены в свои вкладки.</p><div class="hero-number"><div class="value lg">' + escapeHtml(total.completion == null ? pct(total.marginPct) : pct(total.completion)) + '</div><small>' + escapeHtml(total.completion == null ? 'маржа' : 'выполнение плана') + '</small></div></div><div class="hero-orbit"><div class="core">' + escapeHtml(pct(total.drr)) + '</div></div></div></section>',
+      '<div class="grid g4 section-gap ceo-kpi-grid">' + kpis + '</div>',
       '<div class="grid g2 section-gap">',
-      panel('Динамика результата', chart(model.cards.map(function (_card, index) { return 40 + index * 7 + (index % 2 ? 9 : 0); })), 'panel-pad'),
-      panel('Сводка команды', list(focusRows), 'panel-pad', 'сейчас'),
+      panel('Динамика выручки', chart(model.dailyRevenue), 'panel-pad ceo-chart-panel'),
+      panel('Срез данных', list(focusRows), 'panel-pad platform-focus', model.asOf || 'сейчас'),
       '</div>',
+      dashboardPlatformCards(model),
+      dashboardSkuTable(model),
       '</div></section>'
     ].join('');
     syncStageVisibility(route.id);
@@ -565,6 +1021,10 @@
 
   function premiumRoute(routeId) {
     return routeId === 'dashboard' || routeId === 'executive';
+  }
+
+  function managedRoute(routeId) {
+    return !!NAV_BY_ID[routeId];
   }
 
   function stageId(routeId) {
@@ -614,6 +1074,7 @@
       '<header class="altea-premium-shell-topbar">',
       '<div class="altea-premium-crumb"><span class="altea-premium-crumb-index" data-premium-crumb-index>01</span><strong data-premium-crumb-title>Дашборд</strong></div>',
       '<div class="altea-premium-top-spacer"></div>',
+      marketplaceSelectorHtml('altea-global-marketplace--premium', 'premium'),
       '<button type="button" class="altea-premium-shell-action altea-premium-sync" data-premium-proxy="syncStatusBadge">Командная база синхронизируется</button>',
       '<button type="button" class="altea-premium-shell-action" data-premium-proxy="pullRemoteBtn">Обновить данные</button>',
       '<button type="button" class="altea-premium-shell-action" data-premium-proxy="pushRemoteBtn">Синхронизировать</button>',
@@ -654,10 +1115,13 @@
 
   function syncShell(activeId) {
     var shell = ensureShell();
-    var shouldShow = premiumRoute(activeId) && !document.body.classList.contains('portal-auth-locked');
+    ensureLegacyMarketplaceSelector();
+    var shouldShow = managedRoute(activeId) && !document.body.classList.contains('portal-auth-locked');
     shell.hidden = !shouldShow;
     document.body.classList.toggle('altea-premium-app-active', shouldShow);
     if (!shouldShow) return;
+    setMarketplaceVars(shell, currentMarketplace());
+    syncMarketplaceControls();
     var meta = NAV_BY_ID[activeId] || NAV_BY_ID.dashboard;
     var route = ROUTES[activeId] || ROUTES.dashboard;
     shell.style.setProperty('--route-accent', route.accent);
@@ -681,11 +1145,20 @@
   }
 
   function syncStageVisibility(activeId) {
-    ['dashboard', 'executive'].forEach(function (routeId) {
-      var stage = document.getElementById(stageId(routeId));
-      if (stage) stage.hidden = routeId !== activeId;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-premium-stage]'), function (stage) {
+      stage.hidden = stage.dataset.premiumStage !== activeId;
     });
     syncShell(activeId);
+  }
+
+  function attachLegacyRouteToShell(active) {
+    if (!active || !managedRoute(active.id) || premiumRoute(active.id)) return;
+    var stage = ensureStage(active.id);
+    stage.classList.add('altea-premium-route-stage--legacy');
+    if (active.root.parentNode !== stage) stage.appendChild(active.root);
+    active.root.dataset.premiumRoute = active.id;
+    stage.dataset.premiumSignature = active.id + ':' + (active.root.dataset.renderSignature || active.root.childElementCount || 0);
+    syncStageVisibility(active.id);
   }
 
   function pruneLegacyChildren(root) {
@@ -703,7 +1176,7 @@
     }
     syncShell(active.id);
     if (!premiumRoute(active.id)) {
-      syncStageVisibility(active.id);
+      attachLegacyRouteToShell(active);
       return;
     }
     renderLock = true;
@@ -733,8 +1206,12 @@
   function guardActivePremiumRoute() {
     wrapLegacyRenderers();
     var active = activeRoute();
-    if (!active || !premiumRoute(active.id)) {
+    if (!active) {
       syncShell(active ? active.id : '');
+      return;
+    }
+    if (!premiumRoute(active.id)) {
+      attachLegacyRouteToShell(active);
       return;
     }
     var stage = ensureStage(active.id);
@@ -743,7 +1220,7 @@
       return !child.classList || !child.classList.contains('altea-premium-route');
     });
     if (!premium || hasLegacy || stage.hidden) renderActive();
-    else positionStage(active.root, stage);
+    else renderActive();
   }
 
   function startGuardLoop() {
@@ -764,6 +1241,12 @@
 
   function bindEvents() {
     document.addEventListener('click', function (event) {
+      var marketplace = event.target && event.target.closest && event.target.closest('[data-altea-marketplace]');
+      if (marketplace) {
+        event.preventDefault();
+        applyMarketplace(marketplace.getAttribute('data-altea-marketplace') || 'all', { persist: true, rerender: true });
+        return;
+      }
       var premiumNav = event.target && event.target.closest && event.target.closest('[data-premium-nav]');
       if (premiumNav) {
         event.preventDefault();
@@ -799,6 +1282,7 @@
     });
     window.addEventListener('hashchange', function () { scheduleRender(120); });
     window.addEventListener('altea:themechange', function () { scheduleRender(40); });
+    window.addEventListener('altea:marketplacechange', function () { scheduleRender(40); });
     window.addEventListener('altea:data-ready', function () { scheduleRender(80); });
   }
 
@@ -820,6 +1304,8 @@
   }
 
   function init() {
+    applyMarketplace(readMarketplace(), { persist: false, rerender: false, silent: true });
+    ensureLegacyMarketplaceSelector();
     wrapLegacyRenderers();
     bindEvents();
     bindObserver();
@@ -837,6 +1323,8 @@
 
   window.AlteaPremiumPresentation = {
     renderActive: renderActive,
-    scheduleRender: scheduleRender
+    scheduleRender: scheduleRender,
+    applyMarketplace: applyMarketplace,
+    currentMarketplace: currentMarketplace
   };
 })();

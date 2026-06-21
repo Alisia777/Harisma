@@ -35,14 +35,19 @@ ALTEA_WB_PROMOTION_TOKEN
 ALTEA_OZON_CLIENT_ID
 ALTEA_OZON_API_KEY
 ALTEA_YM_API_KEY
-ALTEA_YM_CAMPAIGN_ID
-ALTEA_YM_BUSINESS_ID
-SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY
 ```
 
-Optional source-specific secrets can be added later, but these nine are the
-minimum production set enforced by preflight.
+The workflow also accepts `ALTEA_SUPABASE_SERVICE_ROLE_KEY` as an explicit
+alias for the Supabase service-role key.
+
+`SUPABASE_URL` is configuration, not a secret. The workflow uses the canonical
+portal Supabase URL by default, and can be overridden with repository secret or
+variable `SUPABASE_URL`/`ALTEA_SUPABASE_URL`.
+
+`ALTEA_YM_CAMPAIGN_ID` and `ALTEA_YM_BUSINESS_ID` are optional identity hints.
+When they are absent, the Yandex Market runtime discovers campaigns through
+`ALTEA_YM_API_KEY` via the Partner API before refreshing Yandex facts and stock.
 
 ## Workflow Order
 
@@ -58,8 +63,8 @@ The daily close job order is:
 1. Resolve cutoff date and 30-day revision window.
 2. Run `scripts/portal-daily-close-preflight.js`.
 3. Refresh WB/Ozon/Yandex marketplace facts.
-4. Refresh ads and stock.
-5. Build canonical non-IU layers.
+4. Refresh ads, Yandex Market stock, and warehouse stock.
+5. Build canonical non-IU layers and phase 3 publish-gate reconciliation reports.
 6. Run D-1 and numeric gates.
 7. Package active generation.
 8. Publish to Supabase and verify readback hashes.
@@ -83,8 +88,11 @@ Important fields:
 - `cutoffDate`: business close date
 - `revisionFrom`: start of the 30-day revision window
 - `requiredSecrets`: full enforced secret list
+- `requiredConfig`: enforced non-secret configuration
 - `presentSecretCount`: count only, never secret values
 - `missingSecrets`: missing secret names only
+- `missingConfig`: missing configuration names only
+- `optionalMissingSecrets`: optional hint names that were not configured
 
 The report must never contain secret values.
 
@@ -100,6 +108,11 @@ The run is production-ready only when all of the following are true:
 - `portal_daily_close_preflight.json` has `status=ok` and `publish.allowed=true`.
 - `portal_daily_guard.json` has no blocking reasons and `publish.allowed=true`.
 - `portal_metric_reconciliation.json` has zero blocking checks.
+- The phase 3 publish reports exist and are not blocking:
+  `portal_repricing_reconciliation.json`, `portal_dashboard_reconciliation.json`,
+  `portal_plan_reconciliation.json`, `portal_indicator_audit.json`,
+  `portal_upload_apply_e2e.json`, `portal_minmax_upload_reconciliation.json`,
+  and `portal_cost_upload_reconciliation.json`.
 - `sync_portal_generation_to_supabase.py` reports readback with no missing or mismatched hashes.
 - The uploaded artifact contains both `portal_daily_guard.json` and `portal_metric_reconciliation.json`.
 - The active snapshot manifest verifies successfully.

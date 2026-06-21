@@ -73,15 +73,23 @@ if (workflow.indexOf('Preflight production secrets') > workflow.indexOf('Refresh
   'ALTEA_OZON_CLIENT_ID',
   'ALTEA_OZON_API_KEY',
   'ALTEA_YM_API_KEY',
-  'ALTEA_YM_CAMPAIGN_ID',
-  'ALTEA_YM_BUSINESS_ID',
-  'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY'
 ].forEach((secretName) => {
   if (!workflow.includes(secretName)) {
     fail(`daily close secret preflight is missing ${secretName}`);
   }
 });
+['ALTEA_YM_CAMPAIGN_ID', 'ALTEA_YM_BUSINESS_ID'].forEach((optionalName) => {
+  if (!workflow.includes(optionalName)) {
+    fail(`daily close must pass optional Yandex identity hint ${optionalName} when configured`);
+  }
+});
+if (!workflow.includes("vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co'")) {
+  fail('daily close must provide a stable Supabase URL fallback; the URL is config, not a service-role secret');
+}
+if (!workflow.includes('secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY')) {
+  fail('daily close must accept the ALTEA_SUPABASE_SERVICE_ROLE_KEY alias');
+}
 
 if (paths.includes('data/portal_dashboard_metrics.json')) {
   const command = 'node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir data';
@@ -89,6 +97,17 @@ if (paths.includes('data/portal_dashboard_metrics.json')) {
     fail('daily close must build portal_dashboard_metrics.json into data before snapshot finalization');
   }
 }
+[
+  'node scripts/build-canonical-repricer.js --input-dir data --output-dir data',
+  'node scripts/portal-upload-apply-runtime.js --input-dir data --output-dir data'
+].forEach((command) => {
+  if (!workflow.includes(command)) {
+    fail(`daily close must build required phase3 publish report via: ${command}`);
+  }
+  if (workflow.indexOf(command) > workflow.indexOf('node scripts/portal-daily-layer-guard.js')) {
+    fail(`${command} must run before daily layer guard`);
+  }
+});
 
 if (!workflow.includes('REVISION_FROM=$(TZ=Europe/Moscow date -d "$VALUE -29 days" +%F)')) {
   fail('daily close must expose the 30-day revision window start from the resolved cutoff');
@@ -112,11 +131,26 @@ if (!workflow.includes('echo "revision_from=$REVISION_FROM" >> "$GITHUB_OUTPUT"'
   }
 });
 
+const yandexStockCommand = 'node scripts/portal-yandex-market-stock-sync.js sync';
+if (!workflow.includes(yandexStockCommand)) {
+  fail('daily close must refresh Yandex Market stock before rebuilding order/OOS layers');
+}
+if (workflow.indexOf(yandexStockCommand) > workflow.indexOf('node scripts/build-order-procurement-layer.js')) {
+  fail('Yandex Market stock refresh must run before order procurement build');
+}
+if (workflow.indexOf(yandexStockCommand) < workflow.indexOf('Refresh advertising and stock')) {
+  fail('Yandex Market stock refresh must be part of the production stock refresh step');
+}
+
 [
   'data/portal_dashboard_metrics.json',
   'data/portal_dashboard_reconciliation.json',
   'data/portal_plan_reconciliation.json',
-  'data/portal_indicator_audit.json'
+  'data/portal_indicator_audit.json',
+  'data/portal_repricing_reconciliation.json',
+  'data/portal_upload_apply_e2e.json',
+  'data/portal_minmax_upload_reconciliation.json',
+  'data/portal_cost_upload_reconciliation.json'
 ].forEach((artifactPath) => {
   if (!workflow.includes(artifactPath)) {
     fail(`daily close artifact upload is missing ${artifactPath}`);

@@ -4,17 +4,32 @@ const fs = require('fs');
 const path = require('path');
 
 const REPORT_NAME = 'portal_daily_close_preflight.json';
+const DEFAULT_SUPABASE_URL = 'https://iyckwryrucqrxwlowxow.supabase.co';
 const REQUIRED_SECRETS = [
   'ALTEA_WB_API_TOKEN',
   'ALTEA_WB_PROMOTION_TOKEN',
   'ALTEA_OZON_CLIENT_ID',
   'ALTEA_OZON_API_KEY',
   'ALTEA_YM_API_KEY',
-  'ALTEA_YM_CAMPAIGN_ID',
-  'ALTEA_YM_BUSINESS_ID',
-  'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY'
 ];
+const REQUIRED_CONFIG = ['SUPABASE_URL'];
+const OPTIONAL_SECRETS = [
+  'ALTEA_YM_CAMPAIGN_ID',
+  'ALTEA_YM_BUSINESS_ID'
+];
+
+const SECRET_ALIASES = {
+  SUPABASE_SERVICE_ROLE_KEY: ['ALTEA_SUPABASE_SERVICE_ROLE_KEY']
+};
+
+const CONFIG_ALIASES = {
+  SUPABASE_URL: ['ALTEA_SUPABASE_URL']
+};
+
+const CONFIG_DEFAULTS = {
+  SUPABASE_URL: DEFAULT_SUPABASE_URL
+};
 
 function parseArgs(argv) {
   const args = {};
@@ -41,12 +56,36 @@ function secretPresent(env, name) {
   return String(env[name] || '').trim().length > 0;
 }
 
+function resolveNamedValue(env, name, aliases = [], defaults = {}) {
+  if (secretPresent(env, name)) return { present: true, source: name };
+  for (const alias of aliases) {
+    if (secretPresent(env, alias)) return { present: true, source: alias };
+  }
+  if (secretPresent(defaults, name)) return { present: true, source: 'default' };
+  return { present: false, source: '' };
+}
+
 function buildReport({ env = process.env, cutoffDate = '', revisionFrom = '', generatedAt = utcNowIso() } = {}) {
-  const missingSecrets = REQUIRED_SECRETS.filter((name) => !secretPresent(env, name));
-  const status = missingSecrets.length ? 'blocked' : 'ok';
-  const blockingReasons = missingSecrets.length
-    ? [`Missing required daily close secrets: ${missingSecrets.join(', ')}`]
-    : [];
+  const secretStates = REQUIRED_SECRETS.map((name) => ({
+    name,
+    ...resolveNamedValue(env, name, SECRET_ALIASES[name] || [])
+  }));
+  const configStates = REQUIRED_CONFIG.map((name) => ({
+    name,
+    ...resolveNamedValue(env, name, CONFIG_ALIASES[name] || [], CONFIG_DEFAULTS)
+  }));
+  const optionalSecretStates = OPTIONAL_SECRETS.map((name) => ({
+    name,
+    present: secretPresent(env, name),
+    source: secretPresent(env, name) ? name : ''
+  }));
+  const missingSecrets = secretStates.filter((item) => !item.present).map((item) => item.name);
+  const missingConfig = configStates.filter((item) => !item.present).map((item) => item.name);
+  const optionalMissingSecrets = optionalSecretStates.filter((item) => !item.present).map((item) => item.name);
+  const status = missingSecrets.length || missingConfig.length ? 'blocked' : 'ok';
+  const blockingReasons = [];
+  if (missingSecrets.length) blockingReasons.push(`Missing required daily close secrets: ${missingSecrets.join(', ')}`);
+  if (missingConfig.length) blockingReasons.push(`Missing required daily close config: ${missingConfig.join(', ')}`);
   return {
     schema: 'portal-daily-close-preflight-v1',
     generatedAt,
@@ -58,8 +97,21 @@ function buildReport({ env = process.env, cutoffDate = '', revisionFrom = '', ge
     cutoffDate,
     revisionFrom,
     requiredSecrets: REQUIRED_SECRETS,
-    presentSecretCount: REQUIRED_SECRETS.length - missingSecrets.length,
-    missingSecrets
+    requiredConfig: REQUIRED_CONFIG,
+    optionalSecrets: OPTIONAL_SECRETS,
+    presentSecretCount: secretStates.filter((item) => item.present).length,
+    presentConfigCount: configStates.filter((item) => item.present).length,
+    missingSecrets,
+    missingConfig,
+    optionalMissingSecrets,
+    resolvedSources: {
+      secrets: Object.fromEntries(secretStates.map((item) => [item.name, item.source])),
+      config: Object.fromEntries(configStates.map((item) => [item.name, item.source])),
+      optionalSecrets: Object.fromEntries(optionalSecretStates.map((item) => [item.name, item.source]))
+    },
+    notes: optionalMissingSecrets.length
+      ? ['Yandex Market campaign/business ids are optional: runtime discovers campaigns through ALTEA_YM_API_KEY when explicit ids are absent.']
+      : []
   };
 }
 
@@ -85,12 +137,21 @@ function main(argv = process.argv.slice(2), env = process.env) {
     console.error(`Preflight report: ${reportPath}`);
     return 1;
   }
+  if (report.missingConfig.length) {
+    console.error('Missing required daily close config:');
+    report.missingConfig.forEach((name) => console.error(`- ${name}`));
+    console.error(`Preflight report: ${reportPath}`);
+    return 1;
+  }
 
   console.log(`Daily close secret preflight passed. Report: ${reportPath}`);
   return 0;
 }
 
 module.exports = {
+  DEFAULT_SUPABASE_URL,
+  OPTIONAL_SECRETS,
+  REQUIRED_CONFIG,
   REPORT_NAME,
   REQUIRED_SECRETS,
   buildReport,

@@ -59,8 +59,10 @@ jobs:
           ALTEA_YM_API_KEY: ${{ secrets.ALTEA_YM_API_KEY }}
           ALTEA_YM_CAMPAIGN_ID: ${{ secrets.ALTEA_YM_CAMPAIGN_ID }}
           ALTEA_YM_BUSINESS_ID: ${{ secrets.ALTEA_YM_BUSINESS_ID }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          ALTEA_SUPABASE_URL: ${{ secrets.ALTEA_SUPABASE_URL || vars.ALTEA_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+          ALTEA_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
         run: >-
           node scripts/portal-daily-close-preflight.js
           --output-dir .portal-truth-output
@@ -90,9 +92,13 @@ jobs:
           ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
           ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
           ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          ALTEA_YM_API_KEY: ${{ secrets.ALTEA_YM_API_KEY }}
+          ALTEA_YM_CAMPAIGN_ID: ${{ secrets.ALTEA_YM_CAMPAIGN_ID }}
+          ALTEA_YM_BUSINESS_ID: ${{ secrets.ALTEA_YM_BUSINESS_ID }}
         run: |
           node scripts/portal-wb-ads-sync.js sync --from '${{ steps.cutoff.outputs.revision_from }}' --to '${{ steps.cutoff.outputs.value }}' --no-fixture-fallback --no-external-ads
           node scripts/portal-ozon-ads-finance-sync.js sync --from '${{ steps.cutoff.outputs.revision_from }}' --to '${{ steps.cutoff.outputs.value }}'
+          node scripts/portal-yandex-market-stock-sync.js sync
           node scripts/portal-warehouse-stock-sync.js sync
 
       - name: Build canonical non-IU layers
@@ -102,7 +108,9 @@ jobs:
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
           node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data
           node scripts/build-sku-matrix-layer.js --input-dir data --base-data-dir data --output-dir data
+          node scripts/build-canonical-repricer.js --input-dir data --output-dir data
           node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir data
+          node scripts/portal-upload-apply-runtime.js --input-dir data --output-dir data
 
       - name: D-1 and numeric gates
         run: |
@@ -116,8 +124,8 @@ jobs:
 
       - name: Publish generation and verify readback
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
         run: >-
           python scripts/sync_portal_generation_to_supabase.py
           --manifest data/active_snapshot.json
@@ -136,6 +144,10 @@ jobs:
             data/portal_dashboard_reconciliation.json
             data/portal_plan_reconciliation.json
             data/portal_indicator_audit.json
+            data/portal_repricing_reconciliation.json
+            data/portal_upload_apply_e2e.json
+            data/portal_minmax_upload_reconciliation.json
+            data/portal_cost_upload_reconciliation.json
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 30

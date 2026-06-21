@@ -2,7 +2,7 @@
   "schema": "portal-wb-owner-distribution-audit-v1",
   "generatedAt": "2026-06-19T09:48:29.254Z",
   "source": {
-    "file": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\распределение артикулов.xlsx",
+    "file": "распределение артикулов.xlsx",
     "sheetName": "Лист1",
     "sourceRowCount": 132,
     "mappedRowCount": 131,

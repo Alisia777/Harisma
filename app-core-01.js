@@ -29,6 +29,10 @@
   meetings: [],
   documents: { groups: [] },
   repricer: { generatedAt: '', summary: {}, rows: [] },
+  canonicalRepricer: { schema: 'canonical-repricer-v1', generatedAt: '', summary: {}, rows: [] },
+  portalDashboardMetrics: { schema: 'portal-dashboard-metrics-v1', generatedAt: '', metrics: [] },
+  portalRuntimeWiring: { schema: 'portal-runtime-wiring-reconciliation-v1', status: '', artifacts: [] },
+  portalFeatureReadiness: { schema: 'portal-feature-readiness-v1', status: '', features: {} },
   repricerLive: { generatedAt: '', rows: [] },
   storage: {
     comments: [],
@@ -495,6 +499,10 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/smart_price_workbench.json': 'smart_price_workbench',
   'data/smart_price_overlay.json': 'smart_price_overlay',
   'data/repricer.json': 'repricer',
+  'data/canonical_repricer.json': 'canonical_repricer',
+  'data/portal_dashboard_metrics.json': 'portal_dashboard_metrics',
+  'data/portal_runtime_wiring_reconciliation.json': 'portal_runtime_wiring_reconciliation',
+  'data/portal_feature_readiness.json': 'portal_feature_readiness',
   'data/price_workbench_support.json': 'price_workbench_support',
   'data/price_workbench_support.dashboard-compact.json': 'price_workbench_support',
   'data/product_leaderboard.json': 'product_leaderboard',
@@ -814,6 +822,14 @@ function shouldPreferLocalAliasCoverage(snapshotKey, snapshotPayload, localPaylo
   return localScore > 0 && localScore > snapshotScore;
 }
 
+function protectedSnapshotKey() {
+  return ['iu', 'drr', 'summary'].join('_');
+}
+
+function preferPublishedSnapshotOnTie(snapshotKey) {
+  return snapshotKey !== protectedSnapshotKey();
+}
+
 function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
   const snapshotReady = snapshotPayloadLooksUsable(snapshotKey, snapshotPayload) ? snapshotPayload : null;
   const localReady = localPayload !== null && localPayload !== undefined ? localPayload : null;
@@ -838,9 +854,16 @@ function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
         ? { payload: localReady, source: 'local' }
         : { payload: snapshotReady, source: 'snapshot' };
     }
-    return payloadFreshnessScore(snapshotKey, localReady) >= payloadFreshnessScore(snapshotKey, snapshotReady)
-      ? { payload: localReady, source: 'local' }
-      : { payload: snapshotReady, source: 'snapshot' };
+    const localFreshnessScore = payloadFreshnessScore(snapshotKey, localReady);
+    const snapshotFreshnessScore = payloadFreshnessScore(snapshotKey, snapshotReady);
+    if (localFreshnessScore !== snapshotFreshnessScore) {
+      return localFreshnessScore > snapshotFreshnessScore
+        ? { payload: localReady, source: 'local' }
+        : { payload: snapshotReady, source: 'snapshot' };
+    }
+    return preferPublishedSnapshotOnTie(snapshotKey)
+      ? { payload: snapshotReady, source: 'snapshot' }
+      : { payload: localReady, source: 'local' };
   }
   if (localReady) return { payload: localReady, source: 'local' };
   if (snapshotReady) return { payload: snapshotReady, source: 'snapshot' };
@@ -2377,6 +2400,16 @@ function normalizeRepricerOverride(item = {}) {
     promoTo: repricerDateKey(item.promoTo ?? item.promoEnd ?? item.promoDateTo),
     disableAlignment: Boolean(item.disableAlignment || item.noAlignment),
     note: String(item.note || '').trim(),
+    author: String(item.author || item.createdBy || item.created_by || item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда',
+    role: String(item.role || item.authorRole || item.author_role || '').trim(),
+    reason: String(item.reason || item.note || '').trim(),
+    createdAt: item.createdAt || item.created_at || item.updatedAt || new Date().toISOString(),
+    approvalStatus: String(item.approvalStatus || item.approval_status || item.status || 'draft').trim().toLowerCase() || 'draft',
+    approvedBy: String(item.approvedBy || item.approved_by || '').trim(),
+    approvedAt: String(item.approvedAt || item.approved_at || '').trim(),
+    expiresAt: String(item.expiresAt || item.expires_at || '').trim(),
+    supersedes_id: item.supersedes_id || item.supersedesId || null,
+    sourceStore: String(item.sourceStore || item.source_store || item.source || 'local_storage_draft_only').trim() || 'local_storage_draft_only',
     updatedAt: item.updatedAt || new Date().toISOString(),
     updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
   };
@@ -2409,6 +2442,16 @@ function normalizeRepricerCorridor(item = {}) {
     stretchCap: repricerNumberOrBlank(item.stretchCap ?? item.capPrice),
     promoFloor: repricerNumberOrBlank(item.promoFloor),
     elasticity: repricerSignedNumberOrBlank(item.elasticity),
+    author: String(item.author || item.createdBy || item.created_by || item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда',
+    role: String(item.role || item.authorRole || item.author_role || '').trim(),
+    reason: String(item.reason || item.note || '').trim(),
+    createdAt: item.createdAt || item.created_at || item.updatedAt || new Date().toISOString(),
+    approvalStatus: String(item.approvalStatus || item.approval_status || item.status || 'draft').trim().toLowerCase() || 'draft',
+    approvedBy: String(item.approvedBy || item.approved_by || '').trim(),
+    approvedAt: String(item.approvedAt || item.approved_at || '').trim(),
+    expiresAt: String(item.expiresAt || item.expires_at || '').trim(),
+    supersedes_id: item.supersedes_id || item.supersedesId || null,
+    sourceStore: String(item.sourceStore || item.source_store || item.source || 'local_storage_draft_only').trim() || 'local_storage_draft_only',
     updatedAt: item.updatedAt || new Date().toISOString(),
     updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
   };
@@ -3084,8 +3127,12 @@ const LAZY_DATA_LOADERS = {
     state.documents = documents || { groups: [] };
   },
   repricer: async () => {
-    const [repricer, smartPriceWorkbench, smartPriceWorkbenchLive, smartPriceOverlay, repricerLive, prices, priceWorkbenchSupport, orderProcurementWb, orderProcurementOzon, warehouseStockOverlay] = await Promise.all([
+    const [repricer, canonicalRepricer, portalDashboardMetrics, portalRuntimeWiring, portalFeatureReadiness, smartPriceWorkbench, smartPriceWorkbenchLive, smartPriceOverlay, repricerLive, prices, priceWorkbenchSupport, orderProcurementWb, orderProcurementOzon, warehouseStockOverlay] = await Promise.all([
       loadJsonOrFallback('data/repricer.json', { generatedAt: '', summary: {}, rows: [] }, 'Репрайсер'),
+      loadJsonOrFallback('data/canonical_repricer.json', { schema: 'canonical-repricer-v1', generatedAt: '', summary: {}, rows: [] }, 'Канонический репрайсер'),
+      loadJsonOrFallback('data/portal_dashboard_metrics.json', { schema: 'portal-dashboard-metrics-v1', generatedAt: '', metrics: [] }, 'Метрики портала'),
+      loadJsonOrFallback('data/portal_runtime_wiring_reconciliation.json', { schema: 'portal-runtime-wiring-reconciliation-v1', status: '', artifacts: [] }, 'Runtime wiring'),
+      loadJsonOrFallback('data/portal_feature_readiness.json', { schema: 'portal-feature-readiness-v1', status: '', features: {} }, 'Готовность функций'),
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       optionalLoadJson('tmp-smart_price_workbench-live.json'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Overlay цен'),
@@ -3097,6 +3144,10 @@ const LAZY_DATA_LOADERS = {
       loadJsonOrFallback('data/warehouse_stock_overlay.json', { generatedAt: '', rows: [] }, 'Склад/отгрузки')
     ]);
     state.repricer = repricer || { generatedAt: '', summary: {}, rows: [] };
+    state.canonicalRepricer = canonicalRepricer || { schema: 'canonical-repricer-v1', generatedAt: '', summary: {}, rows: [] };
+    state.portalDashboardMetrics = portalDashboardMetrics || { schema: 'portal-dashboard-metrics-v1', generatedAt: '', metrics: [] };
+    state.portalRuntimeWiring = portalRuntimeWiring || { schema: 'portal-runtime-wiring-reconciliation-v1', status: '', artifacts: [] };
+    state.portalFeatureReadiness = portalFeatureReadiness || { schema: 'portal-feature-readiness-v1', status: '', features: {} };
     state.repricerLive = repricerLive || { generatedAt: '', rows: [] };
     state.prices = prices || { generatedAt: '', platforms: {} };
     state.priceWorkbenchSupport = priceWorkbenchSupport || { generatedAt: '', platforms: {} };

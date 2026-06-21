@@ -120,6 +120,89 @@ function numberOrNull(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function normalizeHeader(value) {
+  return normalizeText(value)
+    .toLowerCase()
+    .replaceAll('ё', 'е')
+    .replace(/[^\p{L}\p{N}]+/gu, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+const HEADER_ALIASES = {
+  brand: ['бренд', 'brand'],
+  product: ['продукт', 'товар', 'наименование'],
+  articleKey: ['буквенный_артикул', 'article_key', 'articlekey', 'sku', 'sku_key'],
+  article: ['артикул', 'nm_id', 'barcode', 'id'],
+  cost: ['себестоимость_единицы_товара', 'себестоимость', 'cost'],
+  reach: ['охват', 'reach'],
+  reactions: ['реакции', 'reaction', 'reactions'],
+  posts: ['публикации', 'posts'],
+  clicks: ['переходы', 'clicks'],
+  orders: ['заказы', 'orders'],
+  buys: ['выкупы', 'покупки', 'купили', 'buys', 'buyouts'],
+  carts: ['добавили_в_корзину', 'корзина', 'carts', 'add_to_cart'],
+  erview: ['erview', 'er_view'],
+  contentCost: ['затраты_на_контент', 'content_cost', 'contentcost'],
+  ctr: ['ctr'],
+  conversion: ['конверсия', 'conversion'],
+  revenue: ['выручка', 'revenue'],
+  income: ['доход', 'income', 'profit'],
+  ecpm: ['ecpm'],
+  grossEcpm: ['валовый_ecpm', 'gross_ecpm', 'grossecpm'],
+  romi: ['romi'],
+  drr: ['ддр', 'доля_рекламных_расходов', 'drr', 'дpp']
+};
+
+const HEADER_FALLBACK_INDEX = {
+  brand: 0,
+  product: 1,
+  articleKey: 2,
+  article: 3,
+  cost: 4,
+  reach: 5,
+  reactions: 6,
+  posts: 7,
+  clicks: 8,
+  orders: 9,
+  buys: 10,
+  carts: 11,
+  erview: 12,
+  contentCost: 13,
+  ctr: 14,
+  conversion: 15,
+  revenue: 16,
+  income: 17,
+  ecpm: 18,
+  grossEcpm: 19,
+  romi: 20,
+  drr: 21
+};
+
+function resolveHeaderMap(headerKeys) {
+  const normalized = headerKeys.map((key) => ({ key, normalized: normalizeHeader(key) }));
+  const map = {};
+  Object.entries(HEADER_ALIASES).forEach(([field, aliases]) => {
+    const aliasSet = new Set(aliases.map(normalizeHeader));
+    const matches = normalized.filter((item) => aliasSet.has(item.normalized));
+    if (matches.length > 1) {
+      throw new Error(`КЗ-лист содержит неоднозначные колонки для ${field}: ${matches.map((item) => item.key).join(', ')}`);
+    }
+    if (matches.length === 1) {
+      map[field] = matches[0].key;
+      return;
+    }
+    const fallbackIndex = HEADER_FALLBACK_INDEX[field];
+    if (Number.isInteger(fallbackIndex) && headerKeys[fallbackIndex]) {
+      map[field] = headerKeys[fallbackIndex];
+    }
+  });
+
+  ['brand', 'product', 'articleKey', 'article', 'reach', 'clicks', 'orders', 'contentCost', 'revenue', 'income'].forEach((field) => {
+    if (!map[field]) throw new Error(`КЗ-лист не содержит обязательную колонку ${field}.`);
+  });
+  return map;
+}
+
 function sum(values) {
   return values.reduce((total, value) => total + numberOrZero(value), 0);
 }
@@ -543,34 +626,35 @@ function buildPayload(rows, skus, options) {
   );
 
   const headerKeys = Object.keys(rows[0] || {});
-  if (headerKeys.length < 22) {
+  if (headerKeys.length < 20) {
     throw new Error(`КЗ-лист выглядит неполным: найдено только ${headerKeys.length} колонок.`);
   }
 
-  const [
-    brandKey,
-    productKey,
-    articleKeyField,
-    articleField,
-    costKey,
-    reachKey,
-    reactionsKey,
-    postsKey,
-    clicksKey,
-    ordersKey,
-    buysKey,
-    cartsKey,
-    erviewKey,
-    contentCostKey,
-    ctrKey,
-    conversionKey,
-    revenueKey,
-    incomeKey,
-    ecpmKey,
-    grossEcpmKey,
-    romiKey,
-    drrKey
-  ] = headerKeys;
+  const headerMap = resolveHeaderMap(headerKeys);
+  const {
+    brand: brandKey,
+    product: productKey,
+    articleKey: articleKeyField,
+    article: articleField,
+    cost: costKey,
+    reach: reachKey,
+    reactions: reactionsKey,
+    posts: postsKey,
+    clicks: clicksKey,
+    orders: ordersKey,
+    buys: buysKey,
+    carts: cartsKey,
+    erview: erviewKey,
+    contentCost: contentCostKey,
+    ctr: ctrKey,
+    conversion: conversionKey,
+    revenue: revenueKey,
+    income: incomeKey,
+    ecpm: ecpmKey,
+    grossEcpm: grossEcpmKey,
+    romi: romiKey,
+    drr: drrKey
+  } = headerMap;
   const creatorKey = findOptionalHeaderKey(headerKeys, ['creator', 'креатор', 'автор', 'исполнитель', 'контентмейкер']);
   const contentBatchKey = findOptionalHeaderKey(headerKeys, ['content batch', 'batch', 'партия контента', 'партия', 'контент партия']);
   const contentFormatKey = findOptionalHeaderKey(headerKeys, ['content format', 'format', 'формат', 'формат контента', 'тип контента']);
@@ -588,6 +672,8 @@ function buildPayload(rows, skus, options) {
     const articleKey = normalizeText(row[articleKeyField]);
     const articleLookupKey = normalizeKey(articleKey);
     const sku = skuByKey.get(articleLookupKey) || null;
+    const rawRevenue = numberOrNull(row[revenueKey]);
+    const rawIncome = numberOrNull(row[incomeKey]);
 
     const item = {
       id: stableId('product-leaderboard', articleKey || row[articleField] || row[productKey]),
@@ -620,8 +706,14 @@ function buildPayload(rows, skus, options) {
       buys: numberOrZero(row[buysKey]),
       itemCost: numberOrZero(row[costKey]),
       contentCost: numberOrZero(row[contentCostKey]),
-      revenue: numberOrZero(row[revenueKey]),
-      income: numberOrZero(row[incomeKey]),
+      revenue: numberOrZero(rawRevenue),
+      income: numberOrZero(rawIncome),
+      revenueProvenance: rawRevenue === null ? 'missing_or_zero_source_column' : `source_column:${revenueKey}`,
+      incomeProvenance: rawIncome === null ? 'missing_or_zero_source_column' : `source_column:${incomeKey}`,
+      provenance: {
+        revenue: rawRevenue === null ? 'missing_or_zero_source_column' : `source_column:${revenueKey}`,
+        income: rawIncome === null ? 'missing_or_zero_source_column' : `source_column:${incomeKey}`
+      },
       erviewPct: safePctValue(row[erviewKey]),
       ctrPct: safePctValue(row[ctrKey]),
       conversionPct: safePctValue(row[conversionKey]),
@@ -633,9 +725,13 @@ function buildPayload(rows, skus, options) {
 
     if (!(item.revenue > 0) && item.contentCost > 0 && item.drrPct !== null && item.drrPct > 0) {
       item.revenue = item.contentCost / item.drrPct;
+      item.revenueProvenance = 'derived_from_content_cost_and_drr';
+      item.provenance.revenue = item.revenueProvenance;
     }
     if (!(item.income > 0) && item.contentCost > 0 && item.romiPct !== null && item.romiPct > 0) {
       item.income = item.contentCost * item.romiPct;
+      item.incomeProvenance = 'derived_from_content_cost_and_romi';
+      item.provenance.income = item.incomeProvenance;
     }
 
     item.cartRatePct = averageRate(item.carts, item.clicks);
@@ -681,7 +777,8 @@ function buildPayload(rows, skus, options) {
       brandKey,
       productKey,
       articleKeyField,
-      articleField
+      articleField,
+      metricKeys: headerMap
     },
     totals: {
       sourceRows: rows.length,

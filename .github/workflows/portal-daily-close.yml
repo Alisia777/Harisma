@@ -1,0 +1,120 @@
+name: Portal daily close
+
+on:
+  schedule:
+    - cron: '30 7 * * *'
+  workflow_dispatch:
+    inputs:
+      cutoff-date:
+        description: 'Business cutoff YYYY-MM-DD; empty means Europe/Moscow D-1'
+        required: false
+
+concurrency:
+  group: portal-daily-close
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TZ: Europe/Moscow
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve cutoff
+        id: cutoff
+        shell: bash
+        run: |
+          VALUE='${{ github.event.inputs['cutoff-date'] }}'
+          if [ -z "$VALUE" ]; then VALUE=$(TZ=Europe/Moscow date -d yesterday +%F); fi
+          REVISION_FROM=$(TZ=Europe/Moscow date -d "$VALUE -29 days" +%F)
+          echo "value=$VALUE" >> "$GITHUB_OUTPUT"
+          echo "revision_from=$REVISION_FROM" >> "$GITHUB_OUTPUT"
+
+      - name: Refresh marketplace facts and rolling revisions
+        env:
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_WB_FINANCE_TOKEN: ${{ secrets.ALTEA_WB_FINANCE_TOKEN }}
+          ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          ALTEA_YM_API_KEY: ${{ secrets.ALTEA_YM_API_KEY }}
+          ALTEA_YM_CAMPAIGN_ID: ${{ secrets.ALTEA_YM_CAMPAIGN_ID }}
+          ALTEA_YM_BUSINESS_ID: ${{ secrets.ALTEA_YM_BUSINESS_ID }}
+        run: >-
+          node scripts/portal-api-max-sync.js sync
+          --mode daily --recent-days 30
+          --platforms wb,ozon,ya
+          --to '${{ steps.cutoff.outputs.value }}'
+          --strict --skip-protected-scope --skip-health --skip-data-guard
+
+      - name: Refresh advertising and stock
+        env:
+          ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+        run: |
+          node scripts/portal-wb-ads-sync.js sync --from '${{ steps.cutoff.outputs.revision_from }}' --to '${{ steps.cutoff.outputs.value }}' --no-fixture-fallback --no-external-ads
+          node scripts/portal-ozon-ads-finance-sync.js sync --from '${{ steps.cutoff.outputs.revision_from }}' --to '${{ steps.cutoff.outputs.value }}'
+          node scripts/portal-warehouse-stock-sync.js sync
+
+      - name: Build canonical non-IU layers
+        run: |
+          mkdir -p .portal-truth-output
+          node scripts/build-order-procurement-layer.js
+          node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
+          node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data
+          node scripts/build-sku-matrix-layer.js --input-dir data --base-data-dir data --output-dir data
+          node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir data
+
+      - name: D-1 and numeric gates
+        run: |
+          python scripts/d1_close_gate.py --policy data/portal_daily_source_policy.json --input-dir data --base-data-dir data --output-dir .portal-truth-output --expected-date '${{ steps.cutoff.outputs.value }}' --skip-protected-scope
+          node scripts/portal-daily-layer-guard.js --input-dir data --base-data-dir data --output-dir .portal-truth-output --expected-date '${{ steps.cutoff.outputs.value }}'
+
+      - name: Package active generation
+        run: |
+          node scripts/portal-atomic-snapshot-finalize.js --data-dir data --output-dir .portal-truth-output
+          python scripts/verify_snapshot_manifest.py --repo . --manifest data/active_snapshot.json --inventory data/runtime_snapshot_inventory.json
+
+      - name: Publish generation and verify readback
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: >-
+          python scripts/sync_portal_generation_to_supabase.py
+          --manifest data/active_snapshot.json
+          --supabase-url "$SUPABASE_URL"
+          --supabase-key "$SUPABASE_SERVICE_ROLE_KEY"
+          --verify-readback
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: portal-daily-close-${{ github.run_id }}
+          path: |
+            .portal-truth-output/**
+            data/active_snapshot.json
+            data/portal_dashboard_metrics.json
+            data/portal_dashboard_reconciliation.json
+            data/portal_plan_reconciliation.json
+            data/portal_indicator_audit.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

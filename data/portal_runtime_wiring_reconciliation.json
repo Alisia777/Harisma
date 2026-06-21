@@ -1,0 +1,60 @@
+{
+  "schema": "portal-runtime-wiring-reconciliation-v1",
+  "generatedAt": "2026-06-20T22:42:01.960Z",
+  "status": "warning",
+  "publish_allowed": true,
+  "writeMode": "runtime",
+  "business_fingerprint": "4f0d9fee2b2a2cbba7b86cb64ff41fb47e175ec12ae043a8a398152a5dc53de4",
+  "artifacts": [
+    {
+      "id": "canonical_repricer",
+      "status": "warning",
+      "promoted": false,
+      "fallback": false,
+      "diagnosticOnly": true,
+      "activationAllowed": false,
+      "source": "diagnostic_only",
+      "sourcePath": ".portal-truth-output/canonical_repricer.json",
+      "runtimePath": "data/canonical_repricer.json",
+      "lastGoodPath": "data/last_good/canonical_repricer.json",
+      "checksum": "eb9019c89367796c02206c8fb528b86bb9bdd2bb2224cc6f21c3f0d152be7f5d",
+      "rowCount": 339,
+      "reconciliationStatus": "warning",
+      "reconciliationPublishAllowed": true,
+      "featurePublishAllowed": false,
+      "writeMode": "runtime",
+      "errors": [],
+      "warnings": [
+        "canonical repricer retained as diagnostic snapshot; feature activation is blocked"
+      ]
+    },
+    {
+      "id": "portal_dashboard_metrics",
+      "status": "ok",
+      "promoted": true,
+      "fallback": false,
+      "diagnosticOnly": false,
+      "activationAllowed": true,
+      "source": "current",
+      "sourcePath": ".portal-truth-output/portal_dashboard_metrics.json",
+      "runtimePath": "data/portal_dashboard_metrics.json",
+      "lastGoodPath": "data/last_good/portal_dashboard_metrics.json",
+      "checksum": "e20d12921155507bb76f8728c6a09ca012ee4d9aec54de35a7fe6d674ab4448d",
+      "rowCount": 9,
+      "reconciliationStatus": "ok",
+      "reconciliationPublishAllowed": true,
+      "writeMode": "runtime",
+      "errors": [],
+      "warnings": []
+    }
+  ],
+  "blockingReasons": [],
+  "warnings": [
+    "canonical repricer retained as diagnostic snapshot; feature activation is blocked"
+  ],
+  "runtime_sources": {
+    "canonical_repricer": "data/canonical_repricer.json",
+    "portal_dashboard_metrics": "data/portal_dashboard_metrics.json",
+    "last_good_dir": "data/last_good"
+  }
+}

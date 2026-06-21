@@ -1,6 +1,6 @@
 {
   "generatedAt": "2026-06-19T10:31:04.079Z",
-  "sourceFile": "C:\\Users\\artiu\\Downloads\\Продуктовый_лидерборд Июнь 01.06.2026 -  28.06.2026.xlsx",
+  "sourceFile": "Продуктовый_лидерборд Июнь 01.06.2026 -  28.06.2026.xlsx",
   "sourceGid": "",
   "sourceSheetName": "08.06.2026 - 14.06.2026",
   "weekLabel": "08.06.2026 - 14.06.2026",
@@ -18,25 +18,25 @@
     "unmatchedRows": 2
   },
   "summary": {
-    "skuCount": 52,
+    "skuCount": 50,
     "ownerCount": 2,
-    "reach": 51357758,
-    "reactions": 539525,
-    "posts": 5848,
-    "clicks": 397370,
-    "carts": 136115,
+    "reach": 51352082,
+    "reactions": 539401,
+    "posts": 5840,
+    "clicks": 397344,
+    "carts": 136114,
     "orders": 22839,
     "buys": 21322,
-    "contentCost": 4788479.149999999,
+    "contentCost": 4777097.43,
     "revenue": 18604132.48,
-    "income": 13815653.33,
-    "ctrPct": 0.007737292581969797,
-    "cartRatePct": 0.34253969851775423,
-    "orderRatePct": 0.05747540075999698,
-    "buyRatePct": 0.05365780003523165,
+    "income": 13827035.05,
+    "ctrPct": 0.007737641484526372,
+    "cartRatePct": 0.3425595957155513,
+    "orderRatePct": 0.05747916163324474,
+    "buyRatePct": 0.05366131110574213,
     "buyoutPct": 0.9335785279565655,
-    "romiPct": 2.8851860678979886,
-    "drrPct": 0.25738793008208033
+    "romiPct": 2.8944427557970074,
+    "drrPct": 0.25677614557601774
   },
   "baselines": {
     "erviewPct": 0.0086,
@@ -188,7 +188,13 @@
           }
         }
       },
-      "signal": "steady"
+      "signal": "steady",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-eb518ca99e6e",
@@ -319,7 +325,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-3dd2fbca6bc7",
@@ -425,7 +437,13 @@
           }
         }
       },
-      "signal": "leader"
+      "signal": "leader",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-09728224dde8",
@@ -544,7 +562,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-a80d22de13b5",
@@ -650,7 +674,13 @@
           }
         }
       },
-      "signal": "leader"
+      "signal": "leader",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-23b40079b939",
@@ -756,7 +786,13 @@
           }
         }
       },
-      "signal": "leader"
+      "signal": "leader",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-674d3ffad5c5",
@@ -887,7 +923,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-0fafb5376ed7",
@@ -993,7 +1035,13 @@
           }
         }
       },
-      "signal": "leader"
+      "signal": "leader",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-8465dd689114",
@@ -1112,7 +1160,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-206619c51fbd",
@@ -1231,7 +1285,13 @@
           }
         }
       },
-      "signal": "steady"
+      "signal": "steady",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-d4678211a7ca",
@@ -1362,7 +1422,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-9e56a5b061b3",
@@ -1468,7 +1534,13 @@
           }
         }
       },
-      "signal": "steady"
+      "signal": "steady",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-ebcdcbaf267c",
@@ -1587,7 +1659,13 @@
           }
         }
       },
-      "signal": "steady"
+      "signal": "steady",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-74909d1e63b3",
@@ -1718,7 +1796,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-c36a197f1c1f",
@@ -1837,7 +1921,13 @@
           }
         }
       },
-      "signal": "steady"
+      "signal": "steady",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-7f5bd801f207",
@@ -1968,7 +2058,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-2694d34a9f86",
@@ -2087,7 +2183,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-6b7133fda1f8",
@@ -2206,7 +2308,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-8e84d730890f",
@@ -2312,7 +2420,13 @@
           }
         }
       },
-      "signal": "leader"
+      "signal": "leader",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-61c7c95e0ff9",
@@ -2418,7 +2532,13 @@
           }
         }
       },
-      "signal": "steady"
+      "signal": "steady",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-a64fbcd46671",
@@ -2549,7 +2669,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-a676f63f4605",
@@ -2716,7 +2842,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-de23bccb8aa8",
@@ -2835,7 +2967,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-4f28b73cf6df",
@@ -2978,7 +3116,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-fd80b1c79e4f",
@@ -3133,7 +3277,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-e1698602aed8",
@@ -3276,7 +3426,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-eb714a822ac5",
@@ -3419,7 +3575,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-3403bf869b6f",
@@ -3574,7 +3736,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-3b632d621e55",
@@ -3729,7 +3897,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-2db2656248f6",
@@ -3872,7 +4046,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-c18fd84822e3",
@@ -4039,7 +4219,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-a281cf070df6",
@@ -4194,7 +4380,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-3047c5c59e5b",
@@ -4337,7 +4529,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-a00d077202b8",
@@ -4480,7 +4678,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-e8a739abc3ae",
@@ -4623,7 +4827,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-52815fe6c95a",
@@ -4766,7 +4976,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-ec6cd74113bf",
@@ -4909,7 +5125,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-c3af5e2e341d",
@@ -5052,7 +5274,13 @@
           }
         }
       },
-      "signal": "risk"
+      "signal": "risk",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-7f4796fbdb04",
@@ -5171,138 +5399,13 @@
           }
         }
       },
-      "signal": "no_sales"
-    },
-    {
-      "id": "product-leaderboard-ea9adcc9bc99",
-      "brand": "АЛТЕЯ",
-      "weekLabel": "08.06.2026 - 14.06.2026",
-      "articleKey": "chudofrukt_BAD_60caps_new",
-      "article": "167208205",
-      "name": "ЧУДОФРУКТ",
-      "owner": "",
-      "price": null,
-      "priceWb": null,
-      "priceOzon": null,
-      "category": "",
-      "traffic": "",
-      "inPortal": false,
-      "reach": 0,
-      "reactions": 0,
-      "posts": 0,
-      "clicks": 8,
-      "carts": 0,
-      "orders": 0,
-      "buys": 0,
-      "itemCost": 215,
-      "contentCost": 0,
-      "revenue": 0,
-      "income": 0,
-      "erviewPct": 0,
-      "ctrPct": 0,
-      "conversionPct": 0,
-      "ecpm": 0,
-      "grossEcpm": 0,
-      "romiPct": 0,
-      "drrPct": 0,
-      "cartRatePct": 0,
-      "buyRatePct": 0,
-      "buyoutPct": 0,
-      "diagnostics": {
-        "healthScore": 20,
-        "highestSeverity": "critical",
-        "alertCount": 2,
-        "alerts": [
-          {
-            "code": "no_owner",
-            "family": "ownership",
-            "severity": "critical",
-            "title": "Нет owner по SKU",
-            "label": "Нет owner",
-            "metricKey": "",
-            "value": null,
-            "baseline": null,
-            "deltaPct": null,
-            "hint": "КЗ уже льётся, а ответственный по карточке не назначен."
-          },
-          {
-            "code": "no_sales",
-            "family": "sales",
-            "severity": "critical",
-            "title": "Трафик не дошёл до выкупов",
-            "label": "Нет выкупов",
-            "metricKey": "buys",
-            "value": 0,
-            "baseline": null,
-            "deltaPct": null,
-            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
-          }
-        ],
-        "summary": "Нет owner · Нет выкупов",
-        "metrics": {
-          "erviewPct": {
-            "value": 0,
-            "baseline": 0.0086,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "ctrPct": {
-            "value": 0,
-            "baseline": 0.0101,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "cartRatePct": {
-            "value": 0,
-            "baseline": 0.2968036529680365,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "conversionPct": {
-            "value": 0,
-            "baseline": 0.05315,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyRatePct": {
-            "value": 0,
-            "baseline": 0.053133491731869514,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyoutPct": {
-            "value": 0,
-            "baseline": 0.96181143281366,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "romiPct": {
-            "value": 0,
-            "baseline": 2.65925,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "drrPct": {
-            "value": 0,
-            "baseline": 0.3832,
-            "lowerIsBetter": true,
-            "deltaPct": -1
-          },
-          "ecpm": {
-            "value": 0,
-            "baseline": 277.92,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "grossEcpm": {
-            "value": 0,
-            "baseline": 43.44,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          }
-        }
-      },
-      "signal": "no_owner"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-dab4647d8f2b",
@@ -5445,7 +5548,13 @@
           }
         }
       },
-      "signal": "no_sales"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-b5504aba80c5",
@@ -5588,7 +5697,13 @@
           }
         }
       },
-      "signal": "no_sales"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-9c4872e98e86",
@@ -5731,7 +5846,13 @@
           }
         }
       },
-      "signal": "no_sales"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-b02efeb0cb48",
@@ -5874,7 +5995,13 @@
           }
         }
       },
-      "signal": "no_sales"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-88d360a01ab8",
@@ -6017,7 +6144,13 @@
           }
         }
       },
-      "signal": "no_sales"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-49a62991a341",
@@ -6160,7 +6293,13 @@
           }
         }
       },
-      "signal": "no_sales"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-9f2dce7af7fd",
@@ -6327,162 +6466,13 @@
           }
         }
       },
-      "signal": "no_sales"
-    },
-    {
-      "id": "product-leaderboard-1e521a850a6d",
-      "brand": "АЛТЕЯ",
-      "weekLabel": "08.06.2026 - 14.06.2026",
-      "articleKey": "shampun_kudryavii_metod_500m",
-      "article": "971199351",
-      "name": "Шампунь для кудрявых волос, Алтея, 500 мл",
-      "owner": "",
-      "price": null,
-      "priceWb": null,
-      "priceOzon": null,
-      "category": "",
-      "traffic": "",
-      "inPortal": false,
-      "reach": 5676,
-      "reactions": 124,
-      "posts": 8,
-      "clicks": 18,
-      "carts": 1,
-      "orders": 0,
-      "buys": 0,
-      "itemCost": 1165.272727,
-      "contentCost": 11381.72,
-      "revenue": 0,
-      "income": -11381.72,
-      "erviewPct": 0.0218,
-      "ctrPct": 0.0032,
-      "conversionPct": 0,
-      "ecpm": -2005.24,
-      "grossEcpm": -3007.85,
-      "romiPct": -1,
-      "drrPct": 0,
-      "cartRatePct": 0.05555555555555555,
-      "buyRatePct": 0,
-      "buyoutPct": 0,
-      "diagnostics": {
-        "healthScore": 0,
-        "highestSeverity": "critical",
-        "alertCount": 4,
-        "alerts": [
-          {
-            "code": "negative_income",
-            "family": "economics",
-            "severity": "critical",
-            "title": "КЗ уводит доход в минус",
-            "label": "Доход <= 0",
-            "metricKey": "income",
-            "value": -11381.72,
-            "baseline": 0,
-            "deltaPct": null,
-            "hint": "Нужно разбирать связку контент / оффер / карточка."
-          },
-          {
-            "code": "no_owner",
-            "family": "ownership",
-            "severity": "critical",
-            "title": "Нет owner по SKU",
-            "label": "Нет owner",
-            "metricKey": "",
-            "value": null,
-            "baseline": null,
-            "deltaPct": null,
-            "hint": "КЗ уже льётся, а ответственный по карточке не назначен."
-          },
-          {
-            "code": "no_sales",
-            "family": "sales",
-            "severity": "critical",
-            "title": "Трафик не дошёл до выкупов",
-            "label": "Нет выкупов",
-            "metricKey": "buys",
-            "value": 0,
-            "baseline": null,
-            "deltaPct": null,
-            "hint": "По КЗ есть активность, но в источнике не зафиксированы выкупы."
-          },
-          {
-            "code": "romi_below_payback",
-            "family": "economics",
-            "severity": "critical",
-            "title": "ROMI ниже окупаемости",
-            "label": "ROMI < 100%",
-            "metricKey": "romiPct",
-            "value": -1,
-            "baseline": 2.65925,
-            "deltaPct": -1.3760458775970668,
-            "hint": "Расход на контент пока не отбивается доходом."
-          }
-        ],
-        "summary": "Доход <= 0 · Нет owner",
-        "metrics": {
-          "erviewPct": {
-            "value": 0.0218,
-            "baseline": 0.0086,
-            "lowerIsBetter": false,
-            "deltaPct": 1.5348837209302326
-          },
-          "ctrPct": {
-            "value": 0.0032,
-            "baseline": 0.0101,
-            "lowerIsBetter": false,
-            "deltaPct": -0.6831683168316831
-          },
-          "cartRatePct": {
-            "value": 0.05555555555555555,
-            "baseline": 0.2968036529680365,
-            "lowerIsBetter": false,
-            "deltaPct": -0.8128205128205128
-          },
-          "conversionPct": {
-            "value": 0,
-            "baseline": 0.05315,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyRatePct": {
-            "value": 0,
-            "baseline": 0.053133491731869514,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "buyoutPct": {
-            "value": 0,
-            "baseline": 0.96181143281366,
-            "lowerIsBetter": false,
-            "deltaPct": -1
-          },
-          "romiPct": {
-            "value": -1,
-            "baseline": 2.65925,
-            "lowerIsBetter": false,
-            "deltaPct": -1.3760458775970668
-          },
-          "drrPct": {
-            "value": 0,
-            "baseline": 0.3832,
-            "lowerIsBetter": true,
-            "deltaPct": -1
-          },
-          "ecpm": {
-            "value": -2005.24,
-            "baseline": 277.92,
-            "lowerIsBetter": false,
-            "deltaPct": -8.21516983304548
-          },
-          "grossEcpm": {
-            "value": -3007.85,
-            "baseline": 43.44,
-            "lowerIsBetter": false,
-            "deltaPct": -70.24148250460405
-          }
-        }
-      },
-      "signal": "no_owner"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-6209910a9519",
@@ -6625,7 +6615,13 @@
           }
         }
       },
-      "signal": "no_sales"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-e005a8bb46ae",
@@ -6768,7 +6764,13 @@
           }
         }
       },
-      "signal": "no_sales"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-be954f397a3d",
@@ -6911,7 +6913,13 @@
           }
         }
       },
-      "signal": "no_sales"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-9945a0c349c9",
@@ -7078,7 +7086,13 @@
           }
         }
       },
-      "signal": "no_sales"
+      "signal": "no_sales",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     }
   ],
   "unmatchedItems": [
@@ -7211,7 +7225,13 @@
           }
         }
       },
-      "signal": "no_owner"
+      "signal": "no_owner",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     },
     {
       "id": "product-leaderboard-1e521a850a6d",
@@ -7366,7 +7386,14 @@
           }
         }
       },
-      "signal": "no_owner"
+      "signal": "no_owner",
+      "revenueProvenance": "source_or_derived_product_leaderboard",
+      "incomeProvenance": "source_or_derived_product_leaderboard",
+      "provenance": {
+        "revenue": "source_or_derived_product_leaderboard",
+        "income": "source_or_derived_product_leaderboard"
+      }
     }
-  ]
+  ],
+  "runId": "portal-9eb2a64e2b39942050e6"
 }

@@ -1,0 +1,269 @@
+{
+  "schema": "portal-truth-manifest-v1",
+  "version": "2026-06-20",
+  "description": "Canonical data lineage and publish contracts for non-protected portal views.",
+  "policy": {
+    "timezone": "Europe/Moscow",
+    "protectedScopeExcluded": true,
+    "moneyToleranceAbsolute": 1000,
+    "moneyToleranceRelative": 0.001,
+    "dateToleranceDays": 1,
+    "ownerCoverageWarn": 0.9,
+    "ownerCoverageBlock": 0.65,
+    "dashboardCardSoftLimit": 80,
+    "dashboardCardHardLimit": 160,
+    "dashboardDuplicateRatioBlock": 0.1,
+    "mojibakeBlockCount": 5,
+    "unmappedRevenueWarnRatio": 0.005,
+    "unmappedRevenueBlockRatio": 0.02
+  },
+  "sources": [
+    {
+      "key": "company_plan",
+      "file": "company_plan.json",
+      "kind": "plan-master",
+      "required": true,
+      "freshness": "monthly",
+      "datePaths": ["activeMonthKey", "generatedAt"],
+      "repairStep": "company-plan-rebuild",
+      "description": "Single source of truth for monthly plans and salary-contour channel totals."
+    },
+    {
+      "key": "platform_fact",
+      "file": "platform_trends.json",
+      "kind": "fact-master",
+      "required": true,
+      "freshness": "daily",
+      "datePaths": ["latestMarketplaceDate", "asOfDate", "generatedAt"],
+      "repairStep": "marketplace-api",
+      "description": "Daily marketplace fact by platform and date."
+    },
+    {
+      "key": "sku_registry",
+      "file": "skus.json",
+      "kind": "dimension-master",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["generatedAt", "meta.generatedAt"],
+      "repairStep": "google-sheet-build",
+      "description": "Canonical SKU, article, lifecycle and owner dimension."
+    },
+    {
+      "key": "dashboard_projection",
+      "file": "dashboard.json",
+      "kind": "projection",
+      "required": true,
+      "freshness": "daily",
+      "datePaths": ["latestMarketplaceDate", "dataFreshness.asOfDate", "asOfDate", "generatedAt"],
+      "repairStep": "google-sheet-build",
+      "description": "Presentation projection only; it must reconcile to plan, fact and SKU masters."
+    },
+    {
+      "key": "ads_fact",
+      "file": "ads_summary.json",
+      "kind": "fact-detail",
+      "required": true,
+      "freshness": "daily",
+      "datePaths": ["window.to", "asOfDate", "generatedAt"],
+      "repairStep": "ads-sync"
+    },
+    {
+      "key": "warehouse_fact",
+      "file": "warehouse_stock_overlay.json",
+      "kind": "fact-detail",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["asOfDate", "generatedAt"],
+      "repairStep": "warehouse-stock"
+    },
+    {
+      "key": "logistics_fact",
+      "file": "logistics.json",
+      "kind": "fact-detail",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["latest_logistics_date", "latestLogisticsDate", "generatedAt", "meta.generatedAt"],
+      "repairStep": "google-sheet-build"
+    },
+    {
+      "key": "price_master",
+      "file": "prices.json",
+      "kind": "calculation-master",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["asOfDate", "generatedAt", "monthKey"],
+      "repairStep": "smart-price"
+    },
+    {
+      "key": "smart_price_overlay",
+      "file": "smart_price_overlay.json",
+      "kind": "calculation-detail",
+      "required": true,
+      "freshness": "daily",
+      "datePaths": ["asOfDate", "generatedAt"],
+      "repairStep": "smart-price"
+    },
+    {
+      "key": "repricer",
+      "file": "repricer.json",
+      "kind": "projection",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["asOfDate", "generatedAt"],
+      "repairStep": "smart-price"
+    },
+    {
+      "key": "order_procurement",
+      "file": "order_procurement.json",
+      "kind": "calculation-master",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["asOfDate", "generatedAt"],
+      "repairStep": "order-procurement"
+    },
+    {
+      "key": "order_procurement_wb",
+      "file": "order_procurement_wb.json",
+      "kind": "calculation-detail",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["asOfDate", "generatedAt"],
+      "repairStep": "order-procurement"
+    },
+    {
+      "key": "order_procurement_ozon",
+      "file": "order_procurement_ozon.json",
+      "kind": "calculation-detail",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["asOfDate", "generatedAt"],
+      "repairStep": "order-procurement"
+    },
+    {
+      "key": "order_procurement_ym",
+      "file": "order_procurement_ym.json",
+      "kind": "calculation-detail",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["asOfDate", "generatedAt"],
+      "repairStep": "order-procurement"
+    },
+    {
+      "key": "oos_control",
+      "file": "oos_control.json",
+      "kind": "calculation-master",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["asOfDate", "generatedAt"],
+      "repairStep": "oos-control"
+    },
+    {
+      "key": "sku_matrix",
+      "file": "sku_matrix.json",
+      "kind": "mapping-master",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["generatedAt"],
+      "repairStep": "sku-matrix"
+    },
+    {
+      "key": "sku_aliases",
+      "file": "sku_aliases.json",
+      "kind": "mapping-master",
+      "required": true,
+      "freshness": "max-age-2d",
+      "datePaths": ["generatedAt"],
+      "repairStep": "sku-alias-snapshots"
+    },
+    {
+      "key": "owner_audit",
+      "file": "wb_owner_distribution_audit.json",
+      "kind": "mapping-audit",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["generatedAt"],
+      "repairStep": "wb-owner-distribution"
+    },
+    {
+      "key": "data_quality",
+      "file": "portal_data_quality.json",
+      "kind": "quality-gate",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["summary.maxDate", "maxDate", "generatedAt"],
+      "repairStep": "data-quality"
+    },
+    {
+      "key": "data_quarantine",
+      "file": "portal_data_quarantine.json",
+      "kind": "quality-gate",
+      "required": true,
+      "freshness": "daily-build",
+      "datePaths": ["generatedAt"],
+      "repairStep": "data-quality"
+    },
+    {
+      "key": "product_leaderboard",
+      "file": "product_leaderboard.json",
+      "kind": "projection",
+      "required": true,
+      "freshness": "max-age-10d",
+      "datePaths": ["asOfDate", "generatedAt", "sourceMtime"],
+      "repairStep": "leaderboard-history"
+    },
+    {
+      "key": "product_leaderboard_history",
+      "file": "product_leaderboard_history.json",
+      "kind": "history",
+      "required": true,
+      "freshness": "max-age-10d",
+      "datePaths": ["generatedAt"],
+      "repairStep": "leaderboard-history"
+    },
+    {
+      "key": "wb_feedbacks",
+      "file": "wb_feedbacks_summary.json",
+      "kind": "fact-detail",
+      "required": true,
+      "freshness": "daily",
+      "datePaths": ["window.to", "asOfDate", "generatedAt"],
+      "repairStep": "wb-feedbacks"
+    },
+    {
+      "key": "wb_sales_funnel",
+      "file": "wb_sales_funnel_report.json",
+      "kind": "projection",
+      "required": true,
+      "freshness": "daily",
+      "datePaths": ["period.to", "generatedAt"],
+      "repairStep": "wb-sales-funnel"
+    }
+  ],
+  "views": {
+    "dashboard": {"sources": ["dashboard_projection", "platform_fact", "company_plan", "sku_registry", "ads_fact", "warehouse_fact"], "critical": true},
+    "executive": {"sources": ["sku_registry", "owner_audit", "sku_matrix", "platform_fact", "company_plan", "data_quality"], "critical": true},
+    "control": {"sources": ["sku_registry", "sku_matrix", "data_quality"], "critical": false},
+    "data-health": {"sources": ["data_quality", "data_quarantine", "sku_matrix", "owner_audit"], "critical": true},
+    "sku-plan-fact": {"sources": ["company_plan", "platform_fact", "sku_registry", "sku_matrix", "sku_aliases", "ads_fact", "warehouse_fact", "price_master", "smart_price_overlay", "data_quality"], "critical": true},
+    "repricer": {"sources": ["repricer", "price_master", "smart_price_overlay", "sku_registry", "warehouse_fact", "data_quality"], "critical": true},
+    "prices": {"sources": ["price_master", "smart_price_overlay", "sku_registry", "warehouse_fact", "data_quality"], "critical": true},
+    "order": {"sources": ["order_procurement", "order_procurement_wb", "order_procurement_ozon", "order_procurement_ym", "warehouse_fact", "platform_fact", "sku_registry"], "critical": true},
+    "oos-control": {"sources": ["oos_control", "warehouse_fact", "platform_fact", "sku_registry"], "critical": true},
+    "ads-funnel": {"sources": ["ads_fact", "wb_sales_funnel", "platform_fact", "sku_registry"], "critical": true},
+    "sku-contour": {"sources": ["sku_registry", "sku_matrix", "sku_aliases", "owner_audit", "platform_fact", "data_quality"], "critical": true},
+    "skus": {"sources": ["sku_registry", "sku_matrix", "sku_aliases", "owner_audit"], "critical": true},
+    "launches": {"sources": ["sku_registry", "warehouse_fact", "price_master", "data_quality"], "critical": false},
+    "launch-control": {"sources": ["sku_registry", "sku_matrix", "data_quality"], "critical": false},
+    "wb-rating": {"sources": ["wb_feedbacks", "sku_registry"], "critical": false},
+    "product-leaderboard": {"sources": ["product_leaderboard", "product_leaderboard_history", "ads_fact", "platform_fact", "sku_registry"], "critical": false}
+  },
+  "metricPassports": {
+    "plan.marketplace.revenue": {"source": "company_plan", "formula": "months[month].revenue", "grain": "month"},
+    "plan.marketplace.revenue.wb": {"source": "company_plan", "formula": "months[month].channels.wb.revenue", "grain": "month"},
+    "plan.marketplace.revenue.ozon": {"source": "company_plan", "formula": "months[month].channels.ozon.revenue", "grain": "month"},
+    "plan.marketplace.revenue.ya": {"source": "company_plan", "formula": "months[month].channels.ya.revenue", "grain": "month"},
+    "fact.marketplace.revenue": {"source": "platform_fact", "formula": "sum(wb, ozon, ya) on one common cutoff date", "grain": "day/cumulative-month"},
+    "owner.coverage": {"source": "sku_registry", "formula": "SKU with canonical owner / active SKU", "grain": "SKU"},
+    "dashboard.cards": {"source": "dashboard_projection", "formula": "unique presentation cards; no repeated semantic signatures", "grain": "card"}
+  }
+}

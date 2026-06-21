@@ -1,0 +1,5 @@
+.portal-truth-output/
+__pycache__/
+scripts/__pycache__/
+data/active_snapshot.json
+data/snapshots/

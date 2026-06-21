@@ -18,7 +18,7 @@
       "to": "2026-06-18"
     },
     "supplierGoods": {
-      "supplierGoodsPath": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\supplier-goods-109831-2026-01-01-2026-05-05-ynubxvgyi.XLSX",
+      "supplierGoodsPath": "supplier-goods-109831-2026-01-01-2026-05-05-ynubxvgyi.XLSX",
       "mappedNmIds": 134,
       "sellerArticles": 183,
       "unmatchedSellerArticles": 49,
@@ -451071,7 +451071,7 @@
   ],
   "extraMarketplace": {
     "generatedAt": "2026-06-19T09:48:03.801Z",
-    "workbook": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\exports\\altea_max_funnel_2025_2026.xlsx",
+    "workbook": "altea_max_funnel_2025_2026.xlsx",
     "asOfDate": "2026-06-18",
     "platforms": {
       "goldapple": {

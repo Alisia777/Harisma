@@ -28,30 +28,24 @@
     side.reason = [current, reason].filter(Boolean).join(" · ");
   }
 
-  function recalcSide(side, safePrice, safeFloor) {
+  function quarantineSide(side, limit, reasons) {
     const current = numberOrZero(side.currentPrice);
-    const nextPrice = Math.max(0, Math.round(numberOrZero(safePrice)));
-    const nextFloor = Math.max(0, Math.round(numberOrZero(safeFloor)));
-    side.economicFloor = nextFloor;
-    side.economicFloorFallback = Math.min(numberOrZero(side.economicFloorFallback), nextFloor || numberOrZero(side.economicFloorFallback));
-    side.marginFloor = nextFloor;
-    side.effectiveFloor = nextFloor;
-    side.finalGuardFloor = nextFloor;
-    side.finalGuardFloorRounded = nextFloor;
-    side.recommendedPrice = nextPrice;
-    side.finalPrice = nextPrice;
-    side.preAlignPrice = Math.min(numberOrZero(side.preAlignPrice) || nextPrice, nextPrice);
-    side.cappedPrice = Math.min(numberOrZero(side.cappedPrice) || nextPrice, nextPrice);
-    side.changeRub = nextPrice - current;
-    side.changePct = current > 0 ? side.changeRub / current : null;
-    side.changed = Math.abs(side.changeRub) >= 1;
-    side.belowFloorNow = current > 0 && nextFloor > 0 && current + 0.001 < nextFloor;
-    side.liveDeltaRub = numberOrZero(side.liveReferencePrice) > 0 ? nextPrice - numberOrZero(side.liveReferencePrice) : null;
-    side.liveDeltaPct = side.liveDeltaRub != null && numberOrZero(side.liveReferencePrice) > 0
-      ? side.liveDeltaRub / numberOrZero(side.liveReferencePrice)
-      : null;
-    side.liveDrift = side.liveDeltaPct != null && Math.abs(side.liveDeltaPct) >= 0.03;
-    side.alignmentApplied = false;
+    side.priceGuardQuarantine = true;
+    side.quarantine = true;
+    side.priceGuardAudit = {
+      code: "GUARD_OUTLIER",
+      limit,
+      reasons,
+      original: {
+        currentPrice: current,
+        economicFloor: side.economicFloor ?? null,
+        effectiveFloor: side.effectiveFloor ?? null,
+        recommendedPrice: side.recommendedPrice ?? null,
+        finalPrice: side.finalPrice ?? null,
+        preAlignPrice: side.preAlignPrice ?? null,
+        cappedPrice: side.cappedPrice ?? null
+      }
+    };
     side.finalReasonCode = "GUARD_OUTLIER";
     appendReason(side, "аномальный fallback-floor отключён");
   }
@@ -75,9 +69,10 @@
     const finalPriceOutlier = finalPrice > limit && !side.promoActive && !side.hasOverride;
     if (!fallbackFloorOutlier && !finalPriceOutlier) return false;
 
-    const safeFloor = hardFloor > 0 ? hardFloor : 0;
-    const safePrice = Math.max(current, safeFloor);
-    recalcSide(side, safePrice, safeFloor);
+    const reasons = [];
+    if (fallbackFloorOutlier) reasons.push("snapshot_fallback_floor_outlier");
+    if (finalPriceOutlier) reasons.push("final_price_outlier");
+    quarantineSide(side, limit, reasons);
     return true;
   }
 
@@ -91,6 +86,11 @@
       row.alignmentEligible = false;
       row.alignmentScenario = "GUARD_OUTLIER";
       row.alignmentReason = "fallback-floor guard";
+      row.priceGuardQuarantine = true;
+      row.priceGuardAudit = {
+        wb: row.wb?.priceGuardAudit || null,
+        ozon: row.ozon?.priceGuardAudit || null
+      };
       row.changed = Boolean(row.wb?.changed || row.ozon?.changed);
       row.belowFloorNow = Boolean(row.wb?.belowFloorNow || row.ozon?.belowFloorNow);
       row.maxAbsDelta = Math.max(Math.abs(numberOrZero(row.wb?.changeRub)), Math.abs(numberOrZero(row.ozon?.changeRub)));

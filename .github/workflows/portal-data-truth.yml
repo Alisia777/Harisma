@@ -1,0 +1,124 @@
+name: Portal data truth
+
+on:
+  pull_request:
+    paths:
+      - 'data/**'
+      - 'scripts/**'
+      - 'app-core-*.js'
+      - 'portal-*.js'
+      - 'index.html'
+      - 'package.json'
+      - '.github/workflows/portal-data-truth.yml'
+      - '.github/workflows/portal-daily-close.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+      - 'scripts/**'
+      - 'app-core-*.js'
+      - 'portal-*.js'
+      - 'index.html'
+      - 'package.json'
+      - '.github/workflows/portal-data-truth.yml'
+      - '.github/workflows/portal-daily-close.yml'
+  schedule:
+    - cron: '15 4 * * *'
+  workflow_dispatch:
+    inputs:
+      base-ref:
+        description: 'Base ref/SHA for full-range protected scope verification'
+        required: false
+        default: 'origin/main'
+
+permissions:
+  contents: read
+
+jobs:
+  truth-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: npm ci
+      - name: Syntax and negative-path self-test
+        run: |
+          mkdir -p .portal-truth-output
+          node scripts/portal-daily-layer-guard.selftest.js
+          node scripts/audit-repricer-dashboard-plan.selftest.js
+          node scripts/portal-upload-apply-runtime.selftest.js
+          node scripts/portal-runtime-promote.selftest.js
+          node scripts/portal-atomic-snapshot-finalize.selftest.js
+          node scripts/portal-api-max-sync.selftest.js
+          node scripts/portal-daily-close-workflow.selftest.js
+          node scripts/portal-runtime-snapshot-choice.selftest.js
+          node scripts/sanitizer_url_contract.test.js
+          node scripts/atomic_publish_failure_injection.test.js
+          python scripts/d1_close_gate.selftest.py
+          python scripts/sync_portal_generation_to_supabase.selftest.py
+      - name: Enforce non-IU scope
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_REF="origin/${{ github.base_ref }}"
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]]; then
+            BASE_REF="${{ github.event.before }}"
+          elif [[ -n "${{ inputs.base-ref }}" ]]; then
+            BASE_REF="${{ inputs.base-ref }}"
+          else
+            BASE_REF="origin/main"
+          fi
+          python scripts/verify_full_pr_non_iu_scope.py --base-ref "$BASE_REF" --head HEAD
+      - name: Build phase 3 truth artifacts
+        run: |
+          mkdir -p .portal-truth-output
+          node scripts/portal-upload-apply-runtime.js --input-dir data --output-dir .portal-truth-output --template-dir .portal-truth-output/templates --generate-templates
+          node scripts/portal-upload-apply-runtime.js --fixture-e2e --output-dir .portal-truth-output
+          node scripts/audit-source-workbooks.js --manifest data/portal_source_registry.json --output-dir .portal-truth-output
+          node scripts/build-canonical-repricer.js --input-dir data --output-dir .portal-truth-output
+          node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir .portal-truth-output
+          node scripts/audit-repricer-dashboard-plan.js --input-dir .portal-truth-output --base-data-dir data --output-dir .portal-truth-output
+          node scripts/portal-runtime-promote.js --input-dir .portal-truth-output --data-dir data --output-dir .portal-truth-output --no-data-write
+      - name: Audit current portal snapshot
+        run: |
+          node scripts/portal-daily-layer-guard.js \
+            --input-dir .portal-truth-output \
+            --base-data-dir data \
+            --output-dir .portal-truth-output
+      - name: Audit truth artifact
+        run: python scripts/audit_truth_artifact.py --artifact-dir .portal-truth-output
+      - name: Enforce publish gate
+        run: |
+          node - <<'NODE'
+          const report = require('./.portal-truth-output/portal_daily_guard.json');
+          if (!report.publish || report.publish.allowed !== true) {
+            console.error('Portal publish gate is blocked.');
+            (report.publish?.blockingReasons || []).forEach((reason) => console.error(`- ${reason}`));
+            process.exit(1);
+          }
+          console.log('Portal publish gate is open.');
+          NODE
+      - name: Promote and activate runtime snapshot
+        run: |
+          node scripts/portal-runtime-promote.js --input-dir .portal-truth-output --data-dir data --output-dir .portal-truth-output
+          node scripts/portal-atomic-snapshot-finalize.js --data-dir data --output-dir .portal-truth-output
+          python scripts/verify_snapshot_manifest.py --repo . --manifest data/active_snapshot.json --inventory data/runtime_snapshot_inventory.json
+      - name: Post-patch numeric/runtime acceptance
+        run: python scripts/post_patch_acceptance.py --repo .
+      - name: Upload audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-data-truth-${{ github.run_id }}
+          path: .portal-truth-output/*.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

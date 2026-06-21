@@ -7021,18 +7021,44 @@ function oosControlFilters() {
   };
 }
 
+function oosControlStableIssueKey(row = {}) {
+  const platform = String(row.platform || row.platformKey || '').trim().toLowerCase() || 'all';
+  const article = String(row.articleKey || row.article || row.sku || '').trim().toLowerCase();
+  const fallback = String(row.issueKey || '').trim().toLowerCase();
+  return [platform, article].filter(Boolean).join('|') || fallback;
+}
+
+function oosControlTaskId(row = {}) {
+  const stableKey = oosControlStableIssueKey(row);
+  if (!stableKey) return String(row.taskId || '').trim();
+  return typeof stableId === 'function'
+    ? stableId('task', `oos_control|${stableKey}`)
+    : `task-oos-${stableKey.replace(/[^\w-]+/g, '-')}`;
+}
+
+function oosControlTaskMarkers(row = {}) {
+  return [
+    oosControlStableIssueKey(row) ? `[oos-stable:${oosControlStableIssueKey(row)}]` : '',
+    String(row.issueKey || '').trim() ? `[oos:${String(row.issueKey || '').trim()}]` : ''
+  ].filter(Boolean);
+}
+
 function oosControlTaskFor(row = {}) {
   const tasks = Array.isArray(state.storage?.tasks) ? state.storage.tasks : [];
+  const stableTaskId = oosControlTaskId(row);
+  if (stableTaskId) {
+    const byStableId = tasks.find((task) => task.id === stableTaskId);
+    if (byStableId) return byStableId;
+  }
   const taskId = String(row.taskId || '').trim();
   if (taskId) {
     const byId = tasks.find((task) => task.id === taskId);
     if (byId) return byId;
   }
-  const issueKey = String(row.issueKey || '').trim();
-  if (!issueKey) return null;
-  const marker = `[oos:${issueKey}]`;
+  const markers = oosControlTaskMarkers(row);
+  if (!markers.length) return null;
   return tasks
-    .filter((task) => task?.autoCode === 'oos_control' && String(task.reason || '').includes(marker))
+    .filter((task) => task?.autoCode === 'oos_control' && markers.some((marker) => String(task.reason || '').includes(marker)))
     .sort((left, right) => {
       const leftTime = Date.parse(left.updatedAt || left.createdAt || '') || 0;
       const rightTime = Date.parse(right.updatedAt || right.createdAt || '') || 0;
@@ -7493,17 +7519,19 @@ async function oosControlSaveTask(issueKey, rootId) {
   }
   const existing = oosControlTaskFor(row);
   const now = new Date().toISOString();
+  const stableIssueKey = oosControlStableIssueKey(row);
   const reason = [
     `OOS сигнал: ${row.statusLabel || row.status}`,
     `Отдел: ${department}`,
     reasonInput ? `Причина: ${reasonInput}` : '',
     `SKU/склад: ${row.platformLabel || row.platform} / ${row.place}`,
     `Остаток ${fmt.int(row.inStock)}, покрытие ${row.turnoverDays === null || row.turnoverDays === undefined ? '—' : fmt.num(row.turnoverDays, 1)} дн., риск ${fmt.money(row.revenueAtRiskDay || 0)}/день`,
+    stableIssueKey ? `[oos-stable:${stableIssueKey}]` : '',
     `[oos:${row.issueKey}]`
   ].filter(Boolean).join('. ');
   const task = normalizeTask({
-    id: row.taskId || existing?.id || uid('task-oos'),
-    source: 'manual',
+    id: existing?.id || oosControlTaskId(row) || row.taskId || uid('task-oos'),
+    source: 'auto',
     autoCode: 'oos_control',
     articleKey: row.articleKey || row.article || '',
     entityLabel: `${row.platformLabel || row.platform} / ${row.place} / ${row.name || row.article}`,
@@ -7518,7 +7546,10 @@ async function oosControlSaveTask(issueKey, rootId) {
     reason,
     createdAt: existing?.createdAt || now,
     updatedAt: now
-  }, 'manual');
+  }, 'auto');
+  task.oosIssueKey = stableIssueKey;
+  task.oosSignalIssueKey = String(row.issueKey || '').trim();
+  task.autoCode = 'oos_control';
   state.storage = state.storage || {};
   state.storage.tasks = Array.isArray(state.storage.tasks) ? state.storage.tasks : [];
   const index = state.storage.tasks.findIndex((item) => item.id === task.id);

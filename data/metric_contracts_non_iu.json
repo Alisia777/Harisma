@@ -1,0 +1,76 @@
+{
+  "schema": "portal-business-metric-contracts-v1",
+  "version": "2026-06-21.1",
+  "scope": "non-IU",
+  "metrics": [
+    {
+      "metric_id": "orders.units",
+      "definition": "Units ordered by order creation date",
+      "formula": "sum(order_quantity)",
+      "not_equal_to": ["buyouts.units", "sales.net_units"]
+    },
+    {
+      "metric_id": "orders.gmv",
+      "definition": "Ordered GMV before cancellations, buyouts, and returns mature",
+      "formula": "sum(order_line_amount)",
+      "not_equal_to": ["sales.net_turnover", "finance.payout"]
+    },
+    {
+      "metric_id": "buyouts.units",
+      "definition": "Units transferred to buyer / bought out by realization date",
+      "formula": "sum(buyout_quantity)"
+    },
+    {
+      "metric_id": "buyouts.gmv",
+      "definition": "Bought-out goods value under the marketplace contract",
+      "formula": "sum(buyout_amount)"
+    },
+    {
+      "metric_id": "returns.units",
+      "definition": "Returned units by return date",
+      "formula": "sum(return_quantity)"
+    },
+    {
+      "metric_id": "returns.gmv",
+      "definition": "Returns amount as a positive analytical value",
+      "formula": "sum(abs(return_amount))"
+    },
+    {
+      "metric_id": "sales.net_units",
+      "definition": "Net realized units",
+      "formula": "buyouts.units - returns.units"
+    },
+    {
+      "metric_id": "sales.net_turnover",
+      "definition": "Actual turnover: buyouts minus returns",
+      "formula": "buyouts.gmv - returns.gmv"
+    },
+    {
+      "metric_id": "finance.payout",
+      "definition": "Amount payable after commissions and deductions",
+      "formula": "source_payout",
+      "not_equal_to": ["sales.net_turnover"]
+    },
+    {
+      "metric_id": "ads.spend",
+      "definition": "Advertising spend for the same calendar period and platform",
+      "formula": "sum(ad_spend)"
+    },
+    {
+      "metric_id": "ads.attributed_drr",
+      "definition": "DRR based on the advertising cabinet attributed revenue",
+      "formula": "ads.spend / ads.attributed_revenue"
+    },
+    {
+      "metric_id": "ads.total_drr",
+      "definition": "Advertising spend divided by platform net turnover on a comparable window",
+      "formula": "ads.spend / sales.net_turnover"
+    },
+    {
+      "metric_id": "stock.available",
+      "definition": "Stock available for sale on the snapshot date",
+      "formula": "sum(available_stock)",
+      "grain": "platform, sku, warehouse, as_of"
+    }
+  ]
+}

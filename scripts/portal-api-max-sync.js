@@ -24,6 +24,10 @@ function parseArgs(argv) {
       args[token.slice(2)] = true;
       continue;
     }
+    if (token === '--skip-protected-scope') {
+      args.skipProtectedScope = true;
+      continue;
+    }
     const [rawKey, inlineValue] = token.split('=');
     const key = rawKey.replace(/^--/, '');
     const nextValue = inlineValue !== undefined ? inlineValue : argv[index + 1];
@@ -107,7 +111,10 @@ function userEnv(name) {
 }
 
 function envValue(env, name) {
-  return normalizeText(env[name] || process.env[name] || userEnv(name));
+  const directValue = normalizeText(env[name] || process.env[name]);
+  if (directValue) return directValue;
+  if (asBool(env.ALTEA_PORTAL_API_IGNORE_USER_ENV || process.env.ALTEA_PORTAL_API_IGNORE_USER_ENV)) return '';
+  return normalizeText(userEnv(name));
 }
 
 function ensureEnv(env, name, aliases = []) {
@@ -405,6 +412,20 @@ function enumerateChunks(from, to, chunkDays) {
   return chunks;
 }
 
+function applySkippedStep(record, step, context) {
+  record.status = context.strict ? 'failed' : 'skipped';
+  record.exitCode = context.strict ? 1 : 0;
+  record.skippedReason = step.skipReason;
+  record.finishedAt = new Date().toISOString();
+  if (context.strict) {
+    record.error = step.skipReason;
+    console.error(`[api-max] blocked ${step.name}: ${step.skipReason}`);
+    throw new Error(`${step.name} skipped: ${step.skipReason}`);
+  }
+  console.log(`[api-max] skipped ${step.name}: ${step.skipReason}`);
+  return record;
+}
+
 function runNodeStep(step, args, context) {
   const startedAt = new Date().toISOString();
   const record = {
@@ -418,11 +439,7 @@ function runNodeStep(step, args, context) {
   };
 
   if (step.skipReason) {
-    record.status = 'skipped';
-    record.skippedReason = step.skipReason;
-    record.finishedAt = new Date().toISOString();
-    console.log(`[api-max] skipped ${step.name}: ${step.skipReason}`);
-    return record;
+    return applySkippedStep(record, step, context);
   }
 
   console.log(`[api-max] ${step.name} started`);
@@ -746,11 +763,7 @@ function runChunkedPlatformStep(step, options, context) {
   };
 
   if (step.skipReason) {
-    record.status = 'skipped';
-    record.skippedReason = step.skipReason;
-    record.finishedAt = new Date().toISOString();
-    console.log(`[api-max] skipped ${step.name}: ${step.skipReason}`);
-    return record;
+    return applySkippedStep(record, step, context);
   }
 
   const chunks = enumerateChunks(options.from, options.to, options.chunkDays);
@@ -810,7 +823,9 @@ function runChunkedPlatformStep(step, options, context) {
 }
 
 function main() {
-  const options = resolveOptions(parseArgs(process.argv));
+  const parsedArgs = parseArgs(process.argv);
+  const options = resolveOptions(parsedArgs);
+  if (parsedArgs.skipProtectedScope) options.skipIuDrr = true;
   if (options.command !== 'sync') throw new Error(`Unsupported command: ${options.command}`);
   if (!options.from || !options.to || options.from > options.to) {
     throw new Error(`Invalid API window: ${options.from || '?'}..${options.to || '?'}`);

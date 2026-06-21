@@ -475,6 +475,7 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     currentPrice,
     buyerPrice: currentBuyerPrice,
     stock,
+    stockState: procurementSnapshotAvailable ? 'known' : 'unknown',
     stockSource,
     inboundUnits,
     procurementSnapshotAvailable,
@@ -489,7 +490,9 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     changePct,
     newBuyerPrice,
     newMarginPct: marginPct === null ? null : marginPct,
+    action: strategy,
     strategy,
+    costState: 'unknown',
     reason,
     marginNoAdsMinPct: thresholdMarginPct === null ? null : thresholdMarginPct,
     marginNoAdsBasePct: marginPct === null ? null : marginPct,
@@ -517,6 +520,36 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     floorApplied: Boolean(recGuard.floorApplied),
     upperCapApplied: recGuard.capApplied
   };
+}
+
+function applyUnknownDataBlock(row) {
+  const costKnown = row?.cost !== null && row?.cost !== undefined && row?.cost !== '';
+  PLATFORM_KEYS.forEach((platform) => {
+    const side = row?.[platform];
+    if (!side) return;
+    const stockKnown = side.procurementSnapshotAvailable !== false && side.stockState !== 'unknown';
+    side.stockState = stockKnown ? (side.stockState || 'known') : 'unknown';
+    side.costState = costKnown ? 'known' : 'unknown';
+    if (stockKnown && costKnown) return;
+
+    const currentPrice = Number(side.currentPrice) || 0;
+    side.recPrice = currentPrice;
+    side.changePct = 0;
+    side.newBuyerPrice = Number(side.buyerPrice) || currentPrice;
+    side.newMarginPct = side.marginPct === null || side.marginPct === undefined ? null : side.marginPct;
+    side.action = 'BLOCK_DATA';
+    side.strategy = 'BLOCK_DATA';
+    side.stockGateBlocksAutoprice = true;
+    side.blockReason = !stockKnown && !costKnown
+      ? 'unknown_stock_and_cost'
+      : (!stockKnown ? 'unknown_stock_snapshot' : 'unknown_cost');
+    side.reason = !stockKnown && !costKnown
+      ? 'Нет надежного snapshot по остаткам и себестоимости: автопрайс удерживает текущую цену.'
+      : (!stockKnown
+        ? 'Нет надежного snapshot по остаткам: автопрайс удерживает текущую цену.'
+        : 'Нет надежной себестоимости: автопрайс удерживает текущую цену.');
+  });
+  return row;
 }
 
 function buildSummary(rows = []) {
@@ -640,7 +673,7 @@ function buildLegacyRepricerLayer(options = {}) {
   const rows = Array.from(byArticle.values())
     .map((row) => {
       row.tag = normalizeTag(Boolean(row.wb), Boolean(row.ozon));
-      return row;
+      return applyUnknownDataBlock(row);
     })
     .sort((left, right) => {
       const leftChange = Math.max(

@@ -39,16 +39,8 @@ to anon, authenticated
 using (true);
 
 drop policy if exists "portal_data_snapshots_insert_public" on public.portal_data_snapshots;
-create policy "portal_data_snapshots_insert_public"
-on public.portal_data_snapshots
-for insert
-to anon, authenticated
-with check (true);
-
 drop policy if exists "portal_data_snapshots_update_public" on public.portal_data_snapshots;
-create policy "portal_data_snapshots_update_public"
-on public.portal_data_snapshots
-for update
-to anon, authenticated
-using (true)
-with check (true);
+
+-- Production writes must use a service-role key from GitHub Actions or a
+-- trusted backend process. Anonymous/authenticated clients keep read-only
+-- access and must not be able to publish portal generations.

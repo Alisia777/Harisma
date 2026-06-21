@@ -27,6 +27,10 @@
     return Boolean(window.__ALTEA_SKU_PLAN_FACT_DESIGN_V1__);
   }
 
+  function pricesDesignV1Enabled() {
+    return Boolean(window.__ALTEA_PRICES_DESIGN_V1__);
+  }
+
   function storageGet(key) {
     try {
       return window.sessionStorage && window.sessionStorage.getItem(key);
@@ -283,6 +287,11 @@
   function applyPricesBudgetDom() {
     const root = document.getElementById('view-prices');
     if (!root) return;
+    if (pricesDesignV1Enabled()) {
+      pricesLastBudget = null;
+      removeNotice(root, PRICES_VIEW);
+      return;
+    }
     ensureStyles();
     ensureObserver(root, '__alteaPricesBudgetObserver', schedulePricesApply);
     const tbody = root.querySelector('.pw-table tbody');
@@ -310,6 +319,10 @@
   }
 
   function renderWithPriceBudget(originalRender, thisArg, args) {
+    if (pricesDesignV1Enabled()) {
+      pricesLastBudget = null;
+      return originalRender.apply(thisArg, args);
+    }
     if (isFull(PRICES_VIEW)) {
       pricesLastBudget = null;
       return originalRender.apply(thisArg, args);
@@ -336,6 +349,11 @@
 
   function hookPrices() {
     if (typeof window.renderPriceWorkbench !== 'function') return false;
+    if (pricesDesignV1Enabled()) {
+      pricesLastBudget = null;
+      applyPricesBudgetDom();
+      return true;
+    }
     if (window.renderPriceWorkbench.__alteaTableBudgetWrapped) {
       applyPricesBudgetDom();
       return true;
@@ -493,7 +511,7 @@
     const launchControlReady = hookLaunchControlStrict();
     const adsFunnelReady = hookAdsFunnelStrict();
     if (!isFull(SKU_VIEW)) applySkuBudgetDom();
-    if (!isFull(PRICES_VIEW)) applyPricesBudgetDom();
+    if (!isFull(PRICES_VIEW) || pricesDesignV1Enabled()) applyPricesBudgetDom();
     if (!isFull(SKU_CONTOUR_VIEW)) applySkuContourBudgetDom();
     return skuReady && pricesReady && skusReady && launchControlReady && adsFunnelReady;
   }

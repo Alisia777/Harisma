@@ -1506,20 +1506,20 @@ function injectOrderProcurementStyles() {
       box-shadow: 0 14px 30px rgba(var(--order-platform-rgb), 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.16);
     }
 
-    body.v87-imperial.theme-sand-dark .altea-order-procurement .altea-order-procurement__platform-btn {
+    body.v87-imperial.altea-premium-shell .altea-order-procurement .altea-order-procurement__platform-btn {
       background:
         radial-gradient(circle at 28% 0, rgba(var(--order-platform-rgb), 0.16), transparent 34%),
         rgba(18, 14, 10, 0.92) !important;
       color: #fff1dd !important;
     }
 
-    body.v87-imperial.theme-sand-dark .altea-order-procurement .altea-order-procurement__platform-btn:hover {
+    body.v87-imperial.altea-premium-shell .altea-order-procurement .altea-order-procurement__platform-btn:hover {
       background:
         radial-gradient(circle at 28% 0, rgba(var(--order-platform-rgb), 0.24), transparent 34%),
         rgba(24, 19, 14, 0.94) !important;
     }
 
-    body.v87-imperial.theme-sand-dark .altea-order-procurement .altea-order-procurement__platform-btn.is-active {
+    body.v87-imperial.altea-premium-shell .altea-order-procurement .altea-order-procurement__platform-btn.is-active {
       background:
         radial-gradient(circle at 24% 0, rgba(255, 255, 255, 0.22), transparent 32%),
         linear-gradient(180deg, rgba(var(--order-platform-rgb), 0.82), rgba(var(--order-platform-rgb), 0.40)) !important;
@@ -1527,7 +1527,7 @@ function injectOrderProcurementStyles() {
       color: #fff !important;
     }
 
-    body.v87-imperial.theme-sand-dark .altea-order-procurement .altea-order-procurement__platform-btn::before {
+    body.v87-imperial.altea-premium-shell .altea-order-procurement .altea-order-procurement__platform-btn::before {
       content: none !important;
       display: none !important;
     }

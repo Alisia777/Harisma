@@ -75,6 +75,48 @@ function payloadStamp(payload, fallbackPath = '') {
   return Date.parse(`${match[1]}T${match[2]}:${match[3]}:${match[4]}Z`) || 0;
 }
 
+function dateKey(value = '') {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  const ru = text.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (ru) {
+    return `${ru[3]}-${String(ru[2]).padStart(2, '0')}-${String(ru[1]).padStart(2, '0')}`;
+  }
+  const stamp = Date.parse(text);
+  if (!Number.isFinite(stamp)) return '';
+  return new Date(stamp).toISOString().slice(0, 10);
+}
+
+function weekRangeFromLabel(label = '') {
+  const match = String(label || '').match(/(\d{1,2})\.(\d{1,2})\.(\d{4})\s*-\s*(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if (!match) return null;
+  const from = dateKey(`${match[1]}.${match[2]}.${match[3]}`);
+  const to = dateKey(`${match[4]}.${match[5]}.${match[6]}`);
+  if (!from || !to) return null;
+  return { from, to };
+}
+
+function snapshotWeekIdentity(payload = {}) {
+  const from = dateKey(payload.sourceWeekFrom);
+  const to = dateKey(payload.sourceWeekTo);
+  const labelRange = weekRangeFromLabel(payload.weekLabel || payload.sourceSheetName || '');
+  const range = from && to ? { from, to } : labelRange;
+  if (range?.from && range?.to) {
+    return {
+      key: `${range.from}_${range.to}`,
+      startStamp: Date.parse(`${range.from}T00:00:00Z`) || 0
+    };
+  }
+
+  const fallback = String(payload.weekLabel || payload.sourceSheetName || payload.generatedAt || payload.__path || '').trim();
+  return {
+    key: fallback || `snapshot_${payload.__stamp || 0}`,
+    startStamp: payload.__stamp || 0
+  };
+}
+
 function collectSnapshots() {
   const snapshots = [];
   const addPayload = (payload, filePath) => {
@@ -112,8 +154,34 @@ function collectSnapshots() {
     if (!existing || payload.__stamp >= existing.__stamp) deduped.set(key, payload);
   });
 
-  return [...deduped.values()]
-    .sort((left, right) => left.__stamp - right.__stamp)
+  const byWeek = new Map();
+  [...deduped.values()].forEach((payload) => {
+    const identity = snapshotWeekIdentity(payload);
+    const existing = byWeek.get(identity.key);
+    const nextPayload = {
+      ...payload,
+      __weekKey: identity.key,
+      __weekStart: identity.startStamp
+    };
+    if (!existing || nextPayload.__stamp >= existing.__stamp) {
+      byWeek.set(identity.key, nextPayload);
+    }
+  });
+
+  const weeklySnapshots = [...byWeek.values()]
+    .sort((left, right) => {
+      const leftStart = left.__weekStart || left.__stamp || 0;
+      const rightStart = right.__weekStart || right.__stamp || 0;
+      if (leftStart !== rightStart) return leftStart - rightStart;
+      return (left.__stamp || 0) - (right.__stamp || 0);
+    })
+    .slice(-12);
+
+  if (weeklySnapshots.length < 8) {
+    console.warn(`leaderboard history warning: only ${weeklySnapshots.length} immutable weekly snapshots, need at least 8`);
+  }
+
+  return weeklySnapshots
     .map((payload) => ({
       generatedAt: payload.generatedAt || '',
       weekLabel: payload.weekLabel || payload.sourceSheetName || '',

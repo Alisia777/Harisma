@@ -607,6 +607,16 @@ function buildSummary(items) {
   };
 }
 
+function findOptionalHeaderKey(headerKeys, aliases) {
+  const cleanAliases = aliases
+    .map((item) => normalizeText(item).toLowerCase().replace(/ё/g, 'е'))
+    .filter(Boolean);
+  return headerKeys.find((key) => {
+    const cleanKey = normalizeText(key).toLowerCase().replace(/ё/g, 'е');
+    return cleanAliases.some((alias) => cleanKey === alias || cleanKey.includes(alias));
+  }) || '';
+}
+
 function buildPayload(rows, skus, options) {
   const baseSkus = Array.isArray(skus) ? skus : [];
   const skuByKey = new Map(
@@ -645,6 +655,14 @@ function buildPayload(rows, skus, options) {
     romi: romiKey,
     drr: drrKey
   } = headerMap;
+  const creatorKey = findOptionalHeaderKey(headerKeys, ['creator', 'креатор', 'автор', 'исполнитель', 'контентмейкер']);
+  const contentBatchKey = findOptionalHeaderKey(headerKeys, ['content batch', 'batch', 'партия контента', 'партия', 'контент партия']);
+  const contentFormatKey = findOptionalHeaderKey(headerKeys, ['content format', 'format', 'формат', 'формат контента', 'тип контента']);
+  const publishedAtKey = findOptionalHeaderKey(headerKeys, ['published at', 'publish date', 'дата публикации', 'публикация', 'опубликовано']);
+  const briefUrlKey = findOptionalHeaderKey(headerKeys, ['brief url', 'tz url', 'task url', 'ссылка на тз', 'тз', 'бриф']);
+  const contentIdKey = findOptionalHeaderKey(headerKeys, ['content id', 'content_id', 'id контента', 'номер контента']);
+  const contentHypothesisKey = findOptionalHeaderKey(headerKeys, ['hypothesis', 'гипотеза']);
+  const productionStatusKey = findOptionalHeaderKey(headerKeys, ['production status', 'content status', 'статус контента', 'статус производства']);
 
   const brandRows = rows.filter((row) => normalizeText(row[brandKey]) === options.brandFilter);
   const matchedItems = [];
@@ -670,6 +688,14 @@ function buildPayload(rows, skus, options) {
       priceOzon: resolveSkuPlatformPrice(sku, 'ozon'),
       category: resolveSkuCategory(sku),
       traffic: resolveSkuTraffic(sku),
+      creator: creatorKey ? normalizeText(row[creatorKey]) : '',
+      contentBatch: contentBatchKey ? normalizeText(row[contentBatchKey]) : '',
+      contentFormat: contentFormatKey ? normalizeText(row[contentFormatKey]) : '',
+      publishedAt: publishedAtKey ? normalizeText(row[publishedAtKey]) : '',
+      briefUrl: briefUrlKey ? normalizeText(row[briefUrlKey]) : '',
+      contentId: contentIdKey ? normalizeText(row[contentIdKey]) : '',
+      contentHypothesis: contentHypothesisKey ? normalizeText(row[contentHypothesisKey]) : '',
+      productionStatus: productionStatusKey ? normalizeText(row[productionStatusKey]) : '',
       inPortal: Boolean(sku),
       reach: numberOrZero(row[reachKey]),
       reactions: numberOrZero(row[reactionsKey]),

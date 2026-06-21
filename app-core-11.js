@@ -6930,11 +6930,55 @@ const OOS_CONTROL_STATUS_META = {
 };
 
 const OOS_CONTROL_TASK_STATUSES = ['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision', 'done'];
+const OOS_CONTROL_RISK_HORIZON_DAYS = 14;
+const OOS_CONTROL_PLATFORM_META = {
+  all: { label: 'Все площадки', shortLabel: 'Все', color: '#d8c6a4' },
+  wb: { label: 'Wildberries', shortLabel: 'WB', color: '#a855f7' },
+  ozon: { label: 'Ozon', shortLabel: 'Ozon', color: '#4f86ff' },
+  ya: { label: 'Яндекс Маркет', shortLabel: 'Я.Маркет', color: '#f2c84b' },
+  goldapple: { label: 'Золотое Яблоко', shortLabel: 'ЗЯ', color: '#72c86a' },
+  letu: { label: 'Л’Этуаль', shortLabel: 'Л’Этуаль', color: '#d96aa9' },
+  magnit: { label: 'Магнит Маркет', shortLabel: 'Магнит', color: '#e85b55' }
+};
 
 function oosControlPayload() {
   return state.oosControl && typeof state.oosControl === 'object'
     ? state.oosControl
     : { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
+}
+
+function oosControlNormalizePlatform(value = 'all') {
+  let key = String(value || 'all').trim().toLowerCase();
+  if (!key || key === 'undefined' || key === 'null') key = 'all';
+  if (['ym', 'yandex', 'yandexmarket', 'yamarket'].includes(key)) key = 'ya';
+  if (['goldenapple', 'gold-apple', 'gold_apple', 'зя'].includes(key)) key = 'goldapple';
+  if (['letual', 'letuall', 'летуаль'].includes(key)) key = 'letu';
+  if (['magnitmarket', 'magnit-market'].includes(key)) key = 'magnit';
+  return OOS_CONTROL_PLATFORM_META[key] ? key : 'all';
+}
+
+function oosControlGlobalPlatformFilter(fallback = 'all') {
+  let sawAll = false;
+  const candidates = [
+    typeof document !== 'undefined' ? document.documentElement?.dataset?.marketplace : '',
+    typeof document !== 'undefined' ? document.body?.dataset?.marketplace : '',
+    typeof document !== 'undefined' ? document.documentElement?.dataset?.platform : '',
+    typeof document !== 'undefined' ? document.body?.dataset?.platform : '',
+    state.filters?.platform,
+    state.filters?.market
+  ];
+  try {
+    candidates.push(window.localStorage?.getItem('altea.portal.marketplace'));
+  } catch {
+    candidates.push('');
+  }
+  for (const candidate of candidates) {
+    if (candidate === null || candidate === undefined || String(candidate).trim() === '') continue;
+    const normalized = oosControlNormalizePlatform(candidate);
+    if (normalized && normalized !== 'all') return normalized;
+    if (normalized === 'all') sawAll = true;
+  }
+  return sawAll ? 'all' : oosControlNormalizePlatform(fallback);
 }
 
 function oosControlOwnerForRow(row = {}) {
@@ -6970,7 +7014,7 @@ function oosControlFilters() {
   const ownerFilter = String(state.oosControlFilters.owner || 'all');
   return {
     search: String(state.oosControlFilters.search || '').trim(),
-    platform: String(state.oosControlFilters.platform || 'all'),
+    platform: oosControlGlobalPlatformFilter(state.oosControlFilters.platform || 'all'),
     owner: ownerFilter === 'all' ? 'all' : (skuPlanFactCanonicalOwner(ownerFilter) || ownerFilter),
     department: String(state.oosControlFilters.department || 'all'),
     status: String(state.oosControlFilters.status || 'active')
@@ -7655,6 +7699,391 @@ function oosControlTopPlaces(rows = [], limit = 8) {
     .map((place) => ({ ...place, riskAmount: place.revenueAtRiskDay + place.lostRevenueDay }))
     .sort((left, right) => right.riskAmount - left.riskAmount)
     .slice(0, limit);
+}
+
+function oosControlSignalSlug(value = '') {
+  const source = String(value || '').trim().toLowerCase();
+  const safe = source.replace(/[^a-z0-9а-яё]+/gi, '-').replace(/^-+|-+$/g, '');
+  return safe || 'cluster';
+}
+
+function oosControlParseDate(value) {
+  if (!value) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+  const source = String(value).trim();
+  const iso = source.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+  const ru = source.match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?/);
+  if (ru) {
+    const now = new Date();
+    return new Date(Number(ru[3] || now.getFullYear()), Number(ru[2]) - 1, Number(ru[1]));
+  }
+  const parsed = new Date(source);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function oosControlAddDays(date, days = 0) {
+  const base = oosControlParseDate(date) || new Date();
+  return new Date(base.getTime() + numberOrZero(days) * 24 * 60 * 60 * 1000);
+}
+
+function oosControlDiffDays(later, earlier) {
+  const end = oosControlParseDate(later);
+  const start = oosControlParseDate(earlier);
+  if (!end || !start) return 0;
+  return (end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000);
+}
+
+function oosControlFormatDate(value, fallback = '—') {
+  const date = oosControlParseDate(value);
+  if (!date) return fallback;
+  return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+}
+
+function oosControlSignalAsOfDate(payload = {}) {
+  return oosControlParseDate(
+    payload.dataFreshness?.dataDate
+    || payload.summary?.dataDate
+    || payload.summary?.date
+    || payload.generatedAt
+  ) || new Date();
+}
+
+function oosControlInboundDate(row = {}, place = {}) {
+  const candidates = [
+    place.inboundEta,
+    place.inboundDate,
+    place.nextSupplyDate,
+    place.deliveryDate,
+    place.supplyDate,
+    row.inboundEta,
+    row.inboundDate,
+    row.nextSupplyDate,
+    row.deliveryDate,
+    row.supplyDate
+  ];
+  for (const candidate of candidates) {
+    const date = oosControlParseDate(candidate);
+    if (date) return { date, confirmed: true };
+  }
+  return { date: null, confirmed: false };
+}
+
+function oosControlPlatformMeta(platform = 'all') {
+  return OOS_CONTROL_PLATFORM_META[oosControlNormalizePlatform(platform)] || OOS_CONTROL_PLATFORM_META.all;
+}
+
+function oosControlSignalTone(signal = {}) {
+  if (signal.alreadyOos || numberOrZero(signal.daysToOos) < 5) return 'critical';
+  if (numberOrZero(signal.daysToOos) < 10 || numberOrZero(signal.oosGapDays) > 0) return 'high';
+  return 'watch';
+}
+
+function oosControlSignalToneLabel(tone = '') {
+  if (tone === 'critical') return 'критично';
+  if (tone === 'high') return 'высокий риск';
+  return 'под наблюдением';
+}
+
+function oosControlSignalFromPlace(row = {}, place = {}, index = 0, payload = {}) {
+  const platform = oosControlNormalizePlatform(row.platform || 'all');
+  const platformMeta = oosControlPlatformMeta(platform);
+  const articleKey = String(row.articleKey || row.article || '').trim() || 'sku';
+  const clusterName = String(place.place || row.place || 'Кластер').trim();
+  const stockUnits = numberOrZero(place.inStock ?? row.inStock);
+  const avgDailyUnits = numberOrZero(place.avgDaily ?? row.avgDaily);
+  const explicitDays = oosControlFiniteOrNull(place.turnoverDays ?? row.turnoverDays);
+  const daysToOos = explicitDays !== null
+    ? explicitDays
+    : avgDailyUnits > 0
+      ? stockUnits / avgDailyUnits
+      : stockUnits <= 0
+        ? 0
+        : null;
+  const avgDailyTurnover = numberOrZero(place.revenueAtRiskDay ?? row.revenueAtRiskDay)
+    || numberOrZero(place.lostRevenueDay ?? row.lostRevenueDay)
+    || avgDailyUnits * numberOrZero(row.averagePrice || 0);
+  const asOfDate = oosControlSignalAsOfDate(payload);
+  const forecastDate = daysToOos === null ? null : oosControlAddDays(asOfDate, daysToOos);
+  const inbound = oosControlInboundDate(row, place);
+  const effectiveInboundDate = inbound.date || oosControlAddDays(asOfDate, OOS_CONTROL_RISK_HORIZON_DAYS);
+  const oosGapDays = forecastDate ? Math.max(0, oosControlDiffDays(effectiveInboundDate, forecastDate)) : 0;
+  const projectedLostTurnover = Math.max(0, oosGapDays * avgDailyTurnover);
+  const alreadyOos = String(row.status || '').toLowerCase() === 'oos' || stockUnits <= 0;
+  const isRisk = alreadyOos
+    || (daysToOos !== null && daysToOos < 10)
+    || oosGapDays > 0
+    || (!inbound.confirmed && daysToOos !== null && daysToOos < OOS_CONTROL_RISK_HORIZON_DAYS);
+  if (!isRisk) return null;
+  const recommendedReplenishment = Math.max(
+    0,
+    Math.ceil(avgDailyUnits * OOS_CONTROL_RISK_HORIZON_DAYS - stockUnits - numberOrZero(place.inTransit ?? row.inTransit) - numberOrZero(place.inRequest ?? row.inRequest))
+  );
+  const signal = {
+    key: `${platform}|${oosControlSignalSlug(clusterName)}|${oosControlSignalSlug(articleKey)}|${index}`,
+    row,
+    platform,
+    platformLabel: row.platformLabel || platformMeta.shortLabel,
+    platformLongLabel: platformMeta.label,
+    platformColor: platformMeta.color,
+    skuId: articleKey,
+    skuName: row.name || row.article || articleKey,
+    clusterId: oosControlSignalSlug(clusterName),
+    clusterName,
+    stockUnits,
+    avgDailyUnits,
+    avgDailyTurnover,
+    daysToOos,
+    forecastDate,
+    inboundDate: inbound.date,
+    inboundConfirmed: inbound.confirmed,
+    effectiveInboundDate,
+    oosGapDays,
+    projectedLostTurnover,
+    recommendedReplenishment,
+    nextAction: row.recommendation || 'Подтвердить поставку, перемещение или лимит продаж.',
+    owner: row.owner || 'Без owner',
+    department: row.department || '',
+    status: row.status || 'risk',
+    statusLabel: row.statusLabel || row.status || 'OOS риск',
+    alreadyOos
+  };
+  signal.tone = oosControlSignalTone(signal);
+  return signal;
+}
+
+function oosControlVisibleSignals(rows = oosControlFilteredRows(), payload = oosControlPayload()) {
+  const signals = [];
+  rows.forEach((row) => {
+    const places = Array.isArray(row.placesAtRisk) && row.placesAtRisk.length
+      ? row.placesAtRisk
+      : [{
+          place: row.place,
+          inStock: row.inStock,
+          inTransit: row.inTransit,
+          inRequest: row.inRequest,
+          avgDaily: row.avgDaily,
+          turnoverDays: row.turnoverDays,
+          revenueAtRiskDay: row.revenueAtRiskDay,
+          lostRevenueDay: row.lostRevenueDay
+        }];
+    places.forEach((place, placeIndex) => {
+      const signal = oosControlSignalFromPlace(row, place, placeIndex, payload);
+      if (signal) signals.push(signal);
+    });
+  });
+  return signals.sort((left, right) => (
+    numberOrZero(right.projectedLostTurnover) - numberOrZero(left.projectedLostTurnover)
+    || numberOrZero(left.daysToOos ?? 999) - numberOrZero(right.daysToOos ?? 999)
+    || String(left.clusterName).localeCompare(String(right.clusterName), 'ru')
+  ));
+}
+
+function oosControlSignalSummary(signals = []) {
+  const skuSet = new Set();
+  const platformSet = new Set();
+  let projectedLostTurnover = 0;
+  let avgDailyTurnover = 0;
+  let unconfirmedInbound = 0;
+  let critical = 0;
+  signals.forEach((signal) => {
+    projectedLostTurnover += numberOrZero(signal.projectedLostTurnover);
+    avgDailyTurnover += numberOrZero(signal.avgDailyTurnover);
+    if (signal.skuId) skuSet.add(signal.skuId);
+    if (signal.platform) platformSet.add(signal.platform);
+    if (!signal.inboundConfirmed) unconfirmedInbound += 1;
+    if (signal.tone === 'critical') critical += 1;
+  });
+  const nearest = signals
+    .filter((signal) => signal.daysToOos !== null && signal.daysToOos !== undefined)
+    .sort((left, right) => numberOrZero(left.daysToOos) - numberOrZero(right.daysToOos))[0] || null;
+  return {
+    projectedLostTurnover,
+    avgDailyTurnover,
+    signalCount: signals.length,
+    skuCount: skuSet.size,
+    platformCount: platformSet.size,
+    unconfirmedInbound,
+    critical,
+    nearest
+  };
+}
+
+function renderOosControlCommand(signals = [], filters = oosControlFilters()) {
+  const summary = oosControlSignalSummary(signals);
+  const platformMeta = oosControlPlatformMeta(filters.platform);
+  const nearestText = summary.nearest
+    ? `${fmt.num(summary.nearest.daysToOos, 1)} д`
+    : '—';
+  const nearestMeta = summary.nearest
+    ? `${summary.nearest.platformLabel} · ${summary.nearest.clusterName}`
+    : 'сигналов нет';
+  return `
+    <section class="oos-command" style="--pc:${escapeHtml(platformMeta.color)}">
+      <div>
+        <span>Под угрозой оборота</span>
+        <strong>${fmt.money(summary.projectedLostTurnover)}</strong>
+        <small>сумма прогнозных потерь по видимым SKU × кластер</small>
+      </div>
+      <div>
+        <span>Критические сигналы</span>
+        <strong>${fmt.int(summary.signalCount)}</strong>
+        <small>${fmt.int(summary.skuCount)} SKU · ${fmt.int(summary.platformCount)} площадок</small>
+      </div>
+      <div>
+        <span>Ближайший OOS</span>
+        <strong>${escapeHtml(nearestText)}</strong>
+        <small>${escapeHtml(nearestMeta)}</small>
+      </div>
+      <div>
+        <span>Фильтр шапки</span>
+        <strong>${escapeHtml(platformMeta.shortLabel)}</strong>
+        <small>${summary.unconfirmedInbound ? `${fmt.int(summary.unconfirmedInbound)} без подтвержденной поставки` : 'поставки подтверждены или риска нет'}</small>
+      </div>
+    </section>
+  `;
+}
+
+function renderOosControlSignalFocus(signal) {
+  if (!signal) {
+    return `
+      <div class="oos-empty">
+        <strong>По выбранной площадке критических сигналов нет</strong>
+        <span>Глобальный фильтр сети сохранен; выберите в шапке «Все», чтобы увидеть весь контур риска.</span>
+      </div>
+    `;
+  }
+  const daysText = signal.daysToOos === null || signal.daysToOos === undefined ? '—' : `${fmt.num(signal.daysToOos, 1)} д`;
+  const forecastText = oosControlFormatDate(signal.forecastDate);
+  const inboundText = signal.inboundConfirmed
+    ? oosControlFormatDate(signal.inboundDate)
+    : `не подтверждена, горизонт ${OOS_CONTROL_RISK_HORIZON_DAYS} д`;
+  const gapText = `${fmt.num(signal.oosGapDays, signal.oosGapDays % 1 ? 1 : 0)} д`;
+  return `
+    <div class="oos-focus-copy" style="--pc:${escapeHtml(signal.platformColor)}">
+      <div class="oos-focus-top">
+        <span class="oos-platform"><i></i>${escapeHtml(signal.platformLongLabel)}</span>
+        <span class="oos-severity ${escapeHtml(signal.tone)}">${escapeHtml(oosControlSignalToneLabel(signal.tone))}</span>
+      </div>
+      <div class="oos-focus-title">
+        <div>
+          <span>Позиция</span>
+          <h2>${escapeHtml(signal.skuName)}</h2>
+          <code>${escapeHtml(signal.skuId)}</code>
+        </div>
+        <div class="oos-focus-arrow">→</div>
+        <div>
+          <span>Кластер</span>
+          <h3>${escapeHtml(signal.clusterName)}</h3>
+          <small>здесь закончится раньше поставки</small>
+        </div>
+      </div>
+      <div class="oos-sentence">
+        Запас вылетит через <strong>${escapeHtml(daysText)}</strong> · прогноз OOS <strong>${escapeHtml(forecastText)}</strong> · поставка <strong>${escapeHtml(inboundText)}</strong>.
+      </div>
+      <div class="oos-focus-meta">
+        <span>Остаток <b>${fmt.int(signal.stockUnits)} шт.</b></span>
+        <span>Продажи <b>${fmt.num(signal.avgDailyUnits, 1)} шт./день</b></span>
+        <span>Разрыв <b>${escapeHtml(gapText)} без товара</b></span>
+        <span>Довезти <b>${fmt.int(signal.recommendedReplenishment)} шт.</b></span>
+      </div>
+    </div>
+    <div class="oos-focus-loss" style="--pc:${escapeHtml(signal.platformColor)}">
+      <span>Потеря оборота</span>
+      <strong>${fmt.money(signal.projectedLostTurnover)}</strong>
+      <small>${fmt.money(signal.avgDailyTurnover)} в день × ${escapeHtml(gapText)} OOS</small>
+      <div class="oos-next-action">${escapeHtml(signal.nextAction)}</div>
+    </div>
+  `;
+}
+
+function renderOosControlSignalRow(signal, index = 0, selectedKey = '') {
+  const isActive = signal.key === selectedKey;
+  const daysText = signal.daysToOos === null || signal.daysToOos === undefined ? '—' : `${fmt.num(signal.daysToOos, 1)} д`;
+  return `
+    <button type="button" class="oos-signal ${isActive ? 'active' : ''}" data-oos-signal="${escapeHtml(signal.key)}" aria-selected="${isActive ? 'true' : 'false'}" style="--pc:${escapeHtml(signal.platformColor)}">
+      <span class="oos-rank">${String(index + 1).padStart(2, '0')}</span>
+      <span class="oos-product"><i></i><b>${escapeHtml(signal.skuName)}</b><small>${escapeHtml(signal.platformLabel)} · ${escapeHtml(signal.skuId)}</small></span>
+      <span class="oos-cluster"><small>кластер</small><b>${escapeHtml(signal.clusterName)}</b></span>
+      <span class="oos-when"><small>вылетит</small><b>${escapeHtml(daysText)}</b><em>${escapeHtml(oosControlFormatDate(signal.forecastDate))}</em></span>
+      <span class="oos-row-loss"><small>потеря оборота</small><b>${fmt.money(signal.projectedLostTurnover)}</b></span>
+      <span class="oos-row-arrow">↗</span>
+    </button>
+  `;
+}
+
+function renderOosControlSignalList(signals = [], selectedKey = '') {
+  return `
+    <section class="card oos-risk-queue">
+      <div class="section-subhead">
+        <div>
+          <h3>Где и сколько оборота потеряем</h3>
+          <p class="small muted">Показываются только кластеры, где OOS наступит раньше пополнения или запас ниже 10 дней.</p>
+        </div>
+        ${badge(`${fmt.int(signals.length)} SKU × кластер`, signals.length ? 'warn' : 'ok')}
+      </div>
+      <div class="oos-signal-list" role="listbox" aria-label="OOS сигналы по кластерам">
+        ${signals.map((signal, index) => renderOosControlSignalRow(signal, index, selectedKey)).join('') || renderOosControlSignalFocus(null)}
+      </div>
+    </section>
+  `;
+}
+
+function renderOosControlFormulaNote() {
+  return `
+    <section class="oos-formula">
+      <span>Расчет</span>
+      <code>потеря оборота = max(0, дата поставки − дата OOS) × средний дневной оборот SKU в кластере</code>
+      <small>Данные считаются строго на уровне SKU × площадка × кластер. Общий остаток по сети не скрывает локальный OOS.</small>
+    </section>
+  `;
+}
+
+function renderOosControlFiltersV4(rows, filters) {
+  const ownerOptions = oosControlOptions(oosControlUnique(rows, 'owner'), filters.owner, 'Все owner');
+  const departmentOptions = oosControlOptions(oosControlUnique(rows, 'department'), filters.department, 'Все отделы');
+  return `
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="grid sku-plan-fact-filters oos-v4-filters" style="grid-template-columns:1.3fr repeat(3,minmax(0,190px));gap:10px">
+        <label><span class="label">Поиск</span><input data-oos-filter="search" value="${escapeHtml(filters.search)}" placeholder="SKU, кластер, owner, мера"></label>
+        <label><span class="label">Сигнал</span>
+          <select data-oos-filter="status">
+            <option value="active" ${filters.status === 'active' ? 'selected' : ''}>Все активные</option>
+            <option value="oos" ${filters.status === 'oos' ? 'selected' : ''}>Только OOS</option>
+            <option value="critical" ${filters.status === 'critical' ? 'selected' : ''}>Критично</option>
+            <option value="risk" ${filters.status === 'risk' ? 'selected' : ''}>OOS скоро &lt;10 д</option>
+            <option value="watch" ${filters.status === 'watch' ? 'selected' : ''}>Наблюдать</option>
+            <option value="has_task" ${filters.status === 'has_task' ? 'selected' : ''}>С задачей</option>
+            <option value="no_task" ${filters.status === 'no_task' ? 'selected' : ''}>Без задачи</option>
+          </select>
+        </label>
+        <label><span class="label">Owner</span><select data-oos-filter="owner">${ownerOptions}</select></label>
+        <label><span class="label">Отдел</span><select data-oos-filter="department">${departmentOptions}</select></label>
+      </div>
+    </div>
+  `;
+}
+
+function oosControlFocusSignal(root, signalKey) {
+  if (!root) return;
+  const payload = oosControlPayload();
+  const signals = oosControlVisibleSignals(oosControlFilteredRows(), payload);
+  const signal = signals.find((item) => item.key === signalKey) || signals[0] || null;
+  if (!signal) return;
+  state.oosControlSelectedSignal = signal.key;
+  root.querySelectorAll('[data-oos-signal]').forEach((button) => {
+    const isActive = button.dataset.oosSignal === signal.key;
+    button.classList.toggle('active', isActive);
+    button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+  const focus = root.querySelector('[data-oos-focus]');
+  if (!focus) return;
+  focus.innerHTML = renderOosControlSignalFocus(signal);
+  const reducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (!reducedMotion) {
+    focus.classList.remove('oos-focus-pulse');
+    window.requestAnimationFrame?.(() => focus.classList.add('oos-focus-pulse'));
+  }
 }
 
 function oosControlCoverageTone(days) {
@@ -8612,6 +9041,11 @@ function bindOosControl(root, rootId) {
       renderOosControl(rootId);
     });
   });
+  root.querySelectorAll('[data-oos-signal]').forEach((button) => {
+    button.addEventListener('click', () => {
+      oosControlFocusSignal(root, button.dataset.oosSignal || '');
+    });
+  });
   root.querySelectorAll('[data-oos-filter]').forEach((control) => {
     const eventName = control.tagName === 'INPUT' ? 'input' : 'change';
     control.addEventListener(eventName, () => {
@@ -8723,6 +9157,9 @@ function renderOosControl(rootId = 'view-oos-control') {
   const filters = oosControlFilters();
   const filteredRows = oosControlFilteredRows();
   const summary = oosControlSummarizeRows(filteredRows, payload.summary || {});
+  const signals = oosControlVisibleSignals(filteredRows, payload);
+  const selectedSignal = signals.find((signal) => signal.key === state.oosControlSelectedSignal) || signals[0] || null;
+  state.oosControlSelectedSignal = selectedSignal?.key || '';
   root.dataset.oosPlatform = filters.platform === 'wb' || filters.platform === 'ozon'
     ? filters.platform
     : filters.platform === 'all'
@@ -8732,29 +9169,31 @@ function renderOosControl(rootId = 'view-oos-control') {
     <div class="page-head">
       <div>
         <h1>OOS контроль</h1>
-        <p>Запасы, риск выручки, склады и ответственные в одном коротком списке.</p>
+        <p>Какая позиция в каком кластере закончится раньше поставки и сколько оборота будет потеряно.</p>
       </div>
       <div class="actions">
         ${badge(`факт до ${escapeHtml(summary.dataDate || payload.dataFreshness?.dataDate || '—')}`, summary.dataStatus === 'ok' ? 'ok' : 'warn')}
-        ${badge(`${fmt.int(filteredRows.length)} из ${fmt.int(rows.length)} строк`)}
-        <button class="quick-chip" type="button" data-oos-export>Выгрузить OOS</button>
+        ${badge(`${fmt.int(signals.length)} SKU × кластер`, signals.length ? 'warn' : 'ok')}
+        <button class="quick-chip" type="button" data-oos-export>Выгрузить риски</button>
         <button class="quick-chip" type="button" data-oos-reload>Обновить экран</button>
       </div>
     </div>
-    ${renderOosStatusStrip(payload, filteredRows, rows)}
-    ${renderOosControlOperationalBriefing(payload, filteredRows, rows, filters)}
+    ${renderOosControlCommand(signals, filters)}
+    <section class="card oos-focus" data-oos-focus>${renderOosControlSignalFocus(selectedSignal)}</section>
+    ${renderOosControlSignalList(signals, selectedSignal?.key || '')}
+    ${renderOosControlFormulaNote()}
     <details class="oos-advanced-panel">
       <summary>
-        <span>Фильтры, таблица и командные задачи</span>
-        ${badge(`${fmt.int(filteredRows.length)} строк`)}
+        <span>Фильтры, комментарии и служебная таблица</span>
+        ${badge(`${fmt.int(filteredRows.length)} агрегированных строк`)}
       </summary>
-      ${renderOosControlFilters(rows, filters)}
+      ${renderOosControlFiltersV4(rows, filters)}
       ${oosControlTeamNotice()}
       <div class="card sku-plan-fact-card oos-detail-card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
-          <h3>Детализация и комментарии</h3>
-          <p class="small muted">Причина, контрмера и срок сохраняются в задачу по каждой строке.</p>
+          <h3>Служебная детализация</h3>
+          <p class="small muted">Комментарии и контрмеры сохраняются к исходной OOS-строке. Первый экран выше всегда считает риски по кластерам.</p>
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(summary.newIssues || 0)} новых`, (summary.newIssues || 0) ? 'warn' : '')}

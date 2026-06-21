@@ -1,0 +1,1763 @@
+/* Premium presentation layer: replaces the visible shell for migrated routes while old code keeps data alive. */
+
+body.v87-imperial.altea-premium-shell:not(.portal-auth-locked) > .app-shell {
+  position: fixed !important;
+  inset: 0 auto auto 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  transform: translate3d(-200vw, -200vh, 0) !important;
+  contain: strict !important;
+}
+
+body.v87-imperial.altea-premium-shell:not(.portal-auth-locked) > .app-shell > .sidebar,
+body.v87-imperial.altea-premium-shell:not(.portal-auth-locked) > .app-shell > .sidebar-toggle,
+body.v87-imperial.altea-premium-shell:not(.portal-auth-locked) > .app-shell > .main > .topbar,
+body.v87-imperial.altea-premium-shell:not(.portal-auth-locked) > .app-shell > .main > .banner {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-app {
+  --premium-sidebar: 254px;
+  --premium-topbar: 72px;
+  --premium-motion-ease: cubic-bezier(.22, 1, .36, 1);
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: grid;
+  grid-template-columns: var(--premium-sidebar) minmax(0, 1fr);
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(900px 520px at 80% 0%, rgba(var(--route-rgb, 216, 198, 164), .10), transparent 68%),
+    linear-gradient(135deg, var(--bg, #070706), var(--bg2, #0b0a09) 58%, var(--bg, #070706));
+  color: var(--text, #f6f0e5);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-app[hidden] {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(780px 520px at 28% 18%, rgba(var(--route-rgb, 216, 198, 164), .15), transparent 66%),
+    radial-gradient(980px 620px at 86% 20%, rgba(var(--platform-rgb, 216, 198, 164), .12), transparent 70%);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient-video {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  object-fit: cover;
+  opacity: .16;
+  filter: blur(10px) brightness(.54) contrast(1.04) saturate(.78);
+  mix-blend-mode: soft-light;
+  transform: scale(1.02);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-video-fallback .altea-premium-ambient-video {
+  display: none;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient::before,
+body.v87-imperial.altea-premium-shell .altea-premium-ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient::before {
+  background:
+    linear-gradient(118deg, transparent 4%, rgba(var(--route-rgb, 216, 198, 164), .08) 28%, transparent 47%),
+    radial-gradient(circle at 54% 43%, rgba(255, 244, 220, .10), transparent 26%);
+  opacity: .78;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient::after {
+  background: linear-gradient(104deg, transparent 0 42%, rgba(255, 238, 198, .075) 49%, transparent 57% 100%);
+  transform: translate3d(-28%, 0, 0);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient-orbit {
+  position: absolute;
+  width: min(64vw, 860px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 238, 198, .08);
+  border-radius: 46% 54% 52% 48%;
+  box-shadow: 0 0 46px rgba(var(--route-rgb, 216, 198, 164), .08);
+  opacity: .42;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient-orbit--a {
+  left: 19%;
+  top: 10%;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient-orbit--b {
+  right: -9%;
+  top: -18%;
+  width: min(48vw, 620px);
+  opacity: .24;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--text, #fff) 2%, transparent) 1px, transparent 1px),
+    linear-gradient(color-mix(in srgb, var(--text, #fff) 1.7%, transparent) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(90deg, transparent 8%, #000 48%, transparent 100%);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-app::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: inset 0 0 150px color-mix(in srgb, var(--bg, #070706) 72%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-sidebar,
+body.v87-imperial.altea-premium-shell .altea-premium-shell-main {
+  position: relative;
+  z-index: 3;
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 24px 15px 18px;
+  border-right: 1px solid color-mix(in srgb, var(--line, #3b342b) 70%, transparent);
+  background: color-mix(in srgb, var(--bg, #070706) 88%, transparent);
+  backdrop-filter: blur(24px);
+  box-shadow: inset -1px 0 0 color-mix(in srgb, var(--text, #fff) 2.5%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 0 8px 21px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line, #3b342b) 70%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--route-accent, #d8c6a4) 42%, var(--line, #3b342b));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--route-accent, #d8c6a4) 10%, var(--surface, #15130f));
+  box-shadow: 0 0 32px rgba(var(--route-rgb, 216, 198, 164), .12);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-mark img {
+  width: 24px;
+  height: 24px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-title {
+  color: var(--text, #f6f0e5);
+  font: 500 20px/1.05 Georgia, "Times New Roman", serif;
+  letter-spacing: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-subtitle {
+  margin-top: 5px;
+  color: var(--faint, #756d63);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-nav {
+  min-height: 0;
+  overflow: auto;
+  padding-right: 3px;
+  scrollbar-width: none;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-nav::-webkit-scrollbar {
+  display: none;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-group {
+  margin: 0 0 12px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-label {
+  padding: 5px 9px 7px;
+  color: var(--faint, #756d63);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-btn {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 47px;
+  grid-template-columns: 30px 1fr 4px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: transparent;
+  color: var(--text, #f6f0e5);
+  text-align: left;
+  cursor: pointer;
+  transition: background .24s ease, border-color .24s ease, transform .24s cubic-bezier(.22, .82, .22, 1), color .24s ease;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-btn:hover {
+  transform: translateX(2px);
+  border-color: color-mix(in srgb, var(--line, #3b342b) 64%, transparent);
+  background: color-mix(in srgb, var(--surface, #15130f) 70%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-btn.is-active {
+  border-color: color-mix(in srgb, var(--route-accent, #d8c6a4) 34%, var(--line, #3b342b));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--route-accent, #d8c6a4) 13%, var(--surface, #15130f)), color-mix(in srgb, var(--surface, #15130f) 86%, transparent));
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--bg, #070706) 38%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--line, #3b342b) 78%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--surface2, #1b1814) 76%, transparent);
+  color: var(--muted, #aaa092);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-icon svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-btn.is-active .altea-premium-nav-icon {
+  border-color: color-mix(in srgb, var(--route-accent, #d8c6a4) 38%, var(--line, #3b342b));
+  color: var(--route-accent, #d8c6a4);
+  box-shadow: 0 0 22px rgba(var(--route-rgb, 216, 198, 164), .10);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-caption {
+  display: block;
+  margin-top: 3px;
+  color: var(--faint, #756d63);
+  font-size: 8px;
+  line-height: 1.2;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-nav-btn.is-active .altea-premium-nav-dot {
+  background: var(--route-accent, #d8c6a4);
+  box-shadow: 0 0 10px rgba(var(--route-rgb, 216, 198, 164), .55);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-main {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: var(--premium-topbar) minmax(0, 1fr);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-topbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  padding: 0 30px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line, #3b342b) 58%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg, #070706) 91%, transparent), color-mix(in srgb, var(--bg, #070706) 65%, transparent));
+  backdrop-filter: blur(20px);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-crumb {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 11px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-crumb-index {
+  color: var(--route-accent, #d8c6a4);
+  font-size: 9px;
+  letter-spacing: .18em;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-crumb strong {
+  color: var(--text, #f6f0e5);
+  font: 500 17px/1 Georgia, "Times New Roman", serif;
+  white-space: nowrap;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-top-spacer {
+  flex: 1;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  min-width: 0;
+  padding: 0 13px;
+  border: 1px solid color-mix(in srgb, var(--line, #3b342b) 76%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface, #15130f) 72%, transparent);
+  color: var(--muted, #aaa092);
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-sync {
+  max-width: min(40vw, 520px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-sync::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--success, #7fc09d);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--success, #7fc09d) 11%, transparent), 0 0 14px color-mix(in srgb, var(--success, #7fc09d) 45%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-global-marketplace {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 4px;
+  border: 1px solid color-mix(in srgb, var(--line, #3b342b) 70%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface, #15130f) 72%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 3%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-global-marketplace--premium {
+  flex: 0 1 auto;
+  max-width: min(42vw, 560px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+body.v87-imperial.altea-premium-shell .altea-global-marketplace--premium::-webkit-scrollbar {
+  display: none;
+}
+
+body.v87-imperial.altea-premium-shell .altea-marketplace-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 26px;
+  min-width: 0;
+  padding: 0 10px;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted, #aaa092);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .03em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .22s ease, border-color .22s ease, background .22s ease, transform .22s cubic-bezier(.22, .82, .22, 1);
+}
+
+body.v87-imperial.altea-premium-shell .altea-marketplace-chip i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--pc, var(--platform));
+  box-shadow: 0 0 11px color-mix(in srgb, var(--pc, var(--platform)) 48%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-marketplace-chip::after {
+  content: "";
+  position: absolute;
+  inset: 1px auto 1px -40%;
+  width: 38%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, #fff 10%, transparent), transparent);
+  transform: skewX(-16deg);
+  opacity: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-marketplace-chip:hover,
+body.v87-imperial.altea-premium-shell .altea-marketplace-chip.is-active {
+  color: var(--text, #fff3df);
+  border-color: color-mix(in srgb, var(--pc, var(--platform)) 42%, var(--line, #3b342b));
+  background: color-mix(in srgb, var(--pc, var(--platform)) 12%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-marketplace-chip:hover {
+  transform: translateY(-1px);
+}
+
+body.v87-imperial.altea-premium-shell .altea-marketplace-chip.is-active::before {
+  content: "";
+  position: absolute;
+  right: 10px;
+  bottom: 3px;
+  left: 10px;
+  height: 1px;
+  border-radius: 99px;
+  background: var(--pc, var(--platform));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--pc, var(--platform)) 46%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-marketplace-chip.is-active::after {
+  animation: alteaPremiumChipSweep 1.8s cubic-bezier(.22, .82, .22, 1) both;
+  opacity: 1;
+}
+
+body.v87-imperial.altea-premium-shell .top-actions > .altea-global-marketplace--legacy {
+  margin-right: 6px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-content {
+  position: relative;
+  min-height: 0;
+  overflow: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--line-strong, #5a4e3f) 70%, transparent) transparent;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-content::-webkit-scrollbar {
+  width: 7px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-content::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line-strong, #5a4e3f) 70%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route-stage {
+  position: relative;
+  min-height: 100%;
+  padding: 28px 31px 64px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route-stage[hidden] {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route-stage--legacy {
+  padding: 22px 24px 64px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route-stage--legacy > .view {
+  display: block;
+  min-height: calc(100vh - var(--premium-topbar, 72px) - 48px);
+  width: 100%;
+  padding: 0 !important;
+  overflow: visible;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route-stage--legacy > .view:not(.active) {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route-stage--legacy .section-title {
+  margin-top: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route-stage--legacy .card,
+body.v87-imperial.altea-premium-shell .altea-premium-route-stage--legacy .panel {
+  border-radius: 8px;
+}
+
+body.v87-imperial.altea-premium-shell.altea-premium-presentation-ready
+  .view[data-premium-route="dashboard"] > :not(.altea-premium-route),
+body.v87-imperial.altea-premium-shell.altea-premium-presentation-ready
+  .view[data-premium-route="executive"] > :not(.altea-premium-route) {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route {
+  --route-accent: #e2cfaf;
+  --route-rgb: 226, 207, 175;
+  --platform: #d8c6a4;
+  --platform-rgb: 216, 198, 164;
+  --wb: #a855f7;
+  --ozon: #4f86ff;
+  --ym: #f2c84b;
+  --goldapple: #72c86a;
+  --letu: #d96aa9;
+  --magnit: #e85b55;
+  --premium-surface: color-mix(in srgb, var(--surface, #171412) 92%, transparent);
+  --premium-surface-2: color-mix(in srgb, var(--surface2, #231c17) 84%, transparent);
+  --premium-line: color-mix(in srgb, var(--line, rgba(255, 236, 190, .16)) 78%, transparent);
+  --premium-muted: color-mix(in srgb, var(--muted, #b8ab96) 88%, transparent);
+  position: relative;
+  z-index: 3;
+  min-height: calc(100vh - 126px);
+  padding: 0 0 64px;
+  color: var(--text, #fff3df);
+  isolation: isolate;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: var(--premium-topbar, 72px) 0 0 var(--premium-sidebar, 254px);
+  pointer-events: none;
+  background:
+    radial-gradient(720px 300px at 18% 8%, rgba(var(--route-rgb), .085), transparent 70%),
+    radial-gradient(650px 300px at 82% 20%, rgba(var(--platform-rgb), .06), transparent 72%);
+  opacity: .92;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route * {
+  box-sizing: border-box;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-route-body {
+  opacity: 1;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route :is(h1, h2, h3, p) {
+  margin: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .route-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  margin: 0 0 23px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .route-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 9px;
+  color: var(--route-accent);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .route-kicker::before {
+  content: "";
+  width: 42px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--route-accent), transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .route-head h1 {
+  max-width: 980px;
+  color: var(--text, #fff3df);
+  font: 500 clamp(32px, 3vw, 50px)/1.02 Georgia, "Times New Roman", serif;
+  letter-spacing: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .route-head p {
+  max-width: 760px;
+  margin-top: 11px;
+  color: var(--premium-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .route-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 38px;
+  padding: 0 15px;
+  border: 1px solid color-mix(in srgb, var(--line-strong, rgba(255, 236, 190, .28)) 76%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--premium-surface) 76%, transparent);
+  color: var(--text, #fff3df);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  cursor: pointer;
+  transition: transform .2s var(--ease-soft, cubic-bezier(.2, .8, .2, 1)), background .2s, border-color .2s, box-shadow .2s;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .btn:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--route-accent) 46%, var(--premium-line));
+  box-shadow: 0 12px 28px color-mix(in srgb, #000 36%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .btn.primary {
+  border-color: color-mix(in srgb, var(--route-accent) 65%, var(--premium-line));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--route-accent) 28%, transparent), var(--route-accent));
+  color: #18110a;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .grid {
+  display: grid;
+  gap: 14px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .g2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .g3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .g4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .g5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .g6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .span2 {
+  grid-column: span 2;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .section-gap {
+  margin-top: 14px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--premium-line);
+  border-radius: 8px;
+  background: linear-gradient(145deg, var(--premium-surface), var(--premium-surface-2));
+  box-shadow: 0 18px 42px color-mix(in srgb, #000 34%, transparent);
+  transition: transform .28s var(--ease-soft, cubic-bezier(.2, .8, .2, 1)), border-color .28s, box-shadow .28s, background .5s;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 0 42%, color-mix(in srgb, var(--text, #fff) 5%, transparent) 48%, transparent 54%);
+  transform: translateX(-120%);
+  transition: transform 1s var(--ease-soft, cubic-bezier(.2, .8, .2, 1));
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .panel:hover::after {
+  transform: translateX(120%);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .panel:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--route-accent) 34%, var(--premium-line));
+  box-shadow: 0 24px 54px color-mix(in srgb, #000 43%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .panel-pad {
+  padding: 18px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .route-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(520px 230px at 12% 0%, rgba(var(--route-rgb), .12), transparent 70%);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .platform-line::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--wb) 0 16.6%, var(--ozon) 16.6% 33.2%, var(--ym) 33.2% 49.8%, var(--goldapple) 49.8% 66.4%, var(--letu) 66.4% 83%, var(--magnit) 83% 100%);
+  opacity: .92;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .platform-focus::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: var(--platform);
+  box-shadow: 0 0 18px rgba(var(--platform-rgb), .35);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .panel-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 14px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .panel-title h2 {
+  color: var(--text, #fff3df);
+  font: 500 17px/1.15 Georgia, "Times New Roman", serif;
+  letter-spacing: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .panel-title small,
+body.v87-imperial.altea-premium-shell .altea-premium-route .micro {
+  color: var(--faint, rgba(255, 244, 229, .46));
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .value {
+  color: var(--text, #fff3df);
+  font-size: 27px;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .value.lg {
+  font-size: 39px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .muted {
+  color: var(--premium-muted);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero {
+  min-height: 255px;
+  padding: 22px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero-grid {
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 24px;
+  align-items: center;
+  height: 100%;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero-copy h2 {
+  max-width: 650px;
+  margin: 10px 0;
+  color: var(--text, #fff3df);
+  font: 500 28px/1.05 Georgia, "Times New Roman", serif;
+  letter-spacing: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero-copy p {
+  max-width: 620px;
+  color: var(--premium-muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero-number {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero-number small {
+  padding-bottom: 5px;
+  color: var(--premium-muted);
+  font-size: 9px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero-orbit {
+  position: relative;
+  display: grid;
+  min-height: 200px;
+  place-items: center;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero-orbit::before,
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero-orbit::after {
+  content: "";
+  position: absolute;
+  border: 1px solid color-mix(in srgb, var(--route-accent) 28%, transparent);
+  border-radius: 50%;
+  animation: alteaPremiumOrbit 10s linear infinite;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero-orbit::before {
+  width: 170px;
+  height: 170px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero-orbit::after {
+  width: 220px;
+  height: 220px;
+  animation-direction: reverse;
+  animation-duration: 16s;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .hero-orbit .core {
+  position: relative;
+  display: grid;
+  width: 112px;
+  height: 112px;
+  border: 1px solid color-mix(in srgb, var(--route-accent) 44%, var(--premium-line));
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--route-accent) 50%, var(--premium-surface)), color-mix(in srgb, var(--premium-surface) 84%, transparent));
+  box-shadow: 0 0 80px rgba(var(--route-rgb), .18), inset 0 0 30px rgba(var(--route-rgb), .08);
+  font: 500 28px/1 Georgia, "Times New Roman", serif;
+  place-items: center;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .metric {
+  min-height: 116px;
+  padding: 16px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .metric .bar,
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-bar {
+  height: 4px;
+  margin-top: 15px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--premium-line) 65%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .metric .bar i,
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-bar i {
+  display: block;
+  width: var(--p, 70%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--route-accent), color-mix(in srgb, var(--route-accent) 40%, #fff));
+  box-shadow: 0 0 14px rgba(var(--route-rgb), .28);
+  animation: alteaPremiumBarGrow 1.2s var(--ease-soft, cubic-bezier(.2, .8, .2, 1)) both;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .metric.platform-metric .bar i {
+  background: var(--pc, var(--route-accent));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--pc, var(--route-accent)) 32%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .list {
+  display: grid;
+  gap: 8px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .list-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--premium-line) 60%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .list-row:last-child {
+  border-bottom: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .list-row strong {
+  color: var(--text, #fff3df);
+  font-size: 10px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .list-row span {
+  display: block;
+  margin-top: 3px;
+  color: var(--premium-muted);
+  font-size: 8px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .list-row em {
+  color: var(--route-accent);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--success, #69d58d) 12%, var(--premium-surface));
+  color: var(--success, #69d58d);
+  font-size: 8px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .status.warn {
+  background: color-mix(in srgb, var(--warning, #ffd67a) 12%, var(--premium-surface));
+  color: var(--warning, #ffd67a);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .status.bad {
+  background: color-mix(in srgb, var(--danger, #ff8178) 12%, var(--premium-surface));
+  color: var(--danger, #ff8178);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .chart {
+  position: relative;
+  height: 180px;
+  margin-top: 8px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .chart svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .chart-grid line {
+  stroke: color-mix(in srgb, var(--premium-line) 62%, transparent);
+  stroke-width: 1;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .chart-area {
+  fill: rgba(var(--route-rgb), .1);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .chart-line {
+  fill: none;
+  stroke: var(--route-accent);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px rgba(var(--route-rgb), .25));
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: alteaPremiumDraw 1.5s var(--ease-soft, cubic-bezier(.2, .8, .2, 1)) .15s forwards;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .chart-dot {
+  fill: var(--premium-surface);
+  stroke: var(--route-accent);
+  stroke-width: 2;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-controlbar {
+  display: grid;
+  grid-template-columns: minmax(220px, .85fr) minmax(220px, 1fr) minmax(180px, .75fr) minmax(210px, .8fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-controlbar .panel {
+  padding: 10px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-segment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-segment button,
+body.v87-imperial.altea-premium-shell .altea-premium-route select,
+body.v87-imperial.altea-premium-shell .altea-premium-route input {
+  min-height: 34px;
+  border: 1px solid color-mix(in srgb, var(--premium-line) 78%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg, #060504) 72%, var(--premium-surface));
+  color: var(--text, #fff3df);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-segment button {
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-segment button.is-active,
+body.v87-imperial.altea-premium-shell .altea-premium-route select:focus,
+body.v87-imperial.altea-premium-shell .altea-premium-route input:focus {
+  border-color: color-mix(in srgb, var(--route-accent) 70%, var(--premium-line));
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(var(--route-rgb), .1);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route select,
+body.v87-imperial.altea-premium-shell .altea-premium-route input {
+  width: 100%;
+  padding: 0 12px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-mini-label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--faint, rgba(255, 244, 229, .46));
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .platform-card {
+  --pc: var(--route-accent);
+  border-color: color-mix(in srgb, var(--pc) 34%, var(--premium-line));
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .platform-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: var(--pc);
+  opacity: .95;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-table th,
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--premium-line) 58%, transparent);
+  text-align: left;
+  vertical-align: top;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-table th {
+  color: var(--faint, rgba(255, 244, 229, .46));
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-table td {
+  color: var(--text, #fff3df);
+  font-size: 11px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-table small {
+  display: block;
+  margin-top: 3px;
+  color: var(--premium-muted);
+  font-size: 9px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-empty {
+  padding: 22px;
+  border: 1px dashed color-mix(in srgb, var(--premium-line) 75%, transparent);
+  border-radius: 8px;
+  color: var(--premium-muted);
+  font-size: 12px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route.altea-ceo-dashboard .ceo-hero {
+  min-height: 230px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route.altea-ceo-dashboard .ceo-kpi {
+  min-height: 132px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route.altea-ceo-dashboard .ceo-kpi .value {
+  font-size: 25px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-platform-grid .metric {
+  min-height: 108px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-platform-card.is-selected {
+  border-color: color-mix(in srgb, var(--pc, var(--platform)) 62%, var(--premium-line));
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--pc, var(--platform)) 12%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-chart-panel .chart {
+  height: 210px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-table-wrap {
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid color-mix(in srgb, var(--premium-line) 62%, transparent);
+  border-radius: 8px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-table {
+  min-width: 980px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-table th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: color-mix(in srgb, var(--surface, #15130f) 94%, #000);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-table th:first-child,
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  min-width: 230px;
+  background: color-mix(in srgb, var(--surface, #15130f) 96%, #000);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-table td:first-child {
+  box-shadow: 1px 0 0 color-mix(in srgb, var(--premium-line) 70%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .platform-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--pc, var(--platform)) 44%, var(--premium-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pc, var(--platform)) 10%, transparent);
+  color: var(--text, #fff3df);
+  font-size: 9px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .platform-pill i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--pc, var(--platform));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--pc, var(--platform)) 50%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-empty--chart {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-period {
+  justify-content: flex-end;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-kpis,
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-kpis {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-main,
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-main {
+  grid-template-columns: minmax(0, 1.72fr) minmax(320px, .78fr);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-lower {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-kpi,
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-kpi {
+  min-height: 124px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-kpi .value,
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-kpi .value {
+  font-size: 24px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-business-chart .chart {
+  height: 300px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--route-accent) 26%, var(--premium-line));
+  border-radius: 999px;
+  color: var(--premium-muted);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-summary .panel-title {
+  margin-bottom: 14px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-conclusion {
+  display: grid;
+  gap: 14px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-orbit {
+  display: grid;
+  width: 156px;
+  height: 156px;
+  place-items: center;
+  justify-self: center;
+  border: 1px solid color-mix(in srgb, var(--route-accent) 28%, var(--premium-line));
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--route-accent) 18%, transparent), transparent 62%),
+    color-mix(in srgb, var(--premium-surface) 82%, #000);
+  box-shadow: inset 0 0 38px color-mix(in srgb, var(--route-accent) 12%, transparent);
+  text-align: center;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-orbit strong {
+  display: block;
+  color: var(--text, #fff3df);
+  font-size: 32px;
+  line-height: 1;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-orbit span,
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-verdict p {
+  color: var(--premium-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-verdict h3 {
+  margin: 0 0 6px;
+  color: var(--text, #fff3df);
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 24px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-contribution-list,
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-list,
+body.v87-imperial.altea-premium-shell .altea-premium-route .decision-list,
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bars {
+  display: grid;
+  gap: 10px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row,
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row,
+body.v87-imperial.altea-premium-shell .altea-premium-route .decision-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--pc, var(--route-accent)) 22%, var(--premium-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--pc, var(--route-accent)) 8%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row {
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--route-accent) 14%, transparent);
+  color: var(--route-accent);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row strong,
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row strong,
+body.v87-imperial.altea-premium-shell .altea-premium-route .decision-row strong {
+  display: block;
+  color: var(--text, #fff3df);
+  font-size: 12px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row span,
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row small,
+body.v87-imperial.altea-premium-shell .altea-premium-route .decision-row span {
+  display: block;
+  margin-top: 3px;
+  color: var(--premium-muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row em,
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row em,
+body.v87-imperial.altea-premium-shell .altea-premium-route .decision-row em {
+  color: var(--route-accent);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  text-align: right;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row i {
+  grid-column: 1 / -1;
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--premium-line) 60%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row i::before {
+  content: "";
+  display: block;
+  width: var(--p, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--pc, var(--route-accent));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--pc, var(--route-accent)) 38%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-tone-up {
+  color: var(--success, #69d58d) !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-tone-down {
+  color: var(--danger, #ff8178) !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-tone-flat {
+  color: var(--premium-muted) !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-controls .premium-controlbar {
+  margin-bottom: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-row {
+  display: grid;
+  grid-template-columns: minmax(170px, .7fr) minmax(220px, 1.4fr) 72px 86px;
+  gap: 12px;
+  align-items: center;
+  padding: 13px;
+  border: 1px solid color-mix(in srgb, var(--pc, var(--route-accent)) 22%, var(--premium-line));
+  border-radius: 8px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--pc, var(--route-accent)) 12%, transparent), color-mix(in srgb, var(--premium-surface) 88%, #000));
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-title strong {
+  display: block;
+  color: var(--text, #fff3df);
+  font-size: 13px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-title span {
+  display: block;
+  margin-top: 4px;
+  color: var(--premium-muted);
+  font-size: 9px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-track {
+  position: relative;
+  height: 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--premium-line) 58%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-track::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  left: min(100%, 71.42%);
+  width: 1px;
+  background: color-mix(in srgb, var(--text, #fff3df) 48%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-track i {
+  display: block;
+  width: var(--p, 0%);
+  max-width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--pc, var(--route-accent)), color-mix(in srgb, var(--pc, var(--route-accent)) 42%, #fff));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--pc, var(--route-accent)) 30%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-row > em {
+  color: var(--text, #fff3df);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 950;
+  text-align: right;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .data-quality {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--premium-line) 62%, transparent);
+  color: var(--premium-muted);
+  font-size: 10px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-table-wrap {
+  max-height: 560px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-table {
+  min-width: 1320px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-table th:first-child,
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  min-width: 190px;
+  background: color-mix(in srgb, var(--surface, #15130f) 96%, #000);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient-video {
+    animation: alteaPremiumVideoDrift 26s ease-in-out infinite alternate;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient::after {
+    animation: alteaPremiumAmbientSweep 9s var(--premium-motion-ease, cubic-bezier(.22, 1, .36, 1)) infinite;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient-orbit--a {
+    animation: alteaPremiumAmbientOrbit 32s linear infinite;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient-orbit--b {
+    animation: alteaPremiumAmbientOrbit 44s linear infinite reverse;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route-stage.is-route-entering {
+    animation: alteaPremiumStageIn .54s var(--premium-motion-ease, cubic-bezier(.22, 1, .36, 1)) both;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route-stage--legacy.is-route-entering > .view {
+    animation: alteaPremiumStageContentIn .42s var(--premium-motion-ease, cubic-bezier(.22, 1, .36, 1)) both;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .premium-route-body {
+    animation: alteaPremiumRouteBodyIn .78s var(--ease-soft, cubic-bezier(.2, .8, .2, 1)) both;
+  }
+}
+
+@keyframes alteaPremiumVideoDrift {
+  from {
+    transform: scale(1.02) translate3d(-1.2%, -.8%, 0);
+  }
+  to {
+    transform: scale(1.055) translate3d(1.4%, .9%, 0);
+  }
+}
+
+@keyframes alteaPremiumAmbientSweep {
+  0%, 24% {
+    opacity: 0;
+    transform: translate3d(-34%, 0, 0);
+  }
+  48% {
+    opacity: .95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(38%, 0, 0);
+  }
+}
+
+@keyframes alteaPremiumAmbientOrbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes alteaPremiumStageIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(.996);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes alteaPremiumStageContentIn {
+  from {
+    opacity: .28;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes alteaPremiumRouteBodyIn {
+  from {
+    transform: translateY(7px) scale(.998);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes alteaPremiumOrbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes alteaPremiumBarGrow {
+  from {
+    width: 0;
+  }
+}
+
+@keyframes alteaPremiumChipSweep {
+  from {
+    transform: translateX(-25%) skewX(-16deg);
+  }
+  to {
+    transform: translateX(390%) skewX(-16deg);
+  }
+}
+
+@keyframes alteaPremiumDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient-video {
+    display: none;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient {
+    background:
+      linear-gradient(rgba(7, 7, 6, .54), rgba(7, 7, 6, .78)),
+      url("assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-poster.jpg") center / cover no-repeat;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route-stage,
+  body.v87-imperial.altea-premium-shell .altea-premium-route-stage--legacy > .view,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .premium-route-body {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 1240px) {
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-kpis,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-main,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-main,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-lower {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .g5,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .g6 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .premium-controlbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  body.v87-imperial.altea-premium-shell .altea-premium-app {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) 68px;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-sidebar {
+    position: fixed;
+    z-index: 4;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 68px;
+    flex-direction: row;
+    padding: 7px 8px;
+    border-top: 1px solid var(--line, #3b342b);
+    border-right: 0;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-brand,
+  body.v87-imperial.altea-premium-shell .altea-premium-nav-label {
+    display: none;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-nav,
+  body.v87-imperial.altea-premium-shell .altea-premium-nav-group {
+    display: flex;
+    gap: 6px;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-nav-btn {
+    width: 52px;
+    min-width: 52px;
+    height: 52px;
+    min-height: 52px;
+    grid-template-columns: 1fr;
+    padding: 5px;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-nav-btn span:not(.altea-premium-nav-icon),
+  body.v87-imperial.altea-premium-shell .altea-premium-nav-dot {
+    display: none;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-main {
+    grid-row: 1;
+    grid-template-rows: 62px minmax(0, 1fr);
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-topbar {
+    height: 62px;
+    padding: 0 14px;
+    gap: 10px;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-action:not(.altea-premium-sync) {
+    display: none;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-global-marketplace--premium {
+    max-width: 46vw;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-marketplace-chip {
+    padding: 0 8px;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route-stage {
+    padding: 20px 14px 100px;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route {
+    padding: 18px 0 92px;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route::before {
+    left: 0;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .route-head,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .hero-grid {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .g2,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .g3,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .g4,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .g5,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .g6,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-kpis,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-kpis,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-main,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-main,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-lower,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .premium-controlbar {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-row {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-row > em {
+    text-align: left;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .span2 {
+    grid-column: span 1;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .route-actions {
+    width: 100%;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .route-actions .btn {
+    flex: 1;
+  }
+}

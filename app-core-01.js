@@ -97,7 +97,7 @@
     search: '',
     owner: 'all',
     signal: 'all',
-    sort: 'gameScore',
+    sort: 'orderDeltaAbs',
     category: 'all',
     snapshot: 'latest',
     lflCurrentSnapshot: 'latest',

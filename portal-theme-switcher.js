@@ -1,5 +1,6 @@
 (function () {
   var STORAGE_KEY = 'altea.portal.theme';
+  var PLATFORM_STORAGE_KEY = 'altea.portal.platform';
   var themes = [
     { id: 'dark', label: '\u0422\u0435\u043c\u043d\u0430\u044f', title: '\u0422\u0435\u043c\u043d\u0430\u044f \u0442\u0435\u043a\u0443\u0449\u0430\u044f' },
     { id: 'light', label: '\u0421\u0432\u0435\u0442\u043b\u0430\u044f', title: '\u0421\u0432\u0435\u0442\u043b\u0430\u044f \u0442\u0435\u043c\u0430' },
@@ -16,6 +17,10 @@
   var currentTheme = 'dark';
   var isOpen = false;
   var guardTimer = 0;
+  var routeMotionTimer = 0;
+  var routeMotionFrame = 0;
+  var lastActiveRoute = '';
+  var routeObserver = null;
 
   function normalizeTheme(theme) {
     return ids[theme] ? theme : 'dark';
@@ -69,10 +74,6 @@
 
   function guardSandDarkClass() {
     if (!document.body) return;
-    if (currentTheme === 'dark') {
-      document.body.classList.add('theme-sand-dark');
-      return;
-    }
     document.body.classList.remove('theme-sand-dark');
   }
 
@@ -84,18 +85,110 @@
     });
   }
 
+  function readPlatform() {
+    try {
+      return localStorage.getItem(PLATFORM_STORAGE_KEY) || document.body.dataset.platform || 'all';
+    } catch (error) {
+      return document.body.dataset.platform || 'all';
+    }
+  }
+
+  function syncPremiumShellAttributes() {
+    if (!document.body) return;
+    var platform = readPlatform();
+    document.documentElement.dataset.theme = currentTheme;
+    document.documentElement.dataset.platform = platform;
+    document.body.dataset.theme = currentTheme;
+    document.body.dataset.platform = platform;
+    document.body.classList.add('altea-premium-shell');
+  }
+
+  function emitThemeChange() {
+    try {
+      window.dispatchEvent(new CustomEvent('altea:themechange', { detail: { theme: currentTheme } }));
+    } catch (error) {}
+  }
+
   function applyTheme(theme, persist) {
     if (!document.body) return;
     currentTheme = normalizeTheme(theme);
     document.documentElement.dataset.portalTheme = currentTheme;
     document.body.dataset.portalTheme = currentTheme;
+    syncPremiumShellAttributes();
     guardSandDarkClass();
     syncButtons();
+    emitThemeChange();
     if (persist) {
       try {
         localStorage.setItem(STORAGE_KEY, currentTheme);
       } catch (error) {}
     }
+  }
+
+  function reducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function getActiveView() {
+    return document.querySelector('.view.active[id^="view-"]');
+  }
+
+  function applyRouteMotion(force) {
+    if (!document.body) return;
+    var activeView = getActiveView();
+    if (!activeView) return;
+
+    var route = activeView.id.replace(/^view-/, '');
+    document.body.dataset.activeRoute = route;
+    if (!force && route === lastActiveRoute) return;
+    lastActiveRoute = route;
+
+    if (routeMotionTimer) {
+      window.clearTimeout(routeMotionTimer);
+      routeMotionTimer = 0;
+    }
+
+    activeView.classList.remove('altea-premium-route-enter');
+    if (reducedMotion()) return;
+
+    void activeView.offsetWidth;
+    activeView.classList.add('altea-premium-route-enter');
+    routeMotionTimer = window.setTimeout(function () {
+      activeView.classList.remove('altea-premium-route-enter');
+      routeMotionTimer = 0;
+    }, 940);
+  }
+
+  function scheduleRouteMotion(force) {
+    if (routeMotionFrame) return;
+    routeMotionFrame = window.requestAnimationFrame(function () {
+      routeMotionFrame = 0;
+      applyRouteMotion(force);
+    });
+  }
+
+  function bindPremiumRouteMotion() {
+    if (routeObserver) return;
+
+    scheduleRouteMotion(true);
+    document.addEventListener('click', function (event) {
+      if (event.target && event.target.closest && event.target.closest('[data-view]')) {
+        scheduleRouteMotion(false);
+      }
+    });
+
+    var motionRoot = document.querySelector('.main') || document.body;
+    routeObserver = new MutationObserver(function (mutations) {
+      var changed = mutations.some(function (mutation) {
+        return mutation.type === 'attributes'
+          && mutation.attributeName === 'class'
+          && mutation.target
+          && mutation.target.classList
+          && mutation.target.classList.contains('view');
+      });
+      if (changed) scheduleRouteMotion(false);
+    });
+    routeObserver.observe(motionRoot, { attributes: true, attributeFilter: ['class'], subtree: true });
   }
 
   function createButton(theme) {
@@ -204,6 +297,12 @@
     applyTheme(currentTheme, false);
     mountSwitcher();
     bindCloseEvents();
+    bindPremiumRouteMotion();
+
+    window.addEventListener('storage', function (event) {
+      if (event.key === STORAGE_KEY) applyTheme(event.newValue || 'dark', false);
+      if (event.key === PLATFORM_STORAGE_KEY) syncPremiumShellAttributes();
+    });
 
     if (document.body) {
       var observer = new MutationObserver(function (mutations) {

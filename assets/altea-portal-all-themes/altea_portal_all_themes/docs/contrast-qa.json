@@ -1,0 +1,114 @@
+{
+  "themes": {
+    "dark": {
+      "checks": {
+        "text_on_bg": 17.77,
+        "text_on_surface": 16.36,
+        "muted_on_bg": 7.82,
+        "muted_on_surface": 7.2,
+        "primary_text_on_accent": 11.04,
+        "success_on_surface": 8.77,
+        "danger_on_surface": 6.2,
+        "warning_on_surface": 8.87,
+        "info_on_surface": 7.53
+      },
+      "normalPass": true,
+      "primaryPass": true
+    },
+    "light": {
+      "checks": {
+        "text_on_bg": 14.32,
+        "text_on_surface": 17.15,
+        "muted_on_bg": 5.63,
+        "muted_on_surface": 6.74,
+        "primary_text_on_accent": 4.6,
+        "success_on_surface": 5.32,
+        "danger_on_surface": 6.36,
+        "warning_on_surface": 5.77,
+        "info_on_surface": 6.58
+      },
+      "normalPass": true,
+      "primaryPass": true
+    },
+    "gray": {
+      "checks": {
+        "text_on_bg": 17.05,
+        "text_on_surface": 14.38,
+        "muted_on_bg": 10.15,
+        "muted_on_surface": 8.56,
+        "primary_text_on_accent": 8.86,
+        "success_on_surface": 7.15,
+        "danger_on_surface": 5.59,
+        "warning_on_surface": 8.17,
+        "info_on_surface": 7.07
+      },
+      "normalPass": true,
+      "primaryPass": true
+    },
+    "emerald": {
+      "checks": {
+        "text_on_bg": 18.04,
+        "text_on_surface": 14.57,
+        "muted_on_bg": 12.03,
+        "muted_on_surface": 9.71,
+        "primary_text_on_accent": 9.64,
+        "success_on_surface": 8.7,
+        "danger_on_surface": 5.82,
+        "warning_on_surface": 7.78,
+        "info_on_surface": 9.16
+      },
+      "normalPass": true,
+      "primaryPass": true
+    },
+    "hellforge": {
+      "checks": {
+        "text_on_bg": 16.72,
+        "text_on_surface": 15.6,
+        "muted_on_bg": 8.75,
+        "muted_on_surface": 8.16,
+        "primary_text_on_accent": 9.12,
+        "success_on_surface": 8.17,
+        "danger_on_surface": 4.83,
+        "warning_on_surface": 9.17,
+        "info_on_surface": 5.77
+      },
+      "normalPass": true,
+      "primaryPass": true
+    },
+    "terminal": {
+      "checks": {
+        "text_on_bg": 18.26,
+        "text_on_surface": 16.46,
+        "muted_on_bg": 10.61,
+        "muted_on_surface": 9.56,
+        "primary_text_on_accent": 16.09,
+        "success_on_surface": 15.27,
+        "danger_on_surface": 6.82,
+        "warning_on_surface": 15.16,
+        "info_on_surface": 14.71
+      },
+      "normalPass": true,
+      "primaryPass": true
+    },
+    "redalert": {
+      "checks": {
+        "text_on_bg": 17.16,
+        "text_on_surface": 16.24,
+        "muted_on_bg": 9.28,
+        "muted_on_surface": 8.78,
+        "primary_text_on_accent": 6.38,
+        "success_on_surface": 10.09,
+        "danger_on_surface": 6.31,
+        "warning_on_surface": 13.42,
+        "info_on_surface": 12.82
+      },
+      "normalPass": true,
+      "primaryPass": true
+    }
+  },
+  "thresholds": {
+    "normalText": 4.5,
+    "largeText": 3.0,
+    "ui": 3.0
+  }
+}

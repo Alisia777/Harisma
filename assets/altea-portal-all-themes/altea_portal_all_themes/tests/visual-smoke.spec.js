@@ -1,0 +1,4 @@
+import { test, expect } from '@playwright/test';
+const themes=['dark','light','gray','emerald','hellforge','terminal','redalert'];
+const routes=["dashboard", "executive", "control", "data-health", "sku-plan-fact", "repricer", "prices", "order", "oos-control", "sku-contour", "launches", "launch-control", "iu-drr", "wb-rating", "product-leaderboard"];
+for(const theme of themes){for(const route of routes){test(`${theme}/${route}`,async({page})=>{await page.setViewportSize({width:1920,height:1080});await page.goto(`./altea-premium-portal-all-themes.html?theme=${theme}&route=${route}&platform=all&capture=1`);await expect(page.locator('.route-stage')).toBeVisible();await expect(page.locator('.route-head h1')).not.toBeEmpty();await page.screenshot({path:`artifacts/${theme}-${route}.png`,fullPage:false});});}}

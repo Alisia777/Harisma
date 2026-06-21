@@ -2913,13 +2913,14 @@ const LAZY_DATA_LOADERS = {
     state.launches = Array.isArray(launches) ? launches : [];
   },
   controlCenter: async () => {
-    const [launches, productLeaderboard, productLeaderboardHistory, oosControl, smartPriceOverlay, returnBaselineSkus] = await Promise.all([
+    const [launches, productLeaderboard, productLeaderboardHistory, oosControl, smartPriceOverlay, returnBaselineSkus, adsSummary] = await Promise.all([
       loadJsonOrFallback('data/launches.json', [], 'Новинки'),
       loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
       loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
       loadJsonOrFallback('data/oos_control.json', { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } }, 'OOS контроль'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
-      loadJsonOrFallback('data/last_good/skus.json', [], 'База возвратов SKU')
+      loadJsonOrFallback('data/last_good/skus.json', [], 'База возвратов SKU'),
+      loadJsonOrFallback('data/ads_summary.json', { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] }, 'Контроль РК')
     ]);
     state.launches = Array.isArray(launches) ? launches : [];
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
@@ -2932,6 +2933,9 @@ const LAZY_DATA_LOADERS = {
     state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
       ? smartPriceOverlay
       : { generatedAt: '', platforms: {} };
+    state.adsSummary = adsSummary && typeof adsSummary === 'object'
+      ? adsSummary
+      : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
     const returnBaselineRows = Array.isArray(returnBaselineSkus)
       ? returnBaselineSkus
       : Array.isArray(returnBaselineSkus?.skus)

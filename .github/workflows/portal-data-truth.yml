@@ -9,6 +9,7 @@ on:
       - 'portal-*.js'
       - 'index.html'
       - 'package.json'
+      - 'docs/PORTAL_DAILY_CLOSE_RUNBOOK.md'
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
   push:
@@ -20,6 +21,7 @@ on:
       - 'portal-*.js'
       - 'index.html'
       - 'package.json'
+      - 'docs/PORTAL_DAILY_CLOSE_RUNBOOK.md'
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
   schedule:

@@ -9998,6 +9998,510 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   });
 }
 
+function iuDrrDesignNormalizePlatform(value) {
+  const key = String(value || '').trim().toLowerCase();
+  if (['wb', 'wildberries'].includes(key)) return 'wb';
+  if (['ozon', 'oz'].includes(key)) return 'ozon';
+  if (['ya', 'ym', 'yandex', 'market', 'yandex-market'].includes(key)) return 'ya';
+  return 'all';
+}
+
+function iuDrrDesignMarketplaceFocus() {
+  let stored = 'all';
+  try {
+    stored = localStorage.getItem('altea.portal.marketplace') || 'all';
+  } catch (error) {
+    stored = 'all';
+  }
+  return iuDrrDesignNormalizePlatform(stored);
+}
+
+function iuDrrDesignPlatformLabel(key = 'all') {
+  if (key === 'wb') return 'WB';
+  if (key === 'ozon') return 'Ozon';
+  if (key === 'ya') return 'Я.Маркет';
+  return 'Все площадки';
+}
+
+function iuDrrDesignSubview() {
+  const filters = getIuDrrFilters();
+  const value = String(filters.designSubview || 'iu');
+  return ['iu', 'funnel', 'sources'].includes(value) ? value : 'iu';
+}
+
+function iuDrrDesignModelFor(platform = 'wb', payload = state.iuDrrSummary || {}) {
+  const filters = getIuDrrFilters();
+  const previousPlatform = filters.platform;
+  filters.platform = ['wb', 'ozon', 'ya'].includes(platform) ? platform : 'wb';
+  try {
+    return iuDrrBuildModel(payload);
+  } finally {
+    filters.platform = previousPlatform;
+  }
+}
+
+function iuDrrDesignRows(model = {}) {
+  const monthKey = model.selectedMonth || iuDrrLatestMonth(model.payload || {});
+  return (model.payload?.daily || [])
+    .filter((row) => row.monthKey === monthKey)
+    .sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')));
+}
+
+function iuDrrDesignSum(rows = [], getter = () => 0) {
+  return rows.reduce((sum, row) => sum + numberOrZero(getter(row)), 0);
+}
+
+function iuDrrDesignRatio(numerator, denominator) {
+  const base = numberOrZero(denominator);
+  return base > 0 ? numberOrZero(numerator) / base : null;
+}
+
+function iuDrrDesignSignedMoney(value) {
+  if (!iuDrrFunnelFinite(value)) return '—';
+  const numeric = Number(value);
+  const prefix = numeric > 0 ? '+' : numeric < 0 ? '-' : '';
+  return `${prefix}${fmt.money(Math.abs(numeric))}`;
+}
+
+function iuDrrDesignFormatValue(metric = {}, value, row = null, group = null) {
+  if (group?.key === 'ya' && metric.sourceRequired && !iuDrrDesignYandexHasSource(row ? [row] : group.rows || [])) {
+    return 'нет источника';
+  }
+  if (!iuDrrFunnelFinite(value)) return '—';
+  if (metric.format === 'money') return fmt.money(value);
+  if (metric.format === 'signedMoney') return iuDrrDesignSignedMoney(value);
+  if (metric.format === 'int') return fmt.int(value);
+  if (metric.format === 'pct') return fmt.pct(value);
+  if (metric.format === 'pctPoint') {
+    const points = Number(value) * 100;
+    return `${points > 0 ? '+' : ''}${fmt.num(points, 1)} п.п.`;
+  }
+  return fmt.num(value, 1);
+}
+
+function iuDrrDesignTone(metric = {}, value, row = {}, group = {}) {
+  if (!iuDrrFunnelFinite(value)) return 'info';
+  if (metric.tone) return metric.tone(value, row);
+  if (metric.kind === 'completion') return iuDrrFunnelCompletionTone(value);
+  if (metric.kind === 'adsCompletion') return iuDrrFunnelAdsCompletionTone(value);
+  if (metric.kind === 'revenueDelta') return iuDrrToneForRevenueDelta(value);
+  if (metric.kind === 'adsDelta') return iuDrrToneForDelta(value);
+  if (metric.kind === 'drr') return iuDrrFunnelDrrTone(value, metric.plan ? metric.plan(row) : null);
+  return iuDrrFunnelCellTone(metric, value, row, group.key || 'wb', group.context || {});
+}
+
+function iuDrrDesignYandexHasSource(rows = []) {
+  return rows.some((row) => (
+    numberOrZero(row?.yandexSourceRows) > 0
+    || numberOrZero(row?.yandexShows) > 0
+    || numberOrZero(row?.yandexClicks) > 0
+    || numberOrZero(row?.yandexToCart) > 0
+  ));
+}
+
+function iuDrrDesignDateLabel(dateKey = '') {
+  const date = String(dateKey || '');
+  return {
+    day: date.slice(8, 10) || date,
+    month: date.slice(5, 7) || ''
+  };
+}
+
+function iuDrrDesignProgressStyle(value, inverse = false) {
+  if (!iuDrrFunnelFinite(value)) return '0%';
+  const numeric = Math.max(0, Math.min(1.18, Number(value)));
+  const width = inverse ? Math.max(0, Math.min(1, 1 - Math.max(0, Number(value) - 1))) : Math.min(1, numeric);
+  return `${Math.round(width * 1000) / 10}%`;
+}
+
+function iuDrrDesignMetricMatrix({ id = '', title = '', helper = '', groups = [], focus = 'all' } = {}) {
+  const dateKeys = [...new Set(groups.flatMap((group) => (group.rows || []).map((row) => row.dateKey || row.date).filter(Boolean)))]
+    .sort((left, right) => String(left).localeCompare(String(right)));
+  const colSpan = 3 + Math.max(1, dateKeys.length);
+  const dateHeaders = dateKeys.map((dateKey) => {
+    const date = iuDrrDesignDateLabel(dateKey);
+    return `<th class="iu-drr-v2-date-col"><span>${escapeHtml(date.day)}</span><small>${escapeHtml(date.month)}</small></th>`;
+  }).join('');
+  const body = groups.map((group) => {
+    const rowByDate = new Map((group.rows || []).map((row) => [row.dateKey || row.date, row]));
+    const mutedClass = focus !== 'all' && focus !== group.key ? ' is-muted' : '';
+    const metricRows = (group.metrics || []).map((metric) => {
+      const summaryRaw = typeof metric.summary === 'function'
+        ? metric.summary(group.rows || [], group)
+        : metric.summary !== undefined
+          ? metric.summary
+        : iuDrrFunnelSummaryValue(metric, group.rows || [], group.key || 'wb', group.context || {});
+      const summaryText = metric.summaryText
+        ? metric.summaryText(group.rows || [], group)
+        : iuDrrDesignFormatValue(metric, summaryRaw, null, group);
+      const dailyCells = dateKeys.map((dateKey) => {
+        const row = rowByDate.get(dateKey) || {};
+        const raw = metric.value
+          ? metric.value(row, group)
+          : iuDrrFunnelMetricValue(metric, row, group.key || 'wb', group.context || {});
+        const tone = iuDrrDesignTone(metric, raw, row, group);
+        return `<td class="iu-drr-v2-cell iu-drr-v2-tone-${escapeHtml(tone)}">${iuDrrDesignFormatValue(metric, raw, row, group)}</td>`;
+      }).join('');
+      return `
+        <tr class="${escapeHtml(mutedClass.trim())}">
+          <td class="iu-drr-v2-sticky iu-drr-v2-col-metric">
+            <strong>${escapeHtml(metric.label || metric.key || '')}</strong>
+          </td>
+          <td class="iu-drr-v2-sticky iu-drr-v2-col-formula">${escapeHtml(metric.formula || '')}</td>
+          <td class="iu-drr-v2-sticky iu-drr-v2-col-summary">${summaryText}</td>
+          ${dailyCells}
+        </tr>
+      `;
+    }).join('');
+    return `
+      <tr class="iu-drr-v2-group-row ${escapeHtml(group.key || '')}${mutedClass}">
+        <td colspan="${colSpan}">
+          <span>${escapeHtml(group.title || '')}</span>
+          <em>${escapeHtml(group.subtitle || '')}</em>
+        </td>
+      </tr>
+      ${metricRows}
+    `;
+  }).join('');
+  return `
+    <section class="iu-drr-v2-panel" id="${escapeHtml(id)}">
+      <div class="iu-drr-v2-panel-head">
+        <div>
+          <p class="iu-drr-v2-eyebrow">ALTEA · IU/DRR</p>
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(helper)}</p>
+        </div>
+        ${badge(`${fmt.int(dateKeys.length)} дней`, 'info')}
+      </div>
+      <div class="iu-drr-v2-matrix-wrap">
+        <table class="iu-drr-v2-matrix" style="--iu-drr-v2-days:${Math.max(1, dateKeys.length)}">
+          <thead>
+            <tr>
+              <th class="iu-drr-v2-sticky iu-drr-v2-col-metric">Метрика</th>
+              <th class="iu-drr-v2-sticky iu-drr-v2-col-formula">Расчет / источник</th>
+              <th class="iu-drr-v2-sticky iu-drr-v2-col-summary">Итого</th>
+              ${dateHeaders || '<th class="iu-drr-v2-date-col">—</th>'}
+            </tr>
+          </thead>
+          <tbody>${body || `<tr><td colspan="${colSpan}">Нет данных по выбранному месяцу.</td></tr>`}</tbody>
+        </table>
+      </div>
+    </section>
+  `;
+}
+
+function iuDrrDesignIuGroups(rows = []) {
+  const wbPlan = (row) => numberOrZero(row.iuTargetRevenueWb || row.targetRevenueWb || row.contractTargetRevenueWb || row.managementTargetRevenueWb);
+  const wbFact = (row) => numberOrZero(row.wbApiRevenue || row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb);
+  const wbAdsPlan = (row) => numberOrZero(row.iuPlanSpendWb || row.planSpendWb || row.contractMarketingPlanWb || row.managementPlanSpendWb);
+  const wbAdsFact = (row) => numberOrZero(row.wbApiSpendFact || row.spendFactDrr || row.spendFact);
+  const ozonPlan = (row) => numberOrZero(row.targetRevenueOzon);
+  const ozonFact = (row) => numberOrZero(row.revenueOzon || row.ozonGmv);
+  const ozonAdsPlan = (row) => numberOrZero(row.planSpendOzon);
+  const ozonAdsFact = (row) => numberOrZero(row.spendFactOzon);
+  const sum = (getter) => iuDrrDesignSum(rows, getter);
+  const pctSummary = (factGetter, planGetter) => () => iuDrrDesignRatio(sum(factGetter), sum(planGetter));
+  return [
+    {
+      key: 'wb',
+      title: 'WB · ИУ и ДРР',
+      subtitle: 'калиброванные API-факты, внешка отдельно от ДРР',
+      rows,
+      metrics: [
+        { label: 'Целевой оборот WB', formula: 'ИУ / дневная норма', format: 'money', value: wbPlan, summary: () => sum(wbPlan) },
+        { label: 'Фактический оборот WB', formula: 'WB API после сверки', format: 'money', value: wbFact, summary: () => sum(wbFact) },
+        { label: 'Выполнение оборота WB', formula: 'факт / план', format: 'pct', kind: 'completion', value: (row) => iuDrrDesignRatio(wbFact(row), wbPlan(row)), summary: pctSummary(wbFact, wbPlan) },
+        { label: 'Отклонение оборота WB', formula: 'факт - план', format: 'signedMoney', kind: 'revenueDelta', value: (row) => wbFact(row) - wbPlan(row), summary: () => sum(wbFact) - sum(wbPlan) },
+        { label: 'План рекламы WB', formula: 'план ДРР × план/факт база', format: 'money', value: wbAdsPlan, summary: () => sum(wbAdsPlan) },
+        { label: 'Факт рекламы WB', formula: 'WB Promotion без внешки', format: 'money', value: wbAdsFact, summary: () => sum(wbAdsFact) },
+        { label: 'Выполнение рекламы WB', formula: 'факт / план', format: 'pct', kind: 'adsCompletion', value: (row) => iuDrrDesignRatio(wbAdsFact(row), wbAdsPlan(row)), summary: pctSummary(wbAdsFact, wbAdsPlan) },
+        { label: 'План ДРР WB', formula: 'план %', format: 'pct', value: (row) => row.planPct, summary: () => iuDrrDesignRatio(sum(wbAdsPlan), sum(wbPlan)) },
+        { label: 'Факт ДРР WB', formula: 'реклама / оборот', format: 'pct', kind: 'drr', plan: (row) => row.planPct, value: (row) => row.factPct != null ? row.factPct : iuDrrDesignRatio(wbAdsFact(row), wbFact(row)), summary: () => iuDrrDesignRatio(sum(wbAdsFact), sum(wbFact)) },
+        { label: 'WB Продвижение', formula: 'внутренняя реклама', format: 'money', value: (row) => row.wbPromotion, summary: () => sum((row) => row.wbPromotion) },
+        { label: 'WB Медиа', formula: 'канал рекламы', format: 'money', value: (row) => row.wbMedia, summary: () => sum((row) => row.wbMedia) },
+        { label: 'WB Инфлюенс', formula: 'канал рекламы', format: 'money', value: (row) => row.wbInfluencer, summary: () => sum((row) => row.wbInfluencer) },
+        { label: 'Реклама в ПВЗ', formula: 'канал рекламы', format: 'money', value: (row) => row.pvzAds, summary: () => sum((row) => row.pvzAds) },
+        { label: 'Брендзона', formula: 'канал рекламы', format: 'money', value: (row) => row.brandZone, summary: () => sum((row) => row.brandZone) },
+        { label: 'Обзоры', formula: 'канал рекламы', format: 'money', value: (row) => row.overviews, summary: () => sum((row) => row.overviews) },
+        { label: 'Отзывы за баллы', formula: 'WB API / finance', format: 'money', value: (row) => row.reviewPoints, summary: () => sum((row) => row.reviewPoints) },
+        { label: 'Внешний трафик', formula: 'отдельный контур, не ДРР', format: 'money', value: (row) => row.externalAds, summary: () => sum((row) => row.externalAds) },
+        { label: 'Дельта расхода по ИУ', formula: 'факт рекламы - план', format: 'signedMoney', kind: 'adsDelta', value: (row) => wbAdsFact(row) - wbAdsPlan(row), summary: () => sum(wbAdsFact) - sum(wbAdsPlan) }
+      ]
+    },
+    {
+      key: 'ozon',
+      title: 'Ozon · GMV, ИУ и исключения ДРР',
+      subtitle: 'GMV и реклама по текущей расчетной логике без изменения формул',
+      rows,
+      metrics: [
+        { label: 'План GMV / ИУ Ozon', formula: 'дневной план Ozon', format: 'money', value: ozonPlan, summary: () => sum(ozonPlan) },
+        { label: 'Факт GMV Ozon', formula: 'продажи - возвраты', format: 'money', value: ozonFact, summary: () => sum(ozonFact) },
+        { label: 'Выполнение GMV Ozon', formula: 'факт / план', format: 'pct', kind: 'completion', value: (row) => iuDrrDesignRatio(ozonFact(row), ozonPlan(row)), summary: pctSummary(ozonFact, ozonPlan) },
+        { label: 'Отклонение GMV Ozon', formula: 'факт - план', format: 'signedMoney', kind: 'revenueDelta', value: (row) => ozonFact(row) - ozonPlan(row), summary: () => sum(ozonFact) - sum(ozonPlan) },
+        { label: 'План рекламы Ozon', formula: 'GMV × цель ДРР', format: 'money', value: ozonAdsPlan, summary: () => sum(ozonAdsPlan) },
+        { label: 'Факт рекламы Ozon', formula: 'Ozon Finance / расчет ДРР', format: 'money', value: ozonAdsFact, summary: () => sum(ozonAdsFact) },
+        { label: 'Выполнение рекламы Ozon', formula: 'факт / план', format: 'pct', kind: 'adsCompletion', value: (row) => iuDrrDesignRatio(ozonAdsFact(row), ozonAdsPlan(row)), summary: pctSummary(ozonAdsFact, ozonAdsPlan) },
+        { label: 'Цель ДРР Ozon', formula: 'договор / план', format: 'pct', value: (row) => row.planPctOzon, summary: () => iuDrrDesignRatio(sum(ozonAdsPlan), sum(ozonPlan)) },
+        { label: 'Факт ДРР к GMV', formula: 'реклама / GMV', format: 'pct', kind: 'drr', plan: (row) => row.planPctOzon, value: (row) => row.factPctOzon != null ? row.factPctOzon : iuDrrDesignRatio(ozonAdsFact(row), ozonFact(row)), summary: () => iuDrrDesignRatio(sum(ozonAdsFact), sum(ozonFact)) },
+        { label: 'Premium Plus исключено', formula: 'не входит в ДРР', format: 'money', value: (row) => row.ozonDrrExcludedPremiumPlus, summary: () => sum((row) => row.ozonDrrExcludedPremiumPlus) },
+        { label: 'Бейдж Оригинал исключен', formula: 'не входит в ДРР', format: 'money', value: (row) => row.ozonDrrExcludedOriginalBadge, summary: () => sum((row) => row.ozonDrrExcludedOriginalBadge) },
+        { label: 'Дельта расхода Ozon', formula: 'факт рекламы - план', format: 'signedMoney', kind: 'adsDelta', value: (row) => ozonAdsFact(row) - ozonAdsPlan(row), summary: () => sum(ozonAdsFact) - sum(ozonAdsPlan) }
+      ]
+    }
+  ];
+}
+
+function iuDrrDesignOzonContext(model = {}) {
+  const ozonPlan = model.payload?.ozonPlan || {};
+  const ozonPlanMonth = model.ozonPlanMonth || ozonPlanMonthSummary(ozonPlan, model.selectedMonth);
+  const ozonPlanTotals = ozonPlanMonth.totals || ozonPlan.totals || {};
+  const ozonAllocation = ozonPlanMonth.allocation || ozonPlan.allocation || {};
+  const ozonContractKpis = ozonPlan.contractKpis || {};
+  const targetDrr = numberOrZero(model.monthSummary?.planPctOzon)
+    || numberOrZero(ozonPlanTotals.targetDrr)
+    || numberOrZero((ozonPlan.accounts || []).find((account) => account.key === 'smart')?.targetDrr)
+    || 0.25;
+  const monthTargetGmv = ozonPlanFactMonthTargetGmv(model, ozonPlanMonth);
+  const context = iuDrrOzonPlanFactContext(model, {
+    monthTargetGmv,
+    smartShare: numberOrZero(ozonAllocation.smartShare || 0.4),
+    targetDrr
+  });
+  return {
+    ...context,
+    ozonTargetDrr: targetDrr,
+    ozonAdRevKpiRate: numberOrZero(ozonContractKpis.adRevKpiRate) || targetDrr
+  };
+}
+
+function iuDrrDesignFunnelGroups(models = {}, rows = []) {
+  const ozonContext = iuDrrDesignOzonContext(models.ozon);
+  const wbFunnel = iuDrrFunnelBuildModel(models.wb, {});
+  const ozonFunnel = iuDrrFunnelBuildModel(models.ozon, ozonContext);
+  const yaAllowed = new Set(['ordersRevenue', 'factRevenue', 'orders', 'units', 'avgCheck', 'buyoutRate', 'views', 'clicks', 'ctr', 'toCart', 'cartRate', 'orderRate', 'cancellations', 'returns']);
+  const yaMetrics = IU_DRR_FUNNEL_METRICS_YANDEX
+    .filter((metric) => yaAllowed.has(metric.key))
+    .map((metric) => ({ ...metric, sourceRequired: ['views', 'clicks', 'toCart', 'ctr', 'cartRate', 'orderRate'].includes(metric.key) }));
+  return [
+    {
+      key: 'wb',
+      title: 'WB · рекламная воронка',
+      subtitle: 'ads API, заказы, клики, каналы и эффективность',
+      rows: wbFunnel.rows,
+      metrics: wbFunnel.metricRows,
+      context: {}
+    },
+    {
+      key: 'ozon',
+      title: 'Ozon · рекламная воронка и GMV',
+      subtitle: 'Ozon Smart, Finance и контрольные исключения',
+      rows: ozonFunnel.rows,
+      metrics: ozonFunnel.metricRows,
+      context: ozonContext
+    },
+    {
+      key: 'ya',
+      title: 'Я.Маркет · только воронка',
+      subtitle: 'без ИУ, плана и ДРР; верхняя воронка показывает источник явно',
+      rows,
+      metrics: yaMetrics,
+      context: {}
+    }
+  ];
+}
+
+function iuDrrDesignHeroCards(rows = [], focus = 'all') {
+  const sum = (getter) => iuDrrDesignSum(rows, getter);
+  const wbPlan = sum((row) => numberOrZero(row.iuTargetRevenueWb || row.targetRevenueWb));
+  const wbFact = sum((row) => numberOrZero(row.wbApiRevenue || row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb));
+  const wbAdsPlan = sum((row) => numberOrZero(row.iuPlanSpendWb || row.planSpendWb));
+  const wbAdsFact = sum((row) => numberOrZero(row.wbApiSpendFact || row.spendFactDrr || row.spendFact));
+  const ozonPlan = sum((row) => numberOrZero(row.targetRevenueOzon));
+  const ozonFact = sum((row) => numberOrZero(row.revenueOzon || row.ozonGmv));
+  const ozonAdsPlan = sum((row) => numberOrZero(row.planSpendOzon));
+  const ozonAdsFact = sum((row) => numberOrZero(row.spendFactOzon));
+  const yaOrders = sum((row) => numberOrZero(row.ordersRevenueYandex));
+  const yaDelivered = sum((row) => numberOrZero(row.revenueYandex));
+  const yaUnits = sum((row) => numberOrZero(row.deliveredUnitsYandex || row.unitsYandex));
+  const yaSource = iuDrrDesignYandexHasSource(rows);
+  const cards = [
+    {
+      key: 'wb',
+      title: 'WB · ИУ',
+      score: fmt.pct(iuDrrDesignRatio(wbFact, wbPlan)),
+      detail: `${fmt.money(wbFact)} / ${fmt.money(wbPlan)}`,
+      progress: iuDrrDesignRatio(wbFact, wbPlan),
+      stats: [
+        ['Реклама факт', fmt.money(wbAdsFact)],
+        ['Реклама план', fmt.money(wbAdsPlan)],
+        ['ДРР факт', iuDrrDesignRatio(wbAdsFact, wbFact) != null ? fmt.pct(iuDrrDesignRatio(wbAdsFact, wbFact)) : '—']
+      ]
+    },
+    {
+      key: 'ozon',
+      title: 'Ozon · GMV',
+      score: fmt.pct(iuDrrDesignRatio(ozonFact, ozonPlan)),
+      detail: `${fmt.money(ozonFact)} / ${fmt.money(ozonPlan)}`,
+      progress: iuDrrDesignRatio(ozonFact, ozonPlan),
+      stats: [
+        ['Реклама факт', fmt.money(ozonAdsFact)],
+        ['Реклама план', fmt.money(ozonAdsPlan)],
+        ['ДРР к GMV', iuDrrDesignRatio(ozonAdsFact, ozonFact) != null ? fmt.pct(iuDrrDesignRatio(ozonAdsFact, ozonFact)) : '—']
+      ]
+    },
+    {
+      key: 'ya',
+      title: 'Я.Маркет · воронка',
+      score: fmt.money(yaOrders),
+      detail: `доставлено ${fmt.money(yaDelivered)} · ${fmt.int(yaUnits)} шт.`,
+      progress: iuDrrDesignRatio(yaDelivered, yaOrders),
+      stats: [
+        ['Показы', yaSource ? fmt.int(sum((row) => row.yandexShows)) : 'нет источника'],
+        ['Клики', yaSource ? fmt.int(sum((row) => row.yandexClicks)) : 'нет источника'],
+        ['Выкуп', iuDrrDesignRatio(yaUnits, sum((row) => row.ordersUnitsYandex)) != null ? fmt.pct(iuDrrDesignRatio(yaUnits, sum((row) => row.ordersUnitsYandex))) : '—']
+      ]
+    }
+  ];
+  return `
+    <div class="iu-drr-v2-hero">
+      ${cards.map((card) => {
+        const muted = focus !== 'all' && focus !== card.key ? ' is-muted' : '';
+        const tone = card.key === 'ya' ? 'info' : iuDrrFunnelCompletionTone(card.progress);
+        return `
+          <article class="iu-drr-v2-card iu-drr-v2-card--${escapeHtml(card.key)} iu-drr-v2-tone-${escapeHtml(tone)}${muted}">
+            <div class="iu-drr-v2-card-main">
+              <span>${escapeHtml(card.title)}</span>
+              <strong>${escapeHtml(card.score)}</strong>
+              <em>${escapeHtml(card.detail)}</em>
+            </div>
+            <div class="iu-drr-v2-card-bar"><i style="width:${iuDrrDesignProgressStyle(card.progress)}"></i></div>
+            <dl>
+              ${card.stats.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join('')}
+            </dl>
+          </article>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function iuDrrDesignSourcesPanel(model = {}, rows = [], focus = 'all') {
+  const payload = model.payload || {};
+  const source = payload.source || {};
+  const diagnostics = payload.diagnostics || {};
+  const yandexSource = iuDrrDesignYandexHasSource(rows);
+  const cards = [
+    ['Сборка', payload.generatedAt || '—', `факт до ${payload.asOfDate || '—'}`],
+    ['WB', source.adsSourceMode || diagnostics.adsSourceMode || 'WB API / сверка', diagnostics.wbApiCalibrationMode || 'калиброванный факт'],
+    ['Ozon', payload.ozonFinance?.source?.sourceMode || 'Ozon Finance', payload.ozonFinance?.source?.endpoint || 'GMV = продажи - возвраты'],
+    ['Я.Маркет', yandexSource ? 'воронка подключена' : 'нет источника верхней воронки', `${fmt.int(sumYandexRows(rows))} строк источника`]
+  ];
+  return `
+    <section class="iu-drr-v2-panel">
+      <div class="iu-drr-v2-panel-head">
+        <div>
+          <p class="iu-drr-v2-eyebrow">ALTEA · SOURCES</p>
+          <h3>Источники и сверка</h3>
+          <p>Отдельный экран для контроля источников, без изменения расчетов.</p>
+        </div>
+        ${badge(`фокус ${iuDrrDesignPlatformLabel(focus)}`, 'info')}
+      </div>
+      <div class="iu-drr-v2-source-grid">
+        ${cards.map(([title, value, detail]) => `
+          <div class="iu-drr-v2-source-card">
+            <span>${escapeHtml(title)}</span>
+            <strong>${escapeHtml(value)}</strong>
+            <em>${escapeHtml(detail)}</em>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function sumYandexRows(rows = []) {
+  return rows.reduce((sum, row) => sum + numberOrZero(row.yandexSourceRows), 0);
+}
+
+function renderIuDrr(rootId = 'view-iu-drr') {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  if (!iuDrrSummaryHasPayload(state.iuDrrSummary || {}) && reloadIuDrrSummaryFromFile(rootId)) return;
+  const baseModel = iuDrrDesignModelFor('wb', state.iuDrrSummary || {});
+  const models = {
+    wb: baseModel,
+    ozon: iuDrrDesignModelFor('ozon', state.iuDrrSummary || {}),
+    ya: iuDrrDesignModelFor('ya', state.iuDrrSummary || {})
+  };
+  const rows = iuDrrDesignRows(baseModel);
+  const focus = iuDrrDesignMarketplaceFocus();
+  const activeView = iuDrrDesignSubview();
+  const tabs = [
+    ['iu', 'ИУ по дням'],
+    ['funnel', 'Воронка по дням'],
+    ['sources', 'Источники']
+  ];
+  const monthSelect = `
+    <select id="iuDrrDesignMonth" aria-label="Месяц ИУ/ДРР">
+      ${baseModel.monthOptions.map((option) => `<option value="${escapeHtml(option.key)}" ${baseModel.selectedMonth === option.key ? 'selected' : ''}>${escapeHtml(option.label)}</option>`).join('')}
+    </select>
+  `;
+  const tabHtml = tabs.map(([key, label]) => `
+    <button type="button" class="iu-drr-v2-tab ${activeView === key ? 'active' : ''}" data-iu-drr-design-view="${escapeHtml(key)}" aria-pressed="${activeView === key ? 'true' : 'false'}">
+      ${escapeHtml(label)}
+    </button>
+  `).join('');
+  const content = activeView === 'funnel'
+    ? iuDrrDesignMetricMatrix({
+      id: 'iuDrrDesignFunnel',
+      title: 'Воронка по дням · три площадки',
+      helper: 'WB и Ozon остаются с рекламными метриками; Я.Маркет показывает только доступную воронку без ИУ и ДРР.',
+      groups: iuDrrDesignFunnelGroups(models, rows),
+      focus
+    })
+    : activeView === 'sources'
+      ? iuDrrDesignSourcesPanel(baseModel, rows, focus)
+      : iuDrrDesignMetricMatrix({
+        id: 'iuDrrDesignDailyIu',
+        title: 'ИУ по дням · все текущие метрики',
+        helper: 'WB и Ozon в одной матрице. Я.Маркет здесь намеренно отсутствует: по контракту у него только воронка.',
+        groups: iuDrrDesignIuGroups(rows),
+        focus
+      });
+  root.innerHTML = `
+    <section class="iu-drr-v2 iu-drr-v2-focus-${escapeHtml(focus)}">
+      <div class="section-title iu-drr-v2-title">
+        <div>
+          <p class="iu-drr-v2-eyebrow">ALTEA · PERFORMANCE</p>
+          <h2>ИУ / ДРР</h2>
+          <p class="muted">Новый внешний слой без изменения расчетов: WB и Ozon для ИУ, Я.Маркет только для воронки.</p>
+        </div>
+        <div class="iu-drr-v2-title-badges">
+          ${badge(`фокус ${iuDrrDesignPlatformLabel(focus)}`, 'info')}
+          ${badge(`срез ${baseModel.payload?.asOfDate || baseModel.selectedMonth}`, 'ok')}
+        </div>
+      </div>
+      <div class="iu-drr-v2-toolbar">
+        ${monthSelect}
+        <div class="iu-drr-v2-tabs" role="tablist" aria-label="Раздел ИУ/ДРР">${tabHtml}</div>
+        <div class="iu-drr-v2-lock">Локальных фильтров площадки нет · используется общий селектор портала</div>
+      </div>
+      ${iuDrrDesignHeroCards(rows, focus)}
+      ${content}
+    </section>
+  `;
+  root.querySelector('#iuDrrDesignMonth')?.addEventListener('change', (event) => {
+    getIuDrrFilters().month = String(event.target.value || 'latest');
+    rerenderCurrentView();
+  });
+  root.querySelectorAll('[data-iu-drr-design-view]').forEach((button) => {
+    button.addEventListener('click', () => {
+      getIuDrrFilters().designSubview = String(button.getAttribute('data-iu-drr-design-view') || 'iu');
+      rerenderCurrentView();
+    });
+  });
+}
+
 function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   if (rootId === 'view-ads-funnel') {
     renderAdsFunnel(rootId);

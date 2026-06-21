@@ -2,9 +2,21 @@
 
 const { spawnSync } = require('child_process');
 const path = require('path');
+const { commonBusinessCutoff } = require('./portal-api-max-sync');
 
 const root = path.resolve(__dirname, '..');
 const script = path.join('scripts', 'portal-api-max-sync.js');
+
+const commonCutoff = commonBusinessCutoff({
+  wb: { to: '2026-06-18' },
+  ozon: { to: '2026-06-20' },
+  ya: { to: '2026-06-20' },
+  all: { to: '2026-06-20' }
+});
+if (commonCutoff !== '2026-06-18') {
+  console.error(`Expected business cutoff to use the oldest required platform date, got ${commonCutoff}`);
+  process.exit(1);
+}
 
 function runSync(extraArgs = []) {
   const result = spawnSync(process.execPath, [

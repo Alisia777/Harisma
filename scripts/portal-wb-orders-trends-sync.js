@@ -196,15 +196,40 @@ function findFirstFile(dir, pattern) {
   return '';
 }
 
-function unzipWithPowerShell(zipPath, destination) {
+function unzipArchive(zipPath, destination) {
   fs.mkdirSync(destination, { recursive: true });
-  execFileSync('powershell', [
+  const attempts = [];
+  const powerShellArgs = [
     '-NoProfile',
     '-ExecutionPolicy',
     'Bypass',
     '-Command',
     `Expand-Archive -LiteralPath ${JSON.stringify(zipPath)} -DestinationPath ${JSON.stringify(destination)} -Force`
-  ], { stdio: 'pipe' });
+  ];
+  if (process.platform === 'win32') {
+    attempts.push(['powershell', powerShellArgs]);
+    attempts.push(['pwsh', powerShellArgs]);
+  }
+  attempts.push(['unzip', ['-q', '-o', zipPath, '-d', destination]]);
+  attempts.push(['python3', ['-m', 'zipfile', '-e', zipPath, destination]]);
+  attempts.push(['python', ['-m', 'zipfile', '-e', zipPath, destination]]);
+  if (process.platform !== 'win32') {
+    attempts.push(['pwsh', powerShellArgs]);
+    attempts.push(['powershell', powerShellArgs]);
+  }
+
+  const failures = [];
+  for (const [command, args] of attempts) {
+    try {
+      execFileSync(command, args, { stdio: 'pipe' });
+      return;
+    } catch (error) {
+      const detail = String(error?.stderr || error?.stdout || error?.message || error?.code || 'failed').trim();
+      failures.push(`${command}: ${detail.slice(0, 300)}`);
+    }
+  }
+
+  throw new Error(`Unable to extract WB analytics ZIP report. Tried ${attempts.map(([command]) => command).join(', ')}. ${failures.join(' | ')}`);
 }
 
 async function wbAnalyticsRequest(options, apiPath, requestOptions = {}) {
@@ -274,7 +299,7 @@ async function createAndDownloadWbFunnelReport(options, startDate, endDate) {
   const zipPath = path.join(tmpDir, `${id}.zip`);
   fs.writeFileSync(zipPath, zip);
   const extractDir = path.join(tmpDir, 'out');
-  unzipWithPowerShell(zipPath, extractDir);
+  unzipArchive(zipPath, extractDir);
   const csvPath = findFirstFile(extractDir, /\.csv$/i);
   if (!csvPath) throw new Error(`WB report ${id} zip did not contain CSV`);
   return parseCsv(fs.readFileSync(csvPath, 'utf8'));

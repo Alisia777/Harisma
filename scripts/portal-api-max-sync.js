@@ -5,6 +5,8 @@ const path = require('path');
 const { spawnSync, execFileSync } = require('child_process');
 const { emitSecurityAudit } = require('./portal-security-audit-event');
 
+const BUSINESS_CUTOFF_PLATFORMS = ['wb', 'ozon', 'ya'];
+
 function parseArgs(argv) {
   const args = {};
   for (let index = 2; index < argv.length; index += 1) {
@@ -334,6 +336,14 @@ function buildAllSeries(platforms) {
   })));
 }
 
+function commonBusinessCutoff(summary, requiredPlatforms = BUSINESS_CUTOFF_PLATFORMS) {
+  const dates = requiredPlatforms
+    .map((key) => isoDate(summary?.[key]?.to))
+    .filter(Boolean)
+    .sort();
+  return dates.length === requiredPlatforms.length ? dates[0] : '';
+}
+
 function findPlatform(payload, key) {
   return (Array.isArray(payload?.platforms) ? payload.platforms : [])
     .find((platform) => normalizeText(platform?.key || platform?.platformKey).toLowerCase() === key);
@@ -386,15 +396,21 @@ function mergePlatformWindow(outputFile, chunkFile, platformKey, from, to) {
     };
   }
 
+  const summary = platformSeriesSummary({ platforms: ordered });
+  const businessCutoffDate = commonBusinessCutoff(summary);
+  const latestMarketplaceDate = businessCutoffDate || summary.all?.to || target.latestMarketplaceDate || '';
   const next = {
     ...target,
     generatedAt: new Date().toISOString(),
-    latestMarketplaceDate: platformSeriesSummary({ platforms: ordered }).all?.to || target.latestMarketplaceDate || '',
+    latestMarketplaceDate,
+    businessCutoffDate: latestMarketplaceDate,
+    sourceLatestMarketplaceDate: summary.all?.to || target.sourceLatestMarketplaceDate || '',
+    platformCutoffDates: Object.fromEntries(BUSINESS_CUTOFF_PLATFORMS.map((key) => [key, summary[key]?.to || ''])),
     platforms: ordered,
     extraMarketplace: {
       ...targetExtra,
       generatedAt: new Date().toISOString(),
-      asOfDate: platformSeriesSummary({ platforms: ordered }).all?.to || targetExtra.asOfDate || '',
+      asOfDate: latestMarketplaceDate,
       platforms: targetExtraPlatforms
     }
   };
@@ -965,7 +981,14 @@ async function main() {
   if (manifest.status !== 'ok' && options.strict) process.exitCode = 1;
 }
 
-main().catch((error) => {
-  console.error(error?.stack || String(error));
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error?.stack || String(error));
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  commonBusinessCutoff,
+  platformSeriesSummary
+};

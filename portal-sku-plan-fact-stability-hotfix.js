@@ -36,6 +36,10 @@
     return document.getElementById(ROOT_ID);
   }
 
+  function planFactDesignV1Active(host = root()) {
+    return Boolean(window.__ALTEA_SKU_PLAN_FACT_DESIGN_V1__ && host?.querySelector('[data-plan-fact-design="v1"]'));
+  }
+
   function filters() {
     const app = appState();
     if (!app) return {};
@@ -636,6 +640,7 @@
   function enhance() {
     const host = root();
     if (!host || !host.innerHTML.trim()) return;
+    if (planFactDesignV1Active(host)) return;
     const model = buildModel();
     ensureDateControl(host, model);
     ensureRefreshButton(host);
@@ -662,6 +667,9 @@
       baseRerenderCurrentView = rerenderCandidate;
       const wrappedRerender = function wrappedRerenderCurrentView() {
         const host = root();
+        if (planFactDesignV1Active(host)) {
+          return baseRerenderCurrentView.apply(this, arguments);
+        }
         if (!forceRender && activeSkuPlanFact() && host?.querySelector('#skuPlanFactSearch')) {
           renderStableBody();
           enhance();

@@ -23,6 +23,10 @@
   let pricesScheduled = false;
   let skuContourScheduled = false;
 
+  function skuPlanFactDesignV1Enabled() {
+    return Boolean(window.__ALTEA_SKU_PLAN_FACT_DESIGN_V1__);
+  }
+
   function storageGet(key) {
     try {
       return window.sessionStorage && window.sessionStorage.getItem(key);
@@ -228,6 +232,10 @@
   function applySkuBudgetDom() {
     const root = document.getElementById('view-sku-plan-fact');
     if (!root) return;
+    if (skuPlanFactDesignV1Enabled()) {
+      removeNotice(root, SKU_VIEW);
+      return;
+    }
     ensureStyles();
     ensureObserver(root, '__alteaSkuPlanFactBudgetObserver', scheduleSkuApply);
     const tbody = root.querySelector('.sku-plan-fact-table tbody');
@@ -238,6 +246,10 @@
 
   function hookSkuPlanFact() {
     if (typeof window.renderSkuPlanFact !== 'function') return false;
+    if (skuPlanFactDesignV1Enabled()) {
+      applySkuBudgetDom();
+      return true;
+    }
     if (window.renderSkuPlanFact.__alteaTableBudgetWrapped) {
       applySkuBudgetDom();
       return true;

@@ -1,0 +1,105 @@
+{
+  "schema": "portal-api-max-sync-v1",
+  "generatedAt": "2026-06-19T09:53:04.465Z",
+  "startedAt": "2026-06-19T09:46:32.500Z",
+  "mode": "max",
+  "window": {
+    "from": "2026-06-01",
+    "to": "2026-06-19"
+  },
+  "platforms": [
+    "wb",
+    "ozon"
+  ],
+  "dryRun": false,
+  "strict": false,
+  "status": "ok",
+  "steps": [
+    {
+      "id": "wb",
+      "name": "WB API marketplace facts",
+      "status": "ok",
+      "startedAt": "2026-06-19T09:46:32.692Z",
+      "finishedAt": "2026-06-19T09:52:08.486Z",
+      "exitCode": 0,
+      "skippedReason": "",
+      "chunkDays": 31,
+      "chunks": [
+        {
+          "from": "2026-06-01",
+          "to": "2026-06-19",
+          "status": "ok",
+          "exitCode": 0,
+          "merge": {
+            "merged": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ozon",
+      "name": "Ozon API marketplace facts",
+      "status": "ok",
+      "startedAt": "2026-06-19T09:52:08.486Z",
+      "finishedAt": "2026-06-19T09:53:04.414Z",
+      "exitCode": 0,
+      "skippedReason": "",
+      "chunkDays": 31,
+      "chunks": [
+        {
+          "from": "2026-06-01",
+          "to": "2026-06-19",
+          "status": "ok",
+          "exitCode": 0,
+          "merge": {
+            "merged": true
+          }
+        }
+      ]
+    }
+  ],
+  "platformSummary": {
+    "wb": {
+      "points": 19,
+      "from": "2026-06-01",
+      "to": "2026-06-19",
+      "revenue": 175855567
+    },
+    "ozon": {
+      "points": 19,
+      "from": "2026-06-01",
+      "to": "2026-06-19",
+      "revenue": 45452985.28
+    },
+    "ya": {
+      "points": 168,
+      "from": "2026-01-01",
+      "to": "2026-06-17",
+      "revenue": 21732239.9015
+    },
+    "goldapple": {
+      "points": 78,
+      "from": "2026-04-01",
+      "to": "2026-06-17",
+      "revenue": 3200127
+    },
+    "letu": {
+      "points": 168,
+      "from": "2026-01-01",
+      "to": "2026-06-17",
+      "revenue": 6922390
+    },
+    "magnit": {
+      "points": 168,
+      "from": "2026-01-01",
+      "to": "2026-06-17",
+      "revenue": 389404.13
+    },
+    "all": {
+      "points": 170,
+      "from": "2026-01-01",
+      "to": "2026-06-19",
+      "revenue": 253552713.312
+    }
+  }
+}

@@ -26,6 +26,15 @@ const LETUAL_DEFAULT_GRAPHQL_PATH = '/api/graphql';
 const LETUAL_DEFAULT_LOCAL_EXPORT_XLSX = 'C:/Users/artiu/Downloads/Letu.xlsx';
 const LETUAL_DEFAULT_PLAN_XLSX = 'C:/Users/artiu/OneDrive/Рабочий стол/План/Лэтуаль.xlsx';
 const ZYA_DEFAULT_SALES_XLSX = path.join('data', 'external_sources', 'zya_plan.xlsx');
+const DOWNLOADS_DIR = path.join(os.homedir(), 'Downloads');
+const TELEGRAM_DOWNLOADS_DIR = path.join(DOWNLOADS_DIR, 'Telegram Desktop');
+const ZYA_LOCAL_SALES_XLSX_CANDIDATES = [
+  path.join(TELEGRAM_DOWNLOADS_DIR, '\u0417\u042f 2.xlsx'),
+  path.join(DOWNLOADS_DIR, '\u0417\u043e\u043b\u043e\u0442\u043e\u0435 \u042f\u0431\u043b\u043e\u043a\u043e.xlsx'),
+  ZYA_DEFAULT_SALES_XLSX
+];
+const ZYA_LOCAL_SALES_ZIP = path.join(TELEGRAM_DOWNLOADS_DIR, '\u0417\u042f \u043f\u0440\u043e\u0434\u0430\u0436\u0438.zip');
+const ZYA_LOCAL_ADS_XLSX = path.join(TELEGRAM_DOWNLOADS_DIR, '\u0420\u0435\u043a\u043b\u0430\u043c\u0430 \u0417\u042f.xlsx');
 const RETAIL_NETWORK_SALES_DEFAULT_XLSX = path.join('data', 'external_sources', 'retail_network_sales.xlsx');
 const LETUAL_CPC_STATS_QUERY = `
   query getCpcStats($where: CpcStatsFilter!, $limit: Int!, $offset: Int!) {
@@ -240,6 +249,19 @@ function asBool(value, fallback = false) {
   return fallback;
 }
 
+function firstExistingPath(candidates) {
+  for (const candidate of candidates.flat()) {
+    const normalized = String(candidate || '').trim();
+    if (normalized && fs.existsSync(normalized)) return normalized;
+  }
+  return '';
+}
+
+function explicitOrExistingPath(explicitValue, fallbackCandidates) {
+  const normalized = String(explicitValue || '').trim();
+  return normalized || firstExistingPath(fallbackCandidates);
+}
+
 function timestamp() {
   const now = new Date();
   const pad = (value) => String(value).padStart(2, '0');
@@ -275,9 +297,9 @@ function resolveOptions(args) {
     letualFullHistory: asBool(args['letual-full-history'] ?? process.env.ALTEA_LETUAL_FULL_HISTORY, false),
     letualLocalExportXlsx: String(args['letual-local-export-xlsx'] || process.env.ALTEA_LETUAL_LOCAL_EXPORT_XLSX || LETUAL_DEFAULT_LOCAL_EXPORT_XLSX).trim(),
     letualPlanXlsx: String(args['letual-plan-xlsx'] || process.env.ALTEA_LETUAL_PLAN_XLSX || LETUAL_DEFAULT_PLAN_XLSX).trim(),
-    zyaSalesZip: String(args['zya-sales-zip'] || process.env.ALTEA_ZYA_SALES_ZIP || '').trim(),
-    zyaSalesXlsx: String(args['zya-sales-xlsx'] || process.env.ALTEA_ZYA_SALES_XLSX || ZYA_DEFAULT_SALES_XLSX).trim(),
-    zyaAdsXlsx: String(args['zya-ads-xlsx'] || process.env.ALTEA_ZYA_ADS_XLSX || '').trim(),
+    zyaSalesZip: explicitOrExistingPath(args['zya-sales-zip'] || process.env.ALTEA_ZYA_SALES_ZIP, [ZYA_LOCAL_SALES_ZIP]),
+    zyaSalesXlsx: explicitOrExistingPath(args['zya-sales-xlsx'] || process.env.ALTEA_ZYA_SALES_XLSX, ZYA_LOCAL_SALES_XLSX_CANDIDATES),
+    zyaAdsXlsx: explicitOrExistingPath(args['zya-ads-xlsx'] || process.env.ALTEA_ZYA_ADS_XLSX, [ZYA_LOCAL_ADS_XLSX]),
     retailNetworkSalesXlsx: String(args['retail-network-sales-xlsx'] || process.env.ALTEA_RETAIL_NETWORK_SALES_XLSX || RETAIL_NETWORK_SALES_DEFAULT_XLSX).trim(),
     magnitApiToken: String(args['magnit-token'] || args['magnit-api-token'] || process.env.ALTEA_MAGNIT_API_TOKEN || process.env.ALTEA_MAGNIT_API_KEY || process.env.ALTEA_MAGNIT_MARKET_API_TOKEN || process.env.ALTEA_MAGNIT_MARKET_API_KEY || '').trim(),
     magnitApiBaseUrl: String(args['magnit-base-url'] || process.env.ALTEA_MAGNIT_API_BASE_URL || process.env.ALTEA_MAGNIT_MARKET_API_BASE_URL || '').trim(),
@@ -303,6 +325,14 @@ function fileMtimeIso(filePath) {
   }
 }
 
+function fileMtimeMs(filePath) {
+  try {
+    return fs.statSync(filePath).mtimeMs || 0;
+  } catch (_error) {
+    return 0;
+  }
+}
+
 function withFileMtime(filePath, detail) {
   const mtime = fileMtimeIso(filePath);
   return mtime ? `${detail}; fileMtime=${mtime.slice(0, 10)}` : detail;
@@ -316,13 +346,22 @@ function sheetRows(workbook, sheetName, options = {}) {
 function numberOrZero(value) {
   if (value === null || value === undefined || value === '') return 0;
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
-  const normalized = String(value)
+  let normalized = String(value)
     .replace(/\s+/g, '')
     .replace(/₽/g, '')
     .replace(/руб\.?/gi, '')
     .replace(/%/g, '')
-    .replace(',', '.')
     .trim();
+  if (normalized.includes(',') && normalized.includes('.')) {
+    normalized = normalized.lastIndexOf(',') > normalized.lastIndexOf('.')
+      ? normalized.replace(/\./g, '').replace(',', '.')
+      : normalized.replace(/,/g, '');
+  } else if (normalized.includes(',')) {
+    const commaParts = normalized.split(',');
+    normalized = commaParts.length === 2 && /^\d{3}$/.test(commaParts[1])
+      ? commaParts.join('')
+      : normalized.replace(',', '.');
+  }
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : 0;
 }
@@ -332,7 +371,7 @@ function normalizeText(value) {
 }
 
 function normalizeKey(value) {
-  return normalizeText(value).toLowerCase().replace(/[^a-zа-яё0-9]+/giu, '');
+  return normalizeText(value).toLowerCase().replace(/[^\p{L}0-9]+/gu, '');
 }
 
 function monthKey(value) {
@@ -367,6 +406,28 @@ function monthKeyFromRussianText(value, fallbackYear = '') {
   if (!raw) return '';
   const year = normalizeYear(raw.match(/(20\d{2}|\d{2})/)?.[1] || fallbackYear);
   const monthTokens = [
+    ['\u044f\u043d\u0432\u0430\u0440', '01'],
+    ['\u044f\u043d\u0432', '01'],
+    ['\u0444\u0435\u0432\u0440\u0430\u043b', '02'],
+    ['\u0444\u0435\u0432', '02'],
+    ['\u043c\u0430\u0440\u0442', '03'],
+    ['\u043c\u0430\u0440', '03'],
+    ['\u0430\u043f\u0440\u0435\u043b', '04'],
+    ['\u0430\u043f\u0440', '04'],
+    ['\u043c\u0430\u0439', '05'],
+    ['\u043c\u0430\u044f', '05'],
+    ['\u0438\u044e\u043d', '06'],
+    ['\u0438\u044e\u043b', '07'],
+    ['\u0430\u0432\u0433\u0443\u0441\u0442', '08'],
+    ['\u0430\u0432\u0433', '08'],
+    ['\u0441\u0435\u043d\u0442\u044f\u0431\u0440', '09'],
+    ['\u0441\u0435\u043d', '09'],
+    ['\u043e\u043a\u0442\u044f\u0431\u0440', '10'],
+    ['\u043e\u043a\u0442', '10'],
+    ['\u043d\u043e\u044f\u0431\u0440', '11'],
+    ['\u043d\u043e\u044f', '11'],
+    ['\u0434\u0435\u043a\u0430\u0431\u0440', '12'],
+    ['\u0434\u0435\u043a', '12'],
     ['январ', '01'],
     ['янв', '01'],
     ['феврал', '02'],
@@ -1593,14 +1654,43 @@ const GENERIC_MARKETPLACE_FIELDS = {
   date: ['date', 'day', 'month', 'period', 'createdAt', 'orderDate', 'saleDate', 'salesDate', 'deliveryDate', 'Дата', 'День', 'Месяц', 'Период', 'Дата заказа', 'Дата продажи', 'Дата начисления'],
   year: ['year', 'год', 'Год'],
   month: ['monthNumber', 'month_num', 'monthNo', 'month', 'Месяц', 'Номер месяца'],
-  article: ['article', 'offerId', 'offer_id', 'sku', 'vendorCode', 'vendor_code', 'item_code', 'sellerSku', 'seller_sku', 'Seller SKU ID', 'Артикул', 'Артикул продавца', 'Код товара', 'SKU', 'Штрихкод'],
+  article: ['article', 'offerId', 'offer_id', 'sku', 'vendorCode', 'vendor_code', 'item_code', 'sellerSku', 'seller_sku', 'Seller SKU ID', 'Артикул', 'Артикул продавца', 'Артикул у ЗЯ', 'Артикул Общий', 'Код товара', 'Код номенклатуры', 'Номенклатура', 'SKU', 'Штрихкод'],
   name: ['name', 'offerName', 'productName', 'itemName', 'title', 'Название', 'Наименование', 'Наименование товара', 'Название товара'],
-  orders_units: ['ordersUnits', 'orderItems', 'quantity', 'qty', 'count', 'sales_qty', 'ordered_units', 'units', 'items', 'Заказы шт', 'Заказано шт', 'Продано шт', 'Количество', 'Шт', 'Июнь шт', 'Май шт', 'Апрель шт'],
-  orders_revenue: ['ordersRevenue', 'revenue', 'amount', 'sum', 'total', 'sales_sum', 'ordered_amount', 'salesAmount', 'grossRevenue', 'Заказы руб', 'Заказано руб', 'Продано руб', 'Выручка', 'Сумма', 'Итого', 'Июнь руб', 'Май руб', 'Апрель руб'],
+  impressions_total: ['impressions', 'shows', 'views', 'totalViews', 'viewCount', 'Показы', 'Просмотры', 'Показы всего', 'Просмотры всего'],
+  impressions_search: ['searchImpressions', 'categoryImpressions', 'searchViews', 'Показы в поиске', 'Показы в категории'],
+  pdp_views: ['pdpViews', 'cardViews', 'productViews', 'detailViews', 'Просмотры карточки', 'Просмотры PDP', 'Карточка просмотры'],
+  traffic_card_opens: ['clicks', 'visits', 'cardOpens', 'traffic', 'Переходы', 'Клики', 'Переходы в карточку', 'Открытия карточки'],
+  sessions_total: ['sessions', 'sessionsTotal', 'visits', 'Сессии', 'Сессии всего'],
+  sessions_search: ['searchSessions', 'categorySessions', 'Сессии поиск', 'Сессии категория'],
+  sessions_pdp: ['pdpSessions', 'cardSessions', 'Сессии PDP', 'Сессии карточки'],
+  add_to_cart_total: ['addToCart', 'add_to_cart', 'carts', 'cartAdds', 'Добавления в корзину', 'Корзины', 'В корзину'],
+  add_to_cart_search: ['searchAddToCart', 'addToCartSearch', 'Добавления в корзину из поиска'],
+  add_to_cart_pdp: ['pdpAddToCart', 'addToCartPdp', 'Добавления в корзину из карточки'],
+  orders_units: ['ordersUnits', 'orderItems', 'quantity', 'qty', 'count', 'sales_qty', 'ordered_units', 'units', 'items', 'Заказы шт', 'Заказано шт', 'Продано шт', 'Количество', 'Шт', 'ИТОГО,шт', 'Итого,шт', 'Июнь шт', 'Май шт', 'Апрель шт'],
+  orders_revenue: ['ordersRevenue', 'revenue', 'amount', 'sum', 'total', 'sales_sum', 'ordered_amount', 'salesAmount', 'grossRevenue', 'Заказы руб', 'Заказано руб', 'Продано руб', 'Выручка', 'Сумма', 'Итого', 'ИТОГО, руб.', 'Итого, руб.', 'Фактическая сумма продаж', 'Июнь руб', 'Май руб', 'Апрель руб'],
   delivered_units: ['deliveredUnits', 'delivered_count', 'delivered', 'buyoutUnits', 'Выкуплено шт', 'Доставлено шт'],
   delivered_revenue: ['deliveredRevenue', 'delivered_amount', 'buyoutRevenue', 'Выкуплено руб', 'Доставлено руб'],
+  buyout_units: ['buyoutUnits', 'boughtUnits', 'Выкупы шт', 'Выкуплено шт'],
+  buyout_revenue: ['buyoutRevenue', 'boughtRevenue', 'Выкупы руб', 'Выкуплено руб'],
   returns_units: ['returns', 'returnsUnits', 'returned_count', 'Возвраты', 'Возвраты шт'],
-  cancellations_units: ['cancellations', 'cancelled', 'canceled_count', 'Отмены', 'Отмены шт']
+  cancellations_units: ['cancellations', 'cancelled', 'canceled_count', 'Отмены', 'Отмены шт'],
+  cancel_revenue: ['cancelRevenue', 'cancelledRevenue', 'Отмены руб'],
+  wishlist: ['wishlist', 'favorites', 'favoriteAdds', 'Избранное', 'Добавления в избранное'],
+  ads_impressions: ['adsImpressions', 'adImpressions', 'adShows', 'Реклама показы', 'Показы рекламы'],
+  ads_clicks: ['adsClicks', 'adClicks', 'Реклама клики', 'Клики рекламы'],
+  ads_spend: ['adsSpend', 'adSpend', 'cost', 'spend', 'Расход', 'Расход (RUB)', 'Реклама расход'],
+  ads_orders: ['adsOrders', 'adOrders', 'postViewOrders', 'postClickOrders', 'Реклама заказы'],
+  ads_revenue: ['adsRevenue', 'adRevenue', 'postViewRevenue', 'postClickRevenue', 'Реклама выручка'],
+  cart_cr: ['cartCr', 'cartConversion', 'CR корзина'],
+  order_cr: ['orderCr', 'orderConversion', 'CR заказ'],
+  buyout_pct: ['buyoutPct', 'buyoutPercent', 'Выкуп %'],
+  ads_ctr: ['adsCtr', 'adCtr', 'CTR (%)', 'CTR'],
+  ads_drr: ['adsDrr', 'adDrr', 'ДРР (%)', 'ДРР'],
+  avg_order_value: ['avgOrderValue', 'averageOrderValue', 'avgCheck', 'Средний чек', 'Ср. чек'],
+  logistics_cost: ['logisticsCost', 'Логистика'],
+  storage_cost: ['storageCost', 'Хранение'],
+  penalties: ['penalties', 'Штрафы'],
+  net_payout: ['netPayout', 'payout', 'К перечислению']
 };
 
 function rowFieldValue(row, aliases) {
@@ -1715,6 +1805,7 @@ function genericApiHeaders(token, clientId) {
   return {
     Authorization: `Bearer ${token}`,
     'Api-Key': token,
+    'X-Api-Key': token,
     'X-API-Key': token,
     'X-Client-Id': clientId || '',
     'Content-Type': 'application/json',
@@ -2022,17 +2113,17 @@ function loadBestWorkbookRowsFromZip(zipPath, requiredHeaders = []) {
 function addZyaSalesZip(store, zipPath, notes) {
   if (!zipPath) {
     sourceNote(notes, 'ZYA sales ZIP', 'missing file', 'ALTEA_ZYA_SALES_ZIP');
-    return;
+    return 0;
   }
   if (!fs.existsSync(zipPath)) {
     sourceNote(notes, 'ZYA sales ZIP', 'missing file', zipPath);
-    return;
+    return 0;
   }
   try {
     const selection = loadBestWorkbookRowsFromZip(zipPath, ['Дата заказа', 'Заказано руб', 'Доставлено руб']);
     if (!selection) {
       sourceNote(notes, 'ZYA sales ZIP', 'empty', path.basename(zipPath));
-      return;
+      return 0;
     }
     let count = 0;
     for (const row of selection.rows) {
@@ -2060,8 +2151,10 @@ function addZyaSalesZip(store, zipPath, notes) {
       count += 1;
     }
     sourceNote(notes, 'ZYA sales ZIP', count ? 'loaded' : 'empty', withFileMtime(zipPath, `${count} rows from ${path.basename(selection.filePath)} / ${selection.sheetName}`));
+    return count;
   } catch (error) {
     sourceNote(notes, 'ZYA sales ZIP', 'failed', error.message);
+    return 0;
   }
 }
 
@@ -2078,11 +2171,42 @@ const ZYA_HEADERS = {
   name: '\u041d\u0430\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u043d\u0438\u0435'
 };
 
+const ZYA_MONTHLY_HEADERS = {
+  articleZya: '\u0410\u0440\u0442\u0438\u043a\u0443\u043b \u0443 \u0417\u042f',
+  articleCommon: '\u0410\u0440\u0442\u0438\u043a\u0443\u043b \u041e\u0431\u0449\u0438\u0439',
+  article: '\u0410\u0440\u0442\u0438\u043a\u0443\u043b',
+  name: '\u041d\u0430\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u043d\u0438\u0435',
+  totalRevenue: '\u0418\u0422\u041e\u0413\u041e, \u0440\u0443\u0431.',
+  totalUnits: '\u0418\u0422\u041e\u0413\u041e,\u0448\u0442',
+  avgCheck: '\u0421\u0440. \u0447\u0435\u043a'
+};
+
 function rowValue(row, keys) {
   for (const key of keys) {
     if (row[key] !== undefined && row[key] !== null && row[key] !== '') return row[key];
   }
   return '';
+}
+
+function sheetRowsFromDetectedHeader(workbook, sheetName, requiredHeaders) {
+  if (!workbook || !workbook.Sheets[sheetName]) return null;
+  const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: '', raw: false, blankrows: false });
+  const requiredKeys = requiredHeaders.map(normalizeKey);
+  for (let rowIndex = 0; rowIndex < Math.min(rows.length, 10); rowIndex += 1) {
+    const headers = rows[rowIndex].map((header) => normalizeText(header));
+    const headerKeys = new Set(headers.map(normalizeKey));
+    if (!requiredKeys.every((key) => headerKeys.has(key))) continue;
+    const dataRows = rows.slice(rowIndex + 1).map((values) => {
+      const row = {};
+      headers.forEach((header, index) => {
+        if (!header) return;
+        row[header] = values[index] ?? '';
+      });
+      return row;
+    }).filter((row) => Object.values(row).some((value) => normalizeText(value)));
+    return dataRows;
+  }
+  return null;
 }
 
 function normalizeZyaCode(value) {
@@ -2098,6 +2222,8 @@ function findWorkbookRowsByHeaders(workbook, requiredHeaders) {
     if (requiredHeaders.every((header) => headers.has(header))) {
       return { sheetName, rows };
     }
+    const detectedRows = sheetRowsFromDetectedHeader(workbook, sheetName, requiredHeaders);
+    if (detectedRows?.length) return { sheetName, rows: detectedRows };
   }
   return null;
 }
@@ -2118,21 +2244,95 @@ function buildZyaArticleLookup(workbook) {
   return lookup;
 }
 
+function addZyaMonthlySalesXlsx(store, workbook, filePath, notes) {
+  if (!workbook || !Array.isArray(workbook.SheetNames)) return 0;
+  const months = new Set();
+  const skuSet = new Set();
+  let count = 0;
+
+  for (const sheetName of workbook.SheetNames) {
+    const month = monthKey(sheetName) || monthKeyFromRussianText(sheetName, TODAY.slice(0, 4));
+    if (!month) continue;
+    const rows = sheetRowsFromDetectedHeader(workbook, sheetName, [
+      ZYA_MONTHLY_HEADERS.name,
+      ZYA_MONTHLY_HEADERS.totalRevenue,
+      ZYA_MONTHLY_HEADERS.totalUnits
+    ]);
+    if (!rows?.length) continue;
+
+    for (const row of rows) {
+      const revenue = numberOrZero(rowFieldValue(row, [
+        ZYA_MONTHLY_HEADERS.totalRevenue,
+        '\u0418\u0442\u043e\u0433\u043e, \u0440\u0443\u0431.',
+        '\u0418\u0442\u043e\u0433\u043e \u0440\u0443\u0431',
+        '\u041f\u0440\u043e\u0434\u0430\u0436\u0438 \u0440\u0443\u0431'
+      ]));
+      const units = numberOrZero(rowFieldValue(row, [
+        ZYA_MONTHLY_HEADERS.totalUnits,
+        '\u0418\u0422\u041e\u0413\u041e, \u0448\u0442',
+        '\u0418\u0442\u043e\u0433\u043e,\u0448\u0442',
+        '\u041f\u0440\u043e\u0434\u0430\u0436\u0438 \u0448\u0442'
+      ]));
+      if (!revenue && !units) continue;
+
+      const article = normalizeText(rowFieldValue(row, [
+        ZYA_MONTHLY_HEADERS.articleCommon,
+        ZYA_MONTHLY_HEADERS.articleZya,
+        ZYA_MONTHLY_HEADERS.article,
+        '\u0410\u0440\u0442\u0438\u043a\u0443\u043b \u0410\u043b\u044c\u043a\u043e\u0440\u0430'
+      ])) || `zya-monthly-${count}`;
+      const name = normalizeText(rowFieldValue(row, [ZYA_MONTHLY_HEADERS.name])) || article;
+      const avgOrderValue = rowFieldValue(row, [ZYA_MONTHLY_HEADERS.avgCheck]);
+      const totalCommon = { level: 'total', platformKey: 'goldapple', source: 'ZYA monthly XLSX' };
+      const skuCommon = { level: 'sku', platformKey: 'goldapple', articleKey: article, article, name, source: 'ZYA monthly XLSX' };
+      const metricValues = {
+        orders_units: units,
+        orders_revenue: revenue,
+        delivered_units: units,
+        delivered_revenue: revenue,
+        buyout_units: units,
+        buyout_revenue: revenue,
+        avg_order_value: avgOrderValue
+      };
+
+      for (const [metricKey, value] of Object.entries(metricValues)) {
+        if (value === undefined || value === null || value === '') continue;
+        store.add({ ...totalCommon, ...metricParts(metricKey) }, month, value);
+        store.add({ ...skuCommon, ...metricParts(metricKey) }, month, value);
+      }
+      months.add(month);
+      skuSet.add(article);
+      count += 1;
+    }
+  }
+
+  const orderedMonths = Array.from(months).sort();
+  sourceNote(
+    notes,
+    'ZYA monthly XLSX',
+    count ? 'loaded' : 'empty',
+    withFileMtime(filePath, `${count} SKU rows, ${skuSet.size} SKU${orderedMonths.length ? `, ${orderedMonths[0]}..${orderedMonths[orderedMonths.length - 1]}` : ''} from ${path.basename(filePath)}`)
+  );
+  return count;
+}
+
 function addZyaSalesXlsx(store, filePath, notes) {
   if (!filePath) {
     sourceNote(notes, 'ZYA sales XLSX', 'missing file', 'ALTEA_ZYA_SALES_XLSX');
-    return;
+    return 0;
   }
   if (!fs.existsSync(filePath)) {
     sourceNote(notes, 'ZYA sales XLSX', 'missing file', filePath);
-    return;
+    return 0;
   }
   try {
     const workbook = readWorkbook(filePath);
     const selection = findWorkbookRowsByHeaders(workbook, [ZYA_HEADERS.saleDate, ZYA_HEADERS.productCode, ZYA_HEADERS.soldUnits]);
     if (!selection) {
+      const monthlyCount = addZyaMonthlySalesXlsx(store, workbook, filePath, notes);
+      if (monthlyCount) return monthlyCount;
       sourceNote(notes, 'ZYA sales XLSX', 'empty', `${path.basename(filePath)} has no daily sales sheet`);
-      return;
+      return 0;
     }
     const articleLookup = buildZyaArticleLookup(workbook);
     const skuSet = new Set();
@@ -2177,55 +2377,67 @@ function addZyaSalesXlsx(store, filePath, notes) {
       count ? 'loaded' : 'empty',
       withFileMtime(filePath, `${count} daily rows, ${skuSet.size} SKU, ${orderedMonths[0] || ''}..${orderedMonths[orderedMonths.length - 1] || ''} from ${path.basename(filePath)} / ${selection.sheetName}`)
     );
+    return count;
   } catch (error) {
     sourceNote(notes, 'ZYA sales XLSX', 'failed', error.message);
+    return 0;
   }
 }
 
 function addZyaAdsXlsx(store, filePath, notes) {
   if (!filePath) {
     sourceNote(notes, 'ZYA ads XLSX', 'missing file', 'ALTEA_ZYA_ADS_XLSX');
-    return;
+    return 0;
   }
   if (!fs.existsSync(filePath)) {
     sourceNote(notes, 'ZYA ads XLSX', 'missing file', filePath);
-    return;
+    return 0;
   }
   try {
     const workbook = readWorkbook(filePath);
     if (!workbook || !workbook.SheetNames.length) {
       sourceNote(notes, 'ZYA ads XLSX', 'empty', path.basename(filePath));
-      return;
+      return 0;
     }
     const rows = sheetRows(workbook, workbook.SheetNames[0]);
     let count = 0;
     for (const row of rows) {
-      const month = monthKey(row['Кампания']) || monthKeyFromRussianText(row['Кампания'], '2026');
+      const campaign = rowFieldValue(row, ['Кампания', 'campaign', 'campaignName']);
+      const adName = rowFieldValue(row, ['Реклама', 'ad', 'adName', 'placementName']);
+      const month = monthKey(campaign) || monthKeyFromRussianText(campaign, TODAY.slice(0, 4));
       if (!month) continue;
-      const adLabel = normalizeText(row['Реклама']) || normalizeText(row['Кампания']);
+      const adLabel = normalizeText(adName) || normalizeText(campaign);
       const article = adLabel.replace(/\s*\+\s*$/, '').trim() || `zya-ad-${count}`;
-      const name = normalizeText(row['Реклама']) || article;
+      const name = normalizeText(adName) || article;
+      const postViewOrders = numberOrZero(rowFieldValue(row, ['PostView Продано товаров', 'postViewOrders']));
+      const postClickOrders = numberOrZero(rowFieldValue(row, ['PostClick Продано товаров', 'postClickOrders']));
+      const postViewRevenue = numberOrZero(rowFieldValue(row, ['PostView Выручка (RUB)', 'postViewRevenue']));
+      const postClickRevenue = numberOrZero(rowFieldValue(row, ['PostClick Выручка (RUB)', 'postClickRevenue']));
       const commonTotal = { level: 'total', platformKey: 'goldapple', source: 'ZYA ads XLSX' };
       const commonSku = { level: 'sku', platformKey: 'goldapple', articleKey: article, article, name, source: 'ZYA ads XLSX' };
       const metricValues = {
-        impressions_total: row['Показы'],
-        pdp_views: row['Просмотры'],
-        traffic_card_opens: row['Клики'],
-        ads_impressions: row['Показы'],
-        ads_clicks: row['Клики'],
-        ads_spend: row['Расход (RUB)'],
-        ads_orders: numberOrZero(row['PostView Продано товаров']) + numberOrZero(row['PostClick Продано товаров']),
-        ads_revenue: numberOrZero(row['PostView Выручка (RUB)']) + numberOrZero(row['PostClick Выручка (RUB)'])
+        impressions_total: rowFieldValue(row, ['Показы', 'impressions', 'shows']),
+        pdp_views: rowFieldValue(row, ['Просмотры', 'views', 'pdpViews']),
+        traffic_card_opens: rowFieldValue(row, ['Клики', 'clicks']),
+        ads_impressions: rowFieldValue(row, ['Показы', 'impressions', 'shows']),
+        ads_clicks: rowFieldValue(row, ['Клики', 'clicks']),
+        ads_spend: rowFieldValue(row, ['Расход (RUB)', 'Расход', 'spend', 'cost']),
+        ads_orders: postViewOrders + postClickOrders,
+        ads_revenue: postViewRevenue + postClickRevenue,
+        ads_ctr: rowFieldValue(row, ['CTR (%)', 'CTR', 'ctr'])
       };
       for (const [metricKey, value] of Object.entries(metricValues)) {
+        if (value === undefined || value === null || value === '') continue;
         store.add({ ...commonTotal, ...metricParts(metricKey) }, month, value);
         store.add({ ...commonSku, ...metricParts(metricKey) }, month, value);
       }
       count += 1;
     }
     sourceNote(notes, 'ZYA ads XLSX', count ? 'loaded' : 'empty', withFileMtime(filePath, `${count} rows from ${path.basename(filePath)}`));
+    return count;
   } catch (error) {
     sourceNote(notes, 'ZYA ads XLSX', 'failed', error.message);
+    return 0;
   }
 }
 
@@ -2565,8 +2777,18 @@ async function main() {
   if (zyaApiRows) apiLoadedPlatforms.add('goldapple');
   if (!zyaApiRows) {
     const zyaSalesZipExists = Boolean(options.zyaSalesZip && fs.existsSync(options.zyaSalesZip));
-    addZyaSalesZip(store, options.zyaSalesZip, notes);
-    if (!zyaSalesZipExists) addZyaSalesXlsx(store, options.zyaSalesXlsx, notes);
+    const zyaSalesXlsxExists = Boolean(options.zyaSalesXlsx && fs.existsSync(options.zyaSalesXlsx));
+    const useZyaZip = zyaSalesZipExists && (!zyaSalesXlsxExists || fileMtimeMs(options.zyaSalesZip) >= fileMtimeMs(options.zyaSalesXlsx));
+    let zyaRows = 0;
+    if (useZyaZip) {
+      zyaRows = addZyaSalesZip(store, options.zyaSalesZip, notes);
+      if (!zyaRows && zyaSalesXlsxExists) zyaRows = addZyaSalesXlsx(store, options.zyaSalesXlsx, notes);
+    } else {
+      if (zyaSalesZipExists) sourceNote(notes, 'ZYA sales ZIP', 'skipped', withFileMtime(options.zyaSalesZip, `newer XLSX selected: ${path.basename(options.zyaSalesXlsx || '')}`));
+      zyaRows = addZyaSalesXlsx(store, options.zyaSalesXlsx, notes);
+      if (!zyaRows && zyaSalesZipExists) addZyaSalesZip(store, options.zyaSalesZip, notes);
+    }
+    if (zyaRows) apiLoadedPlatforms.add('goldapple');
   }
   addZyaAdsXlsx(store, options.zyaAdsXlsx, notes);
   const magnitApiRows = await addGenericMarketplaceApi(store, options, notes, {

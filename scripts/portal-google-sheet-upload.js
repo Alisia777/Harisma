@@ -41,6 +41,7 @@ const SNAPSHOT_KEYS = [
   'sku_matrix',
   'wb_owner_distribution_audit',
   'portal_layer_freshness',
+  'portal_daily_guard',
   'portal_sync_health'
 ];
 const OPTIONAL_SNAPSHOT_KEYS = new Set([
@@ -48,15 +49,16 @@ const OPTIONAL_SNAPSHOT_KEYS = new Set([
   'ozon_feedbacks_summary',
   'order_procurement_ym',
   'product_leaderboard_history',
+  'wb_sales_funnel_report',
   'portal_layer_freshness',
   'portal_daily_guard',
-  'wb_sales_funnel_report',
   'wb_substitution_traffic',
   'wb_substitution_traffic_history'
 ]);
 const INLINE_BODY_LIMIT = 18000;
-const DEFAULT_CHUNK_SIZE = 500000;
-const LARGE_LOGISTICS_CHUNK_SIZE = 500000;
+const DEFAULT_CHUNK_SIZE = 16000;
+const LARGE_LOGISTICS_CHUNK_SIZE = 16000;
+const DEFAULT_CHUNK_CONCURRENCY = 6;
 
 function parseArgs(argv) {
   const args = {};
@@ -87,6 +89,24 @@ function resolveOptions(args) {
 
 function hashPayload(payload) {
   return crypto.createHash('sha256').update(typeof payload === 'string' ? payload : JSON.stringify(payload)).digest('hex');
+}
+
+function chunkUtf8String(text, maxBytes) {
+  const chunks = [];
+  let chunk = '';
+  let chunkBytes = 0;
+  for (const char of text) {
+    const charBytes = Buffer.byteLength(char, 'utf8');
+    if (chunk && chunkBytes + charBytes > maxBytes) {
+      chunks.push(chunk);
+      chunk = '';
+      chunkBytes = 0;
+    }
+    chunk += char;
+    chunkBytes += charBytes;
+  }
+  if (chunk) chunks.push(chunk);
+  return chunks;
 }
 
 function snapshotFilePath(inputDir, snapshotKey) {
@@ -154,10 +174,7 @@ async function uploadSnapshot(snapshotKey, payload, options) {
 
   const payloadText = JSON.stringify(payload);
   const chunkSize = snapshotKey === 'logistics' ? LARGE_LOGISTICS_CHUNK_SIZE : DEFAULT_CHUNK_SIZE;
-  const chunks = [];
-  for (let index = 0; index < payloadText.length; index += chunkSize) {
-    chunks.push(payloadText.slice(index, index + chunkSize));
-  }
+  const chunks = chunkUtf8String(payloadText, chunkSize);
 
   await postRow({
     brand: options.brand,
@@ -174,20 +191,31 @@ async function uploadSnapshot(snapshotKey, payload, options) {
     generated_at: generatedAt
   }, options);
 
-  for (let index = 0; index < chunks.length; index += 1) {
-    const chunk = chunks[index];
-    await postRow({
-      brand: options.brand,
-      snapshot_key: `${snapshotKey}__part__${String(index + 1).padStart(4, '0')}`,
-      payload: { data: chunk },
-      payload_hash: hashPayload(chunk),
-      source: SNAPSHOT_SOURCE,
-      generated_at: generatedAt
-    }, options);
-    if ((index + 1) % 10 === 0 || index + 1 === chunks.length) {
-      console.log(`[upload] ${snapshotKey}: ${index + 1}/${chunks.length}`);
+  const concurrency = Math.max(1, Number(process.env.ALTEA_UPLOAD_CHUNK_CONCURRENCY || DEFAULT_CHUNK_CONCURRENCY) || DEFAULT_CHUNK_CONCURRENCY);
+  let nextIndex = 0;
+  let completed = 0;
+  const workerCount = Math.min(concurrency, chunks.length);
+  async function uploadWorker() {
+    for (;;) {
+      const index = nextIndex;
+      nextIndex += 1;
+      if (index >= chunks.length) return;
+      const chunk = chunks[index];
+      await postRow({
+        brand: options.brand,
+        snapshot_key: `${snapshotKey}__part__${String(index + 1).padStart(4, '0')}`,
+        payload: { data: chunk },
+        payload_hash: hashPayload(chunk),
+        source: SNAPSHOT_SOURCE,
+        generated_at: generatedAt
+      }, options);
+      completed += 1;
+      if (completed % 10 === 0 || completed === chunks.length) {
+        console.log(`[upload] ${snapshotKey}: ${completed}/${chunks.length}`);
+      }
     }
   }
+  await Promise.all(Array.from({ length: workerCount }, () => uploadWorker()));
   return payloadHash;
 }
 

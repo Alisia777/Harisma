@@ -56,6 +56,8 @@
   var memoryStore = {};
   var currentAccess = null;
   var accessObserverStarted = false;
+  var pendingMfaChallenge = null;
+  var loginFlowActive = false;
 
   function assign(target) {
     var output = target || {};
@@ -382,6 +384,26 @@
     applyAccessToDom();
     try {
       window.dispatchEvent(new CustomEvent('altea:accesschange', { detail: currentAccess }));
+    } catch (_) {}
+  }
+
+  function accessRoleText(access) {
+    return access && access.roles && access.roles.length ? access.roles.join(',') : '';
+  }
+
+  function accessAuditMetadata(access, extra) {
+    return assign({
+      accessSource: access && access.source ? access.source : '',
+      allowedViewsCount: access && access.allowedViews ? access.allowedViews.length : 0,
+      roles: access && access.roles ? access.roles : []
+    }, extra || {});
+  }
+
+  function emitSecurityAudit(eventType, payload) {
+    try {
+      if (window.alteaSecurityAudit && typeof window.alteaSecurityAudit.emit === 'function') {
+        window.alteaSecurityAudit.emit(eventType, payload || {});
+      }
     } catch (_) {}
   }
 
@@ -764,6 +786,15 @@
     toggle.setAttribute('aria-label', '\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u043f\u0430\u0440\u043e\u043b\u044c');
     toggle.innerHTML = iconMarkup('eye');
 
+    var mfaField = buildField(form, 'portalAuthMfaCode', 'mfaCode', 'text', 'one-time-code', '\u041a\u043e\u0434 2FA', '000000', '');
+    var mfaInput = mfaField.input;
+    mfaField.field.id = 'portalAuthMfaField';
+    mfaField.field.hidden = true;
+    mfaInput.required = false;
+    mfaInput.inputMode = 'numeric';
+    mfaInput.maxLength = 12;
+    mfaInput.pattern = '[0-9 ]{6,12}';
+
     var honey = document.createElement('input');
     honey.id = 'portalAuthWebsite';
     honey.name = 'website';
@@ -914,6 +945,186 @@
     var elapsed = now() - startedAt;
     var target = LOGIN_MIN_RESPONSE_MS + Math.floor(Math.random() * LOGIN_JITTER_MS);
     return delay(Math.max(0, target - elapsed));
+  }
+
+  function setSubmitText(text) {
+    var submit = document.getElementById('portalAuthSubmit');
+    var label = submit && submit.querySelector ? submit.querySelector('span') : null;
+    if (label) setText(label, text);
+  }
+
+  function setMfaMode(active, email) {
+    var emailNode = document.getElementById('portalAuthEmail');
+    var passwordNode = document.getElementById('portalAuthPassword');
+    var toggle = document.getElementById('portalAuthTogglePassword');
+    var field = document.getElementById('portalAuthMfaField');
+    var codeNode = document.getElementById('portalAuthMfaCode');
+    if (field) field.hidden = !active;
+    if (codeNode) {
+      codeNode.required = !!active;
+      if (!active) codeNode.value = '';
+    }
+    if (emailNode) emailNode.disabled = !!active;
+    if (passwordNode) passwordNode.disabled = !!active;
+    if (toggle) toggle.disabled = !!active;
+    setSubmitText(active ? '\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c \u0432\u0445\u043e\u0434' : '\u0412\u043e\u0439\u0442\u0438 \u0432 \u043f\u043e\u0440\u0442\u0430\u043b');
+    if (active) {
+      setStatus('\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043a\u043e\u0434 2FA \u0438\u0437 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u044f' + (email ? ' \u0434\u043b\u044f ' + email : '') + '.', '');
+      window.setTimeout(function () {
+        if (codeNode) codeNode.focus();
+      }, 60);
+    }
+  }
+
+  function readMfaCode(form) {
+    var node = (form && form.elements && form.elements.mfaCode) || document.getElementById('portalAuthMfaCode');
+    var code = String((node && node.value) || '').replace(/\s+/g, '');
+    if (!/^[0-9]{6,10}$/.test(code)) return '';
+    return code;
+  }
+
+  function firstVerifiedTotpFactor(data) {
+    var factors = [];
+    var index;
+    if (data && data.totp && Object.prototype.toString.call(data.totp) === '[object Array]') factors = data.totp;
+    for (index = 0; index < factors.length; index += 1) {
+      if (factors[index] && factors[index].status === 'verified') return factors[index];
+    }
+    return factors[0] || null;
+  }
+
+  function maybeStartMfaChallenge(authClient, session, access, credentials) {
+    var mfa = authClient && authClient.auth && authClient.auth.mfa;
+    if (!mfa || !mfa.getAuthenticatorAssuranceLevel || !mfa.listFactors || !mfa.challenge) {
+      return Promise.resolve({ pending: false });
+    }
+    return mfa.getAuthenticatorAssuranceLevel()
+      .then(function (aalResult) {
+        var aal = (aalResult && aalResult.data) || {};
+        var needsAal2 = aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2';
+        if (aalResult && aalResult.error) throw aalResult.error;
+        if (!needsAal2) return { pending: false };
+        return mfa.listFactors()
+          .then(function (factorsResult) {
+            var factor;
+            if (factorsResult && factorsResult.error) throw factorsResult.error;
+            factor = firstVerifiedTotpFactor((factorsResult && factorsResult.data) || {});
+            if (!factor || !factor.id) {
+              emitSecurityAudit('mfa_missing', {
+                outcome: 'warning',
+                severity: 'warning',
+                actorEmail: access.email || credentials.email,
+                actorRole: accessRoleText(access),
+                targetType: 'portal',
+                targetName: 'auth-gate',
+                metadata: accessAuditMetadata(access, { method: 'totp', reason: 'aal2_without_verified_factor' })
+              });
+              return { pending: false };
+            }
+            return mfa.challenge({ factorId: factor.id })
+              .then(function (challengeResult) {
+                var challengeId;
+                if (challengeResult && challengeResult.error) throw challengeResult.error;
+                challengeId = challengeResult && challengeResult.data && challengeResult.data.id;
+                if (!challengeId) throw new Error('mfa-challenge-empty');
+                pendingMfaChallenge = {
+                  authClient: authClient,
+                  session: session,
+                  access: access,
+                  email: access.email || credentials.email,
+                  factorId: factor.id,
+                  challengeId: challengeId
+                };
+                setMfaMode(true, access.email || credentials.email);
+                emitSecurityAudit('mfa_challenge', {
+                  outcome: 'ok',
+                  severity: 'notice',
+                  actorEmail: access.email || credentials.email,
+                  actorRole: accessRoleText(access),
+                  targetType: 'portal',
+                  targetName: 'auth-gate',
+                  metadata: accessAuditMetadata(access, { method: 'totp' })
+                });
+                return { pending: true };
+              });
+          });
+      });
+  }
+
+  function verifyPendingMfa(form, submit, startedAt) {
+    var pending = pendingMfaChallenge;
+    var code = readMfaCode(form);
+    var node = document.getElementById('portalAuthMfaCode');
+    if (!pending) {
+      setMfaMode(false);
+      return;
+    }
+    if (!code) {
+      setStatus('\u0412\u0432\u0435\u0434\u0438\u0442\u0435 6-\u0437\u043d\u0430\u0447\u043d\u044b\u0439 \u043a\u043e\u0434 2FA.', 'danger');
+      return;
+    }
+    if (submit) submit.disabled = true;
+    setStatus('\u041f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c \u0432\u0442\u043e\u0440\u043e\u0439 \u0444\u0430\u043a\u0442\u043e\u0440...', '');
+    pending.authClient.auth.mfa.verify({
+      factorId: pending.factorId,
+      challengeId: pending.challengeId,
+      code: code
+    })
+      .then(function (result) {
+        if (result && result.error) throw result.error;
+        return pending.authClient.auth.getSession()
+          .then(function (sessionResult) {
+            return (sessionResult && sessionResult.data && sessionResult.data.session)
+              || (result && result.data && result.data.session)
+              || pending.session;
+          });
+      })
+      .then(function (session) {
+        currentSession = session;
+        window.__ALTEA_AUTH_SESSION__ = session;
+        pendingMfaChallenge = null;
+        setMfaMode(false);
+        return minimumResponseDelay(startedAt).then(function () {
+          setStatus('\u0412\u0445\u043e\u0434 \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d.', 'ok');
+          emitSecurityAudit('mfa_verified', {
+            outcome: 'ok',
+            severity: 'notice',
+            actorEmail: pending.email,
+            actorRole: accessRoleText(pending.access),
+            targetType: 'portal',
+            targetName: 'auth-gate',
+            metadata: accessAuditMetadata(pending.access, { method: 'totp' })
+          });
+          emitSecurityAudit('login_success', {
+            outcome: 'ok',
+            severity: 'info',
+            actorEmail: pending.email,
+            actorRole: accessRoleText(pending.access),
+            targetType: 'portal',
+            targetName: 'auth-gate',
+            metadata: accessAuditMetadata(pending.access, { method: 'email_password_totp' })
+          });
+          loginFlowActive = false;
+          resolveAuth(session);
+        });
+      })
+      .catch(function (error) {
+        emitSecurityAudit('mfa_failed', {
+          outcome: 'failure',
+          severity: 'warning',
+          actorEmail: pending.email,
+          actorRole: accessRoleText(pending.access),
+          targetType: 'portal',
+          targetName: 'auth-gate',
+          metadata: accessAuditMetadata(pending.access, { method: 'totp', reason: error && error.message ? error.message : 'verify_failed' })
+        });
+        setStatus('\u041a\u043e\u0434 2FA \u043d\u0435 \u043f\u043e\u0434\u043e\u0448\u0435\u043b. \u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u043a\u043e\u0434 \u0438 \u043f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435.', 'danger');
+        if (node) {
+          node.value = '';
+          node.focus();
+        }
+        if (submit) submit.disabled = false;
+      });
   }
 
   function waitForSupabase(timeoutMs) {
@@ -1115,6 +1326,7 @@
     var credentials;
     var startedAt;
     var failedAsAuth = false;
+    var accessDeniedLogged = false;
 
     event.preventDefault();
     if (updateThrottleUi()) return;
@@ -1127,14 +1339,26 @@
     form = event.currentTarget;
     submit = document.getElementById('portalAuthSubmit');
     password = document.getElementById('portalAuthPassword');
-    credentials = readCredentials(form);
     startedAt = now();
 
+    if (pendingMfaChallenge) {
+      verifyPendingMfa(form, submit, startedAt);
+      return;
+    }
+
+    credentials = readCredentials(form);
     if (!credentials) {
       setStatus('\u0412\u0432\u0435\u0434\u0438\u0442\u0435 email \u0438 \u043f\u0430\u0440\u043e\u043b\u044c.', 'danger');
       return;
     }
     if (credentials.trapped) {
+      emitSecurityAudit('login_trapped', {
+        outcome: 'failure',
+        severity: 'warning',
+        targetType: 'portal',
+        targetName: 'auth-gate',
+        metadata: { reason: 'honeypot' }
+      });
       lockSubmit(true);
       delay(LOGIN_MIN_RESPONSE_MS + LOGIN_JITTER_MS).then(function () {
         setStatus(GENERIC_LOGIN_ERROR, 'danger');
@@ -1144,6 +1368,7 @@
     }
 
     if (submit) submit.disabled = true;
+    loginFlowActive = true;
     setStatus('\u041f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c \u0434\u043e\u0441\u0442\u0443\u043f...', '');
 
     getClient()
@@ -1162,24 +1387,96 @@
           failedAsAuth = true;
           throw new Error('auth-empty');
         }
+        currentSession = session;
+        window.__ALTEA_AUTH_SESSION__ = session;
         access = resolveAccessForSession(session);
         if (!access.allowedViews.length) {
+          accessDeniedLogged = true;
+          emitSecurityAudit('access_denied', {
+            outcome: 'denied',
+            severity: 'warning',
+            actorEmail: access.email || credentials.email,
+            actorRole: accessRoleText(access),
+            targetType: 'portal',
+            targetName: 'auth-gate',
+            metadata: accessAuditMetadata(access, { reason: 'no_allowed_views' })
+          });
           return getClient()
             .then(function (authClient) { return authClient.auth.signOut(); })
             .catch(function () {})
             .then(function () {
+              clearSessionState();
               throw new Error('access-denied');
             });
         }
-        return minimumResponseDelay(startedAt).then(function () {
-          setStatus('\u0412\u0445\u043e\u0434 \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d.', 'ok');
-          resolveAuth(session);
-        });
+        return getClient()
+          .then(function (authClient) {
+            return maybeStartMfaChallenge(authClient, session, access, credentials);
+          })
+          .then(function (mfaState) {
+            if (mfaState && mfaState.pending) {
+              return minimumResponseDelay(startedAt).then(function () {
+                if (password) password.value = '';
+                if (submit) submit.disabled = false;
+              });
+            }
+            return minimumResponseDelay(startedAt).then(function () {
+              setStatus('\u0412\u0445\u043e\u0434 \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d.', 'ok');
+              emitSecurityAudit('login_success', {
+                outcome: 'ok',
+                severity: 'info',
+                actorEmail: access.email || credentials.email,
+                actorRole: accessRoleText(access),
+                targetType: 'portal',
+                targetName: 'auth-gate',
+                metadata: accessAuditMetadata(access, { method: 'email_password' })
+              });
+              loginFlowActive = false;
+              resolveAuth(session);
+            });
+          });
       })
       .catch(function (error) {
         return minimumResponseDelay(startedAt).then(function () {
           var isAccessDenied = error && error.message === 'access-denied';
           if (failedAsAuth) registerFailure();
+          if (failedAsAuth) {
+            emitSecurityAudit('login_failed', {
+              outcome: 'failure',
+              severity: 'warning',
+              actorEmail: credentials && credentials.email,
+              targetType: 'portal',
+              targetName: 'auth-gate',
+              metadata: { method: 'email_password', reason: 'auth_failed' }
+            });
+          } else if (isAccessDenied && !accessDeniedLogged) {
+            emitSecurityAudit('access_denied', {
+              outcome: 'denied',
+              severity: 'warning',
+              actorEmail: credentials && credentials.email,
+              targetType: 'portal',
+              targetName: 'auth-gate',
+              metadata: { method: 'email_password', reason: 'allowlist_or_role_denied' }
+            });
+          } else if (!isAccessDenied) {
+            emitSecurityAudit('login_error', {
+              outcome: 'failure',
+              severity: 'error',
+              actorEmail: credentials && credentials.email,
+              targetType: 'portal',
+              targetName: 'auth-gate',
+              metadata: { method: 'email_password', reason: error && error.message ? error.message : 'unknown' }
+            });
+            if (currentSession) {
+              getClient().then(function (authClient) {
+                return authClient.auth.signOut();
+              }).catch(function () {});
+              clearSessionState();
+              pendingMfaChallenge = null;
+              setMfaMode(false);
+            }
+          }
+          if (!pendingMfaChallenge) loginFlowActive = false;
           if (window.console && window.console.warn) window.console.warn('[portal-auth] login check failed');
           setStatus(failedAsAuth ? GENERIC_LOGIN_ERROR : (isAccessDenied ? ACCESS_DENIED_ERROR : '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0440\u043e\u0432\u0435\u0440\u0438\u0442\u044c \u0434\u043e\u0441\u0442\u0443\u043f. \u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u0441\u0435\u0442\u044c \u0438 Supabase.'), 'danger');
           if (password) password.value = '';
@@ -1195,7 +1492,13 @@
     if (authListenerReady || !authClient || !authClient.auth || !authClient.auth.onAuthStateChange) return;
     authListenerReady = true;
     authClient.auth.onAuthStateChange(function (event, session) {
-      if (event === 'SIGNED_IN' && session && session.access_token) resolveAuth(session);
+      if (event === 'SIGNED_IN' && session && session.access_token) {
+        if (loginFlowActive || pendingMfaChallenge) {
+          applySession(session);
+          return;
+        }
+        resolveAuth(session);
+      }
       if (event === 'TOKEN_REFRESHED' && session && session.access_token) applySession(session);
       if (event === 'SIGNED_OUT' && currentSession) {
         clearSessionState();
@@ -1206,6 +1509,16 @@
   }
 
   function signOut() {
+    var access = currentAccess || window.__ALTEA_PORTAL_ACCESS__ || {};
+    emitSecurityAudit('logout', {
+      outcome: 'ok',
+      severity: 'info',
+      actorEmail: access.email || '',
+      actorRole: accessRoleText(access),
+      targetType: 'portal',
+      targetName: 'auth-gate',
+      metadata: accessAuditMetadata(access, { method: 'manual' })
+    });
     return getClient()
       .then(function (authClient) {
         return authClient.auth.signOut();
@@ -1249,11 +1562,33 @@
         })
         .then(function (result) {
           var session = result && result.data && result.data.session;
+          var access;
           if (session && session.access_token) {
-            if (!resolveAccessForSession(session).allowedViews.length) {
+            currentSession = session;
+            window.__ALTEA_AUTH_SESSION__ = session;
+            access = resolveAccessForSession(session);
+            if (!access.allowedViews.length) {
+              emitSecurityAudit('access_denied', {
+                outcome: 'denied',
+                severity: 'warning',
+                actorEmail: access.email || '',
+                actorRole: accessRoleText(access),
+                targetType: 'portal',
+                targetName: 'auth-gate',
+                metadata: accessAuditMetadata(access, { reason: 'restored_session_denied' })
+              });
               setStatus(ACCESS_DENIED_ERROR, 'danger');
               return authClient.auth.signOut().catch(function () {});
             }
+            emitSecurityAudit('session_restored', {
+              outcome: 'ok',
+              severity: 'info',
+              actorEmail: access.email || '',
+              actorRole: accessRoleText(access),
+              targetType: 'portal',
+              targetName: 'auth-gate',
+              metadata: accessAuditMetadata(access, { method: 'stored_session' })
+            });
             resolveAuth(session);
           }
         })

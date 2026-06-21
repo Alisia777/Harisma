@@ -724,13 +724,15 @@ $magnitDailyArguments = @(
 )
 
 $magnitApiConfigured = (
-  (-not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_API_TOKEN) -or -not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_API_KEY) -or -not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_MARKET_API_TOKEN) -or -not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_MARKET_API_KEY)) -and
-  (-not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_API_BASE_URL) -or -not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_MARKET_API_BASE_URL)) -and
-  (-not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_SALES_PATH) -or -not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_MARKET_SALES_PATH))
+  (-not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_API_TOKEN) -or -not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_API_KEY) -or -not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_MARKET_API_TOKEN) -or -not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_MARKET_API_KEY))
 )
 $retailNetworkSalesConfigured = (-not [string]::IsNullOrWhiteSpace($env:ALTEA_RETAIL_NETWORK_SALES_XLSX) -and (Test-Path -LiteralPath $env:ALTEA_RETAIL_NETWORK_SALES_XLSX))
-if ($magnitApiConfigured -or $retailNetworkSalesConfigured) {
-  Write-Output "[sync] Magnit Market daily normalization skipped because API/retail-network source is active"
+if ($magnitApiConfigured) {
+  Write-Output "[sync] Magnit Market Partner API normalization started"
+  Invoke-NodeStep -StepName "Magnit Market Partner API normalization" -Arguments $magnitDailyArguments -Attempts 2 -RetryDelaySeconds 20
+  Write-Output "[sync] Magnit Market Partner API normalization completed"
+} elseif ($retailNetworkSalesConfigured) {
+  Write-Output "[sync] Magnit Market daily normalization skipped because retail-network source is active"
 } else {
   Write-Output "[sync] Magnit Market daily normalization started"
   Invoke-NodeStep -StepName "Magnit Market daily normalization" -Arguments $magnitDailyArguments -Attempts 2 -RetryDelaySeconds 20

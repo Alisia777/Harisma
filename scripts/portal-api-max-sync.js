@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync, execFileSync } = require('child_process');
+const { emitSecurityAudit } = require('./portal-security-audit-event');
 
 function parseArgs(argv) {
   const args = {};
@@ -732,6 +733,47 @@ function buildSteps(options, env) {
   return steps;
 }
 
+function stepAuditSummary(steps) {
+  const apiStepIds = new Set([
+    'wb',
+    'ozon',
+    'yandex-market',
+    'extra-marketplace-workbook',
+    'extra-marketplace-merge',
+    'magnit',
+    'wb-ads',
+    'yandex-ads-summary'
+  ]);
+  return steps
+    .filter((step) => apiStepIds.has(step.id))
+    .map((step) => ({
+      id: step.id,
+      name: step.name,
+      configured: !step.skipReason,
+      skippedReason: step.skipReason || ''
+    }));
+}
+
+function configuredApiNames(summary) {
+  return summary
+    .filter((item) => item.configured)
+    .map((item) => item.id);
+}
+
+async function emitApiAudit(eventType, payload) {
+  try {
+    return await emitSecurityAudit({
+      eventType,
+      source: 'portal-api-max-sync',
+      targetType: 'marketplace_api',
+      ...payload
+    });
+  } catch (error) {
+    console.warn(`[api-max] security audit skipped: ${error?.message || String(error)}`);
+    return null;
+  }
+}
+
 function windowStepArgs(step, from, to, inputFile, outputFile) {
   return [
     step.script,
@@ -822,7 +864,7 @@ function runChunkedPlatformStep(step, options, context) {
   return record;
 }
 
-function main() {
+async function main() {
   const parsedArgs = parseArgs(process.argv);
   const options = resolveOptions(parsedArgs);
   if (parsedArgs.skipProtectedScope) options.skipIuDrr = true;
@@ -839,18 +881,51 @@ function main() {
     strict: options.strict
   };
   const steps = buildSteps(options, env);
+  const apiSummary = stepAuditSummary(steps);
+  const configuredApis = configuredApiNames(apiSummary);
   const startedAt = new Date().toISOString();
   console.log(`[api-max] window ${options.from}..${options.to}; mode=${options.mode}; platforms=${options.platforms.join(',')}`);
+  await emitApiAudit('api_connected', {
+    outcome: configuredApis.length ? 'ok' : 'warning',
+    severity: configuredApis.length ? 'notice' : 'warning',
+    targetName: configuredApis.join(',') || 'none',
+    metadata: {
+      mode: options.mode,
+      window: { from: options.from, to: options.to },
+      requestedPlatforms: options.platforms,
+      configuredApis: apiSummary,
+      dryRun: options.dryRun
+    }
+  });
 
   const records = [];
-  for (const step of steps) {
-    records.push(step.chunked
-      ? runChunkedPlatformStep(step, options, context)
-      : runNodeStep(step, step.args, context));
+  let manifest;
+  try {
+    for (const step of steps) {
+      records.push(step.chunked
+        ? runChunkedPlatformStep(step, options, context)
+        : runNodeStep(step, step.args, context));
+    }
+  } catch (error) {
+    await emitApiAudit('api_sync_finished', {
+      outcome: 'failure',
+      severity: 'error',
+      targetName: configuredApis.join(',') || 'none',
+      metadata: {
+        mode: options.mode,
+        window: { from: options.from, to: options.to },
+        requestedPlatforms: options.platforms,
+        configuredApis: apiSummary,
+        records,
+        error: error?.message || String(error),
+        dryRun: options.dryRun
+      }
+    });
+    throw error;
   }
 
   const platformTrends = readJson(options.outputFile, {});
-  const manifest = {
+  manifest = {
     schema: 'portal-api-max-sync-v1',
     generatedAt: new Date().toISOString(),
     startedAt,
@@ -868,12 +943,29 @@ function main() {
   };
   if (!options.dryRun) writeJson(options.manifestFile, manifest);
   console.log(JSON.stringify(manifest, null, 2));
+  await emitApiAudit('api_sync_finished', {
+    outcome: manifest.status === 'ok' ? 'ok' : 'failure',
+    severity: manifest.status === 'ok' ? 'notice' : 'error',
+    targetName: configuredApis.join(',') || 'none',
+    metadata: {
+      mode: options.mode,
+      window: manifest.window,
+      requestedPlatforms: options.platforms,
+      configuredApis: apiSummary,
+      status: manifest.status,
+      dryRun: options.dryRun,
+      stepStatuses: records.map((record) => ({
+        id: record.id,
+        status: record.status,
+        exitCode: record.exitCode || 0,
+        skippedReason: record.skippedReason || ''
+      }))
+    }
+  });
   if (manifest.status !== 'ok' && options.strict) process.exitCode = 1;
 }
 
-try {
-  main();
-} catch (error) {
+main().catch((error) => {
   console.error(error?.stack || String(error));
   process.exitCode = 1;
-}
+});

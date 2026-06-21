@@ -7,6 +7,9 @@ const PLATFORM_KEY = 'magnit';
 const PLATFORM_LABEL = 'Магнит Маркет';
 const SUPPORT_KEY = 'mm';
 const SOURCE_MODE = 'magnit-market-csv-daily';
+const API_SOURCE_MODE = 'magnit-market-partner-api';
+const DEFAULT_API_BASE_URL = 'https://b2b-api.magnit.ru';
+const DEFAULT_API_HISTORY_FROM = '2026-01-01';
 
 function parseArgs(argv) {
   const args = { command: 'sync' };
@@ -218,6 +221,13 @@ function resolveOptions(args) {
   const smartPriceInputFile = path.resolve(args['smart-price-input-file'] || path.join(baseDataDir, 'smart_price_overlay.json'));
   const smartPriceOutputFile = path.resolve(args['smart-price-output-file'] || (outputDir ? path.join(outputDir, 'smart_price_overlay.json') : smartPriceInputFile));
   const rawOutputDir = path.resolve(args['raw-output-dir'] || path.join(outputDir || baseDataDir, 'raw'));
+  const apiKey = normalizeText(
+    args['api-key']
+    || process.env.ALTEA_MAGNIT_API_KEY
+    || process.env.ALTEA_MAGNIT_API_TOKEN
+    || process.env.ALTEA_MAGNIT_MARKET_API_KEY
+    || process.env.ALTEA_MAGNIT_MARKET_API_TOKEN
+  );
   const salesCsv = existingPath(
     args['sales-csv'],
     process.env.ALTEA_MAGNIT_SALES_CSV,
@@ -249,6 +259,13 @@ function resolveOptions(args) {
     skusFile: path.resolve(args['skus-file'] || path.join(baseDataDir, 'skus.json')),
     skuAliasesFile: path.resolve(args['sku-aliases-file'] || path.join(baseDataDir, 'sku_aliases.json')),
     lastGoodFile: path.resolve(args['last-good-file'] || path.join(baseDataDir, 'last_good', 'platform_trends.json')),
+    apiKey,
+    apiBaseUrl: normalizeText(args['api-base-url'] || process.env.ALTEA_MAGNIT_API_BASE_URL || process.env.ALTEA_MAGNIT_MARKET_API_BASE_URL || DEFAULT_API_BASE_URL),
+    apiFrom: isoDate(args['api-from'] || args.from || args['date-from'] || process.env.ALTEA_MAGNIT_HISTORY_FROM || DEFAULT_API_HISTORY_FROM),
+    apiTo: isoDate(args['api-to'] || args.to || args['date-to'] || new Date()),
+    apiPageSize: Math.max(1, Math.min(1000, Number(args['api-page-size'] || process.env.ALTEA_MAGNIT_API_PAGE_SIZE || 1000) || 1000)),
+    apiMaxPages: Math.max(1, Number(args['api-max-pages'] || process.env.ALTEA_MAGNIT_API_MAX_PAGES || 200) || 200),
+    preferApi: args['prefer-api'] !== undefined ? asBool(args['prefer-api'], true) : true,
     salesCsv,
     servicesCsv,
     from: isoDate(args.from || args['date-from'] || ''),
@@ -566,7 +583,386 @@ function buildMagnitSnapshot(options, skus, skuAliases) {
   };
 }
 
-function dailyPoint(row, dayOffset = 0) {
+function apiDateTime(dateKey, endOfDay = false) {
+  const date = isoDate(dateKey);
+  if (!date) return '';
+  const shifted = endOfDay ? addDays(date, 1) : date;
+  return `${shifted}T00:00:00+03:00`;
+}
+
+function magnitApiHeaders(apiKey) {
+  return {
+    'X-Api-Key': apiKey,
+    'X-API-Key': apiKey,
+    'Api-Key': apiKey,
+    'Content-Type': 'application/json',
+    Accept: 'application/json'
+  };
+}
+
+function magnitApiUrl(options, endpoint) {
+  return `${String(options.apiBaseUrl || DEFAULT_API_BASE_URL).replace(/\/+$/, '')}/${String(endpoint || '').replace(/^\/+/, '')}`;
+}
+
+async function magnitApiPost(options, endpoint, body) {
+  const response = await fetch(magnitApiUrl(options, endpoint), {
+    method: 'POST',
+    headers: magnitApiHeaders(options.apiKey),
+    body: JSON.stringify(body || {})
+  });
+  const text = await response.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch {
+    payload = { raw: text };
+  }
+  if (!response.ok) {
+    const detail = typeof payload?.message === 'string' ? payload.message : text.slice(0, 700);
+    throw new Error(`${endpoint}: HTTP ${response.status}${detail ? ` ${detail}` : ''}`);
+  }
+  return payload;
+}
+
+function responseItems(payload) {
+  const candidates = [
+    payload?.result?.items,
+    payload?.result?.orders,
+    payload?.result,
+    payload?.items,
+    payload?.orders,
+    payload?.data?.items,
+    payload?.data?.result?.items
+  ];
+  return candidates.find(Array.isArray) || [];
+}
+
+function responseNextPageToken(payload) {
+  return normalizeText(
+    payload?.result?.next_page_token
+    || payload?.result?.nextPageToken
+    || payload?.next_page_token
+    || payload?.nextPageToken
+    || payload?.pagination?.next_page_token
+    || payload?.result?.pagination?.next_page_token
+  );
+}
+
+function responseTotalPages(payload) {
+  const value = Number(
+    payload?.result?.pagination?.total_pages
+    || payload?.pagination?.total_pages
+    || payload?.result?.total_pages
+    || payload?.total_pages
+  );
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function buildMagnitApiSkuFilters(skuAliases = {}) {
+  const skuIds = new Set();
+  const sellerSkuIds = new Set();
+  for (const row of activeAliasRows(skuAliases)) {
+    if (!aliasPlatformMatches(row.platform || row.marketplace || row.sourcePlatform)) continue;
+    const value = normalizeText(row.api_sku || row.apiSku || row.alias || row.value || row.marketplace_sku || row.external_sku);
+    if (!value) continue;
+    const note = normalizeText(row.note || row.source || '').toLowerCase();
+    const isNumeric = /^\d+$/.test(value);
+    if (isNumeric && (note.includes('product') || value.length <= 10)) {
+      skuIds.add(Number(value));
+    } else {
+      sellerSkuIds.add(value);
+    }
+  }
+  return {
+    sku_ids: Array.from(skuIds),
+    seller_sku_ids: Array.from(sellerSkuIds)
+  };
+}
+
+async function fetchMagnitSkuInfo(options, endpoint, filters) {
+  const rows = [];
+  for (let page = 0; page < options.apiMaxPages; page += 1) {
+    const filter = {};
+    if (Array.isArray(filters.sku_ids) && filters.sku_ids.length) filter.sku_ids = filters.sku_ids;
+    if (Array.isArray(filters.seller_sku_ids) && filters.seller_sku_ids.length) filter.seller_sku_ids = filters.seller_sku_ids;
+    const payload = await magnitApiPost(options, endpoint, {
+      filter,
+      pagination: {
+        dir: 'ASC',
+        page,
+        page_size: options.apiPageSize
+      }
+    });
+    const pageRows = responseItems(payload);
+    rows.push(...pageRows);
+    const totalPages = responseTotalPages(payload);
+    if (totalPages && page + 1 >= totalPages) break;
+    if (pageRows.length < options.apiPageSize) break;
+  }
+  return rows;
+}
+
+async function fetchMagnitOrders(options) {
+  const rows = [];
+  let pageToken = '';
+  for (let page = 0; page < options.apiMaxPages; page += 1) {
+    const body = {
+      dir: 'ASC',
+      page_size: options.apiPageSize,
+      created_at: {
+        from: apiDateTime(options.apiFrom),
+        to: apiDateTime(options.apiTo, true)
+      }
+    };
+    if (pageToken) body.page_token = pageToken;
+    const payload = await magnitApiPost(options, '/api/seller/v1/orders/list', body);
+    const pageRows = responseItems(payload);
+    rows.push(...pageRows);
+    pageToken = responseNextPageToken(payload);
+    if (!pageToken || pageRows.length < options.apiPageSize) break;
+  }
+  return rows;
+}
+
+function apiArticleBucket(articleMap, skuLookup, sourceArticleKey, fallbackName = '') {
+  const sourceKey = normalizeText(sourceArticleKey);
+  if (!sourceKey) return null;
+  const sku = skuLookup.get(normalizeKey(sourceKey)) || null;
+  const articleKey = articleKeyForSku(sku, sourceKey);
+  const name = articleNameForSku(sku, fallbackName || articleKey);
+  const key = normalizeKey(articleKey);
+  const bucket = articleMap.get(key) || {
+    platformKey: PLATFORM_KEY,
+    platformLabel: PLATFORM_LABEL,
+    articleKey,
+    article: articleKey,
+    sourceArticleKey: sourceKey,
+    sourceArticleKeys: new Set(),
+    skuMatched: Boolean(sku),
+    name,
+    owner: ownerForSku(sku),
+    dailyMap: new Map(),
+    source: API_SOURCE_MODE
+  };
+  bucket.sourceArticleKeys.add(sourceKey);
+  bucket.skuMatched = bucket.skuMatched || Boolean(sku);
+  bucket.name = bucket.name || name;
+  bucket.owner = bucket.owner || ownerForSku(sku);
+  articleMap.set(key, bucket);
+  return bucket;
+}
+
+function apiRowKey(row) {
+  return normalizeText(row?.sku_id ?? row?.skuId ?? row?.seller_sku_id ?? row?.sellerSkuId ?? row?.seller_sku ?? row?.sellerSku);
+}
+
+function mapInfoBySourceKey(rows = []) {
+  const map = new Map();
+  for (const row of rows) {
+    [
+      row?.sku_id,
+      row?.skuId,
+      row?.seller_sku_id,
+      row?.sellerSkuId,
+      row?.seller_sku,
+      row?.sellerSku
+    ].map(normalizeText).filter(Boolean).forEach((key) => map.set(normalizeKey(key), row));
+  }
+  return map;
+}
+
+function stockFromInfo(row) {
+  if (!row || typeof row !== 'object') return 0;
+  const direct = numberOrZero(row.stock || row.quantity || row.available_stock || row.availableStock);
+  const details = Array.isArray(row.stock_info_details) ? row.stock_info_details : (Array.isArray(row.stockInfoDetails) ? row.stockInfoDetails : []);
+  const detailed = details.reduce((sum, item) => sum + numberOrZero(item?.stock || item?.quantity || item?.available_stock), 0);
+  return detailed || direct;
+}
+
+function enrichArticlesWithApiInfo(articles, priceRows, stockRows) {
+  const priceMap = mapInfoBySourceKey(priceRows);
+  const stockMap = mapInfoBySourceKey(stockRows);
+  return articles.map((article) => {
+    const sourceKeys = Array.isArray(article.sourceArticleKeys) ? article.sourceArticleKeys : [article.sourceArticleKey, article.articleKey];
+    const priceRow = sourceKeys.map((key) => priceMap.get(normalizeKey(key))).find(Boolean);
+    const stockRow = sourceKeys.map((key) => stockMap.get(normalizeKey(key))).find(Boolean);
+    const currentPrice = firstNumber(priceRow?.price, priceRow?.old_price, article.currentPrice);
+    const stock = stockFromInfo(stockRow);
+    return {
+      ...article,
+      currentPrice,
+      currentClientPrice: currentPrice,
+      currentFillPrice: currentPrice,
+      stock,
+      apiPrice: priceRow ? {
+        skuId: normalizeText(priceRow.sku_id ?? priceRow.skuId),
+        sellerSkuId: normalizeText(priceRow.seller_sku_id ?? priceRow.sellerSkuId),
+        price: numberOrZero(priceRow.price),
+        oldPrice: numberOrZero(priceRow.old_price ?? priceRow.oldPrice),
+        commissionPercent: numberOrZero(priceRow.commission_percent ?? priceRow.commissionPercent),
+        timestamp: normalizeText(priceRow.timestamp || '')
+      } : null,
+      apiStock: stockRow ? {
+        skuId: normalizeText(stockRow.sku_id ?? stockRow.skuId),
+        sellerSkuId: normalizeText(stockRow.seller_sku_id ?? stockRow.sellerSkuId),
+        stock
+      } : null
+    };
+  });
+}
+
+async function buildMagnitApiSnapshot(options, skus, skuAliases) {
+  if (!options.preferApi || !options.apiKey) return null;
+
+  const skuLookup = buildSkuLookup(skus, skuAliases);
+  const filters = buildMagnitApiSkuFilters(skuAliases);
+  const apiErrors = [];
+  let priceRows = [];
+  let stockRows = [];
+  const orders = await fetchMagnitOrders(options);
+
+  try {
+    priceRows = await fetchMagnitSkuInfo(options, '/api/seller/v1/products/sku/price/info', filters);
+  } catch (error) {
+    apiErrors.push(error.message);
+  }
+
+  try {
+    stockRows = await fetchMagnitSkuInfo(options, '/api/seller/v1/products/sku/stocks/info', filters);
+  } catch (error) {
+    apiErrors.push(error.message);
+  }
+
+  const platformDaily = new Map();
+  const articleMap = new Map();
+  const normalizedOrders = [];
+  const skipped = { ordersWithoutDate: 0, itemsWithoutSku: 0, emptyOrders: 0 };
+
+  for (const order of orders) {
+    const orderDate = isoDate(order?.created_at || order?.createdAt || order?.cutoff_time || order?.cutoffTime);
+    if (!orderDate) {
+      skipped.ordersWithoutDate += 1;
+      continue;
+    }
+    if (!inRequestedRange(orderDate, { from: options.apiFrom, to: options.apiTo })) continue;
+    const items = Array.isArray(order?.items) ? order.items : [];
+    if (!items.length) skipped.emptyOrders += 1;
+    const status = normalizeText(order?.status).toUpperCase();
+    const isCanceledOrder = /CANCEL|CANCELED|CANCELLED|ОТМЕН/i.test(status);
+
+    for (const item of items) {
+      const skuId = normalizeText(item?.sku_id ?? item?.skuId ?? item?.sku?.id);
+      if (!skuId) {
+        skipped.itemsWithoutSku += 1;
+        continue;
+      }
+      const quantity = numberOrZero(item?.quantity ?? item?.qty);
+      const canceledQuantity = numberOrZero(item?.canceled_quantity ?? item?.canceledQuantity);
+      const orderedUnits = Math.max(0, quantity + canceledQuantity);
+      const price = firstNumber(
+        item?.financial_data?.payment_price,
+        item?.financialData?.paymentPrice,
+        item?.financial_data?.price,
+        item?.financialData?.price,
+        item?.price
+      );
+      const revenue = orderedUnits * price;
+      const cancelUnits = isCanceledOrder ? orderedUnits : canceledQuantity;
+      const cancelRevenue = cancelUnits * price;
+      const patch = {
+        ordersUnits: orderedUnits,
+        ordersRevenue: revenue,
+        cancellationsUnits: cancelUnits,
+        cancelRevenue
+      };
+      addBucketMetric(platformDaily, orderDate, patch);
+      const article = apiArticleBucket(articleMap, skuLookup, skuId);
+      if (article) addBucketMetric(article.dailyMap, orderDate, patch);
+      normalizedOrders.push({
+        date: orderDate,
+        orderId: normalizeText(order?.order_id || order?.orderId || ''),
+        status,
+        sourceArticleKey: skuId,
+        articleKey: article?.articleKey || '',
+        skuMatched: Boolean(article?.skuMatched),
+        quantity: orderedUnits,
+        canceledQuantity: cancelUnits,
+        price,
+        revenue,
+        source: API_SOURCE_MODE
+      });
+    }
+  }
+
+  const dailyDates = [...platformDaily.keys()].sort();
+  const firstDate = dailyDates[0] || options.apiFrom || '';
+  const lastDate = dailyDates[dailyDates.length - 1] || options.apiTo || '';
+  const fullDates = enumerateDates(options.apiFrom || firstDate, options.apiTo || lastDate);
+  const series = fullDates
+    .map((date) => platformDaily.get(date) || emptyMetricBucket(date))
+    .map((row, index, list) => dailyPoint(row, list.length - 1 - index, API_SOURCE_MODE));
+
+  const articles = enrichArticlesWithApiInfo(
+    [...articleMap.values()]
+      .map((article) => buildArticle(article, fullDates))
+      .filter((article) => article.daily.length)
+      .sort((left, right) => left.articleKey.localeCompare(right.articleKey)),
+    priceRows,
+    stockRows
+  );
+
+  const diagnostics = articleDiagnostics(articles);
+  diagnostics.source = API_SOURCE_MODE;
+  diagnostics.dailyMode = true;
+  diagnostics.ordersRows = orders.length;
+  diagnostics.normalizedOrderRows = normalizedOrders.length;
+  diagnostics.priceRows = priceRows.length;
+  diagnostics.stockRows = stockRows.length;
+  diagnostics.firstDate = firstDate;
+  diagnostics.lastDate = lastDate;
+  diagnostics.window = { from: options.apiFrom, to: options.apiTo };
+  diagnostics.skuFilter = {
+    skuIds: filters.sku_ids.length,
+    sellerSkuIds: filters.seller_sku_ids.length
+  };
+  diagnostics.skipped = skipped;
+  diagnostics.apiErrors = apiErrors;
+
+  return {
+    key: PLATFORM_KEY,
+    label: PLATFORM_LABEL,
+    sourceMode: API_SOURCE_MODE,
+    series,
+    articles,
+    diagnostics,
+    raw: {
+      schema: 'portal-magnit-market-raw-v2',
+      generatedAt: new Date().toISOString(),
+      sourceMode: API_SOURCE_MODE,
+      window: {
+        from: options.apiFrom,
+        to: options.apiTo
+      },
+      diagnostics,
+      orders: normalizedOrders,
+      prices: priceRows.map((row) => ({
+        skuId: normalizeText(row.sku_id ?? row.skuId),
+        sellerSkuId: normalizeText(row.seller_sku_id ?? row.sellerSkuId),
+        price: numberOrZero(row.price),
+        oldPrice: numberOrZero(row.old_price ?? row.oldPrice),
+        commissionPercent: numberOrZero(row.commission_percent ?? row.commissionPercent),
+        timestamp: normalizeText(row.timestamp || '')
+      })),
+      stocks: stockRows.map((row) => ({
+        skuId: normalizeText(row.sku_id ?? row.skuId),
+        sellerSkuId: normalizeText(row.seller_sku_id ?? row.sellerSkuId),
+        stock: stockFromInfo(row)
+      }))
+    }
+  };
+}
+
+function dailyPoint(row, dayOffset = 0, sourceMode = SOURCE_MODE) {
   const revenue = numberOrZero(row.ordersRevenue);
   const units = numberOrZero(row.ordersUnits);
   const netPayout = numberOrZero(row.netPayout);
@@ -592,14 +988,14 @@ function dailyPoint(row, dayOffset = 0) {
     netPayout,
     adsSpend: numberOrZero(row.adsSpend),
     price,
-    source: SOURCE_MODE
+    source: sourceMode
   };
 }
 
 function buildArticle(article, fullDates) {
   const daily = fullDates
     .map((date) => article.dailyMap.get(date) || emptyMetricBucket(date))
-    .map((row, index, list) => dailyPoint(row, list.length - 1 - index))
+    .map((row, index, list) => dailyPoint(row, list.length - 1 - index, article.source || SOURCE_MODE))
     .filter((row) => (
       row.revenue > 0
       || row.units > 0
@@ -683,7 +1079,7 @@ function buildArticle(article, fullDates) {
     estimatedMarginPct: latestMarginPct,
     monthly,
     daily: daily.map(roundMetrics),
-    source: SOURCE_MODE
+    source: article.source || SOURCE_MODE
   };
 }
 
@@ -790,6 +1186,7 @@ function platformRevenue(platform = {}) {
 
 function replaceMagnitPlatform(platformTrends, magnit) {
   const next = deepClone(platformTrends || {});
+  const sourceMode = magnit.sourceMode || SOURCE_MODE;
   const existingPlatforms = Array.isArray(next.platforms) ? next.platforms : [];
   const result = [];
   let inserted = false;
@@ -841,14 +1238,14 @@ function replaceMagnitPlatform(platformTrends, magnit) {
     ...extraMarketplace,
     generatedAt: next.generatedAt,
     asOfDate: next.latestMarketplaceDate,
-    source: SOURCE_MODE,
+    source: sourceMode,
     platforms: {
       ...(extraMarketplace.platforms || {}),
       [PLATFORM_KEY]: {
         key: PLATFORM_KEY,
         label: PLATFORM_LABEL,
         supportKey: SUPPORT_KEY,
-        source: SOURCE_MODE,
+        source: sourceMode,
         asOfDate: magnit.diagnostics.lastDate || '',
         window: {
           from: magnit.diagnostics.firstDate || '',
@@ -860,7 +1257,7 @@ function replaceMagnitPlatform(platformTrends, magnit) {
     }
   };
   next.magnitMarketSync = {
-    source: SOURCE_MODE,
+    source: sourceMode,
     generatedAt: next.generatedAt,
     diagnostics: magnit.diagnostics
   };
@@ -869,19 +1266,20 @@ function replaceMagnitPlatform(platformTrends, magnit) {
 
 function updateSmartPriceOverlay(overlay, magnit, asOfDate) {
   if (!overlay || typeof overlay !== 'object') return null;
+  const sourceMode = magnit.sourceMode || SOURCE_MODE;
   const next = deepClone(overlay);
   next.platforms = next.platforms && typeof next.platforms === 'object' ? next.platforms : {};
   next.platforms[PLATFORM_KEY] = {
     key: PLATFORM_KEY,
     label: PLATFORM_LABEL,
-    source: SOURCE_MODE,
+    source: sourceMode,
     generatedAt: new Date().toISOString(),
     asOfDate: asOfDate || magnit.diagnostics.lastDate || '',
     rows: magnit.articles.map((row) => ({
       ...row,
       platformKey: PLATFORM_KEY,
       platformLabel: PLATFORM_LABEL,
-      sourceMode: SOURCE_MODE
+      sourceMode
     }))
   };
   next.generatedAt = new Date().toISOString();
@@ -889,14 +1287,14 @@ function updateSmartPriceOverlay(overlay, magnit, asOfDate) {
     ...(next.extraMarketplace || {}),
     generatedAt: next.generatedAt,
     asOfDate: asOfDate || magnit.diagnostics.lastDate || '',
-    source: SOURCE_MODE,
+    source: sourceMode,
     platforms: {
       ...((next.extraMarketplace || {}).platforms || {}),
       [PLATFORM_KEY]: {
         key: PLATFORM_KEY,
         label: PLATFORM_LABEL,
         articleCount: magnit.articles.length,
-        source: SOURCE_MODE
+        source: sourceMode
       }
     }
   };
@@ -919,15 +1317,54 @@ function protectAgainstSilentZero(options, currentPlatformTrends, lastGoodPlatfo
   }
 }
 
-function main() {
+async function main() {
   const options = resolveOptions(parseArgs(process.argv));
-  if (options.command !== 'sync') throw new Error(`Unsupported command: ${options.command}`);
+  if (!['sync', 'probe'].includes(options.command)) throw new Error(`Unsupported command: ${options.command}`);
   const platformTrends = readJson(options.inputFile, {});
   const lastGoodPlatformTrends = readJson(options.lastGoodFile, {});
   const skus = readJson(options.skusFile, []);
   const skuAliases = readJson(options.skuAliasesFile, { aliases: [] });
   const smartPriceOverlay = readJson(options.smartPriceInputFile, null);
-  const magnit = buildMagnitSnapshot(options, skus, skuAliases);
+  if (options.command === 'probe') {
+    if (!options.apiKey) {
+      console.log(JSON.stringify({
+        status: 'missing-api-key',
+        sourceMode: API_SOURCE_MODE,
+        expectedEnv: [
+          'ALTEA_MAGNIT_API_KEY',
+          'ALTEA_MAGNIT_API_TOKEN',
+          'ALTEA_MAGNIT_MARKET_API_KEY',
+          'ALTEA_MAGNIT_MARKET_API_TOKEN'
+        ],
+        apiBaseUrl: options.apiBaseUrl,
+        window: { from: options.apiFrom, to: options.apiTo }
+      }, null, 2));
+      return;
+    }
+    const apiSnapshot = await buildMagnitApiSnapshot(options, skus, skuAliases);
+    if (!options.dryRun) writeJson(options.rawOutputFile, apiSnapshot.raw);
+    console.log(JSON.stringify({
+      status: 'ok',
+      sourceMode: apiSnapshot.sourceMode,
+      apiBaseUrl: options.apiBaseUrl,
+      rawOutputFile: options.dryRun ? '' : options.rawOutputFile,
+      window: apiSnapshot.diagnostics.window,
+      ordersRows: apiSnapshot.diagnostics.ordersRows,
+      normalizedOrderRows: apiSnapshot.diagnostics.normalizedOrderRows,
+      priceRows: apiSnapshot.diagnostics.priceRows,
+      stockRows: apiSnapshot.diagnostics.stockRows,
+      articles: apiSnapshot.articles.length,
+      revenue: Math.round(apiSnapshot.diagnostics.revenue * 100) / 100,
+      firstDate: apiSnapshot.diagnostics.firstDate,
+      lastDate: apiSnapshot.diagnostics.lastDate,
+      apiErrors: apiSnapshot.diagnostics.apiErrors
+    }, null, 2));
+    return;
+  }
+
+  const magnit = options.apiKey
+    ? await buildMagnitApiSnapshot(options, skus, skuAliases)
+    : buildMagnitSnapshot(options, skus, skuAliases);
   protectAgainstSilentZero(options, platformTrends, lastGoodPlatformTrends, magnit.missing ? null : magnit);
   if (magnit.missing) {
     console.log(JSON.stringify({ status: 'skipped', reason: magnit.message, dryRun: options.dryRun }, null, 2));
@@ -959,7 +1396,7 @@ function main() {
     revenue: Math.round(magnit.diagnostics.revenue * 100) / 100,
     firstDate: magnit.diagnostics.firstDate,
     lastDate: magnit.diagnostics.lastDate,
-    sourceMode: SOURCE_MODE,
+    sourceMode: magnit.sourceMode || SOURCE_MODE,
     warnings: [
       ...(magnit.diagnostics.lastDate && nextPlatformTrends.latestMarketplaceDate && magnit.diagnostics.lastDate < nextPlatformTrends.latestMarketplaceDate
         ? [`Magnit latest source date ${magnit.diagnostics.lastDate} is older than portal latest marketplace date ${nextPlatformTrends.latestMarketplaceDate}.`]
@@ -969,7 +1406,10 @@ function main() {
 }
 
 try {
-  main();
+  main().catch((error) => {
+    console.error(error?.stack || String(error));
+    process.exitCode = 1;
+  });
 } catch (error) {
   console.error(error?.stack || String(error));
   process.exitCode = 1;

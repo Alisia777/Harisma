@@ -1,0 +1,58 @@
+{
+  "generatedAt": "2026-06-19T09:58:10.934Z",
+  "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
+  "sourceMode": "google-csv-tabs",
+  "sourceGids": {
+    "dim_sku": "4625365",
+    "dim_sku_aliases": "",
+    "fact_logistics_daily_cluster_warehouse_sku": "2003059667",
+    "dim_warehouse": "1429580252",
+    "loyalty_system": ""
+  },
+  "sourceWarnings": [
+    "loyalty_system sheet is optional and was not found in the Google workbook"
+  ],
+  "updatedSkus": 143,
+  "skuAliases": {
+    "sheetRows": 0,
+    "localRows": 341,
+    "normalizedRows": 341,
+    "appliedRows": 0,
+    "unmatchedTargetRows": 0,
+    "unmatchedTargets": []
+  },
+  "dashboard": {
+    "latest_marketplace_date": "2026-06-19",
+    "month_plan_units": 173171,
+    "month_fact_units": 217634.0004,
+    "month_fact_revenue": 228118640.2003,
+    "completion_to_date_pct": 1.9844,
+    "company_plan_revenue": 285818670,
+    "company_plan_to_date_revenue": 181018491,
+    "company_completion_to_date_pct": 1.2602
+  },
+  "platformTrends": {
+    "latest_marketplace_date": "2026-06-19",
+    "points": 19
+  },
+  "loyaltySystem": {
+    "sheet_name": "",
+    "latest_date": "",
+    "rows": 0,
+    "spend": 0
+  },
+  "iuDrr": {
+    "latest_date": "2026-06-17",
+    "rows": 2,
+    "latest_daily_date": "2026-06-17",
+    "generated_at": "2026-06-18T08:26:12.627Z"
+  },
+  "logistics": {
+    "latest_logistics_date": "2026-06-19",
+    "ozon_cluster_count": 31,
+    "ozon_warehouse_count": 61,
+    "wb_warehouse_count": 29,
+    "central_warehouse_stock": 440341,
+    "warehouse_stock_overlay_rows": 134
+  }
+}

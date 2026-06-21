@@ -10509,7 +10509,534 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
   skuPlanFactRestoreFocus(options.focusState);
 }
 
-window.renderSkuPlanFact = renderSkuPlanFact;
+window.__ALTEA_SKU_PLAN_FACT_DESIGN_V1__ = true;
+
+function skuPlanFactV1NormalizePlatform(value = 'all') {
+  let key = String(value || 'all').trim().toLowerCase();
+  if (!key || key === 'undefined' || key === 'null') key = 'all';
+  if (['ym', 'yandex', 'yandexmarket', 'yamarket'].includes(key)) key = 'ya';
+  if (['ga', 'goldenapple', 'gold-apple', 'gold_apple'].includes(key)) key = 'goldapple';
+  if (['mm', 'magnitmarket', 'magnit-market'].includes(key)) key = 'magnit';
+  if (['letual', 'letuall'].includes(key)) key = 'letu';
+  return key === 'all' || SKU_PLAN_FACT_PLATFORMS.includes(key) ? key : 'all';
+}
+
+function skuPlanFactV1GlobalPlatformFilter(fallback = 'all') {
+  const candidates = [
+    document.documentElement?.dataset?.marketplace,
+    document.body?.dataset?.marketplace,
+    document.documentElement?.dataset?.platform,
+    document.body?.dataset?.platform,
+    state.filters?.platform,
+    state.filters?.market
+  ];
+  try {
+    candidates.push(window.localStorage?.getItem('altea.portal.marketplace'));
+  } catch {
+    candidates.push('');
+  }
+  for (const candidate of candidates) {
+    if (candidate === null || candidate === undefined || String(candidate).trim() === '') continue;
+    const normalized = skuPlanFactV1NormalizePlatform(candidate);
+    if (normalized !== 'all') return normalized;
+    if (String(candidate).trim().toLowerCase() === 'all') return 'all';
+  }
+  return skuPlanFactV1NormalizePlatform(fallback);
+}
+
+function skuPlanFactV1SyncGlobalPlatform() {
+  const platform = skuPlanFactV1GlobalPlatformFilter('all');
+  const filters = skuPlanFactFilters();
+  if (filters.platform !== platform) filters.platform = platform;
+  return platform;
+}
+
+function skuPlanFactV1AdvancedFilters() {
+  state.skuPlanFactAdvancedFiltersV1 = state.skuPlanFactAdvancedFiltersV1 || {};
+  return state.skuPlanFactAdvancedFiltersV1;
+}
+
+function skuPlanFactV1AdvancedDefinitions() {
+  return [
+    { key: 'belowPlan', label: 'Ниже плана' },
+    { key: 'marginRisk', label: 'Риск маржи' },
+    { key: 'adsAbovePlan', label: 'Реклама выше плана' },
+    { key: 'noOwner', label: 'Без owner' },
+    { key: 'apiWithoutPair', label: 'API без пары' },
+    { key: 'missingPlan', label: 'План не задан' }
+  ];
+}
+
+function skuPlanFactV1AdvancedCount() {
+  const advanced = skuPlanFactV1AdvancedFilters();
+  return skuPlanFactV1AdvancedDefinitions().filter((item) => advanced[item.key]).length;
+}
+
+function skuPlanFactV1RowMatchesAdvanced(row = {}, model = {}, advanced = {}) {
+  const metric = skuPlanFactDisplayMetric(row, model);
+  const hasPlan = numberOrZero(metric.planRevenue) > 0 || numberOrZero(metric.planToDateRevenue) > 0;
+  if (advanced.belowPlan && !(metric.planToDateRevenue > 0 && metric.factRevenue < metric.planToDateRevenue)) return false;
+  if (advanced.marginRisk) {
+    const margin = skuPlanFactNormalizeRatio(metric.marginPct);
+    const planMargin = skuPlanFactNormalizeRatio(metric.planMarginPct);
+    if (!(margin !== null && ((planMargin !== null && margin < planMargin) || margin < 0.28))) return false;
+  }
+  if (advanced.adsAbovePlan && !(metric.planDrr !== null && metric.drr !== null && metric.drr > metric.planDrr)) return false;
+  if (advanced.noOwner && String(row.owner || '').trim()) return false;
+  if (advanced.apiWithoutPair && !row.syntheticUnmapped) return false;
+  if (advanced.missingPlan && hasPlan) return false;
+  return true;
+}
+
+function skuPlanFactV1Rows(model = {}) {
+  const rows = Array.isArray(model.rows) ? model.rows : [];
+  const advanced = skuPlanFactV1AdvancedFilters();
+  if (!skuPlanFactV1AdvancedCount()) return rows;
+  return rows.filter((row) => skuPlanFactV1RowMatchesAdvanced(row, model, advanced));
+}
+
+function skuPlanFactV1DateMode(filters = {}, model = {}) {
+  if (filters.dateMode === 'month') return 'month';
+  if (filters.dateFrom && filters.dateTo && filters.dateFrom !== filters.dateTo) return 'range';
+  if (model.periodStart && model.periodEnd && model.periodStart !== model.periodEnd && filters.dateMode !== 'manual') return 'range';
+  return 'date';
+}
+
+function skuPlanFactV1ApplyDateMode(rootId, mode, model = {}) {
+  const filters = skuPlanFactFilters();
+  const date = model.periodEnd || model.selectedDate || model.maxFactDate || '';
+  if (mode === 'month') {
+    filters.month = model.monthKey || (date ? date.slice(0, 7) : 'latest');
+    filters.date = '';
+    filters.dateFrom = '';
+    filters.dateTo = '';
+    filters.dateMode = 'month';
+  } else if (mode === 'range') {
+    filters.dateFrom = filters.dateFrom || model.periodStart || (date ? `${date.slice(0, 7)}-01` : '');
+    filters.dateTo = filters.dateTo || date;
+    filters.date = filters.dateTo;
+    filters.month = filters.dateTo ? filters.dateTo.slice(0, 7) : (model.monthKey || 'latest');
+    filters.dateMode = 'manual';
+  } else {
+    filters.date = date;
+    filters.dateFrom = '';
+    filters.dateTo = date;
+    filters.month = date ? date.slice(0, 7) : (model.monthKey || 'latest');
+    filters.dateMode = date ? 'manual' : 'latest';
+  }
+  renderSkuPlanFact(rootId);
+}
+
+function skuPlanFactV1Reset(rootId) {
+  state.skuPlanFactFilters = {
+    search: '',
+    owner: 'all',
+    status: 'all',
+    platform: skuPlanFactV1GlobalPlatformFilter('all'),
+    month: 'latest',
+    date: '',
+    dateFrom: '',
+    dateTo: '',
+    dateMode: 'latest',
+    sort: 'gap',
+    sortDir: 'asc',
+    __truthFilterVersion: SKU_PLAN_FACT_FILTER_VERSION
+  };
+  state.skuPlanFactAdvancedFiltersV1 = {};
+  renderSkuPlanFact(rootId);
+}
+
+function skuPlanFactV1MetricText(value, formatter, fallback = '—') {
+  if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) return fallback;
+  return formatter(value);
+}
+
+function skuPlanFactV1Progress(value, platform = 'all') {
+  const ratio = value === null || value === undefined || !Number.isFinite(Number(value)) ? 0 : Math.max(0, Number(value));
+  const width = Math.min(100, ratio * 100);
+  return `<span class="pf-v1-progress" style="${skuPlanFactCardStyle(platform, ratio)}"><i style="width:${width.toFixed(1)}%"></i></span>`;
+}
+
+function skuPlanFactV1PlatformPills(row = {}) {
+  const active = SKU_PLAN_FACT_PLATFORMS
+    .map((platform) => ({ platform, metric: row.platforms?.[platform] || row[platform] || null }))
+    .filter((entry) => skuPlanFactPlatformHasActivity(entry.metric));
+  if (!active.length) return '<span class="pf-v1-platform muted">—</span>';
+  return active.map(({ platform, metric }) => `
+    <span class="pf-v1-platform" style="${skuPlanFactCardStyle(platform, metric.completionToDate)}">
+      <b>${escapeHtml(skuPlanFactPlatformLabel(platform))}</b>
+      <em>${skuPlanFactV1MetricText(metric.completionToDate, fmt.pct)}</em>
+    </span>
+  `).join('');
+}
+
+function skuPlanFactV1Status(row = {}, metric = {}) {
+  if (row.syntheticUnmapped) return { label: 'API без пары', tone: 'warn' };
+  if (!(numberOrZero(metric.planRevenue) > 0 || numberOrZero(metric.planToDateRevenue) > 0)) return { label: 'План не задан', tone: 'warn' };
+  if (metric.planDrr !== null && metric.drr !== null && metric.drr > metric.planDrr) return { label: 'Риск рекламы', tone: 'danger' };
+  const margin = skuPlanFactNormalizeRatio(metric.marginPct);
+  const planMargin = skuPlanFactNormalizeRatio(metric.planMarginPct);
+  if (margin !== null && planMargin !== null && margin < planMargin) return { label: 'Риск маржи', tone: 'danger' };
+  if (metric.completionToDate !== null && metric.completionToDate < 0.9) return { label: 'Ниже плана', tone: 'warn' };
+  return { label: 'OK', tone: 'ok' };
+}
+
+function skuPlanFactStatusLabel(value = '') {
+  return {
+    all: 'Актуальные',
+    active: 'Без вывода',
+    with_plan: 'Есть план',
+    under_plan: 'Ниже плана',
+    no_fact: 'План есть, факта нет',
+    unmapped: 'API без пары',
+    matrix_problem: 'Проблемы матрицы',
+    missing_owner: 'Без owner',
+    duplicate_risk: 'Риск дубля'
+  }[value] || value;
+}
+
+function skuPlanFactSortLabel(value = '') {
+  return {
+    gap: 'Разрыв: хуже сверху',
+    completion: 'Выполнение',
+    margin: 'Маржа',
+    fact: 'Факт оборота',
+    plan: 'План',
+    drr: 'ДРР',
+    ad: 'Реклама',
+    substitution: 'WB подмены',
+    article: 'Артикул',
+    owner: 'Owner'
+  }[value] || value;
+}
+
+function skuPlanFactV1ActiveChipsHtml(model = {}) {
+  const filters = model.filters || {};
+  const chips = [];
+  if (filters.search) chips.push({ key: 'search', label: `Поиск: ${filters.search}` });
+  if (filters.owner && filters.owner !== 'all') chips.push({ key: 'owner', label: filters.owner });
+  if (filters.status && filters.status !== 'all') chips.push({ key: 'status', label: skuPlanFactStatusLabel(filters.status) });
+  if (filters.sort && filters.sort !== 'gap') chips.push({ key: 'sort', label: `Сортировка: ${skuPlanFactSortLabel(filters.sort)}` });
+  if (model.periodStart || model.periodEnd) chips.push({ key: 'period', label: `Период: ${model.periodStart || '—'} · ${model.periodEnd || model.selectedDate || '—'}` });
+  const advanced = skuPlanFactV1AdvancedFilters();
+  skuPlanFactV1AdvancedDefinitions().forEach((item) => {
+    if (advanced[item.key]) chips.push({ key: `adv:${item.key}`, label: item.label });
+  });
+  if (!chips.length) return '<div class="pf-v1-active-chips"><span class="muted small">Фильтры не мешают цифрам.</span></div>';
+  return `
+    <div class="pf-v1-active-chips">
+      ${chips.map((chip) => `<button type="button" data-sku-plan-fact-clear="${escapeHtml(chip.key)}">${escapeHtml(chip.label)} <span>×</span></button>`).join('')}
+    </div>
+  `;
+}
+
+function skuPlanFactV1PlatformBoardHtml(model = {}) {
+  return `
+    <div class="pf-v1-platform-board" aria-label="Статус площадок">
+      ${(model.platforms || SKU_PLAN_FACT_PLATFORMS).map((platform) => {
+        const summary = skuPlanFactPlatformSummary(model, platform, { scope: 'allRows', respectFilters: true });
+        const level = skuPlanFactCompletionLevel(summary.completionToDate);
+        return `
+          <article class="sku-plan-platform-card pf-v1-platform-card level-${level}" style="${skuPlanFactCardStyle(platform, summary.completionToDate)}">
+            <span class="sku-plan-platform-card__top">
+              <strong>${escapeHtml(summary.label)}</strong>
+              <em>${fmt.int(summary.rows)} SKU</em>
+            </span>
+            <span class="sku-plan-platform-card__value">${skuPlanFactV1MetricText(summary.completionToDate, fmt.pct)}</span>
+            <span class="sku-plan-platform-card__meta">${fmt.money(summary.factRevenue)} / ${fmt.money(summary.planToDateRevenue)}</span>
+            <span class="sku-plan-platform-card__bar"><i></i></span>
+            <span class="sku-plan-platform-card__foot">
+              <b class="${skuPlanFactDeltaClass(summary.gapToDate)}">${fmt.money(summary.gapToDate)}</b>
+              <span><em>${fmt.int(summary.underPlan)} ниже плана</em></span>
+            </span>
+          </article>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function skuPlanFactV1KpiHtml(model = {}, rows = []) {
+  const totals = model.totals || {};
+  const underPlan = rows.filter((row) => {
+    const metric = skuPlanFactDisplayMetric(row, model);
+    return metric.planToDateRevenue > 0 && metric.factRevenue < metric.planToDateRevenue;
+  }).length;
+  const cards = [
+    { title: 'KPI-факт оборота', value: fmt.money(totals.factRevenue), hint: `план к дате ${fmt.money(totals.planToDateRevenue)}`, tone: skuPlanFactDeltaClass(totals.gapToDate) },
+    { title: 'Выполнение к дате', value: skuPlanFactV1MetricText(totals.completionToDate, fmt.pct), hint: `месячный план ${skuPlanFactV1MetricText(totals.completionMonth, fmt.pct)}`, tone: skuPlanFactTone(totals.completionToDate) },
+    { title: 'SKU ниже плана', value: `${fmt.int(underPlan)} / ${fmt.int(rows.length)}`, hint: `в фокусе ${fmt.int(totals.underPlan || 0)} SKU`, tone: underPlan ? 'warn' : 'ok' },
+    { title: 'Маржа', value: skuPlanFactV1MetricText(totals.marginPct, fmt.pct), hint: `план ${skuPlanFactV1MetricText(totals.planMarginPct, fmt.pct)}`, tone: skuPlanFactMarginTone(totals.marginPct) },
+    { title: 'Реклама / ДРР', value: `${fmt.money(totals.adSpend)} · ${skuPlanFactV1MetricText(totals.drr, fmt.pct)}`, hint: `план ${fmt.money(totals.planAdSpend)} · ${skuPlanFactV1MetricText(totals.planDrr, fmt.pct)}`, tone: totals.drr !== null && totals.planDrr !== null && totals.drr > totals.planDrr ? 'warn' : 'ok' }
+  ];
+  return `<div class="pf-v1-kpis">${cards.map((card) => `
+    <article class="pf-v1-kpi ${escapeHtml(card.tone || '')}">
+      <span>${escapeHtml(card.title)}</span>
+      <strong>${card.value}</strong>
+      <em>${escapeHtml(card.hint)}</em>
+    </article>
+  `).join('')}</div>`;
+}
+
+function skuPlanFactV1DrawerHtml(model = {}) {
+  const advanced = skuPlanFactV1AdvancedFilters();
+  const open = Boolean(state.skuPlanFactDrawerOpenV1);
+  return `
+    <aside class="pf-v1-drawer ${open ? 'is-open' : ''}" aria-hidden="${open ? 'false' : 'true'}">
+      <div class="pf-v1-drawer__head">
+        <div>
+          <h3>Расширенные фильтры</h3>
+          <p>Фильтруют строки, но не меняют план-факт и формулы.</p>
+        </div>
+        <button type="button" class="pf-v1-icon-btn" data-sku-plan-fact-drawer-close aria-label="Закрыть">×</button>
+      </div>
+      <div class="pf-v1-drawer__group">
+        <strong>Качество данных и фокус</strong>
+        ${skuPlanFactV1AdvancedDefinitions().map((item) => `
+          <label class="pf-v1-check">
+            <input type="checkbox" data-sku-plan-fact-advanced="${escapeHtml(item.key)}" ${advanced[item.key] ? 'checked' : ''}>
+            <span>${escapeHtml(item.label)}</span>
+          </label>
+        `).join('')}
+      </div>
+      <div class="pf-v1-drawer__actions">
+        <button type="button" data-sku-plan-fact-advanced-reset>Сбросить всё</button>
+        <button type="button" data-sku-plan-fact-drawer-close>Применить · ${fmt.int(skuPlanFactV1Rows(model).length)} SKU</button>
+      </div>
+    </aside>
+  `;
+}
+
+function skuPlanFactV1RowHtml(row = {}, model = {}) {
+  const metric = skuPlanFactDisplayMetric(row, model);
+  const openAttrs = skuPlanFactOpenAttrs(row, model, metric);
+  const status = skuPlanFactV1Status(row, metric);
+  const attention = status.tone === 'danger' || (metric.completionToDate !== null && metric.completionToDate < 0.9);
+  const platform = metric.tonePlatform || metric.platform || 'all';
+  const planToDateUnits = metric.planToDateUnits ?? metric.planUnits;
+  const avgCheck = metric.factUnits > 0 ? metric.factRevenue / metric.factUnits : null;
+  return `
+    <tr class="pf-v1-row sku-plan-fact-row ${attention ? 'is-attention' : ''}" style="${skuPlanFactCardStyle(platform, metric.completionToDate)}"${openAttrs}>
+      <td>${row.syntheticUnmapped ? `<strong>${escapeHtml(row.article || row.articleKey || 'API без пары')}</strong>` : `<button class="link-btn" type="button"${openAttrs}>${escapeHtml(row.article || row.articleKey || '')}</button>`}<div class="muted small">${escapeHtml(row.name || '')}</div></td>
+      <td><strong>${escapeHtml(row.owner || '—')}</strong><div class="muted small">${escapeHtml(row.status || '')}</div></td>
+      <td><div class="pf-v1-platforms">${skuPlanFactV1PlatformPills(row)}</div></td>
+      <td><strong>${skuPlanFactV1MetricText(metric.completionToDate, fmt.pct)}</strong>${skuPlanFactV1Progress(metric.completionToDate, platform)}</td>
+      <td>${fmt.money(metric.planToDateRevenue)}</td>
+      <td><strong>${fmt.money(metric.factRevenue)}</strong></td>
+      <td class="${skuPlanFactDeltaClass(metric.gapToDate)}">${fmt.money(metric.gapToDate)}</td>
+      <td>${fmt.money(metric.planRevenue)}</td>
+      <td>${skuPlanFactV1MetricText(metric.planMarginPct, fmt.pct)}</td>
+      <td><strong>${skuPlanFactV1MetricText(metric.marginPct, fmt.pct)}</strong></td>
+      <td>${skuPlanFactV1MetricText(metric.marginRub, fmt.money)}</td>
+      <td>${skuPlanFactV1MetricText(metric.planAdSpendToDate, fmt.money)}</td>
+      <td><strong>${fmt.money(metric.adSpend)}</strong></td>
+      <td>${skuPlanFactV1MetricText(metric.planDrr, fmt.pct)}</td>
+      <td><strong>${skuPlanFactV1MetricText(metric.drr, fmt.pct)}</strong></td>
+      <td>${fmt.int(planToDateUnits)} / ${fmt.int(metric.factUnits)}</td>
+      <td>${skuPlanFactV1MetricText(avgCheck, fmt.money)}</td>
+      <td><span class="pf-v1-status ${escapeHtml(status.tone)}">${escapeHtml(status.label)}</span></td>
+      <td>${row.syntheticUnmapped ? '<span class="muted small">—</span>' : `<button class="sku-plan-open-card" type="button"${openAttrs} aria-label="Открыть карточку SKU">→</button>`}</td>
+    </tr>
+  `;
+}
+
+function renderSkuPlanFactV1(rootId = 'view-sku-plan-fact', options = {}) {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  if (options.force !== true && !skuPlanFactLazyDataReady()) {
+    skuPlanFactRenderLoading(rootId);
+    return;
+  }
+  skuPlanFactV1SyncGlobalPlatform();
+  const model = skuPlanFactBuildModel();
+  const filters = model.filters;
+  const totals = model.totals || {};
+  const visibleRows = skuPlanFactV1Rows(model);
+  const ownerOptions = model.owners.map((owner) => `<option value="${escapeHtml(owner)}" ${filters.owner === owner ? 'selected' : ''}>${escapeHtml(owner)}</option>`).join('');
+  const monthOptions = model.months.map((monthKey) => `<option value="${escapeHtml(monthKey)}" ${model.monthKey === monthKey ? 'selected' : ''}>${escapeHtml(skuPlanFactMonthLabel(monthKey))}</option>`).join('');
+  const dateAttrs = [model.dateMin ? `min="${escapeHtml(model.dateMin)}"` : '', model.dateMax ? `max="${escapeHtml(model.dateMax)}"` : ''].filter(Boolean).join(' ');
+  const dateMode = skuPlanFactV1DateMode(filters, model);
+  const rowsHtml = visibleRows.length ? visibleRows.map((row) => skuPlanFactV1RowHtml(row, model)).join('') : '<tr><td colspan="19"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>';
+  const matrixSummary = typeof skuMatrixSummary === 'function' ? skuMatrixSummary() : {};
+  const matrixGeneratedAt = state.skuMatrix?.generatedAt || state.skuMatrix?.updatedAt || '';
+
+  root.innerHTML = `
+    <div class="sku-plan-fact-v1" data-plan-fact-design="v1" data-sku-plan-active-platform="${escapeHtml(filters.platform || 'all')}">
+      <div class="pf-v1-head">
+        <div>
+          <div class="pf-v1-kicker">SKU · план · факт · маржа · реклама</div>
+          <h2>План-факт без потери рабочих цифр</h2>
+          <p>Сначала фильтр и итог, затем площадки и подробная таблица по каждому артикулу.</p>
+        </div>
+        <div class="pf-v1-head__actions">
+          ${badge(`${fmt.int(visibleRows.length)} из ${fmt.int(model.rows.length)} SKU`, 'info')}
+          ${badge(`${fmt.int(model.unmappedCount || 0)} API без пары`, model.unmappedCount ? 'warn' : 'ok')}
+          ${matrixSummary.duplicateRiskCount ? badge(`${fmt.int(matrixSummary.duplicateRiskCount)} риск дубля`, 'danger') : ''}
+          ${badge(`матрица ${matrixGeneratedAt ? fmt.date(matrixGeneratedAt) : '—'}`, matrixGeneratedAt ? 'ok' : 'warn')}
+          <button class="quick-chip" type="button" data-sku-plan-fact-refresh>Обновить</button>
+          <button class="quick-chip primary" type="button" data-sku-plan-fact-export>Выгрузить в Excel</button>
+        </div>
+      </div>
+
+      <div class="sku-plan-fact-toolbar pf-v1-filter-dock">
+        <div class="pf-v1-filter-grid">
+          <label class="pf-v1-control pf-v1-search"><span>Поиск</span><input id="skuPlanFactSearch" placeholder="SKU, название, owner..." value="${escapeHtml(filters.search)}"></label>
+          <div class="pf-v1-control"><span>Период</span><div class="pf-v1-segmented" role="group" aria-label="Режим периода">
+            <button type="button" data-sku-plan-fact-date-mode="date" class="${dateMode === 'date' ? 'active' : ''}">На дату</button>
+            <button type="button" data-sku-plan-fact-date-mode="range" class="${dateMode === 'range' ? 'active' : ''}">Период</button>
+            <button type="button" data-sku-plan-fact-date-mode="month" class="${dateMode === 'month' ? 'active' : ''}">Месяц</button>
+          </div></div>
+          <label class="pf-v1-control ${dateMode === 'month' ? 'is-hidden' : ''}"><span>${dateMode === 'range' ? 'Дата с' : 'Дата'}</span><input id="skuPlanFactDateFrom" type="date" value="${escapeHtml(dateMode === 'range' ? (model.periodStart || '') : (model.periodEnd || model.selectedDate || ''))}" ${dateAttrs}></label>
+          <label class="pf-v1-control ${dateMode === 'range' ? '' : 'is-hidden'}"><span>Дата по</span><input id="skuPlanFactDateTo" type="date" value="${escapeHtml(model.periodEnd || model.selectedDate || '')}" ${dateAttrs}></label>
+          <label class="pf-v1-control ${dateMode === 'month' ? '' : 'is-hidden'}"><span>Месяц</span><select id="skuPlanFactMonth">${monthOptions}</select></label>
+          <label class="pf-v1-control"><span>Owner</span><select id="skuPlanFactOwner"><option value="all" ${filters.owner === 'all' ? 'selected' : ''}>Все сотрудники</option>${ownerOptions}</select></label>
+          <label class="pf-v1-control"><span>Статус</span><select id="skuPlanFactStatus">
+            <option value="all" ${filters.status === 'all' ? 'selected' : ''}>Актуальные</option>
+            <option value="active" ${filters.status === 'active' ? 'selected' : ''}>Без вывода</option>
+            <option value="with_plan" ${filters.status === 'with_plan' ? 'selected' : ''}>Есть план</option>
+            <option value="under_plan" ${filters.status === 'under_plan' ? 'selected' : ''}>Ниже плана</option>
+            <option value="no_fact" ${filters.status === 'no_fact' ? 'selected' : ''}>План есть, факта нет</option>
+            <option value="unmapped" ${filters.status === 'unmapped' ? 'selected' : ''}>API без пары</option>
+            <option value="matrix_problem" ${filters.status === 'matrix_problem' ? 'selected' : ''}>Проблемы матрицы</option>
+            <option value="missing_owner" ${filters.status === 'missing_owner' ? 'selected' : ''}>Без owner</option>
+            <option value="duplicate_risk" ${filters.status === 'duplicate_risk' ? 'selected' : ''}>Риск дубля</option>
+          </select></label>
+          <label class="pf-v1-control"><span>Сортировка</span><select id="skuPlanFactSort">
+            <option value="gap" ${filters.sort === 'gap' ? 'selected' : ''}>Разрыв: хуже сверху</option>
+            <option value="completion" ${filters.sort === 'completion' ? 'selected' : ''}>Выполнение</option>
+            <option value="margin" ${filters.sort === 'margin' ? 'selected' : ''}>Маржа</option>
+            <option value="fact" ${filters.sort === 'fact' ? 'selected' : ''}>Факт оборота</option>
+            <option value="plan" ${filters.sort === 'plan' ? 'selected' : ''}>План</option>
+            <option value="drr" ${filters.sort === 'drr' ? 'selected' : ''}>ДРР</option>
+            <option value="ad" ${filters.sort === 'ad' ? 'selected' : ''}>Реклама</option>
+            <option value="substitution" ${filters.sort === 'substitution' ? 'selected' : ''}>WB подмены</option>
+            <option value="article" ${filters.sort === 'article' ? 'selected' : ''}>Артикул</option>
+            <option value="owner" ${filters.sort === 'owner' ? 'selected' : ''}>Owner</option>
+          </select></label>
+          <div class="pf-v1-filter-actions">
+            <button type="button" data-sku-plan-fact-drawer-open>Фильтры · ${skuPlanFactV1AdvancedCount()}</button>
+            <button type="button" data-sku-plan-fact-reset>Сбросить</button>
+            <button type="button" data-sku-plan-fact-scroll-table>Колонки</button>
+          </div>
+        </div>
+        ${skuPlanFactV1ActiveChipsHtml(model)}
+      </div>
+
+      ${skuPlanFactV1KpiHtml(model, visibleRows)}
+      ${skuPlanFactV1PlatformBoardHtml(model)}
+
+      <div class="sku-plan-fact-card pf-v1-table-card">
+        <div class="section-subhead">
+          <div>
+            <h3>Таблица по артикулам</h3>
+            <div class="muted small">Первые колонки закреплены; полный набор метрик доступен горизонтальным скроллом.</div>
+          </div>
+          <div class="badge-stack">${badge(`${fmt.int(visibleRows.length)} SKU · ${fmt.money(totals.factRevenue)}`, 'info')}</div>
+        </div>
+        <div class="table-wrap sku-plan-fact-table pf-v1-table-wrap">
+          <table class="pf-v1-table">
+            <thead>
+              <tr class="pf-v1-groups"><th colspan="3">Идентификация</th><th colspan="5">Оборот</th><th colspan="3">Маржа</th><th colspan="4">Реклама</th><th colspan="4">Операции</th></tr>
+              <tr>
+                ${skuPlanFactSortHeader('article', 'SKU')}
+                ${skuPlanFactSortHeader('owner', 'Owner')}
+                ${skuPlanFactSortHeader('platform', 'Площадки')}
+                ${skuPlanFactSortHeader('completion', 'Вып.')}
+                <th>План к дате</th>
+                ${skuPlanFactSortHeader('fact', 'Факт')}
+                ${skuPlanFactSortHeader('gap', 'Разрыв')}
+                ${skuPlanFactSortHeader('plan', 'План мес.')}
+                <th>Маржа план</th>
+                ${skuPlanFactSortHeader('margin', 'Маржа факт')}
+                <th>Маржа ₽</th>
+                <th>Реклама план</th>
+                ${skuPlanFactSortHeader('ad', 'Реклама факт')}
+                <th>ДРР план</th>
+                ${skuPlanFactSortHeader('drr', 'ДРР факт')}
+                <th>Шт. план / факт</th>
+                <th>Средний чек</th>
+                ${skuPlanFactSortHeader('action', 'Статус')}
+                <th>Карточка</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+      </div>
+      ${skuPlanFactV1DrawerHtml(model)}
+    </div>
+  `;
+
+  root.querySelector('#skuPlanFactSearch')?.addEventListener('input', (event) => {
+    skuPlanFactSetFilter(rootId, 'search', event.target.value, { debounce: 100, focusState: skuPlanFactFocusState(event.target) });
+  });
+  root.querySelectorAll('[data-sku-plan-fact-date-mode]').forEach((button) => {
+    button.addEventListener('click', () => skuPlanFactV1ApplyDateMode(rootId, button.dataset.skuPlanFactDateMode, model));
+  });
+  root.querySelector('#skuPlanFactMonth')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'month', event.target.value); });
+  root.querySelector('#skuPlanFactDateFrom')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, dateMode === 'range' ? 'dateFrom' : 'date', event.target.value); });
+  root.querySelector('#skuPlanFactDateTo')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'dateTo', event.target.value); });
+  root.querySelector('#skuPlanFactOwner')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'owner', event.target.value); });
+  root.querySelector('#skuPlanFactStatus')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'status', event.target.value); });
+  root.querySelector('#skuPlanFactSort')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'sort', event.target.value); });
+  root.querySelectorAll('[data-sku-plan-fact-sort]').forEach((button) => {
+    button.addEventListener('click', () => skuPlanFactToggleSort(rootId, button.dataset.skuPlanFactSort));
+  });
+  root.querySelector('[data-sku-plan-fact-reset]')?.addEventListener('click', () => skuPlanFactV1Reset(rootId));
+  root.querySelector('[data-sku-plan-fact-scroll-table]')?.addEventListener('click', () => {
+    root.querySelector('.pf-v1-table-wrap')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+  root.querySelector('[data-sku-plan-fact-drawer-open]')?.addEventListener('click', () => {
+    state.skuPlanFactDrawerOpenV1 = true;
+    renderSkuPlanFact(rootId);
+  });
+  root.querySelectorAll('[data-sku-plan-fact-drawer-close]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.skuPlanFactDrawerOpenV1 = false;
+      renderSkuPlanFact(rootId);
+    });
+  });
+  root.querySelectorAll('[data-sku-plan-fact-advanced]').forEach((input) => {
+    input.addEventListener('change', () => {
+      const advanced = skuPlanFactV1AdvancedFilters();
+      advanced[input.dataset.skuPlanFactAdvanced] = input.checked;
+      renderSkuPlanFact(rootId);
+    });
+  });
+  root.querySelector('[data-sku-plan-fact-advanced-reset]')?.addEventListener('click', () => {
+    state.skuPlanFactAdvancedFiltersV1 = {};
+    renderSkuPlanFact(rootId);
+  });
+  root.querySelectorAll('[data-sku-plan-fact-clear]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const key = button.dataset.skuPlanFactClear;
+      const filters = skuPlanFactFilters();
+      if (key === 'search') filters.search = '';
+      else if (key === 'owner') filters.owner = 'all';
+      else if (key === 'status') filters.status = 'all';
+      else if (key === 'sort') {
+        filters.sort = 'gap';
+        filters.sortDir = skuPlanFactDefaultSortDir('gap');
+      } else if (key === 'period') {
+        filters.month = 'latest';
+        filters.date = '';
+        filters.dateFrom = '';
+        filters.dateTo = '';
+        filters.dateMode = 'latest';
+      } else if (key?.startsWith('adv:')) {
+        const advanced = skuPlanFactV1AdvancedFilters();
+        delete advanced[key.slice(4)];
+      }
+      renderSkuPlanFact(rootId);
+    });
+  });
+  root.querySelector('[data-sku-plan-fact-refresh]')?.addEventListener('click', (event) => { refreshSkuPlanFactData(event.currentTarget, rootId); });
+  root.querySelector('[data-sku-plan-fact-export]')?.addEventListener('click', () => downloadSkuPlanFactExcel(model));
+  skuPlanFactRestoreFocus(options.focusState);
+}
+
+window.renderSkuPlanFact = renderSkuPlanFactV1;
+try { renderSkuPlanFact = renderSkuPlanFactV1; } catch {}
 window.renderSkuContour = renderSkuContour;
 window.renderPortalDataHealth = renderPortalDataHealth;
 window.renderOosControl = renderOosControl;

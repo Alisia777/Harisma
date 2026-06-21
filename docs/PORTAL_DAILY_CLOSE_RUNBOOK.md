@@ -4,7 +4,7 @@ This runbook is the operational contract for the non-IU portal data truth close.
 It documents the current production blocker and the exact evidence required before
 the portal can be considered self-updating from GitHub.
 
-IU/DRR is intentionally outside this flow.
+The protected finance scope is intentionally outside this flow.
 
 ## Current Status
 
@@ -137,7 +137,7 @@ Do not weaken these rules for a green run:
 - Do not publish if WB/Ozon/Yandex are not on the same cutoff.
 - Do not publish if Supabase readback hashes are missing or mismatched.
 - Do not edit generated JSON manually as the permanent fix.
-- Do not change IU/DRR files, formulas, or UI as part of non-IU daily close.
+- Do not change protected finance files, formulas, or UI as part of non-IU daily close.
 
 The correct response to a blocked close is to fix the source, builder, sync
 configuration, or repository secrets, then rerun the workflow.

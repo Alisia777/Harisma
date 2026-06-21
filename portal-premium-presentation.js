@@ -73,9 +73,7 @@
   });
 
   var renderFrame = 0;
-  var observer = null;
   var renderLock = false;
-  var guardTimer = 0;
 
   function state() {
     return window.__alteaAppState || window.state || {};
@@ -1064,6 +1062,14 @@
     shell.className = 'altea-premium-app';
     shell.hidden = true;
     shell.innerHTML = [
+      '<div class="altea-premium-ambient" aria-hidden="true">',
+      '<video class="altea-premium-ambient-video" data-premium-ambient-video autoplay muted loop playsinline preload="metadata" poster="assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-poster.jpg">',
+      '<source src="assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-source.webm" type="video/webm">',
+      '<source src="assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion.mp4" type="video/mp4">',
+      '</video>',
+      '<span class="altea-premium-ambient-orbit altea-premium-ambient-orbit--a"></span>',
+      '<span class="altea-premium-ambient-orbit altea-premium-ambient-orbit--b"></span>',
+      '</div>',
       '<aside class="altea-premium-shell-sidebar">',
       '<div class="altea-premium-shell-brand">',
       '<span class="altea-premium-shell-mark"><img src="assets/altea-imperial-mark.svg" alt=""></span>',
@@ -1087,6 +1093,20 @@
     ].join('');
     document.body.appendChild(shell);
     return shell;
+  }
+
+  function warmAmbientVideo(shell) {
+    var video = shell && shell.querySelector('[data-premium-ambient-video]');
+    if (!video) return;
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    var play = video.play && video.play();
+    if (play && typeof play.catch === 'function') {
+      play.catch(function () {
+        shell.classList.add('altea-premium-video-fallback');
+      });
+    }
   }
 
   function ensureStage(routeId) {
@@ -1121,6 +1141,9 @@
     shell.hidden = !shouldShow;
     document.body.classList.toggle('altea-premium-app-active', shouldShow);
     if (!shouldShow) return;
+    shell.dataset.premiumActiveRoute = activeId || '';
+    shell.classList.remove('altea-premium-video-fallback');
+    warmAmbientVideo(shell);
     setMarketplaceVars(shell, currentMarketplace());
     syncMarketplaceControls();
     var meta = NAV_BY_ID[activeId] || NAV_BY_ID.dashboard;
@@ -1147,7 +1170,17 @@
 
   function syncStageVisibility(activeId) {
     Array.prototype.forEach.call(document.querySelectorAll('[data-premium-stage]'), function (stage) {
-      stage.hidden = stage.dataset.premiumStage !== activeId;
+      var isActive = stage.dataset.premiumStage === activeId;
+      var wasHidden = stage.hidden;
+      stage.hidden = !isActive;
+      if (isActive && wasHidden) {
+        stage.classList.remove('is-route-entering');
+        void stage.offsetWidth;
+        stage.classList.add('is-route-entering');
+        window.setTimeout(function () {
+          if (!stage.hidden) stage.classList.remove('is-route-entering');
+        }, 720);
+      }
     });
     syncShell(activeId);
   }
@@ -1162,24 +1195,17 @@
     syncStageVisibility(active.id);
   }
 
-  function legacyStageIsStable(active) {
-    if (!active || !managedRoute(active.id) || premiumRoute(active.id)) return false;
-    var stage = document.getElementById(stageId(active.id));
-    return !!(stage && !stage.hidden && active.root.parentNode === stage && stage.classList.contains('altea-premium-route-stage--legacy'));
-  }
-
-  function premiumStageIsStable(active) {
-    if (!active || !premiumRoute(active.id)) return false;
-    var stage = document.getElementById(stageId(active.id));
-    if (!stage || stage.hidden || !stage.querySelector('.altea-premium-route')) return false;
-    return !Array.prototype.some.call(active.root.children || [], function (child) {
-      return !child.classList || !child.classList.contains('altea-premium-route');
-    });
-  }
-
   function pruneLegacyChildren(root) {
     Array.prototype.slice.call(root.children || []).forEach(function (child) {
       child.remove();
+    });
+  }
+
+  function pruneHiddenPremiumRoots() {
+    ['dashboard', 'executive'].forEach(function (routeId) {
+      var root = document.getElementById('view-' + routeId);
+      if (!root || root.closest('.altea-premium-route-stage')) return;
+      pruneLegacyChildren(root);
     });
   }
 
@@ -1223,44 +1249,21 @@
     scheduleRender(80);
     scheduleRender(450);
     scheduleRender(1200);
-  }
-
-  function guardActivePremiumRoute() {
-    wrapLegacyRenderers();
-    var active = activeRoute();
-    if (!active) {
-      syncShell(active ? active.id : '');
-      return;
-    }
-    if (!premiumRoute(active.id)) {
-      if (legacyStageIsStable(active)) {
-        syncShell(active.id);
-        return;
-      }
-      attachLegacyRouteToShell(active);
-      return;
-    }
-    if (premiumStageIsStable(active)) {
-      syncShell(active.id);
-      return;
-    }
-    renderActive();
-  }
-
-  function startGuardLoop() {
-    if (guardTimer) return;
-    guardTimer = window.setInterval(guardActivePremiumRoute, 2500);
+    [180, 900, 2200].forEach(function (delay) {
+      window.setTimeout(pruneHiddenPremiumRoots, delay);
+    });
   }
 
   function navigate(route) {
-    var button = document.querySelector('[data-view="' + route + '"]');
+    var next = String(route || 'dashboard').replace(/^#/, '');
+    var button = document.querySelector('[data-view="' + next + '"]');
     if (button) {
       button.click();
-      return;
     }
     try {
-      window.location.hash = route;
+      if (window.location.hash.replace(/^#/, '') !== next) window.location.hash = next;
     } catch (error) {}
+    scheduleRouteRepair();
   }
 
   function bindEvents() {
@@ -1309,23 +1312,10 @@
     window.addEventListener('altea:themechange', function () { scheduleRender(40); });
     window.addEventListener('altea:marketplacechange', function () { scheduleRender(40); });
     window.addEventListener('altea:data-ready', function () { scheduleRender(80); });
-  }
-
-  function bindObserver() {
-    if (observer) return;
-    var target = document.querySelector('.main') || document.body;
-    observer = new MutationObserver(function (mutations) {
-      if (renderLock) return;
-      var shouldRender = mutations.some(function (mutation) {
-        if (mutation.target && mutation.target.closest && mutation.target.closest('.altea-premium-route')) return false;
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class' && mutation.target.classList && mutation.target.classList.contains('view')) return true;
-        return mutation.type === 'childList' && Array.prototype.some.call(mutation.addedNodes || [], function (node) {
-          return node.nodeType === 1 && (!node.classList || !node.classList.contains('altea-premium-route'));
-        });
-      });
-      if (shouldRender) scheduleRender(40);
+    window.addEventListener('load', function () { scheduleRouteRepair(); });
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) scheduleRouteRepair();
     });
-    observer.observe(target, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
   }
 
   function init() {
@@ -1333,8 +1323,6 @@
     ensureLegacyMarketplaceSelector();
     wrapLegacyRenderers();
     bindEvents();
-    bindObserver();
-    startGuardLoop();
     scheduleRender(0);
     scheduleRender(450);
     scheduleRender(1400);

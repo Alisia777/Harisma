@@ -25,6 +25,7 @@ body.v87-imperial.altea-premium-shell:not(.portal-auth-locked) > .app-shell > .m
 body.v87-imperial.altea-premium-shell .altea-premium-app {
   --premium-sidebar: 254px;
   --premium-topbar: 72px;
+  --premium-motion-ease: cubic-bezier(.22, 1, .36, 1);
   position: fixed;
   inset: 0;
   z-index: 9000;
@@ -42,11 +43,80 @@ body.v87-imperial.altea-premium-shell .altea-premium-app[hidden] {
   display: none !important;
 }
 
+body.v87-imperial.altea-premium-shell .altea-premium-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(780px 520px at 28% 18%, rgba(var(--route-rgb, 216, 198, 164), .15), transparent 66%),
+    radial-gradient(980px 620px at 86% 20%, rgba(var(--platform-rgb, 216, 198, 164), .12), transparent 70%);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient-video {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  object-fit: cover;
+  opacity: .16;
+  filter: blur(10px) brightness(.54) contrast(1.04) saturate(.78);
+  mix-blend-mode: soft-light;
+  transform: scale(1.02);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-video-fallback .altea-premium-ambient-video {
+  display: none;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient::before,
+body.v87-imperial.altea-premium-shell .altea-premium-ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient::before {
+  background:
+    linear-gradient(118deg, transparent 4%, rgba(var(--route-rgb, 216, 198, 164), .08) 28%, transparent 47%),
+    radial-gradient(circle at 54% 43%, rgba(255, 244, 220, .10), transparent 26%);
+  opacity: .78;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient::after {
+  background: linear-gradient(104deg, transparent 0 42%, rgba(255, 238, 198, .075) 49%, transparent 57% 100%);
+  transform: translate3d(-28%, 0, 0);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient-orbit {
+  position: absolute;
+  width: min(64vw, 860px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 238, 198, .08);
+  border-radius: 46% 54% 52% 48%;
+  box-shadow: 0 0 46px rgba(var(--route-rgb, 216, 198, 164), .08);
+  opacity: .42;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient-orbit--a {
+  left: 19%;
+  top: 10%;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-ambient-orbit--b {
+  right: -9%;
+  top: -18%;
+  width: min(48vw, 620px);
+  opacity: .24;
+}
+
 body.v87-imperial.altea-premium-shell .altea-premium-app::before {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
   background:
     linear-gradient(90deg, color-mix(in srgb, var(--text, #fff) 2%, transparent) 1px, transparent 1px),
@@ -59,7 +129,7 @@ body.v87-imperial.altea-premium-shell .altea-premium-app::after {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
   box-shadow: inset 0 0 150px color-mix(in srgb, var(--bg, #070706) 72%, transparent);
 }
@@ -67,7 +137,7 @@ body.v87-imperial.altea-premium-shell .altea-premium-app::after {
 body.v87-imperial.altea-premium-shell .altea-premium-shell-sidebar,
 body.v87-imperial.altea-premium-shell .altea-premium-shell-main {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   min-width: 0;
 }
 
@@ -403,6 +473,7 @@ body.v87-imperial.altea-premium-shell .altea-premium-shell-content {
   position: relative;
   min-height: 0;
   overflow: auto;
+  scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--line-strong, #5a4e3f) 70%, transparent) transparent;
 }
@@ -417,6 +488,7 @@ body.v87-imperial.altea-premium-shell .altea-premium-shell-content::-webkit-scro
 }
 
 body.v87-imperial.altea-premium-shell .altea-premium-route-stage {
+  position: relative;
   min-height: 100%;
   padding: 28px 31px 64px;
 }
@@ -1124,8 +1196,85 @@ body.v87-imperial.altea-premium-shell .altea-premium-route .platform-pill i {
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient-video {
+    animation: alteaPremiumVideoDrift 26s ease-in-out infinite alternate;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient::after {
+    animation: alteaPremiumAmbientSweep 9s var(--premium-motion-ease, cubic-bezier(.22, 1, .36, 1)) infinite;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient-orbit--a {
+    animation: alteaPremiumAmbientOrbit 32s linear infinite;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient-orbit--b {
+    animation: alteaPremiumAmbientOrbit 44s linear infinite reverse;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route-stage.is-route-entering {
+    animation: alteaPremiumStageIn .54s var(--premium-motion-ease, cubic-bezier(.22, 1, .36, 1)) both;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route-stage--legacy.is-route-entering > .view {
+    animation: alteaPremiumStageContentIn .42s var(--premium-motion-ease, cubic-bezier(.22, 1, .36, 1)) both;
+  }
+
   body.v87-imperial.altea-premium-shell .altea-premium-route .premium-route-body {
     animation: alteaPremiumRouteBodyIn .78s var(--ease-soft, cubic-bezier(.2, .8, .2, 1)) both;
+  }
+}
+
+@keyframes alteaPremiumVideoDrift {
+  from {
+    transform: scale(1.02) translate3d(-1.2%, -.8%, 0);
+  }
+  to {
+    transform: scale(1.055) translate3d(1.4%, .9%, 0);
+  }
+}
+
+@keyframes alteaPremiumAmbientSweep {
+  0%, 24% {
+    opacity: 0;
+    transform: translate3d(-34%, 0, 0);
+  }
+  48% {
+    opacity: .95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(38%, 0, 0);
+  }
+}
+
+@keyframes alteaPremiumAmbientOrbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes alteaPremiumStageIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(.996);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes alteaPremiumStageContentIn {
+  from {
+    opacity: .28;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -1162,6 +1311,25 @@ body.v87-imperial.altea-premium-shell .altea-premium-route .platform-pill i {
 @keyframes alteaPremiumDraw {
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient-video {
+    display: none;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-ambient {
+    background:
+      linear-gradient(rgba(7, 7, 6, .54), rgba(7, 7, 6, .78)),
+      url("assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-poster.jpg") center / cover no-repeat;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route-stage,
+  body.v87-imperial.altea-premium-shell .altea-premium-route-stage--legacy > .view,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .premium-route-body {
+    animation: none !important;
+    transition: none !important;
   }
 }
 

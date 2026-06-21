@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES2__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260621_PRICESV1__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260621_PRICESV1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES2__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEIMPACT1__ = true;
@@ -21,6 +22,7 @@
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428C__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428B__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428A__ = true;
+  window.__ALTEA_PRICES_DESIGN_V1__ = true;
 
   var DATA_URL = "data/smart_price_workbench.json";
   var OVERLAY_URL = "data/smart_price_overlay.json";
@@ -33,7 +35,7 @@
   var ORDER_PROCUREMENT_OZON_URL = "data/order_procurement_ozon.json";
   var VIEW_ID = "view-prices";
   var STYLE_ID = "altea-price-simple-style";
-  var STYLE_VERSION = "20260607-price-badges2";
+  var STYLE_VERSION = "20260621-prices-v1";
   var SNAPSHOT_WAIT_MS = 1800;
   var SNAPSHOT_HARD_WAIT_MS = 4500;
   var LOCAL_FETCH_TIMEOUT_MS = 3200;
@@ -3574,6 +3576,685 @@ function downloadPriceSummaryExcel(rows) {
     };
   }
 
+  var priceV1SearchTimer = null;
+
+  function priceV1NormalizeMarket(value) {
+    var key = canonicalPriceMarket(value);
+    if (key === "ya") key = "ym";
+    return PRICE_MARKETS.indexOf(key) >= 0 ? key : "all";
+  }
+
+  function priceV1ReadGlobalMarket(fallback) {
+    var candidates = [
+      document.documentElement && (document.documentElement.dataset.marketplace || document.documentElement.dataset.platform),
+      document.body && (document.body.dataset.marketplace || document.body.dataset.platform)
+    ];
+    try {
+      candidates.push(localStorage.getItem("altea.portal.marketplace"));
+    } catch {}
+    var root = rootState();
+    if (root && root.filters) {
+      candidates.push(root.filters.market);
+      candidates.push(root.filters.platform);
+    }
+    candidates.push(fallback || "all");
+    for (var index = 0; index < candidates.length; index += 1) {
+      var raw = candidates[index];
+      if (raw == null || String(raw).trim() === "") continue;
+      var normalized = priceV1NormalizeMarket(raw);
+      if (normalized !== "all" || String(raw).trim().toLowerCase() === "all") return normalized;
+    }
+    return "all";
+  }
+
+  function priceV1InvalidateRows() {
+    derived.visibleRows.rowsRef = null;
+    derived.visibleRows.value = null;
+    derived.stats.rowsRef = null;
+    derived.stats.value = null;
+    derived.table.rowsRef = null;
+    derived.table.value = null;
+  }
+
+  function priceV1SyncGlobalMarket(explicit) {
+    var market = priceV1ReadGlobalMarket(explicit || state.market || "all");
+    if (state.availableMarkets && state.availableMarkets.length && state.availableMarkets.indexOf(market) < 0) {
+      market = "all";
+    }
+    if (state.market !== market) {
+      state.market = market;
+      priceV1InvalidateRows();
+    }
+    return market;
+  }
+
+  function priceV1AdvancedFilters() {
+    state.priceAdvancedFiltersV1 = state.priceAdvancedFiltersV1 || {};
+    return state.priceAdvancedFiltersV1;
+  }
+
+  function priceV1AdvancedDefinitions() {
+    return [
+      { key: "priceChanged", label: "Цена менялась", group: "Эффект цены" },
+      { key: "ordersDropped", label: "Заказы упали", group: "Эффект цены" },
+      { key: "minMaxRisk", label: "MIN/MAX риск", group: "Коридор" },
+      { key: "belowMargin", label: "Маржа ниже нормы", group: "Экономика" },
+      { key: "noDailyFact", label: "Нет daily-факта", group: "Качество данных" },
+      { key: "noOwner", label: "Без owner", group: "Качество данных" }
+    ];
+  }
+
+  function priceV1AdvancedCount() {
+    var advanced = priceV1AdvancedFilters();
+    return priceV1AdvancedDefinitions().filter(function (item) { return advanced[item.key]; }).length;
+  }
+
+  function priceV1Rows(baseRows) {
+    var advanced = priceV1AdvancedFilters();
+    if (!priceV1AdvancedCount()) return baseRows;
+    return baseRows.filter(function (row) {
+      var impact = row.priceImpact || rowPriceImpact(row);
+      if (advanced.priceChanged && !(impact && impact.change)) return false;
+      if (advanced.ordersDropped && !(impact && Number(impact.orderDelta) < 0)) return false;
+      if (advanced.minMaxRisk && !priceBoundaryState(row)) return false;
+      if (advanced.belowMargin && !(row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct)) return false;
+      if (advanced.noDailyFact && historyItemsForRow(row).length) return false;
+      if (advanced.noOwner && String(row.owner || "").trim() && row.owner !== "\u2014") return false;
+      return true;
+    });
+  }
+
+  function priceV1SortLabel(value) {
+    var labels = {
+      risk: "Риски первыми",
+      orders: "Заказы",
+      revenue: "Выручка",
+      price_change: "Эффект цены",
+      margin: "Маржа",
+      turnover: "Оборачиваемость",
+      article: "Артикул",
+      owner: "Owner",
+      status: "Статус товара"
+    };
+    return labels[value] || value || "Сортировка";
+  }
+
+  function priceV1StatusLabel(value) {
+    if (!value || value === "all") return "Все статусы";
+    return value;
+  }
+
+  function priceV1ActiveChips(summary) {
+    var chips = [];
+    chips.push({ key: "market", label: priceMarketLabel(state.market || "all") });
+    if (state.dateFrom || state.dateTo) chips.push({ key: "period", label: (state.dateFrom || "\u2014") + " - " + (state.dateTo || "\u2014") });
+    if (state.ownerFilter && state.ownerFilter !== "all") chips.push({ key: "owner", label: "Owner: " + state.ownerFilter });
+    if (state.statusFilter && state.statusFilter !== "all") chips.push({ key: "status", label: priceV1StatusLabel(state.statusFilter) });
+    if (state.sortBy && state.sortBy !== "orders") chips.push({ key: "sort", label: priceV1SortLabel(state.sortBy) });
+    var advanced = priceV1AdvancedFilters();
+    priceV1AdvancedDefinitions().forEach(function (item) {
+      if (advanced[item.key]) chips.push({ key: "adv:" + item.key, label: item.label });
+    });
+    chips.push({ key: "summary", label: intf(summary && summary.count) + " SKU" });
+    return '<div class="prices-v1-chips">' + chips.map(function (chip) {
+      var removable = chip.key !== "market" && chip.key !== "summary";
+      return '<button type="button" class="' + (removable ? "" : "is-static") + '" ' + (removable ? 'data-price-v1-clear="' + esc(chip.key) + '"' : 'tabindex="-1"') + '>' + esc(chip.label) + (removable ? ' <span>\u00d7</span>' : '') + '</button>';
+    }).join("") + '</div>';
+  }
+
+  function priceV1OrdersPerDay(total, daysCount) {
+    if (total == null || !Number.isFinite(Number(total)) || !daysCount) return "\u2014";
+    return formatOrdersPerDay(Number(total) / Math.max(1, Number(daysCount)));
+  }
+
+  function priceV1EffectPct(impact) {
+    if (!impact || impact.beforeOrders == null || impact.afterOrders == null || Number(impact.beforeOrders) <= 0) return null;
+    return (Number(impact.afterOrders) / Number(impact.beforeOrders)) - 1;
+  }
+
+  function priceV1DataQuality(row) {
+    var flags = [];
+    if (!historyItemsForRow(row).length) flags.push("нет daily");
+    if (!String(row.owner || "").trim() || row.owner === "\u2014") flags.push("без owner");
+    if (row.matrixProblemLabel) flags.push(row.matrixProblemLabel);
+    return flags.length ? flags.join(" · ") : "OK";
+  }
+
+  function priceV1DecisionStatus(row) {
+    var boundary = priceBoundaryState(row);
+    if (boundary) return "review";
+    var impact = row.priceImpact || rowPriceImpact(row);
+    if (impact && impact.change && Number(impact.orderDelta) < 0) return "стоп / проверить";
+    if (row.repricerDisplay && moneyRound(row.repricerDisplay.price) != null) return "есть рекомендация";
+    return "наблюдать";
+  }
+
+  function priceV1Kpis(summary) {
+    var cards = [
+      { label: "SKU в срезе", value: intf(summary.count), note: priceMarketLabel(state.market || "all") },
+      { label: "Цена сработала", value: intf(summary.impactWins), note: intf(summary.impactDrops) + " просадок" },
+      { label: "Уровень заказов", value: formatOrdersPerDay(summary.avgOrdersPerDay), note: summary.orderDeltaTotal == null ? "без эффекта" : "\u0394 " + signedIntLabel(summary.orderDeltaTotal) },
+      { label: "Смены цен", value: intf(summary.priceChanges), note: intf(summary.changedRows) + " SKU меняли цену" },
+      { label: "MIN/MAX риск", value: intf(summary.minMaxRisk), note: summary.minMaxDanger ? intf(summary.minMaxDanger) + " ниже MIN" : "коридор под контролем" },
+      { label: "Выручка", value: money(summary.revenue), note: summary.ordersUnits == null ? "нет заказов" : intf(summary.ordersUnits) + " заказов" }
+    ];
+    return '<div class="prices-v1-kpis">' + cards.map(function (card) {
+      return '<article><span>' + esc(card.label) + '</span><strong>' + esc(card.value) + '</strong><em>' + esc(card.note || "") + '</em><i></i></article>';
+    }).join("") + '</div>';
+  }
+
+  function priceV1Chart(row) {
+    if (!row) return '<div class="prices-v1-empty">Выберите SKU, чтобы увидеть цену и заказы по дням.</div>';
+    var items = historyItemsForRow(row).slice(-30);
+    if (!items.length) return '<div class="prices-v1-empty">По выбранному SKU нет дневной истории в текущем периоде.</div>';
+    var bounds = row.repricerBounds || {};
+    var priceValues = [];
+    items.forEach(function (item) {
+      var price = num(item.price);
+      var client = num(item.clientPrice);
+      if (price != null) priceValues.push(price);
+      if (client != null) priceValues.push(client);
+    });
+    [bounds.effectiveMin, bounds.effectiveMax].forEach(function (value) {
+      var parsed = num(value);
+      if (parsed != null) priceValues.push(parsed);
+    });
+    var minPrice = Math.min.apply(null, priceValues.length ? priceValues : [0]);
+    var maxPrice = Math.max.apply(null, priceValues.length ? priceValues : [1]);
+    if (minPrice === maxPrice) {
+      minPrice = Math.max(0, minPrice - 1);
+      maxPrice += 1;
+    }
+    var maxOrders = Math.max.apply(null, items.map(function (item) { return num(item.ordersUnits) || 0; }).concat([1]));
+    var width = 940;
+    var left = 36;
+    var top = 28;
+    var chartHeight = 220;
+    var step = items.length > 1 ? (width - left - 24) / (items.length - 1) : 0;
+    function x(index) { return left + (items.length > 1 ? index * step : (width - left) / 2); }
+    function yPrice(value) {
+      var parsed = num(value);
+      if (parsed == null) return null;
+      return top + chartHeight - ((parsed - minPrice) / (maxPrice - minPrice)) * chartHeight;
+    }
+    function line(key) {
+      var points = [];
+      items.forEach(function (item, index) {
+        var y = yPrice(item[key]);
+        if (y != null) points.push(x(index).toFixed(1) + "," + y.toFixed(1));
+      });
+      return points.join(" ");
+    }
+    var previous = null;
+    var bars = items.map(function (item, index) {
+      var orders = num(item.ordersUnits) || 0;
+      var h = Math.max(2, orders / maxOrders * 150);
+      var cx = x(index);
+      var change = "";
+      var price = roundedHistoryPrice(item);
+      if (previous != null && price != null && price !== previous) {
+        change = '<line class="prices-v1-change" x1="' + cx.toFixed(1) + '" x2="' + cx.toFixed(1) + '" y1="' + top + '" y2="' + (top + chartHeight) + '"></line>';
+      }
+      if (price != null) previous = price;
+      return change + '<rect class="prices-v1-bar" x="' + (cx - 5).toFixed(1) + '" y="' + (top + chartHeight - h).toFixed(1) + '" width="10" height="' + h.toFixed(1) + '"><title>' + esc(item.date || "") + " · " + intf(orders) + " заказов" + '</title></rect>';
+    }).join("");
+    var minY = yPrice(bounds.effectiveMin);
+    var maxY = yPrice(bounds.effectiveMax);
+    return [
+      '<svg class="prices-v1-chart" viewBox="0 0 940 292" role="img" aria-label="Цена и заказы по дням">',
+      '<g class="prices-v1-grid"><line x1="36" x2="916" y1="58" y2="58"></line><line x1="36" x2="916" y1="138" y2="138"></line><line x1="36" x2="916" y1="248" y2="248"></line></g>',
+      bars,
+      minY != null ? '<line class="prices-v1-minmax min" x1="36" x2="916" y1="' + minY.toFixed(1) + '" y2="' + minY.toFixed(1) + '"><title>MIN ' + esc(money(bounds.effectiveMin)) + '</title></line>' : '',
+      maxY != null ? '<line class="prices-v1-minmax max" x1="36" x2="916" y1="' + maxY.toFixed(1) + '" y2="' + maxY.toFixed(1) + '"><title>MAX ' + esc(money(bounds.effectiveMax)) + '</title></line>' : '',
+      '<polyline class="prices-v1-line mp" points="' + esc(line("price")) + '"></polyline>',
+      '<polyline class="prices-v1-line client" points="' + esc(line("clientPrice")) + '"></polyline>',
+      '<text x="36" y="282">' + esc(items[0].date || "") + '</text><text x="916" y="282" text-anchor="end">' + esc(items[items.length - 1].date || "") + '</text>',
+      '</svg>'
+    ].join("");
+  }
+
+  function priceV1SelectedPanel(row) {
+    if (!row) return '<section class="prices-v1-selected"><div class="prices-v1-empty">Нет выбранного SKU в текущем фильтре.</div></section>';
+    var impact = row.priceImpact || rowPriceImpact(row);
+    var bounds = row.repricerBounds || {};
+    var lifecycle = row.productLifecycle || priceProductLifecycleForRow(row) || {};
+    var effectPct = priceV1EffectPct(impact);
+    var currentPrice = row.listPrice != null ? row.listPrice : row.currentFillPrice;
+    return [
+      '<section class="prices-v1-selected">',
+      '<div class="prices-v1-chart-card">',
+      '<div class="prices-v1-section-head"><div><span>Цена · заказы · эффект по дням</span><h3>', esc(row.articleKey || "\u2014"), '</h3><p>', esc(row.name || ""), '</p></div>',
+      '<div class="prices-v1-legend"><span class="orders">Заказы</span><span class="mp">Цена MP</span><span class="client">Клиент</span><span class="corridor">MIN/MAX</span></div></div>',
+      priceV1Chart(row),
+      '</div>',
+      '<aside class="prices-v1-sku-card">',
+      '<div class="prices-v1-sku-top"><span>Выбранный SKU</span><button type="button" data-price-v1-open-detail="' + esc(row.articleKey) + '">Открыть историю SKU</button></div>',
+      '<h3>', esc(row.articleKey || "\u2014"), '</h3><p>', esc(row.owner || "\u2014"), ' · ', esc(priceMarketLabel(row.market)), ' · ', esc(state.dateFrom || "\u2014"), ' - ', esc(state.dateTo || "\u2014"), '</p>',
+      '<div class="prices-v1-mini-grid">',
+      '<div><span>Цена MP</span><strong>', money(currentPrice), '</strong><em>', impact.change ? esc(signedMoneyLabel(impact.change.deltaRub)) : "без смены", '</em></div>',
+      '<div><span>Клиент / СПП</span><strong>', money(row.currentClientPrice), '</strong><em>СПП ', pct(row.currentSppPct), '</em></div>',
+      '<div><span>MIN / MAX</span><strong>', money(bounds.effectiveMin), ' / ', money(bounds.effectiveMax), '</strong><em>', esc(priceBoundaryState(row)?.label || "в коридоре"), '</em></div>',
+      '<div><span>Репрайсер</span><strong>', money(row.repricerDisplay && row.repricerDisplay.price), '</strong><em>', esc(priceV1DecisionStatus(row)), '</em></div>',
+      '</div>',
+      '<div class="prices-v1-effect"><span>Эффект после последней смены</span><strong>', effectPct == null ? "\u2014" : signedPctLabel(effectPct), '</strong><em>до ', esc(priceV1OrdersPerDay(impact.beforeOrders, impact.beforeDays)), ' · после ', esc(priceV1OrdersPerDay(impact.afterOrders, impact.afterDays)), '</em></div>',
+      '<div class="prices-v1-status-block"><span>Статус товара</span><strong>', esc(lifecycle.label || row.status || "\u2014"), '</strong>', renderPriceLifecycleEditor(row, true), '</div>',
+      '</aside>',
+      '</section>'
+    ].join("");
+  }
+
+  function priceV1Table(rows) {
+    if (!rows.length) return '<div class="prices-v1-empty">По текущим фильтрам пока нет строк.</div>';
+    var sorted = sortedVisiblePriceRows(rows);
+    return [
+      '<div class="prices-v1-table-wrap"><table class="prices-v1-table pw-table"><thead>',
+      '<tr class="prices-v1-groups"><th colspan="3">Идентификация</th><th colspan="7">Цена и коридор</th><th colspan="6">Эффект после смены</th><th colspan="4">Экономика</th><th colspan="3">Решение</th></tr>',
+      '<tr>',
+      sortableHead("article", "SKU"),
+      sortableHead("owner", "Owner"),
+      sortableHead("status", "Статус товара"),
+      sortableHead("price_mp", "Цена MP"),
+      sortableHead("price_change", "Изм."),
+      sortableHead("client_price", "Клиент"),
+      sortableHead("spp", "СПП"),
+      sortableHead("min", "MIN"),
+      sortableHead("max", "MAX"),
+      sortableHead("repricer_price", "Репрайсер"),
+      '<th>До / дн.</th><th>После / дн.</th><th>Эффект</th><th>Дней после</th>',
+      sortableHead("orders", "Заказы"),
+      '<th>Выкупы</th>',
+      sortableHead("revenue", "Выручка"),
+      sortableHead("margin", "Маржа"),
+      sortableHead("allowed_margin", "Допуст."),
+      sortableHead("turnover", "Оборот."),
+      '<th>Статус решения</th><th>Качество</th><th></th>',
+      '</tr></thead><tbody>',
+      sorted.map(function (row) {
+        var lifecycle = row.productLifecycle || priceProductLifecycleForRow(row) || {};
+        var impact = row.priceImpact || rowPriceImpact(row);
+        var change = impact && impact.change;
+        var bounds = row.repricerBounds || {};
+        var effectPct = priceV1EffectPct(impact);
+        var currentPrice = row.listPrice != null ? row.listPrice : row.currentFillPrice;
+        return [
+          '<tr class="prices-v1-row" data-open-price="', esc(row.articleKey), '" data-price-market="', esc(row.market), '">',
+          '<td><button type="button" class="prices-v1-sku-link" data-price-v1-select="', esc(row.articleKey), '">', esc(row.articleKey || "\u2014"), '</button><small>', esc(row.name || ""), '</small></td>',
+          '<td>', esc(row.owner || "\u2014"), '</td>',
+          '<td><span class="pw-badge', priceLifecycleBadgeClass(lifecycle), '">', esc(lifecycle.label || row.status || "\u2014"), '</span>', renderPriceLifecycleEditor(row, true), '</td>',
+          '<td><strong>', money(currentPrice), '</strong><small>', esc(metricHelp(modalListPriceHelp(row), row.listPriceFactDate || row.priceFactDate, row.valueDate)), '</small></td>',
+          '<td>', change ? '<span class="pw-delta ' + deltaTone(change.deltaRub) + '">' + esc(signedMoneyLabel(change.deltaRub)) + '</span><small>' + esc(change.date || "") + '</small>' : "\u2014", '</td>',
+          '<td><strong>', money(row.currentClientPrice), '</strong></td>',
+          '<td>', pct(row.currentSppPct), '</td>',
+          '<td>', money(bounds.effectiveMin), '</td>',
+          '<td>', money(bounds.effectiveMax), '</td>',
+          '<td>', renderRepricerCell(row.repricerDisplay), '</td>',
+          '<td>', esc(priceV1OrdersPerDay(impact.beforeOrders, impact.beforeDays)), '</td>',
+          '<td>', esc(priceV1OrdersPerDay(impact.afterOrders, impact.afterDays)), '</td>',
+          '<td>', effectPct == null ? "\u2014" : '<span class="pw-delta ' + deltaTone(effectPct) + '">' + esc(signedPctLabel(effectPct)) + '</span>', '</td>',
+          '<td>', intf(impact.afterDays), '</td>',
+          '<td>', impact.ordersUnits == null ? "\u2014" : intf(impact.ordersUnits), '</td>',
+          '<td>', impact.deliveredUnits == null ? "\u2014" : intf(impact.deliveredUnits), '</td>',
+          '<td>', money(impact.revenue), '</td>',
+          '<td>', pct(row.marginTotalPct), '</td>',
+          '<td>', pct(row.allowedMarginPct), '</td>',
+          '<td>', days(row.turnoverDays), '</td>',
+          '<td><span class="prices-v1-decision">', esc(priceV1DecisionStatus(row)), '</span></td>',
+          '<td>', esc(priceV1DataQuality(row)), '</td>',
+          '<td><button type="button" class="sku-plan-open-card" data-price-v1-open-detail="', esc(row.articleKey), '">\u2192</button></td>',
+          '</tr>'
+        ].join("");
+      }).join(""),
+      '</tbody></table></div>'
+    ].join("");
+  }
+
+  function priceV1Drawer(rows) {
+    var advanced = priceV1AdvancedFilters();
+    var open = Boolean(state.priceDrawerOpenV1);
+    return [
+      '<aside class="prices-v1-drawer ', open ? 'is-open' : '', '" aria-hidden="', open ? 'false' : 'true', '">',
+      '<div class="prices-v1-drawer-head"><div><h3>Расширенные фильтры</h3><p>Только отбор строк. Цены, эффект и формулы не пересчитываются.</p></div><button type="button" data-price-v1-drawer-close>\u00d7</button></div>',
+      '<div class="prices-v1-saved"><button type="button" data-price-v1-saved="priceChanged">Цена и заказы</button><button type="button" data-price-v1-saved="minMaxRisk">MIN/MAX риски</button><button type="button" data-price-v1-saved="belowMargin">Маржа и оборачиваемость</button><button type="button" data-price-v1-saved="noDailyFact">Качество данных</button></div>',
+      '<div class="prices-v1-filter-checks">',
+      priceV1AdvancedDefinitions().map(function (item) {
+        return '<label><input type="checkbox" data-price-v1-advanced="' + esc(item.key) + '"' + (advanced[item.key] ? ' checked' : '') + '><span><b>' + esc(item.label) + '</b><em>' + esc(item.group) + '</em></span></label>';
+      }).join(""),
+      '</div>',
+      '<div class="prices-v1-drawer-actions"><button type="button" data-price-v1-advanced-reset>Сбросить всё</button><button type="button" data-price-v1-drawer-close>Применить · ', intf(rows.length), ' SKU</button></div>',
+      '</aside>'
+    ].join("");
+  }
+
+  function renderRootV1() {
+    var root = document.getElementById(VIEW_ID);
+    if (!root) return;
+    if (state.loaded) normalizeDateRange();
+    ensureStyles();
+    var activeMarket = priceV1SyncGlobalMarket();
+    root.dataset.priceActiveMarket = activeMarket;
+    root.dataset.platform = activeMarket === "ym" ? "ya" : activeMarket;
+    root.dataset.pricesDesign = "v1";
+    var baseRows = visibleRows();
+    var rows = priceV1Rows(baseRows);
+    var summary = stats(rows);
+    var sortedRows = sortedVisiblePriceRows(rows);
+    var selected = state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : sortedRows[0];
+    if (selected && rows.every(function (row) { return norm(row.articleKey) !== norm(selected.articleKey); })) selected = sortedRows[0];
+    var filters = buildFilterOptions();
+    var renderKeyText = [
+      "prices-v1",
+      state.loaded ? "ready" : (state.loading ? "loading" : "idle"),
+      state.error || "",
+      activeMarket,
+      state.search || "",
+      state.ownerFilter || "",
+      state.statusFilter || "",
+      state.sortBy || "",
+      state.sortDir || "",
+      state.dateFrom || "",
+      state.dateTo || "",
+      state.priceDrawerOpenV1 ? "drawer-open" : "drawer-closed",
+      JSON.stringify(priceV1AdvancedFilters()),
+      rows.length,
+      priceRowsSignature(rows),
+      summary.ordersUnits == null ? "" : summary.ordersUnits,
+      summary.revenue == null ? "" : Math.round(summary.revenue),
+      state.selectedKey || "",
+      selected ? [selected.articleKey, selected.status, selected.turnoverDays, selected.currentFillPrice].join(":") : ""
+    ].join("|");
+    var renderKey = stableHash(renderKeyText);
+    if (root.dataset.priceRenderKey === renderKey && root.querySelector(".prices-v1-shell")) return;
+    root.dataset.priceRenderKey = renderKey;
+    root.innerHTML = [
+      '<div class="prices-v1-shell" data-prices-design="v1">',
+      '<section class="prices-v1-hero">',
+      '<div><span>Цена · заказы · эффект по дням</span><h2>При какой цене сколько заказов</h2><p>Смена цены видна рядом с заказами, выручкой, MIN/MAX и статусом товара.</p></div>',
+      '<div class="prices-v1-actions"><button type="button" data-price-v1-refresh>Обновить</button><button type="button" data-price-export="summary">Свод в Excel</button><button type="button" data-price-export="daily">Динамика по дням</button></div>',
+      '</section>',
+      state.error ? '<div class="pw-error">' + esc(state.error) + '</div>' : '',
+      state.loaded ? '<div class="prices-v1-freshness"><strong>Факт до ' + esc(state.latestFactDate || "\u2014") + '</strong><span>' + esc(dataFreshnessLabel()) + '</span><span>' + esc(overlayFreshnessLabel()) + '</span></div>' : '',
+      '<section class="prices-v1-filter-dock">',
+      '<div class="prices-v1-filter-grid">',
+      '<label class="prices-v1-control prices-v1-search"><span>Поиск</span><input id="pwSearch" placeholder="SKU, название, owner..." value="', esc(state.search), '"></label>',
+      '<div class="prices-v1-control"><span>Период</span><div class="prices-v1-segmented"><button type="button" data-price-preset="7">7 дн.</button><button type="button" data-price-preset="14">14 дн.</button><button type="button" data-price-preset="30">30 дн.</button></div></div>',
+      '<label class="prices-v1-control"><span>Дата с</span><input type="date" id="pwFrom" value="', esc(state.dateFrom), '" min="', esc(state.earliestTimelineDate || ""), '" max="', esc(todayKey()), '"></label>',
+      '<label class="prices-v1-control"><span>Дата по</span><input type="date" id="pwTo" value="', esc(state.dateTo), '" min="', esc(state.earliestTimelineDate || ""), '" max="', esc(todayKey()), '"></label>',
+      '<label class="prices-v1-control"><span>Owner</span><select id="pwOwnerFilter"><option value="all">Все сотрудники</option>', filters.owners.map(function (option) { return '<option value="' + esc(option.value) + '"' + (state.ownerFilter === option.value ? ' selected' : '') + '>' + esc(option.label) + '</option>'; }).join(""), '</select></label>',
+      '<label class="prices-v1-control"><span>Статус товара</span><select id="pwStatusFilter"><option value="all">Все статусы</option>', filters.statuses.map(function (option) { return '<option value="' + esc(option.value) + '"' + (state.statusFilter === option.value ? ' selected' : '') + '>' + esc(option.label) + '</option>'; }).join(""), '</select></label>',
+      '<label class="prices-v1-control"><span>Сортировка</span><select id="pwSort"><option value="risk"', state.sortBy === "risk" ? " selected" : "", '>Риски первыми</option><option value="orders"', state.sortBy === "orders" ? " selected" : "", '>Заказы</option><option value="revenue"', state.sortBy === "revenue" ? " selected" : "", '>Выручка</option><option value="price_change"', state.sortBy === "price_change" ? " selected" : "", '>Эффект цены</option><option value="margin"', state.sortBy === "margin" ? " selected" : "", '>Маржа</option><option value="turnover"', state.sortBy === "turnover" ? " selected" : "", '>Оборачиваемость</option><option value="article"', state.sortBy === "article" ? " selected" : "", '>Артикул</option><option value="owner"', state.sortBy === "owner" ? " selected" : "", '>Owner</option></select></label>',
+      '<div class="prices-v1-filter-actions"><button type="button" data-price-v1-drawer-open>Фильтры · ', intf(priceV1AdvancedCount()), '</button><button type="button" data-price-v1-reset>Сброс</button><button type="button" data-price-v1-columns>Колонки</button></div>',
+      '</div>',
+      priceV1ActiveChips(summary),
+      '</section>',
+      priceV1Kpis(summary),
+      priceV1SelectedPanel(selected),
+      '<section class="prices-v1-table-card"><div class="prices-v1-section-head"><div><span>Рабочая таблица цен</span><h3>Цена · эффект · экономика · решение</h3><p>Статус товара редактируется в строке, подробности открываются без потери позиции.</p></div><div class="prices-v1-table-actions"><button type="button" data-price-minmax-template>Скачать MIN/MAX</button><button type="button" data-price-minmax-import>Загрузить MIN/MAX</button><em>', intf(rows.length), ' SKU · ', intf(summary.minMaxRisk), ' риска</em></div></div>',
+      state.loading && !state.loaded ? '<div class="pw-empty">Загружаю данные вкладки Цены...</div>' : priceV1Table(rows),
+      '</section>',
+      '<input type="file" id="pwMinMaxFile" accept=".tsv,.csv,.txt,.html" style="display:none">',
+      '<div id="priceSimpleModalHost">', renderModal(state.selectedKey ? selectedDisplayRow() : null), '</div>',
+      priceV1Drawer(rows),
+      '</div>'
+    ].join("");
+    attachPriceV1Handlers(root);
+  }
+
+  function attachPriceV1Handlers(root) {
+    if (!root) return;
+
+    var refreshButton = root.querySelector("[data-price-v1-refresh]");
+    if (refreshButton) {
+      refreshButton.addEventListener("click", function () {
+        loadData(true);
+      });
+    }
+
+    root.querySelectorAll("[data-price-preset]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var daysCount = Number(button.getAttribute("data-price-preset"));
+        var target = state.dateTo || state.latestTimelineDate || state.latestFactDate || todayKey();
+        if (!Number.isFinite(daysCount) || daysCount <= 0 || !target) return;
+        state.dateTo = target;
+        state.dateFrom = shiftDate(target, -(daysCount - 1));
+        normalizeDateRange();
+        priceV1InvalidateRows();
+        renderPriceWorkbench();
+      });
+    });
+
+    root.querySelectorAll("[data-price-export]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var rowsForExport = priceV1Rows(visibleRows());
+        if (button.getAttribute("data-price-export") === "daily") {
+          downloadPriceDailyExcel(rowsForExport);
+          return;
+        }
+        downloadPriceSummaryExcel(rowsForExport);
+      });
+    });
+
+    var templateButton = root.querySelector("[data-price-minmax-template]");
+    if (templateButton) {
+      templateButton.addEventListener("click", function () {
+        downloadPriceMinMaxTemplate(priceV1Rows(visibleRows()));
+      });
+    }
+
+    var importButton = root.querySelector("[data-price-minmax-import]");
+    if (importButton) {
+      importButton.addEventListener("click", function () {
+        var fileInput = root.querySelector("#pwMinMaxFile");
+        if (fileInput) fileInput.click();
+      });
+    }
+
+    var fileInput = root.querySelector("#pwMinMaxFile");
+    if (fileInput) {
+      fileInput.addEventListener("change", function (event) {
+        var file = event && event.target && event.target.files ? event.target.files[0] : null;
+        if (!file) return;
+        importPriceMinMaxFile(file);
+        event.target.value = "";
+      });
+    }
+
+    var fromInput = root.querySelector("#pwFrom");
+    var toInput = root.querySelector("#pwTo");
+    function attachDateHandlers(input, apply) {
+      if (!input) return;
+      input.addEventListener("change", apply);
+      input.addEventListener("input", apply);
+      input.addEventListener("click", function () {
+        try {
+          if (typeof input.showPicker === "function") input.showPicker();
+        } catch (error) {}
+      });
+    }
+    attachDateHandlers(fromInput, function () {
+      state.dateFrom = fromInput.value;
+      normalizeDateRange();
+      priceV1InvalidateRows();
+      renderPriceWorkbench();
+    });
+    attachDateHandlers(toInput, function () {
+      state.dateTo = toInput.value;
+      normalizeDateRange();
+      priceV1InvalidateRows();
+      renderPriceWorkbench();
+    });
+
+    var searchInput = root.querySelector("#pwSearch");
+    if (searchInput) {
+      searchInput.addEventListener("input", function () {
+        window.clearTimeout(state.priceV1SearchTimer);
+        state.priceV1SearchTimer = window.setTimeout(function () {
+          state.search = searchInput.value;
+          priceV1InvalidateRows();
+          renderPriceWorkbench();
+        }, 90);
+      });
+    }
+
+    var ownerFilterInput = root.querySelector("#pwOwnerFilter");
+    if (ownerFilterInput) {
+      ownerFilterInput.addEventListener("change", function () {
+        state.ownerFilter = ownerFilterInput.value || "all";
+        priceV1InvalidateRows();
+        renderPriceWorkbench();
+      });
+    }
+
+    var statusFilterInput = root.querySelector("#pwStatusFilter");
+    if (statusFilterInput) {
+      statusFilterInput.addEventListener("change", function () {
+        state.statusFilter = statusFilterInput.value || "all";
+        priceV1InvalidateRows();
+        renderPriceWorkbench();
+      });
+    }
+
+    var sortInput = root.querySelector("#pwSort");
+    if (sortInput) {
+      sortInput.addEventListener("change", function () {
+        var nextSort = sortInput.value || "orders";
+        if (state.sortBy !== nextSort) state.sortDir = sortToggleDirection(nextSort);
+        state.sortBy = nextSort;
+        derived.table.rowsRef = null;
+        renderPriceWorkbench();
+      });
+    }
+
+    root.querySelectorAll("[data-price-sort]").forEach(function (headerButton) {
+      headerButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        var key = headerButton.getAttribute("data-price-sort") || "risk";
+        state.sortDir = sortToggleDirection(key);
+        state.sortBy = key;
+        derived.table.rowsRef = null;
+        renderPriceWorkbench();
+      });
+    });
+
+    root.querySelectorAll("[data-price-v1-select]").forEach(function (button) {
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        state.selectedKey = button.getAttribute("data-price-v1-select") || "";
+        renderPriceWorkbench();
+      });
+    });
+
+    root.querySelectorAll("[data-price-v1-open-detail]").forEach(function (button) {
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        state.selectedKey = button.getAttribute("data-price-v1-open-detail") || "";
+        renderPriceWorkbench();
+        window.requestAnimationFrame(renderSelectedModal);
+      });
+    });
+
+    root.querySelectorAll("[data-open-price]").forEach(function (rowNode) {
+      var rememberScroll = function () {
+        modalScrollState.pendingOpenY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+      };
+      rowNode.addEventListener("mousedown", rememberScroll);
+      rowNode.addEventListener("touchstart", rememberScroll, { passive: true });
+      rowNode.addEventListener("click", function () {
+        state.selectedKey = rowNode.getAttribute("data-open-price");
+        renderSelectedModal();
+      });
+    });
+
+    var drawerOpen = root.querySelector("[data-price-v1-drawer-open]");
+    if (drawerOpen) {
+      drawerOpen.addEventListener("click", function () {
+        state.priceDrawerOpenV1 = true;
+        renderPriceWorkbench();
+      });
+    }
+
+    root.querySelectorAll("[data-price-v1-drawer-close]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        state.priceDrawerOpenV1 = false;
+        renderPriceWorkbench();
+      });
+    });
+
+    root.querySelectorAll("[data-price-v1-advanced]").forEach(function (input) {
+      input.addEventListener("change", function () {
+        var key = input.getAttribute("data-price-v1-advanced");
+        state.priceAdvancedFiltersV1 = Object.assign({}, priceV1AdvancedFilters());
+        state.priceAdvancedFiltersV1[key] = input.checked;
+        priceV1InvalidateRows();
+        renderPriceWorkbench();
+      });
+    });
+
+    root.querySelectorAll("[data-price-v1-saved]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var key = button.getAttribute("data-price-v1-saved");
+        state.priceAdvancedFiltersV1 = Object.create(null);
+        state.priceAdvancedFiltersV1[key] = true;
+        priceV1InvalidateRows();
+        renderPriceWorkbench();
+      });
+    });
+
+    var advancedReset = root.querySelector("[data-price-v1-advanced-reset]");
+    if (advancedReset) {
+      advancedReset.addEventListener("click", function () {
+        state.priceAdvancedFiltersV1 = Object.create(null);
+        priceV1InvalidateRows();
+        renderPriceWorkbench();
+      });
+    }
+
+    root.querySelectorAll("[data-price-v1-clear]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var target = button.getAttribute("data-price-v1-clear");
+        if (target === "owner") state.ownerFilter = "all";
+        if (target === "status") state.statusFilter = "all";
+        if (target === "sort") {
+          state.sortBy = "orders";
+          state.sortDir = "desc";
+          derived.table.rowsRef = null;
+        }
+        if (target === "advanced") state.priceAdvancedFiltersV1 = Object.create(null);
+        priceV1InvalidateRows();
+        renderPriceWorkbench();
+      });
+    });
+
+    var resetButton = root.querySelector("[data-price-v1-reset]");
+    if (resetButton) {
+      resetButton.addEventListener("click", function () {
+        state.search = "";
+        state.ownerFilter = "all";
+        state.statusFilter = "all";
+        state.sortBy = "orders";
+        state.sortDir = "desc";
+        state.priceAdvancedFiltersV1 = Object.create(null);
+        state.priceDrawerOpenV1 = false;
+        priceV1InvalidateRows();
+        renderPriceWorkbench();
+      });
+    }
+
+    var columnsButton = root.querySelector("[data-price-v1-columns]");
+    if (columnsButton) {
+      columnsButton.addEventListener("click", function () {
+        var tableWrap = root.querySelector(".prices-v1-table-wrap");
+        if (!tableWrap) return;
+        var maxLeft = Math.max(0, tableWrap.scrollWidth - tableWrap.clientWidth);
+        tableWrap.scrollTo({ left: tableWrap.scrollLeft > 16 ? 0 : maxLeft, behavior: "smooth" });
+      });
+    }
+
+    attachPriceLifecycleForms(root);
+    attachModalHandlers();
+  }
+
   function renderRoot() {
     var root = document.getElementById(VIEW_ID);
     if (!root) return;
@@ -3782,7 +4463,7 @@ function downloadPriceSummaryExcel(rows) {
   }
 
   function renderPriceWorkbench() {
-    renderRoot();
+    renderRootV1();
   }
 
   window.renderPriceWorkbench = renderPriceWorkbench;
@@ -3800,6 +4481,14 @@ function downloadPriceSummaryExcel(rows) {
       derived.portalStorageParsed = null;
       derived.explicitRepricerMapRaw = null;
       derived.explicitRepricerMap = null;
+    }
+  });
+
+  window.addEventListener("altea:marketplacechange", function (event) {
+    var detail = event && event.detail ? event.detail : {};
+    priceV1SyncGlobalMarket(detail.internalPlatform || detail.marketplace || detail.platform || detail.market);
+    if (document.querySelector("#view-prices.view.active")) {
+      renderPriceWorkbench();
     }
   });
 

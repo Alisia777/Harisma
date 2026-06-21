@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "portal-upload-contract-v1",
+  "stages": ["upload", "detect", "parse", "normalize", "validate", "preview", "reconcile", "approve", "promote", "rebuild", "guard", "publish", "resolve"],
+  "batch": {
+    "requiredFields": ["batchId", "dataset", "sourceChecksum", "sourceFile", "sourceAsOf", "status"],
+    "statuses": ["uploaded", "detected", "parsed", "normalized", "validated", "preview", "approved", "promoted", "blocked", "quarantined", "resolved"]
+  },
+  "nullPolicy": {
+    "missingCell": null,
+    "blankCell": null,
+    "explicitZero": 0,
+    "rule": "Never coerce missing or blank business fields to zero."
+  },
+  "atomicity": {
+    "stagingRoot": ".portal-upload-staging",
+    "historyRoot": ".portal-upload-history",
+    "productionWritesBeforePromote": false,
+    "lastGoodRequired": true
+  },
+  "issueLifecycle": ["open", "resolved", "superseded"],
+  "formulaErrors": ["#REF!", "#VALUE!", "#N/A", "#DIV/0!", "#NAME?", "#NUM!", "#NULL!"]
+}

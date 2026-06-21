@@ -1,0 +1,9 @@
+{
+  "schema": "portal-min-max-reconciliation-v1",
+  "status": "ok",
+  "batchId": null,
+  "sourceAsOf": null,
+  "acceptedRows": 0,
+  "rejectedRows": 0,
+  "blockingIssues": 0
+}

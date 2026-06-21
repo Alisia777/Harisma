@@ -1103,15 +1103,16 @@ function normalizeTask(task, sourceHint = 'manual') {
   };
 }
 
-function isNonPersistentTaskSource(source) {
+function isNonPersistentTaskSource(source, task = {}) {
   const normalized = String(source || '').trim().toLowerCase();
+  if (normalized === 'auto' && String(task?.autoCode || '').trim().toLowerCase() === 'oos_control') return false;
   return normalized === 'auto' || normalized === 'seed';
 }
 
 function normalizeStorageTasks(tasks, sourceHint = 'manual') {
   return (tasks || [])
     .map((task) => normalizeTask(task, task?.source || sourceHint))
-    .filter((task) => !isNonPersistentTaskSource(task?.source));
+    .filter((task) => !isNonPersistentTaskSource(task?.source, task));
 }
 
 function isTaskActive(task) {

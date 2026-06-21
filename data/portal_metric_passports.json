@@ -1,0 +1,1373 @@
+{
+  "schema": "portal-metric-passports-v1",
+  "generatedAt": "2026-06-18T00:00:00.000Z",
+  "sourceLayerPassportFingerprint": "7c577747570c0a1c961d248f102714463ff84e2547cc20182e9344a16e47db3d",
+  "metricCount": 83,
+  "metrics": [
+    {
+      "metricId": "dashboard.brandSummary.apr_fact_revenue_to_date",
+      "value": 234755850.89,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_fact_units_to_date",
+      "value": 152328,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_forecast_pct",
+      "value": 1.0241,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_forecast_revenue",
+      "value": 259908263.49,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_plan_completion_month_pct",
+      "value": 0.925,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_plan_completion_to_date_pct",
+      "value": 1.0241,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_plan_revenue",
+      "value": 253796998,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_plan_to_date_revenue",
+      "value": 229235998.19,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.apr_plan_units",
+      "value": 173171,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.assigned_sku",
+      "value": 143,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.avg_romi",
+      "value": 93.9518,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_fact_revenue_to_date",
+      "value": 223391296.28,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_forecast_pct",
+      "value": 1.3026,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_forecast_revenue",
+      "value": 372318827.13,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_plan_completion_month_pct",
+      "value": 0.7816,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_plan_completion_to_date_pct",
+      "value": 1.3026,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_plan_revenue",
+      "value": 285818670,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.company_plan_to_date_revenue",
+      "value": 171491202,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.external_any_sku",
+      "value": 36,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.fact_revenue_to_date",
+      "value": 223391296.27999997,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.fact_units_to_date",
+      "value": 212636,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.feb_fact_units",
+      "value": 48829,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.feb_plan_units",
+      "value": 127838,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_fact_revenue_to_date",
+      "value": 223391296.28,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_forecast_pct",
+      "value": 1.3026,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_forecast_revenue",
+      "value": 372318827.13,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_plan_completion_month_pct",
+      "value": 0.7816,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_plan_completion_to_date_pct",
+      "value": 1.3026,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_plan_revenue",
+      "value": 285818670,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_company_plan_to_date_revenue",
+      "value": 171491202,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_fact_revenue_to_date",
+      "value": 223391296.27999997,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_fact_units_to_date",
+      "value": 212636,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_plan_completion_to_date_pct",
+      "value": 2.0465,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.jun_plan_units",
+      "value": 173171,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_fact_revenue_to_date",
+      "value": 270625014.72,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_forecast_pct",
+      "value": 1.0663,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_forecast_revenue",
+      "value": 270625014.72,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_plan_completion_month_pct",
+      "value": 1.0663,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_plan_completion_to_date_pct",
+      "value": 1.0663,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_plan_revenue",
+      "value": 253796998,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_company_plan_to_date_revenue",
+      "value": 253796998,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_fact_revenue_to_date",
+      "value": 270625014.7198,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_fact_units_to_date",
+      "value": 256998.00079999998,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_plan_completion_to_date_pct",
+      "value": 1.4841,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.may_plan_units",
+      "value": 173171,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.negative_margin_sku",
+      "value": 16,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.orders_value",
+      "value": 161631197.21,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.plan_completion_feb26_pct",
+      "value": 0.382,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.plan_completion_to_date_pct",
+      "value": 2.0465,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.plan_units",
+      "value": 173171,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.returns_units",
+      "value": 8580,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.sku_count",
+      "value": 143,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.to_work_sku",
+      "value": 7,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.brandSummary.total_stock",
+      "value": 346547,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-brand-summary-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.table",
+        "dashboard.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.card.company-fact-revenue",
+      "value": 223391296.28,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-card-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.card.company-forecast-vs-plan",
+      "value": 1.3026,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-card-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.card.company-plan-completion",
+      "value": 1.3026,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-card-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.card.company-plan-revenue",
+      "value": 285818670,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-card-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.card.marketplace-fact-units",
+      "value": 212636,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-card-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.card.marketplace-stock-total",
+      "value": 346547,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-card-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.card.owner-assigned",
+      "value": 143,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-card-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.card.owner-unassigned",
+      "value": 0,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-card-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "dashboard.card.sku-registry-total",
+      "value": 143,
+      "status": "verified",
+      "sourceLayer": "dashboard",
+      "sourceAsOf": "2026-06-18",
+      "periodFrom": "2026-06-18",
+      "periodTo": "2026-06-18",
+      "formulaVersion": "dashboard-card-v1",
+      "batchId": "c368061612710e90ed9d5a66",
+      "consumers": [
+        "dashboard.cards",
+        "dashboard.export",
+        "dashboard.table"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "plan.company.2026-12.b2b.revenue",
+      "value": 1500000,
+      "status": "verified",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "periodFrom": "2026-12-01",
+      "periodTo": "2026-12-31",
+      "formulaVersion": "company-plan-channel-v1",
+      "batchId": "c75e7a6a3cdace0df26691c6",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ],
+      "warnings": [
+        "company_plan: sourceAsOf uses explicit generatedAt policy allowance"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.d2c.revenue",
+      "value": 3000000,
+      "status": "verified",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "periodFrom": "2026-12-01",
+      "periodTo": "2026-12-31",
+      "formulaVersion": "company-plan-channel-v1",
+      "batchId": "c75e7a6a3cdace0df26691c6",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ],
+      "warnings": [
+        "company_plan: sourceAsOf uses explicit generatedAt policy allowance"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.goldapple.revenue",
+      "value": 8065112,
+      "status": "verified",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "periodFrom": "2026-12-01",
+      "periodTo": "2026-12-31",
+      "formulaVersion": "company-plan-channel-v1",
+      "batchId": "c75e7a6a3cdace0df26691c6",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ],
+      "warnings": [
+        "company_plan: sourceAsOf uses explicit generatedAt policy allowance"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.letu.revenue",
+      "value": 3509365,
+      "status": "verified",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "periodFrom": "2026-12-01",
+      "periodTo": "2026-12-31",
+      "formulaVersion": "company-plan-channel-v1",
+      "batchId": "c75e7a6a3cdace0df26691c6",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ],
+      "warnings": [
+        "company_plan: sourceAsOf uses explicit generatedAt policy allowance"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.magnit.revenue",
+      "value": 214737,
+      "status": "verified",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "periodFrom": "2026-12-01",
+      "periodTo": "2026-12-31",
+      "formulaVersion": "company-plan-channel-v1",
+      "batchId": "c75e7a6a3cdace0df26691c6",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ],
+      "warnings": [
+        "company_plan: sourceAsOf uses explicit generatedAt policy allowance"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.ozon.revenue",
+      "value": 143447038.351102,
+      "status": "verified",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "periodFrom": "2026-12-01",
+      "periodTo": "2026-12-31",
+      "formulaVersion": "company-plan-channel-v1",
+      "batchId": "c75e7a6a3cdace0df26691c6",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ],
+      "warnings": [
+        "company_plan: sourceAsOf uses explicit generatedAt policy allowance"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.revenue",
+      "value": 459872220.351102,
+      "status": "verified",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "periodFrom": "2026-12-01",
+      "periodTo": "2026-12-31",
+      "formulaVersion": "company-plan-v1",
+      "batchId": "c75e7a6a3cdace0df26691c6",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ],
+      "warnings": [
+        "company_plan: sourceAsOf uses explicit generatedAt policy allowance"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.wb.revenue",
+      "value": 289011920,
+      "status": "verified",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "periodFrom": "2026-12-01",
+      "periodTo": "2026-12-31",
+      "formulaVersion": "company-plan-channel-v1",
+      "batchId": "c75e7a6a3cdace0df26691c6",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ],
+      "warnings": [
+        "company_plan: sourceAsOf uses explicit generatedAt policy allowance"
+      ]
+    },
+    {
+      "metricId": "plan.company.2026-12.ya.revenue",
+      "value": 11124048,
+      "status": "verified",
+      "sourceLayer": "company_plan",
+      "sourceAsOf": "2026-05-29",
+      "periodFrom": "2026-12-01",
+      "periodTo": "2026-12-31",
+      "formulaVersion": "company-plan-channel-v1",
+      "batchId": "c75e7a6a3cdace0df26691c6",
+      "consumers": [
+        "dashboard.cards",
+        "plan.table",
+        "plan.export"
+      ],
+      "warnings": [
+        "company_plan: sourceAsOf uses explicit generatedAt policy allowance"
+      ]
+    },
+    {
+      "metricId": "repricer.summary.ozonBelowMinCount",
+      "value": 65,
+      "status": "verified",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "periodFrom": "2026-06-19",
+      "periodTo": "2026-06-19",
+      "formulaVersion": "repricer-summary-v1",
+      "batchId": "083adab86e24b97fcea8841b",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "repricer.summary.ozonChangeCount",
+      "value": 159,
+      "status": "verified",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "periodFrom": "2026-06-19",
+      "periodTo": "2026-06-19",
+      "formulaVersion": "repricer-summary-v1",
+      "batchId": "083adab86e24b97fcea8841b",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "repricer.summary.ozonEqualizeCount",
+      "value": 0,
+      "status": "verified",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "periodFrom": "2026-06-19",
+      "periodTo": "2026-06-19",
+      "formulaVersion": "repricer-summary-v1",
+      "batchId": "083adab86e24b97fcea8841b",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "repricer.summary.ozonMarginRiskCount",
+      "value": 88,
+      "status": "verified",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "periodFrom": "2026-06-19",
+      "periodTo": "2026-06-19",
+      "formulaVersion": "repricer-summary-v1",
+      "batchId": "083adab86e24b97fcea8841b",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "repricer.summary.ozonTurnoverCount",
+      "value": 63,
+      "status": "verified",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "periodFrom": "2026-06-19",
+      "periodTo": "2026-06-19",
+      "formulaVersion": "repricer-summary-v1",
+      "batchId": "083adab86e24b97fcea8841b",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "repricer.summary.skuCount",
+      "value": 201,
+      "status": "verified",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "periodFrom": "2026-06-19",
+      "periodTo": "2026-06-19",
+      "formulaVersion": "repricer-summary-v1",
+      "batchId": "083adab86e24b97fcea8841b",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "repricer.summary.wbBelowMinCount",
+      "value": 14,
+      "status": "verified",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "periodFrom": "2026-06-19",
+      "periodTo": "2026-06-19",
+      "formulaVersion": "repricer-summary-v1",
+      "batchId": "083adab86e24b97fcea8841b",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "repricer.summary.wbChangeCount",
+      "value": 80,
+      "status": "verified",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "periodFrom": "2026-06-19",
+      "periodTo": "2026-06-19",
+      "formulaVersion": "repricer-summary-v1",
+      "batchId": "083adab86e24b97fcea8841b",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "repricer.summary.wbEqualizeCount",
+      "value": 16,
+      "status": "verified",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "periodFrom": "2026-06-19",
+      "periodTo": "2026-06-19",
+      "formulaVersion": "repricer-summary-v1",
+      "batchId": "083adab86e24b97fcea8841b",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "repricer.summary.wbMarginRiskCount",
+      "value": 72,
+      "status": "verified",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "periodFrom": "2026-06-19",
+      "periodTo": "2026-06-19",
+      "formulaVersion": "repricer-summary-v1",
+      "batchId": "083adab86e24b97fcea8841b",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ],
+      "warnings": []
+    },
+    {
+      "metricId": "repricer.summary.wbTurnoverCount",
+      "value": 63,
+      "status": "verified",
+      "sourceLayer": "repricer",
+      "sourceAsOf": "2026-06-19",
+      "periodFrom": "2026-06-19",
+      "periodTo": "2026-06-19",
+      "formulaVersion": "repricer-summary-v1",
+      "batchId": "083adab86e24b97fcea8841b",
+      "consumers": [
+        "repricer.cards",
+        "repricer.export"
+      ],
+      "warnings": []
+    }
+  ],
+  "fingerprint": "7437c565555219846e8525d68cb72fbfa4d1c831b7afc1f61fabe09a4767c064"
+}

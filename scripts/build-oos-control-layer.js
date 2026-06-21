@@ -5,7 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const DEFAULT_SOON_DAYS = 10;
-const DEFAULT_WATCH_DAYS = 28;
+const DEFAULT_WATCH_DAYS = 30;
 const HISTORY_DAY_LIMIT = 370;
 const ISSUE_STATE_LIMIT = 5000;
 const SIGNAL_LIFECYCLE_KEYS = new Set(['active', 'new']);
@@ -250,7 +250,7 @@ function inferDepartment(row, status) {
   if (status === 'oos') return 'Маркетплейс / логистика';
   if (numberOrZero(row?.inTransit) > 0) return 'Логистика';
   if (numberOrZero(row?.inRequest) > 0) return 'Закуп';
-  if (numberOrZero(row?.targetNeed14) > 0 || numberOrZero(row?.targetNeed28) > 0) return 'Закуп';
+  if (numberOrZero(row?.targetNeed14) > 0 || numberOrZero(row?.targetNeed30 ?? row?.targetNeed28) > 0) return 'Закуп';
   return 'Команда MP';
 }
 
@@ -275,7 +275,7 @@ function classifyRow(row, rules, lifecycle) {
   const inStock = numberOrZero(row?.inStock);
   const avgDaily = numberOrZero(row?.avgDaily);
   const turnoverDays = finiteOrNull(row?.turnoverDays);
-  const targetNeed28 = numberOrZero(row?.targetNeed28);
+  const targetNeed30 = numberOrZero(row?.targetNeed30 ?? row?.targetNeed28);
 
   if (inStock <= 0 && avgDaily > 0) {
     return { status: 'oos', severity: 'critical', statusLabel: 'OOS', rank: 4, signalRule: 'oos_now_active_or_new' };
@@ -283,7 +283,7 @@ function classifyRow(row, rules, lifecycle) {
   if (turnoverDays !== null && turnoverDays > 0 && turnoverDays < rules.soonDays) {
     return { status: 'risk', severity: 'high', statusLabel: `OOS скоро <${rules.soonDays} д`, rank: 2, signalRule: 'oos_soon_turnover_active_or_new' };
   }
-  if ((turnoverDays !== null && turnoverDays > 0 && turnoverDays < rules.watchDays) || targetNeed28 > 0) {
+  if ((turnoverDays !== null && turnoverDays > 0 && turnoverDays < rules.watchDays) || targetNeed30 > 0) {
     return { status: 'watch', severity: 'medium', statusLabel: `Контроль запаса <${rules.watchDays} д`, rank: 1, signalRule: 'oos_watch_turnover_active_or_new' };
   }
   return null;
@@ -334,14 +334,20 @@ function buildRowsLegacy(orderProcurement, skus, smartPriceOverlay, rules) {
         inStock: Math.round(numberOrZero(row?.inStock)),
         inTransit: Math.round(numberOrZero(row?.inTransit)),
         inRequest: Math.round(numberOrZero(row?.inRequest)),
+        available: Math.round(numberOrZero(row?.available ?? (numberOrZero(row?.inStock) + numberOrZero(row?.inTransit) + numberOrZero(row?.inRequest)))),
+        safetyStock: Math.round(numberOrZero(row?.safetyStock)),
         avgDaily: Number(avgDaily.toFixed(4)),
         turnoverDays: finiteOrNull(row?.turnoverDays),
         sales7: Number(numberOrZero(row?.sales7).toFixed(2)),
         sales14: Number(numberOrZero(row?.sales14).toFixed(2)),
         sales28: Number(numberOrZero(row?.sales28).toFixed(2)),
+        sales30: Number(numberOrZero(row?.sales30).toFixed(2)),
+        rawNeed30: Math.round(numberOrZero(row?.rawNeed30 ?? row?.targetNeed30 ?? row?.targetNeed28)),
         targetNeed7: Math.round(numberOrZero(row?.targetNeed7)),
         targetNeed14: Math.round(numberOrZero(row?.targetNeed14)),
         targetNeed28: Math.round(numberOrZero(row?.targetNeed28)),
+        targetNeed30: Math.round(numberOrZero(row?.targetNeed30 ?? row?.targetNeed28)),
+        targetHorizonDays: numberOrZero(row?.targetHorizonDays) || 30,
         averagePrice: Math.round(price.price),
         priceSource: price.source,
         lostRevenueDay: Math.round(lostRevenueDay),
@@ -414,8 +420,10 @@ function aggregateSignalRows(rawRows, rules) {
       inStock: row.inStock,
       inTransit: row.inTransit,
       inRequest: row.inRequest,
+      available: row.available,
       avgDaily: row.avgDaily,
       turnoverDays: row.turnoverDays,
+      targetNeed30: row.targetNeed30,
       revenueAtRiskDay: row.revenueAtRiskDay,
       lostRevenueDay: row.lostRevenueDay
     }));
@@ -429,6 +437,7 @@ function aggregateSignalRows(rawRows, rules) {
       inStock: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.inStock), 0)),
       inTransit: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.inTransit), 0)),
       inRequest: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.inRequest), 0)),
+      available: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.available), 0)),
       avgDaily: Number(avgDaily.toFixed(4)),
       turnoverDays: rows.reduce((min, row) => {
         const days = finiteOrNull(row.turnoverDays);
@@ -438,9 +447,13 @@ function aggregateSignalRows(rawRows, rules) {
       sales7: Number(rows.reduce((sum, row) => sum + numberOrZero(row.sales7), 0).toFixed(2)),
       sales14: Number(rows.reduce((sum, row) => sum + numberOrZero(row.sales14), 0).toFixed(2)),
       sales28: Number(rows.reduce((sum, row) => sum + numberOrZero(row.sales28), 0).toFixed(2)),
+      sales30: Number(rows.reduce((sum, row) => sum + numberOrZero(row.sales30), 0).toFixed(2)),
+      rawNeed30: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.rawNeed30), 0)),
       targetNeed7: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.targetNeed7), 0)),
       targetNeed14: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.targetNeed14), 0)),
       targetNeed28: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.targetNeed28), 0)),
+      targetNeed30: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.targetNeed30), 0)),
+      targetHorizonDays: 30,
       averagePrice: Math.round(weightedPrice || numberOrZero(base.averagePrice)),
       lostRevenueDay: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.lostRevenueDay), 0)),
       revenueAtRiskDay: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.revenueAtRiskDay), 0))
@@ -501,14 +514,20 @@ function buildRows(orderProcurement, skus, smartPriceOverlay, rules) {
         inStock: Math.round(numberOrZero(row?.inStock)),
         inTransit: Math.round(numberOrZero(row?.inTransit)),
         inRequest: Math.round(numberOrZero(row?.inRequest)),
+        available: Math.round(numberOrZero(row?.available ?? (numberOrZero(row?.inStock) + numberOrZero(row?.inTransit) + numberOrZero(row?.inRequest)))),
+        safetyStock: Math.round(numberOrZero(row?.safetyStock)),
         avgDaily: Number(avgDaily.toFixed(4)),
         turnoverDays: finiteOrNull(row?.turnoverDays),
         sales7: Number(numberOrZero(row?.sales7).toFixed(2)),
         sales14: Number(numberOrZero(row?.sales14).toFixed(2)),
         sales28: Number(numberOrZero(row?.sales28).toFixed(2)),
+        sales30: Number(numberOrZero(row?.sales30).toFixed(2)),
+        rawNeed30: Math.round(numberOrZero(row?.rawNeed30 ?? row?.targetNeed30 ?? row?.targetNeed28)),
         targetNeed7: Math.round(numberOrZero(row?.targetNeed7)),
         targetNeed14: Math.round(numberOrZero(row?.targetNeed14)),
         targetNeed28: Math.round(numberOrZero(row?.targetNeed28)),
+        targetNeed30: Math.round(numberOrZero(row?.targetNeed30 ?? row?.targetNeed28)),
+        targetHorizonDays: numberOrZero(row?.targetHorizonDays) || 30,
         averagePrice: Math.round(price.price),
         priceSource: price.source,
         lostRevenueDay: Math.round(lostRevenueDay),

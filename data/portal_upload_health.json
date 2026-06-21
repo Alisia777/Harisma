@@ -1,0 +1,8 @@
+{
+  "schema": "portal-upload-health-v1",
+  "status": "ok",
+  "currentBatchId": null,
+  "message": "No current upload batch in this build.",
+  "unresolvedBlockingIssues": 0,
+  "productionWritesBeforePromote": false
+}

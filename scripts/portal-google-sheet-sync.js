@@ -422,6 +422,114 @@ function formatFactCardLabel(dateValue) {
   return `Факт 01-${day}.${month}, шт.`;
 }
 
+const DASHBOARD_MONTH_LABEL_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+
+function dashboardMonthLabelRu(dateValue) {
+  const date = new Date(`${isoDate(dateValue)}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return '';
+  return DASHBOARD_MONTH_LABEL_RU[date.getUTCMonth()];
+}
+
+function dashboardRangeLabel(dateValue) {
+  const date = new Date(`${isoDate(dateValue)}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return '';
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  return `01-${day}.${month}`;
+}
+
+function buildCanonicalDashboardCards({
+  skus,
+  assignedSku,
+  totalStock,
+  stockDate,
+  latestMarketplaceDate,
+  factUnits,
+  companyPlanSlice
+}) {
+  const skuCount = Array.isArray(skus) ? skus.length : 0;
+  const rangeLabel = dashboardRangeLabel(latestMarketplaceDate);
+  const monthLabel = dashboardMonthLabelRu(latestMarketplaceDate);
+  const cards = [];
+  const seen = new Set();
+  const add = (card) => {
+    const id = normalizeKey(card.id || card.key || card.label);
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+    cards.push(card);
+  };
+
+  add({
+    id: 'sku-registry-total',
+    label: 'SKU в базе',
+    value: skuCount,
+    hint: 'Канонический SKU/owner-реестр.'
+  });
+  add({
+    id: 'owner-assigned',
+    label: 'Закреплено за owner',
+    value: assignedSku,
+    hint: 'Owner берется из канонического SKU/owner-реестра.'
+  });
+  add({
+    id: 'owner-unassigned',
+    label: 'Без owner',
+    value: Math.max(0, skuCount - assignedSku),
+    hint: 'Неразнесенные SKU остаются видимыми в quarantine/unallocated.'
+  });
+  add({
+    id: 'marketplace-stock-total',
+    label: 'Остатки MP, шт.',
+    value: totalStock,
+    hint: `Складской слой WB/Ozon/Yandex на ${stockDate || latestMarketplaceDate || 'последнюю доступную дату'}.`
+  });
+  add({
+    id: 'marketplace-fact-units',
+    label: rangeLabel ? `Факт ${rangeLabel}, шт.` : 'Факт, шт.',
+    value: factUnits,
+    hint: `Факт WB/Ozon/Yandex из platform_trends.json на ${latestMarketplaceDate || 'последнюю доступную дату'}.`
+  });
+
+  if (companyPlanSlice) {
+    add({
+      id: 'company-plan-revenue',
+      label: `План компании ${companyPlanSlice.label || monthLabel || companyPlanSlice.monthKey}, ₽`,
+      value: companyPlanSlice.planRevenueMonth,
+      format: 'money',
+      period: companyPlanSlice.monthKey,
+      hint: 'План выручки берется только из company_plan.json.'
+    });
+    add({
+      id: 'company-fact-revenue',
+      label: rangeLabel ? `Факт компании ${rangeLabel}, ₽` : 'Факт компании, ₽',
+      value: companyPlanSlice.factRevenueToDate,
+      format: 'money',
+      period: latestMarketplaceDate,
+      hint: 'Факт выручки берется только из platform_trends.json.'
+    });
+    add({
+      id: 'company-plan-completion',
+      label: 'Выполнение компании к плану',
+      value: companyPlanSlice.completionToDatePct,
+      valuePct: companyPlanSlice.completionToDatePct,
+      format: 'pct',
+      period: latestMarketplaceDate,
+      hint: 'Факт из platform_trends.json / линейный план из company_plan.json.'
+    });
+    add({
+      id: 'company-forecast-vs-plan',
+      label: 'Прогноз / план',
+      value: companyPlanSlice.forecastPct,
+      valuePct: companyPlanSlice.forecastPct,
+      format: 'pct',
+      period: companyPlanSlice.monthKey,
+      hint: 'Прогноз построен из факта platform_trends.json и месячного плана company_plan.json.'
+    });
+  }
+
+  return cards;
+}
+
 function normalizeMarketplace(value) {
   const raw = normalizeKey(value)
     .replaceAll('.', '')
@@ -1163,6 +1271,7 @@ function buildDashboardFromPlatformTrends(baseDashboard, skus, logisticsRows, op
     const marketplaceHint = hint.includes('Google Sheets') || hint.includes('API');
     return !(marketplaceLabel && marketplaceHint);
   }) : [];
+  cards.length = 0;
   replaceCard(cards, (card) => card.label === 'SKU РІ Р±Р°Р·Рµ', {
     label: 'SKU РІ Р±Р°Р·Рµ',
     value: skus.length,
@@ -1291,6 +1400,15 @@ function buildDashboardFromPlatformTrends(baseDashboard, skus, logisticsRows, op
       summary[`${monthPrefix}_company_forecast_pct`] = companyPlanSlice.forecastPct;
     }
   }
+  next.cards = buildCanonicalDashboardCards({
+    skus,
+    assignedSku,
+    totalStock,
+    stockDate: latestLogisticsDate,
+    latestMarketplaceDate,
+    factUnits,
+    companyPlanSlice
+  });
   next.brandSummary[0] = summary;
   return next;
 }
@@ -1453,6 +1571,7 @@ function buildDashboard(baseDashboard, skus, factRows, logisticsRows, options, p
   next.marketplaceFactSource = next.dataFreshness.marketplaceFactSource;
 
   const cards = Array.isArray(next.cards) ? next.cards : [];
+  cards.length = 0;
   replaceCard(cards, (card) => card.label === 'SKU в базе', {
     label: 'SKU в базе',
     value: skus.length,
@@ -1581,6 +1700,15 @@ function buildDashboard(baseDashboard, skus, factRows, logisticsRows, options, p
       summary[`${monthPrefix}_company_forecast_pct`] = companyPlanSlice.forecastPct;
     }
   }
+  next.cards = buildCanonicalDashboardCards({
+    skus,
+    assignedSku,
+    totalStock,
+    stockDate: latestLogisticsDate,
+    latestMarketplaceDate,
+    factUnits,
+    companyPlanSlice
+  });
   next.brandSummary[0] = summary;
   return next;
 }

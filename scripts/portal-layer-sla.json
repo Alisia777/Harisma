@@ -1,0 +1,210 @@
+{
+  "schemaVersion": "portal-layer-sla-v1",
+  "statusSemantics": {
+    "verified": "The layer has a business sourceAsOf, required coverage and verified dependencies.",
+    "warning": "The layer is usable but has non-blocking warnings that must be visible.",
+    "manual_review": "The layer can be displayed but cannot drive automatic decisions.",
+    "stale": "The layer sourceAsOf is outside SLA even if generatedAt is fresh.",
+    "partial": "The layer has lower than required coverage.",
+    "unknown": "The layer cannot prove sourceAsOf or dependency truth.",
+    "quarantined": "The current batch is rejected and last-good must be used.",
+    "blocked": "The layer blocks publish.",
+    "last_good": "The current layer is rejected; serving last good is allowed only as an explicit status."
+  },
+  "layers": {
+    "dashboard": {
+      "sourceFile": "dashboard.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["dataFreshness.asOfDate", "latestMarketplaceDate", "asOfDate"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 1,
+      "requiredDependencies": ["company_plan", "platform_trends", "sku_matrix"],
+      "blockingMode": "last_good"
+    },
+    "company_plan": {
+      "sourceFile": "company_plan.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["activeMonthKey", "generatedAt"],
+      "allowGeneratedAtSourceAsOf": true,
+      "maxLagDays": 45,
+      "maxBuildAgeHours": 1080,
+      "requiredCoverage": 1,
+      "requiredDependencies": [],
+      "blockingMode": "last_good"
+    },
+    "platform_trends": {
+      "sourceFile": "platform_trends.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["latestMarketplaceDate", "asOfDate"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 1,
+      "requiredDependencies": [],
+      "blockingMode": "last_good"
+    },
+    "prices": {
+      "sourceFile": "prices.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["asOfDate", "sourceAsOf", "dates[].date"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 0.98,
+      "requiredDependencies": ["smart_price_overlay", "sku_matrix"],
+      "blockingMode": "last_good"
+    },
+    "repricer": {
+      "sourceFile": "repricer.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["sourceAsOf", "sourceFreshness.merged"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 0.98,
+      "requiredDependencies": ["prices", "min_max_registry", "cost_registry", "sku_matrix", "warehouse_stock_overlay"],
+      "blockingMode": "last_good"
+    },
+    "smart_price_overlay": {
+      "sourceFile": "smart_price_overlay.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["asOfDate", "sourceAsOf"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 0.98,
+      "requiredDependencies": ["sku_matrix"],
+      "blockingMode": "last_good"
+    },
+    "smart_price_workbench": {
+      "sourceFile": "smart_price_workbench.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["sourceAsOf", "asOfDate"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 0.98,
+      "requiredDependencies": ["min_max_registry", "cost_registry", "sku_matrix"],
+      "blockingMode": "last_good"
+    },
+    "price_workbench_support": {
+      "sourceFile": "price_workbench_support.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["sourceAsOf", "asOfDate"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 0.98,
+      "requiredDependencies": ["company_plan", "sku_matrix"],
+      "blockingMode": "last_good"
+    },
+    "order_procurement": {
+      "sourceFile": "order_procurement.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["window.to", "sourceAsOf"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 0.98,
+      "requiredDependencies": ["platform_trends", "warehouse_stock_overlay", "sku_matrix"],
+      "blockingMode": "last_good"
+    },
+    "order_procurement_wb": {
+      "sourceFile": "order_procurement_wb.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["window.to", "sourceAsOf"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 0.98,
+      "requiredDependencies": ["order_procurement"],
+      "blockingMode": "last_good"
+    },
+    "order_procurement_ozon": {
+      "sourceFile": "order_procurement_ozon.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["window.to", "sourceAsOf"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 0.98,
+      "requiredDependencies": ["order_procurement"],
+      "blockingMode": "last_good"
+    },
+    "order_procurement_ym": {
+      "sourceFile": "order_procurement_ym.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["window.to", "sourceAsOf"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 0.98,
+      "requiredDependencies": ["order_procurement"],
+      "blockingMode": "last_good"
+    },
+    "warehouse_stock_overlay": {
+      "sourceFile": "warehouse_stock_overlay.json",
+      "sourceKind": "canonical_json",
+      "freshnessDataset": "warehouse_stock_overlay",
+      "businessDatePath": ["sourceAsOf"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 0.95,
+      "requiredDependencies": ["sku_matrix"],
+      "blockingMode": "last_good"
+    },
+    "sku_matrix": {
+      "sourceFile": "sku_matrix.json",
+      "sourceKind": "canonical_json",
+      "freshnessDataset": "sku_matrix",
+      "businessDatePath": ["sourceAsOf"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 1,
+      "requiredDependencies": ["sku_aliases", "wb_owner_distribution_audit"],
+      "blockingMode": "last_good"
+    },
+    "sku_aliases": {
+      "sourceFile": "sku_aliases.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["sourceAsOf"],
+      "maxLagDays": 2,
+      "maxBuildAgeHours": 72,
+      "requiredCoverage": 1,
+      "requiredDependencies": [],
+      "blockingMode": "manual_review"
+    },
+    "wb_owner_distribution_audit": {
+      "sourceFile": "wb_owner_distribution_audit.json",
+      "sourceKind": "canonical_json",
+      "freshnessDataset": "wb_owner_distribution_audit",
+      "businessDatePath": ["sourceAsOf"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 1,
+      "requiredDependencies": ["sku_matrix"],
+      "blockingMode": "manual_review"
+    },
+    "portal_data_quality": {
+      "sourceFile": "portal_data_quality.json",
+      "sourceKind": "canonical_json",
+      "businessDatePath": ["summary.maxDate", "maxDate"],
+      "maxLagDays": 1,
+      "maxBuildAgeHours": 30,
+      "requiredCoverage": 1,
+      "requiredDependencies": ["dashboard", "platform_trends", "order_procurement", "warehouse_stock_overlay", "sku_matrix"],
+      "blockingMode": "last_good"
+    },
+    "min_max_registry": {
+      "sourceFile": "min_max_registry.json",
+      "sourceKind": "upload_registry",
+      "businessDatePath": ["sourceAsOf", "effectiveFrom"],
+      "maxLagDays": 31,
+      "maxBuildAgeHours": 744,
+      "requiredCoverage": 0.98,
+      "requiredDependencies": ["sku_matrix"],
+      "blockingMode": "manual_review"
+    },
+    "cost_registry": {
+      "sourceFile": "cost_registry.json",
+      "sourceKind": "upload_registry",
+      "businessDatePath": ["sourceAsOf", "effectiveFrom"],
+      "maxLagDays": 31,
+      "maxBuildAgeHours": 744,
+      "requiredCoverage": 0.98,
+      "requiredDependencies": ["sku_matrix"],
+      "blockingMode": "manual_review"
+    }
+  }
+}

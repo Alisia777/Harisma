@@ -596,6 +596,15 @@ function projectedNeed(avgDaily, stock, days) {
   return Math.max(0, Math.ceil((avgDaily * days) - numberOrZero(stock)));
 }
 
+function projectedNeedRaw(avgDaily, available, days, safetyStock = 0) {
+  if (!(avgDaily > 0) || !(days > 0)) return 0;
+  return Math.ceil((avgDaily * days) + numberOrZero(safetyStock) - numberOrZero(available));
+}
+
+function targetNeedFromRaw(rawNeed) {
+  return Math.max(0, numberOrZero(rawNeed));
+}
+
 function shouldUseFallbackTrend(row, articleRows, trendAvgDaily) {
   if (!(trendAvgDaily > 0)) return false;
   const placementType = normalizeText(row?.placementType).toUpperCase();
@@ -761,6 +770,12 @@ function buildPayload(options, sourceRows, context) {
       }
 
       const safeTurnover = turnoverDays || (avgDaily > 0 ? row.inStock / avgDaily : null);
+      const inTransit = 0;
+      const inRequest = 0;
+      const available = row.inStock + inTransit + inRequest;
+      const safetyStock = 0;
+      const rawNeed28 = projectedNeedRaw(avgDaily, available, 28, safetyStock);
+      const rawNeed30 = projectedNeedRaw(avgDaily, available, 30, safetyStock);
       rows.push({
         platform: 'YM',
         platformKey: 'ym',
@@ -770,16 +785,26 @@ function buildPayload(options, sourceRows, context) {
         name: row.name,
         owner: row.owner,
         inStock: Math.round(row.inStock),
-        inTransit: 0,
-        inRequest: 0,
+        inTransit,
+        inRequest,
+        available,
+        safetyStock,
         avgDaily: Number(avgDaily.toFixed(4)),
         turnoverDays: safeTurnover === null ? null : Number(safeTurnover.toFixed(2)),
         sales7: projectedUnits(avgDaily, 7),
         sales14: projectedUnits(avgDaily, 14),
         sales28: projectedUnits(avgDaily, 28),
-        targetNeed7: projectedNeed(avgDaily, row.inStock, 7),
-        targetNeed14: projectedNeed(avgDaily, row.inStock, 14),
-        targetNeed28: projectedNeed(avgDaily, row.inStock, 28),
+        sales30: projectedUnits(avgDaily, 30),
+        rawNeed7: projectedNeedRaw(avgDaily, available, 7, safetyStock),
+        rawNeed14: projectedNeedRaw(avgDaily, available, 14, safetyStock),
+        rawNeed28,
+        rawNeed30,
+        targetNeed7: targetNeedFromRaw(projectedNeedRaw(avgDaily, available, 7, safetyStock)),
+        targetNeed14: targetNeedFromRaw(projectedNeedRaw(avgDaily, available, 14, safetyStock)),
+        targetNeed28: targetNeedFromRaw(rawNeed28),
+        targetNeed30: targetNeedFromRaw(rawNeed30),
+        targetHorizonDays: 30,
+        needFormula: 'max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))',
         stockAvailable: Math.round(row.stockAvailable),
         stockFit: Math.round(row.stockFit),
         stockFreeze: Math.round(row.stockFreeze),

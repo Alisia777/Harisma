@@ -2727,6 +2727,14 @@ function normalizeProductLeaderboardItem(item = {}) {
     priceOzon: productLeaderboardNumberOrNull(item.priceOzon ?? item.ozonPrice ?? item.ozon?.currentPrice ?? item.ozon?.recPrice),
     category: item.category || '',
     traffic: item.traffic || '',
+    creator: item.creator || item.contentCreator || item.author || '',
+    contentBatch: item.contentBatch || item.batchId || item.batch || item.contentParty || '',
+    contentFormat: item.contentFormat || item.format || item.mediaFormat || '',
+    publishedAt: item.publishedAt || item.publishDate || item.publicationDate || '',
+    briefUrl: item.briefUrl || item.tzUrl || item.taskUrl || item.specUrl || '',
+    contentId: item.contentId || item.content_id || '',
+    contentHypothesis: item.contentHypothesis || item.hypothesis || '',
+    productionStatus: item.productionStatus || item.contentStatus || '',
     signal: item.signal || 'steady',
     inPortal: item.inPortal !== false,
     reach: numberOrZero(item.reach),
@@ -2870,17 +2878,19 @@ function getProductLeaderboardFilters() {
   state.productLeaderboardFilters.category = state.productLeaderboardFilters.category || 'all';
   state.productLeaderboardFilters.signal = state.productLeaderboardFilters.signal || 'all';
   if (!state.productLeaderboardFilters._leaderGameSortMigrated) {
-    if (!state.productLeaderboardFilters.sort || state.productLeaderboardFilters.sort === 'buys') {
-      state.productLeaderboardFilters.sort = 'gameScore';
+    if (!state.productLeaderboardFilters.sort || state.productLeaderboardFilters.sort === 'buys' || state.productLeaderboardFilters.sort === 'gameScore') {
+      state.productLeaderboardFilters.sort = 'orderDeltaAbs';
     }
     state.productLeaderboardFilters._leaderGameSortMigrated = true;
   }
-  state.productLeaderboardFilters.sort = state.productLeaderboardFilters.sort || 'gameScore';
+  state.productLeaderboardFilters.sort = state.productLeaderboardFilters.sort || 'orderDeltaAbs';
   state.productLeaderboardFilters.sortDir = state.productLeaderboardFilters.sortDir === 'asc' ? 'asc' : 'desc';
   state.productLeaderboardFilters.snapshot = state.productLeaderboardFilters.snapshot || 'latest';
   state.productLeaderboardFilters.lflCurrentSnapshot = state.productLeaderboardFilters.lflCurrentSnapshot || 'latest';
   state.productLeaderboardFilters.lflCompareSnapshot = state.productLeaderboardFilters.lflCompareSnapshot || '';
   state.productLeaderboardFilters.expandedPanel = state.productLeaderboardFilters.expandedPanel || 'metrics';
+  state.productLeaderboardFilters.subview = state.productLeaderboardFilters.subview || 'overview';
+  state.productLeaderboardFilters.weeklyMetric = state.productLeaderboardFilters.weeklyMetric || 'orders';
   return state.productLeaderboardFilters;
 }
 
@@ -3000,6 +3010,14 @@ function productLeaderboardExportRows(items, payload) {
       price_ozon: prices.ozon ?? '',
       category: item.category || '',
       traffic: item.traffic || '',
+      creator: item.creator || '',
+      content_batch: item.contentBatch || '',
+      content_format: item.contentFormat || '',
+      published_at: item.publishedAt || '',
+      brief_url: item.briefUrl || '',
+      content_id: item.contentId || '',
+      content_hypothesis: item.contentHypothesis || '',
+      production_status: item.productionStatus || '',
       signal: productLeaderboardSignalMeta(item.signal).label,
       game_score: gameScore.score,
       game_level: gameScore.label,
@@ -3038,6 +3056,14 @@ function downloadProductLeaderboardExcel(payload, items) {
     ['price_ozon', 'Цена Ozon'],
     ['category', 'Категория'],
     ['traffic', 'Трафик'],
+    ['creator', 'Creator'],
+    ['content_batch', 'Content batch'],
+    ['content_format', 'Format'],
+    ['published_at', 'Published at'],
+    ['brief_url', 'TZ link'],
+    ['content_id', 'Content ID'],
+    ['content_hypothesis', 'Hypothesis'],
+    ['production_status', 'Content status'],
     ['signal', 'Сигнал'],
     ['game_score', 'КЗ показатель'],
     ['game_level', 'КЗ статус'],
@@ -3076,7 +3102,7 @@ function getFilteredProductLeaderboardItems(payload) {
     return haystack.includes(search);
   });
 
-  const sortKey = filters.sort || 'buys';
+  const sortKey = filters.sort === 'orderDeltaAbs' ? 'orders' : (filters.sort || 'orders');
   const sortDir = filters.sortDir === 'asc' ? 'asc' : 'desc';
   const directionFactor = sortDir === 'asc' ? 1 : -1;
   const emptyMetric = sortDir === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
@@ -10344,6 +10370,769 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   });
   root.querySelector('[data-product-leaderboard-export]')?.addEventListener('click', () => {
     downloadProductLeaderboardExcel(payload, filteredItems);
+  });
+}
+
+const PRODUCT_LEADERBOARD_NATIVE_MIN_WEEKS = 8;
+const PRODUCT_LEADERBOARD_NATIVE_MAX_WEEKS = 12;
+const PRODUCT_LEADERBOARD_NATIVE_METRICS = {
+  reach: { key: 'reach', label: 'Охват', format: 'int', hue: 42 },
+  clicks: { key: 'clicks', label: 'Клики', format: 'int', hue: 205 },
+  orders: { key: 'orders', label: 'Заказы', format: 'int', hue: 145 },
+  buys: { key: 'buys', label: 'Выкупы', format: 'int', hue: 168 }
+};
+
+function productLeaderboardNativeFormatDelta(value, options = {}) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+  if (options.format === 'money') return productLeaderboardSignedMoney(value);
+  if (options.format === 'pct') return productLeaderboardSignedPp(value);
+  return productLeaderboardSignedInt(value);
+}
+
+function productLeaderboardNativePercentDelta(current, previous) {
+  const prev = numberOrZero(previous);
+  if (prev <= 0) return null;
+  return (numberOrZero(current) - prev) / prev;
+}
+
+function productLeaderboardNativeWeekRows() {
+  const byWeek = new Map();
+  productLeaderboardHistoryPayloads().forEach((payload, index) => {
+    const snapshot = normalizeProductLeaderboardPayload(payload || {});
+    if (!Array.isArray(snapshot.items) || !snapshot.items.length) return;
+    const summary = productLeaderboardSummaryFromItems(snapshot.items);
+    if (summary.orders <= 0 && summary.reach <= 0) return;
+    const range = productLeaderboardWeekRange(snapshot);
+    const weekKey = range.fromIso && range.toIso
+      ? `${range.fromIso}_${range.toIso}`
+      : String(snapshot.weekLabel || snapshot.sourceSheetName || snapshot.generatedAt || `snapshot-${index}`).trim().toLowerCase();
+    if (!weekKey) return;
+    const startStamp = parseFreshStamp(range.fromIso || snapshot.sourceWeekFrom || snapshot.generatedAt || snapshot.weekLabel);
+    const endStamp = parseFreshStamp(range.toIso || snapshot.sourceWeekTo || snapshot.generatedAt || snapshot.weekLabel);
+    const sourceStamp = parseFreshStamp(snapshot.generatedAt || snapshot.sourceWeekTo || range.toIso || snapshot.weekLabel);
+    const next = {
+      weekKey,
+      range,
+      snapshot,
+      summary,
+      weekLabel: snapshot.weekLabel || snapshot.sourceSheetName || '',
+      sourceStamp,
+      startStamp,
+      endStamp,
+      rawIndex: index
+    };
+    const previous = byWeek.get(weekKey);
+    if (!previous || sourceStamp >= previous.sourceStamp) byWeek.set(weekKey, next);
+  });
+
+  const rows = [...byWeek.values()].sort((left, right) => (
+    numberOrZero(left.startStamp) - numberOrZero(right.startStamp)
+    || numberOrZero(left.sourceStamp) - numberOrZero(right.sourceStamp)
+    || String(left.weekLabel || '').localeCompare(String(right.weekLabel || ''), 'ru')
+  ));
+  rows.forEach((row, index) => {
+    row.index = index;
+    row.stableKey = `week:${row.weekKey}`;
+    row.optionKey = index === rows.length - 1 ? 'latest' : row.stableKey;
+  });
+  return rows;
+}
+
+function productLeaderboardNativeWeekLabel(row = {}) {
+  row = row || {};
+  if (row.range?.fromLabel && row.range?.toLabel) return `${row.range.fromLabel} - ${row.range.toLabel}`;
+  return row.weekLabel || 'недельный срез';
+}
+
+function productLeaderboardNativeSelectedWeeks(filters = {}) {
+  const weeks = productLeaderboardNativeWeekRows();
+  const selectedKey = String(filters.snapshot || 'latest').trim();
+  let currentIndex = weeks.length - 1;
+  if (selectedKey && selectedKey !== 'latest') {
+    const matchedIndex = weeks.findIndex((row) => (
+      row.stableKey === selectedKey
+      || row.optionKey === selectedKey
+      || row.snapshot.generatedAt === selectedKey
+      || row.weekLabel === selectedKey
+      || row.range?.fromIso === selectedKey
+      || row.range?.toIso === selectedKey
+    ));
+    if (matchedIndex >= 0) currentIndex = matchedIndex;
+  }
+  const current = weeks[currentIndex] || null;
+  const previous = currentIndex > 0 ? weeks[currentIndex - 1] : null;
+  const gapDays = current && previous && current.startStamp && previous.startStamp
+    ? Math.round((current.startStamp - previous.startStamp) / 86400000)
+    : null;
+  const hasAdjacentComparison = Boolean(previous && gapDays === 7);
+  return {
+    weeks,
+    current,
+    previous,
+    currentIndex,
+    gapDays,
+    hasAdjacentComparison,
+    hasEnoughHistory: weeks.length >= PRODUCT_LEADERBOARD_NATIVE_MIN_WEEKS
+  };
+}
+
+function productLeaderboardNativeAggregateByKey(items = []) {
+  const map = new Map();
+  (Array.isArray(items) ? items : []).forEach((item = {}) => {
+    const key = productLeaderboardItemCompareKey(item);
+    if (!key) return;
+    const entry = map.get(key) || {
+      key,
+      item,
+      reach: 0,
+      reactions: 0,
+      posts: 0,
+      clicks: 0,
+      carts: 0,
+      orders: 0,
+      buys: 0,
+      contentCost: 0,
+      revenue: 0,
+      income: 0
+    };
+    entry.reach += numberOrZero(item.reach);
+    entry.reactions += numberOrZero(item.reactions);
+    entry.posts += numberOrZero(item.posts);
+    entry.clicks += numberOrZero(item.clicks);
+    entry.carts += numberOrZero(item.carts);
+    entry.orders += numberOrZero(item.orders);
+    entry.buys += numberOrZero(item.buys);
+    entry.contentCost += numberOrZero(item.contentCost);
+    entry.revenue += numberOrZero(item.revenue);
+    entry.income += numberOrZero(item.income);
+    if (!entry.item?.articleKey || item.articleKey) entry.item = item;
+    map.set(key, entry);
+  });
+  return map;
+}
+
+function productLeaderboardNativeSummaryFromAggregates(rows = [], side = 'current') {
+  const summary = {
+    skuCount: 0,
+    reach: 0,
+    reactions: 0,
+    posts: 0,
+    clicks: 0,
+    carts: 0,
+    orders: 0,
+    buys: 0,
+    contentCost: 0,
+    revenue: 0,
+    income: 0
+  };
+  rows.forEach((row) => {
+    const entry = side === 'previous' ? row.previous : row.current;
+    if (!entry) return;
+    summary.skuCount += 1;
+    ['reach', 'reactions', 'posts', 'clicks', 'carts', 'orders', 'buys', 'contentCost', 'revenue', 'income'].forEach((key) => {
+      summary[key] += numberOrZero(entry[key]);
+    });
+  });
+  summary.ctrPct = summary.reach > 0 ? summary.clicks / summary.reach : 0;
+  summary.cartRatePct = summary.clicks > 0 ? summary.carts / summary.clicks : 0;
+  summary.orderRatePct = summary.clicks > 0 ? summary.orders / summary.clicks : 0;
+  summary.buyoutPct = summary.orders > 0 ? summary.buys / summary.orders : 0;
+  summary.romiPct = summary.contentCost > 0 ? summary.income / summary.contentCost : 0;
+  summary.drrPct = summary.revenue > 0 ? summary.contentCost / summary.revenue : 0;
+  return summary;
+}
+
+function productLeaderboardNativePrimaryCause(row = {}) {
+  if (row.status === 'new') return 'новый SKU';
+  if (row.status === 'discontinued') return 'выбыл из среза';
+  const causes = [
+    { label: 'трафик', value: Math.abs(numberOrZero(row.reachDelta)) },
+    { label: 'клики / CTR', value: Math.abs(numberOrZero(row.clicksDelta)) },
+    { label: 'корзина', value: Math.abs(numberOrZero(row.cartsDelta)) },
+    { label: 'заказ', value: Math.abs(numberOrZero(row.ordersDelta)) },
+    { label: 'выкуп', value: Math.abs(numberOrZero(row.buysDelta)) }
+  ].sort((left, right) => right.value - left.value);
+  return causes[0]?.value ? causes[0].label : 'без резкого фактора';
+}
+
+function productLeaderboardNativeComparisonRows(currentItems = [], previousItems = []) {
+  const currentMap = productLeaderboardNativeAggregateByKey(currentItems);
+  const previousMap = productLeaderboardNativeAggregateByKey(previousItems);
+  const keys = new Set([...currentMap.keys(), ...previousMap.keys()]);
+  return [...keys].map((key) => {
+    const current = currentMap.get(key) || null;
+    const previous = previousMap.get(key) || null;
+    const item = current?.item || previous?.item || {};
+    const row = {
+      key,
+      item,
+      current,
+      previous,
+      currentItem: current?.item || null,
+      previousItem: previous?.item || null,
+      status: current && previous ? 'comparable' : current ? 'new' : 'discontinued',
+      reachDelta: numberOrZero(current?.reach) - numberOrZero(previous?.reach),
+      clicksDelta: numberOrZero(current?.clicks) - numberOrZero(previous?.clicks),
+      cartsDelta: numberOrZero(current?.carts) - numberOrZero(previous?.carts),
+      ordersDelta: numberOrZero(current?.orders) - numberOrZero(previous?.orders),
+      buysDelta: numberOrZero(current?.buys) - numberOrZero(previous?.buys),
+      revenueDelta: numberOrZero(current?.revenue) - numberOrZero(previous?.revenue)
+    };
+    row.ordersDeltaPct = productLeaderboardNativePercentDelta(current?.orders, previous?.orders);
+    row.clicksDeltaPct = productLeaderboardNativePercentDelta(current?.clicks, previous?.clicks);
+    row.primaryCause = productLeaderboardNativePrimaryCause(row);
+    return row;
+  });
+}
+
+function productLeaderboardNativeRowMatchesFilters(row = {}, filters = {}) {
+  const search = String(filters.search || '').trim().toLowerCase();
+  const item = row.currentItem || row.previousItem || row.item || {};
+  if (filters.owner !== 'all' && item.owner !== filters.owner) return false;
+  if (filters.category !== 'all' && item.category !== filters.category) return false;
+  if (filters.signal !== 'all' && item.signal !== filters.signal) return false;
+  if (!search) return true;
+  const haystack = [
+    item.articleKey,
+    item.article,
+    item.name,
+    item.owner,
+    item.category,
+    item.traffic,
+    item.creator,
+    item.contentBatch,
+    item.contentFormat,
+    item.briefUrl,
+    row.primaryCause
+  ].filter(Boolean).join(' ').toLowerCase();
+  return haystack.includes(search);
+}
+
+function productLeaderboardNativeBridge(rows = []) {
+  const comparable = rows.filter((row) => row.status === 'comparable')
+    .reduce((sum, row) => sum + numberOrZero(row.ordersDelta), 0);
+  const fresh = rows.filter((row) => row.status === 'new')
+    .reduce((sum, row) => sum + numberOrZero(row.current?.orders), 0);
+  const discontinued = rows.filter((row) => row.status === 'discontinued')
+    .reduce((sum, row) => sum + numberOrZero(row.previous?.orders), 0);
+  return {
+    comparable,
+    fresh,
+    discontinued,
+    total: comparable + fresh - discontinued
+  };
+}
+
+function productLeaderboardNativeCauseBridge(current = {}, previous = {}) {
+  const total = numberOrZero(current.orders) - numberOrZero(previous.orders);
+  const previousCartRate = previous.clicks > 0 ? previous.carts / previous.clicks : 0;
+  const currentCartRate = current.clicks > 0 ? current.carts / current.clicks : 0;
+  const previousOrderRate = previous.carts > 0 ? previous.orders / previous.carts : 0;
+  const currentOrderRate = current.carts > 0 ? current.orders / current.carts : 0;
+  const traffic = (numberOrZero(current.clicks) - numberOrZero(previous.clicks)) * previousCartRate * previousOrderRate;
+  const cart = numberOrZero(current.clicks) * (currentCartRate - previousCartRate) * previousOrderRate;
+  const order = numberOrZero(current.carts) * (currentOrderRate - previousOrderRate);
+  const residual = total - traffic - cart - order;
+  return [
+    { label: 'Трафик', value: traffic, detail: `${productLeaderboardNativeFormatDelta(numberOrZero(current.clicks) - numberOrZero(previous.clicks))} кликов` },
+    { label: 'Переход в корзину', value: cart, detail: productLeaderboardSignedPp(currentCartRate - previousCartRate) },
+    { label: 'Конверсия в заказ', value: order, detail: productLeaderboardSignedPp(currentOrderRate - previousOrderRate) },
+    { label: 'Прочее / округление', value: residual, detail: 'сверка до итога' }
+  ];
+}
+
+function productLeaderboardNativeSourceBuckets(items = [], metricKey = 'orders') {
+  return (Array.isArray(items) ? items : []).reduce((acc, item) => {
+    const bucket = productLeaderboardTrafficBucket(item.traffic);
+    acc[bucket] += numberOrZero(item[metricKey]);
+    return acc;
+  }, { kz: 0, digital: 0, organic: 0 });
+}
+
+function productLeaderboardNativeBuildModel() {
+  const filters = getProductLeaderboardFilters();
+  const selection = productLeaderboardNativeSelectedWeeks(filters);
+  if (!selection.current) {
+    return {
+      filters,
+      selection,
+      currentSummary: productLeaderboardSummaryFromItems([]),
+      previousSummary: productLeaderboardSummaryFromItems([]),
+      rows: [],
+      visibleRows: [],
+      bridge: null,
+      hasComparison: false,
+      warnings: ['Нет недельного среза для лидерборда.']
+    };
+  }
+  const previousForCompare = selection.hasAdjacentComparison ? selection.previous : null;
+  const allRows = productLeaderboardNativeComparisonRows(
+    selection.current.snapshot.items || [],
+    previousForCompare?.snapshot?.items || []
+  );
+  const visibleRows = allRows
+    .filter((row) => productLeaderboardNativeRowMatchesFilters(row, filters))
+    .sort((left, right) => (
+      Math.abs(numberOrZero(right.ordersDelta)) - Math.abs(numberOrZero(left.ordersDelta))
+      || Math.abs(numberOrZero(right.clicksDelta)) - Math.abs(numberOrZero(left.clicksDelta))
+      || numberOrZero(right.current?.orders) - numberOrZero(left.current?.orders)
+      || String(left.item?.name || '').localeCompare(String(right.item?.name || ''), 'ru')
+    ));
+  const currentSummary = productLeaderboardNativeSummaryFromAggregates(visibleRows, 'current');
+  const previousSummary = productLeaderboardNativeSummaryFromAggregates(visibleRows, 'previous');
+  const warnings = [];
+  if (!selection.hasEnoughHistory) {
+    warnings.push(`История неполная: ${selection.weeks.length} из ${PRODUCT_LEADERBOARD_NATIVE_MIN_WEEKS} нужных недель. Храним до ${PRODUCT_LEADERBOARD_NATIVE_MAX_WEEKS} неизменяемых срезов.`);
+  }
+  if (selection.previous && !selection.hasAdjacentComparison) {
+    warnings.push(`Сравнение недоступно: рядом нет предыдущей календарной недели. Ближайший срез: ${productLeaderboardNativeWeekLabel(selection.previous)}.`);
+  }
+  if (!selection.previous) warnings.push('Сравнение недоступно: нет предыдущей полной недели.');
+  return {
+    filters,
+    selection,
+    rows: allRows,
+    visibleRows,
+    currentSummary,
+    previousSummary,
+    bridge: previousForCompare ? productLeaderboardNativeBridge(visibleRows) : null,
+    causeBridge: previousForCompare ? productLeaderboardNativeCauseBridge(currentSummary, previousSummary) : [],
+    hasComparison: Boolean(previousForCompare),
+    warnings
+  };
+}
+
+function productLeaderboardNativeKpiHtml(label, value, meta, delta, tone = 'info') {
+  const deltaHtml = delta === null || delta === undefined
+    ? '<span class="plb-native-kpi__delta is-muted">сравнение недоступно</span>'
+    : `<span class="plb-native-kpi__delta is-${numberOrZero(delta) >= 0 ? 'ok' : 'danger'}">${escapeHtml(productLeaderboardNativeFormatDelta(delta))}</span>`;
+  return `
+    <article class="plb-native-kpi is-${escapeHtml(tone)}">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <em>${escapeHtml(meta)}</em>
+      ${deltaHtml}
+    </article>
+  `;
+}
+
+function productLeaderboardNativeWeeklyChartHtml(model) {
+  const metric = PRODUCT_LEADERBOARD_NATIVE_METRICS[model.filters.weeklyMetric] || PRODUCT_LEADERBOARD_NATIVE_METRICS.orders;
+  const rows = model.selection.weeks.slice(-PRODUCT_LEADERBOARD_NATIVE_MAX_WEEKS);
+  const maxValue = Math.max(1, ...rows.map((row) => numberOrZero(productLeaderboardSummaryFromItems(row.snapshot.items || [])[metric.key])));
+  const metricButtons = Object.values(PRODUCT_LEADERBOARD_NATIVE_METRICS).map((item) => `
+    <button type="button" class="quick-chip ${metric.key === item.key ? 'active' : ''}" data-product-weekly-metric="${escapeHtml(item.key)}">${escapeHtml(item.label)}</button>
+  `).join('');
+  return `
+    <section class="card plb-native-chart">
+      <div class="section-subhead">
+        <div>
+          <h3>Трафик по неделям</h3>
+          <p class="small muted">Выделяем текущий срез и ближайшую предыдущую полную неделю. Стеки: КЗ, digital и без метки.</p>
+        </div>
+        <div class="quick-actions">${metricButtons}</div>
+      </div>
+      <div class="plb-native-chart__plot" style="--plb-columns:${rows.length || 1}">
+        ${rows.map((row) => {
+          const summary = productLeaderboardSummaryFromItems(row.snapshot.items || []);
+          const total = numberOrZero(summary[metric.key]);
+          const buckets = productLeaderboardNativeSourceBuckets(row.snapshot.items || [], metric.key);
+          const scale = Math.max(12, Math.min(100, total / maxValue * 100));
+          const denom = Math.max(1, total);
+          const isCurrent = row.weekKey === model.selection.current?.weekKey;
+          const isPrevious = model.hasComparison && row.weekKey === model.selection.previous?.weekKey;
+          return `
+            <button type="button" class="plb-native-column ${isCurrent ? 'is-current' : ''} ${isPrevious ? 'is-previous' : ''}" data-product-week-snapshot="${escapeHtml(row.stableKey)}" style="--plb-bar:${scale.toFixed(1)}%;--plb-hue:${metric.hue}">
+              <span class="plb-native-column__value"><b>${fmt.int(total)}</b>${isCurrent ? '<em>текущая</em>' : isPrevious ? '<em>база</em>' : ''}</span>
+              <i class="plb-native-column__bar">
+                <b class="is-kz" style="height:${(numberOrZero(buckets.kz) / denom * 100).toFixed(1)}%"></b>
+                <b class="is-digital" style="height:${(numberOrZero(buckets.digital) / denom * 100).toFixed(1)}%"></b>
+                <b class="is-organic" style="height:${(numberOrZero(buckets.organic) / denom * 100).toFixed(1)}%"></b>
+              </i>
+              <small class="plb-native-column__label">${escapeHtml(productLeaderboardWeeklyChartLabel(row))}</small>
+            </button>
+          `;
+        }).join('') || '<div class="empty">История недель пока не загружена.</div>'}
+      </div>
+    </section>
+  `;
+}
+
+function productLeaderboardNativeBridgeHtml(model) {
+  if (!model.hasComparison || !model.bridge) {
+    return `
+      <section class="card plb-native-bridge">
+        <div class="section-subhead">
+          <div>
+            <h3>Изменение по сопоставимым SKU</h3>
+            <p class="small muted">Сравнение будет доступно, когда появится предыдущая календарная неделя без разрыва.</p>
+          </div>
+          ${badge('Сравнение недоступно', 'warn')}
+        </div>
+      </section>
+    `;
+  }
+  const items = [
+    { label: 'Сопоставимые SKU', value: model.bridge.comparable, tone: model.bridge.comparable >= 0 ? 'ok' : 'danger' },
+    { label: 'Новые SKU', value: model.bridge.fresh, tone: 'ok' },
+    { label: 'Выбывшие SKU', value: -model.bridge.discontinued, tone: model.bridge.discontinued ? 'danger' : 'info' },
+    { label: 'Общее изменение', value: model.bridge.total, tone: model.bridge.total >= 0 ? 'ok' : 'danger', total: true }
+  ];
+  return `
+    <section class="card plb-native-bridge">
+      <div class="section-subhead">
+        <div>
+          <h3>Изменение по сопоставимым SKU</h3>
+          <p class="small muted">Общее изменение = сопоставимые SKU + новые SKU - выбывшие SKU.</p>
+        </div>
+        ${badge(`${productLeaderboardNativeWeekLabel(model.selection.current)} к ${productLeaderboardNativeWeekLabel(model.selection.previous)}`, 'info')}
+      </div>
+      <div class="plb-native-bridge__steps">
+        ${items.map((item) => `
+          <article class="is-${escapeHtml(item.tone)} ${item.total ? 'is-total' : ''}">
+            <span>${escapeHtml(item.label)}</span>
+            <strong>${escapeHtml(productLeaderboardNativeFormatDelta(item.value))}</strong>
+          </article>
+        `).join('')}
+      </div>
+      <div class="plb-native-causes">
+        ${model.causeBridge.map((cause) => `
+          <span class="${numberOrZero(cause.value) >= 0 ? 'is-ok' : 'is-danger'}">
+            <b>${escapeHtml(cause.label)}</b>
+            <strong>${escapeHtml(productLeaderboardNativeFormatDelta(cause.value))}</strong>
+            <em>${escapeHtml(cause.detail)}</em>
+          </span>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function productLeaderboardNativeFunnelHtml(model) {
+  const current = model.currentSummary;
+  const previous = model.previousSummary;
+  const steps = [
+    { key: 'posts', label: 'Публикации' },
+    { key: 'reach', label: 'Охват' },
+    { key: 'clicks', label: 'Клики' },
+    { key: 'carts', label: 'Корзины' },
+    { key: 'orders', label: 'Заказы' },
+    { key: 'buys', label: 'Выкупы' }
+  ];
+  const maxValue = Math.max(1, ...steps.map((step) => numberOrZero(current[step.key])));
+  return `
+    <section class="card plb-native-funnel">
+      <div class="section-subhead">
+        <div>
+          <h3>Воронка контента</h3>
+          <p class="small muted">Публикации → охват → клики → корзины → заказы → выкупы.</p>
+        </div>
+        ${model.hasComparison ? badge('WoW', 'ok') : badge('без сравнения', 'warn')}
+      </div>
+      <div class="plb-native-funnel__steps">
+        ${steps.map((step) => {
+          const value = numberOrZero(current[step.key]);
+          const previousValue = numberOrZero(previous[step.key]);
+          const scale = Math.max(4, Math.min(100, value / maxValue * 100));
+          return `
+            <article>
+              <span>${escapeHtml(step.label)}</span>
+              <strong>${fmt.int(value)}</strong>
+              <i><b style="width:${scale.toFixed(1)}%"></b></i>
+              <em>${model.hasComparison ? productLeaderboardNativeFormatDelta(value - previousValue) : '—'}</em>
+            </article>
+          `;
+        }).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function productLeaderboardNativeBriefHtml(item = {}) {
+  const url = String(item.briefUrl || '').trim();
+  if (/^https?:\/\//i.test(url)) {
+    return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">ТЗ</a>`;
+  }
+  return `<span class="muted small">${url ? escapeHtml(url) : 'нет ТЗ'}</span>`;
+}
+
+function productLeaderboardNativeContentCell(item = {}) {
+  const fields = [
+    item.creator ? `creator: ${item.creator}` : 'creator не задан',
+    item.contentBatch ? `партия: ${item.contentBatch}` : 'партия не задана',
+    item.contentFormat ? `формат: ${item.contentFormat}` : 'формат не задан',
+    item.publishedAt ? `публикация: ${item.publishedAt}` : 'дата не задана'
+  ];
+  return `
+    <div class="plb-native-content-cell">
+      ${fields.map((field) => `<span>${escapeHtml(field)}</span>`).join('')}
+      ${productLeaderboardNativeBriefHtml(item)}
+    </div>
+  `;
+}
+
+function productLeaderboardNativeRowsTableHtml(model, options = {}) {
+  const rows = model.visibleRows.slice(0, options.limit || 12);
+  const showContent = options.showContent !== false;
+  return `
+    <section class="card plb-native-table-card">
+      <div class="section-subhead">
+        <div>
+          <h3>${escapeHtml(options.title || 'SKU-драйверы')}</h3>
+          <p class="small muted">${escapeHtml(options.caption || 'Сортировка по абсолютному вкладу SKU в изменение заказов.')}</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(model.visibleRows.length)} SKU`, model.visibleRows.length ? 'info' : 'warn')}
+          ${model.hasComparison ? badge('сравнение честное', 'ok') : badge('без WoW', 'warn')}
+        </div>
+      </div>
+      <div class="table-wrap plb-native-table-wrap" style="margin-top:12px">
+        <table class="plb-native-table">
+          <thead>
+            <tr>
+              <th>SKU / товар</th>
+              <th>Статус</th>
+              <th>Owner</th>
+              ${showContent ? '<th>Контент</th>' : ''}
+              <th>Охват</th>
+              <th>CTR</th>
+              <th>Корзины</th>
+              <th>Заказы</th>
+              <th>Выкупы</th>
+              <th>ROMI / ДРР</th>
+              <th>Фактор</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => {
+              const item = row.currentItem || row.previousItem || row.item || {};
+              const current = row.current || {};
+              const previous = row.previous || {};
+              const statusLabel = row.status === 'new' ? 'новый' : row.status === 'discontinued' ? 'выбыл' : 'сопоставимый';
+              const statusTone = row.status === 'new' ? 'ok' : row.status === 'discontinued' ? 'danger' : 'info';
+              const ctr = productLeaderboardSafeRatio(current.clicks, current.reach);
+              const previousCtr = productLeaderboardSafeRatio(previous.clicks, previous.reach);
+              return `
+                <tr data-product-native-sku="${escapeHtml(row.key)}" class="is-${escapeHtml(row.status)}">
+                  <td>
+                    <strong>${item.articleKey ? linkToSku(item.articleKey, item.articleKey) : escapeHtml(item.article || item.name || row.key)}</strong>
+                    <div class="muted small">${escapeHtml(item.name || '')}</div>
+                    <div class="badge-stack" style="margin-top:7px">
+                      ${item.traffic ? badge(item.traffic, 'info') : badge('без метки', '')}
+                      ${item.category ? badge(item.category, '') : ''}
+                    </div>
+                  </td>
+                  <td>${badge(statusLabel, statusTone)}</td>
+                  <td>${item.owner ? badge(item.owner, 'info') : badge('owner не задан', 'warn')}</td>
+                  ${showContent ? `<td>${productLeaderboardNativeContentCell(item)}</td>` : ''}
+                  <td><strong>${fmt.int(current.reach || 0)}</strong><div class="muted small">${model.hasComparison ? productLeaderboardNativeFormatDelta(row.reachDelta) : '—'}</div></td>
+                  <td>${fmt.pct(ctr)}<div class="muted small">${model.hasComparison && previousCtr !== null && ctr !== null ? productLeaderboardSignedPp(ctr - previousCtr) : '—'}</div></td>
+                  <td>${fmt.int(current.carts || 0)}<div class="muted small">${model.hasComparison ? productLeaderboardNativeFormatDelta(row.cartsDelta) : '—'}</div></td>
+                  <td><strong>${fmt.int(current.orders || 0)}</strong><div class="${numberOrZero(row.ordersDelta) >= 0 ? 'ok-text' : 'danger-text'} small">${model.hasComparison ? productLeaderboardNativeFormatDelta(row.ordersDelta) : '—'}</div></td>
+                  <td>${fmt.int(current.buys || 0)}<div class="muted small">${model.hasComparison ? productLeaderboardNativeFormatDelta(row.buysDelta) : '—'}</div></td>
+                  <td>${fmt.pct(item.romiPct)}<div class="muted small">ДРР ${fmt.pct(item.drrPct)}</div></td>
+                  <td>${badge(row.primaryCause, row.ordersDelta >= 0 ? 'ok' : 'warn')}</td>
+                </tr>
+              `;
+            }).join('') || '<tr><td colspan="11"><div class="empty">По текущим фильтрам нет строк.</div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  `;
+}
+
+function productLeaderboardNativeDrawerHtml(model) {
+  const key = String(model.filters.selectedSkuKey || '').trim();
+  if (!key) return '';
+  const row = model.visibleRows.find((item) => item.key === key) || model.rows.find((item) => item.key === key);
+  if (!row) return '';
+  const item = row.currentItem || row.previousItem || row.item || {};
+  return `
+    <aside class="plb-native-drawer">
+      <button type="button" class="quick-chip" data-product-native-close>Закрыть</button>
+      <div>
+        <span>Деталь SKU</span>
+        <h3>${escapeHtml(item.name || item.articleKey || row.key)}</h3>
+        <p class="small muted">${escapeHtml(item.articleKey || item.article || '')}</p>
+      </div>
+      <div class="plb-native-drawer__grid">
+        <span><b>${fmt.int(row.current?.orders || 0)}</b><em>заказы сейчас</em></span>
+        <span><b>${model.hasComparison ? productLeaderboardNativeFormatDelta(row.ordersDelta) : '—'}</b><em>изменение</em></span>
+        <span><b>${fmt.int(row.current?.clicks || 0)}</b><em>клики</em></span>
+        <span><b>${fmt.money(row.current?.revenue || 0)}</b><em>выручка</em></span>
+      </div>
+      <div class="plb-native-content-cell">${productLeaderboardNativeContentCell(item)}</div>
+      <p class="small muted">Основной фактор: ${escapeHtml(row.primaryCause)}.</p>
+    </aside>
+  `;
+}
+
+function productLeaderboardNativeFiltersHtml(model) {
+  const payload = model.selection.current?.snapshot || normalizeProductLeaderboardPayload(state.productLeaderboard || {});
+  const weekOptions = model.selection.weeks.map((row) => `
+    <option value="${escapeHtml(row.optionKey)}" ${row.weekKey === model.selection.current?.weekKey ? 'selected' : ''}>${escapeHtml(productLeaderboardNativeWeekLabel(row))}</option>
+  `).join('');
+  return `
+    <div class="plb-native-toolbar">
+      <input id="productLeaderboardSearch" placeholder="SKU, товар, owner, creator, ТЗ..." value="${escapeHtml(model.filters.search || '')}">
+      <select id="productLeaderboardSnapshot">
+        ${weekOptions || '<option value="latest">Текущий срез</option>'}
+      </select>
+      <select id="productLeaderboardOwner">
+        <option value="all" ${model.filters.owner === 'all' ? 'selected' : ''}>Все owner</option>
+        ${(payload.owners || []).map((owner) => `<option value="${escapeHtml(owner)}" ${model.filters.owner === owner ? 'selected' : ''}>${escapeHtml(owner)}</option>`).join('')}
+      </select>
+      <select id="productLeaderboardCategory">
+        <option value="all" ${model.filters.category === 'all' ? 'selected' : ''}>Все категории</option>
+        ${(payload.categories || []).map((category) => `<option value="${escapeHtml(category)}" ${model.filters.category === category ? 'selected' : ''}>${escapeHtml(category)}</option>`).join('')}
+      </select>
+      <button class="quick-chip portal-action-primary" type="button" data-product-leaderboard-export>Excel</button>
+    </div>
+  `;
+}
+
+function productLeaderboardNativeSubviewHtml(model) {
+  if (model.filters.subview === 'sku-funnel') {
+    return `
+      ${productLeaderboardNativeFunnelHtml(model)}
+      ${productLeaderboardNativeRowsTableHtml(model, {
+        title: 'Полная таблица SKU и воронки',
+        caption: 'Охват, CTR, корзины, заказы, выкупы и вклад в изменение.',
+        limit: 80,
+        showContent: true
+      })}
+    `;
+  }
+  if (model.filters.subview === 'content-causes') {
+    return `
+      ${productLeaderboardNativeBridgeHtml(model)}
+      ${productLeaderboardNativeRowsTableHtml(model, {
+        title: 'Контент и причины',
+        caption: 'Creator, партия, формат, дата публикации и ссылка на ТЗ. Пустые поля показывают, что источник их ещё не отдаёт.',
+        limit: 80,
+        showContent: true
+      })}
+    `;
+  }
+  return `
+    <div class="plb-native-layout">
+      ${productLeaderboardNativeWeeklyChartHtml(model)}
+      ${productLeaderboardNativeBridgeHtml(model)}
+    </div>
+    ${productLeaderboardNativeFunnelHtml(model)}
+    ${productLeaderboardNativeRowsTableHtml(model, {
+      title: 'Главные SKU-драйверы',
+      caption: 'Вверху SKU с самым большим вкладом в изменение заказов или трафика.',
+      limit: 12,
+      showContent: true
+    })}
+  `;
+}
+
+function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
+  if (rootId === 'view-ads-funnel') {
+    renderAdsFunnel(rootId);
+    return;
+  }
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  state.productLeaderboard = normalizeProductLeaderboardPayload(state.productLeaderboard || {});
+  const model = productLeaderboardNativeBuildModel();
+  const current = model.currentSummary;
+  const previous = model.previousSummary;
+  const tabs = [
+    ['overview', 'Обзор WoW'],
+    ['sku-funnel', 'Воронка SKU'],
+    ['content-causes', 'Контент и причины']
+  ].map(([key, label]) => `
+    <button type="button" class="quick-chip ${model.filters.subview === key ? 'active' : ''}" data-product-leaderboard-native-tab="${key}">${label}</button>
+  `).join('');
+  const warningHtml = model.warnings.length
+    ? `<div class="plb-native-warning">${model.warnings.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>`
+    : '';
+
+  root.dataset.productLeaderboardVersion = 'native-wow-v1';
+  root.innerHTML = `
+    <div class="plb-native">
+      <div class="section-title">
+        <div>
+          <span class="section-kicker">Контент-завод · неделя к неделе</span>
+          <h2>Что изменилось — и почему</h2>
+          <p>Трафик → воронка → заказы → вклад SKU. Первый экран показывает причины изменения и рабочие сигналы.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(productLeaderboardNativeWeekLabel(model.selection.current), 'info')}
+          ${model.hasComparison ? badge(`к ${productLeaderboardNativeWeekLabel(model.selection.previous)}`, 'ok') : badge('Сравнение недоступно', 'warn')}
+          ${badge(`${fmt.int(model.selection.weeks.length)} недель истории`, model.selection.weeks.length >= PRODUCT_LEADERBOARD_NATIVE_MIN_WEEKS ? 'ok' : 'warn')}
+        </div>
+      </div>
+
+      ${productLeaderboardNativeFiltersHtml(model)}
+
+      <div class="quick-actions plb-native-tabs">${tabs}</div>
+      ${warningHtml}
+
+      <div class="plb-native-kpis">
+        ${productLeaderboardNativeKpiHtml('Охват', fmt.int(current.reach), `${fmt.int(current.posts)} публикаций`, model.hasComparison ? current.reach - previous.reach : null, 'reach')}
+        ${productLeaderboardNativeKpiHtml('Клики · CTR', fmt.int(current.clicks), `CTR ${fmt.pct(current.ctrPct)}`, model.hasComparison ? current.clicks - previous.clicks : null, 'clicks')}
+        ${productLeaderboardNativeKpiHtml('Заказы', fmt.int(current.orders), `CR ${fmt.pct(current.orderRatePct)}`, model.hasComparison ? current.orders - previous.orders : null, 'orders')}
+        ${productLeaderboardNativeKpiHtml('Выкупы · выручка', `${fmt.int(current.buys)} / ${fmt.money(current.revenue)}`, `buyout ${fmt.pct(current.buyoutPct)}`, model.hasComparison ? current.buys - previous.buys : null, 'revenue')}
+      </div>
+
+      ${productLeaderboardNativeSubviewHtml(model)}
+      ${productLeaderboardNativeDrawerHtml(model)}
+    </div>
+  `;
+
+  root.querySelector('#productLeaderboardSearch')?.addEventListener('input', (event) => {
+    getProductLeaderboardFilters().search = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#productLeaderboardSnapshot')?.addEventListener('change', (event) => {
+    getProductLeaderboardFilters().snapshot = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#productLeaderboardOwner')?.addEventListener('change', (event) => {
+    getProductLeaderboardFilters().owner = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#productLeaderboardCategory')?.addEventListener('change', (event) => {
+    getProductLeaderboardFilters().category = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelectorAll('[data-product-leaderboard-native-tab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      getProductLeaderboardFilters().subview = button.getAttribute('data-product-leaderboard-native-tab') || 'overview';
+      rerenderCurrentView();
+    });
+  });
+  root.querySelectorAll('[data-product-weekly-metric]').forEach((button) => {
+    button.addEventListener('click', () => {
+      getProductLeaderboardFilters().weeklyMetric = button.getAttribute('data-product-weekly-metric') || 'orders';
+      rerenderCurrentView();
+    });
+  });
+  root.querySelectorAll('[data-product-week-snapshot]').forEach((button) => {
+    button.addEventListener('click', () => {
+      getProductLeaderboardFilters().snapshot = button.getAttribute('data-product-week-snapshot') || 'latest';
+      rerenderCurrentView();
+    });
+  });
+  root.querySelectorAll('[data-product-native-sku]').forEach((row) => {
+    row.addEventListener('click', () => {
+      getProductLeaderboardFilters().selectedSkuKey = row.getAttribute('data-product-native-sku') || '';
+      rerenderCurrentView();
+    });
+  });
+  root.querySelector('[data-product-native-close]')?.addEventListener('click', () => {
+    getProductLeaderboardFilters().selectedSkuKey = '';
+    rerenderCurrentView();
+  });
+  root.querySelector('[data-product-leaderboard-export]')?.addEventListener('click', () => {
+    const payload = model.selection.current?.snapshot || normalizeProductLeaderboardPayload(state.productLeaderboard || {});
+    const items = model.visibleRows.map((row) => row.currentItem || row.previousItem || row.item).filter(Boolean);
+    downloadProductLeaderboardExcel(payload, items);
   });
 }
 

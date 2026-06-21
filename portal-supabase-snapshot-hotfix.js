@@ -7,6 +7,7 @@
   const SNAPSHOT_KEYS = [
     'dashboard',
     'skus',
+    'sku_registry_meta',
     'platform_trends',
     'iu_plan',
     'ads_summary',
@@ -21,8 +22,10 @@
     'sku_alias_ignore',
     'sku_alias_audit',
     'sku_matrix',
+    'wb_owner_distribution_audit',
     'product_leaderboard',
     'product_leaderboard_history',
+    'wb_sales_funnel_report',
     'prices',
     'smart_price_workbench',
     'smart_price_overlay',
@@ -39,6 +42,7 @@
   const BOOT_SNAPSHOT_KEYS = [
     'dashboard',
     'skus',
+    'sku_registry_meta',
     'platform_trends',
     'platform_plan',
     'iu_plan',
@@ -54,8 +58,10 @@
     'sku_alias_ignore',
     'sku_alias_audit',
     'sku_matrix',
+    'wb_owner_distribution_audit',
     'product_leaderboard',
     'product_leaderboard_history',
+    'wb_sales_funnel_report',
     'prices',
     'smart_price_workbench',
     'smart_price_overlay',
@@ -86,6 +92,7 @@
   const SNAPSHOT_TO_STATE = {
     dashboard: 'dashboard',
     skus: 'skus',
+    sku_registry_meta: 'skuRegistryMeta',
     platform_trends: 'platformTrends',
     iu_plan: 'iuPlan',
     logistics: 'logistics',
@@ -106,8 +113,10 @@
     sku_alias_ignore: 'skuAliasIgnore',
     sku_alias_audit: 'skuAliasAudit',
     sku_matrix: 'skuMatrix',
+    wb_owner_distribution_audit: 'wbOwnerDistributionAudit',
     product_leaderboard: 'productLeaderboard',
     product_leaderboard_history: 'productLeaderboardHistory',
+    wb_sales_funnel_report: 'wbSalesFunnel',
     repricer: 'repricer',
     order_procurement: 'orderProcurementData',
     order_procurement_wb: 'orderProcurementWb',
@@ -224,6 +233,14 @@
       return score;
     }
 
+    if (snapshotKey === 'wb_sales_funnel_report') {
+      score = bumpFreshness(score, payload.period?.to);
+      (payload.items || []).forEach((item) => {
+        score = bumpFreshness(score, item?.date || item?.period?.to || item?.updatedAt);
+      });
+      return score;
+    }
+
     if (snapshotKey === 'platform_plan' || snapshotKey === 'iu_plan') {
       Object.keys(payload.months || {}).forEach((monthKey) => {
         score = bumpFreshness(score, `${monthKey}-01`);
@@ -287,6 +304,14 @@
       return score;
     }
 
+    if (snapshotKey === 'wb_sales_funnel_report') {
+      score = bumpFreshness(score, payload.period?.to);
+      (payload.items || []).forEach((item) => {
+        score = bumpFreshness(score, item?.date || item?.period?.to);
+      });
+      return score;
+    }
+
     if (snapshotKey === 'platform_plan' || snapshotKey === 'iu_plan') {
       Object.keys(payload.months || {}).forEach((monthKey) => {
         score = bumpFreshness(score, `${monthKey}-01`);
@@ -328,6 +353,7 @@
     if (snapshotKey === 'wb_feedbacks_summary') {
       return Array.isArray(payload.cards) && payload.cards.length > 0;
     }
+    if (snapshotKey === 'wb_sales_funnel_report') return Array.isArray(payload?.items);
     if (snapshotKey === 'platform_plan' || snapshotKey === 'iu_plan') {
       return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;
     }
@@ -347,6 +373,8 @@
     if (snapshotKey === 'sku_alias_ignore') return Array.isArray(payload?.ignored) || Array.isArray(payload?.ignores) || Array.isArray(payload?.rows);
     if (snapshotKey === 'sku_alias_audit') return Array.isArray(payload?.events);
     if (snapshotKey === 'sku_matrix') return Array.isArray(payload?.items) && payload.items.length > 0;
+    if (snapshotKey === 'sku_registry_meta') return typeof payload === 'object' && payload !== null && Boolean(payload?.generatedAt);
+    if (snapshotKey === 'wb_owner_distribution_audit') return typeof payload?.summary === 'object';
     if (snapshotKey === 'wb_substitution_traffic') return Array.isArray(payload?.articles) || Array.isArray(payload?.rows);
     if (snapshotKey === 'wb_substitution_traffic_history') return Array.isArray(payload);
     if (snapshotKey === 'product_leaderboard') return Array.isArray(payload?.items);

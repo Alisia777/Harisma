@@ -41,6 +41,8 @@ function resolveOptions(args) {
     baseDataDir: path.resolve(args['base-data-dir'] || path.join(root, 'data')),
     outputDir: path.resolve(args['output-dir'] || args['input-dir'] || path.join(root, '.altea-google-sheet-sync-output')),
     mirrorLocalFallback: Boolean(args['mirror-local-fallback']),
+    runDate: dateKey(args['run-date'] || args.runDate || ''),
+    generatedAt: String(args['generated-at'] || args.generatedAt || '').trim(),
     issueLimit: Math.max(20, Math.min(1000, Number(args['issue-limit'] || DEFAULT_ISSUE_LIMIT)))
   };
 }
@@ -84,6 +86,12 @@ function isExternalWarehouseKey(value = '') {
 function dateKey(value) {
   const raw = String(value || '').slice(0, 10);
   return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : '';
+}
+
+function generatedAtFor(options = {}) {
+  if (options.generatedAt) return options.generatedAt;
+  if (options.runDate) return `${options.runDate}T00:00:00+03:00`;
+  return new Date().toISOString();
 }
 
 function monthKeyFromDate(value) {
@@ -447,7 +455,7 @@ function buildOrderQuality(orderProcurement = {}) {
     if (stock <= 0 && (need7 > 0 || need14 > 0 || need28 > 0 || numberOrZero(row?.sales7) > 0)) {
       summary.noStockNeedRows += 1;
       issues.push({
-        severity: 'critical',
+        severity: 'warning',
         type: 'order_no_stock_need',
         dataset: 'order_procurement',
         platform: platformKey(row?.platform),
@@ -457,7 +465,7 @@ function buildOrderQuality(orderProcurement = {}) {
         need7,
         need14,
         need28,
-        message: 'По складу нет остатка, но есть продажи/потребность'
+        message: 'Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately.'
       });
     } else if (Number.isFinite(turnover) && turnover > 0 && turnover <= 10) {
       summary.lowTurnoverRows += 1;
@@ -813,7 +821,7 @@ function buildReport(options) {
   };
 
   return {
-    generatedAt: new Date().toISOString(),
+    generatedAt: generatedAtFor(options),
     status: summary.criticalCount ? 'critical' : (summary.warningCount ? 'warning' : 'ok'),
     summary,
     freshness: freshnessQuality.freshness,
@@ -823,7 +831,55 @@ function buildReport(options) {
     warehouseSummary: warehouseQuality.summary,
     wbOwnerDistributionSummary: wbOwnerDistributionQuality.summary,
     _sourceSkus: Array.isArray(files.skus) ? files.skus : [],
+    _allIssues: allIssues,
     issues: allIssues.slice(0, options.issueLimit)
+  };
+}
+
+function quarantineRowsFromIssues(issues = []) {
+  const reviewTypes = new Set([
+    'api_sku_unmapped',
+    'api_sum_above_aggregate',
+    'warehouse_unmatched_source_key',
+    'wb_owner_distribution_missing_in_portal'
+  ]);
+  return issues
+    .filter((issue) => {
+      const type = String(issue.type || '').trim();
+      if (reviewTypes.has(type)) return true;
+      return ['critical', 'warning', 'warn', 'danger'].includes(String(issue.severity || '').trim().toLowerCase())
+        && /^api_|^warehouse_|^wb_owner_distribution/.test(type);
+    })
+    .map((issue) => ({
+      severity: issue.severity || '',
+      type: issue.type || '',
+      dataset: issue.dataset || '',
+      platform: issue.platform || '',
+      articleKey: issue.articleKey || issue.api_sku || issue.apiSku || '',
+      name: issue.name || issue.api_name || '',
+      revenue: Math.round(numberOrZero(issue.revenue)),
+      units: Math.round(numberOrZero(issue.units)),
+      overage: Math.round(numberOrZero(issue.overage)),
+      message: issue.message || '',
+      action: issue.action || ''
+    }))
+    .sort((left, right) => numberOrZero(right.revenue) - numberOrZero(left.revenue) || String(left.articleKey).localeCompare(String(right.articleKey)));
+}
+
+function buildQuarantine(report) {
+  const rows = quarantineRowsFromIssues(report._allIssues || report.issues || []);
+  return {
+    schema: 'portal-data-quarantine-v1',
+    generatedAt: report.generatedAt,
+    reason: 'Rows that need review before the data contour can be trusted.',
+    summary: {
+      rows: rows.length,
+      revenue: rows.reduce((sum, row) => sum + numberOrZero(row.revenue), 0),
+      overage: rows.reduce((sum, row) => sum + numberOrZero(row.overage), 0),
+      apiSumAboveAggregateCount: rows.filter((row) => row.type === 'api_sum_above_aggregate').length,
+      apiUnmappedHighRevenueCount: rows.filter((row) => row.type === 'api_sku_unmapped' && numberOrZero(row.revenue) >= API_SKU_UNMAPPED_WARNING_REVENUE).length
+    },
+    rows
   };
 }
 
@@ -832,10 +888,13 @@ function writeReport(options, report) {
   const jsonPath = path.join(options.outputDir, 'portal_data_quality.json');
   const csvPath = path.join(options.outputDir, 'portal_data_quality_issues.csv');
   const aliasReviewPath = path.join(options.outputDir, 'api_sku_alias_review.csv');
-  const { _sourceSkus, ...publicReport } = report;
+  const quarantinePath = path.join(options.outputDir, 'portal_data_quarantine.json');
+  const { _sourceSkus, _allIssues, ...publicReport } = report;
   fs.writeFileSync(jsonPath, JSON.stringify(publicReport, null, 2), 'utf8');
-  writeCsv(csvPath, report.issues || []);
-  const aliasReviewRows = writeAliasReviewCsv(aliasReviewPath, report.issues || [], _sourceSkus || []);
+  writeCsv(csvPath, _allIssues || report.issues || []);
+  const aliasReviewRows = writeAliasReviewCsv(aliasReviewPath, _allIssues || report.issues || [], _sourceSkus || []);
+  const quarantine = buildQuarantine(report);
+  fs.writeFileSync(quarantinePath, `${JSON.stringify(quarantine, null, 2)}\n`, 'utf8');
 
   const mirrored = [];
   if (options.mirrorLocalFallback) {
@@ -843,13 +902,15 @@ function writeReport(options, report) {
     const mirrorJson = path.join(options.baseDataDir, 'portal_data_quality.json');
     const mirrorCsv = path.join(options.baseDataDir, 'portal_data_quality_issues.csv');
     const mirrorAliasReview = path.join(options.baseDataDir, 'api_sku_alias_review.csv');
+    const mirrorQuarantine = path.join(options.baseDataDir, 'portal_data_quarantine.json');
     fs.copyFileSync(jsonPath, mirrorJson);
     fs.copyFileSync(csvPath, mirrorCsv);
     fs.copyFileSync(aliasReviewPath, mirrorAliasReview);
-    mirrored.push(mirrorJson, mirrorCsv, mirrorAliasReview);
+    fs.copyFileSync(quarantinePath, mirrorQuarantine);
+    mirrored.push(mirrorJson, mirrorCsv, mirrorAliasReview, mirrorQuarantine);
   }
 
-  return { jsonPath, csvPath, aliasReviewPath, aliasReviewRows, mirrored };
+  return { jsonPath, csvPath, aliasReviewPath, quarantinePath, aliasReviewRows, quarantineRows: quarantine.rows.length, mirrored };
 }
 
 function main() {

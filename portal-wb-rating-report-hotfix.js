@@ -332,6 +332,18 @@
     return response.json();
   }
 
+  async function fetchSnapshotJson(path) {
+    if (typeof window.__alteaLoadPortalSnapshot === 'function') {
+      try {
+        const payload = await window.__alteaLoadPortalSnapshot(path);
+        if (payload !== null && payload !== undefined) return payload;
+      } catch (error) {
+        console.warn('[wb-rating-report] snapshot fallback', path, error);
+      }
+    }
+    return fetchJson(path);
+  }
+
   function ensureAuxData() {
     const st = appState();
     const tasks = [];
@@ -367,7 +379,7 @@
     if (st.wbSalesFunnel && typeof st.wbSalesFunnel === 'object' && Array.isArray(st.wbSalesFunnel.items)) {
       auxCache.wbFunnel = st.wbSalesFunnel;
     } else if (!auxCache.wbFunnel) {
-      tasks.push(fetchJson('data/wb_sales_funnel_report.json').then((payload) => {
+      tasks.push(fetchSnapshotJson('data/wb_sales_funnel_report.json').then((payload) => {
         auxCache.wbFunnel = payload && typeof payload === 'object' ? payload : { items: [], period: {} };
         st.wbSalesFunnel = auxCache.wbFunnel;
       }).catch(() => {

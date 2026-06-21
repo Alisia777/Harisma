@@ -115,6 +115,15 @@ if (!workflow.includes('REVISION_FROM=$(TZ=Europe/Moscow date -d "$VALUE -29 day
 if (!workflow.includes('echo "revision_from=$REVISION_FROM" >> "$GITHUB_OUTPUT"')) {
   fail('daily close must publish revision_from through GITHUB_OUTPUT');
 }
+if (!workflow.includes('RUN_DATE=$(TZ=Europe/Moscow date +%F)')) {
+  fail('daily close must freeze the run date before long-running refresh steps');
+}
+if (!workflow.includes('echo "run_date=$RUN_DATE" >> "$GITHUB_OUTPUT"')) {
+  fail('daily close must publish run_date through GITHUB_OUTPUT');
+}
+if (!workflow.includes("--expected-run-date '${{ steps.cutoff.outputs.run_date }}'")) {
+  fail('daily close guard must use the frozen run_date, not wall-clock time after midnight');
+}
 
 [
   'node scripts/portal-wb-ads-sync.js sync',
@@ -128,6 +137,24 @@ if (!workflow.includes('echo "revision_from=$REVISION_FROM" >> "$GITHUB_OUTPUT"'
   }
   if (!snippet.includes("--to '${{ steps.cutoff.outputs.value }}'")) {
     fail(`${command} must refresh through the resolved cutoff date`);
+  }
+});
+
+[
+  'node scripts/build-sku-registry-meta.js --input-dir data --output-dir data',
+  'node scripts/build-logistics-from-warehouse-overlay.js --input-dir data --output-dir data',
+  'node scripts/build-wb-owner-audit-from-skus.js --input-dir data --base-data-dir data --output-dir data',
+  'node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data',
+  'node scripts/build-portal-dashboard.js --input-dir data --output-dir data',
+  'node scripts/build-wb-sales-funnel-from-platform-trends.js --platform-trends data/platform_trends.json --skus data/skus.json --wb-feedbacks data/wb_feedbacks_summary.json --output-file data/wb_sales_funnel_report.json',
+  'node scripts/portal-smart-price-overlay-sync.js sync --output-dir .portal-truth-output/price-sync',
+  'node scripts/portal-wb-feedback-sync.js sync --input-dir data --base-data-dir data --output-dir data'
+].forEach((command) => {
+  if (!workflow.includes(command)) {
+    fail(`daily close must run required source builder/sync via: ${command}`);
+  }
+  if (workflow.indexOf(command) > workflow.indexOf('node scripts/portal-daily-layer-guard.js')) {
+    fail(`${command} must run before daily layer guard`);
   }
 });
 

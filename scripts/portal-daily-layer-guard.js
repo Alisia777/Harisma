@@ -66,6 +66,15 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
 }
 
+function readJsonIfExists(filePath, fallback = null) {
+  try {
+    if (!fs.existsSync(filePath)) return fallback;
+    return readJson(filePath);
+  } catch {
+    return fallback;
+  }
+}
+
 function writeJson(filePath, payload) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
@@ -225,6 +234,15 @@ function loadSources(manifest, options) {
       check.dataDate = freshness.date;
       check.dataDatePath = freshness.path;
       check.generatedAt = payload?.generatedAt || payload?.meta?.generatedAt || '';
+      if (source.key === 'sku_registry' && !check.generatedAt && Array.isArray(payload)) {
+        const metaPath = path.join(path.dirname(resolved.filePath), 'sku_registry_meta.json');
+        const meta = readJsonIfExists(metaPath, {});
+        check.generatedAt = meta?.generatedAt || '';
+        check.metaFile = fs.existsSync(metaPath) ? path.relative(process.cwd(), metaPath).replace(/\\/g, '/') : '';
+        if (!check.generatedAt) {
+          check.blockingReasons.push('sku_registry: sku_registry_meta.json is missing generatedAt for array payload');
+        }
+      }
       if (source.required && sizeOf(payload) === 0) check.blockingReasons.push(`${source.key}: JSON payload is empty`);
       const stagedRun = path.resolve(options.inputDir) !== path.resolve(options.baseDataDir);
       const reportOutputRun = path.basename(options.inputDir) === '.portal-truth-output';

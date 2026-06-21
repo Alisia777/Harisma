@@ -487,6 +487,7 @@ const PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS = 5000;
 const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/dashboard.json': 'dashboard',
   'data/skus.json': 'skus',
+  'data/sku_registry_meta.json': 'sku_registry_meta',
   'data/platform_trends.json': 'platform_trends',
   'data/logistics.json': 'logistics',
   'data/ads_summary.json': 'ads_summary',
@@ -501,6 +502,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/repricer.json': 'repricer',
   'data/canonical_repricer.json': 'canonical_repricer',
   'data/portal_dashboard_metrics.json': 'portal_dashboard_metrics',
+  'data/wb_sales_funnel_report.json': 'wb_sales_funnel_report',
   'data/portal_runtime_wiring_reconciliation.json': 'portal_runtime_wiring_reconciliation',
   'data/portal_feature_readiness.json': 'portal_feature_readiness',
   'data/price_workbench_support.json': 'price_workbench_support',
@@ -519,6 +521,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/sku_alias_ignore.json': 'sku_alias_ignore',
   'data/sku_alias_audit.json': 'sku_alias_audit',
   'data/sku_matrix.json': 'sku_matrix',
+  'data/wb_owner_distribution_audit.json': 'wb_owner_distribution_audit',
   'data/portal_sync_health.json': 'portal_sync_health'
 };
 const portalSnapshotState = {
@@ -659,6 +662,14 @@ function payloadFreshnessScore(snapshotKey, payload) {
     return score;
   }
 
+  if (snapshotKey === 'wb_sales_funnel_report') {
+    score = bumpFreshness(score, payload.period?.to);
+    (payload.items || []).forEach((item) => {
+      score = bumpFreshness(score, item?.date || item?.period?.to || item?.updatedAt);
+    });
+    return score;
+  }
+
   if (snapshotKey === 'platform_plan') {
     Object.keys(payload.months || {}).forEach((monthKey) => {
       score = bumpFreshness(score, `${monthKey}-01`);
@@ -764,6 +775,14 @@ function payloadDataFreshnessScore(snapshotKey, payload) {
     score = bumpFreshness(score, payload.window?.to);
     (payload.daily || []).forEach((item) => {
       score = bumpFreshness(score, item?.date);
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'wb_sales_funnel_report') {
+    score = bumpFreshness(score, payload.period?.to);
+    (payload.items || []).forEach((item) => {
+      score = bumpFreshness(score, item?.date || item?.period?.to);
     });
     return score;
   }
@@ -1377,6 +1396,7 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   if (snapshotKey === 'ads_summary') return Array.isArray(payload?.platforms) && payload.platforms.length > 0;
   if (snapshotKey === 'iu_drr_summary') return Array.isArray(payload?.daily) && payload.daily.length > 0;
   if (snapshotKey === 'wb_feedbacks_summary') return Array.isArray(payload?.cards) && payload.cards.length > 0;
+  if (snapshotKey === 'wb_sales_funnel_report') return Array.isArray(payload?.items);
   if (snapshotKey === 'wb_substitution_traffic') return Array.isArray(payload?.articles) && payload.articles.length > 0;
   if (snapshotKey === 'wb_substitution_traffic_history') return Array.isArray(payload) && payload.length > 0;
   if (snapshotKey === 'platform_plan') return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;
@@ -1419,6 +1439,12 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   }
   if (snapshotKey === 'sku_alias_audit') {
     return typeof payload === 'object' && payload !== null && Array.isArray(payload.events);
+  }
+  if (snapshotKey === 'sku_registry_meta') {
+    return typeof payload === 'object' && payload !== null && Boolean(payload.generatedAt);
+  }
+  if (snapshotKey === 'wb_owner_distribution_audit') {
+    return typeof payload === 'object' && payload !== null && typeof payload.summary === 'object';
   }
   if (snapshotKey === 'logistics') {
     return Array.isArray(payload?.allRows) && payload.allRows.length > 0

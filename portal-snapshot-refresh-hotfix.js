@@ -9,6 +9,7 @@
   var PATH_MAP = {
     "data/dashboard.json": "dashboard",
     "data/skus.json": "skus",
+    "data/sku_registry_meta.json": "sku_registry_meta",
     "data/platform_trends.json": "platform_trends",
     "data/iu_plan.json": "iu_plan",
     "data/logistics.json": "logistics",
@@ -25,6 +26,7 @@
     "data/smart_price_overlay.json": "smart_price_overlay",
     "data/price_workbench_support.json": "price_workbench_support",
     "data/repricer.json": "repricer",
+  "data/wb_sales_funnel_report.json": "wb_sales_funnel_report",
   "data/order_procurement.json": "order_procurement",
   "data/order_procurement_wb.json": "order_procurement_wb",
   "data/order_procurement_ozon.json": "order_procurement_ozon",
@@ -37,6 +39,7 @@
     "data/sku_alias_ignore.json": "sku_alias_ignore",
     "data/sku_alias_audit.json": "sku_alias_audit",
     "data/sku_matrix.json": "sku_matrix",
+    "data/wb_owner_distribution_audit.json": "wb_owner_distribution_audit",
     "data/portal_sync_health.json": "portal_sync_health"
   };
   var SKU_ALIASES_FALLBACK = {
@@ -175,6 +178,13 @@
       });
       return score;
     }
+    if (snapshotKey === "wb_sales_funnel_report") {
+      score = Math.max(score, parseFreshStamp(payload.period && payload.period.to));
+      (payload.items || []).forEach(function (item) {
+        score = Math.max(score, parseFreshStamp(item && (item.date || item.updatedAt)));
+      });
+      return score;
+    }
     if (snapshotKey === "platform_plan" || snapshotKey === "iu_plan") {
       Object.keys(payload.months || {}).forEach(function (monthKey) {
         score = Math.max(score, parseFreshStamp(monthKey + "-01"));
@@ -222,6 +232,18 @@
         && !Array.isArray(payload)
         && Array.isArray(payload.events);
     }
+    if (snapshotKey === "sku_registry_meta") {
+      return payload
+        && typeof payload === "object"
+        && !Array.isArray(payload)
+        && Boolean(payload.generatedAt);
+    }
+    if (snapshotKey === "wb_owner_distribution_audit") {
+      return payload
+        && typeof payload === "object"
+        && !Array.isArray(payload)
+        && typeof payload.summary === "object";
+    }
     if (snapshotKey === "portal_sync_health") {
       return payload
         && typeof payload === "object"
@@ -245,6 +267,9 @@
     }
     if (snapshotKey === "wb_feedbacks_summary") {
       return Array.isArray(payload && payload.cards) && payload.cards.length > 0;
+    }
+    if (snapshotKey === "wb_sales_funnel_report") {
+      return Array.isArray(payload && payload.items);
     }
     if (snapshotKey === "wb_substitution_traffic") {
       return Array.isArray(payload && payload.articles) || Array.isArray(payload && payload.rows);
@@ -831,6 +856,7 @@
   var LIGHT_REFRESH_KEYS = [
     "dashboard",
     "skus",
+    "sku_registry_meta",
     "platform_trends",
     "platform_plan",
     "iu_plan",
@@ -846,8 +872,10 @@
     "sku_alias_ignore",
     "sku_alias_audit",
     "sku_matrix",
+    "wb_owner_distribution_audit",
     "product_leaderboard",
     "product_leaderboard_history",
+    "wb_sales_funnel_report",
     "prices",
     "smart_price_workbench",
     "smart_price_overlay",
@@ -943,7 +971,10 @@
       maybeLoadSnapshotJson("order_procurement_ozon", "data/order_procurement_ozon.json", { generatedAt: "", rows: [] }),
       maybeLoadSnapshotJson("order_procurement_ym", "data/order_procurement_ym.json", { generatedAt: "", rows: [] }),
       maybeLoadSnapshotJson("oos_control", "data/oos_control.json", OOS_CONTROL_FALLBACK),
-      maybeLoadSnapshotJson("warehouse_stock_overlay", "data/warehouse_stock_overlay.json", { generatedAt: "", rows: [] })
+      maybeLoadSnapshotJson("warehouse_stock_overlay", "data/warehouse_stock_overlay.json", { generatedAt: "", rows: [] }),
+      maybeLoadSnapshotJson("sku_registry_meta", "data/sku_registry_meta.json", { generatedAt: "" }),
+      maybeLoadSnapshotJson("wb_owner_distribution_audit", "data/wb_owner_distribution_audit.json", { schema: "portal-wb-owner-distribution-audit-v1", summary: { ownerCounts: {} } }),
+      maybeLoadSnapshotJson("wb_sales_funnel_report", "data/wb_sales_funnel_report.json", { generatedAt: "", period: {}, items: [] })
     ]);
     var dashboard = results[0];
     var platformTrends = results[1];
@@ -978,6 +1009,9 @@
     var orderProcurementYm = results[30];
     var oosControl = results[31];
     var warehouseStockOverlay = results[32];
+    var skuRegistryMeta = results[33];
+    var wbOwnerDistributionAudit = results[34];
+    var wbSalesFunnel = results[35];
     var changed = false;
 
     if (typeof state === "object" && state) {
@@ -1079,6 +1113,15 @@
       var nextWarehouseStockOverlay = warehouseStockOverlay && typeof warehouseStockOverlay === "object"
         ? warehouseStockOverlay
         : (state.warehouseStockOverlay || { generatedAt: "", rows: [] });
+      var nextSkuRegistryMeta = skuRegistryMeta && typeof skuRegistryMeta === "object"
+        ? skuRegistryMeta
+        : (state.skuRegistryMeta || { generatedAt: "" });
+      var nextWbOwnerDistributionAudit = wbOwnerDistributionAudit && typeof wbOwnerDistributionAudit === "object"
+        ? wbOwnerDistributionAudit
+        : (state.wbOwnerDistributionAudit || { schema: "portal-wb-owner-distribution-audit-v1", summary: { ownerCounts: {} } });
+      var nextWbSalesFunnel = wbSalesFunnel && typeof wbSalesFunnel === "object"
+        ? wbSalesFunnel
+        : (state.wbSalesFunnel || { generatedAt: "", period: {}, items: [] });
 
       if (payloadChanged("dashboard", state.dashboard, nextDashboard)) {
         state.dashboard = nextDashboard;
@@ -1216,6 +1259,18 @@
       }
       if (payloadChanged("warehouse_stock_overlay", state.warehouseStockOverlay, nextWarehouseStockOverlay)) {
         state.warehouseStockOverlay = nextWarehouseStockOverlay;
+        changed = true;
+      }
+      if (payloadChanged("sku_registry_meta", state.skuRegistryMeta, nextSkuRegistryMeta)) {
+        state.skuRegistryMeta = nextSkuRegistryMeta;
+        changed = true;
+      }
+      if (payloadChanged("wb_owner_distribution_audit", state.wbOwnerDistributionAudit, nextWbOwnerDistributionAudit)) {
+        state.wbOwnerDistributionAudit = nextWbOwnerDistributionAudit;
+        changed = true;
+      }
+      if (payloadChanged("wb_sales_funnel_report", state.wbSalesFunnel, nextWbSalesFunnel)) {
+        state.wbSalesFunnel = nextWbSalesFunnel;
         changed = true;
       }
       if (changed && typeof applyOwnerOverridesToSkus === "function") applyOwnerOverridesToSkus();

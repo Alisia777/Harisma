@@ -8,10 +8,12 @@ const crypto = require('crypto');
 const DEFAULT_INVENTORY_PATHS = [
   'data/dashboard.json',
   'data/skus.json',
+  'data/sku_registry_meta.json',
   'data/platform_trends.json',
   'data/logistics.json',
   'data/ads_summary.json',
   'data/wb_feedbacks_summary.json',
+  'data/wb_sales_funnel_report.json',
   'data/wb_substitution_traffic.json',
   'data/wb_substitution_traffic_history.json',
   'data/platform_plan.json',
@@ -41,6 +43,7 @@ const DEFAULT_INVENTORY_PATHS = [
   'data/sku_alias_ignore.json',
   'data/sku_alias_audit.json',
   'data/sku_matrix.json',
+  'data/wb_owner_distribution_audit.json',
   'data/portal_sync_health.json'
 ];
 

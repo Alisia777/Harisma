@@ -49,6 +49,30 @@ if (!workflow.includes('--verify-readback')) {
 if (!workflow.includes('--no-fixture-fallback --no-external-ads')) {
   fail('daily close WB ads refresh must not use fixture or external fallback data');
 }
+if (!workflow.includes('Preflight production secrets')) {
+  fail('daily close must preflight production secrets before API refresh');
+}
+if (!workflow.includes('Missing required daily close secrets:')) {
+  fail('daily close secret preflight must list missing secret names without falling through');
+}
+if (workflow.indexOf('Preflight production secrets') > workflow.indexOf('Refresh marketplace facts and rolling revisions')) {
+  fail('daily close secret preflight must run before marketplace refresh');
+}
+[
+  'ALTEA_WB_API_TOKEN',
+  'ALTEA_WB_PROMOTION_TOKEN',
+  'ALTEA_OZON_CLIENT_ID',
+  'ALTEA_OZON_API_KEY',
+  'ALTEA_YM_API_KEY',
+  'ALTEA_YM_CAMPAIGN_ID',
+  'ALTEA_YM_BUSINESS_ID',
+  'SUPABASE_URL',
+  'SUPABASE_SERVICE_ROLE_KEY'
+].forEach((secretName) => {
+  if (!workflow.includes(secretName)) {
+    fail(`daily close secret preflight is missing ${secretName}`);
+  }
+});
 
 if (paths.includes('data/portal_dashboard_metrics.json')) {
   const command = 'node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir data';

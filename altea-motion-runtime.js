@@ -704,10 +704,23 @@
     return !!(status && status.classList && status.classList.contains("pending"));
   }
 
+  function appStateDataReady() {
+    var app = window.__alteaAppState || window.__ALTEA_STATE__ || window.state;
+    return !!(app && app.boot && app.boot.dataReady);
+  }
+
+  function primaryInitReady() {
+    return window.__ALTEA_PRIMARY_INIT_FINISHED__ === true || appStateDataReady();
+  }
+
   function maybeHideBoot() {
     if (!bootOverlayShown || finishingBoot) return;
     var elapsed = Date.now() - bootStartedAt;
     if (elapsed < BOOT_MIN_MS) return;
+    if (primaryInitReady()) {
+      finishBoot();
+      return;
+    }
     if (viewIsReady(activeViewName()) && (statusReady() || elapsed >= 3600)) {
       finishBoot();
     }
@@ -715,6 +728,10 @@
 
   function forceHideBoot() {
     if (!bootOverlayShown || finishingBoot) return;
+    if (primaryInitReady()) {
+      finishBoot();
+      return;
+    }
     if (!viewIsReady(activeViewName()) && Date.now() - bootStartedAt < BOOT_HARD_MAX_MS) {
       window.clearTimeout(bootTimer);
       bootTimer = window.setTimeout(forceHideBoot, 1500);
@@ -1020,6 +1037,8 @@
     bindAuthUnlock();
     bindRouteTransitions();
     bindConnectionState();
+    window.addEventListener("altea:data-ready", maybeHideBoot);
+    window.addEventListener("altea:app-ready", maybeHideBoot);
   }
 
   function routeTransition(label, view) {

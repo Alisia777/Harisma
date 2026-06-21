@@ -85,6 +85,7 @@
   */
 
   const scriptPromises = new Map();
+  const viewAssetPromises = new Map();
   let renderBudgetRerenderScheduled = false;
 
   function existingScript(src) {
@@ -111,7 +112,12 @@
     if (scriptPromises.has(src)) return scriptPromises.get(src);
     const existing = existingScript(src);
     if (existing) {
-      const ready = Promise.resolve(existing);
+      const ready = existing.dataset.alteaLazyLoading === '1'
+        ? new Promise((resolve, reject) => {
+          existing.addEventListener('load', () => resolve(existing), { once: true });
+          existing.addEventListener('error', () => reject(new Error(`Failed to load ${src}`)), { once: true });
+        })
+        : Promise.resolve(existing);
       scriptPromises.set(src, ready);
       return ready;
     }
@@ -119,7 +125,12 @@
       const script = document.createElement('script');
       script.src = src;
       script.async = false;
-      script.onload = () => resolve(script);
+      script.dataset.alteaLazyLoading = '1';
+      script.onload = () => {
+        script.dataset.alteaLazyLoading = '0';
+        script.dataset.alteaLazyLoaded = '1';
+        resolve(script);
+      };
       script.onerror = () => reject(new Error(`РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ ${src}`));
       (document.head || document.body || document.documentElement).appendChild(script);
     });
@@ -158,6 +169,29 @@
       chain = chain.then(() => loadScript(src));
     });
     return chain;
+  }
+
+  function loadViewAssets(view) {
+    const key = String(view || '');
+    if (viewAssetPromises.has(key)) return viewAssetPromises.get(key);
+    const bundleKeys = VIEW_BUNDLES[view] || [];
+    let chain = loadRenderBudget(view);
+    bundleKeys.forEach((bundleKey) => {
+      chain = chain.then(() => loadBundle(bundleKey));
+    });
+    viewAssetPromises.set(key, chain);
+    return chain;
+  }
+
+  function primeDashboardHotfix() {
+    if (activeView() !== 'dashboard') return;
+    const api = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
+    if (!api) return;
+    if (typeof api.hasRoot === 'function' && !api.hasRoot() && typeof api.applyNow === 'function') {
+      Promise.resolve(api.applyNow(false)).catch((error) => console.warn('[portal-live-lazy-hotfixes]', 'dashboard', error));
+      return;
+    }
+    if (typeof api.prime === 'function') api.prime(false);
   }
 
   function installIuDrrOzonFallback() {
@@ -251,13 +285,12 @@
   function loadViewHotfixes(view, options = {}) {
     syncSidebarLabels();
     if (view === 'iu-drr') installIuDrrOzonFallback();
-    const bundleKeys = VIEW_BUNDLES[view] || [];
-    let chain = loadRenderBudget(view);
-    bundleKeys.forEach((bundleKey) => {
-      chain = chain.then(() => loadBundle(bundleKey));
-    });
-    return chain.then(() => {
+    return loadViewAssets(view).then(() => {
       syncSidebarLabels();
+      if (view === 'dashboard') {
+        primeDashboardHotfix();
+        return;
+      }
       if (options.rerender !== false && typeof rerenderCurrentView === 'function') {
         rerenderCurrentView();
       }
@@ -279,7 +312,7 @@
     if (!view) return;
     if (view === 'dashboard') {
       const run = () => {
-        if (activeView() === 'dashboard') loadViewHotfixes('dashboard');
+        if (activeView() === 'dashboard') loadViewHotfixes('dashboard', { rerender: false });
       };
       window.setTimeout(run, 0);
       return;

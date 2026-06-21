@@ -2468,6 +2468,36 @@ function applyPortalAccessToNavigation() {
   if (api?.apply) api.apply();
 }
 
+function dispatchPortalEvent(name, detail = {}) {
+  try {
+    window.dispatchEvent(new CustomEvent(name, { detail }));
+  } catch (error) {
+    console.warn('[portal:event]', name, error);
+  }
+}
+
+function publishPrimaryDataReady() {
+  window.__alteaAppState = state;
+  window.__ALTEA_STATE__ = state;
+  dispatchPortalEvent('altea:data-ready', {
+    view: state.activeView || resolveInitialView(),
+    dataReady: true
+  });
+}
+
+function publishPrimaryInitFinished(status = 'ready') {
+  window.__alteaAppState = state;
+  window.__ALTEA_STATE__ = state;
+  dispatchPortalEvent('altea:app-ready', {
+    view: state.activeView || resolveInitialView(),
+    dataReady: Boolean(state.boot?.dataReady),
+    status
+  });
+  if (window.AlteaMotion && typeof window.AlteaMotion.hide === 'function' && !document.body.classList.contains('portal-auth-locked')) {
+    window.setTimeout(() => window.AlteaMotion.hide(), status === 'ready' ? 120 : 360);
+  }
+}
+
 function setView(view, options = {}) {
   view = normalizeViewName(view);
   if (!isPortalViewAllowed(view)) view = firstAllowedPortalView();
@@ -2528,12 +2558,40 @@ function renderViewFailure(rootId, title, error) {
 }
 
 function renderDashboardView() {
+  const root = document.getElementById('view-dashboard');
   const interactiveApi = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
-  if (interactiveApi && typeof interactiveApi.prime === 'function') {
-    interactiveApi.prime(false);
+  const requestDashboardHotfixes = () => {
+    if (typeof window.__alteaLoadLiveHotfixes !== 'function') return;
+    Promise.resolve(window.__alteaLoadLiveHotfixes('dashboard', { rerender: false }))
+      .catch((error) => console.warn('[portal-dashboard]', error));
+  };
+
+  if (interactiveApi) {
+    requestDashboardHotfixes();
+    if (typeof interactiveApi.hasRoot === 'function' && !interactiveApi.hasRoot() && typeof interactiveApi.applyNow === 'function') {
+      Promise.resolve(interactiveApi.applyNow(false)).catch((error) => console.warn('[portal-dashboard]', error));
+      return;
+    }
+    if (typeof interactiveApi.prime === 'function') interactiveApi.prime(false);
     return;
   }
-  renderDashboard();
+
+  if (root) {
+    if (typeof renderViewLoading === 'function') {
+      renderViewLoading('view-dashboard', VIEW_TITLES.dashboard || 'Dashboard');
+    } else {
+      root.innerHTML = '<div class="card"><div class="head"><div><h3>Dashboard</h3><div class="muted small">Loading dashboard layer.</div></div></div></div>';
+    }
+  }
+  requestDashboardHotfixes();
+  window.setTimeout(() => {
+    const api = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
+    if (api && typeof api.prime === 'function') {
+      api.prime(false);
+      return;
+    }
+    if (!document.getElementById('portalDashboardExecutiveRoot') && typeof renderDashboard === 'function') renderDashboard();
+  }, 700);
 }
 
 function initSidebarToggle() {
@@ -3009,6 +3067,7 @@ async function init() {
     mergeSeedStorage(seed || {});
     state.boot.dataReady = true;
     setView(resolveInitialView(), { persist: true, syncHash: true });
+    publishPrimaryDataReady();
     if (typeof window.portalStartOperationalAutoRefresh === 'function') window.portalStartOperationalAutoRefresh();
     window.setTimeout(() => {
       if (typeof ensureViewData !== 'function') return;
@@ -3034,6 +3093,7 @@ async function init() {
   } finally {
     window.__ALTEA_PRIMARY_INIT_PENDING__ = false;
     window.__ALTEA_PRIMARY_INIT_FINISHED__ = true;
+    publishPrimaryInitFinished(state.boot.dataReady ? 'ready' : 'error');
   }
 
   return teamInitPromise;

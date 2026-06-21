@@ -146,6 +146,49 @@ def fetch_hashes(base_url: str, api_key: str, table: str, brand: str, keys: list
     return result
 
 
+def expected_base_keys(expected_hashes: dict[str, str]) -> list[str]:
+    return sorted({key.split("__part__", 1)[0] for key in expected_hashes})
+
+
+def stale_part_keys(expected_hashes: dict[str, str], existing_part_keys: list[str]) -> list[str]:
+    expected = set(expected_hashes)
+    return sorted({key for key in existing_part_keys if "__part__" in key and key not in expected})
+
+
+def fetch_existing_part_keys(base_url: str, api_key: str, table: str, brand: str, base_keys: list[str]) -> list[str]:
+    result: set[str] = set()
+    for base_key in base_keys:
+        prefix = f"{base_key}__part__"
+        params = parse.urlencode(
+            {
+                "select": "snapshot_key",
+                "brand": f"eq.{brand}",
+                "snapshot_key": f"like.{prefix}*",
+            }
+        )
+        rows = rest_request("GET", f"{base_url}/rest/v1/{table}?{params}", api_key) or []
+        for row in rows:
+            snapshot_key = str(row.get("snapshot_key") or "")
+            if snapshot_key.startswith(prefix):
+                result.add(snapshot_key)
+    return sorted(result)
+
+
+def delete_snapshot_keys(base_url: str, api_key: str, table: str, brand: str, keys: list[str]) -> int:
+    deleted = 0
+    for index in range(0, len(keys), 80):
+        chunk = keys[index : index + 80]
+        params = parse.urlencode(
+            {
+                "brand": f"eq.{brand}",
+                "snapshot_key": f"in.({','.join(chunk)})",
+            }
+        )
+        rest_request("DELETE", f"{base_url}/rest/v1/{table}?{params}", api_key, extra_headers={"Prefer": "return=minimal"})
+        deleted += len(chunk)
+    return deleted
+
+
 def chunk_rows(row: dict[str, Any]) -> list[dict[str, Any]]:
     inline = json.dumps([row], ensure_ascii=False)
     if len(inline.encode("utf-8")) <= INLINE_BODY_LIMIT:
@@ -275,6 +318,10 @@ def main() -> int:
         "snapshotKeys": sorted(expected_hashes),
         "blockingReasons": [],
         "warnings": [],
+        "cleanup": {
+            "stalePartRowsDeleted": 0,
+            "stalePartRows": [],
+        },
         "readback": {},
     }
 
@@ -289,6 +336,11 @@ def main() -> int:
         report["blockingReasons"].append("Supabase URL and service-role key are required for generation publish")
     else:
         try:
+            existing_part_rows = fetch_existing_part_keys(supabase_url, supabase_key, args.table, brand, expected_base_keys(expected_hashes))
+            stale_parts = stale_part_keys(expected_hashes, existing_part_rows)
+            if stale_parts:
+                report["cleanup"]["stalePartRowsDeleted"] = delete_snapshot_keys(supabase_url, supabase_key, args.table, brand, stale_parts)
+                report["cleanup"]["stalePartRows"] = stale_parts[:50]
             upsert_rows(supabase_url, supabase_key, args.table, rows, max(1, args.batch_size))
             if args.verify_readback:
                 remote = fetch_hashes(supabase_url, supabase_key, args.table, brand, sorted(expected_hashes))

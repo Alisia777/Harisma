@@ -83,6 +83,8 @@ jobs:
       - name: Build phase 3 truth artifacts
         run: |
           mkdir -p .portal-truth-output
+          RUN_DATE=$(TZ=Europe/Moscow date +%F)
+          node scripts/build-sku-registry-meta.js --input-dir data --output-dir data --run-date "$RUN_DATE"
           node scripts/portal-upload-apply-runtime.js --input-dir data --output-dir .portal-truth-output --template-dir .portal-truth-output/templates --generate-templates
           node scripts/portal-upload-apply-runtime.js --fixture-e2e --output-dir .portal-truth-output
           node scripts/audit-source-workbooks.js --manifest data/portal_source_registry.json --output-dir .portal-truth-output

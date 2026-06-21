@@ -5,6 +5,7 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const workflowPath = path.join(root, '.github', 'workflows', 'portal-daily-close.yml');
+const dataTruthWorkflowPath = path.join(root, '.github', 'workflows', 'portal-data-truth.yml');
 const inventoryPath = path.join(root, 'data', 'runtime_snapshot_inventory.json');
 
 function fail(message) {
@@ -13,6 +14,7 @@ function fail(message) {
 }
 
 const workflow = fs.readFileSync(workflowPath, 'utf8');
+const dataTruthWorkflow = fs.readFileSync(dataTruthWorkflowPath, 'utf8');
 const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
 const paths = Array.isArray(inventory.paths) ? inventory.paths : [];
 
@@ -89,6 +91,12 @@ if (!workflow.includes("vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supab
 }
 if (!workflow.includes('secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY')) {
   fail('daily close must accept the ALTEA_SUPABASE_SERVICE_ROLE_KEY alias');
+}
+if (!dataTruthWorkflow.includes('node scripts/build-sku-registry-meta.js --input-dir data --output-dir data --run-date "$RUN_DATE"')) {
+  fail('data truth workflow must build sku_registry_meta.json before the current snapshot guard');
+}
+if (dataTruthWorkflow.indexOf('node scripts/build-sku-registry-meta.js') > dataTruthWorkflow.indexOf('node scripts/portal-daily-layer-guard.js')) {
+  fail('data truth workflow must build sku_registry_meta.json before portal-daily-layer-guard');
 }
 
 if (paths.includes('data/portal_dashboard_metrics.json')) {

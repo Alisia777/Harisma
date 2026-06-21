@@ -1,9 +1,25 @@
 /* Premium presentation layer: replaces the visible shell for migrated routes while old code keeps data alive. */
 
-body.v87-imperial.altea-premium-shell.altea-premium-app-active:not(.portal-auth-locked) > .app-shell {
+body.v87-imperial.altea-premium-shell:not(.portal-auth-locked) > .app-shell {
+  position: fixed !important;
+  inset: 0 auto auto 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: hidden !important;
+  transform: translate3d(-200vw, -200vh, 0) !important;
+  contain: strict !important;
+}
+
+body.v87-imperial.altea-premium-shell:not(.portal-auth-locked) > .app-shell > .sidebar,
+body.v87-imperial.altea-premium-shell:not(.portal-auth-locked) > .app-shell > .sidebar-toggle,
+body.v87-imperial.altea-premium-shell:not(.portal-auth-locked) > .app-shell > .main > .topbar,
+body.v87-imperial.altea-premium-shell:not(.portal-auth-locked) > .app-shell > .main > .banner {
+  display: none !important;
 }
 
 body.v87-imperial.altea-premium-shell .altea-premium-app {

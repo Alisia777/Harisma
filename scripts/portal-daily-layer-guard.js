@@ -609,12 +609,13 @@ function inspectDataQuality(loaded, policy, checks, passports) {
   const platformRows = Object.values(payload.platformSummary || {});
   const inferredTotalFact = platformRows.reduce((sum, item) => sum + numberOrZero(item?.directRevenue), 0);
   const totalFact = numberOrZero(summary.totalApiRevenue ?? summary.apiRevenue ?? summary.directRevenue) || inferredTotalFact;
-  const unmapped = numberOrZero(summary.apiUnmappedRevenue ?? summary.unmappedRevenue)
-    + numberOrZero(summary.apiKnownOutsideRegistryRevenue);
+  const unmapped = numberOrZero(summary.apiUnmappedRevenue ?? summary.unmappedRevenue);
+  const knownOutsideRegistry = numberOrZero(summary.apiKnownOutsideRegistryRevenue ?? summary.knownOutsideRegistryRevenue);
   const unmappedRatio = totalFact > 0 ? unmapped / totalFact : 0;
   check.reportStatus = status;
   check.criticalIssues = critical;
   check.unmappedRevenue = roundMoney(unmapped);
+  check.knownOutsideRegistryRevenue = roundMoney(knownOutsideRegistry);
   check.unmappedRevenueRatio = Number(unmappedRatio.toFixed(6));
   if (status === 'critical' || status === 'blocked' || critical > 0) {
     check.blockingReasons.push(`portal_data_quality: blocking status ${status || 'unknown'}, critical issues ${critical}`);
@@ -632,7 +633,7 @@ function inspectDataQuality(loaded, policy, checks, passports) {
     period: dateKey(payload.summary?.maxDate || payload.maxDate || payload.generatedAt),
     value: roundMoney(unmapped),
     formula: 'API fact that has no canonical registry mapping',
-    diagnostics: { totalFact: roundMoney(totalFact), ratio: unmappedRatio }
+    diagnostics: { totalFact: roundMoney(totalFact), ratio: unmappedRatio, knownOutsideRegistryRevenue: roundMoney(knownOutsideRegistry) }
   });
   return addCheck(checks, check);
 }

@@ -101,7 +101,17 @@ function buildFixture(dir) {
   });
   write(dir, 'ads_summary.json', { generatedAt, asOfDate: date, window: { to: date }, itemSeries: [{ date, spend: 1 }], platforms: { wb: {}, ozon: {} } });
   write(dir, 'warehouse_stock_overlay.json', { generatedAt, asOfDate: date, rows: [{ articleKey: 'A', stock: 1 }], matchedSkuCount: 1 });
-  write(dir, 'portal_data_quality.json', { generatedAt, maxDate: date, status: 'ok', summary: { totalApiRevenue: 600, apiUnmappedRevenue: 0, criticalIssues: 0 } });
+  write(dir, 'portal_data_quality.json', {
+    generatedAt,
+    maxDate: date,
+    status: 'ok',
+    summary: {
+      totalApiRevenue: 100000,
+      apiUnmappedRevenue: 0,
+      apiKnownOutsideRegistryRevenue: 50000,
+      criticalIssues: 0
+    }
+  });
   write(dir, 'portal_data_quarantine.json', { generatedAt, rows: [] });
   const orderRows = [
     { platform: 'WB', platformKey: 'wb', article: 'A', articleKey: 'A', inStock: 5, inTransit: 3, inRequest: 2, available: 10, safetyStock: 0, avgDaily: 1, rawNeed30: 20, targetNeed30: 20, targetHorizonDays: 30 },
@@ -153,6 +163,10 @@ try {
   buildFixture(dir);
   const clean = run(options(dir));
   assert.strictEqual(clean.report.publish.allowed, true, JSON.stringify(clean.report.publish.blockingReasons, null, 2));
+  const qualityCheck = clean.report.checks.find((check) => check.id === 'contract:data-quality');
+  assert.strictEqual(qualityCheck.unmappedRevenue, 0);
+  assert.strictEqual(qualityCheck.knownOutsideRegistryRevenue, 50000);
+  assert.ok(!clean.report.publish.warningReasons.some((reason) => reason.includes('unmapped revenue')));
 
   const brokenDashboard = JSON.parse(fs.readFileSync(path.join(dir, 'dashboard.json'), 'utf8'));
   brokenDashboard.cards = Array.from({ length: 200 }, () => ({ label: 'РџР»Р°РЅ', value: 600, format: 'money' }));

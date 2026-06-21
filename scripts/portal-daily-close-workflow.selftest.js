@@ -52,8 +52,17 @@ if (!workflow.includes('--no-fixture-fallback --no-external-ads')) {
 if (!workflow.includes('Preflight production secrets')) {
   fail('daily close must preflight production secrets before API refresh');
 }
-if (!workflow.includes('Missing required daily close secrets:')) {
-  fail('daily close secret preflight must list missing secret names without falling through');
+if (!workflow.includes('node scripts/portal-daily-close-preflight.js')) {
+  fail('daily close must write a structured preflight report before API refresh');
+}
+if (!workflow.includes('--output-dir .portal-truth-output')) {
+  fail('daily close preflight report must be uploaded with the truth artifacts');
+}
+if (!workflow.includes("--cutoff-date '${{ steps.cutoff.outputs.value }}'")) {
+  fail('daily close preflight must record the resolved cutoff date');
+}
+if (!workflow.includes("--revision-from '${{ steps.cutoff.outputs.revision_from }}'")) {
+  fail('daily close preflight must record the resolved revision window');
 }
 if (workflow.indexOf('Preflight production secrets') > workflow.indexOf('Refresh marketplace facts and rolling revisions')) {
   fail('daily close secret preflight must run before marketplace refresh');

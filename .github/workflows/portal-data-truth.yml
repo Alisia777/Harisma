@@ -59,6 +59,7 @@ jobs:
           node scripts/portal-atomic-snapshot-finalize.selftest.js
           node scripts/portal-api-max-sync.selftest.js
           node scripts/portal-daily-close-workflow.selftest.js
+          node scripts/portal-runtime-snapshot-choice.selftest.js
           node scripts/sanitizer_url_contract.test.js
           node scripts/atomic_publish_failure_injection.test.js
           python scripts/d1_close_gate.selftest.py

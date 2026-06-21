@@ -57,6 +57,7 @@ jobs:
         run: >-
           node scripts/portal-api-max-sync.js sync
           --mode daily --recent-days 30
+          --platforms wb,ozon,ya
           --to '${{ steps.cutoff.outputs.value }}'
           --strict --skip-protected-scope --skip-health --skip-data-guard
 

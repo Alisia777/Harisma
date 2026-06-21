@@ -41,7 +41,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.head_ref || github.ref_name }}
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -58,6 +57,7 @@ jobs:
           node scripts/portal-upload-apply-runtime.selftest.js
           node scripts/portal-runtime-promote.selftest.js
           node scripts/portal-atomic-snapshot-finalize.selftest.js
+          node scripts/portal-api-max-sync.selftest.js
           node scripts/sanitizer_url_contract.test.js
           node scripts/atomic_publish_failure_injection.test.js
           python scripts/d1_close_gate.selftest.py

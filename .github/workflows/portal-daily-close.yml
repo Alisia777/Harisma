@@ -42,7 +42,9 @@ jobs:
         run: |
           VALUE='${{ github.event.inputs['cutoff-date'] }}'
           if [ -z "$VALUE" ]; then VALUE=$(TZ=Europe/Moscow date -d yesterday +%F); fi
+          REVISION_FROM=$(TZ=Europe/Moscow date -d "$VALUE -29 days" +%F)
           echo "value=$VALUE" >> "$GITHUB_OUTPUT"
+          echo "revision_from=$REVISION_FROM" >> "$GITHUB_OUTPUT"
 
       - name: Refresh marketplace facts and rolling revisions
         env:
@@ -68,8 +70,8 @@ jobs:
           ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
           ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
         run: |
-          node scripts/portal-wb-ads-sync.js sync --no-fixture-fallback --no-external-ads
-          node scripts/portal-ozon-ads-finance-sync.js sync
+          node scripts/portal-wb-ads-sync.js sync --from '${{ steps.cutoff.outputs.revision_from }}' --to '${{ steps.cutoff.outputs.value }}' --no-fixture-fallback --no-external-ads
+          node scripts/portal-ozon-ads-finance-sync.js sync --from '${{ steps.cutoff.outputs.revision_from }}' --to '${{ steps.cutoff.outputs.value }}'
           node scripts/portal-warehouse-stock-sync.js sync
 
       - name: Build canonical non-IU layers

@@ -1195,6 +1195,292 @@ body.v87-imperial.altea-premium-shell .altea-premium-route .platform-pill i {
   box-shadow: 0 0 10px color-mix(in srgb, var(--pc, var(--platform)) 50%, transparent);
 }
 
+body.v87-imperial.altea-premium-shell .altea-premium-route .premium-empty--chart {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-period {
+  justify-content: flex-end;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-kpis,
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-kpis {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-main,
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-main {
+  grid-template-columns: minmax(0, 1.72fr) minmax(320px, .78fr);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-lower {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-kpi,
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-kpi {
+  min-height: 124px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-kpi .value,
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-kpi .value {
+  font-size: 24px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-business-chart .chart {
+  height: 300px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--route-accent) 26%, var(--premium-line));
+  border-radius: 999px;
+  color: var(--premium-muted);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-summary .panel-title {
+  margin-bottom: 14px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-conclusion {
+  display: grid;
+  gap: 14px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-orbit {
+  display: grid;
+  width: 156px;
+  height: 156px;
+  place-items: center;
+  justify-self: center;
+  border: 1px solid color-mix(in srgb, var(--route-accent) 28%, var(--premium-line));
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--route-accent) 18%, transparent), transparent 62%),
+    color-mix(in srgb, var(--premium-surface) 82%, #000);
+  box-shadow: inset 0 0 38px color-mix(in srgb, var(--route-accent) 12%, transparent);
+  text-align: center;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-orbit strong {
+  display: block;
+  color: var(--text, #fff3df);
+  font-size: 32px;
+  line-height: 1;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-orbit span,
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-verdict p {
+  color: var(--premium-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-verdict h3 {
+  margin: 0 0 6px;
+  color: var(--text, #fff3df);
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 24px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-contribution-list,
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-list,
+body.v87-imperial.altea-premium-shell .altea-premium-route .decision-list,
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bars {
+  display: grid;
+  gap: 10px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row,
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row,
+body.v87-imperial.altea-premium-shell .altea-premium-route .decision-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--pc, var(--route-accent)) 22%, var(--premium-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--pc, var(--route-accent)) 8%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row {
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--route-accent) 14%, transparent);
+  color: var(--route-accent);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row strong,
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row strong,
+body.v87-imperial.altea-premium-shell .altea-premium-route .decision-row strong {
+  display: block;
+  color: var(--text, #fff3df);
+  font-size: 12px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row span,
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row small,
+body.v87-imperial.altea-premium-shell .altea-premium-route .decision-row span {
+  display: block;
+  margin-top: 3px;
+  color: var(--premium-muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row em,
+body.v87-imperial.altea-premium-shell .altea-premium-route .driver-row em,
+body.v87-imperial.altea-premium-shell .altea-premium-route .decision-row em {
+  color: var(--route-accent);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  text-align: right;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row i {
+  grid-column: 1 / -1;
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--premium-line) 60%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .contribution-row i::before {
+  content: "";
+  display: block;
+  width: var(--p, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--pc, var(--route-accent));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--pc, var(--route-accent)) 38%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-tone-up {
+  color: var(--success, #69d58d) !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-tone-down {
+  color: var(--danger, #ff8178) !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .native-tone-flat {
+  color: var(--premium-muted) !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-controls .premium-controlbar {
+  margin-bottom: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-row {
+  display: grid;
+  grid-template-columns: minmax(170px, .7fr) minmax(220px, 1.4fr) 72px 86px;
+  gap: 12px;
+  align-items: center;
+  padding: 13px;
+  border: 1px solid color-mix(in srgb, var(--pc, var(--route-accent)) 22%, var(--premium-line));
+  border-radius: 8px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--pc, var(--route-accent)) 12%, transparent), color-mix(in srgb, var(--premium-surface) 88%, #000));
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-title strong {
+  display: block;
+  color: var(--text, #fff3df);
+  font-size: 13px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-title span {
+  display: block;
+  margin-top: 4px;
+  color: var(--premium-muted);
+  font-size: 9px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-track {
+  position: relative;
+  height: 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--premium-line) 58%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-track::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  left: min(100%, 71.42%);
+  width: 1px;
+  background: color-mix(in srgb, var(--text, #fff3df) 48%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-track i {
+  display: block;
+  width: var(--p, 0%);
+  max-width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--pc, var(--route-accent)), color-mix(in srgb, var(--pc, var(--route-accent)) 42%, #fff));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--pc, var(--route-accent)) 30%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-row > em {
+  color: var(--text, #fff3df);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 950;
+  text-align: right;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .data-quality {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--premium-line) 62%, transparent);
+  color: var(--premium-muted);
+  font-size: 10px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-table-wrap {
+  max-height: 560px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-table {
+  min-width: 1320px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-table th:first-child,
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  min-width: 190px;
+  background: color-mix(in srgb, var(--surface, #15130f) 96%, #000);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   body.v87-imperial.altea-premium-shell .altea-premium-ambient-video {
     animation: alteaPremiumVideoDrift 26s ease-in-out infinite alternate;
@@ -1334,6 +1620,17 @@ body.v87-imperial.altea-premium-shell .altea-premium-route .platform-pill i {
 }
 
 @media (max-width: 1240px) {
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-kpis,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-main,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-main,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-lower {
+    grid-template-columns: 1fr;
+  }
+
   body.v87-imperial.altea-premium-shell .altea-premium-route .g5,
   body.v87-imperial.altea-premium-shell .altea-premium-route .g6 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1435,8 +1732,21 @@ body.v87-imperial.altea-premium-shell .altea-premium-route .platform-pill i {
   body.v87-imperial.altea-premium-shell .altea-premium-route .g4,
   body.v87-imperial.altea-premium-shell .altea-premium-route .g5,
   body.v87-imperial.altea-premium-shell .altea-premium-route .g6,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-kpis,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-kpis,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-main,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .executive-native-main,
+  body.v87-imperial.altea-premium-shell .altea-premium-route .ceo-native-lower,
   body.v87-imperial.altea-premium-shell .altea-premium-route .premium-controlbar {
     grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-row {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .employee-bar-row > em {
+    text-align: left;
   }
 
   body.v87-imperial.altea-premium-shell .altea-premium-route .span2 {

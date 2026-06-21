@@ -72,8 +72,30 @@
     caption: 'CEO · заказы · маржа · реклама'
   });
 
+  Object.assign(ROUTES.dashboard, {
+    title: 'Дашборд',
+    kicker: 'CEO обзор',
+    headline: 'Растём или падаем?',
+    caption: 'Один экран отвечает: что происходит, почему, где именно и что угрожает результату.'
+  });
+  Object.assign(ROUTES.executive, {
+    title: 'Руководителю',
+    kicker: 'Управление командой',
+    headline: 'Кто выполняет план — и почему',
+    caption: 'Итог команды, сотрудники, прогноз конца месяца и решения руководителя.'
+  });
+  Object.assign(NAV_BY_ID.dashboard, {
+    title: 'Дашборд',
+    caption: 'CEO · рост · площадки · риски'
+  });
+  Object.assign(NAV_BY_ID.executive, {
+    title: 'Руководителю',
+    caption: 'KPI · сотрудники · решения'
+  });
+
   var renderFrame = 0;
   var renderLock = false;
+  var routeDataRetryTimers = {};
 
   function state() {
     return window.__alteaAppState || window.state || {};
@@ -372,7 +394,8 @@
   }
 
   function chart(values) {
-    var series = values && values.length ? values.map(function (value) { return finite(value); }) : [42, 48, 51, 57, 62, 66, 71, 74, 81, 88];
+    var series = numericSeries(values);
+    if (!series.length) return '<div class="premium-empty premium-empty--chart">нет данных</div>';
     if (series.length === 1) series = [Math.max(0, series[0] * .75), series[0]];
     var max = Math.max.apply(Math, series.concat([1]));
     var min = Math.min.apply(Math, series.concat([0]));
@@ -397,6 +420,105 @@
       dots,
       '</svg></div>'
     ].join('');
+  }
+
+  function numberOrNull(value) {
+    if (value === null || value === undefined || value === '') return null;
+    var num = Number(value);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  function numericSeries(values) {
+    return (values || []).map(numberOrNull).filter(function (value) { return value !== null; });
+  }
+
+  function signedMoney(value) {
+    var num = numberOrNull(value);
+    if (num === null) return 'нет данных';
+    return (num > 0 ? '+' : '') + money(num);
+  }
+
+  function signedPct(value) {
+    var num = numberOrNull(value);
+    if (num === null) return 'нет данных';
+    return (num > 0 ? '+' : '') + pct(num);
+  }
+
+  function toneClass(value) {
+    var num = numberOrNull(value);
+    if (num === null || Math.abs(num) < .000001) return 'flat';
+    return num > 0 ? 'up' : 'down';
+  }
+
+  function sum(values) {
+    return numericSeries(values).reduce(function (acc, value) { return acc + value; }, 0);
+  }
+
+  function seriesPeriodDelta(values) {
+    var series = numericSeries(values);
+    if (series.length < 2) return null;
+    var split = Math.max(1, Math.floor(series.length / 2));
+    var previous = sum(series.slice(0, split));
+    var current = sum(series.slice(split));
+    if (!previous && !current) return null;
+    return current - previous;
+  }
+
+  function seriesPeriodRatio(values) {
+    var series = numericSeries(values);
+    if (series.length < 2) return null;
+    var split = Math.max(1, Math.floor(series.length / 2));
+    var previous = sum(series.slice(0, split));
+    var current = sum(series.slice(split));
+    return previous > 0 ? (current - previous) / previous : null;
+  }
+
+  function platformRevenueSeries(row) {
+    return (row && row.series || []).map(function (item) {
+      return rowFirstNumber(item, ['revenue', 'factRevenue', 'financeTurnover', 'sales', 'gmv']);
+    });
+  }
+
+  function monthDaysFromKey(monthKey) {
+    var match = /^(\d{4})-(\d{2})/.exec(String(monthKey || ''));
+    if (!match) return 30;
+    return new Date(Number(match[1]), Number(match[2]), 0).getDate();
+  }
+
+  function forecastFromSeries(totalValue, series, monthKey) {
+    var value = numberOrNull(totalValue);
+    var days = numericSeries(series).length;
+    if (value === null || !days) return null;
+    return value / days * monthDaysFromKey(monthKey);
+  }
+
+  function rowStatus(completion) {
+    var ratioValue = numberOrNull(completion);
+    if (ratioValue === null) return { label: 'нет данных', cls: 'warn' };
+    if (ratioValue >= 1) return { label: 'в плане', cls: 'ok' };
+    if (ratioValue >= .9) return { label: 'на грани', cls: 'warn' };
+    return { label: 'догнать', cls: 'bad' };
+  }
+
+  function scheduleRouteDataRetry(routeId, delay) {
+    var stage = document.getElementById(stageId(routeId));
+    var count = stage ? finite(stage.dataset.premiumDataRetryCount) : 0;
+    if (count >= 10 || routeDataRetryTimers[routeId]) return;
+    if (stage) stage.dataset.premiumDataRetryCount = String(count + 1);
+    routeDataRetryTimers[routeId] = window.setTimeout(function () {
+      routeDataRetryTimers[routeId] = null;
+      var active = activeRoute();
+      if (active && active.id === routeId) scheduleRender(0);
+    }, delay || 1200);
+  }
+
+  function resetRouteDataRetry(routeId) {
+    var stage = document.getElementById(stageId(routeId));
+    if (stage) stage.dataset.premiumDataRetryCount = '0';
+    if (routeDataRetryTimers[routeId]) {
+      window.clearTimeout(routeDataRetryTimers[routeId]);
+      routeDataRetryTimers[routeId] = null;
+    }
   }
 
   function buildExecutiveModel() {
@@ -425,6 +547,19 @@
     var hasFact = finite(totals.factRevenue) > 0 || finite(totals.apiFactRevenue) > 0 || finite(totals.marginRub) > 0;
     var hasSpend = finite(totals.adSpend) > 0;
     return hasPlan && hasSpend && !hasFact;
+  }
+
+  function executiveNeedsDataRetry(model, factPending) {
+    if (!model || !model.ready || factPending) return true;
+    var totals = model.totals || {};
+    var hasPlan = finite(totals.planToDateRevenue || totals.planRevenue) > 0;
+    var hasFact = finite(totals.factRevenue) > 0 || finite(totals.apiFactRevenue) > 0 || finite(totals.marginRub) > 0;
+    if (hasPlan && !hasFact) return true;
+    if (typeof window.executiveFunnelBuildModel === 'function') {
+      var funnel = window.executiveFunnelBuildModel() || {};
+      if (funnel.ready === false && hasPlan && !hasFact) return true;
+    }
+    return false;
   }
 
   function ownerOptions(model) {
@@ -562,16 +697,135 @@
     ].join(''), 'panel-pad section-gap', rows.length + ' показано');
   }
 
+  function executiveNativeKpis(model) {
+    var totals = model.totals || {};
+    var employeeCount = finite(totals.employeeCount || (model.allOwnerRows || []).length);
+    var okCount = finite(totals.okCount);
+    var riskCount = finite(totals.underPlanCount);
+    var criticalCount = (model.ownerRows || model.allOwnerRows || []).filter(function (row) {
+      return row.planToDateRevenue > 0 && numberOrNull(row.completionToDate) !== null && row.completionToDate < .8;
+    }).length;
+    return '<div class="grid executive-native-kpis section-gap">' + [
+      metric('План команды к дате', totals.completionToDate == null ? 'нет данных' : pct(totals.completionToDate), 'план ' + money(totals.planToDateRevenue) + ' · факт ' + money(totals.factRevenue), totals.completionToDate == null ? 0 : clampPct(totals.completionToDate), 'executive-native-kpi'),
+      metric('Прогноз месяца', totals.completionToDate == null ? 'нет данных' : pct(totals.completionToDate), 'по текущему темпу к плану', totals.completionToDate == null ? 0 : clampPct(totals.completionToDate), 'executive-native-kpi'),
+      metric('В плане', employeeCount ? int(okCount) + ' / ' + int(employeeCount) : 'нет данных', 'сотрудники с выполнением 100%+', employeeCount ? okCount / employeeCount * 100 : 0, 'executive-native-kpi'),
+      metric('В зоне риска', riskCount ? int(riskCount) : '0', 'ниже плана к дате', employeeCount ? riskCount / Math.max(1, employeeCount) * 100 : 0, 'executive-native-kpi'),
+      metric('Критично', criticalCount ? int(criticalCount) : '0', 'ниже 80% выполнения', employeeCount ? criticalCount / Math.max(1, employeeCount) * 100 : 0, 'executive-native-kpi')
+    ].join('') + '</div>';
+  }
+
+  function executiveEmployeeBars(model) {
+    var rows = (model.ownerRows || []).slice(0, 8);
+    if (!rows.length) return '<div class="premium-empty">нет данных</div>';
+    return [
+      '<div class="employee-bars">',
+      rows.map(function (row) {
+        var status = rowStatus(row.completionToDate);
+        var completion = numberOrNull(row.completionToDate);
+        var progress = completion == null ? 0 : Math.max(3, Math.min(140, completion * 100));
+        var platform = row.primaryPlatform || 'all';
+        return [
+          '<div class="employee-bar-row" style="' + platformStyle(platform) + ';--p:' + progress.toFixed(1) + '%">',
+          '<div class="employee-bar-title"><strong>' + escapeHtml(row.owner || 'Сотрудник') + '</strong><span>' + escapeHtml(platformMeta(platform).label) + ' · ' + int(row.articleCount || 0) + ' SKU</span></div>',
+          '<div class="employee-track"><i></i></div>',
+          '<em>' + escapeHtml(completion == null ? '—' : pct(completion)) + '</em>',
+          '<span class="status ' + escapeHtml(status.cls === 'ok' ? '' : status.cls) + '">' + escapeHtml(status.label) + '</span>',
+          '</div>'
+        ].join('');
+      }).join(''),
+      '</div>'
+    ].join('');
+  }
+
+  function executiveDecisionReason(row) {
+    var completion = numberOrNull(row.completionToDate);
+    if (completion === null) return 'нет плана или факта';
+    if (completion < .9) return 'разрыв к плану ' + money(row.gapToDate);
+    if (row.planDrr != null && row.drr != null && row.drr > row.planDrr) return 'ДРР выше плана';
+    if (row.planMarginPct != null && row.marginPct != null && row.marginPct < row.planMarginPct) return 'маржа ниже плана';
+    if (completion < 1) return 'добрать темп до 100%';
+    return 'удержать темп';
+  }
+
+  function executiveDecisionPanel(model) {
+    var rows = (model.ownerRows || []).filter(function (row) {
+      var completion = numberOrNull(row.completionToDate);
+      return completion === null || completion < 1 || finite(row.gapToDate) < 0;
+    }).slice(0, 4);
+    if (!rows.length) rows = (model.ownerRows || []).slice(0, 3);
+    if (!rows.length) return panel('Решения руководителя', '<div class="premium-empty">нет данных</div>', 'panel-pad executive-decision-panel');
+    return panel('Решения руководителя', [
+      '<div class="decision-list">',
+      rows.map(function (row) {
+        var status = rowStatus(row.completionToDate);
+        var action = status.cls === 'ok' ? 'Удержать темп' : status.cls === 'warn' ? 'Проверить прогноз' : 'Догнать план';
+        var due = status.cls === 'bad' ? 'сегодня' : 'до 3 дней';
+        return [
+          '<div class="decision-row">',
+          '<div><strong>' + escapeHtml(action) + '</strong><span>' + escapeHtml(row.owner || 'Сотрудник') + ' · ' + escapeHtml(executiveDecisionReason(row)) + '</span></div>',
+          '<em>' + escapeHtml(due) + '</em>',
+          '</div>'
+        ].join('');
+      }).join(''),
+      '</div>',
+      '<div class="data-quality">Качество данных · ' + escapeHtml(model.generatedAt || model.periodEnd || 'срез') + '</div>'
+    ].join(''), 'panel-pad executive-decision-panel', 'выбор действия');
+  }
+
+  function executiveNativeTable(model) {
+    var rows = model.ownerRows || [];
+    if (!rows.length) return panel('Сотрудники: план, факт, прогноз и причины', '<div class="premium-empty">нет данных</div>', 'panel-pad section-gap');
+    return panel('Сотрудники: план, факт, прогноз и причины', [
+      '<div class="premium-table-wrap executive-table-wrap"><table class="premium-table executive-native-table">',
+      '<thead><tr><th>Сотрудник</th><th>Портфель</th><th>План к дате</th><th>Факт</th><th>Выполнение</th><th>Прогноз</th><th>Маржа</th><th>Реклама</th><th>Вклад</th><th>Причина</th><th>Статус</th></tr></thead>',
+      '<tbody>',
+      rows.slice(0, 12).map(function (row) {
+        var status = rowStatus(row.completionToDate);
+        var platform = row.primaryPlatform || 'all';
+        return [
+          '<tr data-executive-funnel-owner-card="' + escapeHtml(row.owner || '') + '">',
+          '<td><strong>' + escapeHtml(row.owner || '—') + '</strong><small>' + int(row.articleCount || 0) + ' SKU в KPI</small></td>',
+          '<td><span class="platform-pill" style="' + platformStyle(platform) + '"><i></i>' + escapeHtml(platformMeta(platform).label) + '</span></td>',
+          '<td>' + money(row.planToDateRevenue) + '</td>',
+          '<td>' + money(row.factRevenue) + '</td>',
+          '<td><strong>' + escapeHtml(pct(row.completionToDate)) + '</strong><small>' + signedMoney(row.gapToDate) + '</small></td>',
+          '<td>' + escapeHtml(row.completionToDate == null ? 'нет данных' : pct(row.completionToDate)) + '<small>по текущему темпу</small></td>',
+          '<td>' + pct(row.marginPct) + '<small>' + money(row.marginRub) + '</small></td>',
+          '<td>' + money(row.adSpend) + '<small>ДРР ' + pct(row.drr) + '</small></td>',
+          '<td>' + escapeHtml(model.totals && model.totals.factRevenue ? pct(finite(row.factRevenue) / finite(model.totals.factRevenue)) : 'нет данных') + '</td>',
+          '<td>' + escapeHtml(executiveDecisionReason(row)) + '</td>',
+          '<td><span class="status ' + escapeHtml(status.cls === 'ok' ? '' : status.cls) + '">' + escapeHtml(status.label) + '</span></td>',
+          '</tr>'
+        ].join('');
+      }).join(''),
+      '</tbody></table></div>'
+    ].join(''), 'panel-pad section-gap executive-native-employees', rows.length + ' показано');
+  }
+
+  function executiveNativeBody(model) {
+    return [
+      executiveNativeKpis(model),
+      '<div class="executive-native-controls">' + executiveControls(model) + '</div>',
+      '<div class="grid executive-native-main section-gap">',
+      panel('Выполнение планов сотрудниками', executiveEmployeeBars(model), 'panel-pad executive-bars-panel', 'нормализация по портфелю'),
+      executiveDecisionPanel(model),
+      '</div>',
+      executiveNativeTable(model)
+    ].join('');
+  }
+
   function renderExecutive(root) {
     var route = ROUTES.executive;
     var model = buildExecutiveModel();
     var factPending = executiveFactPending(model);
+    var pendingData = executiveNeedsDataRetry(model, factPending);
     var platform = model.selectedPlatform || (model.filters && model.filters.platform) || 'all';
     var stage = ensureStage(route.id);
     var signature = JSON.stringify({
       route: route.id,
       ready: model.ready,
       factPending: factPending,
+      pendingData: pendingData,
       periodStart: model.periodStart,
       periodEnd: model.periodEnd,
       filters: model.filters,
@@ -583,6 +837,11 @@
     if (root.dataset.premiumSignature === signature && stage.dataset.premiumSignature === signature && stage.querySelector('.altea-premium-route')) {
       pruneLegacyChildren(root);
       positionStage(root, stage);
+      if (pendingData) {
+        scheduleRouteDataRetry(route.id, 1200);
+      } else {
+        resetRouteDataRetry(route.id);
+      }
       syncStageVisibility(route.id);
       return;
     }
@@ -597,9 +856,14 @@
       '<section class="altea-premium-route altea-premium-route--executive" style="' + routeStyle(route, platform) + '">',
       '<div class="premium-route-body">',
       head(route, '<button class="btn" type="button" data-premium-navigate="control">Открыть задачи</button><button class="btn primary" type="button" data-executive-funnel-status="danger">Показать риски</button>'),
-      model.ready && !factPending ? executiveControls(model) + '<div class="grid g3">' + executiveHero(model) + '</div>' + executivePlatforms(model) + executiveOwners(model) : executiveLoadingPanel(model, factPending),
+      model.ready && !pendingData ? executiveNativeBody(model) : executiveLoadingPanel(model, true),
       '</div></section>'
     ].join('');
+    if (pendingData) {
+      scheduleRouteDataRetry(route.id, 1200);
+    } else {
+      resetRouteDataRetry(route.id);
+    }
     syncStageVisibility(route.id);
   }
 
@@ -859,6 +1123,13 @@
     total.plan = selected === 'all'
       ? finite(activeMonth.planRevenueToDate || brand.company_plan_to_date_revenue || brand.plan_to_date_revenue)
       : 0;
+    total.monthPlan = selected === 'all'
+      ? finite(activeMonth.planRevenue || brand.company_plan_revenue || brand.plan_revenue || dashboard.company_plan_revenue)
+      : 0;
+    total.forecast = selected === 'all'
+      ? finite(activeMonth.forecastRevenue || brand.company_forecast_revenue || brand.forecast_revenue || dashboard.company_forecast_revenue)
+      : 0;
+    total.forecastPct = total.monthPlan > 0 && total.forecast > 0 ? total.forecast / total.monthPlan : null;
     total.completion = total.plan > 0 ? total.revenue / total.plan : null;
     total.marginPct = total.revenue > 0 && total.marginRub > 0 ? total.marginRub / total.revenue : null;
     total.drr = total.revenue > 0 ? total.adSpend / total.revenue : null;
@@ -872,6 +1143,15 @@
       buys = finite(leaderboard.buys);
       buyoutPct = orders > 0 ? buys / orders : null;
     }
+    var dailyRevenue = (selected === 'all'
+      ? (allTrend && allTrend.series || [])
+      : (visiblePlatformRows[0] && visiblePlatformRows[0].series || [])
+    ).map(function (row) { return rowFirstNumber(row, ['revenue', 'factRevenue', 'financeTurnover']); });
+    if (!numericSeries(dailyRevenue).length && selected === 'all') {
+      dailyRevenue = [total.plan, total.revenue, total.forecast].filter(function (value) {
+        return numberOrNull(value) !== null && finite(value) > 0;
+      });
+    }
     return {
       generatedAt: dashboard.generatedAt || '',
       asOf: dashboard.asOfDate || dashboard.dataFreshness && dashboard.dataFreshness.asOfDate || s.platformTrends && s.platformTrends.latestMarketplaceDate || '',
@@ -884,10 +1164,7 @@
       platformRows: visiblePlatformRows,
       allPlatformRows: platformRows,
       skuRows: dashboardSkuRows(s, selected, monthKey),
-      dailyRevenue: (selected === 'all'
-        ? (allTrend && allTrend.series || [])
-        : (visiblePlatformRows[0] && visiblePlatformRows[0].series || [])
-      ).map(function (row) { return rowFirstNumber(row, ['revenue', 'factRevenue', 'financeTurnover']); })
+      dailyRevenue: dailyRevenue
     };
   }
 
@@ -929,6 +1206,127 @@
     ].join(''), 'panel-pad section-gap', rows.length + ' строк');
   }
 
+  function dashboardNativeKpis(model) {
+    var total = model.total || {};
+    var revenue = numberOrNull(total.revenue);
+    var orders = numberOrNull(model.orders);
+    var buys = numberOrNull(model.buys);
+    var completion = numberOrNull(total.completion);
+    var marginPct = numberOrNull(total.marginPct);
+    var drr = numberOrNull(total.drr);
+    return '<div class="grid ceo-native-kpis section-gap">' + [
+      metric('Выручка', revenue && revenue > 0 ? money(revenue) : 'нет данных', total.plan ? 'план к дате ' + money(total.plan) : 'факт по текущему контуру', completion == null ? 0 : clampPct(completion), 'ceo-native-kpi'),
+      metric('Заказы', orders && orders > 0 ? int(orders) : 'нет данных', 'заказы за выбранный период', orders && orders > 0 ? 100 : 0, 'ceo-native-kpi'),
+      metric('Выкупы', buys && buys > 0 ? int(buys) : 'нет данных', model.buyoutPct == null ? 'выкуп не опубликован' : 'выкуп ' + pct(model.buyoutPct), model.buyoutPct == null ? 0 : clampPct(model.buyoutPct), 'ceo-native-kpi'),
+      metric('Маржа', marginPct == null ? 'нет данных' : pct(marginPct), total.marginRub ? money(total.marginRub) + ' от выручки' : 'маржинальный источник не опубликован', marginPct == null ? 0 : clampPct(marginPct), 'ceo-native-kpi'),
+      metric('Реклама', drr == null ? 'нет данных' : pct(drr), total.adSpend ? money(total.adSpend) + ' расход' : 'расход не опубликован', drr == null ? 0 : clampPct(drr), 'ceo-native-kpi')
+    ].join('') + '</div>';
+  }
+
+  function dashboardConclusion(model) {
+    var total = model.total || {};
+    var delta = seriesPeriodDelta(model.dailyRevenue);
+    var deltaRatio = seriesPeriodRatio(model.dailyRevenue);
+    var completion = numberOrNull(total.completion);
+    var forecast = numberOrNull(total.forecast) || forecastFromSeries(total.revenue, model.dailyRevenue, model.monthKey);
+    var title = delta == null
+      ? 'Тренд ещё собирается'
+      : delta >= 0 ? 'Бизнес растёт' : 'Бизнес снижается';
+    var badge = completion == null
+      ? (delta == null ? 'нет данных' : delta >= 0 ? 'рост подтверждён' : 'просадка')
+      : completion >= 1 ? 'план выполняется' : completion >= .9 ? 'рядом с планом' : 'ниже плана';
+    var rows = [
+      ['Прогноз месяца', forecast == null ? 'нет данных' : money(forecast), total.forecastPct == null ? (completion == null ? '' : pct(completion)) : pct(total.forecastPct)],
+      ['Факт к дате', total.revenue ? money(total.revenue) : 'нет данных', model.asOf || 'срез'],
+      ['Дельта периода', delta == null ? 'нет данных' : signedMoney(delta), deltaRatio == null ? '' : signedPct(deltaRatio)],
+      ['Реклама', total.drr == null ? 'нет данных' : 'ДРР ' + pct(total.drr), total.adSpend ? money(total.adSpend) : '']
+    ];
+    return panel('Вывод CEO', [
+      '<div class="ceo-native-conclusion">',
+      '<div class="ceo-native-orbit native-tone-' + toneClass(delta) + '"><strong>' + escapeHtml(deltaRatio == null ? '—' : signedPct(deltaRatio)) + '</strong><span>к прошлому периоду</span></div>',
+      '<div class="ceo-native-verdict"><h3>' + escapeHtml(title) + '</h3><p>Смотрим общий результат, вклад площадок и денежные риски без операционного шума.</p></div>',
+      list(rows),
+      '</div>'
+    ].join(''), 'panel-pad ceo-native-summary', badge);
+  }
+
+  function dashboardContributionPanel(model) {
+    var totalRevenue = finite(model.total && model.total.revenue);
+    var rows = (model.allPlatformRows || []).map(function (row) {
+      var series = platformRevenueSeries(row);
+      return {
+        platform: row.platform,
+        label: row.label || platformMeta(row.platform).label,
+        revenue: finite(row.revenue),
+        delta: seriesPeriodDelta(series),
+        share: totalRevenue > 0 ? finite(row.revenue) / totalRevenue : null,
+        drr: row.drr,
+        marginPct: row.marginPct
+      };
+    }).filter(function (row) {
+      return row.revenue > 0 || row.delta !== null;
+    }).sort(function (left, right) {
+      return Math.abs(finite(right.delta == null ? right.revenue : right.delta)) - Math.abs(finite(left.delta == null ? left.revenue : left.delta));
+    }).slice(0, 6);
+    if (!rows.length) return panel('Где происходит рост', '<div class="premium-empty">нет данных</div>', 'panel-pad');
+    return panel('Где происходит рост', [
+      '<div class="ceo-contribution-list">',
+      rows.map(function (row) {
+        var shareText = row.share == null ? 'нет данных' : pct(row.share);
+        var valueText = row.delta == null ? money(row.revenue) : signedMoney(row.delta);
+        var progress = row.share == null ? 3 : Math.max(3, Math.min(100, row.share * 100));
+        return [
+          '<div class="contribution-row" style="' + platformStyle(row.platform) + ';--p:' + progress.toFixed(1) + '%">',
+          '<div><strong>' + escapeHtml(row.label) + '</strong><span>вклад ' + escapeHtml(shareText) + ' · ДРР ' + escapeHtml(pct(row.drr)) + '</span></div>',
+          '<em class="native-tone-' + toneClass(row.delta == null ? row.revenue : row.delta) + '">' + escapeHtml(valueText) + '</em>',
+          '<i></i>',
+          '</div>'
+        ].join('');
+      }).join(''),
+      '</div>'
+    ].join(''), 'panel-pad ceo-contribution-panel');
+  }
+
+  function dashboardDriversPanel(model) {
+    var total = model.total || {};
+    var deltas = (model.allPlatformRows || []).map(function (row) {
+      return {
+        label: row.label || platformMeta(row.platform).label,
+        delta: seriesPeriodDelta(platformRevenueSeries(row)),
+        drr: row.drr,
+        marginPct: row.marginPct
+      };
+    }).filter(function (row) { return row.delta !== null; });
+    var best = deltas.slice().sort(function (left, right) { return finite(right.delta) - finite(left.delta); })[0];
+    var worst = deltas.slice().sort(function (left, right) { return finite(left.delta) - finite(right.delta); })[0];
+    var rows = [];
+    if (best) rows.push(['драйвер', best.label, signedMoney(best.delta), 'native-tone-' + toneClass(best.delta)]);
+    if (worst && worst !== best && worst.delta < 0) rows.push(['тормоз', worst.label, signedMoney(worst.delta), 'native-tone-down']);
+    if (total.marginPct != null) rows.push(['маржа', pct(total.marginPct), total.marginRub ? money(total.marginRub) : 'нет данных', 'native-tone-' + toneClass(total.marginPct)]);
+    if (total.drr != null) rows.push(['реклама', 'ДРР ' + pct(total.drr), total.adSpend ? money(total.adSpend) : 'нет данных', total.drr > .2 ? 'native-tone-down' : 'native-tone-up']);
+    if (!rows.length) return panel('Почему меняется результат', '<div class="premium-empty">нет данных</div>', 'panel-pad');
+    return panel('Почему меняется результат', [
+      '<div class="driver-list">',
+      rows.map(function (row, index) {
+        return [
+          '<div class="driver-row">',
+          '<span>' + (index + 1) + '</span>',
+          '<div><strong>' + escapeHtml(row[0]) + '</strong><small>' + escapeHtml(row[1]) + '</small></div>',
+          '<em class="' + escapeHtml(row[3] || '') + '">' + escapeHtml(row[2]) + '</em>',
+          '</div>'
+        ].join('');
+      }).join(''),
+      '</div>'
+    ].join(''), 'panel-pad ceo-driver-panel', 'драйверы и риски');
+  }
+
+  function dashboardBusinessChart(model) {
+    return panel('Динамика бизнеса', [
+      '<div class="native-chart-legend"><span>Выручка</span><span>период</span><span>' + escapeHtml(platformMeta(model.selected).label) + '</span></div>',
+      chart(model.dailyRevenue)
+    ].join(''), 'panel-pad ceo-business-chart', model.asOf || 'срез');
+  }
+
   function renderDashboard(root) {
     var route = ROUTES.dashboard;
     var model = buildDashboardModel();
@@ -957,35 +1355,19 @@
     pruneLegacyChildren(root);
     stage.dataset.premiumSignature = signature;
     positionStage(root, stage);
-    var selectedLabel = platformMeta(model.selected).label;
-    var total = model.total || {};
-    var marginText = total.marginRub > 0 ? money(total.marginRub) : '—';
-    var marginHint = total.marginPct == null ? 'маржинальный источник не опубликован' : pct(total.marginPct) + ' от выручки ' + money(total.revenue);
-    var buyoutHint = model.buyoutPct == null ? 'факт продаж/выкупов' : 'выкуп ' + pct(model.buyoutPct);
-    var kpis = [
-      metric('Заказы', int(model.orders || total.units), 'контур ' + selectedLabel + ' · источник текущих данных', model.orders ? 100 : 8, 'ceo-kpi'),
-      metric('Выкупы', int(model.buys || total.units), buyoutHint, model.buyoutPct == null ? 18 : clampPct(model.buyoutPct), 'ceo-kpi'),
-      metric('Маржа', marginText, marginHint, total.marginPct == null ? 10 : clampPct(total.marginPct), 'ceo-kpi'),
-      metric('Реклама', money(total.adSpend), 'ДРР ' + pct(total.drr) + ' · ROMI ' + pct(total.romi), clampPct(total.drr), 'ceo-kpi')
-    ].join('');
-    var focusRows = [
-      ['Контур', selectedLabel, model.monthKey || 'месяц'],
-      ['Факт выручки', money(total.revenue), model.asOf || 'срез'],
-      ['План к дате', total.plan ? money(total.plan) : 'по площадке без общего плана', total.completion == null ? '—' : pct(total.completion)],
-      ['Сборка', model.generatedAt || '—', 'данные']
-    ];
     stage.innerHTML = [
       '<section class="altea-premium-route altea-premium-route--dashboard altea-ceo-dashboard" style="' + routeStyle(route, model.selected) + '">',
       '<div class="premium-route-body">',
-      head(route, '<button class="btn" type="button" data-premium-navigate="iu-drr">ИУ / ДРР</button><button class="btn primary" type="button" data-premium-navigate="sku-plan-fact">План-факт SKU</button>'),
-      '<section class="panel hero route-glow ceo-hero"><div class="hero-grid"><div class="hero-copy"><div class="micro">CEO · ' + escapeHtml(selectedLabel) + '</div><h2>' + escapeHtml(money(total.revenue)) + '</h2><p>Продажи, выкупы, маржа и реклама собраны в одном порядке. Операционные задачи вынесены в свои вкладки.</p><div class="hero-number"><div class="value lg">' + escapeHtml(total.completion == null ? pct(total.marginPct) : pct(total.completion)) + '</div><small>' + escapeHtml(total.completion == null ? 'маржа' : 'выполнение плана') + '</small></div></div><div class="hero-orbit"><div class="core">' + escapeHtml(pct(total.drr)) + '</div></div></div></section>',
-      '<div class="grid g4 section-gap ceo-kpi-grid">' + kpis + '</div>',
-      '<div class="grid g2 section-gap">',
-      panel('Динамика выручки', chart(model.dailyRevenue), 'panel-pad ceo-chart-panel'),
-      panel('Срез данных', list(focusRows), 'panel-pad platform-focus', model.asOf || 'сейчас'),
+      head(route, '<div class="premium-segment native-period"><button type="button" class="is-active">период</button><button type="button">к прошлому</button><button type="button">экспорт CEO</button></div>'),
+      dashboardNativeKpis(model),
+      '<div class="grid ceo-native-main section-gap">',
+      dashboardBusinessChart(model),
+      dashboardConclusion(model),
       '</div>',
-      dashboardPlatformCards(model),
-      dashboardSkuTable(model),
+      '<div class="grid ceo-native-lower section-gap">',
+      dashboardContributionPanel(model),
+      dashboardDriversPanel(model),
+      '</div>',
       '</div></section>'
     ].join('');
     syncStageVisibility(route.id);

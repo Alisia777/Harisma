@@ -24,6 +24,10 @@ function parseArgs(argv) {
       args[token.slice(2)] = true;
       continue;
     }
+    if (token === '--skip-protected-scope') {
+      args.skipProtectedScope = true;
+      continue;
+    }
     const [rawKey, inlineValue] = token.split('=');
     const key = rawKey.replace(/^--/, '');
     const nextValue = inlineValue !== undefined ? inlineValue : argv[index + 1];
@@ -810,7 +814,9 @@ function runChunkedPlatformStep(step, options, context) {
 }
 
 function main() {
-  const options = resolveOptions(parseArgs(process.argv));
+  const parsedArgs = parseArgs(process.argv);
+  const options = resolveOptions(parsedArgs);
+  if (parsedArgs.skipProtectedScope) options.skipIuDrr = true;
   if (options.command !== 'sync') throw new Error(`Unsupported command: ${options.command}`);
   if (!options.from || !options.to || options.from > options.to) {
     throw new Error(`Invalid API window: ${options.from || '?'}..${options.to || '?'}`);

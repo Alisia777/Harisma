@@ -25,6 +25,8 @@
     "portal:data-quality": "node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data",
     "portal:sku-matrix": "node scripts/build-sku-matrix-layer.js --input-dir data --base-data-dir data --output-dir data",
     "portal:phase2-reconciliation": "node scripts/portal-phase2-reconciliation.js --input-dir data --base-data-dir data --output-dir .portal-truth-output",
+    "portal:d1-close-gate": "python scripts/d1_close_gate.py --policy data/portal_daily_source_policy.json --input-dir data --base-data-dir data --output-dir .portal-truth-output --skip-protected-scope",
+    "portal:generation-publish-dry-run": "python scripts/sync_portal_generation_to_supabase.py --manifest data/active_snapshot.json --dry-run",
     "portal:wb-owner-import": "node scripts/import-wb-owner-distribution.js --input-dir data --base-data-dir data --output-dir data --mirror-local-fallback",
     "portal:wb-funnel-import": "node scripts/build-wb-sales-funnel-report.js",
     "portal:wb-substitution-traffic": "node scripts/import-wb-substitution-traffic.js --base-data-dir data --output-dir data",

@@ -10,6 +10,7 @@ on:
       - 'index.html'
       - 'package.json'
       - '.github/workflows/portal-data-truth.yml'
+      - '.github/workflows/portal-daily-close.yml'
   push:
     branches: [main]
     paths:
@@ -20,6 +21,7 @@ on:
       - 'index.html'
       - 'package.json'
       - '.github/workflows/portal-data-truth.yml'
+      - '.github/workflows/portal-daily-close.yml'
   schedule:
     - cron: '15 4 * * *'
   workflow_dispatch:
@@ -43,6 +45,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Install dependencies
         run: npm ci
       - name: Syntax and negative-path self-test
@@ -55,6 +60,8 @@ jobs:
           node scripts/portal-atomic-snapshot-finalize.selftest.js
           node scripts/sanitizer_url_contract.test.js
           node scripts/atomic_publish_failure_injection.test.js
+          python scripts/d1_close_gate.selftest.py
+          python scripts/sync_portal_generation_to_supabase.selftest.py
       - name: Enforce non-IU scope
         shell: bash
         run: |

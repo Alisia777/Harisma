@@ -3,8 +3,8 @@
   window.__ALTEA_MOTION_RUNTIME__ = true;
 
   var BOOT_MIN_MS = 2200;
-  var BOOT_MAX_MS = 12000;
-  var BOOT_HARD_MAX_MS = 24000;
+  var BOOT_MAX_MS = 6500;
+  var BOOT_HARD_MAX_MS = 9000;
   var ROUTE_MS = 760;
   var ROUTE_MIN_MS = 980;
   var ROUTE_MAX_MS = 12000;
@@ -728,15 +728,6 @@
 
   function forceHideBoot() {
     if (!bootOverlayShown || finishingBoot) return;
-    if (primaryInitReady()) {
-      finishBoot();
-      return;
-    }
-    if (!viewIsReady(activeViewName()) && Date.now() - bootStartedAt < BOOT_HARD_MAX_MS) {
-      window.clearTimeout(bootTimer);
-      bootTimer = window.setTimeout(forceHideBoot, 1500);
-      return;
-    }
     finishBoot();
   }
 

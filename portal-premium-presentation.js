@@ -1505,6 +1505,13 @@
     return stage;
   }
 
+  function stageHasContent(routeId) {
+    var stage = document.getElementById(stageId(routeId));
+    if (!stage) return false;
+    if (stage.querySelector('.altea-premium-route, .view, .portal-lux-shell, .ceo-motion-v1')) return true;
+    return stage.children.length > 0 && String(stage.textContent || stage.innerHTML || '').replace(/\s+/g, '').length > 12;
+  }
+
   function proxyClick(targetId) {
     if (targetId === 'syncStatusBadge') return;
     if (targetId === 'portalAuthSignOutBtn') {
@@ -1519,10 +1526,14 @@
   function syncShell(activeId) {
     var shell = ensureShell();
     ensureLegacyMarketplaceSelector();
-    var shouldShow = managedRoute(activeId) && !document.body.classList.contains('portal-auth-locked');
+    var routeReady = !premiumRoute(activeId) || stageHasContent(activeId);
+    var shouldShow = managedRoute(activeId) && routeReady && !document.body.classList.contains('portal-auth-locked');
     shell.hidden = !shouldShow;
     document.body.classList.toggle('altea-premium-app-active', shouldShow);
-    if (!shouldShow) return;
+    if (!shouldShow) {
+      shell.dataset.premiumActiveRoute = activeId || '';
+      return;
+    }
     shell.dataset.premiumActiveRoute = activeId || '';
     shell.classList.remove('altea-premium-video-fallback');
     warmAmbientVideo(shell);
@@ -1598,7 +1609,6 @@
       syncShell('');
       return;
     }
-    syncShell(active.id);
     if (!premiumRoute(active.id)) {
       attachLegacyRouteToShell(active);
       return;

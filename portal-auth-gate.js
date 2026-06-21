@@ -8,6 +8,7 @@
   var THROTTLE_KEY = 'altea-portal-auth-throttle-v2';
   var DELAYED_SCRIPT_ATTR = 'data-auth-src';
   var DELAYED_SCRIPT_TYPE = 'application/x-altea-auth-delayed';
+  var DELAYED_SCRIPT_TIMEOUT_MS = 30000;
   var LOGIN_MIN_RESPONSE_MS = 700;
   var LOGIN_JITTER_MS = 450;
   var MAX_EMAIL_LENGTH = 254;
@@ -1230,17 +1231,30 @@
     if (!src || placeholder.getAttribute('data-auth-loaded') === '1') return Promise.resolve();
     return new Promise(function (resolve) {
       var script = document.createElement('script');
+      var settled = false;
+      var timer = window.setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        placeholder.setAttribute('data-auth-timeout', '1');
+        if (window.console && window.console.warn) window.console.warn('[portal-auth:scripts] delayed script timeout', src);
+        resolve();
+      }, DELAYED_SCRIPT_TIMEOUT_MS);
+      function done(attr) {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        placeholder.setAttribute(attr, '1');
+        resolve();
+      }
       script.src = src;
       script.async = false;
       copyScriptAttrs(placeholder, script);
       script.onload = function () {
-        placeholder.setAttribute('data-auth-loaded', '1');
-        resolve();
+        done('data-auth-loaded');
       };
       script.onerror = function () {
-        placeholder.setAttribute('data-auth-error', '1');
         if (window.console && window.console.warn) window.console.warn('[portal-auth:scripts] delayed script failed');
-        resolve();
+        done('data-auth-error');
       };
       placeholder.parentNode.insertBefore(script, placeholder.nextSibling);
     });

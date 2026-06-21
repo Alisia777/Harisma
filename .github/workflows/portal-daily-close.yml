@@ -79,7 +79,7 @@ jobs:
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
           node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data
           node scripts/build-sku-matrix-layer.js --input-dir data --base-data-dir data --output-dir data
-          node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir .portal-truth-output
+          node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir data
 
       - name: D-1 and numeric gates
         run: |
@@ -109,6 +109,10 @@ jobs:
           path: |
             .portal-truth-output/**
             data/active_snapshot.json
+            data/portal_dashboard_metrics.json
+            data/portal_dashboard_reconciliation.json
+            data/portal_plan_reconciliation.json
+            data/portal_indicator_audit.json
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 30

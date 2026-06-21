@@ -151,15 +151,40 @@ function resolveOptions(args) {
   };
 }
 
-function unzipWithPowerShell(zipPath, destination) {
+function unzipArchive(zipPath, destination) {
   fs.mkdirSync(destination, { recursive: true });
-  execFileSync('powershell', [
+  const attempts = [];
+  const powerShellArgs = [
     '-NoProfile',
     '-ExecutionPolicy',
     'Bypass',
     '-Command',
     `Expand-Archive -LiteralPath ${JSON.stringify(zipPath)} -DestinationPath ${JSON.stringify(destination)} -Force`
-  ], { stdio: 'pipe' });
+  ];
+  if (process.platform === 'win32') {
+    attempts.push(['powershell', powerShellArgs]);
+    attempts.push(['pwsh', powerShellArgs]);
+  }
+  attempts.push(['unzip', ['-q', '-o', zipPath, '-d', destination]]);
+  attempts.push(['python3', ['-m', 'zipfile', '-e', zipPath, destination]]);
+  attempts.push(['python', ['-m', 'zipfile', '-e', zipPath, destination]]);
+  if (process.platform !== 'win32') {
+    attempts.push(['pwsh', powerShellArgs]);
+    attempts.push(['powershell', powerShellArgs]);
+  }
+
+  const failures = [];
+  for (const [command, args] of attempts) {
+    try {
+      execFileSync(command, args, { stdio: 'pipe' });
+      return;
+    } catch (error) {
+      const detail = normalizeText(error?.stderr || error?.stdout || error?.message || error?.code || 'failed');
+      failures.push(`${command}: ${detail.slice(0, 300)}`);
+    }
+  }
+
+  throw new Error(`Unable to extract Yandex Market ZIP report. Tried ${attempts.map(([command]) => command).join(', ')}. ${failures.join(' | ')}`);
 }
 
 function collectFiles(dir, pattern, result) {
@@ -425,7 +450,7 @@ async function downloadAndParseReport(fileUrl) {
   const zipPath = path.join(tmpDir, 'report.zip');
   fs.writeFileSync(zipPath, Buffer.from(await response.arrayBuffer()));
   const extractDir = path.join(tmpDir, 'out');
-  unzipWithPowerShell(zipPath, extractDir);
+  unzipArchive(zipPath, extractDir);
   const files = [];
   collectFiles(extractDir, /\.(json|csv|xlsx)$/i, files);
   const rows = [];
@@ -1270,7 +1295,13 @@ async function main() {
   }, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error?.stack || String(error));
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error?.stack || String(error));
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  unzipArchive
+};

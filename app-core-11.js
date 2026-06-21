@@ -6925,7 +6925,7 @@ async function downloadSkuPlanFactQualityExcel(model) {
 const OOS_CONTROL_STATUS_META = {
   oos: { label: 'OOS', tone: 'danger', priority: 'critical' },
   critical: { label: 'Критично', tone: 'danger', priority: 'critical' },
-  risk: { label: 'OOS скоро <10 д', tone: 'warn', priority: 'high' },
+  risk: { label: 'OOS скоро <5 д', tone: 'warn', priority: 'high' },
   watch: { label: 'Наблюдать', tone: 'info', priority: 'medium' }
 };
 
@@ -7176,7 +7176,7 @@ function renderOosControlKpis(summary = {}) {
   return `
     <div class="dashboard-grid-4" style="margin-top:14px">
       <div class="mini-kpi danger"><span>OOS сейчас</span><strong>${fmt.int(summary.oosCount || 0)}</strong><span>нулевой остаток</span></div>
-      <div class="mini-kpi warn"><span>OOS скоро &lt;10 д</span><strong>${fmt.int(summary.oosSoonCount || summary.riskCount || 0)}</strong><span>активные / новинки</span></div>
+      <div class="mini-kpi warn"><span>OOS скоро &lt;5 д</span><strong>${fmt.int(summary.oosSoonCount || summary.riskCount || 0)}</strong><span>активные / новинки</span></div>
       <div class="mini-kpi"><span>SKU в очереди</span><strong>${fmt.int(summary.skuCount || 0)}</strong><span>только активные статусы</span></div>
       <div class="mini-kpi"><span>Выручка под риском / день</span><strong>${fmt.money(summary.revenueAtRiskDay || 0)}</strong><span>по текущему темпу</span></div>
     </div>
@@ -7206,7 +7206,7 @@ function renderOosControlFilters(rows, filters) {
             <option value="active" ${filters.status === 'active' ? 'selected' : ''}>Все активные</option>
             <option value="oos" ${filters.status === 'oos' ? 'selected' : ''}>Только OOS</option>
             <option value="critical" ${filters.status === 'critical' ? 'selected' : ''}>Критично</option>
-            <option value="risk" ${filters.status === 'risk' ? 'selected' : ''}>OOS скоро &lt;10 д</option>
+            <option value="risk" ${filters.status === 'risk' ? 'selected' : ''}>OOS скоро &lt;5 д</option>
             <option value="watch" ${filters.status === 'watch' ? 'selected' : ''}>Наблюдать</option>
             <option value="has_task" ${filters.status === 'has_task' ? 'selected' : ''}>С задачей</option>
             <option value="no_task" ${filters.status === 'no_task' ? 'selected' : ''}>Без задачи</option>
@@ -7987,7 +7987,7 @@ function renderOosControlSignalList(signals = [], selectedKey = '') {
       <div class="section-subhead">
         <div>
           <h3>Где и сколько оборота потеряем</h3>
-          <p class="small muted">Показываются только кластеры, где OOS наступит раньше пополнения или запас ниже 10 дней.</p>
+          <p class="small muted">Показываются только кластеры, где OOS наступит раньше пополнения или запас ниже 5 дней.</p>
         </div>
         ${badge(`${fmt.int(signals.length)} SKU × кластер`, signals.length ? 'warn' : 'ok')}
       </div>
@@ -8020,7 +8020,7 @@ function renderOosControlFiltersV4(rows, filters) {
             <option value="active" ${filters.status === 'active' ? 'selected' : ''}>Все активные</option>
             <option value="oos" ${filters.status === 'oos' ? 'selected' : ''}>Только OOS</option>
             <option value="critical" ${filters.status === 'critical' ? 'selected' : ''}>Критично</option>
-            <option value="risk" ${filters.status === 'risk' ? 'selected' : ''}>OOS скоро &lt;10 д</option>
+            <option value="risk" ${filters.status === 'risk' ? 'selected' : ''}>OOS скоро &lt;5 д</option>
             <option value="watch" ${filters.status === 'watch' ? 'selected' : ''}>Наблюдать</option>
             <option value="has_task" ${filters.status === 'has_task' ? 'selected' : ''}>С задачей</option>
             <option value="no_task" ${filters.status === 'no_task' ? 'selected' : ''}>Без задачи</option>
@@ -8115,7 +8115,7 @@ function renderOosControlHero(payload = {}, rows = [], allRows = rows) {
         <div class="oos-hero-metric warn">
           <span>Скоро OOS</span>
           <strong>${fmt.int(summary.oosSoonCount || summary.riskCount || 0)}</strong>
-          <small>покрытие меньше 10 дней</small>
+          <small>покрытие меньше 5 дней</small>
         </div>
         <div class="oos-hero-metric info">
           <span>Выручка под риском</span>
@@ -8141,8 +8141,6 @@ function oosControlRowSignals(row = {}) {
   }
   if (days && days < 5) {
     signals.push({ key: 'coverage-5', label: 'покрытие меньше 5 дней', tone: 'danger' });
-  } else if (days && days < 10) {
-    signals.push({ key: 'coverage-10', label: 'покрытие меньше 10 дней', tone: 'warn' });
   }
   if (need14 > 0) {
     signals.push({ key: 'need-14', label: 'не хватает до 14 дней', tone: 'warn' });
@@ -8536,7 +8534,7 @@ function renderOosSkuRiskShelf(rows = []) {
           const runwayPercent = oosControlBarPercent(item.minDays || 0, 28, item.minDays ? 6 : 0);
           const daysText = item.minDays ? `закончится через ${fmt.num(item.minDays, 1)} д` : 'срок не рассчитан';
           const platformText = item.platforms.slice(0, 3).join(' · ');
-          const statusText = item.oosCount ? 'OOS' : item.riskCount ? 'риск <10 д' : 'контроль до 28 д';
+          const statusText = item.oosCount ? 'OOS' : item.riskCount ? 'риск <5 д' : 'контроль до 28 д';
           const visibleClusters = item.clusters.slice(0, 10);
           return `
             <details class="oos-sku-card ${tone}" ${index === 0 ? 'open' : ''}>
@@ -8640,7 +8638,7 @@ function renderOosStatusStrip(payload = {}, rows = [], allRows = rows) {
         <small>нулевой или критичный остаток</small>
       </div>
       <div class="oos-simple-strip__item warn">
-        <span>Риск &lt;10 д</span>
+        <span>Риск &lt;5 д</span>
         <strong>${fmt.int(summary.riskCount || 0)}</strong>
         <small>закончится скоро</small>
       </div>
@@ -8724,8 +8722,8 @@ function renderOosControlCoverageChart(rows = []) {
   return `
     <div class="oos-chart-card">
       <div class="section-subhead">
-        <div><h3>Покрытие</h3><p class="small muted">Цель: не ниже 10 дней</p></div>
-        ${badge('10 д')}
+        <div><h3>Покрытие</h3><p class="small muted">Цель: не ниже 5 дней</p></div>
+        ${badge('5 д')}
       </div>
       <div class="oos-bar-list">
         ${sortedRows.map((row) => {
@@ -8828,10 +8826,10 @@ function oosControlGameModel(payload = {}, rows = []) {
       metric: tasks.noTaskCount ? `${fmt.int(tasks.noTaskCount)} без задачи` : 'готово'
     },
     {
-      title: 'Дотянуть покрытие до 10 дней',
+      title: 'Дотянуть покрытие до 5 дней',
       reward: 25,
-      tone: minCover && minCover < 10 ? 'warn' : 'ok',
-      done: Boolean(minCover && minCover >= 10),
+      tone: minCover && minCover < 5 ? 'warn' : 'ok',
+      done: Boolean(minCover && minCover >= 5),
       metric: minCover ? `${fmt.num(minCover, 1)} д минимум` : 'нет риска'
     },
     {

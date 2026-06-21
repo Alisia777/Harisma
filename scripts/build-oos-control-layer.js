@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const DEFAULT_SOON_DAYS = 10;
+const DEFAULT_SOON_DAYS = 5;
 const DEFAULT_WATCH_DAYS = 28;
 const HISTORY_DAY_LIMIT = 370;
 const ISSUE_STATE_LIMIT = 5000;
@@ -557,7 +557,17 @@ function summarizeGroup(rows, keyFn, labelFn) {
     .sort((left, right) => right.revenueAtRiskDay - left.revenueAtRiskDay || right.total - left.total);
 }
 
-function applyHistory(rows, previousPayload, today) {
+function isLegacySoonThresholdState(state, rules) {
+  if (Number(rules?.soonDays) === 10) return false;
+  const text = [
+    state?.place,
+    state?.statusLabel,
+    state?.recommendation
+  ].filter(Boolean).join(' ');
+  return /<10\s*д/.test(text);
+}
+
+function applyHistory(rows, previousPayload, today, rules) {
   const previousStates = new Map(
     (Array.isArray(previousPayload?.history?.issueStates) ? previousPayload.history.issueStates : [])
       .map((item) => [String(item.issueKey || ''), item])
@@ -612,6 +622,7 @@ function applyHistory(rows, previousPayload, today) {
     ...resolvedToday,
     ...[...previousStates.values()].filter((item) => item?.resolvedDate && !activeKeys.has(item.issueKey))
   ]
+    .filter((item) => !isLegacySoonThresholdState(item, rules))
     .sort((left, right) => String(right.resolvedDate || right.lastSeenDate || '').localeCompare(String(left.resolvedDate || left.lastSeenDate || '')))
     .slice(0, Math.max(0, ISSUE_STATE_LIMIT - currentStates.length));
 
@@ -710,7 +721,7 @@ function main() {
   const rows = buildRows(orderLayer.payload, skusLayer.payload, smartPriceLayer.payload, rules);
   const freshnessStatus = buildFreshness(options, orderLayer.payload, syncHealthLayer.payload, qualityLayer.payload);
   const previousPayload = previousLayer.payload?.schema === 'portal-oos-control-v2' ? previousLayer.payload : {};
-  const historyResult = applyHistory(rows, previousPayload, today);
+  const historyResult = applyHistory(rows, previousPayload, today, rules);
   const { summary, dailySummary, days } = buildSummary(historyResult.rows, historyResult, freshnessStatus, previousPayload, today);
 
   const payload = {

@@ -3,6 +3,9 @@ name: Portal daily close
 on:
   schedule:
     - cron: '30 7 * * *'
+  workflow_run:
+    workflows: ['Portal data truth']
+    types: [completed]
   workflow_dispatch:
     inputs:
       cutoff-date:
@@ -21,6 +24,7 @@ env:
 
 jobs:
   close:
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:

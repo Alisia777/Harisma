@@ -16,6 +16,17 @@ const workflow = fs.readFileSync(workflowPath, 'utf8');
 const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
 const paths = Array.isArray(inventory.paths) ? inventory.paths : [];
 
+if (!workflow.includes("workflows: ['Portal data truth']") || !workflow.includes('types: [completed]')) {
+  fail('daily close must auto-run after the Portal data truth workflow completes');
+}
+if (
+  !workflow.includes(
+    "github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')"
+  )
+) {
+  fail('daily close workflow_run trigger must only publish after successful Portal data truth runs on main');
+}
+
 const scriptRefs = new Set();
 for (const match of workflow.matchAll(/\b(?:node|python)\s+(scripts\/[^\s\\]+?)(?=\s|$)/g)) {
   scriptRefs.add(match[1]);

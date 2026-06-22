@@ -438,14 +438,17 @@
       startControlObserver();
       queueEnhance();
     };
-    window.addEventListener('altea:viewchange', onRouteChange);
+    const onRouteChangeCascade = () => {
+      [0, 160, 520, 1100, 2400, 5200].forEach((delay) => window.setTimeout(onRouteChange, delay));
+    };
+    window.addEventListener('altea:viewchange', onRouteChangeCascade);
     window.addEventListener('altea:data-ready', queueEnhance);
     window.addEventListener('altea:app-ready', queueEnhance);
     window.addEventListener('altea:portal-storage-updated', queueEnhance);
-    window.addEventListener('hashchange', onRouteChange);
+    window.addEventListener('hashchange', onRouteChangeCascade);
     document.addEventListener('click', (event) => {
       if (event.target.closest('[data-view="control"],[href$="#control"],[href*="#control"]')) {
-        window.setTimeout(onRouteChange, 0);
+        window.setTimeout(onRouteChangeCascade, 0);
       }
     }, true);
   }

@@ -34,6 +34,7 @@
   };
 
   let baseRenderSkuPlanFact = null;
+  let wrappedRenderSkuPlanFact = null;
   let suppressEnhance = false;
   let priceHistoryCacheSource = null;
   let priceHistoryCache = null;
@@ -1619,7 +1620,7 @@
     host.querySelector('.pf-v1-platform-board')?.remove();
     let mount = host.querySelector('[data-planfact-v4]');
     if (!mount) {
-      const anchor = host.querySelector('.pf-v1-filter-dock') || host.querySelector('.pf-v1-head') || host.firstElementChild;
+      const anchor = host.querySelector('.pf-v1-head') || host.firstElementChild;
       if (anchor) anchor.insertAdjacentHTML('afterend', renderShell(model));
       else host.insertAdjacentHTML('afterbegin', renderShell(model));
     } else {
@@ -1632,13 +1633,18 @@
   function wrapRenderer() {
     const candidate = window.renderSkuPlanFact || (typeof renderSkuPlanFact === 'function' ? renderSkuPlanFact : null);
     if (typeof candidate !== 'function' || candidate.__planFactV4Wrapped) return;
-    baseRenderSkuPlanFact = candidate;
+    if (!baseRenderSkuPlanFact) {
+      baseRenderSkuPlanFact = candidate.__planFactV4Base || candidate;
+    }
+    if (candidate === wrappedRenderSkuPlanFact) return;
     const wrapped = function renderSkuPlanFactWithV4(rootId, options) {
       const result = baseRenderSkuPlanFact.call(this, rootId || ROOT_ID, options || {});
       window.setTimeout(enhance, 0);
       return result;
     };
     wrapped.__planFactV4Wrapped = true;
+    wrapped.__planFactV4Base = baseRenderSkuPlanFact;
+    wrappedRenderSkuPlanFact = wrapped;
     window.renderSkuPlanFact = wrapped;
     try { renderSkuPlanFact = wrapped; } catch (_) {}
   }

@@ -7,6 +7,15 @@
   const VERSION = '20260622-workspaces-gtd-v1';
   const ROOT_SELECTOR = '[data-workspaces-gtd-v1]';
   const ROUTES = {
+    executive: {
+      rootId: 'view-executive',
+      index: '00',
+      title: 'Р СѓРєРѕРІРѕРґРёС‚РµР»СЋ',
+      kicker: 'РєРѕРјР°РЅРґР° -> KPI -> СЂРµС€РµРЅРёРµ',
+      question: 'РЎРЅР°С‡Р°Р»Р° РёС‚РѕРі РїРѕ СЃРѕС‚СЂСѓРґРЅРёРєР°Рј, РґР°Р»СЊС€Рµ РїР»РѕС‰Р°РґРєРё, РѕС‚РєР»РѕРЅРµРЅРёСЏ Рё РґРµС‚Р°Р»Рё KPI.',
+      status: 'Р Р°Р±РѕС‡РёР№ executive-СЌРєСЂР°РЅ РѕСЃС‚Р°РµС‚СЃСЏ native, РЅРѕ РІРµСЂС…РЅРёР№ РІР»Р°РґРµР»РµС† С‚РµРїРµСЂСЊ РЅРѕРІС‹Р№',
+      detail: '.executive-funnel-shell, .executive-funnel, .executive-card, table, .sku-plan-fact-row'
+    },
     control: {
       rootId: 'view-control',
       index: '01',
@@ -43,9 +52,45 @@
       status: 'Старый repricer overlay удаляется перед mount',
       detail: '.repricer-card, .repricer-table, table, .sku-plan-fact-card, .sku-plan-fact-row'
     },
+    order: {
+      rootId: 'view-order',
+      index: '05',
+      title: 'Р—Р°РєР°Р· С‚РѕРІР°СЂР°',
+      kicker: 'РєР»Р°СЃС‚РµСЂ -> СЃРєР»Р°Рґ -> РїРѕСЃС‚Р°РІРєР°',
+      question: 'РћР±С‰РёР№ РєРѕРЅС‚СѓСЂ Р·Р°РєСѓРїРєРё СЃРІРµСЂС…Сѓ, РґР°Р»СЊС€Рµ СЂРѕРґРЅР°СЏ СЂР°Р±РѕС‡Р°СЏ С„РѕСЂРјР° РїРѕ РєР»Р°СЃС‚РµСЂР°Рј.',
+      status: 'Р‘Р»РѕРє Р·Р°РєР°Р·Р° РѕСЃС‚Р°РµС‚СЃСЏ С„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅС‹Рј: С„РёР»СЊС‚СЂС‹, С‚Р°Р±Р»РёС†Р° Рё РІС‹РіСЂСѓР·РєРё РЅРµ С‚СЂРѕРіР°СЋС‚СЃСЏ',
+      detail: '[data-altea-order-procurement], .altea-order-procurement, table, .table-wrap'
+    },
+    'oos-control': {
+      rootId: 'view-oos-control',
+      index: '06',
+      title: 'OOS РєРѕРЅС‚СЂРѕР»СЊ',
+      kicker: 'РґРЅРё Р·Р°РїР°СЃР° -> РїРѕС‚РµСЂСЏ -> РјРµСЂР°',
+      question: 'РЎРЅР°С‡Р°Р»Р° РєСЂРёС‚РёС‡РЅС‹Р№ СЂРёСЃРє Рё РґРµРЅСЊРіРё, Р·Р°С‚РµРј РѕС‡РµСЂРµРґСЊ SKU/РєР»Р°СЃС‚РµСЂРѕРІ Рё С„РѕСЂРјСѓР»Р°. ',
+      status: 'РџРѕСЂРѕРі <10 РґРЅРµР№ Рё СЂР°СЃС‡РµС‚ РїРѕС‚РµСЂСЊ РѕСЃС‚Р°СЋС‚СЃСЏ РІ С‚РµРєСѓС‰РµРј OOS-v4',
+      detail: '.oos-command, .oos-focus, .oos-risk-queue, .oos-advanced-panel, table'
+    },
+    skus: {
+      rootId: 'view-skus',
+      index: '07',
+      title: 'SKU workspace',
+      kicker: 'СЂРµРµСЃС‚СЂ -> API -> РїР»Р°РЅ-С„Р°РєС‚',
+      question: 'РЎРІРѕРґРєР° РїРѕ РјР°С‚СЂРёС†Рµ, owner, alias/API Рё СЃС‚Р°С‚СѓСЃР°Рј, РґР°Р»СЊС€Рµ РїРѕР»РЅС‹Р№ СЂРµРµСЃС‚СЂ SKU.',
+      status: 'Р РµРµСЃС‚СЂ РЅРµ Р·Р°РјРµРЅСЏРµС‚СЃСЏ: РЅРѕРІС‹Р№ СЃР»РѕР№ РґРѕР±Р°РІР»СЏРµС‚ РІРµСЂС…РЅРёР№ РєРѕРЅС‚СѓСЂ Рё РґРµР№СЃС‚РІРёСЏ',
+      detail: '.sku-workspace-panel, .sku-data-focus-board, .sku-data-technical, table, .table-wrap'
+    },
+    launches: {
+      rootId: 'view-launches',
+      index: '08',
+      title: 'РќРѕРІРёРЅРєРё',
+      kicker: 'РєР°Р»РµРЅРґР°СЂСЊ -> СЌС‚Р°Рї -> РєР°РЅР±Р°РЅ',
+      question: 'РљР°Р»РµРЅРґР°СЂСЊ Р·Р°РїСѓСЃРєРѕРІ Рё РІСЃС‚СЂРѕРµРЅРЅС‹Р№ РєР°РЅР±Р°РЅ РѕСЃС‚Р°СЋС‚СЃСЏ РІ РЅРѕРІРѕРј СЃР»РѕРµ РЅРѕРІРёРЅРѕРє.',
+      status: 'Р”Р°С‚С‹, СЌС‚Р°РїС‹ Рё РїСЂРѕСЃСЂРѕС‡РєРё Р±РµСЂСѓС‚СЃСЏ РёР· С‚РµРєСѓС‰РµР№ Р±Р°Р·С‹',
+      detail: '.sku-launch-v1-shell, .launch-v1-shell, [data-sku-launch-version], table'
+    },
     'wb-rating': {
       rootId: 'view-wb-rating',
-      index: '05',
+      index: '09',
       title: 'Рейтинг карточек',
       kicker: 'сигнал -> карточка -> действие',
       question: 'Сводка сверху ведет в текущую таблицу отзывов, вопросов, негатива и рейтинга.',
@@ -575,6 +620,12 @@
     }, 0);
   }
 
+  function scheduleRenderCascade() {
+    [0, 120, 420, 900, 1800, 3600].forEach((delay) => {
+      window.setTimeout(scheduleRender, delay);
+    });
+  }
+
   function focusElement(element) {
     if (!element) return false;
     element.setAttribute('data-workspaces-gtd-focused', 'true');
@@ -716,10 +767,10 @@
       renderActive();
     }, delay));
     ['hashchange', 'altea:viewchange', 'altea:data-ready', 'altea:app-ready', 'altea:portal-storage-updated', 'altea:marketplacechange'].forEach((eventName) => {
-      window.addEventListener(eventName, scheduleRender);
+      window.addEventListener(eventName, scheduleRenderCascade);
     });
     document.addEventListener('click', (event) => {
-      if (event.target.closest('[data-view], a[href^="#"]')) scheduleRender();
+      if (event.target.closest('[data-view], a[href^="#"]')) scheduleRenderCascade();
     }, true);
   }
 

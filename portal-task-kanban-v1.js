@@ -397,7 +397,7 @@
     ensureStyle();
     const installed = installWrapper();
     if (!installed) window.setTimeout(installWrapper, 500);
-    [0, 700, 1800, 4200, 8000, 14000, 20000].forEach((delay) => {
+    [0, 350, 900, 1800].forEach((delay) => {
       window.setTimeout(queueEnhance, delay);
     });
     window.addEventListener('altea:viewchange', queueEnhance);

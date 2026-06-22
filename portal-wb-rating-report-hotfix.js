@@ -3012,10 +3012,32 @@
     attachWorkbenchEvents(rootId);
   }
 
+  function renderWbRatingIfActive() {
+    const root = document.getElementById('view-wb-rating');
+    const active = root && (
+      root.classList.contains('active')
+      || appState().activeView === 'wb-rating'
+      || window.location.hash === '#wb-rating'
+    );
+    if (!active) return;
+    renderWbCardRatingStructured('view-wb-rating');
+  }
+
   window.renderWbCardRating = renderWbCardRatingStructured;
   try {
     renderWbCardRating = renderWbCardRatingStructured;
   } catch (error) {
     window.renderWbCardRating = renderWbCardRatingStructured;
+  }
+
+  ['hashchange', 'altea:viewchange', 'altea:data-ready', 'altea:app-ready', 'altea:portal-storage-updated'].forEach((eventName) => {
+    window.addEventListener(eventName, () => window.setTimeout(renderWbRatingIfActive, 0));
+  });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      [0, 700, 1800, 4200].forEach((delay) => window.setTimeout(renderWbRatingIfActive, delay));
+    }, { once: true });
+  } else {
+    [0, 700, 1800, 4200].forEach((delay) => window.setTimeout(renderWbRatingIfActive, delay));
   }
 })();

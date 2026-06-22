@@ -32,6 +32,8 @@
 
   let wrappedRender = null;
   let enhanceQueued = false;
+  let controlObserver = null;
+  let controlObserverTimer = 0;
 
   function appState() {
     try {
@@ -350,6 +352,7 @@
   function enhanceControl() {
     const root = document.getElementById(ROOT_ID);
     if (!root || !root.classList.contains('active')) return;
+    startControlObserver();
     ensureStyle();
     root.querySelector('[data-task-kanban-v1]')?.remove();
     const anchor = root.querySelector('[data-task-lazy-panel]') || root.querySelector('.section-title');
@@ -368,6 +371,37 @@
     };
     if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(run);
     else window.setTimeout(run, 0);
+  }
+
+  function stopControlObserver() {
+    if (controlObserver) {
+      controlObserver.disconnect();
+      controlObserver = null;
+    }
+    if (controlObserverTimer) {
+      window.clearTimeout(controlObserverTimer);
+      controlObserverTimer = 0;
+    }
+  }
+
+  function startControlObserver() {
+    const root = document.getElementById(ROOT_ID);
+    if (!root || !root.classList.contains('active')) {
+      stopControlObserver();
+      return;
+    }
+    if (controlObserver) return;
+    controlObserver = new MutationObserver(() => {
+      if (!root.classList.contains('active')) {
+        stopControlObserver();
+        return;
+      }
+      const hasBoard = !!root.querySelector('[data-task-kanban-v1]');
+      const hasAnchor = !!(root.querySelector('[data-task-lazy-panel]') || root.querySelector('.section-title'));
+      if (!hasBoard && hasAnchor) queueEnhance();
+    });
+    controlObserver.observe(root, { childList: true });
+    controlObserverTimer = window.setTimeout(stopControlObserver, 9000);
   }
 
   function installWrapper() {
@@ -400,13 +434,19 @@
     [0, 350, 900, 1800].forEach((delay) => {
       window.setTimeout(queueEnhance, delay);
     });
-    window.addEventListener('altea:viewchange', queueEnhance);
+    const onRouteChange = () => {
+      startControlObserver();
+      queueEnhance();
+    };
+    window.addEventListener('altea:viewchange', onRouteChange);
     window.addEventListener('altea:data-ready', queueEnhance);
     window.addEventListener('altea:app-ready', queueEnhance);
     window.addEventListener('altea:portal-storage-updated', queueEnhance);
-    window.addEventListener('hashchange', queueEnhance);
+    window.addEventListener('hashchange', onRouteChange);
     document.addEventListener('click', (event) => {
-      if (event.target.closest('[data-view="control"],[href$="#control"],[href*="#control"]')) window.setTimeout(queueEnhance, 0);
+      if (event.target.closest('[data-view="control"],[href$="#control"],[href*="#control"]')) {
+        window.setTimeout(onRouteChange, 0);
+      }
     }, true);
   }
 

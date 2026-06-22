@@ -536,7 +536,7 @@
     viewObserver.observe(view, { childList: true, subtree: true });
     viewObserverTimer = window.setTimeout(() => {
       if (viewObserverRoute === route) stopViewObserver();
-    }, 6500);
+    }, 22000);
   }
 
   function mount(route, view, html) {
@@ -711,7 +711,7 @@
 
   function boot() {
     wrapRenderers();
-    [0, 350, 900, 1800].forEach((delay) => window.setTimeout(() => {
+    [0, 350, 900, 1800, 4200, 9000, 16000, 23000].forEach((delay) => window.setTimeout(() => {
       wrapRenderers();
       renderActive();
     }, delay));

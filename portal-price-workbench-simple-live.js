@@ -4466,6 +4466,12 @@ function downloadPriceSummaryExcel(rows) {
     renderRootV1();
   }
 
+  function renderPriceWorkbenchIfActive() {
+    if (!document.querySelector("#view-prices.view.active")) return;
+    renderPriceWorkbench();
+    if (!state.loaded && !state.loading) loadData();
+  }
+
   window.renderPriceWorkbench = renderPriceWorkbench;
   window.__alteaRefreshPriceWorkbench = function refreshPriceWorkbench(forceRefresh) {
     return loadData(forceRefresh !== false);
@@ -4490,6 +4496,18 @@ function downloadPriceSummaryExcel(rows) {
     if (document.querySelector("#view-prices.view.active")) {
       renderPriceWorkbench();
     }
+  });
+
+  window.addEventListener("altea:viewchange", function () {
+    window.setTimeout(renderPriceWorkbenchIfActive, 0);
+  });
+
+  window.addEventListener("hashchange", function () {
+    window.setTimeout(renderPriceWorkbenchIfActive, 0);
+  });
+
+  window.addEventListener("altea:data-ready", function () {
+    window.setTimeout(renderPriceWorkbenchIfActive, 0);
   });
 
   document.addEventListener("keydown", function (event) {

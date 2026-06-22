@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260622-iudrr-position-funnel-v7-stats-heatmap';
+  const VERSION = '20260622-iudrr-general-to-detail-v4-position-stats-heatmap';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -1751,8 +1751,8 @@
   function renderSkeleton(root) {
     root.dataset.alteaIuDrrV3 = 'loading';
     root.innerHTML = `
-      <section class="iu-drr-v3-shell">
-        <div class="iu-drr-v3-empty">Подключаю фактические источники ИУ / ДРР v3. Демонстрационные цифры из макета не используются.</div>
+      <section class="iu-drr-v3-shell iu-drr-v4-shell" data-iu-drr-design="v4">
+        <div class="iu-drr-v3-empty">Подключаю фактические источники ИУ / ДРР v4. Демонстрационные цифры из макета не используются.</div>
       </section>
     `;
   }
@@ -1792,10 +1792,10 @@
       </section>
     `).join('');
     root.innerHTML = `
-      <section class="iu-drr-v3-shell iu-drr-v3-focus-${escapeHtml(focus)}" data-iu-drr-version="${escapeHtml(VERSION)}">
+      <section class="iu-drr-v3-shell iu-drr-v4-shell iu-drr-v3-focus-${escapeHtml(focus)}" data-iu-drr-version="${escapeHtml(VERSION)}" data-iu-drr-design="v4">
         <div class="iu-drr-v3-head">
           <div>
-            <p class="iu-drr-v3-eyebrow">ALTEA · IU/DRR POSITION FUNNEL V3</p>
+            <p class="iu-drr-v3-eyebrow">ALTEA · IU/DRR GENERAL TO DETAIL V4</p>
             <h2 class="iu-drr-v3-title">ИУ / ДРР и воронка по каждой позиции</h2>
             <p class="iu-drr-v3-lead">Визуальный слой заменен целиком: WB и Ozon остаются в ИУ, Я.Маркет — только воронка. Формулы сборки не меняются, источники и отсутствующие значения показаны явно.</p>
           </div>
@@ -1876,6 +1876,7 @@
   window.renderIuDrr = renderIuDrrV3;
   try { globalThis.renderIuDrr = renderIuDrrV3; } catch (_) {}
   window.AlteaIuDrrPositionFunnelV3 = { render: renderIuDrrV3, version: VERSION };
+  window.AlteaIuDrrGeneralToDetailV4 = { render: renderIuDrrV3, version: VERSION };
 
   document.addEventListener('altea:marketplacechange', rerenderIfActive);
   window.addEventListener('hashchange', rerenderIfActive);

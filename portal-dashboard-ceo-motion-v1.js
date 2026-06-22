@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260622-dashboard-ceo-motion-critical1';
+  const VERSION = '20260622-dashboard-ceo-motion-drilldown9';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -216,14 +216,28 @@
 
   function source(name) {
     const statePayload = stateSource(name);
-    if (statePayload && Object.keys(statePayload || {}).length) return statePayload;
-    return sourceCache[name] || null;
+    const cachedPayload = sourceCache[name] || null;
+    if (statePayload && Object.keys(statePayload || {}).length) {
+      if (name === 'platformTrends' && cachedPayload) {
+        return mergePlatformTrends(statePayload, cachedPayload);
+      }
+      if (name === 'dashboard' && cachedPayload) {
+        return {
+          ...cachedPayload,
+          ...statePayload,
+          companyPlan: statePayload.companyPlan || cachedPayload.companyPlan,
+          brandSummary: statePayload.brandSummary || cachedPayload.brandSummary
+        };
+      }
+      return statePayload;
+    }
+    return cachedPayload;
   }
 
   function loadSources() {
     if (loadingPromise) return loadingPromise;
     loadingPromise = Promise.all(Object.entries(FILES).map(([name, path]) => {
-      if (source(name)) return Promise.resolve();
+      if (sourceCache[name]) return Promise.resolve();
       return fetch(`${path}?v=${VERSION}`, { cache: 'no-store' })
         .then((response) => response.ok ? response.json() : null)
         .then((payload) => {
@@ -242,7 +256,7 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      #${ROOT_ID} .ceo-motion-v1{--bg:#070706;--surface:#12100d;--surface2:#17140f;--line:#302a22;--line2:#514536;--text:#f4eee4;--muted:#a59c90;--faint:#70685f;--champ:#dbc7a3;--champ2:#f0dfbf;--ok:#74c99a;--warn:#e0b760;--bad:#e7786b;--info:#76a9ea;--platform:${PLATFORM_META.all.color};--ease:cubic-bezier(.22,.82,.22,1);position:relative;display:grid;gap:13px;color:var(--text);isolation:isolate;animation:ceoPageReveal 280ms var(--ease) both}
+      #${ROOT_ID} .ceo-motion-v1{--bg:#070706;--surface:#12100d;--surface2:#17140f;--line:#302a22;--line2:#514536;--text:#f4eee4;--muted:#a59c90;--faint:#70685f;--champ:#dbc7a3;--champ2:#f0dfbf;--ok:#74c99a;--warn:#e0b760;--bad:#e7786b;--info:#76a9ea;--platform:${PLATFORM_META.all.color};--metric:var(--platform);--ease:cubic-bezier(.22,.82,.22,1);position:relative;display:grid;gap:13px;color:var(--text);isolation:isolate;animation:ceoPageReveal 280ms var(--ease) both}
       #${ROOT_ID} .ceo-motion-v1 *{box-sizing:border-box}
       #${ROOT_ID} .ceo-motion-v1 button,#${ROOT_ID} .ceo-motion-v1 input{font:inherit;color:inherit}
       #${ROOT_ID} .ceo-motion-v1 button{cursor:pointer}
@@ -283,12 +297,15 @@
       #${ROOT_ID} .ceo-legend .current{background:var(--platform)}#${ROOT_ID} .ceo-legend .previous{background:#5d554a}#${ROOT_ID} .ceo-legend .plan{height:2px;background:var(--champ2)}
       #${ROOT_ID} .ceo-chart{height:392px;padding:0 18px 17px}
       #${ROOT_ID} .ceo-chart svg{width:100%;height:100%;overflow:visible}
+      #${ROOT_ID} .ceo-chart svg *{vector-effect:non-scaling-stroke}
       #${ROOT_ID} .ceo-grid-line{stroke:rgba(255,255,255,.07);stroke-width:1}
       #${ROOT_ID} .ceo-bar-current{fill:var(--platform);opacity:.86;transform-origin:bottom;animation:ceoBarGrow 620ms var(--ease) both;animation-delay:calc(var(--i)*32ms)}
       #${ROOT_ID} .ceo-bar-prev{fill:#5f564a;opacity:.42;transform-origin:bottom;animation:ceoBarGrow 520ms var(--ease) both;animation-delay:calc(var(--i)*22ms)}
-      #${ROOT_ID} .ceo-plan-line{fill:none;stroke:var(--champ2);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1500;animation:ceoLineDraw 800ms var(--ease) both}
-      #${ROOT_ID} .ceo-rate-line{fill:none;stroke:var(--platform);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1500;animation:ceoLineDraw 800ms var(--ease) both}
-      #${ROOT_ID} .ceo-rate-prev{fill:none;stroke:#70665a;stroke-width:2;opacity:.62}
+      #${ROOT_ID} .ceo-plan-line{fill:none;stroke:#fff1bf;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1500;filter:drop-shadow(0 0 8px rgba(240,223,191,.34));animation:ceoLineDraw 800ms var(--ease) both}
+      #${ROOT_ID} .ceo-rate-line{fill:none;stroke:var(--metric,var(--platform));stroke-width:5.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1500;opacity:1;filter:drop-shadow(0 0 12px rgba(224,183,96,.58));animation:ceoLineDraw 800ms var(--ease) both}
+      #${ROOT_ID} .ceo-rate-prev{fill:none;stroke:#b8aa9a;stroke-width:2.6;opacity:.88;stroke-dasharray:5 8}
+      #${ROOT_ID} .ceo-rate-area{fill:var(--metric,var(--platform));opacity:.18}
+      #${ROOT_ID} .ceo-rate-dot{fill:var(--metric,var(--platform));stroke:#fff5df;stroke-width:1.7;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--metric,var(--platform)) 55%,transparent))}
       #${ROOT_ID} .ceo-hit{fill:transparent;cursor:pointer}
       #${ROOT_ID} .ceo-verdict{padding-bottom:14px}
       #${ROOT_ID} .ceo-verdict-card{margin:0 16px 11px;padding:15px;border:1px solid rgba(116,201,154,.35);border-radius:13px;background:linear-gradient(135deg,rgba(116,201,154,.08),transparent)}
@@ -327,7 +344,7 @@
       #${ROOT_ID} .ceo-sku-row em{font-style:normal;font-size:12px;font-weight:900;white-space:nowrap}
       #${ROOT_ID} .ceo-drawer-back{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity 260ms var(--ease)}
       #${ROOT_ID} .ceo-drawer-back.open{opacity:1;pointer-events:auto}
-      #${ROOT_ID} .ceo-drawer{position:absolute;right:0;top:0;width:min(620px,94vw);height:100%;padding:24px;background:#0e0d0b;border-left:1px solid var(--line);transform:translateX(100%);transition:transform 260ms var(--ease);overflow:auto}
+      #${ROOT_ID} .ceo-drawer{position:absolute;right:0;top:0;width:min(720px,94vw);height:100%;padding:24px;background:#0e0d0b;border-left:1px solid var(--line);transform:translateX(100%);transition:transform 260ms var(--ease);overflow:auto}
       #${ROOT_ID} .ceo-drawer-back.open .ceo-drawer{transform:none}
       #${ROOT_ID} .ceo-drawer h2{margin:0;font:500 30px Georgia,'Times New Roman',serif}
       #${ROOT_ID} .ceo-drawer p{color:var(--muted);font-size:12px;line-height:1.5}
@@ -335,10 +352,24 @@
       #${ROOT_ID} .ceo-drawer-metric{padding:12px;border:1px solid var(--line);border-radius:11px;background:#12100d}
       #${ROOT_ID} .ceo-drawer-metric small{display:block;color:var(--faint);font-size:10px}
       #${ROOT_ID} .ceo-drawer-metric strong{display:block;margin-top:8px;font-size:16px}
+      #${ROOT_ID} .ceo-drawer-search{display:grid;gap:6px;margin-top:15px}
+      #${ROOT_ID} .ceo-drawer-search span{color:var(--faint);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+      #${ROOT_ID} .ceo-drawer-search input{width:100%;height:38px;border:1px solid var(--line);border-radius:10px;background:#090807;color:var(--text);padding:0 12px;outline:none}
+      #${ROOT_ID} .ceo-drawer-search input:focus{border-color:var(--champ)}
       #${ROOT_ID} .ceo-drawer-list{margin-top:15px;border-top:1px solid var(--line)}
-      #${ROOT_ID} .ceo-drawer-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;width:100%;padding:10px 0;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left}
-      #${ROOT_ID} .ceo-drawer-row b{font-size:12px}#${ROOT_ID} .ceo-drawer-row span{color:var(--muted);font-size:11px}
+      #${ROOT_ID} .ceo-drawer-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,auto);gap:10px;width:100%;padding:11px 0;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left}
+      #${ROOT_ID} .ceo-drawer-row:hover{color:#fff7e8}
+      #${ROOT_ID} .ceo-drawer-row b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      #${ROOT_ID} .ceo-drawer-row span{color:var(--muted);font-size:11px}
+      #${ROOT_ID} .ceo-drawer-row small{display:block;margin-top:4px;color:var(--faint);font-size:10px;line-height:1.35}
+      #${ROOT_ID} .ceo-drawer-row em{font-style:normal;font-size:12px;font-weight:900;white-space:nowrap}
       #${ROOT_ID} .ceo-empty{padding:22px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);background:rgba(255,255,255,.018)}
+      #${ROOT_ID} .ceo-sku-table{display:grid;gap:0}
+      #${ROOT_ID} .ceo-sku-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(82px,auto) minmax(82px,auto) minmax(56px,auto);gap:10px;padding:0 0 6px;color:var(--faint);font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+      #${ROOT_ID} .ceo-sku-row{grid-template-columns:minmax(0,1fr) minmax(82px,auto) minmax(82px,auto) minmax(56px,auto);align-items:center}
+      #${ROOT_ID} .ceo-sku-row .ceo-sku-cell{display:grid;gap:3px;text-align:right}
+      #${ROOT_ID} .ceo-sku-row .ceo-sku-cell small{color:var(--faint);font-size:9px;text-transform:uppercase}
+      #${ROOT_ID} .ceo-sku-row .ceo-sku-cell strong{font-size:12px;color:#fff4e1}
       @keyframes ceoPageReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
       @keyframes ceoSweep{0%{opacity:0;transform:translateX(-70%)}36%{opacity:1}100%{opacity:0;transform:translateX(70%)}}
       @keyframes ceoBarGrow{from{transform:scaleY(.04);opacity:.16}to{transform:scaleY(1)}}
@@ -355,21 +386,17 @@
     return Array.isArray(platformTrends?.platforms) ? platformTrends.platforms : [];
   }
 
-  function findPlatform(platformTrends, key) {
-    const normalized = normalizePlatform(key);
-    return platformRows(platformTrends).find((item) => normalizePlatform(item.key) === normalized)
-      || (normalized === 'all' ? platformRows(platformTrends).find((item) => normalizePlatform(item.key) === 'all') : null)
-      || null;
+  function platformSeriesCount(platformTrends) {
+    return platformRows(platformTrends).reduce((sum, platform) => (
+      sum + (Array.isArray(platform?.series) ? platform.series.length : 0)
+    ), 0);
   }
 
-  function latestDate(platformTrends, dashboard) {
-    const explicit = dateKey(
-      platformTrends?.latestMarketplaceDate
-      || dashboard?.dataFreshness?.asOfDate
-      || dashboard?.asOfDate
-      || dashboard?.latestMarketplaceDate
-    );
-    if (explicit) return explicit;
+  function hasPlatformSeries(platformTrends) {
+    return platformSeriesCount(platformTrends) > 0;
+  }
+
+  function latestSeriesDate(platformTrends) {
     const dates = [];
     platformRows(platformTrends).forEach((platform) => {
       (platform.series || []).forEach((row) => {
@@ -378,6 +405,59 @@
       });
     });
     return dates.sort().pop() || '';
+  }
+
+  function mergePlatformTrends(statePayload, cachedPayload) {
+    const stateCount = platformSeriesCount(statePayload);
+    const cachedCount = platformSeriesCount(cachedPayload);
+    if (!stateCount && cachedCount) return cachedPayload;
+    if (!cachedCount) return statePayload;
+
+    const byKey = new Map();
+    platformRows(cachedPayload).forEach((row) => {
+      byKey.set(normalizePlatform(row.key), row);
+    });
+    platformRows(statePayload).forEach((row) => {
+      const key = normalizePlatform(row.key);
+      const cached = byKey.get(key) || {};
+      const rowHasSeries = Array.isArray(row.series) && row.series.length > 0;
+      byKey.set(key, rowHasSeries ? { ...cached, ...row } : { ...cached, ...row, series: cached.series || [] });
+    });
+
+    const merged = {
+      ...cachedPayload,
+      ...statePayload,
+      platforms: Array.from(byKey.values())
+    };
+    const latest = latestSeriesDate(merged) || dateKey(cachedPayload.latestMarketplaceDate) || dateKey(statePayload.latestMarketplaceDate);
+    if (latest) merged.latestMarketplaceDate = latest;
+    return merged;
+  }
+
+  function findPlatform(platformTrends, key) {
+    const normalized = normalizePlatform(key);
+    return platformRows(platformTrends).find((item) => normalizePlatform(item.key) === normalized)
+      || (normalized === 'all' ? platformRows(platformTrends).find((item) => normalizePlatform(item.key) === 'all') : null)
+      || null;
+  }
+
+  function latestDate(platformTrends, dashboard) {
+    const latestMarketplaceRow = latestSeriesDate(platformTrends);
+    if (latestMarketplaceRow) return latestMarketplaceRow;
+    const marketplaceExplicit = dateKey(
+      platformTrends?.latestMarketplaceDate
+      || dashboard?.dataFreshness?.latestMarketplaceDate
+      || dashboard?.latestMarketplaceDate
+    );
+    if (marketplaceExplicit) return marketplaceExplicit;
+    const explicit = dateKey(
+      platformTrends?.latestMarketplaceDate
+      || dashboard?.dataFreshness?.asOfDate
+      || dashboard?.asOfDate
+      || dashboard?.latestMarketplaceDate
+    );
+    if (explicit) return explicit;
+    return '';
   }
 
   function currentRange(asOfKey, periodKey) {
@@ -588,6 +668,164 @@
     return { positive, focus };
   }
 
+  function articleKeyOf(item) {
+    return String(item?.articleKey || item?.article || item?.id || '').trim();
+  }
+
+  function textOf(item) {
+    return [
+      item?.platform,
+      item?.marketplace,
+      item?.channel,
+      item?.traffic,
+      item?.category,
+      item?.focus_reasons,
+      item?.signal?.title,
+      item?.signal?.label,
+      item?.revenueProvenance,
+      item?.incomeProvenance
+    ].filter(Boolean).join(' ').toLowerCase();
+  }
+
+  function explicitPlatformSet(item) {
+    const text = textOf(item);
+    const set = new Set();
+    if (/\bwb\b|wildberries|\bвб\b/.test(text)) set.add('wb');
+    if (/ozon|озон/.test(text)) set.add('ozon');
+    if (/yandex|\bya\b|янд|маркет/.test(text)) set.add('ya');
+    if (/goldapple|золот|з\W?я/.test(text)) set.add('goldapple');
+    if (/letu|лэту|лету/.test(text)) set.add('letu');
+    if (/magnit|магнит/.test(text)) set.add('magnit');
+    return set;
+  }
+
+  function itemMatchesPlatform(item, platform, allowPriceFallback = false) {
+    const key = normalizePlatform(platform);
+    if (key === 'all') return true;
+    const explicit = explicitPlatformSet(item);
+    if (explicit.size) return explicit.has(key);
+    if (!allowPriceFallback) return false;
+    if (key === 'wb') return finite(item?.priceWb) > 0;
+    if (key === 'ozon') return finite(item?.priceOzon) > 0;
+    return false;
+  }
+
+  function platformUnitPrice(item, platform) {
+    const key = normalizePlatform(platform);
+    if (key === 'wb') return finite(item?.priceWb, finite(item?.price));
+    if (key === 'ozon') return finite(item?.priceOzon, finite(item?.price));
+    return finite(item?.price);
+  }
+
+  function dashboardSkuLookup(dashboard) {
+    const lookup = {};
+    ['focusTop', 'underPlan', 'toWork', 'lowStock', 'topReturns', 'unassigned'].forEach((name) => {
+      (Array.isArray(dashboard?.[name]) ? dashboard[name] : []).forEach((item) => {
+        const key = articleKeyOf(item);
+        if (key && !lookup[key]) lookup[key] = item;
+      });
+    });
+    return lookup;
+  }
+
+  function fallbackPlanRevenue(revenue, completionPct, planUnits, unitPrice) {
+    if (finite(revenue) > 0 && Number.isFinite(Number(completionPct)) && finite(completionPct) > 0) return finite(revenue) / finite(completionPct);
+    if (finite(planUnits) > 0 && finite(unitPrice) > 0) return finite(planUnits) * finite(unitPrice);
+    return 0;
+  }
+
+  function allocatedPlanRevenue(model, revenue) {
+    const platform = normalizePlatform(model?.platform);
+    const platformCard = (model?.platformCards || []).find((item) => item.key === platform);
+    const totalRevenue = finite(model?.total?.revenue) || finite(platformCard?.total?.revenue) || finite(model?.allTotal?.revenue);
+    const planChannel = monthlyPlanChannel(model?.dashboard, platform);
+    const rangeLength = finite(model?.range?.length, 0);
+    const activeDays = Math.max(1, finite(model?.dashboard?.companyPlan?.activeMonth?.days, 30));
+    const planRevenue = finite(model?.plan?.revenue)
+      || finite(planChannel?.revenueToDate)
+      || (finite(planChannel?.dailyRevenue) > 0 && rangeLength > 0 ? finite(planChannel.dailyRevenue) * rangeLength : 0)
+      || (finite(planChannel?.revenue) > 0 && rangeLength > 0 ? finite(planChannel.revenue) * rangeLength / activeDays : 0);
+    return totalRevenue > 0 && planRevenue > 0 && finite(revenue) > 0 ? planRevenue * finite(revenue) / totalRevenue : 0;
+  }
+
+  function skuRowValue(item, platform, share = 1) {
+    const key = normalizePlatform(platform);
+    const orders = finite(item?.orders, finite(item?.fact_feb26_units));
+    const unitPrice = platformUnitPrice(item, key);
+    if (key !== 'all' && orders > 0 && unitPrice > 0) return orders * unitPrice;
+    const revenue = finite(item?.revenue, finite(item?.orders_value, finite(item?.content_revenue)));
+    return key === 'all' ? revenue : revenue * (share || 1);
+  }
+
+  function buildSkuRows(model) {
+    const platform = normalizePlatform(model.platform);
+    const platformCard = (model.platformCards || []).find((item) => item.key === platform);
+    const platformShare = platform === 'all'
+      ? 1
+      : finite(platformCard?.share, model.allTotal?.revenue > 0 ? finite(model.total?.revenue) / finite(model.allTotal.revenue) : 0);
+    const lookup = dashboardSkuLookup(model.dashboard);
+    const items = Array.isArray(model.productLeaderboard?.items) ? model.productLeaderboard.items : [];
+    const positiveSource = items
+      .filter((item) => finite(item.revenue) > 0 || finite(item.orders) > 0)
+      .filter((item) => itemMatchesPlatform(item, platform, true));
+    const positiveBase = positiveSource.length ? positiveSource : items.filter((item) => finite(item.revenue) > 0 || finite(item.orders) > 0);
+    const positive = positiveBase
+      .map((item) => {
+        const key = articleKeyOf(item);
+        const planSource = lookup[key] || {};
+        const completionPct = numberOrNull(planSource.plan_completion_feb26_pct);
+        const unitPrice = platformUnitPrice(item, platform);
+        const revenue = skuRowValue(item, platform, platformShare);
+        const planUnits = finite(planSource.plan_feb26_units);
+        let planRevenue = fallbackPlanRevenue(revenue, completionPct, planUnits, unitPrice);
+        if (!planRevenue) planRevenue = allocatedPlanRevenue(model, revenue);
+        return {
+          key,
+          name: item.name || item.title || item.article || 'SKU',
+          owner: item.owner || planSource.owner_name || 'Р‘РµР· owner',
+          revenue,
+          planRevenue,
+          orders: finite(item.orders),
+          planUnits,
+          buys: finite(item.buys),
+          completionPct: planRevenue > 0 ? revenue / planRevenue : completionPct,
+          marginPct: finite(item.income) && finite(item.revenue) ? finite(item.income) / finite(item.revenue) : null,
+          delta: finite(item.orders),
+          driver: `${platformMeta(platform).short} В· ${item.traffic || item.category || 'РєРѕРЅС‚РµРЅС‚'}${positiveSource.length ? '' : ' В· РѕР±С‰РёР№ СЃСЂРµР·'}`,
+          fallback: !positiveSource.length && platform !== 'all'
+        };
+      })
+      .sort((left, right) => right.revenue - left.revenue)
+      .slice(0, 6);
+    const focusRaw = model.dashboard?.focusTop || model.dashboard?.underPlan || [];
+    const focusSource = focusRaw.filter((item) => itemMatchesPlatform(item, platform, false) || platform === 'all');
+    const focusBase = focusSource.length ? focusSource : focusRaw;
+    const focus = focusBase
+      .slice(0, 6)
+      .map((item) => {
+        const revenue = finite(item.orders_value) * (platform === 'all' ? 1 : platformShare || 1);
+        const completionPct = numberOrNull(item.plan_completion_feb26_pct);
+        let planRevenue = fallbackPlanRevenue(revenue, completionPct, item.plan_feb26_units, 0);
+        if (!planRevenue) planRevenue = allocatedPlanRevenue(model, revenue);
+        return {
+          key: item.article || item.articleKey || item.id,
+          name: item.product_name_final || item.name || item.article || 'SKU',
+          owner: item.owner_name || item.owner || 'Р‘РµР· owner',
+          revenue,
+          planRevenue,
+          orders: finite(item.fact_feb26_units),
+          planUnits: finite(item.plan_feb26_units),
+          buys: 0,
+          completionPct,
+          marginPct: platform === 'wb' ? numberOrNull(item.wb_margin_pct) : platform === 'ozon' ? numberOrNull(item.ozon_margin_pct) : null,
+          delta: -finite(item.focus_score, 1),
+          driver: item.focus_reasons || 'СЂРёСЃРє',
+          fallback: !focusSource.length && platform !== 'all'
+        };
+      });
+    return { positive, focus };
+  }
+
   function buildDrivers(model) {
     const current = model.total;
     const previous = model.previousTotal;
@@ -670,7 +908,7 @@
       drr: total.revenue > 0 ? planAds / total.revenue : null
     };
     const platformCards = buildPlatformCards({ dashboard, metrics, platformTrends, iuRows, range, total, allTotal });
-    const skuRows = buildSkuRows({ dashboard, productLeaderboard });
+    const skuRows = buildSkuRows({ dashboard, productLeaderboard, platform, platformCards, total, allTotal, plan, range });
     const model = {
       dashboard,
       metrics,
@@ -786,6 +1024,7 @@
       return '<div class="ceo-empty">Нет дневного источника для выбранного среза.</div>';
     }
     const isLine = series.chart === 'line';
+    const metricTone = METRICS[metric]?.tone || '#dbc7a3';
     const min = isLine ? Math.min(...values) * .92 : 0;
     const max = Math.max(...values) * 1.08 || 1;
     const x = (index) => pad.l + (index + .5) * cw / Math.max(1, points.length);
@@ -806,9 +1045,13 @@
       const currentLine = points.map((point, index) => `${x(index)},${y(point.value)}`).join(' ');
       const prevLine = points.map((point, index) => `${x(index)},${y(point.prev)}`).join(' ');
       const planLine = points.map((point, index) => `${x(index)},${y(point.plan)}`).join(' ');
-      body += `<polyline class="ceo-rate-prev" points="${prevLine}"/><polyline class="ceo-plan-line" points="${planLine}"/><polyline class="ceo-rate-line" points="${currentLine}"/>`;
+      const area = points.length
+        ? `M ${x(0)} ${pad.t + ch} L ${points.map((point, index) => `${x(index)} ${y(point.value)}`).join(' L ')} L ${x(points.length - 1)} ${pad.t + ch} Z`
+        : '';
+      if (area) body += `<path class="ceo-rate-area" fill="${metricTone}" opacity=".18" d="${area}"/>`;
+      body += `<polyline class="ceo-rate-prev" fill="none" stroke="#b8aa9a" stroke-width="2.6" style="fill:none!important;stroke:#b8aa9a!important;stroke-width:2.6px!important" points="${prevLine}"/><polyline class="ceo-plan-line" fill="none" stroke="#fff1bf" stroke-width="2.5" style="fill:none!important;stroke:#fff1bf!important;stroke-width:2.5px!important" points="${planLine}"/><polyline class="ceo-rate-line" fill="none" stroke="${metricTone}" stroke-width="5.2" stroke-opacity="1" style="fill:none!important;stroke:${metricTone}!important;stroke-width:5.2px!important;stroke-opacity:1!important" points="${currentLine}"/>`;
       points.forEach((point, index) => {
-        body += `<circle cx="${x(index)}" cy="${y(point.value)}" r="4" fill="var(--platform)"/><rect class="ceo-hit" data-ceo-day="${escapeHtml(point.date)}" x="${x(index) - cw / Math.max(1, points.length) / 2}" y="${pad.t}" width="${cw / Math.max(1, points.length)}" height="${ch}"/>`;
+        body += `<circle class="ceo-rate-dot" fill="${metricTone}" stroke="#fff5df" cx="${x(index)}" cy="${y(point.value)}" r="5.4"/><rect class="ceo-hit" data-ceo-day="${escapeHtml(point.date)}" x="${x(index) - cw / Math.max(1, points.length) / 2}" y="${pad.t}" width="${cw / Math.max(1, points.length)}" height="${ch}"/>`;
       });
     } else {
       const step = cw / Math.max(1, points.length);
@@ -821,7 +1064,7 @@
         body += `<rect class="ceo-hit" data-ceo-day="${escapeHtml(point.date)}" x="${x(index) - step / 2}" y="${pad.t}" width="${step}" height="${ch}"/>`;
       });
       const planLine = points.map((point, index) => `${x(index)},${y(point.plan)}`).join(' ');
-      body += `<polyline class="ceo-plan-line" points="${planLine}"/>`;
+      body += `<polyline class="ceo-plan-line" stroke="#fff1bf" style="stroke:#fff1bf" points="${planLine}"/>`;
     }
     return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${body}${labels}</svg>`;
   }
@@ -913,11 +1156,46 @@
     `).join('');
   }
 
+  function risksHtml(model) {
+    return model.risks.map((risk) => `
+      <button type="button" class="ceo-risk" data-ceo-risk="${escapeHtml(risk.key)}" style="--pc:${risk.tone}">
+        <small>${escapeHtml(risk.label)}</small>
+        <strong>${escapeHtml(risk.value)}</strong>
+        <p>${escapeHtml(risk.note)}</p>
+      </button>
+    `).join('');
+  }
+
+  function planLabel(value) {
+    return finite(value) > 0 ? fmtMoney(value) : '—';
+  }
+
+  function completionLabel(value) {
+    return Number.isFinite(Number(value)) ? fmtPct(value) : '—';
+  }
+
+  function skuRowsHtml(rows, toneClass) {
+    if (!rows.length) return '<div class="ceo-empty">Нет источника SKU для этого блока.</div>';
+    return `
+      <div class="ceo-sku-table">
+        <div class="ceo-sku-head"><span>SKU</span><span>Факт</span><span>План</span><span>%</span></div>
+        ${rows.map((row) => `
+          <button type="button" class="ceo-sku-row" data-ceo-sku="${escapeHtml(row.key)}">
+            <span><b>${escapeHtml(row.name)}</b><span>${escapeHtml(row.owner)} · ${escapeHtml(row.driver)}</span></span>
+            <span class="ceo-sku-cell"><strong>${fmtMoney(row.revenue)}</strong><small>${fmtInt(row.orders)} шт.</small></span>
+            <span class="ceo-sku-cell"><strong>${planLabel(row.planRevenue)}</strong><small>${row.planUnits ? `${fmtInt(row.planUnits)} шт.` : 'план'}</small></span>
+            <em class="${toneClass}">${completionLabel(row.completionPct)}</em>
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
   function renderShell(model) {
     const periodLabels = { '7': '7 дней', '14': '14 дней', mtd: 'Месяц к дате' };
     const platform = platformMeta(model.platform);
     return `
-      <section class="ceo-motion-v1" data-dashboard-ceo-motion-version="${VERSION}" style="--platform:${platform.color}">
+      <section class="ceo-motion-v1" data-dashboard-ceo-motion-version="${VERSION}" style="--platform:${platform.color};--metric:${METRICS[model.metric]?.tone || platform.color}">
         <div class="ceo-motion-bg"></div>
         <header class="ceo-top">
           <div>
@@ -1060,6 +1338,212 @@
     ]);
   }
 
+  function drawerRowFilter(row) {
+    return [row.label, row.value, row.detail, row.route, row.sku].filter(Boolean).join(' ').toLowerCase();
+  }
+
+  function skuDrawerRows(rows, route = 'sku-plan-fact') {
+    return (Array.isArray(rows) ? rows : []).map((row) => ({
+      label: row.name || row.key || 'SKU',
+      value: `${fmtMoney(row.revenue)} · план ${planLabel(row.planRevenue)} · ${completionLabel(row.completionPct)}`,
+      detail: `${row.owner || 'Без owner'} · ${row.driver || 'источник'}${row.fallback ? ' · общий срез, нет SKU-разбивки площадки' : ''}`,
+      sku: row.key,
+      route
+    }));
+  }
+
+  function dashboardRowsToDrawer(rows, options = {}) {
+    const route = options.route || 'sku-plan-fact';
+    return (Array.isArray(rows) ? rows : []).map((item) => {
+      const name = item.product_name_final || item.name || item.article || item.articleKey || 'SKU';
+      const value = options.value
+        ? options.value(item)
+        : item.orders_value
+          ? fmtMoney(item.orders_value)
+          : item.plan_completion_feb26_pct
+            ? completionLabel(item.plan_completion_feb26_pct)
+            : item.total_mp_stock != null
+              ? `${fmtInt(item.total_mp_stock)} шт.`
+              : 'детали';
+      const detail = options.detail
+        ? options.detail(item)
+        : [item.owner_name || item.owner, item.focus_reasons || item.top_return_reason].filter(Boolean).join(' · ');
+      return {
+        label: name,
+        value,
+        detail,
+        sku: item.article || item.articleKey || item.id,
+        route
+      };
+    });
+  }
+
+  function scopedDashboardRows(model, listName) {
+    const platform = normalizePlatform(model.platform);
+    const rows = Array.isArray(model.dashboard?.[listName]) ? model.dashboard[listName] : [];
+    if (platform === 'all') return rows;
+    const filtered = rows.filter((item) => itemMatchesPlatform(item, platform, false));
+    return filtered.length ? filtered : rows;
+  }
+
+  function rowsForDriver(model, key) {
+    if (key === 'traffic' || key === 'conversion') return skuDrawerRows(model.skuRows.positive, 'product-leaderboard');
+    if (key === 'price') {
+      return dashboardRowsToDrawer(scopedDashboardRows(model, 'toWork').concat(scopedDashboardRows(model, 'focusTop')).slice(0, 10), {
+        route: 'prices',
+        value: (item) => completionLabel(item.plan_completion_feb26_pct),
+        detail: (item) => [item.owner_name || item.owner, item.focus_reasons || 'цена / план'].filter(Boolean).join(' · ')
+      });
+    }
+    if (key === 'oos') {
+      const rows = scopedDashboardRows(model, 'lowStock');
+      const fallbackRows = rows.length
+        ? rows
+        : (Array.isArray(model.dashboard?.lowStock) && model.dashboard.lowStock.length
+          ? model.dashboard.lowStock
+          : scopedDashboardRows(model, 'focusTop'));
+      return dashboardRowsToDrawer(fallbackRows.slice(0, 12), {
+        route: 'oos-control',
+        value: (item) => item.orders_value ? fmtMoney(item.orders_value) : `${fmtInt(item.total_mp_stock)} шт.`,
+        detail: (item) => `${item.owner_name || item.owner || 'Без owner'} · WB ${fmtInt(item.wb_stock)} · Ozon ${fmtInt(item.ozon_stock_final)}`
+      });
+    }
+    if (key === 'ads') {
+      return model.iuRows
+        .map((row) => {
+          const fact = adsDailyValue(row, model.platform);
+          const plan = adsPlanDailyValue(row, model.platform);
+          return {
+            label: shortDate(row.date),
+            value: `${fmtMoneyFull(fact)} · план ${fmtMoneyFull(plan)}`,
+            detail: `отклонение ${signedMoney(fact - plan)}`,
+            route: 'iu-drr'
+          };
+        })
+        .slice(0, 10);
+    }
+    if (key === 'returns') {
+      return dashboardRowsToDrawer(scopedDashboardRows(model, 'topReturns').slice(0, 12), {
+        route: 'sku-plan-fact',
+        value: (item) => `${fmtInt(item.returns_units || item.returns_count)} шт.`,
+        detail: (item) => [item.owner_name || item.owner, item.top_return_reason].filter(Boolean).join(' · ')
+      });
+    }
+    return [];
+  }
+
+  function rowsForRisk(model, key) {
+    if (key === 'oos') return rowsForDriver(model, 'oos');
+    if (key === 'price') return rowsForDriver(model, 'price');
+    if (key === 'ads') return rowsForDriver(model, 'ads');
+    if (key === 'margin') {
+      return dashboardRowsToDrawer(scopedDashboardRows(model, 'focusTop').concat(scopedDashboardRows(model, 'toWork')).slice(0, 12), {
+        route: 'sku-plan-fact',
+        value: (item) => item.wb_margin_pct != null || item.ozon_margin_pct != null
+          ? `WB ${completionLabel(item.wb_margin_pct)} · Ozon ${completionLabel(item.ozon_margin_pct)}`
+          : completionLabel(item.plan_completion_feb26_pct),
+        detail: (item) => [item.owner_name || item.owner, item.focus_reasons || 'маржа / план'].filter(Boolean).join(' · ')
+      });
+    }
+    return [];
+  }
+
+  function openDrawer(root, title, subtitle, metrics, rows) {
+    const back = root.querySelector('[data-ceo-drawer-back]');
+    const drawer = root.querySelector('[data-ceo-drawer]');
+    if (!back || !drawer) return;
+    const list = Array.isArray(rows) ? rows.filter(Boolean) : [];
+    const listHtml = list.length
+      ? `
+        <label class="ceo-drawer-search">
+          <span>Фильтр внутри окна</span>
+          <input type="search" data-ceo-drawer-filter placeholder="SKU, owner, причина, площадка...">
+        </label>
+        <div class="ceo-drawer-list">
+          ${list.map((row) => `<button type="button" class="ceo-drawer-row" data-ceo-drawer-row data-filter="${escapeHtml(drawerRowFilter(row))}" ${row.route ? `data-ceo-route="${escapeHtml(row.route)}"` : ''} ${row.sku ? `data-ceo-sku="${escapeHtml(row.sku)}"` : ''}><span><b>${escapeHtml(row.label)}</b>${row.detail ? `<small>${escapeHtml(row.detail)}</small>` : ''}</span><em>${escapeHtml(row.value)}</em></button>`).join('')}
+        </div>
+      `
+      : '<div class="ceo-empty" style="margin-top:15px">Детали для этого среза не найдены. Проверь фильтр площадки или обнови командные данные.</div>';
+    drawer.innerHTML = `
+      <h2>${escapeHtml(title)}</h2>
+      <p>${escapeHtml(subtitle)}</p>
+      ${drawerMetrics(metrics || [])}
+      ${listHtml}
+      <div style="display:flex;justify-content:flex-end;margin-top:18px"><button type="button" class="ceo-period active" data-ceo-close>Закрыть</button></div>
+    `;
+    back.classList.add('open');
+  }
+
+  function openPlatform(root, model, key) {
+    const normalized = normalizePlatform(key);
+    const item = model.platformCards.find((row) => row.key === normalized);
+    if (!item) return;
+    const scopedSku = buildSkuRows({ ...model, platform: normalized });
+    const rows = skuDrawerRows([...scopedSku.positive, ...scopedSku.focus].slice(0, 12), 'sku-plan-fact');
+    rows.push(
+      { label: 'Открыть лидерборд', value: 'позиции и трафик', detail: 'полный список и недельная динамика', route: 'product-leaderboard' },
+      { label: 'Открыть ИУ / ДРР', value: 'воронка рекламы', detail: 'дневная матрица расходов', route: 'iu-drr' }
+    );
+    openDrawer(root, item.label, 'Площадка как drill-down: цифры, план и SKU внутри выбранного контура.', [
+      ['Выручка', fmtMoneyFull(item.total.revenue)],
+      ['План', planLabel(monthlyPlanChannel(model.dashboard, normalized).revenue)],
+      ['Заказы', fmtInt(item.total.orders)],
+      ['Выкупы', fmtInt(item.total.buys)],
+      ['ДРР', item.drr == null ? 'нет источника' : fmtPct(item.drr)],
+      ['Маржа', item.marginPct == null ? 'нет источника' : fmtPct(item.marginPct)]
+    ], rows);
+  }
+
+  function openDriver(root, model, key) {
+    const item = model.drivers.find((row) => row.key === key);
+    if (!item) return;
+    const rows = rowsForDriver(model, key);
+    rows.push({ label: 'Перейти в детальную вкладку', value: item.route, detail: 'откроет полный рабочий экран', route: item.route });
+    openDrawer(root, item.label, item.detail, [
+      ['Вклад', signedMoney(item.value)],
+      ['Период', `${shortDate(model.range.start)} - ${shortDate(model.range.end)}`],
+      ['Площадка', platformMeta(model.platform).short],
+      ['Деталей', fmtInt(rows.length)]
+    ], rows);
+  }
+
+  function openRisk(root, model, key) {
+    const risk = model.risks.find((row) => row.key === key);
+    if (!risk) return;
+    const rows = rowsForRisk(model, key);
+    rows.push({ label: 'Открыть рабочую вкладку', value: risk.route, detail: 'полная таблица и действия', route: risk.route });
+    openDrawer(root, risk.label, risk.note, [
+      ['Риск', risk.value],
+      ['Период', `${shortDate(model.range.start)} - ${shortDate(model.range.end)}`],
+      ['Площадка', platformMeta(model.platform).short],
+      ['Строк', fmtInt(rows.length)]
+    ], rows);
+  }
+
+  function openSku(root, model, key) {
+    const rows = [...model.skuRows.positive, ...model.skuRows.focus];
+    const item = rows.find((row) => String(row.key) === String(key));
+    if (!item) {
+      openDrawer(root, 'SKU-вклад', 'По выбранному SKU нет строки в текущем срезе. Ниже ближайшие позиции по выбранной площадке.', [
+        ['Площадка', platformMeta(model.platform).short],
+        ['Период', `${shortDate(model.range.start)} - ${shortDate(model.range.end)}`]
+      ], skuDrawerRows(rows.slice(0, 12), 'sku-plan-fact'));
+      return;
+    }
+    openDrawer(root, item.name, `${item.owner} · ${item.driver}`, [
+      ['Факт', fmtMoneyFull(item.revenue)],
+      ['План', planLabel(item.planRevenue)],
+      ['Выполнение', completionLabel(item.completionPct)],
+      ['Заказы', fmtInt(item.orders)],
+      ['Выкупы', item.buys ? fmtInt(item.buys) : 'нет источника'],
+      ['Маржа', item.marginPct == null ? 'нет источника' : fmtPct(item.marginPct)]
+    ], [
+      { label: 'План-факт SKU', value: 'план, факт, маржа', detail: 'открыть детальную таблицу', route: 'sku-plan-fact' },
+      { label: 'Лидерборд', value: 'контент и трафик', detail: 'контентная динамика SKU', route: 'product-leaderboard' },
+      { label: 'Цены', value: 'цена и заказы', detail: 'дневная динамика цены', route: 'prices' }
+    ]);
+  }
+
   function navigate(route) {
     const normalized = String(route || '').replace(/^#/, '');
     if (!normalized) return;
@@ -1106,6 +1590,11 @@
         openSku(root, model, sku.getAttribute('data-ceo-sku'));
         return;
       }
+      const risk = target.closest?.('[data-ceo-risk]');
+      if (risk) {
+        openRisk(root, model, risk.getAttribute('data-ceo-risk'));
+        return;
+      }
       const route = target.closest?.('[data-ceo-route]');
       if (route) {
         navigate(route.getAttribute('data-ceo-route'));
@@ -1117,6 +1606,15 @@
       }
       const back = target.closest?.('[data-ceo-drawer-back]');
       if (back && target === back) closeDrawer(root);
+    };
+    root.oninput = (event) => {
+      const input = event.target?.closest?.('[data-ceo-drawer-filter]');
+      if (!input) return;
+      const query = String(input.value || '').trim().toLowerCase();
+      root.querySelectorAll('[data-ceo-drawer-row]').forEach((row) => {
+        const haystack = String(row.getAttribute('data-filter') || '').toLowerCase();
+        row.hidden = Boolean(query && !haystack.includes(query));
+      });
     };
   }
 
@@ -1137,8 +1635,10 @@
     const oldModal = document.getElementById('portalDashboardExecutiveModal');
     if (oldModal) oldModal.remove();
     ensureStyle();
-    const hasPlatformRows = platformRows(source('platformTrends')).length > 0;
-    if (!hasPlatformRows && !sourcesLoaded) {
+    const dashboardSource = source('dashboard') || {};
+    const hasPlatformRows = hasPlatformSeries(source('platformTrends'));
+    const hasDashboardPlan = Boolean(dashboardSource?.companyPlan?.activeMonth?.channels);
+    if ((!hasPlatformRows || !hasDashboardPlan) && !sourcesLoaded) {
       renderLoading(root);
       if (!renderAfterLoadScheduled) {
         renderAfterLoadScheduled = true;
@@ -1176,6 +1676,20 @@
     render: renderDashboardCeoMotion,
     buildModel
   };
+
+  function syncDashboardMarketplaceEvent(event) {
+    const detail = event?.detail || {};
+    const next = normalizePlatform(detail.internalPlatform || detail.platform || detail.marketplace || detail.market || readStorage(GLOBAL_MARKET_KEY, 'all'));
+    writeStorage(GLOBAL_MARKET_KEY, next);
+    if (dashboardRouteActive()) renderDashboardCeoMotion();
+  }
+
+  if (!window.__ALTEA_DASHBOARD_CEO_MOTION_MARKET_EVENTS__) {
+    window.__ALTEA_DASHBOARD_CEO_MOTION_MARKET_EVENTS__ = true;
+    window.addEventListener('altea:marketplacechange', syncDashboardMarketplaceEvent);
+    document.addEventListener('altea:marketplacechange', syncDashboardMarketplaceEvent);
+    window.addEventListener('altea:platformchange', syncDashboardMarketplaceEvent);
+  }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {

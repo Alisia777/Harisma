@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260622-leaderboard-motion-v4-lfl-metrics';
+  const VERSION = '20260622-leaderboard-motion-v5-substitute-sales';
   const MODE_KEY = 'altea.leaderboard.mode.v2';
   const LFL_CLASS_KEY = 'altea.leaderboard.lflClass.v2';
 
@@ -796,9 +796,29 @@
     }).sort((a, b) => numberOrZero(b.orders) - numberOrZero(a.orders));
   }
 
+  function currentArticleMetricIndex(model) {
+    const rows = model.current?.items || model.allRows || [];
+    return new Map(rows.map((row) => [String(row.articleKey || row.article || '').toLowerCase(), row]).filter(([key]) => key));
+  }
+
+  function canonicalSalesMetrics(row, articleIndex) {
+    const key = String(row.articleKey || row.article || row.sellerArticle || '').toLowerCase();
+    const current = articleIndex.get(key) || null;
+    return current
+      ? { buys: current.buys, revenue: current.revenue, source: 'product_leaderboard' }
+      : { buys: null, revenue: null, source: 'нет источника' };
+  }
+
+  function sourcedMetricCell(value, type, source) {
+    const formatter = type === 'money' ? fmtMoney : fmtInt;
+    const text = numberOrNull(value) === null ? '—' : formatter(value);
+    return `${escapeHtml(text)}<span class="plb-v2-row-sub">${escapeHtml(source || 'нет источника')}</span>`;
+  }
+
   function renderSubstitutes(model) {
     const sub = substitutionPayload();
     const rows = filterSubstitutions(model, sub.articles);
+    const articleIndex = currentArticleMetricIndex(model);
     return `
       <div class="plb-v2-stage">
         <div class="plb-v2-sub-grid">
@@ -822,7 +842,7 @@
         </div>
         <article class="plb-v2-panel plb-v2-table-card">
           <div class="plb-v2-panel-head">
-            <div><h3>Все подменники</h3><p>Полная таблица 61 канонического SKU. Выручка/выкупы не подменяются нулями, если их нет в источнике.</p></div>
+            <div><h3>Все подменники</h3><p>Полная таблица 61 канонического SKU. Выкупы и выручка подтягиваются по каноническому articleKey из текущего product_leaderboard.</p></div>
             <div class="plb-v2-spacer"></div><span class="plb-v2-badge">${fmtInt(rows.length)} строк</span>
           </div>
           <div class="plb-v2-table-wrap">
@@ -832,6 +852,7 @@
                 ${rows.map((row) => {
                   const top = (row.topSubstitutions || [])[0] || {};
                   const topLabel = top.label || top.key || 'нет top';
+                  const sales = canonicalSalesMetrics(row, articleIndex);
                   return `
                     <tr data-plb-v2-sub="${escapeHtml(row.articleKey)}">
                       <td><span class="plb-v2-row-title">${escapeHtml(topLabel)} → ${escapeHtml(row.articleKey)}</span><span class="plb-v2-row-sub">${escapeHtml(row.title || row.name || row.article)}</span></td>
@@ -840,8 +861,8 @@
                       <td>${fmtInt(row.carts)}</td>
                       <td>${fmtInt(row.orders)}</td>
                       <td>${fmtInt(row.favorites)}</td>
-                      <td>—<span class="plb-v2-row-sub">нет источника</span></td>
-                      <td>—<span class="plb-v2-row-sub">нет источника</span></td>
+                      <td>${sourcedMetricCell(sales.buys, 'int', sales.source)}</td>
+                      <td>${sourcedMetricCell(sales.revenue, 'money', sales.source)}</td>
                       <td>${fmtPct(row.cartRate)}</td>
                       <td>${fmtPct(row.orderRate)}</td>
                       <td>${fmtInt(row.campaignCount)}</td>
@@ -1005,6 +1026,7 @@
     const sub = substitutionPayload();
     const row = sub.articles.find((item) => item.articleKey === articleKey);
     if (!row) return;
+    const sales = canonicalSalesMetrics(row, currentArticleMetricIndex(buildModel()));
     const drawerBack = root.querySelector('[data-plb-v2-drawer-back]');
     const drawer = root.querySelector('[data-plb-v2-drawer]');
     if (!drawerBack || !drawer) return;
@@ -1017,6 +1039,8 @@
           ['Корзины', fmtInt(row.carts)],
           ['Заказы', fmtInt(row.orders)],
           ['Избранное', fmtInt(row.favorites)],
+          ['Выкупы', fmtInt(sales.buys)],
+          ['Выручка', fmtMoney(sales.revenue)],
           ['Cart CR', fmtPct(row.cartRate)],
           ['Order CR', fmtPct(row.orderRate)],
           ['Кампании', fmtInt(row.campaignCount)],

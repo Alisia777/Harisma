@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import re
+import socket
 from datetime import datetime, timezone
 from pathlib import Path
 from time import sleep
@@ -17,6 +18,8 @@ SNAPSHOT_TABLE = "portal_data_snapshots"
 DEFAULT_BRAND = "Алтея"
 INLINE_BODY_LIMIT = 18000
 CHUNK_SIZE = 500000
+DEFAULT_REQUEST_TIMEOUT_SECONDS = 60.0
+DEFAULT_MAX_BATCH_BYTES = 2_000_000
 REPORT_NAME = "portal_supabase_generation_publish.json"
 
 
@@ -35,6 +38,10 @@ def write_json(path: Path, payload: Any) -> None:
 
 def canonical_json(payload: Any) -> str:
     return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def json_payload_size(payload: Any) -> int:
+    return len(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
 
 
 def payload_hash(payload: Any) -> str:
@@ -86,6 +93,7 @@ def rest_request(
     payload: Any | None = None,
     extra_headers: dict[str, str] | None = None,
     attempts: int = 3,
+    timeout_seconds: float = DEFAULT_REQUEST_TIMEOUT_SECONDS,
 ) -> Any:
     headers = {
         "apikey": api_key,
@@ -101,9 +109,11 @@ def rest_request(
     for attempt in range(1, attempts + 1):
         req = request.Request(url, data=data, headers=headers, method=method.upper())
         try:
-            with request.urlopen(req, timeout=30) as response:
+            with request.urlopen(req, timeout=timeout_seconds) as response:
                 body = response.read().decode("utf-8")
                 return json.loads(body) if body.strip() else None
+        except (TimeoutError, socket.timeout) as exc:
+            last_error = RuntimeError(f"{method.upper()} {url} timed out after {timeout_seconds:g}s: {exc}")
         except error.HTTPError as exc:
             body = exc.read().decode("utf-8", errors="replace")
             last_error = RuntimeError(f"{method.upper()} {url} failed: {exc.code} {body}")
@@ -115,19 +125,48 @@ def rest_request(
     raise last_error
 
 
-def upsert_rows(base_url: str, api_key: str, table: str, rows: list[dict[str, Any]], batch_size: int) -> None:
+def row_batches(rows: list[dict[str, Any]], batch_size: int, max_batch_bytes: int) -> list[list[dict[str, Any]]]:
+    batches: list[list[dict[str, Any]]] = []
+    current: list[dict[str, Any]] = []
+    for row in rows:
+        candidate = [*current, row]
+        too_many = len(candidate) > batch_size
+        too_large = bool(current) and json_payload_size(candidate) > max_batch_bytes
+        if too_many or too_large:
+            batches.append(current)
+            current = [row]
+        else:
+            current = candidate
+    if current:
+        batches.append(current)
+    return batches
+
+
+def upsert_rows(
+    base_url: str,
+    api_key: str,
+    table: str,
+    rows: list[dict[str, Any]],
+    batch_size: int,
+    max_batch_bytes: int,
+    timeout_seconds: float,
+) -> int:
     url = f"{base_url}/rest/v1/{table}?on_conflict=brand,snapshot_key"
-    for index in range(0, len(rows), batch_size):
+    batches = row_batches(rows, batch_size, max_batch_bytes)
+    for batch in batches:
         rest_request(
             "POST",
             url,
             api_key,
-            payload=rows[index : index + batch_size],
+            payload=batch,
             extra_headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
+            attempts=5,
+            timeout_seconds=timeout_seconds,
         )
+    return len(batches)
 
 
-def fetch_hashes(base_url: str, api_key: str, table: str, brand: str, keys: list[str]) -> dict[str, str]:
+def fetch_hashes(base_url: str, api_key: str, table: str, brand: str, keys: list[str], timeout_seconds: float) -> dict[str, str]:
     if not keys:
         return {}
     result: dict[str, str] = {}
@@ -140,7 +179,7 @@ def fetch_hashes(base_url: str, api_key: str, table: str, brand: str, keys: list
                 "snapshot_key": f"in.({','.join(chunk)})",
             }
         )
-        rows = rest_request("GET", f"{base_url}/rest/v1/{table}?{params}", api_key) or []
+        rows = rest_request("GET", f"{base_url}/rest/v1/{table}?{params}", api_key, attempts=5, timeout_seconds=timeout_seconds) or []
         for row in rows:
             result[str(row.get("snapshot_key"))] = str(row.get("payload_hash") or "")
     return result
@@ -155,7 +194,7 @@ def stale_part_keys(expected_hashes: dict[str, str], existing_part_keys: list[st
     return sorted({key for key in existing_part_keys if "__part__" in key and key not in expected})
 
 
-def fetch_existing_part_keys(base_url: str, api_key: str, table: str, brand: str, base_keys: list[str]) -> list[str]:
+def fetch_existing_part_keys(base_url: str, api_key: str, table: str, brand: str, base_keys: list[str], timeout_seconds: float) -> list[str]:
     result: set[str] = set()
     for base_key in base_keys:
         prefix = f"{base_key}__part__"
@@ -166,7 +205,7 @@ def fetch_existing_part_keys(base_url: str, api_key: str, table: str, brand: str
                 "snapshot_key": f"like.{prefix}*",
             }
         )
-        rows = rest_request("GET", f"{base_url}/rest/v1/{table}?{params}", api_key) or []
+        rows = rest_request("GET", f"{base_url}/rest/v1/{table}?{params}", api_key, attempts=5, timeout_seconds=timeout_seconds) or []
         for row in rows:
             snapshot_key = str(row.get("snapshot_key") or "")
             if snapshot_key.startswith(prefix):
@@ -174,7 +213,7 @@ def fetch_existing_part_keys(base_url: str, api_key: str, table: str, brand: str
     return sorted(result)
 
 
-def delete_snapshot_keys(base_url: str, api_key: str, table: str, brand: str, keys: list[str]) -> int:
+def delete_snapshot_keys(base_url: str, api_key: str, table: str, brand: str, keys: list[str], timeout_seconds: float) -> int:
     deleted = 0
     for index in range(0, len(keys), 80):
         chunk = keys[index : index + 80]
@@ -184,7 +223,14 @@ def delete_snapshot_keys(base_url: str, api_key: str, table: str, brand: str, ke
                 "snapshot_key": f"in.({','.join(chunk)})",
             }
         )
-        rest_request("DELETE", f"{base_url}/rest/v1/{table}?{params}", api_key, extra_headers={"Prefer": "return=minimal"})
+        rest_request(
+            "DELETE",
+            f"{base_url}/rest/v1/{table}?{params}",
+            api_key,
+            extra_headers={"Prefer": "return=minimal"},
+            attempts=5,
+            timeout_seconds=timeout_seconds,
+        )
         deleted += len(chunk)
     return deleted
 
@@ -284,6 +330,12 @@ def resolve_options() -> argparse.Namespace:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--verify-readback", action="store_true")
     parser.add_argument("--batch-size", type=int, default=20)
+    parser.add_argument("--max-batch-bytes", type=int, default=int(os.getenv("ALTEA_SUPABASE_MAX_BATCH_BYTES") or DEFAULT_MAX_BATCH_BYTES))
+    parser.add_argument(
+        "--request-timeout-seconds",
+        type=float,
+        default=float(os.getenv("ALTEA_SUPABASE_REQUEST_TIMEOUT_SECONDS") or DEFAULT_REQUEST_TIMEOUT_SECONDS),
+    )
     parser.add_argument("--no-fail", action="store_true")
     return parser.parse_args()
 
@@ -318,6 +370,16 @@ def main() -> int:
         "snapshotKeys": sorted(expected_hashes),
         "blockingReasons": [],
         "warnings": [],
+        "requestPolicy": {
+            "batchSize": max(1, args.batch_size),
+            "maxBatchBytes": max(1, args.max_batch_bytes),
+            "timeoutSeconds": max(1.0, args.request_timeout_seconds),
+            "attempts": 5,
+        },
+        "upsert": {
+            "batches": 0,
+            "rows": len(rows),
+        },
         "cleanup": {
             "stalePartRowsDeleted": 0,
             "stalePartRows": [],
@@ -336,14 +398,38 @@ def main() -> int:
         report["blockingReasons"].append("Supabase URL and service-role key are required for generation publish")
     else:
         try:
-            existing_part_rows = fetch_existing_part_keys(supabase_url, supabase_key, args.table, brand, expected_base_keys(expected_hashes))
+            timeout_seconds = max(1.0, args.request_timeout_seconds)
+            max_batch_bytes = max(1, args.max_batch_bytes)
+            existing_part_rows = fetch_existing_part_keys(
+                supabase_url,
+                supabase_key,
+                args.table,
+                brand,
+                expected_base_keys(expected_hashes),
+                timeout_seconds,
+            )
             stale_parts = stale_part_keys(expected_hashes, existing_part_rows)
             if stale_parts:
-                report["cleanup"]["stalePartRowsDeleted"] = delete_snapshot_keys(supabase_url, supabase_key, args.table, brand, stale_parts)
+                report["cleanup"]["stalePartRowsDeleted"] = delete_snapshot_keys(
+                    supabase_url,
+                    supabase_key,
+                    args.table,
+                    brand,
+                    stale_parts,
+                    timeout_seconds,
+                )
                 report["cleanup"]["stalePartRows"] = stale_parts[:50]
-            upsert_rows(supabase_url, supabase_key, args.table, rows, max(1, args.batch_size))
+            report["upsert"]["batches"] = upsert_rows(
+                supabase_url,
+                supabase_key,
+                args.table,
+                rows,
+                max(1, args.batch_size),
+                max_batch_bytes,
+                timeout_seconds,
+            )
             if args.verify_readback:
-                remote = fetch_hashes(supabase_url, supabase_key, args.table, brand, sorted(expected_hashes))
+                remote = fetch_hashes(supabase_url, supabase_key, args.table, brand, sorted(expected_hashes), timeout_seconds)
                 missing = sorted(set(expected_hashes) - set(remote))
                 mismatched = sorted(key for key, digest in expected_hashes.items() if remote.get(key) and remote.get(key) != digest)
                 report["readback"] = {"missing": missing, "mismatched": mismatched, "checked": len(remote)}

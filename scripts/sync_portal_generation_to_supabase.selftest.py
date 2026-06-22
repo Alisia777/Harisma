@@ -7,7 +7,7 @@ from pathlib import Path
 from urllib import parse
 
 import sync_portal_generation_to_supabase as publisher
-from sync_portal_generation_to_supabase import build_rows, expected_base_keys, stale_part_keys
+from sync_portal_generation_to_supabase import build_rows, expected_base_keys, row_batches, stale_part_keys
 
 
 def write_json(path: Path, payload: object) -> None:
@@ -58,11 +58,31 @@ with tempfile.TemporaryDirectory(prefix="portal-generation-publish-") as tmp:
     assert stale_part_keys(chunked_hashes, ["logistics__part__0001", "logistics__part__0002", "logistics__part__0003"]) == [
         "logistics__part__0003",
     ]
+    sized_batches = row_batches(
+        [
+            {"snapshot_key": "a", "payload": "x" * 40},
+            {"snapshot_key": "b", "payload": "x" * 40},
+            {"snapshot_key": "c", "payload": "x" * 40},
+        ],
+        batch_size=10,
+        max_batch_bytes=120,
+    )
+    assert [len(batch) for batch in sized_batches] == [1, 1, 1]
+    counted_batches = row_batches(
+        [
+            {"snapshot_key": "a", "payload": "x"},
+            {"snapshot_key": "b", "payload": "x"},
+            {"snapshot_key": "c", "payload": "x"},
+        ],
+        batch_size=2,
+        max_batch_bytes=100000,
+    )
+    assert [len(batch) for batch in counted_batches] == [2, 1]
 
 calls = []
 
 
-def fake_rest_request(method, url, api_key, payload=None, extra_headers=None, attempts=3):
+def fake_rest_request(method, url, api_key, payload=None, extra_headers=None, attempts=3, timeout_seconds=60):
     calls.append(
         {
             "method": method,
@@ -71,6 +91,7 @@ def fake_rest_request(method, url, api_key, payload=None, extra_headers=None, at
             "payload": payload,
             "extra_headers": extra_headers,
             "attempts": attempts,
+            "timeout_seconds": timeout_seconds,
         }
     )
     if method == "GET":
@@ -85,9 +106,9 @@ def fake_rest_request(method, url, api_key, payload=None, extra_headers=None, at
 original_rest_request = publisher.rest_request
 publisher.rest_request = fake_rest_request
 try:
-    existing = publisher.fetch_existing_part_keys("https://example.supabase.co", "secret", "snapshots", "Алтея", ["logistics"])
+    existing = publisher.fetch_existing_part_keys("https://example.supabase.co", "secret", "snapshots", "Алтея", ["logistics"], 90)
     assert existing == ["logistics__part__0001", "logistics__part__0003"]
-    deleted = publisher.delete_snapshot_keys("https://example.supabase.co", "secret", "snapshots", "Алтея", ["logistics__part__0003"])
+    deleted = publisher.delete_snapshot_keys("https://example.supabase.co", "secret", "snapshots", "Алтея", ["logistics__part__0003"], 90)
     assert deleted == 1
     delete_calls = [call for call in calls if call["method"] == "DELETE"]
     assert len(delete_calls) == 1
@@ -96,6 +117,8 @@ try:
     assert query["brand"] == ["eq.Алтея"]
     assert query["snapshot_key"] == ["in.(logistics__part__0003)"]
     assert delete_calls[0]["extra_headers"] == {"Prefer": "return=minimal"}
+    assert delete_calls[0]["attempts"] == 5
+    assert delete_calls[0]["timeout_seconds"] == 90
 finally:
     publisher.rest_request = original_rest_request
 

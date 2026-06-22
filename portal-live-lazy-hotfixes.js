@@ -19,14 +19,14 @@
   const BUNDLES = {
     dashboard: [],
     control: [
-      'portal-form-visual-refine.js?v=20260619task-noise3',
+      'portal-form-visual-refine.js?v=20260622layer-owner1',
       'portal-control-center-v2-hotfix.js?v=20260619task-noise3',
       'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3'
     ],
     executive: [
-      'portal-executive-lite-guard.js?v=20260619exec-layer1',
+      'portal-executive-lite-guard.js?v=20260622layer-owner1',
       'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3',
-      'portal-form-visual-refine.js?v=20260619task-noise3'
+      'portal-form-visual-refine.js?v=20260622layer-owner1'
     ],
     workflow: [
       'portal-loyalty-system-hotfix.js?v=20260521prod1'

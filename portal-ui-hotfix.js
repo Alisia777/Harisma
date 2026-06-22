@@ -2014,9 +2014,12 @@
   applyDashboardEnhancement = function applyDashboardEnhancementPatched() {
     const root = document.getElementById('view-dashboard');
     if (!root || !portalUiViewIsActive('dashboard', root)) return;
-    injectStyles();
-    injectDashboardClarityStyles();
-    ensureDashboardClarityState();
+    const ceoMotionOwnsDashboard = Boolean(
+      window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__
+        || window.__ALTEA_DASHBOARD_CEO_MOTION_V1__?.render
+        || root.dataset.dashboardCeoMotion
+        || root.querySelector('.ceo-motion-v1')
+    );
 
     root.querySelector('[data-portal-livefix]')?.remove();
     root.querySelector('[data-portal-ui-hotfix-hero]')?.remove();
@@ -2024,6 +2027,11 @@
     root.querySelector('[data-portal-ui-hotfix-insights]')?.remove();
     root.querySelector('[data-portal-ui-hotfix-ads]')?.remove();
     root.querySelectorAll('section.imperial-section').forEach((section) => section.remove());
+    if (ceoMotionOwnsDashboard) return;
+
+    injectStyles();
+    injectDashboardClarityStyles();
+    ensureDashboardClarityState();
 
     const hero = root.querySelector('.hero-panel');
     const heroHtml = renderDashboardHeroPulse();

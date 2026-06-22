@@ -816,6 +816,7 @@
 
   function renderExecutive(root) {
     var route = ROUTES.executive;
+    window.__ALTEA_PREMIUM_EXECUTIVE_OWNER__ = true;
     var model = buildExecutiveModel();
     var factPending = executiveFactPending(model);
     var pendingData = executiveNeedsDataRetry(model, factPending);
@@ -847,6 +848,7 @@
     }
     root.dataset.premiumSignature = signature;
     root.dataset.premiumRoute = route.id;
+    root.dataset.premiumExecutiveOwner = 'true';
     root.style.setProperty('--route-accent', route.accent);
     root.style.setProperty('--route-rgb', route.rgb);
     pruneLegacyChildren(root);

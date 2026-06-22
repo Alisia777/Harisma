@@ -1957,6 +1957,12 @@
   function executiveRefined() {
     const root = document.getElementById('view-executive');
     if (!root) return;
+    const premiumExecutiveStage = document.getElementById('altea-premium-stage-executive');
+    if (
+      window.__ALTEA_PREMIUM_EXECUTIVE_OWNER__
+        || root.dataset.premiumExecutiveOwner === 'true'
+        || premiumExecutiveStage?.querySelector('.altea-premium-route--executive')
+    ) return;
     if (window.__ALTEA_EXECUTIVE_LITE_GUARD_READY__ || root.dataset.executiveLayer || root.querySelector('[data-executive-lite-panel]')) return;
     if (typeof getControlSnapshot !== 'function') {
       if (baseExecutive) baseExecutive();
@@ -2026,11 +2032,13 @@
   window.renderTaskModal = taskModalRefined;
   window.openTaskModal = taskModalRefined;
   window.renderControlCenter = controlRefined;
-  window.renderExecutive = executiveRefined;
+  if (!window.__ALTEA_EXECUTIVE_LITE_GUARD_READY__) window.renderExecutive = executiveRefined;
   try { renderTaskModal = taskModalRefined; } catch {}
   try { openTaskModal = taskModalRefined; } catch {}
   try { renderControlCenter = controlRefined; } catch {}
-  try { renderExecutive = executiveRefined; } catch {}
+  if (!window.__ALTEA_EXECUTIVE_LITE_GUARD_READY__) {
+    try { renderExecutive = executiveRefined; } catch {}
+  }
 
   if (state?.activeView === 'control') controlRefined();
   if (state?.activeView === 'executive') executiveRefined();

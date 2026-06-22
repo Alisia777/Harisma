@@ -42,6 +42,16 @@
     return window.__alteaAppState || window.state || {};
   }
 
+  function premiumExecutiveOwnsRoute() {
+    const root = document.getElementById('view-executive');
+    const stage = document.getElementById('altea-premium-stage-executive');
+    return Boolean(
+      window.__ALTEA_PREMIUM_EXECUTIVE_OWNER__
+        || root?.dataset.premiumExecutiveOwner === 'true'
+        || stage?.querySelector('.altea-premium-route--executive')
+    );
+  }
+
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, (char) => ({
       '&': '&amp;',
@@ -868,6 +878,7 @@
   function renderNow(force) {
     const root = document.getElementById('view-executive');
     if (!root) return;
+    if (premiumExecutiveOwnsRoute()) return;
 
     const tasks = activeTasks();
     const signature = `${dataSignature(tasks)}|${executiveFunnelSignature()}`;
@@ -947,6 +958,7 @@
   }
 
   function schedule(force) {
+    if (premiumExecutiveOwnsRoute()) return;
     if (scheduled) return;
     scheduled = true;
     window.requestAnimationFrame(() => {
@@ -959,6 +971,7 @@
 
   function watch() {
     const root = document.getElementById('view-executive');
+    if (premiumExecutiveOwnsRoute()) return;
     if (!root || typeof MutationObserver !== 'function' || observer) return;
     observer = new MutationObserver(() => {
       if (!rendering) schedule(false);
@@ -996,6 +1009,7 @@
   }
 
   function restoreRenderApi() {
+    if (premiumExecutiveOwnsRoute()) return;
     if (!renderApi) return;
     try {
       if (window.renderExecutive !== renderApi) window.renderExecutive = renderApi;

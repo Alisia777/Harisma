@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260621-dashboard-ceo-motion-v1';
+  const VERSION = '20260622-dashboard-ceo-motion-critical1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   const PERIOD_KEY = 'altea.dashboard.ceoMotion.period';
@@ -44,6 +44,8 @@
   };
   const sourceCache = {};
   let loadingPromise = null;
+  let sourcesLoaded = false;
+  let renderAfterLoadScheduled = false;
 
   function appState() {
     return window.__alteaAppState || window.state || window.__ALTEA_STATE__ || {};
@@ -227,7 +229,10 @@
           if (payload) sourceCache[name] = payload;
         })
         .catch(() => {});
-    })).then(() => true);
+    })).then(() => {
+      sourcesLoaded = true;
+      return true;
+    });
     return loadingPromise;
   }
 
@@ -1127,9 +1132,15 @@
     if (!root) return;
     ensureStyle();
     const hasPlatformRows = platformRows(source('platformTrends')).length > 0;
-    if (!hasPlatformRows) {
+    if (!hasPlatformRows && !sourcesLoaded) {
       renderLoading(root);
-      loadSources().then(() => renderDashboardCeoMotion());
+      if (!renderAfterLoadScheduled) {
+        renderAfterLoadScheduled = true;
+        loadSources().then(() => {
+          renderAfterLoadScheduled = false;
+          renderDashboardCeoMotion();
+        });
+      }
       return;
     }
     const model = buildModel();

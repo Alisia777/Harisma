@@ -2560,11 +2560,23 @@ function renderViewFailure(rootId, title, error) {
 function renderDashboardView() {
   const root = document.getElementById('view-dashboard');
   const interactiveApi = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
+  const ceoMotionApi = window.__ALTEA_DASHBOARD_CEO_MOTION_V1__;
   const requestDashboardHotfixes = () => {
     if (typeof window.__alteaLoadLiveHotfixes !== 'function') return;
     Promise.resolve(window.__alteaLoadLiveHotfixes('dashboard', { rerender: false }))
       .catch((error) => console.warn('[portal-dashboard]', error));
   };
+
+  if (ceoMotionApi && typeof ceoMotionApi.render === 'function') {
+    requestDashboardHotfixes();
+    ceoMotionApi.render();
+    return;
+  }
+
+  if (root?.querySelector('.ceo-motion-v1')) {
+    requestDashboardHotfixes();
+    return;
+  }
 
   if (interactiveApi) {
     requestDashboardHotfixes();

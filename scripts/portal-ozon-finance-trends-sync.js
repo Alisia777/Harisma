@@ -7,6 +7,9 @@ const API_BASE_URL = 'https://api-seller.ozon.ru';
 const ANALYTICS_METRICS = ['revenue', 'ordered_units', 'delivered_units'];
 const ANALYTICS_DIMENSION = ['sku', 'day'];
 const PRODUCT_INFO_CHUNK_SIZE = 100;
+const DEFAULT_RATE_LIMIT_RETRY_DELAY_MS = 15000;
+const DEFAULT_REQUEST_RETRY_DELAY_MS = 1000;
+const DEFAULT_REQUEST_DELAY_MS = 1000;
 
 function parseArgs(argv) {
   const args = {};
@@ -52,6 +55,10 @@ function addDays(dateKey, delta) {
   const date = new Date(`${dateKey}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + delta);
   return date.toISOString().slice(0, 10);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function localDateKey(offsetDays = 0) {
@@ -107,6 +114,21 @@ function resolveOptions(args) {
     explicitTo: Boolean(explicitTo),
     partialRefreshRecentDays: Math.max(0, Math.trunc(numberOrZero(args['partial-refresh-recent-days'] || 2))),
     partialRefreshMinRatio: Math.max(0.1, Math.min(1, numberOrZero(args['partial-refresh-min-ratio'] || 0.75))),
+    rateLimitRetryDelayMs: Math.max(1000, Math.trunc(numberOrZero(
+      args['rate-limit-retry-delay-ms']
+      || process.env.ALTEA_OZON_ANALYTICS_RATE_LIMIT_RETRY_DELAY_MS
+      || DEFAULT_RATE_LIMIT_RETRY_DELAY_MS
+    ))),
+    requestRetryDelayMs: Math.max(250, Math.trunc(numberOrZero(
+      args['request-retry-delay-ms']
+      || process.env.ALTEA_OZON_ANALYTICS_REQUEST_RETRY_DELAY_MS
+      || DEFAULT_REQUEST_RETRY_DELAY_MS
+    ))),
+    requestDelayMs: Math.max(0, Math.trunc(numberOrZero(
+      args['request-delay-ms']
+      || process.env.ALTEA_OZON_ANALYTICS_REQUEST_DELAY_MS
+      || DEFAULT_REQUEST_DELAY_MS
+    ))),
     from,
     to
   };
@@ -623,8 +645,12 @@ async function fetchDayReport(options, dateKey) {
         break;
       } catch (error) {
         const status = Number(error?.status || 0);
-        if (attempt < attempts && (status === 429 || status >= 500 || status === 0)) {
-          await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+        if (attempt < attempts && (status === 429 || status === 420 || status >= 500 || status === 0)) {
+          const delayMs = (status === 429 || status === 420)
+            ? options.rateLimitRetryDelayMs * attempt
+            : options.requestRetryDelayMs * attempt;
+          console.warn(`[ozon-finance] ${dateKey}: analytics HTTP ${status || 'network'} retry ${attempt + 1}/${attempts} after ${delayMs}ms`);
+          await sleep(delayMs);
           continue;
         }
         if (status === 404 || status === 409 || status === 403) {
@@ -635,7 +661,8 @@ async function fetchDayReport(options, dateKey) {
           };
         }
         if (attempt < attempts) {
-          await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+          const delayMs = options.requestRetryDelayMs * attempt;
+          await sleep(delayMs);
           continue;
         }
         return {
@@ -682,13 +709,17 @@ async function main() {
   const dayReports = [];
   const apiSkuIds = new Set();
 
-  for (const dateKey of dates) {
+  for (let index = 0; index < dates.length; index += 1) {
+    const dateKey = dates[index];
     const result = await fetchDayReport(options, dateKey);
     warnings.push(...(result.warnings || []));
     dayReports.push({ dateKey, result });
     for (const row of result.rows || []) {
       const skuId = analyticsSkuId(row);
       if (skuId) apiSkuIds.add(skuId);
+    }
+    if (options.requestDelayMs > 0 && index < dates.length - 1) {
+      await sleep(options.requestDelayMs);
     }
   }
 
@@ -818,6 +849,9 @@ async function main() {
       settlementHour: options.settlementHour,
       autoLagDays: options.explicitTo ? 0 : options.autoLagDays,
       explicitTo: options.explicitTo,
+      requestDelayMs: options.requestDelayMs,
+      requestRetryDelayMs: options.requestRetryDelayMs,
+      rateLimitRetryDelayMs: options.rateLimitRetryDelayMs,
       partialRefreshGuard: {
         recentDays: options.partialRefreshRecentDays,
         minRatio: options.partialRefreshMinRatio
@@ -858,6 +892,9 @@ async function main() {
     productInfoRequested: productInfo.requested,
     productInfoMatchedKeys: productInfo.matched,
     sourceMode: selectedMode,
+    requestDelayMs: options.requestDelayMs,
+    requestRetryDelayMs: options.requestRetryDelayMs,
+    rateLimitRetryDelayMs: options.rateLimitRetryDelayMs,
     warnings: payload.ozonApiDirect.warnings || []
   }, null, 2));
 }

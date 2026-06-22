@@ -1,12 +1,13 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260622-iudrr-position-funnel-v6-clean-keys';
+  const VERSION = '20260622-iudrr-position-funnel-v7-stats-heatmap';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
   const SEARCH_KEY = 'altea.iuDrr.search.v3';
   const TABLE_FILTER_KEY = 'altea.iuDrr.tableFilters.v4';
+  const VIEW_KEYS = ['iu', 'position', 'daily', 'stats'];
 
   const PLATFORM = {
     wb: { label: 'WB', full: 'Wildberries', tone: '#b84cff', varName: '--wb' },
@@ -194,11 +195,11 @@
       try { return localStorage.getItem(VIEW_KEY); } catch (_) { return ''; }
     })();
     const view = String(fromState || fromStorage || 'iu');
-    return ['iu', 'position', 'daily'].includes(view) ? view : 'iu';
+    return VIEW_KEYS.includes(view) ? view : 'iu';
   }
 
   function setCurrentView(view) {
-    const next = ['iu', 'position', 'daily'].includes(view) ? view : 'iu';
+    const next = VIEW_KEYS.includes(view) ? view : 'iu';
     const state = appState();
     state.iuDrrV3View = next;
     state.iuDrrFilters = state.iuDrrFilters || {};
@@ -556,6 +557,15 @@
       .iu-drr-v3-table tr[data-iu-v3-status="missing"] td:first-child{box-shadow:inset 3px 0 rgba(255,255,255,.22)}
       .iu-drr-v3-table tr[hidden]{display:none!important}
       .iu-drr-v3-empty-row td{padding:18px!important;text-align:left!important;color:var(--muted);background:#11100d!important}
+      .iu-drr-v3-heatmap{min-width:1680px}
+      .iu-drr-v3-heatmap th,.iu-drr-v3-heatmap td{text-align:center}
+      .iu-drr-v3-heatmap th:first-child,.iu-drr-v3-heatmap td:first-child{text-align:left}
+      .iu-drr-v3-heatmap .iu-drr-v3-calc{text-align:left;color:var(--faint);font-size:9px;line-height:1.25;white-space:normal;min-width:130px}
+      .iu-drr-v3-heat-cell{font-weight:850;border-left:1px solid rgba(255,255,255,.035)}
+      .iu-drr-v3-heat-cell .iu-drr-v3-source{display:block;margin-top:3px;font-weight:700}
+      .iu-drr-v3-stat-pack{display:grid;gap:12px;padding:12px}
+      .iu-drr-v3-stat-caption{display:flex;flex-wrap:wrap;gap:7px;margin:0;color:var(--faint);font-size:10px;line-height:1.35}
+      .iu-drr-v3-stat-caption b{color:var(--muted)}
       .iu-drr-v3-position-layout{display:grid;grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:12px}
       .iu-drr-v3-position-list{padding:12px;max-height:740px;overflow:auto}
       .iu-drr-v3-position-list h3{margin:0 0 10px;font:500 18px Georgia,serif}
@@ -1476,6 +1486,259 @@
     return sections.join('');
   }
 
+  function sumBy(rows, getter) {
+    let total = 0;
+    let found = false;
+    rows.forEach((row) => {
+      const value = numberOrNull(getter(row));
+      if (value === null) return;
+      total += value;
+      found = true;
+    });
+    return found ? total : null;
+  }
+
+  function ratioBy(rows, numeratorGetter, denominatorGetter) {
+    return pctValue(sumBy(rows, numeratorGetter), sumBy(rows, denominatorGetter));
+  }
+
+  function statMetric(label, type, calc, source, cell, total, options = {}) {
+    return { label, type, calc, source, cell, total, ...options };
+  }
+
+  function platformStatsSource(row, platform) {
+    if (platform === 'wb') return row.wbIuFactSource || row.revenueWbSource || row.wbIuFactMode || 'WB API / IU control';
+    if (platform === 'ozon') return row.ozonAdsFactMode || row.ozonGmvMode || 'Ozon Finance / realization';
+    return row.yandexAdsFactMode || 'Yandex Market funnel';
+  }
+
+  function platformStatsMetrics(platform) {
+    if (platform === 'wb') {
+      const wbSpend = (row) => firstDefined(row, ['spendFactDrr', 'spendFact']);
+      return [
+        statMetric('Расходы рекламы, ₽', 'money', 'WB promotion + media + ДРР-контроль', 'WB ads / DRR', wbSpend, (rows) => sumBy(rows, wbSpend), { tone: '#b84cff' }),
+        statMetric('Расходы ИУ, ₽', 'money', 'Расходы для ИУ с учетом согласованных корректировок', 'WB IU control', (row) => row.spendFactIu, (rows) => sumBy(rows, (row) => row.spendFactIu), { tone: '#b84cff' }),
+        statMetric('План рекламы, ₽', 'money', 'План рекламного бюджета WB на дату', 'corporate plan', (row) => row.planSpendWb, (rows) => sumBy(rows, (row) => row.planSpendWb), { tone: '#ffd45f' }),
+        statMetric('Показы рекламы, шт', 'int', 'Показы из рекламной воронки WB', 'WB ads funnel', (row) => row.adsViews, (rows) => sumBy(rows, (row) => row.adsViews)),
+        statMetric('Клики рекламы, шт', 'int', 'Клики из рекламной воронки WB', 'WB ads funnel', (row) => row.adsClicks, (rows) => sumBy(rows, (row) => row.adsClicks)),
+        statMetric('CTR рекламы, %', 'pct', 'клики / показы', 'WB ads funnel', (row) => safeRatio(row.adsClicks, row.adsViews), (rows) => ratioBy(rows, (row) => row.adsClicks, (row) => row.adsViews)),
+        statMetric('CPC, ₽', 'money', 'расходы рекламы / клики', 'WB ads funnel', (row) => safeRatio(wbSpend(row), row.adsClicks), (rows) => safeRatio(sumBy(rows, wbSpend), sumBy(rows, (row) => row.adsClicks))),
+        statMetric('Заказы рекламы, шт', 'int', 'Заказы из рекламной воронки WB', 'WB ads funnel', (row) => row.adsOrders, (rows) => sumBy(rows, (row) => row.adsOrders)),
+        statMetric('CPO, ₽', 'money', 'расходы рекламы / заказы рекламы', 'WB ads funnel', (row) => safeRatio(wbSpend(row), row.adsOrders), (rows) => safeRatio(sumBy(rows, wbSpend), sumBy(rows, (row) => row.adsOrders))),
+        statMetric('CR в заказ, %', 'pct', 'заказы рекламы / клики', 'WB ads funnel', (row) => safeRatio(row.adsOrders, row.adsClicks), (rows) => ratioBy(rows, (row) => row.adsOrders, (row) => row.adsClicks)),
+        statMetric('Оборот WB, ₽', 'money', 'факт оборота из согласованного источника ИУ', 'WB API / control', (row) => row.revenueWb, (rows) => sumBy(rows, (row) => row.revenueWb), { tone: '#72e6a0' }),
+        statMetric('План оборота WB, ₽', 'money', 'план оборота WB', 'corporate plan', (row) => row.targetRevenueWb, (rows) => sumBy(rows, (row) => row.targetRevenueWb)),
+        statMetric('Выполнение ИУ WB, %', 'pct', 'факт оборота / план оборота', 'WB IU control', (row) => row.revenueWbCompletionPct, (rows) => ratioBy(rows, (row) => row.revenueWb, (row) => row.targetRevenueWb), { goodHigh: true, tone: '#72e6a0' }),
+        statMetric('ДРР факт, %', 'pct', 'расходы рекламы / база ДРР', 'WB DRR', (row) => row.factPct, (rows) => ratioBy(rows, wbSpend, (row) => row.adsPctBaseWb || row.revenueWb), { goodLow: true, tone: '#ff746f' }),
+        statMetric('ДРР ИУ, %', 'pct', 'расходы ИУ / факт оборота', 'WB IU control', (row) => row.factPctIu, (rows) => ratioBy(rows, (row) => row.spendFactIu, (row) => row.revenueWb), { goodLow: true, tone: '#ff746f' }),
+        statMetric('Рекламная выручка, ₽', 'money', 'выручка рекламной воронки', 'WB ads funnel', (row) => row.adsRevenue, (rows) => sumBy(rows, (row) => row.adsRevenue), { tone: '#72e6a0' }),
+        statMetric('ROMI рекламы, %', 'pct', 'рекламная выручка / расходы рекламы', 'WB ads funnel', (row) => safeRatio(row.adsRevenue, wbSpend(row)), (rows) => ratioBy(rows, (row) => row.adsRevenue, wbSpend), { goodHigh: true }),
+        statMetric('WB promotion, ₽', 'money', 'расходы promotion-канала WB', 'WB ads channel', (row) => row.wbPromotion, (rows) => sumBy(rows, (row) => row.wbPromotion)),
+        statMetric('WB media, ₽', 'money', 'расходы media-канала WB', 'WB ads channel', (row) => row.wbMedia, (rows) => sumBy(rows, (row) => row.wbMedia)),
+        statMetric('Отзывы / баллы, ₽', 'money', 'финансовые списания отзывов и баллов', 'WB finance deductions', (row) => row.reviewPoints, (rows) => sumBy(rows, (row) => row.reviewPoints)),
+        statMetric('Внешняя реклама, ₽', 'money', 'внешняя реклама, если пришла в источник', 'external ads', (row) => row.externalAds, (rows) => sumBy(rows, (row) => row.externalAds)),
+        statMetric('Сырая API-реклама, ₽', 'money', 'сырые API-расходы до контрольной логики', 'WB raw API audit', (row) => row.wbRawApiSpendFact, (rows) => sumBy(rows, (row) => row.wbRawApiSpendFact)),
+        statMetric('Дельта API / контроль, ₽', 'money', 'контрольный расход минус сырой API-расход', 'WB API audit', (row) => firstDefined(row, ['wbIuAdsRawApiDelta', 'wbIuAdsApiDelta']), (rows) => sumBy(rows, (row) => firstDefined(row, ['wbIuAdsRawApiDelta', 'wbIuAdsApiDelta'])))
+      ];
+    }
+    if (platform === 'ozon') {
+      const ozonSpend = (row) => row.spendFactOzon;
+      return [
+        statMetric('GMV Ozon, ₽', 'money', 'выручка / продажи − возвраты', 'Ozon realization', (row) => row.revenueOzon || row.ozonGmv, (rows) => sumBy(rows, (row) => row.revenueOzon || row.ozonGmv), { tone: '#72e6a0' }),
+        statMetric('GMV gross, ₽', 'money', 'GMV до вычета возвратов', 'Ozon realization', (row) => row.ozonGmvGross, (rows) => sumBy(rows, (row) => row.ozonGmvGross)),
+        statMetric('Возвраты GMV, ₽', 'money', 'возвраты, вычитаемые из GMV', 'Ozon realization', (row) => row.ozonReturns, (rows) => sumBy(rows, (row) => row.ozonReturns), { tone: '#ff746f' }),
+        statMetric('План GMV, ₽', 'money', 'план GMV Ozon на дату', 'corporate plan', (row) => row.targetRevenueOzon, (rows) => sumBy(rows, (row) => row.targetRevenueOzon)),
+        statMetric('Выполнение GMV, %', 'pct', 'GMV / план GMV', 'Ozon realization', (row) => row.revenueOzonCompletionPct, (rows) => ratioBy(rows, (row) => row.revenueOzon || row.ozonGmv, (row) => row.targetRevenueOzon), { goodHigh: true, tone: '#72e6a0' }),
+        statMetric('Расходы рекламы, ₽', 'money', 'Finance balance расход − исключения', 'Ozon Finance', ozonSpend, (rows) => sumBy(rows, ozonSpend), { tone: '#59a9ff' }),
+        statMetric('Gross расход, ₽', 'money', 'полный расход до исключений', 'Ozon Finance', (row) => row.ozonDrrSpendGross, (rows) => sumBy(rows, (row) => row.ozonDrrSpendGross)),
+        statMetric('Исключено из ДРР, ₽', 'money', 'Premium Plus + Бейдж Оригинал', 'Ozon Finance', (row) => row.ozonDrrExcludedTotal, (rows) => sumBy(rows, (row) => row.ozonDrrExcludedTotal), { tone: '#ff746f' }),
+        statMetric('План рекламы, ₽', 'money', 'план рекламного бюджета Ozon', 'corporate plan', (row) => row.planSpendOzon, (rows) => sumBy(rows, (row) => row.planSpendOzon)),
+        statMetric('ДРР Ozon, %', 'pct', 'расходы рекламы / GMV', 'Ozon Finance', (row) => row.factPctOzon, (rows) => ratioBy(rows, ozonSpend, (row) => row.revenueOzon || row.ozonGmv), { goodLow: true, tone: '#ff746f' }),
+        statMetric('Целевой ДРР, %', 'pct', 'план рекламы / план GMV', 'corporate plan', (row) => row.planPctOzon, (rows) => ratioBy(rows, (row) => row.planSpendOzon, (row) => row.targetRevenueOzon)),
+        statMetric('Показы рекламы, шт', 'int', 'показы Ozon Ads', 'Ozon Ads API', (row) => row.ozonAdsViews, (rows) => sumBy(rows, (row) => row.ozonAdsViews)),
+        statMetric('Клики рекламы, шт', 'int', 'клики Ozon Ads', 'Ozon Ads API', (row) => row.ozonAdsClicks, (rows) => sumBy(rows, (row) => row.ozonAdsClicks)),
+        statMetric('CTR рекламы, %', 'pct', 'клики / показы', 'Ozon Ads API', (row) => safeRatio(row.ozonAdsClicks, row.ozonAdsViews), (rows) => ratioBy(rows, (row) => row.ozonAdsClicks, (row) => row.ozonAdsViews)),
+        statMetric('CPC, ₽', 'money', 'расходы рекламы / клики', 'Ozon Ads API', (row) => safeRatio(ozonSpend(row), row.ozonAdsClicks), (rows) => safeRatio(sumBy(rows, ozonSpend), sumBy(rows, (row) => row.ozonAdsClicks))),
+        statMetric('Заказы рекламы, шт', 'int', 'заказы Ozon Ads', 'Ozon Ads API', (row) => row.ozonAdsOrders, (rows) => sumBy(rows, (row) => row.ozonAdsOrders)),
+        statMetric('CPO, ₽', 'money', 'расходы рекламы / заказы рекламы', 'Ozon Ads API', (row) => safeRatio(ozonSpend(row), row.ozonAdsOrders), (rows) => safeRatio(sumBy(rows, ozonSpend), sumBy(rows, (row) => row.ozonAdsOrders))),
+        statMetric('Выручка рекламы, ₽', 'money', 'revenue Ozon Ads', 'Ozon Ads API', (row) => row.ozonAdsRevenue, (rows) => sumBy(rows, (row) => row.ozonAdsRevenue), { tone: '#72e6a0' }),
+        statMetric('ROMI рекламы, %', 'pct', 'выручка рекламы / расходы рекламы', 'Ozon Ads API', (row) => safeRatio(row.ozonAdsRevenue, ozonSpend(row)), (rows) => ratioBy(rows, (row) => row.ozonAdsRevenue, ozonSpend), { goodHigh: true }),
+        statMetric('API-витрина audit, ₽', 'money', 'сырая витринная API-выручка для контроля', 'Ozon raw API audit', (row) => row.revenueOzonApiRaw, (rows) => sumBy(rows, (row) => row.revenueOzonApiRaw)),
+        statMetric('Finance rows, шт', 'int', 'строки Finance balance, попавшие в расчет', 'Ozon Finance', (row) => row.ozonFinanceSourceRows, (rows) => sumBy(rows, (row) => row.ozonFinanceSourceRows))
+      ];
+    }
+    return [
+      statMetric('Оборот Я.Маркета, ₽', 'money', 'оборот из funnel-источника Я.Маркета', 'Yandex funnel', (row) => row.revenueYandex, (rows) => sumBy(rows, (row) => row.revenueYandex), { tone: '#72e6a0' }),
+      statMetric('План оборота, ₽', 'money', 'план оборота Я.Маркета', 'corporate plan', (row) => row.targetRevenueYandex, (rows) => sumBy(rows, (row) => row.targetRevenueYandex)),
+      statMetric('Выполнение, %', 'pct', 'оборот / план оборота', 'Yandex funnel', (row) => row.revenueYandexCompletionPct, (rows) => ratioBy(rows, (row) => row.revenueYandex, (row) => row.targetRevenueYandex), { goodHigh: true, tone: '#72e6a0' }),
+      statMetric('Показы, шт', 'int', 'показы из funnel-источника', 'Yandex funnel', (row) => row.yandexShows, (rows) => sumBy(rows, (row) => row.yandexShows)),
+      statMetric('Клики, шт', 'int', 'клики из funnel-источника', 'Yandex funnel', (row) => row.yandexClicks, (rows) => sumBy(rows, (row) => row.yandexClicks)),
+      statMetric('CTR, %', 'pct', 'клики / показы', 'Yandex funnel', (row) => row.yandexCtr ?? safeRatio(row.yandexClicks, row.yandexShows), (rows) => ratioBy(rows, (row) => row.yandexClicks, (row) => row.yandexShows)),
+      statMetric('Добавления в корзину, шт', 'int', 'to cart из funnel-источника', 'Yandex funnel', (row) => row.yandexToCart, (rows) => sumBy(rows, (row) => row.yandexToCart)),
+      statMetric('CR в корзину, %', 'pct', 'корзины / клики', 'Yandex funnel', (row) => row.yandexCartRate ?? safeRatio(row.yandexToCart, row.yandexClicks), (rows) => ratioBy(rows, (row) => row.yandexToCart, (row) => row.yandexClicks)),
+      statMetric('Заказы, шт', 'int', 'заказы из funnel-источника', 'Yandex funnel', (row) => row.ordersUnitsYandex, (rows) => sumBy(rows, (row) => row.ordersUnitsYandex)),
+      statMetric('CR в заказ, %', 'pct', 'заказы / клики', 'Yandex funnel', (row) => row.yandexOrderRate ?? safeRatio(row.ordersUnitsYandex, row.yandexClicks), (rows) => ratioBy(rows, (row) => row.ordersUnitsYandex, (row) => row.yandexClicks)),
+      statMetric('Выкупы, шт', 'int', 'доставленные единицы', 'Yandex funnel', (row) => row.deliveredUnitsYandex, (rows) => sumBy(rows, (row) => row.deliveredUnitsYandex)),
+      statMetric('Процент выкупа, %', 'pct', 'выкупы / заказы', 'Yandex funnel', (row) => row.yandexBuyoutRate ?? safeRatio(row.deliveredUnitsYandex, row.ordersUnitsYandex), (rows) => ratioBy(rows, (row) => row.deliveredUnitsYandex, (row) => row.ordersUnitsYandex)),
+      statMetric('Средний чек, ₽', 'money', 'оборот / заказы', 'Yandex funnel', (row) => safeRatio(row.revenueYandex, row.ordersUnitsYandex), (rows) => safeRatio(sumBy(rows, (row) => row.revenueYandex), sumBy(rows, (row) => row.ordersUnitsYandex))),
+      statMetric('Возвраты, шт', 'int', 'возвраты из funnel-источника', 'Yandex funnel', (row) => row.yandexReturnsUnits, (rows) => sumBy(rows, (row) => row.yandexReturnsUnits), { tone: '#ff746f' }),
+      statMetric('Отмены, шт', 'int', 'отмены из funnel-источника', 'Yandex funnel', (row) => row.yandexCancellationsUnits, (rows) => sumBy(rows, (row) => row.yandexCancellationsUnits), { tone: '#ff746f' }),
+      statMetric('Source rows, шт', 'int', 'строки источника Я.Маркета', 'Yandex funnel', (row) => row.yandexSourceRows, (rows) => sumBy(rows, (row) => row.yandexSourceRows))
+    ];
+  }
+
+  function statCellStatus(metric, value) {
+    const num = numberOrNull(value);
+    if (num === null) return 'missing';
+    if (metric.goodHigh) return num >= 1 ? 'ok' : num >= 0.9 ? 'warn' : 'bad';
+    if (metric.goodLow) return num <= 1 ? 'ok' : num <= 1.08 ? 'warn' : 'bad';
+    return 'ok';
+  }
+
+  function heatCell(value, type, values, tone) {
+    const num = numberOrNull(value);
+    const max = values.reduce((highest, current) => {
+      const parsed = Math.abs(numberOrZero(current));
+      return parsed > highest ? parsed : highest;
+    }, 0);
+    const heat = num === null || !max ? 0 : Math.max(7, Math.min(48, 8 + (Math.abs(num) / max) * 40));
+    const style = num === null
+      ? ''
+      : `style="--platform:${tone};background:linear-gradient(90deg,color-mix(in srgb,var(--platform) ${heat.toFixed(0)}%,transparent),rgba(255,255,255,.018))"`;
+    return `<td class="iu-drr-v3-heat-cell" ${style}>${metricCell(value, type)}</td>`;
+  }
+
+  function buildStatsHeatmap(platform, rows) {
+    const metrics = platformStatsMetrics(platform);
+    const dates = rows.map((row) => row.date);
+    const tableWidth = Math.max(1450, 450 + dates.length * 92);
+    const body = metrics.map((metric) => {
+      const values = rows.map((row) => metric.cell(row));
+      const summary = metric.total(rows);
+      const status = values.some((value) => numberOrNull(value) !== null) ? 'ok' : 'missing';
+      const search = rowSearch([PLATFORM[platform]?.label, metric.label, metric.calc, metric.source, ...dates, ...values]);
+      return `
+        <tr ${tableRowAttrs({ search, source: sourceBucket(metric.source), status, date: '' })}>
+          <td><strong>${escapeHtml(metric.label)}</strong><span class="iu-drr-v3-source">${escapeHtml(metric.source)}</span></td>
+          <td class="iu-drr-v3-calc">${escapeHtml(metric.calc)}</td>
+          <td>${metricCell(summary, metric.type)}</td>
+          ${values.map((value) => heatCell(value, metric.type, values, metric.tone || PLATFORM[platform]?.tone || '#e5c16f')).join('')}
+        </tr>
+      `;
+    }).join('');
+    return `
+      <div class="iu-drr-v3-matrix-wrap">
+        <table class="iu-drr-v3-table iu-drr-v3-heatmap" style="min-width:${tableWidth}px">
+          <thead>
+            <tr>
+              <th>Метрика</th>
+              <th>Расчет</th>
+              <th>Итого / среднее</th>
+              ${dates.map((date) => `<th>${escapeHtml(compactDate(date))}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function buildStatsLongTable(platform, rows) {
+    const metrics = platformStatsMetrics(platform);
+    const tableKey = safeTableKey('stats-detail', platform);
+    const body = [];
+    rows.forEach((row) => {
+      const baseSource = platformStatsSource(row, platform);
+      metrics.forEach((metric) => {
+        const value = metric.cell(row);
+        const status = statCellStatus(metric, value);
+        const source = `${baseSource} · ${metric.source}`;
+        const search = rowSearch([
+          PLATFORM[platform]?.label,
+          row.date,
+          compactDate(row.date),
+          metric.label,
+          metric.calc,
+          source,
+          fmtMetric(value, metric.type),
+          value
+        ]);
+        body.push(`
+          <tr ${tableRowAttrs({ search, source: sourceBucket(source), status, date: row.date })}>
+            <td><strong>${escapeHtml(compactDate(row.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(row.date)}</span></td>
+            <td>${escapeHtml(metric.label)}<span class="iu-drr-v3-source">${escapeHtml(metric.source)}</span></td>
+            <td><span class="iu-drr-v3-note">${escapeHtml(metric.calc)}</span></td>
+            <td>${metricCell(value, metric.type)}</td>
+            <td>${metricCell(metric.total(rows), metric.type)}</td>
+            <td><span class="iu-drr-v3-note">${escapeHtml(source)}</span></td>
+          </tr>
+        `);
+      });
+    });
+    return `
+      <div class="iu-drr-v3-table-host" data-iu-v3-table-host="${escapeHtml(tableKey)}">
+        ${tableFilterMarkup(tableKey, body.length)}
+        <div class="iu-drr-v3-matrix-wrap" style="max-height:520px">
+          <table class="iu-drr-v3-table" style="min-width:1180px">
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Метрика</th>
+                <th>Расчет</th>
+                <th>Значение дня</th>
+                <th>Итог / среднее</th>
+                <th>Источник</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${body.join('')}
+              <tr class="iu-drr-v3-empty-row" data-iu-v3-empty-row hidden><td colspan="6">Нет строк под выбранный фильтр</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildStatsSummaryCards(platform, rows) {
+    const total = platformMonthSummary(platform, rows);
+    const ctr = safeRatio(total.clicks, total.views);
+    const cpc = safeRatio(total.adsFact, total.clicks);
+    const orderBase = total.orders || total.units;
+    const cpo = safeRatio(total.adsFact, orderBase);
+    const cards = [
+      kpiCard(`${PLATFORM[platform]?.label} оборот`, fmtMoney(total.revenueFact), `план ${fmtMoney(total.revenuePlan)} · выполнение ${fmtPct(total.revenueCompletion)}`, total.revenueCompletion, toneForCompletion(total.revenueCompletion)),
+      kpiCard('Расход рекламы', fmtMoney(total.adsFact), `план ${fmtMoney(total.adsPlan)} · ДРР ${fmtPct(total.drrFact)}`, pctValue(total.adsFact, total.adsPlan), toneForCompletion(pctValue(total.adsFact, total.adsPlan), true)),
+      kpiCard('Показы / клики', `${fmtInt(total.views)} / ${fmtInt(total.clicks)}`, `CTR ${fmtPct(ctr)} · CPC ${fmtMoney(cpc)}`, ctr, PLATFORM[platform]?.tone),
+      kpiCard('Заказы / CPO', `${fmtInt(orderBase)} / ${fmtMoney(cpo)}`, `ad revenue ${fmtMoney(total.adRevenue)}`, safeRatio(total.adRevenue, total.adsFact), '#72e6a0'),
+      kpiCard('Строки источника', fmtInt(total.sourceRows), platform === 'ozon' ? `исключено ${fmtMoney(total.exclusions)}` : `единиц ${fmtInt(total.units)}`, Math.min(1, numberOrZero(total.sourceRows) / 1000), '#e5c16f')
+    ];
+    return `<div class="iu-drr-v3-kpis">${cards.join('')}</div>`;
+  }
+
+  function buildStatsPanel(rows, focus) {
+    const platforms = platformsForFocus(focus, { includeYandex: true });
+    if (!platforms.length) return `<div class="iu-drr-v3-empty">Нет площадок для текущего фильтра.</div>`;
+    return platforms.map((platform) => section(
+      `stats-${platform}`,
+      `${PLATFORM[platform].label} · Статистика`,
+      'Расходы, показы, клики, CTR, CPC, заказы, оборот, ДРР и контрольные источники по дням. Матрица собрана из тех же API/файлов, что расчет ИУ / ДРР.',
+      `
+        <div class="iu-drr-v3-stat-pack">
+          ${buildStatsSummaryCards(platform, rows)}
+          <p class="iu-drr-v3-stat-caption">
+            <b>Матрица как в кабинете:</b> строка — метрика, столбец — день, цвет показывает относительную плотность значения внутри строки.
+            <b>Ниже:</b> те же значения в фильтруемой таблице для сверки источника, даты и формулы.
+            <b>Обновление:</b> новый день появляется автоматически после пересборки data/iu_drr_summary.json, без ручного списка дат в интерфейсе.
+          </p>
+          ${buildStatsHeatmap(platform, rows)}
+          ${buildStatsLongTable(platform, rows)}
+        </div>
+      `,
+      { platform }
+    )).join('');
+  }
+
   function monthSelectHtml(payload, monthKey) {
     const options = monthOptions(payload);
     return `
@@ -1520,9 +1783,10 @@
     const panelContent = {
       iu: buildIuPanel(rows, focus),
       position: buildPositionPanel(rows, focus, positions),
-      daily: buildDailyPanel(rows, focus, positions)
+      daily: buildDailyPanel(rows, focus, positions),
+      stats: buildStatsPanel(rows, focus)
     };
-    const panels = ['iu', 'position', 'daily'].map((key) => `
+    const panels = VIEW_KEYS.map((key) => `
       <section class="iu-drr-v3-panel" id="iu-drr-v3-panel-${key}" data-iu-v3-panel="${key}" role="tabpanel" aria-labelledby="iu-drr-v3-tab-${key}" ${key === view ? '' : 'hidden inert aria-hidden="true"'}>
         ${key === view ? panelContent[key] : ''}
       </section>
@@ -1547,7 +1811,8 @@
             ${[
               ['iu', 'ИУ по дням'],
               ['position', 'Позиционная воронка'],
-              ['daily', 'Дневная матрица']
+              ['daily', 'Дневная матрица'],
+              ['stats', 'Статистика']
             ].map(([key, label]) => `
               <button id="iu-drr-v3-tab-${key}" class="iu-drr-v3-tab" type="button" role="tab" data-iu-v3-view="${key}" aria-controls="iu-drr-v3-panel-${key}" aria-selected="${key === view ? 'true' : 'false'}">${escapeHtml(label)}</button>
             `).join('')}

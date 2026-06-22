@@ -51,6 +51,10 @@ function executiveFunnelPlatformLabel(platform = '') {
 
 function executiveFunnelOwner(row = {}, platform = '') {
   const sku = row.sku || row || {};
+  if (typeof skuPlanFactPlatformOwner === 'function') {
+    const platformOwner = skuPlanFactPlatformOwner(sku, platform);
+    if (platformOwner) return platformOwner;
+  }
   const supportKey = EXECUTIVE_FUNNEL_SUPPORT_KEYS[platform] || platform;
   const raw = sku?.ownersByPlatform?.[supportKey]
     || sku?.owner?.byPlatform?.[supportKey]
@@ -68,6 +72,10 @@ function executiveFunnelCanonicalOwner(owner = '') {
 }
 
 function executiveFunnelExplicitOwnerForSku(sku = {}, platform = '') {
+  if (typeof skuPlanFactPlatformOwner === 'function') {
+    const platformOwner = skuPlanFactPlatformOwner(sku, platform);
+    if (platformOwner) return platformOwner;
+  }
   const supportKey = EXECUTIVE_FUNNEL_SUPPORT_KEYS[platform] || platform;
   const sources = [sku?.ownersByPlatform, sku?.owner?.byPlatform];
   for (const source of sources) {
@@ -90,6 +98,12 @@ function executiveFunnelAllowedOwnersForPlatform(platform = '') {
       const normalized = executiveFunnelCanonicalOwner(owner);
       if (normalized) owners.add(normalized);
     });
+    (state.skus || []).forEach((sku) => {
+      if (!sku?.wbOwnerDistribution || sku.wbOwnerDistribution.missingInDistribution) return;
+      const normalized = executiveFunnelCanonicalOwner(sku.wbOwnerDistribution.owner || '');
+      if (normalized) owners.add(normalized);
+    });
+    if (owners.size) return owners;
   }
   (state.skus || []).forEach((sku) => {
     const owner = executiveFunnelExplicitOwnerForSku(sku, key);
@@ -609,7 +623,7 @@ function executiveFunnelApplyPayrollPlatformRows(platformRows = [], planModel = 
   Object.keys(planModel.payrollKpi.platforms || {}).forEach((platform) => {
     if (!EXECUTIVE_FUNNEL_PLATFORMS.includes(platform)) return;
     if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
-    const metric = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false });
+    const metric = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false, kpiOnly: true });
     if (!metric?.payrollKpi || metric.salaryIncluded === false) return;
 
     let row = platformRows.find((item) => item.platform === platform);
@@ -767,7 +781,7 @@ function executiveFunnelApplyPayrollOwnerControls(ownerMap = new Map(), planMode
   const controls = {};
   EXECUTIVE_FUNNEL_PLATFORMS.forEach((platform) => {
     if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
-    const target = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false });
+    const target = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false, kpiOnly: true });
     if (!target?.payrollKpi || target.salaryIncluded === false) return;
     const raw = [...ownerMap.values()].reduce((acc, ownerBucket) => {
       const metric = ownerBucket.platforms?.get(platform);
@@ -817,6 +831,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
   const excluded = { rows: 0, revenue: 0, planToDateRevenue: 0 };
 
   sourceRows.forEach((row) => {
+    if (typeof skuPlanFactKpiEligible === 'function' && !skuPlanFactKpiEligible(row)) return;
     EXECUTIVE_FUNNEL_PLATFORMS.forEach((platform) => {
       if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
       const metric = row.platforms?.[platform] || row[platform] || null;
@@ -844,6 +859,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     if (!EXECUTIVE_FUNNEL_PLATFORMS.includes(platform)) return;
     if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
     const sku = executiveFunnelSkuForArticle(item.articleKey || item.article || item.sku || item.nmId);
+    if (sku && typeof skuPlanFactKpiEligible === 'function' && !skuPlanFactKpiEligible(sku)) return;
     const owner = sku
       ? executiveFunnelOwner({ sku, owner: item.owner || '' }, platform)
       : (typeof canonicalOwnerName === 'function' ? canonicalOwnerName(item.owner || '') : String(item.owner || '').trim());

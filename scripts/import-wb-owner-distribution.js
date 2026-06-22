@@ -310,6 +310,20 @@ function wbOwnerOf(sku = {}) {
   return normalizeOwner(sku.ownersByPlatform?.wb || sku.owner?.byPlatform?.wb || '');
 }
 
+function fallbackWbOwnerForSku(sku = {}, previousOwner = '') {
+  const current = canonicalOwnerName(previousOwner);
+  if (current && current !== '\u041a\u0438\u0440\u0438\u043b\u043b') return current;
+  const productOwner = canonicalOwnerName(
+    sku.owner?.name
+    || sku.productOwner
+    || sku.ownerName
+    || (typeof sku.owner === 'string' ? sku.owner : '')
+    || ''
+  );
+  if (productOwner && productOwner !== '\u041a\u0438\u0440\u0438\u043b\u043b') return productOwner;
+  return '';
+}
+
 function isWbSku(sku = {}) {
   return Boolean(sku.wb || sku.flags?.hasWB || wbOwnerOf(sku));
 }
@@ -375,14 +389,46 @@ function applyDistribution(options) {
     const row = matchedByArticle.get(articleKey);
     const previousOwner = wbOwnerOf(sku);
     if (!row) {
+      const fallbackOwner = fallbackWbOwnerForSku(sku, previousOwner);
       missingInDistribution.push({
         articleKey,
         article: sku.article || articleKey,
         name: sku.name || '',
-        ownerWb: previousOwner,
+        ownerWb: fallbackOwner || previousOwner,
+        previousOwnerWb: previousOwner,
+        fallbackApplied: Boolean(fallbackOwner && fallbackOwner !== previousOwner),
         status: sku.status || sku.registryStatus || '',
         stock: Math.round(Number(sku.wb?.stock || 0))
       });
+      if (fallbackOwner && fallbackOwner !== previousOwner) {
+        const existingOwnersByPlatform = {
+          ...(typeof sku.owner === 'object' && sku.owner?.byPlatform ? sku.owner.byPlatform : {}),
+          ...(sku.ownersByPlatform || {})
+        };
+        const nextOwnersByPlatform = {
+          ...existingOwnersByPlatform,
+          wb: fallbackOwner
+        };
+        const nextPrimaryOwner = primaryOwnerName(nextOwnersByPlatform) || fallbackOwner;
+        return {
+          ...sku,
+          ownersByPlatform: nextOwnersByPlatform,
+          owner: {
+            ...(typeof sku.owner === 'object' && sku.owner ? sku.owner : {}),
+            name: nextPrimaryOwner,
+            byPlatform: nextOwnersByPlatform
+          },
+          wbOwnerDistribution: {
+            ...(sku.wbOwnerDistribution || {}),
+            owner: fallbackOwner,
+            ownersByPlatform: { wb: fallbackOwner },
+            sourceFile: sku.wbOwnerDistribution?.sourceFile || 'product-owner-fallback',
+            sourceRow: sku.wbOwnerDistribution?.sourceRow || null,
+            missingInDistribution: true,
+            appliedAt: new Date().toISOString()
+          }
+        };
+      }
       return sku;
     }
 

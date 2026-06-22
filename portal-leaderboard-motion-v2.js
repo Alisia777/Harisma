@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260622-leaderboard-motion-v3-chart-select';
+  const VERSION = '20260622-leaderboard-motion-v4-lfl-metrics';
   const MODE_KEY = 'altea.leaderboard.mode.v2';
   const LFL_CLASS_KEY = 'altea.leaderboard.lflClass.v2';
 
@@ -674,11 +674,11 @@
       ['Выкупы', summary.buys, summary.buyoutPct, '#ff93bf'],
       ['Выручка', summary.revenue, summary.drrPct, '#b889ff']
     ];
-    const max = Math.max(...stages.map(([, value]) => numberOrZero(value)), 1);
+    const max = Math.max(...stages.map(([, value]) => Math.abs(numberOrZero(value))), 1);
     return `
       <div class="plb-v2-funnel">
         ${stages.map(([label, value, pct, tone], index) => `
-          <div class="plb-v2-funnel-stage" style="--i:${index};--pc:${tone};--fill:${Math.max(4, Math.min(100, numberOrZero(value) / max * 100)).toFixed(2)}%">
+          <div class="plb-v2-funnel-stage" style="--i:${index};--pc:${tone};--fill:${Math.max(4, Math.min(100, Math.abs(numberOrZero(value)) / max * 100)).toFixed(2)}%">
             <small>${escapeHtml(label)}</small>
             <strong>${escapeHtml(label === 'Выручка' ? fmtMoney(value) : fmtInt(value))}</strong>
             <span>${pct === null ? 'верх воронки' : fmtPct(pct)}</span>
@@ -893,6 +893,27 @@
     return { available: true, current, compare, rows, groups, values, total };
   }
 
+  function lflMetricDelta(row = {}, key) {
+    const current = row.currentItem || (row.lflClass === 'discontinued' ? null : row);
+    const previous = row.previousItem || null;
+    return numberOrZero(current?.[key]) - numberOrZero(previous?.[key]);
+  }
+
+  function summarizeLflDeltas(rows = []) {
+    const summary = {};
+    ['reach', 'clicks', 'carts', 'orders', 'buys', 'revenue', 'contentCost', 'income'].forEach((key) => {
+      summary[key] = rows.reduce((total, row) => total + lflMetricDelta(row, key), 0);
+    });
+    return {
+      ...summary,
+      ctrPct: null,
+      cartRatePct: null,
+      orderRatePct: null,
+      buyoutPct: null,
+      drrPct: null
+    };
+  }
+
   function renderLfl(model) {
     const lfl = lflModel(model);
     if (!lfl.available) {
@@ -902,6 +923,7 @@
     let rows = currentClass === 'all' ? lfl.rows : lfl.groups[currentClass] || [];
     rows = filterRows(rows, model.filters);
     rows = sortRows(rows, model.filters);
+    const bridgeSummary = summarizeLflDeltas(rows);
     const tiles = [
       ['all', 'Итого', lfl.total, lfl.rows.length, '#e5c16f'],
       ['comparable', 'Сопоставимые SKU', lfl.values.comparable, lfl.groups.comparable.length, '#72e6a0'],
@@ -925,7 +947,7 @@
             <div class="plb-v2-spacer"></div>
             <span class="plb-v2-badge">${escapeHtml(lfl.current.label)} к ${escapeHtml(lfl.compare.label)}</span>
           </div>
-          ${funnelHtml({ reach: Math.abs(lfl.values.comparable), clicks: Math.abs(lfl.values.new), carts: Math.abs(lfl.values.discontinued), orders: Math.abs(lfl.total), buys: 0, revenue: 0, ctrPct: null, cartRatePct: null, orderRatePct: null, buyoutPct: null, drrPct: null })}
+          ${funnelHtml(bridgeSummary)}
         </article>
         ${positionRowsTable(rows, 'Все позиции Like-for-like', 'Фильтрованные comparable/new/discontinued строки.')}
       </div>

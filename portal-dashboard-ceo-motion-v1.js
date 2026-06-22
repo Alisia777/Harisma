@@ -1137,6 +1137,15 @@
     root.dataset.premiumRoute = 'dashboard';
     root.innerHTML = renderShell(model);
     attachHandlers(root);
+    if (window.AlteaPremiumPresentation?.scheduleRender) window.AlteaPremiumPresentation.scheduleRender(0);
+  }
+
+  function dashboardRouteActive() {
+    const raw = appState().activeView || location.hash.replace(/^#\/?/, '') || 'dashboard';
+    const normalized = typeof normalizePortalView === 'function'
+      ? normalizePortalView(raw)
+      : String(raw || 'dashboard').replace(/^\/+/, '') || 'dashboard';
+    return normalized === 'dashboard';
   }
 
   renderDashboardCeoMotion.__dashboardCeoMotionV1 = true;
@@ -1153,9 +1162,9 @@
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      if ((appState().activeView || location.hash.replace(/^#/, '') || 'dashboard') === 'dashboard') renderDashboardCeoMotion();
+      if (dashboardRouteActive()) renderDashboardCeoMotion();
     }, { once: true });
-  } else if ((appState().activeView || location.hash.replace(/^#/, '') || 'dashboard') === 'dashboard') {
+  } else if (dashboardRouteActive()) {
     renderDashboardCeoMotion();
   }
 })();

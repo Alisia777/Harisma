@@ -342,7 +342,11 @@ const VIEW_REDIRECTS = {
 };
 
 function normalizePortalView(view = 'dashboard') {
-  const raw = String(view || 'dashboard').trim() || 'dashboard';
+  const raw = String(view || 'dashboard')
+    .trim()
+    .replace(/^#/, '')
+    .replace(/^\/+/, '')
+    .replace(/[?#].*$/, '') || 'dashboard';
   return DISABLED_VIEWS.has(raw) ? (VIEW_REDIRECTS[raw] || 'dashboard') : raw;
 }
 

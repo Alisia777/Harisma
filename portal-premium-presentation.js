@@ -1391,7 +1391,6 @@
 
   function wrapLegacyRenderers() {
     wrapLegacyRenderer('renderExecutive', 'executive', renderExecutive);
-    wrapLegacyRenderer('renderDashboard', 'dashboard', renderDashboard);
   }
 
   function activeRoute() {
@@ -1401,7 +1400,7 @@
   }
 
   function premiumRoute(routeId) {
-    return routeId === 'dashboard' || routeId === 'executive';
+    return routeId === 'executive';
   }
 
   function managedRoute(routeId) {
@@ -1508,7 +1507,9 @@
   function stageHasContent(routeId) {
     var stage = document.getElementById(stageId(routeId));
     if (!stage) return false;
-    if (stage.querySelector('.altea-premium-route, .view, .portal-lux-shell, .ceo-motion-v1')) return true;
+    if (stage.querySelector('.altea-premium-route, .portal-lux-shell, .ceo-motion-v1')) return true;
+    var legacy = stage.querySelector('.view');
+    if (legacy) return legacy.children.length > 0 && String(legacy.textContent || legacy.innerHTML || '').replace(/\s+/g, '').length > 12;
     return stage.children.length > 0 && String(stage.textContent || stage.innerHTML || '').replace(/\s+/g, '').length > 12;
   }
 

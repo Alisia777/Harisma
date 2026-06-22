@@ -2,6 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const zlib = require('zlib');
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
 const XLSX = require('xlsx');
@@ -12,6 +14,8 @@ const { buildLegacyRepricerLayer } = require('./build-legacy-repricer-layer');
 const DEFAULT_SOURCE_URL = 'https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667';
 const MAX_LOCAL_FALLBACK_AGE_HOURS = 48;
 const DEFAULT_PROFILE_EXPORT_TIMEOUT_MS = 180000;
+const GOOGLE_DRIVE_EXPORT_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+const GOOGLE_DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
 
 const CHROME_CANDIDATES = [
   process.env.ALTEA_CHROME_PATH || '',
@@ -68,10 +72,21 @@ function resolveOptions(args) {
   return {
     sourceUrl,
     sheetUrl: sourceUrl,
-    exportUrl: sourceUrl.replace(/\/edit.*$/, '/export?format=xlsx'),
+    exportUrl: args['export-url'] || process.env.ALTEA_SMART_PRICE_EXPORT_URL || sourceUrl.replace(/\/edit.*$/, '/export?format=xlsx'),
     profileDir: path.resolve(args['profile-dir'] || process.env.ALTEA_GOOGLE_SHEET_PROFILE_DIR || cwdJoin('.altea-google-sheets-profile')),
     outputDir: path.resolve(args['output-dir'] || cwdJoin('.altea-google-sheet-sync-output')),
-    inputXlsx: args['input-xlsx'] ? path.resolve(args['input-xlsx']) : '',
+    inputXlsx: args['input-xlsx'] || process.env.ALTEA_SMART_PRICE_INPUT_XLSX
+      ? path.resolve(args['input-xlsx'] || process.env.ALTEA_SMART_PRICE_INPUT_XLSX)
+      : '',
+    sourceXlsxUrl: args['xlsx-url'] || process.env.ALTEA_SMART_PRICE_XLSX_URL || '',
+    sourceXlsxBase64: process.env.ALTEA_SMART_PRICE_XLSX_B64 || '',
+    sourceXlsxGzipBase64: process.env.ALTEA_SMART_PRICE_XLSX_GZIP_B64 || '',
+    sourceMtime: args['source-mtime'] || process.env.ALTEA_SMART_PRICE_SOURCE_MTIME || process.env.ALTEA_SMART_PRICE_XLSX_MTIME || '',
+    httpAuthBearer: process.env.ALTEA_SMART_PRICE_HTTP_AUTH_BEARER || '',
+    httpAuthHeader: process.env.ALTEA_SMART_PRICE_HTTP_AUTH_HEADER || '',
+    googleServiceAccountJson: process.env.ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON || process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || '',
+    googleServiceAccountPath: process.env.ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON_PATH || process.env.GOOGLE_APPLICATION_CREDENTIALS || '',
+    googleFileId: args['google-file-id'] || process.env.ALTEA_SMART_PRICE_GOOGLE_FILE_ID || extractGoogleFileId(sourceUrl),
     workbenchPath: path.resolve(args['workbench-file'] || process.env.ALTEA_WORKBENCH_JSON_PATH || cwdJoin('data', 'smart_price_workbench.json')),
     livePath: path.resolve(args['live-file'] || process.env.ALTEA_WORKBENCH_LIVE_JSON_PATH || cwdJoin('tmp-smart_price_workbench-live.json')),
     liveRepricerPath: path.resolve(args['live-repricer-file'] || process.env.ALTEA_LIVE_REPRICER_JSON_PATH || cwdJoin('tmp-live-repricer.json')),
@@ -91,6 +106,19 @@ function compactRemoteError(error) {
     .replace(/\s+/g, ' ')
     .trim();
   return firstLine.slice(0, 300) || 'unknown error';
+}
+
+function redactUrl(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  try {
+    const url = new URL(raw);
+    if (url.search) url.search = '?redacted=1';
+    if (url.hash) url.hash = '';
+    return url.toString();
+  } catch (_error) {
+    return raw.includes('?') ? `${raw.split('?')[0]}?redacted=1` : raw;
+  }
 }
 
 function readJson(filePath, fallback = null) {
@@ -143,6 +171,199 @@ function workbookLooksLikeSmartPrices(filePath) {
   } catch (_error) {
     return false;
   }
+}
+
+function workbookSheetNamesLookLikeSmartPrices(sheetNames = []) {
+  const names = new Set((sheetNames || []).map((name) => String(name || '').trim()));
+  return names.has('\u0411\u0430\u0437\u0430')
+    || names.has('\u0421\u0432\u043e\u0434\u043d\u0430\u044f')
+    || names.has('Р‘Р°Р·Р°')
+    || names.has('РЎРІРѕРґРЅР°СЏ')
+    || (names.has('dim_sku') && names.has('fact_marketplace_daily_sku'));
+}
+
+function workbookBufferLooksLikeSmartPrices(buffer) {
+  try {
+    const workbook = XLSX.read(buffer, { type: 'buffer', bookSheets: true });
+    return workbookSheetNamesLookLikeSmartPrices(workbook.SheetNames || []);
+  } catch (_error) {
+    return false;
+  }
+}
+
+function assertSmartPriceWorkbookBuffer(buffer, sourceLabel) {
+  if (!workbookBufferLooksLikeSmartPrices(buffer)) {
+    throw new Error(`Price workbook source does not match the smart-price workbook schema: ${sourceLabel}`);
+  }
+}
+
+function sourceMtimeInfo(sourceMtime = '', fallbackMs = Date.now()) {
+  const parsed = sourceMtime ? new Date(sourceMtime) : null;
+  const mtimeMs = parsed && !Number.isNaN(parsed.getTime()) ? parsed.getTime() : fallbackMs;
+  return {
+    sourceMtimeMs: mtimeMs,
+    sourceMtimeIso: new Date(mtimeMs).toISOString()
+  };
+}
+
+function parseHeaderLine(line = '') {
+  const index = String(line).indexOf(':');
+  if (index <= 0) return null;
+  const name = line.slice(0, index).trim();
+  const value = line.slice(index + 1).trim();
+  if (!name || !value) return null;
+  return [name, value];
+}
+
+function buildWorkbookRequestHeaders(options) {
+  const headers = {
+    'User-Agent': 'harisma-portal-smart-price-sync/1.0'
+  };
+  if (options.httpAuthBearer) {
+    headers.Authorization = `Bearer ${options.httpAuthBearer}`;
+  }
+  const parsedHeader = parseHeaderLine(options.httpAuthHeader || '');
+  if (parsedHeader) headers[parsedHeader[0]] = parsedHeader[1];
+  return headers;
+}
+
+async function fetchWorkbookFromUrl(url, options = {}) {
+  const response = await fetch(url, {
+    redirect: 'follow',
+    headers: buildWorkbookRequestHeaders(options)
+  });
+  if (!response.ok) {
+    throw new Error(`Workbook URL export failed with HTTP ${response.status}`);
+  }
+  const buffer = Buffer.from(await response.arrayBuffer());
+  assertSmartPriceWorkbookBuffer(buffer, 'url');
+  const lastModified = response.headers.get('last-modified') || '';
+  const parsedLastModified = lastModified ? new Date(lastModified) : null;
+  const fallbackMs = parsedLastModified && !Number.isNaN(parsedLastModified.getTime())
+    ? parsedLastModified.getTime()
+    : Date.now();
+  return {
+    buffer,
+    sourceFileName: 'smart-price-workbook.xlsx',
+    sourceKind: 'url',
+    ...sourceMtimeInfo(options.sourceMtime, fallbackMs)
+  };
+}
+
+function decodeWorkbookFromEnvironment(options = {}) {
+  const gzipPayload = String(options.sourceXlsxGzipBase64 || '').trim();
+  if (gzipPayload) {
+    const buffer = zlib.gunzipSync(Buffer.from(gzipPayload, 'base64'));
+    assertSmartPriceWorkbookBuffer(buffer, 'gzip-base64');
+    return {
+      buffer,
+      sourceFileName: 'smart-price-workbook.xlsx',
+      sourceKind: 'env-gzip-base64',
+      ...sourceMtimeInfo(options.sourceMtime)
+    };
+  }
+
+  const base64Payload = String(options.sourceXlsxBase64 || '').trim();
+  if (base64Payload) {
+    const buffer = Buffer.from(base64Payload, 'base64');
+    assertSmartPriceWorkbookBuffer(buffer, 'base64');
+    return {
+      buffer,
+      sourceFileName: 'smart-price-workbook.xlsx',
+      sourceKind: 'env-base64',
+      ...sourceMtimeInfo(options.sourceMtime)
+    };
+  }
+
+  return null;
+}
+
+function base64Url(value) {
+  return Buffer.from(value)
+    .toString('base64')
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+}
+
+function extractGoogleFileId(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const match = raw.match(/\/spreadsheets\/d\/([^/]+)/) || raw.match(/\/file\/d\/([^/]+)/) || raw.match(/[?&]id=([^&]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
+function readGoogleServiceAccount(options = {}) {
+  const inlineJson = String(options.googleServiceAccountJson || '').trim();
+  if (inlineJson) return JSON.parse(inlineJson);
+  const filePath = String(options.googleServiceAccountPath || '').trim();
+  if (filePath && fs.existsSync(filePath)) {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  }
+  return null;
+}
+
+async function fetchGoogleAccessToken(serviceAccount) {
+  const now = Math.floor(Date.now() / 1000);
+  const assertionHeader = base64Url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  const assertionPayload = base64Url(JSON.stringify({
+    iss: serviceAccount.client_email,
+    scope: GOOGLE_DRIVE_SCOPE,
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600,
+    iat: now
+  }));
+  const unsigned = `${assertionHeader}.${assertionPayload}`;
+  const signer = crypto.createSign('RSA-SHA256');
+  signer.update(unsigned);
+  const signature = signer.sign(serviceAccount.private_key, 'base64url');
+  const assertion = `${unsigned}.${signature}`;
+  const body = new URLSearchParams({
+    grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+    assertion
+  });
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body
+  });
+  if (!response.ok) {
+    throw new Error(`Google service account token request failed with HTTP ${response.status}`);
+  }
+  const payload = await response.json();
+  if (!payload.access_token) {
+    throw new Error('Google service account token response did not include access_token');
+  }
+  return payload.access_token;
+}
+
+async function fetchWorkbookViaGoogleServiceAccount(options) {
+  if (!options.googleFileId) return null;
+  const serviceAccount = readGoogleServiceAccount(options);
+  if (!serviceAccount) return null;
+  if (!serviceAccount.client_email || !serviceAccount.private_key) {
+    throw new Error('Google service account JSON must include client_email and private_key');
+  }
+  const accessToken = await fetchGoogleAccessToken(serviceAccount);
+  const exportUrl = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(options.googleFileId)}/export?mimeType=${encodeURIComponent(GOOGLE_DRIVE_EXPORT_MIME)}`;
+  const response = await fetch(exportUrl, {
+    redirect: 'follow',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'User-Agent': 'harisma-portal-smart-price-sync/1.0'
+    }
+  });
+  if (!response.ok) {
+    throw new Error(`Google Drive export failed with HTTP ${response.status}`);
+  }
+  const buffer = Buffer.from(await response.arrayBuffer());
+  assertSmartPriceWorkbookBuffer(buffer, 'google-service-account');
+  return {
+    buffer,
+    sourceFileName: 'smart-price-workbook.xlsx',
+    sourceKind: 'google-service-account',
+    ...sourceMtimeInfo(options.sourceMtime)
+  };
 }
 
 function discoverFallbackWorkbook() {
@@ -259,6 +480,9 @@ async function fetchWorkbookViaBrowserAuth(options) {
 async function resolveWorkbookBuffer(options) {
   if (options.inputXlsx) {
     const stat = fs.statSync(options.inputXlsx);
+    if (!workbookLooksLikeSmartPrices(options.inputXlsx)) {
+      throw new Error(`Price workbook source does not match the smart-price workbook schema: ${options.inputXlsx}`);
+    }
     return {
       buffer: fs.readFileSync(options.inputXlsx),
       sourceFileName: path.basename(options.inputXlsx),
@@ -268,8 +492,35 @@ async function resolveWorkbookBuffer(options) {
     };
   }
 
+  const envWorkbook = decodeWorkbookFromEnvironment(options);
+  if (envWorkbook) {
+    console.log(`Smart price workbook loaded from ${envWorkbook.sourceKind}.`);
+    return envWorkbook;
+  }
+
+  if (options.sourceXlsxUrl) {
+    try {
+      const workbook = await fetchWorkbookFromUrl(options.sourceXlsxUrl, options);
+      console.log(`Smart price workbook downloaded via configured URL: ${redactUrl(options.sourceXlsxUrl)}`);
+      return workbook;
+    } catch (error) {
+      throw new Error(`Configured smart price workbook URL failed (${compactRemoteError(error)})`);
+    }
+  }
+
+  try {
+    const workbook = await fetchWorkbookViaGoogleServiceAccount(options);
+    if (workbook) {
+      console.log('Smart price workbook downloaded via Google service account.');
+      return workbook;
+    }
+  } catch (error) {
+    throw new Error(`Google service account smart price export failed (${compactRemoteError(error)})`);
+  }
+
   try {
     const buffer = await fetchDirectWorkbook(options.exportUrl);
+    assertSmartPriceWorkbookBuffer(buffer, 'direct');
     console.log('Smart price workbook downloaded via direct Google export.');
     return {
       buffer,
@@ -283,6 +534,7 @@ async function resolveWorkbookBuffer(options) {
     console.log('Trying authenticated Chrome profile. If you just opened the price sheet in Chrome, close that Chrome window first.');
     try {
       const buffer = await fetchWorkbookViaBrowserAuth(options);
+      assertSmartPriceWorkbookBuffer(buffer, 'profile');
       console.log(`Smart price workbook downloaded via authenticated Chrome profile: ${options.profileDir}`);
       return {
         buffer,
@@ -359,7 +611,8 @@ async function main() {
   });
   const summary = {
     dryRun: options.dryRun,
-    sourceUrl: options.sourceUrl,
+    sourceUrl: redactUrl(options.sourceUrl),
+    workbookUrl: redactUrl(options.sourceXlsxUrl),
     workbook: workbookPath,
     sourceKind: workbook.sourceKind,
     sourceMtime: workbook.sourceMtimeIso || '',
@@ -377,7 +630,22 @@ async function main() {
   console.log(JSON.stringify(summary, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error?.stack || String(error));
-  process.exitCode = 1;
-});
+module.exports = {
+  buildWorkbookRequestHeaders,
+  decodeWorkbookFromEnvironment,
+  extractGoogleFileId,
+  fetchWorkbookFromUrl,
+  readGoogleServiceAccount,
+  redactUrl,
+  resolveOptions,
+  resolveWorkbookBuffer,
+  workbookBufferLooksLikeSmartPrices,
+  workbookSheetNamesLookLikeSmartPrices
+};
+
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error?.stack || String(error));
+    process.exitCode = 1;
+  });
+}

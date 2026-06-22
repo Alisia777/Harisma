@@ -7,7 +7,14 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const scriptPath = path.join(__dirname, 'portal-daily-close-preflight.js');
-const { REPORT_NAME, REQUIRED_CONFIG, REQUIRED_SECRETS, OPTIONAL_SECRETS, buildReport } = require(scriptPath);
+const {
+  REPORT_NAME,
+  REQUIRED_CONFIG,
+  REQUIRED_SECRETS,
+  OPTIONAL_SECRETS,
+  PRICE_WORKBOOK_SOURCE_ENV,
+  buildReport
+} = require(scriptPath);
 
 const blockedReport = buildReport({
   env: {},
@@ -20,6 +27,8 @@ assert.strictEqual(blockedReport.publish.allowed, false);
 assert.deepStrictEqual(blockedReport.missingSecrets, REQUIRED_SECRETS);
 assert.deepStrictEqual(blockedReport.missingConfig, []);
 assert.deepStrictEqual(blockedReport.optionalMissingSecrets, OPTIONAL_SECRETS);
+assert.strictEqual(blockedReport.priceWorkbookSource.present, false);
+assert.deepStrictEqual(blockedReport.priceWorkbookSource.missingAnyOf, PRICE_WORKBOOK_SOURCE_ENV);
 assert.strictEqual(blockedReport.presentSecretCount, 0);
 assert.strictEqual(blockedReport.presentConfigCount, REQUIRED_CONFIG.length);
 assert.strictEqual(blockedReport.resolvedSources.config.SUPABASE_URL, 'default');
@@ -27,12 +36,17 @@ assert.strictEqual(blockedReport.cutoffDate, '2026-06-20');
 assert.strictEqual(blockedReport.revisionFrom, '2026-05-22');
 assert(!JSON.stringify(blockedReport).includes('secret-value'));
 
-const okEnv = Object.fromEntries(REQUIRED_SECRETS.map((name) => [name, `${name}-secret-value`]));
+const okEnv = {
+  ...Object.fromEntries(REQUIRED_SECRETS.map((name) => [name, `${name}-secret-value`])),
+  ALTEA_SMART_PRICE_XLSX_URL: 'https://example.com/private/smart-price-workbook.xlsx?token=secret-value'
+};
 const okReport = buildReport({ env: okEnv, generatedAt: '2026-06-21T00:00:00Z' });
 assert.strictEqual(okReport.status, 'ok');
 assert.strictEqual(okReport.publish.allowed, true);
 assert.deepStrictEqual(okReport.missingSecrets, []);
 assert.deepStrictEqual(okReport.missingConfig, []);
+assert.strictEqual(okReport.priceWorkbookSource.present, true);
+assert.deepStrictEqual(okReport.priceWorkbookSource.presentSources, ['ALTEA_SMART_PRICE_XLSX_URL']);
 assert.strictEqual(okReport.presentSecretCount, REQUIRED_SECRETS.length);
 assert.strictEqual(okReport.presentConfigCount, REQUIRED_CONFIG.length);
 assert.deepStrictEqual(okReport.optionalMissingSecrets, OPTIONAL_SECRETS);
@@ -41,13 +55,15 @@ const aliasReport = buildReport({
   env: {
     ...Object.fromEntries(REQUIRED_SECRETS.filter((name) => name !== 'SUPABASE_SERVICE_ROLE_KEY').map((name) => [name, `${name}-secret-value`])),
     ALTEA_SUPABASE_SERVICE_ROLE_KEY: 'supabase-alias-secret-value',
-    ALTEA_SUPABASE_URL: 'https://example.supabase.co'
+    ALTEA_SUPABASE_URL: 'https://example.supabase.co',
+    ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON: '{"client_email":"price-ci@example.iam.gserviceaccount.com","private_key":"secret-value"}'
   },
   generatedAt: '2026-06-21T00:00:00Z'
 });
 assert.strictEqual(aliasReport.status, 'ok');
 assert.strictEqual(aliasReport.resolvedSources.secrets.SUPABASE_SERVICE_ROLE_KEY, 'ALTEA_SUPABASE_SERVICE_ROLE_KEY');
 assert.strictEqual(aliasReport.resolvedSources.config.SUPABASE_URL, 'ALTEA_SUPABASE_URL');
+assert.deepStrictEqual(aliasReport.priceWorkbookSource.presentSources, ['ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON']);
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'portal-daily-close-preflight-'));
 try {
@@ -64,6 +80,7 @@ try {
   assert.strictEqual(missingDiskReport.status, 'blocked');
   assert.deepStrictEqual(missingDiskReport.missingSecrets, REQUIRED_SECRETS);
   assert.deepStrictEqual(missingDiskReport.optionalMissingSecrets, OPTIONAL_SECRETS);
+  assert.strictEqual(missingDiskReport.priceWorkbookSource.present, false);
 
   const okTmp = path.join(tmp, 'ok');
   const successRun = spawnSync(process.execPath, [scriptPath, '--output-dir', okTmp], {

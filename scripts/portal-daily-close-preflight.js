@@ -18,6 +18,17 @@ const OPTIONAL_SECRETS = [
   'ALTEA_YM_CAMPAIGN_ID',
   'ALTEA_YM_BUSINESS_ID'
 ];
+const PRICE_WORKBOOK_SOURCE_ENV = [
+  'ALTEA_SMART_PRICE_SHEET_URL',
+  'ALTEA_SMART_PRICE_XLSX_URL',
+  'ALTEA_SMART_PRICE_EXPORT_URL',
+  'ALTEA_SMART_PRICE_INPUT_XLSX',
+  'ALTEA_SMART_PRICE_XLSX_B64',
+  'ALTEA_SMART_PRICE_XLSX_GZIP_B64',
+  'ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON',
+  'GOOGLE_APPLICATION_CREDENTIALS_JSON',
+  'GOOGLE_APPLICATION_CREDENTIALS'
+];
 
 const SECRET_ALIASES = {
   SUPABASE_SERVICE_ROLE_KEY: ['ALTEA_SUPABASE_SERVICE_ROLE_KEY']
@@ -65,6 +76,16 @@ function resolveNamedValue(env, name, aliases = [], defaults = {}) {
   return { present: false, source: '' };
 }
 
+function buildPriceWorkbookSourceState(env = {}) {
+  const presentSources = PRICE_WORKBOOK_SOURCE_ENV.filter((name) => secretPresent(env, name));
+  return {
+    requiredAnyOf: PRICE_WORKBOOK_SOURCE_ENV,
+    present: presentSources.length > 0,
+    presentSources,
+    missingAnyOf: presentSources.length ? [] : PRICE_WORKBOOK_SOURCE_ENV
+  };
+}
+
 function buildReport({ env = process.env, cutoffDate = '', revisionFrom = '', generatedAt = utcNowIso() } = {}) {
   const secretStates = REQUIRED_SECRETS.map((name) => ({
     name,
@@ -82,16 +103,20 @@ function buildReport({ env = process.env, cutoffDate = '', revisionFrom = '', ge
   const missingSecrets = secretStates.filter((item) => !item.present).map((item) => item.name);
   const missingConfig = configStates.filter((item) => !item.present).map((item) => item.name);
   const optionalMissingSecrets = optionalSecretStates.filter((item) => !item.present).map((item) => item.name);
-  const status = missingSecrets.length || missingConfig.length ? 'blocked' : 'ok';
+  const priceWorkbookSource = buildPriceWorkbookSourceState(env);
+  const status = missingSecrets.length || missingConfig.length || !priceWorkbookSource.present ? 'blocked' : 'ok';
   const blockingReasons = [];
   if (missingSecrets.length) blockingReasons.push(`Missing required daily close secrets: ${missingSecrets.join(', ')}`);
   if (missingConfig.length) blockingReasons.push(`Missing required daily close config: ${missingConfig.join(', ')}`);
+  if (!priceWorkbookSource.present) {
+    blockingReasons.push(`Missing smart price workbook CI source: configure one of ${PRICE_WORKBOOK_SOURCE_ENV.join(', ')}`);
+  }
   return {
     schema: 'portal-daily-close-preflight-v1',
     generatedAt,
     status,
     publish: {
-      allowed: missingSecrets.length === 0,
+      allowed: missingSecrets.length === 0 && missingConfig.length === 0 && priceWorkbookSource.present,
       blockingReasons
     },
     cutoffDate,
@@ -104,6 +129,7 @@ function buildReport({ env = process.env, cutoffDate = '', revisionFrom = '', ge
     missingSecrets,
     missingConfig,
     optionalMissingSecrets,
+    priceWorkbookSource,
     resolvedSources: {
       secrets: Object.fromEntries(secretStates.map((item) => [item.name, item.source])),
       config: Object.fromEntries(configStates.map((item) => [item.name, item.source])),
@@ -143,6 +169,12 @@ function main(argv = process.argv.slice(2), env = process.env) {
     console.error(`Preflight report: ${reportPath}`);
     return 1;
   }
+  if (!report.priceWorkbookSource.present) {
+    console.error('Missing smart price workbook CI source. Configure one of:');
+    report.priceWorkbookSource.requiredAnyOf.forEach((name) => console.error(`- ${name}`));
+    console.error(`Preflight report: ${reportPath}`);
+    return 1;
+  }
 
   console.log(`Daily close secret preflight passed. Report: ${reportPath}`);
   return 0;
@@ -151,9 +183,11 @@ function main(argv = process.argv.slice(2), env = process.env) {
 module.exports = {
   DEFAULT_SUPABASE_URL,
   OPTIONAL_SECRETS,
+  PRICE_WORKBOOK_SOURCE_ENV,
   REQUIRED_CONFIG,
   REPORT_NAME,
   REQUIRED_SECRETS,
+  buildPriceWorkbookSourceState,
   buildReport,
   main,
   parseArgs

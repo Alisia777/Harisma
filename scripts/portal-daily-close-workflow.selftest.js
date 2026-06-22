@@ -92,6 +92,18 @@ if (!workflow.includes("vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supab
 if (!workflow.includes('secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY')) {
   fail('daily close must accept the ALTEA_SUPABASE_SERVICE_ROLE_KEY alias');
 }
+[
+  'ALTEA_SMART_PRICE_SHEET_URL',
+  'ALTEA_SMART_PRICE_XLSX_URL',
+  'ALTEA_SMART_PRICE_EXPORT_URL',
+  'ALTEA_SMART_PRICE_XLSX_GZIP_B64',
+  'ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON',
+  'ALTEA_SMART_PRICE_GOOGLE_FILE_ID'
+].forEach((name) => {
+  if (!workflow.includes(name)) {
+    fail(`daily close must pass smart price CI source env ${name}`);
+  }
+});
 if (!dataTruthWorkflow.includes('node scripts/build-sku-registry-meta.js --input-dir data --output-dir data --run-date "$RUN_DATE"')) {
   fail('data truth workflow must build sku_registry_meta.json before the current snapshot guard');
 }

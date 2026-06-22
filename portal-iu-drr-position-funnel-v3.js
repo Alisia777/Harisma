@@ -1,11 +1,12 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260621-iudrr-position-funnel-v3';
+  const VERSION = '20260622-iudrr-position-funnel-v4-table-filters';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
   const SEARCH_KEY = 'altea.iuDrr.search.v3';
+  const TABLE_FILTER_KEY = 'altea.iuDrr.tableFilters.v4';
 
   const PLATFORM = {
     wb: { label: 'WB', full: 'Wildberries', tone: '#b84cff', varName: '--wb' },
@@ -202,6 +203,120 @@
     const search = String(value || '');
     appState().iuDrrV3Search = search;
     try { localStorage.setItem(SEARCH_KEY, search); } catch (_) {}
+  }
+
+  function normalizeText(value) {
+    return String(value ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  function getTableFilters() {
+    const filters = readJsonSetting(TABLE_FILTER_KEY, {});
+    return filters && typeof filters === 'object' ? filters : {};
+  }
+
+  function tableFilterState(tableKey) {
+    const state = getTableFilters()[tableKey] || {};
+    return {
+      search: String(state.search || ''),
+      source: String(state.source || 'all'),
+      status: String(state.status || 'all'),
+      dateFrom: String(state.dateFrom || ''),
+      dateTo: String(state.dateTo || '')
+    };
+  }
+
+  function writeTableFilter(tableKey, name, value) {
+    const filters = getTableFilters();
+    filters[tableKey] = tableFilterState(tableKey);
+    filters[tableKey][name] = String(value || '');
+    writeJsonSetting(TABLE_FILTER_KEY, filters);
+  }
+
+  function clearTableFilter(tableKey) {
+    const filters = getTableFilters();
+    delete filters[tableKey];
+    writeJsonSetting(TABLE_FILTER_KEY, filters);
+  }
+
+  function sourceBucket(source) {
+    const text = normalizeText(source);
+    if (!text || text.includes('нет') || text.includes('no source') || text.includes('missing')) return 'missing';
+    if (text.includes('finance') || text.includes('balance')) return 'finance';
+    if (text.includes('procurement') || text.includes('rolling stock') || text.includes('rolling sales')) return 'procurement';
+    if (text.includes('funnel') || text.includes('sku/day') || text.includes('sales_funnel')) return 'funnel';
+    if (text.includes('api') || text.includes('raw') || text.includes('витрина')) return 'api';
+    if (text.includes('ads') || text.includes('media') || text.includes('promotion') || text.includes('drr')) return 'ads';
+    return 'other';
+  }
+
+  function rowSearch(parts) {
+    return normalizeText(parts.filter((part) => part !== null && part !== undefined).join(' '));
+  }
+
+  function safeTableKey(...parts) {
+    return parts.map((part) => encodeURIComponent(String(part || 'item'))).join('__').slice(0, 180);
+  }
+
+  function isFilterActive(filters) {
+    return Boolean(filters.search || filters.dateFrom || filters.dateTo || filters.source !== 'all' || filters.status !== 'all');
+  }
+
+  function filterSelectOptions(options, selected) {
+    return options.map(([value, label]) => `<option value="${escapeHtml(value)}" ${value === selected ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('');
+  }
+
+  function tableFilterMarkup(tableKey, totalRows) {
+    const filters = tableFilterState(tableKey);
+    return `
+      <div class="iu-drr-v3-table-filter" data-iu-v3-filter-bar="${escapeHtml(tableKey)}">
+        <label class="iu-drr-v3-filter-field">
+          <span>Поиск</span>
+          <input type="search" value="${escapeHtml(filters.search)}" data-iu-v3-filter="search" placeholder="Дата, SKU, источник...">
+        </label>
+        <label class="iu-drr-v3-filter-field">
+          <span>Источник</span>
+          <select data-iu-v3-filter="source">
+            ${filterSelectOptions([
+              ['all', 'Все строки'],
+              ['with-source', 'Есть источник'],
+              ['missing', 'Нет источника'],
+              ['api', 'API'],
+              ['finance', 'Finance'],
+              ['funnel', 'Funnel / SKU-day'],
+              ['procurement', 'Procurement'],
+              ['ads', 'Ads / DRR'],
+              ['other', 'Другой']
+            ], filters.source)}
+          </select>
+        </label>
+        <label class="iu-drr-v3-filter-field">
+          <span>Статус</span>
+          <select data-iu-v3-filter="status">
+            ${filterSelectOptions([
+              ['all', 'Все статусы'],
+              ['ok', 'В норме'],
+              ['warn', 'Зона внимания'],
+              ['bad', 'Провал'],
+              ['missing', 'Нет данных']
+            ], filters.status)}
+          </select>
+        </label>
+        <label class="iu-drr-v3-filter-field">
+          <span>С даты</span>
+          <input type="date" value="${escapeHtml(filters.dateFrom)}" data-iu-v3-filter="dateFrom">
+        </label>
+        <label class="iu-drr-v3-filter-field">
+          <span>По дату</span>
+          <input type="date" value="${escapeHtml(filters.dateTo)}" data-iu-v3-filter="dateTo">
+        </label>
+        <button class="iu-drr-v3-filter-reset" type="button" data-iu-v3-filter-reset>Сбросить</button>
+        <span class="iu-drr-v3-filter-count" data-iu-v3-filter-count>${escapeHtml(fmtInt(totalRows))} строк</span>
+      </div>
+    `;
+  }
+
+  function tableRowAttrs({ search, source, status, date }) {
+    return `data-iu-v3-row data-iu-v3-search="${escapeHtml(search)}" data-iu-v3-source="${escapeHtml(source)}" data-iu-v3-status="${escapeHtml(status)}" data-iu-v3-date="${escapeHtml(date || '')}"`;
   }
 
   function currentSelectedPosition() {
@@ -414,6 +529,20 @@
       .iu-drr-v3-note{color:var(--faint);font-size:10px;line-height:1.35}
       .iu-drr-v3-source{display:block;margin-top:4px;color:var(--faint);font-size:9px}
       .iu-drr-v3-total-row td{background:rgba(229,193,111,.07);font-weight:850}
+      .iu-drr-v3-table-host{display:block}
+      .iu-drr-v3-table-filter{display:grid;grid-template-columns:minmax(180px,1.3fr) repeat(4,minmax(126px,.75fr)) auto auto;gap:8px;align-items:end;padding:11px 12px;border-bottom:1px solid var(--line);background:rgba(10,8,7,.54)}
+      .iu-drr-v3-filter-field{display:grid;gap:5px;min-width:0;color:var(--faint);font-size:9px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
+      .iu-drr-v3-filter-field input,.iu-drr-v3-filter-field select{height:32px;width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;background:#0b0a08;color:#fff6e2;padding:0 10px;font-size:11px;letter-spacing:0;text-transform:none;outline:none}
+      .iu-drr-v3-filter-field input:focus,.iu-drr-v3-filter-field select:focus{border-color:color-mix(in srgb,var(--platform,#e5c16f) 60%,var(--line));box-shadow:0 0 0 2px color-mix(in srgb,var(--platform,#e5c16f) 14%,transparent)}
+      .iu-drr-v3-filter-reset{height:32px;border:1px solid var(--line);border-radius:999px;background:#11100d;color:var(--muted);padding:0 12px;font-size:10px;font-weight:850;cursor:pointer}
+      .iu-drr-v3-filter-count{display:inline-flex;align-items:center;justify-content:center;height:32px;padding:0 11px;border:1px solid var(--line);border-radius:999px;background:rgba(229,193,111,.08);color:var(--champ);font-size:10px;font-weight:850;white-space:nowrap}
+      .iu-drr-v3-table tr[data-iu-v3-row]{transition:background 160ms ease}
+      .iu-drr-v3-table tr[data-iu-v3-status="ok"] td:first-child{box-shadow:inset 3px 0 var(--ok)}
+      .iu-drr-v3-table tr[data-iu-v3-status="warn"] td:first-child{box-shadow:inset 3px 0 var(--warn)}
+      .iu-drr-v3-table tr[data-iu-v3-status="bad"] td:first-child{box-shadow:inset 3px 0 var(--bad)}
+      .iu-drr-v3-table tr[data-iu-v3-status="missing"] td:first-child{box-shadow:inset 3px 0 rgba(255,255,255,.22)}
+      .iu-drr-v3-table tr[hidden]{display:none!important}
+      .iu-drr-v3-empty-row td{padding:18px!important;text-align:left!important;color:var(--muted);background:#11100d!important}
       .iu-drr-v3-position-layout{display:grid;grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:12px}
       .iu-drr-v3-position-list{padding:12px;max-height:740px;overflow:auto}
       .iu-drr-v3-position-list h3{margin:0 0 10px;font:500 18px Georgia,serif}
@@ -450,8 +579,8 @@
       @keyframes iuDrrV3Stage{from{opacity:0;transform:translateY(7px) scaleX(.96)}to{opacity:1;transform:none}}
       @keyframes iuDrrV3Bar{from{transform:scaleY(0)}}
       @keyframes iuDrrV3Line{from{stroke-dashoffset:1100}to{stroke-dashoffset:0}}
-      @media(max-width:1400px){.iu-drr-v3-toolbar{grid-template-columns:1fr 1.5fr}.iu-drr-v3-lock{text-align:left}.iu-drr-v3-kpis{grid-template-columns:repeat(3,1fr)}.iu-drr-v3-funnel{grid-template-columns:repeat(4,1fr)}.iu-drr-v3-metric-grid{grid-template-columns:repeat(3,1fr)}.iu-drr-v3-chart-table{grid-template-columns:1fr}}
-      @media(max-width:920px){.iu-drr-v3-head{flex-direction:column;align-items:flex-start}.iu-drr-v3-toolbar{position:static;grid-template-columns:1fr}.iu-drr-v3-kpis{grid-template-columns:1fr}.iu-drr-v3-position-layout{grid-template-columns:1fr}.iu-drr-v3-position-list{max-height:340px}.iu-drr-v3-funnel{grid-template-columns:repeat(2,1fr)}.iu-drr-v3-metric-grid{grid-template-columns:repeat(2,1fr)}}
+      @media(max-width:1400px){.iu-drr-v3-toolbar{grid-template-columns:1fr 1.5fr}.iu-drr-v3-lock{text-align:left}.iu-drr-v3-kpis{grid-template-columns:repeat(3,1fr)}.iu-drr-v3-table-filter{grid-template-columns:repeat(3,minmax(0,1fr))}.iu-drr-v3-funnel{grid-template-columns:repeat(4,1fr)}.iu-drr-v3-metric-grid{grid-template-columns:repeat(3,1fr)}.iu-drr-v3-chart-table{grid-template-columns:1fr}}
+      @media(max-width:920px){.iu-drr-v3-head{flex-direction:column;align-items:flex-start}.iu-drr-v3-toolbar{position:static;grid-template-columns:1fr}.iu-drr-v3-kpis{grid-template-columns:1fr}.iu-drr-v3-table-filter{grid-template-columns:1fr 1fr}.iu-drr-v3-position-layout{grid-template-columns:1fr}.iu-drr-v3-position-list{max-height:340px}.iu-drr-v3-funnel{grid-template-columns:repeat(2,1fr)}.iu-drr-v3-metric-grid{grid-template-columns:repeat(2,1fr)}}
       @media(prefers-reduced-motion:reduce){.iu-drr-v3-shell *,.iu-drr-v3-shell *::before,.iu-drr-v3-shell *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
     `;
     document.head.appendChild(style);
@@ -498,6 +627,93 @@
     });
   }
 
+  function filterValuesFromHost(host) {
+    const valueOf = (name, fallback = '') => host.querySelector(`[data-iu-v3-filter="${name}"]`)?.value || fallback;
+    return {
+      search: normalizeText(valueOf('search')),
+      source: valueOf('source', 'all'),
+      status: valueOf('status', 'all'),
+      dateFrom: valueOf('dateFrom'),
+      dateTo: valueOf('dateTo')
+    };
+  }
+
+  function ensureFilterEmptyRow(host) {
+    let empty = host.querySelector('[data-iu-v3-empty-row]');
+    if (empty) return empty;
+    const table = host.querySelector('table');
+    const tbody = table?.tBodies?.[0];
+    if (!tbody) return null;
+    const colSpan = table.tHead?.rows?.[0]?.cells?.length || 1;
+    empty = document.createElement('tr');
+    empty.className = 'iu-drr-v3-empty-row';
+    empty.setAttribute('data-iu-v3-empty-row', '');
+    empty.hidden = true;
+    empty.innerHTML = `<td colspan="${colSpan}">Нет строк под выбранный фильтр</td>`;
+    tbody.appendChild(empty);
+    return empty;
+  }
+
+  function applyTableFilter(host) {
+    const filters = filterValuesFromHost(host);
+    const active = isFilterActive(filters);
+    const rows = Array.from(host.querySelectorAll('tr[data-iu-v3-row]'));
+    let visible = 0;
+    rows.forEach((row) => {
+      const rowText = row.getAttribute('data-iu-v3-search') || '';
+      const source = row.getAttribute('data-iu-v3-source') || 'other';
+      const status = row.getAttribute('data-iu-v3-status') || 'ok';
+      const date = row.getAttribute('data-iu-v3-date') || '';
+      const sourceMatches = filters.source === 'all'
+        || (filters.source === 'with-source' && source !== 'missing')
+        || source === filters.source;
+      const matches = (!filters.search || rowText.includes(filters.search))
+        && sourceMatches
+        && (filters.status === 'all' || status === filters.status)
+        && (!filters.dateFrom || (date && date >= filters.dateFrom))
+        && (!filters.dateTo || (date && date <= filters.dateTo));
+      row.hidden = !matches;
+      if (matches) visible += 1;
+    });
+    host.querySelectorAll('[data-iu-v3-total-row]').forEach((row) => { row.hidden = active; });
+    const empty = ensureFilterEmptyRow(host);
+    if (empty) empty.hidden = visible > 0;
+    const count = host.querySelector('[data-iu-v3-filter-count]');
+    if (count) count.textContent = `${fmtInt(visible)} / ${fmtInt(rows.length)} строк`;
+  }
+
+  function bindTableFilters(root) {
+    if (!root.dataset.iuDrrV3TableFiltersBound) {
+      const handleControl = (event) => {
+        const control = event.target?.closest?.('[data-iu-v3-filter]');
+        if (!control || !root.contains(control)) return;
+        const host = control.closest('[data-iu-v3-table-host]');
+        const tableKey = host?.getAttribute('data-iu-v3-table-host');
+        const name = control.getAttribute('data-iu-v3-filter');
+        if (!host || !tableKey || !name) return;
+        writeTableFilter(tableKey, name, control.value);
+        applyTableFilter(host);
+      };
+      root.addEventListener('input', handleControl);
+      root.addEventListener('change', handleControl);
+      root.addEventListener('click', (event) => {
+        const button = event.target?.closest?.('[data-iu-v3-filter-reset]');
+        if (!button || !root.contains(button)) return;
+        const host = button.closest('[data-iu-v3-table-host]');
+        const tableKey = host?.getAttribute('data-iu-v3-table-host');
+        if (!host || !tableKey) return;
+        clearTableFilter(tableKey);
+        host.querySelectorAll('[data-iu-v3-filter]').forEach((control) => {
+          const name = control.getAttribute('data-iu-v3-filter');
+          control.value = name === 'source' || name === 'status' ? 'all' : '';
+        });
+        applyTableFilter(host);
+      });
+      root.dataset.iuDrrV3TableFiltersBound = '1';
+    }
+    root.querySelectorAll('[data-iu-v3-table-host]').forEach((host) => applyTableFilter(host));
+  }
+
   function metricCell(value, type, note) {
     const text = fmtMetric(value, type);
     return `${text}${note ? `<span class="iu-drr-v3-source">${escapeHtml(note)}</span>` : ''}`;
@@ -508,6 +724,38 @@
     if (num === null) return '#e5c16f';
     if (inverse) return num <= 1 ? '#72e6a0' : num <= 1.08 ? '#ffd45f' : '#ff746f';
     return num >= 1 ? '#72e6a0' : num >= 0.9 ? '#ffd45f' : '#ff746f';
+  }
+
+  function iuRowStatus(platform, model) {
+    if (sourceBucket(model.source) === 'missing') return 'missing';
+    const completionIndex = platform === 'wb' ? 2 : 3;
+    const factIndex = 1;
+    const completion = numberOrNull(model.values[completionIndex]?.[1]);
+    const fact = numberOrNull(model.values[factIndex]?.[1]);
+    if (completion === null || fact === null) return 'missing';
+    if (completion < 0.9) return 'bad';
+    if (completion < 1) return 'warn';
+    return 'ok';
+  }
+
+  function positionDailyStatus(row) {
+    if (sourceBucket(row.source) === 'missing') return 'missing';
+    if (numberOrNull(row.ordersRevenue) !== null || numberOrNull(row.ordersUnits) !== null) return 'ok';
+    return 'warn';
+  }
+
+  function dailyStatus(metrics) {
+    if (sourceBucket(metrics.source) === 'missing') return 'missing';
+    const hasPrimaryValue = [
+      metrics.views,
+      metrics.clicks,
+      metrics.carts,
+      metrics.ordersUnits,
+      metrics.ordersRevenue,
+      metrics.buyoutsUnits,
+      metrics.margin
+    ].some((value) => numberOrNull(value) !== null);
+    return hasPrimaryValue ? 'ok' : 'warn';
   }
 
   function kpiCard(label, value, detail, progress, tone) {
@@ -588,6 +836,7 @@
     const rowModels = buildIuRows(platform, rows);
     const headers = rowModels[0]?.values.map(([label]) => label) || [];
     const total = platformMonthSummary(platform, rows);
+    const tableKey = safeTableKey('iu', platform);
     const totalValues = platform === 'wb'
       ? [
         total.revenuePlan, total.revenueFact, total.revenueCompletion, total.adsPlan,
@@ -600,8 +849,27 @@
         total.drrPlan, total.drrFact, total.returns, total.sourceRows
       ];
     const totalTypes = rowModels[0]?.values.map(([, , type]) => type) || [];
+    const rowHtml = rowModels.map((model) => {
+      const source = model.source || 'источник не указан';
+      const status = iuRowStatus(platform, model);
+      const search = rowSearch([
+        PLATFORM[platform]?.label,
+        model.date,
+        compactDate(model.date),
+        source,
+        ...model.values.flatMap(([label, value, type]) => [label, fmtMetric(value, type), value])
+      ]);
+      return `
+              <tr ${tableRowAttrs({ search, source: sourceBucket(source), status, date: model.date })}>
+                <td><strong>${escapeHtml(compactDate(model.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(source)}</span></td>
+                ${model.values.map(([, value, type]) => `<td>${metricCell(value, type)}</td>`).join('')}
+              </tr>
+      `;
+    }).join('');
     return `
-      <div class="iu-drr-v3-matrix-wrap">
+      <div class="iu-drr-v3-table-host" data-iu-v3-table-host="${escapeHtml(tableKey)}">
+        ${tableFilterMarkup(tableKey, rowModels.length)}
+        <div class="iu-drr-v3-matrix-wrap">
         <table class="iu-drr-v3-table">
           <thead>
             <tr>
@@ -610,18 +878,21 @@
             </tr>
           </thead>
           <tbody>
-            ${rowModels.map((model) => `
+            ${rowHtml}
+            ${[].map((model) => `
               <tr>
                 <td><strong>${escapeHtml(compactDate(model.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(model.source || 'источник не указан')}</span></td>
                 ${model.values.map(([, value, type]) => `<td>${metricCell(value, type)}</td>`).join('')}
               </tr>
             `).join('')}
-            <tr class="iu-drr-v3-total-row">
+            <tr class="iu-drr-v3-total-row" data-iu-v3-total-row>
               <td><strong>Итого</strong><span class="iu-drr-v3-source">${escapeHtml(PLATFORM[platform].label)} · текущий месяц</span></td>
               ${totalValues.map((value, index) => `<td>${metricCell(value, totalTypes[index])}</td>`).join('')}
             </tr>
+            <tr class="iu-drr-v3-empty-row" data-iu-v3-empty-row hidden><td colspan="${headers.length + 1}">Нет строк под выбранный фильтр</td></tr>
           </tbody>
         </table>
+        </div>
       </div>
     `;
   }
@@ -885,12 +1156,40 @@
 
   function buildPositionDailyTable(pos, platform, rows) {
     const daily = selectedPositionRows(pos, platform, rows);
+    const tableKey = safeTableKey('position', platform, pos.articleKey);
+    const dailyRows = daily.map((row) => {
+      const source = row.source || 'источник не указан';
+      const status = positionDailyStatus(row);
+      const search = rowSearch([
+        row.date,
+        compactDate(row.date),
+        row.stableKey,
+        source,
+        row.ordersUnits,
+        row.ordersRevenue,
+        row.estimatedMargin,
+        row.avgPrice
+      ]);
+      return `
+              <tr ${tableRowAttrs({ search, source: sourceBucket(source), status, date: row.date })}>
+                <td><strong>${escapeHtml(compactDate(row.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(row.stableKey)}</span></td>
+                <td>${metricCell(row.ordersUnits, 'int')}</td>
+                <td>${metricCell(row.ordersRevenue, 'money')}</td>
+                <td>${metricCell(row.estimatedMargin, 'money')}</td>
+                <td>${metricCell(row.avgPrice, 'money')}</td>
+                <td><span class="iu-drr-v3-note">${escapeHtml(source)}</span></td>
+              </tr>
+      `;
+    }).join('');
     return `
-      <div class="iu-drr-v3-matrix-wrap" style="max-height:300px">
+      <div class="iu-drr-v3-table-host" data-iu-v3-table-host="${escapeHtml(tableKey)}">
+        ${tableFilterMarkup(tableKey, daily.length)}
+        <div class="iu-drr-v3-matrix-wrap" style="max-height:300px">
         <table class="iu-drr-v3-table" style="min-width:850px">
           <thead><tr><th>Ключ</th><th>Заказы, шт.</th><th>Оборот</th><th>Маржа</th><th>Средний чек</th><th>Источник</th></tr></thead>
           <tbody>
-            ${daily.map((row) => `
+            ${dailyRows}
+            ${[].map((row) => `
               <tr>
                 <td><strong>${escapeHtml(compactDate(row.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(row.stableKey)}</span></td>
                 <td>${metricCell(row.ordersUnits, 'int')}</td>
@@ -900,8 +1199,10 @@
                 <td><span class="iu-drr-v3-note">${escapeHtml(row.source)}</span></td>
               </tr>
             `).join('')}
+            <tr class="iu-drr-v3-empty-row" data-iu-v3-empty-row hidden><td colspan="6">Нет строк под выбранный фильтр</td></tr>
           </tbody>
         </table>
+        </div>
       </div>
     `;
   }
@@ -1058,11 +1359,29 @@
       platformPositions.forEach((pos) => {
         dates.forEach((date) => {
           const metrics = dailyMetricsForPosition(pos, platform, date, rowsByDate);
+          const source = metrics.source || 'источник не указан';
+          const status = dailyStatus(metrics);
+          const stableKey = `${platform}|${pos.articleKey}|${date}`;
+          const search = rowSearch([
+            stableKey,
+            date,
+            compactDate(date),
+            pos.name,
+            pos.article,
+            pos.articleKey,
+            source,
+            metrics.views,
+            metrics.clicks,
+            metrics.carts,
+            metrics.ordersUnits,
+            metrics.ordersRevenue,
+            metrics.platformContext
+          ]);
           body.push(`
-            <tr>
+            <tr ${tableRowAttrs({ search, source: sourceBucket(source), status, date })}>
               <td>
                 <strong>${escapeHtml(compactDate(date))}</strong>
-                <span class="iu-drr-v3-source">${escapeHtml(`${platform}|${pos.articleKey}|${date}`)}</span>
+                <span class="iu-drr-v3-source">${escapeHtml(stableKey)}</span>
               </td>
               <td>${escapeHtml(pos.name || pos.articleKey)}<span class="iu-drr-v3-source">${escapeHtml(pos.article || pos.articleKey)}</span></td>
               <td>${metricCell(metrics.views, 'int')}</td>
@@ -1080,7 +1399,7 @@
                 <td>${metricCell(metrics.drr, 'pct')}</td>
               `}
               <td>${metricCell(metrics.margin, 'money')}</td>
-              <td>${metricCell(metrics.platformContext, 'money')}<span class="iu-drr-v3-source">${escapeHtml(metrics.source)}</span></td>
+              <td>${metricCell(metrics.platformContext, 'money')}<span class="iu-drr-v3-source">${escapeHtml(source)}</span></td>
             </tr>
           `);
         });
@@ -1088,6 +1407,8 @@
       const headers = platform === 'ya'
         ? '<th>Дата / ключ</th><th>SKU</th><th>Показы</th><th>Клики</th><th>Корзины</th><th>Заказы</th><th>Оборот</th><th>Выкупы</th><th>Отмены</th><th>Маржа</th><th>Контекст площадки</th>'
         : '<th>Дата / ключ</th><th>SKU</th><th>Показы</th><th>Клики</th><th>Корзины</th><th>Заказы</th><th>Оборот</th><th>Выкупы</th><th>Отмены</th><th>Расход</th><th>Ad revenue</th><th>CPC</th><th>CPS/CPO</th><th>ДРР</th><th>Маржа</th><th>Контекст площадки</th>';
+      const tableKey = safeTableKey('daily', platform);
+      const colSpan = platform === 'ya' ? 11 : 16;
       return section(
         `daily-${platform}`,
         `${PLATFORM[platform].label} · platform × SKU × date`,
@@ -1095,11 +1416,14 @@
           ? 'Только доступная funnel-часть. ИУ, расход и ДРР намеренно отсутствуют.'
           : 'Матрица SKU/day с рекламой и экономикой только там, где есть источник.',
         `
-          <div class="iu-drr-v3-matrix-wrap">
+          <div class="iu-drr-v3-table-host" data-iu-v3-table-host="${escapeHtml(tableKey)}">
+            ${tableFilterMarkup(tableKey, body.length)}
+            <div class="iu-drr-v3-matrix-wrap">
             <table class="iu-drr-v3-table" style="min-width:${platform === 'ya' ? '1280px' : '1660px'}">
               <thead><tr>${headers}</tr></thead>
               <tbody>${body.join('') || `<tr><td colspan="16">Нет строк для текущего фильтра</td></tr>`}</tbody>
             </table>
+            </div>
           </div>
         `,
         { platform }
@@ -1231,6 +1555,7 @@
         setSectionOpen(key, nextOpen);
       });
     });
+    bindTableFilters(root);
   }
 
   function rerenderIfActive() {

@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260622-iudrr-position-funnel-v4-table-filters';
+  const VERSION = '20260622-iudrr-position-funnel-v5-value-fallbacks';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -47,6 +47,19 @@
 
   function numberOrZero(value) {
     return numberOrNull(value) ?? 0;
+  }
+
+  function positiveOrNull(value) {
+    const num = numberOrNull(value);
+    return num !== null && num > 0 ? num : null;
+  }
+
+  function pickPositiveMetric(candidates, emptyNote = 'нет источника') {
+    for (const candidate of candidates) {
+      const value = positiveOrNull(candidate?.value);
+      if (value !== null) return { value, note: candidate.note || emptyNote };
+    }
+    return { value: null, note: emptyNote };
   }
 
   function sum(rows, key) {
@@ -1055,16 +1068,41 @@
     const wb = pos.wbFunnel || {};
     const procurement = pos.procurement?.[platform] || {};
     const isWb = platform === 'wb';
-    const trafficSource = isWb && pos.wbFunnel ? 'WB funnel' : (lb.reach != null ? 'КЗ weekly' : 'нет SKU/day источника');
-    const ordersSource = isWb && pos.wbFunnel ? 'WB SKU/day' : (procurement.sales30 != null ? 'rolling stock/sales' : 'нет источника');
+    const views = pickPositiveMetric([
+      { value: isWb ? wb.views : null, note: 'WB funnel' },
+      { value: lb.reach, note: 'КЗ weekly fallback' }
+    ], 'нет показов');
+    const clicks = pickPositiveMetric([
+      { value: isWb ? wb.clicks : null, note: 'WB funnel' },
+      { value: lb.clicks, note: 'КЗ weekly fallback' }
+    ], 'нет кликов');
+    const carts = pickPositiveMetric([
+      { value: isWb ? wb.carts : null, note: 'WB funnel' },
+      { value: lb.carts, note: 'КЗ weekly fallback' }
+    ], 'нет корзин');
+    const orders = pickPositiveMetric([
+      { value: isWb ? wb.ordersUnits : null, note: 'WB SKU/day' },
+      { value: procurement.sales30, note: 'rolling stock/sales' },
+      { value: lb.orders, note: 'КЗ weekly fallback' }
+    ], 'нет заказов');
+    const delivered = pickPositiveMetric([
+      { value: procurement.sales30, note: platform === 'ya' ? 'rolling sales' : 'procurement rolling sales' }
+    ], 'нет SKU/day источника');
+    const buyouts = pickPositiveMetric([
+      { value: isWb ? wb.buyoutsUnits : null, note: 'WB funnel' },
+      { value: lb.buys, note: 'КЗ weekly fallback' }
+    ], 'нет выкупов');
+    const cancellations = pickPositiveMetric([
+      { value: isWb ? wb.cancellationsUnits : null, note: 'WB funnel' }
+    ], 'нет SKU/day источника');
     const stages = [
-      { label: 'Показы', value: isWb ? wb.views : lb.reach, type: 'int', note: trafficSource },
-      { label: 'Клики / PDP', value: isWb ? wb.clicks : lb.clicks, type: 'int', note: trafficSource },
-      { label: 'Корзины', value: isWb ? wb.carts : lb.carts, type: 'int', note: trafficSource },
-      { label: 'Заказы', value: isWb ? wb.ordersUnits : (procurement.sales30 ?? lb.orders), type: 'int', note: ordersSource },
-      { label: 'Доставлено', value: platform === 'ya' ? procurement.sales30 : null, type: 'int', note: platform === 'ya' ? 'rolling sales' : 'нет SKU/day источника' },
-      { label: 'Выкупы', value: isWb ? wb.buyoutsUnits : (lb.buys ?? null), type: 'int', note: isWb ? 'WB funnel' : (lb.buys != null ? 'КЗ weekly' : 'нет источника') },
-      { label: 'Отмены / возвраты', value: isWb ? wb.cancellationsUnits : null, type: 'int', note: isWb ? 'WB funnel' : 'нет SKU/day источника' }
+      { label: 'Показы', value: views.value, type: 'int', note: views.note },
+      { label: 'Клики / PDP', value: clicks.value, type: 'int', note: clicks.note },
+      { label: 'Корзины', value: carts.value, type: 'int', note: carts.note },
+      { label: 'Заказы', value: orders.value, type: 'int', note: orders.note },
+      { label: 'Доставлено', value: delivered.value, type: 'int', note: delivered.note },
+      { label: 'Выкупы', value: buyouts.value, type: 'int', note: buyouts.note },
+      { label: 'Отмены / возвраты', value: cancellations.value, type: 'int', note: cancellations.note }
     ];
     const max = Math.max(...stages.map((stage) => numberOrZero(stage.value)), 1);
     return stages.map((stage) => ({ ...stage, fill: Math.max(0, Math.min(100, (numberOrZero(stage.value) / max) * 100)) }));
@@ -1081,6 +1119,12 @@
     const adClicks = numberOrNull(lb.clicks);
     const adOrders = numberOrNull(lb.orders);
     const impressions = numberOrNull(lb.reach);
+    const wbBuyoutPct = positiveOrNull(wb.buyoutPct);
+    const lbBuyoutPct = positiveOrNull(lb.buyoutPct);
+    const buyoutPct = platform === 'wb' ? (wbBuyoutPct ?? lbBuyoutPct) : lbBuyoutPct;
+    const buyoutNote = platform === 'wb' && wbBuyoutPct !== null
+      ? 'WB funnel'
+      : (lbBuyoutPct !== null ? 'КЗ weekly fallback' : 'нет источника');
     const metrics = [
       ['CPC', safeRatio(adSpend, adClicks), 'money', adClicks ? 'КЗ weekly' : 'нет кликов'],
       ['CPM', impressions ? adSpend / impressions * 1000 : null, 'money', impressions ? 'КЗ weekly' : 'нет показов'],
@@ -1093,7 +1137,7 @@
       ['Остаток', procurement.available, 'int', procurement.available != null ? 'procurement' : 'нет источника'],
       ['Оборачиваемость', procurement.turnoverDays, 'decimal', procurement.turnoverDays != null ? 'procurement' : 'нет источника'],
       ['Продажи 30д', procurement.sales30, 'int', procurement.sales30 != null ? 'procurement' : 'нет источника'],
-      ['Buyout', platform === 'wb' ? wb.buyoutPct : lb.buyoutPct, 'pct', platform === 'wb' && wb.buyoutPct != null ? 'WB funnel' : (lb.buyoutPct != null ? 'КЗ weekly' : 'нет источника')]
+      ['Buyout', buyoutPct, 'pct', buyoutNote]
     ];
     return metrics;
   }
@@ -1294,13 +1338,13 @@
     if (platform === 'wb') {
       return {
         source: wbDaily ? 'WB SKU/day' : 'нет SKU/day источника',
-        views: wbDaily ? pos.wbFunnel.views : null,
-        clicks: wbDaily ? pos.wbFunnel.clicks : null,
-        carts: wbDaily ? pos.wbFunnel.carts : null,
+        views: wbDaily ? positiveOrNull(pos.wbFunnel.views) : null,
+        clicks: wbDaily ? positiveOrNull(pos.wbFunnel.clicks) : null,
+        carts: wbDaily ? positiveOrNull(pos.wbFunnel.carts) : null,
         ordersUnits: wbDaily?.ordersUnits ?? null,
         ordersRevenue: wbDaily?.ordersRevenue ?? null,
-        buyoutsUnits: wbDaily ? pos.wbFunnel.buyoutsUnits : null,
-        cancellationsUnits: wbDaily ? pos.wbFunnel.cancellationsUnits : null,
+        buyoutsUnits: wbDaily ? positiveOrNull(pos.wbFunnel.buyoutsUnits) : null,
+        cancellationsUnits: wbDaily ? positiveOrNull(pos.wbFunnel.cancellationsUnits) : null,
         adsSpend: null,
         adsRevenue: null,
         cpc: null,

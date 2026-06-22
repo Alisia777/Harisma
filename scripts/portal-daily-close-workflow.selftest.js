@@ -92,6 +92,15 @@ if (!workflow.includes("vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supab
 if (!workflow.includes('secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY')) {
   fail('daily close must accept the ALTEA_SUPABASE_SERVICE_ROLE_KEY alias');
 }
+if (!workflow.includes('secrets.ALTEA_SMART_PRICE_HTTP_AUTH_BEARER || github.token')) {
+  fail('daily close must let the smart price source fetch private GitHub release assets with github.token');
+}
+if (!workflow.includes('curl --fail --location --retry 5 --retry-delay 2 --retry-all-errors')) {
+  fail('daily close must predownload GitHub release asset workbooks with curl retries before the Node builder');
+}
+if (!workflow.includes('SMART_PRICE_INPUT_ARGS=(--input-xlsx .portal-truth-output/price-sync/smart-price-workbook.xlsx)')) {
+  fail('daily close must pass the predownloaded smart price workbook to the builder as an input XLSX');
+}
 [
   'ALTEA_SMART_PRICE_SHEET_URL',
   'ALTEA_SMART_PRICE_XLSX_URL',

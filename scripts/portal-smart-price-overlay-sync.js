@@ -215,10 +215,17 @@ function parseHeaderLine(line = '') {
   return [name, value];
 }
 
-function buildWorkbookRequestHeaders(options) {
+function isGitHubReleaseAssetApiUrl(url = '') {
+  return /^https:\/\/api\.github\.com\/repos\/[^/]+\/[^/]+\/releases\/assets\/\d+/i.test(String(url || '').trim());
+}
+
+function buildWorkbookRequestHeaders(options, url = '') {
   const headers = {
     'User-Agent': 'harisma-portal-smart-price-sync/1.0'
   };
+  if (isGitHubReleaseAssetApiUrl(url)) {
+    headers.Accept = 'application/octet-stream';
+  }
   if (options.httpAuthBearer) {
     headers.Authorization = `Bearer ${options.httpAuthBearer}`;
   }
@@ -227,11 +234,37 @@ function buildWorkbookRequestHeaders(options) {
   return headers;
 }
 
+function sleepMs(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetries(url, init, attempts = 3) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await fetch(url, init);
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts) await sleepMs(1000 * attempt);
+    }
+  }
+  throw new Error(`request failed: ${lastError?.message || lastError || 'unknown error'}`);
+}
+
 async function fetchWorkbookFromUrl(url, options = {}) {
-  const response = await fetch(url, {
-    redirect: 'follow',
-    headers: buildWorkbookRequestHeaders(options)
+  const headers = buildWorkbookRequestHeaders(options, url);
+  let response = await fetchWithRetries(url, {
+    redirect: isGitHubReleaseAssetApiUrl(url) ? 'manual' : 'follow',
+    headers
   });
+  if (isGitHubReleaseAssetApiUrl(url) && response.status >= 300 && response.status < 400) {
+    const location = response.headers.get('location');
+    if (!location) throw new Error(`GitHub release asset redirect did not include Location header: HTTP ${response.status}`);
+    response = await fetchWithRetries(location, {
+      redirect: 'follow',
+      headers: { 'User-Agent': headers['User-Agent'] || 'harisma-portal-smart-price-sync/1.0' }
+    });
+  }
   if (!response.ok) {
     throw new Error(`Workbook URL export failed with HTTP ${response.status}`);
   }
@@ -483,12 +516,13 @@ async function resolveWorkbookBuffer(options) {
     if (!workbookLooksLikeSmartPrices(options.inputXlsx)) {
       throw new Error(`Price workbook source does not match the smart-price workbook schema: ${options.inputXlsx}`);
     }
+    const mtime = sourceMtimeInfo(options.sourceMtime, stat.mtimeMs);
     return {
       buffer: fs.readFileSync(options.inputXlsx),
       sourceFileName: path.basename(options.inputXlsx),
       sourceKind: 'local',
-      sourceMtimeMs: stat.mtimeMs,
-      sourceMtimeIso: stat.mtime.toISOString()
+      sourceMtimeMs: mtime.sourceMtimeMs,
+      sourceMtimeIso: mtime.sourceMtimeIso
     };
   }
 
@@ -577,6 +611,10 @@ async function main() {
   fs.mkdirSync(options.outputDir, { recursive: true });
 
   const workbookPath = options.inputXlsx || path.join(options.outputDir, workbook.sourceFileName);
+  if (options.inputXlsx && Number.isFinite(workbook.sourceMtimeMs)) {
+    const sourceDate = new Date(workbook.sourceMtimeMs);
+    fs.utimesSync(workbookPath, sourceDate, sourceDate);
+  }
   if (!options.inputXlsx) {
     fs.writeFileSync(workbookPath, workbook.buffer);
     if (Number.isFinite(workbook.sourceMtimeMs)) {

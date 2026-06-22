@@ -63,5 +63,11 @@ const bearerHeaders = buildWorkbookRequestHeaders({ httpAuthBearer: 'secret-toke
 assert.strictEqual(bearerHeaders.Authorization, 'Bearer secret-token');
 const customHeaders = buildWorkbookRequestHeaders({ httpAuthHeader: 'X-Signed-Token: secret-token' });
 assert.strictEqual(customHeaders['X-Signed-Token'], 'secret-token');
+const githubAssetHeaders = buildWorkbookRequestHeaders(
+  { httpAuthBearer: 'github-token' },
+  'https://api.github.com/repos/Alisia777/Harisma/releases/assets/123456'
+);
+assert.strictEqual(githubAssetHeaders.Authorization, 'Bearer github-token');
+assert.strictEqual(githubAssetHeaders.Accept, 'application/octet-stream');
 
 console.log('portal-smart-price-overlay-sync selftest ok');

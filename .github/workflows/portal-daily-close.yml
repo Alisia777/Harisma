@@ -73,7 +73,7 @@ jobs:
           ALTEA_SMART_PRICE_XLSX_GZIP_B64: ${{ secrets.ALTEA_SMART_PRICE_XLSX_GZIP_B64 }}
           ALTEA_SMART_PRICE_SOURCE_MTIME: ${{ secrets.ALTEA_SMART_PRICE_SOURCE_MTIME || vars.ALTEA_SMART_PRICE_SOURCE_MTIME }}
           ALTEA_SMART_PRICE_GOOGLE_FILE_ID: ${{ secrets.ALTEA_SMART_PRICE_GOOGLE_FILE_ID || vars.ALTEA_SMART_PRICE_GOOGLE_FILE_ID }}
-          ALTEA_SMART_PRICE_HTTP_AUTH_BEARER: ${{ secrets.ALTEA_SMART_PRICE_HTTP_AUTH_BEARER }}
+          ALTEA_SMART_PRICE_HTTP_AUTH_BEARER: ${{ secrets.ALTEA_SMART_PRICE_HTTP_AUTH_BEARER || github.token }}
           ALTEA_SMART_PRICE_HTTP_AUTH_HEADER: ${{ secrets.ALTEA_SMART_PRICE_HTTP_AUTH_HEADER }}
           ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
@@ -127,16 +127,28 @@ jobs:
           ALTEA_SMART_PRICE_XLSX_GZIP_B64: ${{ secrets.ALTEA_SMART_PRICE_XLSX_GZIP_B64 }}
           ALTEA_SMART_PRICE_SOURCE_MTIME: ${{ secrets.ALTEA_SMART_PRICE_SOURCE_MTIME || vars.ALTEA_SMART_PRICE_SOURCE_MTIME }}
           ALTEA_SMART_PRICE_GOOGLE_FILE_ID: ${{ secrets.ALTEA_SMART_PRICE_GOOGLE_FILE_ID || vars.ALTEA_SMART_PRICE_GOOGLE_FILE_ID }}
-          ALTEA_SMART_PRICE_HTTP_AUTH_BEARER: ${{ secrets.ALTEA_SMART_PRICE_HTTP_AUTH_BEARER }}
+          ALTEA_SMART_PRICE_HTTP_AUTH_BEARER: ${{ secrets.ALTEA_SMART_PRICE_HTTP_AUTH_BEARER || github.token }}
           ALTEA_SMART_PRICE_HTTP_AUTH_HEADER: ${{ secrets.ALTEA_SMART_PRICE_HTTP_AUTH_HEADER }}
           ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
         run: |
           mkdir -p .portal-truth-output
           mkdir -p .portal-truth-output/price-sync
+          SMART_PRICE_INPUT_ARGS=()
+          if [[ "${ALTEA_SMART_PRICE_XLSX_URL:-}" == https://api.github.com/repos/*/releases/assets/* ]]; then
+            curl --fail --location --retry 5 --retry-delay 2 --retry-all-errors \
+              -H "Accept: application/octet-stream" \
+              -H "Authorization: Bearer ${ALTEA_SMART_PRICE_HTTP_AUTH_BEARER}" \
+              --output .portal-truth-output/price-sync/smart-price-workbook.xlsx \
+              "$ALTEA_SMART_PRICE_XLSX_URL"
+            if [ -n "${ALTEA_SMART_PRICE_SOURCE_MTIME:-}" ]; then
+              touch -d "$ALTEA_SMART_PRICE_SOURCE_MTIME" .portal-truth-output/price-sync/smart-price-workbook.xlsx
+            fi
+            SMART_PRICE_INPUT_ARGS=(--input-xlsx .portal-truth-output/price-sync/smart-price-workbook.xlsx)
+          fi
           node scripts/build-sku-registry-meta.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/build-logistics-from-warehouse-overlay.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
-          node scripts/portal-smart-price-overlay-sync.js sync --output-dir .portal-truth-output/price-sync
+          node scripts/portal-smart-price-overlay-sync.js sync --output-dir .portal-truth-output/price-sync "${SMART_PRICE_INPUT_ARGS[@]}"
           node scripts/build-order-procurement-layer.js
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
           node scripts/build-wb-owner-audit-from-skus.js --input-dir data --base-data-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'

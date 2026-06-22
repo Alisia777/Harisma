@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260622-iudrr-position-funnel-v5-value-fallbacks';
+  const VERSION = '20260622-iudrr-position-funnel-v6-clean-keys';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -1216,7 +1216,7 @@
       ]);
       return `
               <tr ${tableRowAttrs({ search, source: sourceBucket(source), status, date: row.date })}>
-                <td><strong>${escapeHtml(compactDate(row.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(row.stableKey)}</span></td>
+                <td><strong>${escapeHtml(compactDate(row.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(row.date)}</span></td>
                 <td>${metricCell(row.ordersUnits, 'int')}</td>
                 <td>${metricCell(row.ordersRevenue, 'money')}</td>
                 <td>${metricCell(row.estimatedMargin, 'money')}</td>
@@ -1230,12 +1230,12 @@
         ${tableFilterMarkup(tableKey, daily.length)}
         <div class="iu-drr-v3-matrix-wrap" style="max-height:300px">
         <table class="iu-drr-v3-table" style="min-width:850px">
-          <thead><tr><th>Ключ</th><th>Заказы, шт.</th><th>Оборот</th><th>Маржа</th><th>Средний чек</th><th>Источник</th></tr></thead>
+          <thead><tr><th>Дата</th><th>Заказы, шт.</th><th>Оборот</th><th>Маржа</th><th>Средний чек</th><th>Источник</th></tr></thead>
           <tbody>
             ${dailyRows}
             ${[].map((row) => `
               <tr>
-                <td><strong>${escapeHtml(compactDate(row.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(row.stableKey)}</span></td>
+                <td><strong>${escapeHtml(compactDate(row.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(row.date)}</span></td>
                 <td>${metricCell(row.ordersUnits, 'int')}</td>
                 <td>${metricCell(row.ordersRevenue, 'money')}</td>
                 <td>${metricCell(row.estimatedMargin, 'money')}</td>
@@ -1318,7 +1318,7 @@
             </div>
             <div class="iu-drr-v3-panel-card iu-drr-v3-mini">
               <h3>Дневные строки</h3>
-              <p class="iu-drr-v3-note">Стабильный ключ: platform|articleKey|date.</p>
+              <p class="iu-drr-v3-note">Дневные строки SKU/day. Дата, источник и артикул показаны отдельно.</p>
               ${buildPositionDailyTable(selected, platform, rows)}
             </div>
           </div>
@@ -1425,7 +1425,7 @@
             <tr ${tableRowAttrs({ search, source: sourceBucket(source), status, date })}>
               <td>
                 <strong>${escapeHtml(compactDate(date))}</strong>
-                <span class="iu-drr-v3-source">${escapeHtml(stableKey)}</span>
+                <span class="iu-drr-v3-source">${escapeHtml(date)}</span>
               </td>
               <td>${escapeHtml(pos.name || pos.articleKey)}<span class="iu-drr-v3-source">${escapeHtml(pos.article || pos.articleKey)}</span></td>
               <td>${metricCell(metrics.views, 'int')}</td>
@@ -1449,8 +1449,8 @@
         });
       });
       const headers = platform === 'ya'
-        ? '<th>Дата / ключ</th><th>SKU</th><th>Показы</th><th>Клики</th><th>Корзины</th><th>Заказы</th><th>Оборот</th><th>Выкупы</th><th>Отмены</th><th>Маржа</th><th>Контекст площадки</th>'
-        : '<th>Дата / ключ</th><th>SKU</th><th>Показы</th><th>Клики</th><th>Корзины</th><th>Заказы</th><th>Оборот</th><th>Выкупы</th><th>Отмены</th><th>Расход</th><th>Ad revenue</th><th>CPC</th><th>CPS/CPO</th><th>ДРР</th><th>Маржа</th><th>Контекст площадки</th>';
+        ? '<th>Дата</th><th>SKU</th><th>Показы</th><th>Клики</th><th>Корзины</th><th>Заказы</th><th>Оборот</th><th>Выкупы</th><th>Отмены</th><th>Маржа</th><th>Контекст площадки</th>'
+        : '<th>Дата</th><th>SKU</th><th>Показы</th><th>Клики</th><th>Корзины</th><th>Заказы</th><th>Оборот</th><th>Выкупы</th><th>Отмены</th><th>Расход</th><th>Ad revenue</th><th>CPC</th><th>CPS/CPO</th><th>ДРР</th><th>Маржа</th><th>Контекст площадки</th>';
       const tableKey = safeTableKey('daily', platform);
       const colSpan = platform === 'ya' ? 11 : 16;
       return section(

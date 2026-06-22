@@ -557,7 +557,7 @@
 }
 
 .promo-event-pill.readonly {
-  cursor: default;
+  cursor: pointer;
   border-style: dashed;
 }
 
@@ -593,7 +593,7 @@
 }
 
 .promo-event-pill.readonly:active {
-  cursor: default;
+  cursor: pointer;
 }
 
 .promo-event-pill span,

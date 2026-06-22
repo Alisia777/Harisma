@@ -2512,14 +2512,6 @@
       renderEventCalendar(rootId);
       return;
     }
-    if (event.taskId || eventKindKey(event).startsWith('task-')) {
-      openTaskForEvent(event);
-      return;
-    }
-    if (eventKindKey(event) === 'launch') {
-      openLaunchForEvent(event);
-      return;
-    }
     openReadonlyEventModal(event, rootId);
   }
 
@@ -2529,10 +2521,11 @@
       root.addEventListener('click', (event) => {
         const button = event.target?.closest?.('[data-calendar-event], [data-calendar-edit]');
         if (!button || !root.contains(button)) return;
+        const itemId = button.dataset.calendarEvent || button.dataset.calendarEdit || '';
         event.preventDefault();
         event.stopPropagation();
         if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
-        openCalendarItem(button.dataset.calendarEvent || button.dataset.calendarEdit || '', rootId);
+        window.setTimeout(() => openCalendarItem(itemId, rootId), 0);
       }, true);
     }
 
@@ -2604,8 +2597,9 @@
     });
     root.querySelectorAll('[data-calendar-event], [data-calendar-edit]').forEach((button) => {
       button.addEventListener('click', (event) => {
+        const itemId = button.dataset.calendarEvent || button.dataset.calendarEdit || '';
         event.stopPropagation();
-        openCalendarItem(button.dataset.calendarEvent || button.dataset.calendarEdit || '', rootId);
+        window.setTimeout(() => openCalendarItem(itemId, rootId), 0);
       });
       if (button.getAttribute('draggable') === 'true') {
         button.addEventListener('dragstart', (event) => {

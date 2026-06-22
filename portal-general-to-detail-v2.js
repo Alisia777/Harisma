@@ -4,16 +4,6 @@
   const VERSION = '20260622-general-to-detail-v2';
   const MODE_KEY = 'altea.generalToDetail.v2.mode';
   const ROUTES = {
-    'sku-plan-fact': {
-      rootId: 'view-sku-plan-fact',
-      title: 'План-факт SKU',
-      kicker: 'общее -> кто -> что',
-      modes: [
-        ['general', 'Общее'],
-        ['who', 'Кто сделал'],
-        ['what', 'Что сделало']
-      ]
-    },
     repricer: {
       rootId: 'view-repricer',
       title: 'Репрайсер',
@@ -240,69 +230,6 @@
     bindRoot(root, route);
   }
 
-  function metricForPlanRow(row, model) {
-    try {
-      if (typeof window.skuPlanFactDisplayMetric === 'function') return window.skuPlanFactDisplayMetric(row, model) || row;
-    } catch (_) {}
-    return row || {};
-  }
-
-  function enhancePlanFact() {
-    if (!isActiveRoute('sku-plan-fact')) return;
-    const root = document.getElementById('view-sku-plan-fact');
-    if (!root || typeof window.skuPlanFactBuildModel !== 'function') return;
-    const model = window.skuPlanFactBuildModel();
-    const rows = Array.isArray(model.rows) ? model.rows : [];
-    const totals = model.totals || {};
-    const mode = routeMode('sku-plan-fact');
-    const cards = [
-      card('Выполнение', fmtPct(totals.completionToDate), `${fmtMoney(totals.factRevenue)} / ${fmtMoney(totals.planToDateRevenue)}`, { progress: totals.completionToDate, tone: totals.completionToDate >= 1 ? '#74c99a' : '#e0b760' }),
-      card('Разрыв к дате', fmtMoney(totals.gapToDate), `месячный план ${fmtMoney(totals.planRevenue || totals.monthPlanRevenue)}`, { tone: numberOrZero(totals.gapToDate) >= 0 ? '#74c99a' : '#e7786b' }),
-      card('Маржа', fmtPct(totals.marginPct), `маржа RUB ${fmtMoney(totals.marginRub)}`, { progress: totals.marginPct, tone: '#74c99a' }),
-      card('Реклама / ДРР', fmtMoney(totals.adSpend), `ДРР ${fmtPct(totals.drr)}`, { progress: totals.drr, tone: '#e0b760' }),
-      card('SKU в срезе', fmtInt(rows.length), `owner ${fmtInt((model.owners || []).length)}`, { progress: rows.length ? 1 : 0, tone: '#76a9ea' })
-    ];
-    const platformMap = new Map();
-    const ownerMap = new Map();
-    rows.forEach((row) => {
-      const metric = metricForPlanRow(row, model);
-      const platform = metric.platform || row.platform || row.primaryPlatform || 'all';
-      const owner = row.owner || 'Без owner';
-      const add = (map, key) => {
-        const current = map.get(key) || { key, count: 0, plan: 0, fact: 0, gap: 0 };
-        current.count += 1;
-        current.plan += numberOrZero(metric.planToDateRevenue ?? metric.planRevenue);
-        current.fact += numberOrZero(metric.factRevenue);
-        current.gap += numberOrZero(metric.gapToDate ?? metric.gap);
-        map.set(key, current);
-      };
-      add(platformMap, platform);
-      add(ownerMap, owner);
-    });
-    const platformCards = Array.from(platformMap.values()).sort((a, b) => b.fact - a.fact).slice(0, 6).map((item) => {
-      const completion = ratio(item.fact, item.plan);
-      return card(platformLabel(item.key), fmtPct(completion), `${fmtMoney(item.fact)} · ${fmtInt(item.count)} SKU`, {
-        tone: platformTone(item.key),
-        progress: completion,
-        attrs: `data-gtd-platform="${escapeHtml(item.key)}"`
-      });
-    }).join('');
-    const ownerCards = Array.from(ownerMap.values()).sort((a, b) => a.gap - b.gap).slice(0, 10).map((item) => {
-      const completion = ratio(item.fact, item.plan);
-      return card(item.key, fmtPct(completion), `${fmtMoney(item.fact)} · gap ${fmtMoney(item.gap)}`, {
-        tone: item.gap < 0 ? '#e7786b' : '#74c99a',
-        progress: completion,
-        attrs: `data-gtd-owner="${escapeHtml(item.key)}"`
-      });
-    }).join('');
-    const body = mode === 'who'
-      ? `<div class="gtd-v2-grid">${ownerCards || cards.join('')}</div><p class="gtd-v2-note">Клик по owner открывает SKU сотрудника, исходная таблица ниже остается рабочей.</p>`
-      : mode === 'what'
-        ? `<div class="gtd-v2-wide"><small>Полная рабочая таблица</small><p class="gtd-v2-note">Все строки ниже кликабельны: открывают контекст SKU с планом, фактом, маржей и рекламой. Фильтры и Excel-выгрузка сохранены.</p></div>`
-        : `<div class="gtd-v2-grid">${cards.join('')}</div><div class="gtd-v2-wide"><small>Площадки</small><div class="gtd-v2-row-list">${platformCards}</div></div>`;
-    inject(root, 'sku-plan-fact', shell('sku-plan-fact', body));
-  }
-
   function enhanceRepricer() {
     if (!isActiveRoute('repricer')) return;
     const root = document.getElementById('view-repricer');
@@ -375,62 +302,6 @@
     inject(root, 'oos-control', shell('oos-control', body));
   }
 
-  function drawerMetric(label, value) {
-    return `<div class="gtd-v2-drawer-card"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></div>`;
-  }
-
-  function openDrawer(title, subtitle, metrics, note = '') {
-    let back = document.querySelector('.gtd-v2-drawer-back');
-    if (!back) {
-      back = document.createElement('div');
-      back.className = 'gtd-v2-drawer-back';
-      back.innerHTML = '<aside class="gtd-v2-drawer"><button class="gtd-v2-close" type="button" aria-label="Закрыть">×</button><div data-gtd-v2-drawer-content></div></aside>';
-      document.body.appendChild(back);
-      back.addEventListener('click', (event) => {
-        if (event.target === back || event.target.closest('.gtd-v2-close')) back.classList.remove('is-open');
-      });
-    }
-    const content = back.querySelector('[data-gtd-v2-drawer-content]');
-    content.innerHTML = `
-      <h2>${escapeHtml(title)}</h2>
-      <p>${escapeHtml(subtitle || '')}</p>
-      <div class="gtd-v2-drawer-grid">${metrics.map(([label, value]) => drawerMetric(label, value)).join('')}</div>
-      ${note ? `<p>${escapeHtml(note)}</p>` : ''}
-    `;
-    back.classList.add('is-open');
-  }
-
-  function openPlanSkuDrawer(articleKey) {
-    if (typeof window.skuPlanFactBuildModel !== 'function') return;
-    const model = window.skuPlanFactBuildModel();
-    const rows = Array.isArray(model.allRows) ? model.allRows : (model.rows || []);
-    const row = rows.find((item) => String(item.articleKey || item.article || '') === String(articleKey));
-    if (!row) return;
-    const metric = metricForPlanRow(row, model);
-    openDrawer(row.name || row.article || articleKey, `${row.owner || 'Без owner'} · ${platformLabel(metric.platform || row.platform)}`, [
-      ['План к дате', fmtMoney(metric.planToDateRevenue ?? metric.planRevenue)],
-      ['Факт', fmtMoney(metric.factRevenue)],
-      ['Выполнение', fmtPct(metric.completionToDate)],
-      ['Разрыв', fmtMoney(metric.gapToDate ?? metric.gap)],
-      ['Маржа', fmtPct(metric.marginPct)],
-      ['Реклама', fmtMoney(metric.adSpend)]
-    ], 'Карточка открыта из нового слоя, но исходная SKU-логика и рабочие действия остаются native.');
-  }
-
-  function openOwnerDrawer(owner) {
-    if (typeof window.skuPlanFactBuildModel !== 'function') return;
-    const model = window.skuPlanFactBuildModel();
-    const rows = (model.rows || []).filter((row) => String(row.owner || '') === String(owner));
-    const fact = rows.reduce((total, row) => total + numberOrZero(metricForPlanRow(row, model).factRevenue), 0);
-    const plan = rows.reduce((total, row) => total + numberOrZero(metricForPlanRow(row, model).planToDateRevenue), 0);
-    openDrawer(owner, `${fmtInt(rows.length)} SKU в текущем срезе`, [
-      ['Факт', fmtMoney(fact)],
-      ['План к дате', fmtMoney(plan)],
-      ['Выполнение', fmtPct(ratio(fact, plan))],
-      ['Gap', fmtMoney(fact - plan)]
-    ], 'Для глубокой работы оставлена полная таблица ниже: фильтры, сортировка и Excel не менялись.');
-  }
-
   function bindRoot(root, route) {
     if (!root || root.dataset.gtdV2Bound) return;
     root.dataset.gtdV2Bound = '1';
@@ -452,20 +323,10 @@
         setGlobalMarketplace(platformButton.getAttribute('data-gtd-platform') || 'all');
         return;
       }
-      const ownerButton = event.target.closest('[data-gtd-owner]');
-      if (ownerButton) {
-        openOwnerDrawer(ownerButton.getAttribute('data-gtd-owner') || '');
-        return;
-      }
-      const skuRow = event.target.closest('.sku-plan-fact-row[data-sku-plan-article], [data-sku-plan-article]');
-      if (route === 'sku-plan-fact' && skuRow) {
-        openPlanSkuDrawer(skuRow.getAttribute('data-sku-plan-article') || skuRow.dataset.skuPlanArticle);
-      }
     });
   }
 
   function renderRoute(route) {
-    if (route === 'sku-plan-fact' && typeof window.renderSkuPlanFact === 'function') window.renderSkuPlanFact('view-sku-plan-fact', { force: true });
     if (route === 'repricer' && typeof window.renderRepricer === 'function') window.renderRepricer();
     if (route === 'oos-control' && typeof window.renderOosControl === 'function') window.renderOosControl('view-oos-control');
   }
@@ -473,7 +334,6 @@
   function enhanceVisible() {
     const route = activeRoute();
     clearInactiveShells(route);
-    if (route === 'sku-plan-fact') enhancePlanFact();
     if (route === 'repricer') enhanceRepricer();
     if (route === 'oos-control') enhanceOos();
   }
@@ -490,7 +350,6 @@
       wrapped.gtdV2Wrapped = true;
       window[name] = wrapped;
     };
-    wrap('renderSkuPlanFact', enhancePlanFact);
     wrap('renderRepricer', enhanceRepricer);
     wrap('renderOosControl', enhanceOos);
   }

@@ -85,11 +85,26 @@ async function githubRequest({ method = 'GET', url, token, payload = null, heade
   return text.trim() ? JSON.parse(text) : null;
 }
 
-async function getOrCreateDraftRelease({ repo, token, tag }) {
+function booleanArg(value, fallback = false) {
+  if (value === undefined) return fallback;
+  const normalized = String(value).trim().toLowerCase();
+  return ['1', 'true', 'yes', 'y', 'on'].includes(normalized);
+}
+
+async function getOrCreateRelease({ repo, token, tag, draft }) {
   const base = `https://api.github.com/repos/${repo}`;
   const tagUrl = `${base}/releases/tags/${encodeURIComponent(tag)}`;
   try {
-    return await githubRequest({ url: tagUrl, token });
+    const release = await githubRequest({ url: tagUrl, token });
+    if (Boolean(release.draft) !== Boolean(draft)) {
+      return githubRequest({
+        method: 'PATCH',
+        url: release.url,
+        token,
+        payload: { draft: Boolean(draft) }
+      });
+    }
+    return release;
   } catch (error) {
     if (!/HTTP 404/.test(String(error.message || error))) throw error;
   }
@@ -101,8 +116,8 @@ async function getOrCreateDraftRelease({ repo, token, tag }) {
       tag_name: tag,
       target_commitish: 'main',
       name: DEFAULT_RELEASE_NAME,
-      body: 'Private CI source workbook for the Harisma portal daily close. Updated by scripts/publish-smart-price-workbook-source.js.',
-      draft: true,
+      body: 'CI source workbook for the Harisma portal daily close. Updated by scripts/publish-smart-price-workbook-source.js.',
+      draft: Boolean(draft),
       prerelease: false
     }
   });
@@ -187,16 +202,18 @@ async function main() {
   const assetName = String(args['asset-name'] || DEFAULT_ASSET_NAME).trim();
   const urlVariable = String(args['url-variable'] || DEFAULT_URL_VARIABLE).trim();
   const mtimeVariable = String(args['mtime-variable'] || DEFAULT_MTIME_VARIABLE).trim();
+  const draft = booleanArg(args.draft, false);
   const workbook = await resolveWorkbook(args);
   if (!workbookBufferLooksLikeSmartPrices(workbook.buffer)) {
     throw new Error('Resolved workbook does not match smart-price schema.');
   }
 
-  let release = await getOrCreateDraftRelease({ repo, token, tag });
+  let release = await getOrCreateRelease({ repo, token, tag, draft });
   await deleteExistingAsset({ release, token, assetName });
   release = await githubRequest({ url: release.url, token });
   const asset = await uploadAsset({ release, token, assetName, buffer: workbook.buffer });
-  const urlState = await upsertActionsVariable({ repo, token, name: urlVariable, value: asset.url });
+  const sourceUrl = release.draft ? asset.url : (asset.browser_download_url || asset.url);
+  const urlState = await upsertActionsVariable({ repo, token, name: urlVariable, value: sourceUrl });
   const mtimeState = await upsertActionsVariable({
     repo,
     token,
@@ -210,6 +227,8 @@ async function main() {
     releaseDraft: Boolean(release.draft),
     assetName,
     assetApiUrl: asset.url,
+    assetDownloadUrl: asset.browser_download_url || '',
+    sourceUrl,
     assetBytes: asset.size || workbook.buffer.length,
     sourceKind: workbook.sourceKind,
     sourceMtime: workbook.sourceMtimeIso || '',

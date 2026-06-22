@@ -135,10 +135,12 @@ jobs:
           mkdir -p .portal-truth-output
           mkdir -p .portal-truth-output/price-sync
           SMART_PRICE_INPUT_ARGS=()
-          if [[ "${ALTEA_SMART_PRICE_XLSX_URL:-}" == https://api.github.com/repos/*/releases/assets/* ]]; then
-            curl --fail --location --retry 5 --retry-delay 2 --retry-all-errors \
-              -H "Accept: application/octet-stream" \
-              -H "Authorization: Bearer ${ALTEA_SMART_PRICE_HTTP_AUTH_BEARER}" \
+          if [[ "${ALTEA_SMART_PRICE_XLSX_URL:-}" == https://api.github.com/repos/*/releases/assets/* || "${ALTEA_SMART_PRICE_XLSX_URL:-}" == https://github.com/*/releases/download/* ]]; then
+            SMART_PRICE_CURL_ARGS=(--fail --location --retry 5 --retry-delay 2 --retry-all-errors -H "Accept: application/octet-stream")
+            if [[ "${ALTEA_SMART_PRICE_XLSX_URL:-}" == https://api.github.com/repos/*/releases/assets/* && -n "${ALTEA_SMART_PRICE_HTTP_AUTH_BEARER:-}" ]]; then
+              SMART_PRICE_CURL_ARGS+=(-H "Authorization: Bearer ${ALTEA_SMART_PRICE_HTTP_AUTH_BEARER}")
+            fi
+            curl "${SMART_PRICE_CURL_ARGS[@]}" \
               --output .portal-truth-output/price-sync/smart-price-workbook.xlsx \
               "$ALTEA_SMART_PRICE_XLSX_URL"
             if [ -n "${ALTEA_SMART_PRICE_SOURCE_MTIME:-}" ]; then

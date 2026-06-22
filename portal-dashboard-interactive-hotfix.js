@@ -60,6 +60,16 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     orderProcurement: { generatedAt: '', rows: [] }
   };
 
+  function dashboardCeoMotionActive() {
+    const root = document.getElementById('view-dashboard');
+    return Boolean(
+      window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__
+        || window.__ALTEA_DASHBOARD_CEO_MOTION_V1__?.render
+        || root?.querySelector('.ceo-motion-v1')
+        || root?.dataset.dashboardCeoMotion
+    );
+  }
+
   function syncChrome() {
     document.title = 'Дом бренда Алтея · v8.7.1 Imperial';
     const brandTitle = document.querySelector('.sidebar .brand-title');
@@ -9963,6 +9973,7 @@ function dashboardTaskStatusChip(task) {
   }
 
   function apply() {
+    if (dashboardCeoMotionActive()) return;
     const dashboardRoot = document.getElementById('view-dashboard');
     if (!dashboardRoot) return;
     ensureDashboardStructuredModalStyles();
@@ -9975,6 +9986,7 @@ function dashboardTaskStatusChip(task) {
   }
 
   function isDashboardActive() {
+    if (dashboardCeoMotionActive()) return false;
     const app = stateRef();
     const root = document.getElementById('view-dashboard');
     const requested = String(location.hash || '').replace(/^#/, '').trim().toLowerCase();
@@ -9983,6 +9995,7 @@ function dashboardTaskStatusChip(task) {
   }
 
   function scheduleApply(delay = 0, forceRefresh = false) {
+    if (dashboardCeoMotionActive()) return;
     window.clearTimeout(applyTimer);
     applyTimer = window.setTimeout(() => {
       if (!forceRefresh && !isDashboardActive()) return;
@@ -9993,6 +10006,7 @@ function dashboardTaskStatusChip(task) {
   }
 
   function scheduleLocalApply(delay = 0) {
+    if (dashboardCeoMotionActive()) return;
     window.clearTimeout(applyTimer);
     applyTimer = window.setTimeout(() => {
       if (!isDashboardActive()) return;
@@ -10014,6 +10028,7 @@ function dashboardTaskStatusChip(task) {
   }
 
   function primeDashboard(forceRefresh = false) {
+    if (dashboardCeoMotionActive()) return;
     if (!forceRefresh && dashboardBootPrimed) return;
     if (!forceRefresh && !isDashboardActive()) return;
     if (!forceRefresh && window.__ALTEA_PRIMARY_INIT_PENDING__) {
@@ -10035,19 +10050,23 @@ function dashboardTaskStatusChip(task) {
       hasRoot: () => Boolean(document.getElementById(ROOT_ID)),
       isActive: isDashboardActive,
       prime(forceRefresh = false) {
+        if (dashboardCeoMotionActive()) return;
         primeDashboard(forceRefresh);
       },
       schedule(delay = 0, forceRefresh = false) {
+        if (dashboardCeoMotionActive()) return;
         if (!forceRefresh && !isDashboardActive()) return;
         scheduleApply(delay, forceRefresh);
       },
       loadHeavy(forceRefresh = true) {
+        if (dashboardCeoMotionActive()) return Promise.resolve(false);
         if (!isDashboardActive()) return Promise.resolve(false);
         window.__ALTEA_DASHBOARD_LOAD_HEAVY__ = true;
         dashboardBootPrimed = true;
         return refreshData(forceRefresh).then(apply);
       },
       applyNow(forceRefresh = false) {
+        if (dashboardCeoMotionActive()) return Promise.resolve(false);
         if (!forceRefresh && !isDashboardActive()) return Promise.resolve(false);
         if (forceRefresh) dashboardBootPrimed = true;
         return refreshData(forceRefresh).then(apply);
@@ -10057,6 +10076,7 @@ function dashboardTaskStatusChip(task) {
 
   function ensureInteractiveDashboardBoot(forceRefresh = false) {
     rearmBridges();
+    if (dashboardCeoMotionActive()) return;
     if (!isDashboardActive()) return;
     if (!forceRefresh && document.getElementById(ROOT_ID)) return;
     if (forceRefresh) {

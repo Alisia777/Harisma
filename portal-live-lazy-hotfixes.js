@@ -17,11 +17,7 @@
     launches: [LAUNCH_BUDGET_SRC]
   };
   const BUNDLES = {
-    dashboard: [
-      'portal-dashboard-calendar-stability-hotfix.js?v=20260521prod1',
-      'portal-dashboard-prime-hotfix-20260422e.js?v=20260521prod1',
-      'portal-dashboard-interactive-hotfix.js?v=20260619dashboard-fact-date1'
-    ],
+    dashboard: [],
     control: [
       'portal-form-visual-refine.js?v=20260619task-noise3',
       'portal-control-center-v2-hotfix.js?v=20260619task-noise3',
@@ -174,6 +170,11 @@
   function loadViewAssets(view) {
     const key = String(view || '');
     if (viewAssetPromises.has(key)) return viewAssetPromises.get(key);
+    if (key === 'dashboard') {
+      const dashboardChain = loadRenderBudget(view);
+      viewAssetPromises.set(key, dashboardChain);
+      return dashboardChain;
+    }
     const bundleKeys = VIEW_BUNDLES[view] || [];
     let chain = loadRenderBudget(view);
     bundleKeys.forEach((bundleKey) => {
@@ -185,6 +186,10 @@
 
   function primeDashboardHotfix() {
     if (activeView() !== 'dashboard') return;
+    if (window.__ALTEA_DASHBOARD_CEO_MOTION_V1__?.render) {
+      window.__ALTEA_DASHBOARD_CEO_MOTION_V1__.render();
+      return;
+    }
     const api = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
     if (!api) return;
     if (typeof api.hasRoot === 'function' && !api.hasRoot() && typeof api.applyNow === 'function') {
@@ -312,7 +317,12 @@
     if (!view) return;
     if (view === 'dashboard') {
       const run = () => {
-        if (activeView() === 'dashboard') loadViewHotfixes('dashboard', { rerender: false });
+        if (activeView() !== 'dashboard') return;
+        if (window.__ALTEA_DASHBOARD_CEO_MOTION_V1__?.render) {
+          window.__ALTEA_DASHBOARD_CEO_MOTION_V1__.render();
+          return;
+        }
+        loadViewHotfixes('dashboard', { rerender: false });
       };
       window.setTimeout(run, 0);
       return;

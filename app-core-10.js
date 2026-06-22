@@ -2561,6 +2561,11 @@ function renderDashboardView() {
   const root = document.getElementById('view-dashboard');
   const interactiveApi = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
   const ceoMotionApi = window.__ALTEA_DASHBOARD_CEO_MOTION_V1__;
+  const isCeoMotionReady = () => Boolean(
+    window.__ALTEA_DASHBOARD_CEO_MOTION_V1__?.render
+      || root?.querySelector('.ceo-motion-v1')
+      || root?.dataset.dashboardCeoMotion
+  );
   const requestDashboardHotfixes = () => {
     if (typeof window.__alteaLoadLiveHotfixes !== 'function') return;
     Promise.resolve(window.__alteaLoadLiveHotfixes('dashboard', { rerender: false }))
@@ -2568,17 +2573,14 @@ function renderDashboardView() {
   };
 
   if (ceoMotionApi && typeof ceoMotionApi.render === 'function') {
-    requestDashboardHotfixes();
     ceoMotionApi.render();
     return;
   }
 
-  if (root?.querySelector('.ceo-motion-v1')) {
-    requestDashboardHotfixes();
-    return;
-  }
+  if (isCeoMotionReady()) return;
 
-  if (interactiveApi) {
+  if (interactiveApi && window.__ALTEA_DASHBOARD_ALLOW_LEGACY__ === true) {
+    if (isCeoMotionReady()) return;
     requestDashboardHotfixes();
     if (typeof interactiveApi.hasRoot === 'function' && !interactiveApi.hasRoot() && typeof interactiveApi.applyNow === 'function') {
       Promise.resolve(interactiveApi.applyNow(false)).catch((error) => console.warn('[portal-dashboard]', error));
@@ -2597,12 +2599,18 @@ function renderDashboardView() {
   }
   requestDashboardHotfixes();
   window.setTimeout(() => {
+    const ceoApi = window.__ALTEA_DASHBOARD_CEO_MOTION_V1__;
+    if (ceoApi && typeof ceoApi.render === 'function') {
+      ceoApi.render();
+      return;
+    }
+    if (isCeoMotionReady()) return;
     const api = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
-    if (api && typeof api.prime === 'function') {
+    if (api && window.__ALTEA_DASHBOARD_ALLOW_LEGACY__ === true && typeof api.prime === 'function') {
       api.prime(false);
       return;
     }
-    if (!document.getElementById('portalDashboardExecutiveRoot') && typeof renderDashboard === 'function') renderDashboard();
+    if (!document.getElementById('portalDashboardExecutiveRoot') && typeof renderDashboard === 'function' && renderDashboard.__dashboardCeoMotionV1) renderDashboard();
   }, 700);
 }
 

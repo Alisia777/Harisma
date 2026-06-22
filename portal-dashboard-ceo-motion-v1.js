@@ -4,6 +4,7 @@
   const VERSION = '20260622-dashboard-ceo-motion-critical1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
+  window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
   const PERIOD_KEY = 'altea.dashboard.ceoMotion.period';
   const METRIC_KEY = 'altea.dashboard.ceoMotion.metric';
   const GLOBAL_MARKET_KEY = 'altea.portal.marketplace';
@@ -1120,6 +1121,8 @@
   }
 
   function renderLoading(root) {
+    root.dataset.dashboardCeoMotion = VERSION;
+    window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
     root.innerHTML = `
       <section class="ceo-motion-v1">
         <div class="ceo-empty">Собираем CEO dashboard: факты, план, площадки и рекламный контур.</div>
@@ -1130,6 +1133,9 @@
   function renderDashboardCeoMotion() {
     const root = document.getElementById(ROOT_ID);
     if (!root) return;
+    window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
+    const oldModal = document.getElementById('portalDashboardExecutiveModal');
+    if (oldModal) oldModal.remove();
     ensureStyle();
     const hasPlatformRows = platformRows(source('platformTrends')).length > 0;
     if (!hasPlatformRows && !sourcesLoaded) {

@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260621-leaderboard-motion-v2';
+  const VERSION = '20260622-leaderboard-motion-v3-chart-select';
   const MODE_KEY = 'altea.leaderboard.mode.v2';
   const LFL_CLASS_KEY = 'altea.leaderboard.lflClass.v2';
 
@@ -445,7 +445,12 @@
       .plb-v2-mini span{display:block;margin-top:6px;color:var(--muted);font-size:10px}
       .plb-v2-chart{height:330px;padding:0 15px 12px}
       .plb-v2-chart svg{width:100%;height:100%;overflow:visible}
+      .plb-v2-chart-hit{cursor:pointer;outline:none}
+      .plb-v2-chart-hotspot{fill:transparent}
       .plb-v2-week-bar{transform-origin:bottom;animation:plbV2Bar 650ms cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--i)*48ms)}
+      .plb-v2-chart-hit:hover .plb-v2-week-bar,.plb-v2-chart-hit:focus-visible .plb-v2-week-bar,.plb-v2-chart-hit.active .plb-v2-week-bar{filter:drop-shadow(0 0 11px rgba(229,193,111,.42))}
+      .plb-v2-chart-hit:hover .plb-v2-chart-value,.plb-v2-chart-hit:focus-visible .plb-v2-chart-value{fill:#fff6e2}
+      .plb-v2-chart-hit:focus-visible .plb-v2-chart-label{fill:#fff6e2}
       .plb-v2-chart-line{stroke:rgba(255,255,255,.08);stroke-width:1}
       .plb-v2-chart-label{fill:var(--faint);font-size:9px}
       .plb-v2-chart-value{fill:var(--text);font-size:10px;font-weight:800}
@@ -619,12 +624,19 @@
       const barH = Math.max(4, (item.value / max) * (height - padY * 2));
       const x = padX + index * step + step * 0.24;
       const y = height - padY - barH;
+      const barW = step * 0.52;
+      const barCenter = x + barW / 2;
+      const hitX = Math.max(padX, x - step * 0.12);
+      const hitW = Math.min(step * 0.76, width - padX - hitX);
       const active = item.snapshot.key === model.current?.key;
+      const snapshotKey = String(item.snapshot.key || '');
+      const weekLabel = shortWeek(item.snapshot.label);
       return `
-        <g class="${active ? 'active' : ''}">
-          <rect class="plb-v2-week-bar" style="--i:${index}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(step * 0.52).toFixed(1)}" height="${barH.toFixed(1)}" rx="9" fill="${active ? '#e5c16f' : 'rgba(229,193,111,.42)'}"></rect>
-          <text class="plb-v2-chart-value" x="${(x + step * 0.26).toFixed(1)}" y="${(y - 8).toFixed(1)}" text-anchor="middle">${escapeHtml(metricFmt(item.value))}</text>
-          <text class="plb-v2-chart-label" x="${(x + step * 0.26).toFixed(1)}" y="${height - 9}" text-anchor="middle">${escapeHtml(shortWeek(item.snapshot.label))}</text>
+        <g class="plb-v2-chart-hit ${active ? 'active' : ''}" role="button" tabindex="0" aria-pressed="${active ? 'true' : 'false'}" aria-label="Select week ${escapeHtml(weekLabel)}" data-plb-v2-week-snapshot="${escapeHtml(snapshotKey)}">
+          <rect class="plb-v2-chart-hotspot" x="${hitX.toFixed(1)}" y="${padY}" width="${hitW.toFixed(1)}" height="${(height - padY * 1.2).toFixed(1)}" rx="12"></rect>
+          <rect class="plb-v2-week-bar" style="--i:${index}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" rx="9" fill="${active ? '#e5c16f' : 'rgba(229,193,111,.42)'}"></rect>
+          <text class="plb-v2-chart-value" x="${barCenter.toFixed(1)}" y="${(y - 8).toFixed(1)}" text-anchor="middle">${escapeHtml(metricFmt(item.value))}</text>
+          <text class="plb-v2-chart-label" x="${barCenter.toFixed(1)}" y="${height - 9}" text-anchor="middle">${escapeHtml(weekLabel)}</text>
         </g>
       `;
     }).join('');
@@ -636,6 +648,16 @@
         </svg>
       </div>
     `;
+  }
+
+  function selectSnapshotFromChart(snapshotKey, rootId) {
+    const key = String(snapshotKey || '');
+    if (!key) return;
+    const filters = getFilters();
+    filters.snapshot = key;
+    filters.lflCurrentSnapshot = key;
+    if (filters.lflCompareSnapshot === key) filters.lflCompareSnapshot = '';
+    renderProductLeaderboardV2(rootId);
   }
 
   function shortWeek(label = '') {
@@ -1058,6 +1080,11 @@
         renderProductLeaderboardV2(rootId);
         return;
       }
+      const weekBar = target.closest?.('[data-plb-v2-week-snapshot]');
+      if (weekBar) {
+        selectSnapshotFromChart(weekBar.getAttribute('data-plb-v2-week-snapshot'), rootId);
+        return;
+      }
       const resetButton = target.closest?.('[data-plb-v2-reset]');
       if (resetButton) {
         const filters = getFilters();
@@ -1091,6 +1118,15 @@
       if (back && target === back) {
         back.classList.remove('open');
       }
+    };
+
+    root.onkeydown = (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const target = event.target;
+      const weekBar = target.closest?.('[data-plb-v2-week-snapshot]');
+      if (!weekBar) return;
+      event.preventDefault();
+      selectSnapshotFromChart(weekBar.getAttribute('data-plb-v2-week-snapshot'), rootId);
     };
 
     root.onchange = (event) => {

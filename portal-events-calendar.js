@@ -8,13 +8,15 @@
   const MAX_SELECTED_SKU_CHIPS = 18;
   const MAX_BULK_SKUS = 500;
   const MAX_TASK_SKU_LINES = 80;
-  const VERSION = '20260623-calendar-owner1';
+  const VERSION = '20260623-calendar-design-v1';
   const CALENDAR_STATE = window.__ALTEA_PROMO_CALENDAR_STATE__ || {
     month: '',
     dateFrom: '',
     dateTo: '',
     platform: 'all',
     kind: 'all',
+    viewMode: 'month',
+    showDone: false,
     search: '',
     editingId: '',
     selectedDate: '',
@@ -34,6 +36,8 @@
   };
   window.__ALTEA_PROMO_CALENDAR_STATE__ = CALENDAR_STATE;
   if (!CALENDAR_STATE.kind) CALENDAR_STATE.kind = 'all';
+  if (!CALENDAR_STATE.viewMode) CALENDAR_STATE.viewMode = 'month';
+  if (!('showDone' in CALENDAR_STATE)) CALENDAR_STATE.showDone = false;
   if (!('readonlyEventId' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEventId = '';
   if (!('readonlyEvent' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEvent = null;
   let calendarOwnerQueued = false;
@@ -180,6 +184,33 @@
   function platformLabel(value) {
     const key = platformKey(value);
     return PLATFORMS.find(([item]) => item === key)?.[1] || key;
+  }
+
+  function calendarGlobalPlatform(fallback = 'all') {
+    const candidates = [
+      document.documentElement?.dataset?.marketplace,
+      document.body?.dataset?.marketplace,
+      document.documentElement?.dataset?.platform,
+      document.body?.dataset?.platform,
+      appState()?.filters?.platform,
+      appState()?.filters?.market
+    ];
+    try {
+      candidates.push(localStorage.getItem('altea.portal.marketplace'));
+    } catch (_) {}
+    candidates.push(fallback);
+    for (const candidate of candidates) {
+      if (candidate === null || candidate === undefined || String(candidate).trim() === '') continue;
+      let normalized = String(candidate || '').trim().toLowerCase();
+      if (normalized === 'ym' || normalized === 'yandex' || normalized === 'yandexmarket') normalized = 'ya';
+      if (normalized === 'goldenapple' || normalized === 'gold-apple' || normalized === 'gold_apple') normalized = 'goldapple';
+      if (normalized === 'letual' || normalized === 'letoile') normalized = 'letu';
+      if (normalized === 'magnitmarket' || normalized === 'magnit-market') normalized = 'magnit';
+      const key = platformKey(normalized);
+      if (key && key !== 'cross') return key;
+      if (normalized === 'all' || key === 'all') return 'all';
+    }
+    return 'all';
   }
 
   function addPlatformKey(target, value) {
@@ -1186,6 +1217,7 @@
     return calendarEvents().filter((event) => {
       if (!eventMatchesPlatform(event, CALENDAR_STATE.platform)) return false;
       if (CALENDAR_STATE.kind !== 'all' && eventKindKey(event) !== CALENDAR_STATE.kind) return false;
+      if (!CALENDAR_STATE.showDone && (event.status === 'done' || taskDoneStatus(event.rawStatus || ''))) return false;
       if (!eventOverlapsRange(event, CALENDAR_STATE.dateFrom, CALENDAR_STATE.dateTo)) return false;
       if (!query) return true;
       return [
@@ -1968,6 +2000,126 @@
     }).join('');
   }
 
+  function startOfWeekKey(key = todayKey()) {
+    const date = dateFromKey(key);
+    const offset = (date.getDay() + 6) % 7;
+    date.setDate(date.getDate() - offset);
+    return dateKey(date);
+  }
+
+  function calendarViewMode() {
+    return ['month', 'week', 'agenda'].includes(CALENDAR_STATE.viewMode) ? CALENDAR_STATE.viewMode : 'month';
+  }
+
+  function renderCalendarModeRail() {
+    const mode = calendarViewMode();
+    const options = [
+      ['month', 'Месяц'],
+      ['week', 'Неделя'],
+      ['agenda', 'Повестка']
+    ];
+    return `
+      <div class="promo-calendar-mode-rail" aria-label="Режим календаря">
+        ${options.map(([key, label]) => `<button class="${mode === key ? 'active' : ''}" type="button" data-calendar-mode="${html(key)}">${html(label)}</button>`).join('')}
+        <button class="${CALENDAR_STATE.showDone ? 'active' : ''}" type="button" data-calendar-show-done>${CALENDAR_STATE.showDone ? 'Готовые видны' : 'Готовые скрыты'}</button>
+      </div>
+    `;
+  }
+
+  function renderCalendarSurface(gridDays, events, monthKey) {
+    const mode = calendarViewMode();
+    if (mode === 'agenda') return renderAgendaSurface(events);
+    if (mode === 'week') return renderWeekSurface(events, monthKey);
+    return `
+      <div class="promo-month-head">
+        <button type="button" data-calendar-month="-1">‹</button>
+        <strong>${html(monthLabel(monthKey))}</strong>
+        <button type="button" data-calendar-month="1">›</button>
+      </div>
+      <div class="promo-weekdays">${WEEKDAYS.map((day) => `<span>${day}</span>`).join('')}</div>
+      <div class="promo-month-grid">${renderMonthGrid(gridDays, events, monthKey)}</div>
+    `;
+  }
+
+  function renderWeekSurface(events, monthKey) {
+    const reference = CALENDAR_STATE.selectedDate || (todayKey().startsWith(String(monthKey).slice(0, 7)) ? todayKey() : monthKey);
+    const start = startOfWeekKey(reference);
+    const days = Array.from({ length: 7 }, (_, index) => addDays(start, index));
+    return `
+      <div class="promo-month-head">
+        <button type="button" data-calendar-week="-1">‹</button>
+        <strong>${html(`${formatDate(days[0])} - ${formatDate(days[6])}`)}</strong>
+        <button type="button" data-calendar-week="1">›</button>
+      </div>
+      <div class="promo-weekdays">${WEEKDAYS.map((day) => `<span>${day}</span>`).join('')}</div>
+      <div class="promo-month-grid promo-week-grid">${renderWeek(days, events, monthKey)}</div>
+    `;
+  }
+
+  function renderAgendaSurface(events) {
+    const rows = [...events].sort(sortCalendarEvents).slice(0, 80);
+    if (!rows.length) return '<div class="promo-empty promo-agenda-empty">Событий по текущим фильтрам нет.</div>';
+    return `
+      <div class="promo-agenda-table">
+        ${rows.map((event) => `
+          <article class="promo-agenda-row ${eventVisualClass(event)} ${eventTone(event)}">
+            <time>${html(formatDate(event.startDate))}${event.endDate !== event.startDate ? ` - ${html(formatDate(event.endDate))}` : ''}</time>
+            <button type="button" data-calendar-edit="${html(event.id)}">
+              <strong>${html(event.title)}</strong>
+              <span>${html(eventKindLabel(event))} · ${html(platformLabel(event.platform))}${event.owner ? ` · ${html(event.owner)}` : ''}</span>
+            </button>
+            <em>${event.skus.length ? `${formatInt(event.skus.length)} SKU` : 'без SKU'}</em>
+          </article>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function undatedCalendarTasks() {
+    const query = String(CALENDAR_STATE.search || '').trim().toLowerCase();
+    return normalizedTaskList().filter((task) => {
+      if (taskDateRange(task).startDate) return false;
+      if (taskDoneStatus(task.status)) return false;
+      const platforms = taskPlatformKeys(task);
+      const platform = primaryTaskPlatform(task, platforms);
+      if (!eventMatchesPlatform({ platform, platforms, calendarKind: taskEventKind(task) }, CALENDAR_STATE.platform)) return false;
+      if (!query) return true;
+      return [
+        task.title,
+        task.nextAction,
+        task.reason,
+        task.owner,
+        task.entityLabel,
+        task.articleKey,
+        platformLabel(platform)
+      ].join(' ').toLowerCase().includes(query);
+    }).sort((a, b) => String(a.owner || '').localeCompare(String(b.owner || ''), 'ru') || String(a.title || '').localeCompare(String(b.title || ''), 'ru'));
+  }
+
+  function renderUndatedTray() {
+    const allUndated = undatedCalendarTasks();
+    const tasks = allUndated.slice(0, 12);
+    return `
+      <div class="promo-side-card promo-undated-card">
+        <div class="promo-agenda-head">
+          <span>Без даты</span>
+          <strong>${formatInt(allUndated.length)}</strong>
+        </div>
+        ${tasks.length ? tasks.map((task) => {
+          const platforms = taskPlatformKeys(task);
+          const platform = primaryTaskPlatform(task, platforms);
+          const taskId = String(task.id || '').trim();
+          return `
+            <button type="button" class="promo-undated-task ${eventClass(platform)}" data-calendar-undated-task="${html(taskId)}">
+              <strong>${html(task.title || task.nextAction || task.entityLabel || 'Задача')}</strong>
+              <span>${html(task.owner || 'Без owner')} · ${html(platformLabel(platform))}</span>
+            </button>
+          `;
+        }).join('') : '<div class="promo-empty">Все активные задачи имеют срок.</div>'}
+      </div>
+    `;
+  }
+
   function readonlyMetricRows(event = {}) {
     const metrics = event.metrics && typeof event.metrics === 'object' ? event.metrics : {};
     return [
@@ -2162,6 +2314,7 @@
     root.dataset.promoCalendarOwner = VERSION;
     if (isCalendarActive()) startCalendarObserver(rootId);
     patchCalendarChrome();
+    CALENDAR_STATE.platform = calendarGlobalPlatform(CALENDAR_STATE.platform);
     const month = CALENDAR_STATE.month || startOfMonth(todayKey());
     CALENDAR_STATE.month = month;
     if (!CALENDAR_STATE.dateFrom) CALENDAR_STATE.dateFrom = startOfMonth(month);
@@ -2180,10 +2333,12 @@
           <div class="promo-calendar-command-actions">
             <button class="quick-chip" type="button" data-calendar-sync>${CALENDAR_STATE.remoteSaving ? 'Сохраняем...' : 'Синхронизировать'}</button>
             <button class="quick-chip" type="button" data-calendar-today>Сегодня</button>
+            <button class="quick-chip primary" type="button" data-calendar-create-promo>Создать событие</button>
           </div>
         </section>
 
         <section class="promo-calendar-toolbar">
+          ${renderCalendarModeRail()}
           <label>
             <span>С</span>
             <input type="date" data-calendar-date-from value="${html(CALENDAR_STATE.dateFrom)}">
@@ -2198,12 +2353,14 @@
           </label>
         </section>
 
-        ${renderPlatformRail()}
         ${renderKindRail()}
         ${renderStats(events)}
 
         <section class="promo-calendar-layout">
           <div class="promo-calendar-board">
+            <div class="promo-calendar-surface" data-calendar-surface="${html(calendarViewMode())}">
+              ${renderCalendarSurface(gridDays, events, month)}
+            </div>
             <div class="promo-month-head">
               <button type="button" data-calendar-month="-1">‹</button>
               <strong>${html(monthLabel(month))}</strong>
@@ -2220,6 +2377,7 @@
               </div>
               ${renderSideList(events)}
             </div>
+            ${renderUndatedTray()}
             <div class="promo-side-card promo-data-card">
               <span>Автослой</span>
               <strong>${CALENDAR_STATE.dataLoading ? 'грузим...' : `${formatInt((appState().skus || []).length)} SKU · ${formatInt((appState().launches || []).length)} новинок`}</strong>
@@ -2595,9 +2753,32 @@
       CALENDAR_STATE.search = event.target.value || '';
       renderEventCalendar(rootId);
     });
+    root.querySelectorAll('[data-calendar-mode]').forEach((button) => {
+      button.addEventListener('click', () => {
+        CALENDAR_STATE.viewMode = button.dataset.calendarMode || 'month';
+        renderEventCalendar(rootId);
+      });
+    });
+    root.querySelector('[data-calendar-show-done]')?.addEventListener('click', () => {
+      CALENDAR_STATE.showDone = !CALENDAR_STATE.showDone;
+      renderEventCalendar(rootId);
+    });
     root.querySelectorAll('[data-calendar-platform-chip]').forEach((button) => {
       button.addEventListener('click', () => {
         CALENDAR_STATE.platform = button.dataset.calendarPlatformChip || 'all';
+        renderEventCalendar(rootId);
+      });
+    });
+    root.querySelectorAll('[data-calendar-week]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const reference = CALENDAR_STATE.selectedDate || CALENDAR_STATE.dateFrom || todayKey();
+        CALENDAR_STATE.selectedDate = addDays(reference, Number(button.dataset.calendarWeek || 0) * 7);
+        const selectedMonth = startOfMonth(CALENDAR_STATE.selectedDate);
+        if (selectedMonth !== CALENDAR_STATE.month) {
+          CALENDAR_STATE.month = selectedMonth;
+          CALENDAR_STATE.dateFrom = startOfMonth(selectedMonth);
+          CALENDAR_STATE.dateTo = endOfMonth(selectedMonth);
+        }
         renderEventCalendar(rootId);
       });
     });
@@ -2617,6 +2798,10 @@
       CALENDAR_STATE.month = startOfMonth(todayKey());
       CALENDAR_STATE.dateFrom = startOfMonth(todayKey());
       CALENDAR_STATE.dateTo = endOfMonth(todayKey());
+      renderEventCalendar(rootId);
+    });
+    root.querySelector('[data-calendar-create-promo]')?.addEventListener('click', () => {
+      openEventModal('', CALENDAR_STATE.selectedDate || CALENDAR_STATE.dateFrom || todayKey());
       renderEventCalendar(rootId);
     });
     root.querySelector('[data-calendar-sync]')?.addEventListener('click', async () => {
@@ -2661,6 +2846,9 @@
           event.dataTransfer?.setData('application/x-promo-event', id);
         });
       }
+    });
+    root.querySelectorAll('[data-calendar-undated-task]').forEach((button) => {
+      button.addEventListener('click', () => openTaskForEvent({ taskId: button.dataset.calendarUndatedTask }));
     });
     root.querySelector('[data-calendar-form]')?.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -2813,7 +3001,7 @@
 
   install();
   window.addEventListener('DOMContentLoaded', install, { once: true });
-  ['hashchange', 'altea:viewchange', 'altea:app-ready', 'altea:data-ready', 'altea:portal-storage-updated'].forEach((eventName) => {
+  ['hashchange', 'altea:viewchange', 'altea:app-ready', 'altea:data-ready', 'altea:portal-storage-updated', 'altea:marketplacechange'].forEach((eventName) => {
     window.addEventListener(eventName, () => {
       install();
       if (isCalendarActive()) {

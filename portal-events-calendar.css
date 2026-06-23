@@ -1250,6 +1250,146 @@
 .promo-calendar-shell.promo-platform-magnit { --calendar-accent: #ff6c6c; }
 .promo-calendar-shell.promo-platform-product { --calendar-accent: #62d5d1; }
 
+.promo-calendar-shell {
+  --calendar-panel: #12100d;
+  --calendar-panel-2: #17130f;
+  --calendar-line: #302a22;
+  --calendar-champagne: #dbc7a3;
+}
+
+.promo-calendar-toolbar {
+  grid-template-columns: minmax(260px, 1.2fr) minmax(126px, .5fr) minmax(126px, .5fr) minmax(260px, 1.4fr);
+  position: sticky;
+  top: 76px;
+  z-index: 6;
+  backdrop-filter: blur(16px);
+}
+
+.promo-calendar-mode-rail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.promo-calendar-mode-rail button,
+.promo-undated-task {
+  border: 1px solid color-mix(in srgb, var(--calendar-accent) 22%, var(--calendar-line));
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .055), transparent 56%), rgba(0, 0, 0, .34);
+  color: var(--text);
+  cursor: pointer;
+  min-height: 38px;
+  padding: 9px 12px;
+  transition: border-color .16s ease, transform .16s ease, background .16s ease;
+}
+
+.promo-calendar-mode-rail button:hover,
+.promo-undated-task:hover {
+  border-color: color-mix(in srgb, var(--calendar-accent) 68%, white 8%);
+  transform: translateY(-1px);
+}
+
+.promo-calendar-mode-rail button.active {
+  background: linear-gradient(180deg, #ead8b7, #a98448);
+  border-color: rgba(219, 199, 163, .78);
+  color: #130f0a;
+  font-weight: 900;
+}
+
+.promo-calendar-board > .promo-month-head,
+.promo-calendar-board > .promo-weekdays,
+.promo-calendar-board > .promo-month-grid {
+  display: none;
+}
+
+.promo-calendar-surface {
+  display: grid;
+  gap: 10px;
+  min-height: 100%;
+}
+
+.promo-week-grid .promo-week-layer {
+  min-height: 560px;
+}
+
+.promo-agenda-table {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.promo-agenda-row {
+  display: grid;
+  grid-template-columns: minmax(84px, .28fr) minmax(0, 1fr) minmax(72px, .2fr);
+  gap: 10px;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--promo-color, var(--calendar-accent)) 20%, var(--calendar-line));
+  border-radius: 8px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--promo-color, var(--calendar-accent)) 10%, transparent), rgba(0,0,0,.22)), var(--calendar-panel);
+  padding: 11px 12px;
+}
+
+.promo-agenda-row time,
+.promo-agenda-row em {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.promo-agenda-row button {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.promo-agenda-row strong {
+  font-size: 13px;
+}
+
+.promo-agenda-row span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.promo-undated-card {
+  display: grid;
+  gap: 8px;
+}
+
+.promo-undated-task {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.promo-undated-task strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.promo-undated-task span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.promo-data-card {
+  display: none;
+}
+
 .promo-kind-all { --promo-color: #e7c46b; }
 .promo-kind-promo { --promo-color: #edce8a; }
 .promo-kind-task-auto { --promo-color: #4aa3ff; }

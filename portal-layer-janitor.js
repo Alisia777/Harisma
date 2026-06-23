@@ -33,10 +33,19 @@
     '[data-task-lazy-panel]',
     '.control-simple-platform-board',
     '.control-simple-workstream-lane',
+    '.control-simple-workspace',
+    '.control-simple-create',
+    '.control-simple-filters',
+    '.control-simple-filterbar',
+    '.control-simple-queue',
+    '.control-simple-task',
+    '.task-center-queues',
+    '.task-center-hotfix',
+    '[data-control-simple-root]',
     '.section-title.control-simple-title'
   ].join(',');
 
-  const ACTIVE_CONTROL_LEGACY = '.control-simple-panel,[data-task-lazy-panel],.control-simple-platform-board,.control-simple-workstream-lane,.section-title.control-simple-title';
+  const ACTIVE_CONTROL_LEGACY = '.control-simple-panel,[data-task-lazy-panel],.control-simple-platform-board,.control-simple-workstream-lane,.control-simple-workspace,.control-simple-create,.control-simple-filters,.control-simple-filterbar,.control-simple-queue,.control-simple-task,.task-center-queues,.task-center-hotfix,[data-control-simple-root],.section-title.control-simple-title';
   const ACTIVE_CALENDAR_LEGACY = '.data-health-shell,[data-health-change-digest],[data-health-rules-form],.data-health-digest,.data-health-hero,.data-health-queue,.data-health-tech';
 
   function cleanupLegacyNodes() {
@@ -58,10 +67,10 @@
   function cleanupActiveOwnedViews() {
     const controlRoot = document.getElementById('view-control');
     if (controlRoot?.classList.contains('active')) {
-      const hasKanban = Boolean(controlRoot.querySelector('[data-task-kanban-v1]'));
+      const hasKanban = Boolean(controlRoot.querySelector('[data-task-calendar-design-v1],[data-task-kanban-v1]'));
       if (hasKanban) {
         controlRoot.querySelectorAll(ACTIVE_CONTROL_LEGACY).forEach((node) => {
-          if (!node.closest('[data-task-kanban-v1]')) node.remove();
+          if (!node.closest('[data-task-calendar-design-v1],[data-task-kanban-v1]')) node.remove();
         });
       } else if (typeof window.renderControlCenter === 'function') {
         window.setTimeout(() => window.renderControlCenter(), 0);

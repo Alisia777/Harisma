@@ -1426,9 +1426,11 @@ function buildLeaderboardAutoTask({
 const AUTO_SIGNAL_RULES = {
   stockDays: 5,
   priceDropPct: 0.15,
-  ordersDropPct: 0.35,
+  ordersDropPct: 0.20,
   revenueDropPct: 0.20,
-  trafficDropPct: 0.35,
+  trafficDropPct: 0.20,
+  funnelDeviationPct: 0.20,
+  warehouseLocalizationPct: 0.20,
   aovDropPct: 0.20,
   returnsGrowthPct: 0.20,
   conversionDropPct: 0.10,
@@ -1449,12 +1451,19 @@ const AUTO_SIGNAL_RULES = {
   minKzClicks: 700,
   minKzRevenue: 50000,
   minKzSpend: 30000,
+  minFunnelRevenue: 100000,
+  minFunnelRevenueDelta: 30000,
+  minFunnelOrders: 80,
+  minWarehouseShipped: 200,
+  minWarehouseAccepted: 500,
   totalLimit: 12,
   launchLimit: 5,
   escalationLimit: 4,
   escalateAfterDays: 3,
   familyLimits: {
     stock: 5,
+    warehouse: 3,
+    funnel: 3,
     price: 3,
     orders: 4,
     sales: 3,
@@ -1471,6 +1480,8 @@ const MANAGED_AUTO_SIGNAL_CODES = new Set([
   'price_drop_v2',
   'orders_drop_v2',
   'sales_drop_v2',
+  'funnel_swing_v1',
+  'warehouse_localization_drop_v1',
   'traffic_drop_v2',
   'aov_drop_v2',
   'returns_spike_v2',
@@ -1747,6 +1758,43 @@ function autoSignalActiveStockKeys() {
     .map((row) => autoSignalIssueKey(row.platform, row.articleKey || row.article)));
 }
 
+function autoSignalWbFunnelPayload() {
+  const payload = state.wbSalesFunnel || state.wb_sales_funnel_report || {};
+  return payload && typeof payload === 'object' ? payload : {};
+}
+
+function autoSignalWbFunnelItems() {
+  const payload = autoSignalWbFunnelPayload();
+  return Array.isArray(payload.items) ? payload.items : [];
+}
+
+function autoSignalFunnelArticleMap() {
+  const map = new Map();
+  autoSignalWbFunnelItems().forEach((row) => {
+    const articleKey = autoSignalArticleKey(row).toLowerCase();
+    if (articleKey && !map.has(articleKey)) map.set(articleKey, row);
+  });
+  return map;
+}
+
+function autoSignalFunnelDailyRows(row = {}) {
+  return (Array.isArray(row.daily) ? row.daily : [])
+    .filter((point) => point?.date)
+    .map((point) => ({
+      date: String(point.date || '').slice(0, 10),
+      ordersUnits: autoSignalFinite(point.ordersUnits ?? point.orders ?? point.orderCount),
+      revenue: autoSignalFinite(point.ordersRevenue ?? point.revenue ?? point.sales ?? point.gmv),
+      margin: autoSignalFinite(point.estimatedMargin ?? point.margin),
+      avgPrice: autoSignalFinite(point.avgPrice ?? point.price)
+    }))
+    .sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')));
+}
+
+function autoSignalWarehouseRows() {
+  const payload = state.warehouseStockOverlay || state.warehouse_stock_overlay || {};
+  return Array.isArray(payload.rows) ? payload.rows : [];
+}
+
 function buildStockAutoSignalCandidates() {
   const rows = Array.isArray(state.oosControl?.rows) ? state.oosControl.rows : [];
   return rows.map((row) => {
@@ -1792,6 +1840,155 @@ function buildStockAutoSignalCandidates() {
         priority: isOos ? 'critical' : 'high',
         platform,
         entityLabel: row.name || sku?.name || row.articleKey || row.article
+      }
+    };
+  }).filter(Boolean);
+}
+
+function buildWarehouseLocalizationAutoSignalCandidates() {
+  const rows = autoSignalWarehouseRows();
+  if (!rows.length) return [];
+  const funnelMap = autoSignalFunnelArticleMap();
+  return rows.map((row) => {
+    const articleKey = autoSignalArticleKey(row);
+    const sku = getSku(articleKey);
+    if (!articleKey || !autoSignalSkuAllowed(sku)) return null;
+
+    const stockWarehouse = Math.max(0, autoSignalFinite(row.stockWarehouse ?? row.warehouseStock ?? row.stock));
+    const shippedWb = Math.max(0, autoSignalFinite(row.shippedWB ?? row.wbShipped ?? row.shipped_wb));
+    const shippedOzon = Math.max(0, autoSignalFinite(row.shippedOzon ?? row.ozonShipped ?? row.shipped_ozon));
+    const shippedTotal = shippedWb + shippedOzon;
+    const accepted = Math.max(0, autoSignalFinite(row.accepted ?? row.acceptedTotal ?? row.acceptance));
+    const funnel = funnelMap.get(articleKey.toLowerCase()) || {};
+    const funnelOrders = Math.max(0, autoSignalFinite(funnel.ordersUnits));
+    const funnelRevenue = Math.max(0, autoSignalFinite(funnel.ordersRevenue));
+    const hasMeaningfulDemand = shippedTotal >= AUTO_SIGNAL_RULES.minWarehouseShipped
+      || accepted >= AUTO_SIGNAL_RULES.minWarehouseAccepted
+      || funnelOrders >= AUTO_SIGNAL_RULES.minFunnelOrders
+      || funnelRevenue >= AUTO_SIGNAL_RULES.minFunnelRevenue;
+    if (!hasMeaningfulDemand) return null;
+
+    const pressureBase = Math.max(shippedTotal, accepted * 0.1, funnelOrders);
+    if (pressureBase <= 0) return null;
+    const warehouseRatio = stockWarehouse / pressureBase;
+    if (warehouseRatio > AUTO_SIGNAL_RULES.warehouseLocalizationPct && stockWarehouse > 0) return null;
+
+    const platform = shippedWb > 0 && shippedOzon > 0 ? 'wb+ozon' : shippedWb > 0 ? 'wb' : shippedOzon > 0 ? 'ozon' : 'cross';
+    const platformLabel = platform === 'wb+ozon' ? 'WB+Ozon' : autoSignalPlatformLabel(platform);
+    const priority = stockWarehouse <= 0 || warehouseRatio <= 0.05 ? 'critical' : 'high';
+    const ratioLabel = autoSignalPct(warehouseRatio, 1);
+    return {
+      family: 'warehouse',
+      dedupeKey: articleKey,
+      articleKey,
+      taskType: 'supply',
+      platform,
+      priority,
+      score: 805 + (1 - Math.min(1, warehouseRatio)) * 120 + shippedTotal / 250 + funnelRevenue / 100000,
+      task: {
+        id: stableId('auto-warehouse-localization-v1', articleKey),
+        source: 'auto',
+        autoCode: 'warehouse_localization_drop_v1',
+        articleKey,
+        title: `${platformLabel}: складская локализация SKU просела`,
+        nextAction: 'Проверить локализацию SKU: остаток на складе, отгрузки WB/Ozon, ближайшую поставку и необходимость перераспределения. В задаче оставить одно действие: довезти, перераспределить или подтвердить, что SKU не трогаем.',
+        reason: [
+          `склад ${autoSignalNum(stockWarehouse, 0)} шт. при отгрузках ${autoSignalNum(shippedTotal, 0)} шт.`,
+          accepted ? `принято/в работе ${autoSignalNum(accepted, 0)} шт.` : '',
+          funnelOrders ? `WB-заказы за окно ${autoSignalNum(funnelOrders, 0)} шт.` : '',
+          `отношение склад/давление ${ratioLabel}, порог ${autoSignalPct(AUTO_SIGNAL_RULES.warehouseLocalizationPct, 0)}`,
+          'антиспам: в работу попадают только top SKU по силе сигнала'
+        ].filter(Boolean).join(' · '),
+        owner: autoSignalOwner(sku, platform),
+        due: autoSignalTaskDue(priority),
+        status: 'new',
+        type: 'supply',
+        priority,
+        platform,
+        entityLabel: sku?.name || articleKey
+      }
+    };
+  }).filter(Boolean);
+}
+
+function buildWbFunnelSwingAutoSignalCandidates() {
+  const items = autoSignalWbFunnelItems();
+  if (!items.length) return [];
+  const activeStockKeys = autoSignalActiveStockKeys();
+  return items.map((row) => {
+    const articleKey = autoSignalArticleKey(row);
+    const sku = getSku(articleKey);
+    if (!articleKey || !autoSignalSkuAllowed(sku)) return null;
+    if (activeStockKeys.has(autoSignalIssueKey('wb', articleKey))) return null;
+
+    const daily = autoSignalFunnelDailyRows(row);
+    const recent = daily.slice(-3);
+    const base = daily.slice(0, Math.max(0, daily.length - 3));
+    const recentDays = Math.max(1, recent.length);
+    const baseDays = Math.max(1, base.length);
+    const recentRevenueDay = autoSignalSum(recent, 'revenue') / recentDays;
+    const baseRevenueDay = autoSignalSum(base, 'revenue') / baseDays;
+    const recentOrdersDay = autoSignalSum(recent, 'ordersUnits') / recentDays;
+    const baseOrdersDay = autoSignalSum(base, 'ordersUnits') / baseDays;
+    const revenueSwing = baseRevenueDay > 0 ? (recentRevenueDay - baseRevenueDay) / baseRevenueDay : 0;
+    const ordersSwing = baseOrdersDay > 0 ? (recentOrdersDay - baseOrdersDay) / baseOrdersDay : 0;
+    const currentRevenue = autoSignalFinite(row.ordersRevenue);
+    const previousRevenue = autoSignalFinite(row.previousOrdersRevenue);
+    const periodSwing = previousRevenue > 0 ? (currentRevenue - previousRevenue) / previousRevenue : 0;
+
+    const dailyRevenueDelta = recentRevenueDay - baseRevenueDay;
+    const dailyOrdersDelta = recentOrdersDay - baseOrdersDay;
+    const periodRevenueDelta = currentRevenue - previousRevenue;
+    const hasDailySignal = base.length >= 3
+      && Math.abs(revenueSwing) >= AUTO_SIGNAL_RULES.funnelDeviationPct
+      && Math.abs(dailyRevenueDelta) >= AUTO_SIGNAL_RULES.minFunnelRevenueDelta
+      && (baseRevenueDay >= AUTO_SIGNAL_RULES.minBaseRevenueDay || baseOrdersDay >= AUTO_SIGNAL_RULES.minOrdersBaseDay);
+    const hasOrdersSignal = base.length >= 3
+      && Math.abs(ordersSwing) >= AUTO_SIGNAL_RULES.funnelDeviationPct
+      && Math.abs(dailyOrdersDelta) >= AUTO_SIGNAL_RULES.minOrdersLossDay
+      && baseOrdersDay >= AUTO_SIGNAL_RULES.minOrdersBaseDay;
+    const hasPeriodSignal = previousRevenue >= AUTO_SIGNAL_RULES.minFunnelRevenue
+      && Math.abs(periodSwing) >= AUTO_SIGNAL_RULES.funnelDeviationPct
+      && Math.abs(periodRevenueDelta) >= AUTO_SIGNAL_RULES.minFunnelRevenueDelta;
+    const volumeGate = currentRevenue >= AUTO_SIGNAL_RULES.minFunnelRevenue
+      || previousRevenue >= AUTO_SIGNAL_RULES.minFunnelRevenue
+      || autoSignalFinite(row.ordersUnits) >= AUTO_SIGNAL_RULES.minFunnelOrders;
+    if (!volumeGate || (!hasDailySignal && !hasOrdersSignal && !hasPeriodSignal)) return null;
+
+    const pickedSwing = Math.abs(revenueSwing) >= Math.abs(ordersSwing) ? revenueSwing : ordersSwing;
+    const strongestSwing = Math.abs(periodSwing) > Math.abs(pickedSwing) ? periodSwing : pickedSwing;
+    const direction = strongestSwing < 0 ? 'просадка' : 'всплеск';
+    const priority = Math.abs(strongestSwing) >= 0.35 || (strongestSwing < 0 && Math.abs(dailyRevenueDelta) >= 100000) ? 'critical' : 'high';
+    const swingLabel = `${strongestSwing > 0 ? '+' : ''}${autoSignalPct(strongestSwing, 0)}`;
+    return {
+      family: 'funnel',
+      dedupeKey: articleKey,
+      articleKey,
+      taskType: 'traffic',
+      platform: 'wb',
+      priority,
+      score: 790 + Math.abs(strongestSwing) * 140 + Math.abs(dailyRevenueDelta) / 8000 + Math.abs(periodRevenueDelta) / 30000,
+      task: {
+        id: stableId('auto-funnel-swing-v1', `wb|${articleKey}`),
+        source: 'auto',
+        autoCode: 'funnel_swing_v1',
+        articleKey,
+        title: `WB: ${direction} воронки SKU ${swingLabel}`,
+        nextAction: 'Проверить SKU по воронке: заказы, оборот, цена, карточка, реклама и позиция. В задаче оставить одну причину и одно действие, чтобы сигнал не превращался в общий список проверок.',
+        reason: [
+          `последние 3 дня: ${autoSignalMoney(recentRevenueDay)}/день и ${autoSignalNum(recentOrdersDay, 1)} заказов/день`,
+          `база: ${autoSignalMoney(baseRevenueDay)}/день и ${autoSignalNum(baseOrdersDay, 1)} заказов/день`,
+          `период к периоду: ${periodSwing ? `${periodSwing > 0 ? '+' : ''}${autoSignalPct(periodSwing, 0)}` : '—'}`,
+          `порог сигнала ${autoSignalPct(AUTO_SIGNAL_RULES.funnelDeviationPct, 0)}`,
+          'OOS не объясняет сигнал, поэтому задача идет по воронке'
+        ].filter(Boolean).join(' · '),
+        owner: autoSignalOwner(sku, 'wb', row.owner),
+        due: autoSignalTaskDue(priority),
+        status: 'new',
+        type: 'traffic',
+        priority,
+        platform: 'wb',
+        entityLabel: row.name || sku?.name || articleKey
       }
     };
   }).filter(Boolean);
@@ -2278,6 +2475,8 @@ function selectAutoSignalCandidates(candidates = []) {
 function buildQualityAutoSignalTasks(keys, leaderboardPayload = {}) {
   return selectAutoSignalCandidates([
     ...buildStockAutoSignalCandidates(),
+    ...buildWarehouseLocalizationAutoSignalCandidates(),
+    ...buildWbFunnelSwingAutoSignalCandidates(),
     ...buildPriceAndSalesAutoSignalCandidates(),
     ...buildAdsTrafficAutoSignalCandidates(),
     ...buildReturnsAutoSignalCandidates(),
@@ -2313,7 +2512,7 @@ function isManagedAutoSignalTask(task = {}) {
   if (MANAGED_AUTO_SIGNAL_CODES.has(code)) return true;
   const id = String(task?.id || '').trim().toLowerCase();
   return task?.source === 'auto'
-    && /^auto-(stock|price-drop|orders-drop|sales-drop|traffic-drop|aov-drop|returns-spike|kz-quality)-v2/.test(id);
+    && /^(auto-(stock|price-drop|orders-drop|sales-drop|traffic-drop|aov-drop|returns-spike|kz-quality)-v2|auto-(funnel-swing|warehouse-localization)-v1)/.test(id);
 }
 
 function isEscalatedStaleAutoSignalTask(task = {}) {

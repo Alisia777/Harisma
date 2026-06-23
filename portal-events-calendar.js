@@ -9,6 +9,11 @@
   const MAX_BULK_SKUS = 500;
   const MAX_TASK_SKU_LINES = 80;
   const VERSION = '20260623-calendar-design-v1';
+  const BACKGROUND_STORAGE_KEY = 'altea.calendar.backgroundMode';
+  const BACKGROUND_MODES = ['static', 'motion'];
+  const CALENDAR_MOTION_POSTER = 'assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-poster.jpg';
+  const CALENDAR_MOTION_WEBM = 'assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-source.webm';
+  const CALENDAR_MOTION_MP4 = 'assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion.mp4';
   const CALENDAR_STATE = window.__ALTEA_PROMO_CALENDAR_STATE__ || {
     month: '',
     dateFrom: '',
@@ -32,7 +37,8 @@
     dataLoading: false,
     taskSyncing: false,
     activityLoaded: false,
-    activityLoading: false
+    activityLoading: false,
+    backgroundMode: ''
   };
   window.__ALTEA_PROMO_CALENDAR_STATE__ = CALENDAR_STATE;
   if (!CALENDAR_STATE.kind) CALENDAR_STATE.kind = 'all';
@@ -40,6 +46,7 @@
   if (!('showDone' in CALENDAR_STATE)) CALENDAR_STATE.showDone = false;
   if (!('readonlyEventId' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEventId = '';
   if (!('readonlyEvent' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEvent = null;
+  if (!BACKGROUND_MODES.includes(CALENDAR_STATE.backgroundMode)) CALENDAR_STATE.backgroundMode = calendarStoredBackgroundMode();
   let calendarOwnerQueued = false;
   let calendarObserver = null;
   let calendarObserverTimer = 0;
@@ -73,6 +80,24 @@
 
   function appState() {
     return window.state || window.__alteaAppState || {};
+  }
+
+  function calendarStoredBackgroundMode() {
+    try {
+      const stored = localStorage.getItem(BACKGROUND_STORAGE_KEY);
+      if (BACKGROUND_MODES.includes(stored)) return stored;
+    } catch (_) {}
+    return 'static';
+  }
+
+  function calendarBackgroundMode() {
+    return BACKGROUND_MODES.includes(CALENDAR_STATE.backgroundMode) ? CALENDAR_STATE.backgroundMode : 'static';
+  }
+
+  function setCalendarBackgroundMode(mode) {
+    const nextMode = BACKGROUND_MODES.includes(mode) ? mode : 'static';
+    CALENDAR_STATE.backgroundMode = nextMode;
+    try { localStorage.setItem(BACKGROUND_STORAGE_KEY, nextMode); } catch (_) {}
   }
 
   function html(value) {
@@ -482,6 +507,18 @@
       task.date_to,
       task.toDate,
       task.to_date,
+      task.targetDate,
+      task.target_date,
+      task.actionDate,
+      task.action_date,
+      task.plannedDate,
+      task.planned_date,
+      task.scheduledDate,
+      task.scheduled_date,
+      task.scheduledAt,
+      task.scheduled_at,
+      task.taskDate,
+      task.task_date,
       task.to,
       task.finish,
       task.date
@@ -495,6 +532,18 @@
       task.from_date,
       task.periodStart,
       task.period_start,
+      task.targetDate,
+      task.target_date,
+      task.actionDate,
+      task.action_date,
+      task.plannedDate,
+      task.planned_date,
+      task.scheduledDate,
+      task.scheduled_date,
+      task.scheduledAt,
+      task.scheduled_at,
+      task.taskDate,
+      task.task_date,
       task.beginDate,
       task.begin_date,
       task.dateStart,
@@ -513,6 +562,18 @@
       task.to_date,
       task.periodEnd,
       task.period_end,
+      task.targetDate,
+      task.target_date,
+      task.actionDate,
+      task.action_date,
+      task.plannedDate,
+      task.planned_date,
+      task.scheduledDate,
+      task.scheduled_date,
+      task.scheduledAt,
+      task.scheduled_at,
+      task.taskDate,
+      task.task_date,
       task.finishDate,
       task.finish_date,
       task.dateEnd,
@@ -527,6 +588,30 @@
     const startDate = start || end;
     const endDate = end && end >= startDate ? end : startDate;
     return { startDate, endDate, due: due || endDate || startDate };
+  }
+
+  function taskDirectId(task = {}) {
+    return String(task.id || task.taskId || task.task_id || task.uuid || task.key || '').trim();
+  }
+
+  function taskStableId(task = {}, index = 0) {
+    const direct = taskDirectId(task);
+    if (direct) return direct;
+    const range = taskDateRange(task);
+    return calendarSafeId('task-source', [
+      task.title,
+      task.nextAction,
+      task.entityLabel,
+      task.owner,
+      range.startDate,
+      range.endDate,
+      index
+    ]);
+  }
+
+  function taskRemovedFromCalendar(task = {}) {
+    const status = String(task.status || '').trim().toLowerCase();
+    return taskDoneStatus(status) && /deleted|removed|archive|cancel/.test(status);
   }
 
   function taskSkuKeys(task = {}) {
@@ -550,12 +635,17 @@
       .filter(Boolean);
   }
 
+  function activeCalendarTasks() {
+    return normalizedTaskList().filter((task) => !taskRemovedFromCalendar(task));
+  }
+
   function taskCalendarEvents(manualEvents = allEvents()) {
     const linkedPromoTaskIds = new Set(manualEvents.map((event) => String(event.taskId || '').trim()).filter(Boolean));
-    return normalizedTaskList().map((task) => {
+    return activeCalendarTasks().map((task, index) => {
       const range = taskDateRange(task);
-      const taskId = String(task.id || '').trim();
-      if (!range.startDate || !taskId || linkedPromoTaskIds.has(taskId) || taskDoneStatus(task.status) && /deleted|removed|archive|cancel/.test(String(task.status || '').toLowerCase())) return null;
+      const directId = taskDirectId(task);
+      const taskId = taskStableId(task, index);
+      if (!range.startDate || !taskId || (directId && linkedPromoTaskIds.has(directId))) return null;
       const kind = taskEventKind(task);
       const skus = taskSkuKeys(task);
       const title = String(task.title || task.nextAction || task.entityLabel || 'Задача').trim();
@@ -563,8 +653,9 @@
       const platform = primaryTaskPlatform(task, platforms);
       return {
         id: `task:${taskId}`,
-        sourceId: taskId,
-        taskId,
+        sourceId: directId || taskId,
+        taskId: directId || taskId,
+        syntheticTaskId: directId ? '' : taskId,
         calendarKind: kind,
         readonly: true,
         title,
@@ -588,6 +679,33 @@
         updatedAt: String(task.updatedAt || task.createdAt || '')
       };
     }).filter(Boolean);
+  }
+
+  function taskCoverageModel(manualEvents = allEvents()) {
+    const tasks = activeCalendarTasks();
+    const taskEvents = taskCalendarEvents(manualEvents);
+    const linkedTaskIds = new Set(manualEvents.map((event) => String(event.taskId || '').trim()).filter(Boolean));
+    const eventTaskIds = new Set(taskEvents.map((event) => String(event.taskId || event.sourceId || '').trim()).filter(Boolean));
+    const dated = [];
+    const undated = [];
+    let covered = 0;
+    tasks.forEach((task, index) => {
+      const range = taskDateRange(task);
+      const directId = taskDirectId(task);
+      const stableId = taskStableId(task, index);
+      const coverageId = directId || stableId;
+      if (range.startDate) dated.push(task);
+      else undated.push(task);
+      if ((directId && linkedTaskIds.has(directId)) || (coverageId && eventTaskIds.has(coverageId))) covered += 1;
+    });
+    return {
+      total: tasks.length,
+      dated: dated.length,
+      undated: undated.length,
+      covered,
+      taskEvents: taskEvents.length,
+      linkedPromo: linkedTaskIds.size
+    };
   }
 
   function launchPlatformKey(item = {}) {
@@ -1937,6 +2055,7 @@
     const autoTasks = events.filter((event) => eventKindKey(event) === 'task-auto').length;
     const manualTasks = events.filter((event) => eventKindKey(event) === 'task-manual').length;
     const launches = events.filter((event) => eventKindKey(event) === 'launch').length;
+    const coverage = taskCoverageModel(allEvents());
     const skuCount = new Set(events.flatMap((event) => event.skus)).size;
     const days = new Set(events.flatMap((event) => {
       const duration = daysBetween(event.startDate, event.endDate);
@@ -1944,6 +2063,7 @@
     })).size;
     return `
       <div class="promo-calendar-stats">
+        <button class="promo-task-coverage-stat" type="button" data-calendar-task-coverage data-total="${coverage.total}" data-covered="${coverage.covered}" data-dated="${coverage.dated}" data-undated="${coverage.undated}"><span>задачи в календаре</span><strong>${formatInt(coverage.covered)} / ${formatInt(coverage.total)}</strong><em>${formatInt(coverage.undated)} без даты · ${formatInt(coverage.taskEvents)} сроков</em></button>
         <button class="${CALENDAR_STATE.kind === 'all' ? 'active' : ''}" type="button" data-calendar-kind-stat="all"><span>все события</span><strong>${events.length}</strong><em>${formatInt(days)} дней · ${formatInt(skuCount)} SKU</em></button>
         <button class="${CALENDAR_STATE.kind === 'task-auto' ? 'active' : ''}" type="button" data-calendar-kind-stat="task-auto"><span>автозадачи</span><strong>${autoTasks}</strong></button>
         <button class="${CALENDAR_STATE.kind === 'task-manual' ? 'active' : ''}" type="button" data-calendar-kind-stat="task-manual"><span>сроки задач</span><strong>${manualTasks}</strong></button>
@@ -2026,6 +2146,31 @@
     `;
   }
 
+  function renderCalendarBackgroundLayer() {
+    const mode = calendarBackgroundMode();
+    if (mode !== 'motion') {
+      return '<div class="promo-calendar-bg promo-calendar-bg-static" aria-hidden="true"></div>';
+    }
+    return `
+      <div class="promo-calendar-bg promo-calendar-bg-motion" aria-hidden="true">
+        <video autoplay muted loop playsinline preload="metadata" poster="${html(CALENDAR_MOTION_POSTER)}">
+          <source src="${html(CALENDAR_MOTION_WEBM)}" type="video/webm">
+          <source src="${html(CALENDAR_MOTION_MP4)}" type="video/mp4">
+        </video>
+      </div>
+    `;
+  }
+
+  function renderCalendarBackgroundControls() {
+    const mode = calendarBackgroundMode();
+    return `
+      <div class="promo-calendar-bg-switch" aria-label="Фон календаря">
+        <button class="${mode === 'static' ? 'active' : ''}" type="button" data-calendar-background-mode="static">Статика</button>
+        <button class="${mode === 'motion' ? 'active' : ''}" type="button" data-calendar-background-mode="motion">Движение</button>
+      </div>
+    `;
+  }
+
   function renderCalendarSurface(gridDays, events, monthKey) {
     const mode = calendarViewMode();
     if (mode === 'agenda') return renderAgendaSurface(events);
@@ -2077,9 +2222,8 @@
 
   function undatedCalendarTasks() {
     const query = String(CALENDAR_STATE.search || '').trim().toLowerCase();
-    return normalizedTaskList().filter((task) => {
+    return activeCalendarTasks().filter((task) => {
       if (taskDateRange(task).startDate) return false;
-      if (taskDoneStatus(task.status)) return false;
       const platforms = taskPlatformKeys(task);
       const platform = primaryTaskPlatform(task, platforms);
       if (!eventMatchesPlatform({ platform, platforms, calendarKind: taskEventKind(task) }, CALENDAR_STATE.platform)) return false;
@@ -2105,10 +2249,10 @@
           <span>Без даты</span>
           <strong>${formatInt(allUndated.length)}</strong>
         </div>
-        ${tasks.length ? tasks.map((task) => {
+        ${tasks.length ? tasks.map((task, index) => {
           const platforms = taskPlatformKeys(task);
           const platform = primaryTaskPlatform(task, platforms);
-          const taskId = String(task.id || '').trim();
+          const taskId = taskDirectId(task) || taskStableId(task, index);
           return `
             <button type="button" class="promo-undated-task ${eventClass(platform)}" data-calendar-undated-task="${html(taskId)}">
               <strong>${html(task.title || task.nextAction || task.entityLabel || 'Задача')}</strong>
@@ -2321,9 +2465,11 @@
     if (!CALENDAR_STATE.dateTo) CALENDAR_STATE.dateTo = endOfMonth(month);
     const events = filteredEvents();
     const gridDays = monthDays(month);
-    const shellClass = `promo-calendar-shell ${eventClass(CALENDAR_STATE.platform)}`;
+    const backgroundMode = calendarBackgroundMode();
+    const shellClass = `promo-calendar-shell ${eventClass(CALENDAR_STATE.platform)} promo-calendar-bg-${backgroundMode}`;
     const markup = `
-      <div class="${shellClass}">
+      <div class="${shellClass}" data-calendar-background="${html(backgroundMode)}">
+        ${renderCalendarBackgroundLayer()}
         <section class="promo-calendar-command">
           <div class="promo-calendar-command-copy">
             <span>Командный календарь</span>
@@ -2331,6 +2477,7 @@
             <p>Все сроки и события собираются в одну временную карту: ручные промо редактируются здесь, задачи и новинки подтягиваются автоматически.</p>
           </div>
           <div class="promo-calendar-command-actions">
+            ${renderCalendarBackgroundControls()}
             <button class="quick-chip" type="button" data-calendar-sync>${CALENDAR_STATE.remoteSaving ? 'Сохраняем...' : 'Синхронизировать'}</button>
             <button class="quick-chip" type="button" data-calendar-today>Сегодня</button>
             <button class="quick-chip primary" type="button" data-calendar-create-promo>Создать событие</button>
@@ -2361,13 +2508,6 @@
             <div class="promo-calendar-surface" data-calendar-surface="${html(calendarViewMode())}">
               ${renderCalendarSurface(gridDays, events, month)}
             </div>
-            <div class="promo-month-head">
-              <button type="button" data-calendar-month="-1">‹</button>
-              <strong>${html(monthLabel(month))}</strong>
-              <button type="button" data-calendar-month="1">›</button>
-            </div>
-            <div class="promo-weekdays">${WEEKDAYS.map((day) => `<span>${day}</span>`).join('')}</div>
-            <div class="promo-month-grid">${renderMonthGrid(gridDays, events, month)}</div>
           </div>
           <aside class="promo-calendar-side">
             <div class="promo-side-card">
@@ -2536,13 +2676,35 @@
     return firstValidDate(
       task.due,
       task.deadline,
+      task.dueDate,
+      task.due_date,
       task.endDate,
       task.end_date,
       task.dateTo,
       task.date_to,
+      task.toDate,
+      task.to_date,
+      task.targetDate,
+      task.target_date,
+      task.actionDate,
+      task.action_date,
+      task.plannedDate,
+      task.planned_date,
+      task.scheduledDate,
+      task.scheduled_date,
+      task.scheduledAt,
+      task.scheduled_at,
+      task.taskDate,
+      task.task_date,
       task.date,
       task.startDate,
-      task.start_date
+      task.start_date,
+      task.dateFrom,
+      task.date_from,
+      task.fromDate,
+      task.from_date,
+      task.periodStart,
+      task.period_start
     );
   }
 
@@ -2762,6 +2924,12 @@
     root.querySelector('[data-calendar-show-done]')?.addEventListener('click', () => {
       CALENDAR_STATE.showDone = !CALENDAR_STATE.showDone;
       renderEventCalendar(rootId);
+    });
+    root.querySelectorAll('[data-calendar-background-mode]').forEach((button) => {
+      button.addEventListener('click', () => {
+        setCalendarBackgroundMode(button.dataset.calendarBackgroundMode || 'static');
+        renderEventCalendar(rootId);
+      });
     });
     root.querySelectorAll('[data-calendar-platform-chip]').forEach((button) => {
       button.addEventListener('click', () => {

@@ -3,8 +3,10 @@
 
   if (window.__ALTEA_LAYER_JANITOR_20260623__) return;
   window.__ALTEA_LAYER_JANITOR_20260623__ = true;
+  const VERSION = '20260623-layer-janitor-owner-v1';
   let cascadeTimers = [];
   let cleanupQueued = false;
+  const TRANSIENT_SELECTOR = '.promo-modal-backdrop,.modal,.toast,.portal-loader,.route-loader,.pf-v4-drawer-back,.plb-v2-drawer-back,[data-pf-v4-drawer-back],[data-plb-v2-drawer-back]';
 
   const HEAVY_VIEW_IDS = [
     'view-dashboard',
@@ -41,14 +43,150 @@
     '.task-center-queues',
     '.task-center-hotfix',
     '[data-control-simple-root]',
-    '.section-title.control-simple-title'
+    '.section-title.control-simple-title',
+    '#portalDashboardExecutiveRoot',
+    '.dashboard-interactive-root',
+    '.dashboard-lux-loader',
+    '[data-dashboard-layout-root]',
+    '.price-workbench-root',
+    '.price-workbench-shell',
+    '.price-live-shell',
+    '.price-calendar-shell',
+    '.price-overlay-shell',
+    '.sku-plan-fact-shell',
+    '.sku-plan-fact-v1',
+    '.pf-v1-kpis',
+    '.pf-v1-platform-board',
+    '.repricer-stack',
+    '.repricer-card',
+    '.order-calc-shell',
+    '.order-logistics-legacy',
+    '.logistics-workbench',
+    '.oos-control-legacy',
+    '.oos-simple-board',
+    '.oos-old-table',
+    '.sku-contour-legacy',
+    '.sku-workspace-legacy',
+    '.iu-drr-legacy',
+    '.iu-drr-old-shell',
+    '[data-iu-drr-legacy]',
+    '.wb-rating-old',
+    '.rating-old-shell',
+    '[data-wb-rating-legacy]',
+    '.product-leaderboard-legacy',
+    '.leaderboard-old-shell',
+    '[data-product-leaderboard-legacy]',
+    '.launches-legacy',
+    '.launch-old-shell',
+    '[data-launches-legacy]',
+    '[data-executive-lite-panel]',
+    '.executive-lite-surface',
+    '.executive-lite-workbench'
   ].join(',');
 
-  const ACTIVE_CONTROL_LEGACY = '.control-simple-panel,[data-task-lazy-panel],.control-simple-platform-board,.control-simple-workstream-lane,.control-simple-workspace,.control-simple-create,.control-simple-filters,.control-simple-filterbar,.control-simple-queue,.control-simple-task,.task-center-queues,.task-center-hotfix,[data-control-simple-root],.section-title.control-simple-title';
-  const ACTIVE_CALENDAR_LEGACY = '.data-health-shell,[data-health-change-digest],[data-health-rules-form],.data-health-digest,.data-health-hero,.data-health-queue,.data-health-tech';
+  const ACTIVE_ROUTE_RULES = {
+    dashboard: {
+      rootId: 'view-dashboard',
+      owned: '.ceo-motion-v1[data-dashboard-ceo-motion-version],.ceo-motion-v1',
+      legacy: '#portalDashboardExecutiveRoot,.dashboard-interactive-root,.dashboard-lux-loader,[data-dashboard-layout-root]'
+    },
+    prices: {
+      rootId: 'view-prices',
+      owned: '.prices-v1-shell[data-prices-design="v1"],.prices-v1-shell',
+      legacy: '.price-workbench-root,.price-workbench-shell,.price-live-shell,.price-calendar-shell,.price-overlay-shell'
+    },
+    'sku-plan-fact': {
+      rootId: 'view-sku-plan-fact',
+      owned: '.pf-v4[data-planfact-v4],.pf-v4',
+      legacy: '.sku-plan-fact-shell,.pf-v1-kpis,.pf-v1-platform-board'
+    },
+    repricer: {
+      rootId: 'view-repricer',
+      owned: '[data-repricer-native-panel="1"],.repricer-native-simple .repricer-game-panel,.repricer-operator-panel[data-repricer-native-panel]',
+      legacy: '.repricer-stack,.repricer-card,[data-gtd-v2="repricer"],.workspace-gtd-v1[data-route="repricer"]'
+    },
+    order: {
+      rootId: 'view-order',
+      owned: '[data-altea-order-procurement],.altea-order-procurement,.portal-ui-hotfix-procurement',
+      legacy: '.order-calc-shell,.order-logistics-legacy,.logistics-workbench'
+    },
+    'oos-control': {
+      rootId: 'view-oos-control',
+      owned: '[data-oos-focus],.oos-focus,.oos-v4-filters,.oos-signal',
+      legacy: '.oos-control-legacy,.oos-simple-board,.oos-old-table,[data-gtd-v2="oos"]'
+    },
+    'sku-contour': {
+      rootId: 'view-sku-contour',
+      owned: '.sku-contour-focus-board,.sku-data-focus-board,[data-sku-contour-guide],[data-sku-contour-decision-cards]',
+      legacy: '[data-workspaces-gtd-v1],.workspace-gtd-v1,.sku-contour-legacy,.sku-workspace-legacy'
+    },
+    'iu-drr': {
+      rootId: 'view-iu-drr',
+      owned: '.iu-drr-v4-shell[data-iu-drr-design="v4"],.iu-drr-v4-shell,.iu-drr-v3-shell',
+      legacy: '.iu-drr-legacy,.iu-drr-old-shell,[data-iu-drr-legacy]'
+    },
+    'wb-rating': {
+      rootId: 'view-wb-rating',
+      owned: '.wb-rating-platforms,.wb-rating-report-table,.rating-planfact-card,.wb-rating-report-table-wrap',
+      legacy: '.wb-rating-old,.rating-old-shell,[data-wb-rating-legacy]'
+    },
+    'product-leaderboard': {
+      rootId: 'view-product-leaderboard',
+      owned: '.plb-motion-v2[data-leaderboard-motion-version],.plb-motion-v2,.plb-v2-stage',
+      legacy: '.product-leaderboard-legacy,.leaderboard-old-shell,[data-product-leaderboard-legacy]'
+    },
+    launches: {
+      rootId: 'view-launches',
+      owned: '.launch-calendar-shell,.launch-task-board,[data-launch-stage-board],.launch-calendar-game',
+      legacy: '.launches-legacy,.launch-old-shell,[data-launches-legacy]'
+    },
+    'data-health': {
+      rootId: 'view-data-health',
+      owned: '.promo-calendar-shell',
+      legacy: '.data-health-shell,[data-health-change-digest],[data-health-rules-form],.data-health-digest,.data-health-hero,.data-health-queue,.data-health-tech'
+    },
+    control: {
+      rootId: 'view-control',
+      owned: '[data-task-calendar-design-v1][data-task-kanban-v1],[data-task-calendar-design-v1]',
+      legacy: '.control-simple-panel,[data-task-lazy-panel],.control-simple-platform-board,.control-simple-workstream-lane,.control-simple-workspace,.control-simple-create,.control-simple-filters,.control-simple-filterbar,.control-simple-queue,.control-simple-task,.task-center-queues,.task-center-hotfix,[data-control-simple-root],.section-title.control-simple-title'
+    },
+    executive: {
+      rootId: 'view-executive',
+      owned: '[data-executive-v5]',
+      legacy: '[data-executive-lite-panel],.executive-lite-surface,.executive-lite-workbench'
+    }
+  };
+
+  function appState() {
+    return window.__alteaAppState || window.state || {};
+  }
+
+  function normalizeView(view) {
+    if (view === 'calendar') return 'data-health';
+    if (view === 'tasks' || view === 'task') return 'control';
+    if (view === 'sku-workspace' || view === 'sku-workbench') return 'sku-contour';
+    if (view === 'rating') return 'wb-rating';
+    if (view === 'leaderboard') return 'product-leaderboard';
+    return view;
+  }
+
+  function currentView() {
+    const hash = String(window.location.hash.replace('#', '') || '');
+    const active = String(appState().activeView || 'dashboard');
+    return normalizeView(hash || active);
+  }
+
+  function isInsideOwned(node, selector) {
+    try {
+      return Boolean(node.closest(selector));
+    } catch {
+      return false;
+    }
+  }
 
   function cleanupLegacyNodes() {
     document.querySelectorAll(LEGACY_SELECTORS).forEach((node) => {
+      if (node.matches?.(TRANSIENT_SELECTOR)) return;
       if (!node.closest('.view.active')) node.remove();
     });
   }
@@ -64,29 +202,17 @@
   }
 
   function cleanupActiveOwnedViews() {
-    const controlRoot = document.getElementById('view-control');
-    if (controlRoot?.classList.contains('active')) {
-      const hasKanban = Boolean(controlRoot.querySelector('[data-task-calendar-design-v1],[data-task-kanban-v1]'));
-      if (hasKanban) {
-        controlRoot.querySelectorAll(ACTIVE_CONTROL_LEGACY).forEach((node) => {
-          if (!node.closest('[data-task-calendar-design-v1],[data-task-kanban-v1]')) node.remove();
-        });
-      } else if (typeof window.renderControlCenter === 'function') {
-        window.setTimeout(() => window.renderControlCenter(), 0);
-      }
-    }
-
-    const calendarRoot = document.getElementById('view-data-health');
-    if (calendarRoot?.classList.contains('active')) {
-      const hasCalendar = Boolean(calendarRoot.querySelector('.promo-calendar-shell'));
-      if (hasCalendar) {
-        calendarRoot.querySelectorAll(ACTIVE_CALENDAR_LEGACY).forEach((node) => {
-          if (!node.closest('.promo-calendar-shell')) node.remove();
-        });
-      } else if (typeof window.renderPortalDataHealth === 'function') {
-        window.setTimeout(() => window.renderPortalDataHealth('view-data-health'), 0);
-      }
-    }
+    const rule = ACTIVE_ROUTE_RULES[currentView()];
+    if (!rule) return;
+    const root = document.getElementById(rule.rootId);
+    if (!root?.classList.contains('active')) return;
+    const owned = root.querySelector(rule.owned);
+    if (!owned) return;
+    root.querySelectorAll(rule.legacy).forEach((node) => {
+      if (node.matches?.(TRANSIENT_SELECTOR)) return;
+      if (!isInsideOwned(node, rule.owned)) node.remove();
+    });
+    root.dataset.layerJanitorOwner = VERSION;
   }
 
   function cleanup() {
@@ -106,7 +232,7 @@
 
   function cascade() {
     cascadeTimers.forEach((timer) => window.clearTimeout(timer));
-    cascadeTimers = [0, 120, 420, 1200, 2800, 6200, 12000, 22000].map((delay) => {
+    cascadeTimers = [0, 160, 1000, 5000, 12000, 24000].map((delay) => {
       return window.setTimeout(cleanup, delay);
     });
   }

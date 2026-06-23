@@ -6,7 +6,7 @@
 
   const ROOT_ID = 'view-sku-plan-fact';
   const STORE_KEY = 'altea.planFact.generalToDetail.v4';
-  const VERSION = '20260623-planfact-gtd-v4-charts';
+  const VERSION = '20260623-planfact-gtd-v4-standalone1';
   const MODES = [
     ['general', 'Общее'],
     ['lfl', 'Like-for-like'],
@@ -2061,16 +2061,38 @@
     });
   }
 
+  function renderStandaloneFallback(host, model) {
+    if (!host || !model) return;
+    const nextSignature = shellSignature(model);
+    const current = host.querySelector('[data-planfact-v4]');
+    if (current && current.dataset.pfV4Signature === nextSignature) {
+      bindRenderedControls(host);
+      return;
+    }
+    const transients = Array.from(host.querySelectorAll('[data-pf-v4-drawer-back],.pf-v4-drawer-back'));
+    host.innerHTML = renderShell(model);
+    transients.forEach((node) => host.appendChild(node));
+    const mount = host.querySelector('[data-planfact-v4]');
+    if (mount) mount.dataset.pfV4Signature = nextSignature;
+    lastShellSignature = nextSignature;
+    bindRenderedControls(host);
+  }
+
   function enhance() {
     if (suppressEnhance) return;
     const host = root();
-    if (!host || !host.querySelector('[data-plan-fact-design="v1"]')) return;
+    if (!host) return;
     installActiveObserver();
     ensureStyle();
     bind(host);
+    const hasNativePlanFact = Boolean(host.querySelector('[data-plan-fact-design="v1"]'));
     const model = buildModel();
     if (!model) {
       ensureFallbackModelData().then((data) => { if (data) enhance(); });
+      return;
+    }
+    if (!hasNativePlanFact) {
+      renderStandaloneFallback(host, model);
       return;
     }
     host.querySelector('.pf-v1-kpis')?.remove();
@@ -2132,8 +2154,10 @@
 
   function needsRestore(host = root()) {
     if (!host || !host.classList.contains('active')) return false;
+    const hasV4 = Boolean(host.querySelector('[data-planfact-v4]'));
+    if (!hasV4) return true;
     if (!host.querySelector('[data-plan-fact-design="v1"]')) return false;
-    return !host.querySelector('[data-planfact-v4]') || Boolean(host.querySelector('.pf-v1-kpis,.pf-v1-platform-board'));
+    return Boolean(host.querySelector('.pf-v1-kpis,.pf-v1-platform-board'));
   }
 
   function queueObserverRestore() {

@@ -5,10 +5,52 @@
 }
 
 .promo-calendar-shell {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: grid;
   gap: 14px;
   max-width: 100%;
   --calendar-accent: #e7c46b;
+}
+
+.promo-calendar-shell > :not(.promo-calendar-bg) {
+  position: relative;
+  z-index: 1;
+}
+
+.promo-calendar-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.promo-calendar-bg-static {
+  background:
+    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--calendar-accent) 12%, transparent), transparent 30%),
+    radial-gradient(circle at 78% 18%, rgba(108, 76, 255, .12), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, .026), rgba(0, 0, 0, .18));
+  opacity: .86;
+}
+
+.promo-calendar-bg-motion video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .2;
+  filter: saturate(.78) contrast(1.08);
+}
+
+.promo-calendar-bg-motion::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 20%, transparent, rgba(0, 0, 0, .62) 52%),
+    linear-gradient(135deg, rgba(0, 0, 0, .52), rgba(18, 10, 18, .7));
 }
 
 .promo-calendar-command {
@@ -67,11 +109,43 @@
   gap: 8px;
 }
 
+.promo-calendar-bg-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid color-mix(in srgb, var(--calendar-accent) 18%, rgba(255, 255, 255, .1));
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
+}
+
+.promo-calendar-bg-switch button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 6px 10px;
+  text-transform: uppercase;
+}
+
+.promo-calendar-bg-switch button.active {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .18), transparent 58%),
+    color-mix(in srgb, var(--calendar-accent) 58%, rgba(0, 0, 0, .22));
+  color: #15100a;
+}
+
 .promo-calendar-toolbar {
   display: grid;
   grid-template-columns: minmax(126px, .5fr) minmax(126px, .5fr) minmax(260px, 1.5fr);
-  gap: 10px;
-  padding: 12px;
+  gap: 8px;
+  padding: 8px 10px;
   border: 1px solid color-mix(in srgb, var(--calendar-accent) 18%, var(--line));
   border-radius: 8px;
   background:
@@ -93,12 +167,12 @@
 .promo-event-form textarea,
 .promo-sku-search input {
   width: 100%;
-  min-height: 40px;
+  min-height: 36px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(0, 0, 0, .28);
   color: var(--text);
-  padding: 9px 10px;
+  padding: 7px 10px;
   font: inherit;
 }
 
@@ -185,7 +259,7 @@
 
 .promo-calendar-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 10px;
 }
 
@@ -206,6 +280,13 @@
 .promo-calendar-stats button.active {
   border-color: color-mix(in srgb, var(--calendar-accent) 58%, rgba(255, 255, 255, .18));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .075), 0 0 0 1px color-mix(in srgb, var(--calendar-accent) 18%, transparent);
+}
+
+.promo-calendar-stats .promo-task-coverage-stat {
+  border-color: color-mix(in srgb, #5dcb94 38%, rgba(255, 255, 255, .12));
+  background:
+    linear-gradient(135deg, rgba(93, 203, 148, .13), rgba(237, 206, 138, .06)),
+    rgba(0, 0, 0, .24);
 }
 
 .promo-calendar-stats span,
@@ -1260,27 +1341,55 @@
 .promo-calendar-toolbar {
   grid-template-columns: minmax(260px, 1.2fr) minmax(126px, .5fr) minmax(126px, .5fr) minmax(260px, 1.4fr);
   position: sticky;
-  top: 76px;
+  top: 58px;
   z-index: 6;
+  margin-top: -6px;
   backdrop-filter: blur(16px);
+}
+
+.promo-calendar-toolbar label {
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+}
+
+.promo-calendar-toolbar label span {
+  min-width: 36px;
+  font-size: 10px;
+  text-align: right;
+}
+
+.promo-calendar-toolbar input,
+.promo-calendar-toolbar select {
+  height: 34px;
+  min-height: 34px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .promo-calendar-mode-rail {
   display: flex;
-  flex-wrap: wrap;
-  align-items: end;
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.promo-calendar-mode-rail::-webkit-scrollbar {
+  display: none;
 }
 
 .promo-calendar-mode-rail button,
 .promo-undated-task {
+  flex: 0 0 auto;
   border: 1px solid color-mix(in srgb, var(--calendar-accent) 22%, var(--calendar-line));
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(255, 255, 255, .055), transparent 56%), rgba(0, 0, 0, .34);
   color: var(--text);
   cursor: pointer;
-  min-height: 38px;
-  padding: 9px 12px;
+  min-height: 34px;
+  padding: 7px 11px;
   transition: border-color .16s ease, transform .16s ease, background .16s ease;
 }
 
@@ -1503,5 +1612,17 @@
   .promo-form-row,
   .promo-sku-top {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-calendar-bg-motion video {
+    display: none;
+  }
+
+  .promo-calendar-bg-motion {
+    background:
+      radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--calendar-accent) 12%, transparent), transparent 30%),
+      linear-gradient(135deg, rgba(255, 255, 255, .026), rgba(0, 0, 0, .18));
   }
 }

@@ -6,7 +6,7 @@
 
   const ROOT_ID = 'view-sku-plan-fact';
   const STORE_KEY = 'altea.planFact.generalToDetail.v4';
-  const VERSION = '20260622-planfact-gtd-v4-history';
+  const VERSION = '20260623-planfact-gtd-v4-charts';
   const MODES = [
     ['general', 'Общее'],
     ['lfl', 'Like-for-like'],
@@ -157,7 +157,24 @@
       const parsed = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
       if (parsed && MODES.some(([key]) => key === parsed.mode)) return parsed;
     } catch (_) {}
-    return { mode: 'general' };
+    return { mode: 'general', selectedDate: '', marginMetric: 'pct', marginGroup: 'market', hiddenSeries: {} };
+  }
+
+  function planFactUi() {
+    const current = modeState();
+    return {
+      mode: current.mode || 'general',
+      selectedDate: current.selectedDate || '',
+      marginMetric: current.marginMetric === 'rub' ? 'rub' : 'pct',
+      marginGroup: current.marginGroup || 'market',
+      hiddenSeries: current.hiddenSeries || {}
+    };
+  }
+
+  function updatePlanFactUi(patch) {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ ...modeState(), ...(patch || {}) }));
+    } catch (_) {}
   }
 
   function setMode(mode) {
@@ -658,7 +675,7 @@
     const periodStart = String(model?.periodStart || model?.monthStart || '').slice(0, 10);
     const periodEnd = String(model?.periodEnd || model?.selectedDate || model?.maxFactDate || '').slice(0, 10);
     views.forEach((view) => {
-      const daily = rowDailySource(view);
+      const daily = rowHistorySource(view, model);
       if (!daily.length) return;
       daily.forEach((item) => {
         const date = String(item?.date || item?.day || item?.label || '').slice(0, 10);
@@ -681,7 +698,11 @@
           clientPriceWeighted: 0,
           clientPriceWeight: 0,
           marginWeighted: 0,
-          marginWeight: 0
+          marginWeight: 0,
+          marginRub: 0,
+          marginRubFound: false,
+          activeSkuCount: 0,
+          sourceQuality: 'missing'
         };
         const fact = dailyNumber(item, ['factRevenue', 'revenue', 'sales', 'turnover', 'amount', 'fact', 'value']);
         const units = dailyNumber(item, ['factUnits', 'units', 'ordersUnits', 'orders', 'ordered', 'buyouts', 'deliveredUnits']);
@@ -689,6 +710,7 @@
         const clientPrice = dailyClientPrice(item);
         const marginPct = dailyMarginPct(item);
         const valueWeight = fact || units || 1;
+        if (fact || units || price !== null || clientPrice !== null || marginPct !== null) current.activeSkuCount += 1;
         current.fact += fact;
         current.plan += dailyNumber(item, ['planRevenue', 'plan', 'planToDateRevenue']);
         current.reach += dailyNumber(item, ['reach', 'views', 'impressions']);
@@ -709,6 +731,13 @@
         if (marginPct !== null) {
           current.marginWeighted += marginPct * valueWeight;
           current.marginWeight += valueWeight;
+          if (fact) {
+            current.marginRub += fact * marginPct;
+            current.marginRubFound = true;
+            current.sourceQuality = 'derived';
+          } else {
+            current.sourceQuality = current.sourceQuality === 'missing' ? 'daily' : current.sourceQuality;
+          }
         }
         map.set(date, current);
       });
@@ -718,6 +747,14 @@
       day.price = day.priceWeight ? day.priceWeighted / day.priceWeight : null;
       day.clientPrice = day.clientPriceWeight ? day.clientPriceWeighted / day.clientPriceWeight : null;
       day.marginPct = day.marginWeight ? day.marginWeighted / day.marginWeight : null;
+      day.marginRub = day.marginRubFound ? day.marginRub : null;
+      day.factRevenue = day.fact;
+      day.planRevenue = day.plan;
+      day.previousRevenue = null;
+      day.planMarginPct = null;
+      day.adSpend = day.kzCost || 0;
+      day.drr = ratio(day.adSpend, day.factRevenue);
+      day.sourceQuality = day.marginWeight ? day.sourceQuality : 'missing';
     });
     if (days.some((day) => day.plan > 0)) return days;
     if (!days.length) return days;
@@ -739,7 +776,296 @@
     `;
   }
 
+  function pfCompactMoney(value) {
+    const parsed = numberOrNull(value);
+    if (parsed === null) return '—';
+    const abs = Math.abs(parsed);
+    if (abs >= 1000000) return `${(parsed / 1000000).toLocaleString('ru-RU', { maximumFractionDigits: 1 })} млн ₽`;
+    if (abs >= 1000) return `${(parsed / 1000).toLocaleString('ru-RU', { maximumFractionDigits: 0 })} тыс. ₽`;
+    return fmtMoney(parsed);
+  }
+
+  function pfSvgDomain(values, pad = 0.12, floorZero = false) {
+    const clean = values.map((value) => numberOrNull(value)).filter((value) => value !== null);
+    if (!clean.length) return { min: 0, max: 1 };
+    const rawMin = Math.min(...clean);
+    const min = floorZero && rawMin >= 0 ? 0 : Math.min(0, rawMin);
+    const max = Math.max(...clean);
+    const spread = Math.max(1, max - min);
+    return { min: floorZero && min === 0 ? 0 : min - spread * pad, max: max + spread * pad };
+  }
+
+  function pfScaleY(value, domain, top, height) {
+    const parsed = numberOrNull(value);
+    if (parsed === null) return top + height;
+    const span = Math.max(1, domain.max - domain.min);
+    return top + height - ((parsed - domain.min) / span) * height;
+  }
+
+  function pfLinePath(points) {
+    return points
+      .filter((point) => point && numberOrNull(point.y) !== null)
+      .map((point, index) => `${index ? 'L' : 'M'}${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
+      .join(' ');
+  }
+
+  function pfAreaPath(points, baseY) {
+    const clean = points.filter((point) => point && numberOrNull(point.y) !== null);
+    if (!clean.length) return '';
+    return `${pfLinePath(clean)} L${clean[clean.length - 1].x.toFixed(1)} ${baseY.toFixed(1)} L${clean[0].x.toFixed(1)} ${baseY.toFixed(1)} Z`;
+  }
+
+  function pfDailyPointForView(view, date, model) {
+    const item = rowHistorySource(view, model).find((entry) => String(entry?.date || entry?.day || entry?.label || '').slice(0, 10) === date);
+    if (!item) return null;
+    const fact = dailyNumber(item, ['factRevenue', 'revenue', 'sales', 'turnover', 'amount', 'fact', 'value']);
+    const plan = dailyNumber(item, ['planRevenue', 'plan', 'planToDateRevenue']);
+    const units = dailyNumber(item, ['factUnits', 'units', 'ordersUnits', 'orders', 'ordered', 'buyouts', 'deliveredUnits']);
+    const marginPct = dailyMarginPct(item);
+    const marginRub = fact && marginPct !== null ? fact * marginPct : null;
+    return { view, date, fact, plan, units, gap: fact - plan, marginPct, marginRub };
+  }
+
+  function buildPlanFactOverviewModel(model, views) {
+    const aggregateTotals = aggregate(views);
+    const totals = model?.totals?.factRevenue !== undefined ? { ...aggregateTotals, ...model.totals } : aggregateTotals;
+    const days = buildDaily(views, model);
+    const ui = planFactUi();
+    const selectedDate = days.some((day) => day.date === ui.selectedDate)
+      ? ui.selectedDate
+      : (days[days.length - 1]?.date || '');
+    const selectedDay = days.find((day) => day.date === selectedDate) || days[days.length - 1] || null;
+    const dayViews = selectedDate ? views.map((view) => pfDailyPointForView(view, selectedDate, model)).filter(Boolean) : [];
+    const dayDrivers = dayViews
+      .filter((point) => point.fact || point.plan)
+      .sort((a, b) => Math.abs(b.gap || 0) - Math.abs(a.gap || 0));
+    const positive = dayDrivers.filter((point) => point.gap > 0).slice(0, 5);
+    const negative = dayDrivers.filter((point) => point.gap < 0).slice(0, 5);
+    const platformGaps = new Map();
+    views.forEach((view) => {
+      const key = normalizedPlatform(view.platform || 'all');
+      const current = platformGaps.get(key) || { platform: key, gap: 0, count: 0 };
+      current.gap += view.gapToDate || 0;
+      current.count += 1;
+      platformGaps.set(key, current);
+    });
+    const platformRows = Array.from(platformGaps.values());
+    const bestPlatform = [...platformRows].sort((a, b) => b.gap - a.gap)[0] || null;
+    const worstPlatform = [...platformRows].sort((a, b) => a.gap - b.gap)[0] || null;
+    const marginRisks = views
+      .filter((view) => view.marginPct !== null && view.planMarginPct !== null && view.marginPct < view.planMarginPct - 0.03)
+      .sort((a, b) => (a.marginPct - a.planMarginPct) - (b.marginPct - b.planMarginPct));
+    return { model, views, totals, days, ui, selectedDate, selectedDay, dayDrivers, positive, negative, bestPlatform, worstPlatform, marginRisks };
+  }
+
+  function renderPlanFactTooltip(day) {
+    const fact = day.factRevenue ?? day.fact;
+    const plan = day.planRevenue ?? day.plan;
+    const completion = ratio(fact, plan);
+    const gap = (fact || 0) - (plan || 0);
+    return [
+      shortDate(day.date),
+      `Факт: ${fmtMoney(fact)}`,
+      `План: ${fmtMoney(plan)}`,
+      `Выполнение: ${fmtPct(completion)}`,
+      `Gap: ${fmtSignedMoney(gap)}`,
+      `Активных SKU: ${fmtInt(day.activeSkuCount || 0)}`,
+      `Источник: ${day.sourceQuality || 'daily'}`
+    ].join('\n');
+  }
+
+  function renderPlanFactRevenueChart(days) {
+    if (!days.length) return '<div class="pf-v4-empty">Нет дневной истории по текущему срезу. Таблица ниже остается рабочей и показывает план/факт по SKU.</div>';
+    const ui = planFactUi();
+    const selectedDate = days.some((day) => day.date === ui.selectedDate) ? ui.selectedDate : days[days.length - 1].date;
+    const w = 980, h = 360, left = 66, right = 24, top = 28, bottom = 46;
+    const plotW = w - left - right;
+    const plotH = h - top - bottom;
+    const step = days.length > 1 ? plotW / (days.length - 1) : plotW;
+    const barGap = 6;
+    const barW = Math.max(10, Math.min(30, plotW / Math.max(days.length, 1) - barGap));
+    const domain = pfSvgDomain(days.flatMap((day) => [day.factRevenue ?? day.fact, day.planRevenue ?? day.plan, day.previousRevenue]), 0.12, true);
+    const planPoints = days
+      .map((day, index) => ({ x: left + index * step, y: pfScaleY(day.planRevenue ?? day.plan, domain, top, plotH), value: day.planRevenue ?? day.plan }))
+      .filter((point) => numberOrNull(point.value) !== null && point.value > 0);
+    const previousPoints = days
+      .map((day, index) => ({ x: left + index * step, y: pfScaleY(day.previousRevenue, domain, top, plotH), value: day.previousRevenue }))
+      .filter((point) => numberOrNull(point.value) !== null);
+    const selectedIndex = Math.max(0, days.findIndex((day) => day.date === selectedDate));
+    const yTicks = Array.from({ length: 5 }, (_, index) => domain.min + (domain.max - domain.min) * (index / 4));
+    const xStep = Math.max(1, Math.ceil(days.length / 8));
+    return `
+      <div class="pf-v4-svg-shell" data-pf-v4-chart="revenue">
+        <svg class="pf-v4-svg-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="План-факт выручки по дням">
+          <defs><linearGradient id="pf-v4-revenue-bar" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#80e5a2"/><stop offset="1" stop-color="#d9b75d"/></linearGradient></defs>
+          <g class="pf-v4-svg-grid">
+            ${yTicks.map((tick) => {
+              const y = pfScaleY(tick, domain, top, plotH);
+              return `<line x1="${left}" x2="${w - right}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"></line><text class="pf-v4-svg-y" x="${left - 12}" y="${(y + 4).toFixed(1)}">${escapeHtml(pfCompactMoney(tick))}</text>`;
+            }).join('')}
+          </g>
+          ${previousPoints.length > 1 ? `<path class="pf-v4-previous-line" d="${pfLinePath(previousPoints)}"></path>` : ''}
+          ${planPoints.length > 1 ? `<path class="pf-v4-plan-line" d="${pfLinePath(planPoints)}"></path>` : ''}
+          ${days.map((day, index) => {
+            const value = day.factRevenue ?? day.fact;
+            const parsed = numberOrNull(value);
+            if (parsed === null) return '';
+            const x = left + index * step - barW / 2;
+            const y = pfScaleY(parsed, domain, top, plotH);
+            const barH = Math.max(0, top + plotH - y);
+            const active = day.date === selectedDate ? ' is-active' : '';
+            return `
+              <g class="pf-v4-day-hit${active}" data-pf-v4-day="${escapeHtml(day.date)}" tabindex="0" role="button" aria-label="${escapeHtml(shortDate(day.date))}">
+                <title>${escapeHtml(renderPlanFactTooltip(day))}</title>
+                <rect class="pf-v4-svg-bar" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" rx="7"></rect>
+                <rect class="pf-v4-hit-rect" x="${(left + index * step - Math.max(16, step / 2)).toFixed(1)}" y="${top}" width="${Math.max(32, step).toFixed(1)}" height="${plotH}"></rect>
+              </g>`;
+          }).join('')}
+          ${selectedIndex >= 0 ? `<line class="pf-v4-crosshair" x1="${(left + selectedIndex * step).toFixed(1)}" x2="${(left + selectedIndex * step).toFixed(1)}" y1="${top}" y2="${top + plotH}"></line>` : ''}
+          ${days.map((day, index) => index % xStep === 0 || index === days.length - 1 ? `<text class="pf-v4-svg-x" x="${(left + index * step).toFixed(1)}" y="${h - 16}">${escapeHtml(shortDate(day.date))}</text>` : '').join('')}
+        </svg>
+        <div class="pf-v4-legend">
+          <span><i class="fact"></i>факт</span>
+          <span><i class="plan"></i>план</span>
+          ${previousPoints.length > 1 ? '<span><i class="previous"></i>предыдущий период</span>' : ''}
+        </div>
+      </div>`;
+  }
+
+  function renderPlanFactMarginChart(overview) {
+    const days = overview.days || [];
+    const ui = planFactUi();
+    const metric = ui.marginMetric === 'rub' ? 'rub' : 'pct';
+    const selectedDate = overview.selectedDate || days[days.length - 1]?.date || '';
+    const pointsSource = days
+      .map((day) => ({ ...day, value: metric === 'rub' ? day.marginRub : day.marginPct }))
+      .filter((day) => numberOrNull(day.value) !== null && day.sourceQuality !== 'snapshot');
+    const marginValuesPct = days.map((day) => day.marginPct).filter((value) => numberOrNull(value) !== null);
+    const marginRange = marginValuesPct.length ? `${fmtPct(Math.min(...marginValuesPct))} — ${fmtPct(Math.max(...marginValuesPct))}` : '—';
+    const side = `
+      <aside class="pf-v4-margin-side">
+        <span>Сводка</span>
+        <strong>${escapeHtml(metric === 'rub' ? fmtMoney(overview.totals.marginRub) : fmtPct(overview.totals.marginPct))}</strong>
+        <em>выполнение ${escapeHtml(fmtPct(overview.totals.completionToDate))}</em>
+        <em>ДРР ${escapeHtml(fmtPct(overview.totals.drr))}</em>
+        <em>диапазон ${escapeHtml(marginRange)}</em>
+        <em>${escapeHtml(fmtInt(pointsSource.length))} дней с дневной маржой</em>
+      </aside>`;
+    if (!pointsSource.length) {
+      return `<div class="pf-v4-margin-layout" id="pf-v4-margin-chart"><div class="pf-v4-empty">Нет дневной истории маржи. Snapshot оставлен в KPI, но линия по дням не рисуется.</div>${side}</div>`;
+    }
+    const w = 760, h = 320, left = 58, right = 18, top = 26, bottom = 44;
+    const plotW = w - left - right;
+    const plotH = h - top - bottom;
+    const domain = pfSvgDomain(pointsSource.map((point) => point.value), 0.18);
+    const byDate = new Map(pointsSource.map((point) => [point.date, point]));
+    const step = days.length > 1 ? plotW / (days.length - 1) : plotW;
+    const linePoints = days.map((day, index) => {
+      const point = byDate.get(day.date);
+      return point ? { x: left + index * step, y: pfScaleY(point.value, domain, top, plotH), day: point } : null;
+    }).filter(Boolean);
+    const planPoints = metric === 'pct'
+      ? days.map((day, index) => ({ x: left + index * step, y: pfScaleY(day.planMarginPct, domain, top, plotH), value: day.planMarginPct })).filter((point) => numberOrNull(point.value) !== null)
+      : [];
+    const selectedIndex = Math.max(0, days.findIndex((day) => day.date === selectedDate));
+    const yTicks = Array.from({ length: 4 }, (_, index) => domain.min + (domain.max - domain.min) * (index / 3));
+    const xStep = Math.max(1, Math.ceil(days.length / 7));
+    return `
+      <div class="pf-v4-margin-layout" id="pf-v4-margin-chart">
+        <div class="pf-v4-svg-shell" data-pf-v4-chart="margin">
+          <div class="pf-v4-chart-tabs">
+            <button type="button" data-pf-v4-margin-metric="pct" aria-pressed="${metric === 'pct' ? 'true' : 'false'}">Маржа %</button>
+            <button type="button" data-pf-v4-margin-metric="rub" aria-pressed="${metric === 'rub' ? 'true' : 'false'}">Маржа ₽</button>
+            <button type="button" data-pf-v4-margin-focus="market">По площадкам</button>
+            <button type="button" data-pf-v4-margin-focus="sku">По SKU</button>
+          </div>
+          <svg class="pf-v4-svg-chart pf-v4-margin-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Маржа и выполнение по дням">
+            <defs><linearGradient id="pf-v4-margin-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#78dea0" stop-opacity=".32"/><stop offset="1" stop-color="#78dea0" stop-opacity="0"/></linearGradient></defs>
+            <g class="pf-v4-svg-grid">
+              ${yTicks.map((tick) => {
+                const y = pfScaleY(tick, domain, top, plotH);
+                const label = metric === 'rub' ? pfCompactMoney(tick) : fmtPct(tick);
+                return `<line x1="${left}" x2="${w - right}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"></line><text class="pf-v4-svg-y" x="${left - 12}" y="${(y + 4).toFixed(1)}">${escapeHtml(label)}</text>`;
+              }).join('')}
+            </g>
+            ${linePoints.length > 1 ? `<path class="pf-v4-margin-area" d="${pfAreaPath(linePoints, top + plotH)}"></path><path class="pf-v4-margin-line" d="${pfLinePath(linePoints)}"></path>` : ''}
+            ${planPoints.length > 1 ? `<path class="pf-v4-plan-line thin" d="${pfLinePath(planPoints)}"></path>` : ''}
+            ${linePoints.map((point) => `
+              <g class="pf-v4-day-hit${point.day.date === selectedDate ? ' is-active' : ''}" data-pf-v4-day="${escapeHtml(point.day.date)}" tabindex="0" role="button">
+                <title>${escapeHtml(renderPlanFactTooltip(point.day))}</title>
+                <circle class="pf-v4-margin-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="${point.day.date === selectedDate ? 5 : 3.5}"></circle>
+              </g>`).join('')}
+            ${selectedIndex >= 0 ? `<line class="pf-v4-crosshair" x1="${(left + selectedIndex * step).toFixed(1)}" x2="${(left + selectedIndex * step).toFixed(1)}" y1="${top}" y2="${top + plotH}"></line>` : ''}
+            ${days.map((day, index) => index % xStep === 0 || index === days.length - 1 ? `<text class="pf-v4-svg-x" x="${(left + index * step).toFixed(1)}" y="${h - 16}">${escapeHtml(shortDate(day.date))}</text>` : '').join('')}
+          </svg>
+        </div>
+        ${side}
+      </div>`;
+  }
+
+  function renderPlanFactDayDrivers(overview) {
+    const rows = [...overview.negative, ...overview.positive].slice(0, 10);
+    if (!rows.length) return renderDrivers(overview.views);
+    return rows.map((point, index) => `
+      <button class="pf-v4-driver" type="button" data-pf-v4-sku="${escapeHtml(point.view.key)}">
+        <i>${index + 1}</i>
+        <span><b>${escapeHtml(point.view.title)}</b><em>${escapeHtml(shortDate(point.date))} · ${escapeHtml(point.view.owner)}</em></span>
+        <strong class="${point.gap >= 0 ? 'positive' : 'negative'}">${escapeHtml(fmtSignedMoney(point.gap))}</strong>
+      </button>`).join('');
+  }
+
+  function renderPlanFactInsights(overview) {
+    const best = overview.bestPlatform;
+    const worst = overview.worstPlatform;
+    const margin = overview.marginRisks[0];
+    const underCount = aggregate(overview.views).underPlan;
+    return `
+      <div class="pf-v4-insights">
+        <button type="button" data-pf-v4-platform="${escapeHtml(best?.platform || 'all')}"><span>Где перевыполнение</span><strong>${escapeHtml(best ? `${platformLabel(best.platform)} · ${fmtSignedMoney(best.gap)}` : '—')}</strong><em>${escapeHtml(best ? `${fmtInt(best.count)} SKU в текущем фильтре` : 'Нет положительного вклада')}</em></button>
+        <button type="button" data-pf-v4-platform="${escapeHtml(worst?.platform || 'all')}"><span>Где недобор</span><strong class="negative">${escapeHtml(worst ? `${platformLabel(worst.platform)} · ${fmtSignedMoney(worst.gap)}` : '—')}</strong><em>Переход к площадке и строкам SKU</em></button>
+        <button type="button" data-pf-v4-margin-focus="sku"><span>Где теряем маржу</span><strong class="negative">${escapeHtml(margin ? margin.title : 'Нет критичного провала')}</strong><em>${escapeHtml(margin ? `${fmtPct(margin.marginPct)} против плана ${fmtPct(margin.planMarginPct)}` : 'Плановая маржа не нарушена')}</em></button>
+        <button type="button" data-pf-v4-scroll-table><span>Задачи на сегодня</span><strong>${escapeHtml(fmtInt(underCount))} SKU ниже плана</strong><em>Открыть полную таблицу с текущими фильтрами</em></button>
+      </div>`;
+  }
+
+  function renderPlanFactGeneralV4(model, views) {
+    const overview = buildPlanFactOverviewModel(model, views);
+    const totals = overview.totals;
+    const underPlan = aggregate(views).underPlan;
+    return `
+      <div class="pf-v4-kpis">
+        ${renderKpi('Выполнение к дате', fmtPct(totals.completionToDate), `факт ${fmtMoney(totals.factRevenue)}`, totals.completionToDate >= 1 ? '#74c99a' : '#e0b760', totals.completionToDate, 'data-pf-v4-scroll-table')}
+        ${renderKpi('Факт выручки', fmtMoney(totals.factRevenue), `план ${fmtMoney(totals.planToDateRevenue)}`, MARKET_COLORS.all, totals.completionToDate, 'data-pf-v4-scroll-table')}
+        ${renderKpi('Разрыв к дате', fmtSignedMoney(totals.gapToDate), `${fmtInt(underPlan)} SKU ниже плана`, totals.gapToDate >= 0 ? '#74c99a' : '#e7786b', null, 'data-pf-v4-scroll-table')}
+        ${renderKpi('Маржа', fmtPct(totals.marginPct), `план ${fmtPct(totals.planMarginPct)}`, '#74c99a', totals.marginPct, 'data-pf-v4-margin-focus="chart"')}
+        ${renderKpi('Реклама / ДРР', fmtMoney(totals.adSpend), `ДРР ${fmtPct(totals.drr)} · план ${fmtPct(totals.planDrr)}`, '#e0b760', totals.drr)}
+        ${renderKpi('SKU ниже плана', fmtInt(underPlan), 'клик ведет к детализации', '#ff8b78', ratio(underPlan, views.length || 1), 'data-pf-v4-scroll-table')}
+      </div>
+      <div class="pf-v4-chart-grid">
+        <article class="pf-v4-panel pf-v4-chart-panel">
+          <div class="pf-v4-panel-head"><div><span>Дневная выручка</span><h3>Факт против плана</h3></div><em>${escapeHtml(model?.periodStart || '—')} — ${escapeHtml(model?.periodEnd || model?.selectedDate || '—')}</em></div>
+          ${renderPlanFactRevenueChart(overview.days)}
+        </article>
+        <article class="pf-v4-panel pf-v4-chart-panel">
+          <div class="pf-v4-panel-head"><div><span>Маржа и выполнение</span><h3>Динамика без snapshot-линии</h3></div><em>${escapeHtml(overview.selectedDate ? `выбран день ${shortDate(overview.selectedDate)}` : 'день не выбран')}</em></div>
+          ${renderPlanFactMarginChart(overview)}
+        </article>
+      </div>
+      ${renderPlanFactInsights(overview)}
+      <div class="pf-v4-split">
+        <article class="pf-v4-panel">
+          <div class="pf-v4-panel-head"><div><span>Drill-down</span><h3>Что объясняет разрыв ${escapeHtml(overview.selectedDate ? shortDate(overview.selectedDate) : '')}</h3></div><button type="button" data-pf-v4-scroll-table>Открыть SKU</button></div>
+          <div class="pf-v4-drivers">${renderPlanFactDayDrivers(overview)}</div>
+        </article>
+        <article class="pf-v4-panel">
+          <div class="pf-v4-panel-head"><div><span>Площадки</span><h3>Клик пересчитывает срез</h3></div></div>
+          <div class="pf-v4-platform-grid">${renderPlatformCards(model, views)}</div>
+        </article>
+      </div>`;
+  }
+
   function renderDailyChart(days) {
+    return renderPlanFactRevenueChart(days);
     if (!days.length) {
       return '<div class="pf-v4-empty">Дневная история по текущему срезу не найдена. Таблица ниже остается рабочей и показывает план/факт по SKU.</div>';
     }
@@ -795,6 +1121,7 @@
   }
 
   function renderGeneral(model, views) {
+    return renderPlanFactGeneralV4(model, views);
     const totals = model?.totals?.factRevenue !== undefined
       ? {
         ...aggregate(views),
@@ -1205,8 +1532,12 @@
     const filters = model?.filters || {};
     const totals = model?.totals || {};
     const rows = visibleRows(model);
+    const ui = planFactUi();
     return JSON.stringify({
       mode: activeMode(),
+      selectedDate: ui.selectedDate || '',
+      marginMetric: ui.marginMetric || 'pct',
+      marginGroup: ui.marginGroup || 'market',
       platform: normalizedPlatform(filters.platform || 'all'),
       owner: filters.owner || 'all',
       status: filters.status || '',
@@ -1262,6 +1593,44 @@
       #${ROOT_ID} .pf-v4-day-bars i{height:var(--plan);background:rgba(219,199,163,.28)}
       #${ROOT_ID} .pf-v4-day-bars b{height:var(--fact);background:linear-gradient(180deg,#f1d78b,#d5a34c)}
       #${ROOT_ID} .pf-v4-day em{font-style:normal;font-size:10px}
+      #${ROOT_ID} .pf-v4-chart-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:9px;margin-top:9px;align-items:stretch}
+      #${ROOT_ID} .pf-v4-chart-panel{min-width:0;overflow:hidden}
+      #${ROOT_ID} .pf-v4-svg-shell{position:relative;overflow:auto;padding:4px 0 2px;border:1px solid rgba(219,199,163,.12);border-radius:13px;background:radial-gradient(circle at 18% 12%,rgba(224,183,96,.12),transparent 34%),linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012))}
+      #${ROOT_ID} .pf-v4-svg-chart{display:block;width:100%;min-width:700px;height:auto;color:#f4ead6}
+      #${ROOT_ID} .pf-v4-svg-grid line{stroke:rgba(245,235,214,.10);stroke-width:1}
+      #${ROOT_ID} .pf-v4-svg-y{fill:rgba(245,235,214,.58);font-size:10px;font-weight:800;text-anchor:end}
+      #${ROOT_ID} .pf-v4-svg-x{fill:rgba(245,235,214,.56);font-size:10px;font-weight:800;text-anchor:middle}
+      #${ROOT_ID} .pf-v4-svg-bar{fill:url(#pf-v4-revenue-bar);filter:drop-shadow(0 0 10px rgba(117,217,154,.22));transform-origin:center bottom;animation:pfV4Column 640ms cubic-bezier(.22,1,.36,1) both}
+      #${ROOT_ID} .pf-v4-hit-rect{fill:transparent;cursor:pointer}
+      #${ROOT_ID} .pf-v4-day-hit:focus{outline:none}
+      #${ROOT_ID} .pf-v4-day-hit:focus .pf-v4-svg-bar,#${ROOT_ID} .pf-v4-day-hit:hover .pf-v4-svg-bar,#${ROOT_ID} .pf-v4-day-hit.is-active .pf-v4-svg-bar{stroke:#f6df9f;stroke-width:2}
+      #${ROOT_ID} .pf-v4-plan-line{fill:none;stroke:#f1d78b;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px rgba(241,215,139,.22))}
+      #${ROOT_ID} .pf-v4-plan-line.thin{stroke-width:2;stroke-dasharray:4 5}
+      #${ROOT_ID} .pf-v4-previous-line{fill:none;stroke:rgba(245,235,214,.42);stroke-width:2;stroke-dasharray:6 6;stroke-linecap:round}
+      #${ROOT_ID} .pf-v4-crosshair{stroke:rgba(246,223,159,.62);stroke-width:1;stroke-dasharray:3 5;pointer-events:none}
+      #${ROOT_ID} .pf-v4-legend{display:flex;flex-wrap:wrap;gap:10px;padding:0 10px 10px;color:var(--pf-v4-faint);font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.08em}
+      #${ROOT_ID} .pf-v4-legend span{display:inline-flex;align-items:center;gap:6px}
+      #${ROOT_ID} .pf-v4-legend i{display:inline-block;width:18px;height:3px;border-radius:999px;background:#80e5a2}
+      #${ROOT_ID} .pf-v4-legend i.plan{background:#f1d78b}
+      #${ROOT_ID} .pf-v4-legend i.previous{background:rgba(245,235,214,.42)}
+      #${ROOT_ID} .pf-v4-margin-layout{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:10px;align-items:stretch}
+      #${ROOT_ID} .pf-v4-margin-layout .pf-v4-empty{min-height:270px}
+      #${ROOT_ID} .pf-v4-chart-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:9px 10px 0}
+      #${ROOT_ID} .pf-v4-chart-tabs button{height:28px;border:1px solid rgba(219,199,163,.2);border-radius:999px;background:rgba(7,6,5,.62);color:#eadcbd;padding:0 10px;font-size:10px;font-weight:850}
+      #${ROOT_ID} .pf-v4-chart-tabs button[aria-pressed="true"]{background:linear-gradient(180deg,#f0dfbf,#b89455);color:#18110a}
+      #${ROOT_ID} .pf-v4-margin-area{fill:url(#pf-v4-margin-fill)}
+      #${ROOT_ID} .pf-v4-margin-line{fill:none;stroke:#78dea0;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 10px rgba(120,222,160,.24))}
+      #${ROOT_ID} .pf-v4-margin-dot{fill:#0b0a08;stroke:#78dea0;stroke-width:2;cursor:pointer}
+      #${ROOT_ID} .pf-v4-day-hit:hover .pf-v4-margin-dot,#${ROOT_ID} .pf-v4-day-hit.is-active .pf-v4-margin-dot{fill:#f1d78b;stroke:#f1d78b}
+      #${ROOT_ID} .pf-v4-margin-side{display:grid;align-content:start;gap:8px;padding:12px;border:1px solid rgba(219,199,163,.14);border-radius:12px;background:rgba(7,6,5,.45)}
+      #${ROOT_ID} .pf-v4-margin-side span{color:#dbc7a3;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.12em}
+      #${ROOT_ID} .pf-v4-margin-side strong{font-size:21px;line-height:1.05}
+      #${ROOT_ID} .pf-v4-margin-side em{color:var(--pf-v4-muted);font-size:11px;font-style:normal;line-height:1.35}
+      #${ROOT_ID} .pf-v4-insights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:9px}
+      #${ROOT_ID} .pf-v4-insights button{min-height:92px;border:1px solid rgba(219,199,163,.14);border-radius:13px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));color:inherit;text-align:left;padding:12px}
+      #${ROOT_ID} .pf-v4-insights span{display:block;color:var(--pf-v4-faint);font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.08em}
+      #${ROOT_ID} .pf-v4-insights strong{display:block;margin-top:10px;font-size:16px}
+      #${ROOT_ID} .pf-v4-insights em{display:block;margin-top:7px;color:var(--pf-v4-muted);font-size:11px;font-style:normal;line-height:1.35}
       #${ROOT_ID} .pf-v4-margin-chart{width:100%;overflow:auto;padding:6px 0 2px;border:1px solid rgba(219,199,163,.1);border-radius:12px;background:linear-gradient(180deg,rgba(117,217,154,.055),rgba(255,255,255,.01))}
       #${ROOT_ID} .pf-v4-margin-chart svg{display:block;width:var(--pf-v4-chart-width);max-width:none;height:230px}
       #${ROOT_ID} .pf-v4-margin-chart line{stroke:rgba(255,255,255,.085);stroke-width:1}
@@ -1321,8 +1690,8 @@
       @keyframes pfV4In{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
       @keyframes pfV4Bar{from{width:0}}
       @keyframes pfV4Column{from{transform:scaleY(.04);opacity:.18}}
-      @media(max-width:1350px){#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#${ROOT_ID} .pf-v4-split{grid-template-columns:1fr}}
-      @media(max-width:760px){#${ROOT_ID} .pf-v4-head{display:grid}#${ROOT_ID} .pf-v4-tabs{overflow:auto}#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles,#${ROOT_ID} .pf-v4-drawer-grid,#${ROOT_ID} .pf-v4-funnel{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table button{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table b,#${ROOT_ID} .pf-v4-team-table em,#${ROOT_ID} .pf-v4-team-table small{text-align:left}}
+      @media(max-width:1350px){#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#${ROOT_ID} .pf-v4-split,#${ROOT_ID} .pf-v4-chart-grid{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-insights{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(max-width:760px){#${ROOT_ID} .pf-v4-head{display:grid}#${ROOT_ID} .pf-v4-tabs{overflow:auto}#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles,#${ROOT_ID} .pf-v4-drawer-grid,#${ROOT_ID} .pf-v4-funnel,#${ROOT_ID} .pf-v4-insights,#${ROOT_ID} .pf-v4-margin-layout{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table button{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table b,#${ROOT_ID} .pf-v4-team-table em,#${ROOT_ID} .pf-v4-team-table small{text-align:left}#${ROOT_ID} .pf-v4-svg-chart{min-width:620px}}
       @media(prefers-reduced-motion:reduce){#${ROOT_ID} .pf-v4 *{animation:none!important;transition:none!important}}
     `;
     document.head.appendChild(style);
@@ -1508,6 +1877,64 @@
         event.preventDefault();
         event.stopPropagation();
         host.querySelector('.pf-v1-table-card')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      });
+    });
+    host.querySelectorAll('[data-pf-v4-day]').forEach((button) => {
+      if (button.dataset.pfV4DirectBound === '1') return;
+      button.dataset.pfV4DirectBound = '1';
+      const selectDay = () => {
+        const date = button.getAttribute('data-pf-v4-day') || '';
+        const current = planFactUi().selectedDate;
+        updatePlanFactUi({ selectedDate: current === date ? '' : date });
+        enhance();
+      };
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        selectDay();
+      });
+      button.addEventListener('keydown', (event) => {
+        const allDays = Array.from(host.querySelectorAll('[data-pf-v4-day]'));
+        const currentIndex = allDays.indexOf(button);
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          selectDay();
+        } else if (event.key === 'Escape') {
+          event.preventDefault();
+          updatePlanFactUi({ selectedDate: '' });
+          enhance();
+        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+          event.preventDefault();
+          const nextIndex = clamp(currentIndex + (event.key === 'ArrowRight' ? 1 : -1), 0, allDays.length - 1);
+          const next = allDays[nextIndex];
+          if (next) {
+            updatePlanFactUi({ selectedDate: next.getAttribute('data-pf-v4-day') || '' });
+            enhance();
+          }
+        }
+      });
+    });
+    host.querySelectorAll('[data-pf-v4-margin-metric]').forEach((button) => {
+      if (button.dataset.pfV4DirectBound === '1') return;
+      button.dataset.pfV4DirectBound = '1';
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        updatePlanFactUi({ marginMetric: button.getAttribute('data-pf-v4-margin-metric') === 'rub' ? 'rub' : 'pct' });
+        enhance();
+      });
+    });
+    host.querySelectorAll('[data-pf-v4-margin-focus]').forEach((button) => {
+      if (button.dataset.pfV4DirectBound === '1') return;
+      button.dataset.pfV4DirectBound = '1';
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const focus = button.getAttribute('data-pf-v4-margin-focus') || 'chart';
+        updatePlanFactUi({ marginGroup: focus });
+        if (focus === 'sku') setMode('sku');
+        else host.querySelector('#pf-v4-margin-chart')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        enhance();
       });
     });
   }

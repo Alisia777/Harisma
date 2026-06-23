@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260621_PRICESV1__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260623_CHARTS1__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260623_CHARTS1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260621_PRICESV1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES2__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES1__ = true;
@@ -35,7 +36,7 @@
   var ORDER_PROCUREMENT_OZON_URL = "data/order_procurement_ozon.json";
   var VIEW_ID = "view-prices";
   var STYLE_ID = "altea-price-simple-style";
-  var STYLE_VERSION = "20260621-prices-v1";
+  var STYLE_VERSION = "20260623-prices-charts-v1";
   var SNAPSHOT_WAIT_MS = 1800;
   var SNAPSHOT_HARD_WAIT_MS = 4500;
   var LOCAL_FETCH_TIMEOUT_MS = 3200;
@@ -77,6 +78,12 @@
     selectedKey: "",
     dateFrom: "",
     dateTo: "",
+    chartUi: {
+      selectedDate: "",
+      marginMetric: "pct",
+      skuChartFocus: "fact",
+      hiddenSeries: {}
+    },
     latestFactDate: "",
     latestTimelineDate: "",
     earliestTimelineDate: "",
@@ -1369,9 +1376,32 @@
       ".pw-history th,.pw-history td{padding:10px 12px;border-top:1px solid rgba(214,175,85,.1);text-align:left;}",
       ".pw-history th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#bda57a;}",
       ".pw-history-change td{background:rgba(214,175,85,.055);}",
+      "#view-prices .prices-v1-kpis{grid-template-columns:repeat(5,minmax(0,1fr));}",
+      "#view-prices .prices-v1-kpi-button{position:relative;min-height:110px;display:grid;align-content:space-between;gap:9px;text-align:left;border:1px solid rgba(222,190,128,.18);border-radius:8px;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.014));color:#f8f1de;padding:15px;cursor:pointer;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.05);}",
+      "#view-prices .prices-v1-kpi-button:hover,#view-prices .prices-v1-kpi-button:focus-visible{border-color:rgba(222,190,128,.42);background:linear-gradient(145deg,rgba(222,190,128,.12),rgba(255,255,255,.018));outline:0;}",
+      "#view-prices .prices-v1-kpi-button span{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:rgba(235,216,174,.62);font-weight:900;}",
+      "#view-prices .prices-v1-kpi-button strong{font-size:clamp(20px,1.55vw,30px);line-height:1;font-weight:950;font-variant-numeric:tabular-nums;}",
+      "#view-prices .prices-v1-kpi-button em{font-style:normal;color:rgba(248,241,222,.64);font-size:12px;padding-bottom:9px;}",
+      "#view-prices .prices-v1-kpi-button em.up{color:#91e3aa;}#view-prices .prices-v1-kpi-button em.down{color:#ff9b8e;}",
+      "#view-prices .prices-v1-kpi-button i{position:absolute;left:14px;right:14px;bottom:12px;height:4px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;}#view-prices .prices-v1-kpi-button i:after{content:\"\";display:block;width:var(--kpi-progress,0%);height:100%;border-radius:999px;background:linear-gradient(90deg,#d8b36c,#74d997);}",
+      "#view-prices .prices-v1-overview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}",
+      "#view-prices .prices-v1-chart-panel{min-width:0;border:1px solid rgba(222,190,128,.18);border-radius:8px;background:linear-gradient(150deg,rgba(255,255,255,.045),rgba(255,255,255,.014));padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.045);}",
+      "#view-prices .prices-v1-overview .prices-v1-section-head{align-items:flex-start;}#view-prices .prices-v1-overview .prices-v1-section-head button,#view-prices .prices-v1-mini-tabs button{border:1px solid rgba(222,190,128,.24);border-radius:999px;background:rgba(222,190,128,.08);color:#f8f1de;padding:8px 11px;cursor:pointer;}",
+      "#view-prices .prices-v1-mini-tabs{display:flex;gap:6px;}#view-prices .prices-v1-mini-tabs button[aria-pressed='true']{background:linear-gradient(180deg,#f1d793,#b78332);color:#100d09;}",
+      "#view-prices .prices-v1-chart-legend{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:6px 0 10px;color:rgba(248,241,222,.62);font-size:12px;}#view-prices .prices-v1-chart-legend span{display:inline-flex;align-items:center;gap:6px;}#view-prices .prices-v1-chart-legend span:before{content:\"\";width:10px;height:10px;border-radius:999px;background:#74d997;}#view-prices .prices-v1-chart-legend .previous:before{background:#77736b;}#view-prices .prices-v1-chart-legend .margin:before{background:#75d99a;}#view-prices .prices-v1-chart-legend em{margin-left:auto;font-style:normal;color:#dbc7a3;}",
+      "#view-prices .prices-overview-svg,#view-prices .prices-v1-chart{display:block;width:100%;height:auto;min-height:240px;overflow:visible;}#view-prices .prices-v1-chart{min-height:320px;}",
+      "#view-prices .prices-chart-grid line,#view-prices .prices-v1-grid line{stroke:rgba(245,235,214,.16);stroke-width:1;}#view-prices .prices-chart-y,#view-prices .prices-chart-x{fill:rgba(245,235,214,.58);font-size:11px;font-weight:700;}",
+      "#view-prices .prices-chart-bar{rx:5;transition:opacity .18s ease,filter .18s ease;}#view-prices .prices-chart-bar.current{fill:#74d997;}#view-prices .prices-chart-bar.prev{fill:rgba(160,153,138,.52);}#view-prices .prices-chart-bar:hover,#view-prices .prices-v1-bar:hover{filter:drop-shadow(0 0 8px rgba(219,199,163,.36));}",
+      "#view-prices .prices-margin-area{fill:rgba(116,217,151,.16);}#view-prices .prices-margin-line{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}#view-prices .prices-margin-line.current{stroke:#74d997;}#view-prices .prices-margin-line.prev{stroke:rgba(180,174,162,.7);stroke-width:2;stroke-dasharray:6 7;}#view-prices .prices-margin-dot{fill:#74d997;stroke:#0a0806;stroke-width:2;}",
+      "#view-prices .prices-v1-insights{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}#view-prices .prices-v1-insights button{min-height:108px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:7px;border:1px solid rgba(222,190,128,.16);border-radius:8px;background:rgba(10,8,6,.54);color:#f8f1de;padding:14px;cursor:pointer;}#view-prices .prices-v1-insights button:hover{border-color:rgba(222,190,128,.38);}#view-prices .prices-v1-insights span{grid-column:1/-1;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(235,216,174,.6);font-weight:900;}#view-prices .prices-v1-insights strong{font-size:15px;line-height:1.25;}#view-prices .prices-v1-insights em{font-style:normal;color:rgba(248,241,222,.6);}#view-prices .prices-v1-insights b{align-self:end;color:#dbc7a3;}",
+      "#view-prices .prices-v1-legend{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;}#view-prices .prices-v1-legend button{border:1px solid rgba(222,190,128,.22);border-radius:999px;background:rgba(222,190,128,.06);color:#f8f1de;padding:7px 10px;font-size:12px;cursor:pointer;}#view-prices .prices-v1-legend button[aria-pressed='false']{opacity:.42;text-decoration:line-through;}#view-prices .prices-v1-legend button:hover{border-color:rgba(222,190,128,.44);}",
+      "#view-prices .prices-v1-corridor-band{fill:rgba(219,199,163,.08);stroke:rgba(219,199,163,.16);stroke-width:1;}#view-prices .prices-v1-repricer-line{stroke:#f1d793;stroke-width:2;stroke-dasharray:7 7;}#view-prices .prices-v1-clip-label{fill:#dbc7a3;font-size:11px;font-weight:800;}#view-prices .prices-v1-before-after{fill:rgba(245,235,214,.62);font-size:11px;font-weight:800;}#view-prices .prices-v1-bar.orders{fill:#5aa7ff;}#view-prices .prices-v1-bar.buyouts{fill:#74d997;}#view-prices .prices-v1-line{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}#view-prices .prices-v1-line.mp{stroke:#d8b36c;}#view-prices .prices-v1-line.client{stroke:#b868ff;}#view-prices .prices-v1-minmax{stroke:#dbc7a3;stroke-width:2;stroke-dasharray:5 6;}#view-prices .prices-v1-change{stroke:#ff7b6e;stroke-width:1.5;stroke-dasharray:4 5;opacity:.72;}",
+      "#view-prices .prices-v1-table-wrap{overflow:auto;max-height:72vh;border-radius:8px;}#view-prices .prices-v1-table{min-width:1880px;table-layout:fixed;}#view-prices .prices-v1-table th,#view-prices .prices-v1-table td{overflow:hidden;text-overflow:ellipsis;}#view-prices .prices-v1-table th:nth-child(1),#view-prices .prices-v1-table td:nth-child(1){width:230px;}#view-prices .prices-v1-table th:nth-child(2),#view-prices .prices-v1-table td:nth-child(2){width:150px;}#view-prices .prices-v1-table th:nth-child(3),#view-prices .prices-v1-table td:nth-child(3){width:250px;}#view-prices .prices-v1-table th:nth-child(n+4),#view-prices .prices-v1-table td:nth-child(n+4){min-width:92px;}#view-prices .prices-v1-table td small{display:block;white-space:normal;line-height:1.3;max-height:2.8em;overflow:hidden;}",
       "@media (max-width:1180px){.pw-game-strip{grid-template-columns:repeat(3,minmax(0,1fr));}}",
+      "@media (max-width:1280px){#view-prices .prices-v1-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}#view-prices .prices-v1-overview{grid-template-columns:1fr;}#view-prices .prices-v1-insights{grid-template-columns:repeat(2,minmax(0,1fr));}}",
       "@media (max-width:1080px){.pw-grid,.pw-stats,.pw-kpis{grid-template-columns:1fr 1fr;}}",
-      "@media (max-width:720px){#view-prices{padding:18px 14px 28px;}.pw-grid,.pw-stats,.pw-kpis,.pw-grid2,.pw-game-strip{grid-template-columns:1fr;}.pw-title{font-size:28px;}}"
+      "@media (max-width:720px){#view-prices{padding:18px 14px 28px;}.pw-grid,.pw-stats,.pw-kpis,.pw-grid2,.pw-game-strip,#view-prices .prices-v1-kpis,#view-prices .prices-v1-insights{grid-template-columns:1fr;}.pw-title{font-size:28px;}}",
+      "@media (prefers-reduced-motion:reduce){#view-prices .prices-chart-bar,#view-prices .prices-v1-bar{transition:none;}}"
     ].join("");
     document.head.appendChild(style);
   }
@@ -3712,6 +3742,539 @@ function downloadPriceSummaryExcel(rows) {
     return (Number(impact.afterOrders) / Number(impact.beforeOrders)) - 1;
   }
 
+  function priceChartUi() {
+    state.chartUi = Object.assign({
+      selectedDate: "",
+      marginMetric: "pct",
+      skuChartFocus: "fact",
+      hiddenSeries: {}
+    }, state.chartUi || {});
+    state.chartUi.hiddenSeries = Object.assign({}, state.chartUi.hiddenSeries || {});
+    return state.chartUi;
+  }
+
+  function priceShortDate(value) {
+    var key = isoDate(value);
+    if (!key) return "";
+    return key.slice(8, 10) + "." + key.slice(5, 7);
+  }
+
+  function priceRatio(value) {
+    var parsed = num(value);
+    if (parsed == null) return null;
+    return Math.abs(parsed) > 3 ? parsed / 100 : parsed;
+  }
+
+  function priceFirstNum(source, keys) {
+    for (var index = 0; index < keys.length; index += 1) {
+      var value = num(source && source[keys[index]]);
+      if (value != null) return value;
+    }
+    return null;
+  }
+
+  function priceRangeDays(from, to) {
+    var start = isoDate(from);
+    var end = isoDate(to);
+    if (!start || !end) return [];
+    var total = Math.max(0, diffDays(start, end));
+    var daysList = [];
+    for (var index = 0; index <= total; index += 1) {
+      daysList.push(shiftDate(start, index));
+    }
+    return daysList;
+  }
+
+  function priceCurrentRange() {
+    var end = isoDate(state.dateTo || state.latestTimelineDate || state.latestFactDate || todayKey());
+    var start = isoDate(state.dateFrom || (end ? shiftDate(end, -6) : ""));
+    if (!start || !end) return { start: "", end: "", days: [] };
+    if (start > end) {
+      var swap = start;
+      start = end;
+      end = swap;
+    }
+    return { start: start, end: end, days: priceRangeDays(start, end) };
+  }
+
+  function pricePreviousRange(current) {
+    var daysCount = current && current.days ? current.days.length : 0;
+    if (!daysCount || !current.start) return { start: "", end: "", days: [] };
+    var end = shiftDate(current.start, -1);
+    var start = shiftDate(end, -(daysCount - 1));
+    return { start: start, end: end, days: priceRangeDays(start, end) };
+  }
+
+  function priceAllHistoryItems(row) {
+    var items = (row && row.timeline || []).filter(function (item) {
+      return item && isoDate(item.date);
+    }).slice();
+    var priceFactDate = isoDate(row && row.priceFactDate);
+    var currentSnapshotDate = isoDate(row && row.currentPriceDate);
+    var snapshotDate = priceFactDate;
+    if (currentSnapshotDate && (!snapshotDate || currentSnapshotDate > snapshotDate)) snapshotDate = currentSnapshotDate;
+    var snapshotPrice = num(row && row.currentFillPrice);
+    if (snapshotDate && snapshotPrice != null) {
+      var lastDate = items.length ? isoDate(items[items.length - 1] && items[items.length - 1].date) : "";
+      if (!lastDate || snapshotDate > lastDate) {
+        items.push({
+          date: snapshotDate,
+          price: snapshotPrice,
+          clientPrice: row.clientPriceFactDate === snapshotDate ? num(row.currentClientPrice) : null,
+          sppPct: row.sppFactDate === snapshotDate ? num(row.currentSppPct) : null,
+          turnoverDays: row.turnoverFactDate === snapshotDate ? num(row.turnoverDays) : null,
+          ordersUnits: null,
+          deliveredUnits: null,
+          revenue: null
+        });
+      }
+    }
+    return items.sort(function (left, right) {
+      return String(left.date || "").localeCompare(String(right.date || ""));
+    });
+  }
+
+  function priceItemByDate(row, date) {
+    var wanted = isoDate(date);
+    if (!wanted) return null;
+    var items = priceAllHistoryItems(row);
+    for (var index = 0; index < items.length; index += 1) {
+      if (isoDate(items[index] && items[index].date) === wanted) return items[index];
+    }
+    return null;
+  }
+
+  function priceHasRangeFact(row, range) {
+    var daysList = range && range.days || [];
+    for (var index = 0; index < daysList.length; index += 1) {
+      var item = priceItemByDate(row, daysList[index]);
+      if (!item) continue;
+      if (num(item.revenue) != null || num(item.ordersUnits) != null || num(item.deliveredUnits) != null || num(item.price) != null) return true;
+    }
+    return false;
+  }
+
+  function priceComparableRows(rows, current, previous) {
+    return (rows || []).filter(function (row) {
+      return row && row.market && row.articleKey && priceHasRangeFact(row, current) && priceHasRangeFact(row, previous);
+    });
+  }
+
+  function priceAverageCheckContribution(item) {
+    if (!item) return null;
+    var revenue = num(item.revenue);
+    var delivered = num(item.deliveredUnits);
+    var orders = num(item.ordersUnits);
+    var price = roundedHistoryPrice(item);
+    if (revenue != null && delivered != null && delivered > 0) {
+      return { value: revenue, weight: delivered, base: "\u043f\u043e \u0432\u044b\u043a\u0443\u043f\u0430\u043c" };
+    }
+    if (revenue != null && orders != null && orders > 0) {
+      return { value: revenue, weight: orders, base: "\u043f\u043e \u0437\u0430\u043a\u0430\u0437\u0430\u043c" };
+    }
+    if (price != null && delivered != null && delivered > 0) {
+      return { value: price * delivered, weight: delivered, base: "\u0432\u0437\u0432\u0435\u0448\u0435\u043d\u043d\u0430\u044f \u0446\u0435\u043d\u0430" };
+    }
+    if (price != null && orders != null && orders > 0) {
+      return { value: price * orders, weight: orders, base: "\u0432\u0437\u0432\u0435\u0448\u0435\u043d\u043d\u0430\u044f \u0446\u0435\u043d\u0430" };
+    }
+    return null;
+  }
+
+  function priceMarginContribution(item) {
+    if (!item) return null;
+    var revenue = priceFirstNum(item, ["marginRevenue", "revenue"]);
+    var quantity = priceFirstNum(item, ["deliveredUnits", "ordersUnits", "quantity", "qty"]);
+    var marginRub = priceFirstNum(item, ["marginRub", "grossMarginRub", "profitRub", "profit", "marginValue"]);
+    var marginPct = priceRatio(priceFirstNum(item, ["marginPct", "grossMarginPct", "marginTotalPct", "profitabilityPct"]));
+    if (marginRub != null && revenue != null && Math.abs(revenue) > 0) {
+      return { rub: marginRub, revenue: revenue, pctWeight: Math.abs(revenue), pctValue: marginRub / revenue, quality: "daily" };
+    }
+    if (marginPct != null && revenue != null && Math.abs(revenue) > 0) {
+      return { rub: revenue * marginPct, revenue: revenue, pctWeight: Math.abs(revenue), pctValue: marginPct, quality: "derived" };
+    }
+    if (marginPct != null && quantity != null && quantity > 0) {
+      return { rub: null, revenue: null, pctWeight: quantity, pctValue: marginPct, quality: "daily" };
+    }
+    return null;
+  }
+
+  function priceAggregateAverage(rows, dates) {
+    var points = (dates || []).map(function (date) {
+      var acc = { date: date, value: 0, weight: 0, sku: 0, bases: Object.create(null) };
+      (rows || []).forEach(function (row) {
+        var contribution = priceAverageCheckContribution(priceItemByDate(row, date));
+        if (!contribution) return;
+        acc.value += contribution.value;
+        acc.weight += contribution.weight;
+        acc.sku += 1;
+        acc.bases[contribution.base] = (acc.bases[contribution.base] || 0) + 1;
+      });
+      var base = Object.keys(acc.bases).sort(function (left, right) {
+        return acc.bases[right] - acc.bases[left];
+      })[0] || "";
+      return {
+        date: date,
+        value: acc.weight > 0 ? acc.value / acc.weight : null,
+        weight: acc.weight,
+        sku: acc.sku,
+        base: base
+      };
+    });
+    return points;
+  }
+
+  function priceAggregateMargin(rows, dates) {
+    return (dates || []).map(function (date) {
+      var rub = 0;
+      var rubFound = false;
+      var revenue = 0;
+      var pctValue = 0;
+      var pctWeight = 0;
+      var sku = 0;
+      var quality = "";
+      (rows || []).forEach(function (row) {
+        var contribution = priceMarginContribution(priceItemByDate(row, date));
+        if (!contribution) return;
+        sku += 1;
+        if (contribution.rub != null) {
+          rub += contribution.rub;
+          rubFound = true;
+        }
+        if (contribution.revenue != null) revenue += contribution.revenue;
+        if (contribution.pctValue != null && contribution.pctWeight > 0) {
+          pctValue += contribution.pctValue * contribution.pctWeight;
+          pctWeight += contribution.pctWeight;
+        }
+        if (!quality || contribution.quality === "daily") quality = contribution.quality;
+      });
+      return {
+        date: date,
+        pct: pctWeight > 0 ? pctValue / pctWeight : null,
+        rub: rubFound ? rub : null,
+        revenue: revenue || null,
+        sku: sku,
+        quality: quality || "missing"
+      };
+    });
+  }
+
+  function priceWeightedMargin(rows) {
+    var value = 0;
+    var weight = 0;
+    var rub = 0;
+    var rubFound = false;
+    (rows || []).forEach(function (row) {
+      var impact = row.priceImpact || rowPriceImpact(row);
+      var revenue = num(impact && impact.revenue);
+      var marginPct = priceRatio(row && row.marginTotalPct);
+      var qty = num(impact && (impact.deliveredUnits != null ? impact.deliveredUnits : impact.ordersUnits));
+      var rowWeight = revenue != null && revenue > 0 ? revenue : (qty != null && qty > 0 ? qty : 0);
+      if (marginPct != null && rowWeight > 0) {
+        value += marginPct * rowWeight;
+        weight += rowWeight;
+      }
+      if (marginPct != null && revenue != null && revenue > 0) {
+        rub += revenue * marginPct;
+        rubFound = true;
+      }
+    });
+    return { pct: weight > 0 ? value / weight : null, rub: rubFound ? rub : null };
+  }
+
+  function priceSeriesAverage(points, key) {
+    var total = 0;
+    var count = 0;
+    (points || []).forEach(function (point) {
+      var value = num(point && point[key]);
+      if (value == null) return;
+      total += value;
+      count += 1;
+    });
+    return count ? total / count : null;
+  }
+
+  function priceValueDelta(current, previous) {
+    if (current == null || previous == null || !Number.isFinite(Number(current)) || !Number.isFinite(Number(previous))) {
+      return { rub: null, pct: null };
+    }
+    var delta = Number(current) - Number(previous);
+    return { rub: delta, pct: previous !== 0 ? delta / Math.abs(Number(previous)) : null };
+  }
+
+  function buildPriceOverviewModel(rows, summary) {
+    var current = priceCurrentRange();
+    var previous = pricePreviousRange(current);
+    var comparable = priceComparableRows(rows, current, previous);
+    var currentAverage = priceAggregateAverage(comparable, current.days);
+    var previousAverage = priceAggregateAverage(comparable, previous.days).map(function (point, index) {
+      return Object.assign({}, point, { compareDate: point.date, date: current.days[index] || point.date });
+    });
+    var currentMargin = priceAggregateMargin(rows, current.days);
+    var previousMargin = priceAggregateMargin(rows, previous.days).map(function (point, index) {
+      return Object.assign({}, point, { compareDate: point.date, date: current.days[index] || point.date });
+    });
+    var avgCurrent = priceSeriesAverage(currentAverage, "value");
+    var avgPrevious = priceSeriesAverage(previousAverage, "value");
+    var marginWeighted = priceWeightedMargin(rows);
+    var risky = rows.filter(function (row) { return priceBoundaryState(row); });
+    var belowMargin = rows.filter(function (row) {
+      return row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct;
+    });
+    var bestPrice = rows.map(function (row) {
+      var impact = row.priceImpact || rowPriceImpact(row);
+      return { row: row, delta: impact && impact.orderDelta != null ? Number(impact.orderDelta) : null };
+    }).filter(function (item) { return item.delta != null; }).sort(function (left, right) {
+      return right.delta - left.delta;
+    })[0] || null;
+    return {
+      rows: rows || [],
+      summary: summary || {},
+      currentRange: current,
+      previousRange: previous,
+      comparableRows: comparable,
+      averageCurrent: currentAverage,
+      averagePrevious: previousAverage,
+      averageValue: avgCurrent,
+      averagePreviousValue: avgPrevious,
+      averageDelta: priceValueDelta(avgCurrent, avgPrevious),
+      marginCurrent: currentMargin,
+      marginPrevious: previousMargin,
+      marginWeighted: marginWeighted,
+      riskRows: risky,
+      belowMarginRows: belowMargin,
+      bestPriceRow: bestPrice
+    };
+  }
+
+  function priceChartDomain(values, fallbackMin, fallbackMax) {
+    var filtered = (values || []).filter(function (value) {
+      return value != null && Number.isFinite(Number(value));
+    }).map(Number);
+    if (!filtered.length) return { min: fallbackMin || 0, max: fallbackMax || 1 };
+    var minValue = Math.min.apply(null, filtered);
+    var maxValue = Math.max.apply(null, filtered);
+    if (minValue === maxValue) {
+      var padSingle = Math.max(1, Math.abs(maxValue) * 0.08);
+      return { min: minValue - padSingle, max: maxValue + padSingle };
+    }
+    var pad = (maxValue - minValue) * 0.12;
+    return { min: minValue - pad, max: maxValue + pad };
+  }
+
+  function priceScaleY(value, domain, top, height) {
+    var parsed = num(value);
+    if (parsed == null || !domain || domain.max === domain.min) return null;
+    return top + height - ((parsed - domain.min) / (domain.max - domain.min)) * height;
+  }
+
+  function priceLinePoints(points, key, xFn, yFn) {
+    return (points || []).map(function (point, index) {
+      var y = yFn(point && point[key]);
+      if (y == null) return "";
+      return xFn(index).toFixed(1) + "," + y.toFixed(1);
+    }).filter(Boolean).join(" ");
+  }
+
+  function priceAreaPoints(points, key, xFn, yFn, baseY) {
+    var line = (points || []).map(function (point, index) {
+      var y = yFn(point && point[key]);
+      if (y == null) return "";
+      return xFn(index).toFixed(1) + "," + y.toFixed(1);
+    }).filter(Boolean);
+    if (line.length < 2) return "";
+    return line[0].split(",")[0] + "," + baseY.toFixed(1) + " " + line.join(" ") + " " + line[line.length - 1].split(",")[0] + "," + baseY.toFixed(1);
+  }
+
+  function priceAxisLabels(domain, formatter) {
+    var max = formatter(domain.max);
+    var mid = formatter((domain.max + domain.min) / 2);
+    var min = formatter(domain.min);
+    return { max: max, mid: mid, min: min };
+  }
+
+  function priceRenderKpiButton(config) {
+    return [
+      '<button type="button" class="prices-v1-kpi-button" ', config.action || '', '>',
+      '<span>', esc(config.label), '</span>',
+      '<strong>', esc(config.value), '</strong>',
+      '<em class="', config.deltaTone || '', '">', esc(config.delta || config.note || ""), '</em>',
+      '<i style="--kpi-progress:', Math.max(0, Math.min(100, Number(config.progress) || 0)).toFixed(1), '%"></i>',
+      '</button>'
+    ].join("");
+  }
+
+  function renderPriceKpis(model) {
+    var summary = model.summary || {};
+    var marginPct = model.marginWeighted && model.marginWeighted.pct;
+    var avgDelta = model.averageDelta || {};
+    var cards = [
+      {
+        label: "\u0421\u0440\u0435\u0434\u043d\u0438\u0439 \u0447\u0435\u043a LFL",
+        value: money(model.averageValue),
+        delta: avgDelta.rub == null ? "\u043d\u0435\u0442 \u0441\u0440\u0430\u0432\u043d\u0435\u043d\u0438\u044f" : signedMoneyLabel(avgDelta.rub),
+        deltaTone: avgDelta.rub == null ? "" : deltaTone(avgDelta.rub),
+        progress: model.comparableRows.length ? 78 : 12,
+        action: 'data-price-v1-scroll="price-overview"'
+      },
+      {
+        label: "\u041c\u0430\u0440\u0436\u0430",
+        value: pct(marginPct),
+        delta: model.marginWeighted && model.marginWeighted.rub != null ? money(model.marginWeighted.rub) : "\u0432\u0437\u0432\u0435\u0448\u0435\u043d\u043d\u0430\u044f",
+        deltaTone: marginPct != null && marginPct < 0.25 ? "down" : "up",
+        progress: marginPct == null ? 0 : marginPct * 100,
+        action: 'data-price-v1-saved="belowMargin"'
+      },
+      {
+        label: "\u0412\u044b\u0440\u0443\u0447\u043a\u0430",
+        value: money(summary.revenue),
+        delta: summary.ordersUnits == null ? "\u043d\u0435\u0442 \u0432\u0435\u0441\u0430" : intf(summary.ordersUnits) + " \u0437\u0430\u043a.",
+        progress: 86,
+        action: 'data-price-v1-scroll="price-table"'
+      },
+      {
+        label: "SKU \u0432 \u0440\u0438\u0441\u043a\u0435",
+        value: intf(model.belowMarginRows.length),
+        delta: "\u043c\u0430\u0440\u0436\u0430 \u043d\u0438\u0436\u0435 \u043d\u043e\u0440\u043c\u044b",
+        deltaTone: model.belowMarginRows.length ? "down" : "up",
+        progress: summary.count ? model.belowMarginRows.length / summary.count * 100 : 0,
+        action: 'data-price-v1-saved="belowMargin"'
+      },
+      {
+        label: "\u0426\u0435\u043d\u0430 \u0432\u043d\u0435 \u043a\u043e\u0440\u0438\u0434\u043e\u0440\u0430",
+        value: intf(model.riskRows.length),
+        delta: summary.minMaxDanger ? intf(summary.minMaxDanger) + " \u043d\u0438\u0436\u0435 MIN" : "MIN/MAX",
+        deltaTone: model.riskRows.length ? "down" : "up",
+        progress: summary.count ? model.riskRows.length / summary.count * 100 : 0,
+        action: 'data-price-v1-saved="minMaxRisk"'
+      }
+    ];
+    return '<div class="prices-v1-kpis">' + cards.map(priceRenderKpiButton).join("") + '</div>';
+  }
+
+  function renderAverageCheckChart(model) {
+    var current = model.averageCurrent || [];
+    var previous = model.averagePrevious || [];
+    var values = current.map(function (point) { return point.value; }).concat(previous.map(function (point) { return point.value; }));
+    if (!values.some(function (value) { return value != null; })) {
+      return '<div class="prices-v1-empty">\u0414\u043b\u044f LFL \u043d\u0435\u0442 \u0432\u0435\u0441\u0430: \u043d\u0443\u0436\u043d\u044b \u0432\u044b\u0440\u0443\u0447\u043a\u0430 + \u0437\u0430\u043a\u0430\u0437\u044b/\u0432\u044b\u043a\u0443\u043f\u044b.</div>';
+    }
+    var domain = priceChartDomain(values, 0, 1);
+    domain.min = Math.min(0, domain.min);
+    var width = 720;
+    var height = 285;
+    var left = 58;
+    var right = 22;
+    var top = 34;
+    var bottom = 42;
+    var plotWidth = width - left - right;
+    var plotHeight = height - top - bottom;
+    var groupWidth = plotWidth / Math.max(1, current.length);
+    var barWidth = Math.max(5, Math.min(16, groupWidth * 0.28));
+    var axis = priceAxisLabels(domain, money);
+    function y(value) { return priceScaleY(value, domain, top, plotHeight); }
+    var bars = current.map(function (point, index) {
+      var cx = left + index * groupWidth + groupWidth / 2;
+      var currentY = y(point.value);
+      var previousPoint = previous[index] || {};
+      var previousY = y(previousPoint.value);
+      var baseY = top + plotHeight;
+      var tooltip = point.date + " / " + (previousPoint.compareDate || "\u2014") + " | \u0447\u0435\u043a " + money(point.value) + " vs " + money(previousPoint.value) + " | SKU " + intf(point.sku) + " | " + (point.base || "\u0431\u0435\u0437 \u0431\u0430\u0437\u044b");
+      return [
+        previousY == null ? '' : '<rect class="prices-chart-bar prev" x="' + (cx - barWidth - 2).toFixed(1) + '" y="' + previousY.toFixed(1) + '" width="' + barWidth.toFixed(1) + '" height="' + Math.max(1, baseY - previousY).toFixed(1) + '"><title>' + esc(tooltip) + '</title></rect>',
+        currentY == null ? '' : '<rect class="prices-chart-bar current" tabindex="0" data-price-v1-day="' + esc(point.date) + '" x="' + (cx + 2).toFixed(1) + '" y="' + currentY.toFixed(1) + '" width="' + barWidth.toFixed(1) + '" height="' + Math.max(1, baseY - currentY).toFixed(1) + '"><title>' + esc(tooltip) + '</title></rect>',
+        index % Math.ceil(Math.max(1, current.length / 6)) === 0 ? '<text class="prices-chart-x" x="' + cx.toFixed(1) + '" y="' + (height - 12) + '" text-anchor="middle">' + esc(priceShortDate(point.date)) + '</text>' : ''
+      ].join("");
+    }).join("");
+    return [
+      '<svg class="prices-overview-svg" viewBox="0 0 ', width, ' ', height, '" role="img" aria-label="\u0421\u0440\u0435\u0434\u043d\u0438\u0439 \u0447\u0435\u043a LFL \u043f\u043e \u0434\u043d\u044f\u043c">',
+      '<g class="prices-chart-grid"><line x1="', left, '" x2="', width - right, '" y1="', top, '" y2="', top, '"></line><line x1="', left, '" x2="', width - right, '" y1="', top + plotHeight / 2, '" y2="', top + plotHeight / 2, '"></line><line x1="', left, '" x2="', width - right, '" y1="', top + plotHeight, '" y2="', top + plotHeight, '"></line></g>',
+      '<text class="prices-chart-y" x="10" y="', top + 4, '">', esc(axis.max), '</text><text class="prices-chart-y" x="10" y="', top + plotHeight / 2 + 4, '">', esc(axis.mid), '</text><text class="prices-chart-y" x="10" y="', top + plotHeight + 4, '">', esc(axis.min), '</text>',
+      bars,
+      '</svg>'
+    ].join("");
+  }
+
+  function renderMarginChart(model) {
+    var ui = priceChartUi();
+    var metric = ui.marginMetric === "rub" ? "rub" : "pct";
+    var current = model.marginCurrent || [];
+    var previous = model.marginPrevious || [];
+    var values = current.map(function (point) { return point[metric]; }).concat(previous.map(function (point) { return point[metric]; }));
+    if (!values.some(function (value) { return value != null; })) {
+      return '<div class="prices-v1-empty">\u041d\u0435\u0442 \u0434\u043d\u0435\u0432\u043d\u043e\u0439 \u043c\u0430\u0440\u0436\u0438. Snapshot \u043d\u0435 \u0440\u0430\u0441\u0442\u044f\u0433\u0438\u0432\u0430\u044e \u0432 \u043b\u043e\u0436\u043d\u0443\u044e \u043b\u0438\u043d\u0438\u044e.</div>';
+    }
+    var domain = priceChartDomain(values, metric === "pct" ? 0 : 0, metric === "pct" ? 1 : 1);
+    var width = 720;
+    var height = 285;
+    var left = 58;
+    var right = 22;
+    var top = 34;
+    var bottom = 42;
+    var plotWidth = width - left - right;
+    var plotHeight = height - top - bottom;
+    var step = current.length > 1 ? plotWidth / (current.length - 1) : plotWidth;
+    function x(index) { return left + (current.length > 1 ? index * step : plotWidth / 2); }
+    function y(value) { return priceScaleY(value, domain, top, plotHeight); }
+    var line = priceLinePoints(current, metric, x, y);
+    var prev = priceLinePoints(previous, metric, x, y);
+    var area = priceAreaPoints(current, metric, x, y, top + plotHeight);
+    var axis = priceAxisLabels(domain, metric === "pct" ? pct : money);
+    var dots = current.map(function (point, index) {
+      var cy = y(point[metric]);
+      if (cy == null) return "";
+      return '<circle class="prices-margin-dot" tabindex="0" data-price-v1-day="' + esc(point.date) + '" cx="' + x(index).toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="4"><title>' + esc(point.date + " | " + (metric === "pct" ? pct(point.pct) : money(point.rub)) + " | SKU " + intf(point.sku) + " | " + point.quality) + '</title></circle>';
+    }).join("");
+    return [
+      '<svg class="prices-overview-svg" viewBox="0 0 ', width, ' ', height, '" role="img" aria-label="\u041c\u0430\u0440\u0436\u0430 \u043f\u043e \u0434\u043d\u044f\u043c">',
+      '<g class="prices-chart-grid"><line x1="', left, '" x2="', width - right, '" y1="', top, '" y2="', top, '"></line><line x1="', left, '" x2="', width - right, '" y1="', top + plotHeight / 2, '" y2="', top + plotHeight / 2, '"></line><line x1="', left, '" x2="', width - right, '" y1="', top + plotHeight, '" y2="', top + plotHeight, '"></line></g>',
+      '<text class="prices-chart-y" x="10" y="', top + 4, '">', esc(axis.max), '</text><text class="prices-chart-y" x="10" y="', top + plotHeight / 2 + 4, '">', esc(axis.mid), '</text><text class="prices-chart-y" x="10" y="', top + plotHeight + 4, '">', esc(axis.min), '</text>',
+      area ? '<polygon class="prices-margin-area" points="' + esc(area) + '"></polygon>' : '',
+      prev ? '<polyline class="prices-margin-line prev" points="' + esc(prev) + '"></polyline>' : '',
+      line ? '<polyline class="prices-margin-line current" points="' + esc(line) + '"></polyline>' : '',
+      dots,
+      current.map(function (point, index) {
+        return index % Math.ceil(Math.max(1, current.length / 6)) === 0 ? '<text class="prices-chart-x" x="' + x(index).toFixed(1) + '" y="' + (height - 12) + '" text-anchor="middle">' + esc(priceShortDate(point.date)) + '</text>' : '';
+      }).join(""),
+      '</svg>'
+    ].join("");
+  }
+
+  function renderPriceInsights(model) {
+    var best = model.bestPriceRow && model.bestPriceRow.row;
+    var bestLabel = best ? priceMarketLabel(best.market) + " · " + best.articleKey + " · " + signedIntLabel(model.bestPriceRow.delta) + " заказов" : "\u043d\u0435\u0442 \u044d\u0444\u0444\u0435\u043a\u0442\u0430";
+    var below = model.belowMarginRows[0];
+    var risk = model.riskRows[0];
+    var cards = [
+      { label: "\u0413\u0434\u0435 \u043f\u0440\u043e\u0441\u0435\u043b\u0430 \u043c\u0430\u0440\u0436\u0430", value: below ? priceMarketLabel(below.market) + " · " + below.articleKey : "\u041e\u041a", note: intf(model.belowMarginRows.length) + " SKU", action: 'data-price-v1-saved="belowMargin"' },
+      { label: "\u0413\u0434\u0435 \u0432\u044b\u0440\u043e\u0441 \u0441\u0440\u0435\u0434\u043d\u0438\u0439 \u0447\u0435\u043a", value: money(model.averageValue), note: model.averageDelta && model.averageDelta.rub != null ? signedMoneyLabel(model.averageDelta.rub) : "\u0431\u0435\u0437 LFL", action: 'data-price-v1-scroll="price-overview"' },
+      { label: "SKU \u0441 \u043b\u0443\u0447\u0448\u0435\u0439 \u0446\u0435\u043d\u043e\u0432\u043e\u0439 \u0434\u0438\u043d\u0430\u043c\u0438\u043a\u043e\u0439", value: bestLabel, note: "\u0441\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430 \u043f\u043e \u044d\u0444\u0444\u0435\u043a\u0442\u0443", action: 'data-price-v1-insight="price_change"' },
+      { label: "SKU \u0432 \u0446\u0435\u043d\u043e\u0432\u043e\u043c \u0440\u0438\u0441\u043a\u0435", value: risk ? priceMarketLabel(risk.market) + " · " + risk.articleKey : "\u041e\u041a", note: intf(model.riskRows.length) + " \u0432\u043d\u0435 MIN/MAX", action: 'data-price-v1-saved="minMaxRisk"' }
+    ];
+    return '<div class="prices-v1-insights">' + cards.map(function (card) {
+      return '<button type="button" ' + card.action + '><span>' + esc(card.label) + '</span><strong>' + esc(card.value) + '</strong><em>' + esc(card.note) + '</em><b>\u2192</b></button>';
+    }).join("") + '</div>';
+  }
+
+  function renderPriceOverview(model) {
+    var ui = priceChartUi();
+    return [
+      '<section class="prices-v1-overview" id="price-overview">',
+      '<div class="prices-v1-chart-panel" data-price-chart="average-check-lfl">',
+      '<div class="prices-v1-section-head"><div><span>LFL</span><h3>\u0421\u0440\u0435\u0434\u043d\u0438\u0439 \u0447\u0435\u043a \u043f\u043e \u0434\u043d\u044f\u043c</h3><p>\u0422\u043e\u043b\u044c\u043a\u043e \u0441\u043e\u043f\u043e\u0441\u0442\u0430\u0432\u0438\u043c\u044b\u0435 marketplace + SKU, \u0431\u0435\u0437 \u043d\u043e\u0432\u044b\u0445 \u0438 \u0432\u044b\u0431\u044b\u0432\u0448\u0438\u0445.</p></div><button type="button" data-price-v1-scroll="price-table">\u041e\u0442\u043a\u0440\u044b\u0442\u044c SKU</button></div>',
+      '<div class="prices-v1-chart-legend"><span class="current">\u0442\u0435\u043a\u0443\u0449\u0438\u0439</span><span class="previous">\u043f\u0440\u0435\u0434.</span><em>', intf(model.comparableRows.length), ' LFL SKU</em></div>',
+      renderAverageCheckChart(model),
+      '</div>',
+      '<div class="prices-v1-chart-panel" data-price-chart="margin-daily">',
+      '<div class="prices-v1-section-head"><div><span>\u041c\u0430\u0440\u0436\u0430</span><h3>\u041c\u0430\u0440\u0436\u0430 \u043f\u043e \u0434\u043d\u044f\u043c</h3><p>\u0414\u043d\u0435\u0432\u043d\u0430\u044f \u043b\u0438\u043d\u0438\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u0438\u0437 daily-\u0440\u044f\u0434\u043e\u0432, snapshot \u043d\u0435 \u043f\u043e\u0432\u0442\u043e\u0440\u044f\u0435\u0442\u0441\u044f.</p></div><div class="prices-v1-mini-tabs"><button type="button" data-price-margin-metric="pct" aria-pressed="', ui.marginMetric !== "rub" ? "true" : "false", '">%</button><button type="button" data-price-margin-metric="rub" aria-pressed="', ui.marginMetric === "rub" ? "true" : "false", '">\u20bd</button></div></div>',
+      '<div class="prices-v1-chart-legend"><span class="margin">\u0442\u0435\u043a\u0443\u0449\u0430\u044f</span><span class="previous">\u043f\u0440\u0435\u0434.</span><em>\u0438\u0442\u043e\u0433: ', esc(pct(model.marginWeighted && model.marginWeighted.pct)), '</em></div>',
+      renderMarginChart(model),
+      '</div>',
+      renderPriceInsights(model),
+      '</section>'
+    ].join("");
+  }
+
   function priceV1DataQuality(row) {
     var flags = [];
     if (!historyItemsForRow(row).length) flags.push("нет daily");
@@ -3743,7 +4306,117 @@ function downloadPriceSummaryExcel(rows) {
     }).join("") + '</div>';
   }
 
+  function renderSkuPriceEffectChart(row) {
+    if (!row) return '<div class="prices-v1-empty">\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 SKU, \u0447\u0442\u043e\u0431\u044b \u0443\u0432\u0438\u0434\u0435\u0442\u044c \u0446\u0435\u043d\u0443 \u0438 \u0437\u0430\u043a\u0430\u0437\u044b \u043f\u043e \u0434\u043d\u044f\u043c.</div>';
+    var items = historyItemsForRow(row).slice(-30);
+    if (!items.length) return '<div class="prices-v1-empty">\u041f\u043e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u043c\u0443 SKU \u043d\u0435\u0442 \u0434\u043d\u0435\u0432\u043d\u043e\u0439 \u0438\u0441\u0442\u043e\u0440\u0438\u0438 \u0432 \u0442\u0435\u043a\u0443\u0449\u0435\u043c \u043f\u0435\u0440\u0438\u043e\u0434\u0435.</div>';
+    var ui = priceChartUi();
+    var hidden = ui.hiddenSeries || {};
+    var bounds = row.repricerBounds || {};
+    var repricer = row.repricerDisplay && num(row.repricerDisplay.price);
+    var priceValues = [];
+    items.forEach(function (item) {
+      var price = num(item.price);
+      var client = num(item.clientPrice);
+      if (price != null) priceValues.push(price);
+      if (client != null) priceValues.push(client);
+    });
+    if (repricer != null) priceValues.push(repricer);
+    if (ui.skuChartFocus === "corridor") {
+      [bounds.effectiveMin, bounds.effectiveMax].forEach(function (value) {
+        var parsed = num(value);
+        if (parsed != null) priceValues.push(parsed);
+      });
+    }
+    var priceDomain = priceChartDomain(priceValues, 0, 1);
+    var maxOrders = Math.max.apply(null, items.map(function (item) {
+      return Math.max(num(item.ordersUnits) || 0, num(item.deliveredUnits) || 0);
+    }).concat([1]));
+    var width = 940;
+    var left = 58;
+    var right = 24;
+    var moneyTop = 32;
+    var moneyHeight = 170;
+    var effectTop = 242;
+    var effectHeight = 86;
+    var plotWidth = width - left - right;
+    var step = items.length > 1 ? plotWidth / (items.length - 1) : 0;
+    function x(index) { return left + (items.length > 1 ? index * step : plotWidth / 2); }
+    function yPrice(value) { return priceScaleY(value, priceDomain, moneyTop, moneyHeight); }
+    function yOrders(value) {
+      var parsed = num(value);
+      if (parsed == null) return null;
+      return effectTop + effectHeight - (parsed / maxOrders) * effectHeight;
+    }
+    function line(key) {
+      var points = [];
+      items.forEach(function (item, index) {
+        var y = yPrice(item[key]);
+        if (y != null) points.push(x(index).toFixed(1) + "," + y.toFixed(1));
+      });
+      return points.join(" ");
+    }
+    var changeMarkers = [];
+    var previous = null;
+    var bars = items.map(function (item, index) {
+      var orders = num(item.ordersUnits) || 0;
+      var delivered = num(item.deliveredUnits) || 0;
+      var cx = x(index);
+      var yOrder = yOrders(orders);
+      var yDelivered = yOrders(delivered);
+      var orderHeight = Math.max(1, effectTop + effectHeight - (yOrder == null ? effectTop + effectHeight : yOrder));
+      var deliveredHeight = Math.max(1, effectTop + effectHeight - (yDelivered == null ? effectTop + effectHeight : yDelivered));
+      var price = roundedHistoryPrice(item);
+      if (previous != null && price != null && price !== previous) {
+        changeMarkers.push('<line class="prices-v1-change" x1="' + cx.toFixed(1) + '" x2="' + cx.toFixed(1) + '" y1="' + moneyTop + '" y2="' + (effectTop + effectHeight) + '"><title>' + esc(item.date || "") + " \u00b7 " + esc(signedMoneyLabel(price - previous)) + '</title></line>');
+      }
+      if (price != null) previous = price;
+      var tooltip = (item.date || "") + " \u00b7 " + intf(orders) + " \u0437\u0430\u043a. \u00b7 " + (delivered ? intf(delivered) + " \u0432\u044b\u043a. \u00b7 " : "") + money(item.price) + " MP \u00b7 " + money(item.clientPrice) + " \u043a\u043b\u0438\u0435\u043d\u0442";
+      return [
+        hidden.orders ? '' : '<rect class="prices-v1-bar orders" tabindex="0" x="' + (cx - 6).toFixed(1) + '" y="' + (effectTop + effectHeight - orderHeight).toFixed(1) + '" width="9" height="' + orderHeight.toFixed(1) + '"><title>' + esc(tooltip) + '</title></rect>',
+        hidden.buyouts || !delivered ? '' : '<rect class="prices-v1-bar buyouts" tabindex="0" x="' + (cx + 4).toFixed(1) + '" y="' + (effectTop + effectHeight - deliveredHeight).toFixed(1) + '" width="7" height="' + deliveredHeight.toFixed(1) + '"><title>' + esc(tooltip) + '</title></rect>',
+        index % Math.ceil(Math.max(1, items.length / 6)) === 0 ? '<text class="prices-chart-x" x="' + cx.toFixed(1) + '" y="368" text-anchor="middle">' + esc(priceShortDate(item.date)) + '</text>' : ''
+      ].join("");
+    }).join("");
+    var minY = yPrice(bounds.effectiveMin);
+    var maxY = yPrice(bounds.effectiveMax);
+    var band = "";
+    if (!hidden.corridor && minY != null && maxY != null && minY >= moneyTop && minY <= moneyTop + moneyHeight && maxY >= moneyTop && maxY <= moneyTop + moneyHeight) {
+      band = '<rect class="prices-v1-corridor-band" x="' + left + '" y="' + Math.min(minY, maxY).toFixed(1) + '" width="' + plotWidth + '" height="' + Math.max(1, Math.abs(maxY - minY)).toFixed(1) + '"><title>MIN/MAX ' + esc(money(bounds.effectiveMin)) + " - " + esc(money(bounds.effectiveMax)) + '</title></rect>';
+    }
+    var clipped = [];
+    if (!hidden.corridor) {
+      if (num(bounds.effectiveMin) != null && (minY == null || minY > moneyTop + moneyHeight)) clipped.push('<text class="prices-v1-clip-label" x="' + (width - right) + '" y="' + (moneyTop + moneyHeight - 6) + '" text-anchor="end">MIN \u043d\u0438\u0436\u0435 \u0432\u0438\u0434\u0438\u043c\u043e\u0433\u043e</text>');
+      if (num(bounds.effectiveMax) != null && (maxY == null || maxY < moneyTop)) clipped.push('<text class="prices-v1-clip-label" x="' + (width - right) + '" y="' + (moneyTop + 14) + '" text-anchor="end">MAX \u0432\u044b\u0448\u0435 \u0432\u0438\u0434\u0438\u043c\u043e\u0433\u043e</text>');
+    }
+    var moneyAxis = priceAxisLabels(priceDomain, money);
+    var repricerY = yPrice(repricer);
+    var impact = row.priceImpact || rowPriceImpact(row);
+    var beforeAfter = "";
+    if (impact && impact.change) {
+      var changeX = x(Math.max(0, Math.min(items.length - 1, Number(impact.change.index) || 0)));
+      beforeAfter = '<text class="prices-v1-before-after" x="' + Math.max(left, changeX - 42).toFixed(1) + '" y="' + (effectTop + effectHeight + 24) + '">\u0434\u043e</text><text class="prices-v1-before-after" x="' + Math.min(width - right, changeX + 28).toFixed(1) + '" y="' + (effectTop + effectHeight + 24) + '">\u043f\u043e\u0441\u043b\u0435 \u00b7 ' + esc(impact.orderDelta == null ? "\u2014" : signedIntLabel(impact.orderDelta)) + '</text>';
+    }
+    return [
+      '<svg class="prices-v1-chart" viewBox="0 0 940 382" role="img" aria-label="\u0426\u0435\u043d\u0430, \u0437\u0430\u043a\u0430\u0437\u044b \u0438 \u044d\u0444\u0444\u0435\u043a\u0442 \u043f\u043e \u0434\u043d\u044f\u043c">',
+      '<g class="prices-v1-grid"><line x1="', left, '" x2="', width - right, '" y1="', moneyTop, '" y2="', moneyTop, '"></line><line x1="', left, '" x2="', width - right, '" y1="', moneyTop + moneyHeight / 2, '" y2="', moneyTop + moneyHeight / 2, '"></line><line x1="', left, '" x2="', width - right, '" y1="', moneyTop + moneyHeight, '" y2="', moneyTop + moneyHeight, '"></line><line x1="', left, '" x2="', width - right, '" y1="', effectTop + effectHeight, '" y2="', effectTop + effectHeight, '"></line></g>',
+      '<text class="prices-chart-y" x="8" y="', moneyTop + 4, '">', esc(moneyAxis.max), '</text><text class="prices-chart-y" x="8" y="', moneyTop + moneyHeight / 2 + 4, '">', esc(moneyAxis.mid), '</text><text class="prices-chart-y" x="8" y="', moneyTop + moneyHeight + 4, '">', esc(moneyAxis.min), '</text><text class="prices-chart-y" x="8" y="', effectTop + 8, '">', esc(intf(maxOrders)), '</text><text class="prices-chart-y" x="8" y="', effectTop + effectHeight + 4, '">0</text>',
+      band,
+      bars,
+      changeMarkers.join(""),
+      !hidden.corridor && minY != null && minY >= moneyTop && minY <= moneyTop + moneyHeight ? '<line class="prices-v1-minmax min" x1="' + left + '" x2="' + (width - right) + '" y1="' + minY.toFixed(1) + '" y2="' + minY.toFixed(1) + '"><title>MIN ' + esc(money(bounds.effectiveMin)) + '</title></line>' : '',
+      !hidden.corridor && maxY != null && maxY >= moneyTop && maxY <= moneyTop + moneyHeight ? '<line class="prices-v1-minmax max" x1="' + left + '" x2="' + (width - right) + '" y1="' + maxY.toFixed(1) + '" y2="' + maxY.toFixed(1) + '"><title>MAX ' + esc(money(bounds.effectiveMax)) + '</title></line>' : '',
+      clipped.join(""),
+      !hidden.repricer && repricerY != null ? '<line class="prices-v1-repricer-line" x1="' + left + '" x2="' + (width - right) + '" y1="' + repricerY.toFixed(1) + '" y2="' + repricerY.toFixed(1) + '"><title>\u0420\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440 ' + esc(money(repricer)) + '</title></line>' : '',
+      hidden.mp ? '' : '<polyline class="prices-v1-line mp" points="' + esc(line("price")) + '"></polyline>',
+      hidden.client ? '' : '<polyline class="prices-v1-line client" points="' + esc(line("clientPrice")) + '"></polyline>',
+      beforeAfter,
+      '</svg>'
+    ].join("");
+  }
+
   function priceV1Chart(row) {
+    return renderSkuPriceEffectChart(row);
     if (!row) return '<div class="prices-v1-empty">Выберите SKU, чтобы увидеть цену и заказы по дням.</div>';
     var items = historyItemsForRow(row).slice(-30);
     if (!items.length) return '<div class="prices-v1-empty">По выбранному SKU нет дневной истории в текущем периоде.</div>';
@@ -3820,11 +4493,17 @@ function downloadPriceSummaryExcel(rows) {
     var lifecycle = row.productLifecycle || priceProductLifecycleForRow(row) || {};
     var effectPct = priceV1EffectPct(impact);
     var currentPrice = row.listPrice != null ? row.listPrice : row.currentFillPrice;
+    var ui = priceChartUi();
+    var hidden = ui.hiddenSeries || {};
+    function legendButton(key, label, className) {
+      var pressed = !hidden[key];
+      return '<button type="button" class="' + esc(className || key) + '" data-price-series="' + esc(key) + '" aria-pressed="' + (pressed ? "true" : "false") + '">' + esc(label) + '</button>';
+    }
     return [
       '<section class="prices-v1-selected">',
       '<div class="prices-v1-chart-card">',
       '<div class="prices-v1-section-head"><div><span>Цена · заказы · эффект по дням</span><h3>', esc(row.articleKey || "\u2014"), '</h3><p>', esc(row.name || ""), '</p></div>',
-      '<div class="prices-v1-legend"><span class="orders">Заказы</span><span class="mp">Цена MP</span><span class="client">Клиент</span><span class="corridor">MIN/MAX</span></div></div>',
+      '<div class="prices-v1-legend">', legendButton("orders", "Заказы", "orders"), legendButton("buyouts", "Выкупы", "buyouts"), legendButton("mp", "Цена MP", "mp"), legendButton("client", "Клиент", "client"), legendButton("corridor", "MIN/MAX", "corridor"), legendButton("repricer", "Репрайсер", "repricer"), '<button type="button" data-price-chart-focus="', ui.skuChartFocus === "corridor" ? "fact" : "corridor", '">', ui.skuChartFocus === "corridor" ? "Фокус на факте" : "Весь коридор", '</button></div></div>',
       priceV1Chart(row),
       '</div>',
       '<aside class="prices-v1-sku-card">',
@@ -3937,6 +4616,7 @@ function downloadPriceSummaryExcel(rows) {
     var baseRows = visibleRows();
     var rows = priceV1Rows(baseRows);
     var summary = stats(rows);
+    var overview = buildPriceOverviewModel(rows, summary);
     var sortedRows = sortedVisiblePriceRows(rows);
     var selected = state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : sortedRows[0];
     if (selected && rows.every(function (row) { return norm(row.articleKey) !== norm(selected.articleKey); })) selected = sortedRows[0];
@@ -3955,6 +4635,7 @@ function downloadPriceSummaryExcel(rows) {
       state.dateTo || "",
       state.priceDrawerOpenV1 ? "drawer-open" : "drawer-closed",
       JSON.stringify(priceV1AdvancedFilters()),
+      JSON.stringify(priceChartUi()),
       rows.length,
       priceRowsSignature(rows),
       summary.ordersUnits == null ? "" : summary.ordersUnits,
@@ -3986,9 +4667,10 @@ function downloadPriceSummaryExcel(rows) {
       '</div>',
       priceV1ActiveChips(summary),
       '</section>',
-      priceV1Kpis(summary),
+      renderPriceKpis(overview),
+      renderPriceOverview(overview),
       priceV1SelectedPanel(selected),
-      '<section class="prices-v1-table-card"><div class="prices-v1-section-head"><div><span>Рабочая таблица цен</span><h3>Цена · эффект · экономика · решение</h3><p>Статус товара редактируется в строке, подробности открываются без потери позиции.</p></div><div class="prices-v1-table-actions"><button type="button" data-price-minmax-template>Скачать MIN/MAX</button><button type="button" data-price-minmax-import>Загрузить MIN/MAX</button><em>', intf(rows.length), ' SKU · ', intf(summary.minMaxRisk), ' риска</em></div></div>',
+      '<section class="prices-v1-table-card" id="price-table"><div class="prices-v1-section-head"><div><span>Рабочая таблица цен</span><h3>Цена · эффект · экономика · решение</h3><p>Статус товара редактируется в строке, подробности открываются без потери позиции.</p></div><div class="prices-v1-table-actions"><button type="button" data-price-minmax-template>Скачать MIN/MAX</button><button type="button" data-price-minmax-import>Загрузить MIN/MAX</button><em>', intf(rows.length), ' SKU · ', intf(summary.minMaxRisk), ' риска</em></div></div>',
       state.loading && !state.loaded ? '<div class="pw-empty">Загружаю данные вкладки Цены...</div>' : priceV1Table(rows),
       '</section>',
       '<input type="file" id="pwMinMaxFile" accept=".tsv,.csv,.txt,.html" style="display:none">',
@@ -4250,6 +4932,65 @@ function downloadPriceSummaryExcel(rows) {
         tableWrap.scrollTo({ left: tableWrap.scrollLeft > 16 ? 0 : maxLeft, behavior: "smooth" });
       });
     }
+
+    root.querySelectorAll("[data-price-margin-metric]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        priceChartUi().marginMetric = button.getAttribute("data-price-margin-metric") === "rub" ? "rub" : "pct";
+        renderPriceWorkbench();
+      });
+    });
+
+    root.querySelectorAll("[data-price-series]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var key = button.getAttribute("data-price-series");
+        if (!key) return;
+        var ui = priceChartUi();
+        ui.hiddenSeries[key] = !ui.hiddenSeries[key];
+        renderPriceWorkbench();
+      });
+    });
+
+    root.querySelectorAll("[data-price-chart-focus]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        priceChartUi().skuChartFocus = button.getAttribute("data-price-chart-focus") === "corridor" ? "corridor" : "fact";
+        renderPriceWorkbench();
+      });
+    });
+
+    root.querySelectorAll("[data-price-v1-day]").forEach(function (node) {
+      node.addEventListener("click", function () {
+        priceChartUi().selectedDate = node.getAttribute("data-price-v1-day") || "";
+        renderPriceWorkbench();
+      });
+      node.addEventListener("keydown", function (event) {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        priceChartUi().selectedDate = node.getAttribute("data-price-v1-day") || "";
+        renderPriceWorkbench();
+      });
+    });
+
+    root.querySelectorAll("[data-price-v1-scroll]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var id = button.getAttribute("data-price-v1-scroll");
+        var target = id ? root.querySelector("#" + id) : null;
+        if (target) target.scrollIntoView({ block: "start", behavior: "smooth" });
+      });
+    });
+
+    root.querySelectorAll("[data-price-v1-insight]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var key = button.getAttribute("data-price-v1-insight");
+        if (key) {
+          state.sortBy = key;
+          state.sortDir = sortToggleDirection(key);
+          derived.table.rowsRef = null;
+        }
+        var table = root.querySelector("#price-table");
+        if (table) table.scrollIntoView({ block: "start", behavior: "smooth" });
+        renderPriceWorkbench();
+      });
+    });
 
     attachPriceLifecycleForms(root);
     attachModalHandlers();

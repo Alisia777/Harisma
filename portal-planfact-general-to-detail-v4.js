@@ -6,7 +6,7 @@
 
   const ROOT_ID = 'view-sku-plan-fact';
   const STORE_KEY = 'altea.planFact.generalToDetail.v4';
-  const VERSION = '20260623-planfact-gtd-v4-standalone1';
+  const VERSION = '20260623-planfact-gtd-v4-filterdock1';
   const MODES = [
     ['general', 'Общее'],
     ['lfl', 'Like-for-like'],
@@ -42,6 +42,7 @@
   let activeObserver = null;
   let observedRoot = null;
   let observerRestoreQueued = false;
+  let filterCommitTimer = 0;
   let priceHistoryCacheSource = null;
   let priceHistoryCache = null;
   let fallbackModelData = null;
@@ -1512,6 +1513,199 @@
     return renderGeneral(model, views);
   }
 
+  function monthLabel(monthKey = '') {
+    const key = String(monthKey || '').slice(0, 7);
+    if (!/^\d{4}-\d{2}$/.test(key)) return 'Последний срез';
+    try {
+      return new Date(`${key}-01T00:00:00`).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+    } catch (_) {
+      return key;
+    }
+  }
+
+  function optionList(options, selected) {
+    return options.map(([value, label]) => (
+      `<option value="${escapeHtml(value)}" ${String(selected) === String(value) ? 'selected' : ''}>${escapeHtml(label)}</option>`
+    )).join('');
+  }
+
+  function planFactDateAttr(model) {
+    return [
+      model?.dateMin ? `min="${escapeHtml(model.dateMin)}"` : '',
+      model?.dateMax ? `max="${escapeHtml(model.dateMax)}"` : ''
+    ].filter(Boolean).join(' ');
+  }
+
+  function renderFilterPanel(model) {
+    const filters = model?.filters || fallbackFiltersFromDom();
+    const platformKeys = Array.isArray(window.SKU_PLAN_FACT_PLATFORMS) && window.SKU_PLAN_FACT_PLATFORMS.length
+      ? window.SKU_PLAN_FACT_PLATFORMS
+      : ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+    const platformOptions = [['all', 'Все площадки'], ...platformKeys.map((key) => [key, platformLabel(key)])];
+    const ownerOptions = [['all', 'Все сотрудники'], ...(model?.owners || []).map((owner) => [owner, owner])];
+    const monthOptions = [['latest', 'Последний срез'], ...(model?.months || []).map((month) => [month, monthLabel(month)])];
+    const statusOptions = [
+      ['actual', 'Актуальные'],
+      ['output', 'Вывод'],
+      ['question', 'Под вопросом'],
+      ['all', 'Все SKU'],
+      ['with_plan', 'Есть план'],
+      ['under_plan', 'Ниже плана'],
+      ['no_fact', 'План есть, факта нет'],
+      ['unmapped', 'API без пары'],
+      ['matrix_problem', 'Проблемы матрицы'],
+      ['missing_owner', 'Без owner'],
+      ['duplicate_risk', 'Риск дубля']
+    ];
+    const sortOptions = [
+      ['gap', 'Разрыв к плану'],
+      ['completion', 'Выполнение'],
+      ['margin', 'Маржа'],
+      ['fact', 'Факт оборота'],
+      ['plan', 'План'],
+      ['drr', 'ДРР'],
+      ['ad', 'Реклама'],
+      ['substitution', 'WB подмены'],
+      ['article', 'Артикул'],
+      ['owner', 'Owner']
+    ];
+    const dateAttrs = planFactDateAttr(model);
+    return `
+      <div class="pf-v4-filter-panel" data-pf-v4-filter-panel>
+        <label class="pf-v4-filter-search">
+          <span>Поиск</span>
+          <input type="search" data-pf-v4-filter="search" value="${escapeHtml(filters.search || '')}" placeholder="SKU, название, owner, alias...">
+        </label>
+        <label>
+          <span>Месяц</span>
+          <select data-pf-v4-filter="month">${optionList(monthOptions, filters.month || model?.monthKey || 'latest')}</select>
+        </label>
+        <label>
+          <span>С даты</span>
+          <input type="date" data-pf-v4-filter="dateFrom" value="${escapeHtml(model?.periodStart || filters.dateFrom || '')}" ${dateAttrs}>
+        </label>
+        <label>
+          <span>По дату</span>
+          <input type="date" data-pf-v4-filter="dateTo" value="${escapeHtml(model?.periodEnd || model?.selectedDate || filters.dateTo || '')}" ${dateAttrs}>
+        </label>
+        <label>
+          <span>Owner</span>
+          <select data-pf-v4-filter="owner">${optionList(ownerOptions, filters.owner || 'all')}</select>
+        </label>
+        <label>
+          <span>Статус</span>
+          <select data-pf-v4-filter="status">${optionList(statusOptions, filters.status || 'actual')}</select>
+        </label>
+        <label>
+          <span>Площадка</span>
+          <select data-pf-v4-filter="platform">${optionList(platformOptions, normalizedPlatform(filters.platform || 'all'))}</select>
+        </label>
+        <label>
+          <span>Сортировка</span>
+          <select data-pf-v4-filter="sort">${optionList(sortOptions, filters.sort || 'gap')}</select>
+        </label>
+        <div class="pf-v4-filter-actions">
+          <button type="button" data-pf-v4-filter-reset>Сбросить</button>
+          <button type="button" data-pf-v4-scroll-table>К таблице</button>
+          <em>${escapeHtml(fmtInt(visibleRows(model).length))} из ${escapeHtml(fmtInt(allRows(model).length))} SKU</em>
+        </div>
+      </div>
+    `;
+  }
+
+  function dateKey(value = '') {
+    const key = String(value || '').slice(0, 10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(key) ? key : '';
+  }
+
+  function monthFromDate(value = '') {
+    const key = dateKey(value);
+    return key ? key.slice(0, 7) : '';
+  }
+
+  function nextFilterPatch(key, value) {
+    const app = appState();
+    const current = { ...(app?.skuPlanFactFilters || {}) };
+    const patch = { [key]: value };
+    if (key === 'dateFrom') {
+      const next = dateKey(value);
+      patch.dateFrom = next;
+      patch.dateMode = next ? 'manual' : 'latest';
+      if (next) patch.month = next.slice(0, 7);
+      if (current.dateTo && next && monthFromDate(current.dateTo) !== monthFromDate(next)) {
+        patch.dateTo = '';
+        patch.date = '';
+      }
+      if (current.dateTo && next && current.dateTo < next) {
+        patch.dateTo = next;
+        patch.date = next;
+      }
+    }
+    if (key === 'dateTo') {
+      const next = dateKey(value);
+      patch.dateTo = next;
+      patch.date = next;
+      patch.dateMode = next ? 'manual' : 'latest';
+      patch.month = next ? next.slice(0, 7) : 'latest';
+      if (current.dateFrom && next && monthFromDate(current.dateFrom) !== monthFromDate(next)) {
+        patch.dateFrom = `${next.slice(0, 7)}-01`;
+      }
+      if (current.dateFrom && next && current.dateFrom > next) patch.dateFrom = next;
+    }
+    if (key === 'month') {
+      const month = /^\d{4}-\d{2}$/.test(String(value || '').slice(0, 7)) ? String(value || '').slice(0, 7) : 'latest';
+      patch.month = month;
+      patch.date = '';
+      patch.dateFrom = '';
+      patch.dateTo = '';
+      patch.dateMode = month === 'latest' ? 'latest' : 'month';
+    }
+    if (key === 'platform') patch.platform = normalizedPlatform(value || 'all');
+    if (key === 'sort') {
+      patch.sortDir = ['gap', 'article', 'owner'].includes(String(value || '')) ? 'asc' : 'desc';
+    }
+    return patch;
+  }
+
+  function updateNativeFilterControls(filters) {
+    const host = root();
+    if (!host) return;
+    Object.entries({
+      '#skuPlanFactSearch': 'search',
+      '#skuPlanFactMonth': 'month',
+      '#skuPlanFactDateFrom': 'dateFrom',
+      '#skuPlanFactDateTo': 'dateTo',
+      '#skuPlanFactOwner': 'owner',
+      '#skuPlanFactStatus': 'status',
+      '#skuPlanFactPlatform': 'platform',
+      '#skuPlanFactSort': 'sort'
+    }).forEach(([selector, key]) => {
+      const node = host.querySelector(selector);
+      if (!node || filters[key] === undefined) return;
+      try { node.value = filters[key]; } catch (_) {}
+    });
+  }
+
+  function applyPlanFactFilterPatch(patch) {
+    const app = appState();
+    const current = { ...(app?.skuPlanFactFilters || {}) };
+    const next = { ...current, ...(patch || {}) };
+    if (!next.status) next.status = 'actual';
+    if (!next.owner) next.owner = 'all';
+    if (!next.platform) next.platform = 'all';
+    if (!next.sort) next.sort = 'gap';
+    if (app) app.skuPlanFactFilters = next;
+    if (patch?.platform !== undefined) {
+      const platform = normalizedPlatform(next.platform || 'all');
+      try { localStorage.setItem('altea.portal.marketplace', platform); } catch (_) {}
+      document.documentElement.dataset.marketplace = platform;
+      document.body.dataset.marketplace = platform;
+    }
+    updatePlanFactUi({ selectedDate: '' });
+    updateNativeFilterControls(next);
+    renderBase();
+  }
+
   function renderShell(model) {
     const mode = activeMode();
     const tabs = MODES.map(([key, label]) => `
@@ -1527,6 +1721,7 @@
           </div>
           <div class="pf-v4-tabs" role="tablist">${tabs}</div>
         </div>
+        ${renderFilterPanel(model)}
         <div class="pf-v4-body">${renderBody(model)}</div>
       </section>
     `;
@@ -1574,6 +1769,16 @@
       #${ROOT_ID} .pf-v4-tabs button{height:31px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--pf-v4-muted);padding:0 12px;font-size:11px;font-weight:850;white-space:nowrap;transition:transform 160ms ease,border-color 160ms ease,background 160ms ease}
       #${ROOT_ID} .pf-v4-tabs button:hover{transform:translateY(-1px)}
       #${ROOT_ID} .pf-v4-tabs button[aria-selected="true"]{background:linear-gradient(180deg,#f0dfbf,#b89455);color:#17110a}
+      #${ROOT_ID}.pf-v4-controls-active .pf-v1-filter-dock{display:none!important}
+      #${ROOT_ID} .pf-v4-filter-panel{position:relative;z-index:3;display:grid;grid-template-columns:minmax(260px,1.7fr) minmax(130px,.7fr) minmax(135px,.7fr) minmax(135px,.7fr) minmax(170px,.85fr) minmax(160px,.85fr) minmax(150px,.75fr) minmax(180px,.9fr) auto;gap:8px;align-items:end;margin:10px 0 12px;padding:10px;border:1px solid rgba(219,199,163,.18);border-radius:14px;background:linear-gradient(135deg,rgba(219,199,163,.08),rgba(168,85,247,.055) 42%,rgba(0,0,0,.22));box-shadow:inset 0 1px rgba(255,255,255,.035)}
+      #${ROOT_ID} .pf-v4-filter-panel label{display:grid;gap:5px;min-width:0}
+      #${ROOT_ID} .pf-v4-filter-panel label span{color:#dbc7a3;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em}
+      #${ROOT_ID} .pf-v4-filter-panel input,#${ROOT_ID} .pf-v4-filter-panel select{width:100%;height:34px;min-width:0;border:1px solid rgba(219,199,163,.18);border-radius:9px;background:rgba(5,4,3,.78);color:#f7edda;padding:0 10px;font:inherit;font-size:12px;outline:none}
+      #${ROOT_ID} .pf-v4-filter-panel input:focus,#${ROOT_ID} .pf-v4-filter-panel select:focus{border-color:rgba(240,210,145,.72);box-shadow:0 0 0 2px rgba(240,210,145,.12)}
+      #${ROOT_ID} .pf-v4-filter-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;min-width:max-content}
+      #${ROOT_ID} .pf-v4-filter-actions button{height:34px;border:1px solid rgba(219,199,163,.22);border-radius:999px;background:rgba(7,6,5,.72);color:#eadcbd;padding:0 12px;font-size:11px;font-weight:850;white-space:nowrap}
+      #${ROOT_ID} .pf-v4-filter-actions button:first-child{background:rgba(255,255,255,.035);color:var(--pf-v4-muted)}
+      #${ROOT_ID} .pf-v4-filter-actions em{color:var(--pf-v4-faint);font-size:10px;font-style:normal;white-space:nowrap}
       #${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
       #${ROOT_ID} .pf-v4-owner-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
       #${ROOT_ID} .pf-v4-kpi{--pf-v4-color:#dbc7a3;position:relative;min-height:104px;display:grid;align-content:start;gap:8px;padding:13px 14px;border:1px solid var(--pf-v4-line);border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.012));color:inherit;text-align:left;overflow:hidden;box-shadow:inset 0 1px rgba(255,255,255,.03)}
@@ -1694,8 +1899,8 @@
       @keyframes pfV4In{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
       @keyframes pfV4Bar{from{width:0}}
       @keyframes pfV4Column{from{transform:scaleY(.04);opacity:.18}}
-      @media(max-width:1350px){#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#${ROOT_ID} .pf-v4-split,#${ROOT_ID} .pf-v4-chart-grid{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-insights{grid-template-columns:repeat(2,minmax(0,1fr))}}
-      @media(max-width:760px){#${ROOT_ID} .pf-v4-head{display:grid}#${ROOT_ID} .pf-v4-tabs{overflow:auto}#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles,#${ROOT_ID} .pf-v4-drawer-grid,#${ROOT_ID} .pf-v4-funnel,#${ROOT_ID} .pf-v4-insights,#${ROOT_ID} .pf-v4-margin-layout{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table button{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table b,#${ROOT_ID} .pf-v4-team-table em,#${ROOT_ID} .pf-v4-team-table small{text-align:left}#${ROOT_ID} .pf-v4-svg-chart{min-width:620px}}
+      @media(max-width:1350px){#${ROOT_ID} .pf-v4-filter-panel{grid-template-columns:repeat(4,minmax(0,1fr))}#${ROOT_ID} .pf-v4-filter-search{grid-column:span 2}#${ROOT_ID} .pf-v4-filter-actions{justify-content:flex-start}#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#${ROOT_ID} .pf-v4-split,#${ROOT_ID} .pf-v4-chart-grid{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-insights{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(max-width:760px){#${ROOT_ID} .pf-v4-head{display:grid}#${ROOT_ID} .pf-v4-tabs{overflow:auto}#${ROOT_ID} .pf-v4-filter-panel{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-filter-search{grid-column:auto}#${ROOT_ID} .pf-v4-filter-actions{display:grid;grid-template-columns:1fr 1fr}#${ROOT_ID} .pf-v4-filter-actions em{grid-column:1/-1}#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles,#${ROOT_ID} .pf-v4-drawer-grid,#${ROOT_ID} .pf-v4-funnel,#${ROOT_ID} .pf-v4-insights,#${ROOT_ID} .pf-v4-margin-layout{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table button{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table b,#${ROOT_ID} .pf-v4-team-table em,#${ROOT_ID} .pf-v4-team-table small{text-align:left}#${ROOT_ID} .pf-v4-svg-chart{min-width:620px}}
       @media(prefers-reduced-motion:reduce){#${ROOT_ID} .pf-v4 *{animation:none!important;transition:none!important}}
     `;
     document.head.appendChild(style);
@@ -1846,6 +2051,46 @@
   }
 
   function bindRenderedControls(host) {
+    host.querySelectorAll('[data-pf-v4-filter]').forEach((control) => {
+      if (control.dataset.pfV4DirectBound === '1') return;
+      control.dataset.pfV4DirectBound = '1';
+      const key = control.getAttribute('data-pf-v4-filter') || '';
+      const commit = () => {
+        applyPlanFactFilterPatch(nextFilterPatch(key, control.value));
+      };
+      if (key === 'search') {
+        control.addEventListener('input', () => {
+          if (filterCommitTimer) window.clearTimeout(filterCommitTimer);
+          filterCommitTimer = window.setTimeout(() => {
+            filterCommitTimer = 0;
+            commit();
+          }, 160);
+        });
+      } else {
+        control.addEventListener('change', commit);
+      }
+    });
+    host.querySelectorAll('[data-pf-v4-filter-reset]').forEach((button) => {
+      if (button.dataset.pfV4DirectBound === '1') return;
+      button.dataset.pfV4DirectBound = '1';
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        applyPlanFactFilterPatch({
+          search: '',
+          owner: 'all',
+          status: 'actual',
+          platform: 'all',
+          month: 'latest',
+          date: '',
+          dateFrom: '',
+          dateTo: '',
+          dateMode: 'latest',
+          sort: 'gap',
+          sortDir: 'asc'
+        });
+      });
+    });
     host.querySelectorAll('[data-pf-v4-mode]').forEach((button) => {
       if (button.dataset.pfV4DirectBound === '1') return;
       button.dataset.pfV4DirectBound = '1';
@@ -1945,25 +2190,12 @@
 
   function setGlobalPlatform(platform) {
     const normalized = normalizedPlatform(platform);
-    try { localStorage.setItem('altea.portal.marketplace', normalized); } catch (_) {}
-    document.documentElement.dataset.marketplace = normalized;
-    document.body.dataset.marketplace = normalized;
-    window.dispatchEvent(new CustomEvent('altea:marketplacechange', { detail: { platform: normalized } }));
-    const app = appState();
-    if (app?.skuPlanFactFilters) app.skuPlanFactFilters.platform = normalized;
-    renderBase();
+    applyPlanFactFilterPatch({ platform: normalized });
+    try { window.dispatchEvent(new CustomEvent('altea:marketplacechange', { detail: { platform: normalized } })); } catch (_) {}
   }
 
   function setOwnerFilter(owner) {
-    const app = appState();
-    if (app?.skuPlanFactFilters) app.skuPlanFactFilters.owner = owner || 'all';
-    const ownerSelect = root()?.querySelector('#skuPlanFactOwner');
-    if (ownerSelect) {
-      ownerSelect.value = owner || 'all';
-      ownerSelect.dispatchEvent(new Event('change', { bubbles: true }));
-    } else {
-      renderBase();
-    }
+    applyPlanFactFilterPatch({ owner: owner || 'all' });
   }
 
   function renderBase() {
@@ -2085,6 +2317,7 @@
     installActiveObserver();
     ensureStyle();
     bind(host);
+    host.classList.add('pf-v4-controls-active');
     const hasNativePlanFact = Boolean(host.querySelector('[data-plan-fact-design="v1"]'));
     const model = buildModel();
     if (!model) {
@@ -2100,8 +2333,8 @@
 
     const nextSignature = shellSignature(model);
     let mount = host.querySelector('[data-planfact-v4]');
-    const anchor = host.querySelector('.pf-v1-filter-dock')
-      || host.querySelector('.pf-v1-head')
+    const anchor = host.querySelector('.pf-v1-head')
+      || host.querySelector('.pf-v1-filter-dock')
       || host.firstElementChild;
     const isPlacedAfterAnchor = Boolean(anchor && mount && mount.previousElementSibling === anchor);
     if (mount && mount.dataset.pfV4Signature === nextSignature) {

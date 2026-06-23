@@ -158,6 +158,39 @@
       .sort((a, b) => taskScore(b) - taskScore(a) || String(a.due || '').localeCompare(String(b.due || '')));
   }
 
+  function stableHash(value) {
+    const text = String(value || '');
+    let hash = 0;
+    for (let index = 0; index < text.length; index += 1) {
+      hash = ((hash << 5) - hash + text.charCodeAt(index)) | 0;
+    }
+    return Math.abs(hash).toString(36);
+  }
+
+  function renderSignature(tasks) {
+    const filters = appState()?.controlFilters || {};
+    return stableHash(JSON.stringify({
+      filters: {
+        search: filters.search || '',
+        owner: filters.owner || '',
+        status: filters.status || '',
+        priority: filters.priority || '',
+        type: filters.type || '',
+        source: filters.source || '',
+        platform: filters.platform || '',
+        horizon: filters.horizon || ''
+      },
+      tasks: tasks.map((task) => [
+        task?.id,
+        task?.status,
+        task?.owner,
+        task?.priority,
+        task?.due || task?.deadline,
+        task?.updatedAt || task?.updated_at || ''
+      ])
+    }));
+  }
+
   function priorityLabel(priority) {
     const key = normalizeText(priority || 'medium');
     if (key === 'critical') return 'критично';
@@ -354,18 +387,25 @@
     if (!root || !root.classList.contains('active')) return;
     startControlObserver();
     ensureStyle();
-    root.querySelector('[data-task-kanban-v1]')?.remove();
-    const anchor = root.querySelector('[data-task-lazy-panel]') || root.querySelector('.section-title');
-    if (!anchor) return;
-    anchor.insertAdjacentHTML(anchor.matches('[data-task-lazy-panel]') ? 'afterend' : 'afterend', renderBoard(filteredTasks()));
+    const tasks = filteredTasks();
+    const signature = renderSignature(tasks);
+    const currentBoard = root.querySelector('[data-task-kanban-v1]');
+    if (currentBoard && currentBoard.dataset.renderSignature === signature && root.children.length === 1) {
+      cleanupLegacyControl(root);
+      return;
+    }
+    root.innerHTML = renderBoard(tasks);
     const board = root.querySelector('[data-task-kanban-v1]');
-    if (board) bindBoard(board);
+    if (board) {
+      board.dataset.renderSignature = signature;
+      bindBoard(board);
+    }
     cleanupLegacyControl(root);
   }
 
   function cleanupLegacyControl(root) {
     if (!root?.querySelector('[data-task-kanban-v1]')) return;
-    root.querySelectorAll('.section-title.control-simple-title, .control-simple-panel, [data-task-lazy-panel]').forEach((node) => {
+    root.querySelectorAll('.section-title.control-simple-title, .control-simple-panel, [data-task-lazy-panel], .control-simple-platform-board, .control-simple-workstream-lane').forEach((node) => {
       if (!node.closest('[data-task-kanban-v1]')) node.remove();
     });
   }
@@ -405,8 +445,8 @@
         return;
       }
       const hasBoard = !!root.querySelector('[data-task-kanban-v1]');
-      const hasAnchor = !!(root.querySelector('[data-task-lazy-panel]') || root.querySelector('.section-title'));
-      if (!hasBoard && hasAnchor) queueEnhance();
+      const hasLegacy = !!root.querySelector('.control-simple-panel,[data-task-lazy-panel],.control-simple-platform-board,.control-simple-workstream-lane,.section-title.control-simple-title');
+      if (!hasBoard || hasLegacy || root.children.length > 1) queueEnhance();
     });
     controlObserver.observe(root, { childList: true });
     controlObserverTimer = window.setTimeout(stopControlObserver, 9000);
@@ -447,7 +487,7 @@
       queueEnhance();
     };
     const onRouteChangeCascade = () => {
-      [0, 160, 520, 1100, 2400, 5200].forEach((delay) => window.setTimeout(onRouteChange, delay));
+      [0, 180, 700, 1800].forEach((delay) => window.setTimeout(onRouteChange, delay));
     };
     window.addEventListener('altea:viewchange', onRouteChangeCascade);
     window.addEventListener('altea:data-ready', queueEnhance);

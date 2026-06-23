@@ -38,6 +38,10 @@
   let suppressEnhance = false;
   let lastShellSignature = '';
   let enhanceTimer = 0;
+  let recoveryTimersInstalled = false;
+  let activeObserver = null;
+  let observedRoot = null;
+  let observerRestoreQueued = false;
   let priceHistoryCacheSource = null;
   let priceHistoryCache = null;
   let fallbackModelData = null;
@@ -2061,6 +2065,7 @@
     if (suppressEnhance) return;
     const host = root();
     if (!host || !host.querySelector('[data-plan-fact-design="v1"]')) return;
+    installActiveObserver();
     ensureStyle();
     bind(host);
     const model = buildModel();
@@ -2107,6 +2112,54 @@
     }, delay);
   }
 
+  function queueRecovery(delay) {
+    window.setTimeout(() => {
+      const host = root();
+      if (!host || !host.classList.contains('active')) return;
+      wrapRenderer();
+      if (needsRestore(host)) {
+        lastShellSignature = '';
+        queueEnhance(0);
+      }
+    }, delay);
+  }
+
+  function installRecoveryTimers() {
+    if (recoveryTimersInstalled) return;
+    recoveryTimersInstalled = true;
+    [700, 1800, 3600, 7000, 11000, 16000].forEach(queueRecovery);
+  }
+
+  function needsRestore(host = root()) {
+    if (!host || !host.classList.contains('active')) return false;
+    if (!host.querySelector('[data-plan-fact-design="v1"]')) return false;
+    return !host.querySelector('[data-planfact-v4]') || Boolean(host.querySelector('.pf-v1-kpis,.pf-v1-platform-board'));
+  }
+
+  function queueObserverRestore() {
+    if (observerRestoreQueued) return;
+    observerRestoreQueued = true;
+    window.setTimeout(() => {
+      observerRestoreQueued = false;
+      wrapRenderer();
+      if (!needsRestore()) return;
+      lastShellSignature = '';
+      queueEnhance(40);
+    }, 90);
+  }
+
+  function installActiveObserver() {
+    const host = root();
+    if (!host || typeof MutationObserver !== 'function') return;
+    if (activeObserver && observedRoot === host) return;
+    if (activeObserver) activeObserver.disconnect();
+    observedRoot = host;
+    activeObserver = new MutationObserver(() => {
+      if (needsRestore(host)) queueObserverRestore();
+    });
+    activeObserver.observe(host, { childList: true, subtree: true });
+  }
+
   function wrapRenderer() {
     const candidate = window.renderSkuPlanFact || (typeof renderSkuPlanFact === 'function' ? renderSkuPlanFact : null);
     if (typeof candidate !== 'function' || candidate.__planFactV4Wrapped) return;
@@ -2116,7 +2169,7 @@
     if (candidate === wrappedRenderSkuPlanFact) return;
     const wrapped = function renderSkuPlanFactWithV4(rootId, options) {
       const result = baseRenderSkuPlanFact.call(this, rootId || ROOT_ID, options || {});
-      queueEnhance(0);
+      queueEnhance(80);
       return result;
     };
     wrapped.__planFactV4Wrapped = true;
@@ -2128,8 +2181,9 @@
 
   function boot() {
     wrapRenderer();
-    enhance();
-    [700, 1800, 3600].forEach((delay) => window.setTimeout(enhance, delay));
+    installActiveObserver();
+    queueEnhance(0);
+    installRecoveryTimers();
   }
 
   if (document.readyState === 'loading') {
@@ -2137,10 +2191,16 @@
   } else {
     boot();
   }
-  window.addEventListener('altea:viewchange', () => queueEnhance(0));
-  window.addEventListener('hashchange', () => queueEnhance(0));
+  window.addEventListener('altea:viewchange', () => {
+    installActiveObserver();
+    queueEnhance(60);
+  });
+  window.addEventListener('hashchange', () => {
+    installActiveObserver();
+    queueEnhance(60);
+  });
   window.addEventListener('altea:marketplacechange', () => {
     lastShellSignature = '';
-    queueEnhance(0);
+    queueEnhance(60);
   });
 })();

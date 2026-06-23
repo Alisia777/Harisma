@@ -497,9 +497,12 @@
       guard.panelHydrationRetries = (guard.panelHydrationRetries || 0) + 1;
       hydrateTrustedPlanFactMetrics("dataHealthPanel");
     }
+    var panel = host.querySelector("[data-portal-data-guard-panel]");
+    if (panel) panel.remove();
+    if (!window.__ALTEA_SHOW_DATA_GUARD_PANEL__) return;
     var ready = host.classList.contains("active") || (appState().activeView === "data-health");
     if (!ready) return;
-    var panel = host.querySelector("[data-portal-data-guard-panel]");
+    panel = host.querySelector("[data-portal-data-guard-panel]");
     if (!panel) {
       panel = document.createElement("div");
       panel.setAttribute("data-portal-data-guard-panel", "true");

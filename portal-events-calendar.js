@@ -8,6 +8,7 @@
   const MAX_SELECTED_SKU_CHIPS = 18;
   const MAX_BULK_SKUS = 500;
   const MAX_TASK_SKU_LINES = 80;
+  const VERSION = '20260623-calendar-owner1';
   const CALENDAR_STATE = window.__ALTEA_PROMO_CALENDAR_STATE__ || {
     month: '',
     dateFrom: '',
@@ -35,6 +36,9 @@
   if (!CALENDAR_STATE.kind) CALENDAR_STATE.kind = 'all';
   if (!('readonlyEventId' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEventId = '';
   if (!('readonlyEvent' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEvent = null;
+  let calendarOwnerQueued = false;
+  let calendarObserver = null;
+  let calendarObserverTimer = 0;
 
   const PLATFORMS = [
     ['all', 'Все площадки'],
@@ -1088,6 +1092,52 @@
     return appState().activeView === 'data-health' || document.getElementById('view-data-health')?.classList.contains('active');
   }
 
+  function calendarLegacyNodes(root) {
+    if (!root) return [];
+    return Array.from(root.querySelectorAll('.data-health-shell,[data-health-change-digest],[data-health-rules-form],.data-health-digest,.data-health-hero,.data-health-queue,.data-health-tech'))
+      .filter((node) => !node.closest('.promo-calendar-shell'));
+  }
+
+  function stopCalendarObserver() {
+    if (calendarObserver) {
+      calendarObserver.disconnect();
+      calendarObserver = null;
+    }
+    if (calendarObserverTimer) {
+      window.clearTimeout(calendarObserverTimer);
+      calendarObserverTimer = 0;
+    }
+  }
+
+  function queueCalendarOwnerCheck(rootId = 'view-data-health') {
+    if (calendarOwnerQueued) return;
+    calendarOwnerQueued = true;
+    window.setTimeout(() => {
+      calendarOwnerQueued = false;
+      const root = document.getElementById(rootId);
+      if (!root || !isCalendarActive()) {
+        stopCalendarObserver();
+        return;
+      }
+      const hasCalendar = Boolean(root.querySelector('.promo-calendar-shell'));
+      const legacyNodes = calendarLegacyNodes(root);
+      if (legacyNodes.length && hasCalendar) legacyNodes.forEach((node) => node.remove());
+      if (!hasCalendar || legacyNodes.length) renderEventCalendar(rootId);
+    }, 80);
+  }
+
+  function startCalendarObserver(rootId = 'view-data-health') {
+    const root = document.getElementById(rootId);
+    if (!root || !isCalendarActive()) {
+      stopCalendarObserver();
+      return;
+    }
+    if (calendarObserver) return;
+    calendarObserver = new MutationObserver(() => queueCalendarOwnerCheck(rootId));
+    calendarObserver.observe(root, { childList: true });
+    calendarObserverTimer = window.setTimeout(stopCalendarObserver, 15000);
+  }
+
   function monthDays(monthKey) {
     const first = dateFromKey(startOfMonth(monthKey));
     const firstDay = (first.getDay() + 6) % 7;
@@ -2109,6 +2159,8 @@
   function renderEventCalendar(rootId = 'view-data-health') {
     const root = document.getElementById(rootId);
     if (!root) return;
+    root.dataset.promoCalendarOwner = VERSION;
+    if (isCalendarActive()) startCalendarObserver(rootId);
     patchCalendarChrome();
     const month = CALENDAR_STATE.month || startOfMonth(todayKey());
     CALENDAR_STATE.month = month;
@@ -2183,6 +2235,7 @@
       root.__alteaPromoCalendarMarkup = markup;
       bindCalendar(root, rootId);
     }
+    queueCalendarOwnerCheck(rootId);
     if (!CALENDAR_STATE.dataLoaded && !CALENDAR_STATE.dataLoading) ensureCalendarData(rootId);
     if (!CALENDAR_STATE.remoteLoaded && !CALENDAR_STATE.remoteLoading) syncCalendarFromRemote({ rootId, rerender: true });
     if (!CALENDAR_STATE.taskSyncing && !CALENDAR_STATE.modalOpen) {
@@ -2754,10 +2807,24 @@
     window.renderPromoEventsCalendar = renderEventCalendar;
     window.syncPromoCalendarFromRemote = syncCalendarFromRemote;
     window.persistPromoCalendarEvents = persistPromoCalendarEvents;
+    renderEventCalendar.__promoCalendarRenderer = true;
     try { renderPortalDataHealth = renderEventCalendar; } catch {}
   }
 
   install();
   window.addEventListener('DOMContentLoaded', install, { once: true });
+  ['hashchange', 'altea:viewchange', 'altea:app-ready', 'altea:data-ready', 'altea:portal-storage-updated'].forEach((eventName) => {
+    window.addEventListener(eventName, () => {
+      install();
+      if (isCalendarActive()) {
+        [0, 220, 900, 2200, 5200].forEach((delay) => {
+          window.setTimeout(() => {
+            startCalendarObserver('view-data-health');
+            queueCalendarOwnerCheck('view-data-health');
+          }, delay);
+        });
+      }
+    });
+  });
   document.addEventListener('click', openCalendarFromNav, true);
 })();

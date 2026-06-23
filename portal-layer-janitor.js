@@ -3,6 +3,9 @@
 
   if (window.__ALTEA_LAYER_JANITOR_20260623__) return;
   window.__ALTEA_LAYER_JANITOR_20260623__ = true;
+  let cascadeTimers = [];
+  let cleanupQueued = false;
+  let viewObserver = null;
 
   const HEAVY_VIEW_IDS = [
     'view-dashboard',
@@ -33,6 +36,9 @@
     '.section-title.control-simple-title'
   ].join(',');
 
+  const ACTIVE_CONTROL_LEGACY = '.control-simple-panel,[data-task-lazy-panel],.control-simple-platform-board,.control-simple-workstream-lane,.section-title.control-simple-title';
+  const ACTIVE_CALENDAR_LEGACY = '.data-health-shell,[data-health-change-digest],[data-health-rules-form],.data-health-digest,.data-health-hero,.data-health-queue,.data-health-tech';
+
   function cleanupLegacyNodes() {
     document.querySelectorAll(LEGACY_SELECTORS).forEach((node) => {
       if (!node.closest('.view.active')) node.remove();
@@ -49,14 +55,65 @@
     });
   }
 
+  function cleanupActiveOwnedViews() {
+    const controlRoot = document.getElementById('view-control');
+    if (controlRoot?.classList.contains('active')) {
+      const hasKanban = Boolean(controlRoot.querySelector('[data-task-kanban-v1]'));
+      if (hasKanban) {
+        controlRoot.querySelectorAll(ACTIVE_CONTROL_LEGACY).forEach((node) => {
+          if (!node.closest('[data-task-kanban-v1]')) node.remove();
+        });
+      } else if (typeof window.renderControlCenter === 'function') {
+        window.setTimeout(() => window.renderControlCenter(), 0);
+      }
+    }
+
+    const calendarRoot = document.getElementById('view-data-health');
+    if (calendarRoot?.classList.contains('active')) {
+      const hasCalendar = Boolean(calendarRoot.querySelector('.promo-calendar-shell'));
+      if (hasCalendar) {
+        calendarRoot.querySelectorAll(ACTIVE_CALENDAR_LEGACY).forEach((node) => {
+          if (!node.closest('.promo-calendar-shell')) node.remove();
+        });
+      } else if (typeof window.renderPortalDataHealth === 'function') {
+        window.setTimeout(() => window.renderPortalDataHealth('view-data-health'), 0);
+      }
+    }
+  }
+
   function cleanup() {
+    observeViewRoots();
     cleanupLegacyNodes();
     cleanupInactiveViews();
+    cleanupActiveOwnedViews();
+  }
+
+  function queueCleanup(delay = 60) {
+    if (cleanupQueued) return;
+    cleanupQueued = true;
+    window.setTimeout(() => {
+      cleanupQueued = false;
+      cleanup();
+    }, delay);
+  }
+
+  function observeViewRoots() {
+    if (typeof MutationObserver !== 'function') return;
+    if (!viewObserver) {
+      viewObserver = new MutationObserver(() => queueCleanup(70));
+    }
+    HEAVY_VIEW_IDS.forEach((id) => {
+      const root = document.getElementById(id);
+      if (!root || root.dataset.layerJanitorObserved === 'true') return;
+      root.dataset.layerJanitorObserved = 'true';
+      viewObserver.observe(root, { childList: true });
+    });
   }
 
   function cascade() {
-    [0, 80, 240, 600, 1400, 3000, 6200].forEach((delay) => {
-      window.setTimeout(cleanup, delay);
+    cascadeTimers.forEach((timer) => window.clearTimeout(timer));
+    cascadeTimers = [0, 120, 420, 1200, 2800, 6200].map((delay) => {
+      return window.setTimeout(cleanup, delay);
     });
   }
 

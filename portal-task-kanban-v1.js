@@ -42,6 +42,13 @@
     return window.state || window.__alteaAppState || {};
   }
 
+  function isControlRouteActive() {
+    const root = document.getElementById(ROOT_ID);
+    const activeView = normalizeText(appState().activeView || '');
+    const hash = normalizeText(window.location.hash || '');
+    return Boolean(root?.classList.contains('active') || activeView === 'control' || hash.includes('control'));
+  }
+
   function escapeHtml(value) {
     return String(value ?? '')
       .replace(/&/g, '&amp;')
@@ -449,7 +456,6 @@
       if (!hasBoard || hasLegacy || root.children.length > 1) queueEnhance();
     });
     controlObserver.observe(root, { childList: true });
-    controlObserverTimer = window.setTimeout(stopControlObserver, 9000);
   }
 
   function installWrapper() {
@@ -463,6 +469,10 @@
       return true;
     }
     wrappedRender = function taskKanbanRenderControlCenter(...args) {
+      if (isControlRouteActive()) {
+        enhanceControl();
+        return document.getElementById(ROOT_ID);
+      }
       const result = current.apply(this, args);
       queueEnhance();
       return result;
@@ -483,6 +493,7 @@
       window.setTimeout(queueEnhance, delay);
     });
     const onRouteChange = () => {
+      installWrapper();
       startControlObserver();
       queueEnhance();
     };
@@ -490,9 +501,9 @@
       [0, 180, 700, 1800].forEach((delay) => window.setTimeout(onRouteChange, delay));
     };
     window.addEventListener('altea:viewchange', onRouteChangeCascade);
-    window.addEventListener('altea:data-ready', queueEnhance);
-    window.addEventListener('altea:app-ready', queueEnhance);
-    window.addEventListener('altea:portal-storage-updated', queueEnhance);
+    window.addEventListener('altea:data-ready', onRouteChange);
+    window.addEventListener('altea:app-ready', onRouteChange);
+    window.addEventListener('altea:portal-storage-updated', onRouteChange);
     window.addEventListener('hashchange', onRouteChangeCascade);
     document.addEventListener('click', (event) => {
       if (event.target.closest('[data-view="control"],[href$="#control"],[href*="#control"]')) {

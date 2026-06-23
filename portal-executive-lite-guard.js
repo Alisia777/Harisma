@@ -1,4 +1,8 @@
 (function () {
+  if (window.__ALTEA_EXECUTIVE_V5_DISABLE_LITE_GUARD__ !== false) {
+    window.__ALTEA_EXECUTIVE_LITE_DISABLED_BY_V5__ = '20260623-routefix';
+    return;
+  }
   if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN16__) return;
   window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN12__ = true;
   window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN13__ = true;

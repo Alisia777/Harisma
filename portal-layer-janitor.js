@@ -5,7 +5,6 @@
   window.__ALTEA_LAYER_JANITOR_20260623__ = true;
   let cascadeTimers = [];
   let cleanupQueued = false;
-  let viewObserver = null;
 
   const HEAVY_VIEW_IDS = [
     'view-dashboard',
@@ -91,7 +90,6 @@
   }
 
   function cleanup() {
-    observeViewRoots();
     cleanupLegacyNodes();
     cleanupInactiveViews();
     cleanupActiveOwnedViews();
@@ -106,22 +104,9 @@
     }, delay);
   }
 
-  function observeViewRoots() {
-    if (typeof MutationObserver !== 'function') return;
-    if (!viewObserver) {
-      viewObserver = new MutationObserver(() => queueCleanup(70));
-    }
-    HEAVY_VIEW_IDS.forEach((id) => {
-      const root = document.getElementById(id);
-      if (!root || root.dataset.layerJanitorObserved === 'true') return;
-      root.dataset.layerJanitorObserved = 'true';
-      viewObserver.observe(root, { childList: true });
-    });
-  }
-
   function cascade() {
     cascadeTimers.forEach((timer) => window.clearTimeout(timer));
-    cascadeTimers = [0, 120, 420, 1200, 2800, 6200].map((delay) => {
+    cascadeTimers = [0, 120, 420, 1200, 2800, 6200, 12000, 22000].map((delay) => {
       return window.setTimeout(cleanup, delay);
     });
   }

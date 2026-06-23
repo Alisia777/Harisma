@@ -10447,21 +10447,46 @@ function skuPlanFactLazyDataReady() {
 function skuPlanFactRenderLoading(rootId = 'view-sku-plan-fact') {
   const root = document.getElementById(rootId);
   if (!root) return;
-  if (typeof renderViewLoading === 'function') {
-    renderViewLoading(rootId, 'План-факт SKU');
-  } else {
-    root.innerHTML = `
-      <div class="card">
-        <div class="head">
-          <div>
-            <h3>План-факт SKU</h3>
-            <div class="muted small">Подгружаем план, факт и рекламный слой.</div>
-          </div>
-          ${typeof badge === 'function' ? badge('загрузка', 'info') : ''}
+  root.innerHTML = `
+    <div class="sku-plan-fact-v1" data-plan-fact-design="v1" data-plan-fact-loading="true">
+      <div class="pf-v1-head">
+        <div>
+          <div class="pf-v1-kicker">SKU · план · факт · маржа · реклама</div>
+          <h2>План-факт собирает рабочие цифры</h2>
+          <p>Держим новый слой на экране, пока подтягиваются матрица, факт и рекламные расходы. Старый loading-card больше не подставляется.</p>
+        </div>
+        <div class="pf-v1-head__actions">
+          ${typeof badge === 'function' ? badge('загрузка данных', 'info') : ''}
         </div>
       </div>
-    `;
-  }
+      <div class="sku-plan-fact-toolbar pf-v1-filter-dock">
+        <div class="pf-v1-filter-grid">
+          <label class="pf-v1-control pf-v1-search"><span>Поиск</span><input disabled placeholder="SKU, название, owner..."></label>
+          <div class="pf-v1-control"><span>Период</span><div class="pf-v1-segmented" role="group" aria-label="Режим периода"><button type="button" class="active" disabled>На дату</button><button type="button" disabled>Период</button><button type="button" disabled>Месяц</button></div></div>
+          <label class="pf-v1-control"><span>Owner</span><select disabled><option>Все сотрудники</option></select></label>
+          <label class="pf-v1-control"><span>Статус</span><select disabled><option>Актуальные</option></select></label>
+          <div class="pf-v1-filter-actions"><button type="button" disabled>Фильтры</button><button type="button" disabled>Сбросить</button></div>
+        </div>
+        <div class="pf-v1-active-chips"><span class="muted small">Фильтры появятся сразу после загрузки фактических данных.</span></div>
+      </div>
+      <div class="pf-v1-kpis" aria-hidden="true">
+        <article class="pf-v1-kpi"><span>План</span><strong>...</strong><em>ждем матрицу</em></article>
+        <article class="pf-v1-kpi"><span>Факт</span><strong>...</strong><em>ждем API</em></article>
+        <article class="pf-v1-kpi"><span>Маржа</span><strong>...</strong><em>ждем расчет</em></article>
+        <article class="pf-v1-kpi"><span>Реклама</span><strong>...</strong><em>ждем расходы</em></article>
+        <article class="pf-v1-kpi"><span>Таблица</span><strong>...</strong><em>готовим строки SKU</em></article>
+      </div>
+      <div class="sku-plan-fact-card pf-v1-table-card">
+        <div class="section-subhead">
+          <div>
+            <h3>Таблица по артикулам</h3>
+            <div class="muted small">Сейчас поднимаем источник, но маршрут уже занят новым интерфейсом.</div>
+          </div>
+        </div>
+        <div class="empty">Подгружаем данные без отката на старый слой.</div>
+      </div>
+    </div>
+  `;
   if (!state.boot?.dataReady || typeof ensureViewData !== 'function') return;
   if (!skuPlanFactLazyRenderPromise) {
     skuPlanFactLazyRenderPromise = Promise.resolve(ensureViewData('sku-plan-fact'))

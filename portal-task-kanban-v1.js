@@ -360,6 +360,14 @@
     anchor.insertAdjacentHTML(anchor.matches('[data-task-lazy-panel]') ? 'afterend' : 'afterend', renderBoard(filteredTasks()));
     const board = root.querySelector('[data-task-kanban-v1]');
     if (board) bindBoard(board);
+    cleanupLegacyControl(root);
+  }
+
+  function cleanupLegacyControl(root) {
+    if (!root?.querySelector('[data-task-kanban-v1]')) return;
+    root.querySelectorAll('.section-title.control-simple-title, .control-simple-panel, [data-task-lazy-panel]').forEach((node) => {
+      if (!node.closest('[data-task-kanban-v1]')) node.remove();
+    });
   }
 
   function queueEnhance() {

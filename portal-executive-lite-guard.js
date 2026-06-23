@@ -42,14 +42,18 @@
     return window.__alteaAppState || window.state || {};
   }
 
+  function hasPremiumExecutiveContent(node) {
+    if (!node) return false;
+    const text = String(node.textContent || '').replace(/\s+/g, '');
+    return Boolean(text.length > 12 || node.querySelector('.executive-native-kpis, .altea-premium-card, .altea-premium-route__body'));
+  }
+
   function premiumExecutiveOwnsRoute() {
     const root = document.getElementById('view-executive');
     const stage = document.getElementById('altea-premium-stage-executive');
-    return Boolean(
-      window.__ALTEA_PREMIUM_EXECUTIVE_OWNER__
-        || root?.dataset.premiumExecutiveOwner === 'true'
-        || stage?.querySelector('.altea-premium-route--executive')
-    );
+    const stageRoute = stage?.querySelector('.altea-premium-route--executive');
+    const rootRoute = root?.querySelector('.altea-premium-route--executive');
+    return hasPremiumExecutiveContent(stageRoute) || hasPremiumExecutiveContent(rootRoute);
   }
 
   function escapeHtml(value) {

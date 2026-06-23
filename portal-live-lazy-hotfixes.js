@@ -24,7 +24,7 @@
       'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3'
     ],
     executive: [
-      'portal-executive-lite-guard.js?v=20260622layer-owner1',
+      'portal-executive-lite-guard.js?v=20260623executivefallback1',
       'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3',
       'portal-form-visual-refine.js?v=20260622layer-owner1'
     ],

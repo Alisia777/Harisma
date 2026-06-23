@@ -26,7 +26,7 @@ const SKU_PLAN_FACT_RECONCILE_MIN_REVENUE = 10000;
 const SKU_PLAN_FACT_UNMAPPED_OWNER = 'Не в реестре';
 const SKU_PLAN_FACT_UNMAPPED_STATUS = 'API SKU без пары';
 const SKU_PLAN_FACT_UNALLOCATED_STATUS = 'Агрегат без SKU';
-const SKU_PLAN_FACT_FILTER_VERSION = '20260603-fact-date-signal-v2';
+const SKU_PLAN_FACT_FILTER_VERSION = '20260623-status-top-filters-v1';
 let skuPlanFactSearchTimer = 0;
 let skuPlanFactExcelDownloadLockUntil = 0;
 let skuPlanFactTruthWarmupPromise = null;
@@ -213,6 +213,24 @@ function skuPlanFactKpiEligible(row = {}) {
   );
 }
 
+function skuPlanFactIsOutput(row = {}) {
+  const status = skuPlanFactKpiStatusText(row);
+  return Boolean(
+    status.includes('\u0432\u044b\u0432\u043e\u0434')
+    || status.includes('\u043d\u0435\u0442 \u0432 \u0441\u043f\u0435\u0446')
+    || status.includes('\u0430\u0440\u0445\u0438\u0432')
+    || /\b(exit|archive|archived|inactive)\b/i.test(status)
+  );
+}
+
+function skuPlanFactIsQuestion(row = {}) {
+  const status = skuPlanFactKpiStatusText(row);
+  return Boolean(
+    status.includes('\u043f\u043e\u0434 \u0432\u043e\u043f\u0440\u043e\u0441')
+    || /\bquestion\b/i.test(status)
+  );
+}
+
 function skuPlanFactOwnerOptionsFromRows(rows = []) {
   const owners = new Set();
   const addOwner = (value) => {
@@ -355,7 +373,7 @@ function skuPlanFactFilters(overrides = null, options = {}) {
   const nextFilters = {
     search: '',
     owner: 'all',
-    status: 'all',
+    status: 'actual',
     platform: 'all',
     month: 'latest',
     date: '',
@@ -368,7 +386,7 @@ function skuPlanFactFilters(overrides = null, options = {}) {
     ...(overrides || {})
   };
   if (nextFilters.__truthFilterVersion !== SKU_PLAN_FACT_FILTER_VERSION) {
-    if (nextFilters.status === 'active') nextFilters.status = 'all';
+    if (!nextFilters.status || nextFilters.status === 'active' || nextFilters.status === 'all') nextFilters.status = 'actual';
     if (!nextFilters.dateMode || nextFilters.dateMode === 'latest') {
       nextFilters.date = '';
       nextFilters.dateFrom = '';
@@ -2812,7 +2830,9 @@ function skuPlanFactSortRows(rows, sort, sortDir) {
 function skuPlanFactRowMatchesFilters(row = {}, filters = {}, options = {}) {
   const checkPlatform = options.platform !== false;
   if (filters.owner !== 'all' && row.owner !== filters.owner) return false;
-  if (filters.status === 'active' && !skuPlanFactKpiEligible(row)) return false;
+  if ((filters.status === 'actual' || filters.status === 'active') && !skuPlanFactKpiEligible(row)) return false;
+  if (filters.status === 'output' && !skuPlanFactIsOutput(row)) return false;
+  if (filters.status === 'question' && !skuPlanFactIsQuestion(row)) return false;
   if (filters.status === 'with_plan' && row.planRevenue <= 0) return false;
   if (filters.status === 'under_plan' && !(row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue)) return false;
   if (filters.status === 'no_fact' && !(row.planRevenue > 0 && row.factRevenue <= 0)) return false;
@@ -10526,7 +10546,9 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
           ${ownerOptions}
         </select>
         <select id="skuPlanFactStatus">
-          <option value="active" ${filters.status === 'active' ? 'selected' : ''}>Без вывода</option>
+          <option value="actual" ${filters.status === 'actual' || filters.status === 'active' ? 'selected' : ''}>Актуальные</option>
+          <option value="output" ${filters.status === 'output' ? 'selected' : ''}>Вывод</option>
+          <option value="question" ${filters.status === 'question' ? 'selected' : ''}>Под вопросом</option>
           <option value="all" ${filters.status === 'all' ? 'selected' : ''}>Все SKU</option>
           <option value="with_plan" ${filters.status === 'with_plan' ? 'selected' : ''}>Есть план</option>
           <option value="under_plan" ${filters.status === 'under_plan' ? 'selected' : ''}>Ниже плана</option>
@@ -10769,7 +10791,7 @@ function skuPlanFactV1Reset(rootId) {
   state.skuPlanFactFilters = {
     search: '',
     owner: 'all',
-    status: 'all',
+    status: 'actual',
     platform: skuPlanFactV1GlobalPlatformFilter('all'),
     month: 'latest',
     date: '',
@@ -10821,8 +10843,11 @@ function skuPlanFactV1Status(row = {}, metric = {}) {
 
 function skuPlanFactStatusLabel(value = '') {
   return {
-    all: 'Актуальные',
-    active: 'Без вывода',
+    actual: 'Актуальные',
+    active: 'Актуальные',
+    output: 'Вывод',
+    question: 'Под вопросом',
+    all: 'Все SKU',
     with_plan: 'Есть план',
     under_plan: 'Ниже плана',
     no_fact: 'План есть, факта нет',
@@ -11029,8 +11054,10 @@ function renderSkuPlanFactV1(rootId = 'view-sku-plan-fact', options = {}) {
           <label class="pf-v1-control ${dateMode === 'month' ? '' : 'is-hidden'}"><span>Месяц</span><select id="skuPlanFactMonth">${monthOptions}</select></label>
           <label class="pf-v1-control"><span>Owner</span><select id="skuPlanFactOwner"><option value="all" ${filters.owner === 'all' ? 'selected' : ''}>Все сотрудники</option>${ownerOptions}</select></label>
           <label class="pf-v1-control"><span>Статус</span><select id="skuPlanFactStatus">
-            <option value="all" ${filters.status === 'all' ? 'selected' : ''}>Актуальные</option>
-            <option value="active" ${filters.status === 'active' ? 'selected' : ''}>Без вывода</option>
+            <option value="actual" ${filters.status === 'actual' || filters.status === 'active' ? 'selected' : ''}>Актуальные</option>
+            <option value="output" ${filters.status === 'output' ? 'selected' : ''}>Вывод</option>
+            <option value="question" ${filters.status === 'question' ? 'selected' : ''}>Под вопросом</option>
+            <option value="all" ${filters.status === 'all' ? 'selected' : ''}>Все SKU</option>
             <option value="with_plan" ${filters.status === 'with_plan' ? 'selected' : ''}>Есть план</option>
             <option value="under_plan" ${filters.status === 'under_plan' ? 'selected' : ''}>Ниже плана</option>
             <option value="no_fact" ${filters.status === 'no_fact' ? 'selected' : ''}>План есть, факта нет</option>

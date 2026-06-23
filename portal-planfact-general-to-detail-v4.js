@@ -36,6 +36,8 @@
   let baseRenderSkuPlanFact = null;
   let wrappedRenderSkuPlanFact = null;
   let suppressEnhance = false;
+  let lastShellSignature = '';
+  let enhanceTimer = 0;
   let priceHistoryCacheSource = null;
   let priceHistoryCache = null;
   let fallbackModelData = null;
@@ -198,7 +200,7 @@
       search: fallbackDomValue('#skuPlanFactSearch', ''),
       owner: fallbackDomValue('#skuPlanFactOwner', 'all') || 'all',
       platform: normalizedPlatform(fallbackDomValue('#skuPlanFactPlatform', activePlatform || document.documentElement.dataset.marketplace || 'all')),
-      status: fallbackDomValue('#skuPlanFactStatus', 'active') || 'active',
+      status: fallbackDomValue('#skuPlanFactStatus', 'actual') || 'actual',
       sort: fallbackDomValue('#skuPlanFactSort', 'gap') || 'gap',
       dateFrom: fallbackDomValue('#skuPlanFactDateFrom', ''),
       dateTo: fallbackDomValue('#skuPlanFactDateTo', fallbackDomValue('#skuPlanFactDate', ''))
@@ -1199,6 +1201,29 @@
     `;
   }
 
+  function shellSignature(model) {
+    const filters = model?.filters || {};
+    const totals = model?.totals || {};
+    const rows = visibleRows(model);
+    return JSON.stringify({
+      mode: activeMode(),
+      platform: normalizedPlatform(filters.platform || 'all'),
+      owner: filters.owner || 'all',
+      status: filters.status || '',
+      search: filters.search || '',
+      sort: filters.sort || '',
+      from: filters.dateFrom || filters.periodStart || model?.periodStart || '',
+      to: filters.dateTo || filters.periodEnd || model?.periodEnd || model?.selectedDate || '',
+      rows: rows.length,
+      allRows: allRows(model).length,
+      factRevenue: Math.round(numberOrZero(totals.factRevenue || totals.revenue)),
+      planToDateRevenue: Math.round(numberOrZero(totals.planToDateRevenue)),
+      planRevenue: Math.round(numberOrZero(totals.planRevenue)),
+      adSpend: Math.round(numberOrZero(totals.adSpend)),
+      margin: Math.round(numberOrZero(totals.marginPct) * 10000)
+    });
+  }
+
   function ensureStyle() {
     if (document.getElementById('altea-planfact-v4-style')) return;
     const style = document.createElement('style');
@@ -1618,16 +1643,41 @@
     }
     host.querySelector('.pf-v1-kpis')?.remove();
     host.querySelector('.pf-v1-platform-board')?.remove();
+
+    const nextSignature = shellSignature(model);
     let mount = host.querySelector('[data-planfact-v4]');
-    if (!mount) {
-      const anchor = host.querySelector('.pf-v1-head') || host.firstElementChild;
-      if (anchor) anchor.insertAdjacentHTML('afterend', renderShell(model));
-      else host.insertAdjacentHTML('afterbegin', renderShell(model));
-    } else {
-      mount.outerHTML = renderShell(model);
+    const anchor = host.querySelector('.pf-v1-filter-dock')
+      || host.querySelector('.pf-v1-head')
+      || host.firstElementChild;
+    const isPlacedAfterAnchor = Boolean(anchor && mount && mount.previousElementSibling === anchor);
+    if (mount && mount.dataset.pfV4Signature === nextSignature) {
+      if (anchor && !isPlacedAfterAnchor) anchor.insertAdjacentElement('afterend', mount);
+      decorateRows(host);
+      bindRenderedControls(host);
+      return;
     }
+
+    const nextHtml = renderShell(model);
+    if (mount && isPlacedAfterAnchor) {
+      mount.outerHTML = nextHtml;
+    } else {
+      if (mount) mount.remove();
+      if (anchor) anchor.insertAdjacentHTML('afterend', nextHtml);
+      else host.insertAdjacentHTML('afterbegin', nextHtml);
+    }
+    mount = host.querySelector('[data-planfact-v4]');
+    if (mount) mount.dataset.pfV4Signature = nextSignature;
+    lastShellSignature = nextSignature;
     decorateRows(host);
     bindRenderedControls(host);
+  }
+
+  function queueEnhance(delay = 0) {
+    if (enhanceTimer) window.clearTimeout(enhanceTimer);
+    enhanceTimer = window.setTimeout(() => {
+      enhanceTimer = 0;
+      enhance();
+    }, delay);
   }
 
   function wrapRenderer() {
@@ -1639,7 +1689,7 @@
     if (candidate === wrappedRenderSkuPlanFact) return;
     const wrapped = function renderSkuPlanFactWithV4(rootId, options) {
       const result = baseRenderSkuPlanFact.call(this, rootId || ROOT_ID, options || {});
-      window.setTimeout(enhance, 0);
+      queueEnhance(0);
       return result;
     };
     wrapped.__planFactV4Wrapped = true;
@@ -1652,7 +1702,7 @@
   function boot() {
     wrapRenderer();
     enhance();
-    [700, 1800, 4200, 8000].forEach((delay) => window.setTimeout(enhance, delay));
+    [700, 1800, 3600].forEach((delay) => window.setTimeout(enhance, delay));
   }
 
   if (document.readyState === 'loading') {
@@ -1660,7 +1710,10 @@
   } else {
     boot();
   }
-  window.addEventListener('altea:viewchange', () => window.setTimeout(boot, 0));
-  window.addEventListener('hashchange', () => window.setTimeout(boot, 0));
-  window.addEventListener('altea:marketplacechange', () => window.setTimeout(enhance, 0));
+  window.addEventListener('altea:viewchange', () => queueEnhance(0));
+  window.addEventListener('hashchange', () => queueEnhance(0));
+  window.addEventListener('altea:marketplacechange', () => {
+    lastShellSignature = '';
+    queueEnhance(0);
+  });
 })();

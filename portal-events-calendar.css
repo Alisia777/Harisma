@@ -1339,12 +1339,21 @@
 }
 
 .promo-calendar-toolbar {
-  grid-template-columns: minmax(260px, 1.2fr) minmax(126px, .5fr) minmax(126px, .5fr) minmax(260px, 1.4fr);
-  position: relative;
-  top: auto;
-  z-index: 2;
-  margin: 8px 0 10px;
+  grid-template-columns: minmax(300px, .9fr) minmax(126px, .45fr) minmax(126px, .45fr) minmax(260px, 1fr);
+  position: static;
+  inset: auto;
+  z-index: 0;
+  margin: 4px 0 8px;
+  align-items: center;
+  isolation: isolate;
+  overflow: visible;
   backdrop-filter: blur(16px);
+}
+
+.promo-calendar-shell > .promo-calendar-toolbar {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
 }
 
 .promo-calendar-toolbar label {
@@ -1372,6 +1381,7 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -1404,6 +1414,14 @@
   border-color: rgba(219, 199, 163, .78);
   color: #130f0a;
   font-weight: 900;
+}
+
+.promo-calendar-stats,
+.promo-calendar-layout,
+.promo-calendar-board,
+.promo-calendar-side {
+  position: relative;
+  z-index: 0;
 }
 
 .promo-calendar-board > .promo-month-head,

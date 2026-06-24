@@ -6,7 +6,7 @@
 
   const ROOT_ID = 'view-sku-plan-fact';
   const STORE_KEY = 'altea.planFact.generalToDetail.v4';
-  const VERSION = '20260623-planfact-gtd-v4-filterdock1';
+  const VERSION = '20260624-planfact-gtd-v4-filterlayer2';
   const MODES = [
     ['general', 'Общее'],
     ['lfl', 'Like-for-like'],
@@ -413,12 +413,175 @@
     };
   }
 
+  function activePlanFactFilters(model) {
+    const app = appState();
+    const filters = {
+      ...fallbackFiltersFromDom(),
+      ...(app?.skuPlanFactFilters || {}),
+      ...(model?.filters || {})
+    };
+    filters.search = String(filters.search || '');
+    filters.owner = filters.owner || 'all';
+    filters.status = filters.status || 'actual';
+    filters.platform = normalizedPlatform(filters.platform || 'all');
+    filters.sort = filters.sort || 'gap';
+    filters.sortDir = filters.sortDir || (['gap', 'article', 'owner'].includes(filters.sort) ? 'asc' : 'desc');
+    return filters;
+  }
+
+  function planFactRowSearchText(row = {}) {
+    const ownerMap = row.owner?.byPlatform || row.ownersByPlatform || {};
+    return [
+      rowKey(row),
+      rowTitle(row),
+      row.article,
+      row.articleKey,
+      row.sku,
+      row.vendorCode,
+      row.nmId,
+      row.offerId,
+      row.name,
+      rowOwner(row),
+      row.ownerBase,
+      row.status,
+      row.lifecycleStatus,
+      row.cardStatus,
+      row.matrixProblemMeta?.label,
+      row.matrixProblemState,
+      ...Object.values(ownerMap || {}),
+      ...Object.keys(row.platforms || {}),
+      row.platform,
+      row.primaryPlatform
+    ].filter(Boolean).join(' ');
+  }
+
+  function metricHasActivity(metric = {}) {
+    if (!metric || typeof metric !== 'object') return false;
+    return [
+      metric.factRevenue,
+      metric.revenue,
+      metric.turnover,
+      metric.factUnits,
+      metric.units,
+      metric.orders,
+      metric.planRevenue,
+      metric.planToDateRevenue,
+      metric.adSpend,
+      metric.factAdSpend
+    ].some((value) => Math.abs(numberOrZero(value)) > 0);
+  }
+
+  function rowHasPlatformSignal(row = {}, platform = 'all', metric = null) {
+    const key = normalizedPlatform(platform);
+    if (!key || key === 'all') return true;
+    const native = window.skuPlanFactPlatformHasActivity || (typeof skuPlanFactPlatformHasActivity === 'function' ? skuPlanFactPlatformHasActivity : null);
+    const source = row.platforms?.[key] || row[key];
+    if (typeof native === 'function') {
+      try {
+        if (native(source || {})) return true;
+      } catch (_) {}
+    }
+    if (metricHasActivity(metric)) return true;
+    if (metricHasActivity(source)) return true;
+    return normalizedPlatform(row.platform || row.primaryPlatform || '') === key;
+  }
+
+  function rowStatusBlob(row = {}) {
+    return textKey([
+      row.status,
+      row.lifecycleStatus,
+      row.cardStatus,
+      row.operationStatus,
+      row.outputStatus,
+      row.matrixProblemState,
+      row.matrixProblemMeta?.label,
+      Array.isArray(row.tags) ? row.tags.join(' ') : '',
+      row.isOutput ? 'output' : '',
+      row.toOutput ? 'output' : '',
+      row.output ? 'output' : '',
+      row.isQuestion ? 'question' : '',
+      row.question ? 'question' : '',
+      row.duplicateRisk ? 'duplicate_risk' : '',
+      row.syntheticUnmapped ? 'unmapped' : ''
+    ].filter(Boolean).join(' '));
+  }
+
+  function rowMatchesPlanFactFilters(row, filters, model) {
+    const native = window.skuPlanFactRowMatchesFilters || (typeof skuPlanFactRowMatchesFilters === 'function' ? skuPlanFactRowMatchesFilters : null);
+    if (typeof native === 'function') {
+      try {
+        return native(row, filters);
+      } catch (_) {}
+    }
+
+    const owner = rowOwner(row);
+    if (filters.owner && filters.owner !== 'all' && owner !== filters.owner) return false;
+
+    const platform = normalizedPlatform(filters.platform || 'all');
+    const metric = displayMetric(row, { ...model, filters: { ...(model?.filters || {}), ...filters, platform } }, platform);
+    if (!rowHasPlatformSignal(row, platform, metric)) return false;
+
+    const status = filters.status || 'actual';
+    const view = rowMetricView(row, { ...model, filters: { ...(model?.filters || {}), ...filters, platform } }, platform);
+    const blob = rowStatusBlob(row);
+    const isOutput = /\boutput\b|вывод|архив|снят|stop/.test(blob);
+    const isQuestion = /\bquestion\b|вопрос|hold|problem|риск/.test(blob);
+    if ((status === 'actual' || status === 'active') && (row.syntheticUnmapped || isOutput || isQuestion)) return false;
+    if (status === 'output' && !isOutput) return false;
+    if (status === 'question' && !isQuestion) return false;
+    if (status === 'with_plan' && !(view.planRevenue > 0 || view.planToDateRevenue > 0)) return false;
+    if (status === 'under_plan' && !(view.planToDateRevenue > 0 && view.factRevenue < view.planToDateRevenue)) return false;
+    if (status === 'no_fact' && !((view.planRevenue > 0 || view.planToDateRevenue > 0) && view.factRevenue <= 0)) return false;
+    if (status === 'unmapped' && !row.syntheticUnmapped) return false;
+    if (status === 'matrix_problem' && (row.matrixProblemState === 'ok' || !row.matrixProblemState)) return false;
+    if (status === 'missing_owner' && row.matrixProblemState !== 'missing_owner' && !/без owner|no owner/.test(textKey(owner))) return false;
+    if (status === 'duplicate_risk' && !row.duplicateRisk) return false;
+
+    const search = textKey(filters.search);
+    if (search && !textKey(planFactRowSearchText(row)).includes(search)) return false;
+    return true;
+  }
+
+  function sortPlanFactRows(rows, model) {
+    const filters = activePlanFactFilters(model);
+    const native = window.skuPlanFactSortRows || (typeof skuPlanFactSortRows === 'function' ? skuPlanFactSortRows : null);
+    if (typeof native === 'function') {
+      try {
+        return native(rows, filters.sort, filters.sortDir);
+      } catch (_) {}
+    }
+    const sort = filters.sort || 'gap';
+    const direction = filters.sortDir === 'desc' ? -1 : 1;
+    const valueOf = (row) => {
+      const view = rowMetricView(row, { ...model, filters });
+      if (sort === 'completion') return numberOrZero(view.completionToDate);
+      if (sort === 'margin') return numberOrZero(view.marginPct);
+      if (sort === 'fact') return numberOrZero(view.factRevenue);
+      if (sort === 'plan') return numberOrZero(view.planToDateRevenue || view.planRevenue);
+      if (sort === 'drr') return numberOrZero(view.drr);
+      if (sort === 'ad') return numberOrZero(view.adSpend);
+      if (sort === 'article') return textKey(rowKey(row));
+      if (sort === 'owner') return textKey(rowOwner(row));
+      return numberOrZero(view.gapToDate);
+    };
+    return [...rows].sort((left, right) => {
+      const a = valueOf(left);
+      const b = valueOf(right);
+      if (typeof a === 'string' || typeof b === 'string') return String(a).localeCompare(String(b), 'ru') * direction;
+      return (a - b) * direction;
+    });
+  }
+
   function visibleRows(model) {
-    return Array.isArray(model?.rows) ? model.rows : [];
+    const sourceRows = allRows(model);
+    if (!sourceRows.length) return Array.isArray(model?.rows) ? model.rows : [];
+    const filters = activePlanFactFilters(model);
+    return sortPlanFactRows(sourceRows.filter((row) => rowMatchesPlanFactFilters(row, filters, model)), { ...model, filters });
   }
 
   function allRows(model) {
-    return Array.isArray(model?.allRows) && model.allRows.length ? model.allRows : visibleRows(model);
+    if (Array.isArray(model?.allRows) && model.allRows.length) return model.allRows;
+    return Array.isArray(model?.rows) ? model.rows : [];
   }
 
   function aggregate(views) {
@@ -833,7 +996,7 @@
 
   function buildPlanFactOverviewModel(model, views) {
     const aggregateTotals = aggregate(views);
-    const totals = model?.totals?.factRevenue !== undefined ? { ...aggregateTotals, ...model.totals } : aggregateTotals;
+    const totals = model?.totals?.factRevenue !== undefined ? { ...model.totals, ...aggregateTotals } : aggregateTotals;
     const days = buildDaily(views, model);
     const ui = planFactUi();
     const selectedDate = days.some((day) => day.date === ui.selectedDate)
@@ -1703,7 +1866,15 @@
     }
     updatePlanFactUi({ selectedDate: '' });
     updateNativeFilterControls(next);
-    renderBase();
+    const changedKeys = Object.keys(patch || {});
+    const needsBaseRender = changedKeys.some((key) => ['dateFrom', 'dateTo', 'month', 'date', 'dateMode'].includes(key));
+    lastShellSignature = '';
+    if (needsBaseRender) {
+      renderBase();
+      return;
+    }
+    enhance();
+    queueEnhance(80);
   }
 
   function renderShell(model) {
@@ -1769,8 +1940,8 @@
       #${ROOT_ID} .pf-v4-tabs button{height:31px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--pf-v4-muted);padding:0 12px;font-size:11px;font-weight:850;white-space:nowrap;transition:transform 160ms ease,border-color 160ms ease,background 160ms ease}
       #${ROOT_ID} .pf-v4-tabs button:hover{transform:translateY(-1px)}
       #${ROOT_ID} .pf-v4-tabs button[aria-selected="true"]{background:linear-gradient(180deg,#f0dfbf,#b89455);color:#17110a}
-      #${ROOT_ID}.pf-v4-controls-active .pf-v1-filter-dock{display:none!important}
-      #${ROOT_ID} .pf-v4-filter-panel{position:relative;z-index:3;display:grid;grid-template-columns:minmax(260px,1.7fr) minmax(130px,.7fr) minmax(135px,.7fr) minmax(135px,.7fr) minmax(170px,.85fr) minmax(160px,.85fr) minmax(150px,.75fr) minmax(180px,.9fr) auto;gap:8px;align-items:end;margin:10px 0 12px;padding:10px;border:1px solid rgba(219,199,163,.18);border-radius:14px;background:linear-gradient(135deg,rgba(219,199,163,.08),rgba(168,85,247,.055) 42%,rgba(0,0,0,.22));box-shadow:inset 0 1px rgba(255,255,255,.035)}
+      #${ROOT_ID}.pf-v4-controls-active .pf-v1-filter-dock,#${ROOT_ID}.pf-v4-controls-active .sku-plan-fact-toolbar.pf-v1-filter-dock,#${ROOT_ID}.pf-v4-controls-active [data-sku-plan-filter-dock],#${ROOT_ID}.pf-v4-controls-active .sku-plan-fact-filter-dock,#${ROOT_ID}.pf-v4-controls-active .sku-plan-fact-filters:not(.pf-v4-filter-panel){display:none!important;visibility:hidden!important;pointer-events:none!important;max-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+      #${ROOT_ID} .pf-v4-filter-panel{position:static!important;top:auto!important;transform:none!important;z-index:1;display:grid;grid-template-columns:minmax(260px,1.7fr) minmax(130px,.7fr) minmax(135px,.7fr) minmax(135px,.7fr) minmax(170px,.85fr) minmax(160px,.85fr) minmax(150px,.75fr) minmax(180px,.9fr) auto;gap:8px;align-items:end;margin:10px 0 12px;padding:10px;border:1px solid rgba(219,199,163,.18);border-radius:14px;background:linear-gradient(135deg,rgba(219,199,163,.08),rgba(168,85,247,.055) 42%,rgba(0,0,0,.22));box-shadow:inset 0 1px rgba(255,255,255,.035)}
       #${ROOT_ID} .pf-v4-filter-panel label{display:grid;gap:5px;min-width:0}
       #${ROOT_ID} .pf-v4-filter-panel label span{color:#dbc7a3;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em}
       #${ROOT_ID} .pf-v4-filter-panel input,#${ROOT_ID} .pf-v4-filter-panel select{width:100%;height:34px;min-width:0;border:1px solid rgba(219,199,163,.18);border-radius:9px;background:rgba(5,4,3,.78);color:#f7edda;padding:0 10px;font:inherit;font-size:12px;outline:none}
@@ -2064,7 +2235,7 @@
           filterCommitTimer = window.setTimeout(() => {
             filterCommitTimer = 0;
             commit();
-          }, 160);
+          }, 80);
         });
       } else {
         control.addEventListener('change', commit);
@@ -2293,12 +2464,58 @@
     });
   }
 
+  function cleanupLegacyFilterLayers(host) {
+    if (!host) return;
+    host.querySelectorAll('.pf-v1-kpis,.pf-v1-platform-board').forEach((node) => node.remove());
+    host.querySelectorAll('.pf-v1-filter-dock,.sku-plan-fact-toolbar.pf-v1-filter-dock,[data-sku-plan-filter-dock],.sku-plan-fact-filter-dock,.sku-plan-fact-filters:not(.pf-v4-filter-panel)').forEach((node) => {
+      node.hidden = true;
+      node.setAttribute('aria-hidden', 'true');
+      node.style.setProperty('display', 'none', 'important');
+      node.style.setProperty('visibility', 'hidden', 'important');
+      node.style.setProperty('pointer-events', 'none', 'important');
+      node.style.setProperty('max-height', '0', 'important');
+      node.style.setProperty('overflow', 'hidden', 'important');
+    });
+  }
+
+  function applyNativeTableFilter(host, model) {
+    if (!host || !model) return;
+    cleanupLegacyFilterLayers(host);
+    const rows = Array.from(host.querySelectorAll('.sku-plan-fact-row[data-sku-plan-article]'));
+    if (!rows.length) return;
+    const filteredRows = visibleRows(model);
+    const allowedKeys = new Set();
+    filteredRows.forEach((row) => candidateRowKeys(row).forEach((key) => allowedKeys.add(key)));
+    const filters = activePlanFactFilters(model);
+    const search = textKey(filters.search);
+    const hasRestrictiveFilter = Boolean(
+      search
+      || (filters.owner && filters.owner !== 'all')
+      || (filters.status && filters.status !== 'all')
+      || (filters.platform && filters.platform !== 'all')
+    );
+    rows.forEach((rowNode) => {
+      const keys = [
+        rowNode.dataset.skuPlanArticle,
+        rowNode.dataset.openSku,
+        rowNode.getAttribute('data-sku-plan-article'),
+        rowNode.getAttribute('data-open-sku')
+      ].map(textKey).filter(Boolean);
+      const keyMatch = allowedKeys.size ? keys.some((key) => allowedKeys.has(key)) : !hasRestrictiveFilter;
+      const searchMatch = !search || textKey(rowNode.textContent).includes(search);
+      const shouldShow = keyMatch && searchMatch;
+      rowNode.hidden = !shouldShow;
+      rowNode.style.display = shouldShow ? '' : 'none';
+    });
+  }
+
   function renderStandaloneFallback(host, model) {
     if (!host || !model) return;
     const nextSignature = shellSignature(model);
     const current = host.querySelector('[data-planfact-v4]');
     if (current && current.dataset.pfV4Signature === nextSignature) {
       bindRenderedControls(host);
+      applyNativeTableFilter(host, model);
       return;
     }
     const transients = Array.from(host.querySelectorAll('[data-pf-v4-drawer-back],.pf-v4-drawer-back'));
@@ -2308,6 +2525,7 @@
     if (mount) mount.dataset.pfV4Signature = nextSignature;
     lastShellSignature = nextSignature;
     bindRenderedControls(host);
+    applyNativeTableFilter(host, model);
   }
 
   function enhance() {
@@ -2318,6 +2536,7 @@
     ensureStyle();
     bind(host);
     host.classList.add('pf-v4-controls-active');
+    cleanupLegacyFilterLayers(host);
     const hasNativePlanFact = Boolean(host.querySelector('[data-plan-fact-design="v1"]'));
     const model = buildModel();
     if (!model) {
@@ -2341,6 +2560,7 @@
       if (anchor && !isPlacedAfterAnchor) anchor.insertAdjacentElement('afterend', mount);
       decorateRows(host);
       bindRenderedControls(host);
+      applyNativeTableFilter(host, model);
       return;
     }
 
@@ -2357,6 +2577,7 @@
     lastShellSignature = nextSignature;
     decorateRows(host);
     bindRenderedControls(host);
+    applyNativeTableFilter(host, model);
   }
 
   function queueEnhance(delay = 0) {

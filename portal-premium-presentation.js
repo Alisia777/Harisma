@@ -1481,6 +1481,14 @@
   function warmAmbientVideo(shell) {
     var video = shell && shell.querySelector('[data-premium-ambient-video]');
     if (!video) return;
+    var backgroundMode = (document.documentElement.dataset.portalBackground || 'motion');
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (backgroundMode !== 'motion' || reduceMotion) {
+      try {
+        if (video.pause) video.pause();
+      } catch (error) {}
+      return;
+    }
     video.muted = true;
     video.loop = true;
     video.playsInline = true;

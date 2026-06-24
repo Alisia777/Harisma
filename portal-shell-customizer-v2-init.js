@@ -4,6 +4,7 @@
   var oldThemeKey = 'altea.portal.theme';
   var sidebarKey = 'altea.portal.sidebar.v1';
   var oldSidebarKey = 'altea.sidebarCollapsed';
+  var backgroundKey = 'altea.portal.background.v1';
   var legacyThemeMap = {
     dark: 'noir-pearl',
     light: 'porcelain-day',
@@ -25,6 +26,12 @@
     'red-alert-2': 'dark',
     'warcraft-2': 'dark'
   };
+  var backgrounds = {
+    motion: true,
+    static: true,
+    theme: true,
+    clean: true
+  };
   function read(key) {
     try {
       return localStorage.getItem(key) || '';
@@ -42,8 +49,12 @@
     if (read(oldSidebarKey) === '1') return 'hidden';
     return window.innerWidth < 780 ? 'hidden' : 'expanded';
   }
+  function background(value) {
+    return backgrounds[value] ? value : 'motion';
+  }
   var selectedTheme = theme(read(themeKey) || read(oldThemeKey) || document.documentElement.dataset.theme);
   document.documentElement.dataset.theme = selectedTheme;
   document.documentElement.dataset.themeMode = themes[selectedTheme] || 'dark';
   document.documentElement.dataset.sidebar = sidebar(read(sidebarKey));
+  document.documentElement.dataset.portalBackground = background(read(backgroundKey) || document.documentElement.dataset.portalBackground);
 })();

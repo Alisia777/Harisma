@@ -9,7 +9,12 @@
   var SIDEBAR_KEY = 'altea.portal.sidebar.v1';
   var OLD_SIDEBAR_KEY = 'altea.sidebarCollapsed';
   var LAST_VISIBLE_KEY = 'altea.portal.sidebar.lastVisible';
+  var BACKGROUND_KEY = 'altea.portal.background.v1';
+  var BACKGROUND_POSTER = 'assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-poster.jpg';
+  var BACKGROUND_WEBM = 'assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-source.webm';
+  var BACKGROUND_MP4 = 'assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion.mp4';
   var VALID_SIDEBARS = { expanded: true, compact: true, hidden: true };
+  var VALID_BACKGROUNDS = { motion: true, static: true, theme: true, clean: true };
   var LEGACY_THEME_MAP = {
     dark: 'noir-pearl',
     light: 'porcelain-day',
@@ -30,6 +35,12 @@
     { id: 'porcelain-day', name: 'Porcelain Day', caption: 'Светлая слоновая кость и теплая бронза', group: 'portal', mode: 'light', motif: 'paper', badge: 'СВЕТЛАЯ', bg: '#f3efe7', surface: '#fffdf9', line: '#d6cab9', accent: '#9b7953', accent3: '#617c91', text: '#241f1a' },
     { id: 'red-alert-2', name: 'Red Alert 2 · Command', caption: 'Красная тревога, сталь и предупреждения', group: 'game', mode: 'dark', motif: 'industrial-alert', badge: 'COMMAND', bg: '#08090b', surface: '#15171a', line: '#3b3f45', accent: '#d72b39', accent3: '#f0c24b', text: '#f3f0e7' },
     { id: 'warcraft-2', name: 'Warcraft II · Tides', caption: 'Камень, королевский синий и золото', group: 'game', mode: 'dark', motif: 'stone-rune', badge: 'TIDES', bg: '#0d1317', surface: '#182126', line: '#4b5755', accent: '#3678c8', accent3: '#dfb64a', text: '#f1e5c5' }
+  ];
+  var BACKGROUNDS = [
+    { id: 'motion', name: 'Движение', caption: 'Премиальный живой фон из motion-kit' },
+    { id: 'static', name: 'Статика', caption: 'Тот же стиль без видео и лишней нагрузки' },
+    { id: 'theme', name: 'По теме', caption: 'Фон меняется только палитрой выбранной темы' },
+    { id: 'clean', name: 'Чистый', caption: 'Минимум подсветок для тяжелых таблиц' }
   ];
   var root = document.documentElement;
 
@@ -90,6 +101,10 @@
     return VALID_SIDEBARS[value] ? value : '';
   }
 
+  function normalizeBackground(value) {
+    return VALID_BACKGROUNDS[value] ? value : 'motion';
+  }
+
   function initialTheme() {
     return normalizeTheme(read(THEME_KEY, '') || read(OLD_THEME_KEY, '') || root.dataset.theme || 'noir-pearl');
   }
@@ -99,6 +114,14 @@
     if (stored) return stored;
     if (read(OLD_SIDEBAR_KEY, '0') === '1') return 'hidden';
     return window.innerWidth < 780 ? 'hidden' : 'expanded';
+  }
+
+  function initialBackground() {
+    return normalizeBackground(read(BACKGROUND_KEY, '') || root.dataset.portalBackground || 'motion');
+  }
+
+  function reducedMotion() {
+    return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
 
   function legacyTheme(id) {
@@ -143,6 +166,73 @@
     }
     try {
       window.dispatchEvent(new CustomEvent('altea:themechange', { detail: { theme: theme.id, legacyTheme: legacy } }));
+    } catch (error) {}
+  }
+
+  function backgroundById(id) {
+    var normalized = normalizeBackground(id);
+    return BACKGROUNDS.find(function (background) { return background.id === normalized; }) || BACKGROUNDS[0];
+  }
+
+  function setBackgroundControls(id) {
+    var background = backgroundById(id);
+    qsa('[data-shell-background-id]').forEach(function (node) {
+      var active = node.dataset.shellBackgroundId === background.id;
+      node.classList.toggle('active', active);
+      node.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    qsa('[data-current-shell-background]').forEach(function (node) {
+      node.textContent = background.name;
+    });
+  }
+
+  function ensureBackgroundStage() {
+    if (!document.body) return null;
+    var stage = qs('[data-shell-background-stage]');
+    if (stage) return stage;
+    stage = document.createElement('div');
+    stage.className = 'shell-background-stage';
+    stage.setAttribute('data-shell-background-stage', '');
+    stage.setAttribute('aria-hidden', 'true');
+    stage.innerHTML = [
+      '<video class="shell-background-video" data-shell-background-video muted loop playsinline preload="metadata" poster="', BACKGROUND_POSTER, '">',
+        '<source src="', BACKGROUND_WEBM, '" type="video/webm">',
+        '<source src="', BACKGROUND_MP4, '" type="video/mp4">',
+      '</video>'
+    ].join('');
+    document.body.insertBefore(stage, document.body.firstChild || null);
+    return stage;
+  }
+
+  function syncBackgroundVideos(id) {
+    var motion = normalizeBackground(id) === 'motion' && !reducedMotion();
+    qsa('[data-shell-background-video], [data-premium-ambient-video]').forEach(function (video) {
+      try {
+        if (!motion) {
+          if (video.pause) video.pause();
+          return;
+        }
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        var play = video.play && video.play();
+        if (play && typeof play.catch === 'function') play.catch(function () {});
+      } catch (error) {}
+    });
+  }
+
+  function applyBackground(id, options) {
+    var next = normalizeBackground(id);
+    root.dataset.portalBackground = next;
+    if (document.body) {
+      document.body.dataset.portalBackground = next;
+      ensureBackgroundStage();
+    }
+    setBackgroundControls(next);
+    syncBackgroundVideos(next);
+    if (!options || options.persist !== false) write(BACKGROUND_KEY, next);
+    try {
+      window.dispatchEvent(new CustomEvent('altea:backgroundchange', { detail: { background: next } }));
     } catch (error) {}
   }
 
@@ -270,6 +360,24 @@
     ].join('');
   }
 
+  function createBackgroundCard(background) {
+    return [
+      '<button type="button" class="shell-background-card" data-shell-background-id="', background.id, '" aria-pressed="false">',
+        '<i aria-hidden="true"></i>',
+        '<span><b>', background.name, '</b><em>', background.caption, '</em></span>',
+      '</button>'
+    ].join('');
+  }
+
+  function createBackgroundSection() {
+    return [
+      '<section class="shell-background-section">',
+        '<div class="shell-theme-section-head"><h3>Фон портала</h3><span data-current-shell-background>Движение</span></div>',
+        '<div class="shell-background-grid">', BACKGROUNDS.map(createBackgroundCard).join(''), '</div>',
+      '</section>'
+    ].join('');
+  }
+
   function drawerMarkup() {
     return [
       '<div id="appearanceBack" class="shell-appearance-back" aria-hidden="true">',
@@ -281,6 +389,7 @@
           '<div class="shell-theme-grid">',
             createThemeSection('portal', 'Темы портала', '8 вариантов'),
             createThemeSection('game', 'Игровые темы', '2 UI-настроения'),
+            createBackgroundSection(),
           '</div>',
           '<div class="shell-appearance-options">',
             '<div class="shell-option-row"><span><b>Компактное меню</b><span>Оставляет иконки и освобождает рабочее поле.</span></span><button type="button" class="shell-switch" data-shell-compact-switch aria-pressed="false" aria-label="Компактное меню"><i></i></button></div>',
@@ -358,6 +467,11 @@
         applyTheme(themeButton.dataset.shellThemeId);
         return;
       }
+      var backgroundButton = event.target.closest && event.target.closest('[data-shell-background-id]');
+      if (backgroundButton) {
+        applyBackground(backgroundButton.dataset.shellBackgroundId);
+        return;
+      }
       if (event.target.closest && event.target.closest('#appearanceButton')) {
         mountAppearanceButton();
         openAppearance(true);
@@ -373,6 +487,7 @@
       }
       if (event.target.closest && event.target.closest('#resetAppearance')) {
         applyTheme('noir-pearl');
+        applyBackground('motion');
         applySidebar('expanded');
         return;
       }
@@ -390,6 +505,13 @@
     window.addEventListener('storage', function (event) {
       if (event.key === THEME_KEY && event.newValue) applyTheme(event.newValue, { persist: false, animate: false });
       if (event.key === SIDEBAR_KEY && event.newValue) applySidebar(event.newValue, { persist: false });
+      if (event.key === BACKGROUND_KEY && event.newValue) applyBackground(event.newValue, { persist: false });
+    });
+    window.addEventListener('altea:themechange', function () {
+      applyBackground(root.dataset.portalBackground || initialBackground(), { persist: false });
+    });
+    window.addEventListener('altea:backgroundchange', function (event) {
+      syncBackgroundVideos(event && event.detail ? event.detail.background : root.dataset.portalBackground);
     });
   }
 
@@ -400,12 +522,14 @@
     mountAppearanceButton();
     mountDrawer();
     applyTheme(initialTheme(), { persist: false, animate: false });
+    applyBackground(initialBackground(), { persist: false });
     applySidebar(initialSidebar(), { persist: false });
     bindEvents();
   }
 
   root.dataset.theme = normalizeTheme(root.dataset.theme || initialTheme());
   root.dataset.sidebar = normalizeSidebar(root.dataset.sidebar) || initialSidebar();
+  root.dataset.portalBackground = normalizeBackground(root.dataset.portalBackground || initialBackground());
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot, { once: true });

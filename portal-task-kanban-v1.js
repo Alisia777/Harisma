@@ -7,6 +7,8 @@
   const VERSION = '20260623-tasks-calendar-design-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
+  const EXTRA_KEY = 'altea.tasks.design.extras.v1';
+  const ATTACHMENTS_KEY = 'altea.tasks.design.attachments.v1';
   const WAITING_STATUSES = new Set(['waiting', 'waiting_team', 'waiting_rop', 'waiting_decision', 'approval']);
   const DONE_STATUSES = new Set(['done', 'closed', 'complete', 'completed', 'cancelled', 'archive', 'archived', 'deleted', 'removed']);
   const LANES = [
@@ -93,6 +95,12 @@
   let controlObserver = null;
   let controlObserverTimer = 0;
   let renderToken = 0;
+  let detailEventsBound = false;
+  let createEventsBound = false;
+  const TASK_CACHE = window.__ALTEA_TASK_DESIGN_CACHE__ instanceof Map ? window.__ALTEA_TASK_DESIGN_CACHE__ : new Map();
+  window.__ALTEA_TASK_DESIGN_CACHE__ = TASK_CACHE;
+  let taskExtraCache = null;
+  let taskAttachmentCache = null;
 
   const TASK_UI = window.__ALTEA_TASK_DESIGN_UI__ || loadUi();
   window.__ALTEA_TASK_DESIGN_UI__ = TASK_UI;
@@ -102,16 +110,17 @@
       const parsed = JSON.parse(localStorage.getItem(UI_KEY) || '{}');
       return {
         view: parsed.view === 'list' ? 'list' : 'board',
-        createOpen: Boolean(parsed.createOpen)
+        createOpen: Boolean(parsed.createOpen),
+        draft: parsed.draft && typeof parsed.draft === 'object' ? parsed.draft : {}
       };
     } catch (_) {
-      return { view: 'board', createOpen: false };
+      return { view: 'board', createOpen: false, draft: {} };
     }
   }
 
   function saveUi() {
     try {
-      localStorage.setItem(UI_KEY, JSON.stringify({ view: TASK_UI.view, createOpen: TASK_UI.createOpen }));
+      localStorage.setItem(UI_KEY, JSON.stringify({ view: TASK_UI.view, createOpen: TASK_UI.createOpen, draft: TASK_UI.draft || {} }));
     } catch (_) {}
   }
 
@@ -190,11 +199,33 @@
   }
 
   function taskList() {
+    const localTasks = (() => {
+      const storage = appState()?.storage?.tasks;
+      return Array.isArray(storage) ? storage : [];
+    })();
     try {
-      if (typeof window.getAllTasks === 'function') return window.getAllTasks() || [];
+      if (typeof window.getAllTasks === 'function') {
+        const remoteTasks = window.getAllTasks() || [];
+        const byId = new Map();
+        remoteTasks.filter(Boolean).forEach((task) => {
+          const id = String(task?.id || '').trim();
+          if (id) byId.set(id, mergeTaskExtras(task));
+        });
+        localTasks.filter(Boolean).forEach((task) => {
+          const id = String(task?.id || '').trim();
+          if (!id) return;
+          const remote = byId.get(id) || {};
+          byId.set(id, mergeTaskExtras({
+            ...remote,
+            ...task,
+            articleKeys: task.articleKeys || remote.articleKeys,
+            articles: task.articles || remote.articles
+          }));
+        });
+        return Array.from(byId.values()).map(mergeTaskExtras);
+      }
     } catch (_) {}
-    const storageTasks = appState()?.storage?.tasks;
-    return Array.isArray(storageTasks) ? storageTasks : [];
+    return localTasks.map(mergeTaskExtras);
   }
 
   function ensureFilters() {
@@ -326,6 +357,463 @@
     return [...owners].sort((a, b) => a.localeCompare(b, 'ru'));
   }
 
+  function allSkus() {
+    const skus = appState()?.skus;
+    return Array.isArray(skus) ? skus : [];
+  }
+
+  function taskId() {
+    if (typeof window.uid === 'function') return window.uid('task');
+    return `task-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function commentId() {
+    if (typeof window.uid === 'function') return window.uid('comment');
+    return `comment-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function findSku(articleKey) {
+    const key = normalizeText(articleKey);
+    if (!key) return null;
+    try {
+      if (typeof window.getSku === 'function') return window.getSku(articleKey) || null;
+    } catch (_) {}
+    return allSkus().find((sku) => {
+      return [sku?.articleKey, sku?.article, sku?.sku, sku?.id, sku?.nmId]
+        .map(normalizeText)
+        .includes(key);
+    }) || null;
+  }
+
+  function skuTitle(sku) {
+    return String(sku?.name || sku?.title || sku?.productName || sku?.article || sku?.articleKey || '').trim();
+  }
+
+  function parseArticleKeys(value) {
+    const source = Array.isArray(value) ? value.join('\n') : String(value || '');
+    return [...new Set(source
+      .split(/[\n,;]+|\s{2,}/g)
+      .map((item) => String(item || '').trim())
+      .filter(Boolean))];
+  }
+
+  function taskArticleKeys(task) {
+    const keys = parseArticleKeys(task?.articleKeys || task?.articles || task?.articleKey || '');
+    if (task?.articleKey && !keys.includes(task.articleKey)) keys.unshift(String(task.articleKey));
+    return [...new Set(keys)].filter(Boolean);
+  }
+
+  function taskArticleSummary(task, limit = 3) {
+    const keys = taskArticleKeys(task);
+    if (!keys.length) return task?.entityLabel || 'без привязки';
+    const head = keys.slice(0, limit).join(', ');
+    return keys.length > limit ? `${head} +${keys.length - limit}` : head;
+  }
+
+  function taskArticleTextareaValue(task) {
+    return taskArticleKeys(task).join('\n');
+  }
+
+  function taskSkuListMarkup(task) {
+    const keys = taskArticleKeys(task);
+    if (!keys.length) return '<div class="task-detail-empty">SKU не выбраны.</div>';
+    return keys.map((key) => {
+      const sku = findSku(key);
+      return `
+        <button type="button" class="task-detail-sku-row" data-task-detail-open-article="${escapeHtml(key)}">
+          <strong>${escapeHtml(key)}</strong>
+          <span>${escapeHtml(sku ? skuTitle(sku) : 'нет в реестре или еще не сопоставлен')}</span>
+        </button>
+      `;
+    }).join('');
+  }
+
+  function skuDatalist(limit = 320) {
+    return allSkus().slice(0, limit).map((sku) => {
+      const key = sku?.articleKey || sku?.article || sku?.sku || sku?.id || '';
+      if (!key) return '';
+      return `<option value="${escapeHtml(key)}">${escapeHtml(skuTitle(sku))}</option>`;
+    }).join('');
+  }
+
+  function storageTasks() {
+    const state = appState();
+    state.storage = state.storage && typeof state.storage === 'object' ? state.storage : {};
+    state.storage.tasks = Array.isArray(state.storage.tasks) ? state.storage.tasks : [];
+    return state.storage.tasks;
+  }
+
+  function storageComments() {
+    const state = appState();
+    state.storage = state.storage && typeof state.storage === 'object' ? state.storage : {};
+    state.storage.comments = Array.isArray(state.storage.comments) ? state.storage.comments : [];
+    return state.storage.comments;
+  }
+
+  function taskExtras() {
+    if (taskExtraCache && typeof taskExtraCache === 'object') return taskExtraCache;
+    try {
+      const parsed = JSON.parse(localStorage.getItem(EXTRA_KEY) || '{}');
+      taskExtraCache = parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (_) {
+      taskExtraCache = {};
+    }
+    return taskExtraCache;
+  }
+
+  function saveTaskExtras() {
+    try {
+      localStorage.setItem(EXTRA_KEY, JSON.stringify(taskExtras()));
+    } catch (_) {}
+  }
+
+  function mergeTaskExtras(task) {
+    if (!task?.id) return task;
+    const id = String(task.id);
+    const cached = TASK_CACHE.get(id);
+    const extra = taskExtras()[id];
+    let merged = { ...task };
+    if (cached) {
+      merged = {
+        ...merged,
+        ...cached,
+        articleKeys: cached.articleKeys || merged.articleKeys,
+        articles: cached.articles || merged.articles
+      };
+    }
+    if (extra) {
+      merged = {
+        ...merged,
+        ...extra,
+        articleKeys: extra.articleKeys || merged.articleKeys,
+        articles: extra.articles || merged.articles
+      };
+    }
+    return merged;
+  }
+
+  function rememberTask(task) {
+    if (!task?.id) return task;
+    const id = String(task.id);
+    const articleKeys = taskArticleKeys(task);
+    const snapshot = {
+      ...task,
+      articleKey: articleKeys[0] || task.articleKey || '',
+      articleKeys,
+      articles: articleKeys
+    };
+    TASK_CACHE.set(id, snapshot);
+    const extras = taskExtras();
+    extras[id] = {
+      ...(extras[id] || {}),
+      articleKey: snapshot.articleKey,
+      articleKeys: snapshot.articleKeys,
+      articles: snapshot.articles,
+      entityLabel: snapshot.entityLabel || taskArticleSummary(snapshot),
+      nextAction: snapshot.nextAction || '',
+      reason: snapshot.reason || '',
+      updatedAt: snapshot.updatedAt || snapshot.updated_at || new Date().toISOString()
+    };
+    saveTaskExtras();
+    return task;
+  }
+
+  function taskById(id) {
+    const key = String(id || '').trim();
+    if (!key) return null;
+    const local = storageTasks().find((task) => String(task?.id || '') === key);
+    if (local) return mergeTaskExtras(local);
+    const cached = TASK_CACHE.get(key);
+    if (cached) return mergeTaskExtras(cached);
+    const found = taskList().find((task) => String(task?.id || '') === key);
+    return found ? mergeTaskExtras(found) : null;
+  }
+
+  function materializeTask(task) {
+    if (!task?.id) return null;
+    const tasks = storageTasks();
+    let current = tasks.find((item) => String(item?.id || '') === String(task.id));
+    if (!current) {
+      current = {
+        ...mergeTaskExtras(task),
+        source: task.source || 'manual',
+        createdAt: task.createdAt || task.created_at || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      tasks.unshift(current);
+    } else {
+      const merged = mergeTaskExtras(task);
+      Object.assign(current, {
+        ...merged,
+        id: current.id,
+        createdAt: current.createdAt || current.created_at || merged.createdAt || merged.created_at,
+        created_at: current.created_at || current.createdAt || merged.created_at || merged.createdAt,
+        updatedAt: current.updatedAt || current.updated_at || merged.updatedAt || merged.updated_at || new Date().toISOString()
+      });
+    }
+    rememberTask(current);
+    return current;
+  }
+
+  function savePortalState(reason = 'task-kanban-v1') {
+    try {
+      if (typeof window.invalidateControlTaskCache === 'function') window.invalidateControlTaskCache();
+    } catch (_) {}
+    try {
+      if (typeof window.saveLocalStorage === 'function') window.saveLocalStorage({ reason });
+      else if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason });
+    } catch (_) {}
+    try {
+      window.dispatchEvent(new CustomEvent('altea:portal-storage-updated', { detail: { reason } }));
+    } catch (_) {}
+  }
+
+  function persistTaskLater(task) {
+    try {
+      const fn = window.persistTask || (typeof persistTask === 'function' ? persistTask : null);
+      if (typeof fn === 'function') Promise.resolve(fn(task)).catch((error) => console.error('[task-kanban-v1] persist task', error));
+    } catch (error) {
+      console.error('[task-kanban-v1] persist task', error);
+    }
+  }
+
+  function persistCommentLater(comment) {
+    try {
+      const fn = window.persistComment || (typeof persistComment === 'function' ? persistComment : null);
+      if (typeof fn === 'function') Promise.resolve(fn(comment)).catch((error) => console.error('[task-kanban-v1] persist comment', error));
+    } catch (error) {
+      console.error('[task-kanban-v1] persist comment', error);
+    }
+  }
+
+  function addTaskHistory(task, kind, text) {
+    const message = String(text || '').trim();
+    if (!task?.id || !message) return null;
+    const app = appState();
+    const comment = {
+      id: commentId(),
+      articleKey: task.articleKey || '',
+      author: app?.team?.member?.name || task.owner || 'Команда',
+      team: app?.team?.member?.name || 'Команда',
+      type: 'task_log',
+      text: `[[task:${task.id}]] [[kind:${kind || 'comment'}]] ${message}`,
+      createdAt: new Date().toISOString()
+    };
+    storageComments().unshift(comment);
+    persistCommentLater(comment);
+    return comment;
+  }
+
+  function taskHistory(task) {
+    const id = String(task?.id || '').trim();
+    if (!id) return [];
+    return storageComments()
+      .filter((comment) => String(comment?.text || '').includes(`[[task:${id}]]`))
+      .map((comment) => ({
+        ...comment,
+        cleanText: String(comment?.text || '').replace(/^\[\[task:[^\]]+\]\]\s*\[\[kind:[^\]]+\]\]\s*/i, '').trim()
+      }))
+      .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  }
+
+  function storageAttachments() {
+    const state = appState();
+    state.storage = state.storage && typeof state.storage === 'object' ? state.storage : {};
+    state.storage.taskAttachments = Array.isArray(state.storage.taskAttachments) ? state.storage.taskAttachments : [];
+    return state.storage.taskAttachments;
+  }
+
+  function localAttachments() {
+    if (Array.isArray(taskAttachmentCache)) return taskAttachmentCache;
+    try {
+      const parsed = JSON.parse(localStorage.getItem(ATTACHMENTS_KEY) || '[]');
+      taskAttachmentCache = Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+      taskAttachmentCache = [];
+    }
+    return taskAttachmentCache;
+  }
+
+  function saveLocalAttachments() {
+    try {
+      localStorage.setItem(ATTACHMENTS_KEY, JSON.stringify(localAttachments().slice(0, 400)));
+    } catch (_) {}
+  }
+
+  function rememberAttachment(attachment) {
+    if (!attachment?.taskId) return attachment;
+    const list = localAttachments();
+    const key = String(attachment.id || `${attachment.taskId}:${attachment.fileName || attachment.name || Date.now()}`);
+    const index = list.findIndex((item) => String(item?.id || `${item?.taskId}:${item?.fileName || item?.name || ''}`) === key);
+    if (index >= 0) list.splice(index, 1, attachment);
+    else list.unshift(attachment);
+    saveLocalAttachments();
+    return attachment;
+  }
+
+  function taskAttachments(taskId) {
+    const id = String(taskId || '').trim();
+    let remote = [];
+    try {
+      if (typeof window.getTaskAttachments === 'function') remote = window.getTaskAttachments(taskId) || [];
+    } catch (_) {}
+    const local = storageAttachments()
+      .filter((item) => String(item?.taskId || '') === id)
+      .concat(localAttachments().filter((item) => String(item?.taskId || '') === id));
+    const byId = new Map();
+    [...remote, ...local].filter(Boolean).forEach((item) => {
+      const key = String(item?.id || item?.fileName || item?.name || Math.random());
+      byId.set(key, item);
+    });
+    return Array.from(byId.values()).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  }
+
+  function attachmentSizeLabel(size = 0) {
+    const bytes = Number(size || 0);
+    if (!Number.isFinite(bytes) || bytes <= 0) return '';
+    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(bytes >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
+    if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+    return `${Math.round(bytes)} B`;
+  }
+
+  function renderTaskAttachments(taskId) {
+    const attachments = taskAttachments(taskId);
+    if (!attachments.length) {
+      return '<div class="task-detail-empty">Файлов пока нет. Можно приложить XLSX, CSV, PDF, DOCX или картинку к этой задаче.</div>';
+    }
+    return attachments.map((item) => {
+      const fileName = item?.fileName || item?.name || 'Файл';
+      const meta = [
+        item?.createdBy || '',
+        item?.createdAt ? formatDate(String(item.createdAt).slice(0, 10)) : '',
+        attachmentSizeLabel(item?.size)
+      ].filter(Boolean).join(' · ');
+      const url = item?.publicUrl || item?.url || item?.dataUrl || '';
+      return `
+        <div class="task-detail-file-row">
+          <div>
+            <strong>${escapeHtml(fileName)}</strong>
+            <span>${escapeHtml(meta || 'Вложение к задаче')}</span>
+          </div>
+          ${url ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">Открыть</a>` : '<em>ждет синхронизацию</em>'}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve) => {
+      if (!file || Number(file.size || 0) > 1024 * 1024) {
+        resolve('');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleTaskFiles(taskId, files) {
+    const list = Array.from(files || []).filter(Boolean);
+    if (!taskId || !list.length) return;
+    const task = materializeTask(taskById(taskId) || { id: taskId });
+    if (!task) return;
+    for (const file of list) {
+      let attachment = null;
+      if (typeof window.uploadTaskAttachment === 'function') {
+        try {
+          attachment = await window.uploadTaskAttachment(task.id, file);
+        } catch (error) {
+          console.warn('[task-kanban-v1] remote attachment failed, keeping local metadata', error);
+        }
+      }
+      if (!attachment) {
+        const dataUrl = await readFileAsDataUrl(file);
+        attachment = {
+          id: `attach-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+          taskId: task.id,
+          articleKey: task.articleKey || '',
+          fileName: String(file.name || 'Файл'),
+          mimeType: String(file.type || ''),
+          size: Number(file.size || 0),
+          dataUrl,
+          localOnly: true,
+          syncStatus: 'local',
+          createdAt: new Date().toISOString(),
+          createdBy: appState()?.team?.member?.name || task.owner || 'Команда'
+        };
+        storageAttachments().unshift(attachment);
+        rememberAttachment(attachment);
+        savePortalState('task-kanban-v1-attachment-local');
+      } else {
+        rememberAttachment(attachment);
+      }
+      addTaskHistory(task, 'attachment', `Прикреплен файл: ${attachment.fileName || file.name || 'файл'}.`);
+    }
+    rememberTask(task);
+    savePortalState('task-kanban-v1-attachment');
+  }
+
+  function updateTaskLocal(taskId, patch = {}, historyText = '') {
+    const source = taskById(taskId);
+    const current = materializeTask(source || { id: taskId });
+    if (!current) return null;
+    const beforeStatus = current.status || 'new';
+    Object.assign(current, patch, {
+      id: current.id,
+      updatedAt: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    });
+    if (!current.title) current.title = 'Новая задача';
+    if (!current.status) current.status = 'new';
+    rememberTask(current);
+    if (historyText) addTaskHistory(current, beforeStatus !== current.status ? 'status' : 'updated', historyText);
+    savePortalState('task-kanban-v1-update');
+    persistTaskLater(current);
+    queueEnhance(true);
+    return current;
+  }
+
+  function statusOptionsHtml(value) {
+    const options = [
+      ['new', 'Новая'],
+      ['in_progress', 'В работе'],
+      ['waiting_rop', 'Ожидает РОП'],
+      ['waiting_decision', 'Ожидает решения'],
+      ['done', 'Готово']
+    ];
+    return options.map(([key, label]) => `<option value="${escapeHtml(key)}" ${String(value || 'new') === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('');
+  }
+
+  function createDraft() {
+    TASK_UI.draft = TASK_UI.draft && typeof TASK_UI.draft === 'object' ? TASK_UI.draft : {};
+    return TASK_UI.draft;
+  }
+
+  function updateCreateDraft(form) {
+    if (!form) return createDraft();
+    const data = new FormData(form);
+    const draft = createDraft();
+    ['title', 'articleKeys', 'articleKey', 'nextAction', 'reason', 'owner', 'due', 'type', 'priority', 'platform'].forEach((key) => {
+      const value = data.get(key);
+      if (typeof value === 'string') draft[key] = value;
+    });
+    saveUi();
+    return draft;
+  }
+
+  function draftValue(name, fallback = '') {
+    const draft = createDraft();
+    return String(draft[name] ?? fallback ?? '');
+  }
+
+  function fieldValue(data, draft, name) {
+    const value = data.get(name);
+    const text = typeof value === 'string' ? value : '';
+    return text || String(draft?.[name] || '');
+  }
+
   function matchesFilters(task, filters, platform) {
     const lane = laneFor(task);
     const status = normalizeText(filters.status || 'active');
@@ -372,6 +860,7 @@
         task?.nextAction,
         task?.reason,
         task?.articleKey,
+        taskArticleKeys(task).join(' '),
         task?.platform,
         task?.marketplace,
         task?.type
@@ -384,6 +873,8 @@
 
   function taskScore(task) {
     let score = 0;
+    const createdMs = Date.parse(task?.createdAt || task?.created_at || '');
+    if (taskSource(task) === 'manual' && Number.isFinite(createdMs) && Date.now() - createdMs < 24 * 60 * 60 * 1000) score += 120;
     if (isOverdue(task)) score += 70;
     if (task?.priority === 'critical') score += 40;
     if (task?.priority === 'high') score += 22;
@@ -468,29 +959,38 @@
     return `
       <section class="task-design-create" data-task-create-drawer>
         <form data-task-create-form>
-          <div>
+          <div class="task-design-create-head">
             <span class="task-design-kicker">Быстрое создание</span>
             <h3>Новая задача</h3>
           </div>
-          <label>
+          <label class="task-design-title-field">
             <span>Что сделать</span>
-            <input name="title" required placeholder="Например: проверить карточку SKU">
+            <input name="title" required placeholder="Например: проверить карточку SKU" value="${escapeHtml(draftValue('title'))}">
           </label>
-          <label>
+          <label class="task-design-article-field">
+            <span>Артикулы / SKU</span>
+            <textarea name="articleKeys" rows="4" placeholder="Можно вставить списком: каждый артикул с новой строки, через запятую или точку с запятой">${escapeHtml(draftValue('articleKeys'))}</textarea>
+          </label>
+          <label class="task-design-next-field">
             <span>Первый шаг / ожидаемый результат</span>
-            <textarea name="nextAction" rows="3" placeholder="Что должно измениться после выполнения"></textarea>
+            <textarea name="nextAction" rows="3" placeholder="Что должно измениться после выполнения">${escapeHtml(draftValue('nextAction'))}</textarea>
+          </label>
+          <label class="task-design-reason-field">
+            <span>Контекст / доп. описание</span>
+            <textarea name="reason" rows="3" placeholder="Причина, ссылки, что проверить, какие метрики смотреть">${escapeHtml(draftValue('reason'))}</textarea>
           </label>
           <div class="task-design-create-grid">
-            <label><span>Owner</span><input name="owner" placeholder="Имя ответственного"></label>
-            <label><span>Срок</span><input name="due" type="date" value="${escapeHtml(plusDays(3))}"></label>
-            <label><span>Тип</span><select name="type">${TYPE_OPTIONS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`).join('')}</select></label>
-            <label><span>Приоритет</span><select name="priority">${PRIORITY_OPTIONS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`).join('')}</select></label>
+            <label><span>Owner</span><input name="owner" placeholder="Имя ответственного" value="${escapeHtml(draftValue('owner'))}"></label>
+            <label><span>Срок</span><input name="due" type="date" value="${escapeHtml(draftValue('due', plusDays(3)))}"></label>
+            <label><span>Тип</span><select name="type">${TYPE_OPTIONS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}" ${draftValue('type', 'general') === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>
+            <label><span>Приоритет</span><select name="priority">${PRIORITY_OPTIONS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}" ${draftValue('priority', 'critical') === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>
+            <label class="task-design-file-field"><span>Файлы к задаче</span><input name="files" type="file" multiple accept=".xlsx,.xls,.csv,.pdf,.doc,.docx,.png,.jpg,.jpeg"></label>
           </div>
-          <input type="hidden" name="platform" value="${escapeHtml(platform === 'all' ? 'cross' : platform)}">
+          <input type="hidden" name="platform" value="${escapeHtml(draftValue('platform', platform === 'all' ? 'cross' : platform))}">
           <div class="task-design-create-actions">
             <span>Площадка: ${escapeHtml(platformLabel(platform))}</span>
             <button type="button" data-task-create-toggle>Отмена</button>
-            <button type="submit">Создать</button>
+            <button type="button" data-task-create-submit>Создать</button>
           </div>
         </form>
       </section>
@@ -500,7 +1000,7 @@
   function taskCard(task) {
     const platform = normalizePlatform('', task);
     const title = task?.title || task?.entityLabel || 'Задача';
-    const entity = task?.entityLabel || task?.articleKey || 'без привязки';
+    const entity = taskArticleSummary(task);
     const next = task?.nextAction || task?.reason || 'Нужен следующий шаг.';
     const owner = taskOwner(task) || 'Без owner';
     const due = taskDate(task);
@@ -572,7 +1072,7 @@
           <tbody>
             ${tasks.slice(0, 220).map((task) => `
               <tr data-kanban-task="${escapeHtml(task?.id || '')}" tabindex="0">
-                <td><strong>${escapeHtml(task?.title || task?.entityLabel || 'Задача')}</strong><span>${escapeHtml(task?.nextAction || task?.reason || task?.articleKey || '')}</span></td>
+                <td><strong>${escapeHtml(task?.title || task?.entityLabel || 'Задача')}</strong><span>${escapeHtml(task?.nextAction || task?.reason || taskArticleSummary(task) || '')}</span></td>
                 <td>${escapeHtml(taskOwner(task) || 'Без owner')}</td>
                 <td class="${isOverdue(task) ? 'danger' : ''}">${escapeHtml(formatDate(taskDate(task)))}</td>
                 <td>${escapeHtml(statusLabel(task))}</td>
@@ -659,7 +1159,7 @@
       .task-design-mode{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
       .task-design-mode button,.task-design-reset,.task-design-create-actions button,.task-design-snapshot button{min-height:34px;border:1px solid var(--task-line2);border-radius:999px;background:#0b0907;color:var(--task-text);padding:8px 13px;cursor:pointer;transition:border-color .16s ease,background .16s ease,transform .16s ease}
       .task-design-mode button:hover,.task-design-reset:hover,.task-design-create-actions button:hover,.task-design-snapshot button:hover{border-color:rgba(219,199,163,.62);transform:translateY(-1px)}
-      .task-design-mode button.active,.task-design-mode button.primary,.task-design-create-actions button[type=submit]{border-color:rgba(219,199,163,.78);background:linear-gradient(180deg,#ead8b7,#a98448);color:#130f0a;font-weight:900;box-shadow:0 12px 26px rgba(219,199,163,.22)}
+      .task-design-mode button.active,.task-design-mode button.primary,.task-design-create-actions button[data-task-create-submit]{border-color:rgba(219,199,163,.78);background:linear-gradient(180deg,#ead8b7,#a98448);color:#130f0a;font-weight:900;box-shadow:0 12px 26px rgba(219,199,163,.22)}
       .task-design-snapshot{display:grid;grid-template-columns:repeat(5,minmax(100px,1fr)) minmax(150px,.9fr);gap:8px;margin-bottom:12px}
       .task-design-snapshot button,.task-design-platform-badge{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid rgba(219,199,163,.16);border-radius:8px;background:#0b0907;padding:10px 12px;color:var(--task-text)}
       .task-design-snapshot strong{font-size:22px;line-height:1}
@@ -671,12 +1171,16 @@
       .task-design-filter input,.task-design-filter select,.task-design-create input,.task-design-create select,.task-design-create textarea{width:100%;min-height:38px;border:1px solid var(--task-line);border-radius:8px;background:#050403;color:var(--task-text);padding:9px 10px;outline:none}
       .task-design-filter input:focus,.task-design-filter select:focus,.task-design-create input:focus,.task-design-create textarea:focus{border-color:rgba(219,199,163,.62);box-shadow:0 0 0 3px rgba(219,199,163,.1)}
       .task-design-result-line{margin-top:10px;color:rgba(247,241,231,.54);font-size:11px}
-      .task-design-create{padding:14px;animation:taskDesignIn .2s ease both}
-      .task-design-create form{display:grid;grid-template-columns:minmax(180px,.55fr) minmax(260px,1fr) minmax(260px,1fr);gap:12px;align-items:start}
+      .task-design-create{padding:12px 14px;animation:taskDesignIn .2s ease both}
+      .task-design-create form{display:grid;grid-template-columns:minmax(260px,1fr) minmax(300px,1.1fr) minmax(240px,.8fr);gap:10px;align-items:start}
+      .task-design-create-head{grid-column:1/-1;display:flex;align-items:end;justify-content:space-between;gap:12px}
+      .task-design-create-head h3{font-size:24px}
       .task-design-create label{display:grid;gap:6px}
       .task-design-create label span,.task-design-create-actions span{color:var(--task-muted);font-size:10px;font-weight:900;text-transform:uppercase}
       .task-design-create textarea{resize:vertical}
+      .task-design-article-field textarea{min-height:88px}
       .task-design-create-grid{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px}
+      .task-design-file-field{grid-column:1/-1}
       .task-design-create-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:8px}
       .task-design-board{display:grid;grid-template-columns:repeat(5,minmax(224px,1fr));gap:10px;overflow-x:auto;padding-bottom:2px}
       .task-design-lane{min-height:420px;display:grid;grid-template-rows:auto 1fr}
@@ -718,18 +1222,272 @@
       .task-design-list tr:hover{background:rgba(219,199,163,.06)}
       .task-design-list td strong{display:block;font-size:13px}
       .task-design-list td span{display:block;margin-top:4px;color:rgba(247,241,231,.5);font-size:11px}
+      body.task-detail-open{overflow:hidden}
+      .task-detail-backdrop{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:26px;background:rgba(0,0,0,.68);backdrop-filter:blur(18px)}
+      .task-detail-dialog{--task-line:#302a22;--task-text:#f7f1e7;--task-muted:#9f9688;--task-gold:#dbc7a3;position:relative;width:min(1180px,calc(100vw - 44px));max-height:calc(100vh - 44px);overflow:auto;border:1px solid rgba(219,199,163,.24);border-radius:10px;background:linear-gradient(135deg,rgba(219,199,163,.12),rgba(80,40,120,.1) 52%,rgba(0,0,0,.28)),#0b0907;color:var(--task-text);box-shadow:0 34px 100px rgba(0,0,0,.55);padding:18px;animation:taskDesignIn .2s ease both}
+      .task-detail-close{position:absolute;right:14px;top:12px;width:34px;height:34px;border:1px solid rgba(219,199,163,.26);border-radius:999px;background:#090705;color:var(--task-text);cursor:pointer}
+      .task-detail-head{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:16px;margin-right:42px;margin-bottom:14px}
+      .task-detail-head h2{margin:4px 0 6px;font:500 30px/1.06 Georgia,serif}
+      .task-detail-head p{margin:0;color:rgba(247,241,231,.68);line-height:1.45}
+      .task-detail-status-card,.task-detail-sku-card,.task-detail-files,.task-detail-history{border:1px solid rgba(219,199,163,.16);border-radius:8px;background:rgba(255,255,255,.035);padding:12px}
+      .task-detail-status-card{display:grid;align-content:center;gap:6px}
+      .task-detail-status-card span,.task-detail-status-card em,.task-detail-form label span,.task-detail-sku-card span,.task-detail-section-head span{color:var(--task-muted);font-size:10px;font-weight:900;text-transform:uppercase;font-style:normal}
+      .task-detail-status-card strong{font-size:20px}
+      .task-detail-status-card .danger{color:#ff756b}
+      .task-detail-form{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px}
+      .task-detail-form label{display:grid;gap:6px}
+      .task-detail-form label.wide,.task-detail-sku-card,.task-detail-actions{grid-column:span 2}
+      .task-detail-form input,.task-detail-form select,.task-detail-form textarea,.task-detail-comment-row textarea{width:100%;min-height:38px;border:1px solid var(--task-line);border-radius:8px;background:#050403;color:var(--task-text);padding:9px 10px;outline:none}
+      .task-detail-form textarea{resize:vertical}
+      .task-detail-actions{display:flex;flex-wrap:wrap;align-items:end;gap:8px}
+      .task-detail-actions button,.task-detail-comment-row button,.task-detail-file-upload span,.task-detail-file-row a,.task-detail-sku-card button{min-height:34px;border:1px solid rgba(219,199,163,.28);border-radius:999px;background:#0b0907;color:var(--task-text);padding:8px 12px;cursor:pointer;text-decoration:none}
+      .task-detail-actions .primary,.task-detail-comment-row button,.task-detail-file-upload span{background:linear-gradient(180deg,#ead8b7,#a98448);color:#130f0a;font-weight:900}
+      .task-detail-sku-card p{margin:6px 0 10px;color:rgba(247,241,231,.62);font-size:12px}
+      .task-detail-sku-list{display:grid;gap:6px;margin-bottom:10px;max-height:150px;overflow:auto}
+      .task-detail-sku-row{display:grid!important;grid-template-columns:160px minmax(0,1fr);gap:10px;text-align:left;border-radius:7px!important;background:rgba(0,0,0,.22)!important}
+      .task-detail-sku-row strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .task-detail-sku-row span{font-size:11px;color:rgba(247,241,231,.62);text-transform:none}
+      .task-detail-files,.task-detail-history{margin-top:12px}
+      .task-detail-section-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}
+      .task-detail-section-head h3,.task-detail-history h3{margin:0 0 10px;font-size:15px}
+      .task-detail-file-row,.task-detail-history-row{display:flex;justify-content:space-between;gap:12px;align-items:center;border-top:1px solid rgba(219,199,163,.1);padding:10px 0}
+      .task-detail-file-row:first-child,.task-detail-history-row:first-child{border-top:0}
+      .task-detail-file-row strong,.task-detail-history-row strong{display:block;font-size:12px}
+      .task-detail-file-row span,.task-detail-history-row span,.task-detail-file-row em{display:block;color:rgba(247,241,231,.58);font-size:11px;font-style:normal}
+      .task-detail-file-upload{display:inline-flex;margin-top:8px;cursor:pointer}
+      .task-detail-file-upload input{display:none}
+      .task-detail-comment-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-bottom:8px}
+      .task-detail-empty{border:1px dashed rgba(219,199,163,.2);border-radius:8px;padding:12px;color:rgba(247,241,231,.58);font-size:12px}
       @keyframes taskDesignIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
       @media(max-width:1520px){.task-design-filters{grid-template-columns:minmax(220px,1.4fr) repeat(3,minmax(132px,1fr));}.task-design-reset{min-height:38px}.task-design-board{grid-template-columns:repeat(5,242px)}.task-design-toolbar{top:62px}}
-      @media(max-width:900px){.task-design-toolbar-top,.task-design-create form{display:block}.task-design-mode,.task-design-create-actions{justify-content:flex-start;margin-top:10px}.task-design-snapshot{grid-template-columns:repeat(2,1fr)}.task-design-filters{grid-template-columns:1fr}.task-design-board{grid-template-columns:repeat(5,238px)}}
+      @media(max-width:900px){.task-design-toolbar-top,.task-design-create form,.task-detail-head,.task-detail-form{display:block}.task-design-mode,.task-design-create-actions{justify-content:flex-start;margin-top:10px}.task-design-snapshot{grid-template-columns:repeat(2,1fr)}.task-design-filters{grid-template-columns:1fr}.task-design-board{grid-template-columns:repeat(5,238px)}.task-detail-form label,.task-detail-sku-card,.task-detail-actions{margin-top:10px}.task-detail-comment-row{grid-template-columns:1fr}.task-detail-backdrop{padding:12px}.task-detail-dialog{width:calc(100vw - 24px);max-height:calc(100vh - 24px)}}
       @media(prefers-reduced-motion:reduce){.task-design-v1,.task-design-v1 *{animation:none!important;transition:none!important}}
     `;
     document.head.appendChild(style);
   }
 
+  function closeTaskDetail() {
+    document.querySelector('[data-task-detail-modal]')?.remove();
+    document.body.classList.remove('task-detail-open');
+  }
+
+  function renderTaskDetailHistory(task) {
+    const history = taskHistory(task).slice(0, 12);
+    if (!history.length) return '<div class="task-detail-empty">Истории пока нет.</div>';
+    return history.map((item) => `
+      <div class="task-detail-history-row">
+        <strong>${escapeHtml(formatDate(String(item.createdAt || '').slice(0, 10)))}</strong>
+        <span>${escapeHtml(item.cleanText || item.text || '')}</span>
+      </div>
+    `).join('');
+  }
+
+  function openSkuFromTask(task) {
+    const articleKey = String(task?.articleKey || '').trim();
+    if (!articleKey) return;
+    try {
+      if (typeof window.openSkuModal === 'function' && window.openSkuModal(articleKey)) return;
+    } catch (_) {}
+    try {
+      window.location.hash = '#sku-contour';
+      appState().filters = appState().filters || {};
+      appState().filters.search = articleKey;
+    } catch (_) {}
+  }
+
   function openTask(taskId) {
+    const task = taskById(taskId);
+    if (!task) return;
+    closeTaskDetail();
+    const platform = normalizePlatform('', task);
+    const modal = document.createElement('div');
+    modal.className = 'task-detail-backdrop';
+    modal.setAttribute('data-task-detail-modal', '');
+    modal.innerHTML = `
+      <section class="task-detail-dialog platform-${escapeHtml(platform)}" role="dialog" aria-modal="true" aria-label="Задача">
+        <button class="task-detail-close" type="button" data-task-detail-close aria-label="Закрыть">×</button>
+        <header class="task-detail-head">
+          <div>
+            <span class="task-design-kicker">${taskSource(task) === 'auto' ? 'Автосигнал' : 'Ручная задача'} · ${escapeHtml(platformLabel(platform))}</span>
+            <h2>${escapeHtml(task.title || task.entityLabel || 'Задача')}</h2>
+            <p>${escapeHtml(task.nextAction || task.reason || 'Описание пока не заполнено.')}</p>
+          </div>
+          <div class="task-detail-status-card">
+            <span>Статус</span>
+            <strong>${escapeHtml(statusLabel(task))}</strong>
+            <em class="${isOverdue(task) ? 'danger' : ''}">${escapeHtml(formatDate(taskDate(task)))}</em>
+          </div>
+        </header>
+        <form class="task-detail-form" data-task-detail-form data-task-id="${escapeHtml(task.id || '')}">
+          <label><span>Название</span><input name="title" value="${escapeHtml(task.title || '')}"></label>
+          <label><span>Артикулы / SKU</span><textarea name="articleKeys" rows="4" placeholder="Вставьте несколько артикулов списком">${escapeHtml(taskArticleTextareaValue(task))}</textarea></label>
+          <label><span>Owner</span><input name="owner" value="${escapeHtml(taskOwner(task) || '')}"></label>
+          <label><span>Срок</span><input name="due" type="date" value="${escapeHtml(taskDate(task) || '')}"></label>
+          <label><span>Статус</span><select name="status">${statusOptionsHtml(task.status || 'new')}</select></label>
+          <label><span>Приоритет</span><select name="priority">${PRIORITY_OPTIONS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}" ${String(task.priority || 'medium') === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>
+          <label><span>Тип</span><select name="type">${TYPE_OPTIONS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}" ${String(task.type || 'general') === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>
+          <label><span>Площадка</span><select name="platform">${Object.entries(PLATFORM_LABELS).filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}" ${platform === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>
+          <label class="wide"><span>Первый шаг / результат</span><textarea name="nextAction" rows="3">${escapeHtml(task.nextAction || '')}</textarea></label>
+          <label class="wide"><span>Контекст / доп. описание</span><textarea name="reason" rows="4">${escapeHtml(task.reason || '')}</textarea></label>
+          <div class="task-detail-sku-card">
+            <span>Привязка</span>
+            <strong>${escapeHtml(taskArticleSummary(task, 2))}</strong>
+            <p>Нажмите на артикул, чтобы перейти к SKU. Можно сохранить несколько позиций в одной задаче.</p>
+            <div class="task-detail-sku-list">${taskSkuListMarkup(task)}</div>
+            <button type="button" data-task-detail-open-sku ${task.articleKey ? '' : 'disabled'}>Открыть первый SKU</button>
+          </div>
+          <div class="task-detail-actions">
+            <button type="button" data-task-detail-status="in_progress">В работу</button>
+            <button type="button" data-task-detail-status="waiting_rop">Ожидает РОП</button>
+            <button type="button" data-task-detail-status="waiting_decision">На решение</button>
+            <button type="button" data-task-detail-status="done">Готово</button>
+            <button type="submit" class="primary">Сохранить</button>
+          </div>
+        </form>
+        <section class="task-detail-files">
+          <div class="task-detail-section-head">
+            <h3>Файлы к задаче</h3>
+            <span>${taskAttachments(task.id).length} файлов</span>
+          </div>
+          <div data-task-detail-files-list>${renderTaskAttachments(task.id)}</div>
+          <label class="task-detail-file-upload">
+            <input type="file" multiple data-task-detail-files accept=".xlsx,.xls,.csv,.pdf,.doc,.docx,.png,.jpg,.jpeg">
+            <span>Прикрепить файл</span>
+          </label>
+        </section>
+        <section class="task-detail-history">
+          <h3>История и комментарии</h3>
+          <div class="task-detail-comment-row">
+            <textarea data-task-detail-comment rows="2" placeholder="Комментарий, что изменилось или что нужно проверить"></textarea>
+            <button type="button" data-task-detail-add-comment>Добавить</button>
+          </div>
+          <div data-task-detail-history-list>${renderTaskDetailHistory(task)}</div>
+        </section>
+      </section>
+    `;
+    document.body.appendChild(modal);
+    document.body.classList.add('task-detail-open');
+    appState().activeTaskId = task.id;
+    modal.querySelector('input[name="title"]')?.focus();
+  }
+
+  function taskPatchFromForm(form) {
+    const data = new FormData(form);
+    const articleKeys = parseArticleKeys(data.get('articleKeys') || data.get('articleKey') || '');
+    const articleKey = articleKeys[0] || '';
+    const sku = findSku(articleKey);
+    return {
+      title: String(data.get('title') || '').trim() || 'Новая задача',
+      articleKey,
+      articleKeys,
+      entityLabel: sku
+        ? `${sku.article || sku.articleKey || articleKey} · ${skuTitle(sku)}${articleKeys.length > 1 ? ` +${articleKeys.length - 1}` : ''}`
+        : taskArticleSummary({ articleKey, articleKeys }),
+      owner: String(data.get('owner') || '').trim(),
+      due: String(data.get('due') || '').trim(),
+      status: String(data.get('status') || 'new'),
+      priority: String(data.get('priority') || 'medium'),
+      type: String(data.get('type') || 'general'),
+      platform: String(data.get('platform') || 'cross'),
+      nextAction: String(data.get('nextAction') || '').trim(),
+      reason: String(data.get('reason') || '').trim()
+    };
+  }
+
+  function refreshOpenTaskDetail(taskId) {
+    window.setTimeout(() => openTask(taskId), 50);
+  }
+
+  async function saveTaskDetail(form) {
+    const taskId = form?.getAttribute('data-task-id') || '';
     if (!taskId) return;
-    if (typeof window.openTaskModal === 'function') window.openTaskModal(taskId);
-    else if (typeof window.renderTaskModal === 'function') window.renderTaskModal(taskId);
+    const updated = updateTaskLocal(taskId, taskPatchFromForm(form), 'Задача обновлена из карточки задачи.');
+    if (updated) refreshOpenTaskDetail(updated.id);
+  }
+
+  async function setTaskStatusFromDetail(taskId, status) {
+    if (!taskId || !status) return;
+    const updated = updateTaskLocal(taskId, { status }, `Статус изменен: ${statusLabel({ status })}.`);
+    if (updated) refreshOpenTaskDetail(updated.id);
+  }
+
+  function addTaskDetailComment(modal) {
+    const form = modal?.querySelector('[data-task-detail-form]');
+    const taskId = form?.getAttribute('data-task-id') || '';
+    const task = taskById(taskId);
+    const textarea = modal?.querySelector('[data-task-detail-comment]');
+    const text = String(textarea?.value || '').trim();
+    if (!task || !text) {
+      textarea?.focus();
+      return;
+    }
+    addTaskHistory(materializeTask(task), 'comment', text);
+    savePortalState('task-kanban-v1-comment');
+    if (textarea) textarea.value = '';
+    refreshOpenTaskDetail(task.id);
+  }
+
+  function bindTaskDetailEvents() {
+    if (detailEventsBound) return;
+    detailEventsBound = true;
+    document.addEventListener('click', (event) => {
+      const modal = event.target.closest?.('[data-task-detail-modal]');
+      if (event.target.matches?.('[data-task-detail-modal]') || event.target.closest?.('[data-task-detail-close]')) {
+        event.preventDefault();
+        closeTaskDetail();
+        return;
+      }
+      if (!modal) return;
+      const statusButton = event.target.closest?.('[data-task-detail-status]');
+      if (statusButton) {
+        event.preventDefault();
+        const form = modal.querySelector('[data-task-detail-form]');
+        setTaskStatusFromDetail(form?.getAttribute('data-task-id') || '', statusButton.getAttribute('data-task-detail-status') || '');
+        return;
+      }
+      if (event.target.closest?.('[data-task-detail-add-comment]')) {
+        event.preventDefault();
+        addTaskDetailComment(modal);
+        return;
+      }
+      if (event.target.closest?.('[data-task-detail-open-sku]')) {
+        event.preventDefault();
+        const task = taskById(modal.querySelector('[data-task-detail-form]')?.getAttribute('data-task-id') || '');
+        openSkuFromTask(task);
+        return;
+      }
+      const articleButton = event.target.closest?.('[data-task-detail-open-article]');
+      if (articleButton) {
+        event.preventDefault();
+        const task = taskById(modal.querySelector('[data-task-detail-form]')?.getAttribute('data-task-id') || '');
+        openSkuFromTask({ ...(task || {}), articleKey: articleButton.getAttribute('data-task-detail-open-article') || '' });
+      }
+    }, true);
+    document.addEventListener('change', (event) => {
+      const input = event.target.closest?.('[data-task-detail-files]');
+      if (!input) return;
+      const modal = input.closest('[data-task-detail-modal]');
+      const taskId = modal?.querySelector('[data-task-detail-form]')?.getAttribute('data-task-id') || '';
+      const files = Array.from(input.files || []);
+      if (!taskId || !files.length) return;
+      handleTaskFiles(taskId, files)
+        .then(() => refreshOpenTaskDetail(taskId))
+        .catch((error) => {
+          console.error('[task-kanban-v1] attach files', error);
+          alert(error?.message || 'Не удалось прикрепить файл.');
+        })
+        .finally(() => { input.value = ''; });
+    }, true);
+    document.addEventListener('submit', (event) => {
+      const form = event.target.closest?.('[data-task-detail-form]');
+      if (!form) return;
+      event.preventDefault();
+      event.stopPropagation();
+      saveTaskDetail(form);
+    }, true);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && document.querySelector('[data-task-detail-modal]')) closeTaskDetail();
+    });
   }
 
   async function moveTask(taskId, laneStatus) {
@@ -737,48 +1495,123 @@
     const status = laneStatus === 'waiting' ? 'waiting_rop' : laneStatus === 'no_date' ? 'new' : laneStatus;
     const task = taskList().find((item) => String(item?.id || '') === String(taskId));
     if (task && laneFor(task) === laneFor({ ...task, status })) return;
+    updateTaskLocal(taskId, { status }, `Статус изменен перетаскиванием: ${statusLabel({ status })}.`);
     if (typeof window.updateTaskStatus === 'function') {
-      await window.updateTaskStatus(taskId, status);
-    } else if (task) {
-      task.status = status;
-      if (typeof window.saveLocalStorage === 'function') window.saveLocalStorage({ reason: 'task-design-status' });
+      try {
+        Promise.resolve(window.updateTaskStatus(taskId, status)).catch((error) => {
+          console.warn('[task-kanban-v1] background updateTaskStatus failed', error);
+        });
+      } catch (error) {
+        console.warn('[task-kanban-v1] background updateTaskStatus failed', error);
+      }
     }
-    queueEnhance();
+    queueEnhance(true);
   }
 
   async function createTaskFromForm(form) {
+    const draft = updateCreateDraft(form);
     const data = new FormData(form);
+    const articleKeys = parseArticleKeys(fieldValue(data, draft, 'articleKeys') || fieldValue(data, draft, 'articleKey'));
+    const articleKey = articleKeys[0] || '';
     const payload = {
-      title: String(data.get('title') || '').trim(),
-      nextAction: String(data.get('nextAction') || '').trim(),
-      owner: String(data.get('owner') || '').trim(),
-      due: String(data.get('due') || '').trim(),
-      type: String(data.get('type') || 'general'),
-      priority: String(data.get('priority') || 'medium'),
-      platform: String(data.get('platform') || globalPlatform() || 'cross'),
-      reason: String(data.get('nextAction') || '').trim()
+      title: String(fieldValue(data, draft, 'title')).trim(),
+      nextAction: String(fieldValue(data, draft, 'nextAction')).trim(),
+      reason: String(fieldValue(data, draft, 'reason')).trim(),
+      articleKey,
+      articleKeys,
+      owner: String(fieldValue(data, draft, 'owner')).trim(),
+      due: String(fieldValue(data, draft, 'due')).trim(),
+      type: String(fieldValue(data, draft, 'type') || 'general'),
+      priority: String(fieldValue(data, draft, 'priority') || 'medium'),
+      platform: String(fieldValue(data, draft, 'platform') || globalPlatform() || 'cross'),
+      entityLabel: ''
     };
-    let task = null;
-    if (typeof window.createManualTask === 'function') {
-      task = await window.createManualTask(payload);
-    } else {
-      const state = appState();
-      state.storage = state.storage || {};
-      state.storage.tasks = Array.isArray(state.storage.tasks) ? state.storage.tasks : [];
-      task = {
-        id: `task-${Date.now().toString(36)}`,
-        source: 'manual',
-        status: 'new',
-        createdAt: new Date().toISOString(),
-        ...payload
-      };
-      state.storage.tasks.unshift(task);
-      if (typeof window.saveLocalStorage === 'function') window.saveLocalStorage({ reason: 'task-design-create' });
+    const sku = findSku(articleKey);
+    payload.entityLabel = sku
+      ? `${sku.article || sku.articleKey || articleKey} · ${skuTitle(sku)}${articleKeys.length > 1 ? ` +${articleKeys.length - 1}` : ''}`
+      : taskArticleSummary(payload);
+    let task = {
+      id: taskId(),
+      source: 'manual',
+      status: 'new',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ...payload
+    };
+    storageTasks().unshift(task);
+    savePortalState('task-design-create');
+    if (task) {
+      const current = materializeTask(task) || task;
+      Object.assign(current, {
+        ...payload,
+        id: current.id || task.id,
+        status: current.status || task.status || 'new',
+        source: current.source || task.source || 'manual',
+        createdAt: current.createdAt || task.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      task = current;
+      rememberTask(task);
+      addTaskHistory(task, 'created', 'Задача создана из вкладки Задачи.');
+      const filesInput = form.querySelector('input[name="files"]');
+      await handleTaskFiles(task.id, filesInput?.files || []);
+      persistTaskLater(task);
+      savePortalState('task-kanban-v1-create');
     }
     TASK_UI.createOpen = false;
+    TASK_UI.draft = {};
     saveUi();
-    queueEnhance();
+    queueEnhance(true);
     if (task?.id) window.setTimeout(() => openTask(task.id), 120);
+  }
+
+  async function submitCreateTask(form) {
+    if (!form || form.dataset.taskSubmitting === '1') return;
+    form.dataset.taskSubmitting = '1';
+    try {
+      await createTaskFromForm(form);
+    } finally {
+      delete form.dataset.taskSubmitting;
+    }
+  }
+
+  function bindTaskCreateEvents() {
+    if (createEventsBound) return;
+    createEventsBound = true;
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest?.('[data-task-create-submit]');
+      if (!button) return;
+      const form = button.closest('form[data-task-create-form]');
+      if (!form || !form.closest('[data-task-calendar-design-v1]')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+      submitCreateTask(form).catch((error) => {
+        console.error('[task-kanban-v1] create task', error);
+        alert(error?.message || 'Не удалось создать задачу.');
+      });
+    }, true);
+    document.addEventListener('input', (event) => {
+      const form = event.target.closest?.('[data-task-create-form]');
+      if (!form || !form.closest('[data-task-calendar-design-v1]')) return;
+      updateCreateDraft(form);
+    }, true);
+    document.addEventListener('change', (event) => {
+      const form = event.target.closest?.('[data-task-create-form]');
+      if (!form || !form.closest('[data-task-calendar-design-v1]')) return;
+      updateCreateDraft(form);
+    }, true);
+    document.addEventListener('submit', (event) => {
+      const form = event.target.closest?.('[data-task-create-form]');
+      if (!form || !form.closest('[data-task-calendar-design-v1]')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+      submitCreateTask(form).catch((error) => {
+        console.error('[task-kanban-v1] create task', error);
+        alert(error?.message || 'Не удалось создать задачу.');
+      });
+    }, true);
   }
 
   function setFilter(name, value) {
@@ -862,7 +1695,7 @@
       const form = event.target.closest('[data-task-create-form]');
       if (!form) return;
       event.preventDefault();
-      await createTaskFromForm(form);
+      await submitCreateTask(form);
     });
     shell.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -1013,6 +1846,10 @@
 
   function boot() {
     ensureStyle();
+    bindTaskDetailEvents();
+    bindTaskCreateEvents();
+    window.openTaskModal = openTask;
+    window.renderTaskModal = openTask;
     const installed = installWrapper();
     if (!installed) window.setTimeout(installWrapper, 450);
     [0, 220, 700, 1600, 3600, 7200].forEach((delay) => window.setTimeout(() => queueEnhance(true), delay));

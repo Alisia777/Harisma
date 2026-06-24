@@ -6,7 +6,7 @@
   const VERSION = '20260624-layer-janitor-oos-localization-v1';
   let cascadeTimers = [];
   let cleanupQueued = false;
-  const TRANSIENT_SELECTOR = '.promo-modal-backdrop,.modal,.toast,.portal-loader,.route-loader,.pf-v4-drawer-back,.plb-v2-drawer-back,[data-pf-v4-drawer-back],[data-plb-v2-drawer-back]';
+  const TRANSIENT_SELECTOR = '.promo-modal-backdrop,.modal,.toast,.portal-loader,.route-loader,.pf-v4-drawer-back,.plb-v2-drawer-back,.launch-v1-editor-backdrop,[data-pf-v4-drawer-back],[data-plb-v2-drawer-back],[data-launch-v1-editor-backdrop]';
 
   const HEAVY_VIEW_IDS = [
     'view-dashboard',
@@ -137,7 +137,7 @@
     },
     launches: {
       rootId: 'view-launches',
-      owned: '.launch-calendar-shell,.launch-task-board,[data-launch-stage-board],.launch-calendar-game',
+      owned: '.sku-launch-v1-shell,.launch-v1-shell,.launch-v1-workspace,.launch-v1-detail,.launch-v1-full-kanban,.launch-calendar-shell,.launch-task-board,[data-launch-stage-board],.launch-calendar-game',
       legacy: '.launches-legacy,.launch-old-shell,[data-launches-legacy]'
     },
     'data-health': {

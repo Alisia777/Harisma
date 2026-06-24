@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260621skulaunchv1';
+  const VERSION = '20260624launchcrud1';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -969,6 +969,245 @@
     }));
   }
 
+  const LAUNCH_V1_STAGE_STATUSES = [
+    { key: 'empty', label: 'не начато', value: '' },
+    { key: 'work', label: 'в работе', value: 'в работе' },
+    { key: 'done', label: 'готово', value: 'готово' },
+    { key: 'blocked', label: 'блокер', value: 'блокер' }
+  ];
+
+  function launchV1StatusTone(value = '') {
+    const text = String(value || '').toLowerCase();
+    if (/готов|done|ok|закрыт/.test(text)) return 'ok';
+    if (/блок|стоп|stop|риск|проср/.test(text)) return 'danger';
+    if (/работ|процесс|ждем|ждём|соглас/.test(text)) return 'warn';
+    return '';
+  }
+
+  function launchV1StatusOptions(current = '') {
+    const normalized = String(current || '').trim().toLowerCase();
+    const base = ['', 'в работе', 'готово', 'блокер', 'переговоры', 'пробный образец', 'производство'];
+    const values = [...new Set([...base, current].filter((value) => value !== undefined))];
+    return values.map((value) => {
+      const label = value || 'не начато';
+      return `<option value="${escapeValue(value)}"${String(value || '').trim().toLowerCase() === normalized ? ' selected' : ''}>${escapeValue(label)}</option>`;
+    }).join('');
+  }
+
+  function launchV1FindItem(id = '') {
+    const key = String(id || '').trim();
+    return launchItemsV1().find((item) => launchId(item) === key) || null;
+  }
+
+  function launchV1DraftId() {
+    return `launch-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  }
+
+  function launchV1DefaultDraft(defaults = {}) {
+    const date = defaults.launchDate || defaults.dueDate || todayKey();
+    return {
+      id: defaults.id || launchV1DraftId(),
+      name: defaults.name || 'Новая новинка',
+      articleKey: defaults.articleKey || '',
+      owner: defaults.owner || '',
+      reportGroup: defaults.reportGroup || defaults.category || 'Продукт',
+      status: defaults.status || 'в работе',
+      marketplaces: defaults.marketplaces || (typeof currentMarketplace === 'function' ? currentMarketplace() : 'WB'),
+      launchDate: date,
+      dueDate: date,
+      launchMonth: typeof launchMonthLabel === 'function' ? launchMonthLabel(launchMonthKey(date)) : date.slice(0, 7),
+      productComment: defaults.productComment || defaults.notes || '',
+      negotiationStatus: defaults.negotiationStatus || 'в работе',
+      sampleStatus: defaults.sampleStatus || '',
+      productionStatus: defaults.productionStatus || '',
+      packagingStatus: defaults.packagingStatus || '',
+      contentStatus: defaults.contentStatus || '',
+      launchReadinessStatus: defaults.launchReadinessStatus || ''
+    };
+  }
+
+  function launchV1SaveDraft(item = {}) {
+    const draft = { ...item, id: item.id || launchId(item) || launchV1DraftId() };
+    let saved = draft;
+    if (typeof upsertLaunchDraft === 'function') {
+      saved = upsertLaunchDraft(draft) || draft;
+    } else {
+      const stateRef = appState();
+      stateRef.storage = stateRef.storage || {};
+      const list = Array.isArray(stateRef.storage.launchOverrides) ? stateRef.storage.launchOverrides : [];
+      stateRef.storage.launchOverrides = [draft, ...list.filter((entry) => launchId(entry) !== draft.id)];
+      if (Array.isArray(stateRef.storage.launchDeletedIds)) {
+        stateRef.storage.launchDeletedIds = stateRef.storage.launchDeletedIds.filter((entry) => String(entry) !== draft.id);
+      }
+      try { if (typeof saveLocalStorage === 'function') saveLocalStorage(); } catch {}
+    }
+    try { window.dispatchEvent(new CustomEvent('altea:portal-storage-updated', { detail: { source: 'launch-v1' } })); } catch {}
+    return saved;
+  }
+
+  function launchV1DeleteDraft(id = '') {
+    const key = String(id || '').trim();
+    if (!key) return;
+    if (typeof deleteLaunchDraft === 'function') {
+      deleteLaunchDraft(key);
+    } else {
+      const stateRef = appState();
+      stateRef.storage = stateRef.storage || {};
+      stateRef.storage.launchOverrides = (stateRef.storage.launchOverrides || []).filter((entry) => launchId(entry) !== key);
+      stateRef.storage.launchDeletedIds = [...new Set([...(stateRef.storage.launchDeletedIds || []), key])];
+      try { if (typeof saveLocalStorage === 'function') saveLocalStorage(); } catch {}
+    }
+    try { window.dispatchEvent(new CustomEvent('altea:portal-storage-updated', { detail: { source: 'launch-v1' } })); } catch {}
+  }
+
+  function launchV1Toast(text = '') {
+    const toast = document.createElement('div');
+    toast.className = 'launch-v1-toast';
+    toast.textContent = text || 'Сохранено';
+    document.body.appendChild(toast);
+    window.setTimeout(() => toast.remove(), 2200);
+  }
+
+  function launchV1StageActions(item, entry) {
+    const field = entry?.config?.status || '';
+    if (!field) return '';
+    const itemId = launchId(item);
+    const current = String(entry.status || '').trim().toLowerCase();
+    return `
+      <div class="launch-v1-stage-actions" role="group" aria-label="Статус этапа">
+        ${LAUNCH_V1_STAGE_STATUSES.map((status) => {
+          const active = String(status.value || '').trim().toLowerCase() === current;
+          return `<button type="button" class="${active ? 'active' : ''}" data-launch-v1-stage-status="${escapeValue(status.value)}" data-launch-v1-stage="${escapeValue(field)}" data-launch-v1-id="${escapeValue(itemId)}">${escapeValue(status.label)}</button>`;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  function launchV1SetStageStatus(itemId = '', stageField = '', status = '') {
+    const item = launchV1FindItem(itemId);
+    if (!item || !stageField) return;
+    const draft = { ...item, id: launchId(item), [stageField]: status };
+    const entry = stageEntries(item).find((stage) => stage.config?.status === stageField);
+    if (entry?.config?.comment && status && !draft[entry.config.comment]) draft[entry.config.comment] = status === 'блокер' ? 'нужна проверка' : '';
+    if (status) draft.status = status === 'готово' ? 'в работе' : status;
+    launchV1SaveDraft(draft);
+    appState().launchV1SelectedId = draft.id;
+    launchV1Toast('Статус этапа сохранен');
+    renderLaunchesV1('view-launches');
+  }
+
+  function openLaunchV1Editor(id = '', defaults = {}) {
+    closeLaunchV1Editor();
+    const existing = id ? launchV1FindItem(id) : null;
+    const base = existing ? { ...existing, id: launchId(existing) } : launchV1DefaultDraft(defaults);
+    const entries = stageEntries(base);
+    const backdrop = document.createElement('div');
+    backdrop.className = 'launch-v1-editor-backdrop';
+    backdrop.setAttribute('data-launch-v1-editor-backdrop', '');
+    backdrop.innerHTML = `
+      <section class="launch-v1-editor" role="dialog" aria-modal="true" aria-label="Карточка новинки">
+        <form data-launch-v1-editor-form>
+          <input type="hidden" name="id" value="${escapeValue(base.id || launchId(base) || '')}">
+          <header>
+            <div>
+              <span>Новинка</span>
+              <h3>${escapeValue(existing ? 'Редактировать карточку' : 'Новая карточка')}</h3>
+            </div>
+            <button type="button" data-launch-v1-close-editor aria-label="Закрыть">×</button>
+          </header>
+          <div class="launch-v1-editor-grid">
+            <label><span>Название</span><input name="name" required value="${escapeValue(base.name || base.title || '')}"></label>
+            <label><span>Артикул / SKU</span><input name="articleKey" value="${escapeValue(base.articleKey || base.article || '')}"></label>
+            <label><span>Owner</span><input name="owner" value="${escapeValue(launchOwner(base) || '')}"></label>
+            <label><span>Категория</span><input name="reportGroup" value="${escapeValue(base.reportGroup || base.category || '')}"></label>
+            <label><span>Дата запуска</span><input type="date" name="launchDate" value="${escapeValue(launchDue(base) || todayKey())}"></label>
+            <label><span>Площадка</span><input name="marketplaces" value="${escapeValue(base.marketplaces || base.marketplace || 'WB')}"></label>
+            <label><span>Статус</span><select name="status">${launchV1StatusOptions(base.status || '')}</select></label>
+            <label class="wide"><span>Комментарий</span><textarea name="productComment" rows="3">${escapeValue(base.productComment || base.notes || '')}</textarea></label>
+          </div>
+          <div class="launch-v1-editor-stages">
+            <strong>Этапы карточки</strong>
+            ${entries.map((entry) => `
+              <fieldset>
+                <legend>${escapeValue(entry.config?.title || 'Этап')}</legend>
+                <label><span>Статус</span><select name="${escapeValue(entry.config?.status || '')}">${launchV1StatusOptions(entry.status || '')}</select></label>
+                <label><span>Дата</span><input type="date" name="${escapeValue(entry.config?.due || '')}" value="${escapeValue(entry.due || '')}"></label>
+                <label><span>Ответственный</span><input name="${escapeValue(entry.config?.owner || '')}" value="${escapeValue(entry.owner || '')}"></label>
+                <label class="wide"><span>Комментарий</span><input name="${escapeValue(entry.config?.comment || '')}" value="${escapeValue(entry.comment || '')}"></label>
+              </fieldset>
+            `).join('')}
+          </div>
+          <footer>
+            ${existing ? '<button type="button" class="danger" data-launch-v1-delete-editor>Удалить</button>' : '<span></span>'}
+            <div>
+              <button type="button" data-launch-v1-close-editor>Отмена</button>
+              <button type="submit">Сохранить</button>
+            </div>
+          </footer>
+        </form>
+      </section>
+    `;
+    document.body.appendChild(backdrop);
+    backdrop.addEventListener('click', (event) => {
+      if (event.target === backdrop || event.target.closest('[data-launch-v1-close-editor]')) closeLaunchV1Editor();
+    });
+    backdrop.querySelector('[data-launch-v1-delete-editor]')?.addEventListener('click', () => {
+      const key = String(backdrop.querySelector('input[name="id"]')?.value || '').trim();
+      if (!key) return;
+      launchV1DeleteDraft(key);
+      closeLaunchV1Editor();
+      appState().launchV1SelectedId = '';
+      launchV1Toast('Карточка удалена');
+      renderLaunchesV1('view-launches');
+    });
+    backdrop.querySelector('[data-launch-v1-editor-form]')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const draft = readLaunchV1EditorForm(event.currentTarget);
+      const saved = launchV1SaveDraft(draft);
+      appState().launchV1SelectedId = launchId(saved) || draft.id;
+      launchFilters().month = launchMonthKey(draft.launchDate || draft.dueDate || todayKey());
+      appState().launchV1FullKanban = false;
+      closeLaunchV1Editor();
+      launchV1Toast('Карточка сохранена');
+      renderLaunchesV1('view-launches');
+    });
+    backdrop.querySelector('input[name="name"]')?.focus();
+  }
+
+  function closeLaunchV1Editor() {
+    document.querySelectorAll('[data-launch-v1-editor-backdrop]').forEach((node) => node.remove());
+  }
+
+  function readLaunchV1EditorForm(form) {
+    const data = new FormData(form);
+    const id = String(data.get('id') || '').trim() || launchV1DraftId();
+    const launchDate = String(data.get('launchDate') || '').trim() || todayKey();
+    const existing = launchV1FindItem(id);
+    const draft = {
+      ...(existing || {}),
+      id,
+      name: String(data.get('name') || '').trim() || 'Новая новинка',
+      articleKey: String(data.get('articleKey') || '').trim(),
+      owner: String(data.get('owner') || '').trim(),
+      reportGroup: String(data.get('reportGroup') || '').trim(),
+      category: String(data.get('reportGroup') || '').trim(),
+      launchDate,
+      dueDate: launchDate,
+      launchMonth: typeof launchMonthLabel === 'function' ? launchMonthLabel(launchMonthKey(launchDate)) : launchDate.slice(0, 7),
+      marketplaces: String(data.get('marketplaces') || '').trim(),
+      status: String(data.get('status') || '').trim(),
+      productComment: String(data.get('productComment') || '').trim()
+    };
+    ['negotiation', 'sample', 'production', 'packaging', 'content', 'launchReadiness'].forEach((prefix) => {
+      ['Status', 'Due', 'Owner', 'Comment'].forEach((suffix) => {
+        const key = `${prefix}${suffix}`;
+        const value = String(data.get(key) || '').trim();
+        if (value) draft[key] = value;
+      });
+    });
+    return draft;
+  }
+
   function readiness(item) {
     if (typeof launchReadinessState === 'function') return launchReadinessState(item);
     const entries = stageEntries(item);
@@ -1273,6 +1512,15 @@
           <p>${escapeValue(item.reportGroup || item.category || 'категория —')} · ${escapeValue(launchDueText(item))}</p>
           ${safeBadge(current?.config?.title || item.status || 'этап —', current?.column?.tone || 'info')}
         </div>
+        <div class="launch-v1-detail-controls">
+          <label>
+            <span>Статус новинки</span>
+            <select data-launch-v1-status-select="${escapeValue(launchId(item))}">
+              ${launchV1StatusOptions(item.status || '')}
+            </select>
+          </label>
+          <button type="button" data-launch-v1-edit="${escapeValue(launchId(item))}">Открыть карточку</button>
+        </div>
         <div class="launch-v1-facts">
           <span><em>Owner</em><strong>${escapeValue(owner)}</strong></span>
           <span><em>Текущая фаза</em><strong>${escapeValue(current?.config?.title || 'нет данных')}</strong></span>
@@ -1294,6 +1542,7 @@
                   <em>${escapeValue(entry.status || 'нет данных')}</em>
                   <small>${escapeValue(entry.owner || 'без owner')} · ${escapeValue(entry.due || 'без даты')}</small>
                   ${entry.comment ? `<small>${escapeValue(entry.comment)}</small>` : ''}
+                  ${launchV1StageActions(item, entry)}
                 </span>
               </article>
             `;
@@ -1336,6 +1585,7 @@
                   <em>${escapeValue(entry.owner || 'без owner')}</em>
                   <b>${escapeValue(entry.due || 'без даты')}</b>
                   ${entry.comment ? `<p>${escapeValue(entry.comment)}</p>` : ''}
+                  ${launchV1StageActions(selected, entry)}
                 </article>
               </section>
             `;
@@ -1426,7 +1676,7 @@
       window.alert('Расширенные фильтры учтены в готовности: без owner, без даты, с блокерами и неготовые этапы. Данные не подменяются нулями.');
     });
     root.querySelector('[data-launch-v1-add]')?.addEventListener('click', () => {
-      if (typeof openLaunchEditor === 'function') openLaunchEditor('', {});
+      openLaunchV1Editor('', { launchDate: todayKey() });
     });
     root.querySelectorAll('[data-launch-v1-select]').forEach((button) => {
       button.addEventListener('click', () => {
@@ -1437,7 +1687,29 @@
     });
     root.querySelectorAll('[data-launch-v1-edit]').forEach((button) => {
       button.addEventListener('click', () => {
-        if (typeof openLaunchEditor === 'function') openLaunchEditor(button.dataset.launchV1Edit || '');
+        openLaunchV1Editor(button.dataset.launchV1Edit || '');
+      });
+    });
+    root.querySelectorAll('[data-launch-v1-stage-status]').forEach((button) => {
+      button.addEventListener('click', () => {
+        launchV1SetStageStatus(button.dataset.launchV1Id || appState().launchV1SelectedId || '', button.dataset.launchV1Stage || '', button.dataset.launchV1StageStatus || '');
+      });
+    });
+    root.querySelectorAll('[data-launch-v1-status-select]').forEach((select) => {
+      select.addEventListener('change', () => {
+        const item = launchV1FindItem(select.dataset.launchV1StatusSelect || '');
+        if (!item) return;
+        const draft = { ...item, id: launchId(item), status: select.value || '' };
+        launchV1SaveDraft(draft);
+        appState().launchV1SelectedId = draft.id;
+        launchV1Toast('Статус новинки сохранен');
+        rerender();
+      });
+    });
+    root.querySelectorAll('[data-launch-v1-day]').forEach((day) => {
+      day.addEventListener('dblclick', (event) => {
+        if (event.target.closest('[data-launch-v1-select]')) return;
+        openLaunchV1Editor('', { launchDate: day.dataset.launchV1Day || todayKey() });
       });
     });
     root.querySelectorAll('[data-launch-v1-kanban]').forEach((button) => {
@@ -1511,13 +1783,17 @@
       .sl-v1-stage-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}.sl-v1-stage-strip i{height:5px;border-radius:999px;background:rgba(255,255,255,.12)}.sl-v1-stage-strip i.ok{background:#61d89a}.sl-v1-stage-strip i.warn{background:#f0c469}.sl-v1-stage-strip i.danger{background:#ff7469}
       .launch-v1-no-date{margin-top:12px;border:1px dashed rgba(224,190,126,.2);border-radius:9px;padding:12px}.launch-v1-no-date>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:8px}
       .launch-v1-detail{position:sticky;top:96px;display:grid;gap:14px}.launch-v1-detail-head h3{margin:6px 0 4px;font-size:24px;line-height:1.05}.launch-v1-detail-head p{margin:0;color:var(--sl-muted)}
+      .launch-v1-detail-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}.launch-v1-detail-controls label{display:grid;gap:6px}.launch-v1-detail-controls span{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:rgba(235,216,174,.62);font-weight:850}.launch-v1-detail-controls select,.launch-v1-detail-controls button{height:38px;border:1px solid rgba(224,190,126,.22);border-radius:8px;background:rgba(5,4,3,.82);color:var(--sl-text);font:inherit;font-size:12px;font-weight:850;padding:0 10px}.launch-v1-detail-controls button{cursor:pointer;background:linear-gradient(180deg,rgba(245,223,173,.22),rgba(185,139,71,.12))}
       .launch-v1-facts{display:grid;gap:1px;border:1px solid rgba(224,190,126,.12);border-radius:9px;overflow:hidden}.launch-v1-facts span{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 12px;background:rgba(0,0,0,.16)}.launch-v1-facts em{color:var(--sl-muted);font-style:normal}.launch-v1-facts strong{font-size:12px;text-align:right}
       .launch-v1-gate{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.launch-v1-gate span{border:1px solid rgba(224,190,126,.18);border-radius:9px;padding:10px;display:grid;gap:4px;font-size:12px;font-weight:850}.launch-v1-gate span.ok{border-color:rgba(103,213,154,.36)}.launch-v1-gate span.warn{border-color:rgba(255,116,105,.38)}.launch-v1-gate i{width:8px;height:8px;border-radius:50%;background:#f0c469}.launch-v1-gate .ok i{background:#61d89a}.launch-v1-gate em{font-style:normal;color:var(--sl-muted);font-size:10px}
       .launch-v1-stage{display:grid;grid-template-columns:8px minmax(0,1fr);gap:10px;border:1px solid var(--sl-line);border-radius:9px;padding:10px;background:rgba(0,0,0,.14)}.launch-v1-stage i{width:8px;height:100%;min-height:34px;border-radius:999px;background:#f0c469}.launch-v1-stage.ok i{background:#61d89a}.launch-v1-stage.danger i{background:#ff7469}.launch-v1-stage span{display:grid;gap:3px}.launch-v1-stage em,.launch-v1-stage small{font-style:normal;color:var(--sl-muted);font-size:11px}
+      .launch-v1-stage-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.launch-v1-stage-actions button{height:26px;border:1px solid rgba(224,190,126,.20);border-radius:999px;background:rgba(255,255,255,.035);color:rgba(247,241,232,.72);padding:0 8px;font:inherit;font-size:10px;font-weight:850;cursor:pointer}.launch-v1-stage-actions button.active{border-color:rgba(245,218,165,.75);background:linear-gradient(180deg,#f5dfad,#b98b47);color:#120d07}
       .launch-v1-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.launch-v1-detail-actions button{border-color:rgba(224,190,126,.22);background:rgba(255,255,255,.035)}
       .launch-v1-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
       .launch-v1-full-kanban{display:grid;gap:14px}.launch-v1-full-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.launch-v1-full-head h3{margin:4px 0 0;font-size:32px}.launch-v1-full-head>div:last-child{display:flex;gap:8px}.launch-v1-full-head button{border-color:rgba(224,190,126,.22);background:rgba(255,255,255,.035);padding:0 14px}
       .launch-v1-kanban-columns{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));gap:10px;overflow:auto}.launch-v1-kanban-col{min-height:520px;border:1px solid var(--sl-line);border-radius:10px;background:rgba(255,255,255,.018);padding:10px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px}.launch-v1-kanban-col header{display:grid;gap:8px}.launch-v1-kanban-col article{border:1px solid rgba(224,190,126,.14);border-radius:9px;padding:12px;background:rgba(0,0,0,.16);display:grid;align-content:start;gap:8px}.launch-v1-kanban-col em,.launch-v1-kanban-col p{color:var(--sl-muted);font-style:normal}.launch-v1-kanban-col b{color:#f0d49a}
+      .launch-v1-editor-backdrop{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.62);backdrop-filter:blur(16px)}.launch-v1-editor{width:min(1080px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;border:1px solid rgba(224,190,126,.28);border-radius:16px;background:linear-gradient(145deg,rgba(25,22,18,.98),rgba(8,7,6,.98));box-shadow:0 24px 80px rgba(0,0,0,.58);color:#f7f1e8}.launch-v1-editor form{display:grid;gap:16px;padding:18px}.launch-v1-editor header,.launch-v1-editor footer{display:flex;align-items:center;justify-content:space-between;gap:12px}.launch-v1-editor header span{display:block;color:#d8c08a;font-size:11px;font-weight:850;letter-spacing:.22em;text-transform:uppercase}.launch-v1-editor h3{margin:4px 0 0;font-size:28px}.launch-v1-editor header button{width:38px;height:38px;border:1px solid rgba(224,190,126,.26);border-radius:50%;background:rgba(255,255,255,.04);color:#f7f1e8;font-size:24px;cursor:pointer}.launch-v1-editor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.launch-v1-editor label{display:grid;gap:6px}.launch-v1-editor label.wide{grid-column:1/-1}.launch-v1-editor label span,.launch-v1-editor-stages strong{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:rgba(235,216,174,.64);font-weight:850}.launch-v1-editor input,.launch-v1-editor select,.launch-v1-editor textarea{min-width:0;width:100%;border:1px solid rgba(224,190,126,.22);border-radius:9px;background:rgba(5,4,3,.82);color:#f7f1e8;padding:10px 12px;font:inherit;outline:none}.launch-v1-editor textarea{resize:vertical}.launch-v1-editor-stages{display:grid;gap:10px}.launch-v1-editor-stages fieldset{display:grid;grid-template-columns:1fr 170px 1fr;gap:10px;border:1px solid rgba(224,190,126,.14);border-radius:12px;margin:0;padding:12px;background:rgba(0,0,0,.16)}.launch-v1-editor-stages legend{padding:0 8px;color:#f0d49a;font-weight:900}.launch-v1-editor footer button{height:40px;border:1px solid rgba(224,190,126,.26);border-radius:9px;background:rgba(255,255,255,.04);color:#f7f1e8;padding:0 16px;font:inherit;font-weight:850;cursor:pointer}.launch-v1-editor footer button[type="submit"]{background:linear-gradient(180deg,#f5dfad,#b98b47);color:#120d07}.launch-v1-editor footer button.danger{border-color:rgba(255,116,105,.45);color:#ff8a80}
+      .launch-v1-toast{position:fixed;right:22px;bottom:22px;z-index:10000;border:1px solid rgba(103,213,154,.36);border-radius:999px;background:rgba(10,22,16,.94);color:#dfffe9;padding:10px 14px;font-weight:850;box-shadow:0 14px 44px rgba(0,0,0,.35)}
       @media (max-width:1200px){.sl-v1-hero,.launch-v1-workspace,.sl-v1-focus-grid{grid-template-columns:1fr}.sl-v1-kpis,.launch-v1-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sl-v1-filter-grid,.launch-v1-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.launch-v1-detail{position:relative;top:auto}.launch-v1-kanban-columns{grid-template-columns:repeat(3,minmax(220px,1fr))}}
       @media (max-width:720px){.sl-v1-hero h2{font-size:34px}.sl-v1-filter-grid,.launch-v1-filter-grid,.sl-v1-kpis,.launch-v1-kpis,.launch-v1-gate{grid-template-columns:1fr}.sl-v1-segment{grid-template-columns:1fr}.launch-v1-month-grid,.launch-v1-weekdays{min-width:760px}.launch-v1-calendar-card{overflow:auto}.launch-v1-detail-actions,.launch-v1-full-head{display:grid}.launch-v1-kanban-columns{grid-template-columns:repeat(6,220px)}}
       @media (prefers-reduced-motion:reduce){.sku-launch-v1-shell *{transition:none!important;animation:none!important}}

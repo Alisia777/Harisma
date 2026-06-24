@@ -7,7 +7,7 @@
   const VERSION = '20260623-route-layer-owner-v1';
   let cascadeTimers = [];
   let running = false;
-  const TRANSIENT_SELECTOR = '.promo-modal-backdrop,.modal,.toast,.portal-loader,.route-loader,.pf-v4-drawer-back,.plb-v2-drawer-back,[data-pf-v4-drawer-back],[data-plb-v2-drawer-back]';
+  const TRANSIENT_SELECTOR = '.promo-modal-backdrop,.modal,.toast,.portal-loader,.route-loader,.pf-v4-drawer-back,.plb-v2-drawer-back,.launch-v1-editor-backdrop,[data-pf-v4-drawer-back],[data-plb-v2-drawer-back],[data-launch-v1-editor-backdrop]';
 
   const ROUTES = {
     dashboard: {
@@ -107,7 +107,7 @@
     },
     launches: {
       rootId: 'view-launches',
-      selector: '.launch-calendar-shell,.launch-task-board,[data-launch-stage-board],.launch-calendar-game',
+      selector: '.sku-launch-v1-shell,.launch-v1-shell,.launch-v1-workspace,.launch-v1-detail,.launch-v1-full-kanban,.launch-calendar-shell,.launch-task-board,[data-launch-stage-board],.launch-calendar-game',
       legacySelector: '.launches-legacy,.launch-old-shell,[data-launches-legacy]',
       render() {
         if (typeof window.renderLaunches === 'function') window.renderLaunches();

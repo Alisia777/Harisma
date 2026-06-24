@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260622-dashboard-ceo-motion-drilldown9';
+  const VERSION = '20260624-dashboard-plan-visible1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -294,14 +294,18 @@
       #${ROOT_ID} .ceo-spacer{flex:1}
       #${ROOT_ID} .ceo-legend{display:flex;gap:13px;align-items:center;color:var(--muted);font-size:10px;white-space:nowrap}
       #${ROOT_ID} .ceo-legend i{display:inline-block;width:13px;height:6px;border-radius:999px;margin-right:5px;vertical-align:middle}
-      #${ROOT_ID} .ceo-legend .current{background:var(--platform)}#${ROOT_ID} .ceo-legend .previous{background:#5d554a}#${ROOT_ID} .ceo-legend .plan{height:2px;background:var(--champ2)}
+      #${ROOT_ID} .ceo-legend .current{background:var(--platform)}#${ROOT_ID} .ceo-legend .previous{background:#5d554a}#${ROOT_ID} .ceo-legend .plan{height:3px;background:linear-gradient(90deg,#fff8d6,#f5c76b)}
       #${ROOT_ID} .ceo-chart{height:392px;padding:0 18px 17px}
       #${ROOT_ID} .ceo-chart svg{width:100%;height:100%;overflow:visible}
       #${ROOT_ID} .ceo-chart svg *{vector-effect:non-scaling-stroke}
-      #${ROOT_ID} .ceo-grid-line{stroke:rgba(255,255,255,.07);stroke-width:1}
+      #${ROOT_ID} .ceo-grid-line{stroke:rgba(255,255,255,.13);stroke-width:1}
       #${ROOT_ID} .ceo-bar-current{fill:var(--platform);opacity:.86;transform-origin:bottom;animation:ceoBarGrow 620ms var(--ease) both;animation-delay:calc(var(--i)*32ms)}
-      #${ROOT_ID} .ceo-bar-prev{fill:#5f564a;opacity:.42;transform-origin:bottom;animation:ceoBarGrow 520ms var(--ease) both;animation-delay:calc(var(--i)*22ms)}
-      #${ROOT_ID} .ceo-plan-line{fill:none;stroke:#fff1bf;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1500;filter:drop-shadow(0 0 8px rgba(240,223,191,.34));animation:ceoLineDraw 800ms var(--ease) both}
+      #${ROOT_ID} .ceo-bar-prev{fill:#6e6253;opacity:.62;transform-origin:bottom;animation:ceoBarGrow 520ms var(--ease) both;animation-delay:calc(var(--i)*22ms)}
+      #${ROOT_ID} .ceo-plan-line{fill:none;stroke:#fff1bf;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 7;filter:drop-shadow(0 0 9px rgba(255,235,177,.72));animation:ceoLineDraw 800ms var(--ease) both}
+      #${ROOT_ID} .ceo-plan-line-bars{stroke-width:3.8}
+      #${ROOT_ID} .ceo-plan-dot{fill:#fff7d0;stroke:#20160a;stroke-width:1.5;filter:drop-shadow(0 0 8px rgba(255,229,153,.75))}
+      #${ROOT_ID} .ceo-plan-label{fill:#fff2bd;font-size:11px;font-weight:950;paint-order:stroke;stroke:rgba(0,0,0,.82);stroke-width:3px;stroke-linejoin:round}
+      #${ROOT_ID} .ceo-axis-label{fill:#d6c6b2;font-size:10px;font-weight:850;paint-order:stroke;stroke:rgba(0,0,0,.72);stroke-width:2px;stroke-linejoin:round}
       #${ROOT_ID} .ceo-rate-line{fill:none;stroke:var(--metric,var(--platform));stroke-width:5.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1500;opacity:1;filter:drop-shadow(0 0 12px rgba(224,183,96,.58));animation:ceoLineDraw 800ms var(--ease) both}
       #${ROOT_ID} .ceo-rate-prev{fill:none;stroke:#b8aa9a;stroke-width:2.6;opacity:.88;stroke-dasharray:5 8}
       #${ROOT_ID} .ceo-rate-area{fill:var(--metric,var(--platform));opacity:.18}
@@ -329,6 +333,16 @@
       #${ROOT_ID} .ceo-lower-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(360px,.75fr);gap:11px}
       #${ROOT_ID} .ceo-waterfall{height:310px;padding:0 17px 14px}
       #${ROOT_ID} .ceo-waterfall svg{width:100%;height:100%;overflow:visible}
+      #${ROOT_ID} .ceo-waterfall-grid{stroke:rgba(255,255,255,.13);stroke-width:1}
+      #${ROOT_ID} .ceo-waterfall-base{stroke:rgba(255,241,191,.36);stroke-width:1.4}
+      #${ROOT_ID} .ceo-waterfall-bar{opacity:.96;filter:drop-shadow(0 0 10px rgba(0,0,0,.55))}
+      #${ROOT_ID} .ceo-waterfall-bar.is-up{fill:var(--ok)}
+      #${ROOT_ID} .ceo-waterfall-bar.is-down{fill:var(--bad)}
+      #${ROOT_ID} .ceo-waterfall-label{font-size:12px;font-weight:950;paint-order:stroke;stroke:rgba(0,0,0,.82);stroke-width:3px;stroke-linejoin:round}
+      #${ROOT_ID} .ceo-waterfall-label.is-up{fill:var(--ok)}
+      #${ROOT_ID} .ceo-waterfall-label.is-down{fill:var(--bad)}
+      #${ROOT_ID} .ceo-waterfall-x{fill:#d8cbb9;font-size:10px;font-weight:900;paint-order:stroke;stroke:rgba(0,0,0,.75);stroke-width:2px;stroke-linejoin:round}
+      #${ROOT_ID} .ceo-waterfall-connector{stroke:rgba(255,241,191,.34);stroke-width:1.4;stroke-dasharray:4 5}
       #${ROOT_ID} .ceo-risk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 16px}
       #${ROOT_ID} .ceo-risk{--pc:var(--warn);min-height:96px;padding:13px;border:1px solid var(--line);border-radius:12px;background:#11100d;text-align:left;transition:transform 160ms var(--ease),border-color 160ms var(--ease)}
       #${ROOT_ID} .ceo-risk:hover{transform:translateY(-2px);border-color:var(--pc)}
@@ -573,6 +587,12 @@
     const platformShare = model.total.revenue > 0 && model.allTotal.revenue > 0 ? model.total.revenue / model.allTotal.revenue : 1;
     const buyoutTarget = model.total.orders > 0 ? model.total.buys / model.total.orders : .92;
     const marginTarget = model.plan.marginPct;
+    const rangeLength = Math.max(1, finite(model.range?.length, rows.length || 1));
+    const planRevenueDaily = finite(planChannel.dailyRevenue) || (finite(model.plan?.revenue) > 0 ? finite(model.plan.revenue) / rangeLength : 0);
+    const avgCheck = model.total.orders > 0 ? model.total.revenue / model.total.orders : 0;
+    const planOrdersByRevenue = avgCheck > 0 && planRevenueDaily > 0 ? planRevenueDaily / avgCheck : 0;
+    const planOrdersDailyRaw = planUnitsPerDay * platformShare;
+    const planOrdersDaily = planOrdersDailyRaw > 0 ? planOrdersDailyRaw : planOrdersByRevenue;
     const make = (row, index, current) => {
       const fallbackPrev = prev[index] || {};
       const base = current ? row : fallbackPrev;
@@ -582,9 +602,9 @@
       const marginRub = finite(base.estimatedMargin, finite(base.financialResult));
       const day = dateKey(row.date || row.label || base.date || base.label) || model.range.start;
       const iuRow = model.iuRowsByDate[day] || {};
-      if (metricKey === 'orders') return { date: day, value: orders, plan: planUnitsPerDay * platformShare, prev: finite(fallbackPrev.ordersUnits, finite(fallbackPrev.units)) };
-      if (metricKey === 'buys') return { date: day, value: buys, plan: planUnitsPerDay * platformShare * buyoutTarget, prev: finite(fallbackPrev.deliveredUnits, finite(fallbackPrev.units)) };
-      if (metricKey === 'revenue') return { date: day, value: revenue, plan: planChannel.dailyRevenue || revenue, prev: finite(fallbackPrev.revenue) };
+      if (metricKey === 'orders') return { date: day, value: orders, plan: planOrdersDaily || orders, prev: finite(fallbackPrev.ordersUnits, finite(fallbackPrev.units)) };
+      if (metricKey === 'buys') return { date: day, value: buys, plan: (planOrdersDaily || orders) * buyoutTarget, prev: finite(fallbackPrev.deliveredUnits, finite(fallbackPrev.units)) };
+      if (metricKey === 'revenue') return { date: day, value: revenue, plan: planRevenueDaily || revenue, prev: finite(fallbackPrev.revenue) };
       if (metricKey === 'margin') {
         const prevRevenue = finite(fallbackPrev.revenue);
         const prevMargin = finite(fallbackPrev.estimatedMargin, finite(fallbackPrev.financialResult));
@@ -1037,8 +1057,17 @@
     const labels = points.map((point, index) => {
       const every = Math.max(1, Math.ceil(points.length / 7));
       return index % every === 0
-        ? `<text x="${x(index)}" y="${H - 14}" fill="var(--faint)" font-size="10" text-anchor="middle">${shortDate(point.date)}</text>`
+        ? `<text class="ceo-axis-label" x="${x(index)}" y="${H - 14}" text-anchor="middle">${shortDate(point.date)}</text>`
         : '';
+    }).join('');
+    const planEvery = Math.max(1, Math.ceil(points.length / 6));
+    const planMarkers = points.map((point, index) => {
+      const planValue = Number(point.plan);
+      if (!Number.isFinite(planValue)) return '';
+      const yy = y(planValue);
+      const labelY = Math.max(14, yy - 10);
+      const showLabel = index % planEvery === 0 || index === points.length - 1;
+      return `<circle class="ceo-plan-dot" cx="${x(index)}" cy="${yy}" r="4.4"/>${showLabel ? `<text class="ceo-plan-label" x="${x(index)}" y="${labelY}" text-anchor="middle">${escapeHtml(fmtMetric(metric, planValue))}</text>` : ''}`;
     }).join('');
     let body = '';
     if (isLine) {
@@ -1049,7 +1078,7 @@
         ? `M ${x(0)} ${pad.t + ch} L ${points.map((point, index) => `${x(index)} ${y(point.value)}`).join(' L ')} L ${x(points.length - 1)} ${pad.t + ch} Z`
         : '';
       if (area) body += `<path class="ceo-rate-area" fill="${metricTone}" opacity=".18" d="${area}"/>`;
-      body += `<polyline class="ceo-rate-prev" fill="none" stroke="#b8aa9a" stroke-width="2.6" style="fill:none!important;stroke:#b8aa9a!important;stroke-width:2.6px!important" points="${prevLine}"/><polyline class="ceo-plan-line" fill="none" stroke="#fff1bf" stroke-width="2.5" style="fill:none!important;stroke:#fff1bf!important;stroke-width:2.5px!important" points="${planLine}"/><polyline class="ceo-rate-line" fill="none" stroke="${metricTone}" stroke-width="5.2" stroke-opacity="1" style="fill:none!important;stroke:${metricTone}!important;stroke-width:5.2px!important;stroke-opacity:1!important" points="${currentLine}"/>`;
+      body += `<polyline class="ceo-rate-prev" fill="none" stroke="#b8aa9a" stroke-width="2.6" style="fill:none!important;stroke:#b8aa9a!important;stroke-width:2.6px!important" points="${prevLine}"/><polyline class="ceo-plan-line" fill="none" stroke="#fff1bf" stroke-width="3.4" style="fill:none!important;stroke:#fff1bf!important;stroke-width:3.4px!important" points="${planLine}"/><polyline class="ceo-rate-line" fill="none" stroke="${metricTone}" stroke-width="5.2" stroke-opacity="1" style="fill:none!important;stroke:${metricTone}!important;stroke-width:5.2px!important;stroke-opacity:1!important" points="${currentLine}"/>${planMarkers}`;
       points.forEach((point, index) => {
         body += `<circle class="ceo-rate-dot" fill="${metricTone}" stroke="#fff5df" cx="${x(index)}" cy="${y(point.value)}" r="5.4"/><rect class="ceo-hit" data-ceo-day="${escapeHtml(point.date)}" x="${x(index) - cw / Math.max(1, points.length) / 2}" y="${pad.t}" width="${cw / Math.max(1, points.length)}" height="${ch}"/>`;
       });
@@ -1064,7 +1093,7 @@
         body += `<rect class="ceo-hit" data-ceo-day="${escapeHtml(point.date)}" x="${x(index) - step / 2}" y="${pad.t}" width="${step}" height="${ch}"/>`;
       });
       const planLine = points.map((point, index) => `${x(index)},${y(point.plan)}`).join(' ');
-      body += `<polyline class="ceo-plan-line" stroke="#fff1bf" style="stroke:#fff1bf" points="${planLine}"/>`;
+      body += `<polyline class="ceo-plan-line ceo-plan-line-bars" stroke="#fff1bf" style="stroke:#fff1bf" points="${planLine}"/>${planMarkers}`;
     }
     return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${body}${labels}</svg>`;
   }
@@ -1117,7 +1146,12 @@
     const maxAbs = Math.max(1, ...model.drivers.map((item) => Math.abs(finite(item.value)))) * 1.35;
     const step = (W - pad * 2) / model.drivers.length;
     let cumulative = 0;
-    let body = `<line x1="${pad}" y1="${baseline}" x2="${W - pad}" y2="${baseline}" stroke="rgba(255,255,255,.12)"/>`;
+    let body = '';
+    [0, .25, .5, .75, 1].forEach((part) => {
+      const yy = baseline - 150 + part * 150;
+      body += `<line class="ceo-waterfall-grid" x1="${pad}" y1="${yy}" x2="${W - pad}" y2="${yy}"/>`;
+    });
+    body += `<line class="ceo-waterfall-base" x1="${pad}" y1="${baseline}" x2="${W - pad}" y2="${baseline}"/>`;
     model.drivers.forEach((driver, index) => {
       const before = cumulative;
       cumulative += finite(driver.value);
@@ -1127,11 +1161,11 @@
       const y2 = baseline - cumulative / maxAbs * 150;
       const top = Math.min(y1, y2);
       const h = Math.max(5, Math.abs(y2 - y1));
-      const color = driver.value >= 0 ? 'var(--ok)' : 'var(--bad)';
-      body += `<rect data-ceo-driver="${escapeHtml(driver.key)}" x="${x}" y="${top}" width="${w}" height="${h}" rx="7" fill="${color}" opacity=".82" style="animation:ceoBarGrow 520ms var(--ease) both;animation-delay:${index * 55}ms"/>`;
-      body += `<text x="${x + w / 2}" y="${top - 8}" fill="${color}" font-size="10" font-weight="800" text-anchor="middle">${escapeHtml(driver.value >= 0 ? `+${fmtMoney(driver.value)}` : fmtMoney(driver.value))}</text>`;
-      body += `<text x="${x + w / 2}" y="${H - 18}" fill="var(--faint)" font-size="10" text-anchor="middle">${escapeHtml(driver.label)}</text>`;
-      if (index < model.drivers.length - 1) body += `<line x1="${x + w}" y1="${y2}" x2="${x + step}" y2="${y2}" stroke="rgba(255,255,255,.18)" stroke-dasharray="3 4"/>`;
+      const tone = driver.value >= 0 ? 'is-up' : 'is-down';
+      body += `<rect class="ceo-waterfall-bar ${tone}" data-ceo-driver="${escapeHtml(driver.key)}" x="${x}" y="${top}" width="${w}" height="${h}" rx="7" style="animation:ceoBarGrow 520ms var(--ease) both;animation-delay:${index * 55}ms"/>`;
+      body += `<text class="ceo-waterfall-label ${tone}" x="${x + w / 2}" y="${Math.max(18, top - 10)}" text-anchor="middle">${escapeHtml(driver.value >= 0 ? `+${fmtMoney(driver.value)}` : fmtMoney(driver.value))}</text>`;
+      body += `<text class="ceo-waterfall-x" x="${x + w / 2}" y="${H - 18}" text-anchor="middle">${escapeHtml(driver.label)}</text>`;
+      if (index < model.drivers.length - 1) body += `<line class="ceo-waterfall-connector" x1="${x + w}" y1="${y2}" x2="${x + step}" y2="${y2}"/>`;
     });
     return `<svg viewBox="0 0 ${W} ${H}">${body}</svg>`;
   }

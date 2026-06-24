@@ -36,7 +36,7 @@
   var ORDER_PROCUREMENT_OZON_URL = "data/order_procurement_ozon.json";
   var VIEW_ID = "view-prices";
   var STYLE_ID = "altea-price-simple-style";
-  var STYLE_VERSION = "20260623-prices-charts-v1";
+  var STYLE_VERSION = "20260624-prices-answer-v1";
   var SNAPSHOT_WAIT_MS = 1800;
   var SNAPSHOT_HARD_WAIT_MS = 4500;
   var LOCAL_FETCH_TIMEOUT_MS = 3200;
@@ -1307,6 +1307,7 @@
       ".pw-game-card.ok{--pw-hue:142;}.pw-game-card.info{--pw-hue:202;}.pw-game-card.warn{--pw-hue:42;}.pw-game-card.danger{--pw-hue:3;}.pw-game-card.violet{--pw-hue:268;}",
       ".pw-game-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;color:#d8c6a3;font-size:11px;text-transform:uppercase;letter-spacing:.06em;line-height:1.25;}",
       ".pw-game-top em{font-style:normal;color:#fff0cf;white-space:nowrap;}",
+      "#view-prices .prices-v1-filter-dock{position:relative!important;top:auto!important;z-index:2!important;}",
       ".pw-game-card strong{font-size:28px;line-height:1;color:#fff4d6;font-weight:900;overflow-wrap:anywhere;}",
       ".pw-game-card small{color:#d2bd98;line-height:1.35;font-size:12px;}",
       ".pw-game-foot{align-self:end;display:flex;justify-content:space-between;gap:8px;align-items:center;color:#f3dfb6;font-size:12px;line-height:1.25;}",
@@ -1396,11 +1397,13 @@
       "#view-prices .prices-v1-insights{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}#view-prices .prices-v1-insights button{min-height:108px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:7px;border:1px solid rgba(222,190,128,.16);border-radius:8px;background:rgba(10,8,6,.54);color:#f8f1de;padding:14px;cursor:pointer;}#view-prices .prices-v1-insights button:hover{border-color:rgba(222,190,128,.38);}#view-prices .prices-v1-insights span{grid-column:1/-1;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(235,216,174,.6);font-weight:900;}#view-prices .prices-v1-insights strong{font-size:15px;line-height:1.25;}#view-prices .prices-v1-insights em{font-style:normal;color:rgba(248,241,222,.6);}#view-prices .prices-v1-insights b{align-self:end;color:#dbc7a3;}",
       "#view-prices .prices-v1-legend{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;}#view-prices .prices-v1-legend button{border:1px solid rgba(222,190,128,.22);border-radius:999px;background:rgba(222,190,128,.06);color:#f8f1de;padding:7px 10px;font-size:12px;cursor:pointer;}#view-prices .prices-v1-legend button[aria-pressed='false']{opacity:.42;text-decoration:line-through;}#view-prices .prices-v1-legend button:hover{border-color:rgba(222,190,128,.44);}",
       "#view-prices .prices-v1-corridor-band{fill:rgba(219,199,163,.08);stroke:rgba(219,199,163,.16);stroke-width:1;}#view-prices .prices-v1-repricer-line{stroke:#f1d793;stroke-width:2;stroke-dasharray:7 7;}#view-prices .prices-v1-clip-label{fill:#dbc7a3;font-size:11px;font-weight:800;}#view-prices .prices-v1-before-after{fill:rgba(245,235,214,.62);font-size:11px;font-weight:800;}#view-prices .prices-v1-bar.orders{fill:#5aa7ff;}#view-prices .prices-v1-bar.buyouts{fill:#74d997;}#view-prices .prices-v1-line{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}#view-prices .prices-v1-line.mp{stroke:#d8b36c;}#view-prices .prices-v1-line.client{stroke:#b868ff;}#view-prices .prices-v1-minmax{stroke:#dbc7a3;stroke-width:2;stroke-dasharray:5 6;}#view-prices .prices-v1-change{stroke:#ff7b6e;stroke-width:1.5;stroke-dasharray:4 5;opacity:.72;}",
-      "#view-prices .prices-v1-table-wrap{overflow:auto;max-height:72vh;border-radius:8px;}#view-prices .prices-v1-table{min-width:1880px;table-layout:fixed;}#view-prices .prices-v1-table th,#view-prices .prices-v1-table td{overflow:hidden;text-overflow:ellipsis;}#view-prices .prices-v1-table th:nth-child(1),#view-prices .prices-v1-table td:nth-child(1){width:230px;}#view-prices .prices-v1-table th:nth-child(2),#view-prices .prices-v1-table td:nth-child(2){width:150px;}#view-prices .prices-v1-table th:nth-child(3),#view-prices .prices-v1-table td:nth-child(3){width:250px;}#view-prices .prices-v1-table th:nth-child(n+4),#view-prices .prices-v1-table td:nth-child(n+4){min-width:92px;}#view-prices .prices-v1-table td small{display:block;white-space:normal;line-height:1.3;max-height:2.8em;overflow:hidden;}",
+      "#view-prices .prices-v1-quick{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px;padding:10px;border:1px solid rgba(222,190,128,.14);border-radius:8px;background:rgba(10,8,6,.46);}#view-prices .prices-v1-quick span{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:rgba(235,216,174,.62);font-weight:900;margin-right:2px;}#view-prices .prices-v1-quick button{border:1px solid rgba(222,190,128,.2);border-radius:999px;background:rgba(222,190,128,.055);color:#f8f1de;padding:8px 11px;font-size:12px;cursor:pointer;}#view-prices .prices-v1-quick button:hover,#view-prices .prices-v1-quick button.is-active{border-color:rgba(222,190,128,.48);background:linear-gradient(180deg,rgba(241,215,147,.24),rgba(183,131,50,.14));}#view-prices .prices-v1-quick button.is-reset{margin-left:auto;}",
+      "#view-prices .prices-v1-top{border:1px solid rgba(222,190,128,.16);border-radius:8px;background:linear-gradient(150deg,rgba(255,255,255,.04),rgba(255,255,255,.012));padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}#view-prices .prices-v1-top-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px;}#view-prices .prices-v1-top-card{min-height:112px;text-align:left;display:grid;gap:7px;border:1px solid rgba(222,190,128,.14);border-radius:8px;background:rgba(10,8,6,.56);color:#f8f1de;padding:13px;cursor:pointer;}#view-prices .prices-v1-top-card:hover,#view-prices .prices-v1-top-card:focus-visible{border-color:rgba(222,190,128,.42);background:rgba(222,190,128,.08);outline:0;}#view-prices .prices-v1-top-card span{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(235,216,174,.62);font-weight:900;}#view-prices .prices-v1-top-card strong{font-size:15px;line-height:1.25;color:#fff6de;overflow-wrap:anywhere;}#view-prices .prices-v1-top-card em{font-style:normal;color:#d8c6a3;font-size:12px;}#view-prices .prices-v1-top-card b{justify-self:start;color:#9be8b4;font-size:13px;}",
+      "#view-prices .prices-v1-table-wrap{overflow:auto;max-height:72vh;border-radius:8px;}#view-prices .prices-v1-table{min-width:1320px;table-layout:fixed;}#view-prices .prices-v1-table th,#view-prices .prices-v1-table td{overflow:hidden;text-overflow:ellipsis;}#view-prices .prices-v1-table th:nth-child(1),#view-prices .prices-v1-table td:nth-child(1){width:250px;}#view-prices .prices-v1-table th:nth-child(2),#view-prices .prices-v1-table td:nth-child(2){width:145px;}#view-prices .prices-v1-table th:nth-child(3),#view-prices .prices-v1-table td:nth-child(3){width:145px;}#view-prices .prices-v1-table th:nth-child(4),#view-prices .prices-v1-table td:nth-child(4){width:155px;}#view-prices .prices-v1-table th:nth-child(5),#view-prices .prices-v1-table td:nth-child(5){width:150px;}#view-prices .prices-v1-table th:nth-child(6),#view-prices .prices-v1-table td:nth-child(6){width:140px;}#view-prices .prices-v1-table th:nth-child(7),#view-prices .prices-v1-table td:nth-child(7){width:160px;}#view-prices .prices-v1-table th:nth-child(8),#view-prices .prices-v1-table td:nth-child(8){width:145px;}#view-prices .prices-v1-table th:nth-child(9),#view-prices .prices-v1-table td:nth-child(9){width:190px;}#view-prices .prices-v1-row.is-selected{background:rgba(222,190,128,.075);}#view-prices .prices-v1-table td small{display:block;white-space:normal;line-height:1.3;max-height:3.8em;overflow:hidden;}#view-prices .prices-v1-answer-cell{display:grid;gap:5px;min-width:0;}#view-prices .prices-v1-answer-cell strong{color:#fff6de;font-size:14px;}#view-prices .prices-v1-answer-cell span{color:#f8f1de;font-size:12px;}#view-prices .prices-v1-answer-cell small{color:#cdb892;font-size:11px;}#view-prices .prices-v1-answer-cell .ok{color:#9be8b4;}#view-prices .prices-v1-answer-cell .bad{color:#ff9b8e;}#view-prices .prices-v1-sku-link{border:0;background:transparent;color:#fff6de;font:inherit;font-weight:900;padding:0;cursor:pointer;text-align:left;}#view-prices .prices-v1-sku-link:hover{text-decoration:underline;text-underline-offset:3px;}",
       "@media (max-width:1180px){.pw-game-strip{grid-template-columns:repeat(3,minmax(0,1fr));}}",
-      "@media (max-width:1280px){#view-prices .prices-v1-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}#view-prices .prices-v1-overview{grid-template-columns:1fr;}#view-prices .prices-v1-insights{grid-template-columns:repeat(2,minmax(0,1fr));}}",
+      "@media (max-width:1280px){#view-prices .prices-v1-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}#view-prices .prices-v1-overview{grid-template-columns:1fr;}#view-prices .prices-v1-insights,#view-prices .prices-v1-top-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}",
       "@media (max-width:1080px){.pw-grid,.pw-stats,.pw-kpis{grid-template-columns:1fr 1fr;}}",
-      "@media (max-width:720px){#view-prices{padding:18px 14px 28px;}.pw-grid,.pw-stats,.pw-kpis,.pw-grid2,.pw-game-strip,#view-prices .prices-v1-kpis,#view-prices .prices-v1-insights{grid-template-columns:1fr;}.pw-title{font-size:28px;}}",
+      "@media (max-width:720px){#view-prices{padding:18px 14px 28px;}.pw-grid,.pw-stats,.pw-kpis,.pw-grid2,.pw-game-strip,#view-prices .prices-v1-kpis,#view-prices .prices-v1-insights,#view-prices .prices-v1-top-grid{grid-template-columns:1fr;}.pw-title{font-size:28px;}}",
       "@media (prefers-reduced-motion:reduce){#view-prices .prices-chart-bar,#view-prices .prices-v1-bar{transition:none;}}"
     ].join("");
     document.head.appendChild(style);
@@ -2510,9 +2513,31 @@
     return summary;
   }
 
+  function priceSelectionKey(row) {
+    if (!row) return "";
+    return [canonicalPriceMarket(row.market || "all"), row.articleKey || ""].join("::");
+  }
+
+  function priceSelectionParts(key) {
+    var text = String(key || "").trim();
+    if (text.indexOf("::") < 0) return { market: "", article: text };
+    var parts = text.split("::");
+    return {
+      market: canonicalPriceMarket(parts.shift() || ""),
+      article: parts.join("::")
+    };
+  }
+
+  function priceRowMatchesSelection(row, key) {
+    var parts = priceSelectionParts(key);
+    if (parts.market) {
+      return canonicalPriceMarket(row && row.market) === parts.market && norm(row && row.articleKey) === norm(parts.article);
+    }
+    return norm(row && row.articleKey) === norm(parts.article);
+  }
+
   function findRow(key) {
-    var wanted = norm(key);
-    return state.rows.find(function (row) { return norm(row.articleKey) === wanted; }) || null;
+    return state.rows.find(function (row) { return priceRowMatchesSelection(row, key); }) || null;
   }
 
   function priceProgress(part, total) {
@@ -3694,6 +3719,39 @@ function downloadPriceSummaryExcel(rows) {
     });
   }
 
+  function priceV1RowMatchesQuick(row, key) {
+    var impact = row.priceImpact || rowPriceImpact(row);
+    if (key === "priceChanged") return Boolean(impact && impact.change);
+    if (key === "ordersDropped") return Boolean(impact && Number(impact.orderDelta) < 0);
+    if (key === "minMaxRisk") return Boolean(priceBoundaryState(row));
+    if (key === "belowMargin") return Boolean(row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct);
+    if (key === "noDailyFact") return !historyItemsForRow(row).length;
+    if (key === "noOwner") return !(String(row.owner || "").trim() && row.owner !== "\u2014");
+    return false;
+  }
+
+  function priceV1QuickFilters(baseRows) {
+    var advanced = priceV1AdvancedFilters();
+    var items = [
+      { key: "priceChanged", label: "Цена менялась" },
+      { key: "ordersDropped", label: "Заказы просели" },
+      { key: "belowMargin", label: "Маржа ниже нормы" },
+      { key: "minMaxRisk", label: "MIN/MAX риск" },
+      { key: "noDailyFact", label: "Нет daily" }
+    ];
+    var buttons = items.map(function (item) {
+      var count = baseRows.filter(function (row) { return priceV1RowMatchesQuick(row, item.key); }).length;
+      return '<button type="button" class="' + (advanced[item.key] ? 'is-active' : '') + '" data-price-v1-saved="' + esc(item.key) + '">' + esc(item.label) + ' · ' + intf(count) + '</button>';
+    }).join("");
+    return [
+      '<div class="prices-v1-quick">',
+      '<span>Быстрые фильтры</span>',
+      buttons,
+      priceV1AdvancedCount() ? '<button type="button" class="is-reset" data-price-v1-clear="advanced">Сбросить быстрый фильтр</button>' : '',
+      '</div>'
+    ].join("");
+  }
+
   function priceV1SortLabel(value) {
     var labels = {
       risk: "Риски первыми",
@@ -4152,6 +4210,72 @@ function downloadPriceSummaryExcel(rows) {
     return '<div class="prices-v1-kpis">' + cards.map(priceRenderKpiButton).join("") + '</div>';
   }
 
+  function priceV1TopSkuPanel(model) {
+    var rows = model.rows || [];
+    if (!rows.length) return "";
+    var used = Object.create(null);
+    function impact(row) { return row.priceImpact || rowPriceImpact(row); }
+    function topRow(filter, score, direction) {
+      var selected = rows.filter(filter).sort(function (left, right) {
+        var leftValue = score(left);
+        var rightValue = score(right);
+        return direction === "asc" ? leftValue - rightValue : rightValue - leftValue;
+      })[0];
+      return selected || null;
+    }
+    function add(cards, label, row, value, note) {
+      if (!row) return;
+      var key = priceSelectionKey(row);
+      if (!key || used[key]) return;
+      used[key] = true;
+      cards.push({ label: label, row: row, value: value, note: note, key: key });
+    }
+    var cards = [];
+    var ordersLeader = topRow(function (row) {
+      return (impact(row).ordersUnits || 0) > 0;
+    }, function (row) {
+      return Number(impact(row).ordersUnits) || 0;
+    });
+    var revenueLeader = topRow(function (row) {
+      return (impact(row).revenue || 0) > 0;
+    }, function (row) {
+      return Number(impact(row).revenue) || 0;
+    });
+    var orderDropLeader = topRow(function (row) {
+      var rowImpact = impact(row);
+      return rowImpact && rowImpact.orderDelta != null && Number(rowImpact.orderDelta) < 0;
+    }, function (row) {
+      return Number(impact(row).orderDelta) || 0;
+    }, "asc");
+    add(cards, "Топ SKU по заказам", ordersLeader, ordersLeader ? intf(impact(ordersLeader).ordersUnits) + " заказов" : "", "где сейчас основной объем");
+    add(cards, "Топ SKU по выручке", revenueLeader, revenueLeader ? money(impact(revenueLeader).revenue) : "", "самая крупная строка в деньгах");
+    add(cards, "Лучший эффект цены", model.bestPriceRow && model.bestPriceRow.row, model.bestPriceRow ? signedIntLabel(model.bestPriceRow.delta) + " заказов" : "", "после изменения цены");
+    add(cards, "Просадка после цены", orderDropLeader, orderDropLeader ? signedIntLabel(impact(orderDropLeader).orderDelta) + " заказов" : "", "заказы упали после изменения");
+    add(cards, "Маржа ниже нормы", model.belowMarginRows[0], model.belowMarginRows[0] ? pct(model.belowMarginRows[0].marginTotalPct) : "", "сравнить цену и допустимую маржу");
+    add(cards, "Цена вне коридора", model.riskRows[0], model.riskRows[0] ? (priceBoundaryState(model.riskRows[0]) || {}).label : "", "проверить MIN/MAX");
+    if (!cards.length) return "";
+    return [
+      '<section class="prices-v1-top" id="price-top-sku">',
+      '<div class="prices-v1-section-head"><div><span>Top SKU</span><h3>Куда смотреть в первую очередь</h3><p>Клик по карточке выбирает SKU, обновляет график цены/заказов и подсвечивает строку в таблице.</p></div></div>',
+      '<div class="prices-v1-top-grid">',
+      cards.map(function (card) {
+        var row = card.row || {};
+        var cardImpact = impact(row);
+        var value = card.value || (cardImpact.revenue != null ? money(cardImpact.revenue) : intf(cardImpact.ordersUnits));
+        return [
+          '<button type="button" class="prices-v1-top-card" data-price-v1-select="', esc(card.key), '" data-price-v1-show-selected="1">',
+          '<span>', esc(card.label), '</span>',
+          '<strong>', esc(row.articleKey || "—"), '</strong>',
+          '<em>', esc(priceMarketLabel(row.market)), ' · ', esc(row.owner || "без owner"), '</em>',
+          '<b>', esc(value || "—"), '</b>',
+          '<em>', esc(card.note || ""), '</em>',
+          '</button>'
+        ].join("");
+      }).join(""),
+      '</div></section>'
+    ].join("");
+  }
+
   function renderAverageCheckChart(model) {
     var current = model.averageCurrent || [];
     var previous = model.averagePrevious || [];
@@ -4495,19 +4619,20 @@ function downloadPriceSummaryExcel(rows) {
     var currentPrice = row.listPrice != null ? row.listPrice : row.currentFillPrice;
     var ui = priceChartUi();
     var hidden = ui.hiddenSeries || {};
+    var key = priceSelectionKey(row);
     function legendButton(key, label, className) {
       var pressed = !hidden[key];
       return '<button type="button" class="' + esc(className || key) + '" data-price-series="' + esc(key) + '" aria-pressed="' + (pressed ? "true" : "false") + '">' + esc(label) + '</button>';
     }
     return [
-      '<section class="prices-v1-selected">',
+      '<section class="prices-v1-selected" id="price-selected">',
       '<div class="prices-v1-chart-card">',
       '<div class="prices-v1-section-head"><div><span>Цена · заказы · эффект по дням</span><h3>', esc(row.articleKey || "\u2014"), '</h3><p>', esc(row.name || ""), '</p></div>',
       '<div class="prices-v1-legend">', legendButton("orders", "Заказы", "orders"), legendButton("buyouts", "Выкупы", "buyouts"), legendButton("mp", "Цена MP", "mp"), legendButton("client", "Клиент", "client"), legendButton("corridor", "MIN/MAX", "corridor"), legendButton("repricer", "Репрайсер", "repricer"), '<button type="button" data-price-chart-focus="', ui.skuChartFocus === "corridor" ? "fact" : "corridor", '">', ui.skuChartFocus === "corridor" ? "Фокус на факте" : "Весь коридор", '</button></div></div>',
       priceV1Chart(row),
       '</div>',
       '<aside class="prices-v1-sku-card">',
-      '<div class="prices-v1-sku-top"><span>Выбранный SKU</span><button type="button" data-price-v1-open-detail="' + esc(row.articleKey) + '">Открыть историю SKU</button></div>',
+      '<div class="prices-v1-sku-top"><span>Выбранный SKU</span><button type="button" data-price-v1-open-detail="' + esc(key) + '">Открыть историю SKU</button></div>',
       '<h3>', esc(row.articleKey || "\u2014"), '</h3><p>', esc(row.owner || "\u2014"), ' · ', esc(priceMarketLabel(row.market)), ' · ', esc(state.dateFrom || "\u2014"), ' - ', esc(state.dateTo || "\u2014"), '</p>',
       '<div class="prices-v1-mini-grid">',
       '<div><span>Цена MP</span><strong>', money(currentPrice), '</strong><em>', impact.change ? esc(signedMoneyLabel(impact.change.deltaRub)) : "без смены", '</em></div>',
@@ -4522,7 +4647,7 @@ function downloadPriceSummaryExcel(rows) {
     ].join("");
   }
 
-  function priceV1Table(rows) {
+  function priceV1TableLegacy(rows) {
     if (!rows.length) return '<div class="prices-v1-empty">По текущим фильтрам пока нет строк.</div>';
     var sorted = sortedVisiblePriceRows(rows);
     return [
@@ -4587,6 +4712,80 @@ function downloadPriceSummaryExcel(rows) {
     ].join("");
   }
 
+  function priceV1DecisionText(row) {
+    var boundary = priceBoundaryState(row);
+    if (boundary) return "Проверить коридор";
+    var impact = row.priceImpact || rowPriceImpact(row);
+    if (impact && impact.change && Number(impact.orderDelta) < 0) return "Стоп / проверить";
+    if (row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct) return "Проверить маржу";
+    if (row.repricerDisplay && moneyRound(row.repricerDisplay.price) != null) return "Есть рекомендация";
+    return "Наблюдать";
+  }
+
+  function priceV1QualityText(row) {
+    var flags = [];
+    if (!historyItemsForRow(row).length) flags.push("нет daily");
+    if (!String(row.owner || "").trim() || row.owner === "\u2014") flags.push("без owner");
+    if (row.matrixProblemLabel) flags.push(row.matrixProblemLabel);
+    return flags.length ? flags.join(" · ") : "данные есть";
+  }
+
+  function priceV1MarginRub(row, impact) {
+    var revenue = num(impact && impact.revenue);
+    var margin = num(row && row.marginTotalPct);
+    if (revenue == null || margin == null) return null;
+    return revenue * margin;
+  }
+
+  function priceV1Table(rows) {
+    if (!rows.length) return '<div class="prices-v1-empty">По текущим фильтрам пока нет строк.</div>';
+    var sorted = sortedVisiblePriceRows(rows);
+    return [
+      '<div class="prices-v1-table-wrap"><table class="prices-v1-table pw-table"><thead><tr>',
+      sortableHead("article", "SKU"),
+      sortableHead("owner", "Площадка / owner"),
+      sortableHead("price_mp", "Цена"),
+      sortableHead("orders", "Продажи"),
+      sortableHead("revenue", "Выручка"),
+      sortableHead("margin", "Маржа"),
+      sortableHead("price_change", "Эффект цены"),
+      sortableHead("risk", "Коридор / риск"),
+      '<th>Решение</th>',
+      '</tr></thead><tbody>',
+      sorted.map(function (row) {
+        var lifecycle = row.productLifecycle || priceProductLifecycleForRow(row) || {};
+        var impact = row.priceImpact || rowPriceImpact(row);
+        var change = impact && impact.change;
+        var bounds = row.repricerBounds || {};
+        var boundary = priceBoundaryState(row);
+        var effectPct = priceV1EffectPct(impact);
+        var currentPrice = row.listPrice != null ? row.listPrice : row.currentFillPrice;
+        var key = priceSelectionKey(row);
+        var selected = state.selectedKey && priceRowMatchesSelection(row, state.selectedKey);
+        var marginRub = priceV1MarginRub(row, impact);
+        var revenue = num(impact.revenue);
+        var averageCheck = impact.ordersUnits && revenue != null ? revenue / Math.max(1, Number(impact.ordersUnits)) : null;
+        var afterBefore = "до " + priceV1OrdersPerDay(impact.beforeOrders, impact.beforeDays) + " · после " + priceV1OrdersPerDay(impact.afterOrders, impact.afterDays);
+        var priceNote = ["клиент " + money(row.currentClientPrice), "СПП " + pct(row.currentSppPct)].join(" · ");
+        var corridorNote = ["MIN " + money(bounds.effectiveMin), "MAX " + money(bounds.effectiveMax)].join(" · ");
+        return [
+          '<tr class="prices-v1-row ', selected ? 'is-selected' : '', '" data-open-price="', esc(key), '" data-price-market="', esc(row.market), '">',
+          '<td><button type="button" class="prices-v1-sku-link" data-price-v1-select="', esc(key), '">', esc(row.articleKey || "\u2014"), '</button><small>', esc(row.name || ""), '</small><small>', esc(lifecycle.label || row.status || "\u2014"), '</small></td>',
+          '<td><div class="prices-v1-answer-cell"><strong>', esc(priceMarketLabel(row.market)), '</strong><span>', esc(row.owner || "\u2014"), '</span><small>', esc(state.dateFrom || "\u2014"), ' - ', esc(state.dateTo || "\u2014"), '</small></div></td>',
+          '<td><div class="prices-v1-answer-cell"><strong>', money(currentPrice), '</strong><span>', esc(priceNote), '</span><small>', esc(metricHelp(modalListPriceHelp(row), row.listPriceFactDate || row.priceFactDate, row.valueDate)), '</small></div></td>',
+          '<td><div class="prices-v1-answer-cell"><strong>', impact.ordersUnits == null ? "\u2014" : intf(impact.ordersUnits), ' заказов</strong><span>', impact.deliveredUnits == null ? "\u2014" : intf(impact.deliveredUnits), ' выкупов</span><small>', esc(afterBefore), '</small></div></td>',
+          '<td><div class="prices-v1-answer-cell"><strong>', money(revenue), '</strong><span>средний чек ', money(averageCheck), '</span><small>по выбранному периоду</small></div></td>',
+          '<td><div class="prices-v1-answer-cell"><strong>', pct(row.marginTotalPct), '</strong><span>', marginRub == null ? "\u2014" : money(marginRub), '</span><small>план/допуск ', pct(row.allowedMarginPct), '</small></div></td>',
+          '<td><div class="prices-v1-answer-cell"><strong>', change ? esc(signedMoneyLabel(change.deltaRub)) : "без смены", '</strong><span>', effectPct == null ? "\u2014" : esc(signedPctLabel(effectPct)), '</span><small>', change ? esc(change.date || "") : "цена в периоде не менялась", '</small></div></td>',
+          '<td><div class="prices-v1-answer-cell"><strong class="', boundary ? 'bad' : 'ok', '">', esc(boundary ? boundary.label : "в коридоре"), '</strong><span>', esc(corridorNote), '</span><small>', esc(priceV1QualityText(row)), '</small></div></td>',
+          '<td><div class="prices-v1-answer-cell"><strong>', esc(priceV1DecisionText(row)), '</strong><div>', renderRepricerCell(row.repricerDisplay), '</div><small><button type="button" class="sku-plan-open-card" data-price-v1-open-detail="', esc(key), '">Открыть SKU</button></small></div></td>',
+          '</tr>'
+        ].join("");
+      }).join(""),
+      '</tbody></table></div>'
+    ].join("");
+  }
+
   function priceV1Drawer(rows) {
     var advanced = priceV1AdvancedFilters();
     var open = Boolean(state.priceDrawerOpenV1);
@@ -4619,7 +4818,7 @@ function downloadPriceSummaryExcel(rows) {
     var overview = buildPriceOverviewModel(rows, summary);
     var sortedRows = sortedVisiblePriceRows(rows);
     var selected = state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : sortedRows[0];
-    if (selected && rows.every(function (row) { return norm(row.articleKey) !== norm(selected.articleKey); })) selected = sortedRows[0];
+    if (selected && rows.every(function (row) { return !priceRowMatchesSelection(row, priceSelectionKey(selected)); })) selected = sortedRows[0];
     var filters = buildFilterOptions();
     var renderKeyText = [
       "prices-v1",
@@ -4666,9 +4865,11 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="prices-v1-filter-actions"><button type="button" data-price-v1-drawer-open>Фильтры · ', intf(priceV1AdvancedCount()), '</button><button type="button" data-price-v1-reset>Сброс</button><button type="button" data-price-v1-columns>Колонки</button></div>',
       '</div>',
       priceV1ActiveChips(summary),
+      priceV1QuickFilters(baseRows),
       '</section>',
       renderPriceKpis(overview),
       renderPriceOverview(overview),
+      priceV1TopSkuPanel(overview),
       priceV1SelectedPanel(selected),
       '<section class="prices-v1-table-card" id="price-table"><div class="prices-v1-section-head"><div><span>Рабочая таблица цен</span><h3>Цена · эффект · экономика · решение</h3><p>Статус товара редактируется в строке, подробности открываются без потери позиции.</p></div><div class="prices-v1-table-actions"><button type="button" data-price-minmax-template>Скачать MIN/MAX</button><button type="button" data-price-minmax-import>Загрузить MIN/MAX</button><em>', intf(rows.length), ' SKU · ', intf(summary.minMaxRisk), ' риска</em></div></div>',
       state.loading && !state.loaded ? '<div class="pw-empty">Загружаю данные вкладки Цены...</div>' : priceV1Table(rows),
@@ -4683,6 +4884,36 @@ function downloadPriceSummaryExcel(rows) {
 
   function attachPriceV1Handlers(root) {
     if (!root) return;
+
+    if (root.dataset.priceV1Delegated !== STYLE_VERSION) {
+      root.dataset.priceV1Delegated = STYLE_VERSION;
+      root.addEventListener("click", function (event) {
+        var target = event.target;
+        var selectButton = target && target.closest ? target.closest("[data-price-v1-select]") : null;
+        if (selectButton && root.contains(selectButton)) {
+          event.preventDefault();
+          event.stopPropagation();
+          state.selectedKey = selectButton.getAttribute("data-price-v1-select") || "";
+          var shouldShowSelected = selectButton.hasAttribute("data-price-v1-show-selected");
+          renderPriceWorkbench();
+          if (shouldShowSelected) {
+            window.requestAnimationFrame(function () {
+              var selectedTarget = root.querySelector("#price-selected");
+              if (selectedTarget) selectedTarget.scrollIntoView({ block: "start", behavior: "smooth" });
+            });
+          }
+          return;
+        }
+        var detailButton = target && target.closest ? target.closest("[data-price-v1-open-detail]") : null;
+        if (detailButton && root.contains(detailButton)) {
+          event.preventDefault();
+          event.stopPropagation();
+          state.selectedKey = detailButton.getAttribute("data-price-v1-open-detail") || "";
+          renderPriceWorkbench();
+          window.requestAnimationFrame(renderSelectedModal);
+        }
+      }, true);
+    }
 
     var refreshButton = root.querySelector("[data-price-v1-refresh]");
     if (refreshButton) {
@@ -4822,7 +5053,14 @@ function downloadPriceSummaryExcel(rows) {
         event.preventDefault();
         event.stopPropagation();
         state.selectedKey = button.getAttribute("data-price-v1-select") || "";
+        var shouldShowSelected = button.hasAttribute("data-price-v1-show-selected");
         renderPriceWorkbench();
+        if (shouldShowSelected) {
+          window.requestAnimationFrame(function () {
+            var target = root.querySelector("#price-selected");
+            if (target) target.scrollIntoView({ block: "start", behavior: "smooth" });
+          });
+        }
       });
     });
 
@@ -4880,6 +5118,10 @@ function downloadPriceSummaryExcel(rows) {
         state.priceAdvancedFiltersV1[key] = true;
         priceV1InvalidateRows();
         renderPriceWorkbench();
+        window.requestAnimationFrame(function () {
+          var table = root.querySelector("#price-table");
+          if (table) table.scrollIntoView({ block: "start", behavior: "smooth" });
+        });
       });
     });
 

@@ -540,6 +540,213 @@
     };
   }
 
+  function executiveOwnerDetailCanonical(value) {
+    try {
+      if (typeof canonicalOwnerName === 'function') return String(canonicalOwnerName(value || '') || '').trim().toLowerCase();
+    } catch (error) {}
+    return String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
+  function executiveOwnerDetailPlanModel(model) {
+    if (model && model.planModel) return model.planModel;
+    try {
+      if (typeof window.skuPlanFactBuildModel === 'function') return window.skuPlanFactBuildModel(null, { persistFilters: false });
+    } catch (error) {
+      console.warn('[executive-owner-detail-plan]', error);
+    }
+    return null;
+  }
+
+  function executiveOwnerDetailPlatforms(model) {
+    var selected = internalPlatform(model && (model.selectedPlatform || model.filters && model.filters.platform) || 'all');
+    if (selected && selected !== 'all') return [selected];
+    var fromModel = (model && model.platformRows || []).map(function (row) {
+      return internalPlatform(row.platform || row.key || '');
+    }).filter(Boolean);
+    return Array.from(new Set(fromModel.concat(['wb', 'ozon', 'ya']).filter(function (key) {
+      return key && key !== 'all';
+    })));
+  }
+
+  function executiveOwnerDetailMetric(row, platform) {
+    if (!row) return null;
+    var key = internalPlatform(platform);
+    return row.platforms && (row.platforms[key] || row.platforms[platform])
+      || row[key]
+      || row[platform]
+      || null;
+  }
+
+  function executiveOwnerDetailOwner(row, platform) {
+    try {
+      if (typeof executiveFunnelOwner === 'function') return executiveFunnelOwner(row, platform);
+    } catch (error) {}
+    var key = internalPlatform(platform);
+    var owners = row && (row.ownerByPlatform || row.ownersByPlatform || row.owner && row.owner.byPlatform) || {};
+    return String(owners[key] || owners[key + 'Support'] || row.ownerBase || row.owner || row.ownerName || 'Без owner').trim() || 'Без owner';
+  }
+
+  function executiveOwnerDetailHasSignal(metric) {
+    if (!metric) return false;
+    return finite(metric.planRevenue)
+      || finite(metric.planToDateRevenue)
+      || finite(metric.factRevenue)
+      || finite(metric.adSpend)
+      || finite(metric.planAdSpend);
+  }
+
+  function executiveOwnerDetailSku(row) {
+    return String(row.article || row.articleKey || row.sku || row.skuKey || row.targetSku || row.nmId || row.id || '').trim() || 'SKU';
+  }
+
+  function executiveOwnerDetailTitle(row) {
+    return String(row.name || row.title || row.productName || row.product || row.skuName || row.fullName || '').trim();
+  }
+
+  function executiveOwnerDetailRows(model, ownerName) {
+    var planModel = executiveOwnerDetailPlanModel(model);
+    var sourceRows = Array.isArray(planModel && planModel.allRows)
+      ? planModel.allRows
+      : (Array.isArray(planModel && planModel.rows) ? planModel.rows : []);
+    var target = executiveOwnerDetailCanonical(ownerName);
+    if (!target) return [];
+    var rows = [];
+    executiveOwnerDetailPlatforms(model).forEach(function (platform) {
+      sourceRows.forEach(function (row) {
+        try {
+          if (typeof skuPlanFactKpiEligible === 'function' && !skuPlanFactKpiEligible(row)) return;
+        } catch (error) {}
+        var metric = executiveOwnerDetailMetric(row, platform);
+        if (!executiveOwnerDetailHasSignal(metric)) return;
+        if (executiveOwnerDetailCanonical(executiveOwnerDetailOwner(row, platform)) !== target) return;
+        var planToDate = finite(metric.planToDateRevenue);
+        var fact = finite(metric.factRevenue);
+        var completion = planToDate > 0 ? fact / planToDate : null;
+        var gap = fact - planToDate;
+        var status = planToDate <= 0 && fact > 0 ? 'noplan' : (completion !== null && completion < 1 ? 'under' : 'ok');
+        rows.push({
+          sku: executiveOwnerDetailSku(row),
+          title: executiveOwnerDetailTitle(row),
+          platform: platform,
+          planToDateRevenue: planToDate,
+          factRevenue: fact,
+          completionToDate: completion,
+          gapToDate: gap,
+          marginPct: numberOrNull(metric.marginPct),
+          adSpend: finite(metric.adSpend),
+          drr: fact > 0 ? finite(metric.adSpend) / fact : null,
+          status: status
+        });
+      });
+    });
+    return rows.sort(function (left, right) {
+      var statusWeight = { under: 0, noplan: 1, ok: 2 };
+      return (statusWeight[left.status] || 9) - (statusWeight[right.status] || 9)
+        || finite(left.gapToDate) - finite(right.gapToDate)
+        || finite(right.factRevenue) - finite(left.factRevenue);
+    });
+  }
+
+  function executiveOwnerDetailSummary(model, ownerName, rows) {
+    var target = executiveOwnerDetailCanonical(ownerName);
+    var ownerRow = (model.allOwnerRows || model.scopedOwnerRows || model.ownerRows || []).find(function (row) {
+      return executiveOwnerDetailCanonical(row.owner) === target;
+    }) || {};
+    var under = rows.filter(function (row) { return row.status === 'under'; }).length;
+    var noPlan = rows.filter(function (row) { return row.status === 'noplan'; }).length;
+    var ok = rows.filter(function (row) { return row.status === 'ok'; }).length;
+    return {
+      owner: ownerRow.owner || ownerName,
+      completion: numberOrNull(ownerRow.completionToDate),
+      factRevenue: finite(ownerRow.factRevenue),
+      planToDateRevenue: finite(ownerRow.planToDateRevenue),
+      gapToDate: finite(ownerRow.gapToDate),
+      under: under,
+      ok: ok,
+      noPlan: noPlan,
+      total: rows.length
+    };
+  }
+
+  function closeExecutiveOwnerDetail() {
+    var existing = document.querySelector('[data-executive-owner-detail-modal]');
+    if (existing) existing.remove();
+    document.body.classList.remove('executive-owner-detail-open');
+  }
+
+  function applyExecutiveOwnerDetailFilters(modal) {
+    if (!modal) return;
+    var search = String(modal.querySelector('[data-executive-owner-detail-search]')?.value || '').trim().toLowerCase();
+    var status = String(modal.querySelector('[data-executive-owner-detail-status]')?.value || 'all');
+    var rows = Array.from(modal.querySelectorAll('[data-executive-owner-detail-row]'));
+    var visible = 0;
+    rows.forEach(function (row) {
+      var text = String(row.getAttribute('data-search') || '').toLowerCase();
+      var rowStatus = row.getAttribute('data-status') || 'ok';
+      var match = (!search || text.indexOf(search) !== -1) && (status === 'all' || rowStatus === status);
+      row.hidden = !match;
+      if (match) visible += 1;
+    });
+    var counter = modal.querySelector('[data-executive-owner-detail-count]');
+    if (counter) counter.textContent = visible + ' из ' + rows.length + ' SKU';
+  }
+
+  function openExecutiveOwnerDetail(ownerName) {
+    var model = buildExecutiveModel();
+    var rows = executiveOwnerDetailRows(model, ownerName);
+    var summary = executiveOwnerDetailSummary(model, ownerName, rows);
+    closeExecutiveOwnerDetail();
+    var tableRows = rows.map(function (row) {
+      var meta = [row.sku, row.title, platformMeta(row.platform).label].join(' ').toLowerCase();
+      var statusText = row.status === 'under' ? 'ниже плана' : row.status === 'noplan' ? 'без плана' : 'в плане';
+      return [
+        '<tr data-executive-owner-detail-row data-status="' + escapeHtml(row.status) + '" data-search="' + escapeHtml(meta) + '">',
+        '<td><strong>' + escapeHtml(row.sku) + '</strong><small>' + escapeHtml(row.title || 'без названия') + '</small></td>',
+        '<td><span class="platform-pill" style="' + platformStyle(row.platform) + '"><i></i>' + escapeHtml(platformMeta(row.platform).label) + '</span></td>',
+        '<td>' + money(row.planToDateRevenue) + '</td>',
+        '<td>' + money(row.factRevenue) + '</td>',
+        '<td><strong>' + escapeHtml(row.completionToDate == null ? '—' : pct(row.completionToDate)) + '</strong><small>' + signedMoney(row.gapToDate) + '</small></td>',
+        '<td>' + pct(row.marginPct) + '</td>',
+        '<td>' + money(row.adSpend) + '<small>ДРР ' + pct(row.drr) + '</small></td>',
+        '<td><span class="status ' + (row.status === 'ok' ? '' : row.status === 'under' ? 'bad' : 'warn') + '">' + escapeHtml(statusText) + '</span></td>',
+        '</tr>'
+      ].join('');
+    }).join('');
+    document.body.insertAdjacentHTML('beforeend', [
+      '<div class="executive-owner-detail-backdrop" data-executive-owner-detail-modal>',
+      '<section class="executive-owner-detail-dialog" role="dialog" aria-modal="true" aria-label="SKU сотрудника">',
+      '<button class="executive-owner-detail-close" type="button" data-executive-owner-detail-close aria-label="Закрыть">×</button>',
+      '<header class="executive-owner-detail-head">',
+      '<div><span>Портфель сотрудника</span><h2>' + escapeHtml(summary.owner || ownerName) + '</h2><p>Закрепленные SKU, план к дате, факт и невыполнение по каждому артикулу.</p></div>',
+      '<div class="executive-owner-detail-score"><strong>' + escapeHtml(summary.completion == null ? '—' : pct(summary.completion)) + '</strong><span>выполнение</span></div>',
+      '</header>',
+      '<div class="executive-owner-detail-kpis">',
+      '<article><span>План к дате</span><strong>' + money(summary.planToDateRevenue) + '</strong></article>',
+      '<article><span>Факт</span><strong>' + money(summary.factRevenue) + '</strong></article>',
+      '<article><span>Разрыв</span><strong class="' + (summary.gapToDate >= 0 ? 'good' : 'bad') + '">' + signedMoney(summary.gapToDate) + '</strong></article>',
+      '<article><span>Ниже плана</span><strong>' + int(summary.under) + '</strong></article>',
+      '<article><span>В плане</span><strong>' + int(summary.ok) + '</strong></article>',
+      '</div>',
+      '<div class="executive-owner-detail-tools">',
+      '<label><span>Поиск</span><input type="search" data-executive-owner-detail-search placeholder="SKU или название"></label>',
+      '<label><span>Статус</span><select data-executive-owner-detail-status><option value="all">Все SKU</option><option value="under">Ниже плана</option><option value="ok">В плане</option><option value="noplan">Без плана</option></select></label>',
+      '<em data-executive-owner-detail-count>' + int(rows.length) + ' SKU</em>',
+      '</div>',
+      rows.length ? '<div class="executive-owner-detail-table-wrap"><table class="premium-table executive-owner-detail-table"><thead><tr><th>SKU</th><th>Площадка</th><th>План к дате</th><th>Факт</th><th>Выполнение</th><th>Маржа</th><th>Реклама</th><th>Статус</th></tr></thead><tbody>' + tableRows + '</tbody></table></div>' : '<div class="premium-empty">По сотруднику не найдено закрепленных SKU в текущем срезе.</div>',
+      '</section>',
+      '</div>'
+    ].join(''));
+    var modal = document.querySelector('[data-executive-owner-detail-modal]');
+    document.body.classList.add('executive-owner-detail-open');
+    modal?.querySelector('[data-executive-owner-detail-search]')?.focus();
+    applyExecutiveOwnerDetailFilters(modal);
+  }
+
+  window.AlteaExecutiveOwnerSkuDrawer = {
+    open: openExecutiveOwnerDetail,
+    close: closeExecutiveOwnerDetail
+  };
+
   function executiveFactPending(model) {
     if (!model || !model.ready) return false;
     var totals = model.totals || {};
@@ -725,7 +932,7 @@
         var progress = completion == null ? 0 : Math.max(3, Math.min(140, completion * 100));
         var platform = row.primaryPlatform || 'all';
         return [
-          '<div class="employee-bar-row" style="' + platformStyle(platform) + ';--p:' + progress.toFixed(1) + '%">',
+          '<div class="employee-bar-row" role="button" tabindex="0" data-executive-funnel-owner-card="' + escapeHtml(row.owner || '') + '" style="' + platformStyle(platform) + ';--p:' + progress.toFixed(1) + '%">',
           '<div class="employee-bar-title"><strong>' + escapeHtml(row.owner || 'Сотрудник') + '</strong><span>' + escapeHtml(platformMeta(platform).label) + ' · ' + int(row.articleCount || 0) + ' SKU</span></div>',
           '<div class="employee-track"><i></i></div>',
           '<em>' + escapeHtml(completion == null ? '—' : pct(completion)) + '</em>',
@@ -1671,11 +1878,41 @@
 
   function bindEvents() {
     document.addEventListener('click', function (event) {
+      var ownerCard = event.target && event.target.closest && event.target.closest('[data-executive-funnel-owner-card]');
+      if (!ownerCard || String(window.location.hash || '').replace(/^#/, '') !== 'executive') return;
+      var ownerName = ownerCard.getAttribute('data-executive-funnel-owner-card') || '';
+      if (!ownerName) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openExecutiveOwnerDetail(ownerName);
+    }, true);
+    document.addEventListener('click', function (event) {
       var marketplace = event.target && event.target.closest && event.target.closest('[data-altea-marketplace]');
       if (marketplace) {
         event.preventDefault();
         applyMarketplace(marketplace.getAttribute('data-altea-marketplace') || 'all', { persist: true, rerender: true });
         return;
+      }
+      var ownerDetailClose = event.target && event.target.closest && event.target.closest('[data-executive-owner-detail-close]');
+      if (ownerDetailClose) {
+        event.preventDefault();
+        closeExecutiveOwnerDetail();
+        return;
+      }
+      if (event.target && event.target.matches && event.target.matches('[data-executive-owner-detail-modal]')) {
+        event.preventDefault();
+        closeExecutiveOwnerDetail();
+        return;
+      }
+      var ownerCard = event.target && event.target.closest && event.target.closest('[data-executive-funnel-owner-card]');
+      if (ownerCard && String(window.location.hash || '').replace(/^#/, '') === 'executive') {
+        var ownerName = ownerCard.getAttribute('data-executive-funnel-owner-card') || '';
+        if (ownerName) {
+          event.preventDefault();
+          event.stopPropagation();
+          openExecutiveOwnerDetail(ownerName);
+          return;
+        }
       }
       var premiumNav = event.target && event.target.closest && event.target.closest('[data-premium-nav]');
       if (premiumNav) {
@@ -1705,11 +1942,30 @@
       if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-owner], [data-executive-funnel-sort]')) {
         scheduleRender(120);
       }
+      if (event.target && event.target.matches && event.target.matches('[data-executive-owner-detail-status]')) {
+        applyExecutiveOwnerDetailFilters(event.target.closest('[data-executive-owner-detail-modal]'));
+      }
     });
     document.addEventListener('input', function (event) {
       if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-search]')) {
         scheduleRender(180);
       }
+      if (event.target && event.target.matches && event.target.matches('[data-executive-owner-detail-search]')) {
+        applyExecutiveOwnerDetailFilters(event.target.closest('[data-executive-owner-detail-modal]'));
+      }
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        closeExecutiveOwnerDetail();
+        return;
+      }
+      var ownerCard = event.target && event.target.closest && event.target.closest('[data-executive-funnel-owner-card]');
+      if (!ownerCard || String(window.location.hash || '').replace(/^#/, '') !== 'executive') return;
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      var ownerName = ownerCard.getAttribute('data-executive-funnel-owner-card') || '';
+      if (!ownerName) return;
+      event.preventDefault();
+      openExecutiveOwnerDetail(ownerName);
     });
     window.addEventListener('hashchange', scheduleRouteRepair);
     window.addEventListener('altea:themechange', function () { scheduleRender(40); });

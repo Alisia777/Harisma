@@ -1,10 +1,10 @@
 (function () {
   'use strict';
 
-  if (window.__ALTEA_EXECUTIVE_V5_ROUTE_20260623__) return;
-  window.__ALTEA_EXECUTIVE_V5_ROUTE_20260623__ = true;
+  if (window.__ALTEA_EXECUTIVE_V5_ROUTE_20260624__) return;
+  window.__ALTEA_EXECUTIVE_V5_ROUTE_20260624__ = true;
 
-  const VERSION = '20260623-executive-v5-route-lock';
+  const VERSION = '20260624-executive-owner-detail';
   const PLATFORM_KEYS = ['wb', 'ozon', 'ya'];
   const PLATFORM_LABELS = {
     all: 'Все',
@@ -322,7 +322,7 @@
   function ownerCard(row, index) {
     const rowTone = tone(row);
     return `
-      <article class="executive-v5-owner ${html(rowTone)}" data-exec-v5-owner-card="${html(row.label)}">
+      <article class="executive-v5-owner ${html(rowTone)}" data-exec-v5-owner-card="${html(row.label)}" role="button" tabindex="0">
         <div class="executive-v5-owner-head">
           <span>#${index + 1}</span>
           <strong>${html(row.label)}</strong>
@@ -481,9 +481,20 @@
       schedule(true);
     });
     root.querySelectorAll('[data-exec-v5-owner-card]').forEach((card) => {
-      card.addEventListener('click', () => {
-        FILTERS.owner = card.getAttribute('data-exec-v5-owner-card') || 'all';
+      const openOwner = () => {
+        const owner = card.getAttribute('data-exec-v5-owner-card') || 'all';
+        if (owner !== 'all' && window.AlteaExecutiveOwnerSkuDrawer?.open) {
+          window.AlteaExecutiveOwnerSkuDrawer.open(owner);
+          return;
+        }
+        FILTERS.owner = owner;
         schedule(true);
+      };
+      card.addEventListener('click', openOwner);
+      card.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        openOwner();
       });
     });
   }

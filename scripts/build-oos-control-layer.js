@@ -676,6 +676,7 @@ function buildSummary(rows, historyResult, freshnessStatus, previousPayload, tod
     riskCount: rows.filter((row) => row.status === 'risk').length,
     oosSoonCount: rows.filter((row) => row.signalRule === 'oos_soon_turnover_active_or_new').length,
     watchCount: rows.filter((row) => row.status === 'watch').length,
+    placeCount: rows.reduce((sum, row) => sum + Math.max(1, Math.round(numberOrZero(row.clusterCount || 1))), 0),
     lostRevenueDay: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.lostRevenueDay), 0)),
     revenueAtRiskDay: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.revenueAtRiskDay), 0))
   };

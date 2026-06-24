@@ -7146,7 +7146,9 @@ function oosControlFilters() {
     platform: oosControlGlobalPlatformFilter(state.oosControlFilters.platform || 'all'),
     owner: ownerFilter === 'all' ? 'all' : (skuPlanFactCanonicalOwner(ownerFilter) || ownerFilter),
     department: String(state.oosControlFilters.department || 'all'),
-    status: String(state.oosControlFilters.status || 'active')
+    status: String(state.oosControlFilters.status || 'active'),
+    cluster: String(state.oosControlFilters.cluster || 'all'),
+    days: String(state.oosControlFilters.days || 'all')
   };
 }
 
@@ -7220,6 +7222,19 @@ function oosControlUnique(rows, key) {
     .sort((left, right) => left.localeCompare(right, 'ru'));
 }
 
+function oosControlRowPlaces(row = {}) {
+  const places = Array.isArray(row.placesAtRisk) && row.placesAtRisk.length
+    ? row.placesAtRisk.map((place) => String(place?.place || '').trim()).filter(Boolean)
+    : [String(row.place || '').trim()].filter(Boolean);
+  return [...new Set(places)].sort((left, right) => left.localeCompare(right, 'ru'));
+}
+
+function oosControlUniquePlaces(rows = []) {
+  return [...new Set(rows.flatMap(oosControlRowPlaces))]
+    .filter(Boolean)
+    .sort((left, right) => left.localeCompare(right, 'ru'));
+}
+
 function oosControlOptions(values, selected, allLabel) {
   return [
     `<option value="all" ${selected === 'all' ? 'selected' : ''}>${escapeHtml(allLabel)}</option>`,
@@ -7282,11 +7297,14 @@ function oosControlFilteredRows() {
   const rows = oosControlRows();
   const filters = oosControlFilters();
   const search = filters.search.toLowerCase();
+  const cluster = String(filters.cluster || 'all').trim();
   return rows.filter((row) => {
     const task = oosControlTaskFor(row);
     if (filters.platform !== 'all' && row.platform !== filters.platform) return false;
     if (filters.owner !== 'all' && row.owner !== filters.owner) return false;
     if (filters.department !== 'all' && row.department !== filters.department) return false;
+    const rowPlaces = oosControlRowPlaces(row);
+    if (cluster !== 'all' && !rowPlaces.includes(cluster)) return false;
     if (filters.status === 'has_task' && !task) return false;
     if (filters.status === 'no_task' && task) return false;
     if (!['active', 'all', 'has_task', 'no_task'].includes(filters.status) && row.status !== filters.status) return false;
@@ -7296,6 +7314,7 @@ function oosControlFilteredRows() {
         row.name,
         row.platformLabel,
         row.place,
+        ...rowPlaces,
         row.owner,
         row.department,
         row.statusLabel,
@@ -7983,6 +8002,17 @@ function oosControlSignalFromPlace(row = {}, place = {}, index = 0, payload = {}
 
 function oosControlVisibleSignals(rows = oosControlFilteredRows(), payload = oosControlPayload()) {
   const signals = [];
+  const filters = oosControlFilters();
+  const clusterFilter = String(filters.cluster || 'all').trim();
+  const maxDays = filters.days === 'oos'
+    ? 0
+    : filters.days === 'under5'
+      ? 5
+      : filters.days === 'under10'
+        ? 10
+        : filters.days === 'under14'
+          ? 14
+          : null;
   rows.forEach((row) => {
     const places = Array.isArray(row.placesAtRisk) && row.placesAtRisk.length
       ? row.placesAtRisk
@@ -7998,6 +8028,16 @@ function oosControlVisibleSignals(rows = oosControlFilteredRows(), payload = oos
         }];
     places.forEach((place, placeIndex) => {
       const signal = oosControlSignalFromPlace(row, place, placeIndex, payload);
+      if (!signal) return;
+      if (clusterFilter !== 'all' && signal.clusterName !== clusterFilter) return;
+      if (maxDays !== null) {
+        const days = numberOrZero(signal.daysToOos);
+        if (filters.days === 'oos') {
+          if (days > 0 || signal.status !== 'oos') return;
+        } else if (!days || days >= maxDays) {
+          return;
+        }
+      }
       if (signal) signals.push(signal);
     });
   });
@@ -8141,7 +8181,145 @@ function renderOosControlSignalRow(signal, index = 0, selectedKey = '') {
   `;
 }
 
-function renderOosControlSignalList(signals = [], selectedKey = '') {
+function renderOosControlSignalFilters(rows = [], signals = [], filters = oosControlFilters()) {
+  const ownerOptions = oosControlOptions(oosControlUnique(rows, 'owner'), filters.owner, 'Все owner');
+  const clusterOptions = oosControlOptions(oosControlUniquePlaces(rows), filters.cluster, 'Все кластеры');
+  return `
+    <div class="oos-signal-tools">
+      <label>
+        <span>Поиск по риску</span>
+        <input data-oos-filter="search" value="${escapeHtml(filters.search)}" placeholder="SKU, товар, кластер, owner">
+      </label>
+      <label>
+        <span>Кластер / склад</span>
+        <select data-oos-filter="cluster">${clusterOptions}</select>
+      </label>
+      <label>
+        <span>Сигнал</span>
+        <select data-oos-filter="status">
+          <option value="active" ${filters.status === 'active' ? 'selected' : ''}>Все активные</option>
+          <option value="oos" ${filters.status === 'oos' ? 'selected' : ''}>Только OOS</option>
+          <option value="critical" ${filters.status === 'critical' ? 'selected' : ''}>Критично</option>
+          <option value="risk" ${filters.status === 'risk' ? 'selected' : ''}>OOS скоро</option>
+          <option value="watch" ${filters.status === 'watch' ? 'selected' : ''}>Наблюдать</option>
+          <option value="has_task" ${filters.status === 'has_task' ? 'selected' : ''}>С задачей</option>
+          <option value="no_task" ${filters.status === 'no_task' ? 'selected' : ''}>Без задачи</option>
+        </select>
+      </label>
+      <label>
+        <span>Горизонт</span>
+        <select data-oos-filter="days">
+          <option value="all" ${filters.days === 'all' ? 'selected' : ''}>Любой срок</option>
+          <option value="oos" ${filters.days === 'oos' ? 'selected' : ''}>Уже OOS</option>
+          <option value="under5" ${filters.days === 'under5' ? 'selected' : ''}>До 5 дней</option>
+          <option value="under10" ${filters.days === 'under10' ? 'selected' : ''}>До 10 дней</option>
+          <option value="under14" ${filters.days === 'under14' ? 'selected' : ''}>До 14 дней</option>
+        </select>
+      </label>
+      <label>
+        <span>Ответственный</span>
+        <select data-oos-filter="owner">${ownerOptions}</select>
+      </label>
+      <button type="button" class="quick-chip" data-oos-reset-filters>Сбросить</button>
+      <div class="oos-signal-tools__meta">
+        ${badge(`${fmt.int(signals.length)} кластеров`, signals.length ? 'warn' : 'ok')}
+        ${filters.cluster !== 'all' ? badge(filters.cluster, 'info') : ''}
+        ${filters.days !== 'all' ? badge('срок отфильтрован', 'info') : ''}
+      </div>
+    </div>
+  `;
+}
+
+function oosControlLocalizationHistory(payload = {}, rows = []) {
+  const days = Array.isArray(payload.history?.days) ? [...payload.history.days] : [];
+  const summary = payload.summary || {};
+  const rowPlaceCount = rows.reduce((sum, row) => sum + oosControlPlaceCount(row), 0);
+  const fallbackDenominator = Math.max(
+    numberOrZero(summary.localizationDenominator || 0),
+    numberOrZero(summary.placeCount || 0),
+    rowPlaceCount,
+    ...days.map((day) => numberOrZero(day.placeCount || day.totalPlaces || day.totalIssuePlaces || day.totalIssues || 0)),
+    0
+  );
+  return days
+    .filter((day) => day?.date)
+    .sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')))
+    .slice(-21)
+    .map((day) => {
+      const denominator = Math.max(
+        numberOrZero(day.localizationDenominator || 0),
+        numberOrZero(day.placeCount || day.totalPlaces || day.totalIssuePlaces || 0),
+        fallbackDenominator
+      );
+      const activeRisk = Math.max(0, numberOrZero(day.placeCountAtRisk || day.totalIssuePlaces || day.totalIssues || 0));
+      const localizedPct = denominator > 0
+        ? Math.max(0, Math.min(100, ((denominator - activeRisk) / denominator) * 100))
+        : 0;
+      return {
+        date: String(day.date || ''),
+        activeRisk,
+        denominator,
+        localizedPct,
+        oosCount: numberOrZero(day.oosCount || 0),
+        riskCount: numberOrZero(day.oosSoonCount || day.riskCount || 0),
+        revenueAtRiskDay: numberOrZero(day.revenueAtRiskDay || 0)
+      };
+    });
+}
+
+function renderOosControlLocalizationTrend(payload = {}, rows = [], signals = []) {
+  const points = oosControlLocalizationHistory(payload, rows);
+  if (!points.length) {
+    return `
+      <section class="card oos-localization-card">
+        <div class="section-subhead">
+          <div>
+            <h3>Локализация по дням</h3>
+            <p class="small muted">История начнет строиться после ежедневных OOS-синхронизаций.</p>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+  const latest = points[points.length - 1];
+  const avgPct = points.reduce((sum, point) => sum + point.localizedPct, 0) / points.length;
+  const minPoint = [...points].sort((left, right) => left.localizedPct - right.localizedPct)[0] || latest;
+  return `
+    <section class="card oos-localization-card">
+      <div class="section-subhead">
+        <div>
+          <h3>Локализация по дням</h3>
+          <p class="small muted">Доля складского контура без активного OOS/риска. Если дневной контур не сохранен, берется текущий контур OOS.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`сейчас ${fmt.num(latest.localizedPct, 1)}%`, latest.localizedPct >= 85 ? 'ok' : latest.localizedPct >= 70 ? 'warn' : 'danger')}
+          ${badge(`${fmt.int(signals.length)} активных кластеров`, signals.length ? 'warn' : 'ok')}
+        </div>
+      </div>
+      <div class="oos-localization-metrics">
+        <span><b>${fmt.num(latest.localizedPct, 1)}%</b><em>последний день</em></span>
+        <span><b>${fmt.num(avgPct, 1)}%</b><em>среднее за ${fmt.int(points.length)} дн.</em></span>
+        <span><b>${fmt.num(minPoint.localizedPct, 1)}%</b><em>минимум ${escapeHtml(minPoint.date.slice(5))}</em></span>
+        <span><b>${fmt.int(latest.denominator)}</b><em>контур SKU × склад</em></span>
+      </div>
+      <div class="oos-localization-chart" aria-label="Процент локализации по дням">
+        ${points.map((point) => {
+          const tone = point.localizedPct >= 85 ? 'ok' : point.localizedPct >= 70 ? 'warn' : 'danger';
+          const title = `${point.date}: локализация ${fmt.num(point.localizedPct, 1)}%, активный риск ${fmt.int(point.activeRisk)} из ${fmt.int(point.denominator)}`;
+          return `
+            <span class="oos-localization-day ${tone}" style="--pct:${point.localizedPct}" title="${escapeHtml(title)}">
+              <i></i>
+              <b>${fmt.num(point.localizedPct, 0)}%</b>
+              <small>${escapeHtml(point.date.slice(5))}</small>
+            </span>
+          `;
+        }).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderOosControlSignalList(signals = [], selectedKey = '', rows = [], filters = oosControlFilters()) {
   return `
     <section class="card oos-risk-queue">
       <div class="section-subhead">
@@ -8151,6 +8329,7 @@ function renderOosControlSignalList(signals = [], selectedKey = '') {
         </div>
         ${badge(`${fmt.int(signals.length)} SKU × кластер`, signals.length ? 'warn' : 'ok')}
       </div>
+      ${renderOosControlSignalFilters(rows, signals, filters)}
       <div class="oos-signal-list" role="listbox" aria-label="OOS сигналы по кластерам">
         ${signals.map((signal, index) => renderOosControlSignalRow(signal, index, selectedKey)).join('') || renderOosControlSignalFocus(null)}
       </div>
@@ -8171,9 +8350,10 @@ function renderOosControlFormulaNote() {
 function renderOosControlFiltersV4(rows, filters) {
   const ownerOptions = oosControlOptions(oosControlUnique(rows, 'owner'), filters.owner, 'Все owner');
   const departmentOptions = oosControlOptions(oosControlUnique(rows, 'department'), filters.department, 'Все отделы');
+  const clusterOptions = oosControlOptions(oosControlUniquePlaces(rows), filters.cluster, 'Все кластеры');
   return `
     <div class="card sku-plan-fact-card" style="margin-top:14px">
-      <div class="grid sku-plan-fact-filters oos-v4-filters" style="grid-template-columns:1.3fr repeat(3,minmax(0,190px));gap:10px">
+      <div class="grid sku-plan-fact-filters oos-v4-filters" style="grid-template-columns:1.3fr repeat(5,minmax(0,170px));gap:10px">
         <label><span class="label">Поиск</span><input data-oos-filter="search" value="${escapeHtml(filters.search)}" placeholder="SKU, кластер, owner, мера"></label>
         <label><span class="label">Сигнал</span>
           <select data-oos-filter="status">
@@ -8186,6 +8366,16 @@ function renderOosControlFiltersV4(rows, filters) {
             <option value="no_task" ${filters.status === 'no_task' ? 'selected' : ''}>Без задачи</option>
           </select>
         </label>
+        <label><span class="label">Горизонт</span>
+          <select data-oos-filter="days">
+            <option value="all" ${filters.days === 'all' ? 'selected' : ''}>Любой срок</option>
+            <option value="oos" ${filters.days === 'oos' ? 'selected' : ''}>Уже OOS</option>
+            <option value="under5" ${filters.days === 'under5' ? 'selected' : ''}>До 5 дней</option>
+            <option value="under10" ${filters.days === 'under10' ? 'selected' : ''}>До 10 дней</option>
+            <option value="under14" ${filters.days === 'under14' ? 'selected' : ''}>До 14 дней</option>
+          </select>
+        </label>
+        <label><span class="label">Кластер</span><select data-oos-filter="cluster">${clusterOptions}</select></label>
         <label><span class="label">Owner</span><select data-oos-filter="owner">${ownerOptions}</select></label>
         <label><span class="label">Отдел</span><select data-oos-filter="department">${departmentOptions}</select></label>
       </div>
@@ -9181,6 +9371,20 @@ function bindOosControl(root, rootId) {
       renderOosControl(rootId);
     });
   });
+  root.querySelectorAll('[data-oos-reset-filters]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.oosControlFilters = {
+        ...(state.oosControlFilters || {}),
+        search: '',
+        owner: 'all',
+        department: 'all',
+        status: 'active',
+        cluster: 'all',
+        days: 'all'
+      };
+      renderOosControl(rootId);
+    });
+  });
   root.querySelectorAll('[data-oos-save]').forEach((button) => {
     button.addEventListener('click', async () => {
       const original = button.textContent;
@@ -9307,7 +9511,8 @@ function renderOosControl(rootId = 'view-oos-control') {
     </div>
     ${renderOosControlCommand(signals, filters)}
     <section class="card oos-focus" data-oos-focus>${renderOosControlSignalFocus(selectedSignal)}</section>
-    ${renderOosControlSignalList(signals, selectedSignal?.key || '')}
+    ${renderOosControlLocalizationTrend(payload, filteredRows, signals)}
+    ${renderOosControlSignalList(signals, selectedSignal?.key || '', rows, filters)}
     ${renderOosControlFormulaNote()}
     <details class="oos-advanced-panel">
       <summary>

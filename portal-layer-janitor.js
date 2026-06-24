@@ -3,7 +3,7 @@
 
   if (window.__ALTEA_LAYER_JANITOR_20260623__) return;
   window.__ALTEA_LAYER_JANITOR_20260623__ = true;
-  const VERSION = '20260623-layer-janitor-owner-v1';
+  const VERSION = '20260624-layer-janitor-oos-localization-v1';
   let cascadeTimers = [];
   let cleanupQueued = false;
   const TRANSIENT_SELECTOR = '.promo-modal-backdrop,.modal,.toast,.portal-loader,.route-loader,.pf-v4-drawer-back,.plb-v2-drawer-back,[data-pf-v4-drawer-back],[data-plb-v2-drawer-back]';
@@ -112,7 +112,7 @@
     },
     'oos-control': {
       rootId: 'view-oos-control',
-      owned: '[data-oos-focus],.oos-focus,.oos-v4-filters,.oos-signal',
+      owned: '[data-oos-focus],.oos-focus,.oos-localization-card,.oos-risk-queue,.oos-signal-tools,.oos-v4-filters,.oos-signal,.oos-formula',
       legacy: '.oos-control-legacy,.oos-simple-board,.oos-old-table,[data-gtd-v2="oos"]'
     },
     'sku-contour': {

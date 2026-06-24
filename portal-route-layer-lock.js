@@ -67,7 +67,7 @@
     },
     'oos-control': {
       rootId: 'view-oos-control',
-      selector: '[data-oos-focus],.oos-focus,.oos-v4-filters,.oos-signal',
+      selector: '[data-oos-focus],.oos-focus,.oos-localization-card,.oos-risk-queue,.oos-signal-tools,.oos-v4-filters,.oos-signal,.oos-formula',
       legacySelector: '.oos-control-legacy,.oos-simple-board,.oos-old-table,[data-gtd-v2="oos"]',
       render() {
         if (typeof window.renderOosControl === 'function') window.renderOosControl('view-oos-control');

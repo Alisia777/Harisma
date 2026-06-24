@@ -1544,6 +1544,166 @@
     ]);
   }
 
+  function skuNeedle(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function skuKeys(row) {
+    return [
+      row?.key,
+      row?.sku,
+      row?.article,
+      row?.articleKey,
+      row?.id,
+      row?.nmId,
+      row?.articleName,
+      row?.product_name_final,
+      row?.name
+    ].map(skuNeedle).filter(Boolean);
+  }
+
+  function rowMatchesSku(row, key) {
+    const target = skuNeedle(key);
+    if (!target) return false;
+    return skuKeys(row).some((candidate) => (
+      candidate === target
+      || (candidate.length > 4 && target.length > 4 && (candidate.includes(target) || target.includes(candidate)))
+    ));
+  }
+
+  function dashboardRowsForSku(model, key) {
+    const sources = [
+      ['План-факт', scopedDashboardRows(model, 'focusTop')],
+      ['В работе', scopedDashboardRows(model, 'toWork')],
+      ['OOS', scopedDashboardRows(model, 'lowStock')],
+      ['Возвраты', scopedDashboardRows(model, 'topReturns')],
+      ['Без owner', scopedDashboardRows(model, 'unassigned')]
+    ];
+    const result = [];
+    sources.forEach(([sourceLabel, list]) => {
+      (Array.isArray(list) ? list : [])
+        .filter((item) => rowMatchesSku(item, key))
+        .slice(0, 3)
+        .forEach((item) => {
+          const completion = item.plan_completion_feb26_pct != null ? completionLabel(item.plan_completion_feb26_pct) : '';
+          const revenue = finite(item.orders_value) > 0 ? fmtMoneyFull(item.orders_value) : '';
+          const stock = item.total_mp_stock != null ? `${fmtInt(item.total_mp_stock)} шт.` : '';
+          result.push({
+            label: `${sourceLabel}: ${item.product_name_final || item.name || item.article || item.articleKey || key}`,
+            value: revenue || completion || stock || 'есть строка',
+            detail: [
+              item.owner_name || item.owner,
+              item.focus_reasons || item.top_return_reason || item.article || item.articleKey,
+              completion ? `выполнение ${completion}` : ''
+            ].filter(Boolean).join(' · ')
+          });
+        });
+    });
+    return result;
+  }
+
+  function fallbackSkuRows(model, limit = 12) {
+    const skuRows = [...(model.skuRows?.positive || []), ...(model.skuRows?.focus || [])];
+    if (skuRows.length) return skuDrawerRows(skuRows.slice(0, limit), 'sku-plan-fact');
+    const dashboardRows = []
+      .concat(scopedDashboardRows(model, 'focusTop'))
+      .concat(scopedDashboardRows(model, 'toWork'))
+      .concat(scopedDashboardRows(model, 'lowStock'))
+      .filter(Boolean)
+      .slice(0, limit);
+    return dashboardRowsToDrawer(dashboardRows, { route: 'sku-plan-fact' });
+  }
+
+  function skuDetailRows(model, item) {
+    const rows = [
+      {
+        label: 'Факт / план',
+        value: `${fmtMoneyFull(item.revenue)} / ${planLabel(item.planRevenue)}`,
+        detail: `выполнение ${completionLabel(item.completionPct)} · ${platformMeta(model.platform).short}`
+      },
+      {
+        label: 'Заказы / план',
+        value: `${fmtInt(item.orders)} шт.`,
+        detail: item.planUnits ? `план ${fmtInt(item.planUnits)} шт.` : 'план по штукам не найден'
+      },
+      {
+        label: 'Маржа',
+        value: item.marginPct == null ? 'нет источника' : fmtPct(item.marginPct),
+        detail: item.buys ? `выкупы ${fmtInt(item.buys)} шт.` : 'выкуп не пришёл в текущий срез'
+      },
+      {
+        label: 'Ответственный',
+        value: item.owner || 'Без owner',
+        detail: item.key || 'SKU без ключа'
+      },
+      {
+        label: 'Причина / сигнал',
+        value: item.driver || 'сигнал',
+        detail: item.fallback ? 'общий срез, нет SKU-разбивки выбранной площадки' : 'из текущего среза дашборда'
+      }
+    ];
+    dashboardRowsForSku(model, item.key).forEach((row) => rows.push(row));
+    rows.push(
+      { label: 'Открыть План-факт SKU', value: 'таблица по артикулам', detail: 'план, факт, маржа, статусы и фильтры', route: 'sku-plan-fact' },
+      { label: 'Открыть Цены', value: 'цена и заказы', detail: 'дневная динамика цены по SKU', route: 'prices' },
+      { label: 'Открыть Лидерборд', value: 'контент и трафик', detail: 'недельная динамика и вклад SKU', route: 'product-leaderboard' }
+    );
+    return rows;
+  }
+
+  function openDrawer(root, title, subtitle, metrics, rows) {
+    const back = root.querySelector('[data-ceo-drawer-back]');
+    const drawer = root.querySelector('[data-ceo-drawer]');
+    if (!back || !drawer) return;
+    const list = Array.isArray(rows) ? rows.filter(Boolean) : [];
+    const listHtml = list.length
+      ? `
+        <label class="ceo-drawer-search">
+          <span>Фильтр внутри окна</span>
+          <input type="search" data-ceo-drawer-filter placeholder="SKU, owner, причина, площадка...">
+        </label>
+        <div class="ceo-drawer-list">
+          ${list.map((row) => {
+            const routeAttr = row.route ? `data-ceo-route="${escapeHtml(row.route)}"` : '';
+            const skuAttr = row.sku && !row.route ? `data-ceo-sku="${escapeHtml(row.sku)}"` : '';
+            const actionClass = row.route || row.sku ? '' : ' is-static';
+            return `<button type="button" class="ceo-drawer-row${actionClass}" data-ceo-drawer-row data-filter="${escapeHtml(drawerRowFilter(row))}" ${routeAttr} ${skuAttr}><span><b>${escapeHtml(row.label)}</b>${row.detail ? `<small>${escapeHtml(row.detail)}</small>` : ''}</span><em>${escapeHtml(row.value)}</em></button>`;
+          }).join('')}
+        </div>
+      `
+      : '<div class="ceo-empty" style="margin-top:15px">Детали для этого среза не найдены. Проверь фильтр площадки или обнови командные данные.</div>';
+    drawer.innerHTML = `
+      <h2>${escapeHtml(title)}</h2>
+      <p>${escapeHtml(subtitle)}</p>
+      ${drawerMetrics(metrics || [])}
+      ${listHtml}
+      <div style="display:flex;justify-content:flex-end;margin-top:18px"><button type="button" class="ceo-period active" data-ceo-close>Закрыть</button></div>
+    `;
+    back.classList.add('open');
+  }
+
+  function openSku(root, model, key) {
+    const rows = [...(model.skuRows?.positive || []), ...(model.skuRows?.focus || [])];
+    const item = rows.find((row) => rowMatchesSku(row, key));
+    if (!item) {
+      const fallback = fallbackSkuRows(model);
+      openDrawer(root, 'SKU-вклад', 'По выбранному SKU нет строки в текущем срезе. Ниже ближайшие позиции по выбранной площадке.', [
+        ['Площадка', platformMeta(model.platform).short],
+        ['Период', `${shortDate(model.range.start)} - ${shortDate(model.range.end)}`],
+        ['Доступно строк', fmtInt(fallback.length)]
+      ], fallback);
+      return;
+    }
+    openDrawer(root, item.name, `${item.owner} · ${item.driver}`, [
+      ['Факт', fmtMoneyFull(item.revenue)],
+      ['План', planLabel(item.planRevenue)],
+      ['Выполнение', completionLabel(item.completionPct)],
+      ['Заказы', fmtInt(item.orders)],
+      ['Выкупы', item.buys ? fmtInt(item.buys) : 'нет источника'],
+      ['Маржа', item.marginPct == null ? 'нет источника' : fmtPct(item.marginPct)]
+    ], skuDetailRows(model, item));
+  }
+
   function navigate(route) {
     const normalized = String(route || '').replace(/^#/, '');
     if (!normalized) return;

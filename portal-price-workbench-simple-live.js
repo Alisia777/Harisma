@@ -36,7 +36,7 @@
   var ORDER_PROCUREMENT_OZON_URL = "data/order_procurement_ozon.json";
   var VIEW_ID = "view-prices";
   var STYLE_ID = "altea-price-simple-style";
-  var STYLE_VERSION = "20260626-prices-table-sort-v1";
+  var STYLE_VERSION = "20260626-prices-modal-scroll-v1";
   var SNAPSHOT_WAIT_MS = 1800;
   var SNAPSHOT_HARD_WAIT_MS = 4500;
   var LOCAL_FETCH_TIMEOUT_MS = 3200;
@@ -115,6 +115,7 @@
   var modalScrollState = {
     savedY: 0,
     savedOverflow: "",
+    savedHtmlOverflow: "",
     pendingOpenY: null
   };
 
@@ -3409,13 +3410,51 @@ function downloadPriceSummaryExcel(rows) {
     }
     modalScrollState.savedY = resolvedY;
     modalScrollState.savedOverflow = document.body.style.overflow || "";
+    modalScrollState.savedHtmlOverflow = document.documentElement.style.overflow || "";
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     document.body.setAttribute("data-pw-scroll-lock", "1");
   }
 
   function unlockModalBackgroundScroll() {
     if (document.body.getAttribute("data-pw-scroll-lock") !== "1") return;
     document.body.removeAttribute("data-pw-scroll-lock");
-    window.scrollTo(0, Number(modalScrollState.savedY) || 0);
+    document.body.style.overflow = modalScrollState.savedOverflow || "";
+    document.documentElement.style.overflow = modalScrollState.savedHtmlOverflow || "";
+    window.scrollTo({ top: Number(modalScrollState.savedY) || 0, left: 0, behavior: "auto" });
+  }
+
+  function centerPriceModal() {
+    var modal = document.getElementById("priceSimpleModal");
+    if (!modal || !state.selectedKey) return;
+    var box = modal.querySelector(".pw-modal-box");
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    if (box) {
+      box.setAttribute("tabindex", "-1");
+      box.scrollTop = 0;
+    }
+    window.requestAnimationFrame(function () {
+      if (!document.body.contains(modal)) return;
+      try {
+        modal.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" });
+      } catch (error) {
+        window.scrollTo({ top: Number(modalScrollState.savedY) || 0, left: 0, behavior: "auto" });
+      }
+      if (box) {
+        try {
+          box.focus({ preventScroll: true });
+        } catch (error) {
+          box.focus();
+        }
+      }
+    });
+  }
+
+  function closePriceModal() {
+    state.selectedKey = "";
+    renderSelectedModal();
+    unlockModalBackgroundScroll();
   }
 
   function attachModalHandlers() {
@@ -3431,9 +3470,7 @@ function downloadPriceSummaryExcel(rows) {
         return;
       }
       if (event.target === modal || event.target.closest("[data-close-price-modal]")) {
-        state.selectedKey = "";
-        renderSelectedModal();
-        unlockModalBackgroundScroll();
+        closePriceModal();
       }
     });
     var minMaxForm = modal.querySelector("#priceMinMaxForm");
@@ -3477,8 +3514,12 @@ function downloadPriceSummaryExcel(rows) {
     modalScrollState.pendingOpenY = null;
     host.innerHTML = renderModal(selectedDisplayRow());
     attachModalHandlers();
-    if (state.selectedKey) lockModalBackgroundScroll(scrollBeforeRender);
-    else unlockModalBackgroundScroll();
+    if (state.selectedKey) {
+      lockModalBackgroundScroll(scrollBeforeRender);
+      centerPriceModal();
+    } else {
+      unlockModalBackgroundScroll();
+    }
   }
 
   function renderControlGuide() {
@@ -5442,9 +5483,9 @@ function downloadPriceSummaryExcel(rows) {
       };
       rowNode.addEventListener("mousedown", rememberScroll);
       rowNode.addEventListener("touchstart", rememberScroll, { passive: true });
-      rowNode.addEventListener("click", function () {
-        state.selectedKey = rowNode.getAttribute("data-open-price");
-        renderSelectedModal();
+      rowNode.addEventListener("click", function (event) {
+        event.preventDefault();
+        openPriceV1ModalByKey(rowNode.getAttribute("data-open-price") || "");
       });
     });
     root.querySelectorAll("[data-open-product-leaderboard]").forEach(function (button) {

@@ -7087,6 +7087,8 @@ function oosControlNormalizePlatform(value = 'all') {
 }
 
 function oosControlGlobalPlatformFilter(fallback = 'all') {
+  const explicit = oosControlNormalizePlatform(fallback);
+  if (explicit && explicit !== 'all') return explicit;
   let sawAll = false;
   const candidates = [
     typeof document !== 'undefined' ? document.documentElement?.dataset?.marketplace : '',
@@ -7107,7 +7109,7 @@ function oosControlGlobalPlatformFilter(fallback = 'all') {
     if (normalized && normalized !== 'all') return normalized;
     if (normalized === 'all') sawAll = true;
   }
-  return sawAll ? 'all' : oosControlNormalizePlatform(fallback);
+  return sawAll ? 'all' : explicit;
 }
 
 function oosControlOwnerForRow(row = {}) {
@@ -7298,14 +7300,14 @@ function oosControlFilteredRows(options = {}) {
   const filters = oosControlFilters();
   const ignoreCluster = !!options.ignoreCluster;
   const search = filters.search.toLowerCase();
-  const cluster = String(filters.cluster || 'all').trim();
-  return rows.filter((row) => {
+  const requestedCluster = String(filters.cluster || 'all').trim();
+  const matches = (row, rowOptions = {}) => {
     const task = oosControlTaskFor(row);
     if (filters.platform !== 'all' && row.platform !== filters.platform) return false;
     if (filters.owner !== 'all' && row.owner !== filters.owner) return false;
     if (filters.department !== 'all' && row.department !== filters.department) return false;
     const rowPlaces = oosControlRowPlaces(row);
-    if (!ignoreCluster && cluster !== 'all' && !rowPlaces.includes(cluster)) return false;
+    if (!rowOptions.ignoreCluster && requestedCluster !== 'all' && !rowPlaces.includes(requestedCluster)) return false;
     if (filters.status === 'has_task' && !task) return false;
     if (filters.status === 'no_task' && task) return false;
     if (!['active', 'all', 'has_task', 'no_task'].includes(filters.status) && row.status !== filters.status) return false;
@@ -7326,7 +7328,16 @@ function oosControlFilteredRows(options = {}) {
       if (!haystack.includes(search)) return false;
     }
     return true;
-  });
+  };
+  const baseRows = rows.filter((row) => matches(row, { ignoreCluster: true }));
+  if (ignoreCluster || requestedCluster === 'all') return baseRows;
+  const hasCluster = baseRows.some((row) => oosControlRowPlaces(row).includes(requestedCluster));
+  if (!hasCluster) {
+    state.oosControlFilters = state.oosControlFilters || {};
+    state.oosControlFilters.cluster = 'all';
+    return baseRows;
+  }
+  return baseRows.filter((row) => matches(row));
 }
 
 function oosControlFreshnessNotice(payload) {
@@ -7959,9 +7970,14 @@ function oosControlSignalFromPlace(row = {}, place = {}, index = 0, payload = {}
   const oosGapDays = forecastDate ? Math.max(0, oosControlDiffDays(effectiveInboundDate, forecastDate)) : 0;
   const projectedLostTurnover = Math.max(0, oosGapDays * avgDailyTurnover);
   const alreadyOos = String(row.status || '').toLowerCase() === 'oos' || stockUnits <= 0;
+  const rowStatus = String(row.status || '').toLowerCase();
+  const targetNeed30 = numberOrZero(place.targetNeed30 ?? row.targetNeed30);
   const isRisk = alreadyOos
+    || rowStatus === 'risk'
+    || rowStatus === 'watch'
     || (daysToOos !== null && daysToOos < 10)
     || oosGapDays > 0
+    || targetNeed30 > 0
     || (!inbound.confirmed && daysToOos !== null && daysToOos < OOS_CONTROL_RISK_HORIZON_DAYS);
   if (!isRisk) return null;
   const recommendedReplenishment = Math.max(
@@ -9625,8 +9641,9 @@ function renderOosControl(rootId = 'view-oos-control') {
   if (!root) return;
   const payload = oosControlPayload();
   const rows = oosControlRows();
-  const filters = oosControlFilters();
+  let filters = oosControlFilters();
   const filteredRows = oosControlFilteredRows();
+  filters = oosControlFilters();
   const localizationRows = oosControlFilteredRows({ ignoreCluster: true });
   const summary = oosControlSummarizeRows(filteredRows, payload.summary || {});
   const signals = oosControlVisibleSignals(filteredRows, payload);
@@ -9653,14 +9670,14 @@ function renderOosControl(rootId = 'view-oos-control') {
     ${renderOosControlCommand(signals, filters)}
     <section class="card oos-focus" data-oos-focus>${renderOosControlSignalFocus(selectedSignal)}</section>
     ${renderOosControlLocalizationTrend(payload, localizationRows, signals, filters)}
-    ${renderOosControlSignalList(signals, selectedSignal?.key || '', rows, filters)}
+    ${renderOosControlSignalList(signals, selectedSignal?.key || '', localizationRows, filters)}
     ${renderOosControlFormulaNote()}
     <details class="oos-advanced-panel">
       <summary>
         <span>Фильтры, комментарии и служебная таблица</span>
         ${badge(`${fmt.int(filteredRows.length)} агрегированных строк`)}
       </summary>
-      ${renderOosControlFiltersV4(rows, filters)}
+      ${renderOosControlFiltersV4(localizationRows, filters)}
       ${oosControlTeamNotice()}
       <div class="card sku-plan-fact-card oos-detail-card" style="margin-top:14px">
       <div class="section-subhead">

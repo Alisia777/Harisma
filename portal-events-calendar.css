@@ -865,16 +865,25 @@
   position: fixed;
   inset: 0;
   z-index: 1500;
-  display: grid;
-  place-items: center;
-  padding: 24px;
+  display: block;
+  padding: 0;
+  overflow: auto;
   background: rgba(0, 0, 0, .72);
   backdrop-filter: blur(8px);
 }
 
+.promo-calendar-shell > .promo-modal-backdrop {
+  position: fixed;
+  z-index: 1500;
+}
+
 .promo-event-modal {
+  position: fixed;
+  top: var(--calendar-modal-top, 88px);
+  left: var(--calendar-modal-left, 50vw);
+  transform: translateX(-50%);
   width: min(1180px, calc(100vw - 32px));
-  max-height: calc(100vh - 42px);
+  max-height: min(880px, calc(100vh - var(--calendar-modal-top, 88px) - 18px));
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--promo-color, #74a7ff) 42%, rgba(237, 206, 138, .22));
   border-radius: 8px;
@@ -1613,12 +1622,14 @@
 
 @media (max-width: 640px) {
   .promo-modal-backdrop {
-    padding: 10px;
-    align-items: stretch;
+    padding: 0;
   }
 
   .promo-event-modal {
-    width: 100%;
+    top: 10px;
+    left: 10px;
+    transform: none;
+    width: calc(100vw - 20px);
     max-height: calc(100vh - 20px);
   }
 

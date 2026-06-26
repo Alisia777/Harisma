@@ -28,6 +28,7 @@
     modalOpen: false,
     readonlyEventId: '',
     readonlyEvent: null,
+    modalAnchor: null,
     skuQuery: '',
     draftSkus: [],
     remoteLoaded: false,
@@ -46,6 +47,7 @@
   if (!('showDone' in CALENDAR_STATE)) CALENDAR_STATE.showDone = false;
   if (!('readonlyEventId' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEventId = '';
   if (!('readonlyEvent' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEvent = null;
+  if (!('modalAnchor' in CALENDAR_STATE)) CALENDAR_STATE.modalAnchor = null;
   if (!BACKGROUND_MODES.includes(CALENDAR_STATE.backgroundMode)) CALENDAR_STATE.backgroundMode = calendarStoredBackgroundMode();
   let calendarOwnerQueued = false;
   let calendarObserver = null;
@@ -98,6 +100,39 @@
     const nextMode = BACKGROUND_MODES.includes(mode) ? mode : 'static';
     CALENDAR_STATE.backgroundMode = nextMode;
     try { localStorage.setItem(BACKGROUND_STORAGE_KEY, nextMode); } catch (_) {}
+  }
+
+  function clampNumber(value, min, max) {
+    const numberValue = Number(value);
+    const minValue = Number(min);
+    const maxValue = Number(max);
+    if (!Number.isFinite(numberValue)) return minValue;
+    return Math.min(Math.max(numberValue, minValue), Math.max(minValue, maxValue));
+  }
+
+  function setModalAnchor(anchorElement) {
+    const rect = anchorElement?.getBoundingClientRect?.();
+    if (!rect) {
+      CALENDAR_STATE.modalAnchor = null;
+      return;
+    }
+    const viewportWidth = window.innerWidth || document.documentElement?.clientWidth || 1280;
+    const viewportHeight = window.innerHeight || document.documentElement?.clientHeight || 760;
+    const modalWidth = Math.min(1180, Math.max(320, viewportWidth - 32));
+    const halfWidth = modalWidth / 2;
+    const left = clampNumber(rect.left + rect.width / 2, halfWidth + 16, viewportWidth - halfWidth - 16);
+    const topLimit = Math.max(78, viewportHeight - Math.min(620, viewportHeight - 96));
+    const top = clampNumber(rect.top - 14, 78, topLimit);
+    CALENDAR_STATE.modalAnchor = {
+      left: Math.round(left),
+      top: Math.round(top)
+    };
+  }
+
+  function modalPositionAttr() {
+    const anchor = CALENDAR_STATE.modalAnchor;
+    if (!anchor || !Number.isFinite(Number(anchor.left)) || !Number.isFinite(Number(anchor.top))) return '';
+    return ` style="--calendar-modal-left:${Math.round(Number(anchor.left))}px;--calendar-modal-top:${Math.round(Number(anchor.top))}px"`;
   }
 
   function html(value) {
@@ -2289,7 +2324,7 @@
       ? `${formatDate(event.startDate)} - ${formatDate(event.endDate)}`
       : formatDate(event.startDate);
     return `
-      <div class="promo-modal-backdrop" data-calendar-modal-close>
+      <div class="promo-modal-backdrop" data-calendar-modal-close${modalPositionAttr()}>
         <section class="promo-event-modal ${eventClass(event)}" role="dialog" aria-modal="true" aria-label="${html(event.title)}" data-calendar-modal>
           <div class="promo-event-form">
             <header class="promo-modal-head">
@@ -2369,7 +2404,7 @@
       return acc;
     }, { warehouse: 0, shipped: 0, orders7: 0 });
     return `
-      <div class="promo-modal-backdrop" data-calendar-modal-close>
+      <div class="promo-modal-backdrop" data-calendar-modal-close${modalPositionAttr()}>
         <section class="promo-event-modal ${eventClass(event)}" role="dialog" aria-modal="true" aria-label="${isEdit ? 'Событие календаря' : 'Новое событие календаря'}" data-calendar-modal>
           <form class="promo-event-form" data-calendar-form>
             <input type="hidden" name="id" value="${html(event.id)}">
@@ -2418,7 +2453,6 @@
               </section>
 
               <aside class="promo-modal-side">
-                ${renderMissionPanel(event, selectedRows, signalTotals)}
                 <div class="promo-sku-top">
                   <div>
                     <span>SKU в событии</span>
@@ -2549,7 +2583,7 @@
     CALENDAR_STATE.dateTo = endOfMonth(CALENDAR_STATE.month);
   }
 
-  function openEventModal(eventId = '', date = '') {
+  function openEventModal(eventId = '', date = '', anchorElement = null) {
     CALENDAR_STATE.editingId = String(eventId || '').trim();
     CALENDAR_STATE.readonlyEventId = '';
     CALENDAR_STATE.readonlyEvent = null;
@@ -2557,10 +2591,11 @@
     const event = activeEvent();
     CALENDAR_STATE.draftSkus = event ? [...event.skus] : [];
     CALENDAR_STATE.skuQuery = '';
+    setModalAnchor(anchorElement);
     CALENDAR_STATE.modalOpen = true;
   }
 
-  function openReadonlyEventModal(event, rootId) {
+  function openReadonlyEventModal(event, rootId, anchorElement = null) {
     const normalized = normalizeEvent(event);
     CALENDAR_STATE.editingId = '';
     CALENDAR_STATE.readonlyEventId = normalized.id;
@@ -2568,6 +2603,7 @@
     CALENDAR_STATE.selectedDate = normalized.startDate || CALENDAR_STATE.selectedDate || todayKey();
     CALENDAR_STATE.draftSkus = [...(normalized.skus || [])];
     CALENDAR_STATE.skuQuery = '';
+    setModalAnchor(anchorElement);
     CALENDAR_STATE.modalOpen = true;
     renderEventCalendar(rootId);
   }
@@ -2576,6 +2612,7 @@
     CALENDAR_STATE.modalOpen = false;
     CALENDAR_STATE.readonlyEventId = '';
     CALENDAR_STATE.readonlyEvent = null;
+    CALENDAR_STATE.modalAnchor = null;
     CALENDAR_STATE.skuQuery = '';
   }
 
@@ -2609,8 +2646,28 @@
     if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason: 'promo-calendar-task' });
     await persistPromoCalendarEvents({ rootId });
     CALENDAR_STATE.modalOpen = false;
+    CALENDAR_STATE.modalAnchor = null;
     renderEventCalendar(rootId);
     if (typeof setAppError === 'function') setAppError(`Событие сохранено: ${eventWithTask.title}.`);
+  }
+
+  async function cancelLinkedTaskForDeletedEvent(event = {}) {
+    const taskId = String(event.taskId || '').trim();
+    if (!taskId) return;
+    const tasks = Array.isArray(appState().storage?.tasks) ? appState().storage.tasks : [];
+    const task = tasks.find((item) => String(item?.id || '').trim() === taskId);
+    try {
+      if (typeof window.updateTaskStatus === 'function') {
+        await window.updateTaskStatus(taskId, 'cancelled');
+      } else if (task) {
+        task.status = 'cancelled';
+        task.updatedAt = new Date().toISOString();
+        if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason: 'promo-calendar-task-cancel' });
+        if (typeof persistTask === 'function') await persistTask(task);
+      }
+    } catch (error) {
+      console.warn('[promo-calendar] task cancel after event delete', error);
+    }
   }
 
   async function deleteEvent(id, rootId) {
@@ -2623,7 +2680,9 @@
     ];
     CALENDAR_STATE.editingId = '';
     CALENDAR_STATE.modalOpen = false;
+    CALENDAR_STATE.modalAnchor = null;
     if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason: 'promo-calendar-delete' });
+    await cancelLinkedTaskForDeletedEvent(event);
     if (event.taskId && typeof createTaskHistoryEntry === 'function') {
       try { await createTaskHistoryEntry(event.taskId, 'updated', `Календарное событие удалено: ${event.title}.`); } catch {}
     }
@@ -2877,15 +2936,15 @@
     }
   }
 
-  function openCalendarItem(id, rootId) {
+  function openCalendarItem(id, rootId, anchorElement = null) {
     const event = calendarEvents().find((item) => item.id === id) || allEvents().find((item) => item.id === id);
     if (!event) return;
     if (isEditableEvent(event)) {
-      openEventModal(event.id, '');
+      openEventModal(event.id, '', anchorElement);
       renderEventCalendar(rootId);
       return;
     }
-    openReadonlyEventModal(event, rootId);
+    openReadonlyEventModal(event, rootId, anchorElement);
   }
 
   function bindCalendar(root, rootId) {
@@ -2898,7 +2957,7 @@
         event.preventDefault();
         event.stopPropagation();
         if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
-        window.setTimeout(() => openCalendarItem(itemId, rootId), 0);
+        window.setTimeout(() => openCalendarItem(itemId, rootId, button), 0);
       }, true);
     }
 
@@ -2968,8 +3027,8 @@
       CALENDAR_STATE.dateTo = endOfMonth(todayKey());
       renderEventCalendar(rootId);
     });
-    root.querySelector('[data-calendar-create-promo]')?.addEventListener('click', () => {
-      openEventModal('', CALENDAR_STATE.selectedDate || CALENDAR_STATE.dateFrom || todayKey());
+    root.querySelector('[data-calendar-create-promo]')?.addEventListener('click', (event) => {
+      openEventModal('', CALENDAR_STATE.selectedDate || CALENDAR_STATE.dateFrom || todayKey(), event.currentTarget);
       renderEventCalendar(rootId);
     });
     root.querySelector('[data-calendar-sync]')?.addEventListener('click', async () => {
@@ -2979,14 +3038,14 @@
     root.querySelectorAll('[data-calendar-day]').forEach((day) => {
       const open = (event) => {
         if (event?.target?.closest?.('[data-calendar-event], [data-calendar-edit]')) return;
-        openEventModal('', day.dataset.calendarDay || todayKey());
+        openEventModal('', day.dataset.calendarDay || todayKey(), day);
         renderEventCalendar(rootId);
       };
       day.addEventListener('click', open);
       day.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
-          open();
+          open(event);
         }
       });
       day.addEventListener('dragover', (event) => {
@@ -3005,7 +3064,7 @@
       button.addEventListener('click', (event) => {
         const itemId = button.dataset.calendarEvent || button.dataset.calendarEdit || '';
         event.stopPropagation();
-        window.setTimeout(() => openCalendarItem(itemId, rootId), 0);
+        window.setTimeout(() => openCalendarItem(itemId, rootId, button), 0);
       });
       if (button.getAttribute('draggable') === 'true') {
         button.addEventListener('dragstart', (event) => {

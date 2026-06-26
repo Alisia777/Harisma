@@ -3460,6 +3460,111 @@ function productLeaderboardTrafficBucket(value = '') {
   return 'organic';
 }
 
+function productLeaderboardItemSubstitutionKeys(item = {}) {
+  const keys = new Set();
+  [
+    item.articleKey,
+    item.article,
+    item.sellerArticle,
+    item.vendorCode,
+    item.sku,
+    item.nmId,
+    item.productId,
+    item.id
+  ].forEach((value) => {
+    const key = productLeaderboardSubstitutionKey(value);
+    if (key) keys.add(key);
+  });
+  return [...keys];
+}
+
+function productLeaderboardWbSubstitutionArticleMap(payload = wbSubstitutionTrafficPayload()) {
+  const map = new Map();
+  const articles = Array.isArray(payload?.articles) ? payload.articles : [];
+  const setKey = (value, row) => {
+    const key = productLeaderboardSubstitutionKey(value);
+    if (key && !map.has(key)) map.set(key, row);
+  };
+  articles.forEach((row = {}) => {
+    [
+      row.articleKey,
+      row.article,
+      row.sellerArticle,
+      row.vendorCode,
+      row.sku,
+      row.nmId,
+      row.productId,
+      row.id
+    ].forEach((value) => setKey(value, row));
+  });
+  return map;
+}
+
+function productLeaderboardWbSubstitutionRowHasTraffic(row = null) {
+  if (!row || typeof row !== 'object') return false;
+  return Boolean(
+    numberOrZero(row.orders)
+    || numberOrZero(row.views)
+    || numberOrZero(row.carts)
+    || numberOrZero(row.substitutionCount)
+    || numberOrZero(row.rowCount)
+  );
+}
+
+function productLeaderboardWbSubstitutionRowForItem(item = {}, articleMap = null) {
+  const map = articleMap || productLeaderboardWbSubstitutionArticleMap();
+  for (const key of productLeaderboardItemSubstitutionKeys(item)) {
+    const row = map.get(key);
+    if (row) return row;
+  }
+  return null;
+}
+
+function productLeaderboardTrafficBucketForItem(item = {}, articleMap = null) {
+  const wbRow = productLeaderboardWbSubstitutionRowForItem(item, articleMap);
+  if (productLeaderboardWbSubstitutionRowHasTraffic(wbRow)) return 'kz';
+  return productLeaderboardTrafficBucket(item.traffic);
+}
+
+function productLeaderboardWbSubstitutionPayloadForRange(range = {}) {
+  const fromIso = String(range.fromIso || range.startKey || '').slice(0, 10);
+  const toIso = String(range.toIso || range.endKey || fromIso || '').slice(0, 10);
+  if (!fromIso && !toIso) return null;
+  return wbSubstitutionTrafficHistoryPayloads().find((payload = {}) => {
+    const stamp = String(payload.asOfDate || payload.source?.sourceGeneratedAt || payload.generatedAt || '').slice(0, 10);
+    if (!stamp) return false;
+    if (fromIso && stamp < fromIso) return false;
+    if (toIso && stamp > toIso) return false;
+    return true;
+  }) || null;
+}
+
+function productLeaderboardWbSubstitutionStatsForItems(items = [], payload = wbSubstitutionTrafficPayload()) {
+  const articleMap = productLeaderboardWbSubstitutionArticleMap(payload);
+  const seen = new Set();
+  const rows = [];
+  (Array.isArray(items) ? items : []).forEach((item = {}) => {
+    const row = productLeaderboardWbSubstitutionRowForItem(item, articleMap);
+    if (!productLeaderboardWbSubstitutionRowHasTraffic(row)) return;
+    const rowKey = productLeaderboardSubstitutionArticleKey(row)
+      || productLeaderboardItemSubstitutionKeys(item)[0]
+      || `row-${rows.length}`;
+    if (seen.has(rowKey)) return;
+    seen.add(rowKey);
+    rows.push(row);
+  });
+  const summary = productLeaderboardSubstitutionSummary(rows);
+  const sourceLabel = payload.asOfDate || payload.source?.sourceGeneratedAt || payload.generatedAt || '';
+  return {
+    ...summary,
+    rows,
+    hasData: rows.length > 0,
+    source: 'wb-substitution-traffic',
+    sourceLabel,
+    labels: rows.length ? [`WB подменники ${fmt.int(summary.articles)} SKU`] : []
+  };
+}
+
 function productLeaderboardWeeklyShareRows() {
   const byWeek = new Map();
   productLeaderboardHistoryPayloads().forEach((snapshot, index) => {
@@ -3483,14 +3588,25 @@ function productLeaderboardWeeklyShareRows() {
       const summary = productLeaderboardSummaryFromItems(items);
       const orders = { kz: 0, digital: 0, organic: 0 };
       const revenue = { kz: 0, digital: 0, organic: 0 };
+      const range = productLeaderboardWeekRange(weekLabel || snapshot.weekLabel || snapshot.sourceSheetName || '');
+      const wbPayload = productLeaderboardWbSubstitutionPayloadForRange(range)
+        || (snapshotKey === 'latest' ? wbSubstitutionTrafficPayload() : null);
+      const wbArticleMap = wbPayload ? productLeaderboardWbSubstitutionArticleMap(wbPayload) : null;
       items.forEach((item) => {
-        const bucket = productLeaderboardTrafficBucket(item.traffic);
-        orders[bucket] += numberOrZero(item.orders);
+        const bucket = wbArticleMap
+          ? productLeaderboardTrafficBucketForItem(item, wbArticleMap)
+          : productLeaderboardTrafficBucket(item.traffic);
+        const wbRow = bucket === 'kz' && wbArticleMap
+          ? productLeaderboardWbSubstitutionRowForItem(item, wbArticleMap)
+          : null;
+        const orderValue = productLeaderboardWbSubstitutionRowHasTraffic(wbRow)
+          ? numberOrZero(wbRow.orders)
+          : numberOrZero(item.orders);
+        orders[bucket] += orderValue;
         revenue[bucket] += numberOrZero(item.revenue);
       });
       const totalOrders = orders.kz + orders.digital + orders.organic || numberOrZero(summary.orders);
       const totalRevenue = revenue.kz + revenue.digital + revenue.organic || numberOrZero(summary.revenue);
-      const range = productLeaderboardWeekRange(weekLabel || snapshot.weekLabel || snapshot.sourceSheetName || '');
       const sortStamp = parseFreshStamp(range?.fromIso || range?.startKey || snapshot.sourceWeekFrom || snapshot.generatedAt || weekLabel);
       return {
         weekLabel,
@@ -3507,6 +3623,7 @@ function productLeaderboardWeeklyShareRows() {
         kzShare: totalOrders > 0 ? orders.kz / totalOrders : null,
         digitalShare: totalOrders > 0 ? orders.digital / totalOrders : null,
         organicShare: totalOrders > 0 ? orders.organic / totalOrders : null,
+        wbSubstitutionSourceLabel: wbPayload ? (wbPayload.asOfDate || wbPayload.source?.sourceGeneratedAt || wbPayload.generatedAt || '') : '',
         sortStamp
       };
     })
@@ -3702,7 +3819,7 @@ function productLeaderboardDateOnlyLabel(value = '') {
 }
 
 function productLeaderboardBucketLabel(bucket = '') {
-  if (bucket === 'kz') return 'КЗ-метка';
+  if (bucket === 'kz') return 'WB подменники';
   if (bucket === 'digital') return 'digital';
   return 'без метки';
 }
@@ -3741,11 +3858,16 @@ function productLeaderboardWeeklyGrowthModel(current = null, previous = null) {
   const currentMap = productLeaderboardAggregateItemsByKey(current.items || []);
   const previousMap = productLeaderboardAggregateItemsByKey(previous.items || []);
   const keys = new Set([...currentMap.keys(), ...previousMap.keys()]);
+  const wbArticleMap = productLeaderboardWbSubstitutionArticleMap();
   const rows = [...keys].map((key) => {
     const curr = currentMap.get(key) || { item: {}, orders: 0, revenue: 0, clicks: 0, carts: 0, buys: 0 };
     const prev = previousMap.get(key) || { item: {}, orders: 0, revenue: 0, clicks: 0, carts: 0, buys: 0 };
     const item = curr.item && (curr.item.name || curr.item.articleKey || curr.item.article) ? curr.item : prev.item;
-    const bucket = productLeaderboardTrafficBucket(item.traffic || curr.item?.traffic || prev.item?.traffic || '');
+    const bucket = productLeaderboardTrafficBucketForItem({
+      ...prev.item,
+      ...curr.item,
+      traffic: item.traffic || curr.item?.traffic || prev.item?.traffic || ''
+    }, wbArticleMap);
     return {
       key,
       item,
@@ -3943,7 +4065,7 @@ function productLeaderboardWeeklyGrowthHtml(model = null) {
   const driverRows = [...model.positive, ...model.negative];
   const maxAbsOrders = Math.max(1, ...driverRows.map((row) => Math.abs(numberOrZero(row.ordersDelta))));
   const buckets = [
-    { label: 'КЗ-метка', value: model.bucketDeltas.kz, tone: model.bucketDeltas.kz >= 0 ? 'ok' : 'danger' },
+    { label: 'WB подменники', value: model.bucketDeltas.kz, tone: model.bucketDeltas.kz >= 0 ? 'ok' : 'danger' },
     { label: 'digital', value: model.bucketDeltas.digital, tone: model.bucketDeltas.digital >= 0 ? 'ok' : 'danger' },
     { label: 'без метки', value: model.bucketDeltas.organic, tone: model.bucketDeltas.organic >= 0 ? 'ok' : 'danger' }
   ];
@@ -3999,7 +4121,7 @@ function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1, sele
           <em>Какая неделя растет и чем она наполнена.</em>
         </div>
         <div class="product-leaderboard-weekly-bi-chart__legend" aria-label="Легенда недельного графика">
-          <span><i class="is-kz"></i>КЗ-метка</span>
+          <span><i class="is-kz"></i>WB подменники</span>
           <span><i class="is-digital"></i>digital</span>
           <span><i class="is-organic"></i>без метки</span>
         </div>
@@ -4013,7 +4135,7 @@ function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1, sele
           const organicPct = Math.max(0, Math.min(100, numberOrZero(row.orders.organic) / total * 100));
           const weekLabel = productLeaderboardWeeklyChartLabel(row);
           const isActive = productLeaderboardWeeklyRowSnapshotMatch(row, selectedKey);
-          const tooltip = `${weekLabel}: всего ${fmt.int(total)} заказов · КЗ-метка ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · без метки ${fmt.int(row.orders.organic)} · выручка ${fmt.money(row.totalRevenue)}`;
+          const tooltip = `${weekLabel}: всего ${fmt.int(total)} заказов · WB подменники ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · без метки ${fmt.int(row.orders.organic)} · выручка ${fmt.money(row.totalRevenue)}`;
           return `
             <button
               type="button"
@@ -4034,7 +4156,7 @@ function productLeaderboardWeeklyStackedChartHtml(rows = [], maxOrders = 1, sele
               </div>
               <div class="product-leaderboard-weekly-bi-column__tooltip">
                 <b>${escapeHtml(weekLabel)}</b>
-                <span>КЗ-метка ${fmt.int(row.orders.kz)} · ${fmt.pct(row.kzShare)}</span>
+                <span>WB подменники ${fmt.int(row.orders.kz)} · ${fmt.pct(row.kzShare)}</span>
                 <span>digital ${fmt.int(row.orders.digital)} · ${fmt.pct(row.digitalShare)}</span>
                 <span>без метки ${fmt.int(row.orders.organic)} · ${fmt.pct(row.organicShare)}</span>
                 <span>выручка ${fmt.money(row.totalRevenue)}</span>
@@ -4074,7 +4196,7 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}, selectedPayl
   const cards = [
     {
       className: 'is-kz',
-      label: 'КЗ-метка / неделя',
+      label: 'WB подменники / неделя',
       value: kzMarkedShare == null ? '—' : fmt.pct(kzMarkedShare),
       meta: `${fmt.int(kzMarkedOrders)} из ${fmt.int(weeklyTotalOrders)} заказов`,
       delta: null,
@@ -4165,7 +4287,7 @@ function renderProductLeaderboardWeeklyTrendHtml(orderContour = {}, selectedPayl
                 </span>
                 <span class="product-leaderboard-weekly-bi-row__shares">
                   <b>КЗ-лист ${fmt.int(row.totalOrders)}</b>
-                  <em>внутри листа: КЗ-метка ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · без метки ${fmt.int(row.orders.organic)}</em>
+                  <em>внутри листа: WB подменники ${fmt.int(row.orders.kz)} · digital ${fmt.int(row.orders.digital)} · без метки ${fmt.int(row.orders.organic)}</em>
                 </span>
               </div>
             `;
@@ -4808,10 +4930,10 @@ function productLeaderboardSubstitutionRowsForItems(items = [], filters = {}) {
   const articles = Array.isArray(payload.articles) ? payload.articles : [];
   const hasActiveFilter = productLeaderboardHasActiveFilters(filters);
   const visibleKeys = new Set((Array.isArray(items) ? items : [])
-    .map((item) => productLeaderboardSubstitutionKey(item.articleKey || item.article || item.sku || item.vendorCode || ''))
+    .flatMap((item) => productLeaderboardItemSubstitutionKeys(item))
     .filter(Boolean));
-  const filteredByLeaderboard = hasActiveFilter && visibleKeys.size > 0
-    ? articles.filter((row) => visibleKeys.has(productLeaderboardSubstitutionArticleKey(row)))
+  const filteredByLeaderboard = visibleKeys.size > 0
+    ? articles.filter((row) => productLeaderboardItemSubstitutionKeys(row).some((key) => visibleKeys.has(key)))
     : articles;
   const rows = filteredByLeaderboard.length ? filteredByLeaderboard : articles;
   return {
@@ -4819,7 +4941,7 @@ function productLeaderboardSubstitutionRowsForItems(items = [], filters = {}) {
     articles,
     rows,
     hasActiveFilter,
-    isFiltered: hasActiveFilter && visibleKeys.size > 0 && rows.length !== articles.length
+    isFiltered: visibleKeys.size > 0 && rows.length !== articles.length
   };
 }
 
@@ -11146,9 +11268,15 @@ function productLeaderboardNativeCauseBridge(current = {}, previous = {}) {
 }
 
 function productLeaderboardNativeSourceBuckets(items = [], metricKey = 'orders') {
+  const wbArticleMap = productLeaderboardWbSubstitutionArticleMap();
   return (Array.isArray(items) ? items : []).reduce((acc, item) => {
-    const bucket = productLeaderboardTrafficBucket(item.traffic);
-    acc[bucket] += numberOrZero(item[metricKey]);
+    const bucket = productLeaderboardTrafficBucketForItem(item, wbArticleMap);
+    const wbRow = metricKey === 'orders' && bucket === 'kz'
+      ? productLeaderboardWbSubstitutionRowForItem(item, wbArticleMap)
+      : null;
+    acc[bucket] += productLeaderboardWbSubstitutionRowHasTraffic(wbRow)
+      ? numberOrZero(wbRow.orders)
+      : numberOrZero(item[metricKey]);
     return acc;
   }, { kz: 0, digital: 0, organic: 0 });
 }

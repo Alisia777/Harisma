@@ -20,7 +20,6 @@
     "sku-contour",
     "skus",
     "launches",
-    "launch-control",
     "iu-drr",
     "wb-rating",
     "product-leaderboard"
@@ -40,7 +39,7 @@
     {
       key: "product",
       label: "03 \u041f\u0440\u043e\u0434\u0443\u043a\u0442",
-      views: ["sku-contour", "skus", "launches", "launch-control"]
+      views: ["sku-contour", "skus", "launches"]
     },
     {
       key: "analytics",
@@ -132,11 +131,6 @@
       subtitle: "\u041a\u0417 \u00b7 \u0432\u043e\u0440\u043e\u043d\u043a\u0430 \u00b7 ROMI",
       icon: "leaderboard"
     },
-    "launch-control": {
-      title: "\u0417\u0430\u043f\u0443\u0441\u043a \u043d\u043e\u0432\u0438\u043d\u043e\u043a",
-      subtitle: "\u0427\u0435\u043a-\u043b\u0438\u0441\u0442\u044b \u00b7 \u0444\u0430\u0437\u044b \u00b7 \u043f\u0440\u043e\u0441\u0440\u043e\u0447\u043a\u0438",
-      icon: "launch-control"
-    },
     skus: {
       title: "\u0420\u0435\u0435\u0441\u0442\u0440 \u0421\u041a\u042e",
       subtitle: "\u0421\u041a\u042e \u00b7 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438 \u00b7 owner",
@@ -178,8 +172,10 @@
 
   var REDIRECTS = {
     meetings: "dashboard",
-    documents: "dashboard"
+    documents: "dashboard",
+    "launch-control": "launches"
   };
+  var HIDDEN_VIEWS = ["meetings", "documents", "launch-control"];
   var LAST_VIEW_STORAGE_KEY = "altea:last-view";
   var viewRestored = false;
   var observerStarted = false;
@@ -441,7 +437,7 @@
       byView[String(btn.dataset.view || "").trim()] = btn;
     });
 
-    ["meetings", "documents"].forEach(function (view) {
+    HIDDEN_VIEWS.forEach(function (view) {
       if (byView[view] && byView[view].parentNode) byView[view].parentNode.removeChild(byView[view]);
       delete byView[view];
     });

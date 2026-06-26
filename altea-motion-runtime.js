@@ -555,18 +555,24 @@
     startCanvas(theme);
   }
 
+  function normalizeMotionView(view) {
+    var key = String(view || "dashboard").trim() || "dashboard";
+    if (key === "launch-control") return "launches";
+    return key;
+  }
+
   function activeViewName() {
     if (typeof window.state === "object" && window.state && window.state.activeView) {
-      return String(window.state.activeView || "");
+      return normalizeMotionView(window.state.activeView);
     }
     var active = document.querySelector(".view.active[id^='view-']");
-    if (active && active.id) return active.id.replace(/^view-/, "");
+    if (active && active.id) return normalizeMotionView(active.id.replace(/^view-/, ""));
     var hash = String(window.location.hash || "").replace(/^#/, "").trim();
-    return hash || "dashboard";
+    return normalizeMotionView(hash || "dashboard");
   }
 
   function viewRoot(view) {
-    var id = "view-" + String(view || activeViewName() || "dashboard");
+    var id = "view-" + normalizeMotionView(view || activeViewName() || "dashboard");
     return document.getElementById(id);
   }
 
@@ -586,7 +592,7 @@
   }
 
   function viewIsReady(view) {
-    var key = String(view || activeViewName() || "dashboard");
+    var key = normalizeMotionView(view || activeViewName() || "dashboard");
     var root = viewRoot(key);
     if (!viewRootVisible(root)) return false;
     if (key === "dashboard") {
@@ -614,7 +620,7 @@
   function waitForViewReady(view, options) {
     cancelReadinessWait();
     options = options || {};
-    var targetView = String(view || activeViewName() || "dashboard");
+    var targetView = normalizeMotionView(view || activeViewName() || "dashboard");
     var startedAt = Date.now();
     var minMs = Number(options.minDuration || ROUTE_MIN_MS);
     var maxMs = Number(options.maxDuration || ROUTE_MAX_MS);

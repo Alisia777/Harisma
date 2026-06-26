@@ -2834,7 +2834,6 @@ function rerenderCurrentView() {
     ['view-skus', 'Реестр SKU', renderSkuRegistry],
     ['view-launches', 'Новинки', renderLaunches],
     ['view-product-leaderboard', 'Продуктовый лидерборд', renderProductLeaderboard],
-    ['view-launch-control', 'Новинки', renderLaunchControl],
     ['view-meetings', 'Ритм работы', renderMeetings],
     ['view-executive', 'Руководителю', renderExecutive]
   ];

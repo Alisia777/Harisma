@@ -149,6 +149,7 @@
   function normalizeView(view) {
     if (view === 'calendar') return 'data-health';
     if (view === 'tasks' || view === 'task') return 'control';
+    if (view === 'launch-control') return 'launches';
     if (view === 'sku-workspace' || view === 'sku-workbench') return 'sku-contour';
     if (view === 'rating') return 'wb-rating';
     if (view === 'leaderboard') return 'product-leaderboard';

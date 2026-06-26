@@ -355,18 +355,18 @@
       }
     }
 
-    refreshRows() {
+    refreshRows({ force = false } = {}) {
       const tbody = this.table.tBodies[0];
       if (!tbody) return;
       const rows = Array.from(tbody.rows || []);
       const needsRefresh = rows.length !== this.rowInfos.length || rows.some((row, index) => this.rowInfos[index]?.row !== row);
-      if (!needsRefresh) return;
+      if (!force && !needsRefresh) return;
       this.tbody = tbody;
       this.rowInfos = rows.map((row, index) => ({
         row,
         index,
         values: new Map(),
-        originalDisplay: row.style.display || ''
+        originalDisplay: row.style.display && row.style.display !== 'none' ? row.style.display : ''
       }));
       this.inferColumns();
     }
@@ -477,7 +477,7 @@
 
     applyState({ persist }) {
       this.refreshHeaders();
-      this.refreshRows();
+      this.refreshRows({ force: true });
       const sorted = this.sortedRows();
       const visibleSet = new Set();
       this.rowInfos.forEach((info) => {
@@ -492,8 +492,10 @@
         this.tbody.appendChild(fragment);
       }
       this.rowInfos.forEach((info) => {
-        info.row.style.display = visibleSet.has(info.row) ? info.originalDisplay : 'none';
-        if (visibleSet.has(info.row)) info.row.removeAttribute('data-altea-filtered-out');
+        const visible = visibleSet.has(info.row);
+        info.row.style.display = visible ? info.originalDisplay : 'none';
+        info.row.setAttribute('aria-hidden', visible ? 'false' : 'true');
+        if (visible) info.row.removeAttribute('data-altea-filtered-out');
         else info.row.dataset.alteaFilteredOut = '1';
       });
       if (scroller) {

@@ -657,8 +657,8 @@
     const valueOf = (name, fallback = '') => host.querySelector(`[data-iu-v3-filter="${name}"]`)?.value || fallback;
     return {
       search: normalizeText(valueOf('search')),
-      source: valueOf('source', 'all'),
-      status: valueOf('status', 'all'),
+      source: normalizeText(valueOf('source', 'all') || 'all'),
+      status: normalizeText(valueOf('status', 'all') || 'all'),
       dateFrom: valueOf('dateFrom'),
       dateTo: valueOf('dateTo')
     };
@@ -686,9 +686,9 @@
     const rows = Array.from(host.querySelectorAll('tr[data-iu-v3-row]'));
     let visible = 0;
     rows.forEach((row) => {
-      const rowText = row.getAttribute('data-iu-v3-search') || '';
-      const source = row.getAttribute('data-iu-v3-source') || 'other';
-      const status = row.getAttribute('data-iu-v3-status') || 'ok';
+      const rowText = normalizeText(row.getAttribute('data-iu-v3-search') || '');
+      const source = normalizeText(row.getAttribute('data-iu-v3-source') || 'other');
+      const status = normalizeText(row.getAttribute('data-iu-v3-status') || 'ok');
       const date = row.getAttribute('data-iu-v3-date') || '';
       const sourceMatches = filters.source === 'all'
         || (filters.source === 'with-source' && source !== 'missing')
@@ -699,11 +699,21 @@
         && (!filters.dateFrom || (date && date >= filters.dateFrom))
         && (!filters.dateTo || (date && date <= filters.dateTo));
       row.hidden = !matches;
+      row.style.display = matches ? '' : 'none';
+      row.setAttribute('aria-hidden', matches ? 'false' : 'true');
       if (matches) visible += 1;
     });
-    host.querySelectorAll('[data-iu-v3-total-row]').forEach((row) => { row.hidden = active; });
+    host.querySelectorAll('[data-iu-v3-total-row]').forEach((row) => {
+      row.hidden = active;
+      row.style.display = active ? 'none' : '';
+      row.setAttribute('aria-hidden', active ? 'true' : 'false');
+    });
     const empty = ensureFilterEmptyRow(host);
-    if (empty) empty.hidden = visible > 0;
+    if (empty) {
+      empty.hidden = visible > 0;
+      empty.style.display = visible > 0 ? 'none' : '';
+      empty.setAttribute('aria-hidden', visible > 0 ? 'true' : 'false');
+    }
     const count = host.querySelector('[data-iu-v3-filter-count]');
     if (count) count.textContent = `${fmtInt(visible)} / ${fmtInt(rows.length)} строк`;
   }

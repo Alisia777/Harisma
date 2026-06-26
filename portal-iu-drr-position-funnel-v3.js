@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260624-iudrr-header-stickiness';
+  const VERSION = '20260626-iudrr-daily-summary-restore';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -1480,6 +1480,142 @@
               <thead><tr>${headers}</tr></thead>
               <tbody>${body.join('') || `<tr><td colspan="16">Нет строк для текущего фильтра</td></tr>`}</tbody>
             </table>
+            </div>
+          </div>
+        `,
+        { platform }
+      );
+    });
+    return sections.join('');
+  }
+
+  function dailyAggregateModel(platform, row) {
+    if (platform === 'wb') {
+      const spend = firstDefined(row, ['spendFactDrr', 'spendFact']);
+      return {
+        date: row.date,
+        source: row.wbIuFactSource || row.revenueWbSource || row.wbIuFactMode || 'WB API / IU control',
+        values: [
+          ['План оборота', row.targetRevenueWb, 'money'],
+          ['Факт оборота', row.revenueWb, 'money'],
+          ['Выполнение', row.revenueWbCompletionPct, 'pct'],
+          ['План рекламы', row.planSpendWb, 'money'],
+          ['Факт рекламы', spend, 'money'],
+          ['Факт ИУ', row.spendFactIu, 'money'],
+          ['ДРР факт', row.factPct, 'pct'],
+          ['ДРР ИУ', row.factPctIu, 'pct'],
+          ['Показы', row.adsViews, 'int'],
+          ['Клики', row.adsClicks, 'int'],
+          ['Заказы', row.adsOrders, 'int'],
+          ['Ad revenue', row.adsRevenue, 'money'],
+          ['WB promotion', row.wbPromotion, 'money'],
+          ['WB media', row.wbMedia, 'money'],
+          ['Отзывы / баллы', row.reviewPoints, 'money'],
+          ['Внешняя реклама', row.externalAds, 'money']
+        ]
+      };
+    }
+    if (platform === 'ozon') {
+      return {
+        date: row.date,
+        source: row.ozonAdsFactMode || row.ozonGmvMode || 'Ozon Finance / realization',
+        values: [
+          ['План GMV', row.targetRevenueOzon, 'money'],
+          ['Факт GMV', row.revenueOzon || row.ozonGmv, 'money'],
+          ['Выполнение GMV', row.revenueOzonCompletionPct, 'pct'],
+          ['План рекламы', row.planSpendOzon, 'money'],
+          ['Факт рекламы', row.spendFactOzon, 'money'],
+          ['Gross расход', row.ozonDrrSpendGross, 'money'],
+          ['Исключено', row.ozonDrrExcludedTotal, 'money'],
+          ['ДРР факт', row.factPctOzon, 'pct'],
+          ['Показы', row.ozonAdsViews, 'int'],
+          ['Клики', row.ozonAdsClicks, 'int'],
+          ['Заказы', row.ozonAdsOrders, 'int'],
+          ['Ad revenue', row.ozonAdsRevenue, 'money'],
+          ['Возвраты', row.ozonReturns, 'money'],
+          ['Finance rows', row.ozonFinanceSourceRows, 'int']
+        ]
+      };
+    }
+    return {
+      date: row.date,
+      source: row.yandexAdsFactMode || 'Yandex Market funnel',
+      values: [
+        ['План оборота', row.targetRevenueYandex, 'money'],
+        ['Факт оборота', row.revenueYandex, 'money'],
+        ['Выполнение', row.revenueYandexCompletionPct, 'pct'],
+        ['Показы', row.yandexShows, 'int'],
+        ['Клики', row.yandexClicks, 'int'],
+        ['Корзины', row.yandexToCart, 'int'],
+        ['Заказы', row.ordersUnitsYandex, 'int'],
+        ['Выкупы', row.deliveredUnitsYandex, 'int'],
+        ['Возвраты', row.yandexReturnsUnits, 'int'],
+        ['Отмены', row.yandexCancellationsUnits, 'int'],
+        ['Средний чек', safeRatio(row.revenueYandex, row.ordersUnitsYandex), 'money'],
+        ['Source rows', row.yandexSourceRows, 'int']
+      ]
+    };
+  }
+
+  function dailyAggregateStatus(model) {
+    if (sourceBucket(model.source) === 'missing') return 'missing';
+    const fact = numberOrNull(model.values.find(([label]) => label.includes('Факт'))?.[1]);
+    const completion = numberOrNull(model.values.find(([label]) => label.includes('Выполнение'))?.[1]);
+    if (fact === null && completion === null) return 'missing';
+    if (completion === null) return 'ok';
+    if (completion < 0.9) return 'bad';
+    if (completion < 1) return 'warn';
+    return 'ok';
+  }
+
+  function buildDailyPanel(rows, focus, positions) {
+    const platforms = platformsForFocus(focus, { includeYandex: true });
+    const sections = platforms.map((platform) => {
+      const models = rows.map((row) => dailyAggregateModel(platform, row));
+      const headers = models[0]?.values.map(([label]) => label) || [];
+      const tableKey = safeTableKey('daily-summary', platform);
+      const body = models.map((model) => {
+        const source = model.source || 'источник не указан';
+        const status = dailyAggregateStatus(model);
+        const search = rowSearch([
+          PLATFORM[platform]?.label,
+          model.date,
+          compactDate(model.date),
+          source,
+          ...model.values.flatMap(([label, value, type]) => [label, fmtMetric(value, type), value])
+        ]);
+        return `
+          <tr ${tableRowAttrs({ search, source: sourceBucket(source), status, date: model.date })}>
+            <td><strong>${escapeHtml(compactDate(model.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(model.date)}</span></td>
+            ${model.values.map(([, value, type]) => `<td>${metricCell(value, type)}</td>`).join('')}
+            <td><span class="iu-drr-v3-note">${escapeHtml(source)}</span></td>
+          </tr>
+        `;
+      }).join('');
+      return section(
+        `daily-${platform}`,
+        `${PLATFORM[platform].label} · сводная по дням`,
+        'День берется из расчетного источника ИУ / ДРР. Здесь видны факты, планы, расходы, воронка и источник, чтобы дневные значения не пропадали при переключении вкладок.',
+        `
+          <div class="iu-drr-v3-stat-pack">
+            ${buildStatsSummaryCards(platform, rows)}
+          </div>
+          <div class="iu-drr-v3-table-host" data-iu-v3-table-host="${escapeHtml(tableKey)}">
+            ${tableFilterMarkup(tableKey, models.length)}
+            <div class="iu-drr-v3-matrix-wrap">
+              <table class="iu-drr-v3-table" style="min-width:${platform === 'wb' ? '1840px' : '1560px'}">
+                <thead>
+                  <tr>
+                    <th>Дата</th>
+                    ${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join('')}
+                    <th>Источник</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${body || `<tr><td colspan="${headers.length + 2}">Нет строк для текущего фильтра</td></tr>`}
+                  <tr class="iu-drr-v3-empty-row" data-iu-v3-empty-row hidden><td colspan="${headers.length + 2}">Нет строк под выбранный фильтр</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         `,

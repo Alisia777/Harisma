@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260623-tasks-calendar-design-v1';
+  const VERSION = '20260626-tasks-drag-stable-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -111,16 +111,24 @@
       return {
         view: parsed.view === 'list' ? 'list' : 'board',
         createOpen: Boolean(parsed.createOpen),
+        recentMovedId: String(parsed.recentMovedId || ''),
+        recentMovedAt: Number(parsed.recentMovedAt || 0),
         draft: parsed.draft && typeof parsed.draft === 'object' ? parsed.draft : {}
       };
     } catch (_) {
-      return { view: 'board', createOpen: false, draft: {} };
+      return { view: 'board', createOpen: false, recentMovedId: '', recentMovedAt: 0, draft: {} };
     }
   }
 
   function saveUi() {
     try {
-      localStorage.setItem(UI_KEY, JSON.stringify({ view: TASK_UI.view, createOpen: TASK_UI.createOpen, draft: TASK_UI.draft || {} }));
+      localStorage.setItem(UI_KEY, JSON.stringify({
+        view: TASK_UI.view,
+        createOpen: TASK_UI.createOpen,
+        recentMovedId: TASK_UI.recentMovedId || '',
+        recentMovedAt: Number(TASK_UI.recentMovedAt || 0),
+        draft: TASK_UI.draft || {}
+      }));
     } catch (_) {}
   }
 
@@ -324,6 +332,86 @@
     const source = normalizeText(task?.source || '');
     const id = normalizeText(task?.id || '');
     return source === 'auto' || task?.autoCode || id.startsWith('auto-') ? 'auto' : 'manual';
+  }
+
+  function taskTextBundle(task) {
+    return [
+      task?.id,
+      task?.title,
+      task?.entityLabel,
+      task?.nextAction,
+      task?.reason,
+      task?.owner,
+      task?.articleKey,
+      taskArticleKeys(task).join(' '),
+      task?.source,
+      task?.type,
+      task?.platform,
+      task?.marketplace
+    ].map((value) => String(value || '')).join(' ');
+  }
+
+  function hasEncodingDamage(value) {
+    return /[\u00d0\u00d1\ufffd]/.test(String(value || ''));
+  }
+
+  function isRuntimeSmokeTask(task) {
+    const text = taskTextBundle(task).toLowerCase();
+    return /smoke attachment|contract smoke|visual smoke|playwright|__contract_|task-test|test task|fixture/.test(text);
+  }
+
+  function isEmptyPlaceholderTask(task) {
+    const title = normalizeText(task?.title || '');
+    const defaultTitles = new Set([
+      '',
+      '\u0437\u0430\u0434\u0430\u0447\u0430',
+      '\u043d\u043e\u0432\u0430\u044f \u0437\u0430\u0434\u0430\u0447\u0430',
+      '\u0437\u0430\u0434\u0430\u0447\u0430 \u0431\u0435\u0437 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f'
+    ]);
+    if (!defaultTitles.has(title)) return false;
+    const hasPayload = [
+      task?.nextAction,
+      task?.reason,
+      task?.entityLabel,
+      task?.articleKey,
+      taskArticleKeys(task).join(' ')
+    ].some((value) => String(value || '').trim());
+    return !hasPayload && !taskOwner(task);
+  }
+
+  function isTaskDisplayable(task) {
+    if (!task?.id) return false;
+    if (isRuntimeSmokeTask(task)) return false;
+    if (isEmptyPlaceholderTask(task)) return false;
+    if (hasEncodingDamage(task?.title) || hasEncodingDamage(task?.nextAction) || hasEncodingDamage(task?.reason)) return false;
+    return true;
+  }
+
+  function isRecentMovedTask(task) {
+    const movedAt = Number(TASK_UI.recentMovedAt || 0);
+    return Boolean(
+      task?.id
+      && TASK_UI.recentMovedId
+      && String(task.id) === String(TASK_UI.recentMovedId)
+      && Number.isFinite(movedAt)
+      && Date.now() - movedAt < 90 * 1000
+    );
+  }
+
+  function markTaskMoved(taskId) {
+    TASK_UI.recentMovedId = String(taskId || '');
+    TASK_UI.recentMovedAt = Date.now();
+    saveUi();
+  }
+
+  function clearStaleRecentMove() {
+    if (!TASK_UI.recentMovedId) return;
+    const movedAt = Number(TASK_UI.recentMovedAt || 0);
+    if (!Number.isFinite(movedAt) || Date.now() - movedAt > 90 * 1000) {
+      TASK_UI.recentMovedId = '';
+      TASK_UI.recentMovedAt = 0;
+      saveUi();
+    }
   }
 
   function priorityLabel(priority) {
@@ -873,6 +961,7 @@
 
   function taskScore(task) {
     let score = 0;
+    if (isRecentMovedTask(task)) score += 1000;
     const createdMs = Date.parse(task?.createdAt || task?.created_at || '');
     if (taskSource(task) === 'manual' && Number.isFinite(createdMs) && Date.now() - createdMs < 24 * 60 * 60 * 1000) score += 120;
     if (isOverdue(task)) score += 70;
@@ -889,6 +978,7 @@
     const platform = globalPlatform();
     return taskList()
       .filter(Boolean)
+      .filter(isTaskDisplayable)
       .filter((task) => matchesFilters(task, filters, platform))
       .sort((a, b) => taskScore(b) - taskScore(a) || String(taskDate(a)).localeCompare(String(taskDate(b))) || String(a?.title || '').localeCompare(String(b?.title || ''), 'ru'));
   }
@@ -1006,8 +1096,9 @@
     const due = taskDate(task);
     const source = taskSource(task);
     const overdue = isOverdue(task);
+    const recent = isRecentMovedTask(task);
     return `
-      <article class="task-design-card platform-${escapeHtml(platform)} ${overdue ? 'is-overdue' : ''}" draggable="true" data-kanban-task="${escapeHtml(task?.id || '')}" tabindex="0">
+      <article class="task-design-card platform-${escapeHtml(platform)} ${overdue ? 'is-overdue' : ''} ${recent ? 'is-recently-moved' : ''}" draggable="true" data-kanban-task="${escapeHtml(task?.id || '')}" tabindex="0">
         <div class="task-design-card-top">
           <span class="task-design-pill source-${escapeHtml(source)}">${source === 'auto' ? 'авто-сигнал' : 'ручная'}</span>
           <span class="task-design-platform">${escapeHtml(platformLabel(platform))}</span>
@@ -1034,7 +1125,7 @@
           const laneTasks = tasks.filter((task) => laneFor(task) === lane.key);
           const visible = laneTasks.slice(0, 70);
           return `
-            <section class="task-design-lane lane-${escapeHtml(lane.key)}" data-kanban-lane="${escapeHtml(lane.key === 'waiting' ? 'waiting_rop' : lane.key === 'no_date' ? 'new' : lane.key)}" data-lane-key="${escapeHtml(lane.key)}">
+            <section class="task-design-lane lane-${escapeHtml(lane.key)}" data-kanban-lane="${escapeHtml(lane.key === 'waiting' ? 'waiting_rop' : lane.key)}" data-lane-key="${escapeHtml(lane.key)}">
               <header>
                 <div>
                   <h3>${escapeHtml(lane.label)}</h3>
@@ -1125,8 +1216,9 @@
   }
 
   function renderShell() {
+    clearStaleRecentMove();
     const filters = ensureFilters();
-    const tasks = taskList().filter(Boolean);
+    const tasks = taskList().filter(Boolean).filter(isTaskDisplayable);
     const platform = globalPlatform();
     const filtered = filteredTasks();
     const signature = renderSignature(tasks, filtered, filters, platform);
@@ -1194,6 +1286,8 @@
       .task-design-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--card-color,#dbc7a3);box-shadow:0 0 22px var(--card-color,#dbc7a3)}
       .task-design-card:hover,.task-design-card:focus{outline:0;transform:translateY(-2px);border-color:rgba(219,199,163,.54);box-shadow:0 18px 34px rgba(0,0,0,.3)}
       .task-design-card.is-dragging{opacity:.55;cursor:grabbing}
+      .task-design-card.is-recently-moved{border-color:rgba(114,224,154,.72);box-shadow:0 0 0 1px rgba(114,224,154,.18),0 18px 38px rgba(0,0,0,.36),0 0 28px rgba(114,224,154,.18)}
+      .task-design-card.is-recently-moved::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,transparent,rgba(114,224,154,.16),transparent);animation:taskMovedPulse 1.8s ease-out 1;pointer-events:none}
       .task-design-card.is-overdue{border-color:rgba(255,117,107,.44);background:linear-gradient(180deg,rgba(125,29,24,.26),rgba(255,255,255,.012)),#100807}
       .task-design-card-top,.task-design-card-meta,.task-design-card-footer{display:flex;justify-content:space-between;gap:8px;align-items:center}
       .task-design-card strong{display:block;margin-top:9px;font-size:13px;line-height:1.25}
@@ -1259,6 +1353,7 @@
       .task-detail-comment-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-bottom:8px}
       .task-detail-empty{border:1px dashed rgba(219,199,163,.2);border-radius:8px;padding:12px;color:rgba(247,241,231,.58);font-size:12px}
       @keyframes taskDesignIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+      @keyframes taskMovedPulse{from{opacity:.9;transform:translateX(-40%)}to{opacity:0;transform:translateX(40%)}}
       @media(max-width:1520px){.task-design-filters{grid-template-columns:minmax(220px,1.4fr) repeat(3,minmax(132px,1fr));}.task-design-reset{min-height:38px}.task-design-board{grid-template-columns:repeat(5,242px)}}
       @media(max-width:900px){.task-design-toolbar-top,.task-design-create form,.task-detail-head,.task-detail-form{display:block}.task-design-mode,.task-design-create-actions{justify-content:flex-start;margin-top:10px}.task-design-snapshot{grid-template-columns:repeat(2,1fr)}.task-design-filters{grid-template-columns:1fr}.task-design-board{grid-template-columns:repeat(5,238px)}.task-detail-form label,.task-detail-sku-card,.task-detail-actions{margin-top:10px}.task-detail-comment-row{grid-template-columns:1fr}.task-detail-backdrop{padding:12px}.task-detail-dialog{width:calc(100vw - 24px);max-height:calc(100vh - 24px)}}
       @media(prefers-reduced-motion:reduce){.task-design-v1,.task-design-v1 *{animation:none!important;transition:none!important}}
@@ -1492,10 +1587,33 @@
 
   async function moveTask(taskId, laneStatus) {
     if (!taskId || !laneStatus) return;
-    const status = laneStatus === 'waiting' ? 'waiting_rop' : laneStatus === 'no_date' ? 'new' : laneStatus;
+    const targetLane = String(laneStatus || 'new');
+    const status = targetLane === 'waiting' ? 'waiting_rop' : targetLane === 'no_date' ? 'new' : targetLane;
     const task = taskList().find((item) => String(item?.id || '') === String(taskId));
     if (task && laneFor(task) === laneFor({ ...task, status })) return;
-    updateTaskLocal(taskId, { status }, `Статус изменен перетаскиванием: ${statusLabel({ status })}.`);
+    const patch = { status };
+    if (targetLane === 'no_date') {
+      Object.assign(patch, {
+        due: '',
+        deadline: '',
+        dueDate: '',
+        due_date: '',
+        endDate: '',
+        end_date: '',
+        dateTo: '',
+        date_to: '',
+        date: ''
+      });
+    }
+    const updated = updateTaskLocal(taskId, patch, `Task moved by drag and drop: ${status}.`);
+    if (updated?.id) {
+      markTaskMoved(updated.id);
+      const filters = ensureFilters();
+      if (DONE_STATUSES.has(normalizeText(status))) filters.status = 'all';
+      else if (filters.status && filters.status !== 'all') filters.status = 'active';
+      if (filters.horizon && filters.horizon !== 'all') filters.horizon = 'all';
+      savePortalState('task-kanban-v1-move-visibility');
+    }
     if (typeof window.updateTaskStatus === 'function') {
       try {
         Promise.resolve(window.updateTaskStatus(taskId, status)).catch((error) => {

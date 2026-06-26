@@ -7293,9 +7293,10 @@ function oosControlTeamNotice() {
   `;
 }
 
-function oosControlFilteredRows() {
+function oosControlFilteredRows(options = {}) {
   const rows = oosControlRows();
   const filters = oosControlFilters();
+  const ignoreCluster = !!options.ignoreCluster;
   const search = filters.search.toLowerCase();
   const cluster = String(filters.cluster || 'all').trim();
   return rows.filter((row) => {
@@ -7304,7 +7305,7 @@ function oosControlFilteredRows() {
     if (filters.owner !== 'all' && row.owner !== filters.owner) return false;
     if (filters.department !== 'all' && row.department !== filters.department) return false;
     const rowPlaces = oosControlRowPlaces(row);
-    if (cluster !== 'all' && !rowPlaces.includes(cluster)) return false;
+    if (!ignoreCluster && cluster !== 'all' && !rowPlaces.includes(cluster)) return false;
     if (filters.status === 'has_task' && !task) return false;
     if (filters.status === 'no_task' && task) return false;
     if (!['active', 'all', 'has_task', 'no_task'].includes(filters.status) && row.status !== filters.status) return false;
@@ -8041,6 +8042,14 @@ function oosControlVisibleSignals(rows = oosControlFilteredRows(), payload = oos
       if (signal) signals.push(signal);
     });
   });
+  const localizationStats = oosControlPlaceLocalizationStats(rows, payload);
+  const clusterStats = new Map(localizationStats.clusters.map((item) => [item.clusterName, item]));
+  signals.forEach((signal) => {
+    const stat = clusterStats.get(signal.clusterName);
+    signal.localizationPct = stat ? stat.localizedPct : localizationStats.localizedPct;
+    signal.localizationRiskSkuCount = stat ? stat.activeSkuCount : 0;
+    signal.localizationDenominator = stat ? stat.denominator : localizationStats.totalSkuCount;
+  });
   return signals.sort((left, right) => (
     numberOrZero(right.projectedLostTurnover) - numberOrZero(left.projectedLostTurnover)
     || numberOrZero(left.daysToOos ?? 999) - numberOrZero(right.daysToOos ?? 999)
@@ -8153,6 +8162,7 @@ function renderOosControlSignalFocus(signal) {
       <div class="oos-focus-meta">
         <span>Остаток <b>${fmt.int(signal.stockUnits)} шт.</b></span>
         <span>Продажи <b>${fmt.num(signal.avgDailyUnits, 1)} шт./день</b></span>
+        <span>Локализация <b>${fmt.num(signal.localizationPct ?? 0, 1)}%</b></span>
         <span>Разрыв <b>${escapeHtml(gapText)} без товара</b></span>
         <span>Довезти <b>${fmt.int(signal.recommendedReplenishment)} шт.</b></span>
       </div>
@@ -8170,10 +8180,10 @@ function renderOosControlSignalRow(signal, index = 0, selectedKey = '') {
   const isActive = signal.key === selectedKey;
   const daysText = signal.daysToOos === null || signal.daysToOos === undefined ? '—' : `${fmt.num(signal.daysToOos, 1)} д`;
   return `
-    <button type="button" class="oos-signal ${isActive ? 'active' : ''}" data-oos-signal="${escapeHtml(signal.key)}" aria-selected="${isActive ? 'true' : 'false'}" style="--pc:${escapeHtml(signal.platformColor)}">
+    <button type="button" class="oos-signal ${isActive ? 'active' : ''}" data-oos-signal="${escapeHtml(signal.key)}" data-oos-cluster="${escapeHtml(signal.clusterName)}" aria-selected="${isActive ? 'true' : 'false'}" style="--pc:${escapeHtml(signal.platformColor)}">
       <span class="oos-rank">${String(index + 1).padStart(2, '0')}</span>
       <span class="oos-product"><i></i><b>${escapeHtml(signal.skuName)}</b><small>${escapeHtml(signal.platformLabel)} · ${escapeHtml(signal.skuId)}</small></span>
-      <span class="oos-cluster"><small>кластер</small><b>${escapeHtml(signal.clusterName)}</b></span>
+      <span class="oos-cluster"><small>кластер</small><b>${escapeHtml(signal.clusterName)}</b><em>локализация ${fmt.num(signal.localizationPct ?? 0, 1)}%</em></span>
       <span class="oos-when"><small>вылетит</small><b>${escapeHtml(daysText)}</b><em>${escapeHtml(oosControlFormatDate(signal.forecastDate))}</em></span>
       <span class="oos-row-loss"><small>потеря оборота</small><b>${fmt.money(signal.projectedLostTurnover)}</b></span>
       <span class="oos-row-arrow">↗</span>
@@ -8230,11 +8240,94 @@ function renderOosControlSignalFilters(rows = [], signals = [], filters = oosCon
   `;
 }
 
-function oosControlLocalizationHistory(payload = {}, rows = []) {
+function oosControlPlaceLocalizationStats(rows = [], payload = {}) {
+  const rowSkuSet = new Set();
+  const clusterMap = new Map();
+  const activePairSet = new Set();
+  const addRiskPlace = (row = {}, place = {}) => {
+    const articleKey = String(row.articleKey || row.article || '').trim();
+    const clusterName = String(place.place || row.place || '').trim();
+    if (!articleKey || !clusterName) return;
+    rowSkuSet.add(articleKey);
+    activePairSet.add(`${articleKey}||${clusterName}`);
+    if (!clusterMap.has(clusterName)) {
+      clusterMap.set(clusterName, {
+        clusterName,
+        activeSkuSet: new Set(),
+        rowCount: 0,
+        riskAmount: 0,
+        minTurnoverDays: null
+      });
+    }
+    const item = clusterMap.get(clusterName);
+    item.activeSkuSet.add(articleKey);
+    item.rowCount += 1;
+    item.riskAmount += numberOrZero(place.revenueAtRiskDay ?? row.revenueAtRiskDay) + numberOrZero(place.lostRevenueDay ?? row.lostRevenueDay);
+    const days = oosControlFiniteOrNull(place.turnoverDays ?? row.turnoverDays);
+    if (days !== null) item.minTurnoverDays = item.minTurnoverDays === null ? days : Math.min(item.minTurnoverDays, days);
+  };
+  rows.forEach((row) => {
+    const articleKey = String(row.articleKey || row.article || '').trim();
+    if (articleKey) rowSkuSet.add(articleKey);
+    const places = Array.isArray(row.placesAtRisk) && row.placesAtRisk.length
+      ? row.placesAtRisk
+      : [{
+          place: row.place,
+          turnoverDays: row.turnoverDays,
+          revenueAtRiskDay: row.revenueAtRiskDay,
+          lostRevenueDay: row.lostRevenueDay
+        }];
+    places.forEach((place) => addRiskPlace(row, place));
+  });
+  const payloadSkuCount = numberOrZero(payload.summary?.skuCount || 0);
+  const totalSkuCount = Math.max(payloadSkuCount, rowSkuSet.size, 1);
+  const clusterCount = Math.max(clusterMap.size, 1);
+  const matrixTotal = Math.max(totalSkuCount * clusterCount, activePairSet.size, 1);
+  const activePairs = activePairSet.size;
+  const localizedPct = Math.max(0, Math.min(100, ((matrixTotal - activePairs) / matrixTotal) * 100));
+  const clusters = [...clusterMap.values()]
+    .map((item) => {
+      const activeSkuCount = item.activeSkuSet.size;
+      const clusterLocalizedPct = Math.max(0, Math.min(100, ((totalSkuCount - activeSkuCount) / totalSkuCount) * 100));
+      return {
+        clusterName: item.clusterName,
+        activeSkuCount,
+        rowCount: item.rowCount,
+        riskAmount: item.riskAmount,
+        minTurnoverDays: item.minTurnoverDays,
+        localizedPct: clusterLocalizedPct,
+        denominator: totalSkuCount
+      };
+    })
+    .sort((left, right) => (
+      numberOrZero(right.riskAmount) - numberOrZero(left.riskAmount)
+      || numberOrZero(left.localizedPct) - numberOrZero(right.localizedPct)
+      || String(left.clusterName).localeCompare(String(right.clusterName), 'ru')
+    ));
+  return {
+    totalSkuCount,
+    clusterCount,
+    matrixTotal,
+    activePairs,
+    localizedPct,
+    clusters
+  };
+}
+
+function oosControlLocalizationTone(value) {
+  const pct = numberOrZero(value);
+  if (pct >= 90) return 'ok';
+  if (pct >= 75) return 'warn';
+  return 'danger';
+}
+
+function oosControlLocalizationHistory(payload = {}, rows = [], matrixStats = null) {
   const days = Array.isArray(payload.history?.days) ? [...payload.history.days] : [];
   const summary = payload.summary || {};
   const rowPlaceCount = rows.reduce((sum, row) => sum + oosControlPlaceCount(row), 0);
+  const currentStats = matrixStats || oosControlPlaceLocalizationStats(rows, payload);
   const fallbackDenominator = Math.max(
+    numberOrZero(currentStats.matrixTotal || 0),
     numberOrZero(summary.localizationDenominator || 0),
     numberOrZero(summary.placeCount || 0),
     rowPlaceCount,
@@ -8245,13 +8338,17 @@ function oosControlLocalizationHistory(payload = {}, rows = []) {
     .filter((day) => day?.date)
     .sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')))
     .slice(-21)
-    .map((day) => {
+    .map((day, index, source) => {
+      const isLatest = index === source.length - 1;
       const denominator = Math.max(
+        numberOrZero(currentStats.matrixTotal || 0),
         numberOrZero(day.localizationDenominator || 0),
         numberOrZero(day.placeCount || day.totalPlaces || day.totalIssuePlaces || 0),
         fallbackDenominator
       );
-      const activeRisk = Math.max(0, numberOrZero(day.placeCountAtRisk || day.totalIssuePlaces || day.totalIssues || 0));
+      const activeRisk = Math.max(0, isLatest
+        ? numberOrZero(currentStats.activePairs || 0)
+        : numberOrZero(day.placeCountAtRisk || day.totalIssuePlaces || day.totalIssues || 0));
       const localizedPct = denominator > 0
         ? Math.max(0, Math.min(100, ((denominator - activeRisk) / denominator) * 100))
         : 0;
@@ -8267,8 +8364,14 @@ function oosControlLocalizationHistory(payload = {}, rows = []) {
     });
 }
 
-function renderOosControlLocalizationTrend(payload = {}, rows = [], signals = []) {
-  const points = oosControlLocalizationHistory(payload, rows);
+function renderOosControlLocalizationTrend(payload = {}, rows = [], signals = [], filters = oosControlFilters()) {
+  const matrixStats = oosControlPlaceLocalizationStats(rows, payload);
+  const points = oosControlLocalizationHistory(payload, rows, matrixStats);
+  const selectedCluster = String(filters.cluster || 'all').trim();
+  const selectedClusterStat = selectedCluster === 'all'
+    ? null
+    : matrixStats.clusters.find((item) => item.clusterName === selectedCluster) || null;
+  const topClusters = matrixStats.clusters.slice(0, selectedClusterStat ? 16 : 12);
   if (!points.length) {
     return `
       <section class="card oos-localization-card">
@@ -8284,27 +8387,32 @@ function renderOosControlLocalizationTrend(payload = {}, rows = [], signals = []
   const latest = points[points.length - 1];
   const avgPct = points.reduce((sum, point) => sum + point.localizedPct, 0) / points.length;
   const minPoint = [...points].sort((left, right) => left.localizedPct - right.localizedPct)[0] || latest;
+  const currentTone = oosControlLocalizationTone(matrixStats.localizedPct);
+  const selectedPct = selectedClusterStat ? selectedClusterStat.localizedPct : matrixStats.localizedPct;
+  const selectedActive = selectedClusterStat ? selectedClusterStat.activeSkuCount : matrixStats.activePairs;
+  const selectedTotal = selectedClusterStat ? selectedClusterStat.denominator : matrixStats.matrixTotal;
+  const selectedTone = oosControlLocalizationTone(selectedPct);
   return `
     <section class="card oos-localization-card">
       <div class="section-subhead">
         <div>
           <h3>Локализация по дням</h3>
-          <p class="small muted">Доля складского контура без активного OOS/риска. Если дневной контур не сохранен, берется текущий контур OOS.</p>
+          <p class="small muted">Общий график считает матрицу SKU × кластер. Ниже можно нажать кластер и увидеть его процент, позиции и риск уже без общего смешения.</p>
         </div>
         <div class="badge-stack">
-          ${badge(`сейчас ${fmt.num(latest.localizedPct, 1)}%`, latest.localizedPct >= 85 ? 'ok' : latest.localizedPct >= 70 ? 'warn' : 'danger')}
-          ${badge(`${fmt.int(signals.length)} активных кластеров`, signals.length ? 'warn' : 'ok')}
+          ${badge(`сейчас ${fmt.num(matrixStats.localizedPct, 1)}%`, currentTone)}
+          ${selectedClusterStat ? badge(`выбран: ${selectedClusterStat.clusterName}`, selectedTone) : badge(`${fmt.int(matrixStats.clusterCount)} кластеров`, signals.length ? 'warn' : 'ok')}
         </div>
       </div>
       <div class="oos-localization-metrics">
-        <span><b>${fmt.num(latest.localizedPct, 1)}%</b><em>последний день</em></span>
+        <span><b>${fmt.num(matrixStats.localizedPct, 1)}%</b><em>общая локализация</em></span>
         <span><b>${fmt.num(avgPct, 1)}%</b><em>среднее за ${fmt.int(points.length)} дн.</em></span>
-        <span><b>${fmt.num(minPoint.localizedPct, 1)}%</b><em>минимум ${escapeHtml(minPoint.date.slice(5))}</em></span>
-        <span><b>${fmt.int(latest.denominator)}</b><em>контур SKU × склад</em></span>
+        <span class="${selectedTone}"><b>${fmt.num(selectedPct, 1)}%</b><em>${selectedClusterStat ? 'локализация выбранного кластера' : `минимум ${escapeHtml(minPoint.date.slice(5))}: ${fmt.num(minPoint.localizedPct, 1)}%`}</em></span>
+        <span><b>${fmt.int(selectedActive)} / ${fmt.int(selectedTotal)}</b><em>${selectedClusterStat ? 'SKU в риске по кластеру' : 'SKU × кластер в риске'}</em></span>
       </div>
       <div class="oos-localization-chart" aria-label="Процент локализации по дням">
         ${points.map((point) => {
-          const tone = point.localizedPct >= 85 ? 'ok' : point.localizedPct >= 70 ? 'warn' : 'danger';
+          const tone = oosControlLocalizationTone(point.localizedPct);
           const title = `${point.date}: локализация ${fmt.num(point.localizedPct, 1)}%, активный риск ${fmt.int(point.activeRisk)} из ${fmt.int(point.denominator)}`;
           return `
             <span class="oos-localization-day ${tone}" style="--pct:${point.localizedPct}" title="${escapeHtml(title)}">
@@ -8314,6 +8422,21 @@ function renderOosControlLocalizationTrend(payload = {}, rows = [], signals = []
             </span>
           `;
         }).join('')}
+      </div>
+      <div class="oos-localization-clusters" aria-label="Локализация по кластерам">
+        ${selectedCluster !== 'all' ? `<button type="button" class="oos-cluster-pill clear" data-oos-cluster-pick="all">Все кластеры</button>` : ''}
+        ${topClusters.map((cluster) => {
+          const isActive = selectedCluster === cluster.clusterName;
+          const tone = oosControlLocalizationTone(cluster.localizedPct);
+          const daysText = cluster.minTurnoverDays === null ? '—' : `${fmt.num(cluster.minTurnoverDays, 1)} д`;
+          return `
+            <button type="button" class="oos-cluster-pill ${tone} ${isActive ? 'active' : ''}" data-oos-cluster-pick="${escapeHtml(cluster.clusterName)}" title="${escapeHtml(cluster.clusterName)}: ${fmt.num(cluster.localizedPct, 1)}%, ${fmt.int(cluster.activeSkuCount)} SKU в риске">
+              <strong>${escapeHtml(cluster.clusterName)}</strong>
+              <span>${fmt.num(cluster.localizedPct, 1)}%</span>
+              <small>${fmt.int(cluster.activeSkuCount)} из ${fmt.int(cluster.denominator)} SKU · ${escapeHtml(daysText)}</small>
+            </button>
+          `;
+        }).join('') || '<div class="empty">Нет кластеров под текущие фильтры</div>'}
       </div>
     </section>
   `;
@@ -9358,9 +9481,26 @@ function bindOosControl(root, rootId) {
       renderOosControl(rootId);
     });
   });
+  root.querySelectorAll('[data-oos-cluster-pick]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.oosControlFilters = state.oosControlFilters || {};
+      state.oosControlFilters.cluster = button.dataset.oosClusterPick || 'all';
+      state.oosControlSelectedSignal = '';
+      renderOosControl(rootId);
+    });
+  });
   root.querySelectorAll('[data-oos-signal]').forEach((button) => {
     button.addEventListener('click', () => {
-      oosControlFocusSignal(root, button.dataset.oosSignal || '');
+      const signalKey = button.dataset.oosSignal || '';
+      const clusterName = button.dataset.oosCluster || '';
+      if (clusterName && state.oosControlFilters?.cluster !== clusterName) {
+        state.oosControlFilters = state.oosControlFilters || {};
+        state.oosControlFilters.cluster = clusterName;
+        state.oosControlSelectedSignal = signalKey;
+        renderOosControl(rootId);
+        return;
+      }
+      oosControlFocusSignal(root, signalKey);
     });
   });
   root.querySelectorAll('[data-oos-filter]').forEach((control) => {
@@ -9487,6 +9627,7 @@ function renderOosControl(rootId = 'view-oos-control') {
   const rows = oosControlRows();
   const filters = oosControlFilters();
   const filteredRows = oosControlFilteredRows();
+  const localizationRows = oosControlFilteredRows({ ignoreCluster: true });
   const summary = oosControlSummarizeRows(filteredRows, payload.summary || {});
   const signals = oosControlVisibleSignals(filteredRows, payload);
   const selectedSignal = signals.find((signal) => signal.key === state.oosControlSelectedSignal) || signals[0] || null;
@@ -9511,7 +9652,7 @@ function renderOosControl(rootId = 'view-oos-control') {
     </div>
     ${renderOosControlCommand(signals, filters)}
     <section class="card oos-focus" data-oos-focus>${renderOosControlSignalFocus(selectedSignal)}</section>
-    ${renderOosControlLocalizationTrend(payload, filteredRows, signals)}
+    ${renderOosControlLocalizationTrend(payload, localizationRows, signals, filters)}
     ${renderOosControlSignalList(signals, selectedSignal?.key || '', rows, filters)}
     ${renderOosControlFormulaNote()}
     <details class="oos-advanced-panel">

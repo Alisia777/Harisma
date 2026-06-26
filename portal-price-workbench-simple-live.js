@@ -36,7 +36,7 @@
   var ORDER_PROCUREMENT_OZON_URL = "data/order_procurement_ozon.json";
   var VIEW_ID = "view-prices";
   var STYLE_ID = "altea-price-simple-style";
-  var STYLE_VERSION = "20260624-prices-answer-v1";
+  var STYLE_VERSION = "20260626-prices-click-modal-v5";
   var SNAPSHOT_WAIT_MS = 1800;
   var SNAPSHOT_HARD_WAIT_MS = 4500;
   var LOCAL_FETCH_TIMEOUT_MS = 3200;
@@ -1307,7 +1307,7 @@
       ".pw-game-card.ok{--pw-hue:142;}.pw-game-card.info{--pw-hue:202;}.pw-game-card.warn{--pw-hue:42;}.pw-game-card.danger{--pw-hue:3;}.pw-game-card.violet{--pw-hue:268;}",
       ".pw-game-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;color:#d8c6a3;font-size:11px;text-transform:uppercase;letter-spacing:.06em;line-height:1.25;}",
       ".pw-game-top em{font-style:normal;color:#fff0cf;white-space:nowrap;}",
-      "#view-prices .prices-v1-filter-dock{position:relative!important;top:auto!important;z-index:2!important;}",
+      "#view-prices .prices-v1-filter-dock{position:relative!important;top:auto!important;z-index:4!important;margin-top:0!important;background:linear-gradient(180deg,rgba(13,10,7,.97),rgba(13,10,7,.90))!important;backdrop-filter:blur(18px);box-shadow:0 18px 34px rgba(0,0,0,.24),0 1px 0 rgba(222,190,128,.16);}",
       ".pw-game-card strong{font-size:28px;line-height:1;color:#fff4d6;font-weight:900;overflow-wrap:anywhere;}",
       ".pw-game-card small{color:#d2bd98;line-height:1.35;font-size:12px;}",
       ".pw-game-foot{align-self:end;display:flex;justify-content:space-between;gap:8px;align-items:center;color:#f3dfb6;font-size:12px;line-height:1.25;}",
@@ -1399,7 +1399,7 @@
       "#view-prices .prices-v1-corridor-band{fill:rgba(219,199,163,.08);stroke:rgba(219,199,163,.16);stroke-width:1;}#view-prices .prices-v1-repricer-line{stroke:#f1d793;stroke-width:2;stroke-dasharray:7 7;}#view-prices .prices-v1-clip-label{fill:#dbc7a3;font-size:11px;font-weight:800;}#view-prices .prices-v1-before-after{fill:rgba(245,235,214,.62);font-size:11px;font-weight:800;}#view-prices .prices-v1-bar.orders{fill:#5aa7ff;}#view-prices .prices-v1-bar.buyouts{fill:#74d997;}#view-prices .prices-v1-line{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}#view-prices .prices-v1-line.mp{stroke:#d8b36c;}#view-prices .prices-v1-line.client{stroke:#b868ff;}#view-prices .prices-v1-minmax{stroke:#dbc7a3;stroke-width:2;stroke-dasharray:5 6;}#view-prices .prices-v1-change{stroke:#ff7b6e;stroke-width:1.5;stroke-dasharray:4 5;opacity:.72;}",
       "#view-prices .prices-v1-quick{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px;padding:10px;border:1px solid rgba(222,190,128,.14);border-radius:8px;background:rgba(10,8,6,.46);}#view-prices .prices-v1-quick span{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:rgba(235,216,174,.62);font-weight:900;margin-right:2px;}#view-prices .prices-v1-quick button{border:1px solid rgba(222,190,128,.2);border-radius:999px;background:rgba(222,190,128,.055);color:#f8f1de;padding:8px 11px;font-size:12px;cursor:pointer;}#view-prices .prices-v1-quick button:hover,#view-prices .prices-v1-quick button.is-active{border-color:rgba(222,190,128,.48);background:linear-gradient(180deg,rgba(241,215,147,.24),rgba(183,131,50,.14));}#view-prices .prices-v1-quick button.is-reset{margin-left:auto;}",
       "#view-prices .prices-v1-top{border:1px solid rgba(222,190,128,.16);border-radius:8px;background:linear-gradient(150deg,rgba(255,255,255,.04),rgba(255,255,255,.012));padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}#view-prices .prices-v1-top-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px;}#view-prices .prices-v1-top-card{min-height:112px;text-align:left;display:grid;gap:7px;border:1px solid rgba(222,190,128,.14);border-radius:8px;background:rgba(10,8,6,.56);color:#f8f1de;padding:13px;cursor:pointer;}#view-prices .prices-v1-top-card:hover,#view-prices .prices-v1-top-card:focus-visible{border-color:rgba(222,190,128,.42);background:rgba(222,190,128,.08);outline:0;}#view-prices .prices-v1-top-card span{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(235,216,174,.62);font-weight:900;}#view-prices .prices-v1-top-card strong{font-size:15px;line-height:1.25;color:#fff6de;overflow-wrap:anywhere;}#view-prices .prices-v1-top-card em{font-style:normal;color:#d8c6a3;font-size:12px;}#view-prices .prices-v1-top-card b{justify-self:start;color:#9be8b4;font-size:13px;}",
-      "#view-prices .prices-v1-table-wrap{overflow:auto;max-height:72vh;border-radius:8px;}#view-prices .prices-v1-table{min-width:1320px;table-layout:fixed;}#view-prices .prices-v1-table th,#view-prices .prices-v1-table td{overflow:hidden;text-overflow:ellipsis;}#view-prices .prices-v1-table th:nth-child(1),#view-prices .prices-v1-table td:nth-child(1){width:250px;}#view-prices .prices-v1-table th:nth-child(2),#view-prices .prices-v1-table td:nth-child(2){width:145px;}#view-prices .prices-v1-table th:nth-child(3),#view-prices .prices-v1-table td:nth-child(3){width:145px;}#view-prices .prices-v1-table th:nth-child(4),#view-prices .prices-v1-table td:nth-child(4){width:155px;}#view-prices .prices-v1-table th:nth-child(5),#view-prices .prices-v1-table td:nth-child(5){width:150px;}#view-prices .prices-v1-table th:nth-child(6),#view-prices .prices-v1-table td:nth-child(6){width:140px;}#view-prices .prices-v1-table th:nth-child(7),#view-prices .prices-v1-table td:nth-child(7){width:160px;}#view-prices .prices-v1-table th:nth-child(8),#view-prices .prices-v1-table td:nth-child(8){width:145px;}#view-prices .prices-v1-table th:nth-child(9),#view-prices .prices-v1-table td:nth-child(9){width:190px;}#view-prices .prices-v1-row.is-selected{background:rgba(222,190,128,.075);}#view-prices .prices-v1-table td small{display:block;white-space:normal;line-height:1.3;max-height:3.8em;overflow:hidden;}#view-prices .prices-v1-answer-cell{display:grid;gap:5px;min-width:0;}#view-prices .prices-v1-answer-cell strong{color:#fff6de;font-size:14px;}#view-prices .prices-v1-answer-cell span{color:#f8f1de;font-size:12px;}#view-prices .prices-v1-answer-cell small{color:#cdb892;font-size:11px;}#view-prices .prices-v1-answer-cell .ok{color:#9be8b4;}#view-prices .prices-v1-answer-cell .bad{color:#ff9b8e;}#view-prices .prices-v1-sku-link{border:0;background:transparent;color:#fff6de;font:inherit;font-weight:900;padding:0;cursor:pointer;text-align:left;}#view-prices .prices-v1-sku-link:hover{text-decoration:underline;text-underline-offset:3px;}",
+      "#view-prices .prices-v1-table-card{scroll-margin-top:168px;}#view-prices .prices-v1-table-wrap{overflow:auto;max-height:72vh;border-radius:8px;position:relative;}#view-prices .prices-v1-table{min-width:1700px;table-layout:auto;}#view-prices .prices-v1-table th{position:sticky;top:0;z-index:5;background:rgba(10,8,6,.98);backdrop-filter:blur(12px);}#view-prices .prices-v1-table th,#view-prices .prices-v1-table td{overflow:hidden;text-overflow:ellipsis;}#view-prices .prices-v1-table th:nth-child(1),#view-prices .prices-v1-table td:nth-child(1){min-width:300px;width:300px;}#view-prices .prices-v1-table th:nth-child(2),#view-prices .prices-v1-table td:nth-child(2){min-width:190px;width:190px;}#view-prices .prices-v1-table th:nth-child(3),#view-prices .prices-v1-table td:nth-child(3){min-width:170px;width:170px;}#view-prices .prices-v1-table th:nth-child(4),#view-prices .prices-v1-table td:nth-child(4){min-width:190px;width:190px;}#view-prices .prices-v1-table th:nth-child(5),#view-prices .prices-v1-table td:nth-child(5){min-width:180px;width:180px;}#view-prices .prices-v1-table th:nth-child(6),#view-prices .prices-v1-table td:nth-child(6){min-width:170px;width:170px;}#view-prices .prices-v1-table th:nth-child(7),#view-prices .prices-v1-table td:nth-child(7){min-width:190px;width:190px;}#view-prices .prices-v1-table th:nth-child(8),#view-prices .prices-v1-table td:nth-child(8){min-width:190px;width:190px;}#view-prices .prices-v1-table th:nth-child(9),#view-prices .prices-v1-table td:nth-child(9){min-width:230px;width:230px;}#view-prices .prices-v1-row.is-selected{background:rgba(222,190,128,.075);}#view-prices .prices-v1-row{cursor:pointer;}#view-prices .prices-v1-row:hover{background:rgba(222,190,128,.055);}#view-prices .prices-v1-table td small{display:block;white-space:normal;line-height:1.3;max-height:3.8em;overflow:hidden;}#view-prices .prices-v1-answer-cell{display:grid;gap:5px;min-width:0;}#view-prices .prices-v1-answer-cell strong{color:#fff6de;font-size:14px;}#view-prices .prices-v1-answer-cell span{color:#f8f1de;font-size:12px;}#view-prices .prices-v1-answer-cell small{color:#cdb892;font-size:11px;}#view-prices .prices-v1-answer-cell .ok{color:#9be8b4;}#view-prices .prices-v1-answer-cell .bad{color:#ff9b8e;}#view-prices .prices-v1-sku-link{border:0;background:transparent;color:#fff6de;font:inherit;font-weight:900;padding:0;cursor:pointer;text-align:left;}#view-prices .prices-v1-sku-link:hover{text-decoration:underline;text-underline-offset:3px;}",
       "@media (max-width:1180px){.pw-game-strip{grid-template-columns:repeat(3,minmax(0,1fr));}}",
       "@media (max-width:1280px){#view-prices .prices-v1-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}#view-prices .prices-v1-overview{grid-template-columns:1fr;}#view-prices .prices-v1-insights,#view-prices .prices-v1-top-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}",
       "@media (max-width:1080px){.pw-grid,.pw-stats,.pw-kpis{grid-template-columns:1fr 1fr;}}",
@@ -3365,7 +3365,40 @@ function downloadPriceSummaryExcel(rows) {
   }
 
   function selectedDisplayRow() {
-    return state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : null;
+    if (!state.selectedKey) return null;
+    var visible = visibleRows().find(function (row) {
+      return priceRowMatchesSelection(row, state.selectedKey);
+    });
+    return visible || buildDisplayRow(findRow(state.selectedKey));
+  }
+
+  function openPriceV1ModalByKey(key) {
+    var nextKey = String(key || "").trim();
+    if (!nextKey) return;
+    modalScrollState.pendingOpenY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+    state.selectedKey = nextKey;
+    document.documentElement.dataset.priceV1LastOpenKey = nextKey;
+    renderPriceWorkbench();
+    window.requestAnimationFrame(renderSelectedModal);
+  }
+
+  function ensurePriceV1GlobalOpenHandler() {
+    if (document.documentElement.dataset.priceV1OpenHandler === STYLE_VERSION) return;
+    if (window.__priceV1OpenHandler) {
+      document.removeEventListener("click", window.__priceV1OpenHandler, true);
+    }
+    window.__openPriceV1Modal = openPriceV1ModalByKey;
+    window.__priceV1OpenHandler = function (event) {
+      var target = event && event.target;
+      var button = target && target.closest ? target.closest("[data-price-v1-open-detail]") : null;
+      var root = document.getElementById(VIEW_ID);
+      if (!button || !root || !root.contains(button)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openPriceV1ModalByKey(button.getAttribute("data-price-v1-open-detail") || "");
+    };
+    document.addEventListener("click", window.__priceV1OpenHandler, true);
+    document.documentElement.dataset.priceV1OpenHandler = STYLE_VERSION;
   }
 
   function lockModalBackgroundScroll(preferredY) {
@@ -3479,16 +3512,24 @@ function downloadPriceSummaryExcel(rows) {
         return market === "wb" || market === "ozon";
       })
       .map(function (row) {
+        var displayRow = buildDisplayRow(row);
+        var bounds = displayRow.repricerBounds || {};
+        var minValue = bounds.manualMin != null ? bounds.manualMin : bounds.effectiveMin;
+        var maxValue = bounds.manualMax != null ? bounds.manualMax : bounds.effectiveMax;
         return {
-          article_key: row.articleKey || "",
-          article: row.article || "",
-          name: row.name || "",
-          marketplace: String((row.market || "")).toUpperCase(),
-          min_price: row.repricerBounds && row.repricerBounds.manualMin != null ? row.repricerBounds.manualMin : "",
-          max_price: row.repricerBounds && row.repricerBounds.manualMax != null ? row.repricerBounds.manualMax : "",
-          current_price_mp: moneyRound(row.currentFillPrice),
-          repricer_price: moneyRound(row.repricerDisplay && row.repricerDisplay.price),
-          note: row.repricerBounds && row.repricerBounds.override && row.repricerBounds.override.note || ""
+          article_key: displayRow.articleKey || "",
+          article: displayRow.article || "",
+          name: displayRow.name || "",
+          marketplace: String((displayRow.market || "")).toUpperCase(),
+          owner: displayRow.owner || "",
+          status: displayRow.status || "",
+          current_price_mp: moneyRound(displayRow.currentFillPrice),
+          current_min_price: moneyRound(bounds.effectiveMin),
+          current_max_price: moneyRound(bounds.effectiveMax),
+          min_price: moneyRound(minValue),
+          max_price: moneyRound(maxValue),
+          repricer_price: moneyRound(displayRow.repricerDisplay && displayRow.repricerDisplay.price),
+          note: bounds.override && bounds.override.note || ""
         };
       });
   }
@@ -3499,14 +3540,18 @@ function downloadPriceSummaryExcel(rows) {
       window.alert("По текущим фильтрам нет строк WB/Ozon для шаблона MIN/MAX.");
       return;
     }
-    downloadPriceHtmlTable([
+    downloadPriceDelimitedFile([
       ["article_key", "article_key"],
       ["article", "Артикул"],
       ["name", "Название"],
       ["marketplace", "Площадка"],
+      ["owner", "owner"],
+      ["status", "status"],
+      ["current_price_mp", "current_price_mp"],
+      ["current_min_price", "current_min_price"],
+      ["current_max_price", "current_max_price"],
       ["min_price", "min_price"],
       ["max_price", "max_price"],
-      ["current_price_mp", "current_price_mp"],
       ["repricer_price", "repricer_price"],
       ["note", "note"]
     ], templateRows, "prices-minmax-template-" + priceExportScope() + ".tsv", "\t");
@@ -3611,8 +3656,11 @@ function downloadPriceSummaryExcel(rows) {
   function buildFilterOptions() {
     var owners = Object.create(null);
     var statuses = Object.create(null);
-    state.rows.forEach(function (row) {
-      if (state.market !== "all" && row.market !== state.market) return;
+    var activeMarket = canonicalPriceMarket(state.market || "all");
+    state.rows.forEach(function (rawRow) {
+      var row = buildDisplayRow(rawRow);
+      var rowMarket = canonicalPriceMarket(row && row.market);
+      if (activeMarket !== "all" && rowMarket !== activeMarket) return;
       var ownerLabel = String(row.owner || "").trim();
       var ownerKey = norm(ownerLabel);
       if (ownerLabel && ownerKey && !owners[ownerKey]) owners[ownerKey] = ownerLabel;
@@ -4808,6 +4856,7 @@ function downloadPriceSummaryExcel(rows) {
     if (!root) return;
     if (state.loaded) normalizeDateRange();
     ensureStyles();
+    ensurePriceV1GlobalOpenHandler();
     var activeMarket = priceV1SyncGlobalMarket();
     root.dataset.priceActiveMarket = activeMarket;
     root.dataset.platform = activeMarket === "ym" ? "ya" : activeMarket;
@@ -4889,6 +4938,13 @@ function downloadPriceSummaryExcel(rows) {
       root.dataset.priceV1Delegated = STYLE_VERSION;
       root.addEventListener("click", function (event) {
         var target = event.target;
+        var detailButton = target && target.closest ? target.closest("[data-price-v1-open-detail]") : null;
+        if (detailButton && root.contains(detailButton)) {
+          event.preventDefault();
+          event.stopPropagation();
+          openPriceV1ModalByKey(detailButton.getAttribute("data-price-v1-open-detail") || "");
+          return;
+        }
         var selectButton = target && target.closest ? target.closest("[data-price-v1-select]") : null;
         if (selectButton && root.contains(selectButton)) {
           event.preventDefault();
@@ -4904,13 +4960,12 @@ function downloadPriceSummaryExcel(rows) {
           }
           return;
         }
-        var detailButton = target && target.closest ? target.closest("[data-price-v1-open-detail]") : null;
-        if (detailButton && root.contains(detailButton)) {
+        var rowNode = target && target.closest ? target.closest("[data-open-price]") : null;
+        var formClick = target && target.closest ? target.closest("button,input,select,textarea,a,label") : null;
+        if (rowNode && root.contains(rowNode) && !formClick) {
           event.preventDefault();
           event.stopPropagation();
-          state.selectedKey = detailButton.getAttribute("data-price-v1-open-detail") || "";
-          renderPriceWorkbench();
-          window.requestAnimationFrame(renderSelectedModal);
+          openPriceV1ModalByKey(rowNode.getAttribute("data-open-price") || "");
         }
       }, true);
     }
@@ -5048,44 +5103,6 @@ function downloadPriceSummaryExcel(rows) {
       });
     });
 
-    root.querySelectorAll("[data-price-v1-select]").forEach(function (button) {
-      button.addEventListener("click", function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        state.selectedKey = button.getAttribute("data-price-v1-select") || "";
-        var shouldShowSelected = button.hasAttribute("data-price-v1-show-selected");
-        renderPriceWorkbench();
-        if (shouldShowSelected) {
-          window.requestAnimationFrame(function () {
-            var target = root.querySelector("#price-selected");
-            if (target) target.scrollIntoView({ block: "start", behavior: "smooth" });
-          });
-        }
-      });
-    });
-
-    root.querySelectorAll("[data-price-v1-open-detail]").forEach(function (button) {
-      button.addEventListener("click", function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        state.selectedKey = button.getAttribute("data-price-v1-open-detail") || "";
-        renderPriceWorkbench();
-        window.requestAnimationFrame(renderSelectedModal);
-      });
-    });
-
-    root.querySelectorAll("[data-open-price]").forEach(function (rowNode) {
-      var rememberScroll = function () {
-        modalScrollState.pendingOpenY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-      };
-      rowNode.addEventListener("mousedown", rememberScroll);
-      rowNode.addEventListener("touchstart", rememberScroll, { passive: true });
-      rowNode.addEventListener("click", function () {
-        state.selectedKey = rowNode.getAttribute("data-open-price");
-        renderSelectedModal();
-      });
-    });
-
     var drawerOpen = root.querySelector("[data-price-v1-drawer-open]");
     if (drawerOpen) {
       drawerOpen.addEventListener("click", function () {
@@ -5139,6 +5156,11 @@ function downloadPriceSummaryExcel(rows) {
         var target = button.getAttribute("data-price-v1-clear");
         if (target === "owner") state.ownerFilter = "all";
         if (target === "status") state.statusFilter = "all";
+        if (target && target.indexOf("adv:") === 0) {
+          var advancedKey = target.slice(4);
+          state.priceAdvancedFiltersV1 = Object.assign({}, priceV1AdvancedFilters());
+          delete state.priceAdvancedFiltersV1[advancedKey];
+        }
         if (target === "sort") {
           state.sortBy = "orders";
           state.sortDir = "desc";

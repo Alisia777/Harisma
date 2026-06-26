@@ -112,7 +112,7 @@
     },
     'oos-control': {
       rootId: 'view-oos-control',
-      owned: '[data-oos-focus],.oos-focus,.oos-localization-card,.oos-risk-queue,.oos-signal-tools,.oos-v4-filters,.oos-signal,.oos-formula',
+      owned: '[data-oos-focus],.oos-focus,.oos-localization-card,.oos-localization-clusters,.oos-cluster-pill,.oos-risk-queue,.oos-signal-tools,.oos-v4-filters,.oos-signal,.oos-formula',
       legacy: '.oos-control-legacy,.oos-simple-board,.oos-old-table,[data-gtd-v2="oos"]'
     },
     'sku-contour': {

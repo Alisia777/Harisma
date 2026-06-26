@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260624-dashboard-plan-visible1';
+  const VERSION = '20260626-dashboard-no-chart-dots';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -33,7 +33,7 @@
     orders: { label: 'Заказы', unit: 'int', chart: 'bars', route: 'product-leaderboard', tone: '#76a9ea' },
     buys: { label: 'Выкупы', unit: 'int', chart: 'bars', route: 'product-leaderboard', tone: '#74c99a' },
     revenue: { label: 'Выручка', unit: 'money', chart: 'bars', route: 'sku-plan-fact', tone: '#dbc7a3' },
-    margin: { label: 'Маржа', unit: 'pct', chart: 'line', route: 'sku-plan-fact', tone: '#e0b760' },
+    margin: { label: 'Маржа', unit: 'pct', chart: 'bars', route: 'sku-plan-fact', tone: '#e0b760' },
     ads: { label: 'Реклама', unit: 'money', chart: 'bars', route: 'iu-drr', tone: '#a855f7' }
   };
   const FILES = {
@@ -1067,7 +1067,7 @@
       const yy = y(planValue);
       const labelY = Math.max(14, yy - 10);
       const showLabel = index % planEvery === 0 || index === points.length - 1;
-      return `<circle class="ceo-plan-dot" cx="${x(index)}" cy="${yy}" r="4.4"/>${showLabel ? `<text class="ceo-plan-label" x="${x(index)}" y="${labelY}" text-anchor="middle">${escapeHtml(fmtMetric(metric, planValue))}</text>` : ''}`;
+      return showLabel ? `<text class="ceo-plan-label" x="${x(index)}" y="${labelY}" text-anchor="middle">${escapeHtml(fmtMetric(metric, planValue))}</text>` : '';
     }).join('');
     let body = '';
     if (isLine) {
@@ -1080,7 +1080,7 @@
       if (area) body += `<path class="ceo-rate-area" fill="${metricTone}" opacity=".18" d="${area}"/>`;
       body += `<polyline class="ceo-rate-prev" fill="none" stroke="#b8aa9a" stroke-width="2.6" style="fill:none!important;stroke:#b8aa9a!important;stroke-width:2.6px!important" points="${prevLine}"/><polyline class="ceo-plan-line" fill="none" stroke="#fff1bf" stroke-width="3.4" style="fill:none!important;stroke:#fff1bf!important;stroke-width:3.4px!important" points="${planLine}"/><polyline class="ceo-rate-line" fill="none" stroke="${metricTone}" stroke-width="5.2" stroke-opacity="1" style="fill:none!important;stroke:${metricTone}!important;stroke-width:5.2px!important;stroke-opacity:1!important" points="${currentLine}"/>${planMarkers}`;
       points.forEach((point, index) => {
-        body += `<circle class="ceo-rate-dot" fill="${metricTone}" stroke="#fff5df" cx="${x(index)}" cy="${y(point.value)}" r="5.4"/><rect class="ceo-hit" data-ceo-day="${escapeHtml(point.date)}" x="${x(index) - cw / Math.max(1, points.length) / 2}" y="${pad.t}" width="${cw / Math.max(1, points.length)}" height="${ch}"/>`;
+        body += `<rect class="ceo-hit" data-ceo-day="${escapeHtml(point.date)}" x="${x(index) - cw / Math.max(1, points.length) / 2}" y="${pad.t}" width="${cw / Math.max(1, points.length)}" height="${ch}"/>`;
       });
     } else {
       const step = cw / Math.max(1, points.length);

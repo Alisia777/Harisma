@@ -8,7 +8,7 @@
   const MAX_SELECTED_SKU_CHIPS = 18;
   const MAX_BULK_SKUS = 500;
   const MAX_TASK_SKU_LINES = 80;
-  const VERSION = '20260623-calendar-design-v1';
+  const VERSION = '20260626-calendar-no-blink-v1';
   const BACKGROUND_STORAGE_KEY = 'altea.calendar.backgroundMode';
   const BACKGROUND_MODES = ['static', 'motion'];
   const CALENDAR_MOTION_POSTER = 'assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-poster.jpg';
@@ -1271,7 +1271,7 @@
       const hasCalendar = Boolean(root.querySelector('.promo-calendar-shell'));
       const legacyNodes = calendarLegacyNodes(root);
       if (legacyNodes.length && hasCalendar) legacyNodes.forEach((node) => node.remove());
-      if (!hasCalendar || legacyNodes.length) renderEventCalendar(rootId);
+      if (!hasCalendar) renderEventCalendar(rootId);
     }, 80);
   }
 

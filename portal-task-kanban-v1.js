@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260626-tasks-drag-stable-v1';
+  const VERSION = '20260626-tasks-no-blink-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -92,6 +92,7 @@
 
   let wrappedRender = null;
   let enhanceQueued = false;
+  let enhanceQueuedForce = false;
   let controlObserver = null;
   let controlObserverTimer = 0;
   let renderToken = 0;
@@ -1206,31 +1207,73 @@
       counts: [tasks.length, filtered.length],
       tasks: filtered.slice(0, 260).map((task) => [
         task?.id,
+        task?.title,
+        task?.entityLabel,
+        task?.nextAction,
+        task?.reason,
+        task?.articleKey,
+        Array.isArray(task?.articleKeys) ? task.articleKeys.join('|') : '',
         task?.status,
         task?.owner,
         task?.priority,
-        taskDate(task),
-        task?.updatedAt || task?.updated_at || ''
+        taskType(task),
+        normalizePlatform('', task),
+        taskSource(task),
+        taskDate(task)
       ])
     }));
+  }
+
+  function isTaskDataHydrating() {
+    const state = appState();
+    const mode = normalizeText(state?.team?.mode || '');
+    const manualTasks = Array.isArray(state?.storage?.tasks) ? state.storage.tasks.length : 0;
+    return manualTasks === 0 && (mode === 'pending' || mode === 'loading' || mode === 'connecting');
+  }
+
+  function renderHydratingShell(platform) {
+    return `
+      <section class="task-design-v1 platform-${escapeHtml(platform)} is-loading" data-task-calendar-design-v1 data-task-kanban-v1 data-task-loading="team" data-version="${escapeHtml(VERSION)}">
+        <div class="task-design-header">
+          <div>
+            <span class="task-design-kicker">ALTEA · TASKS V1</span>
+            <h2>Задачи команды</h2>
+            <p>Загружаем командные задачи и не показываем неполный промежуточный слой.</p>
+          </div>
+          <div class="task-design-actions">
+            <button type="button" disabled>Загрузка</button>
+          </div>
+        </div>
+        <div class="task-design-skeleton" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </section>
+    `;
   }
 
   function renderShell() {
     clearStaleRecentMove();
     const filters = ensureFilters();
-    const tasks = taskList().filter(Boolean).filter(isTaskDisplayable);
     const platform = globalPlatform();
+    if (isTaskDataHydrating()) {
+      const markup = renderHydratingShell(platform);
+      return {
+        signature: stableHash(markup),
+        markup
+      };
+    }
+    const tasks = taskList().filter(Boolean).filter(isTaskDisplayable);
     const filtered = filteredTasks();
-    const signature = renderSignature(tasks, filtered, filters, platform);
+    const markup = `
+      <section class="task-design-v1 platform-${escapeHtml(platform)}" data-task-calendar-design-v1 data-task-kanban-v1 data-version="${escapeHtml(VERSION)}">
+        ${renderFilters(tasks, filtered, filters, platform)}
+        ${renderCreateDrawer(platform)}
+        ${TASK_UI.view === 'list' ? renderList(filtered) : renderBoard(filtered)}
+      </section>
+    `;
     return {
-      signature,
-      markup: `
-        <section class="task-design-v1 platform-${escapeHtml(platform)}" data-task-calendar-design-v1 data-task-kanban-v1 data-version="${escapeHtml(VERSION)}">
-          ${renderFilters(tasks, filtered, filters, platform)}
-          ${renderCreateDrawer(platform)}
-          ${TASK_UI.view === 'list' ? renderList(filtered) : renderBoard(filtered)}
-        </section>
-      `
+      signature: stableHash(markup),
+      markup
     };
   }
 
@@ -1864,7 +1907,7 @@
     ensureStyle();
     const { signature, markup } = renderShell();
     const current = viewRoot.querySelector('[data-task-calendar-design-v1]');
-    if (!force && current && current.dataset.renderSignature === signature && viewRoot.children.length === 1) {
+    if (current && current.dataset.renderSignature === signature && viewRoot.children.length === 1) {
       cleanupLegacyControl(viewRoot);
       return;
     }
@@ -1887,11 +1930,14 @@
   }
 
   function queueEnhance(force = false) {
+    enhanceQueuedForce = enhanceQueuedForce || force;
     if (enhanceQueued) return;
     enhanceQueued = true;
     const run = () => {
+      const shouldForce = enhanceQueuedForce;
       enhanceQueued = false;
-      enhanceControl(force);
+      enhanceQueuedForce = false;
+      enhanceControl(shouldForce);
     };
     if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(run);
     else window.setTimeout(run, 0);
@@ -1947,7 +1993,7 @@
     }
     wrappedRender = function taskDesignRenderControlCenter(...args) {
       if (isControlRouteActive()) {
-        enhanceControl(true);
+        queueEnhance(true);
         return root();
       }
       const result = current.apply(this, args);

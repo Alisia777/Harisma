@@ -8408,6 +8408,56 @@ function renderOosControlLocalizationTrend(payload = {}, rows = [], signals = []
   const selectedActive = selectedClusterStat ? selectedClusterStat.activeSkuCount : matrixStats.activePairs;
   const selectedTotal = selectedClusterStat ? selectedClusterStat.denominator : matrixStats.matrixTotal;
   const selectedTone = oosControlLocalizationTone(selectedPct);
+  const chartWidth = 980;
+  const chartHeight = 255;
+  const chartPadX = 42;
+  const chartPadY = 34;
+  const chartPlotWidth = chartWidth - chartPadX * 2;
+  const chartPlotHeight = chartHeight - chartPadY * 2;
+  const pctValues = points.map((point) => Math.max(0, Math.min(100, numberOrZero(point.localizedPct))));
+  const minPct = pctValues.length ? Math.min(...pctValues) : 0;
+  const chartMin = minPct > 60 ? Math.max(0, Math.floor(minPct / 10) * 10 - 5) : 0;
+  const chartMax = 100;
+  const chartRange = Math.max(1, chartMax - chartMin);
+  const yForPct = (value) => chartPadY + ((chartMax - Math.max(chartMin, Math.min(chartMax, value))) / chartRange) * chartPlotHeight;
+  const baselineY = yForPct(chartMin);
+  const chartStep = points.length > 1 ? chartPlotWidth / points.length : chartPlotWidth;
+  const chartTicks = [chartMax, chartMin + chartRange * 0.66, chartMin + chartRange * 0.33, chartMin];
+  const localizationChartSvg = `
+    <svg viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="Процент локализации по дням">
+      ${chartTicks.map((tick) => {
+        const y = yForPct(tick);
+        return `
+          <line class="oos-localization-chart-line" x1="${chartPadX}" x2="${chartWidth - chartPadX}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"></line>
+          <text class="oos-localization-axis" x="${chartPadX - 10}" y="${(y + 3).toFixed(1)}" text-anchor="end">${fmt.num(tick, tick % 1 ? 1 : 0)}%</text>
+        `;
+      }).join('')}
+      ${points.map((point, index) => {
+        const pct = Math.max(0, Math.min(100, numberOrZero(point.localizedPct)));
+        const tone = oosControlLocalizationTone(pct);
+        const color = tone === 'danger' ? '#ff7b72' : tone === 'warn' ? '#e5c16f' : '#74e59b';
+        const x = chartPadX + index * chartStep + chartStep * 0.24;
+        const barWidth = Math.max(10, Math.min(28, chartStep * 0.52));
+        const y = yForPct(pct);
+        const barHeight = Math.max(6, baselineY - y);
+        const barCenter = x + barWidth / 2;
+        const hitX = chartPadX + index * chartStep;
+        const hitW = chartStep;
+        const label = String(point.date || '').slice(5) || '—';
+        const title = `${point.date}: локализация ${fmt.num(pct, 1)}%, активный риск ${fmt.int(point.activeRisk)} из ${fmt.int(point.denominator)}`;
+        const isLatest = index === points.length - 1;
+        return `
+          <g class="oos-localization-hit ${tone} ${isLatest ? 'active' : ''}" tabindex="0" aria-label="${escapeHtml(title)}">
+            <title>${escapeHtml(title)}</title>
+            <rect class="oos-localization-hotspot" x="${hitX.toFixed(1)}" y="${chartPadY}" width="${hitW.toFixed(1)}" height="${(chartHeight - chartPadY * 1.2).toFixed(1)}" rx="12"></rect>
+            <rect class="oos-localization-bar" style="--i:${index}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${barHeight.toFixed(1)}" rx="8" fill="${color}"></rect>
+            <text class="oos-localization-value" x="${barCenter.toFixed(1)}" y="${Math.max(13, y - 8).toFixed(1)}" text-anchor="middle">${fmt.num(pct, 0)}%</text>
+            <text class="oos-localization-label" x="${barCenter.toFixed(1)}" y="${chartHeight - 8}" text-anchor="middle">${escapeHtml(label)}</text>
+          </g>
+        `;
+      }).join('')}
+    </svg>
+  `;
   return `
     <section class="card oos-localization-card">
       <div class="section-subhead">
@@ -8427,17 +8477,7 @@ function renderOosControlLocalizationTrend(payload = {}, rows = [], signals = []
         <span><b>${fmt.int(selectedActive)} / ${fmt.int(selectedTotal)}</b><em>${selectedClusterStat ? 'SKU в риске по кластеру' : 'SKU × кластер в риске'}</em></span>
       </div>
       <div class="oos-localization-chart" aria-label="Процент локализации по дням">
-        ${points.map((point) => {
-          const tone = oosControlLocalizationTone(point.localizedPct);
-          const title = `${point.date}: локализация ${fmt.num(point.localizedPct, 1)}%, активный риск ${fmt.int(point.activeRisk)} из ${fmt.int(point.denominator)}`;
-          return `
-            <span class="oos-localization-day ${tone}" style="--pct:${point.localizedPct}" title="${escapeHtml(title)}">
-              <i></i>
-              <b>${fmt.num(point.localizedPct, 0)}%</b>
-              <small>${escapeHtml(point.date.slice(5))}</small>
-            </span>
-          `;
-        }).join('')}
+        ${localizationChartSvg}
       </div>
       <div class="oos-localization-clusters" aria-label="Локализация по кластерам">
         ${selectedCluster !== 'all' ? `<button type="button" class="oos-cluster-pill clear" data-oos-cluster-pick="all">Все кластеры</button>` : ''}

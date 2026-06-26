@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260626-tasks-no-blink-v1';
+  const VERSION = '20260626-tasks-done-filter-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -906,7 +906,8 @@
   function matchesFilters(task, filters, platform) {
     const lane = laneFor(task);
     const status = normalizeText(filters.status || 'active');
-    if (status === 'active' && !isActive(task)) return false;
+    const recentMoved = isRecentMovedTask(task);
+    if (status === 'active' && !isActive(task) && !recentMoved) return false;
     if (status && status !== 'active' && status !== 'all') {
       if (status === 'waiting') {
         if (lane !== 'waiting') return false;
@@ -1652,8 +1653,7 @@
     if (updated?.id) {
       markTaskMoved(updated.id);
       const filters = ensureFilters();
-      if (DONE_STATUSES.has(normalizeText(status))) filters.status = 'all';
-      else if (filters.status && filters.status !== 'all') filters.status = 'active';
+      if (!DONE_STATUSES.has(normalizeText(status)) && filters.status && filters.status !== 'all') filters.status = 'active';
       if (filters.horizon && filters.horizon !== 'all') filters.horizon = 'all';
       savePortalState('task-kanban-v1-move-visibility');
     }

@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260626-dashboard-no-chart-dots';
+  const VERSION = '20260626-dashboard-no-chart-values';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -1060,15 +1060,7 @@
         ? `<text class="ceo-axis-label" x="${x(index)}" y="${H - 14}" text-anchor="middle">${shortDate(point.date)}</text>`
         : '';
     }).join('');
-    const planEvery = Math.max(1, Math.ceil(points.length / 6));
-    const planMarkers = points.map((point, index) => {
-      const planValue = Number(point.plan);
-      if (!Number.isFinite(planValue)) return '';
-      const yy = y(planValue);
-      const labelY = Math.max(14, yy - 10);
-      const showLabel = index % planEvery === 0 || index === points.length - 1;
-      return showLabel ? `<text class="ceo-plan-label" x="${x(index)}" y="${labelY}" text-anchor="middle">${escapeHtml(fmtMetric(metric, planValue))}</text>` : '';
-    }).join('');
+    const planMarkers = '';
     let body = '';
     if (isLine) {
       const currentLine = points.map((point, index) => `${x(index)},${y(point.value)}`).join(' ');
@@ -1163,7 +1155,6 @@
       const h = Math.max(5, Math.abs(y2 - y1));
       const tone = driver.value >= 0 ? 'is-up' : 'is-down';
       body += `<rect class="ceo-waterfall-bar ${tone}" data-ceo-driver="${escapeHtml(driver.key)}" x="${x}" y="${top}" width="${w}" height="${h}" rx="7" style="animation:ceoBarGrow 520ms var(--ease) both;animation-delay:${index * 55}ms"/>`;
-      body += `<text class="ceo-waterfall-label ${tone}" x="${x + w / 2}" y="${Math.max(18, top - 10)}" text-anchor="middle">${escapeHtml(driver.value >= 0 ? `+${fmtMoney(driver.value)}` : fmtMoney(driver.value))}</text>`;
       body += `<text class="ceo-waterfall-x" x="${x + w / 2}" y="${H - 18}" text-anchor="middle">${escapeHtml(driver.label)}</text>`;
       if (index < model.drivers.length - 1) body += `<line class="ceo-waterfall-connector" x1="${x + w}" y1="${y2}" x2="${x + step}" y2="${y2}"/>`;
     });

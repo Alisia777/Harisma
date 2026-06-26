@@ -1,13 +1,13 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260626-iudrr-daily-summary-restore';
+  const VERSION = '20260626-iudrr-funnel-summary-fix';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
   const SEARCH_KEY = 'altea.iuDrr.search.v3';
   const TABLE_FILTER_KEY = 'altea.iuDrr.tableFilters.v4';
-  const VIEW_KEYS = ['iu', 'position', 'daily', 'stats'];
+  const VIEW_KEYS = ['iu', 'summary', 'position', 'daily', 'stats'];
 
   const PLATFORM = {
     wb: { label: 'WB', full: 'Wildberries', tone: '#b84cff', varName: '--wb' },
@@ -1349,63 +1349,75 @@
       : null;
     const platformRow = rowsByDate.get(date) || {};
     if (platform === 'wb') {
+      const ordersRevenue = wbDaily?.ordersRevenue ?? firstDefined(platformRow, ['revenueWb', 'ordersRevenueWb', 'wbApiRevenue', 'wbIuFactRevenueGross']);
+      const ordersUnits = wbDaily?.ordersUnits ?? firstDefined(platformRow, ['adsOrders', 'ordersUnitsWb', 'unitsWb']);
+      const clicks = wbDaily ? positiveOrNull(pos.wbFunnel.clicks) : firstDefined(platformRow, ['adsClicks']);
+      const adsSpend = firstDefined(platformRow, ['spendFactDrr', 'spendFact', 'wbApiSpendFact']);
       return {
-        source: wbDaily ? 'WB SKU/day' : 'нет SKU/day источника',
-        views: wbDaily ? positiveOrNull(pos.wbFunnel.views) : null,
-        clicks: wbDaily ? positiveOrNull(pos.wbFunnel.clicks) : null,
+        source: wbDaily ? 'WB SKU/day' : 'WB API daily summary',
+        views: wbDaily ? positiveOrNull(pos.wbFunnel.views) : firstDefined(platformRow, ['adsViews']),
+        clicks,
         carts: wbDaily ? positiveOrNull(pos.wbFunnel.carts) : null,
-        ordersUnits: wbDaily?.ordersUnits ?? null,
-        ordersRevenue: wbDaily?.ordersRevenue ?? null,
-        buyoutsUnits: wbDaily ? positiveOrNull(pos.wbFunnel.buyoutsUnits) : null,
-        cancellationsUnits: wbDaily ? positiveOrNull(pos.wbFunnel.cancellationsUnits) : null,
-        adsSpend: null,
-        adsRevenue: null,
-        cpc: null,
-        cpo: null,
-        drr: null,
-        margin: wbDaily?.estimatedMargin ?? null,
-        platformContext: platformRow.revenueWb
+        ordersUnits,
+        ordersRevenue,
+        buyoutsUnits: wbDaily ? positiveOrNull(pos.wbFunnel.buyoutsUnits) : firstDefined(platformRow, ['unitsWb']),
+        cancellationsUnits: wbDaily ? positiveOrNull(pos.wbFunnel.cancellationsUnits) : firstDefined(platformRow, ['cancellationsUnitsWb', 'cancelledUnitsWb']),
+        adsSpend,
+        adsRevenue: firstDefined(platformRow, ['adsRevenue']),
+        cpc: safeRatio(adsSpend, clicks),
+        cpo: safeRatio(adsSpend, ordersUnits),
+        drr: safeRatio(adsSpend, ordersRevenue),
+        margin: wbDaily?.estimatedMargin ?? firstDefined(platformRow, ['marginWb', 'grossProfitWb']),
+        platformContext: ordersRevenue
       };
     }
     if (platform === 'ozon') {
+      const ordersRevenue = firstDefined(platformRow, ['revenueOzon', 'ozonGmv', 'ozonGmvGross']);
+      const ordersUnits = firstDefined(platformRow, ['ozonAdsOrders', 'ordersUnitsOzon', 'unitsOzon']);
+      const clicks = firstDefined(platformRow, ['ozonAdsClicks']);
+      const adsSpend = firstDefined(platformRow, ['spendFactOzon', 'ozonDrrSpendFact']);
       return {
-        source: 'нет SKU/day источника',
-        views: null,
-        clicks: null,
+        source: 'Ozon daily summary',
+        views: firstDefined(platformRow, ['ozonAdsViews']),
+        clicks,
         carts: null,
-        ordersUnits: null,
-        ordersRevenue: null,
-        buyoutsUnits: null,
-        cancellationsUnits: null,
-        adsSpend: null,
-        adsRevenue: null,
-        cpc: null,
-        cpo: null,
-        drr: null,
-        margin: null,
-        platformContext: platformRow.revenueOzon
+        ordersUnits,
+        ordersRevenue,
+        buyoutsUnits: firstDefined(platformRow, ['unitsOzon', 'deliveredUnitsOzon']),
+        cancellationsUnits: firstDefined(platformRow, ['ozonCancellationsUnits']),
+        adsSpend,
+        adsRevenue: firstDefined(platformRow, ['ozonAdsRevenue']),
+        cpc: safeRatio(adsSpend, clicks),
+        cpo: safeRatio(adsSpend, ordersUnits),
+        drr: safeRatio(adsSpend, ordersRevenue),
+        margin: firstDefined(platformRow, ['marginOzon', 'grossProfitOzon']),
+        platformContext: ordersRevenue
       };
     }
+    const ordersRevenue = firstDefined(platformRow, ['revenueYandex', 'ordersRevenueYandex']);
+    const ordersUnits = firstDefined(platformRow, ['ordersUnitsYandex']);
+    const clicks = firstDefined(platformRow, ['yandexClicks']);
+    const adsSpend = firstDefined(platformRow, ['spendFactYandex']);
     return {
-      source: 'Я.Маркет funnel-only · нет SKU/day источника',
-      views: null,
-      clicks: null,
-      carts: null,
-      ordersUnits: null,
-      ordersRevenue: null,
-      buyoutsUnits: null,
-      cancellationsUnits: null,
-      adsSpend: null,
+      source: 'Yandex Market funnel daily summary',
+      views: firstDefined(platformRow, ['yandexShows']),
+      clicks,
+      carts: firstDefined(platformRow, ['yandexToCart']),
+      ordersUnits,
+      ordersRevenue,
+      buyoutsUnits: firstDefined(platformRow, ['deliveredUnitsYandex']),
+      cancellationsUnits: firstDefined(platformRow, ['yandexCancellationsUnits']),
+      adsSpend,
       adsRevenue: null,
-      cpc: null,
-      cpo: null,
+      cpc: safeRatio(adsSpend, clicks),
+      cpo: safeRatio(adsSpend, ordersUnits),
       drr: null,
-      margin: null,
-      platformContext: platformRow.revenueYandex
+      margin: firstDefined(platformRow, ['marginYandex', 'grossProfitYandex']),
+      platformContext: ordersRevenue
     };
   }
 
-  function buildDailyPanel(rows, focus, positions) {
+  function buildSkuDailyPanel(rows, focus, positions) {
     const platforms = platformsForFocus(focus, { includeYandex: true });
     const rowsByDate = new Map(rows.map((row) => [row.date, row]));
     const dates = rows.map((row) => row.date);
@@ -1487,6 +1499,204 @@
       );
     });
     return sections.join('');
+  }
+
+  function platformDayFunnelModel(platform, row) {
+    if (platform === 'wb') {
+      const revenue = firstDefined(row, ['revenueWb', 'ordersRevenueWb', 'wbApiRevenue', 'wbIuFactRevenueGross']);
+      const spend = firstDefined(row, ['spendFactDrr', 'spendFact', 'wbApiSpendFact']);
+      const clicks = firstDefined(row, ['adsClicks']);
+      const orders = firstDefined(row, ['adsOrders', 'ordersUnitsWb', 'unitsWb']);
+      return {
+        date: row.date,
+        platform,
+        source: row.wbIuFactSource || row.revenueWbSource || row.wbIuFactMode || 'WB API / IU control',
+        views: firstDefined(row, ['adsViews']),
+        clicks,
+        ctr: safeRatio(clicks, firstDefined(row, ['adsViews'])),
+        carts: firstDefined(row, ['adsCarts', 'cartsWb']),
+        orders,
+        buyouts: firstDefined(row, ['unitsWb']),
+        revenue,
+        spend,
+        adRevenue: firstDefined(row, ['adsRevenue']),
+        drr: firstDefined(row, ['factPct']) ?? safeRatio(spend, revenue),
+        cpc: safeRatio(spend, clicks),
+        cpo: safeRatio(spend, orders)
+      };
+    }
+    if (platform === 'ozon') {
+      const revenue = firstDefined(row, ['revenueOzon', 'ozonGmv', 'ozonGmvGross']);
+      const spend = firstDefined(row, ['spendFactOzon', 'ozonDrrSpendFact']);
+      const clicks = firstDefined(row, ['ozonAdsClicks']);
+      const orders = firstDefined(row, ['ozonAdsOrders', 'ordersUnitsOzon', 'unitsOzon']);
+      return {
+        date: row.date,
+        platform,
+        source: row.ozonAdsFactMode || row.ozonGmvMode || 'Ozon Finance / realization',
+        views: firstDefined(row, ['ozonAdsViews']),
+        clicks,
+        ctr: safeRatio(clicks, firstDefined(row, ['ozonAdsViews'])),
+        carts: firstDefined(row, ['ozonAdsCarts']),
+        orders,
+        buyouts: firstDefined(row, ['unitsOzon', 'deliveredUnitsOzon']),
+        revenue,
+        spend,
+        adRevenue: firstDefined(row, ['ozonAdsRevenue']),
+        drr: firstDefined(row, ['factPctOzon']) ?? safeRatio(spend, revenue),
+        cpc: safeRatio(spend, clicks),
+        cpo: safeRatio(spend, orders)
+      };
+    }
+    const revenue = firstDefined(row, ['revenueYandex', 'ordersRevenueYandex']);
+    const spend = firstDefined(row, ['spendFactYandex']);
+    const views = firstDefined(row, ['yandexShows']);
+    const clicks = firstDefined(row, ['yandexClicks']);
+    const orders = firstDefined(row, ['ordersUnitsYandex']);
+    return {
+      date: row.date,
+      platform,
+      source: row.yandexAdsFactMode || 'Yandex Market funnel',
+      views,
+      clicks,
+      ctr: firstDefined(row, ['yandexCtr']) ?? safeRatio(clicks, views),
+      carts: firstDefined(row, ['yandexToCart']),
+      orders,
+      buyouts: firstDefined(row, ['deliveredUnitsYandex']),
+      revenue,
+      spend,
+      adRevenue: null,
+      drr: safeRatio(spend, revenue),
+      cpc: safeRatio(spend, clicks),
+      cpo: safeRatio(spend, orders)
+    };
+  }
+
+  function sumModels(models, key) {
+    return sumBy(models, (model) => model[key]);
+  }
+
+  function funnelStage(label, value, type, detail, progress, tone, index) {
+    const pct = numberOrNull(progress) === null ? 0 : Math.max(0, Math.min(100, progress * 100));
+    return `
+      <div class="iu-drr-v3-stage" style="--platform:${tone || '#e5c16f'};--fill:${pct.toFixed(2)};--i:${index}">
+        <small>${escapeHtml(label)}</small>
+        <strong>${metricCell(value, type)}</strong>
+        <span>${escapeHtml(detail || '')}</span>
+      </div>
+    `;
+  }
+
+  function funnelSummaryStages(platform, models) {
+    const tone = PLATFORM[platform]?.tone || '#e5c16f';
+    const views = sumModels(models, 'views');
+    const clicks = sumModels(models, 'clicks');
+    const carts = sumModels(models, 'carts');
+    const orders = sumModels(models, 'orders');
+    const buyouts = sumModels(models, 'buyouts');
+    const revenue = sumModels(models, 'revenue');
+    const spend = sumModels(models, 'spend');
+    const adRevenue = sumModels(models, 'adRevenue');
+    const stages = [
+      ['Показы', views, 'int', 'верх воронки', 1],
+      ['Клики', clicks, 'int', `CTR ${fmtPct(safeRatio(clicks, views))}`, safeRatio(clicks, views)],
+      ['Корзины', carts, 'int', `CR ${fmtPct(safeRatio(carts, clicks))}`, safeRatio(carts, clicks)],
+      ['Заказы', orders, 'int', `CR ${fmtPct(safeRatio(orders, clicks))}`, safeRatio(orders, clicks)],
+      ['Выкупы', buyouts, 'int', `выкуп ${fmtPct(safeRatio(buyouts, orders))}`, safeRatio(buyouts, orders)],
+      [platform === 'ozon' ? 'GMV' : 'Оборот', revenue, 'money', `ДРР ${fmtPct(safeRatio(spend, revenue))}`, safeRatio(revenue, revenue || 1)],
+      ['Расход рекламы', spend, 'money', adRevenue ? `ad revenue ${fmtMoney(adRevenue)}` : 'по дневному API-срезу', safeRatio(spend, revenue)]
+    ];
+    return `<div class="iu-drr-v3-funnel">${stages.map((stage, index) => funnelStage(stage[0], stage[1], stage[2], stage[3], stage[4], tone, index)).join('')}</div>`;
+  }
+
+  function buildFunnelSummaryPanel(rows, focus) {
+    const platforms = platformsForFocus(focus, { includeYandex: true });
+    if (!platforms.length) return `<div class="iu-drr-v3-empty">Нет площадок для текущего фильтра.</div>`;
+    return platforms.map((platform) => {
+      const models = rows.map((row) => platformDayFunnelModel(platform, row));
+      const total = platformMonthSummary(platform, rows);
+      const tableKey = safeTableKey('funnel-summary', platform);
+      const body = models.map((model) => {
+        const status = numberOrNull(model.revenue) !== null || numberOrNull(model.orders) !== null ? 'ok' : 'missing';
+        const search = rowSearch([
+          PLATFORM[platform]?.label,
+          model.date,
+          compactDate(model.date),
+          model.source,
+          model.views,
+          model.clicks,
+          model.carts,
+          model.orders,
+          model.buyouts,
+          model.revenue,
+          model.spend
+        ]);
+        return `
+          <tr ${tableRowAttrs({ search, source: sourceBucket(model.source), status, date: model.date })}>
+            <td><strong>${escapeHtml(compactDate(model.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(model.date)}</span></td>
+            <td>${metricCell(model.views, 'int')}</td>
+            <td>${metricCell(model.clicks, 'int')}</td>
+            <td>${metricCell(model.ctr, 'pct')}</td>
+            <td>${metricCell(model.carts, 'int')}</td>
+            <td>${metricCell(model.orders, 'int')}</td>
+            <td>${metricCell(model.buyouts, 'int')}</td>
+            <td>${metricCell(model.revenue, 'money')}</td>
+            <td>${metricCell(model.spend, 'money')}</td>
+            <td>${metricCell(model.drr, 'pct')}</td>
+            <td>${metricCell(model.cpc, 'money')}</td>
+            <td>${metricCell(model.cpo, 'money')}</td>
+            <td><span class="iu-drr-v3-note">${escapeHtml(model.source)}</span></td>
+          </tr>
+        `;
+      }).join('');
+      const summaryCards = [
+        kpiCard(`${PLATFORM[platform]?.label} оборот`, fmtMoney(total.revenueFact), `план ${fmtMoney(total.revenuePlan)} · выполнение ${fmtPct(total.revenueCompletion)}`, total.revenueCompletion, PLATFORM[platform]?.tone),
+        kpiCard('Показы / клики', `${fmtInt(total.views)} / ${fmtInt(total.clicks)}`, `CTR ${fmtPct(safeRatio(total.clicks, total.views))}`, safeRatio(total.clicks, total.views), PLATFORM[platform]?.tone),
+        kpiCard('Заказы / выкупы', `${fmtInt(total.orders)} / ${fmtInt(total.buyouts || total.units)}`, `CPO ${fmtMoney(safeRatio(total.adsFact, total.orders || total.units))}`, safeRatio(total.buyouts || total.units, total.orders), '#72e6a0'),
+        kpiCard('Расход / ДРР', fmtMoney(total.adsFact), `ДРР ${fmtPct(total.drrFact)} · план ${fmtMoney(total.adsPlan)}`, total.drrFact, toneForCompletion(total.drrFact, true)),
+        kpiCard('Источник', fmtInt(total.sourceRows), platform === 'ya' ? 'воронка Я.Маркета' : 'API / finance / funnel', Math.min(1, numberOrZero(total.sourceRows) / 1000), '#e5c16f')
+      ].join('');
+      return section(
+        `funnel-summary-${platform}`,
+        `${PLATFORM[platform].label} · сводная воронка`,
+        'Единый срез по дням: показы, клики, корзины, заказы, выкупы, оборот/GMV, расход и ДРР. Данные берутся из тех же дневных API-полей, что расчет ИУ/ДРР.',
+        `
+          <div class="iu-drr-v3-stat-pack">
+            <div class="iu-drr-v3-kpis">${summaryCards}</div>
+            ${funnelSummaryStages(platform, models)}
+            <div class="iu-drr-v3-table-host" data-iu-v3-table-host="${escapeHtml(tableKey)}">
+              ${tableFilterMarkup(tableKey, models.length)}
+              <div class="iu-drr-v3-matrix-wrap">
+                <table class="iu-drr-v3-table" style="min-width:1420px">
+                  <thead>
+                    <tr>
+                      <th>Дата</th>
+                      <th>Показы</th>
+                      <th>Клики</th>
+                      <th>CTR</th>
+                      <th>Корзины</th>
+                      <th>Заказы</th>
+                      <th>Выкупы</th>
+                      <th>${platform === 'ozon' ? 'GMV' : 'Оборот'}</th>
+                      <th>Расход</th>
+                      <th>ДРР</th>
+                      <th>CPC</th>
+                      <th>CPO</th>
+                      <th>Источник</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${body || `<tr><td colspan="13">Нет строк для текущего фильтра</td></tr>`}
+                    <tr class="iu-drr-v3-empty-row" data-iu-v3-empty-row hidden><td colspan="13">Нет строк под выбранный фильтр</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `,
+        { platform }
+      );
+    }).join('');
   }
 
   function dailyAggregateModel(platform, row) {
@@ -1921,6 +2131,7 @@
     const positions = buildPositions(focus);
     const panelContent = {
       iu: buildIuPanel(rows, focus),
+      summary: buildFunnelSummaryPanel(rows, focus),
       position: buildPositionPanel(rows, focus, positions),
       daily: buildDailyPanel(rows, focus, positions),
       stats: buildStatsPanel(rows, focus)
@@ -1949,6 +2160,7 @@
           <div class="iu-drr-v3-tabs" role="tablist" aria-label="Раздел ИУ / ДРР">
             ${[
               ['iu', 'ИУ по дням'],
+              ['summary', 'Свод воронки'],
               ['position', 'Позиционная воронка'],
               ['daily', 'Дневная матрица'],
               ['stats', 'Статистика']

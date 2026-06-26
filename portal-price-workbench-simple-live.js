@@ -36,7 +36,7 @@
   var ORDER_PROCUREMENT_OZON_URL = "data/order_procurement_ozon.json";
   var VIEW_ID = "view-prices";
   var STYLE_ID = "altea-price-simple-style";
-  var STYLE_VERSION = "20260626-prices-click-modal-v5";
+  var STYLE_VERSION = "20260626-prices-table-sort-v1";
   var SNAPSHOT_WAIT_MS = 1800;
   var SNAPSHOT_HARD_WAIT_MS = 4500;
   var LOCAL_FETCH_TIMEOUT_MS = 3200;
@@ -4938,6 +4938,17 @@ function downloadPriceSummaryExcel(rows) {
       root.dataset.priceV1Delegated = STYLE_VERSION;
       root.addEventListener("click", function (event) {
         var target = event.target;
+        var sortButton = target && target.closest ? target.closest("[data-price-sort]") : null;
+        if (sortButton && root.contains(sortButton)) {
+          event.preventDefault();
+          event.stopPropagation();
+          var key = sortButton.getAttribute("data-price-sort") || "risk";
+          state.sortDir = sortToggleDirection(key);
+          state.sortBy = key;
+          derived.table.rowsRef = null;
+          renderPriceWorkbench();
+          return;
+        }
         var detailButton = target && target.closest ? target.closest("[data-price-v1-open-detail]") : null;
         if (detailButton && root.contains(detailButton)) {
           event.preventDefault();
@@ -5091,17 +5102,6 @@ function downloadPriceSummaryExcel(rows) {
         renderPriceWorkbench();
       });
     }
-
-    root.querySelectorAll("[data-price-sort]").forEach(function (headerButton) {
-      headerButton.addEventListener("click", function (event) {
-        event.preventDefault();
-        var key = headerButton.getAttribute("data-price-sort") || "risk";
-        state.sortDir = sortToggleDirection(key);
-        state.sortBy = key;
-        derived.table.rowsRef = null;
-        renderPriceWorkbench();
-      });
-    });
 
     var drawerOpen = root.querySelector("[data-price-v1-drawer-open]");
     if (drawerOpen) {
@@ -5434,16 +5434,6 @@ function downloadPriceSummaryExcel(rows) {
     if (statusFilterInput) statusFilterInput.addEventListener("change", function () {
       state.statusFilter = statusFilterInput.value || "all";
       renderPriceWorkbench();
-    });
-    root.querySelectorAll("[data-price-sort]").forEach(function (headerButton) {
-      headerButton.addEventListener("click", function (event) {
-        event.preventDefault();
-        var key = headerButton.getAttribute("data-price-sort") || "risk";
-        state.sortDir = sortToggleDirection(key);
-        state.sortBy = key;
-        derived.table.rowsRef = null;
-        renderPriceWorkbench();
-      });
     });
     attachPriceLifecycleForms(root);
     root.querySelectorAll("[data-open-price]").forEach(function (rowNode) {

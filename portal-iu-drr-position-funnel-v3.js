@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260627-iudrr-position-dashboard-chart';
+  const VERSION = '20260627-iudrr-position-daily-filters';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -1390,8 +1390,9 @@
         row.estimatedMargin,
         row.avgPrice
       ]);
+      const primaryValue = row.ordersRevenue ?? row.ordersUnits ?? row.estimatedMargin ?? row.avgPrice;
       return `
-              <tr ${tableRowAttrs({ search, source: sourceBucket(source), status, date: row.date })}>
+              <tr ${tableRowAttrs({ search, source: sourceBucket(source), status, date: row.date, value: valueFilterState(primaryValue) })}>
                 <td><strong>${escapeHtml(compactDate(row.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(row.date)}</span></td>
                 <td>${metricCell(row.ordersUnits, 'int')}</td>
                 <td>${metricCell(row.ordersRevenue, 'money')}</td>
@@ -1403,22 +1404,22 @@
     }).join('');
     return `
       <div class="iu-drr-v3-table-host" data-iu-v3-table-host="${escapeHtml(tableKey)}">
-        ${tableFilterMarkup(tableKey, daily.length)}
+        ${tableFilterMarkup(tableKey, daily.length, {
+          valueFilter: true,
+          searchPlaceholder: 'Дата, источник, заказы, оборот...'
+        })}
         <div class="iu-drr-v3-matrix-wrap" style="max-height:300px">
         <table class="iu-drr-v3-table" style="min-width:850px">
-          <thead><tr><th>Дата</th><th>Заказы, шт.</th><th>Оборот</th><th>Маржа</th><th>Средний чек</th><th>Источник</th></tr></thead>
+          <thead><tr>
+            <th data-iu-v3-sort-col="0" aria-sort="none">Дата</th>
+            <th data-iu-v3-sort-col="1" aria-sort="none">Заказы, шт.</th>
+            <th data-iu-v3-sort-col="2" aria-sort="none">Оборот</th>
+            <th data-iu-v3-sort-col="3" aria-sort="none">Маржа</th>
+            <th data-iu-v3-sort-col="4" aria-sort="none">Средний чек</th>
+            <th data-iu-v3-sort-col="5" aria-sort="none">Источник</th>
+          </tr></thead>
           <tbody>
             ${dailyRows}
-            ${[].map((row) => `
-              <tr>
-                <td><strong>${escapeHtml(compactDate(row.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(row.date)}</span></td>
-                <td>${metricCell(row.ordersUnits, 'int')}</td>
-                <td>${metricCell(row.ordersRevenue, 'money')}</td>
-                <td>${metricCell(row.estimatedMargin, 'money')}</td>
-                <td>${metricCell(row.avgPrice, 'money')}</td>
-                <td><span class="iu-drr-v3-note">${escapeHtml(row.source)}</span></td>
-              </tr>
-            `).join('')}
             <tr class="iu-drr-v3-empty-row" data-iu-v3-empty-row hidden><td colspan="6">Нет строк под выбранный фильтр</td></tr>
           </tbody>
         </table>

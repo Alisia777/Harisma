@@ -483,9 +483,9 @@
       .plb-v2-lfl-tile{--pc:var(--champ);padding:14px;border:1px solid var(--line);border-radius:15px;background:#11100d;color:var(--text);text-align:left;cursor:pointer;transition:transform 160ms,border 160ms}
       .plb-v2-lfl-tile:hover{transform:translateY(-2px)}.plb-v2-lfl-tile.active{border-color:var(--pc);box-shadow:inset 0 0 0 1px rgba(255,255,255,.025)}
       .plb-v2-lfl-tile small{display:block;color:var(--faint);font-size:9px;font-weight:850;text-transform:uppercase}.plb-v2-lfl-tile strong{display:block;margin-top:8px;color:var(--pc);font-size:23px}.plb-v2-lfl-tile p{margin:6px 0 0;color:var(--muted);font-size:10px}
-      .plb-v2-drawer-back{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity 240ms cubic-bezier(.2,.8,.2,1)}
+      .plb-v2-drawer-back{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.62);display:flex;justify-content:flex-end;align-items:flex-start;padding:72px 16px 16px;opacity:0;pointer-events:none;transition:opacity 240ms cubic-bezier(.2,.8,.2,1)}
       .plb-v2-drawer-back.open{opacity:1;pointer-events:auto}
-      .plb-v2-drawer{position:absolute;right:0;top:0;width:min(590px,94vw);height:100%;padding:22px;background:#0e0d0b;border-left:1px solid var(--line);transform:translateX(100%);transition:transform 240ms cubic-bezier(.16,1,.3,1);overflow:auto}
+      .plb-v2-drawer{position:relative;width:min(590px,94vw);height:min(760px,calc(100vh - 96px));max-height:calc(100vh - 96px);padding:22px;background:#0e0d0b;border:1px solid var(--line);border-radius:18px 0 0 18px;box-shadow:0 26px 90px rgba(0,0,0,.56);transform:translateX(110%);transition:transform 240ms cubic-bezier(.16,1,.3,1);overflow:auto}
       .plb-v2-drawer-back.open .plb-v2-drawer{transform:none}
       .plb-v2-drawer h2{font:500 27px Georgia,serif;margin:0}.plb-v2-drawer p{color:var(--muted);font-size:12px;line-height:1.45}
       .plb-v2-drawer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
@@ -1109,7 +1109,47 @@
   }
 
   function drawerHtml() {
-    return `<div class="plb-v2-drawer-back" data-plb-v2-drawer-back><aside class="plb-v2-drawer" data-plb-v2-drawer></aside></div>`;
+    return '';
+  }
+
+  function ensureDrawer() {
+    document.querySelectorAll('[data-plb-v2-drawer-back]:not([data-plb-v2-global-drawer-back])').forEach((node) => node.remove());
+    let drawerBack = document.querySelector('[data-plb-v2-global-drawer-back]');
+    if (!drawerBack) {
+      drawerBack = document.createElement('div');
+      drawerBack.className = 'plb-motion-v2 plb-v2-drawer-back';
+      drawerBack.setAttribute('data-plb-v2-drawer-back', '');
+      drawerBack.setAttribute('data-plb-v2-global-drawer-back', '');
+      drawerBack.innerHTML = '<aside class="plb-v2-drawer" data-plb-v2-drawer tabindex="-1"></aside>';
+      drawerBack.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target === drawerBack || target.closest?.('[data-plb-v2-close-drawer]')) closeDrawer();
+      });
+      document.body.appendChild(drawerBack);
+    }
+    return {
+      drawerBack,
+      drawer: drawerBack.querySelector('[data-plb-v2-drawer]')
+    };
+  }
+
+  function closeDrawer() {
+    const drawerBack = document.querySelector('[data-plb-v2-global-drawer-back]');
+    drawerBack?.classList.remove('open');
+    const savedScroll = Number(window.__plbV2DrawerScrollY);
+    if (Number.isFinite(savedScroll) && Math.abs((window.scrollY || 0) - savedScroll) > 2) {
+      window.scrollTo({ top: savedScroll, behavior: 'auto' });
+    }
+  }
+
+  function openDrawerWithContent(content) {
+    window.__plbV2DrawerScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const { drawerBack, drawer } = ensureDrawer();
+    if (!drawerBack || !drawer) return;
+    drawer.innerHTML = content;
+    drawer.scrollTop = 0;
+    drawerBack.classList.add('open');
+    requestAnimationFrame(() => drawer.focus({ preventScroll: true }));
   }
 
   function detailMetrics(row) {
@@ -1134,10 +1174,7 @@
   function openSkuDrawer(root, model, articleKey) {
     const row = [...model.allRows, ...lflModel(model).rows].find((item) => item.articleKey === articleKey);
     if (!row) return;
-    const drawerBack = root.querySelector('[data-plb-v2-drawer-back]');
-    const drawer = root.querySelector('[data-plb-v2-drawer]');
-    if (!drawerBack || !drawer) return;
-    drawer.innerHTML = `
+    openDrawerWithContent(`
       <h2>${escapeHtml(row.name)}</h2>
       <p>${escapeHtml(row.articleKey)} · ${escapeHtml(row.owner)} · ${escapeHtml(row.category)} · ${escapeHtml(row.traffic)}</p>
       <div class="plb-v2-drawer-grid">
@@ -1145,8 +1182,7 @@
       </div>
       <p><b>Неделя к неделе:</b> ${row.orderDelta >= 0 ? '+' : ''}${fmtInt(row.orderDelta)} заказов. Причина: ${escapeHtml(row.cause || 'сигнал не указан')}. Предыдущая неделя: ${fmtInt(row.previousItem?.orders)} заказов.</p>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="plb-v2-btn accent" type="button" data-plb-v2-close-drawer>Закрыть</button></div>
-    `;
-    drawerBack.classList.add('open');
+    `);
   }
 
   function openSubDrawer(root, articleKey) {
@@ -1154,10 +1190,7 @@
     const row = sub.articles.find((item) => item.articleKey === articleKey);
     if (!row) return;
     const sales = canonicalSalesMetrics(row, currentArticleMetricIndex(buildModel()));
-    const drawerBack = root.querySelector('[data-plb-v2-drawer-back]');
-    const drawer = root.querySelector('[data-plb-v2-drawer]');
-    if (!drawerBack || !drawer) return;
-    drawer.innerHTML = `
+    openDrawerWithContent(`
       <h2>${escapeHtml(row.title || row.name || row.articleKey)}</h2>
       <p>${escapeHtml(row.articleKey)} · ${escapeHtml(row.owner || 'Без owner')} · ${fmtInt(row.substitutionCount)} подменников</p>
       <div class="plb-v2-drawer-grid">
@@ -1176,8 +1209,7 @@
       </div>
       <p><b>Top подменники:</b> ${escapeHtml((row.topSubstitutions || []).slice(0, 8).map((item) => `${item.label || item.key}: ${fmtInt(item.orders)} заказов`).join(' · ') || 'нет трафика')}.</p>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="plb-v2-btn accent" type="button" data-plb-v2-close-drawer>Закрыть</button></div>
-    `;
-    drawerBack.classList.add('open');
+    `);
   }
 
   function renderSkeleton(root) {
@@ -1350,12 +1382,12 @@
       }
       const close = target.closest?.('[data-plb-v2-close-drawer]');
       if (close) {
-        root.querySelector('[data-plb-v2-drawer-back]')?.classList.remove('open');
+        closeDrawer();
         return;
       }
       const back = target.closest?.('[data-plb-v2-drawer-back]');
       if (back && target === back) {
-        back.classList.remove('open');
+        closeDrawer();
       }
     };
 

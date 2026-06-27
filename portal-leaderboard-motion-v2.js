@@ -407,6 +407,9 @@
       .plb-v2-kicker{margin:0 0 7px;color:var(--champ);font-size:10px;font-weight:850;letter-spacing:.14em;text-transform:uppercase}
       .plb-v2-title{margin:0;font:500 clamp(27px,3vw,42px)/1.04 Georgia,serif;letter-spacing:0}
       .plb-v2-lead{max-width:920px;margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.45}
+      .plb-v2-head-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+      .plb-v2-head-actions{display:flex;justify-content:flex-end;gap:8px}
+      .plb-v2-export-btn{min-width:126px}
       .plb-v2-badges{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px}
       .plb-v2-badge{display:inline-flex;align-items:center;gap:7px;min-height:28px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:rgba(13,11,9,.82);color:var(--muted);font-size:10px;font-weight:850;white-space:nowrap}
       .plb-v2-badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--champ);box-shadow:0 0 12px rgba(229,193,111,.45)}
@@ -492,7 +495,7 @@
       @keyframes plbV2Bar{from{transform:scaleY(.05);opacity:.12}to{transform:scaleY(1);opacity:1}}
       @keyframes plbV2Funnel{from{opacity:0;transform:translateY(7px) scaleX(.96)}to{opacity:1;transform:none}}
       @media(max-width:1350px){.plb-v2-weekbar,.plb-v2-grid,.plb-v2-sub-grid{grid-template-columns:1fr}.plb-v2-toolbar{grid-template-columns:1fr 1fr 1fr}.plb-v2-funnel{grid-template-columns:repeat(3,1fr)}.plb-v2-lfl-tiles{grid-template-columns:repeat(2,1fr)}}
-      @media(max-width:920px){.plb-v2-head{align-items:flex-start;flex-direction:column}.plb-v2-mode-rail{grid-template-columns:1fr}.plb-v2-week-compare,.plb-v2-week-tools,.plb-v2-toolbar{position:static;grid-template-columns:1fr}.plb-v2-versus{display:none}.plb-v2-funnel{grid-template-columns:repeat(2,1fr)}.plb-v2-sub-summary,.plb-v2-kpis,.plb-v2-lfl-tiles{grid-template-columns:1fr}.plb-v2-table th:first-child,.plb-v2-table td:first-child{position:static}}
+      @media(max-width:920px){.plb-v2-head{align-items:flex-start;flex-direction:column}.plb-v2-head-side{align-items:flex-start}.plb-v2-mode-rail{grid-template-columns:1fr}.plb-v2-week-compare,.plb-v2-week-tools,.plb-v2-toolbar{position:static;grid-template-columns:1fr}.plb-v2-versus{display:none}.plb-v2-funnel{grid-template-columns:repeat(2,1fr)}.plb-v2-sub-summary,.plb-v2-kpis,.plb-v2-lfl-tiles{grid-template-columns:1fr}.plb-v2-table th:first-child,.plb-v2-table td:first-child{position:static}}
       @media(prefers-reduced-motion:reduce){.plb-motion-v2 *,.plb-motion-v2 *::before,.plb-motion-v2 *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
     `;
     document.head.appendChild(style);
@@ -572,12 +575,12 @@
     ].map(([key, label]) => ({ key, label }));
     return `
       <div class="plb-v2-toolbar">
-        <div class="plb-v2-field"><label>Поиск по всем позициям</label><input id="plbV2Search" class="plb-v2-control" value="${escapeHtml(model.filters.search)}" placeholder="SKU, товар, owner..."></div>
-        <div class="plb-v2-field"><label>Owner</label><select id="plbV2Owner" class="plb-v2-control">${optionsHtml(owners, model.filters.owner, 'Все owner')}</select></div>
-        <div class="plb-v2-field"><label>Категория</label><select id="plbV2Category" class="plb-v2-control">${optionsHtml(categories, model.filters.category, 'Все категории')}</select></div>
-        <div class="plb-v2-field"><label>Источник</label><select id="plbV2Traffic" class="plb-v2-control">${optionsHtml(traffic, model.filters.traffic, 'Все источники')}</select></div>
-        <div class="plb-v2-field"><label>Сигнал</label><select id="plbV2Signal" class="plb-v2-control">${optionsHtml(signalOptions, model.filters.signal, 'Все сигналы')}</select></div>
-        <div class="plb-v2-field"><label>Сортировка</label><select id="plbV2Sort" class="plb-v2-control">${optionsHtml(sortOptions, model.filters.sort)}</select></div>
+        <div class="plb-v2-field"><label>Поиск по всем позициям</label><input id="plbV2Search" class="plb-v2-control" data-plb-v2-filter="search" value="${escapeHtml(model.filters.search)}" placeholder="SKU, товар, owner..."></div>
+        <div class="plb-v2-field"><label>Owner</label><select id="plbV2Owner" class="plb-v2-control" data-plb-v2-filter="owner">${optionsHtml(owners, model.filters.owner, 'Все owner')}</select></div>
+        <div class="plb-v2-field"><label>Категория</label><select id="plbV2Category" class="plb-v2-control" data-plb-v2-filter="category">${optionsHtml(categories, model.filters.category, 'Все категории')}</select></div>
+        <div class="plb-v2-field"><label>Источник</label><select id="plbV2Traffic" class="plb-v2-control" data-plb-v2-filter="traffic">${optionsHtml(traffic, model.filters.traffic, 'Все источники')}</select></div>
+        <div class="plb-v2-field"><label>Сигнал</label><select id="plbV2Signal" class="plb-v2-control" data-plb-v2-filter="signal">${optionsHtml(signalOptions, model.filters.signal, 'Все сигналы')}</select></div>
+        <div class="plb-v2-field"><label>Сортировка</label><select id="plbV2Sort" class="plb-v2-control" data-plb-v2-filter="sort">${optionsHtml(sortOptions, model.filters.sort)}</select></div>
         <button type="button" class="plb-v2-btn accent" data-plb-v2-reset>Сбросить</button>
       </div>
     `;
@@ -587,9 +590,9 @@
     return `
       <div class="plb-v2-weekbar">
         <div class="plb-v2-week-compare">
-          <div class="plb-v2-field"><label>Текущая неделя</label><select id="plbV2CurrentWeek" class="plb-v2-control">${snapshotOptionsHtml(model.snapshots, model.current?.key || 'latest')}</select></div>
+          <div class="plb-v2-field"><label>Текущая неделя</label><select id="plbV2CurrentWeek" class="plb-v2-control" data-plb-v2-week-control="current">${snapshotOptionsHtml(model.snapshots, model.current?.key || 'latest')}</select></div>
           <div class="plb-v2-versus">к</div>
-          <div class="plb-v2-field"><label>Сравнить с</label><select id="plbV2CompareWeek" class="plb-v2-control">${snapshotOptionsHtml(model.snapshots, model.compare?.key || '')}</select></div>
+          <div class="plb-v2-field"><label>Сравнить с</label><select id="plbV2CompareWeek" class="plb-v2-control" data-plb-v2-week-control="compare">${snapshotOptionsHtml(model.snapshots, model.compare?.key || '')}</select></div>
         </div>
         <div class="plb-v2-week-tools">
           ${[
@@ -741,6 +744,130 @@
         </div>
       </article>
     `;
+  }
+
+  function excelCell(value) {
+    return escapeHtml(value ?? '').replace(/\n/g, '<br>');
+  }
+
+  function exportDateStamp() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function downloadHtmlTable(filename, title, headers, rows) {
+    const table = `
+      <html>
+        <head><meta charset="utf-8"></head>
+        <body>
+          <table border="1">
+            <caption>${excelCell(title)}</caption>
+            <thead><tr>${headers.map((header) => `<th>${excelCell(header)}</th>`).join('')}</tr></thead>
+            <tbody>
+              ${rows.map((row) => `<tr>${row.map((cell) => `<td>${excelCell(cell)}</td>`).join('')}</tr>`).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+    const blob = new Blob([`\ufeff${table}`], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1200);
+  }
+
+  function exportMetricRows(model) {
+    const headers = ['SKU', 'Артикул', 'Owner', 'Категория', 'Источник', 'Охваты', 'Клики', 'CTR', 'Корзины', 'Заказы', 'Δ заказов', 'Выкупы', 'Выручка', 'ROMI', 'ДРР', 'Сигнал', 'Причина'];
+    const rows = model.rows.map((row) => [
+      row.name,
+      row.articleKey,
+      row.owner,
+      row.category,
+      row.traffic,
+      numberOrZero(row.reach),
+      numberOrZero(row.clicks),
+      fmtPct(row.ctrPct),
+      numberOrZero(row.carts),
+      numberOrZero(row.orders),
+      numberOrZero(row.orderDelta),
+      numberOrZero(row.buys),
+      numberOrZero(row.revenue),
+      fmtPct(row.romiPct),
+      fmtPct(row.drrPct),
+      signalLabel(row.signalKey),
+      row.cause || ''
+    ]);
+    return { headers, rows, title: 'Продуктовый лидерборд - все позиции' };
+  }
+
+  function exportSubstitutionRows(model) {
+    const sub = substitutionPayload();
+    const articleIndex = currentArticleMetricIndex(model);
+    const rows = filterSubstitutions(model, sub.articles).map((row) => {
+      const sales = canonicalSalesMetrics(row, articleIndex);
+      return [
+        row.articleKey,
+        row.title || row.name || row.article,
+        row.owner || 'Без owner',
+        numberOrZero(row.views),
+        numberOrZero(row.carts),
+        numberOrZero(row.orders),
+        numberOrZero(row.favorites),
+        numberOrZero(sales.buys),
+        numberOrZero(sales.revenue),
+        fmtPct(row.cartRate),
+        fmtPct(row.orderRate),
+        numberOrZero(row.campaignCount),
+        (row.topSubstitutions || []).slice(0, 8).map((item) => `${item.label || item.key}: ${fmtInt(item.orders)}`).join(' | ')
+      ];
+    });
+    return {
+      headers: ['SKU', 'Название', 'Owner', 'Просмотры', 'Корзины', 'Заказы', 'Избранное', 'Выкупы', 'Выручка', 'Cart CR', 'Order CR', 'Кампании', 'Top подменники'],
+      rows,
+      title: 'Продуктовый лидерборд - WB подменники'
+    };
+  }
+
+  function exportLflRows(model) {
+    const lfl = lflModel(model);
+    const currentClass = lflClass();
+    let rows = lfl.available ? (currentClass === 'all' ? lfl.rows : lfl.groups[currentClass] || []) : [];
+    rows = sortRows(filterRows(rows, model.filters), model.filters);
+    return {
+      headers: ['SKU', 'Артикул', 'Owner', 'Класс', 'Категория', 'Источник', 'Заказы сейчас', 'Заказы было', 'Δ заказов', 'Охваты Δ', 'Клики Δ', 'Корзины Δ', 'Выкупы Δ', 'Выручка Δ', 'Причина'],
+      rows: rows.map((row) => [
+        row.name,
+        row.articleKey,
+        row.owner,
+        row.lflClass,
+        row.category,
+        row.traffic,
+        numberOrZero(row.currentItem?.orders ?? (row.lflClass === 'discontinued' ? 0 : row.orders)),
+        numberOrZero(row.previousItem?.orders),
+        numberOrZero(row.orderDelta),
+        numberOrZero(lflMetricDelta(row, 'reach')),
+        numberOrZero(lflMetricDelta(row, 'clicks')),
+        numberOrZero(lflMetricDelta(row, 'carts')),
+        numberOrZero(lflMetricDelta(row, 'buys')),
+        numberOrZero(lflMetricDelta(row, 'revenue')),
+        row.cause || ''
+      ]),
+      title: 'Продуктовый лидерборд - изменение по сопоставимым SKU'
+    };
+  }
+
+  function exportProductLeaderboard(model) {
+    const exportData = model.mode === 'substitutes'
+      ? exportSubstitutionRows(model)
+      : model.mode === 'lfl'
+        ? exportLflRows(model)
+        : exportMetricRows(model);
+    const modeName = model.mode || 'metrics';
+    downloadHtmlTable(`product-leaderboard-${modeName}-${exportDateStamp()}.xls`, exportData.title, exportData.headers, exportData.rows);
   }
 
   function renderMetrics(model) {
@@ -1094,10 +1221,15 @@
             <h2 class="plb-v2-title">Продуктовый лидерборд</h2>
             <p class="plb-v2-lead">КЗ, подменники WB и изменение по сопоставимым SKU. Фильтры, текущая/сравнительная недели и полные таблицы сохранены.</p>
           </div>
-          <div class="plb-v2-badges">
-            <span class="plb-v2-badge">площадка из шапки: ${escapeHtml(model.marketplace)}</span>
-            <span class="plb-v2-badge">${fmtInt(model.snapshots.length)} недель</span>
-            <span class="plb-v2-badge">${fmtInt(model.rows.length)} строк</span>
+          <div class="plb-v2-head-side">
+            <div class="plb-v2-head-actions">
+              <button type="button" class="plb-v2-btn accent plb-v2-export-btn" data-plb-v2-export>Выгрузить Excel</button>
+            </div>
+            <div class="plb-v2-badges">
+              <span class="plb-v2-badge">площадка из шапки: ${escapeHtml(model.marketplace)}</span>
+              <span class="plb-v2-badge">${fmtInt(model.snapshots.length)} недель</span>
+              <span class="plb-v2-badge">${fmtInt(model.rows.length)} строк</span>
+            </div>
           </div>
         </div>
         ${buildWeekControls(model)}
@@ -1109,6 +1241,62 @@
       </section>
     `;
     bindEvents(root, rootId);
+  }
+
+  function applyWeekControl(control, rootId) {
+    const kind = control?.getAttribute?.('data-plb-v2-week-control') || '';
+    if (!kind) return false;
+    const filters = getFilters();
+    if (kind === 'current') {
+      filters.snapshot = control.value || 'latest';
+      filters.lflCurrentSnapshot = filters.snapshot;
+      if (filters.lflCompareSnapshot === filters.snapshot) filters.lflCompareSnapshot = '';
+    } else if (kind === 'compare') {
+      filters.lflCompareSnapshot = control.value || '';
+    } else {
+      return false;
+    }
+    renderProductLeaderboardV2(rootId);
+    return true;
+  }
+
+  function applyFilterControl(control, rootId) {
+    const key = control?.getAttribute?.('data-plb-v2-filter') || '';
+    if (!key) return false;
+    const filters = getFilters();
+    if (key === 'search') {
+      filters.search = control.value || '';
+    } else if (key === 'sort') {
+      filters.sort = control.value || 'orderDeltaAbs';
+    } else {
+      filters[key] = control.value || 'all';
+    }
+    renderProductLeaderboardV2(rootId);
+    return true;
+  }
+
+  function bindDirectControls(root, rootId) {
+    root.querySelectorAll('[data-plb-v2-filter]').forEach((control) => {
+      const key = control.getAttribute('data-plb-v2-filter');
+      if (key === 'search') {
+        control.oninput = (event) => {
+          event.stopPropagation();
+          clearTimeout(searchDebounce);
+          searchDebounce = setTimeout(() => applyFilterControl(control, rootId), 90);
+        };
+      } else {
+        control.onchange = (event) => {
+          event.stopPropagation();
+          applyFilterControl(control, rootId);
+        };
+      }
+    });
+    root.querySelectorAll('[data-plb-v2-week-control]').forEach((control) => {
+      control.onchange = (event) => {
+        event.stopPropagation();
+        applyWeekControl(control, rootId);
+      };
+    });
   }
 
   function bindEvents(root, rootId) {
@@ -1129,6 +1317,11 @@
       const weekBar = target.closest?.('[data-plb-v2-week-snapshot]');
       if (weekBar) {
         selectSnapshotFromChart(weekBar.getAttribute('data-plb-v2-week-snapshot'), rootId);
+        return;
+      }
+      const exportButton = target.closest?.('[data-plb-v2-export]');
+      if (exportButton) {
+        exportProductLeaderboard(buildModel());
         return;
       }
       const resetButton = target.closest?.('[data-plb-v2-reset]');
@@ -1177,42 +1370,20 @@
 
     root.onchange = (event) => {
       const target = event.target;
-      const filters = getFilters();
-      if (target.id === 'plbV2CurrentWeek') {
-        filters.snapshot = target.value || 'latest';
-        filters.lflCurrentSnapshot = filters.snapshot;
-        if (filters.lflCompareSnapshot === filters.snapshot) filters.lflCompareSnapshot = '';
-        renderProductLeaderboardV2(rootId);
-      } else if (target.id === 'plbV2CompareWeek') {
-        filters.lflCompareSnapshot = target.value || '';
-        renderProductLeaderboardV2(rootId);
-      } else if (target.id === 'plbV2Owner') {
-        filters.owner = target.value || 'all';
-        renderProductLeaderboardV2(rootId);
-      } else if (target.id === 'plbV2Category') {
-        filters.category = target.value || 'all';
-        renderProductLeaderboardV2(rootId);
-      } else if (target.id === 'plbV2Traffic') {
-        filters.traffic = target.value || 'all';
-        renderProductLeaderboardV2(rootId);
-      } else if (target.id === 'plbV2Signal') {
-        filters.signal = target.value || 'all';
-        renderProductLeaderboardV2(rootId);
-      } else if (target.id === 'plbV2Sort') {
-        filters.sort = target.value || 'orderDeltaAbs';
-        renderProductLeaderboardV2(rootId);
-      }
+      if (applyWeekControl(target, rootId)) return;
+      applyFilterControl(target, rootId);
     };
 
     root.oninput = (event) => {
       const target = event.target;
-      if (target.id !== 'plbV2Search') return;
+      if (target.getAttribute?.('data-plb-v2-filter') !== 'search') return;
       clearTimeout(searchDebounce);
       searchDebounce = setTimeout(() => {
-        getFilters().search = target.value || '';
-        renderProductLeaderboardV2(rootId);
+        applyFilterControl(target, rootId);
       }, 90);
     };
+
+    bindDirectControls(root, rootId);
   }
 
   function rerenderIfActive() {

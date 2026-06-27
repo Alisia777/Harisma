@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260626-iudrr-funnel-summary-fix';
+  const VERSION = '20260627-iudrr-platform-kpis';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -806,10 +806,37 @@
     `;
   }
 
+  function buildPlatformHeroKpis(rows, focus, positions) {
+    const total = platformMonthSummary(focus, rows);
+    const label = PLATFORM[focus]?.label || focus;
+    if (focus === 'ya') {
+      const ctr = safeRatio(total.clicks, total.views);
+      const orderCr = safeRatio(total.orders, total.clicks);
+      const cards = [
+        kpiCard(`${label} оборот`, fmtMoney(total.revenueFact), `план ${fmtMoney(total.revenuePlan)} · выполнение ${fmtPct(total.revenueCompletion)}`, total.revenueCompletion, PLATFORM[focus]?.tone),
+        kpiCard(`${label} заказы`, fmtInt(total.orders), `клики ${fmtInt(total.clicks)} · CR ${fmtPct(orderCr)}`, orderCr, '#72e6a0'),
+        kpiCard(`${label} выкупы`, fmtInt(total.buyouts), `заказы ${fmtInt(total.orders)} · выкуп ${fmtPct(safeRatio(total.buyouts, total.orders))}`, safeRatio(total.buyouts, total.orders), '#72e6a0'),
+        kpiCard(`${label} трафик`, `${fmtInt(total.views)} / ${fmtInt(total.clicks)}`, `показы / клики · CTR ${fmtPct(ctr)}`, ctr, PLATFORM[focus]?.tone),
+        kpiCard('Позиционный источник', fmtInt(positions.length), `${label} · воронка без ИУ`, Math.min(1, positions.length / 50), '#e5c16f')
+      ];
+      return `<div class="iu-drr-v3-kpis">${cards.join('')}</div>`;
+    }
+
+    const drrProgress = total.drrFact === null ? null : Math.max(0, 1 - total.drrFact);
+    const cards = [
+      kpiCard(`${label} факт на дату`, fmtMoney(total.revenueFact), `план ${fmtMoney(total.revenuePlan)} · выполнение ${fmtPct(total.revenueCompletion)}`, total.revenueCompletion, toneForCompletion(total.revenueCompletion)),
+      kpiCard(`${label} реклама факт`, fmtMoney(total.adsFact), `план ${fmtMoney(total.adsPlan)} · ДРР ${fmtPct(total.drrFact)}`, pctValue(total.adsFact, total.adsPlan), toneForCompletion(pctValue(total.adsFact, total.adsPlan), true)),
+      kpiCard(`${label} выполнение`, fmtPct(total.revenueCompletion), `${fmtMoney(total.revenueFact)} / ${fmtMoney(total.revenuePlan)}`, total.revenueCompletion, toneForCompletion(total.revenueCompletion)),
+      kpiCard(`${label} ДРР`, fmtPct(total.drrFact), `расход ${fmtMoney(total.adsFact)} / база ${fmtMoney(total.revenueFact)}`, drrProgress, toneForCompletion(total.drrFact, true)),
+      kpiCard('Позиционный источник', fmtInt(positions.length), `${label} · SKU/day и API-срез`, Math.min(1, positions.length / 50), '#e5c16f')
+    ];
+    return `<div class="iu-drr-v3-kpis">${cards.join('')}</div>`;
+  }
+
   function buildHeroKpis(rows, focus, positions) {
+    if (focus !== 'all' && PLATFORM[focus]) return buildPlatformHeroKpis(rows, focus, positions);
     const wb = platformMonthSummary('wb', rows);
     const ozon = platformMonthSummary('ozon', rows);
-    const ya = platformMonthSummary('ya', rows);
     const iuPlan = wb.revenuePlan + ozon.revenuePlan;
     const iuFact = wb.revenueFact + ozon.revenueFact;
     const adsPlan = wb.adsPlan + ozon.adsPlan;
@@ -821,9 +848,6 @@
       kpiCard('Ozon GMV', fmtPct(ozon.revenueCompletion), `${fmtMoney(ozon.revenueFact)} / ${fmtMoney(ozon.revenuePlan)} · ДРР ${fmtPct(ozon.drrFact)}`, ozon.revenueCompletion, toneForCompletion(ozon.revenueCompletion)),
       kpiCard('Позиционный источник', fmtInt(positions.length), `${focus === 'all' ? 'все площадки' : PLATFORM[focus]?.label} · Yandex без ИУ`, Math.min(1, positions.length / 50), '#e5c16f')
     ];
-    if (focus === 'ya') {
-      cards[3] = kpiCard('Я.Маркет воронка', fmtMoney(ya.revenueFact), `заказы ${fmtInt(ya.orders)} · выкупы ${fmtInt(ya.buyouts)}`, ya.revenueCompletion, '#ffd45f');
-    }
     return `<div class="iu-drr-v3-kpis">${cards.join('')}</div>`;
   }
 

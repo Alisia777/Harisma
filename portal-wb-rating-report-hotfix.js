@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260608wbfunnel1';
+  const VERSION = '20260627ratingdetails1';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -282,13 +282,19 @@
       .rating-sort-control button:hover { border-color:rgba(215,166,76,.46); background:rgba(215,166,76,.1); }
       .rating-queue-controls { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.018); }
       .rating-queue-controls .rating-sort-control { justify-content:flex-start; }
+      .rating-inline-search { flex:1 1 260px; min-width:220px; height:36px; border:1px solid rgba(216,176,102,.2); border-radius:999px; background:rgba(0,0,0,.32); color:#fff7e6; padding:0 12px; font:inherit; font-size:12px; outline:none; }
+      .rating-inline-search::placeholder { color:rgba(255,247,230,.52); }
+      .rating-inline-search:focus { border-color:rgba(216,176,102,.62); box-shadow:0 0 0 3px rgba(216,176,102,.12); }
       .rating-work-table { max-height:640px; overflow:auto; }
       .rating-work-table table { width:100%; min-width:2060px; border-collapse:separate; border-spacing:0; table-layout:fixed; }
       .rating-work-table thead th { position:sticky; top:0; z-index:4; padding:10px 12px; border-bottom:1px solid var(--line); background:rgba(12,8,7,.96); color:#f8e9c7; font-size:11px; text-align:left; text-transform:uppercase; letter-spacing:0; }
       .rating-work-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:top; overflow:hidden; background:linear-gradient(90deg,hsl(var(--pf-hue,205) 74% 34% / var(--pf-row-fill,.025)),rgba(255,255,255,.012)); }
       .rating-work-table tr:hover td { background:hsl(var(--pf-hue,205) 72% 42% / .08); }
       .rating-work-table .article-cell { min-width:0; }
-      .rating-work-table .article-cell .link-btn { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .rating-work-table .article-cell .link-btn { display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff3d6 !important; background:rgba(216,176,102,.13); border:1px solid rgba(216,176,102,.34); border-radius:999px; padding:4px 8px; text-decoration:none; }
+      .rating-work-table .article-cell .link-btn:hover { color:#fff !important; background:rgba(216,176,102,.24); border-color:rgba(216,176,102,.62); }
+      .rating-work-row[data-rating-detail] { cursor:pointer; }
+      .rating-work-row[data-rating-detail]:hover .article-cell .link-btn { color:#fff !important; background:rgba(216,176,102,.22); }
       .rating-work-table .cell-main { display:block; font-size:15px; line-height:1.15; font-weight:900; color:#fff7e6; }
       .rating-work-table .cell-muted { display:block; margin-top:4px; color:var(--muted); font-size:11px; line-height:1.25; }
       .rating-work-table .cell-text { display:block; color:#efe5d6; font-size:12px; line-height:1.35; max-height:48px; overflow:hidden; }
@@ -309,6 +315,20 @@
       .rating-empty-ozon h4 { margin:0 0 8px; font-size:16px; }
       .rating-empty-ozon p { margin:0; color:var(--muted); line-height:1.45; }
       .rating-empty-ozon .need-list { display:grid; gap:8px; margin-top:10px; }
+      .rating-card-modal-backdrop { position:fixed; inset:0; z-index:10000; display:grid; place-items:center; padding:24px; background:rgba(0,0,0,.72); backdrop-filter:blur(10px); }
+      .rating-card-modal { width:min(980px,96vw); max-height:min(82vh,820px); overflow:auto; border:1px solid rgba(216,176,102,.32); border-radius:14px; background:linear-gradient(145deg,rgba(17,20,24,.98),rgba(13,10,9,.98)); box-shadow:0 28px 90px rgba(0,0,0,.58); color:#fff7e6; }
+      .rating-card-modal__head { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; padding:20px 22px 12px; border-bottom:1px solid rgba(216,176,102,.18); }
+      .rating-card-modal__head h3 { margin:4px 0 8px; font-size:28px; line-height:1.05; }
+      .rating-card-modal__head p { margin:0; color:rgba(255,247,230,.68); line-height:1.4; }
+      .rating-card-modal__close { border:1px solid rgba(216,176,102,.34); border-radius:999px; background:rgba(216,176,102,.1); color:#fff7e6; padding:8px 12px; font:inherit; font-weight:800; cursor:pointer; }
+      .rating-card-modal__body { display:grid; gap:14px; padding:16px 22px 22px; }
+      .rating-detail-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+      .rating-detail-box { border:1px solid rgba(255,255,255,.1); border-radius:10px; background:rgba(255,255,255,.035); padding:12px; min-width:0; }
+      .rating-detail-box span { display:block; color:rgba(255,247,230,.58); font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0; }
+      .rating-detail-box strong { display:block; margin-top:6px; color:#fff; font-size:20px; line-height:1.12; overflow-wrap:anywhere; }
+      .rating-detail-box small { display:block; margin-top:5px; color:rgba(255,247,230,.58); line-height:1.35; }
+      .rating-detail-note { border:1px solid rgba(216,176,102,.2); border-radius:10px; background:rgba(216,176,102,.08); padding:12px; color:#f6e6c5; line-height:1.45; }
+      @media (max-width: 900px) { .rating-detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
       @media (max-width: 1200px) {
         .rating-platform-grid, .rating-empty-ozon { grid-template-columns:1fr; }
         .rating-planfact-board.sku-plan-platform-board { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -2487,9 +2507,40 @@
     return true;
   }
 
+  function ratingSearchQuery() {
+    return normalizeKey(workbenchState.search || '');
+  }
+
+  function ratingRowSearchText(row) {
+    return normalizeKey([
+      row?.key,
+      row?.label,
+      row?.card?.articleKey,
+      row?.card?.supplierArticle,
+      row?.card?.article,
+      row?.card?.nmId,
+      gameLabel(row),
+      row?.comment
+    ].filter(Boolean).join(' '));
+  }
+
+  function ratingItemSearchText(item) {
+    return normalizeKey([
+      item?.key,
+      item?.label,
+      item?.article,
+      item?.supplierArticle,
+      item?.nmId,
+      item?.date,
+      item?.status,
+      item?.text
+    ].filter(Boolean).join(' '));
+  }
+
   function filterRatingRows(rows) {
     const status = workbenchState.status || 'all';
-    return [...rows].filter((row) => historyRowMatches(row, status));
+    const query = ratingSearchQuery();
+    return [...rows].filter((row) => historyRowMatches(row, status) && (!query || ratingRowSearchText(row).includes(query)));
   }
 
   function renderHistoryControls(items, visible) {
@@ -2508,6 +2559,7 @@
           <span>Фильтр</span>
           ${statusOptions.map(([value, label]) => `<button type="button" class="${status === value ? 'active' : ''}" data-rating-status="${esc(value)}">${esc(label)}</button>`).join('')}
         </div>
+        <input class="rating-inline-search" data-rating-search value="${esc(workbenchState.search || '')}" placeholder="Поиск: артикул, nmID, статус">
         ${renderRatingSortControl()}
         <div class="badge-stack">${chip(`${fmtInt(visible.length)} из ${fmtInt(items.length)}`, 'info')}</div>
       </div>
@@ -2561,6 +2613,7 @@
           <span>Сортировка</span>
           ${sortOptions.map(([value, label]) => `<button type="button" class="${activeSort === value ? 'active' : ''}" data-rating-sort="${esc(value)}">${esc(label)}</button>`).join('')}
         </div>
+        <input class="rating-inline-search" data-rating-search value="${esc(workbenchState.search || '')}" placeholder="Поиск: артикул, nmID, текст">
         <div class="badge-stack">${chip(`${fmtInt(visible.length)} из ${fmtInt(items.length)}`, 'info')}</div>
       </div>
     `;
@@ -2568,6 +2621,7 @@
 
   function filterStructuredQueueItems(items, kind) {
     const status = workbenchState.status || 'all';
+    const query = ratingSearchQuery();
     let next = [...items];
     if (status === 'unanswered') {
       next = next.filter((item) => num(item.unanswered) > 0 || item.answered === false);
@@ -2577,6 +2631,7 @@
       const newest = next.reduce((latest, item) => Math.max(latest, dateValue(item.date)), 0);
       next = next.filter((item) => dateValue(item.date) === newest);
     }
+    if (query) next = next.filter((item) => ratingItemSearchText(item).includes(query));
     return next;
   }
 
@@ -2610,7 +2665,7 @@
             ? simpleBadge('падает', 'down')
             : simpleBadge('норма', 'up');
       return `
-        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('wb', ratingRatio)}">
+        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('wb', ratingRatio)}" data-rating-detail="${esc(row.key || row.label)}" data-rating-kind="history" tabindex="0">
           <td class="article-cell">
             ${link}
             <span class="cell-muted">WB nm ${esc(row.card?.nmId || '—')} · история отзывов ${signed(row.historyDelta)}</span>
@@ -2690,7 +2745,7 @@
     const rows = visible.slice(0, 120).map((item) => {
       const ratio = kind === 'reviews' && hasNumber(item.valuation || item.rating) ? Number(item.valuation || item.rating) / 5 : (item.unanswered ? 0.35 : 0.85);
       return `
-        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('wb', ratio)}">
+        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('wb', ratio)}" data-rating-detail="${esc(item.key || item.label)}" data-rating-kind="${esc(kind)}" tabindex="0">
           <td class="article-cell">
             ${typeof linkToSku === 'function' ? linkToSku(item.key || item.label, item.label) : esc(item.label)}
             <span class="cell-muted">WB nm ${esc(item.nmId || '—')}</span>
@@ -2866,6 +2921,136 @@
     return renderHistoryCards(model);
   }
 
+  function ratingDetailKeys(row) {
+    return [
+      row?.key,
+      row?.label,
+      row?.card?.articleKey,
+      row?.card?.supplierArticle,
+      row?.card?.article,
+      row?.card?.sku,
+      row?.card?.nmId,
+      row?.card?.wbNmId
+    ].map(normalizeKey).filter(Boolean);
+  }
+
+  function findRatingDetailRow(model, key) {
+    const needle = normalizeKey(key);
+    if (!needle) return null;
+    return (model?.rows || []).find((row) => ratingDetailKeys(row).some((value) => value === needle))
+      || (model?.rows || []).find((row) => ratingDetailKeys(row).some((value) => value.includes(needle) || needle.includes(value)))
+      || null;
+  }
+
+  function ratingSkuMeta(row, st) {
+    const skuMap = buildSkuMap(st);
+    return ratingDetailKeys(row).map((key) => skuMap.get(key)).find(Boolean) || null;
+  }
+
+  function ratingProductStatus(row, sku) {
+    return sku?.status
+      || sku?.lifecycleStatus
+      || sku?.productStatus
+      || sku?.state
+      || row?.card?.status
+      || row?.card?.statusName
+      || 'Статус в реестре не задан';
+  }
+
+  function ratingHowItWorks(row) {
+    const unanswered = num(row?.unanswered) + num(row?.unansweredQuestions);
+    if (unanswered > 0) return `Нужно ответить: ${fmtInt(unanswered)} хвостов по отзывам/вопросам.`;
+    if (num(row?.p1?.low) > 0) return `Есть свежий негатив: ${fmtInt(row.p1.low)} низких оценок за последний день.`;
+    if (num(row?.p7?.negativePct) >= 0.12) return `Негатив выше нормы за 7 дней: ${fmtPct(row.p7.negativePct)}.`;
+    if (num(row?.ratingDelta1) <= -0.03 || num(row?.ratingDelta7) <= -0.05) return 'Рейтинг просел, стоит проверить последние отзывы и карточку.';
+    if (num(row?.p7?.reviews) >= 10 && (row?.p7?.negativePct === null || num(row.p7.negativePct) <= 0.05)) return 'Карточка работает ровно: поток отзывов есть, негатив под контролем.';
+    return row?.comment || 'Критичных сигналов по карточке сейчас нет.';
+  }
+
+  function ratingDetailBox(label, value, hint = '') {
+    return `
+      <div class="rating-detail-box">
+        <span>${esc(label)}</span>
+        <strong>${esc(value)}</strong>
+        ${hint ? `<small>${esc(hint)}</small>` : ''}
+      </div>
+    `;
+  }
+
+  function closeRatingDetailModal() {
+    const existing = document.querySelector('.rating-card-modal-backdrop');
+    if (existing) existing.remove();
+  }
+
+  function openRatingDetail(key) {
+    const st = appState();
+    const payload = st.wbFeedbacks && typeof st.wbFeedbacks === 'object'
+      ? st.wbFeedbacks
+      : { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] };
+    const model = buildModel(payload);
+    const row = findRatingDetailRow(model, key);
+    if (!row) return;
+
+    const sku = ratingSkuMeta(row, st);
+    const status = ratingProductStatus(row, sku);
+    const unanswered = num(row.unanswered) + num(row.unansweredQuestions);
+    const title = row.label || row.key || 'WB карточка';
+    const nmId = row.card?.nmId || sku?.wb?.nmId || sku?.nmId || '—';
+    closeRatingDetailModal();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'rating-card-modal-backdrop';
+    overlay.innerHTML = `
+      <article class="rating-card-modal" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+        <div class="rating-card-modal__head">
+          <div>
+            <div class="badge-stack">
+              ${chip('WB', 'info')}
+              ${chip(status, status === 'Статус в реестре не задан' ? 'warn' : 'ok')}
+              ${unanswered > 0 ? chip(`без ответа ${fmtInt(unanswered)}`, 'danger') : chip('ответы ок', 'ok')}
+            </div>
+            <h3>${esc(title)}</h3>
+            <p>nmID ${esc(nmId)} · ${esc(sku?.category || sku?.segment || row.card?.subject || 'категория не указана')}</p>
+          </div>
+          <button type="button" class="rating-card-modal__close" data-rating-detail-close>Закрыть</button>
+        </div>
+        <div class="rating-card-modal__body">
+          <div class="rating-detail-grid">
+            ${ratingDetailBox('Статус товара', status, 'Берется из SKU-реестра или API-карточки.')}
+            ${ratingDetailBox('Как работает', gameLabel(row), ratingHowItWorks(row))}
+            ${ratingDetailBox('Рейтинг', fmtNum(row.rating, 2), `${fmtInt(row.feedbackCount)} отзывов в реестре`)}
+            ${ratingDetailBox('Выручка 7д', fmtMoney(row.revenue?.revenue7), row.revenue?.source || 'источник не указан')}
+            ${ratingDetailBox('Отзывы 7д', fmtInt(row.p7?.reviews), `негатив ${fmtPct(row.p7?.negativePct)}`)}
+            ${ratingDetailBox('Отзывы вчера', fmtInt(row.p1?.reviews), `низкие оценки ${fmtInt(row.p1?.low)}`)}
+            ${ratingDetailBox('Вопросы', fmtInt(row.questionCount), `без ответа ${fmtInt(row.unansweredQuestions)}`)}
+            ${ratingDetailBox('Динамика', signed(row.historyDelta), `к истории: ${fmtNum(row.historyRating, 2)}`)}
+          </div>
+          <div class="rating-detail-note">
+            <strong>Что проверить:</strong> ${esc(ratingHowItWorks(row))}
+          </div>
+          <div class="rating-detail-note">
+            <strong>Связь с реестром:</strong> ${esc(sku ? 'карточка связана с SKU-реестром' : 'связь с SKU-реестром не найдена, проверьте alias/API в SKU workspace')}.
+          </div>
+        </div>
+      </article>
+    `;
+
+    function dismiss() {
+      document.removeEventListener('keydown', handleKey);
+      overlay.remove();
+    }
+
+    function handleKey(event) {
+      if (event.key === 'Escape') dismiss();
+    }
+
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay || event.target.closest('[data-rating-detail-close]')) dismiss();
+    });
+    document.addEventListener('keydown', handleKey);
+    document.body.appendChild(overlay);
+  }
+
   function attachStructuredEvents(rootId) {
     const root = document.getElementById(rootId);
     if (!root) return;
@@ -2875,6 +3060,7 @@
         structuredState.view = 'history';
         workbenchState.status = 'all';
         workbenchState.sort = 'revenue';
+        workbenchState.search = '';
         renderWbCardRatingStructured(rootId);
       });
     });
@@ -2882,6 +3068,7 @@
       button.addEventListener('click', () => {
         structuredState.view = button.dataset.ratingView || 'history';
         workbenchState.status = 'all';
+        workbenchState.search = '';
         renderWbCardRatingStructured(rootId);
       });
     });
@@ -2899,6 +3086,19 @@
       if (control.tagName === 'SELECT') control.addEventListener('change', applySort);
       else control.addEventListener('click', applySort);
     });
+    root.querySelectorAll('[data-rating-search]').forEach((input) => {
+      input.addEventListener('input', () => {
+        workbenchState.search = input.value || '';
+        renderWbCardRatingStructured(rootId);
+        window.requestAnimationFrame(() => {
+          const nextInput = document.getElementById(rootId)?.querySelector('[data-rating-search]');
+          if (!nextInput) return;
+          nextInput.focus();
+          const length = nextInput.value.length;
+          if (typeof nextInput.setSelectionRange === 'function') nextInput.setSelectionRange(length, length);
+        });
+      });
+    });
     root.querySelectorAll('[data-rating-stats-period]').forEach((control) => {
       control.addEventListener('click', () => {
         structuredState.statsPeriod = control.dataset.ratingStatsPeriod || 'all';
@@ -2910,6 +3110,16 @@
         structuredState.statsMetric = control.dataset.ratingStatsMetric || 'all';
         renderWbCardRatingStructured(rootId);
       });
+    });
+    root.querySelectorAll('[data-rating-detail]').forEach((row) => {
+      const open = (event) => {
+        if (event.type === 'keydown' && !['Enter', ' '].includes(event.key)) return;
+        if (event.target.closest('[data-rating-status],[data-rating-sort],[data-rating-view],[data-rating-platform],[data-rating-stats-period],[data-rating-stats-metric],[data-rating-search]')) return;
+        event.preventDefault();
+        openRatingDetail(row.dataset.ratingDetail || '');
+      };
+      row.addEventListener('click', open);
+      row.addEventListener('keydown', open);
     });
   }
 

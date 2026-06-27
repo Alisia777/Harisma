@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260627-iudrr-table-filters';
+  const VERSION = '20260627-iudrr-position-dashboard-chart';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -632,8 +632,12 @@
       .iu-drr-v3-chart,.iu-drr-v3-mini{padding:13px;overflow:hidden}
       .iu-drr-v3-chart h3,.iu-drr-v3-mini h3{margin:0;font:500 17px Georgia,serif}
       .iu-drr-v3-svg{width:100%;height:245px;margin-top:9px;overflow:visible}
-      .iu-drr-v3-svg .bar{fill:var(--platform,#e5c16f);opacity:.28;transform-origin:bottom;animation:iuDrrV3Bar 480ms cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*35ms)}
-      .iu-drr-v3-svg .line{fill:none;stroke:var(--platform,#e5c16f);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1100;animation:iuDrrV3Line 780ms cubic-bezier(.2,.8,.2,1) both}
+      .iu-drr-v3-svg *{vector-effect:non-scaling-stroke}
+      .iu-drr-v3-svg .grid-line{stroke:rgba(255,255,255,.13);stroke-width:1}
+      .iu-drr-v3-svg .bar-current{fill:var(--platform,#e5c16f);opacity:.86;transform-origin:bottom;filter:drop-shadow(0 0 11px color-mix(in srgb,var(--platform,#e5c16f) 38%,transparent));animation:iuDrrV3Bar 620ms cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*32ms)}
+      .iu-drr-v3-svg .avg-line{fill:none;stroke:#fff1bf;stroke-width:3.3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 7;filter:drop-shadow(0 0 9px rgba(255,235,177,.62));animation:iuDrrV3Line 780ms cubic-bezier(.2,.8,.2,1) both}
+      .iu-drr-v3-svg .axis-label{fill:#d6c6b2;font-size:10px;font-weight:850;paint-order:stroke;stroke:rgba(0,0,0,.72);stroke-width:2px;stroke-linejoin:round}
+      .iu-drr-v3-svg .hit{fill:transparent;pointer-events:auto}
       .iu-drr-v3-no-source{margin-top:10px;padding:15px;border:1px dashed var(--line2);border-radius:12px;background:#11100d;color:var(--muted);font-size:11px;line-height:1.45}
       .iu-drr-v3-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:11px}
       .iu-drr-v3-empty{padding:20px;border:1px dashed var(--line2);border-radius:15px;color:var(--muted);background:rgba(255,255,255,.02);font-size:12px;line-height:1.5}
@@ -1303,28 +1307,46 @@
     }
     const width = 720;
     const height = 230;
-    const pad = 22;
+    const pad = { l: 38, r: 22, t: 20, b: 34 };
+    const chartW = width - pad.l - pad.r;
+    const chartH = height - pad.t - pad.b;
     const max = Math.max(...values, 1);
-    const min = Math.min(...values);
-    const step = values.length > 1 ? (width - pad * 2) / (values.length - 1) : width - pad * 2;
-    const points = values.map((value, index) => {
-      const x = pad + index * step;
-      const y = height - pad - ((value - min) / Math.max(1, max - min)) * (height - pad * 2);
-      return [x, Number.isFinite(y) ? y : height - pad];
-    });
-    const line = points.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
-    const bars = values.map((value, index) => {
-      const barHeight = Math.max(4, (value / max) * (height - pad * 2));
-      const x = pad + index * step - 5;
-      const y = height - pad - barHeight;
-      return `<rect class="bar" style="--i:${index}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="10" height="${barHeight.toFixed(1)}" rx="4"></rect>`;
+    const avg = values.reduce((total, value) => total + value, 0) / values.length;
+    const y = (value) => pad.t + chartH - (numberOrZero(value) / Math.max(1, max) * chartH);
+    const step = chartW / Math.max(1, values.length);
+    const barW = Math.min(22, step * .32);
+    const x = (index) => pad.l + (index + .5) * step;
+    const grid = [0, 1, 2, 3, 4].map((i) => {
+      const yy = pad.t + i * chartH / 4;
+      return `<line class="grid-line" x1="${pad.l}" y1="${yy.toFixed(1)}" x2="${width - pad.r}" y2="${yy.toFixed(1)}"></line>`;
     }).join('');
+    const bars = values.map((value, index) => {
+      const barHeight = Math.max(2, pad.t + chartH - y(value));
+      const xx = x(index) - barW / 2;
+      const yy = pad.t + chartH - barHeight;
+      const dateLabel = compactDate(rows[index]?.date);
+      return `
+        <rect class="bar-current" style="--i:${index}" x="${xx.toFixed(1)}" y="${yy.toFixed(1)}" width="${barW.toFixed(1)}" height="${barHeight.toFixed(1)}" rx="5">
+          <title>${escapeHtml(`${dateLabel}: ${fmtMoney(value)}`)}</title>
+        </rect>
+        <rect class="hit" x="${(pad.l + index * step).toFixed(1)}" y="${pad.t}" width="${step.toFixed(1)}" height="${chartH.toFixed(1)}">
+          <title>${escapeHtml(`${dateLabel}: ${fmtMoney(value)}`)}</title>
+        </rect>
+      `;
+    }).join('');
+    const labelsEvery = Math.max(1, Math.ceil(values.length / 7));
+    const labels = values.map((_, index) => {
+      if (index % labelsEvery !== 0 && index !== values.length - 1) return '';
+      return `<text class="axis-label" x="${x(index).toFixed(1)}" y="${(height - 12).toFixed(1)}" text-anchor="middle">${escapeHtml(compactDate(rows[index]?.date))}</text>`;
+    }).join('');
+    const avgY = y(avg);
+    const avgLine = `<line class="avg-line" x1="${pad.l}" y1="${avgY.toFixed(1)}" x2="${width - pad.r}" y2="${avgY.toFixed(1)}"><title>${escapeHtml(`Среднее: ${fmtMoney(avg)}`)}</title></line>`;
     return `
-      <svg class="iu-drr-v3-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Дневная динамика SKU">
-        <g opacity=".18">${[0, 1, 2, 3].map((i) => `<line x1="${pad}" y1="${pad + i * 50}" x2="${width - pad}" y2="${pad + i * 50}" stroke="currentColor"></line>`).join('')}</g>
+      <svg class="iu-drr-v3-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Дневная динамика SKU">
+        ${grid}
         ${bars}
-        <polyline class="line" points="${line}"></polyline>
-        ${points.map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${PLATFORM[platform]?.tone || '#e5c16f'}"></circle>`).join('')}
+        ${avgLine}
+        ${labels}
       </svg>
     `;
   }

@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260627-iudrr-platform-kpis';
+  const VERSION = '20260627-iudrr-table-filters';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -234,6 +234,8 @@
       search: String(state.search || ''),
       source: String(state.source || 'all'),
       status: String(state.status || 'all'),
+      metric: String(state.metric || 'all'),
+      value: String(state.value || 'all'),
       dateFrom: String(state.dateFrom || ''),
       dateTo: String(state.dateTo || '')
     };
@@ -272,21 +274,52 @@
   }
 
   function isFilterActive(filters) {
-    return Boolean(filters.search || filters.dateFrom || filters.dateTo || filters.source !== 'all' || filters.status !== 'all');
+    return Boolean(filters.search
+      || filters.dateFrom
+      || filters.dateTo
+      || filters.source !== 'all'
+      || filters.status !== 'all'
+      || filters.metric !== 'all'
+      || filters.value !== 'all');
   }
 
   function filterSelectOptions(options, selected) {
     return options.map(([value, label]) => `<option value="${escapeHtml(value)}" ${value === selected ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('');
   }
 
-  function tableFilterMarkup(tableKey, totalRows) {
+  function tableFilterMarkup(tableKey, totalRows, options = {}) {
     const filters = tableFilterState(tableKey);
+    const metricOptions = Array.isArray(options.metricOptions) ? options.metricOptions : [];
+    const searchPlaceholder = options.searchPlaceholder || 'Дата, SKU, источник...';
     return `
       <div class="iu-drr-v3-table-filter" data-iu-v3-filter-bar="${escapeHtml(tableKey)}">
         <label class="iu-drr-v3-filter-field">
           <span>Поиск</span>
-          <input type="search" value="${escapeHtml(filters.search)}" data-iu-v3-filter="search" placeholder="Дата, SKU, источник...">
+          <input type="search" value="${escapeHtml(filters.search)}" data-iu-v3-filter="search" placeholder="${escapeHtml(searchPlaceholder)}">
         </label>
+        ${metricOptions.length ? `
+          <label class="iu-drr-v3-filter-field">
+            <span>Метрика</span>
+            <select data-iu-v3-filter="metric">
+              ${filterSelectOptions([['all', 'Все метрики'], ...metricOptions], filters.metric)}
+            </select>
+          </label>
+        ` : ''}
+        ${options.valueFilter ? `
+          <label class="iu-drr-v3-filter-field">
+            <span>Значение</span>
+            <select data-iu-v3-filter="value">
+              ${filterSelectOptions([
+                ['all', 'Все значения'],
+                ['with-value', 'Есть значение'],
+                ['missing', 'Нет значения'],
+                ['positive', 'Больше нуля'],
+                ['zero', 'Ноль'],
+                ['negative', 'Ниже нуля']
+              ], filters.value)}
+            </select>
+          </label>
+        ` : ''}
         <label class="iu-drr-v3-filter-field">
           <span>Источник</span>
           <select data-iu-v3-filter="source">
@@ -329,8 +362,8 @@
     `;
   }
 
-  function tableRowAttrs({ search, source, status, date }) {
-    return `data-iu-v3-row data-iu-v3-search="${escapeHtml(search)}" data-iu-v3-source="${escapeHtml(source)}" data-iu-v3-status="${escapeHtml(status)}" data-iu-v3-date="${escapeHtml(date || '')}"`;
+  function tableRowAttrs({ search, source, status, date, metric, value }) {
+    return `data-iu-v3-row data-iu-v3-search="${escapeHtml(search)}" data-iu-v3-source="${escapeHtml(source)}" data-iu-v3-status="${escapeHtml(status)}" data-iu-v3-date="${escapeHtml(date || '')}" data-iu-v3-metric="${escapeHtml(metric || 'all')}" data-iu-v3-value-state="${escapeHtml(value || 'with-value')}"`;
   }
 
   function currentSelectedPosition() {
@@ -538,6 +571,10 @@
       .iu-drr-v3-table{width:100%;border-collapse:separate;border-spacing:0;min-width:1180px;font-size:11px}
       .iu-drr-v3-table th,.iu-drr-v3-table td{height:42px;padding:10px 11px;border-right:1px solid rgba(224,183,96,.07);border-bottom:1px solid var(--line);white-space:nowrap;text-align:right;vertical-align:top;background-clip:padding-box}
       .iu-drr-v3-table thead th{position:sticky;top:0;z-index:70;background:#15120f;color:var(--faint);font-size:9px;letter-spacing:.06em;text-transform:uppercase;vertical-align:middle;box-shadow:0 1px 0 var(--line),0 10px 18px rgba(0,0,0,.28)}
+      .iu-drr-v3-table th[data-iu-v3-sort-col]{cursor:pointer;user-select:none}
+      .iu-drr-v3-table th[data-iu-v3-sort-col]::after{content:"";display:inline-block;width:6px;height:6px;margin-left:7px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:translateY(-2px) rotate(45deg);opacity:.45}
+      .iu-drr-v3-table th[data-iu-v3-sort-col][aria-sort="ascending"]::after{transform:translateY(1px) rotate(225deg);opacity:1;color:var(--champ)}
+      .iu-drr-v3-table th[data-iu-v3-sort-col][aria-sort="descending"]::after{transform:translateY(-2px) rotate(45deg);opacity:1;color:var(--champ)}
       .iu-drr-v3-table th:first-child,.iu-drr-v3-table td:first-child{position:sticky;left:0;text-align:left;background:#15120f}
       .iu-drr-v3-table tbody td{position:relative;z-index:1}
       .iu-drr-v3-table thead th:first-child{z-index:90;background:#17120f!important}
@@ -547,7 +584,7 @@
       .iu-drr-v3-source{display:block;margin-top:4px;color:var(--faint);font-size:9px}
       .iu-drr-v3-total-row td{background:rgba(229,193,111,.07);font-weight:850}
       .iu-drr-v3-table-host{display:block}
-      .iu-drr-v3-table-filter{display:grid;grid-template-columns:minmax(180px,1.3fr) repeat(4,minmax(126px,.75fr)) auto auto;gap:8px;align-items:end;padding:11px 12px;border-bottom:1px solid var(--line);background:rgba(10,8,7,.54)}
+      .iu-drr-v3-table-filter{display:grid;grid-template-columns:minmax(190px,1.35fr) repeat(auto-fit,minmax(126px,1fr));gap:8px;align-items:end;padding:11px 12px;border-bottom:1px solid var(--line);background:rgba(10,8,7,.54)}
       .iu-drr-v3-filter-field{display:grid;gap:5px;min-width:0;color:var(--faint);font-size:9px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
       .iu-drr-v3-filter-field input,.iu-drr-v3-filter-field select{height:32px;width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;background:#0b0a08;color:#fff6e2;padding:0 10px;font-size:11px;letter-spacing:0;text-transform:none;outline:none}
       .iu-drr-v3-filter-field input:focus,.iu-drr-v3-filter-field select:focus{border-color:color-mix(in srgb,var(--platform,#e5c16f) 60%,var(--line));box-shadow:0 0 0 2px color-mix(in srgb,var(--platform,#e5c16f) 14%,transparent)}
@@ -659,6 +696,8 @@
       search: normalizeText(valueOf('search')),
       source: normalizeText(valueOf('source', 'all') || 'all'),
       status: normalizeText(valueOf('status', 'all') || 'all'),
+      metric: normalizeText(valueOf('metric', 'all') || 'all'),
+      value: normalizeText(valueOf('value', 'all') || 'all'),
       dateFrom: valueOf('dateFrom'),
       dateTo: valueOf('dateTo')
     };
@@ -689,12 +728,20 @@
       const rowText = normalizeText(row.getAttribute('data-iu-v3-search') || '');
       const source = normalizeText(row.getAttribute('data-iu-v3-source') || 'other');
       const status = normalizeText(row.getAttribute('data-iu-v3-status') || 'ok');
+      const metric = normalizeText(row.getAttribute('data-iu-v3-metric') || 'all');
+      const valueState = normalizeText(row.getAttribute('data-iu-v3-value-state') || 'with-value');
       const date = row.getAttribute('data-iu-v3-date') || '';
       const sourceMatches = filters.source === 'all'
         || (filters.source === 'with-source' && source !== 'missing')
         || source === filters.source;
+      const metricMatches = filters.metric === 'all' || metric === filters.metric;
+      const valueMatches = filters.value === 'all'
+        || (filters.value === 'with-value' && valueState !== 'missing')
+        || valueState === filters.value;
       const matches = (!filters.search || rowText.includes(filters.search))
         && sourceMatches
+        && metricMatches
+        && valueMatches
         && (filters.status === 'all' || status === filters.status)
         && (!filters.dateFrom || (date && date >= filters.dateFrom))
         && (!filters.dateTo || (date && date <= filters.dateTo));
@@ -718,6 +765,50 @@
     if (count) count.textContent = `${fmtInt(visible)} / ${fmtInt(rows.length)} строк`;
   }
 
+  function sortableText(text) {
+    return normalizeText(text).replace(/\s+/g, ' ');
+  }
+
+  function sortableNumber(text) {
+    const normalized = String(text || '')
+      .replace(/\s+/g, '')
+      .replace(/[₽%]/g, '')
+      .replace(',', '.')
+      .replace(/[^\d.+-]/g, '');
+    if (!normalized || normalized === '-' || normalized === '+' || normalized === '.') return null;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function compareSortValues(a, b, dir) {
+    const aNum = sortableNumber(a);
+    const bNum = sortableNumber(b);
+    let result;
+    if (aNum !== null && bNum !== null) {
+      result = aNum - bNum;
+    } else {
+      result = sortableText(a).localeCompare(sortableText(b), 'ru', { numeric: true, sensitivity: 'base' });
+    }
+    return dir === 'desc' ? -result : result;
+  }
+
+  function applyTableSort(host) {
+    const column = Number(host.dataset.iuV3SortColumn);
+    const dir = host.dataset.iuV3SortDir || 'asc';
+    if (!Number.isInteger(column) || column < 0) return;
+    const table = host.querySelector('table');
+    const tbody = table?.tBodies?.[0];
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr[data-iu-v3-row]'));
+    rows.sort((a, b) => compareSortValues(a.cells[column]?.textContent || '', b.cells[column]?.textContent || '', dir));
+    const empty = host.querySelector('[data-iu-v3-empty-row]');
+    rows.forEach((row) => tbody.insertBefore(row, empty || null));
+    table.querySelectorAll('[data-iu-v3-sort-col]').forEach((header) => {
+      const isActive = Number(header.getAttribute('data-iu-v3-sort-col')) === column;
+      header.setAttribute('aria-sort', isActive ? (dir === 'desc' ? 'descending' : 'ascending') : 'none');
+    });
+  }
+
   function bindTableFilters(root) {
     if (!root.dataset.iuDrrV3TableFiltersBound) {
       const handleControl = (event) => {
@@ -729,25 +820,41 @@
         if (!host || !tableKey || !name) return;
         writeTableFilter(tableKey, name, control.value);
         applyTableFilter(host);
+        applyTableSort(host);
       };
       root.addEventListener('input', handleControl);
       root.addEventListener('change', handleControl);
       root.addEventListener('click', (event) => {
         const button = event.target?.closest?.('[data-iu-v3-filter-reset]');
-        if (!button || !root.contains(button)) return;
-        const host = button.closest('[data-iu-v3-table-host]');
-        const tableKey = host?.getAttribute('data-iu-v3-table-host');
-        if (!host || !tableKey) return;
-        clearTableFilter(tableKey);
-        host.querySelectorAll('[data-iu-v3-filter]').forEach((control) => {
-          const name = control.getAttribute('data-iu-v3-filter');
-          control.value = name === 'source' || name === 'status' ? 'all' : '';
-        });
-        applyTableFilter(host);
+        if (button && root.contains(button)) {
+          const host = button.closest('[data-iu-v3-table-host]');
+          const tableKey = host?.getAttribute('data-iu-v3-table-host');
+          if (!host || !tableKey) return;
+          clearTableFilter(tableKey);
+          host.querySelectorAll('[data-iu-v3-filter]').forEach((control) => {
+            const name = control.getAttribute('data-iu-v3-filter');
+            control.value = ['source', 'status', 'metric', 'value'].includes(name) ? 'all' : '';
+          });
+          applyTableFilter(host);
+          applyTableSort(host);
+          return;
+        }
+        const header = event.target?.closest?.('[data-iu-v3-sort-col]');
+        if (!header || !root.contains(header)) return;
+        const host = header.closest('[data-iu-v3-table-host]');
+        if (!host) return;
+        const column = header.getAttribute('data-iu-v3-sort-col');
+        const sameColumn = host.dataset.iuV3SortColumn === column;
+        host.dataset.iuV3SortColumn = column;
+        host.dataset.iuV3SortDir = sameColumn && host.dataset.iuV3SortDir !== 'desc' ? 'desc' : 'asc';
+        applyTableSort(host);
       });
       root.dataset.iuDrrV3TableFiltersBound = '1';
     }
-    root.querySelectorAll('[data-iu-v3-table-host]').forEach((host) => applyTableFilter(host));
+    root.querySelectorAll('[data-iu-v3-table-host]').forEach((host) => {
+      applyTableFilter(host);
+      applyTableSort(host);
+    });
   }
 
   function metricCell(value, type, note) {
@@ -1978,6 +2085,13 @@
     return 'ok';
   }
 
+  function valueFilterState(value) {
+    const num = numberOrNull(value);
+    if (num === null) return 'missing';
+    if (num === 0) return 'zero';
+    return num < 0 ? 'negative' : 'positive';
+  }
+
   function heatCell(value, type, values, tone) {
     const num = numberOrNull(value);
     const max = values.reduce((highest, current) => {
@@ -2001,7 +2115,7 @@
       const status = values.some((value) => numberOrNull(value) !== null) ? 'ok' : 'missing';
       const search = rowSearch([PLATFORM[platform]?.label, metric.label, metric.calc, metric.source, ...dates, ...values]);
       return `
-        <tr ${tableRowAttrs({ search, source: sourceBucket(metric.source), status, date: '' })}>
+        <tr ${tableRowAttrs({ search, source: sourceBucket(metric.source), status, date: '', metric: metric.label, value: status === 'missing' ? 'missing' : 'with-value' })}>
           <td><strong>${escapeHtml(metric.label)}</strong><span class="iu-drr-v3-source">${escapeHtml(metric.source)}</span></td>
           <td class="iu-drr-v3-calc">${escapeHtml(metric.calc)}</td>
           <td>${metricCell(summary, metric.type)}</td>
@@ -2028,6 +2142,7 @@
 
   function buildStatsLongTable(platform, rows) {
     const metrics = platformStatsMetrics(platform);
+    const metricOptions = Array.from(new Map(metrics.map((metric) => [metric.label, metric.label])).entries());
     const tableKey = safeTableKey('stats-detail', platform);
     const body = [];
     rows.forEach((row) => {
@@ -2047,7 +2162,7 @@
           value
         ]);
         body.push(`
-          <tr ${tableRowAttrs({ search, source: sourceBucket(source), status, date: row.date })}>
+          <tr ${tableRowAttrs({ search, source: sourceBucket(source), status, date: row.date, metric: metric.label, value: valueFilterState(value) })}>
             <td><strong>${escapeHtml(compactDate(row.date))}</strong><span class="iu-drr-v3-source">${escapeHtml(row.date)}</span></td>
             <td>${escapeHtml(metric.label)}<span class="iu-drr-v3-source">${escapeHtml(metric.source)}</span></td>
             <td><span class="iu-drr-v3-note">${escapeHtml(metric.calc)}</span></td>
@@ -2060,17 +2175,21 @@
     });
     return `
       <div class="iu-drr-v3-table-host" data-iu-v3-table-host="${escapeHtml(tableKey)}">
-        ${tableFilterMarkup(tableKey, body.length)}
+        ${tableFilterMarkup(tableKey, body.length, {
+          metricOptions,
+          valueFilter: true,
+          searchPlaceholder: 'Дата, метрика, расчет, источник...'
+        })}
         <div class="iu-drr-v3-matrix-wrap" style="max-height:520px">
           <table class="iu-drr-v3-table" style="min-width:1180px">
             <thead>
               <tr>
-                <th>Дата</th>
-                <th>Метрика</th>
-                <th>Расчет</th>
-                <th>Значение дня</th>
-                <th>Итог / среднее</th>
-                <th>Источник</th>
+                <th data-iu-v3-sort-col="0" aria-sort="none">Дата</th>
+                <th data-iu-v3-sort-col="1" aria-sort="none">Метрика</th>
+                <th data-iu-v3-sort-col="2" aria-sort="none">Расчет</th>
+                <th data-iu-v3-sort-col="3" aria-sort="none">Значение дня</th>
+                <th data-iu-v3-sort-col="4" aria-sort="none">Итог / среднее</th>
+                <th data-iu-v3-sort-col="5" aria-sort="none">Источник</th>
               </tr>
             </thead>
             <tbody>

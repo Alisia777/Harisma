@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260626-tasks-done-filter-v1';
+  const VERSION = '20260628-tasks-sku-open-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -1422,16 +1422,53 @@
   }
 
   function openSkuFromTask(task) {
-    const articleKey = String(task?.articleKey || '').trim();
-    if (!articleKey) return;
+    const articleKey = String(task?.articleKey || taskArticleKeys(task)[0] || '').trim();
+    if (!articleKey) return false;
     try {
-      if (typeof window.openSkuModal === 'function' && window.openSkuModal(articleKey)) return;
+      closeTaskDetail();
     } catch (_) {}
     try {
-      window.location.hash = '#sku-contour';
-      appState().filters = appState().filters || {};
-      appState().filters.search = articleKey;
+      if (typeof window.openSkuModal === 'function' && window.openSkuModal(articleKey)) return true;
     } catch (_) {}
+    try {
+      const state = appState();
+      state.filters = state.filters && typeof state.filters === 'object' ? state.filters : {};
+      state.filters.search = articleKey;
+      state.filters.focus = 'all';
+      state.filters.assignment = 'all';
+      state.skuWorkspaceMode = 'registry';
+    } catch (_) {}
+    try {
+      if (typeof window.skuJourneyHandleAction === 'function') {
+        window.skuJourneyHandleAction('open-registry', { search: articleKey });
+      } else if (typeof window.skuJourneyApplyRegistryFocus === 'function') {
+        window.skuJourneyApplyRegistryFocus('all', articleKey);
+      } else if (typeof window.setView === 'function') {
+        window.setView('sku-contour', { preserveSkuWorkspaceMode: true });
+      } else {
+        window.location.hash = '#sku-contour';
+      }
+    } catch (_) {
+      try {
+        window.location.hash = '#sku-contour';
+      } catch (__) {}
+    }
+    window.setTimeout(() => {
+      try {
+        if (typeof window.renderSkuRegistry === 'function') window.renderSkuRegistry('view-sku-contour');
+        const root = document.getElementById('view-sku-contour') || document;
+        const input = root.querySelector('#skuSearchInput, [data-sku-search], input[type="search"], input[name="search"]');
+        if (input && input.value !== articleKey) {
+          input.value = articleKey;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        const row = Array.from(root.querySelectorAll('[data-open-sku]'))
+          .find((node) => String(node.getAttribute('data-open-sku') || '') === articleKey);
+        row?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+        row?.classList?.add('task-open-target');
+      } catch (_) {}
+    }, 120);
+    return true;
   }
 
   function openTask(taskId) {
@@ -1473,7 +1510,7 @@
             <strong>${escapeHtml(taskArticleSummary(task, 2))}</strong>
             <p>Нажмите на артикул, чтобы перейти к SKU. Можно сохранить несколько позиций в одной задаче.</p>
             <div class="task-detail-sku-list">${taskSkuListMarkup(task)}</div>
-            <button type="button" data-task-detail-open-sku ${task.articleKey ? '' : 'disabled'}>Открыть первый SKU</button>
+            <button type="button" data-task-detail-open-sku ${taskArticleKeys(task).length ? '' : 'disabled'}>Открыть первый SKU</button>
           </div>
           <div class="task-detail-actions">
             <button type="button" data-task-detail-status="in_progress">В работу</button>

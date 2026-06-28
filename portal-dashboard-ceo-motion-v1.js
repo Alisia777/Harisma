@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260626-dashboard-no-chart-values';
+  const VERSION = '20260628-dashboard-ads-breakdown6';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -47,6 +47,8 @@
   let loadingPromise = null;
   let sourcesLoaded = false;
   let renderAfterLoadScheduled = false;
+  let missingSourceRetries = 0;
+  const MAX_MISSING_SOURCE_RETRIES = 3;
 
   function appState() {
     return window.__alteaAppState || window.state || window.__ALTEA_STATE__ || {};
@@ -55,6 +57,14 @@
   function finite(value, fallback = 0) {
     const number = Number(value);
     return Number.isFinite(number) ? number : fallback;
+  }
+
+  function positiveFinite(...values) {
+    for (const value of values) {
+      const number = Number(value);
+      if (Number.isFinite(number) && number > 0) return number;
+    }
+    return 0;
   }
 
   function numberOrNull(value) {
@@ -234,10 +244,33 @@
     return cachedPayload;
   }
 
-  function loadSources() {
-    if (loadingPromise) return loadingPromise;
-    loadingPromise = Promise.all(Object.entries(FILES).map(([name, path]) => {
-      if (sourceCache[name]) return Promise.resolve();
+  function hasUsableSource(name) {
+    const payload = source(name);
+    if (!payload || !Object.keys(payload || {}).length) return false;
+    if (name === 'dashboard') return Boolean(payload?.companyPlan?.activeMonth?.channels || payload?.cards?.length);
+    if (name === 'platformTrends') return hasPlatformSeries(payload);
+    if (name === 'iuDrr') return Array.isArray(payload?.daily) && payload.daily.length > 0;
+    return true;
+  }
+
+  function requiredSourceState() {
+    const dashboardSource = source('dashboard') || {};
+    return {
+      hasPlatformRows: hasPlatformSeries(source('platformTrends')),
+      hasDashboardPlan: Boolean(dashboardSource?.companyPlan?.activeMonth?.channels),
+      hasIuDrrRows: Array.isArray(source('iuDrr')?.daily) && source('iuDrr').daily.length > 0
+    };
+  }
+
+  function loadSources(options = {}) {
+    const forceMissing = Boolean(options.forceMissing);
+    if (loadingPromise && (!forceMissing || !sourcesLoaded)) return loadingPromise;
+    const entries = Object.entries(FILES).filter(([name]) => forceMissing ? !hasUsableSource(name) : !sourceCache[name]);
+    if (!entries.length) {
+      sourcesLoaded = true;
+      return Promise.resolve(true);
+    }
+    loadingPromise = Promise.all(entries.map(([name, path]) => {
       return fetch(`${path}?v=${VERSION}`, { cache: 'no-store' })
         .then((response) => response.ok ? response.json() : null)
         .then((payload) => {
@@ -260,6 +293,10 @@
       #${ROOT_ID} .ceo-motion-v1 *{box-sizing:border-box}
       #${ROOT_ID} .ceo-motion-v1 button,#${ROOT_ID} .ceo-motion-v1 input{font:inherit;color:inherit}
       #${ROOT_ID} .ceo-motion-v1 button{cursor:pointer}
+      .ceo-motion-v1.ceo-drawer-back{--bg:#070706;--surface:#12100d;--surface2:#17140f;--line:#302a22;--line2:#514536;--text:#f4eee4;--muted:#a59c90;--faint:#70685f;--champ:#dbc7a3;--champ2:#f0dfbf;--ok:#74c99a;--warn:#e0b760;--bad:#e7786b;--info:#76a9ea;--platform:${PLATFORM_META.all.color};--metric:var(--platform);--ease:cubic-bezier(.22,.82,.22,1);color:var(--text)}
+      .ceo-motion-v1.ceo-drawer-back *{box-sizing:border-box}
+      .ceo-motion-v1.ceo-drawer-back button,.ceo-motion-v1.ceo-drawer-back input{font:inherit;color:inherit}
+      .ceo-motion-v1.ceo-drawer-back button{cursor:pointer}
       #${ROOT_ID} .ceo-motion-bg{position:absolute;inset:-30px -22px auto -22px;height:360px;z-index:-1;overflow:hidden;pointer-events:none}
       #${ROOT_ID} .ceo-motion-bg::before{content:"";position:absolute;right:4%;top:-210px;width:640px;height:640px;border-radius:50%;background:radial-gradient(circle,rgba(219,199,163,.22),rgba(219,199,163,.08) 42%,transparent 68%);filter:blur(.2px)}
       #${ROOT_ID} .ceo-motion-bg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(219,199,163,.25),transparent)}
@@ -272,8 +309,8 @@
       #${ROOT_ID} .ceo-chip{display:inline-flex;align-items:center;gap:7px;min-height:31px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:rgba(12,10,8,.86);color:var(--muted);font-size:11px;font-weight:800;white-space:nowrap}
       #${ROOT_ID} .ceo-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--pc,var(--champ));box-shadow:0 0 12px var(--pc,var(--champ))}
       #${ROOT_ID} .ceo-periods{display:flex;gap:5px;padding:5px;border:1px solid var(--line);border-radius:999px;background:#0f0d0b}
-      #${ROOT_ID} .ceo-period{height:34px;padding:0 15px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--muted);font-size:11px;font-weight:900;transition:background 180ms var(--ease),border-color 180ms var(--ease),color 180ms var(--ease)}
-      #${ROOT_ID} .ceo-period.active{background:var(--champ2);border-color:var(--champ2);color:#18120a}
+      #${ROOT_ID} .ceo-period,.ceo-motion-v1.ceo-drawer-back .ceo-period{height:34px;padding:0 15px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--muted);font-size:11px;font-weight:900;transition:background 180ms var(--ease),border-color 180ms var(--ease),color 180ms var(--ease)}
+      #${ROOT_ID} .ceo-period.active,.ceo-motion-v1.ceo-drawer-back .ceo-period.active{background:var(--champ2);border-color:var(--champ2);color:#18120a}
       #${ROOT_ID} .ceo-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
       #${ROOT_ID} .ceo-kpi{--pc:var(--champ);position:relative;min-height:116px;padding:15px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.012));text-align:left;overflow:hidden;contain:layout paint;transition:transform 180ms var(--ease),border-color 180ms var(--ease),background 180ms var(--ease)}
       #${ROOT_ID} .ceo-kpi::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--pc);opacity:.78}
@@ -356,28 +393,28 @@
       #${ROOT_ID} .ceo-sku-row b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       #${ROOT_ID} .ceo-sku-row span span{display:block;margin-top:4px;color:var(--faint);font-size:10px}
       #${ROOT_ID} .ceo-sku-row em{font-style:normal;font-size:12px;font-weight:900;white-space:nowrap}
-      #${ROOT_ID} .ceo-drawer-back{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity 260ms var(--ease)}
-      #${ROOT_ID} .ceo-drawer-back.open{opacity:1;pointer-events:auto}
-      #${ROOT_ID} .ceo-drawer{position:absolute;right:0;top:0;width:min(720px,94vw);height:100%;padding:24px;background:#0e0d0b;border-left:1px solid var(--line);transform:translateX(100%);transition:transform 260ms var(--ease);overflow:auto}
-      #${ROOT_ID} .ceo-drawer-back.open .ceo-drawer{transform:none}
-      #${ROOT_ID} .ceo-drawer h2{margin:0;font:500 30px Georgia,'Times New Roman',serif}
-      #${ROOT_ID} .ceo-drawer p{color:var(--muted);font-size:12px;line-height:1.5}
-      #${ROOT_ID} .ceo-drawer-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
-      #${ROOT_ID} .ceo-drawer-metric{padding:12px;border:1px solid var(--line);border-radius:11px;background:#12100d}
-      #${ROOT_ID} .ceo-drawer-metric small{display:block;color:var(--faint);font-size:10px}
-      #${ROOT_ID} .ceo-drawer-metric strong{display:block;margin-top:8px;font-size:16px}
-      #${ROOT_ID} .ceo-drawer-search{display:grid;gap:6px;margin-top:15px}
-      #${ROOT_ID} .ceo-drawer-search span{color:var(--faint);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
-      #${ROOT_ID} .ceo-drawer-search input{width:100%;height:38px;border:1px solid var(--line);border-radius:10px;background:#090807;color:var(--text);padding:0 12px;outline:none}
-      #${ROOT_ID} .ceo-drawer-search input:focus{border-color:var(--champ)}
-      #${ROOT_ID} .ceo-drawer-list{margin-top:15px;border-top:1px solid var(--line)}
-      #${ROOT_ID} .ceo-drawer-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,auto);gap:10px;width:100%;padding:11px 0;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left}
-      #${ROOT_ID} .ceo-drawer-row:hover{color:#fff7e8}
-      #${ROOT_ID} .ceo-drawer-row b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      #${ROOT_ID} .ceo-drawer-row span{color:var(--muted);font-size:11px}
-      #${ROOT_ID} .ceo-drawer-row small{display:block;margin-top:4px;color:var(--faint);font-size:10px;line-height:1.35}
-      #${ROOT_ID} .ceo-drawer-row em{font-style:normal;font-size:12px;font-weight:900;white-space:nowrap}
-      #${ROOT_ID} .ceo-empty{padding:22px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);background:rgba(255,255,255,.018)}
+      #${ROOT_ID} .ceo-drawer-back,.ceo-motion-v1.ceo-drawer-back{position:fixed;inset:0;z-index:2147482000;background:rgba(0,0,0,.62);display:flex;justify-content:flex-end;align-items:flex-start;padding:72px 16px 16px;opacity:0;pointer-events:none;transition:opacity 260ms var(--ease)}
+      #${ROOT_ID} .ceo-drawer-back.open,.ceo-motion-v1.ceo-drawer-back.open{opacity:1;pointer-events:auto}
+      #${ROOT_ID} .ceo-drawer,.ceo-motion-v1.ceo-drawer-back .ceo-drawer{position:relative;width:min(720px,94vw);height:min(760px,calc(100vh - 96px));max-height:calc(100vh - 96px);padding:24px;background:#0e0d0b;border:1px solid var(--line);border-radius:18px 0 0 18px;box-shadow:0 26px 90px rgba(0,0,0,.56);transform:translateX(110%);transition:transform 260ms var(--ease);overflow:auto;outline:none}
+      #${ROOT_ID} .ceo-drawer-back.open .ceo-drawer,.ceo-motion-v1.ceo-drawer-back.open .ceo-drawer{transform:none}
+      #${ROOT_ID} .ceo-drawer h2,.ceo-motion-v1.ceo-drawer-back .ceo-drawer h2{margin:0;font:500 30px Georgia,'Times New Roman',serif}
+      #${ROOT_ID} .ceo-drawer p,.ceo-motion-v1.ceo-drawer-back .ceo-drawer p{color:var(--muted);font-size:12px;line-height:1.5}
+      #${ROOT_ID} .ceo-drawer-grid,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+      #${ROOT_ID} .ceo-drawer-metric,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-metric{padding:12px;border:1px solid var(--line);border-radius:11px;background:#12100d}
+      #${ROOT_ID} .ceo-drawer-metric small,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-metric small{display:block;color:var(--faint);font-size:10px}
+      #${ROOT_ID} .ceo-drawer-metric strong,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-metric strong{display:block;margin-top:8px;font-size:16px}
+      #${ROOT_ID} .ceo-drawer-search,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-search{display:grid;gap:6px;margin-top:15px}
+      #${ROOT_ID} .ceo-drawer-search span,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-search span{color:var(--faint);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+      #${ROOT_ID} .ceo-drawer-search input,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-search input{width:100%;height:38px;border:1px solid var(--line);border-radius:10px;background:#090807;color:var(--text);padding:0 12px;outline:none}
+      #${ROOT_ID} .ceo-drawer-search input:focus,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-search input:focus{border-color:var(--champ)}
+      #${ROOT_ID} .ceo-drawer-list,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-list{margin-top:15px;border-top:1px solid var(--line)}
+      #${ROOT_ID} .ceo-drawer-row,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,auto);gap:10px;width:100%;padding:11px 0;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left}
+      #${ROOT_ID} .ceo-drawer-row:hover,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-row:hover{color:#fff7e8}
+      #${ROOT_ID} .ceo-drawer-row b,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-row b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      #${ROOT_ID} .ceo-drawer-row span,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-row span{color:var(--muted);font-size:11px}
+      #${ROOT_ID} .ceo-drawer-row small,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-row small{display:block;margin-top:4px;color:var(--faint);font-size:10px;line-height:1.35}
+      #${ROOT_ID} .ceo-drawer-row em,.ceo-motion-v1.ceo-drawer-back .ceo-drawer-row em{font-style:normal;font-size:12px;font-weight:900;white-space:nowrap}
+      #${ROOT_ID} .ceo-empty,.ceo-motion-v1.ceo-drawer-back .ceo-empty{padding:22px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);background:rgba(255,255,255,.018)}
       #${ROOT_ID} .ceo-sku-table{display:grid;gap:0}
       #${ROOT_ID} .ceo-sku-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(82px,auto) minmax(82px,auto) minmax(56px,auto);gap:10px;padding:0 0 6px;color:var(--faint);font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
       #${ROOT_ID} .ceo-sku-row{grid-template-columns:minmax(0,1fr) minmax(82px,auto) minmax(82px,auto) minmax(56px,auto);align-items:center}
@@ -523,14 +560,99 @@
     return map;
   }
 
-  function adsDailyValue(row, platform) {
+  function emptyAdsBreakdown() {
+    return {
+      total: 0,
+      internal: 0,
+      media: 0,
+      external: 0,
+      kz: 0,
+      ozon: 0,
+      yandex: 0,
+      other: 0
+    };
+  }
+
+  function mergeAdsBreakdown(left, right) {
+    const merged = emptyAdsBreakdown();
+    Object.keys(merged).forEach((key) => {
+      merged[key] = finite(left?.[key]) + finite(right?.[key]);
+    });
+    return merged;
+  }
+
+  function wbAdsBreakdown(row) {
+    const media = positiveFinite(row.wbMedia, row.wbMediaFinanceDeduction);
+    const external = finite(row.externalAds) + finite(row.pvzAds) + finite(row.brandZoneAds) + finite(row.overviewsAds);
+    const kz = positiveFinite(row.reviewPoints, row.wbReviewDeduction, row.contentFactoryAds, row.reviewPointsCashbackControl);
+    const explicitInternal = positiveFinite(
+      row.wbPromotion,
+      row.wbPromotionFromAds,
+      row.wbPromotionFinanceDeduction,
+      row.wbAds,
+      row.internalAds
+    );
+    const baseSpend = positiveFinite(
+      row.wbIuFactAdsGross,
+      row.wbApiSpendFact,
+      row.spendFact,
+      row.spendFactDrr,
+      row.spendFactTotal,
+      row.wbRawApiSpendFact
+    );
+    let internal = explicitInternal || Math.max(0, baseSpend - media);
+    const subtotal = internal + media + external + kz;
+    const total = Math.max(baseSpend + external + kz, subtotal);
+    const other = Math.max(0, total - subtotal);
+    internal += other;
+    return {
+      total,
+      internal,
+      media,
+      external,
+      kz,
+      ozon: 0,
+      yandex: 0,
+      other
+    };
+  }
+
+  function ozonAdsBreakdown(row) {
+    const internal = positiveFinite(row.spendFactOzon, row.ozonSpendFact, row.ozonAds);
+    return {
+      ...emptyAdsBreakdown(),
+      total: internal,
+      internal,
+      ozon: internal
+    };
+  }
+
+  function yandexAdsBreakdown(row) {
+    const internal = positiveFinite(row.spendFactYandex, row.yandexSpendFact, row.yaAds);
+    return {
+      ...emptyAdsBreakdown(),
+      total: internal,
+      internal,
+      yandex: internal
+    };
+  }
+
+  function adsDailyBreakdown(row, platform) {
     const key = normalizePlatform(platform);
-    if (key === 'wb') return finite(row.spendFact, finite(row.spendFactDrr, finite(row.spendFactTotalIu)));
-    if (key === 'ozon') return finite(row.spendFactOzon);
-    if (key === 'ya') return finite(row.spendFactYandex);
-    return finite(row.spendFact, finite(row.spendFactDrr))
-      + finite(row.spendFactOzon)
-      + finite(row.spendFactYandex);
+    if (key === 'wb') return wbAdsBreakdown(row || {});
+    if (key === 'ozon') return ozonAdsBreakdown(row || {});
+    if (key === 'ya') return yandexAdsBreakdown(row || {});
+    return [wbAdsBreakdown(row || {}), ozonAdsBreakdown(row || {}), yandexAdsBreakdown(row || {})]
+      .reduce((acc, item) => mergeAdsBreakdown(acc, item), emptyAdsBreakdown());
+  }
+
+  function adsRowsBreakdown(rows, platform) {
+    return (Array.isArray(rows) ? rows : [])
+      .reduce((acc, row) => mergeAdsBreakdown(acc, adsDailyBreakdown(row, platform)), emptyAdsBreakdown());
+  }
+
+  function adsDailyValue(row, platform) {
+    return adsDailyBreakdown(row, platform).total;
   }
 
   function adsPlanDailyValue(row, platform) {
@@ -555,8 +677,47 @@
 
   function iuRowsInRange(iu, start, end) {
     return (Array.isArray(iu?.daily) ? iu.daily : [])
-      .filter((row) => row.date >= start && row.date <= end)
-      .sort((left, right) => left.date.localeCompare(right.date));
+      .filter((row) => {
+        const day = dateKey(row?.date || row?.label || row?.period);
+        return day && day >= start && day <= end;
+      })
+      .sort((left, right) => dateKey(left?.date || left?.label || left?.period).localeCompare(dateKey(right?.date || right?.label || right?.period)));
+  }
+
+  function latestIuDate(iu) {
+    return (Array.isArray(iu?.daily) ? iu.daily : [])
+      .map((row) => dateKey(row?.date || row?.label || row?.period))
+      .filter(Boolean)
+      .sort()
+      .pop() || '';
+  }
+
+  function iuRowsForRangeOrLatest(iu, range, periodKey) {
+    const exactRows = iuRowsInRange(iu, range.start, range.end);
+    if (exactRows.length) {
+      return {
+        rows: exactRows,
+        previousRows: iuRowsInRange(iu, range.prevStart, range.prevEnd),
+        range,
+        fallback: false
+      };
+    }
+    const latest = latestIuDate(iu);
+    if (!latest) {
+      return {
+        rows: exactRows,
+        previousRows: [],
+        range,
+        fallback: false
+      };
+    }
+    const fallbackRange = currentRange(latest, periodKey);
+    return {
+      rows: iuRowsInRange(iu, fallbackRange.start, fallbackRange.end),
+      previousRows: iuRowsInRange(iu, fallbackRange.prevStart, fallbackRange.prevEnd),
+      range: fallbackRange,
+      fallback: true
+    };
   }
 
   function monthlyPlanChannel(dashboard, platform) {
@@ -580,8 +741,8 @@
 
   function buildSeries(model, metricKey) {
     const meta = METRICS[metricKey] || METRICS.revenue;
-    const rows = model.currentRows;
-    const prev = model.previousRows;
+    const rows = metricKey === 'ads' ? (model.adRows || model.iuRows || []) : model.currentRows;
+    const prev = metricKey === 'ads' ? (model.previousAdRows || model.prevIuRows || []) : model.previousRows;
     const planChannel = monthlyPlanChannel(model.dashboard, model.platform);
     const planUnitsPerDay = finite(model.dashboard?.brandSummary?.[0]?.plan_units) / Math.max(1, finite(model.dashboard?.companyPlan?.activeMonth?.days, 30));
     const platformShare = model.total.revenue > 0 && model.allTotal.revenue > 0 ? model.total.revenue / model.allTotal.revenue : 1;
@@ -594,6 +755,15 @@
     const planOrdersDailyRaw = planUnitsPerDay * platformShare;
     const planOrdersDaily = planOrdersDailyRaw > 0 ? planOrdersDailyRaw : planOrdersByRevenue;
     const make = (row, index, current) => {
+      if (metricKey === 'ads') {
+        const prevIu = prev[index] || {};
+        return {
+          date: dateKey(row.date || row.label) || model.adRange?.start || model.range.start,
+          value: adsDailyValue(row, model.platform),
+          plan: adsPlanDailyValue(row, model.platform),
+          prev: adsDailyValue(prevIu, model.platform)
+        };
+      }
       const fallbackPrev = prev[index] || {};
       const base = current ? row : fallbackPrev;
       const revenue = finite(base.revenue);
@@ -635,7 +805,7 @@
         const prevRows = rowsInRange(platform.series, model.range.prevStart, model.range.prevEnd);
         const total = sumRows(rows);
         const previous = sumRows(prevRows);
-        const iuRows = model.iuRows;
+        const iuRows = model.adRows || model.iuRows;
         const ads = iuRows.reduce((sum, row) => sum + adsDailyValue(row, key), 0);
         return {
           key,
@@ -902,10 +1072,29 @@
     const allTotal = sumRows(allRows);
     const iuRows = iuRowsInRange(iuDrr, range.start, range.end);
     const prevIuRows = iuRowsInRange(iuDrr, range.prevStart, range.prevEnd);
+    const adWindow = iuRowsForRangeOrLatest(iuDrr, range, period);
+    let adRows = adWindow.rows;
+    let previousAdRows = adWindow.previousRows;
+    let adRange = adWindow.range;
+    let adsFromFallback = adWindow.fallback;
     const iuRowsByDate = {};
     iuRows.forEach((row) => { iuRowsByDate[row.date] = row; });
-    total.ads = iuRows.reduce((sum, row) => sum + adsDailyValue(row, platform), 0);
-    previousTotal.ads = prevIuRows.reduce((sum, row) => sum + adsDailyValue(row, platform), 0);
+    let adsBreakdown = adsRowsBreakdown(adRows, platform);
+    let previousAdsBreakdown = adsRowsBreakdown(previousAdRows, platform);
+    if (!adsBreakdown.total && Array.isArray(iuDrr?.daily) && iuDrr.daily.length) {
+      const latest = latestIuDate(iuDrr);
+      if (latest) {
+        const fallbackRange = currentRange(latest, period);
+        adRows = iuRowsInRange(iuDrr, fallbackRange.start, fallbackRange.end);
+        previousAdRows = iuRowsInRange(iuDrr, fallbackRange.prevStart, fallbackRange.prevEnd);
+        adRange = fallbackRange;
+        adsFromFallback = true;
+        adsBreakdown = adsRowsBreakdown(adRows, platform);
+        previousAdsBreakdown = adsRowsBreakdown(previousAdRows, platform);
+      }
+    }
+    total.ads = adsBreakdown.total;
+    previousTotal.ads = previousAdsBreakdown.total;
     total.drr = total.revenue > 0 ? total.ads / total.revenue : null;
     previousTotal.drr = previousTotal.revenue > 0 ? previousTotal.ads / previousTotal.revenue : null;
     total.marginPct = total.revenue > 0 ? total.marginRub / total.revenue : null;
@@ -918,7 +1107,7 @@
       planChannel.revenueToDate = finite(active.planRevenueToDate);
     }
     const planOrders = finite(dashboard?.brandSummary?.[0]?.plan_units) / Math.max(1, finite(active.days, 30)) * range.length * (allTotal.revenue > 0 ? total.revenue / allTotal.revenue : 1);
-    const planAds = iuRows.reduce((sum, row) => sum + adsPlanDailyValue(row, platform), 0);
+    const planAds = adRows.reduce((sum, row) => sum + adsPlanDailyValue(row, platform), 0);
     const plan = {
       revenue: planChannel.revenueToDate || planRevenue,
       orders: planOrders,
@@ -927,7 +1116,7 @@
       marginPct: total.marginPct ?? .43,
       drr: total.revenue > 0 ? planAds / total.revenue : null
     };
-    const platformCards = buildPlatformCards({ dashboard, metrics, platformTrends, iuRows, range, total, allTotal });
+    const platformCards = buildPlatformCards({ dashboard, metrics, platformTrends, iuRows, adRows, range, total, allTotal });
     const skuRows = buildSkuRows({ dashboard, productLeaderboard, platform, platformCards, total, allTotal, plan, range });
     const model = {
       dashboard,
@@ -940,11 +1129,17 @@
       metric,
       asOf,
       range,
+      adRange,
       currentRows,
       previousRows,
       iuRows,
       prevIuRows,
+      adRows,
+      previousAdRows,
+      adsFromFallback,
       iuRowsByDate,
+      adsBreakdown,
+      previousAdsBreakdown,
       total,
       previousTotal,
       allTotal,
@@ -1274,7 +1469,6 @@
             <div class="ceo-contrib-col"><h3>Что тянет вниз</h3>${skuRowsHtml(model.skuRows.focus, 'is-down')}</div>
           </div>
         </section>
-        <div class="ceo-drawer-back" data-ceo-drawer-back><aside class="ceo-drawer" data-ceo-drawer></aside></div>
       </section>
     `;
   }
@@ -1297,8 +1491,13 @@
     back.classList.add('open');
   }
 
-  function closeDrawer(root) {
-    root.querySelector('[data-ceo-drawer-back]')?.classList.remove('open');
+  function closeDrawer(rootOrOptions) {
+    const options = rootOrOptions && rootOrOptions.nodeType ? {} : (rootOrOptions || {});
+    const root = rootOrOptions && rootOrOptions.nodeType ? rootOrOptions : document.getElementById(ROOT_ID);
+    document.querySelector('[data-ceo-global-drawer-back]')?.classList.remove('open');
+    root?.querySelector('[data-ceo-drawer-back]')?.classList.remove('open');
+    document.querySelectorAll('[data-ceo-drawer-back].open').forEach((node) => node.classList.remove('open'));
+    if (options.restore !== false) restoreDashboardDrawerScroll();
   }
 
   function openDay(root, model, day) {
@@ -1676,9 +1875,97 @@
     return rows;
   }
 
+  function dashboardScrollTarget() {
+    const nodes = [
+      document.scrollingElement,
+      document.documentElement,
+      document.body,
+      document.querySelector('main'),
+      document.querySelector('.app-main'),
+      document.querySelector('.app-content'),
+      document.querySelector('.content'),
+      document.getElementById(ROOT_ID)
+    ].filter(Boolean);
+    const visibleScrollable = nodes.find((node) => {
+      if (!node || node === document.body || node === document.documentElement || node === document.scrollingElement) return false;
+      return node.scrollHeight > node.clientHeight + 8 && node.scrollTop > 0;
+    });
+    return visibleScrollable || document.scrollingElement || document.documentElement || document.body;
+  }
+
+  function saveDashboardDrawerScroll() {
+    const target = dashboardScrollTarget();
+    window.__ALTEA_DASHBOARD_DRAWER_SCROLL__ = {
+      winX: window.scrollX || 0,
+      winY: window.scrollY || 0,
+      target,
+      top: target?.scrollTop || 0,
+      left: target?.scrollLeft || 0
+    };
+  }
+
+  function restoreDashboardDrawerScroll() {
+    const saved = window.__ALTEA_DASHBOARD_DRAWER_SCROLL__;
+    if (!saved) return;
+    requestAnimationFrame(() => {
+      if (saved.target && saved.target.isConnected) {
+        saved.target.scrollTop = saved.top || 0;
+        saved.target.scrollLeft = saved.left || 0;
+      }
+      window.scrollTo(saved.winX || 0, saved.winY || 0);
+    });
+  }
+
+  function filterDashboardDrawer(scope, input) {
+    const query = String(input?.value || '').trim().toLowerCase();
+    scope?.querySelectorAll('[data-ceo-drawer-row]').forEach((row) => {
+      const haystack = String(row.getAttribute('data-filter') || '').toLowerCase();
+      row.hidden = Boolean(query && !haystack.includes(query));
+    });
+  }
+
+  function ensureDashboardDrawer(root) {
+    document.querySelectorAll('[data-ceo-drawer-back]:not([data-ceo-global-drawer-back])').forEach((node) => node.remove());
+    let back = document.querySelector('[data-ceo-global-drawer-back]');
+    if (!back) {
+      back = document.createElement('div');
+      back.className = 'ceo-motion-v1 ceo-drawer-back';
+      back.setAttribute('data-ceo-drawer-back', '');
+      back.setAttribute('data-ceo-global-drawer-back', '');
+      back.innerHTML = '<aside class="ceo-drawer" data-ceo-drawer tabindex="-1"></aside>';
+      back.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target === back || target.closest?.('[data-ceo-close]')) {
+          closeDrawer();
+          return;
+        }
+        const route = target.closest?.('[data-ceo-route]');
+        if (route) {
+          closeDrawer({ restore: false });
+          navigate(route.getAttribute('data-ceo-route'));
+          return;
+        }
+        const sku = target.closest?.('[data-ceo-sku]');
+        if (sku) {
+          const dashboardRoot = document.getElementById(ROOT_ID);
+          if (dashboardRoot) openSku(dashboardRoot, buildModel(), sku.getAttribute('data-ceo-sku'));
+        }
+      });
+      back.addEventListener('input', (event) => {
+        const input = event.target?.closest?.('[data-ceo-drawer-filter]');
+        if (input) filterDashboardDrawer(back, input);
+      });
+      document.body.appendChild(back);
+    }
+    return {
+      back,
+      drawer: back.querySelector('[data-ceo-drawer]') || root?.querySelector('[data-ceo-drawer]')
+    };
+  }
+
   function openDrawer(root, title, subtitle, metrics, rows) {
-    const back = root.querySelector('[data-ceo-drawer-back]');
-    const drawer = root.querySelector('[data-ceo-drawer]');
+    saveDashboardDrawerScroll();
+    const { back, drawer } = ensureDashboardDrawer(root);
     if (!back || !drawer) return;
     const list = Array.isArray(rows) ? rows.filter(Boolean) : [];
     const listHtml = list.length
@@ -1704,7 +1991,9 @@
       ${listHtml}
       <div style="display:flex;justify-content:flex-end;margin-top:18px"><button type="button" class="ceo-period active" data-ceo-close>Закрыть</button></div>
     `;
+    drawer.scrollTop = 0;
     back.classList.add('open');
+    requestAnimationFrame(() => drawer.focus?.({ preventScroll: true }));
   }
 
   function openSku(root, model, key) {
@@ -1729,6 +2018,44 @@
     ], skuDetailRows(model, item));
   }
 
+  function openAds(root, model) {
+    const breakdown = model.adsBreakdown || adsRowsBreakdown(model.adRows || model.iuRows, model.platform);
+    const platform = platformMeta(model.platform);
+    const shownRange = model.adRange || model.range;
+    const drr = model.total.revenue > 0 ? breakdown.total / model.total.revenue : null;
+    const detailRows = [
+      ['Внутренняя реклама', breakdown.internal, 'WB promotion / performance, Ozon / Yandex performance'],
+      ['Медийка', breakdown.media, 'Медийные размещения WB и ручные media-расходы'],
+      ['Промо внешняя', breakdown.external, 'Внешнее промо, PVZ, brand zone и внешние каналы'],
+      ['КЗ реклама', breakdown.kz, 'Контент-завод, review points и поддержка карточек'],
+      ['Ozon-реклама', breakdown.ozon, 'Отдельный контроль Ozon в общем срезе'],
+      ['Яндекс-реклама', breakdown.yandex, 'Отдельный контроль Яндекс.Маркет в общем срезе']
+    ]
+      .filter((item) => item[1] > 0 || ['Внутренняя реклама', 'Медийка', 'Промо внешняя', 'КЗ реклама'].includes(item[0]))
+      .map(([label, value, detail]) => ({ label, value: fmtMoneyFull(value), detail }));
+    const dayRows = (Array.isArray(model.adRows) ? model.adRows : (model.iuRows || [])).map((row) => {
+      const day = adsDailyBreakdown(row, model.platform);
+      return {
+        label: shortDate(row.date),
+        value: fmtMoneyFull(day.total),
+        detail: `внутр. ${fmtMoneyFull(day.internal)} · медийка ${fmtMoneyFull(day.media)} · внешняя ${fmtMoneyFull(day.external)} · КЗ ${fmtMoneyFull(day.kz)}`,
+        route: 'iu-drr'
+      };
+    });
+    openDrawer(root, 'Реклама по выбранному срезу', `${platform.label} · ${shortDate(shownRange.start)} - ${shortDate(shownRange.end)} · внутренняя, медийка, внешняя и КЗ`, [
+      ['Всего реклама', fmtMoneyFull(breakdown.total)],
+      ['Внутренняя', fmtMoneyFull(breakdown.internal)],
+      ['Медийка', fmtMoneyFull(breakdown.media)],
+      ['Промо внешняя', fmtMoneyFull(breakdown.external)],
+      ['КЗ реклама', fmtMoneyFull(breakdown.kz)],
+      ['ДРР', drr == null ? 'нет выручки' : fmtPct(drr)]
+    ], [
+      ...detailRows,
+      { label: 'Открыть ИУ / ДРР', value: 'дневная матрица', detail: 'полная таблица рекламы, расходов и выполнения', route: 'iu-drr' },
+      ...dayRows
+    ]);
+  }
+
   function navigate(route) {
     const normalized = String(route || '').replace(/^#/, '');
     if (!normalized) return;
@@ -1744,8 +2071,15 @@
       const target = event.target;
       const metric = target.closest?.('[data-ceo-metric]');
       if (metric) {
-        writeStorage(METRIC_KEY, metric.getAttribute('data-ceo-metric') || 'orders');
+        const metricKey = metric.getAttribute('data-ceo-metric') || 'orders';
+        writeStorage(METRIC_KEY, metricKey);
         renderDashboardCeoMotion();
+        if (metricKey === 'ads') {
+          requestAnimationFrame(() => {
+            const nextRoot = document.getElementById(ROOT_ID);
+            if (nextRoot) openAds(nextRoot, buildModel());
+          });
+        }
         return;
       }
       const period = target.closest?.('[data-ceo-period]');
@@ -1795,11 +2129,7 @@
     root.oninput = (event) => {
       const input = event.target?.closest?.('[data-ceo-drawer-filter]');
       if (!input) return;
-      const query = String(input.value || '').trim().toLowerCase();
-      root.querySelectorAll('[data-ceo-drawer-row]').forEach((row) => {
-        const haystack = String(row.getAttribute('data-filter') || '').toLowerCase();
-        row.hidden = Boolean(query && !haystack.includes(query));
-      });
+      filterDashboardDrawer(document.querySelector('[data-ceo-global-drawer-back]') || root, input);
     };
   }
 
@@ -1813,6 +2143,17 @@
     `;
   }
 
+  function scheduleRenderAfterSources(forceMissing = false) {
+    if ((!forceMissing && sourcesLoaded) || renderAfterLoadScheduled) return;
+    if (forceMissing && sourcesLoaded && missingSourceRetries >= MAX_MISSING_SOURCE_RETRIES) return;
+    if (forceMissing) missingSourceRetries += 1;
+    renderAfterLoadScheduled = true;
+    loadSources({ forceMissing }).then(() => {
+      renderAfterLoadScheduled = false;
+      if (dashboardRouteActive()) renderDashboardCeoMotion();
+    });
+  }
+
   function renderDashboardCeoMotion() {
     const root = document.getElementById(ROOT_ID);
     if (!root) return;
@@ -1820,21 +2161,24 @@
     const oldModal = document.getElementById('portalDashboardExecutiveModal');
     if (oldModal) oldModal.remove();
     ensureStyle();
-    const dashboardSource = source('dashboard') || {};
-    const hasPlatformRows = hasPlatformSeries(source('platformTrends'));
-    const hasDashboardPlan = Boolean(dashboardSource?.companyPlan?.activeMonth?.channels);
-    if ((!hasPlatformRows || !hasDashboardPlan) && !sourcesLoaded) {
+    const { hasPlatformRows, hasDashboardPlan, hasIuDrrRows } = requiredSourceState();
+    const missingCoreSource = !hasPlatformRows || !hasDashboardPlan || !hasIuDrrRows;
+    if (missingCoreSource && (!sourcesLoaded || missingSourceRetries < MAX_MISSING_SOURCE_RETRIES)) {
       renderLoading(root);
-      if (!renderAfterLoadScheduled) {
-        renderAfterLoadScheduled = true;
-        loadSources().then(() => {
-          renderAfterLoadScheduled = false;
-          renderDashboardCeoMotion();
-        });
-      }
+      scheduleRenderAfterSources(true);
       return;
     }
+    if (!missingCoreSource) missingSourceRetries = 0;
+    if (!sourcesLoaded) scheduleRenderAfterSources();
     const model = buildModel();
+    const waitingForAdsSource = model.metric === 'ads'
+      && model.total.ads <= 0
+      && missingSourceRetries < MAX_MISSING_SOURCE_RETRIES;
+    if (waitingForAdsSource) {
+      renderLoading(root);
+      scheduleRenderAfterSources(true);
+      return;
+    }
     root.dataset.dashboardCeoMotion = VERSION;
     root.dataset.premiumRoute = 'dashboard';
     root.innerHTML = renderShell(model);

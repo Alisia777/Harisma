@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260628-tasks-sku-open-v1';
+  const VERSION = '20260628-tasks-status-persist-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -429,6 +429,11 @@
   }
 
   function statusLabel(task) {
+    const status = normalizeText(task?.status || 'new');
+    if (status === 'waiting_rop') return 'Ожидает РОП';
+    if (status === 'waiting_decision') return 'Ожидает решения';
+    if (status === 'in_progress') return 'В работе';
+    if (status === 'done') return 'Готово';
     const lane = laneFor(task);
     if (lane === 'waiting') return 'Ожидает';
     if (lane === 'in_progress') return 'В работе';
@@ -585,6 +590,8 @@
     if (!task?.id) return task;
     const id = String(task.id);
     const articleKeys = taskArticleKeys(task);
+    const due = taskDate(task);
+    const now = new Date().toISOString();
     const snapshot = {
       ...task,
       articleKey: articleKeys[0] || task.articleKey || '',
@@ -593,15 +600,32 @@
     };
     TASK_CACHE.set(id, snapshot);
     const extras = taskExtras();
+    const previous = extras[id] || {};
     extras[id] = {
-      ...(extras[id] || {}),
+      ...previous,
+      title: snapshot.title || previous.title || '',
       articleKey: snapshot.articleKey,
       articleKeys: snapshot.articleKeys,
       articles: snapshot.articles,
-      entityLabel: snapshot.entityLabel || taskArticleSummary(snapshot),
-      nextAction: snapshot.nextAction || '',
-      reason: snapshot.reason || '',
-      updatedAt: snapshot.updatedAt || snapshot.updated_at || new Date().toISOString()
+      entityLabel: snapshot.entityLabel || previous.entityLabel || taskArticleSummary(snapshot),
+      owner: snapshot.owner || previous.owner || '',
+      status: snapshot.status || previous.status || 'new',
+      priority: snapshot.priority || previous.priority || 'medium',
+      type: snapshot.type || previous.type || 'general',
+      platform: snapshot.platform || snapshot.marketplace || snapshot.marketplaceKey || previous.platform || 'cross',
+      due: due || previous.due || '',
+      deadline: snapshot.deadline || previous.deadline || due || '',
+      dueDate: snapshot.dueDate || previous.dueDate || due || '',
+      due_date: snapshot.due_date || previous.due_date || due || '',
+      endDate: snapshot.endDate || previous.endDate || due || '',
+      end_date: snapshot.end_date || previous.end_date || due || '',
+      dateTo: snapshot.dateTo || previous.dateTo || due || '',
+      date_to: snapshot.date_to || previous.date_to || due || '',
+      nextAction: snapshot.nextAction || previous.nextAction || '',
+      reason: snapshot.reason || previous.reason || '',
+      source: snapshot.source || previous.source || '',
+      updatedAt: snapshot.updatedAt || snapshot.updated_at || now,
+      updated_at: snapshot.updated_at || snapshot.updatedAt || now
     };
     saveTaskExtras();
     return task;
@@ -1379,6 +1403,7 @@
       .task-detail-form textarea{resize:vertical}
       .task-detail-actions{display:flex;flex-wrap:wrap;align-items:end;gap:8px}
       .task-detail-actions button,.task-detail-comment-row button,.task-detail-file-upload span,.task-detail-file-row a,.task-detail-sku-card button{min-height:34px;border:1px solid rgba(219,199,163,.28);border-radius:999px;background:#0b0907;color:var(--task-text);padding:8px 12px;cursor:pointer;text-decoration:none}
+      .task-detail-actions button.is-active{border-color:rgba(219,199,163,.72);background:rgba(219,199,163,.14);box-shadow:0 0 18px rgba(219,199,163,.16)}
       .task-detail-actions .primary,.task-detail-comment-row button,.task-detail-file-upload span{background:linear-gradient(180deg,#ead8b7,#a98448);color:#130f0a;font-weight:900}
       .task-detail-sku-card p{margin:6px 0 10px;color:rgba(247,241,231,.62);font-size:12px}
       .task-detail-sku-list{display:grid;gap:6px;margin-bottom:10px;max-height:150px;overflow:auto}
@@ -1574,6 +1599,29 @@
     window.setTimeout(() => openTask(taskId), 50);
   }
 
+  function syncTaskDetailStatus(task, form = null) {
+    if (!task?.id) return;
+    const modal = form?.closest?.('[data-task-detail-modal]') || document.querySelector('[data-task-detail-modal]');
+    if (!modal) return;
+    const statusSelect = form?.querySelector?.('select[name="status"]') || modal.querySelector('[data-task-detail-form] select[name="status"]');
+    if (statusSelect) statusSelect.value = task.status || 'new';
+    const statusCard = modal.querySelector('.task-detail-status-card');
+    const statusTitle = statusCard?.querySelector('strong');
+    if (statusTitle) statusTitle.textContent = statusLabel(task);
+    const statusDate = statusCard?.querySelector('em');
+    if (statusDate) {
+      statusDate.textContent = formatDate(taskDate(task));
+      statusDate.classList.toggle('danger', isOverdue(task));
+    }
+    modal.querySelectorAll('[data-task-detail-status]').forEach((button) => {
+      const active = String(button.getAttribute('data-task-detail-status') || '') === String(task.status || '');
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    const historyList = modal.querySelector('[data-task-detail-history-list]');
+    if (historyList) historyList.innerHTML = renderTaskDetailHistory(task);
+  }
+
   async function saveTaskDetail(form) {
     const taskId = form?.getAttribute('data-task-id') || '';
     if (!taskId) return;
@@ -1581,10 +1629,11 @@
     if (updated) refreshOpenTaskDetail(updated.id);
   }
 
-  async function setTaskStatusFromDetail(taskId, status) {
+  async function setTaskStatusFromDetail(taskId, status, form = null) {
     if (!taskId || !status) return;
-    const updated = updateTaskLocal(taskId, { status }, `Статус изменен: ${statusLabel({ status })}.`);
-    if (updated) refreshOpenTaskDetail(updated.id);
+    const patch = form ? { ...taskPatchFromForm(form), status } : { status };
+    const updated = updateTaskLocal(taskId, patch, `Статус изменен: ${statusLabel({ status })}.`);
+    if (updated) syncTaskDetailStatus(updated, form);
   }
 
   function addTaskDetailComment(modal) {
@@ -1618,7 +1667,7 @@
       if (statusButton) {
         event.preventDefault();
         const form = modal.querySelector('[data-task-detail-form]');
-        setTaskStatusFromDetail(form?.getAttribute('data-task-id') || '', statusButton.getAttribute('data-task-detail-status') || '');
+        setTaskStatusFromDetail(form?.getAttribute('data-task-id') || '', statusButton.getAttribute('data-task-detail-status') || '', form);
         return;
       }
       if (event.target.closest?.('[data-task-detail-add-comment]')) {

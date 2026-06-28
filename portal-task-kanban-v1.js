@@ -4,11 +4,29 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260628-tasks-status-persist-v1';
+  const VERSION = '20260628-tasks-owner-canonical-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
   const ATTACHMENTS_KEY = 'altea.tasks.design.attachments.v1';
+  const OWNER_PINNED = ['РОП Маша', 'РОП Миша', 'РОП Саша'];
+  const OWNER_BLOCKLIST = new Set(['codex', 'codex qa']);
+  const OWNER_ALIASES = new Map([
+    ['васильева мария', 'РОП Маша'],
+    ['мария васильева', 'РОП Маша'],
+    ['маша', 'РОП Маша'],
+    ['роп маша', 'РОП Маша'],
+    ['миша', 'РОП Миша'],
+    ['михаил', 'РОП Миша'],
+    ['павленко михаил', 'РОП Миша'],
+    ['михаил павленко', 'РОП Миша'],
+    ['роп миша', 'РОП Миша'],
+    ['саша', 'РОП Саша'],
+    ['александр', 'РОП Саша'],
+    ['споров александр', 'РОП Саша'],
+    ['александр споров', 'РОП Саша'],
+    ['роп саша', 'РОП Саша']
+  ]);
   const WAITING_STATUSES = new Set(['waiting', 'waiting_team', 'waiting_rop', 'waiting_decision', 'approval']);
   const DONE_STATUSES = new Set(['done', 'closed', 'complete', 'completed', 'cancelled', 'archive', 'archived', 'deleted', 'removed']);
   const LANES = [
@@ -156,6 +174,18 @@
 
   function normalizeText(value) {
     return String(value || '').trim().toLowerCase();
+  }
+
+  function ownerKey(value) {
+    return normalizeText(value).replace(/\s+/g, ' ');
+  }
+
+  function normalizeOwnerName(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const key = ownerKey(raw);
+    if (OWNER_BLOCKLIST.has(key)) return '';
+    return OWNER_ALIASES.get(key) || raw;
   }
 
   function normalizePlatform(value, task) {
@@ -322,7 +352,7 @@
   }
 
   function taskOwner(task) {
-    return String(task?.owner || task?.coOwner || '').trim();
+    return normalizeOwnerName(task?.owner || task?.coOwner || '');
   }
 
   function taskType(task) {
@@ -342,7 +372,7 @@
       task?.entityLabel,
       task?.nextAction,
       task?.reason,
-      task?.owner,
+      taskOwner(task),
       task?.articleKey,
       taskArticleKeys(task).join(' '),
       task?.source,
@@ -443,12 +473,17 @@
   }
 
   function ownerOptions(tasks) {
-    const owners = new Set();
+    const owners = new Set(OWNER_PINNED);
     tasks.forEach((task) => {
       const owner = taskOwner(task);
       if (owner) owners.add(owner);
     });
-    return [...owners].sort((a, b) => a.localeCompare(b, 'ru'));
+    return [...owners].sort((a, b) => {
+      const ai = OWNER_PINNED.indexOf(a);
+      const bi = OWNER_PINNED.indexOf(b);
+      if (ai !== -1 || bi !== -1) return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+      return a.localeCompare(b, 'ru');
+    });
   }
 
   function allSkus() {
@@ -608,7 +643,7 @@
       articleKeys: snapshot.articleKeys,
       articles: snapshot.articles,
       entityLabel: snapshot.entityLabel || previous.entityLabel || taskArticleSummary(snapshot),
-      owner: snapshot.owner || previous.owner || '',
+      owner: normalizeOwnerName(snapshot.owner || previous.owner || ''),
       status: snapshot.status || previous.status || 'new',
       priority: snapshot.priority || previous.priority || 'medium',
       type: snapshot.type || previous.type || 'general',
@@ -910,7 +945,7 @@
     const draft = createDraft();
     ['title', 'articleKeys', 'articleKey', 'nextAction', 'reason', 'owner', 'due', 'type', 'priority', 'platform'].forEach((key) => {
       const value = data.get(key);
-      if (typeof value === 'string') draft[key] = value;
+      if (typeof value === 'string') draft[key] = key === 'owner' ? normalizeOwnerName(value) : value;
     });
     saveUi();
     return draft;
@@ -946,7 +981,7 @@
       if (taskPlatform !== platformFilter && taskPlatform !== 'cross') return false;
     }
 
-    const owner = normalizeText(filters.owner || 'all');
+    const owner = normalizeText(normalizeOwnerName(filters.owner || 'all') || 'all');
     if (owner && owner !== 'all' && normalizeText(taskOwner(task) || 'Без owner') !== owner) return false;
 
     const priority = normalizeText(filters.priority || 'all');
@@ -970,7 +1005,7 @@
       const haystack = [
         task?.title,
         task?.entityLabel,
-        task?.owner,
+        taskOwner(task),
         task?.nextAction,
         task?.reason,
         task?.articleKey,
@@ -1026,6 +1061,7 @@
 
   function renderFilters(tasks, filtered, filters, platform) {
     const owners = [['all', 'Все ответственные'], ...ownerOptions(tasks).map((owner) => [owner, owner])];
+    const selectedOwner = normalizeOwnerName(filters.owner || 'all') || 'all';
     const activeCount = countBy(tasks, isActive);
     const overdueCount = countBy(tasks, isOverdue);
     const noOwnerCount = countBy(tasks, (task) => isActive(task) && !taskOwner(task));
@@ -1057,7 +1093,7 @@
             <span>Поиск</span>
             <input type="search" data-task-filter="search" value="${escapeHtml(filters.search || '')}" placeholder="SKU, задача, owner, следующий шаг...">
           </label>
-          ${selectHtml('owner', 'Owner', filters.owner || 'all', owners)}
+          ${selectHtml('owner', 'Owner', selectedOwner, owners)}
           ${selectHtml('status', 'Статус', filters.status || 'active', STATUS_OPTIONS)}
           ${selectHtml('type', 'Тип', filters.type || 'all', TYPE_OPTIONS)}
           ${selectHtml('priority', 'Приоритет', filters.priority || 'all', PRIORITY_OPTIONS)}
@@ -1072,6 +1108,7 @@
 
   function renderCreateDrawer(platform) {
     if (!TASK_UI.createOpen) return '';
+    const ownerValue = normalizeOwnerName(draftValue('owner'));
     return `
       <section class="task-design-create" data-task-create-drawer>
         <form data-task-create-form>
@@ -1096,7 +1133,7 @@
             <textarea name="reason" rows="3" placeholder="Причина, ссылки, что проверить, какие метрики смотреть">${escapeHtml(draftValue('reason'))}</textarea>
           </label>
           <div class="task-design-create-grid">
-            <label><span>Owner</span><input name="owner" placeholder="Имя ответственного" value="${escapeHtml(draftValue('owner'))}"></label>
+            <label><span>Owner</span><input name="owner" placeholder="Имя ответственного" value="${escapeHtml(ownerValue)}"></label>
             <label><span>Срок</span><input name="due" type="date" value="${escapeHtml(draftValue('due', plusDays(3)))}"></label>
             <label><span>Тип</span><select name="type">${TYPE_OPTIONS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}" ${draftValue('type', 'general') === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>
             <label><span>Приоритет</span><select name="priority">${PRIORITY_OPTIONS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}" ${draftValue('priority', 'critical') === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>
@@ -1239,7 +1276,7 @@
         task?.articleKey,
         Array.isArray(task?.articleKeys) ? task.articleKeys.join('|') : '',
         task?.status,
-        task?.owner,
+        taskOwner(task),
         task?.priority,
         taskType(task),
         normalizePlatform('', task),
@@ -1584,7 +1621,7 @@
       entityLabel: sku
         ? `${sku.article || sku.articleKey || articleKey} · ${skuTitle(sku)}${articleKeys.length > 1 ? ` +${articleKeys.length - 1}` : ''}`
         : taskArticleSummary({ articleKey, articleKeys }),
-      owner: String(data.get('owner') || '').trim(),
+      owner: normalizeOwnerName(data.get('owner') || ''),
       due: String(data.get('due') || '').trim(),
       status: String(data.get('status') || 'new'),
       priority: String(data.get('priority') || 'medium'),
@@ -1766,7 +1803,7 @@
       reason: String(fieldValue(data, draft, 'reason')).trim(),
       articleKey,
       articleKeys,
-      owner: String(fieldValue(data, draft, 'owner')).trim(),
+      owner: normalizeOwnerName(fieldValue(data, draft, 'owner')),
       due: String(fieldValue(data, draft, 'due')).trim(),
       type: String(fieldValue(data, draft, 'type') || 'general'),
       priority: String(fieldValue(data, draft, 'priority') || 'medium'),
@@ -1863,7 +1900,7 @@
 
   function setFilter(name, value) {
     const filters = ensureFilters();
-    filters[name] = value;
+    filters[name] = name === 'owner' ? (normalizeOwnerName(value) || 'all') : value;
     if (name === 'search') {
       window.clearTimeout(setFilter.searchTimer);
       setFilter.searchTimer = window.setTimeout(queueEnhance, 80);

@@ -631,6 +631,8 @@ function buildSteps(options, env) {
         options.baseDataDir,
         '--output-dir',
         path.dirname(trendsOutput),
+        '--platforms',
+        options.platforms.join(','),
         '--mirror-local-fallback',
         '--ozon-daily-funnel',
         '0'

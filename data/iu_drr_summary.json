@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-29T10:19:56.525Z",
+  "generatedAt": "2026-06-29T11:11:24.931Z",
   "asOfDate": "2026-06-28",
   "source": {
     "iuPlanGeneratedAt": "2026-06-29T06:36:28.331Z",
     "companyPlanGeneratedAt": "2026-05-29T19:18:00+03:00",
-    "platformTrendsGeneratedAt": "2026-06-29T10:17:39.973Z",
-    "adsSummaryGeneratedAt": "2026-06-29T10:17:40.917Z",
+    "platformTrendsGeneratedAt": "2026-06-29T11:09:19.440Z",
+    "adsSummaryGeneratedAt": "2026-06-29T11:09:19.490Z",
     "wbFeedbacksGeneratedAt": "2026-06-28T14:09:06.004Z",
     "ozonFinanceSourceMode": "api",
     "ozonFinanceEndpoint": "/v3/finance/transaction/list",
@@ -17238,7 +17238,7 @@
         "enabled": false,
         "source": "Ozon Seller API /v1/analytics/data",
         "from": "2026-06-01",
-        "to": "2026-06-27",
+        "to": "2026-06-28",
         "rows": 0,
         "applied": false,
         "warnings": [
@@ -17246,7 +17246,7 @@
         ],
         "itemSeriesReplacement": {
           "from": "2026-06-01",
-          "to": "2026-06-27",
+          "to": "2026-06-28",
           "replacedRows": 0,
           "insertedRows": 0,
           "source": "Ozon Seller analytics daily total + Smart spend"

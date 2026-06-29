@@ -36,9 +36,13 @@ const PLATFORM_KEY_ALIASES = {
   'золотое яблоко': 'goldapple',
   'золотоеяблоко': 'goldapple',
   letu: 'letu',
+  letual: 'letu',
+  letoile: 'letu',
   'летуаль': 'letu',
   'лэтуаль': 'letu',
   megamarket: 'megamarket',
+  mega: 'megamarket',
+  sbermegamarket: 'megamarket',
   'mega market': 'megamarket',
   'мегамаркет': 'megamarket',
   samokat: 'samokat',
@@ -188,6 +192,37 @@ function isOutOfScopeBrandRow(row = {}) {
 function canonicalPlatformKey(value) {
   const raw = normalizeKey(value);
   return PLATFORM_KEY_ALIASES[raw] || raw;
+}
+
+function requestedPlatformSet(value) {
+  const requested = normalizeText(value);
+  if (!requested) return null;
+  const keys = requested
+    .split(',')
+    .map((item) => canonicalPlatformKey(item))
+    .filter(Boolean);
+  if (!keys.length || keys.some((key) => ['all', '*'].includes(key))) return null;
+  return new Set(keys);
+}
+
+function platformRequested(requestedPlatforms, platformKey) {
+  if (!requestedPlatforms) return true;
+  return requestedPlatforms.has(canonicalPlatformKey(platformKey));
+}
+
+function requestedExtraPlatformOrder(requestedPlatforms) {
+  if (!requestedPlatforms) return [...EXTRA_PLATFORM_ORDER];
+  return EXTRA_PLATFORM_ORDER.filter((key) => platformRequested(requestedPlatforms, key));
+}
+
+function requestedMarketplacePlatformOrder(requestedPlatforms, extraPlatformOrder) {
+  const baseOrder = ['wb', 'ozon', 'ya'].filter((key) => platformRequested(requestedPlatforms, key));
+  return [...baseOrder, ...extraPlatformOrder];
+}
+
+function requestedAdsPlatformOrder(requestedPlatforms, extraPlatformOrder) {
+  const baseOrder = ['ozon', 'ya'].filter((key) => platformRequested(requestedPlatforms, key));
+  return [...baseOrder, ...extraPlatformOrder];
 }
 
 function platformLabel(key) {
@@ -462,9 +497,10 @@ function loadWorkbookData(workbook, sheetName) {
   return XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '' });
 }
 
-function platformMonthlyTotals(rawRows, asOfDate) {
+function platformMonthlyTotals(rawRows, asOfDate, allowedPlatformOrder = ['wb', 'ozon', 'ya', ...EXTRA_PLATFORM_ORDER]) {
   const platforms = new Map();
   const monthHeaders = Object.keys(rawRows[0] || {}).filter((header) => /^\d{2}\.\d{4}$/.test(String(header)));
+  const allowedPlatforms = new Set(allowedPlatformOrder.map((key) => canonicalPlatformKey(key)));
 
   const normalizeRowPlatform = (row) => canonicalPlatformKey(row.platform_key || row.platformKey || row.platform);
   const setMonthlyMetric = (bucket, field, value, priority) => {
@@ -477,7 +513,6 @@ function platformMonthlyTotals(rawRows, asOfDate) {
   };
 
   if (!monthHeaders.length) {
-    const allowedPlatforms = new Set(['wb', 'ozon', 'ya', ...EXTRA_PLATFORM_ORDER]);
     for (const row of rawRows) {
       if (normalizeKey(row.level || row['level']) !== 'total') continue;
       const platformKey = normalizeRowPlatform(row);
@@ -528,7 +563,7 @@ function platformMonthlyTotals(rawRows, asOfDate) {
   for (const row of rawRows) {
     if (normalizeKey(row.level || row['level']) !== 'total') continue;
     const platformKey = normalizeRowPlatform(row);
-    if (!EXTRA_PLATFORM_ORDER.includes(platformKey) && platformKey !== 'ya') continue;
+    if (!allowedPlatforms.has(platformKey)) continue;
     const platform = platforms.get(platformKey) || new Map();
     for (const header of monthHeaders) {
       const month = monthKeyFromHeader(header);
@@ -618,14 +653,15 @@ function platformMonthlyTotals(rawRows, asOfDate) {
   return result;
 }
 
-function buildArticleRows(rows, skus, skuAliases, asOfDate) {
+function buildArticleRows(rows, skus, skuAliases, asOfDate, extraPlatformOrder = EXTRA_PLATFORM_ORDER) {
   const skuLookup = buildSkuLookup(skus, skuAliases);
   const monthHeaders = Object.keys(rows[0] || {}).filter((header) => /^\d{2}\.\d{4}$/.test(String(header)));
   const grouped = new Map();
+  const activeExtraPlatforms = new Set(extraPlatformOrder.map((key) => canonicalPlatformKey(key)));
 
   for (const row of rows) {
     const platformKey = canonicalPlatformKey(row['Площадка'] || row.platform || row.marketplace);
-    if (!EXTRA_PLATFORM_ORDER.includes(platformKey)) continue;
+    if (!activeExtraPlatforms.has(platformKey)) continue;
     const sourceArticleKey = normalizeText(row['Артикул/SKU'] || row.article || row.sku || row.offer_id || row.vendorCode);
     if (!sourceArticleKey) continue;
     if (isOutOfScopeBrandRow(row) || isOutOfScopeBrandText(sourceArticleKey)) continue;
@@ -998,11 +1034,11 @@ function mergeOzonSmartSpendWithSellerFunnel(existingSeries = [], monthlySeries 
     .filter((point) => point.views || point.clicks || point.spend || point.orders || point.revenue);
 }
 
-function buildAdsItemSeries(rawRows, asOfDate) {
+function buildAdsItemSeries(rawRows, asOfDate, adsPlatformOrder = ADS_PLATFORM_ORDER) {
   const grouped = new Map();
   const totalGrouped = new Map();
   const skuMonthPresence = new Set();
-  const allowedPlatforms = new Set(ADS_PLATFORM_ORDER);
+  const allowedPlatforms = new Set(adsPlatformOrder.map((key) => canonicalPlatformKey(key)));
 
   for (const row of Array.isArray(rawRows) ? rawRows : []) {
     const platformKey = canonicalPlatformKey(row.platform_key || row.platformKey || row.platform);
@@ -1099,6 +1135,14 @@ function mergeItemSeries(baseSeries, extraSeries) {
     return leftDate.localeCompare(rightDate)
       || normalizeKey(left?.platformKey || left?.platform || '').localeCompare(normalizeKey(right?.platformKey || right?.platform || ''))
       || normalizeText(left?.articleKey || left?.article || '').localeCompare(normalizeText(right?.articleKey || right?.article || ''));
+  });
+}
+
+function pruneInactiveExtraRows(rows, extraPlatformOrder = EXTRA_PLATFORM_ORDER) {
+  const activeExtraPlatforms = new Set(extraPlatformOrder.map((key) => canonicalPlatformKey(key)));
+  return (Array.isArray(rows) ? rows : []).filter((row) => {
+    const platformKey = canonicalPlatformKey(row?.platformKey || row?.platform || row?.key);
+    return !EXTRA_PLATFORM_ORDER.includes(platformKey) || activeExtraPlatforms.has(platformKey);
   });
 }
 
@@ -1530,7 +1574,9 @@ function buildAdsAllSeries(platformSeriesMap) {
   return [...byDate.values()].sort((left, right) => left.date.localeCompare(right.date));
 }
 
-function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, asOfDate) {
+function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, asOfDate, options = {}) {
+  const extraPlatformOrder = options.extraPlatformOrder || EXTRA_PLATFORM_ORDER;
+  const activeExtraPlatforms = new Set(extraPlatformOrder.map((key) => canonicalPlatformKey(key)));
   const next = deepClone(basePlatformTrends || {});
   const cutoffDate = iso(asOfDate);
   const existingPlatforms = Array.isArray(next.platforms) ? [...next.platforms] : [];
@@ -1547,10 +1593,12 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
     generatedAt: new Date().toISOString(),
     workbook: DEFAULT_WORKBOOK,
     asOfDate: cutoffDate,
-    platforms: Object.fromEntries(Object.entries(existingExtraPlatforms).map(([key, bucket]) => [
-      key,
-      trimExtraPlatformToDate(bucket, cutoffDate)
-    ]))
+    platforms: Object.fromEntries(Object.entries(existingExtraPlatforms)
+      .filter(([key]) => activeExtraPlatforms.has(canonicalPlatformKey(key)))
+      .map(([key, bucket]) => [
+        canonicalPlatformKey(key),
+        trimExtraPlatformToDate(bucket, cutoffDate)
+      ]))
   };
 
   const extraArticleMap = new Map();
@@ -1561,7 +1609,7 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
     extraArticleMap.set(key, list);
   }
 
-  for (const key of EXTRA_PLATFORM_ORDER) {
+  for (const key of extraPlatformOrder) {
     const newSeries = buildPlatformSeriesFromMonthly(platformTotals.get(key) || new Map(), asOfDate);
     const existing = platformMap.get(key) || {};
     let series = mergeSeriesFillMissing(existing.series, newSeries, cutoffDate);
@@ -1617,19 +1665,10 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
   }
 
   const allSeriesMap = new Map();
-  for (const [key, monthlyTotals] of platformTotals.entries()) {
-    allSeriesMap.set(key, buildPlatformSeriesFromMonthly(monthlyTotals || new Map(), asOfDate));
-  }
-  for (const [key, platform] of platformMap.entries()) {
-    if (EXTRA_PLATFORM_ORDER.includes(key) || key === 'all') continue;
-    const series = key === 'ya'
-      ? mergeSeriesFillMissing(
-          platform.series,
-          buildPlatformSeriesFromMonthly(platformTotals.get(key) || new Map(), asOfDate),
-          cutoffDate
-        )
-      : platform.series;
-    allSeriesMap.set(key, Array.isArray(series) ? series : []);
+  for (const platform of resultPlatforms) {
+    const key = canonicalPlatformKey(platform?.key);
+    if (!key || key === 'all') continue;
+    allSeriesMap.set(key, Array.isArray(platform.series) ? platform.series : []);
   }
   const allSeriesCutoff = completeSeriesDate(allSeriesMap);
   const allSeries = buildAllSeries(allSeriesMap)
@@ -1652,6 +1691,9 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
 }
 
 function buildAdsSummary(baseAdsSummary, wbPlatformSeries, platformAdsSeries, asOfDate, options = {}) {
+  const adsPlatformOrder = options.adsPlatformOrder || ADS_PLATFORM_ORDER;
+  const extraPlatformOrder = options.extraPlatformOrder || EXTRA_PLATFORM_ORDER;
+  const activeExtraPlatforms = new Set(extraPlatformOrder.map((key) => canonicalPlatformKey(key)));
   const existing = deepClone(baseAdsSummary || {});
   const windowFromValue = isoDate(options.adsWindowFrom) || isoDate(existing.window?.from) || monthStart(iso(asOfDate));
   const windowToValue = isoDate(options.adsWindowTo) || isoDate(existing.window?.to) || iso(asOfDate);
@@ -1710,12 +1752,30 @@ function buildAdsSummary(baseAdsSummary, wbPlatformSeries, platformAdsSeries, as
       ? existingWb.series
       : [];
   const adPlatforms = [];
+  const addedPlatforms = new Set();
   adPlatforms.push(addPlatform('wb', existingWb?.label || 'WB', freshWb, existingWb ? { ...existingWb, key: 'wb', platformKey: 'wb', label: existingWb?.label || 'WB' } : {}));
-  for (const key of ADS_PLATFORM_ORDER) {
+  addedPlatforms.add('wb');
+  for (const key of adsPlatformOrder) {
     if (!platformAdsSeries.has(key)) continue;
     adPlatforms.push(addPlatform(key, platformLabel(key), platformAdsSeries.get(key)));
+    addedPlatforms.add(canonicalPlatformKey(key));
+  }
+  for (const platform of Array.isArray(existing.platforms) ? existing.platforms : []) {
+    const key = canonicalPlatformKey(platform?.key || platform?.platformKey || platform?.label);
+    if (!key || key === 'all' || addedPlatforms.has(key)) continue;
+    if (EXTRA_PLATFORM_ORDER.includes(key) && !activeExtraPlatforms.has(key)) continue;
+    adPlatforms.push(addPlatform(key, platform?.label || platformLabel(key), platform?.series || [], platform));
+    addedPlatforms.add(key);
   }
   const allSeries = buildAdsAllSeries(mergedPlatformSeries);
+  const completeAdsCutoff = completeSeriesDate(mergedPlatformSeries);
+  if (completeAdsCutoff && completeAdsCutoff < windowTo) {
+    next.window = {
+      ...next.window,
+      to: completeAdsCutoff,
+      days: enumerateDates(windowFrom, completeAdsCutoff).length
+    };
+  }
   adPlatforms.push({
     key: 'all',
     platformKey: 'all',
@@ -1734,6 +1794,8 @@ function resolveOptions(args) {
   const workbookPath = path.resolve(args.workbook || args['workbook'] || DEFAULT_WORKBOOK);
   const adsWindowFrom = isoDate(args['ads-window-from'] || args['ads-date-from'] || args['date-from'] || '');
   const adsWindowTo = isoDate(args['ads-window-to'] || args['ads-date-to'] || args['date-to'] || '');
+  const requestedPlatforms = requestedPlatformSet(args.platforms || args['extra-platforms'] || '');
+  const extraPlatformOrder = requestedExtraPlatformOrder(requestedPlatforms);
   return {
     command: args.command || 'sync',
     dryRun: Boolean(args.dryRun),
@@ -1743,6 +1805,10 @@ function resolveOptions(args) {
     workbookPath,
     adsWindowFrom,
     adsWindowTo,
+    requestedPlatforms,
+    extraPlatformOrder,
+    marketplacePlatformOrder: requestedMarketplacePlatformOrder(requestedPlatforms, extraPlatformOrder),
+    adsPlatformOrder: requestedAdsPlatformOrder(requestedPlatforms, extraPlatformOrder),
     ozonDailyFunnelEnabled: asBool(args['ozon-daily-funnel'], true),
     ozonClientId: normalizeText(args['ozon-client-id'] || process.env.ALTEA_OZON_CLIENT_ID || ''),
     ozonApiKey: normalizeText(args['ozon-api-key'] || process.env.ALTEA_OZON_API_KEY || '')
@@ -1855,22 +1921,31 @@ function enrichSmartPriceOverlayWithPrices(baseOverlay, priceSnapshot = {}) {
   return next;
 }
 
-function updateSmartPriceOverlay(baseOverlay, extraMarketplace, asOfDate, priceSnapshot = {}) {
+function updateSmartPriceOverlay(baseOverlay, extraMarketplace, asOfDate, priceSnapshot = {}, options = {}) {
+  const extraPlatformOrder = options.extraPlatformOrder || EXTRA_PLATFORM_ORDER;
+  const activeExtraPlatforms = new Set(extraPlatformOrder.map((key) => canonicalPlatformKey(key)));
   const next = enrichSmartPriceOverlayWithPrices(baseOverlay, priceSnapshot);
   next.platforms = next.platforms && typeof next.platforms === 'object' ? next.platforms : {};
+  for (const key of Object.keys(next.platforms)) {
+    const platformKey = canonicalPlatformKey(key);
+    if (EXTRA_PLATFORM_ORDER.includes(platformKey) && !activeExtraPlatforms.has(platformKey)) {
+      delete next.platforms[key];
+    }
+  }
   const platforms = extraMarketplace?.platforms || {};
   for (const [key, bucket] of Object.entries(platforms)) {
-    if (!EXTRA_PLATFORM_ORDER.includes(canonicalPlatformKey(key))) continue;
+    const platformKey = canonicalPlatformKey(key);
+    if (!activeExtraPlatforms.has(platformKey)) continue;
     const articles = Array.isArray(bucket?.articles) ? bucket.articles : [];
-    next.platforms[key] = {
-      key,
+    next.platforms[platformKey] = {
+      key: platformKey,
       label: bucket?.label || platformLabel(key),
       source: 'platform_trends.extraMarketplace',
       generatedAt: new Date().toISOString(),
       asOfDate: iso(asOfDate),
       rows: articles.map((row) => ({
         ...row,
-        platformKey: key,
+        platformKey,
         platformLabel: bucket?.label || row.platformLabel || platformLabel(key),
         sourceMode: row.source || 'marketplace-workbook'
       }))
@@ -1882,8 +1957,10 @@ function updateSmartPriceOverlay(baseOverlay, extraMarketplace, asOfDate, priceS
     generatedAt: next.generatedAt,
     asOfDate: next.asOfDate,
     source: 'platform_trends.extraMarketplace',
-    platforms: Object.fromEntries(Object.entries(platforms).map(([key, bucket]) => [key, {
-      key,
+    platforms: Object.fromEntries(Object.entries(platforms)
+      .filter(([key]) => activeExtraPlatforms.has(canonicalPlatformKey(key)))
+      .map(([key, bucket]) => [canonicalPlatformKey(key), {
+      key: canonicalPlatformKey(key),
       label: bucket?.label || platformLabel(key),
       articleCount: Array.isArray(bucket?.articles) ? bucket.articles.length : 0
     }]))
@@ -1944,10 +2021,12 @@ async function main() {
   const referenceDate = parseDate(completeMarketplaceDate(basePlatformTrends) || basePlatformTrends.latestMarketplaceDate || baseAdsSummary.asOfDate || new Date().toISOString().slice(0, 10))
     || new Date();
 
-  const platformTotals = platformMonthlyTotals(rawMonthlyRows, referenceDate);
-  const articleRows = buildArticleRows(skuMonthlyRows, skus, skuAliases, referenceDate);
+  const platformTotals = platformMonthlyTotals(rawMonthlyRows, referenceDate, options.marketplacePlatformOrder);
+  const articleRows = buildArticleRows(skuMonthlyRows, skus, skuAliases, referenceDate, options.extraPlatformOrder);
 
-  const platformTrends = updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, referenceDate);
+  const platformTrends = updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, referenceDate, {
+    extraPlatformOrder: options.extraPlatformOrder
+  });
 
   const adsMonthlyTotals = new Map();
   const skuAdsFieldPresence = new Set();
@@ -1983,7 +2062,7 @@ async function main() {
     if (!target) continue;
     const value = numberOrZero(row.value);
     const targetKey = platformKey === 'ym' ? 'ya' : platformKey;
-    if (!ADS_PLATFORM_ORDER.includes(targetKey)) continue;
+    if (!options.adsPlatformOrder.includes(targetKey)) continue;
     if (level === 'sku') {
       if (isOutOfScopeBrandRow(row)) continue;
       skuAdsFieldPresence.add(`${targetKey}|${month}|${target.field}`);
@@ -2041,13 +2120,18 @@ async function main() {
 
   const mergedAdsSummary = buildAdsSummary(baseAdsSummary, wbPlatformSeries, extraAdsSeriesMap, referenceDate, {
     adsWindowFrom,
-    adsWindowTo
+    adsWindowTo,
+    adsPlatformOrder: options.adsPlatformOrder,
+    extraPlatformOrder: options.extraPlatformOrder
   });
   mergedAdsSummary.diagnostics = {
     ...(mergedAdsSummary.diagnostics || {}),
     ozonDailySellerFunnel: ozonDailyFunnelDiagnostics
   };
-  mergedAdsSummary.itemSeries = mergeItemSeries(mergedAdsSummary.itemSeries, buildAdsItemSeries(rawMonthlyRows, referenceDate));
+  mergedAdsSummary.itemSeries = mergeItemSeries(
+    pruneInactiveExtraRows(mergedAdsSummary.itemSeries, options.extraPlatformOrder),
+    buildAdsItemSeries(rawMonthlyRows, referenceDate, options.adsPlatformOrder)
+  );
   const ozonDailyItemSeries = replaceOzonWindowItemSeriesWithDailyTotal(
     mergedAdsSummary.itemSeries,
     extraAdsSeriesMap.get('ozon') || [],
@@ -2068,7 +2152,7 @@ async function main() {
     generatedAt: new Date().toISOString(),
     workbook: options.workbookPath,
     asOfDate: iso(referenceDate),
-    platforms: EXTRA_PLATFORM_ORDER.reduce((acc, key) => {
+    platforms: options.extraPlatformOrder.reduce((acc, key) => {
       acc[key] = {
         key,
         label: platformLabel(key),
@@ -2079,13 +2163,15 @@ async function main() {
     }, {})
   };
 
-  const smartPriceOverlay = updateSmartPriceOverlay(baseSmartPriceOverlay, platformTrends.extraMarketplace, referenceDate, priceSnapshot);
+  const smartPriceOverlay = updateSmartPriceOverlay(baseSmartPriceOverlay, platformTrends.extraMarketplace, referenceDate, priceSnapshot, {
+    extraPlatformOrder: options.extraPlatformOrder
+  });
   const writtenFiles = writeOutputs(platformTrends, mergedAdsSummary, smartPriceOverlay, options);
   const summary = {
     dryRun: options.dryRun,
     workbookPath: options.workbookPath,
     asOfDate: iso(referenceDate),
-    extraPlatforms: EXTRA_PLATFORM_ORDER,
+    extraPlatforms: options.extraPlatformOrder,
     platformPoints: platformTrends.platforms.reduce((sum, platform) => sum + (Array.isArray(platform.series) ? platform.series.length : 0), 0),
     articleRows: articleRows.length,
     writtenFiles

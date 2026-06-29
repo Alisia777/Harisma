@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-29T08:07:26.925Z",
+  "generatedAt": "2026-06-29T11:11:25.223Z",
   "status": "blocked",
   "publish": {
     "allowed": false,
@@ -9,10 +9,9 @@
       "API SKU sum is above marketplace aggregate for 3 platform(s)."
     ],
     "warnings": [
-      "Potential duplicated revenue overage: 490820.",
-      "Unmapped API SKU revenue: 128813."
+      "Potential duplicated revenue overage: 490820."
     ],
-    "checkedAt": "2026-06-29T08:07:26.925Z"
+    "checkedAt": "2026-06-29T11:11:25.223Z"
   },
   "freshness": {
     "maxDate": "2026-06-28",
@@ -21,7 +20,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-29T08:07:26.919Z",
+      "checkedAt": "2026-06-29T11:11:25.217Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-28",
       "maxDate": "2026-06-28",
@@ -68,7 +67,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-29T08:07:26.924Z",
+      "checkedAt": "2026-06-29T11:11:25.223Z",
       "expectedDate": "2026-06-28",
       "adsSummaryWindowTo": "2026-06-27",
       "iuDrrWindowTo": "2026-06-28",
@@ -109,8 +108,8 @@
   "sources": {
     "dashboard": {
       "exists": true,
-      "rows": 15,
-      "generatedAt": "2026-06-29T06:32:18.705Z",
+      "rows": 20,
+      "generatedAt": "2026-06-29T10:17:39.973Z",
       "asOfDate": "2026-06-28",
       "revenue": 0
     },
@@ -124,14 +123,14 @@
     "platform_trends": {
       "exists": true,
       "rows": 7,
-      "generatedAt": "2026-06-29T08:04:02.794Z",
+      "generatedAt": "2026-06-29T11:09:19.440Z",
       "asOfDate": "2026-06-28",
-      "revenue": 1251271064
+      "revenue": 1245839858
     },
     "ads_summary": {
       "exists": true,
-      "rows": 7,
-      "generatedAt": "2026-06-29T06:43:28.800Z",
+      "rows": 4,
+      "generatedAt": "2026-06-29T11:09:19.490Z",
       "asOfDate": "2026-06-28",
       "revenue": 0
     },
@@ -159,7 +158,7 @@
     "smart_price_overlay": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-29T06:48:22.809Z",
+      "generatedAt": "2026-06-29T11:09:19.609Z",
       "asOfDate": "2026-06-28",
       "revenue": 0
     },
@@ -207,43 +206,43 @@
     },
     "order_procurement": {
       "exists": true,
-      "rows": 2222,
-      "generatedAt": "2026-06-28T13:33:47.989Z",
-      "asOfDate": "2026-06-28",
+      "rows": 3165,
+      "generatedAt": "2026-06-29T08:07:25.728Z",
+      "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "order_procurement_wb": {
       "exists": true,
-      "rows": 616,
-      "generatedAt": "2026-06-28T13:33:47.989Z",
-      "asOfDate": "2026-06-28",
+      "rows": 615,
+      "generatedAt": "2026-06-29T08:07:25.728Z",
+      "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "order_procurement_ozon": {
       "exists": true,
-      "rows": 1606,
-      "generatedAt": "2026-06-28T13:33:47.989Z",
-      "asOfDate": "2026-06-28",
+      "rows": 1615,
+      "generatedAt": "2026-06-29T08:07:25.728Z",
+      "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "order_procurement_ym": {
       "exists": true,
       "rows": 935,
       "generatedAt": "2026-06-15T08:33:08.937Z",
-      "asOfDate": "2026-06-20",
+      "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "oos_control": {
       "exists": true,
-      "rows": 12,
-      "generatedAt": "2026-06-29T08:07:25.942Z",
+      "rows": 124,
+      "generatedAt": "2026-06-29T10:25:03.362Z",
       "asOfDate": "2026-06-28",
       "revenue": 0
     },
     "iu_drr_summary": {
       "exists": true,
       "rows": 28,
-      "generatedAt": "2026-06-29T06:43:53.784Z",
+      "generatedAt": "2026-06-29T11:11:24.931Z",
       "asOfDate": "2026-06-28",
       "revenue": 0
     },
@@ -257,16 +256,16 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-29T08:07:26.513Z",
+      "generatedAt": "2026-06-29T00:00:00+03:00",
       "asOfDate": "2026-06-28",
-      "revenue": 131340
+      "revenue": 2527
     },
     "portal_data_quarantine": {
       "exists": true,
-      "rows": 38,
-      "generatedAt": "2026-06-29T08:07:26.513Z",
+      "rows": 3,
+      "generatedAt": "2026-06-29T11:08:01.743Z",
       "asOfDate": "2026-06-29",
-      "revenue": 1735325
+      "revenue": 1490826
     },
     "sku_aliases": {
       "exists": true,
@@ -292,14 +291,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-29T08:07:26.601Z",
+      "generatedAt": "2026-06-29T10:25:03.801Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-29T07:48:43.691Z",
+      "generatedAt": "2026-06-29T11:08:01.750Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     }
@@ -357,30 +356,30 @@
     ]
   },
   "quality": {
-    "issueCount": 91,
-    "criticalCount": 4,
-    "warningCount": 0,
+    "issueCount": 227,
+    "criticalCount": 3,
+    "warningCount": 136,
     "monthKey": "2026-06",
     "maxDate": "2026-06-28",
-    "apiUnmappedPlatformRows": 4,
-    "apiUnmappedUniqueSku": 4,
-    "apiUnmappedRevenue": 131340,
-    "apiUnmappedActionRows": 1,
-    "apiUnmappedActionUniqueSku": 1,
-    "apiUnmappedActionRevenue": 128813,
-    "apiKnownOutsideRegistryRows": 35,
-    "apiKnownOutsideRegistryUniqueSku": 31,
-    "apiKnownOutsideRegistryRevenue": 5769647,
+    "apiUnmappedPlatformRows": 3,
+    "apiUnmappedUniqueSku": 3,
+    "apiUnmappedRevenue": 2527,
+    "apiUnmappedActionRows": 0,
+    "apiUnmappedActionUniqueSku": 0,
+    "apiUnmappedActionRevenue": 0,
+    "apiKnownOutsideRegistryRows": 36,
+    "apiKnownOutsideRegistryUniqueSku": 32,
+    "apiKnownOutsideRegistryRevenue": 5901510,
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 3,
     "apiSumAboveAggregateOverage": 490820,
     "skuAliasCount": 341,
-    "priceContourSkuCount": 289,
-    "orderNoStockNeedRows": 0,
+    "priceContourSkuCount": 303,
+    "orderNoStockNeedRows": 135,
     "skuMissingOwner": 0,
     "warehouseUnmatchedRows": 25,
     "wbOwnerMatchedSku": 125,
-    "wbOwnerUpdatedSku": 125,
+    "wbOwnerUpdatedSku": 36,
     "wbOwnerMissingInPortal": 6,
     "wbOwnerMissingInDistribution": 18
   },
@@ -390,11 +389,11 @@
     "overage": 490820
   },
   "quarantine": {
-    "rows": 4,
-    "revenue": 1585156,
+    "rows": 3,
+    "revenue": 1490826,
     "overage": 490820,
     "apiSumAboveAggregateCount": 3,
-    "apiUnmappedHighRevenueCount": 1
+    "apiUnmappedHighRevenueCount": 0
   },
   "lastGood": {
     "exists": true,
@@ -415,16 +414,16 @@
         "rows": 7,
         "previousRows": 7,
         "rowRatio": 1,
-        "revenue": 1251271064,
+        "revenue": 1245839858,
         "previousRevenue": 100968408,
-        "revenueRatio": 12.392698753851798,
+        "revenueRatio": 12.33890761157688,
         "revenueComparable": true
       },
       {
         "snapshot": "order_procurement",
-        "rows": 2222,
+        "rows": 3165,
         "previousRows": 2286,
-        "rowRatio": 0.9720034995625547,
+        "rowRatio": 1.3845144356955381,
         "revenue": 0,
         "previousRevenue": 0,
         "revenueRatio": 1,
@@ -452,9 +451,9 @@
       },
       {
         "snapshot": "oos_control",
-        "rows": 12,
+        "rows": 124,
         "previousRows": 12,
-        "rowRatio": 1,
+        "rowRatio": 10.333333333333334,
         "revenue": 0,
         "previousRevenue": 0,
         "revenueRatio": 1,
@@ -466,7 +465,7 @@
     {
       "name": "required:dashboard",
       "status": "ok",
-      "rows": 15
+      "rows": 20
     },
     {
       "name": "required:skus",
@@ -481,7 +480,7 @@
     {
       "name": "required:order_procurement",
       "status": "ok",
-      "rows": 2222
+      "rows": 3165
     },
     {
       "name": "required:warehouse_stock_overlay",

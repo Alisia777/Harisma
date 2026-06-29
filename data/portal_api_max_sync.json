@@ -1,46 +1,27 @@
 {
   "schema": "portal-api-max-sync-v1",
-  "generatedAt": "2026-06-29T10:19:56.647Z",
-  "startedAt": "2026-06-29T10:10:51.500Z",
+  "generatedAt": "2026-06-29T11:11:25.256Z",
+  "startedAt": "2026-06-29T11:09:16.786Z",
   "mode": "max",
   "window": {
     "from": "2026-06-01",
     "to": "2026-06-28"
   },
   "platforms": [
-    "ya",
     "letu",
     "megamarket",
     "samokat"
   ],
   "dryRun": false,
   "strict": false,
-  "status": "failed",
+  "status": "ok",
   "steps": [
-    {
-      "id": "yandex-market",
-      "name": "Yandex Market API marketplace facts",
-      "status": "failed",
-      "startedAt": "2026-06-29T10:10:51.659Z",
-      "finishedAt": "2026-06-29T10:17:32.645Z",
-      "exitCode": 1,
-      "skippedReason": "",
-      "chunkDays": 31,
-      "chunks": [
-        {
-          "from": "2026-06-01",
-          "to": "2026-06-28",
-          "status": "failed",
-          "exitCode": 1
-        }
-      ]
-    },
     {
       "id": "extra-marketplace-workbook",
       "name": "Extra marketplace API workbook build",
       "status": "ok",
-      "startedAt": "2026-06-29T10:17:32.645Z",
-      "finishedAt": "2026-06-29T10:17:39.199Z",
+      "startedAt": "2026-06-29T11:09:16.996Z",
+      "finishedAt": "2026-06-29T11:09:19.032Z",
       "exitCode": 0,
       "skippedReason": ""
     },
@@ -48,17 +29,8 @@
       "id": "extra-marketplace-merge",
       "name": "Extra marketplace API merge",
       "status": "ok",
-      "startedAt": "2026-06-29T10:17:39.199Z",
-      "finishedAt": "2026-06-29T10:17:40.700Z",
-      "exitCode": 0,
-      "skippedReason": ""
-    },
-    {
-      "id": "yandex-ads-summary",
-      "name": "Yandex Market ads summary bridge",
-      "status": "ok",
-      "startedAt": "2026-06-29T10:17:40.700Z",
-      "finishedAt": "2026-06-29T10:17:41.004Z",
+      "startedAt": "2026-06-29T11:09:19.032Z",
+      "finishedAt": "2026-06-29T11:09:19.835Z",
       "exitCode": 0,
       "skippedReason": ""
     },
@@ -66,19 +38,22 @@
       "id": "iu-drr",
       "name": "IU/DRR summary rebuild",
       "status": "ok",
-      "startedAt": "2026-06-29T10:17:41.004Z",
-      "finishedAt": "2026-06-29T10:19:56.566Z",
+      "startedAt": "2026-06-29T11:09:19.835Z",
+      "finishedAt": "2026-06-29T11:11:24.970Z",
+      "exitCode": 0,
+      "skippedReason": ""
+    },
+    {
+      "id": "sync-health",
+      "name": "Portal sync health after API max sync",
+      "status": "ok",
+      "startedAt": "2026-06-29T11:11:24.970Z",
+      "finishedAt": "2026-06-29T11:11:25.241Z",
       "exitCode": 0,
       "skippedReason": ""
     }
   ],
   "platformSummary": {
-    "goldapple": {
-      "points": 59,
-      "from": "2026-05-01",
-      "to": "2026-06-28",
-      "revenue": 2359765.4286
-    },
     "letu": {
       "points": 179,
       "from": "2026-01-01",
@@ -96,12 +71,6 @@
       "from": "",
       "to": "",
       "revenue": 0
-    },
-    "magnit": {
-      "points": 179,
-      "from": "2026-01-01",
-      "to": "2026-06-28",
-      "revenue": 390320.4129
     },
     "wb": {
       "points": 59,
@@ -125,7 +94,7 @@
       "points": 179,
       "from": "2026-01-01",
       "to": "2026-06-28",
-      "revenue": 625635531.8599
+      "revenue": 622919928.9773
     }
   }
 }

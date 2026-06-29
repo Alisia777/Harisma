@@ -1,5 +1,5 @@
 Portal sync health: blocked
-Generated: 2026-06-29T08:07:26.925Z
+Generated: 2026-06-29T11:11:25.223Z
 Publish allowed: no
 Max data date: 2026-06-28
 
@@ -9,4 +9,3 @@ Blocking reasons:
 
 Warnings:
 - Potential duplicated revenue overage: 490820.
-- Unmapped API SKU revenue: 128813.

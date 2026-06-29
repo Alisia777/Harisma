@@ -1,8 +1,18 @@
 const EXECUTIVE_MARKETPLACE_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 const EXECUTIVE_SUPPORT_KEYS = ['cross', 'product'];
 const EXECUTIVE_WORKSTREAM_KEYS = [...EXECUTIVE_MARKETPLACE_KEYS, ...EXECUTIVE_SUPPORT_KEYS];
-const EXECUTIVE_FUNNEL_PLATFORMS = ['wb', 'ozon', 'ya'];
-const EXECUTIVE_FUNNEL_SUPPORT_KEYS = { wb: 'wb', ozon: 'ozon', ya: 'ym' };
+const EXECUTIVE_FUNNEL_PLATFORMS = EXECUTIVE_MARKETPLACE_KEYS.slice();
+const EXECUTIVE_FUNNEL_SUPPORT_KEYS = {
+  wb: 'wb',
+  ozon: 'ozon',
+  ya: 'ym',
+  goldapple: 'ga',
+  letu: 'letu',
+  megamarket: 'megamarket',
+  samokat: 'samokat',
+  magnit: 'mm'
+};
+window.EXECUTIVE_MARKETPLACE_KEYS = EXECUTIVE_MARKETPLACE_KEYS;
 const EXECUTIVE_FUNNEL_DEFAULT_FILTERS = {
   platform: 'all',
   owner: 'all',

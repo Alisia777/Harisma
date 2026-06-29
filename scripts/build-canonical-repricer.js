@@ -14,7 +14,7 @@ const {
 } = require('./smart-price-contour');
 const { evaluateIndicator, readJson: readPolicyJson } = require('./portal-indicator-engine');
 
-const PLATFORM_KEYS = ['wb', 'ozon', 'ym'];
+const PLATFORM_KEYS = ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 const OUTPUT_FILE = 'canonical_repricer.json';
 const RECONCILIATION_FILE = 'portal_repricing_reconciliation.json';
 

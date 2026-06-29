@@ -5657,8 +5657,17 @@ function productLeaderboardRowGameHtml(item = {}, payload = {}) {
   });
 }
 
+const PORTAL_MARKETPLACE_KEYS_EXTENDED = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
+const PORTAL_MARKETPLACE_CORE_IU_DRR_KEYS = ['wb', 'ozon', 'ya'];
+
 function adsFunnelNormalizePlatformKey(value = '') {
   const raw = String(value || '').trim().toLowerCase();
+  const compact = raw.replace(/[\s_.-]+/g, '');
+  if (['ga', 'goldapple', 'goldenapple'].includes(compact)) return 'goldapple';
+  if (['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
+  if (['megamarket', 'sbermegamarket'].includes(compact)) return 'megamarket';
+  if (['samokat'].includes(compact)) return 'samokat';
+  if (['mm', 'magnit', 'magnitmarket'].includes(compact)) return 'magnit';
   if (!raw) return 'all';
   if (['wb', 'wildberries', 'вб'].includes(raw)) return 'wb';
   if (['ozon', 'озон'].includes(raw)) return 'ozon';
@@ -5669,6 +5678,7 @@ function adsFunnelNormalizePlatformKey(value = '') {
 
 function adsFunnelPlatformLabel(platformKey = 'all') {
   const key = adsFunnelNormalizePlatformKey(platformKey);
+  if (key !== 'all' && typeof skuPlanFactPlatformLabel === 'function') return skuPlanFactPlatformLabel(key);
   const map = {
     all: 'Все площадки',
     wb: 'WB',
@@ -5754,7 +5764,7 @@ function getAdsFunnelFilters() {
   state.adsFunnelFilters = state.adsFunnelFilters || {};
   state.adsFunnelFilters.search = state.adsFunnelFilters.search || '';
   state.adsFunnelFilters.platform = adsFunnelNormalizePlatformKey(state.adsFunnelFilters.platform || 'all');
-  if (!['wb', 'ozon', 'ya'].includes(state.adsFunnelFilters.platform)) state.adsFunnelFilters.platform = 'wb';
+  if (!PORTAL_MARKETPLACE_KEYS_EXTENDED.includes(state.adsFunnelFilters.platform)) state.adsFunnelFilters.platform = 'wb';
   state.adsFunnelFilters.horizon = String(state.adsFunnelFilters.horizon || '28');
   state.adsFunnelFilters.sort = state.adsFunnelFilters.sort || 'spend';
   state.adsFunnelFilters.sortDir = state.adsFunnelFilters.sortDir === 'asc' ? 'asc' : 'desc';
@@ -5804,6 +5814,11 @@ function adsFunnelPlatformRgb(key = 'wb') {
   const platformKey = adsFunnelNormalizePlatformKey(key);
   if (platformKey === 'ozon') return [42, 139, 242];
   if (platformKey === 'ya') return [236, 184, 49];
+  if (platformKey === 'goldapple') return [91, 188, 114];
+  if (platformKey === 'letu') return [219, 106, 169];
+  if (platformKey === 'megamarket') return [249, 115, 22];
+  if (platformKey === 'samokat') return [16, 185, 129];
+  if (platformKey === 'magnit') return [232, 91, 85];
   return [128, 86, 214];
 }
 
@@ -5811,6 +5826,8 @@ function adsFunnelPlatformTone(key = 'wb') {
   const platformKey = adsFunnelNormalizePlatformKey(key);
   if (platformKey === 'ozon') return 'info';
   if (platformKey === 'ya') return 'ok';
+  if (['goldapple', 'samokat'].includes(platformKey)) return 'ok';
+  if (['letu', 'megamarket', 'magnit'].includes(platformKey)) return 'warn';
   return 'warn';
 }
 
@@ -5884,10 +5901,16 @@ function adsFunnelTaskPlatform(task, fallbackText = '') {
   try {
     if (typeof controlWorkstreamKey === 'function') {
       const key = adsFunnelNormalizePlatformKey(controlWorkstreamKey(task, typeof getSku === 'function' ? getSku(task?.articleKey) : null));
-      if (['wb', 'ozon'].includes(key)) return key;
+      if (PORTAL_MARKETPLACE_KEYS_EXTENDED.includes(key)) return key;
     }
   } catch {}
   const text = String(fallbackText || '').toLowerCase();
+  const compactText = text.replace(/[\s_.-]+/g, '');
+  if (/goldapple|goldenapple|золот/.test(compactText)) return 'goldapple';
+  if (/letu|letual|letoile|л['’]?этуаль|летуаль/.test(compactText)) return 'letu';
+  if (/megamarket|sbermegamarket|мегамаркет/.test(compactText)) return 'megamarket';
+  if (/samokat|самокат/.test(compactText)) return 'samokat';
+  if (/magnitmarket|magnit|магнит/.test(compactText)) return 'magnit';
   if (/(^|[^a-zа-я0-9])wb(?=$|[^a-zа-я0-9])|wildberries|(^|[^а-я0-9])вб(?=$|[^а-я0-9])/.test(text)) return 'wb';
   if (/ozon|озон/.test(text)) return 'ozon';
   return '';
@@ -5960,7 +5983,7 @@ function adsFunnelCollectEvents(platformKey, dateKeys = [], searchNeedle = '') {
 function adsFunnelBuildDailyMatrixModel(payload = state.adsSummary || {}) {
   const filters = getAdsFunnelFilters();
   const normalized = normalizeAdsSummaryPayload(payload || {});
-  const platformKey = ['wb', 'ozon'].includes(filters.platform) ? filters.platform : 'wb';
+  const platformKey = PORTAL_MARKETPLACE_KEYS_EXTENDED.includes(filters.platform) ? filters.platform : 'wb';
   const horizonDays = adsFunnelHorizonDays(filters.horizon);
   const searchNeedle = String(filters.search || '').trim().toLowerCase();
   const platform = normalized.platforms.find((item) => adsFunnelNormalizePlatformKey(item.key) === platformKey) || { series: [] };
@@ -6283,12 +6306,12 @@ function renderAdsFunnel(rootId = 'view-ads-funnel') {
   const scopeLabel = model.searchNeedle
     ? `${fmt.int(model.uniqueSkuCount)} SKU · ${fmt.int(model.matchedRows.length)} строк`
     : 'вся площадка';
-  const platformButtons = ['wb', 'ozon', 'ya'].map((key) => {
+  const platformButtons = PORTAL_MARKETPLACE_KEYS_EXTENDED.map((key) => {
     const active = model.platformKey === key;
     const label = adsFunnelPlatformLabel(key);
     const tone = adsFunnelPlatformTone(key);
-    const subLabel = key === 'wb' ? 'Wildberries' : key === 'ozon' ? 'Ozon' : 'Funnel API';
-    const toneLabel = key === 'wb' ? 'фиолетовый контур' : key === 'ozon' ? 'синий контур' : 'воронка API';
+    const subLabel = key === 'wb' ? 'Wildberries' : key === 'ozon' ? 'Ozon' : key === 'ya' ? 'Funnel API' : 'extra network';
+    const toneLabel = key === 'wb' ? 'фиолетовый контур' : key === 'ozon' ? 'синий контур' : key === 'ya' ? 'воронка API' : 'нет API-факта';
     return `
       <button class="ads-control-platform ${active ? 'active' : ''}" type="button" data-ads-platform="${escapeHtml(key)}" aria-pressed="${active}">
         <span>${escapeHtml(label)}</span>
@@ -6734,7 +6757,7 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
 function getIuDrrFilters() {
   state.iuDrrFilters = state.iuDrrFilters || {};
   state.iuDrrFilters.month = state.iuDrrFilters.month || 'latest';
-  state.iuDrrFilters.platform = ['wb', 'ozon', 'ya'].includes(state.iuDrrFilters.platform) ? state.iuDrrFilters.platform : 'wb';
+  state.iuDrrFilters.platform = PORTAL_MARKETPLACE_KEYS_EXTENDED.includes(state.iuDrrFilters.platform) ? state.iuDrrFilters.platform : 'wb';
   return state.iuDrrFilters;
 }
 
@@ -6945,8 +6968,29 @@ function iuDrrForecastStatusLabel(value) {
 }
 
 function iuDrrBuildQuarterForecast(model = {}, context = {}) {
-  const platformKey = ['ozon', 'ya'].includes(model.selectedPlatform) ? model.selectedPlatform : 'wb';
+  const platformKey = PORTAL_MARKETPLACE_KEYS_EXTENDED.includes(model.selectedPlatform) ? model.selectedPlatform : 'wb';
   const quarter = iuDrrQuarterRange(model.selectedMonth);
+  if (!PORTAL_MARKETPLACE_CORE_IU_DRR_KEYS.includes(platformKey)) {
+    return {
+      available: false,
+      platformKey,
+      platformLabel: adsFunnelPlatformLabel(platformKey),
+      quarter,
+      daysTotal: quarter.days || 0,
+      factToDate: 0,
+      elapsedDays: 0,
+      factFrom: '',
+      factTo: '',
+      factSourceLabel: 'нет источника IU/DRR',
+      dailyAverage: null,
+      projectedFact: null,
+      month: { key: model.selectedMonth || '', days: daysInMonthKey(model.selectedMonth), fact: 0, elapsedDays: 0, dailyAverage: null, projectedFact: null, iuPlan: 0, portalPlan: 0, iuCompletion: null, factCompletion: null },
+      rawCorporatePlan: 0,
+      ruleSelectedPlan: 0,
+      selectedPlan: 0,
+      plans: []
+    };
+  }
   const factBase = iuDrrQuarterFactBase(model, platformKey, context);
   const daysTotal = quarter.days || quarter.months.reduce((sum, month) => sum + daysInMonthKey(month), 0);
   const hasFactForTempo = factBase.days > 0 && factBase.fact > 0;
@@ -7129,7 +7173,7 @@ function iuDrrForecastMetricHtml(label, value, detail = '', tip = '', tone = 'in
 }
 
 function iuDrrQuarterForecastHeroHtml(plan = {}, forecast = {}) {
-  const platformKey = ['ozon', 'ya'].includes(forecast.platformKey) ? forecast.platformKey : 'wb';
+  const platformKey = PORTAL_MARKETPLACE_KEYS_EXTENDED.includes(forecast.platformKey) ? forecast.platformKey : 'wb';
   const month = forecast.month || {};
   const monthPlanLabel = platformKey === 'ya' ? 'ИУ план к дате Я.Маркет' : platformKey === 'ozon' ? 'ИУ план месяца Ozon 40%' : 'ИУ план месяца WB';
   const portalPlanLabel = platformKey === 'ya' ? 'План портала к дате Я.Маркет' : platformKey === 'ozon' ? 'Рабочий план месяца' : 'План портала месяца';
@@ -7258,11 +7302,16 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
   const filters = getIuDrrFilters();
   const latestMonth = iuDrrLatestMonth(normalized);
   const selectedMonth = filters.month === 'latest' || !filters.month ? latestMonth : filters.month;
-  const selectedPlatform = ['wb', 'ozon', 'ya'].includes(filters.platform) ? filters.platform : 'wb';
+  const selectedPlatform = PORTAL_MARKETPLACE_KEYS_EXTENDED.includes(filters.platform) ? filters.platform : 'wb';
+  const selectedPlatformHasCoreSource = PORTAL_MARKETPLACE_CORE_IU_DRR_KEYS.includes(selectedPlatform);
   const quarterSummary = normalized.quarterSummary || normalized.wbQuarter || {};
   const iuDailyRows = normalized.daily.filter((row) => row.monthKey === selectedMonth);
   const ozonFinanceDailyRows = (normalized.ozonFinance?.daily || []).filter((row) => row.monthKey === selectedMonth);
-  const dailyRows = selectedPlatform === 'ozon' && ozonFinanceDailyRows.length ? ozonFinanceDailyRows : iuDailyRows;
+  const dailyRows = !selectedPlatformHasCoreSource
+    ? []
+    : selectedPlatform === 'ozon' && ozonFinanceDailyRows.length
+      ? ozonFinanceDailyRows
+      : iuDailyRows;
   const rawMonthSummary = (normalized.months || []).find((month) => month.monthKey === selectedMonth) || {};
   const planTruthMonth = iuDrrPlanTruthMonth(normalized, selectedMonth);
   const wbTruth = planTruthMonth.wb || {};
@@ -7395,6 +7444,37 @@ function iuDrrPlatformMeta(model) {
   const month = model.monthSummary || {};
   const isOzon = model.selectedPlatform === 'ozon';
   const isYandex = model.selectedPlatform === 'ya';
+  const isExtra = !PORTAL_MARKETPLACE_CORE_IU_DRR_KEYS.includes(model.selectedPlatform);
+  if (isExtra) {
+    const key = PORTAL_MARKETPLACE_KEYS_EXTENDED.includes(model.selectedPlatform) ? model.selectedPlatform : 'wb';
+    const label = adsFunnelPlatformLabel(key);
+    return {
+      key,
+      label,
+      title: label,
+      completion: null,
+      fact: 0,
+      planToDate: 0,
+      targetRevenue: 0,
+      revenueDelta: 0,
+      revenueDeltaPct: null,
+      sparkKey: '',
+      tableTargetKey: '',
+      tableRevenueKey: '',
+      tableDeltaKey: '',
+      tableDeltaPctKey: '',
+      tableCompletionKey: '',
+      adsPlanPct: null,
+      adsPlan: 0,
+      adsPlanMonth: 0,
+      adsFact: 0,
+      adsFactPct: null,
+      adsCompletion: null,
+      adsDelta: null,
+      adsDeltaPct: null,
+      adsFactSource: 'нет источника IU/DRR по этой площадке'
+    };
+  }
   const finance = isOzon ? (month.ozonFinance || model.ozonFinanceMonth || {}) : {};
   const ozonPlanToDate = numberOrZero(month.iuRevenueOzonPlanToDate || month.targetRevenueOzon);
   const ozonRevenueFact = numberOrZero(month.iuRevenueOzonFactToDate || month.revenueOzon)
@@ -7584,6 +7664,11 @@ function iuDrrFunnelFinite(value) {
 function iuDrrFunnelPlatformRgb(platformKey = 'wb') {
   if (platformKey === 'ozon') return [42, 139, 242];
   if (platformKey === 'ya') return [234, 179, 8];
+  if (platformKey === 'goldapple') return [91, 188, 114];
+  if (platformKey === 'letu') return [219, 106, 169];
+  if (platformKey === 'megamarket') return [249, 115, 22];
+  if (platformKey === 'samokat') return [16, 185, 129];
+  if (platformKey === 'magnit') return [232, 91, 85];
   return [139, 92, 246];
 }
 
@@ -7900,8 +7985,10 @@ function iuDrrFunnelHeatStyle(metric = {}, value, stats = {}, platformKey = 'wb'
 }
 
 function iuDrrFunnelBuildModel(model = {}, context = {}) {
-  const platformKey = ['ozon', 'ya'].includes(model.selectedPlatform) ? model.selectedPlatform : 'wb';
-  const sourceRows = platformKey === 'ozon' ? (context.ozonPlanFactRows || []) : (model.dailyRows || []);
+  const platformKey = PORTAL_MARKETPLACE_KEYS_EXTENDED.includes(model.selectedPlatform) ? model.selectedPlatform : 'wb';
+  const sourceRows = PORTAL_MARKETPLACE_CORE_IU_DRR_KEYS.includes(platformKey)
+    ? (platformKey === 'ozon' ? (context.ozonPlanFactRows || []) : (model.dailyRows || []))
+    : [];
   const iuRowsByDate = new Map((model.payload?.daily || [])
     .filter((row) => row.monthKey === model.selectedMonth)
     .map((row) => [row.date, row]));
@@ -9609,6 +9696,18 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
     </div>
   `;
+  const extraIuDrrPlatformButtons = PORTAL_MARKETPLACE_KEYS_EXTENDED
+    .filter((key) => !PORTAL_MARKETPLACE_CORE_IU_DRR_KEYS.includes(key))
+    .map((key) => `
+      <button type="button" class="iu-drr-platform-chip iu-drr-platform-chip--${escapeHtml(key)} ${model.selectedPlatform === key ? 'active' : ''}" data-iu-drr-platform="${escapeHtml(key)}" aria-pressed="${model.selectedPlatform === key ? 'true' : 'false'}">
+        <span>${escapeHtml(adsFunnelPlatformLabel(key))}</span>
+        <strong>${escapeHtml(adsFunnelPlatformLabel(key))}</strong>
+        <em>нет источника</em>
+      </button>
+    `).join('');
+  const iuDrrPlatformOptions = PORTAL_MARKETPLACE_KEYS_EXTENDED
+    .map((key) => `<option value="${escapeHtml(key)}" ${model.selectedPlatform === key ? 'selected' : ''}>${escapeHtml(adsFunnelPlatformLabel(key))}</option>`)
+    .join('');
   const platformSelectHtml = `
     <div class="iu-drr-platform-switch" role="tablist" aria-label="Площадка">
       <button type="button" class="iu-drr-platform-chip iu-drr-platform-chip--wb ${model.selectedPlatform === 'wb' ? 'active' : ''}" data-iu-drr-platform="wb" aria-pressed="${model.selectedPlatform === 'wb' ? 'true' : 'false'}">
@@ -9626,11 +9725,10 @@ function renderIuDrr(rootId = 'view-iu-drr') {
         <strong>Я.Маркет</strong>
         <em>funnel API</em>
       </button>
+      ${extraIuDrrPlatformButtons}
     </div>
     <select id="iuDrrPlatform" class="iu-drr-platform-select-fallback" aria-label="Площадка">
-      <option value="wb" ${model.selectedPlatform === 'wb' ? 'selected' : ''}>WB</option>
-      <option value="ozon" ${model.selectedPlatform === 'ozon' ? 'selected' : ''}>Ozon</option>
-      <option value="ya" ${model.selectedPlatform === 'ya' ? 'selected' : ''}>Я.Маркет</option>
+      ${iuDrrPlatformOptions}
     </select>
   `;
   const quarter = model.quarterSummary || {};
@@ -10123,6 +10221,12 @@ function renderIuDrr(rootId = 'view-iu-drr') {
 }
 
 function iuDrrDesignNormalizePlatform(value) {
+  const key = adsFunnelNormalizePlatformKey(value);
+  if (key === 'all') return 'all';
+  return PORTAL_MARKETPLACE_KEYS_EXTENDED.includes(key) ? key : 'all';
+}
+
+function iuDrrDesignNormalizePlatformLegacy(value) {
   const key = String(value || '').trim().toLowerCase();
   if (['wb', 'wildberries'].includes(key)) return 'wb';
   if (['ozon', 'oz'].includes(key)) return 'ozon';
@@ -10141,6 +10245,7 @@ function iuDrrDesignMarketplaceFocus() {
 }
 
 function iuDrrDesignPlatformLabel(key = 'all') {
+  return adsFunnelPlatformLabel(key);
   if (key === 'wb') return 'WB';
   if (key === 'ozon') return 'Ozon';
   if (key === 'ya') return 'Я.Маркет';
@@ -10156,7 +10261,7 @@ function iuDrrDesignSubview() {
 function iuDrrDesignModelFor(platform = 'wb', payload = state.iuDrrSummary || {}) {
   const filters = getIuDrrFilters();
   const previousPlatform = filters.platform;
-  filters.platform = ['wb', 'ozon', 'ya'].includes(platform) ? platform : 'wb';
+  filters.platform = PORTAL_MARKETPLACE_KEYS_EXTENDED.includes(platform) ? platform : 'wb';
   try {
     return iuDrrBuildModel(payload);
   } finally {

@@ -567,7 +567,8 @@
     var fromModel = (model && model.platformRows || []).map(function (row) {
       return internalPlatform(row.platform || row.key || '');
     }).filter(Boolean);
-    return Array.from(new Set(fromModel.concat(['wb', 'ozon', 'ya']).filter(function (key) {
+    var knownPlatforms = window.EXECUTIVE_MARKETPLACE_KEYS || window.SKU_PLAN_FACT_PLATFORMS || ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
+    return Array.from(new Set(fromModel.concat(knownPlatforms).filter(function (key) {
       return key && key !== 'all';
     })));
   }
@@ -1251,7 +1252,9 @@
         });
       });
     }
-    var platformKeys = selected === 'all' ? ['wb', 'ozon', 'ym'] : [selected];
+    var platformKeys = selected === 'all'
+      ? (window.SKU_PLAN_FACT_PLATFORMS || ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'])
+      : [selected];
     platformKeys.forEach(function (platformKey) {
       collectSmart(platformKey);
       collectSupport(platformKey);

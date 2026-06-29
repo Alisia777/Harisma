@@ -4197,8 +4197,15 @@ function repricerImportNumber(value) {
 
 function repricerImportPlatform(value) {
   const raw = String(value || '').trim().toLowerCase();
+  const compact = raw.replace(/[\s_.-]+/g, '');
   if (raw.includes('ozon') || raw.includes('озон')) return 'ozon';
   if (raw.includes('wb') || raw.includes('wild') || raw.includes('вайлд')) return 'wb';
+  if (['ym', 'ya', 'yandex', 'yandexmarket', 'yamarket'].includes(compact)) return 'ym';
+  if (['ga', 'goldapple', 'goldenapple'].includes(compact)) return 'goldapple';
+  if (['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
+  if (['megamarket', 'sbermegamarket'].includes(compact)) return 'megamarket';
+  if (['samokat'].includes(compact)) return 'samokat';
+  if (['mm', 'magnit', 'magnitmarket'].includes(compact)) return 'magnit';
   return 'all';
 }
 
@@ -4439,7 +4446,10 @@ function repricerTeamActor() {
 
 function repricerQueuePlatform(platform = 'all') {
   const raw = String(platform || '').trim().toLowerCase();
-  return ['wb', 'ozon', 'all'].includes(raw) ? raw : 'all';
+  const compact = raw.replace(/[\s_.-]+/g, '');
+  const normalized = repricerImportPlatform(compact);
+  if (normalized !== 'all') return normalized;
+  return ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'all'].includes(compact) ? compact : 'all';
 }
 
 function repricerQueueTaskKey(item = {}) {

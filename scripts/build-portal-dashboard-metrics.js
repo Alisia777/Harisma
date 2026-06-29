@@ -10,7 +10,7 @@ const OUTPUT_FILE = 'portal_dashboard_metrics.json';
 const DASHBOARD_RECONCILIATION_FILE = 'portal_dashboard_reconciliation.json';
 const PLAN_RECONCILIATION_FILE = 'portal_plan_reconciliation.json';
 const INDICATOR_AUDIT_FILE = 'portal_indicator_audit.json';
-const INCLUDED_PLATFORMS = ['wb', 'ozon', 'ya'];
+const INCLUDED_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 
 function parseArgs(argv) {
   const args = {};

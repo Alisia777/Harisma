@@ -19,6 +19,7 @@ const OUT_OF_SCOPE_BRAND_TOKENS = [
   '\u043a\u0432\u0438\u043f',
   '\u0445\u0430\u0440\u043b\u0438'
 ].map((token) => normalizeArticleKey(token).replace(/[_-]+/g, ''));
+const SMART_PRICE_PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 
 function isOutOfScopeBrandText(value) {
   const compact = normalizeArticleKey(value).replace(/[_-]+/g, '');
@@ -152,7 +153,7 @@ function buildPriceMarginLookup(priceSnapshot = {}) {
   const platforms = priceSnapshot?.platforms || {};
   Object.entries(platforms).forEach(([rawKey, bucket]) => {
     const platformKey = priceOverlayPlatformKey(rawKey);
-    if (!['wb', 'ozon', 'ya'].includes(platformKey)) return;
+    if (!SMART_PRICE_PLATFORM_KEYS.includes(platformKey)) return;
     const rows = Array.isArray(bucket?.rows) ? bucket.rows : [];
     rows.forEach((row) => {
       priceArticleTokens(row).forEach((token) => lookup.set(`${platformKey}|${token}`, row));
@@ -207,7 +208,7 @@ function enrichOverlayWithPrices(payload, priceSnapshot = {}) {
   const lookup = buildPriceMarginLookup(priceSnapshot);
   Object.entries(payload.platforms || {}).forEach(([rawKey, bucket]) => {
     const platformKey = priceOverlayPlatformKey(rawKey);
-    if (!['wb', 'ozon', 'ya'].includes(platformKey) || !Array.isArray(bucket?.rows)) return;
+    if (!SMART_PRICE_PLATFORM_KEYS.includes(platformKey) || !Array.isArray(bucket?.rows)) return;
     bucket.rows = bucket.rows.map((row) => {
       const priceRow = priceArticleTokens(row)
         .map((token) => lookup.get(`${platformKey}|${token}`))

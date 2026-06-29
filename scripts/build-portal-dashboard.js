@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const OUTPUT_FILE = 'dashboard.json';
-const PLATFORMS = ['wb', 'ozon', 'ya'];
+const PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 
 function parseArgs(argv) {
   const args = {};
@@ -160,7 +160,7 @@ function platformOwner(sku = {}, platform = '') {
 }
 
 function marketplaceStock(sku = {}) {
-  return ['wb', 'ozon', 'ya', 'ym'].reduce((sum, platform) => (
+  return ['wb', 'ozon', 'ya', 'ym', 'ga', 'goldapple', 'letu', 'megamarket', 'samokat', 'mm', 'magnit'].reduce((sum, platform) => (
     sum + numberOrZero(sku?.[platform]?.stock || sku?.[platform]?.stockProducts || sku?.[platform]?.inStock)
   ), 0);
 }
@@ -172,7 +172,12 @@ function companyPlanControlTotals(companyPlan = {}) {
       revenue: numberOrZero(month?.revenue),
       wb: numberOrZero(month?.channels?.wb?.revenue),
       ozon: numberOrZero(month?.channels?.ozon?.revenue),
-      ya: numberOrZero(month?.channels?.ya?.revenue)
+      ya: numberOrZero(month?.channels?.ya?.revenue),
+      goldapple: numberOrZero(month?.channels?.goldapple?.revenue),
+      letu: numberOrZero(month?.channels?.letu?.revenue),
+      megamarket: numberOrZero(month?.channels?.megamarket?.revenue),
+      samokat: numberOrZero(month?.channels?.samokat?.revenue),
+      magnit: numberOrZero(month?.channels?.magnit?.revenue)
     }
   ]));
 }
@@ -242,16 +247,14 @@ function buildCards({ metrics, skus, warehouse, cutoffDate, monthKey, planSlice 
   const assignedSku = skuRows.filter((sku) => ownerNames(sku).length > 0).length;
   const totalMarketplaceStock = skuRows.reduce((sum, sku) => sum + marketplaceStock(sku), 0);
   const warehouseStock = numberOrNull(warehouse?.summary?.stockWarehouse) ?? rowsOf(warehouse).reduce((sum, row) => sum + numberOrZero(row.stockWarehouse), 0);
-  const factRevenue = numberOrZero(metricValue(metrics, 'sales.raw_revenue', 'wb'))
-    + numberOrZero(metricValue(metrics, 'sales.raw_revenue', 'ozon'))
-    + numberOrZero(metricValue(metrics, 'sales.raw_revenue', 'ya'))
+  const factRevenue = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(metricValue(metrics, 'sales.raw_revenue', platform)), 0)
     + numberOrZero(metricValue(metrics, 'sales.raw_revenue.unallocated', 'unallocated'));
   const forecastRevenue = metricValue(metrics, 'plan.forecast_revenue', 'all');
 
   add({ id: 'dashboard-cutoff', label: 'Data cutoff', value: cutoffDate, format: 'text', period: cutoffDate, hint: 'Common marketplace fact date.' });
   add({ id: 'sku-registry-total', label: 'SKU registry', value: skuRows.length, period: cutoffDate, hint: 'Rows from canonical skus.json.' });
   add({ id: 'owner-assigned', label: 'SKU with owner', value: assignedSku, period: cutoffDate, hint: 'Owner comes from canonical SKU owner fields.' });
-  add({ id: 'marketplace-stock-total', label: 'Marketplace stock', value: Math.round(totalMarketplaceStock), period: cutoffDate, hint: 'WB/Ozon/Yandex stock visible in SKU registry.' });
+  add({ id: 'marketplace-stock-total', label: 'Marketplace stock', value: Math.round(totalMarketplaceStock), period: cutoffDate, hint: 'Marketplace stock visible in SKU registry.' });
   add({ id: 'warehouse-stock-total', label: 'Warehouse stock', value: Math.round(warehouseStock), period: cutoffDate, hint: 'Warehouse stock overlay remains visible.' });
   PLATFORMS.forEach((platform) => {
     add({
@@ -340,9 +343,7 @@ function buildPortalDashboard(options = resolveOptions({})) {
     platform,
     platformFact(trends, platform, monthKey, cutoffDate)
   ]));
-  const factRevenue = numberOrZero(metricValue(metrics, 'sales.raw_revenue', 'wb'))
-    + numberOrZero(metricValue(metrics, 'sales.raw_revenue', 'ozon'))
-    + numberOrZero(metricValue(metrics, 'sales.raw_revenue', 'ya'))
+  const factRevenue = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(metricValue(metrics, 'sales.raw_revenue', platform)), 0)
     + numberOrZero(metricValue(metrics, 'sales.raw_revenue.unallocated', 'unallocated'));
   const factUnits = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(platformFacts[platform].units), 0);
   const planSlice = buildCompanyPlanSlice(companyPlan, monthKey, cutoffDate, factRevenue);

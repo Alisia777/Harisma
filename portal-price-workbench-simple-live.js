@@ -311,9 +311,7 @@
       var market = canonicalPriceMarket(row && row.market);
       if (market) seen[market] = true;
     });
-    return PRICE_MARKETS.filter(function (market) {
-      return market === "all" || seen[market];
-    });
+    return PRICE_MARKETS.slice();
   }
 
   function readJsonSafe(key, fallback) {

@@ -15,6 +15,16 @@
     ya: { label: 'Я.Маркет', full: 'Яндекс Маркет', tone: '#ffd45f', varName: '--ym' }
   };
 
+  Object.assign(PLATFORM, {
+    goldapple: { label: 'ЗЯ', full: 'Золотое Яблоко', tone: '#72c86a', varName: '--goldapple' },
+    letu: { label: 'Лэтуаль', full: 'Лэтуаль', tone: '#d96aa9', varName: '--letu' },
+    megamarket: { label: 'Мегамаркет', full: 'Мегамаркет', tone: '#f97316', varName: '--megamarket' },
+    samokat: { label: 'Самокат', full: 'Самокат', tone: '#10b981', varName: '--samokat' },
+    magnit: { label: 'Магнит', full: 'Магнит Маркет', tone: '#e85b55', varName: '--magnit' }
+  });
+  const PLATFORM_KEYS = Object.keys(PLATFORM);
+  const PLATFORM_SUPPORT_KEYS = { ya: 'ym', goldapple: 'ga', magnit: 'mm' };
+
   const SOURCE_FILES = {
     iu: 'data/iu_drr_summary.json',
     leaderboard: 'data/product_leaderboard.json',
@@ -127,10 +137,16 @@
 
   function normalizePlatform(value) {
     const raw = String(value || '').toLowerCase().trim();
+    const compact = raw.replace(/[\s_.-]+/g, '');
     if (raw === 'all' || raw === 'all_marketplaces' || raw === 'all-platforms') return 'all';
     if (raw === 'ym' || raw === 'ya' || raw === 'yandex' || raw === 'yandex_market') return 'ya';
     if (raw === 'wb' || raw === 'wildberries') return 'wb';
     if (raw === 'ozon' || raw === 'oz') return 'ozon';
+    if (['ga', 'goldapple', 'goldenapple'].includes(compact)) return 'goldapple';
+    if (['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
+    if (['megamarket', 'sbermegamarket'].includes(compact)) return 'megamarket';
+    if (['samokat'].includes(compact)) return 'samokat';
+    if (['mm', 'magnit', 'magnitmarket'].includes(compact)) return 'magnit';
     return '';
   }
 
@@ -150,9 +166,9 @@
   }
 
   function platformsForFocus(focus, { includeYandex = true } = {}) {
-    if (focus === 'all') return includeYandex ? ['wb', 'ozon', 'ya'] : ['wb', 'ozon'];
+    if (focus === 'all') return includeYandex ? PLATFORM_KEYS.slice() : PLATFORM_KEYS.filter((key) => key !== 'ya');
     if (focus === 'ya' && !includeYandex) return [];
-    return PLATFORM[focus] ? [focus] : (includeYandex ? ['wb', 'ozon', 'ya'] : ['wb', 'ozon']);
+    return PLATFORM[focus] ? [focus] : (includeYandex ? PLATFORM_KEYS.slice() : PLATFORM_KEYS.filter((key) => key !== 'ya'));
   }
 
   function readJsonSetting(key, fallback) {
@@ -1112,6 +1128,16 @@
     return map;
   }
 
+  function platformSupportKey(platform) {
+    return PLATFORM_SUPPORT_KEYS[platform] || platform;
+  }
+
+  function hasPlatformValue(source, platform) {
+    if (!source || typeof source !== 'object') return false;
+    const supportKey = platformSupportKey(platform);
+    return Boolean(source[platform] || source[supportKey]);
+  }
+
   function buildPositions(focus) {
     const map = new Map();
     const ensure = (key, seed = {}) => {
@@ -1133,7 +1159,7 @@
         category: item.category
       });
       if (pos) {
-        ['wb', 'ozon', 'ya'].forEach((platform) => item.platformOwners?.[platform] && pos.platforms.add(platform));
+        PLATFORM_KEYS.forEach((platform) => hasPlatformValue(item.platformOwners, platform) && pos.platforms.add(platform));
         pos.sources.add('sku_matrix');
       }
     });
@@ -1149,7 +1175,7 @@
         skuRaw: item
       });
       if (pos) {
-        ['wb', 'ozon', 'ya'].forEach((platform) => (item[platform] || item.owner?.byPlatform?.[platform]) && pos.platforms.add(platform));
+        PLATFORM_KEYS.forEach((platform) => (item[platform] || hasPlatformValue(item.owner?.byPlatform, platform) || hasPlatformValue(item.ownersByPlatform, platform)) && pos.platforms.add(platform));
         pos.sources.add('skus');
       }
     });

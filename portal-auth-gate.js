@@ -36,6 +36,7 @@
     'meetings',
     'documents'
   ];
+  var SHARED_AUTHENTICATED_VIEWS = ['documents'];
   var FALLBACK_CONFIG = {
     brand: '\u0410\u043b\u0442\u0435\u044f',
     teamMode: 'supabase',
@@ -233,6 +234,11 @@
     return uniqueViews(views);
   }
 
+  function appendSharedAuthenticatedViews(views, email, configured) {
+    if (!email || !configured) return uniqueViews(views);
+    return uniqueViews((views || []).concat(SHARED_AUTHENTICATED_VIEWS));
+  }
+
   function sessionMetadata(session) {
     var user = (session && session.user) || {};
     return assign({}, user.user_metadata || {}, user.app_metadata || {});
@@ -275,13 +281,15 @@
       source = 'default';
     }
 
+    var configured = !!userConfig || source.indexOf('metadata') === 0 || source === 'roles';
+
     return {
       email: email,
       name: String((userConfig && userConfig.name) || metadata.name || user.email || '').replace(/^\s+|\s+$/g, ''),
       roles: uniqueStrings(roles),
-      allowedViews: uniqueViews(views),
+      allowedViews: appendSharedAuthenticatedViews(views, email, configured),
       source: source,
-      configured: !!userConfig || source.indexOf('metadata') === 0 || source === 'roles'
+      configured: configured
     };
   }
 

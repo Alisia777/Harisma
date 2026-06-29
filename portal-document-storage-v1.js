@@ -413,7 +413,19 @@
     return deleted;
   }
 
+  function ensureAccessAllowsStorage() {
+    const access = window.__ALTEA_PORTAL_ACCESS__;
+    if (!access || !Array.isArray(access.allowedViews) || !access.allowedViews.length) return;
+    if (access.allowedViews.includes(STORAGE_VIEW)) return;
+    access.allowedViews.push(STORAGE_VIEW);
+    if (window.alteaPortalAccess && typeof window.alteaPortalAccess.apply === 'function') {
+      window.alteaPortalAccess.apply();
+    }
+  }
+
   function ensureDocumentStorageShell() {
+    ensureAccessAllowsStorage();
+
     const nav = document.querySelector('.sidebar .nav') || document.querySelector('.nav');
     if (nav && !nav.querySelector('.nav-btn[data-view="documents"]')) {
       const button = document.createElement('button');

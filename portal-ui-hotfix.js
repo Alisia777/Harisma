@@ -1374,7 +1374,7 @@
     { key: '14', label: '14', hint: '14 дней' },
     { key: '30', label: '30', hint: '30 дней' }
   ];
-  const DASHBOARD_PLATFORMS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+  const DASHBOARD_PLATFORMS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
   const DASHBOARD_PLATFORM_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -1382,6 +1382,8 @@
     ya: 'Я.Маркет',
     goldapple: 'Золотое яблоко',
     letu: "Л'Этуаль",
+    megamarket: 'Мегамаркет',
+    samokat: 'Самокат',
     magnit: 'Магнит Маркет'
   };
 

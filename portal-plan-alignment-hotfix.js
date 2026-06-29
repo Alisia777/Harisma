@@ -23,7 +23,7 @@
     }
   });
 
-  const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
+  const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
   const LIVEFIX_VIEWS = new Set(['dashboard', 'executive']);
   let applyTimer = 0;
   let applying = false;
@@ -138,12 +138,14 @@
   }
 
   function factsFor(platformKey, state, range) {
+    const channel = PLAN.channels[platformKey];
+    if (!channel) return { allUnits: 0, planRevenueFact: 0, planRevenue: 0, completion: 0, plannedDayCount: 1 };
     const byDate = new Map(seriesFor(platformKey, state).map((point) => [iso(point.date), point]));
     const allDates = enumerateDates(range.start, range.end);
     const planDates = plannedDates(range);
     const allUnits = allDates.reduce((sum, date) => sum + num(byDate.get(iso(date))?.units), 0);
     const planRevenueFact = planDates.reduce((sum, date) => sum + num(byDate.get(iso(date))?.revenue), 0);
-    const planRevenue = PLAN.channels[platformKey].revenue / PLAN.days * Math.max(1, planDates.length);
+    const planRevenue = channel.revenue / PLAN.days * Math.max(1, planDates.length);
     const completion = planRevenue > 0 ? planRevenueFact / planRevenue : 0;
     return { allUnits, planRevenueFact, planRevenue, completion, plannedDayCount: Math.max(1, planDates.length) };
   }

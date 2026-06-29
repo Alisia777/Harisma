@@ -177,6 +177,18 @@ const CONTROL_WORKSTREAM_META = {
     description: 'Отдельный контур Л\'Этуаль.',
     kind: 'ok'
   },
+  megamarket: {
+    label: 'Мегамаркет',
+    chip: 'Мегамаркет',
+    description: 'Отдельный контур Мегамаркета.',
+    kind: 'ok'
+  },
+  samokat: {
+    label: 'Самокат',
+    chip: 'Самокат',
+    description: 'Отдельный контур Самоката.',
+    kind: 'ok'
+  },
   magnit: {
     label: 'Магнит Маркет',
     chip: 'Магнит Маркет',
@@ -191,7 +203,7 @@ const CONTROL_WORKSTREAM_META = {
   }
 };
 
-const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'executive'];
+const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'product', 'executive'];
 const CONTROL_WORKSTREAM_FILTER_ORDER = ['all', ...CONTROL_WORKSTREAM_ORDER];
 
 const DEFAULT_APP_CONFIG = {
@@ -1057,6 +1069,8 @@ function inferMarketplacePlatform(text = '') {
   const raw = String(text || '').toLowerCase();
   if (/золот[а-я\s-]*ябл|goldapple|gold apple|zya|зя/.test(raw)) return 'goldapple';
   if (/л[еэ]туал|летуаль|letual|letu/.test(raw)) return 'letu';
+  if (/мегамаркет|mega[\s_-]*market|megamarket|sbermegamarket/.test(raw)) return 'megamarket';
+  if (/самокат|samokat/.test(raw)) return 'samokat';
   if (/магнит|magnit|mm/.test(raw)) return 'magnit';
   if (/яндекс|я[.\s-]?маркет|yandex|ym|yandex_market|ymarket/.test(raw)) return 'ya';
   return '';
@@ -1073,6 +1087,8 @@ function normalizeTaskPlatform(value, contextText = '') {
   if (['ya', 'yandex', 'yandex_market', 'ym'].includes(raw)) return 'ya';
   if (['goldapple', 'ga', 'zya'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'лэтуаль', 'летуаль'].includes(raw)) return 'letu';
+  if (['megamarket', 'mega_market', 'mega market', 'sbermegamarket', 'мегамаркет'].includes(raw)) return 'megamarket';
+  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   if (['magnit', 'mm', 'магнит'].includes(raw)) return 'magnit';
   if (['wb+ozon', 'wb + ozon', 'wb_ozon', 'wb-ozon'].includes(raw)) return 'wb+ozon';
   const marketplacePlatform = inferMarketplacePlatform(text);
@@ -1101,7 +1117,7 @@ function controlWorkstreamKey(task, sku = null) {
 
   if (platform === 'wb') return 'wb';
   if (platform === 'ozon') return 'ozon';
-  if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
+  if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'megamarket' || platform === 'samokat' || platform === 'magnit') return platform;
   if (platform === 'retail') return inferMarketplacePlatform(text) || 'ya';
   if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
 
@@ -2662,6 +2678,8 @@ function renderControlCenter() {
             <option value="ya" ${selectedWorkstream === 'ya' ? 'selected' : ''}>Я.Маркет</option>
             <option value="goldapple" ${selectedWorkstream === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
             <option value="letu" ${selectedWorkstream === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+            <option value="megamarket" ${selectedWorkstream === 'megamarket' ? 'selected' : ''}>Мегамаркет</option>
+            <option value="samokat" ${selectedWorkstream === 'samokat' ? 'selected' : ''}>Самокат</option>
             <option value="magnit" ${selectedWorkstream === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
           </select>
           <select name="type">
@@ -2693,6 +2711,8 @@ function renderControlCenter() {
         <option value="ya" ${selectedWorkstream === 'ya' ? 'selected' : ''}>Я.Маркет</option>
         <option value="goldapple" ${selectedWorkstream === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
         <option value="letu" ${selectedWorkstream === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+        <option value="megamarket" ${selectedWorkstream === 'megamarket' ? 'selected' : ''}>Мегамаркет</option>
+        <option value="samokat" ${selectedWorkstream === 'samokat' ? 'selected' : ''}>Самокат</option>
         <option value="magnit" ${selectedWorkstream === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
         <option value="cross" ${selectedWorkstream === 'cross' ? 'selected' : ''}>Общий контур</option>
       </select>
@@ -2906,6 +2926,8 @@ function renderTaskModal(taskId) {
             <option value="ya" ${normalizeTaskPlatform(task.platform) === 'ya' ? 'selected' : ''}>Я.Маркет</option>
             <option value="goldapple" ${normalizeTaskPlatform(task.platform) === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
             <option value="letu" ${normalizeTaskPlatform(task.platform) === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+            <option value="megamarket" ${normalizeTaskPlatform(task.platform) === 'megamarket' ? 'selected' : ''}>Мегамаркет</option>
+            <option value="samokat" ${normalizeTaskPlatform(task.platform) === 'samokat' ? 'selected' : ''}>Самокат</option>
             <option value="magnit" ${normalizeTaskPlatform(task.platform) === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
             <option value="wb+ozon" ${task.platform === 'wb+ozon' ? 'selected' : ''}>WB + Ozon</option>
           </select>
@@ -3243,6 +3265,8 @@ function renderSkuModal(articleKey) {
             <option value="ya">Я.Маркет</option>
             <option value="goldapple">Золотое яблоко</option>
             <option value="letu">Л'Этуаль</option>
+            <option value="megamarket">Мегамаркет</option>
+            <option value="samokat">Самокат</option>
             <option value="magnit">Магнит Маркет</option>
           </select>
           <input name="owner" placeholder="Owner" value="${escapeHtml(ownerName(sku) || '')}">

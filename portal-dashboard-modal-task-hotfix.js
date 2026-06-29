@@ -133,6 +133,8 @@
     if (raw === 'ya' || raw === 'ym' || raw === 'yandex' || /ям|сет|яндекс|market|retail/.test(raw)) return 'ya';
     if (raw === 'goldapple' || raw === 'zya' || /золот[а-я\s-]*яблок|gold\s*apple|zya|зя/.test(raw)) return 'goldapple';
     if (raw === 'letu' || /letu?al|л[еэ]туал/.test(raw)) return 'letu';
+    if (raw === 'megamarket' || raw === 'sbermegamarket' || /мегамаркет|mega[\s_-]*market/.test(raw)) return 'megamarket';
+    if (raw === 'samokat' || /самокат/.test(raw)) return 'samokat';
     if (raw === 'magnit' || raw === 'mm' || /магнит/.test(raw)) return 'magnit';
     return 'all';
   }
@@ -140,7 +142,7 @@
   function normalizeControlPlatformKey(platformKey) {
     const raw = String(platformKey || '').trim().toLowerCase();
     if (raw === 'retail') return 'ya';
-    if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'].includes(raw)) return raw;
+    if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'].includes(raw)) return raw;
     return 'all';
   }
 

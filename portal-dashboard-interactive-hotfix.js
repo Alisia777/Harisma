@@ -21,7 +21,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const DASHBOARD_RANGE_STORAGE_KEY = 'altea.portal.dashboardRange.v2';
-  const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+  const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
   const PRESET_KEYS = ['yesterday', '7', 'prevweek', '14', '30'];
   const DASHBOARD_FOCUS_METRICS = ['revenue', 'completion', 'margin', 'stock'];
   const cache = {
@@ -214,6 +214,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     if (raw === 'ya' || raw === 'ym' || raw.includes('yandex')) return 'ya';
     if (raw === 'goldapple' || raw === 'ga' || raw === 'zya' || raw.includes('золот')) return 'goldapple';
     if (raw === 'letu' || raw.includes('лету')) return 'letu';
+    if (raw === 'megamarket' || raw === 'sbermegamarket' || raw.includes('мегамаркет')) return 'megamarket';
+    if (raw === 'samokat' || raw.includes('самокат')) return 'samokat';
     if (raw === 'magnit' || raw === 'mm' || raw.includes('магнит')) return 'magnit';
     if (raw === 'retail') return 'ya';
     if (raw === 'all' || raw === 'wb' || raw === 'ozon') return raw;
@@ -227,6 +229,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     ya: 'Я.Маркет',
     goldapple: 'Золотое яблоко',
     letu: "Л'Этуаль",
+    megamarket: 'Мегамаркет',
+    samokat: 'Самокат',
     magnit: 'Магнит Маркет'
   })[canonicalDashboardPlatformKey(key)] || String(key || '').toUpperCase();
   const DASHBOARD_PLATFORM_RGB = {
@@ -236,6 +240,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     ya: [244, 196, 48],
     goldapple: [154, 196, 58],
     letu: [217, 70, 239],
+    megamarket: [249, 115, 22],
+    samokat: [16, 185, 129],
     magnit: [239, 68, 68]
   };
   const clampNumber = (value, min, max) => Math.max(min, Math.min(max, Number(value)));
@@ -536,15 +542,17 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     const extraMarketplace = payload?.extraMarketplace?.platforms || {};
     const sourceKeysForPlatform = (key) => {
       const canonicalKey = canonicalDashboardPlatformKey(key);
-      if (canonicalKey === 'all') return ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+      if (canonicalKey === 'all') return ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
       if (canonicalKey === 'ya') return ['ym', 'ya'];
       if (canonicalKey === 'goldapple') return ['goldapple', 'ga', 'zya'];
       if (canonicalKey === 'letu') return ['letu'];
+      if (canonicalKey === 'megamarket') return ['megamarket'];
+      if (canonicalKey === 'samokat') return ['samokat'];
       if (canonicalKey === 'magnit') return ['magnit', 'mm', 'magnitmarket'];
       return [canonicalKey];
     };
     const targetKeys = canonicalDashboardPlatformKey(platformKey) === 'all'
-      ? ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit']
+      ? ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit']
       : [canonicalDashboardPlatformKey(platformKey)];
     const rows = [];
     const seen = new Set();
@@ -713,6 +721,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     if (canonicalKey === 'ya') return 'ym';
     if (canonicalKey === 'goldapple') return 'ga';
     if (canonicalKey === 'letu') return 'letu';
+    if (canonicalKey === 'megamarket') return 'megamarket';
+    if (canonicalKey === 'samokat') return 'samokat';
     if (canonicalKey === 'magnit') return 'mm';
     return canonicalKey;
   }
@@ -729,7 +739,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
 
   function supportRowsForPlatform(platformKey) {
     const targetKeys = canonicalDashboardPlatformKey(platformKey) === 'all'
-      ? ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit']
+      ? ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit']
       : [canonicalDashboardPlatformKey(platformKey)];
     return targetKeys.flatMap((targetKey) => {
       const supportKey = supportPlatformKey(targetKey);
@@ -1365,6 +1375,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     if (platformKey === 'ya') return num(channels.ya?.revenue);
     if (platformKey === 'goldapple') return num(channels.goldapple?.revenue);
     if (platformKey === 'letu') return num(channels.letu?.revenue);
+    if (platformKey === 'megamarket') return num(channels.megamarket?.revenue);
+    if (platformKey === 'samokat') return num(channels.samokat?.revenue);
     if (platformKey === 'magnit') return num(channels.magnit?.revenue);
     return 0;
   }
@@ -1613,6 +1625,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     if (key === 'ya') return Boolean(sku?.ownersByPlatform?.ym || sku?.ownersByPlatform?.ya || sku?.categoriesByPlatform?.ym || sku?.categoriesByPlatform?.ya);
     if (key === 'goldapple') return Boolean(sku?.ownersByPlatform?.ga || sku?.categoriesByPlatform?.ga);
     if (key === 'letu') return Boolean(sku?.ownersByPlatform?.letu || sku?.categoriesByPlatform?.letu);
+    if (key === 'megamarket') return Boolean(sku?.ownersByPlatform?.megamarket || sku?.categoriesByPlatform?.megamarket);
+    if (key === 'samokat') return Boolean(sku?.ownersByPlatform?.samokat || sku?.categoriesByPlatform?.samokat);
     if (key === 'magnit') return Boolean(sku?.ownersByPlatform?.mm || sku?.categoriesByPlatform?.mm);
     return false;
   }
@@ -1623,19 +1637,25 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     const ymOwner = String(sku?.ownersByPlatform?.ym || sku?.ownersByPlatform?.ya || '').trim();
     const gaOwner = String(sku?.ownersByPlatform?.ga || '').trim();
     const letuOwner = String(sku?.ownersByPlatform?.letu || '').trim();
+    const megamarketOwner = String(sku?.ownersByPlatform?.megamarket || '').trim();
+    const samokatOwner = String(sku?.ownersByPlatform?.samokat || '').trim();
     const mmOwner = String(sku?.ownersByPlatform?.mm || '').trim();
     const parts = [];
     if (ymOwner) parts.push(`ЯМ: ${ymOwner}`);
     const retailLabels = [];
     if (gaOwner) retailLabels.push('ЗЯ');
     if (letuOwner) retailLabels.push('Летуаль');
+    if (megamarketOwner) retailLabels.push('Мегамаркет');
+    if (samokatOwner) retailLabels.push('Самокат');
     if (mmOwner) retailLabels.push('ММ');
-    const retailOwners = [...new Set([gaOwner, letuOwner, mmOwner].filter(Boolean))];
+    const retailOwners = [...new Set([gaOwner, letuOwner, megamarketOwner, samokatOwner, mmOwner].filter(Boolean))];
     if (retailOwners.length === 1 && retailLabels.length) {
       parts.push(`${retailLabels.join(' / ')}: ${retailOwners[0]}`);
     } else {
       if (gaOwner) parts.push(`ЗЯ: ${gaOwner}`);
       if (letuOwner) parts.push(`Летуаль: ${letuOwner}`);
+      if (megamarketOwner) parts.push(`Мегамаркет: ${megamarketOwner}`);
+      if (samokatOwner) parts.push(`Самокат: ${samokatOwner}`);
       if (mmOwner) parts.push(`ММ: ${mmOwner}`);
     }
     return parts.join(' · ') || generic || 'Без owner';
@@ -1658,6 +1678,12 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     }
     if (platformKey === 'letu') {
       return String(sku?.ownersByPlatform?.letu || generic || '').trim() || 'Без owner';
+    }
+    if (platformKey === 'megamarket') {
+      return String(sku?.ownersByPlatform?.megamarket || generic || '').trim() || 'Без owner';
+    }
+    if (platformKey === 'samokat') {
+      return String(sku?.ownersByPlatform?.samokat || generic || '').trim() || 'Без owner';
     }
     if (platformKey === 'mm') {
       return String(sku?.ownersByPlatform?.mm || generic || '').trim() || 'Без owner';
@@ -4713,7 +4739,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
 
   function stockSection(executive) {
     const platforms = executive.selectedPlatform === 'all'
-      ? ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit']
+      ? ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit']
       : [executive.selectedPlatform];
     return `
       <section class="portal-exec-section">
@@ -5385,7 +5411,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     const raw = String(task?.platform || '').trim().toLowerCase();
     const text = `${raw} ${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''} ${task?.entityLabel || ''}`.toLowerCase();
     const direct = canonicalDashboardPlatformKey(raw);
-    if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'].includes(direct)) return direct;
+    if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'].includes(direct)) return direct;
     if (['wb+ozon', 'wb + ozon', 'cross', 'common', 'shared', 'general', 'all'].includes(raw)) return 'cross';
     if (/(^|\\W)wb($|\\W)|wildberries|вб/.test(text)) return 'wb';
     if (/ozon|озон/.test(text)) return 'ozon';
@@ -5396,7 +5422,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
 
   function dashboardControlPlatformKey(platformKey) {
     const key = canonicalDashboardPlatformKey(platformKey);
-    if (['ya', 'goldapple', 'letu', 'magnit', 'wb', 'ozon', 'all'].includes(key)) return key;
+    if (['ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'wb', 'ozon', 'all'].includes(key)) return key;
     return 'all';
   }
 
@@ -5485,6 +5511,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       ya: ['яндекс', 'market', 'ym', 'я.м', 'ям'],
       goldapple: ['золот', 'goldapple', 'ga', 'zya', 'зя'],
       letu: ['лету', 'l\'этуаль', "л'этуаль", 'letu'],
+      megamarket: ['мегамаркет', 'megamarket', 'sbermegamarket'],
+      samokat: ['самокат', 'samokat'],
       magnit: ['магнит', 'magnit', 'mm']
     };
     const matchesPlatform = (text) => {
@@ -5838,6 +5866,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     if (!raw) return '';
     if (raw.includes('золотое яблоко') || raw.includes('goldapple') || raw.includes('gold apple') || raw.includes('золот') || raw.includes('зя')) return 'goldapple';
     if (raw.includes("л'этуаль") || raw.includes('летуаль') || raw.includes('letual') || raw.includes('letu')) return 'letu';
+    if (raw.includes('мегамаркет') || raw.includes('megamarket') || raw.includes('sbermegamarket') || raw.includes('mega market')) return 'megamarket';
+    if (raw.includes('самокат') || raw.includes('samokat')) return 'samokat';
     if (raw.includes('магнит маркет') || raw.includes('магнитмаркет') || raw.includes('магнит') || raw.includes('magnit') || /(^|[^a-z0-9])mm([^a-z0-9]|$)/.test(raw)) return 'magnit';
     if (/(^|[^a-z0-9])ya([^a-z0-9]|$)/.test(raw) || raw.includes('ya_market') || raw.includes('yandex_market') || raw.includes('yandexmarket') || raw.includes('яндекс') || raw.includes('я.маркет') || raw.includes('я маркет') || raw.includes('ям') || raw.includes('ym') || raw.includes('yandex')) return 'ya';
     return '';
@@ -5847,7 +5877,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     const raw = String(task?.platform || '').trim().toLowerCase();
     const text = `${raw} ${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''} ${task?.entityLabel || ''}`.toLowerCase();
     const direct = canonicalDashboardPlatformKey(raw);
-    if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'].includes(direct)) return direct;
+    if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'].includes(direct)) return direct;
     if (['wb+ozon', 'wb + ozon', 'cross', 'common', 'shared', 'general', 'all'].includes(raw)) return 'cross';
     if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
     if (/ozon|озон/.test(text)) return 'ozon';
@@ -5858,7 +5888,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
 
   function dashboardControlPlatformKey(platformKey) {
     const key = canonicalDashboardPlatformKey(platformKey);
-    if (['ya', 'goldapple', 'letu', 'magnit', 'wb', 'ozon', 'all'].includes(key)) return key;
+    if (['ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'wb', 'ozon', 'all'].includes(key)) return key;
     return 'all';
   }
 
@@ -5966,6 +5996,8 @@ function dashboardTaskStatusChip(task) {
     if (key === 'ya') return badgeHtml('Я.Маркет', 'ok');
     if (key === 'goldapple') return badgeHtml('Золотое яблоко', 'ok');
     if (key === 'letu') return badgeHtml("Л'Этуаль", 'ok');
+    if (key === 'megamarket') return badgeHtml('Мегамаркет', 'ok');
+    if (key === 'samokat') return badgeHtml('Самокат', 'ok');
     if (key === 'magnit') return badgeHtml('Магнит Маркет', 'ok');
     return badgeHtml('Общий контур', '');
   }
@@ -6156,6 +6188,8 @@ function dashboardTaskStatusChip(task) {
       #view-dashboard [data-platform="ya"] { --platform-color:#f4c430; --platform-soft:rgba(244,196,48,.08); --platform-active:rgba(244,196,48,.15); --platform-border:rgba(244,196,48,.25); --platform-strong:rgba(244,196,48,.56); }
       #view-dashboard [data-platform="goldapple"] { --platform-color:#9ac43a; --platform-soft:rgba(154,196,58,.08); --platform-active:rgba(154,196,58,.16); --platform-border:rgba(154,196,58,.25); --platform-strong:rgba(154,196,58,.56); }
       #view-dashboard [data-platform="letu"] { --platform-color:#d946ef; --platform-soft:rgba(217,70,239,.075); --platform-active:rgba(217,70,239,.16); --platform-border:rgba(217,70,239,.24); --platform-strong:rgba(217,70,239,.54); }
+      #view-dashboard [data-platform="megamarket"] { --platform-color:#f97316; --platform-soft:rgba(249,115,22,.075); --platform-active:rgba(249,115,22,.16); --platform-border:rgba(249,115,22,.24); --platform-strong:rgba(249,115,22,.54); }
+      #view-dashboard [data-platform="samokat"] { --platform-color:#10b981; --platform-soft:rgba(16,185,129,.075); --platform-active:rgba(16,185,129,.16); --platform-border:rgba(16,185,129,.24); --platform-strong:rgba(16,185,129,.54); }
       #view-dashboard [data-platform="magnit"] { --platform-color:#ef4444; --platform-soft:rgba(239,68,68,.075); --platform-active:rgba(239,68,68,.16); --platform-border:rgba(239,68,68,.24); --platform-strong:rgba(239,68,68,.54); }
       #view-dashboard .portal-calm-dates { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 8px; }
       #view-dashboard .portal-calm-date { display: grid; gap: 6px; min-width: 0; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.06); background: rgba(7,6,5,.34); }
@@ -7923,6 +7957,8 @@ function dashboardTaskStatusChip(task) {
       #view-dashboard [data-platform="ya"] { --platform-color:#f4c430; --platform-soft:rgba(244,196,48,.08); --platform-active:rgba(244,196,48,.15); --platform-border:rgba(244,196,48,.25); --platform-strong:rgba(244,196,48,.56); }
       #view-dashboard [data-platform="goldapple"] { --platform-color:#9ac43a; --platform-soft:rgba(154,196,58,.08); --platform-active:rgba(154,196,58,.16); --platform-border:rgba(154,196,58,.25); --platform-strong:rgba(154,196,58,.56); }
       #view-dashboard [data-platform="letu"] { --platform-color:#d946ef; --platform-soft:rgba(217,70,239,.075); --platform-active:rgba(217,70,239,.16); --platform-border:rgba(217,70,239,.24); --platform-strong:rgba(217,70,239,.54); }
+      #view-dashboard [data-platform="megamarket"] { --platform-color:#f97316; --platform-soft:rgba(249,115,22,.075); --platform-active:rgba(249,115,22,.16); --platform-border:rgba(249,115,22,.24); --platform-strong:rgba(249,115,22,.54); }
+      #view-dashboard [data-platform="samokat"] { --platform-color:#10b981; --platform-soft:rgba(16,185,129,.075); --platform-active:rgba(16,185,129,.16); --platform-border:rgba(16,185,129,.24); --platform-strong:rgba(16,185,129,.54); }
       #view-dashboard [data-platform="magnit"] { --platform-color:#ef4444; --platform-soft:rgba(239,68,68,.075); --platform-active:rgba(239,68,68,.16); --platform-border:rgba(239,68,68,.24); --platform-strong:rgba(239,68,68,.54); }
       #view-dashboard .portal-lux-platform-pill { border-color: var(--platform-border, rgba(255,255,255,.1)); background: linear-gradient(180deg, var(--platform-soft, rgba(255,255,255,.03)), rgba(255,255,255,.025)); }
       #view-dashboard .portal-lux-platform-pill.active { border-color: var(--platform-strong, rgba(236,203,123,.58)); color: #fff8ea; background: linear-gradient(180deg, var(--platform-active, rgba(212,164,74,.16)), rgba(255,255,255,.035)); box-shadow: inset 0 0 0 1px var(--platform-border, rgba(255,255,255,.1)); }
@@ -9395,6 +9431,8 @@ function dashboardTaskStatusChip(task) {
       #view-dashboard .portal-calm-platform-button[data-platform="ya"] { --portal-platform-rgb: 244, 196, 48; }
       #view-dashboard .portal-calm-platform-button[data-platform="goldapple"] { --portal-platform-rgb: 154, 196, 58; }
       #view-dashboard .portal-calm-platform-button[data-platform="letu"] { --portal-platform-rgb: 217, 70, 239; }
+      #view-dashboard .portal-calm-platform-button[data-platform="megamarket"] { --portal-platform-rgb: 249, 115, 22; }
+      #view-dashboard .portal-calm-platform-button[data-platform="samokat"] { --portal-platform-rgb: 16, 185, 129; }
       #view-dashboard .portal-calm-platform-button[data-platform="magnit"] { --portal-platform-rgb: 239, 68, 68; }
       #view-dashboard .portal-calm-platform-button.active {
         color: #fff7e8;

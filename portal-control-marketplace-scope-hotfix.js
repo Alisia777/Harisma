@@ -2,8 +2,8 @@
   if (window.__ALTEA_CONTROL_MARKETPLACE_SCOPE_20260521__) return;
   window.__ALTEA_CONTROL_MARKETPLACE_SCOPE_20260521__ = true;
 
-  const SINGLE = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
-  const RETAIL = ['ya', 'goldapple', 'letu', 'magnit'];
+  const SINGLE = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'product', 'cross'];
+  const RETAIL = ['ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
   const baseControlWorkstreamKey = typeof controlWorkstreamKey === 'function'
     ? controlWorkstreamKey
     : (typeof window.controlWorkstreamKey === 'function' ? window.controlWorkstreamKey : null);
@@ -43,6 +43,8 @@
       || /(^|[^a-zа-я0-9])(ya|ym|ям)(?=$|[^a-zа-я0-9])/i.test(raw)) keys.push('ya');
     if (raw.includes('золот') || flat === 'зя' || flat.includes('gold') || flat === 'zya') keys.push('goldapple');
     if (flat.includes('лету') || flat.includes('лэту') || flat.includes('letu') || flat.includes('letoile') || flat.includes('letoil')) keys.push('letu');
+    if (flat.includes('мегамаркет') || flat.includes('megamarket') || flat.includes('sbermegamarket')) keys.push('megamarket');
+    if (flat.includes('самокат') || flat.includes('samokat')) keys.push('samokat');
     if (flat.includes('магнит') || flat.includes('magnit') || flat.includes('magnet')) keys.push('magnit');
     return unique(keys);
   }

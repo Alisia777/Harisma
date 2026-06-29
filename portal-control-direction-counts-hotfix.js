@@ -2,8 +2,8 @@
   if (window.__ALTEA_CONTROL_DIRECTION_COUNTS_20260521__) return;
   window.__ALTEA_CONTROL_DIRECTION_COUNTS_20260521__ = true;
 
-  const TARGETS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
-  const RETAIL = ['ya', 'goldapple', 'letu', 'magnit'];
+  const TARGETS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
+  const RETAIL = ['ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 
   function lower(value) {
     return String(value || '').trim().toLowerCase();
@@ -48,6 +48,8 @@
       || /(^|[^a-zа-я0-9])(ya|ym|ям)(?=$|[^a-zа-я0-9])/i.test(raw)) keys.push('ya');
     if (isGoldAppleText(raw, flat)) keys.push('goldapple');
     if (flat.includes('лету') || flat.includes('лэту') || flat.includes('letu') || flat.includes('letoile') || flat.includes('letoil')) keys.push('letu');
+    if (flat.includes('мегамаркет') || flat.includes('megamarket') || flat.includes('sbermegamarket')) keys.push('megamarket');
+    if (flat.includes('самокат') || flat.includes('samokat')) keys.push('samokat');
     if (flat.includes('магнит') || flat.includes('magnit') || flat.includes('magnet')) keys.push('magnit');
     return unique(keys);
   }

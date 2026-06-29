@@ -40,6 +40,18 @@
       description: 'Отдельный контур Л\'Этуаль.',
       kind: 'ok'
     },
+    megamarket: {
+      label: '\u041c\u0435\u0433\u0430\u043c\u0430\u0440\u043a\u0435\u0442',
+      chip: '\u041c\u0435\u0433\u0430\u043c\u0430\u0440\u043a\u0435\u0442',
+      description: '\u041e\u0442\u0434\u0435\u043b\u044c\u043d\u044b\u0439 \u043a\u043e\u043d\u0442\u0443\u0440 \u043f\u043e \u041c\u0435\u0433\u0430\u043c\u0430\u0440\u043a\u0435\u0442\u0443.',
+      kind: 'ok'
+    },
+    samokat: {
+      label: '\u0421\u0430\u043c\u043e\u043a\u0430\u0442',
+      chip: '\u0421\u0430\u043c\u043e\u043a\u0430\u0442',
+      description: '\u041e\u0442\u0434\u0435\u043b\u044c\u043d\u044b\u0439 \u043a\u043e\u043d\u0442\u0443\u0440 \u043f\u043e \u0421\u0430\u043c\u043e\u043a\u0430\u0442\u0443.',
+      kind: 'ok'
+    },
     magnit: {
       label: 'Магнит Маркет',
       chip: 'Магнит Маркет',
@@ -54,7 +66,7 @@
     }
   };
 
-  const WORKSTREAM_ORDER = ['ozon', 'wb', 'ya', 'goldapple', 'letu', 'magnit', 'cross'];
+  const WORKSTREAM_ORDER = ['ozon', 'wb', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'cross'];
   const FILTER_ORDER = ['all', ...WORKSTREAM_ORDER];
   const TYPE_FILTER_ORDER = ['all', 'price_margin', 'supply', 'content', 'traffic', 'launch', 'returns', 'assignment', 'general'];
 
@@ -68,6 +80,8 @@
 
   function inferMarketplacePlatform(text = '') {
     const raw = String(text || '').toLowerCase();
+    if (/мегамаркет|mega[\s_-]*market|megamarket|sbermegamarket/.test(raw)) return 'megamarket';
+    if (/самокат|samokat/.test(raw)) return 'samokat';
     if (/золот[а-я\s-]*ябл|goldapple|gold apple|zya|зя/.test(raw)) return 'goldapple';
     if (/л[еэ]туал|летуаль|letual|letu/.test(raw)) return 'letu';
     if (/магнит|magnit|mm/.test(raw)) return 'magnit';
@@ -81,6 +95,8 @@
 
     if (raw === 'all') return 'all';
     if (['cross', 'common', 'shared', 'general'].includes(raw)) return 'cross';
+    if (['megamarket', 'mega_market', 'mega market', 'sbermegamarket', 'мегамаркет'].includes(raw)) return 'megamarket';
+    if (['samokat', 'самокат'].includes(raw)) return 'samokat';
     if (['wb', 'wildberries', 'вб'].includes(raw)) return 'wb';
     if (['ozon', 'озон'].includes(raw)) return 'ozon';
     if (['ya', 'yandex', 'yandex_market', 'ym'].includes(raw)) return 'ya';
@@ -114,6 +130,7 @@
 
     if (platform === 'wb') return 'wb';
     if (platform === 'ozon') return 'ozon';
+    if (['ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'].includes(platform)) return platform;
     if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
     if (platform === 'retail') return inferMarketplacePlatform(text) || 'ya';
     if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
@@ -344,6 +361,12 @@
           <select name="type">${taskTypes}</select>
           <select name="priority">${priorities}</select>
           <select name="platform">
+            <option value="megamarket">Мегамаркет</option>
+            <option value="samokat">Самокат</option>
+            <option value="ya">ЯМ</option>
+            <option value="goldapple">ЗЯ</option>
+            <option value="letu">Летуаль</option>
+            <option value="magnit">Магнит</option>
             <option value="cross">Общий контур</option>
             <option value="ozon">РОП Ozon</option>
             <option value="wb">РОП WB</option>
@@ -409,6 +432,12 @@
       const select = form?.querySelector('select[name="platform"]');
       if (!select) return;
       select.innerHTML = [
+        '<option value="megamarket">Мегамаркет</option>',
+        '<option value="samokat">Самокат</option>',
+        '<option value="ya">ЯМ</option>',
+        '<option value="goldapple">ЗЯ</option>',
+        '<option value="letu">Летуаль</option>',
+        '<option value="magnit">Магнит</option>',
         '<option value="cross">Общий контур</option>',
         '<option value="wb">РОП WB</option>',
         '<option value="ozon">РОП Ozon</option>',
@@ -548,6 +577,12 @@
       <div class="control-filters">
         <input id="controlSearchInput" placeholder="Поиск по SKU, задаче, owner, контуру…" value="${escapeHtml(state.controlFilters.search)}">
         <select id="controlPlatformFilter">
+          <option value="megamarket" ${selectedWorkstream === 'megamarket' ? 'selected' : ''}>Мегамаркет</option>
+          <option value="samokat" ${selectedWorkstream === 'samokat' ? 'selected' : ''}>Самокат</option>
+          <option value="ya" ${selectedWorkstream === 'ya' ? 'selected' : ''}>ЯМ</option>
+          <option value="goldapple" ${selectedWorkstream === 'goldapple' ? 'selected' : ''}>ЗЯ</option>
+          <option value="letu" ${selectedWorkstream === 'letu' ? 'selected' : ''}>Летуаль</option>
+          <option value="magnit" ${selectedWorkstream === 'magnit' ? 'selected' : ''}>Магнит</option>
           <option value="all" ${selectedWorkstream === 'all' ? 'selected' : ''}>Все контуры</option>
           <option value="ozon" ${selectedWorkstream === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
           <option value="wb" ${selectedWorkstream === 'wb' ? 'selected' : ''}>РОП WB</option>

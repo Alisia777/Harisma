@@ -1,6 +1,6 @@
 {
   "schema": "portal-daily-guard-v2",
-  "generatedAt": "2026-06-29T06:49:05.502Z",
+  "generatedAt": "2026-06-29T07:36:12.632Z",
   "manifest": {
     "file": "scripts\\portal-truth-manifest.json",
     "version": "2026-06-20",
@@ -35,8 +35,6 @@
       "sku_registry: sku_registry_meta.json is missing generatedAt for array payload",
       "sku_registry: build date unknown is older than expected run date 2026-06-29",
       "ads_fact: data date 2026-06-27 is older than expected 2026-06-28",
-      "warehouse_fact: build date 2026-06-28 is older than expected run date 2026-06-29",
-      "logistics_fact: build date 2026-06-28 is older than expected run date 2026-06-29",
       "order_procurement: build date 2026-06-28 is older than expected run date 2026-06-29",
       "order_procurement_wb: build date 2026-06-28 is older than expected run date 2026-06-29",
       "order_procurement_ozon: build date 2026-06-28 is older than expected run date 2026-06-29",
@@ -49,6 +47,7 @@
       "order_procurement: 1494 rows fail need30 formula",
       "order_procurement: 2222 detail rows are missing canonical 30-day target fields",
       "order_procurement: combined layer has 0 Yandex rows, detail layer has 935",
+      "oos task: local storage normalization would drop auto OOS tasks",
       "cutoff date: ads_fact=2026-06-27, platform_fact=2026-06-28",
       "phase3: required report is missing: portal_repricing_reconciliation.json",
       "phase3:portal_dashboard_reconciliation.json: mixed platform fact dates: 2026-06-28, 2026-06-28, 2026-06-22",
@@ -68,9 +67,9 @@
     "sources": 24,
     "contracts": 12,
     "views": 16,
-    "blockingChecks": 14,
+    "blockingChecks": 13,
     "warningChecks": 0,
-    "fingerprint": "5c1de4a5070aefd7749a64b7785bd463af3c0d34ef799d7a83e097785579fef2"
+    "fingerprint": "5f6f9f038d38d08a631e9f90482d45f9cd4bb2c84350a937ba67f4ea3b0f1730"
   },
   "views": {
     "dashboard": {
@@ -99,7 +98,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
       "blockingContracts": [
@@ -219,7 +218,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "price_master",
@@ -263,7 +262,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "data_quality",
@@ -293,7 +292,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "data_quality",
@@ -327,7 +326,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "platform_fact",
@@ -355,7 +354,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "platform_fact",
@@ -369,6 +368,7 @@
       "blockingContracts": [
         "contract:platform-fact",
         "contract:data-quality",
+        "contract:oos-auto-task-code",
         "contract:cutoff-date"
       ]
     },
@@ -467,7 +467,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "price_master",
@@ -548,6 +548,7 @@
       "contract:platform-fact",
       "contract:data-quality",
       "contract:order-procurement-phase2",
+      "contract:oos-auto-task-code",
       "contract:cutoff-date",
       "contract:phase3-publish-reports"
     ]
@@ -580,9 +581,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 25098165,
-      "mtime": "2026-06-29T06:32:18.794Z",
-      "sha256": "88e890aea6fb22d0cfbcb351e4e4ad10f63a143056c428bd834b1bb561dcfe0f",
+      "bytes": 25835174,
+      "mtime": "2026-06-29T06:59:18.810Z",
+      "sha256": "ffa5d1295b7e7d2275a7b8b726dae4ea65b9936b126a9655e192446d3c03699e",
       "dataDate": "2026-06-28",
       "dataDatePath": "latestMarketplaceDate",
       "generatedAt": "2026-06-29T06:32:18.705Z"
@@ -600,9 +601,9 @@
         "sku_registry: build date unknown is older than expected run date 2026-06-29"
       ],
       "origin": "input",
-      "bytes": 775883,
-      "mtime": "2026-06-28T13:33:50.674Z",
-      "sha256": "16071e4350f32f96dd569ffc25f9ed180fb7a862a485687740e14abb10b1189f",
+      "bytes": 799793,
+      "mtime": "2026-06-29T06:59:18.830Z",
+      "sha256": "65616990a2e7bbc83f4010cb6a5d727e5077724e01f33167680bf2c14c43b960",
       "dataDate": "",
       "dataDatePath": "",
       "generatedAt": "",
@@ -619,8 +620,8 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 49003,
-      "mtime": "2026-06-29T06:43:54.162Z",
-      "sha256": "12a7f00e57fc4f57e8ade03dee96728e89a6caf0acceef2cc8b4cdd547d1afa8",
+      "mtime": "2026-06-29T07:35:56.564Z",
+      "sha256": "acdcf505714b19511f909ab97d47261a5169c47f97d79785644558595b6dd1aa",
       "dataDate": "2026-06-28",
       "dataDatePath": "latestMarketplaceDate",
       "generatedAt": "2026-06-29T06:32:18.705Z"
@@ -637,9 +638,9 @@
         "ads_fact: data date 2026-06-27 is older than expected 2026-06-28"
       ],
       "origin": "input",
-      "bytes": 21250968,
-      "mtime": "2026-06-29T06:43:28.867Z",
-      "sha256": "0d0a4c36eff3044f4754b6228889ce3a64fc9b9e7e595874c0868e20df82aab5",
+      "bytes": 21883510,
+      "mtime": "2026-06-29T06:59:18.725Z",
+      "sha256": "0cdced8579dd59901d432c2ae10dc02c392666634986bca3a84cae96aebb644f",
       "dataDate": "2026-06-27",
       "dataDatePath": "window.to",
       "generatedAt": "2026-06-29T06:43:28.800Z"
@@ -650,18 +651,16 @@
       "source": "warehouse_fact",
       "file": "warehouse_stock_overlay.json",
       "kind": "fact-detail",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "warehouse_fact: build date 2026-06-28 is older than expected run date 2026-06-29"
-      ],
+      "blockingReasons": [],
       "origin": "input",
-      "bytes": 34071,
-      "mtime": "2026-06-28T13:33:49.641Z",
-      "sha256": "8128326f9054ca9528ac17e7844f11d0a43f5a46b0dea809280a8e563b3acfb4",
-      "dataDate": "2026-06-28",
+      "bytes": 34575,
+      "mtime": "2026-06-29T07:35:56.384Z",
+      "sha256": "2fa0a805ab49a50ce41223a225d03f04dfa20d6dff4334070120e9662bc33c01",
+      "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-28T13:32:24.200Z"
+      "generatedAt": "2026-06-29T07:35:56.383Z"
     },
     {
       "id": "source:logistics_fact",
@@ -669,18 +668,16 @@
       "source": "logistics_fact",
       "file": "logistics.json",
       "kind": "fact-detail",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "logistics_fact: build date 2026-06-28 is older than expected run date 2026-06-29"
-      ],
+      "blockingReasons": [],
       "origin": "input",
-      "bytes": 1129635,
-      "mtime": "2026-06-28T13:33:49.639Z",
-      "sha256": "fd009ded687e00cd21a43342d437e66c8b707f4e1e555dd3e50f6f26dd0c180c",
+      "bytes": 1129847,
+      "mtime": "2026-06-29T07:35:56.442Z",
+      "sha256": "38b3bdbda85773a41eb7c83cbe5568e97d3a9b686f98a751c6a5a4499ef18bda",
       "dataDate": "2026-06-28",
-      "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-28T13:33:47.989Z"
+      "dataDatePath": "latest_logistics_date",
+      "generatedAt": "2026-06-29T07:35:56.435Z"
     },
     {
       "id": "source:price_master",
@@ -692,9 +689,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 3136149,
-      "mtime": "2026-06-29T06:48:30.479Z",
-      "sha256": "bf3a72eeb166d48cbafe2e8e8a4481f9cf80f4bb7a24952a6e7b777059c806b2",
+      "bytes": 3234742,
+      "mtime": "2026-06-29T06:59:18.824Z",
+      "sha256": "2594420060ce14fe86058ab8cfd543a56d4e61bb8a120e6da7f5ba0656fba62c",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-06-29T06:48:22.809Z"
@@ -709,9 +706,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 1776942,
-      "mtime": "2026-06-29T06:48:30.301Z",
-      "sha256": "f9661f7c69acffb5279092d73478a4083e1eb1ad308b7fd71b2403c9ab3e4f67",
+      "bytes": 1833908,
+      "mtime": "2026-06-29T06:59:18.836Z",
+      "sha256": "66e16aefc6c9fb00c116b8dfdaa4ad99024f88e0b2e32f5747cda73eb2e091cd",
       "dataDate": "2026-06-28",
       "dataDatePath": "asOfDate",
       "generatedAt": "2026-06-29T06:48:22.809Z"
@@ -726,9 +723,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 770580,
-      "mtime": "2026-06-29T06:48:30.743Z",
-      "sha256": "0b16d4fe502ad667c7aaa8f400714228544e210aa3bb0fca255e2b13a420ecd1",
+      "bytes": 791020,
+      "mtime": "2026-06-29T06:59:18.826Z",
+      "sha256": "79b9471b5c2400f15909ae4df75a2a855d204f308618f46bf6369aa0abcab6d2",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-06-29T06:48:22.809Z"
@@ -745,9 +742,9 @@
         "order_procurement: build date 2026-06-28 is older than expected run date 2026-06-29"
       ],
       "origin": "input",
-      "bytes": 1304956,
-      "mtime": "2026-06-28T13:33:50.801Z",
-      "sha256": "f540c8a9d1f164ad13db6cacd1d6aa812829ebb23134f934e811e91f513afa46",
+      "bytes": 1347191,
+      "mtime": "2026-06-29T06:59:18.737Z",
+      "sha256": "84c7ed4cc3e29813c324b0b5ac10d4b73e171b663f5cfdc3d6dbd345d9d121c2",
       "dataDate": "2026-06-28",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-06-28T13:33:47.989Z"
@@ -764,9 +761,9 @@
         "order_procurement_wb: build date 2026-06-28 is older than expected run date 2026-06-29"
       ],
       "origin": "input",
-      "bytes": 373642,
-      "mtime": "2026-06-28T13:33:50.803Z",
-      "sha256": "b8f609582932e29dfe76d811aed5e48d0432d5d188d56bfd40484d843e6d87f1",
+      "bytes": 385364,
+      "mtime": "2026-06-29T06:59:18.741Z",
+      "sha256": "c029a81eb7f7d0bd6bdcd156e1bbeb6e1c04560c5b3ed88c1d89f4fb50d53deb",
       "dataDate": "2026-06-28",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-06-28T13:33:47.989Z"
@@ -783,9 +780,9 @@
         "order_procurement_ozon: build date 2026-06-28 is older than expected run date 2026-06-29"
       ],
       "origin": "input",
-      "bytes": 931771,
-      "mtime": "2026-06-28T13:33:50.807Z",
-      "sha256": "27d534fac28d7187ed687113466c19496abb87b47b4801ca52382ff251cabfd8",
+      "bytes": 962303,
+      "mtime": "2026-06-29T06:59:18.739Z",
+      "sha256": "aad4a182b0acd3c7dfd3662ab33af3fefa91aeca0dd9982e8b693fdc80f86e3c",
       "dataDate": "2026-06-28",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-06-28T13:33:47.989Z"
@@ -820,11 +817,11 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 119326,
-      "mtime": "2026-06-29T06:49:04.474Z",
-      "sha256": "277bf46ee5bf59c8c9c1223d9783e6d863a6b4cfe12f85ef90d527f945b10a03",
+      "mtime": "2026-06-29T07:35:56.639Z",
+      "sha256": "c5d0635711c47f2a60a54c13426dc62eac43ae77864e54c48c097fb746997c04",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T06:49:04.472Z"
+      "generatedAt": "2026-06-29T07:35:56.637Z"
     },
     {
       "id": "source:sku_matrix",
@@ -837,11 +834,11 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 432158,
-      "mtime": "2026-06-29T06:49:04.823Z",
-      "sha256": "86b3e2275f259c8433beeeb80282eefcc97749d23bc62ad7c40c169388af704b",
+      "mtime": "2026-06-29T07:36:11.965Z",
+      "sha256": "a2f7bc96811dae946e9fcac48277702031ddddde6cae45d4b5d106bb6063d582",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T06:49:04.819Z"
+      "generatedAt": "2026-06-29T07:36:11.961Z"
     },
     {
       "id": "source:sku_aliases",
@@ -872,9 +869,9 @@
         "owner_audit: build date 2026-06-28 is older than expected run date 2026-06-29"
       ],
       "origin": "input",
-      "bytes": 51839,
-      "mtime": "2026-06-28T13:33:50.675Z",
-      "sha256": "79c2bc832678cecd4350adc11fdd1148e91715362a8735224ac0010e49ddf2db",
+      "bytes": 53201,
+      "mtime": "2026-06-29T06:59:18.862Z",
+      "sha256": "74eaef938cf80c805f421306f93438e497de3e15fea079ea168ed03c1f5208a2",
       "dataDate": "2026-06-28",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-06-28T13:33:50.670Z"
@@ -890,11 +887,11 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 47071,
-      "mtime": "2026-06-29T06:49:04.736Z",
-      "sha256": "d8f39969ebc342bbbf76cf544cf502aa2504b9e70adf5d633aa0960644b8b24e",
+      "mtime": "2026-06-29T07:36:11.873Z",
+      "sha256": "5d27e325ba59ea84e952a1f54cf2851796a13a771fa222013a4d77a3e1ef0956",
       "dataDate": "2026-06-28",
       "dataDatePath": "summary.maxDate",
-      "generatedAt": "2026-06-29T06:49:04.733Z"
+      "generatedAt": "2026-06-29T07:36:11.872Z"
     },
     {
       "id": "source:data_quarantine",
@@ -907,11 +904,11 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 2020,
-      "mtime": "2026-06-29T06:49:05.144Z",
-      "sha256": "69a8672f505dd50bdeea9127c11fe4f424be32b938dad358bbe8678bba4ce0e4",
+      "mtime": "2026-06-29T07:36:12.274Z",
+      "sha256": "e24627941c3b6ceca1b633c77f5b03eac53636efaf01a801bc9d7a2d3d624503",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T06:49:05.137Z"
+      "generatedAt": "2026-06-29T07:36:12.266Z"
     },
     {
       "id": "source:product_leaderboard",
@@ -923,13 +920,13 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 244763,
-      "mtime": "2026-06-29T06:46:51.332Z",
-      "sha256": "ba7af48aa53d9ded5c5739027c3d9845cd0b81b43050d0e789b950a3dfbe74b5",
-      "dataDate": "2026-06-19",
+      "bytes": 241132,
+      "mtime": "2026-06-29T07:34:35.189Z",
+      "sha256": "3b3871d32fbbf3fe989fa7dced8f722c0d394c404a2f4eb95524ccdb569a8687",
+      "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-19T10:31:04.079Z",
-      "ageDays": 10
+      "generatedAt": "2026-06-29T07:34:35.185Z",
+      "ageDays": 0
     },
     {
       "id": "source:product_leaderboard_history",
@@ -941,9 +938,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 1645479,
-      "mtime": "2026-06-29T06:46:51.363Z",
-      "sha256": "7b08ead8194e3277dfeddef55ee480227f65e002000fb7eaa13eeb460bad6a54",
+      "bytes": 1607819,
+      "mtime": "2026-06-29T07:34:35.621Z",
+      "sha256": "79c77f8f45154e869fb561d262c25baf37d5877335f33dd85e1a9b5d9bc988c7",
       "dataDate": "",
       "dataDatePath": "",
       "generatedAt": ""
@@ -958,9 +955,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 9173985,
-      "mtime": "2026-06-28T14:09:06.238Z",
-      "sha256": "a172ff35d9fb0cf92d3b69876c5e41b08f46a80960b8bc4f7b8d9e7f9b051431",
+      "bytes": 9474277,
+      "mtime": "2026-06-29T06:59:18.861Z",
+      "sha256": "88a9c5e5e83d90857ca569e29313932c2487c74d706539a07f3cfeb77bb1aab7",
       "dataDate": "2026-06-28",
       "dataDatePath": "window.to",
       "generatedAt": "2026-06-28T14:09:06.004Z"
@@ -975,9 +972,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 248621,
-      "mtime": "2026-06-29T06:35:11.631Z",
-      "sha256": "b5b98b86ff403cc97c9dc7eb1c3d1671a3442f624b50d35124db5ca0a134b59b",
+      "bytes": 257336,
+      "mtime": "2026-06-29T06:59:18.863Z",
+      "sha256": "59ddbb497c5e46736e602f217939ace73fb195d731ae23a745cd8698dc975429",
       "dataDate": "2026-06-28",
       "dataDatePath": "period.to",
       "generatedAt": "2026-06-29T06:35:11.628Z"
@@ -1182,7 +1179,9 @@
       "scope": "oos",
       "source": "app-core-11.js",
       "warnings": [],
-      "blockingReasons": [],
+      "blockingReasons": [
+        "oos task: local storage normalization would drop auto OOS tasks"
+      ],
       "markers": {
         "hasStableIssueKey": true,
         "hasStableMarker": true,
@@ -1190,9 +1189,9 @@
         "taskSourceAuto": true,
         "taskNormalizeAuto": true,
         "taskForStableMarker": true,
-        "localAutoOosPersistent": true
+        "localAutoOosPersistent": false
       },
-      "status": "ok"
+      "status": "blocked"
     },
     {
       "id": "contract:sku-matrix-phase2",
@@ -1236,7 +1235,7 @@
         "platform_fact": "2026-06-28",
         "dashboard_projection": "2026-06-28",
         "ads_fact": "2026-06-27",
-        "warehouse_fact": "2026-06-28",
+        "warehouse_fact": "2026-06-29",
         "data_quality": "2026-06-28"
       },
       "status": "blocked"
@@ -1337,12 +1336,6 @@
         "source": "ads_fact"
       },
       {
-        "id": "warehouse-stock",
-        "name": "warehouse stock",
-        "reason": "warehouse_fact: build date 2026-06-28 is older than expected run date 2026-06-29",
-        "source": "warehouse_fact"
-      },
-      {
         "id": "order-procurement",
         "name": "order procurement",
         "reason": "order_procurement: build date 2026-06-28 is older than expected run date 2026-06-29",
@@ -1365,6 +1358,12 @@
         "name": "data quality",
         "reason": "portal_data_quality: blocking status critical, critical issues 4",
         "source": "portal_data_quality"
+      },
+      {
+        "id": "oos-control",
+        "name": "oos control",
+        "reason": "oos task: local storage normalization would drop auto OOS tasks",
+        "source": "app-core-11.js"
       },
       {
         "id": "repricer-dashboard-plan-audit",

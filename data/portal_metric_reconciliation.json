@@ -1,20 +1,20 @@
 {
   "schema": "portal-metric-reconciliation-v1",
-  "generatedAt": "2026-06-29T06:49:05.502Z",
+  "generatedAt": "2026-06-29T07:36:12.632Z",
   "manifestVersion": "2026-06-20",
   "scope": {
     "included": "all portal views and layers"
   },
   "cutoffDate": "2026-06-28",
   "status": "blocked",
-  "business_fingerprint": "5c1de4a5070aefd7749a64b7785bd463af3c0d34ef799d7a83e097785579fef2",
+  "business_fingerprint": "5f6f9f038d38d08a631e9f90482d45f9cd4bb2c84350a937ba67f4ea3b0f1730",
   "summary": {
     "sourceCount": 24,
     "contractCount": 12,
     "metricPassportCount": 21,
-    "blockingChecks": 14,
+    "blockingChecks": 13,
     "warningChecks": 0,
-    "fingerprint": "5c1de4a5070aefd7749a64b7785bd463af3c0d34ef799d7a83e097785579fef2"
+    "fingerprint": "5f6f9f038d38d08a631e9f90482d45f9cd4bb2c84350a937ba67f4ea3b0f1730"
   },
   "metricPassports": [
     {
@@ -145,7 +145,7 @@
       "key": "oos.autoTaskContract",
       "source": "app-core-11.js",
       "period": "",
-      "value": "ok",
+      "value": "blocked",
       "formula": "OOS task identity is stable by platform+article; task source is auto; local fallback keeps OOS auto tasks"
     },
     {
@@ -251,7 +251,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
       "blockingContracts": [
@@ -371,7 +371,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "price_master",
@@ -415,7 +415,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "data_quality",
@@ -445,7 +445,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "data_quality",
@@ -479,7 +479,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "platform_fact",
@@ -507,7 +507,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "platform_fact",
@@ -521,6 +521,7 @@
       "blockingContracts": [
         "contract:platform-fact",
         "contract:data-quality",
+        "contract:oos-auto-task-code",
         "contract:cutoff-date"
       ]
     },
@@ -619,7 +620,7 @@
         },
         {
           "source": "warehouse_fact",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "price_master",
@@ -700,6 +701,7 @@
       "contract:platform-fact",
       "contract:data-quality",
       "contract:order-procurement-phase2",
+      "contract:oos-auto-task-code",
       "contract:cutoff-date",
       "contract:phase3-publish-reports"
     ]
@@ -905,7 +907,9 @@
       "scope": "oos",
       "source": "app-core-11.js",
       "warnings": [],
-      "blockingReasons": [],
+      "blockingReasons": [
+        "oos task: local storage normalization would drop auto OOS tasks"
+      ],
       "markers": {
         "hasStableIssueKey": true,
         "hasStableMarker": true,
@@ -913,9 +917,9 @@
         "taskSourceAuto": true,
         "taskNormalizeAuto": true,
         "taskForStableMarker": true,
-        "localAutoOosPersistent": true
+        "localAutoOosPersistent": false
       },
-      "status": "ok"
+      "status": "blocked"
     },
     {
       "id": "contract:sku-matrix-phase2",
@@ -959,7 +963,7 @@
         "platform_fact": "2026-06-28",
         "dashboard_projection": "2026-06-28",
         "ads_fact": "2026-06-27",
-        "warehouse_fact": "2026-06-28",
+        "warehouse_fact": "2026-06-29",
         "data_quality": "2026-06-28"
       },
       "status": "blocked"

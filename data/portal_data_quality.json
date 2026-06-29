@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-29T06:49:04.733Z",
+  "generatedAt": "2026-06-29T07:36:11.872Z",
   "status": "critical",
   "summary": {
     "issueCount": 91,
@@ -35,8 +35,8 @@
       "asOfDate": "2026-06-28",
       "generatedAt": "2026-06-29T06:32:18.705Z",
       "rows": 15,
-      "referenceDate": "2026-06-28",
-      "lagDays": 0,
+      "referenceDate": "2026-06-29",
+      "lagDays": 1,
       "status": "ok"
     },
     {
@@ -44,8 +44,8 @@
       "asOfDate": "2026-06-28",
       "generatedAt": "2026-06-29T06:32:18.705Z",
       "rows": 7,
-      "referenceDate": "2026-06-28",
-      "lagDays": 0,
+      "referenceDate": "2026-06-29",
+      "lagDays": 1,
       "status": "ok"
     },
     {
@@ -53,18 +53,18 @@
       "asOfDate": "2026-06-28",
       "generatedAt": "2026-06-28T13:33:47.989Z",
       "rows": 2222,
-      "referenceDate": "2026-06-28",
-      "lagDays": 0,
+      "referenceDate": "2026-06-29",
+      "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "warehouse_stock_overlay",
-      "asOfDate": "2026-06-28",
-      "generatedAt": "2026-06-28T13:32:24.200Z",
-      "rows": 134,
-      "matchedRows": 136,
+      "asOfDate": "2026-06-29",
+      "generatedAt": "2026-06-29T07:35:56.383Z",
+      "rows": 136,
+      "matchedRows": 140,
       "unmatchedRows": 25,
-      "referenceDate": "2026-06-28",
+      "referenceDate": "2026-06-29",
       "lagDays": 0,
       "status": "ok"
     },
@@ -73,8 +73,8 @@
       "asOfDate": "2026-06-28",
       "generatedAt": "2026-06-29T06:43:28.800Z",
       "rows": 7,
-      "referenceDate": "2026-06-28",
-      "lagDays": 0,
+      "referenceDate": "2026-06-29",
+      "lagDays": 1,
       "status": "ok"
     },
     {
@@ -82,8 +82,8 @@
       "asOfDate": "2026-06-28",
       "generatedAt": "2026-06-29T06:43:53.784Z",
       "rows": 28,
-      "referenceDate": "2026-06-28",
-      "lagDays": 0,
+      "referenceDate": "2026-06-29",
+      "lagDays": 1,
       "status": "ok"
     }
   ],
@@ -204,8 +204,8 @@
     "missingOwner": 0
   },
   "warehouseSummary": {
-    "sourceRows": 306,
-    "matchedRows": 136,
+    "sourceRows": 303,
+    "matchedRows": 140,
     "unmatchedRows": 25,
     "externalUnmatchedRows": 25,
     "warningUnmatchedRows": 0

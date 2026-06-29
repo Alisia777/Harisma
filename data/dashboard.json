@@ -81,7 +81,7 @@
     "cutoffDate": "2026-06-28",
     "monthKey": "2026-06",
     "factUnits": 322168,
-    "warehouseStock": 489618,
+    "warehouseStock": 408491,
     "marketplaceStock": 220574
   },
   "cards": [
@@ -121,7 +121,7 @@
     {
       "id": "warehouse-stock-total",
       "label": "Warehouse stock",
-      "value": 489618,
+      "value": 408491,
       "period": "2026-06-28",
       "hint": "Warehouse stock overlay remains visible.",
       "metricId": "warehouse-stock-total"
@@ -228,7 +228,7 @@
       "sku_count": 143,
       "assigned_sku": 143,
       "total_stock": 220574,
-      "warehouse_stock": 489618,
+      "warehouse_stock": 408491,
       "plan_units": 0,
       "fact_units_to_date": 322168,
       "fact_revenue_to_date": 340551907.78,

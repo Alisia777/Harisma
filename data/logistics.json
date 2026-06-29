@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-28T13:33:47.989Z",
+  "generatedAt": "2026-06-29T07:35:56.435Z",
   "updatedAt": "2026-04-28T16:21:18.080Z",
   "window": {
     "from": "2026-06-01",
@@ -89,15 +89,15 @@
     }
   ],
   "centralWarehouse": {
-    "accepted": 3321242,
-    "shippedOzon": 1084781,
-    "shippedWB": 1746308,
-    "stock": 489618,
-    "skuCount": 134,
+    "accepted": 2727957,
+    "shippedOzon": 908117,
+    "shippedWB": 1410814,
+    "stock": 408491,
+    "skuCount": 136,
     "source": "warehouse_stock_overlay",
-    "sourceWorkbook": "Склад Балашиха",
-    "sourceSheet": "Склад Балашиха",
-    "generatedAt": "2026-06-28T13:32:24.200Z"
+    "sourceWorkbook": "Склад Балашиха.xlsx",
+    "sourceSheet": "Остатки",
+    "generatedAt": "2026-06-29T07:35:56.383Z"
   },
   "backlogByCluster": [
     {
@@ -67075,5 +67075,13 @@
       "avgDaily": 0,
       "turnoverDays": null
     }
-  ]
+  ],
+  "latest_logistics_date": "2026-06-28",
+  "latestLogisticsDate": "2026-06-28",
+  "warehouseOverlay": {
+    "generatedAt": "2026-06-29T07:35:56.383Z",
+    "asOfDate": "",
+    "rows": 136,
+    "matchedRowCount": 140
+  }
 }

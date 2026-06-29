@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-29T06:49:05.144Z",
+  "generatedAt": "2026-06-29T07:36:12.273Z",
   "status": "blocked",
   "publish": {
     "allowed": false,
@@ -12,7 +12,7 @@
       "Potential duplicated revenue overage: 490820.",
       "Unmapped API SKU revenue: 128813."
     ],
-    "checkedAt": "2026-06-29T06:49:05.144Z"
+    "checkedAt": "2026-06-29T07:36:12.273Z"
   },
   "freshness": {
     "maxDate": "2026-06-28",
@@ -21,7 +21,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-29T06:49:05.138Z",
+      "checkedAt": "2026-06-29T07:36:12.268Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-28",
       "maxDate": "2026-06-28",
@@ -68,7 +68,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-29T06:49:05.143Z",
+      "checkedAt": "2026-06-29T07:36:12.273Z",
       "expectedDate": "2026-06-28",
       "adsSummaryWindowTo": "2026-06-27",
       "iuDrrWindowTo": "2026-06-28",
@@ -165,9 +165,9 @@
     },
     "warehouse_stock_overlay": {
       "exists": true,
-      "rows": 134,
-      "generatedAt": "2026-06-28T13:32:24.200Z",
-      "asOfDate": "2026-06-28",
+      "rows": 136,
+      "generatedAt": "2026-06-29T07:35:56.383Z",
+      "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "loyalty_system": {
@@ -180,15 +180,15 @@
     "product_leaderboard": {
       "exists": true,
       "rows": 50,
-      "generatedAt": "2026-06-19T10:31:04.079Z",
-      "asOfDate": "2026-06-19",
-      "revenue": 18604132
+      "generatedAt": "2026-06-29T07:34:35.185Z",
+      "asOfDate": "2026-06-29",
+      "revenue": 18603355
     },
     "product_leaderboard_history": {
       "exists": true,
       "rows": 7,
       "generatedAt": "",
-      "asOfDate": "2026-06-19",
+      "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "wb_substitution_traffic": {
@@ -236,7 +236,7 @@
     "oos_control": {
       "exists": true,
       "rows": 12,
-      "generatedAt": "2026-06-29T06:49:04.472Z",
+      "generatedAt": "2026-06-29T07:35:56.637Z",
       "asOfDate": "2026-06-28",
       "revenue": 0
     },
@@ -257,14 +257,14 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-29T06:49:04.733Z",
+      "generatedAt": "2026-06-29T07:36:11.872Z",
       "asOfDate": "2026-06-28",
       "revenue": 131340
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 38,
-      "generatedAt": "2026-06-29T06:49:04.733Z",
+      "generatedAt": "2026-06-29T07:36:11.872Z",
       "asOfDate": "2026-06-29",
       "revenue": 1735325
     },
@@ -292,14 +292,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-29T06:49:04.819Z",
+      "generatedAt": "2026-06-29T07:36:11.961Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-29T06:47:23.701Z",
+      "generatedAt": "2026-06-29T07:34:55.237Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     }
@@ -432,9 +432,9 @@
       },
       {
         "snapshot": "warehouse_stock_overlay",
-        "rows": 134,
+        "rows": 136,
         "previousRows": 134,
-        "rowRatio": 1,
+        "rowRatio": 1.0149253731343284,
         "revenue": 0,
         "previousRevenue": 0,
         "revenueRatio": 1,
@@ -486,7 +486,7 @@
     {
       "name": "required:warehouse_stock_overlay",
       "status": "ok",
-      "rows": 134
+      "rows": 136
     },
     {
       "name": "required:sku_matrix",

@@ -257,7 +257,7 @@ function buildOverlayPayload(csvText, options, skus, existingPayload) {
     sourceUrl: options.sourceUrl,
     sourceWorkbook: options.sourceWorkbook,
     sourceSheet: options.sourceSheet,
-    sourceFormat: 'google-csv-export',
+    sourceFormat: options.sourceFormat || 'google-csv-export',
     sheetName: sheetName || options.sourceSheet,
     matchField: DEFAULT_MATCH_FIELD,
     sheetRowCount: Array.isArray(sheetRows) ? sheetRows.length : 0,
@@ -274,11 +274,28 @@ function buildOverlayPayload(csvText, options, skus, existingPayload) {
   };
 }
 
+function readSheetCsvFromWorkbook(filePath, sheetName = '') {
+  if (!fs.existsSync(filePath)) throw new Error(`warehouse stock workbook not found: ${filePath}`);
+  const workbook = XLSX.readFile(filePath);
+  const resolvedSheet = sheetName && workbook.SheetNames.includes(sheetName)
+    ? sheetName
+    : workbook.SheetNames[0];
+  if (!resolvedSheet) throw new Error(`warehouse stock workbook has no sheets: ${filePath}`);
+  return {
+    csvText: XLSX.utils.sheet_to_csv(workbook.Sheets[resolvedSheet]),
+    sheetName: resolvedSheet
+  };
+}
+
 function resolveOptions(argv) {
+  const inputXlsx = argv['input-xlsx'] || process.env.ALTEA_WAREHOUSE_STOCK_XLSX || '';
+  const resolvedInputXlsx = inputXlsx ? path.resolve(inputXlsx) : '';
   return {
     sourceUrl: argv['source-url'] || process.env.ALTEA_WAREHOUSE_STOCK_SHEET_URL || DEFAULT_SOURCE_URL,
-    sourceWorkbook: argv['source-workbook'] || process.env.ALTEA_WAREHOUSE_STOCK_WORKBOOK || DEFAULT_SOURCE_WORKBOOK,
+    sourceWorkbook: argv['source-workbook'] || process.env.ALTEA_WAREHOUSE_STOCK_WORKBOOK || (resolvedInputXlsx ? path.basename(resolvedInputXlsx) : DEFAULT_SOURCE_WORKBOOK),
     sourceSheet: argv['source-sheet'] || process.env.ALTEA_WAREHOUSE_STOCK_SHEET || DEFAULT_SOURCE_SHEET,
+    inputXlsx: resolvedInputXlsx,
+    sourceFormat: resolvedInputXlsx ? 'local-xlsx' : 'google-csv-export',
     baseDataDir: path.resolve(argv['base-data-dir'] || cwdJoin('data')),
     outputDir: argv['output-dir'] ? path.resolve(argv['output-dir']) : ''
   };
@@ -293,8 +310,16 @@ async function main() {
 
   let payload;
   try {
-    const csvText = await fetchCsvText(options.sourceUrl);
-    payload = buildOverlayPayload(csvText, options, skus, existingPayload);
+    let csvText;
+    let sheetName = '';
+    if (options.inputXlsx) {
+      const workbookSource = readSheetCsvFromWorkbook(options.inputXlsx, options.sourceSheet);
+      csvText = workbookSource.csvText;
+      sheetName = workbookSource.sheetName;
+    } else {
+      csvText = await fetchCsvText(options.sourceUrl);
+    }
+    payload = buildOverlayPayload(csvText, { ...options, sourceSheet: sheetName || options.sourceSheet }, skus, existingPayload);
   } catch (error) {
     if (existingPayload && Array.isArray(existingPayload.rows) && existingPayload.rows.length) {
       console.warn(`[warehouse-stock] ${error.message}`);

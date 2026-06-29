@@ -13,6 +13,8 @@ const PLATFORM_LABELS = {
   ya: 'Я.Маркет',
   goldapple: 'ЗЯ',
   letu: 'Лэтуаль',
+  megamarket: 'Мегамаркет',
+  samokat: 'Самокат',
   magnit: 'Магнит Маркет'
 };
 
@@ -125,6 +127,8 @@ function platformKey(value) {
   if (['ya', 'ym', 'yandex', 'yandexmarket', 'ямаркет'].includes(raw)) return 'ya';
   if (['ga', 'goldapple', 'зя', 'золотоеяблоко'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
+  if (['megamarket', 'мегамаркет'].includes(raw)) return 'megamarket';
+  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   if (['mm', 'magnit', 'magnitmarket', 'магнитмаркет'].includes(raw)) return 'magnit';
   return raw;
 }
@@ -271,7 +275,7 @@ function ownerText(sku = {}) {
   const directOwner = String(sku.owner?.name || '').trim();
   if (directOwner) return directOwner;
   const byPlatform = sku.owner?.byPlatform && typeof sku.owner.byPlatform === 'object' ? sku.owner.byPlatform : {};
-  const platformOrder = ['wb', 'ozon', 'ym', 'ya', 'ga', 'goldapple', 'letu', 'mm', 'magnit'];
+  const platformOrder = ['wb', 'ozon', 'ym', 'ya', 'ga', 'goldapple', 'letu', 'megamarket', 'samokat', 'mm', 'magnit'];
   for (const platform of platformOrder) {
     const platformOwner = String(byPlatform[platform] || '').trim();
     if (platformOwner) return platformOwner;

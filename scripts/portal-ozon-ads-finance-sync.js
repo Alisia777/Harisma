@@ -341,7 +341,7 @@ function patchPayload(payload, options, daily, pendingDaily = []) {
   }
   const ozonPlatform = buildOzonPlatform(daily, platformMap.get('ozon'));
   platformMap.set('ozon', ozonPlatform);
-  const orderedKeys = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+  const orderedKeys = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
   const platforms = [];
   for (const key of orderedKeys) {
     if (platformMap.has(key)) {

@@ -53,11 +53,13 @@
     ym: { label: 'Я.Маркет', color: '#F2C84B', rgb: '242,200,75' },
     goldapple: { label: 'ЗЯ', color: '#72C86A', rgb: '114,200,106' },
     letu: { label: 'Л’Этуаль', color: '#D96AA9', rgb: '217,106,169' },
+    megamarket: { label: 'Мегамаркет', color: '#F97316', rgb: '249,115,22' },
+    samokat: { label: 'Самокат', color: '#10B981', rgb: '16,185,129' },
     magnit: { label: 'Магнит', color: '#E85B55', rgb: '232,91,85' }
   };
 
   var MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
-  var MARKETPLACE_IDS = ['all', 'wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit'];
+  var MARKETPLACE_IDS = ['all', 'wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
   var MARKETPLACE_TO_INTERNAL = { ym: 'ya' };
   var INTERNAL_TO_MARKETPLACE = { ya: 'ym' };
 
@@ -146,6 +148,8 @@
     if (key === 'ya' || key === 'yandex' || key === 'yandexmarket' || key === 'yamarket') key = 'ym';
     if (key === 'goldenapple' || key === 'gold-apple' || key === 'gold_apple' || key === 'зя') key = 'goldapple';
     if (key === 'letual' || key === 'letuall' || key === 'летуаль') key = 'letu';
+    if (key === 'mega-market' || key === 'mega_market' || key === 'sbermegamarket' || key === 'мегамаркет') key = 'megamarket';
+    if (key === 'самокат') key = 'samokat';
     if (key === 'magnitmarket' || key === 'magnit-market') key = 'magnit';
     return MARKETPLACE_IDS.indexOf(key) >= 0 ? key : 'all';
   }

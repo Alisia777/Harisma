@@ -5,12 +5,17 @@
   window.__ALTEA_EXECUTIVE_V5_ROUTE_20260624__ = true;
 
   const VERSION = '20260624-executive-owner-detail';
-  const PLATFORM_KEYS = ['wb', 'ozon', 'ya'];
+  const PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
   const PLATFORM_LABELS = {
     all: 'Все',
     wb: 'WB',
     ozon: 'Ozon',
-    ya: 'Я.Маркет'
+    ya: 'Я.Маркет',
+    goldapple: 'ЗЯ',
+    letu: "Л'Этуаль",
+    megamarket: 'Мегамаркет',
+    samokat: 'Самокат',
+    magnit: 'Магнит'
   };
   const NO_OWNER = 'Без owner';
   const FILTERS = window.__ALTEA_EXECUTIVE_V5_FILTERS__ || {

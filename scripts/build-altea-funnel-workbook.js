@@ -307,6 +307,14 @@ function resolveOptions(args) {
     magnitClientId: String(args['magnit-client-id'] || process.env.ALTEA_MAGNIT_CLIENT_ID || process.env.ALTEA_MAGNIT_MARKET_CLIENT_ID || '').trim(),
     magnitSalesCsv: String(args['magnit-sales-csv'] || process.env.ALTEA_MAGNIT_SALES_CSV || '').trim(),
     magnitServicesCsv: String(args['magnit-services-csv'] || process.env.ALTEA_MAGNIT_SERVICES_CSV || '').trim(),
+    megamarketApiToken: String(args['megamarket-token'] || args['megamarket-api-token'] || process.env.ALTEA_MEGAMARKET_API_TOKEN || process.env.ALTEA_MEGAMARKET_API_KEY || '').trim(),
+    megamarketApiBaseUrl: String(args['megamarket-base-url'] || process.env.ALTEA_MEGAMARKET_API_BASE_URL || '').trim(),
+    megamarketSalesPath: String(args['megamarket-sales-path'] || process.env.ALTEA_MEGAMARKET_SALES_PATH || '').trim(),
+    megamarketClientId: String(args['megamarket-client-id'] || process.env.ALTEA_MEGAMARKET_CLIENT_ID || '').trim(),
+    samokatApiToken: String(args['samokat-token'] || args['samokat-api-token'] || process.env.ALTEA_SAMOKAT_API_TOKEN || process.env.ALTEA_SAMOKAT_API_KEY || '').trim(),
+    samokatApiBaseUrl: String(args['samokat-base-url'] || process.env.ALTEA_SAMOKAT_API_BASE_URL || '').trim(),
+    samokatSalesPath: String(args['samokat-sales-path'] || process.env.ALTEA_SAMOKAT_SALES_PATH || '').trim(),
+    samokatClientId: String(args['samokat-client-id'] || process.env.ALTEA_SAMOKAT_CLIENT_ID || '').trim(),
     from: '2025-01-01',
     to: TODAY
   };
@@ -589,11 +597,15 @@ function metricParts(metricKey) {
 }
 
 const PLATFORM_ORDER_EXTENDED = PLATFORM_ORDER.concat([
-  ['magnitmarket', 'Магнит Маркет']
+  ['magnitmarket', 'Магнит Маркет'],
+  ['megamarket', 'Megamarket'],
+  ['samokat', 'Samokat']
 ]);
 
 const PLATFORM_LABEL_OVERRIDES = {
-  magnitmarket: 'Магнит Маркет'
+  magnitmarket: 'Магнит Маркет',
+  megamarket: 'Megamarket',
+  samokat: 'Samokat'
 };
 
 const MARKETPLACE_PLATFORM_OVERRIDES = {
@@ -601,7 +613,10 @@ const MARKETPLACE_PLATFORM_OVERRIDES = {
   'золотоеяблоко': 'goldapple',
   'золотое яблоко': 'goldapple',
   'магнитмаркет': 'magnitmarket',
-  'магнит маркет': 'magnitmarket'
+  'магнит маркет': 'magnitmarket',
+  megamarket: 'megamarket',
+  'mega market': 'megamarket',
+  samokat: 'samokat'
 };
 
 function marketplacePlatformKey(value) {
@@ -2811,6 +2826,38 @@ async function main() {
     addMagnitSalesCsv(store, options.magnitSalesCsv, notes);
     addMagnitServicesCsv(store, options.magnitServicesCsv, notes);
   }
+  const megamarketApiRows = await addGenericMarketplaceApi(store, options, notes, {
+    platformKey: 'megamarket',
+    sourceLabel: 'Megamarket API sales',
+    defaultArticle: 'megamarket-unmapped',
+    token: options.megamarketApiToken,
+    baseUrl: options.megamarketApiBaseUrl,
+    salesPath: options.megamarketSalesPath,
+    clientId: options.megamarketClientId,
+    tokenHelp: 'ALTEA_MEGAMARKET_API_TOKEN / ALTEA_MEGAMARKET_API_KEY',
+    endpointHelp: 'ALTEA_MEGAMARKET_API_BASE_URL + ALTEA_MEGAMARKET_SALES_PATH',
+    methodEnv: ['ALTEA_MEGAMARKET_API_METHOD'],
+    bodyEnv: ['ALTEA_MEGAMARKET_API_BODY_JSON'],
+    graphqlQueryEnv: ['ALTEA_MEGAMARKET_GRAPHQL_QUERY'],
+    graphqlQueryHelp: 'ALTEA_MEGAMARKET_GRAPHQL_QUERY'
+  });
+  if (megamarketApiRows) apiLoadedPlatforms.add('megamarket');
+  const samokatApiRows = await addGenericMarketplaceApi(store, options, notes, {
+    platformKey: 'samokat',
+    sourceLabel: 'Samokat API sales',
+    defaultArticle: 'samokat-unmapped',
+    token: options.samokatApiToken,
+    baseUrl: options.samokatApiBaseUrl,
+    salesPath: options.samokatSalesPath,
+    clientId: options.samokatClientId,
+    tokenHelp: 'ALTEA_SAMOKAT_API_TOKEN / ALTEA_SAMOKAT_API_KEY',
+    endpointHelp: 'ALTEA_SAMOKAT_API_BASE_URL + ALTEA_SAMOKAT_SALES_PATH',
+    methodEnv: ['ALTEA_SAMOKAT_API_METHOD'],
+    bodyEnv: ['ALTEA_SAMOKAT_API_BODY_JSON'],
+    graphqlQueryEnv: ['ALTEA_SAMOKAT_GRAPHQL_QUERY'],
+    graphqlQueryHelp: 'ALTEA_SAMOKAT_GRAPHQL_QUERY'
+  });
+  if (samokatApiRows) apiLoadedPlatforms.add('samokat');
   await addOzonApi(store, options, notes);
   await addWbFunnelApi(store, options, notes);
   await addYandexMarketApi(store, options, notes);

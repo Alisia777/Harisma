@@ -61,6 +61,8 @@
     ['ya', 'Яндекс'],
     ['goldapple', 'ЗЯ'],
     ['letu', 'Летуаль'],
+    ['megamarket', 'Мегамаркет'],
+    ['samokat', 'Самокат'],
     ['magnit', 'Магнит'],
     ['product', 'Продукт']
   ];
@@ -265,6 +267,7 @@
       if (normalized === 'ym' || normalized === 'yandex' || normalized === 'yandexmarket') normalized = 'ya';
       if (normalized === 'goldenapple' || normalized === 'gold-apple' || normalized === 'gold_apple') normalized = 'goldapple';
       if (normalized === 'letual' || normalized === 'letoile') normalized = 'letu';
+      if (normalized === 'mega-market' || normalized === 'mega_market' || normalized === 'sbermegamarket') normalized = 'megamarket';
       if (normalized === 'magnitmarket' || normalized === 'magnit-market') normalized = 'magnit';
       const key = platformKey(normalized);
       if (key && key !== 'cross') return key;
@@ -281,7 +284,7 @@
     if (!target.includes(key)) target.push(key);
   }
 
-  const MARKETPLACE_PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+  const MARKETPLACE_PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 
   function platformKeysFromText(text = '') {
     const keys = [];
@@ -296,6 +299,8 @@
     if (/яндекс|я[.\s-]?маркет|yandex|(^|[^a-zа-я0-9])(ya|ym|ям)(?=$|[^a-zа-я0-9])/i.test(raw)) push('ya');
     if (/золот|gold[\s_-]*apple|goldapple|golden\s*apple|(^|[^a-zа-я0-9])(zya|з\s*я)(?=$|[^a-zа-я0-9])/i.test(raw)) push('goldapple');
     if (/лету|л[’'\s.-]*[еэ]туал|letual|letu|letoile|l[\s'`.-]*etoile/i.test(raw)) push('letu');
+    if (/мегамаркет|megamarket|sbermegamarket|mega[\s_-]*market/i.test(raw)) push('megamarket');
+    if (/самокат|samokat/i.test(raw)) push('samokat');
     if (/магнит|magnit|magnet|(^|\W)mm($|\W)/i.test(raw)) push('magnit');
     return keys;
   }
@@ -751,6 +756,8 @@
     if (text.includes('янд') || text.includes('ya')) return 'ya';
     if (text.includes('золот') || text.includes('gold')) return 'goldapple';
     if (text.includes('лету') || text.includes('letu')) return 'letu';
+    if (text.includes('мегамаркет') || text.includes('megamarket')) return 'megamarket';
+    if (text.includes('самокат') || text.includes('samokat')) return 'samokat';
     if (text.includes('магнит') || text.includes('magnit')) return 'magnit';
     return 'product';
   }

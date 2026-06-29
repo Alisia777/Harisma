@@ -12,6 +12,8 @@
     goldapple: 'ЗЯ',
     ga: 'ЗЯ',
     letu: "Л'Этуаль",
+    megamarket: 'Мегамаркет',
+    samokat: 'Самокат',
     magnit: 'Магнит'
   };
   const MARKET_ALIAS = {
@@ -31,6 +33,9 @@
     zya: 'goldapple',
     letu: 'letu',
     letual: 'letu',
+    megamarket: 'megamarket',
+    sbermegamarket: 'megamarket',
+    samokat: 'samokat',
     magnit: 'magnit',
     magnitmarket: 'magnit'
   };

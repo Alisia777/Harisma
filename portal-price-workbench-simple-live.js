@@ -45,7 +45,7 @@
     "brand-portal-price-workbench-v20260419-entries",
     "portal_price_workbench_entries"
   ];
-  var PRICE_MARKETS = ["all", "wb", "ozon", "ym", "goldapple", "letu", "magnit"];
+  var PRICE_MARKETS = ["all", "wb", "ozon", "ym", "goldapple", "letu", "megamarket", "samokat", "magnit"];
   var PRICE_MARKET_LABELS = {
     all: "Все",
     wb: "WB",
@@ -54,6 +54,8 @@
     ya: "Я.Маркет",
     goldapple: "Золотое яблоко",
     letu: "Л'Этуаль",
+    megamarket: "Мегамаркет",
+    samokat: "Самокат",
     magnit: "Магнит Маркет"
   };
 
@@ -198,6 +200,8 @@
     if (normalized === "ym" || normalized === "ya" || normalized.indexOf("yandex") >= 0 || normalized.indexOf("яндекс") >= 0) return "ym";
     if (normalized === "goldapple" || normalized === "goldenapple" || normalized === "ga" || normalized === "zya" || normalized.indexOf("золот") >= 0 || normalized.indexOf("яблок") >= 0) return "goldapple";
     if (normalized === "letu" || normalized === "letual" || normalized === "letoile" || normalized.indexOf("лету") >= 0 || normalized.indexOf("лэту") >= 0) return "letu";
+    if (normalized === "megamarket" || normalized === "sbermegamarket" || normalized.indexOf("мегамаркет") >= 0) return "megamarket";
+    if (normalized === "samokat" || normalized.indexOf("самокат") >= 0) return "samokat";
     if (normalized === "magnit" || normalized === "magnitmarket" || normalized === "mm" || normalized.indexOf("магнит") >= 0) return "magnit";
     return raw;
   }

@@ -1104,7 +1104,7 @@ function updatePlatformTrends(existing, layer, options, identities, sourceInfo =
     series: mergeAllSeries(platforms)
   });
 
-  const orderedKeys = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'all'];
+  const orderedKeys = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'all'];
   const ordered = [
     ...orderedKeys.map((key) => platforms.get(key)).filter(Boolean),
     ...Array.from(platforms.entries())

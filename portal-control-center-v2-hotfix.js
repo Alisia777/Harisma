@@ -17,12 +17,14 @@
     ya: { label: 'Я.Маркет', chip: 'Я.Маркет', kind: 'ok' },
     goldapple: { label: 'Золотое яблоко', chip: 'Золотое яблоко', kind: 'ok' },
     letu: { label: "Л'Этуаль", chip: "Л'Этуаль", kind: 'ok' },
+    megamarket: { label: 'Мегамаркет', chip: 'Мегамаркет', kind: 'ok' },
+    samokat: { label: 'Самокат', chip: 'Самокат', kind: 'ok' },
     magnit: { label: 'Магнит Маркет', chip: 'Магнит Маркет', kind: 'ok' },
     product: { label: 'Продукт / новинки', chip: 'Продукт', kind: 'info' },
     executive: { label: 'Управленческий финал', chip: 'Финал', kind: 'danger' },
     cross: { label: 'Общий контур', chip: 'Общий контур', kind: '' }
   };
-  const CONTROL_TASK_PLATFORM_FILTERS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'cross', 'product'];
+  const CONTROL_TASK_PLATFORM_FILTERS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'cross', 'product'];
   const CONTROL_ROLE_PRESETS = [
     { key: 'leader', label: 'Все', platform: 'all', text: 'видит всё' },
     { key: 'wb', label: 'РОП WB', platform: 'wb', text: 'только WB' },
@@ -30,6 +32,8 @@
     { key: 'ya', label: 'Я.Маркет', platform: 'ya', text: 'только Я.Маркет' },
     { key: 'goldapple', label: 'ЗЯ', platform: 'goldapple', text: 'только ЗЯ' },
     { key: 'letu', label: "Л'Этуаль", platform: 'letu', text: "только Л'Этуаль" },
+    { key: 'megamarket', label: 'Мегамаркет', platform: 'megamarket', text: 'только Мегамаркет' },
+    { key: 'samokat', label: 'Самокат', platform: 'samokat', text: 'только Самокат' },
     { key: 'magnit', label: 'Магнит', platform: 'magnit', text: 'только Магнит' },
     { key: 'product', label: 'Продукт', platform: 'product', text: 'новинки' }
   ];
@@ -78,13 +82,19 @@
     if (!raw) return '';
     if (isGoldAppleMarketplaceText(raw, compact)) return 'goldapple';
     if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c?|\u043b\u044d\u0442\u0443\u0430\u043b\u044c?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile', '\u043b\u0435\u0442\u0443\u0430\u043b\u044c', '\u043b\u0435\u0442\u0443\u0430\u043b', '\u043b\u044d\u0442\u0443\u0430\u043b\u044c', '\u043b\u044d\u0442\u0443\u0430\u043b'].includes(compact)) return 'letu';
+    if (/\u043c\u0435\u0433\u0430\u043c\u0430\u0440\u043a\u0435\u0442|megamarket|sbermegamarket|mega[\s_-]*market/.test(raw) || ['megamarket', 'sbermegamarket'].includes(compact)) return 'megamarket';
+    if (/\u0441\u0430\u043c\u043e\u043a\u0430\u0442|samokat/.test(raw) || ['samokat'].includes(compact)) return 'samokat';
     if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'magnet', 'magnetmarket', 'mm', '\u043c\u0430\u0433\u043d\u0438\u0442', '\u043c\u0430\u0433\u043d\u0438\u0442\u043c\u0430\u0440\u043a\u0435\u0442'].includes(compact)) return 'magnit';
     if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|yandex|(^|[^a-z0-9])(ya|ym)([^a-z0-9]|$)|(^|[^\u0430-\u044f\u04510-9])\u044f\u043c([^\u0430-\u044f\u04510-9]|$)/.test(raw)) return 'ya';
     if (isGoldAppleMarketplaceText(raw, compact)) return 'goldapple';
     if (/\u043b['\u2019]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu|letoile|l['\s.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
+    if (/\u043c\u0435\u0433\u0430\u043c\u0430\u0440\u043a\u0435\u0442|megamarket|sbermegamarket|mega[\s_-]*market/.test(raw) || ['megamarket', 'sbermegamarket'].includes(compact)) return 'megamarket';
+    if (/\u0441\u0430\u043c\u043e\u043a\u0430\u0442|samokat/.test(raw) || ['samokat'].includes(compact)) return 'samokat';
     if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'mm'].includes(compact)) return 'magnit';
     if (isGoldAppleMarketplaceText(raw, compact)) return 'goldapple';
     if (/\u043b['’]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu/.test(raw)) return 'letu';
+    if (/\u043c\u0435\u0433\u0430\u043c\u0430\u0440\u043a\u0435\u0442|megamarket|sbermegamarket|mega[\s_-]*market/.test(raw)) return 'megamarket';
+    if (/\u0441\u0430\u043c\u043e\u043a\u0430\u0442|samokat/.test(raw)) return 'samokat';
     if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw)) return 'magnit';
     if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|\u044f\u043c|ym|yandex/.test(raw)) return 'ya';
     return '';
@@ -101,9 +111,13 @@
     if (raw === 'wb+ozon' || raw === 'wb + ozon' || raw === 'all') return 'cross';
     if (['goldapple', 'goldenapple', 'zya', 'ga'].includes(compactRaw)) return 'goldapple';
     if (['letu', 'letual', 'letoile'].includes(compactRaw)) return 'letu';
+    if (['megamarket', 'sbermegamarket'].includes(compactRaw)) return 'megamarket';
+    if (['samokat'].includes(compactRaw)) return 'samokat';
     if (['magnit', 'magnitmarket', 'mm'].includes(compactRaw)) return 'magnit';
     if (isGoldAppleMarketplaceText(text, compactRaw)) return 'goldapple';
     if (/л[еэ]туал|летуаль|letual|letu/.test(text)) return 'letu';
+    if (/мегамаркет|megamarket|sbermegamarket|mega[\s_-]*market/.test(text)) return 'megamarket';
+    if (/самокат|samokat/.test(text)) return 'samokat';
     if (/магнит|magnit|mm/.test(text)) return 'magnit';
     if (/продукт|новин|launch|ксени|ксюш|product/.test(text)) return 'product';
     if (/руковод|директор|director|executive/.test(text)) return 'cross';
@@ -181,7 +195,7 @@
     const platform = normalizeTaskPlatform(task?.platform, text);
     if (platform === 'wb') return 'wb';
     if (platform === 'ozon') return 'ozon';
-    if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
+    if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'megamarket' || platform === 'samokat' || platform === 'magnit') return platform;
     if (platform === 'product') return platform;
     if (platform === 'retail') return 'cross';
     if (platform === 'cross') return 'cross';
@@ -826,6 +840,8 @@
               <option value="ya" ${normalizeTaskPlatform(task.platform) === 'ya' ? 'selected' : ''}>Я.Маркет</option>
               <option value="goldapple" ${normalizeTaskPlatform(task.platform) === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
               <option value="letu" ${normalizeTaskPlatform(task.platform) === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+              <option value="megamarket" ${normalizeTaskPlatform(task.platform) === 'megamarket' ? 'selected' : ''}>Мегамаркет</option>
+              <option value="samokat" ${normalizeTaskPlatform(task.platform) === 'samokat' ? 'selected' : ''}>Самокат</option>
               <option value="magnit" ${normalizeTaskPlatform(task.platform) === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
             </select>
             <textarea name="nextAction" rows="4" placeholder="Следующее действие">${escapeHtml(task.nextAction || '')}</textarea>
@@ -1093,6 +1109,8 @@
               <option value="ya" ${normalizeTaskPlatform(task.platform) === 'ya' ? 'selected' : ''}>Я.Маркет</option>
               <option value="goldapple" ${normalizeTaskPlatform(task.platform) === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
               <option value="letu" ${normalizeTaskPlatform(task.platform) === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+              <option value="megamarket" ${normalizeTaskPlatform(task.platform) === 'megamarket' ? 'selected' : ''}>Мегамаркет</option>
+              <option value="samokat" ${normalizeTaskPlatform(task.platform) === 'samokat' ? 'selected' : ''}>Самокат</option>
               <option value="magnit" ${normalizeTaskPlatform(task.platform) === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
             </select>
             <textarea name="nextAction" rows="4" placeholder="Следующее действие">${escapeHtml(task.nextAction || '')}</textarea>
@@ -1456,6 +1474,8 @@
                 <option value="ya" ${selectedPlatform === 'ya' ? 'selected' : ''}>Я.Маркет</option>
                 <option value="goldapple" ${selectedPlatform === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
                 <option value="letu" ${selectedPlatform === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+                <option value="megamarket" ${selectedPlatform === 'megamarket' ? 'selected' : ''}>Мегамаркет</option>
+                <option value="samokat" ${selectedPlatform === 'samokat' ? 'selected' : ''}>Самокат</option>
                 <option value="magnit" ${selectedPlatform === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
                 <option value="product" ${selectedPlatform === 'product' ? 'selected' : ''}>Продукт / новинки</option>
               </select>
@@ -1696,6 +1716,8 @@
                 <option value="ya">Я.Маркет</option>
                 <option value="goldapple">Золотое яблоко</option>
                 <option value="letu">Л'Этуаль</option>
+                <option value="megamarket">Мегамаркет</option>
+                <option value="samokat">Самокат</option>
                 <option value="magnit">Магнит Маркет</option>
               </select>
             `}
@@ -1926,6 +1948,8 @@
         <option value="ya" ${selectedWorkstream === 'ya' ? 'selected' : ''}>Я.Маркет</option>
         <option value="goldapple" ${selectedWorkstream === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
         <option value="letu" ${selectedWorkstream === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+        <option value="megamarket" ${selectedWorkstream === 'megamarket' ? 'selected' : ''}>Мегамаркет</option>
+        <option value="samokat" ${selectedWorkstream === 'samokat' ? 'selected' : ''}>Самокат</option>
         <option value="magnit" ${selectedWorkstream === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
         <option value="cross" ${selectedWorkstream === 'cross' ? 'selected' : ''}>Общий контур</option>
       `);

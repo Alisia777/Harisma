@@ -128,6 +128,8 @@ function normalizePlatform(value = '') {
   if (['ym', 'ya', 'yandex', 'yandex_market', 'яндекс', 'я_маркет'].includes(raw)) return 'ya';
   if (['goldapple', 'ga', 'золотое_яблоко', 'зя'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
+  if (['megamarket', 'mega_market', 'мегамаркет'].includes(raw)) return 'megamarket';
+  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   if (['magnit', 'magnitmarket', 'mm', 'магнит'].includes(raw)) return 'magnit';
   return raw || 'all';
 }
@@ -188,6 +190,8 @@ function platformLabel(platform) {
   if (key === 'ya') return 'Я.Маркет';
   if (key === 'goldapple') return 'Золотое яблоко';
   if (key === 'letu') return "Л'Этуаль";
+  if (key === 'megamarket') return 'Мегамаркет';
+  if (key === 'samokat') return 'Самокат';
   if (key === 'magnit') return 'Магнит';
   return String(platform || key || '').trim() || 'Площадка';
 }

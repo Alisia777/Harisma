@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const CHANNELS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'd2c', 'b2b'];
+const CHANNELS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'd2c', 'b2b'];
 const MONEY_TOLERANCE = 0.02;
 
 function parseArgs(argv) {

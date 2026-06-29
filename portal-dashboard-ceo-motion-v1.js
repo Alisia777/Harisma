@@ -27,6 +27,8 @@
     goldapple: { label: 'ЗЯ', short: 'ЗЯ', color: '#72c86a' },
     ga: { label: 'ЗЯ', short: 'ЗЯ', color: '#72c86a', alias: 'goldapple' },
     letu: { label: "Л'Этуаль", short: "Л'Этуаль", color: '#d96aa9' },
+    megamarket: { label: 'Мегамаркет', short: 'Мегамаркет', color: '#f97316' },
+    samokat: { label: 'Самокат', short: 'Самокат', color: '#10b981' },
     magnit: { label: 'Магнит', short: 'Магнит', color: '#e85b55' }
   };
   const METRICS = {
@@ -173,6 +175,8 @@
     if (!raw || raw === 'marketplaces' || raw === 'all') return 'all';
     if (raw === 'yandex' || raw === 'ym' || raw === 'ya') return 'ya';
     if (raw === 'goldapple' || raw === 'gold_apple' || raw === 'ga' || raw === 'goldapple-online') return 'goldapple';
+    if (raw === 'megamarket' || raw === 'mega_market' || raw === 'sbermegamarket') return 'megamarket';
+    if (raw === 'samokat') return 'samokat';
     if (raw === 'magnitmarket' || raw === 'magnit_market') return 'magnit';
     return PLATFORM_META[raw] ? (PLATFORM_META[raw].alias || raw) : 'all';
   }
@@ -980,6 +984,8 @@
     if (/yandex|\bya\b|янд|маркет/.test(text)) set.add('ya');
     if (/goldapple|золот|з\W?я/.test(text)) set.add('goldapple');
     if (/letu|лэту|лету/.test(text)) set.add('letu');
+    if (/megamarket|мегамаркет/.test(text)) set.add('megamarket');
+    if (/samokat|самокат/.test(text)) set.add('samokat');
     if (/magnit|магнит/.test(text)) set.add('magnit');
     return set;
   }

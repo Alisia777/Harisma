@@ -3029,6 +3029,8 @@ function buildPlanTruthRows(iuPlan, companyPlan) {
         ya: roundMoney(channels.ya?.revenue),
         goldapple: roundMoney(channels.goldapple?.revenue),
         letu: roundMoney(channels.letu?.revenue),
+        megamarket: roundMoney(channels.megamarket?.revenue),
+        samokat: roundMoney(channels.samokat?.revenue),
         magnit: roundMoney(channels.magnit?.revenue),
         d2c: roundMoney(channels.d2c?.revenue),
         b2b: roundMoney(channels.b2b?.revenue)

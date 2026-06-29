@@ -2,7 +2,7 @@ param(
   [string]$LogDir = "",
   [string]$From = "",
   [string]$To = "",
-  [string]$Platforms = "wb,ozon,ya,goldapple,letu,magnit",
+  [string]$Platforms = "wb,ozon,ya,goldapple,letu,megamarket,samokat,magnit",
   [switch]$Strict
 )
 

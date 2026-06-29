@@ -9,6 +9,8 @@
     ya: { label: 'Я.Маркет', chip: 'Я.Маркет', kind: 'ok' },
     goldapple: { label: 'Золотое яблоко', chip: 'Золотое яблоко', kind: 'ok' },
     letu: { label: "Л'Этуаль", chip: "Л'Этуаль", kind: 'ok' },
+    megamarket: { label: 'Мегамаркет', chip: 'Мегамаркет', kind: 'ok' },
+    samokat: { label: 'Самокат', chip: 'Самокат', kind: 'ok' },
     magnit: { label: 'Магнит Маркет', chip: 'Магнит Маркет', kind: 'ok' },
     product: { label: 'Новинки', chip: 'Новинки', kind: 'info' },
     executive: { label: 'Управленческий финал', chip: 'Финал', kind: 'danger' },
@@ -23,7 +25,7 @@
     done: 'Сделано',
     cancelled: 'Отменено'
   };
-  const EXEC_PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'cross', 'product'];
+  const EXEC_PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'cross', 'product'];
   const EXEC_QUEUE_LIMIT = 6;
   const baseTaskModal = typeof window.renderTaskModal === 'function' ? window.renderTaskModal : null;
   const baseControl = typeof window.renderControlCenter === 'function' ? window.renderControlCenter : null;
@@ -50,10 +52,14 @@
     if (!raw) return '';
     if (isGoldAppleSignal(raw, compact)) return 'goldapple';
     if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c?|\u043b\u044d\u0442\u0443\u0430\u043b\u044c?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile', '\u043b\u0435\u0442\u0443\u0430\u043b\u044c', '\u043b\u0435\u0442\u0443\u0430\u043b', '\u043b\u044d\u0442\u0443\u0430\u043b\u044c', '\u043b\u044d\u0442\u0443\u0430\u043b'].includes(compact)) return 'letu';
+    if (/\u043c\u0435\u0433\u0430\u043c\u0430\u0440\u043a\u0435\u0442|megamarket|sbermegamarket|mega[\s_-]*market/.test(raw) || ['megamarket', 'sbermegamarket'].includes(compact)) return 'megamarket';
+    if (/\u0441\u0430\u043c\u043e\u043a\u0430\u0442|samokat/.test(raw) || ['samokat'].includes(compact)) return 'samokat';
     if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'magnet', 'magnetmarket', 'mm', '\u043c\u0430\u0433\u043d\u0438\u0442', '\u043c\u0430\u0433\u043d\u0438\u0442\u043c\u0430\u0440\u043a\u0435\u0442'].includes(compact)) return 'magnit';
     if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|yandex|(^|[^a-z0-9])(ya|ym)([^a-z0-9]|$)|(^|[^\u0430-\u044f\u04510-9])\u044f\u043c([^\u0430-\u044f\u04510-9]|$)/.test(raw)) return 'ya';
     if (isGoldAppleSignal(raw, compact)) return 'goldapple';
     if (/\u043b['\u2019]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu|letoile|l['\s.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
+    if (/\u043c\u0435\u0433\u0430\u043c\u0430\u0440\u043a\u0435\u0442|megamarket|sbermegamarket|mega[\s_-]*market/.test(raw) || ['megamarket', 'sbermegamarket'].includes(compact)) return 'megamarket';
+    if (/\u0441\u0430\u043c\u043e\u043a\u0430\u0442|samokat/.test(raw) || ['samokat'].includes(compact)) return 'samokat';
     if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'mm'].includes(compact)) return 'magnit';
     if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|\u044f\u043c|ym|yandex/.test(raw)) return 'ya';
     return '';
@@ -64,8 +70,10 @@
     if (raw === 'retail') return 'cross';
     if (['goldapple', 'goldenapple', 'zya', 'ga'].includes(compact)) return 'goldapple';
     if (['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
+    if (['megamarket', 'sbermegamarket'].includes(compact)) return 'megamarket';
+    if (['samokat'].includes(compact)) return 'samokat';
     if (['magnit', 'magnitmarket', 'mm'].includes(compact)) return 'magnit';
-    return ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'].includes(raw) ? raw : 'cross';
+    return ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'product', 'cross'].includes(raw) ? raw : 'cross';
   };
   const stage = (s) => s === 'waiting_decision' ? 3 : s === 'waiting_rop' ? 2 : 1;
 
@@ -389,6 +397,8 @@
               <option value="ya" ${currentPlatform === 'ya' ? 'selected' : ''}>Я.Маркет</option>
               <option value="goldapple" ${currentPlatform === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
               <option value="letu" ${currentPlatform === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+              <option value="megamarket" ${currentPlatform === 'megamarket' ? 'selected' : ''}>Мегамаркет</option>
+              <option value="samokat" ${currentPlatform === 'samokat' ? 'selected' : ''}>Самокат</option>
               <option value="magnit" ${currentPlatform === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
               <option value="product" ${currentPlatform === 'product' ? 'selected' : ''}>Новинки</option>
             </select></label>
@@ -533,7 +543,7 @@
               <label class="ui-field"><span class="ui-label">Owner</span><input name="owner" list="generalTaskOwnerList" placeholder="Кто ведёт задачу"></label>
               <label class="ui-field"><span class="ui-label">Соисполнитель</span><input name="coOwner" list="generalTaskOwnerList" placeholder="Второй менеджер"></label>
               <label class="ui-field"><span class="ui-label">Срок</span><input name="due" type="date" value="${plusDays(2)}"></label>
-          ${fixed ? `<div class="ui-note"><strong>Контур задачи</strong>${escapeHtml(meta(platform).label)}<input type="hidden" name="platform" value="${escapeHtml(platform)}"></div>` : `<label class="ui-field"><span class="ui-label">Контур</span><select name="platform"><option value="cross" ${platform === 'cross' ? 'selected' : ''}>Общий контур</option><option value="wb">РОП WB</option><option value="ozon">РОП Ozon</option><option value="ya">Я.Маркет</option><option value="goldapple">Золотое яблоко</option><option value="letu">Л'Этуаль</option><option value="magnit">Магнит Маркет</option><option value="product">Новинки</option></select></label>`}
+          ${fixed ? `<div class="ui-note"><strong>Контур задачи</strong>${escapeHtml(meta(platform).label)}<input type="hidden" name="platform" value="${escapeHtml(platform)}"></div>` : `<label class="ui-field"><span class="ui-label">Контур</span><select name="platform"><option value="cross" ${platform === 'cross' ? 'selected' : ''}>Общий контур</option><option value="wb">РОП WB</option><option value="ozon">РОП Ozon</option><option value="ya">Я.Маркет</option><option value="goldapple">Золотое яблоко</option><option value="letu">Л'Этуаль</option><option value="megamarket">Мегамаркет</option><option value="samokat">Самокат</option><option value="magnit">Магнит Маркет</option><option value="product">Новинки</option></select></label>`}
             </div>
             <label class="ui-field"><span class="ui-label">Первый шаг</span><textarea name="nextAction" rows="3" placeholder="Что делаем первым действием" required></textarea></label>
             <label class="ui-field"><span class="ui-label">Артикулы для массовой постановки</span><textarea name="articleKeys" rows="4" placeholder="По одному SKU на строку, можно вставить столбец из Excel&#10;Пример:&#10;curly_method_300ml&#10;retinait_krem_05_50ml"></textarea><span class="ui-hint">Если поле заполнено, будет создана отдельная задача на каждый SKU.</span></label>
@@ -1114,14 +1124,16 @@
     ['ya', 'Я.Маркет', 'маркетплейс'],
     ['goldapple', 'ЗЯ', 'Золотое яблоко'],
     ['letu', "Л'Этуаль", 'сеть'],
+    ['megamarket', 'Мегамаркет', 'маркетплейс'],
+    ['samokat', 'Самокат', 'сеть'],
     ['magnit', 'Магнит', 'сеть'],
     ['product', 'Продукт', 'новинки'],
     ['cross', 'Общие', 'без площадки']
   ];
   const CONTROL_SIMPLE_META = Object.fromEntries(CONTROL_SIMPLE_DIRECTIONS.map(([key, label, hint]) => [key, { label, hint }]));
-  const CONTROL_SIMPLE_WORKSPACE_ORDER = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
+  const CONTROL_SIMPLE_WORKSPACE_ORDER = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'product', 'cross'];
   const CONTROL_SIMPLE_DIRECTION_RENDER_ORDER = ['all', ...CONTROL_SIMPLE_WORKSPACE_ORDER];
-  const CONTROL_SIMPLE_RETAIL_ROP_DIRECTIONS = new Set(['ya', 'goldapple', 'letu', 'magnit']);
+  const CONTROL_SIMPLE_RETAIL_ROP_DIRECTIONS = new Set(['ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit']);
   const CONTROL_SIMPLE_QUEUES = [
     ['new', 'Новые задачи', 'Что взять в работу сейчас'],
     ['signals', 'Автосигналы', 'Портал нашёл риск сам'],
@@ -1251,12 +1263,16 @@
     const raw = context.toLowerCase();
     if (isGoldAppleSignal(raw)) return 'goldapple';
     if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b|letu|letoile|l[\s'`.-]*etoile/.test(raw)) return 'letu';
+    if (/\u043c\u0435\u0433\u0430\u043c\u0430\u0440\u043a\u0435\u0442|megamarket|sbermegamarket|mega[\s_-]*market/.test(raw)) return 'megamarket';
+    if (/\u0441\u0430\u043c\u043e\u043a\u0430\u0442|samokat/.test(raw)) return 'samokat';
     if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet/.test(raw)) return 'magnit';
     if (raw.includes('ozon') || raw.includes('озон')) return 'ozon';
     if (raw.includes('wb') || raw.includes('wildberries') || raw.includes('вб')) return 'wb';
     if (raw.includes('yandex') || raw.includes('яндекс') || raw.includes('я.маркет')) return 'ya';
     if (raw.includes('gold') || raw.includes('золот')) return 'goldapple';
     if (raw.includes('letu') || raw.includes('лету') || raw.includes("л'")) return 'letu';
+    if (raw.includes('megamarket') || raw.includes('мегамаркет')) return 'megamarket';
+    if (raw.includes('samokat') || raw.includes('самокат')) return 'samokat';
     if (raw.includes('magnit') || raw.includes('магнит')) return 'magnit';
     if (raw.includes('launch') || raw.includes('новин') || raw.includes('продукт')) return 'product';
     return taskItem?.articleKey ? 'product' : 'cross';
@@ -1939,7 +1955,7 @@
         const key = normPlatform(button.dataset.executiveOpenWorkstream || 'cross');
         state.controlFilters = state.controlFilters || {};
         state.controlFilters.platform = key;
-        state.controlFilters.peopleRole = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product'].includes(key) ? key : 'leader';
+        state.controlFilters.peopleRole = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'product'].includes(key) ? key : 'leader';
         state.controlFilters.status = 'active';
         state.controlFilters.horizon = 'all';
         state.controlFilters.source = 'all';

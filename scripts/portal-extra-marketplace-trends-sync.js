@@ -6,10 +6,12 @@ const XLSX = require('xlsx');
 
 const DEFAULT_WORKBOOK = 'exports/altea_max_funnel_2025_2026.xlsx';
 const OZON_SELLER_URL = 'https://api-seller.ozon.ru';
-const EXTRA_PLATFORM_ORDER = ['goldapple', 'letu', 'magnit'];
+const EXTRA_PLATFORM_ORDER = ['goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 const EXTRA_PLATFORM_LABELS = {
   goldapple: 'ЗЯ',
   letu: 'Лэтуаль',
+  megamarket: 'Мегамаркет',
+  samokat: 'Самокат',
   magnit: 'Магнит Маркет'
 };
 const ADS_PLATFORM_ORDER = ['ozon', 'ya', ...EXTRA_PLATFORM_ORDER];
@@ -36,6 +38,11 @@ const PLATFORM_KEY_ALIASES = {
   letu: 'letu',
   'летуаль': 'letu',
   'лэтуаль': 'letu',
+  megamarket: 'megamarket',
+  'mega market': 'megamarket',
+  'мегамаркет': 'megamarket',
+  samokat: 'samokat',
+  'самокат': 'samokat',
   magnit: 'magnit',
   mm: 'magnit',
   magnitmarket: 'magnit',
@@ -46,6 +53,8 @@ const PLATFORM_SUPPORT_KEYS = {
   ya: 'ym',
   goldapple: 'ga',
   letu: 'letu',
+  megamarket: 'megamarket',
+  samokat: 'samokat',
   magnit: 'mm'
 };
 
@@ -657,6 +666,8 @@ function buildArticleRows(rows, skus, skuAliases, asOfDate) {
   const ownerKeyMap = {
     goldapple: 'ga',
     letu: 'letu',
+    megamarket: 'megamarket',
+    samokat: 'samokat',
     magnit: 'mm'
   };
 

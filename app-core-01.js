@@ -423,6 +423,18 @@ const CONTROL_WORKSTREAM_META = {
     description: 'Отдельный контур Л\'Этуаль.',
     kind: 'ok'
   },
+  megamarket: {
+    label: 'Мегамаркет',
+    chip: 'Мегамаркет',
+    description: 'Отдельный контур Мегамаркета.',
+    kind: 'ok'
+  },
+  samokat: {
+    label: 'Самокат',
+    chip: 'Самокат',
+    description: 'Отдельный контур Самоката.',
+    kind: 'ok'
+  },
   magnit: {
     label: 'Магнит Маркет',
     chip: 'Магнит Маркет',
@@ -449,7 +461,7 @@ const CONTROL_WORKSTREAM_META = {
   }
 };
 
-const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product'];
+const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'product'];
 const CONTROL_WORKSTREAM_FILTER_ORDER = ['all', ...CONTROL_WORKSTREAM_ORDER];
 
 const DEFAULT_APP_CONFIG = {
@@ -2604,7 +2616,7 @@ function normalizeOwnerPlatformKey(platform = '') {
   return normalized;
 }
 
-const OWNER_OVERRIDE_PLATFORM_KEYS = new Set(['wb', 'ozon', 'ym', 'letu', 'ga', 'mm']);
+const OWNER_OVERRIDE_PLATFORM_KEYS = new Set(['wb', 'ozon', 'ym', 'letu', 'ga', 'megamarket', 'samokat', 'mm']);
 const OWNER_OVERRIDE_NOTE_RE = /\[\[ownerByPlatform:([A-Za-z0-9%._~-]+)\]\]/g;
 
 function normalizeOwnerOverridePlatformKey(platform = '') {
@@ -2615,6 +2627,8 @@ function normalizeOwnerOverridePlatformKey(platform = '') {
   if (raw === 'ym' || raw === 'ya' || raw === 'yandex' || raw === 'yandex_market' || raw === 'market' || raw === 'ям' || raw === 'яндекс') return 'ym';
   if (raw === 'letu' || raw === 'letual' || raw === 'лэтуаль' || raw === 'летуаль') return 'letu';
   if (raw === 'ga' || raw === 'goldenapple' || raw === 'зя' || raw === 'зя') return 'ga';
+  if (raw === 'megamarket' || raw === 'mega_market' || raw === 'мегамаркет') return 'megamarket';
+  if (raw === 'samokat' || raw === 'самокат') return 'samokat';
   if (raw === 'mm' || raw === 'magnit' || raw === 'магнит') return 'mm';
   return normalizeOwnerPlatformKey(raw);
 }

@@ -11,7 +11,7 @@
   window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN16__ = true;
 
   const VERSION = '20260516execlean16';
-  const PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
+  const PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'product', 'cross'];
   const PLATFORM_META = {
     all: { label: 'Все', title: 'Все контуры' },
     wb: { label: 'WB', title: 'РОП WB' },
@@ -19,6 +19,8 @@
     ya: { label: 'Я.Маркет', title: 'Яндекс Маркет' },
     goldapple: { label: 'ЗЯ', title: 'Золотое яблоко' },
     letu: { label: "Л'Этуаль", title: "Л'Этуаль" },
+    megamarket: { label: 'Мегамаркет', title: 'Мегамаркет' },
+    samokat: { label: 'Самокат', title: 'Самокат' },
     magnit: { label: 'Магнит', title: 'Магнит Маркет' },
     product: { label: 'Новинки', title: 'Новинки' },
     cross: { label: 'Общее', title: 'Общий контур' }
@@ -144,6 +146,8 @@
     if (raw.includes('yandex') || raw.includes('янд') || raw.includes('ya')) return 'ya';
     if (raw.includes('gold') || raw.includes('золот')) return 'goldapple';
     if (raw.includes('лет') || raw.includes('letu')) return 'letu';
+    if (raw.includes('megamarket') || raw.includes('мегамаркет')) return 'megamarket';
+    if (raw.includes('samokat') || raw.includes('самокат')) return 'samokat';
     if (raw.includes('magnit') || raw.includes('магнит')) return 'magnit';
     if (raw.includes('product') || raw.includes('новин')) return 'product';
     return task?.articleKey ? 'product' : 'cross';
@@ -555,6 +559,8 @@
       ['product', 'Продукт'],
       ['goldapple', 'ЗЯ'],
       ['letu', "Л'Этуаль"],
+      ['megamarket', 'Мегамаркет'],
+      ['samokat', 'Самокат'],
       ['magnit', 'Магнит']
     ];
     const selected = selectedPlatform === 'all' ? 'cross' : selectedPlatform;
@@ -874,6 +880,8 @@
       [data-platform="ya"]{--platform-color:#f4c430;--platform-soft:rgba(244,196,48,.075);--platform-active:rgba(244,196,48,.14);--platform-border:rgba(244,196,48,.24);--platform-strong:rgba(244,196,48,.54)}
       [data-platform="goldapple"]{--platform-color:#9ac43a;--platform-soft:rgba(154,196,58,.075);--platform-active:rgba(154,196,58,.15);--platform-border:rgba(154,196,58,.24);--platform-strong:rgba(154,196,58,.54)}
       [data-platform="letu"]{--platform-color:#d946ef;--platform-soft:rgba(217,70,239,.07);--platform-active:rgba(217,70,239,.15);--platform-border:rgba(217,70,239,.23);--platform-strong:rgba(217,70,239,.52)}
+      [data-platform="megamarket"]{--platform-color:#f97316;--platform-soft:rgba(249,115,22,.07);--platform-active:rgba(249,115,22,.15);--platform-border:rgba(249,115,22,.23);--platform-strong:rgba(249,115,22,.52)}
+      [data-platform="samokat"]{--platform-color:#10b981;--platform-soft:rgba(16,185,129,.07);--platform-active:rgba(16,185,129,.15);--platform-border:rgba(16,185,129,.23);--platform-strong:rgba(16,185,129,.52)}
       [data-platform="magnit"]{--platform-color:#ef4444;--platform-soft:rgba(239,68,68,.07);--platform-active:rgba(239,68,68,.15);--platform-border:rgba(239,68,68,.23);--platform-strong:rgba(239,68,68,.52)}
       [data-platform="product"]{--platform-color:#22c55e;--platform-soft:rgba(34,197,94,.07);--platform-active:rgba(34,197,94,.15);--platform-border:rgba(34,197,94,.23);--platform-strong:rgba(34,197,94,.52)}
       [data-platform="cross"]{--platform-color:#94a3b8;--platform-soft:rgba(148,163,184,.065);--platform-active:rgba(148,163,184,.13);--platform-border:rgba(148,163,184,.22);--platform-strong:rgba(148,163,184,.48)}

@@ -241,7 +241,7 @@ function buildAllPlatform(platforms) {
 }
 
 function orderedPlatforms(platformMap) {
-  const preferred = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'all'];
+  const preferred = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'all'];
   const ordered = [];
   for (const key of preferred) {
     if (platformMap.has(key)) ordered.push(platformMap.get(key));

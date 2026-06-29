@@ -58,6 +58,8 @@ function platformKey(value = '') {
   if (['ya', 'ym', 'yandex', 'yandexmarket', 'ямаркет'].includes(raw)) return 'ya';
   if (['ga', 'goldapple', 'зя', 'золотоеяблоко'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
+  if (['megamarket', 'мегамаркет'].includes(raw)) return 'megamarket';
+  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   if (['mm', 'magnit', 'magnitmarket', 'магнитмаркет'].includes(raw)) return 'magnit';
   return raw;
 }
@@ -77,6 +79,10 @@ function platformOwnerText(sku = {}, platform = '') {
     ? ['ym', 'ya', 'yandex']
     : platformToken === 'goldapple'
       ? ['ga', 'goldapple']
+      : platformToken === 'megamarket'
+        ? ['megamarket']
+        : platformToken === 'samokat'
+          ? ['samokat']
       : platformToken === 'magnit'
         ? ['mm', 'magnit']
         : [platformToken];
@@ -99,7 +105,7 @@ function ownerText(sku = {}, platform = '') {
     ...(sku.owner?.byPlatform && typeof sku.owner.byPlatform === 'object' ? sku.owner.byPlatform : {}),
     ...(sku.ownersByPlatform && typeof sku.ownersByPlatform === 'object' ? sku.ownersByPlatform : {})
   };
-  const platformOrder = ['wb', 'ozon', 'ym', 'ya', 'ga', 'goldapple', 'letu', 'mm', 'magnit'];
+  const platformOrder = ['wb', 'ozon', 'ym', 'ya', 'ga', 'goldapple', 'letu', 'megamarket', 'samokat', 'mm', 'magnit'];
   for (const platform of platformOrder) {
     const platformOwner = String(byPlatform[platform] || '').trim();
     if (platformOwner) return platformOwner;
@@ -113,7 +119,7 @@ function productOwnerText(sku = {}) {
 }
 
 function platformOwnerMap(sku = {}) {
-  const platforms = ['wb', 'ozon', 'ym', 'ga', 'letu', 'mm'];
+  const platforms = ['wb', 'ozon', 'ym', 'ga', 'letu', 'megamarket', 'samokat', 'mm'];
   return Object.fromEntries(platforms.map((platform) => [platform, platformOwnerText(sku, platform)]).filter(([, owner]) => owner));
 }
 

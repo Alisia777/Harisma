@@ -877,6 +877,8 @@ function normalizeSkuAliasPlatform(value = '') {
   if (['ya', 'ym', 'yandex', 'yandexmarket'].includes(normalized)) return 'ym';
   if (['ga', 'goldapple', 'zolotoeyabloko', 'zy'].includes(normalized)) return 'ga';
   if (['letu', 'letual', 'letoile'].includes(normalized)) return 'letu';
+  if (['megamarket', 'mega', 'sbermegamarket'].includes(normalized)) return 'megamarket';
+  if (['samokat'].includes(normalized)) return 'samokat';
   if (['mm', 'magnit', 'magnitmarket'].includes(normalized)) return 'mm';
   return normalized || 'all';
 }
@@ -955,6 +957,8 @@ function normalizeSkuAliasRows(sheetRows = [], localRows = []) {
     ['ym', ['api_ym', 'api_ya', 'ym_alias', 'ya_alias', 'yandex_alias', 'yandex_market_sku']],
     ['ga', ['api_ga', 'goldapple_alias', 'goldapple_sku', 'ga_sku']],
     ['letu', ['api_letu', 'letu_alias', 'letual_alias', 'letu_sku']],
+    ['megamarket', ['api_megamarket', 'megamarket_alias', 'megamarket_sku']],
+    ['samokat', ['api_samokat', 'samokat_alias', 'samokat_sku']],
     ['mm', ['api_mm', 'magnit_alias', 'magnit_market_sku', 'mm_sku']]
   ];
 
@@ -1046,6 +1050,8 @@ function buildSkuOverlay(baseSkus, dimSkuRows) {
       ym: canonicalOwnerName(normalizeText(sheetRow.owner_ym)),
       ga: canonicalOwnerName(normalizeText(sheetRow.owner_ga)),
       letu: canonicalOwnerName(normalizeText(sheetRow.owner_letu)),
+      megamarket: canonicalOwnerName(normalizeText(sheetRow.owner_megamarket)),
+      samokat: canonicalOwnerName(normalizeText(sheetRow.owner_samokat)),
       mm: canonicalOwnerName(normalizeText(sheetRow.owner_mm))
     };
     const categoriesByPlatform = {
@@ -1054,6 +1060,8 @@ function buildSkuOverlay(baseSkus, dimSkuRows) {
       ym: normalizeText(sheetRow.catygory_ym),
       ga: normalizeText(sheetRow.catygory_ga),
       letu: normalizeText(sheetRow.catygory_letu),
+      megamarket: normalizeText(sheetRow.catygory_megamarket),
+      samokat: normalizeText(sheetRow.catygory_samokat),
       mm: normalizeText(sheetRow.catygory_mm)
     };
     next.ownersByPlatform = ownersByPlatform;

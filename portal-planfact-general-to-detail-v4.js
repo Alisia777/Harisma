@@ -23,6 +23,8 @@
     goldapple: '#72c86a',
     ga: '#72c86a',
     letu: '#d96aa9',
+    megamarket: '#f97316',
+    samokat: '#10b981',
     magnit: '#e85b55'
   };
   const statusLabels = {
@@ -139,6 +141,8 @@
     if (key === 'ym' || key === 'ya') return 'Я.Маркет';
     if (key === 'goldapple' || key === 'ga') return 'ЗЯ';
     if (key === 'letu') return "Л'Этуаль";
+    if (key === 'megamarket') return 'Мегамаркет';
+    if (key === 'samokat') return 'Самокат';
     if (key === 'magnit') return 'Магнит';
     return platform || 'Площадка';
   }
@@ -154,6 +158,8 @@
     if (key === 'wildberries') return 'wb';
     if (key === 'yandex' || key === 'yamarket' || key === 'я.маркет') return 'ym';
     if (key === 'золотое яблоко') return 'goldapple';
+    if (key === 'мегамаркет') return 'megamarket';
+    if (key === 'самокат') return 'samokat';
     return key;
   }
 
@@ -241,7 +247,7 @@
 
   function fallbackPriceRowForSku(sku, platform) {
     const index = priceHistoryIndex();
-    const platforms = platform && platform !== 'all' ? [platform] : ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit'];
+    const platforms = platform && platform !== 'all' ? [platform] : ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
     const keys = candidateRowKeys(sku);
     for (const platformKey of platforms) {
       for (const key of keys) {
@@ -1257,7 +1263,7 @@
   function renderPlatformCards(model, views) {
     const platforms = Array.isArray(window.SKU_PLAN_FACT_PLATFORMS) && window.SKU_PLAN_FACT_PLATFORMS.length
       ? window.SKU_PLAN_FACT_PLATFORMS
-      : ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit'];
+      : ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
     return platforms.map((platform) => {
       const scoped = views.map((view) => rowMetricView(view.row, model, platform));
       const active = scoped.filter((view) => view.factRevenue > 0 || view.planToDateRevenue > 0 || view.planRevenue > 0);
@@ -1703,7 +1709,7 @@
     const filters = model?.filters || fallbackFiltersFromDom();
     const platformKeys = Array.isArray(window.SKU_PLAN_FACT_PLATFORMS) && window.SKU_PLAN_FACT_PLATFORMS.length
       ? window.SKU_PLAN_FACT_PLATFORMS
-      : ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+      : ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
     const platformOptions = [['all', 'Все площадки'], ...platformKeys.map((key) => [key, platformLabel(key)])];
     const ownerOptions = [['all', 'Все сотрудники'], ...(model?.owners || []).map((owner) => [owner, owner])];
     const monthOptions = [['latest', 'Последний срез'], ...(model?.months || []).map((month) => [month, monthLabel(month)])];

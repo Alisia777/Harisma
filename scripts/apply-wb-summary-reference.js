@@ -204,7 +204,7 @@ function officialMarginForPoint(point) {
 function rebuildAllSeries(platformTrends) {
   const platforms = Array.isArray(platformTrends.platforms) ? platformTrends.platforms : [];
   const byKey = new Map(platforms.map((platform) => [String(platform?.key || '').toLowerCase(), platform]));
-  const sourceKeys = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+  const sourceKeys = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
   const byDate = new Map();
   for (const key of sourceKeys) {
     for (const point of byKey.get(key)?.series || []) {

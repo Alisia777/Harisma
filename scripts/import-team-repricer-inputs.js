@@ -15,6 +15,8 @@ const OWNER_PLATFORM_COLUMNS = {
   ym: 'Ответственный ЯМ',
   letu: 'Ответственный Летуаль',
   goldapple: 'Ответственный ЗЯ',
+  megamarket: 'Ответственный Мегамаркет',
+  samokat: 'Ответственный Самокат',
   magnit: 'Ответственный Магнит'
 };
 
@@ -131,7 +133,7 @@ function cleanOwnerForPlatform(value = '', platformKey = '', currentOwner = '') 
     if ((current === 'Васильева Мария' || current === 'Лапыгин Максим') && ['Кирилл', 'Олеся', 'Светлана'].includes(owner)) return current;
   }
   if (platformKey === 'ym') return 'Пирогова Анна';
-  if (platformKey === 'goldapple' || platformKey === 'letu' || platformKey === 'magnit') return 'Доможирова Екатерина';
+  if (platformKey === 'goldapple' || platformKey === 'letu' || platformKey === 'megamarket' || platformKey === 'samokat' || platformKey === 'magnit') return 'Доможирова Екатерина';
   return owner;
 }
 
@@ -201,6 +203,8 @@ function buildOwnerMaps(files) {
     ym: new Map(),
     goldapple: new Map(),
     letu: new Map(),
+    megamarket: new Map(),
+    samokat: new Map(),
     magnit: new Map()
   };
 
@@ -274,7 +278,7 @@ function updateSkuOwners(skus, ownerMaps) {
     const master = ownerMaps.master.get(token);
     if (!master) return;
     ensureOwnerObject(sku);
-    ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit'].forEach((platformKey) => {
+    ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'].forEach((platformKey) => {
       const localKey = platformKey === 'goldapple' ? 'ga' : (platformKey === 'magnit' ? 'mm' : platformKey);
       const owner = cleanOwnerForPlatform(
         master.owners[platformKey] || ownerMaps.platform[platformKey]?.get(token),
@@ -409,6 +413,8 @@ function platformAliases(platformKey) {
   if (platformKey === 'ym') return ['ym', 'ya'];
   if (platformKey === 'ya') return ['ya', 'ym'];
   if (platformKey === 'goldapple' || platformKey === 'ga') return ['goldapple', 'ga'];
+  if (platformKey === 'megamarket') return ['megamarket'];
+  if (platformKey === 'samokat') return ['samokat'];
   if (platformKey === 'magnit' || platformKey === 'mm') return ['magnit', 'mm'];
   return [platformKey];
 }

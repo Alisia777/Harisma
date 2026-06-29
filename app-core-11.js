@@ -1,4 +1,4 @@
-const SKU_PLAN_FACT_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+const SKU_PLAN_FACT_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 const SKU_PLAN_FACT_PAYROLL_PLATFORMS = ['wb', 'ozon', 'ya'];
 const SKU_PLAN_FACT_PAYROLL_ALIGNMENT_PLATFORMS = new Set(['wb', 'ozon']);
 const SKU_PLAN_FACT_PLATFORM_LABELS = {
@@ -7,6 +7,8 @@ const SKU_PLAN_FACT_PLATFORM_LABELS = {
   ya: 'Я.Маркет',
   goldapple: 'ЗЯ',
   letu: 'Лэтуаль',
+  megamarket: 'Мегамаркет',
+  samokat: 'Самокат',
   magnit: 'Магнит Маркет'
 };
 const SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS = {
@@ -15,6 +17,8 @@ const SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS = {
   ya: 'ym',
   goldapple: 'ga',
   letu: 'letu',
+  megamarket: 'megamarket',
+  samokat: 'samokat',
   magnit: 'mm'
 };
 const SKU_PLAN_FACT_DIRECT_PLAN_PLATFORMS = new Set(['wb', 'ozon']);
@@ -500,6 +504,8 @@ function skuPlanFactNormalizePlatform(value = '') {
   if (/\bya\b|\bym\b|yandex|яндекс|я\.?маркет|ямаркет/i.test(lower)) detected.push('ya');
   if (/gold\s*apple|золотое\s*яблоко|\bзя\b/i.test(lower)) detected.push('goldapple');
   if (/letu|letual|летуаль/i.test(lower)) detected.push('letu');
+  if (/megamarket|мегамаркет/i.test(lower)) detected.push('megamarket');
+  if (/samokat|самокат/i.test(lower)) detected.push('samokat');
   if (/magnit|магнит/i.test(lower)) detected.push('magnit');
   const uniqueDetected = [...new Set(detected)];
   if (uniqueDetected.length > 1) return 'all';
@@ -511,6 +517,8 @@ function skuPlanFactNormalizePlatform(value = '') {
   if (['ya', 'ym', 'yandex', 'yandexmarket', 'ямаркет'].includes(raw)) return 'ya';
   if (['ga', 'goldapple', 'зя', 'золотоеяблоко'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
+  if (['megamarket', 'мегамаркет'].includes(raw)) return 'megamarket';
+  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   if (['mm', 'magnit', 'magnitmarket', 'магнитмаркет'].includes(raw)) return 'magnit';
   return raw;
 }
@@ -5693,6 +5701,8 @@ function skuPlanFactPlatformHue(platform = '') {
     ya: 42,
     goldapple: 146,
     letu: 330,
+    megamarket: 28,
+    samokat: 168,
     magnit: 4
   }[platform] ?? 205;
 }
@@ -7067,6 +7077,8 @@ const OOS_CONTROL_PLATFORM_META = {
   ya: { label: 'Яндекс Маркет', shortLabel: 'Я.Маркет', color: '#f2c84b' },
   goldapple: { label: 'Золотое Яблоко', shortLabel: 'ЗЯ', color: '#72c86a' },
   letu: { label: 'Л’Этуаль', shortLabel: 'Л’Этуаль', color: '#d96aa9' },
+  megamarket: { label: 'Мегамаркет', shortLabel: 'Мегамаркет', color: '#f97316' },
+  samokat: { label: 'Самокат', shortLabel: 'Самокат', color: '#10b981' },
   magnit: { label: 'Магнит Маркет', shortLabel: 'Магнит', color: '#e85b55' }
 };
 
@@ -7082,6 +7094,8 @@ function oosControlNormalizePlatform(value = 'all') {
   if (['ym', 'yandex', 'yandexmarket', 'yamarket'].includes(key)) key = 'ya';
   if (['goldenapple', 'gold-apple', 'gold_apple', 'зя'].includes(key)) key = 'goldapple';
   if (['letual', 'letuall', 'летуаль'].includes(key)) key = 'letu';
+  if (['mega-market', 'mega_market', 'sbermegamarket', 'мегамаркет'].includes(key)) key = 'megamarket';
+  if (['самокат'].includes(key)) key = 'samokat';
   if (['magnitmarket', 'magnit-market'].includes(key)) key = 'magnit';
   return OOS_CONTROL_PLATFORM_META[key] ? key : 'all';
 }
@@ -11106,6 +11120,8 @@ function skuPlanFactV1NormalizePlatform(value = 'all') {
   if (['ga', 'goldenapple', 'gold-apple', 'gold_apple'].includes(key)) key = 'goldapple';
   if (['mm', 'magnitmarket', 'magnit-market'].includes(key)) key = 'magnit';
   if (['letual', 'letuall'].includes(key)) key = 'letu';
+  if (['mega-market', 'mega_market', 'sbermegamarket', 'мегамаркет'].includes(key)) key = 'megamarket';
+  if (['самокат'].includes(key)) key = 'samokat';
   return key === 'all' || SKU_PLAN_FACT_PLATFORMS.includes(key) ? key : 'all';
 }
 

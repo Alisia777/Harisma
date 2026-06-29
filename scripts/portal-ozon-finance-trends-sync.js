@@ -790,7 +790,7 @@ async function main() {
   });
 
   const ozonLatestMarketplaceDate = series.map((item) => item.label).filter(Boolean).sort().pop() || '';
-  const platforms = ['wb', 'ozon', 'ya', 'all']
+  const platforms = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'all']
     .map((key) => existingPlatforms.get(key) || { key, label: key, series: [] });
   const ozonIndex = platforms.findIndex((platform) => String(platform?.key || '').trim() === 'ozon');
   const ozonSeries = series;

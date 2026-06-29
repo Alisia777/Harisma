@@ -143,7 +143,7 @@ function resolveOptions(args) {
   const from = mode === 'daily' || mode === 'recent'
     ? isoDate(args.from || args['date-from']) || addDays(to, -recentDays + 1)
     : maxFrom;
-  const platforms = normalizeText(args.platforms || envValue(process.env, 'ALTEA_PORTAL_API_PLATFORMS') || 'wb,ozon,ya,goldapple,letu,magnit')
+  const platforms = normalizeText(args.platforms || envValue(process.env, 'ALTEA_PORTAL_API_PLATFORMS') || 'wb,ozon,ya,goldapple,letu,megamarket,samokat,magnit')
     .split(',')
     .map((item) => normalizeText(item).toLowerCase())
     .filter(Boolean);
@@ -374,7 +374,7 @@ function mergePlatformWindow(outputFile, chunkFile, platformKey, from, to) {
     series: buildAllSeries(targetPlatforms)
   });
 
-  const orderedKeys = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'all'];
+  const orderedKeys = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'all'];
   const ordered = [
     ...orderedKeys.map((key) => targetPlatforms.get(key)).filter(Boolean),
     ...Array.from(targetPlatforms.entries())
@@ -494,7 +494,7 @@ function buildSteps(options, env) {
   const steps = [];
   const trendsInput = options.inputFile;
   const trendsOutput = options.outputFile;
-  const extraRequested = options.platforms.some((platform) => ['goldapple', 'zya', 'ga', 'letu', 'letual', 'magnit', 'magnitmarket', 'mm'].includes(platform));
+  const extraRequested = options.platforms.some((platform) => ['goldapple', 'zya', 'ga', 'letu', 'letual', 'megamarket', 'mega', 'samokat', 'magnit', 'magnitmarket', 'mm'].includes(platform));
 
   if (options.platforms.includes('wb')) {
     ensureEnv(env, 'ALTEA_WB_API_TOKEN', ['ALTEA_WB_PROMOTION_TOKEN']);
@@ -582,6 +582,22 @@ function buildSteps(options, env) {
       'ALTEA_MAGNIT_MARKET_API_METHOD',
       'ALTEA_MAGNIT_MARKET_API_BODY_JSON',
       'ALTEA_MAGNIT_MARKET_GRAPHQL_QUERY',
+      'ALTEA_MEGAMARKET_API_TOKEN',
+      'ALTEA_MEGAMARKET_API_KEY',
+      'ALTEA_MEGAMARKET_API_BASE_URL',
+      'ALTEA_MEGAMARKET_SALES_PATH',
+      'ALTEA_MEGAMARKET_CLIENT_ID',
+      'ALTEA_MEGAMARKET_API_METHOD',
+      'ALTEA_MEGAMARKET_API_BODY_JSON',
+      'ALTEA_MEGAMARKET_GRAPHQL_QUERY',
+      'ALTEA_SAMOKAT_API_TOKEN',
+      'ALTEA_SAMOKAT_API_KEY',
+      'ALTEA_SAMOKAT_API_BASE_URL',
+      'ALTEA_SAMOKAT_SALES_PATH',
+      'ALTEA_SAMOKAT_CLIENT_ID',
+      'ALTEA_SAMOKAT_API_METHOD',
+      'ALTEA_SAMOKAT_API_BODY_JSON',
+      'ALTEA_SAMOKAT_GRAPHQL_QUERY',
       'ALTEA_RETAIL_NETWORK_SALES_XLSX'
     ].forEach((name) => ensureEnv(env, name));
     const extraWorkbook = path.join(process.cwd(), '.altea-google-sheet-sync-output', 'api_max_extra_marketplaces.xlsx');

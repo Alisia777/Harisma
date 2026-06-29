@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-29T07:36:12.273Z",
+  "generatedAt": "2026-06-29T07:48:43.691Z",
   "status": "blocked",
   "publish": {
     "allowed": false,
@@ -12,7 +12,7 @@
       "Potential duplicated revenue overage: 490820.",
       "Unmapped API SKU revenue: 128813."
     ],
-    "checkedAt": "2026-06-29T07:36:12.273Z"
+    "checkedAt": "2026-06-29T07:48:43.691Z"
   },
   "freshness": {
     "maxDate": "2026-06-28",
@@ -21,7 +21,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-29T07:36:12.268Z",
+      "checkedAt": "2026-06-29T07:48:43.686Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-28",
       "maxDate": "2026-06-28",
@@ -68,7 +68,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-29T07:36:12.273Z",
+      "checkedAt": "2026-06-29T07:48:43.691Z",
       "expectedDate": "2026-06-28",
       "adsSummaryWindowTo": "2026-06-27",
       "iuDrrWindowTo": "2026-06-28",
@@ -180,13 +180,13 @@
     "product_leaderboard": {
       "exists": true,
       "rows": 50,
-      "generatedAt": "2026-06-29T07:34:35.185Z",
+      "generatedAt": "2026-06-29T07:48:42.700Z",
       "asOfDate": "2026-06-29",
-      "revenue": 18603355
+      "revenue": 17390825
     },
     "product_leaderboard_history": {
       "exists": true,
-      "rows": 7,
+      "rows": 8,
       "generatedAt": "",
       "asOfDate": "2026-06-29",
       "revenue": 0
@@ -257,14 +257,14 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-29T07:36:11.872Z",
+      "generatedAt": "2026-06-29T07:48:43.265Z",
       "asOfDate": "2026-06-28",
       "revenue": 131340
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 38,
-      "generatedAt": "2026-06-29T07:36:11.872Z",
+      "generatedAt": "2026-06-29T07:48:43.265Z",
       "asOfDate": "2026-06-29",
       "revenue": 1735325
     },
@@ -292,14 +292,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-29T07:36:11.961Z",
+      "generatedAt": "2026-06-29T07:48:43.364Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-29T07:34:55.237Z",
+      "generatedAt": "2026-06-29T07:36:12.273Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     }

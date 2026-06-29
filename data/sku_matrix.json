@@ -1,13 +1,13 @@
 {
   "schema": "portal-sku-matrix-v2",
-  "generatedAt": "2026-06-29T07:36:11.961Z",
+  "generatedAt": "2026-06-29T07:48:43.364Z",
   "source": {
     "skus": 143,
     "aliases": 566,
     "externalAliases": 341,
     "embeddedAliases": 1132,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-06-29T07:36:11.872Z"
+    "dataQualityGeneratedAt": "2026-06-29T07:48:43.265Z"
   },
   "summary": {
     "skuCount": 143,

@@ -1,6 +1,6 @@
 {
   "schema": "portal-daily-guard-v2",
-  "generatedAt": "2026-06-29T07:36:12.632Z",
+  "generatedAt": "2026-06-29T07:48:44.036Z",
   "manifest": {
     "file": "scripts\\portal-truth-manifest.json",
     "version": "2026-06-20",
@@ -69,7 +69,7 @@
     "views": 16,
     "blockingChecks": 13,
     "warningChecks": 0,
-    "fingerprint": "5f6f9f038d38d08a631e9f90482d45f9cd4bb2c84350a937ba67f4ea3b0f1730"
+    "fingerprint": "06b5f5583f5662d06335b5655154ac3a6b6529cceccfed4505a77fb199d437ce"
   },
   "views": {
     "dashboard": {
@@ -619,9 +619,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 49003,
-      "mtime": "2026-06-29T07:35:56.564Z",
-      "sha256": "acdcf505714b19511f909ab97d47261a5169c47f97d79785644558595b6dd1aa",
+      "bytes": 50343,
+      "mtime": "2026-06-29T07:39:13.592Z",
+      "sha256": "5264c03e41bc71aa3ff8bf63055998c857f880aa9cc21dda3cbc7c427cff1fa6",
       "dataDate": "2026-06-28",
       "dataDatePath": "latestMarketplaceDate",
       "generatedAt": "2026-06-29T06:32:18.705Z"
@@ -655,9 +655,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 34575,
-      "mtime": "2026-06-29T07:35:56.384Z",
-      "sha256": "2fa0a805ab49a50ce41223a225d03f04dfa20d6dff4334070120e9662bc33c01",
+      "bytes": 36120,
+      "mtime": "2026-06-29T07:39:13.608Z",
+      "sha256": "731e30fc8d7e0d0f6196afd9cd8a22475028efd5732b3f5620bf1fbc0157d6a3",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-06-29T07:35:56.383Z"
@@ -672,9 +672,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 1129847,
-      "mtime": "2026-06-29T07:35:56.442Z",
-      "sha256": "38b3bdbda85773a41eb7c83cbe5568e97d3a9b686f98a751c6a5a4499ef18bda",
+      "bytes": 1196934,
+      "mtime": "2026-06-29T07:39:13.595Z",
+      "sha256": "4f5694ab8e5c660e9a133905fcac23e84000b1a6aecedeb972389273c0cd871e",
       "dataDate": "2026-06-28",
       "dataDatePath": "latest_logistics_date",
       "generatedAt": "2026-06-29T07:35:56.435Z"
@@ -816,9 +816,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 119326,
-      "mtime": "2026-06-29T07:35:56.639Z",
-      "sha256": "c5d0635711c47f2a60a54c13426dc62eac43ae77864e54c48c097fb746997c04",
+      "bytes": 123289,
+      "mtime": "2026-06-29T07:39:13.596Z",
+      "sha256": "68f095466a11c4e3c8b20b749076c68f1c8ad4d72681a17db7eaabbef4136042",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-06-29T07:35:56.637Z"
@@ -834,11 +834,11 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 432158,
-      "mtime": "2026-06-29T07:36:11.965Z",
-      "sha256": "a2f7bc96811dae946e9fcac48277702031ddddde6cae45d4b5d106bb6063d582",
+      "mtime": "2026-06-29T07:48:43.368Z",
+      "sha256": "e2dea0d2d0067ff1426f0285708269e57de285ba8f8bc429adaa0b44af5b1aee",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T07:36:11.961Z"
+      "generatedAt": "2026-06-29T07:48:43.364Z"
     },
     {
       "id": "source:sku_aliases",
@@ -887,11 +887,11 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 47071,
-      "mtime": "2026-06-29T07:36:11.873Z",
-      "sha256": "5d27e325ba59ea84e952a1f54cf2851796a13a771fa222013a4d77a3e1ef0956",
+      "mtime": "2026-06-29T07:48:43.266Z",
+      "sha256": "e50596c3f54ab893367c8ffa0e84b2ad2242d453e85ac05585397348533c00f0",
       "dataDate": "2026-06-28",
       "dataDatePath": "summary.maxDate",
-      "generatedAt": "2026-06-29T07:36:11.872Z"
+      "generatedAt": "2026-06-29T07:48:43.265Z"
     },
     {
       "id": "source:data_quarantine",
@@ -904,11 +904,11 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 2020,
-      "mtime": "2026-06-29T07:36:12.274Z",
-      "sha256": "e24627941c3b6ceca1b633c77f5b03eac53636efaf01a801bc9d7a2d3d624503",
+      "mtime": "2026-06-29T07:48:43.692Z",
+      "sha256": "3f000547eb18acb17e0ad7c19f195d3683c45dcd982341a3efc078c36082ede7",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T07:36:12.266Z"
+      "generatedAt": "2026-06-29T07:48:43.684Z"
     },
     {
       "id": "source:product_leaderboard",
@@ -920,12 +920,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 241132,
-      "mtime": "2026-06-29T07:34:35.189Z",
-      "sha256": "3b3871d32fbbf3fe989fa7dced8f722c0d394c404a2f4eb95524ccdb569a8687",
+      "bytes": 245755,
+      "mtime": "2026-06-29T07:48:42.703Z",
+      "sha256": "c8a9fa602e0badea23e4d7e62a856eeaf86cdb6cf9293843b0d7f80b7ff53beb",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T07:34:35.185Z",
+      "generatedAt": "2026-06-29T07:48:42.700Z",
       "ageDays": 0
     },
     {
@@ -938,9 +938,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 1607819,
-      "mtime": "2026-06-29T07:34:35.621Z",
-      "sha256": "79c77f8f45154e869fb561d262c25baf37d5877335f33dd85e1a9b5d9bc988c7",
+      "bytes": 1867008,
+      "mtime": "2026-06-29T07:48:43.008Z",
+      "sha256": "4358c5313f4e3d5624343d2602963ba30021e92ac670eb3dc024b0bd861d3803",
       "dataDate": "",
       "dataDatePath": "",
       "generatedAt": ""

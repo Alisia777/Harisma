@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-storage-v2';
+  const VERSION = '20260629-storage-v3';
   const STORAGE_VIEW = 'documents';
   const RESOURCE_ARTICLE_KEY = '__portal_resource_links__';
   const RESOURCE_LINK_MARKER = '[[resource-link:v1]]';
@@ -65,7 +65,35 @@
     const raw = String(value || '').trim();
     if (!raw) return '';
     if (/^\s*javascript:/i.test(raw)) return '';
+    if (/^[a-z]:[\\/]/i.test(raw) || /^\\\\/.test(raw)) return '';
+    if (/^(www\.|docs\.google\.com|drive\.google\.com|sheets\.google\.com|slides\.google\.com)/i.test(raw)) {
+      return `https://${raw}`;
+    }
     return raw;
+  }
+
+  function isAbsoluteHref(href = '') {
+    return /^[a-z][a-z0-9+.-]*:/i.test(String(href || '').trim());
+  }
+
+  function isKnownInternalHref(href = '') {
+    const path = String(href || '').split(/[?#]/)[0].replace(/^\/+/, '');
+    return /^docs\/[a-z0-9._/-]+\.md$/i.test(path)
+      || /^assets\/[a-z0-9._/-]+\.(svg|png|jpe?g|webp|pdf)$/i.test(path);
+  }
+
+  function openableHref(rawHref = '') {
+    const href = safeHref(rawHref);
+    if (!href) return '';
+    if (href.startsWith('#')) return href;
+    if (isAbsoluteHref(href)) return href;
+    if (isKnownInternalHref(href)) return href;
+    return '';
+  }
+
+  function looksLikeDownload(item = {}, href = '') {
+    const target = String(href || item.href || item.fileName || '').split(/[?#]/)[0].toLowerCase();
+    return Boolean(item.fileName || item.storageMode === 'supabase' || /\.(xlsx?|csv|pdf|docx?|pptx?|zip|png|jpe?g|webp|mp4|mov|webm|txt)$/i.test(target));
   }
 
   function inferType(raw = {}) {
@@ -185,25 +213,34 @@
     if (item.source === 'user') meta.push(chip('добавлено командой', 'ok'));
     if (item.storageMode === 'local-file') meta.push(chip('локальный файл', 'warn'));
     if (item.storageMode === 'supabase') meta.push(chip('файл загружен', 'ok'));
+    if (item.storageMode === 'missing-file') meta.push(chip('файл не прикреплён', 'warn'));
     if (item.fileSize) meta.push(chip(formatBytes(item.fileSize)));
     else if (item.sizeMb && item.sizeMb !== '0') meta.push(chip(`${item.sizeMb} MB`));
     return meta.join('');
   }
 
   function renderResourceCard(item) {
-    const hasHref = Boolean(item.href);
+    const href = openableHref(item.href);
+    const hasHref = Boolean(href);
     const hasLocalFile = Boolean(item.localFileId);
     const sourceLabel = item.fileName || item.storageMode ? 'рабочий файл' : 'рабочая ссылка';
-    const action = hasHref
-      ? `<a class="doc-action" href="${html(item.href)}" target="_blank" rel="noopener">Открыть</a>`
-      : hasLocalFile
-        ? `<button class="link-btn doc-action" type="button" data-open-resource-file="${html(item.localFileId)}">Скачать файл</button>`
-        : '<span class="doc-action is-disabled">Файл или ссылка не указаны</span>';
+    const actions = [];
+    if (hasLocalFile) {
+      actions.push(`<button class="link-btn doc-action" type="button" data-open-resource-file="${html(item.localFileId)}">Скачать файл</button>`);
+    }
+    if (hasHref) {
+      const download = looksLikeDownload(item, href);
+      const downloadAttr = download && !/^https?:\/\//i.test(href) ? ` download="${html(item.fileName || item.title || 'file')}"` : '';
+      actions.push(`<a class="doc-action" href="${html(href)}" target="_blank" rel="noopener"${downloadAttr}>${download ? 'Скачать файл' : 'Открыть'}</a>`);
+    }
+    const action = actions.length
+      ? actions.join('')
+      : `<span class="doc-action is-disabled">${item.fileName || item.storageMode === 'missing-file' ? 'Файл не прикреплён' : 'Файл или ссылка не указаны'}</span>`;
     const deleteAction = item.source === 'user'
       ? `<button class="link-btn document-storage-delete" type="button" data-delete-resource-link="${html(item.id)}">Удалить</button>`
       : '';
     return `
-      <div class="doc-card document-storage-card ${item.source === 'user' ? 'is-user-added' : ''} ${hasHref ? '' : 'is-disabled'}">
+      <div class="doc-card document-storage-card ${item.source === 'user' ? 'is-user-added' : ''} ${hasHref || hasLocalFile ? '' : 'is-disabled'}">
         <div class="doc-top">
           <span class="doc-type">${html(item.group)}</span>
           <span class="muted small">${html(item.source === 'user' ? sourceLabel : 'база')}</span>

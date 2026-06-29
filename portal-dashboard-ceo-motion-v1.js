@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260628-dashboard-ads-breakdown6';
+  const VERSION = '20260629-dashboard-buyout1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -72,6 +72,10 @@
     return Number.isFinite(number) ? number : null;
   }
 
+  function hasFiniteValue(value) {
+    return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
+  }
+
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
@@ -116,6 +120,7 @@
 
   function fmtMetric(metric, value) {
     const meta = METRICS[metric] || METRICS.revenue;
+    if (value === null || value === undefined || value === '') return 'нет данных';
     if (meta.unit === 'money') return fmtMoney(value);
     if (meta.unit === 'pct') return fmtPct(value);
     return fmtInt(value);
@@ -532,14 +537,102 @@
       .sort((left, right) => dateKey(left.date || left.label).localeCompare(dateKey(right.date || right.label)));
   }
 
+  function explicitNumber(value) {
+    if (value === null || value === undefined || value === '') return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function firstExplicitNumber(...values) {
+    for (const value of values) {
+      const number = explicitNumber(value);
+      if (number !== null) return number;
+    }
+    return null;
+  }
+
+  function orderUnitsForRow(row) {
+    return firstExplicitNumber(row?.ordersUnits, row?.orderUnits, row?.units) ?? 0;
+  }
+
+  function buyoutUnitsForRow(row) {
+    return firstExplicitNumber(
+      row?.deliveredUnits,
+      row?.buyoutUnits,
+      row?.boughtUnits,
+      row?.buys,
+      row?.wbSellerSummaryBuyoutUnits,
+      row?.wbSellerSummary?.buyoutUnits
+    );
+  }
+
+  function emptyTotal() {
+    return { orders: 0, buys: 0, revenue: 0, marginRub: 0, orderRows: 0, buyoutRows: 0, buyoutOrders: 0 };
+  }
+
   function sumRows(rows) {
     return rows.reduce((acc, row) => {
-      acc.orders += finite(row.ordersUnits, finite(row.units));
-      acc.buys += finite(row.deliveredUnits, finite(row.units));
+      const orders = orderUnitsForRow(row);
+      const buys = buyoutUnitsForRow(row);
+      acc.orders += orders;
+      if (orders > 0) acc.orderRows += 1;
+      if (buys !== null) {
+        acc.buys += buys;
+        acc.buyoutRows += 1;
+        acc.buyoutOrders += orders;
+      }
       acc.revenue += finite(row.revenue);
       acc.marginRub += finite(row.estimatedMargin, finite(row.financialResult));
       return acc;
-    }, { orders: 0, buys: 0, revenue: 0, marginRub: 0 });
+    }, emptyTotal());
+  }
+
+  function addTotals(left, right) {
+    const result = emptyTotal();
+    Object.keys(result).forEach((key) => {
+      result[key] = finite(left?.[key]) + finite(right?.[key]);
+    });
+    return result;
+  }
+
+  function platformTotalsInRange(platformTrends, start, end) {
+    return platformRows(platformTrends)
+      .filter((platform) => normalizePlatform(platform.key) !== 'all')
+      .map((platform) => sumRows(rowsInRange(platform.series, start, end)))
+      .reduce((acc, total) => addTotals(acc, total), emptyTotal());
+  }
+
+  function hasBuyoutSource(total) {
+    return finite(total?.buyoutRows) > 0;
+  }
+
+  function buyoutBase(total) {
+    return finite(total?.buyoutOrders) > 0 ? finite(total.buyoutOrders) : finite(total?.orders);
+  }
+
+  function buyoutRate(total) {
+    if (!hasBuyoutSource(total)) return null;
+    const base = buyoutBase(total);
+    return base > 0 ? finite(total?.buys) / base : null;
+  }
+
+  function buyoutDisplay(total) {
+    return hasBuyoutSource(total) ? fmtInt(total?.buys) : 'нет источника';
+  }
+
+  function buyoutHint(total) {
+    const rate = buyoutRate(total);
+    if (rate === null) return 'выкуп не опубликован';
+    const suffix = buyoutBase(total) < finite(total?.orders) ? ' по источникам' : '';
+    return `выкуп ${fmtPct(rate)}${suffix}`;
+  }
+
+  function fillBuyoutFromSource(target, source) {
+    if (!target || hasBuyoutSource(target) || !hasBuyoutSource(source)) return target;
+    target.buys = finite(source.buys);
+    target.buyoutRows = finite(source.buyoutRows);
+    target.buyoutOrders = finite(source.buyoutOrders);
+    return target;
   }
 
   function rawRevenueMetrics(metrics) {
@@ -746,7 +839,7 @@
     const planChannel = monthlyPlanChannel(model.dashboard, model.platform);
     const planUnitsPerDay = finite(model.dashboard?.brandSummary?.[0]?.plan_units) / Math.max(1, finite(model.dashboard?.companyPlan?.activeMonth?.days, 30));
     const platformShare = model.total.revenue > 0 && model.allTotal.revenue > 0 ? model.total.revenue / model.allTotal.revenue : 1;
-    const buyoutTarget = model.total.orders > 0 ? model.total.buys / model.total.orders : .92;
+    const buyoutTarget = buyoutRate(model.total);
     const marginTarget = model.plan.marginPct;
     const rangeLength = Math.max(1, finite(model.range?.length, rows.length || 1));
     const planRevenueDaily = finite(planChannel.dailyRevenue) || (finite(model.plan?.revenue) > 0 ? finite(model.plan.revenue) / rangeLength : 0);
@@ -767,13 +860,15 @@
       const fallbackPrev = prev[index] || {};
       const base = current ? row : fallbackPrev;
       const revenue = finite(base.revenue);
-      const orders = finite(base.ordersUnits, finite(base.units));
-      const buys = finite(base.deliveredUnits, finite(base.units));
+      const orders = orderUnitsForRow(base);
+      const buys = buyoutUnitsForRow(base);
+      const previousOrders = orderUnitsForRow(fallbackPrev);
+      const previousBuys = buyoutUnitsForRow(fallbackPrev);
       const marginRub = finite(base.estimatedMargin, finite(base.financialResult));
       const day = dateKey(row.date || row.label || base.date || base.label) || model.range.start;
       const iuRow = model.iuRowsByDate[day] || {};
-      if (metricKey === 'orders') return { date: day, value: orders, plan: planOrdersDaily || orders, prev: finite(fallbackPrev.ordersUnits, finite(fallbackPrev.units)) };
-      if (metricKey === 'buys') return { date: day, value: buys, plan: (planOrdersDaily || orders) * buyoutTarget, prev: finite(fallbackPrev.deliveredUnits, finite(fallbackPrev.units)) };
+      if (metricKey === 'orders') return { date: day, value: orders, plan: planOrdersDaily || orders, prev: previousOrders };
+      if (metricKey === 'buys') return { date: day, value: buys, plan: buyoutTarget === null ? null : (planOrdersDaily || orders) * buyoutTarget, prev: previousBuys };
       if (metricKey === 'revenue') return { date: day, value: revenue, plan: planRevenueDaily || revenue, prev: finite(fallbackPrev.revenue) };
       if (metricKey === 'margin') {
         const prevRevenue = finite(fallbackPrev.revenue);
@@ -1023,14 +1118,16 @@
     const currentAvgCheck = current.orders > 0 ? current.revenue / current.orders : prevAvgCheck;
     const traffic = (current.orders - previous.orders) * prevAvgCheck;
     const price = (currentAvgCheck - prevAvgCheck) * current.orders;
-    const prevBuyout = previous.orders > 0 ? previous.buys / previous.orders : (current.orders > 0 ? current.buys / current.orders : 0);
-    const conversion = (current.buys - current.orders * prevBuyout) * currentAvgCheck;
+    const currentBuyoutRate = buyoutRate(current);
+    const previousBuyoutRate = buyoutRate(previous);
+    const prevBuyout = previousBuyoutRate ?? currentBuyoutRate;
+    const conversion = prevBuyout === null ? 0 : (current.buys - buyoutBase(current) * prevBuyout) * currentAvgCheck;
     const oos = -Math.abs((model.dashboard?.lowStock || []).slice(0, 8).reduce((sum, row) => sum + finite(row.orders_value), 0));
     const adsDelta = -(current.ads - previous.ads);
     const returns = -Math.abs((model.dashboard?.topReturns || []).slice(0, 8).reduce((sum, row) => sum + finite(row.orders_value), 0));
     return [
       { key: 'traffic', label: 'Трафик / спрос', value: traffic, detail: 'изменение заказов к прошлому периоду', route: 'product-leaderboard' },
-      { key: 'conversion', label: 'Выкуп / конверсия', value: conversion, detail: 'разница между заказами и выкупами', route: 'product-leaderboard' },
+      { key: 'conversion', label: 'Выкуп / конверсия', value: conversion, detail: prevBuyout === null ? 'источник выкупа не пришёл' : 'разница между заказами и выкупами', route: 'product-leaderboard' },
       { key: 'price', label: 'Цена / чек', value: price, detail: 'эффект среднего чека', route: 'prices' },
       { key: 'oos', label: 'OOS', value: oos, detail: 'товары с риском доступности', route: 'oos-control' },
       { key: 'ads', label: 'Эффективность рекламы', value: adsDelta, detail: 'изменение рекламных расходов', route: 'iu-drr' },
@@ -1070,6 +1167,13 @@
     const total = sumRows(currentRows);
     const previousTotal = sumRows(previousRows);
     const allTotal = sumRows(allRows);
+    const platformRangeTotal = platformTotalsInRange(platformTrends, range.start, range.end);
+    const platformPreviousRangeTotal = platformTotalsInRange(platformTrends, range.prevStart, range.prevEnd);
+    if (platform === 'all') {
+      fillBuyoutFromSource(total, platformRangeTotal);
+      fillBuyoutFromSource(previousTotal, platformPreviousRangeTotal);
+    }
+    fillBuyoutFromSource(allTotal, platformRangeTotal);
     const iuRows = iuRowsInRange(iuDrr, range.start, range.end);
     const prevIuRows = iuRowsInRange(iuDrr, range.prevStart, range.prevEnd);
     const adWindow = iuRowsForRangeOrLatest(iuDrr, range, period);
@@ -1108,10 +1212,11 @@
     }
     const planOrders = finite(dashboard?.brandSummary?.[0]?.plan_units) / Math.max(1, finite(active.days, 30)) * range.length * (allTotal.revenue > 0 ? total.revenue / allTotal.revenue : 1);
     const planAds = adRows.reduce((sum, row) => sum + adsPlanDailyValue(row, platform), 0);
+    const planBuyoutRate = buyoutRate(total);
     const plan = {
       revenue: planChannel.revenueToDate || planRevenue,
       orders: planOrders,
-      buys: planOrders * (total.orders > 0 ? total.buys / total.orders : .92),
+      buys: planBuyoutRate === null ? null : planOrders * planBuyoutRate,
       ads: planAds,
       marginPct: total.marginPct ?? .43,
       drr: total.revenue > 0 ? planAds / total.revenue : null
@@ -1155,7 +1260,7 @@
 
   function metricValueFor(model, metric) {
     if (metric === 'orders') return model.total.orders;
-    if (metric === 'buys') return model.total.buys;
+    if (metric === 'buys') return hasBuyoutSource(model.total) ? model.total.buys : null;
     if (metric === 'revenue') return model.total.revenue;
     if (metric === 'margin') return model.total.marginPct;
     if (metric === 'ads') return model.total.ads;
@@ -1164,7 +1269,7 @@
 
   function previousMetricValueFor(model, metric) {
     if (metric === 'orders') return model.previousTotal.orders;
-    if (metric === 'buys') return model.previousTotal.buys;
+    if (metric === 'buys') return hasBuyoutSource(model.previousTotal) ? model.previousTotal.buys : null;
     if (metric === 'revenue') return model.previousTotal.revenue;
     if (metric === 'margin') return model.previousTotal.marginPct;
     if (metric === 'ads') return model.previousTotal.ads;
@@ -1183,6 +1288,7 @@
   function metricDelta(model, metric) {
     const current = metricValueFor(model, metric);
     const prev = previousMetricValueFor(model, metric);
+    if (current == null || prev == null) return null;
     if (metric === 'margin') return current == null || prev == null ? null : current - prev;
     return prev ? current / prev - 1 : null;
   }
@@ -1191,7 +1297,7 @@
     const plan = planMetricValueFor(model, metric);
     const current = metricValueFor(model, metric);
     if (metric === 'orders') return `план ${fmtInt(plan)} шт.`;
-    if (metric === 'buys') return model.total.orders ? `выкуп ${fmtPct(model.total.buys / model.total.orders)}` : 'нет факта выкупа';
+    if (metric === 'buys') return buyoutHint(model.total);
     if (metric === 'revenue') return `к плану ${plan > 0 ? fmtPct(current / plan) : 'нет плана'}`;
     if (metric === 'margin') return `план ${fmtPct(plan)}`;
     if (metric === 'ads') return model.total.revenue ? `ДРР ${fmtPct(model.total.ads / model.total.revenue)}` : 'нет базы ДРР';
@@ -1232,7 +1338,7 @@
     const values = [];
     points.forEach((point) => {
       [point.value, point.prev, point.plan].forEach((value) => {
-        if (Number.isFinite(Number(value))) values.push(Number(value));
+        if (hasFiniteValue(value)) values.push(Number(value));
       });
     });
     if (!values.length) {
@@ -1522,7 +1628,7 @@
     openDrawer(root, item.label, 'Площадка как drill-down: фильтр портала не меняется.', [
       ['Выручка', fmtMoneyFull(item.total.revenue)],
       ['Заказы', fmtInt(item.total.orders)],
-      ['Выкупы', fmtInt(item.total.buys)],
+      ['Выкупы', buyoutDisplay(item.total)],
       ['ДРР', item.drr == null ? 'нет источника' : fmtPct(item.drr)],
       ['Маржа', item.marginPct == null ? 'нет источника' : fmtPct(item.marginPct)],
       ['Доля', fmtPct(item.share)]
@@ -1712,7 +1818,7 @@
       ['Выручка', fmtMoneyFull(item.total.revenue)],
       ['План', planLabel(monthlyPlanChannel(model.dashboard, normalized).revenue)],
       ['Заказы', fmtInt(item.total.orders)],
-      ['Выкупы', fmtInt(item.total.buys)],
+      ['Выкупы', buyoutDisplay(item.total)],
       ['ДРР', item.drr == null ? 'нет источника' : fmtPct(item.drr)],
       ['Маржа', item.marginPct == null ? 'нет источника' : fmtPct(item.marginPct)]
     ], rows);

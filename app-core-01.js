@@ -203,7 +203,7 @@ const STORAGE_KEY = 'brand-portal-local-v1';
 const ACTIVE_TASK_STATUSES = new Set(['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision']);
 const VIEW_TITLES = {
   dashboard: 'Дашборд',
-  documents: 'Документы',
+  documents: 'Хранилище',
   repricer: 'Репрайсер',
   prices: 'Цены',
   order: 'Заказ товара',
@@ -333,10 +333,9 @@ function waitForProductLeaderboardFastSnapshot(options = {}, timeoutMs = 4500) {
   });
 }
 
-const DISABLED_VIEWS = new Set(['meetings', 'documents', 'ads-funnel', 'launch-control']);
+const DISABLED_VIEWS = new Set(['meetings', 'ads-funnel', 'launch-control']);
 const VIEW_REDIRECTS = {
   meetings: 'dashboard',
-  documents: 'dashboard',
   'ads-funnel': 'iu-drr',
   'launch-control': 'launches'
 };
@@ -3171,7 +3170,7 @@ const LAZY_DATA_LOADERS = {
     state.meetings = Array.isArray(meetings) ? meetings : [];
   },
   documents: async () => {
-    const documents = await loadJsonOrFallback('data/documents.json', { groups: [] }, 'Документы');
+    const documents = await loadJsonOrFallback('data/documents.json', { groups: [] }, 'Хранилище');
     state.documents = documents || { groups: [] };
   },
   repricer: async () => {

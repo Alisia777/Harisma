@@ -10,6 +10,7 @@
     "dashboard",
     "executive",
     "control",
+    "documents",
     "data-health",
     "sku-plan-fact",
     "repricer",
@@ -29,7 +30,7 @@
     {
       key: "daily",
       label: "01 \u0413\u043b\u0430\u0432\u043d\u043e\u0435",
-      views: ["dashboard", "executive", "control", "data-health"]
+      views: ["dashboard", "executive", "control", "documents", "data-health"]
     },
     {
       key: "commerce",
@@ -67,8 +68,8 @@
       icon: "dashboard"
     },
     documents: {
-      title: "\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b",
-      subtitle: "\u0413\u0430\u0439\u0434\u044b \u00b7 \u0448\u0430\u0431\u043b\u043e\u043d\u044b \u00b7 \u0441\u0441\u044b\u043b\u043a\u0438",
+      title: "\u0425\u0440\u0430\u043d\u0438\u043b\u0438\u0449\u0435",
+      subtitle: "\u0424\u0430\u0439\u043b\u044b \u00b7 \u0441\u0441\u044b\u043b\u043a\u0438 \u00b7 \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u044f",
       icon: "documents"
     },
     "data-health": {
@@ -172,10 +173,9 @@
 
   var REDIRECTS = {
     meetings: "dashboard",
-    documents: "dashboard",
     "launch-control": "launches"
   };
-  var HIDDEN_VIEWS = ["meetings", "documents", "launch-control"];
+  var HIDDEN_VIEWS = ["meetings", "launch-control"];
   var LAST_VIEW_STORAGE_KEY = "altea:last-view";
   var viewRestored = false;
   var observerStarted = false;

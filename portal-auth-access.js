@@ -54,16 +54,16 @@
     roles: {
       owner: { views: '*' },
       director: {
-        views: ['dashboard', 'executive', 'control', 'sku-plan-fact', 'prices', 'order', 'product-leaderboard', 'iu-drr', 'wb-rating']
+        views: ['dashboard', 'executive', 'control', 'documents', 'sku-plan-fact', 'prices', 'order', 'product-leaderboard', 'iu-drr', 'wb-rating']
       },
       marketplace: {
-        views: ['dashboard', 'sku-plan-fact', 'repricer', 'prices', 'order', 'oos-control', 'iu-drr', 'wb-rating']
+        views: ['dashboard', 'documents', 'sku-plan-fact', 'repricer', 'prices', 'order', 'oos-control', 'iu-drr', 'wb-rating']
       },
       product: {
-        views: ['dashboard', 'data-health', 'sku-contour', 'launches', 'launch-control', 'product-leaderboard', 'wb-rating']
+        views: ['dashboard', 'data-health', 'documents', 'sku-contour', 'launches', 'launch-control', 'product-leaderboard', 'wb-rating']
       },
       operations: {
-        views: ['dashboard', 'control', 'order', 'oos-control', 'sku-plan-fact']
+        views: ['dashboard', 'control', 'documents', 'order', 'oos-control', 'sku-plan-fact']
       },
       employee: {
         views: EMPLOYEE_VIEWS

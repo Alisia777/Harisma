@@ -2836,7 +2836,7 @@ function rerenderCurrentView() {
     ['view-wb-rating', 'Рейтинг карточек', () => renderWbCardRating('view-wb-rating')],
     ['view-iu-drr', 'Показатели площадок', () => renderIuDrr('view-iu-drr')],
     ['view-dashboard', 'Дашборд', renderDashboardView],
-    ['view-documents', 'Документы', renderDocuments],
+    ['view-documents', 'Хранилище', renderDocuments],
     ['view-repricer', 'Репрайсер', renderRepricer],
     ['view-prices', 'Цены', () => { if (typeof window.renderPriceWorkbench === 'function') window.renderPriceWorkbench(); }],
     ['view-order', 'Логистика и заказ', () => { if (typeof renderOrderCalculator === 'function') renderOrderCalculator(); }],

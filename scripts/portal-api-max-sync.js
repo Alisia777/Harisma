@@ -551,6 +551,7 @@ function buildSteps(options, env) {
       'ALTEA_ZYA_API_METHOD',
       'ALTEA_ZYA_API_BODY_JSON',
       'ALTEA_ZYA_GRAPHQL_QUERY',
+      'ALTEA_ZYA_SALES_XLSX',
       'ALTEA_GOLDAPPLE_API_TOKEN',
       'ALTEA_GOLDAPPLE_API_KEY',
       'ALTEA_GOLDAPPLE_API_BASE_URL',
@@ -582,6 +583,11 @@ function buildSteps(options, env) {
       'ALTEA_MAGNIT_MARKET_API_METHOD',
       'ALTEA_MAGNIT_MARKET_API_BODY_JSON',
       'ALTEA_MAGNIT_MARKET_GRAPHQL_QUERY',
+      'ALTEA_MAGNIT_SALES_XLSX',
+      'ALTEA_MAGNIT_SALES_XLS',
+      'ALTEA_MAGNIT_SALES_WORKBOOK',
+      'ALTEA_MAGNIT_SALES_CSV',
+      'ALTEA_MAGNIT_SERVICES_CSV',
       'ALTEA_MEGAMARKET_API_TOKEN',
       'ALTEA_MEGAMARKET_API_KEY',
       'ALTEA_MEGAMARKET_API_BASE_URL',
@@ -640,7 +646,17 @@ function buildSteps(options, env) {
     });
   }
 
-  if (options.platforms.includes('magnit') && !options.skipMagnitCsv && !extraRequested) {
+  if (options.platforms.includes('magnit') && !options.skipMagnitCsv) {
+    const salesWorkbook = firstExistingPath([
+      envValue(env, 'ALTEA_MAGNIT_SALES_XLSX'),
+      envValue(env, 'ALTEA_MAGNIT_SALES_XLS'),
+      envValue(env, 'ALTEA_MAGNIT_SALES_WORKBOOK'),
+      path.join(options.baseDataDir, 'external_sources', 'magnit_sales_drive.xlsx'),
+      path.join(options.baseDataDir, 'external_sources', 'magnit_sales.xlsx'),
+      path.join(process.cwd(), '..', 'data', 'external_sources', 'magnit_sales_drive.xlsx'),
+      path.join(process.cwd(), '..', 'data', 'external_sources', 'magnit_sales.xlsx'),
+      path.join(process.env.LOCALAPPDATA || '', 'Temp', 'magnit_sales.xlsx')
+    ]);
     const salesCsv = firstExistingPath([
       envValue(env, 'ALTEA_MAGNIT_SALES_CSV'),
       path.join(options.baseDataDir, 'external_sources', 'magnit_sales.csv'),
@@ -653,8 +669,16 @@ function buildSteps(options, env) {
       path.join(process.cwd(), '..', 'data', 'external_sources', 'magnit_services.csv'),
       path.join(process.env.LOCALAPPDATA || '', 'Temp', 'magnit_services.csv')
     ]);
+    if (salesWorkbook) {
+      env.ALTEA_MAGNIT_SALES_XLSX = salesWorkbook;
+      env.ALTEA_MAGNIT_SALES_WORKBOOK = salesWorkbook;
+    }
     if (salesCsv) env.ALTEA_MAGNIT_SALES_CSV = salesCsv;
     if (servicesCsv) env.ALTEA_MAGNIT_SERVICES_CSV = servicesCsv;
+    const magnitApiConfigured = envValue(env, 'ALTEA_MAGNIT_API_TOKEN')
+      || envValue(env, 'ALTEA_MAGNIT_API_KEY')
+      || envValue(env, 'ALTEA_MAGNIT_MARKET_API_TOKEN')
+      || envValue(env, 'ALTEA_MAGNIT_MARKET_API_KEY');
     steps.push({
       id: 'magnit',
       name: 'Magnit Market daily source normalization',
@@ -674,7 +698,7 @@ function buildSteps(options, env) {
         '--mirror-local-fallback',
         '--require-source'
       ],
-      skipReason: salesCsv ? '' : 'Magnit API is not configured and ALTEA_MAGNIT_SALES_CSV was not found'
+      skipReason: (magnitApiConfigured || salesWorkbook || salesCsv) ? '' : 'Magnit API is not configured and ALTEA_MAGNIT_SALES_XLSX / ALTEA_MAGNIT_SALES_CSV were not found'
     });
   }
 

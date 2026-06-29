@@ -483,6 +483,7 @@ function buildMagnitSnapshot(options, skus, skuAliases) {
 
   const salesInput = salesRowsFromFile(salesSource);
   const salesRows = salesInput.rows;
+  const sourceMode = salesInput.kind === 'workbook' ? 'magnit-market-xlsx-daily' : SOURCE_MODE;
   const serviceRows = options.servicesCsv ? parseCsv(fs.readFileSync(options.servicesCsv, 'utf8')) : [];
   const skuLookup = buildSkuLookup(skus, skuAliases);
   const platformDaily = new Map();
@@ -512,7 +513,7 @@ function buildMagnitSnapshot(options, skus, skuAliases) {
       name,
       owner: ownerForSku(sku),
       dailyMap: new Map(),
-      source: SOURCE_MODE
+      source: sourceMode
     };
     bucket.sourceArticleKeys.add(sourceArticleKey);
     bucket.skuMatched = bucket.skuMatched || Boolean(sku);
@@ -606,7 +607,7 @@ function buildMagnitSnapshot(options, skus, skuAliases) {
   const fullDates = enumerateDates(options.from || firstDate, options.to || lastDate);
   const series = fullDates
     .map((date) => platformDaily.get(date) || emptyMetricBucket(date))
-    .map((row, index, list) => dailyPoint(row, list.length - 1 - index));
+    .map((row, index, list) => dailyPoint(row, list.length - 1 - index, sourceMode));
 
   const articles = [...articleMap.values()]
     .map((article) => buildArticle(article, fullDates))
@@ -614,7 +615,7 @@ function buildMagnitSnapshot(options, skus, skuAliases) {
     .sort((left, right) => left.articleKey.localeCompare(right.articleKey));
 
   const diagnostics = articleDiagnostics(articles);
-  diagnostics.source = SOURCE_MODE;
+  diagnostics.source = sourceMode;
   diagnostics.dailyMode = true;
   diagnostics.inputKind = salesInput.kind;
   diagnostics.inputDetail = salesInput.detail;
@@ -633,13 +634,14 @@ function buildMagnitSnapshot(options, skus, skuAliases) {
   return {
     key: PLATFORM_KEY,
     label: PLATFORM_LABEL,
+    sourceMode,
     series,
     articles,
     diagnostics,
     raw: {
       schema: 'portal-magnit-market-raw-v1',
       generatedAt: new Date().toISOString(),
-      sourceMode: SOURCE_MODE,
+      sourceMode,
       window: {
         from: options.from || firstDate,
         to: options.to || lastDate

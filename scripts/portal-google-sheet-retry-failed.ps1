@@ -677,8 +677,11 @@ try {
   )) {
     Set-ProcessEnvFallback -Name $envName
   }
+  Set-ProcessEnvFallback -Name "ALTEA_ZYA_SALES_XLSX" (Join-Path $repoRoot "data\external_sources\zya_sales_drive.xlsx")
   Set-ProcessEnvFallback -Name "ALTEA_ZYA_SALES_ZIP" (Join-Path $env:LOCALAPPDATA "Temp\zya_sales.zip")
   Set-ProcessEnvFallback -Name "ALTEA_ZYA_ADS_XLSX" (Join-Path $env:LOCALAPPDATA "Temp\zya_ads.xlsx")
+  Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SALES_XLSX" (Join-Path $repoRoot "data\external_sources\magnit_sales_drive.xlsx")
+  Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SALES_WORKBOOK" (Join-Path $repoRoot "data\external_sources\magnit_sales_drive.xlsx")
   Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SALES_CSV" (Join-Path $env:LOCALAPPDATA "Temp\magnit_sales.csv")
   Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SERVICES_CSV" (Join-Path $env:LOCALAPPDATA "Temp\magnit_services.csv")
 

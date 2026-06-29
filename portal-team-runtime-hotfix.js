@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_TEAM_RUNTIME_HOTFIX_20260417J__) return;
-  window.__ALTEA_TEAM_RUNTIME_HOTFIX_20260417J__ = true;
+  if (window.__ALTEA_TEAM_RUNTIME_HOTFIX_20260629_TIMEOUT1__) return;
+  window.__ALTEA_TEAM_RUNTIME_HOTFIX_20260629_TIMEOUT1__ = true;
 
   const TABLES = typeof TEAM_TABLES === 'object' && TEAM_TABLES ? TEAM_TABLES : {
     tasks: 'portal_tasks',
@@ -49,10 +49,26 @@
     return bodyText ? JSON.parse(bodyText) : [];
   }
 
+  function timeoutHotfix(promise, ms, label) {
+    if (typeof withTimeout === 'function') return withTimeout(promise, ms, label);
+    return new Promise((resolve, reject) => {
+      const timer = window.setTimeout(() => reject(new Error(`${label} превысил ${Math.round(ms / 1000)} сек.`)), ms);
+      Promise.resolve(promise)
+        .then((value) => {
+          window.clearTimeout(timer);
+          resolve(value);
+        })
+        .catch((error) => {
+          window.clearTimeout(timer);
+          reject(error);
+        });
+    });
+  }
+
   async function signInViaRestHotfix() {
     const cfg = restConfig();
-    if (!cfg) throw new Error('Supabase REST недоступен');
-    const response = await fetch(`${cfg.baseUrl}/auth/v1/signup`, {
+    if (!cfg) throw new Error('Supabase REST unavailable');
+    const response = await timeoutHotfix(fetch(`${cfg.baseUrl}/auth/v1/signup`, {
       method: 'POST',
       headers: {
         apikey: cfg.anonKey,
@@ -61,8 +77,8 @@
         'Content-Type': 'application/json'
       },
       body: '{}'
-    });
-    return readJson(response, 'Анонимный вход Supabase');
+    }), 8000, 'supabase anonymous sign-in');
+    return timeoutHotfix(readJson(response, 'supabase anonymous sign-in'), 5000, 'supabase anonymous sign-in json');
   }
 
   async function signInAnonymouslyHotfix() {
@@ -76,7 +92,7 @@
           storageKey: 'altea-team-store'
         }
       });
-      const response = await client.auth.signInAnonymously();
+      const response = await timeoutHotfix(client.auth.signInAnonymously(), 8000, 'supabase anonymous sign-in');
       if (response?.error) throw response.error;
       return {
         access_token: response?.data?.session?.access_token || '',
@@ -145,14 +161,14 @@
       } else {
         url.searchParams.set('select', '*');
       }
-      const response = await fetch(url.toString(), {
+      const response = await timeoutHotfix(fetch(url.toString(), {
         headers: {
           apikey: cfg.anonKey,
           Authorization: `Bearer ${cfg.accessToken}`,
           Accept: 'application/json'
         }
-      });
-      return readJson(response, `Запрос ${table}`);
+      }), 8000, `supabase query ${table}`);
+      return timeoutHotfix(readJson(response, `supabase query ${table}`), 5000, `supabase query ${table} json`);
     }
     if (!app?.team?.client?.from) return [];
     const query = isTaskTable
@@ -161,7 +177,7 @@
           .select('id,article_key,title,next_action,reason,owner,due,status,type,priority,platform,source,entity_label,auto_code,created_at,updated_at')
           .eq('brand', currentBrandSafe())
       : app.team.client.from(table).select('*').eq('brand', currentBrandSafe());
-    const response = await query;
+    const response = await timeoutHotfix(query, 8000, `supabase query ${table}`);
     if (response?.error) throw response.error;
     return response?.data || [];
   }
@@ -174,7 +190,7 @@
       if (!cfg) return;
       const url = new URL(`${cfg.baseUrl}/rest/v1/${table}`);
       url.searchParams.set('on_conflict', onConflict);
-      const response = await fetch(url.toString(), {
+      const response = await timeoutHotfix(fetch(url.toString(), {
         method: 'POST',
         headers: {
           apikey: cfg.anonKey,
@@ -184,12 +200,12 @@
           Prefer: 'resolution=merge-duplicates,return=representation'
         },
         body: JSON.stringify(rows)
-      });
-      await readJson(response, `Синхронизация ${table}`);
+      }), 8000, `supabase sync ${table}`);
+      await timeoutHotfix(readJson(response, `supabase sync ${table}`), 5000, `supabase sync ${table} json`);
       return;
     }
     if (!app?.team?.client?.from) return;
-    const response = await app.team.client.from(table).upsert(rows, { onConflict });
+    const response = await timeoutHotfix(app.team.client.from(table).upsert(rows, { onConflict }), 8000, `supabase sync ${table}`);
     if (response?.error) throw response.error;
   }
 
@@ -453,6 +469,17 @@
   assignGlobal('portalAutoRefreshSnapshots', maybeAutoRefreshSnapshotsHotfix);
   assignGlobal('initTeamStore', initTeamStoreHotfix);
   bindAutoPullHotfix();
+
+  window.setTimeout(() => {
+    const app = appState();
+    if (!app?.team || app.team.mode !== 'pending') return;
+    app.team.mode = 'local';
+    app.team.ready = false;
+    app.team.error = app.team.error || 'Командная база не ответила за 14 сек.';
+    app.team.note = 'Командная база не ответила — работаем локально';
+    if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
+    if (typeof updateSyncBadge === 'function') updateSyncBadge();
+  }, 14000);
 
   window.setTimeout(() => {
     const app = appState();

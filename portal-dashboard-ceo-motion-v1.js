@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-dashboard-ads-scope1';
+  const VERSION = '20260629-dashboard-ads-scope2';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -1498,6 +1498,10 @@
       });
     });
     if (!values.length) {
+      if (metric === 'ads') {
+        const platform = platformMeta(model.platform);
+        return `<div class="ceo-empty">Рекламные расходы по ${escapeHtml(platform.short)} за период не опубликованы. Продажи по сети доступны ниже.</div>`;
+      }
       return '<div class="ceo-empty">Нет дневного источника для выбранного среза.</div>';
     }
     const isLine = series.chart === 'line';

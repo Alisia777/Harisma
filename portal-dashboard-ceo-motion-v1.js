@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-dashboard-ads-scope2';
+  const VERSION = '20260629-dashboard-ads-scope3';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -661,6 +661,23 @@
     return map;
   }
 
+  function applyRawRevenueFallback(total, rawMetric, rows = []) {
+    if (!total || !rawMetric) return total;
+    if (Array.isArray(rows) && rows.length && finite(total.revenue) > 0) return total;
+    const revenue = numberOrNull(rawMetric.revenue);
+    const units = numberOrNull(rawMetric.units);
+    if (revenue !== null && revenue > 0 && finite(total.revenue) <= 0) {
+      total.revenue = revenue;
+      total.rawRevenueFallback = true;
+    }
+    if (units !== null && units > 0 && finite(total.orders) <= 0) {
+      total.orders = units;
+      total.orderRows = 1;
+      total.rawRevenueFallback = true;
+    }
+    return total;
+  }
+
   function emptyAdsBreakdown() {
     return {
       total: 0,
@@ -1036,6 +1053,7 @@
         const prevRows = rowsInRange(platform.series, model.range.prevStart, model.range.prevEnd);
         const total = sumRows(rows);
         const previous = sumRows(prevRows);
+        applyRawRevenueFallback(total, raw[key], rows);
         const adsRows = !isCoreAdsPlatform(key)
           ? adsSummaryRowsInRange(model.adsSummary, key, model.range.start, model.range.end)
           : (model.coreAdRows || model.iuRows || []);
@@ -1297,7 +1315,7 @@
     const period = currentPeriod();
     const metric = currentMetric();
     const range = currentRange(asOf, period);
-    const selectedPlatform = findPlatform(platformTrends, platform) || findPlatform(platformTrends, 'all') || { key: platform, series: [] };
+    const selectedPlatform = findPlatform(platformTrends, platform) || { key: platform, label: platformMeta(platform).label, series: [] };
     const allPlatform = findPlatform(platformTrends, 'all') || selectedPlatform;
     const currentRows = rowsInRange(selectedPlatform.series, range.start, range.end);
     const previousRows = rowsInRange(selectedPlatform.series, range.prevStart, range.prevEnd);
@@ -1305,6 +1323,8 @@
     const total = sumRows(currentRows);
     const previousTotal = sumRows(previousRows);
     const allTotal = sumRows(allRows);
+    const rawRevenue = rawRevenueMetrics(metrics);
+    if (platform !== 'all') applyRawRevenueFallback(total, rawRevenue[platform], currentRows);
     const platformRangeTotal = platformTotalsInRange(platformTrends, range.start, range.end);
     const platformPreviousRangeTotal = platformTotalsInRange(platformTrends, range.prevStart, range.prevEnd);
     if (platform === 'all') {

@@ -121,7 +121,7 @@
   function controlPlatformKey(platformKey) {
     const raw = String(platformKey || '').trim().toLowerCase();
     if (raw === 'retail') return 'ya';
-    if (raw === 'wb' || raw === 'ozon' || raw === 'ya' || raw === 'goldapple' || raw === 'letu' || raw === 'magnit') return raw;
+    if (raw === 'wb' || raw === 'ozon' || raw === 'ya' || raw === 'goldapple' || raw === 'letu' || raw === 'megamarket' || raw === 'samokat' || raw === 'magnit') return raw;
     return 'all';
   }
 
@@ -140,6 +140,8 @@
     if (raw === 'ya' || raw === 'ym' || raw === 'yandex' || /яндекс|я[.\s-]?маркет/.test(text)) return 'ya';
     if (raw === 'goldapple' || raw === 'zya' || /золот[а-я\s-]*яблок|gold\s*apple|zya|зя/.test(text)) return 'goldapple';
     if (raw === 'letu' || /letu?al|л[еэ]туал/.test(text)) return 'letu';
+    if (raw === 'megamarket' || raw === 'sbermegamarket' || /мегамаркет|megamarket|sbermegamarket|mega[\s_-]*market/.test(text)) return 'megamarket';
+    if (raw === 'samokat' || /самокат|samokat/.test(text)) return 'samokat';
     if (raw === 'magnit' || raw === 'mm' || /магнит/.test(text)) return 'magnit';
     if (/retail|market/.test(text)) return 'ya';
     return 'cross';
@@ -692,6 +694,8 @@
     if (raw === 'ya' || raw === 'ym' || raw === 'yandex' || /\u044f\u043c|\u0441\u0435\u0442|\u044f\u043d\u0434\u0435\u043a\u0441|market|retail/.test(raw)) return 'ya';
     if (raw === 'goldapple' || raw === 'zya' || /золот[а-я\s-]*яблок|gold\s*apple|zya|зя/.test(raw)) return 'goldapple';
     if (raw === 'letu' || /letu?al|л[еэ]туал/.test(raw)) return 'letu';
+    if (raw === 'megamarket' || raw === 'sbermegamarket' || /мегамаркет|megamarket|sbermegamarket|mega[\s_-]*market/.test(raw)) return 'megamarket';
+    if (raw === 'samokat' || /самокат|samokat/.test(raw)) return 'samokat';
     if (raw === 'magnit' || raw === 'mm' || /магнит/.test(raw)) return 'magnit';
     return 'all';
   }

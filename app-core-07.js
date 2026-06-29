@@ -180,6 +180,8 @@ function renderSkuModal(articleKey) {
             <option value="ya">Я.Маркет</option>
             <option value="goldapple">Золотое яблоко</option>
             <option value="letu">Л'Этуаль</option>
+            <option value="megamarket">Мегамаркет</option>
+            <option value="samokat">Самокат</option>
             <option value="magnit">Магнит Маркет</option>
           </select>
           <input name="owner" placeholder="Owner" value="${escapeHtml(ownerName(sku) || '')}">

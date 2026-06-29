@@ -126,6 +126,8 @@ function renderTaskModal(taskId) {
             <option value="ya" ${task.platform === 'ya' ? 'selected' : ''}>Я.Маркет</option>
             <option value="goldapple" ${task.platform === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
             <option value="letu" ${task.platform === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+            <option value="megamarket" ${task.platform === 'megamarket' ? 'selected' : ''}>Мегамаркет</option>
+            <option value="samokat" ${task.platform === 'samokat' ? 'selected' : ''}>Самокат</option>
             <option value="magnit" ${task.platform === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
             <option value="wb+ozon" ${task.platform === 'wb+ozon' ? 'selected' : ''}>WB + Ozon</option>
           </select>
@@ -262,6 +264,8 @@ const REGISTRY_MARKET_TABS = [
   { key: 'ya', label: 'Я.Маркет' },
   { key: 'goldapple', label: 'ЗЯ' },
   { key: 'letu', label: 'Лэтуаль' },
+  { key: 'megamarket', label: 'Мегамаркет' },
+  { key: 'samokat', label: 'Самокат' },
   { key: 'magnit', label: 'Магнит Маркет' }
 ];
 const REGISTRY_MARKET_SUPPORT_KEYS = {
@@ -270,6 +274,8 @@ const REGISTRY_MARKET_SUPPORT_KEYS = {
   ya: 'ym',
   goldapple: 'ga',
   letu: 'letu',
+  megamarket: 'megamarket',
+  samokat: 'samokat',
   magnit: 'mm'
 };
 

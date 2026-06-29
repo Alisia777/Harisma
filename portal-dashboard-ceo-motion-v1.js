@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-dashboard-buyout1';
+  const VERSION = '20260629-dashboard-buyout2';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -31,6 +31,7 @@
     samokat: { label: 'Самокат', short: 'Самокат', color: '#10b981' },
     magnit: { label: 'Магнит', short: 'Магнит', color: '#e85b55' }
   };
+  const MARKETPLACE_ORDER = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
   const METRICS = {
     orders: { label: 'Заказы', unit: 'int', chart: 'bars', route: 'product-leaderboard', tone: '#76a9ea' },
     buys: { label: 'Выкупы', unit: 'int', chart: 'bars', route: 'product-leaderboard', tone: '#74c99a' },
@@ -368,7 +369,7 @@
       #${ROOT_ID} .ceo-driver b{display:block;font-size:12px}
       #${ROOT_ID} .ceo-driver span span{display:block;margin-top:3px;color:var(--faint);font-size:10px}
       #${ROOT_ID} .ceo-driver em{font-style:normal;font-size:12px;font-weight:900;white-space:nowrap}
-      #${ROOT_ID} .ceo-platform-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+      #${ROOT_ID} .ceo-platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
       #${ROOT_ID} .ceo-platform{--pc:var(--champ);padding:13px;border:1px solid var(--line);border-radius:13px;background:#11100d;text-align:left;transition:transform 160ms var(--ease),border-color 160ms var(--ease);contain:layout paint}
       #${ROOT_ID} .ceo-platform:hover,#${ROOT_ID} .ceo-platform:focus-visible{transform:translateY(-2px);border-color:var(--pc)}
       #${ROOT_ID} .ceo-platform small{display:block;color:var(--faint);font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
@@ -896,10 +897,14 @@
   function buildPlatformCards(model) {
     const raw = rawRevenueMetrics(model.metrics);
     const allRevenue = model.allTotal.revenue || Object.values(raw).reduce((sum, row) => sum + finite(row.revenue), 0);
-    return platformRows(model.platformTrends)
-      .filter((platform) => normalizePlatform(platform.key) !== 'all')
-      .map((platform) => {
-        const key = normalizePlatform(platform.key);
+    const trendByKey = new Map();
+    platformRows(model.platformTrends).forEach((platform) => {
+      const key = normalizePlatform(platform.key);
+      if (key && key !== 'all' && !trendByKey.has(key)) trendByKey.set(key, platform);
+    });
+    return MARKETPLACE_ORDER
+      .map((key) => {
+        const platform = trendByKey.get(key) || { key, label: platformMeta(key).label, series: [] };
         const rows = rowsInRange(platform.series, model.range.start, model.range.end);
         const prevRows = rowsInRange(platform.series, model.range.prevStart, model.range.prevEnd);
         const total = sumRows(rows);
@@ -916,12 +921,9 @@
           drr: total.revenue > 0 ? ads / total.revenue : null,
           marginPct: total.revenue > 0 ? total.marginRub / total.revenue : null,
           share: allRevenue > 0 ? total.revenue / allRevenue : 0,
-          sourceStatus: raw[key]?.status || ''
+          sourceStatus: raw[key]?.status || (rows.length ? '' : 'no_daily')
         };
-      })
-      .filter((item) => item.total.revenue > 0 || item.total.orders > 0)
-      .sort((left, right) => right.total.revenue - left.total.revenue)
-      .slice(0, 6);
+      });
   }
 
   function buildSkuRows(model) {
@@ -1432,7 +1434,7 @@
         <small>${escapeHtml(item.label)}</small>
         <strong>${fmtMoney(item.total.revenue)}</strong>
         <p>${fmtInt(item.total.orders)} заказов · маржа ${item.marginPct == null ? 'нет данных' : fmtPct(item.marginPct)}</p>
-        <div class="ceo-progress"><i style="width:${clamp(item.share * 100, 3, 100).toFixed(1)}%"></i></div>
+        <div class="ceo-progress"><i style="width:${item.share > 0 ? clamp(item.share * 100, 3, 100).toFixed(1) : 0}%"></i></div>
       </button>
     `).join('');
   }

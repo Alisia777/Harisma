@@ -57,6 +57,8 @@ function skuMatrixPlatform(value = '') {
   if (['ya', 'ym', 'yandex', 'yandexmarket', 'ямаркет'].includes(raw)) return 'ya';
   if (['ga', 'goldapple', 'зя', 'золотоеяблоко'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
+  if (['megamarket', 'sbermegamarket', 'мегамаркет'].includes(raw)) return 'megamarket';
+  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   if (['mm', 'magnit', 'magnitmarket', 'магнитмаркет'].includes(raw)) return 'magnit';
   return raw;
 }
@@ -860,6 +862,8 @@ function detectMarketplaceNetworkKey(text = '') {
   const compact = raw.replace(/[\s._'`"\u2019-]+/g, '');
   if (!raw) return '';
   if (isGoldAppleMarketplaceText(raw, compact)) return 'goldapple';
+  if (/мегамаркет|megamarket|sbermegamarket|mega[\s_-]*market/.test(raw) || ['megamarket', 'sbermegamarket', 'мегамаркет'].includes(compact)) return 'megamarket';
+  if (/самокат|samokat/.test(raw) || ['samokat', 'самокат'].includes(compact)) return 'samokat';
   if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c?|\u043b\u044d\u0442\u0443\u0430\u043b\u044c?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile', '\u043b\u0435\u0442\u0443\u0430\u043b\u044c', '\u043b\u0435\u0442\u0443\u0430\u043b', '\u043b\u044d\u0442\u0443\u0430\u043b\u044c', '\u043b\u044d\u0442\u0443\u0430\u043b'].includes(compact)) return 'letu';
   if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'magnet', 'magnetmarket', 'mm', '\u043c\u0430\u0433\u043d\u0438\u0442', '\u043c\u0430\u0433\u043d\u0438\u0442\u043c\u0430\u0440\u043a\u0435\u0442'].includes(compact)) return 'magnit';
   if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|yandex|(^|[^a-z0-9])(ya|ym)([^a-z0-9]|$)|(^|[^\u0430-\u044f\u04510-9])\u044f\u043c([^\u0430-\u044f\u04510-9]|$)/.test(raw)) return 'ya';
@@ -968,10 +972,14 @@ function normalizeTaskPlatform(value, contextText = '') {
   if (['wb+ozon', 'wb + ozon', 'wb_ozon', 'wb-ozon'].includes(raw)) return 'wb+ozon';
   if (['goldapple', 'goldenapple', 'zya', 'ga'].includes(compactRaw)) return 'goldapple';
   if (['letu', 'letual', 'letoile'].includes(compactRaw)) return 'letu';
+  if (['megamarket', 'sbermegamarket', 'мегамаркет'].includes(compactRaw)) return 'megamarket';
+  if (['samokat', 'самокат'].includes(compactRaw)) return 'samokat';
   if (['magnit', 'magnitmarket', 'mm'].includes(compactRaw)) return 'magnit';
   if (['ya', 'ym', 'yandex', 'yandex_market', 'yandexmarket', 'ya_market', 'ям', 'я.маркет', 'яндекс'].includes(raw)) return 'ya';
   if (['goldapple', 'ga', 'zya', 'зя'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
+  if (['megamarket', 'sbermegamarket', 'мегамаркет'].includes(raw)) return 'megamarket';
+  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   if (['magnit', 'mm'].includes(raw)) return 'magnit';
   if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return detectMarketplaceNetworkKey(text) || 'cross';
   if (['product', 'launch', 'launches', 'новинки', 'продукт', 'ксюша'].includes(raw)) return 'product';
@@ -1004,13 +1012,13 @@ function controlWorkstreamKey(task, sku = null) {
 
   const text = taskMarketplaceContext(task, sku);
   const specificMarketplace = detectMarketplaceNetworkKey(text);
-  if (specificMarketplace === 'goldapple' || specificMarketplace === 'letu' || specificMarketplace === 'magnit' || specificMarketplace === 'ya') return specificMarketplace;
+  if (specificMarketplace === 'goldapple' || specificMarketplace === 'letu' || specificMarketplace === 'megamarket' || specificMarketplace === 'samokat' || specificMarketplace === 'magnit' || specificMarketplace === 'ya') return specificMarketplace;
 
   const platform = normalizeTaskPlatform(task?.platform, text);
 
   if (platform === 'wb') return 'wb';
   if (platform === 'ozon') return 'ozon';
-  if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
+  if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'megamarket' || platform === 'samokat' || platform === 'magnit') return platform;
   if (platform === 'product') return 'product';
   if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
 

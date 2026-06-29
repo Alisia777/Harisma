@@ -1883,8 +1883,37 @@
     scheduleRouteRepair();
   }
 
+  function setExecutiveFunnelFilter(key, value, delay) {
+    var defaults = { platform: 'all', status: 'all', owner: 'all', search: '', sort: 'completionAsc' };
+    if (!Object.prototype.hasOwnProperty.call(defaults, key)) return false;
+    var filters = window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__;
+    if (!filters || typeof filters !== 'object') filters = {};
+    Object.keys(defaults).forEach(function (name) {
+      if (filters[name] == null) filters[name] = defaults[name];
+    });
+    filters[key] = String(value == null ? defaults[key] : value);
+    window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ = filters;
+    var root = document.getElementById('view-executive');
+    if (root) root.dataset.premiumSignature = '';
+    var stage = document.getElementById(stageId('executive'));
+    if (stage) stage.dataset.premiumSignature = '';
+    scheduleRender(delay || 0);
+    return true;
+  }
+
   function bindEvents() {
     document.addEventListener('click', function (event) {
+      var funnelControl = event.target && event.target.closest && event.target.closest('#altea-premium-stage-executive [data-executive-funnel-platform], #altea-premium-stage-executive [data-executive-funnel-status]');
+      if (funnelControl && String(window.location.hash || '').replace(/^#/, '') === 'executive') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (funnelControl.hasAttribute('data-executive-funnel-platform')) {
+          setExecutiveFunnelFilter('platform', funnelControl.getAttribute('data-executive-funnel-platform') || 'all');
+        } else {
+          setExecutiveFunnelFilter('status', funnelControl.getAttribute('data-executive-funnel-status') || 'all');
+        }
+        return;
+      }
       var ownerCard = event.target && event.target.closest && event.target.closest('[data-executive-funnel-owner-card]');
       if (!ownerCard || String(window.location.hash || '').replace(/^#/, '') !== 'executive') return;
       var ownerName = ownerCard.getAttribute('data-executive-funnel-owner-card') || '';
@@ -1946,6 +1975,19 @@
       }
     });
     document.addEventListener('change', function (event) {
+      if (!event.target || !event.target.closest || !event.target.closest('#altea-premium-stage-executive')) return;
+      if (event.target.matches && event.target.matches('[data-executive-funnel-owner]')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setExecutiveFunnelFilter('owner', event.target.value || 'all', 120);
+      }
+      if (event.target.matches && event.target.matches('[data-executive-funnel-sort]')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setExecutiveFunnelFilter('sort', event.target.value || 'completionAsc', 120);
+      }
+    }, true);
+    document.addEventListener('change', function (event) {
       if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-owner], [data-executive-funnel-sort]')) {
         scheduleRender(120);
       }
@@ -1953,6 +1995,13 @@
         applyExecutiveOwnerDetailFilters(event.target.closest('[data-executive-owner-detail-modal]'));
       }
     });
+    document.addEventListener('input', function (event) {
+      if (!event.target || !event.target.closest || !event.target.closest('#altea-premium-stage-executive')) return;
+      if (event.target.matches && event.target.matches('[data-executive-funnel-search]')) {
+        event.stopImmediatePropagation();
+        setExecutiveFunnelFilter('search', event.target.value || '', 180);
+      }
+    }, true);
     document.addEventListener('input', function (event) {
       if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-search]')) {
         scheduleRender(180);

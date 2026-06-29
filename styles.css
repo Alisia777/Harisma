@@ -51,8 +51,6 @@ body{min-height:100vh}
 .topbar h1{margin:0 0 6px;font-size:30px;line-height:1.1}
 .topbar p{margin:0;color:var(--muted);max-width:980px}
 .top-actions{display:flex;gap:10px;flex-wrap:wrap}
-.portal-storage-top-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
-.portal-storage-top-link::before{content:"";width:7px;height:7px;margin-right:7px;border-radius:999px;background:#8ac8ff;box-shadow:0 0 0 4px rgba(138,200,255,.12)}
 
 .btn,.quick-chip,.market-tab,.inline-select,.nav-btn,.link-btn{transition:.18s ease}
 .btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;cursor:pointer;box-shadow:none}

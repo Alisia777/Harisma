@@ -2676,6 +2676,16 @@ function initSidebarToggle() {
 
 function ensureSkuContourShell() {
   const nav = document.querySelector('.nav');
+  if (nav && !document.querySelector('.nav-btn[data-view="documents"]')) {
+    const button = document.createElement('button');
+    button.className = 'nav-btn';
+    button.type = 'button';
+    button.dataset.view = 'documents';
+    button.innerHTML = '<span>&#1061;&#1088;&#1072;&#1085;&#1080;&#1083;&#1080;&#1097;&#1077;</span><small>&#1092;&#1072;&#1081;&#1083;&#1099; &middot; &#1089;&#1089;&#1099;&#1083;&#1082;&#1080; &middot; &#1086;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1103;</small>';
+    const controlButton = nav.querySelector('.nav-btn[data-view="control"]');
+    const dataHealthButton = nav.querySelector('.nav-btn[data-view="data-health"]');
+    nav.insertBefore(button, controlButton?.nextSibling || dataHealthButton || nav.firstChild);
+  }
   if (nav && !document.querySelector('.nav-btn[data-view="data-health"]')) {
     const button = document.createElement('button');
     button.className = 'nav-btn';
@@ -2702,6 +2712,14 @@ function ensureSkuContourShell() {
     section.id = 'view-data-health';
     const dashboardSection = document.getElementById('view-dashboard');
     main.insertBefore(section, dashboardSection?.nextSibling || main.querySelector('.view') || null);
+  }
+  if (main && !document.getElementById('view-documents')) {
+    const section = document.createElement('section');
+    section.className = 'view';
+    section.id = 'view-documents';
+    const controlSection = document.getElementById('view-control');
+    const dataHealthSection = document.getElementById('view-data-health');
+    main.insertBefore(section, controlSection?.nextSibling || dataHealthSection?.nextSibling || main.querySelector('.view') || null);
   }
   if (main && !document.getElementById('view-sku-contour')) {
     const section = document.createElement('section');

@@ -326,6 +326,21 @@
     btn.title = subtitle ? title + " - " + subtitle : title;
   }
 
+  function ensureRegisteredButton(nav, view) {
+    if (!nav || !view || !META[view]) return null;
+    var selector = '.nav-btn[data-view="' + view.replace(/"/g, '\\"') + '"]';
+    var existing = nav.querySelector(selector);
+    if (existing) return existing;
+
+    var button = document.createElement("button");
+    button.className = "nav-btn";
+    button.type = "button";
+    button.dataset.view = view;
+    syncButtonMeta(button, view);
+    nav.appendChild(button);
+    return button;
+  }
+
   function needsSidebarSync() {
     var toggle = document.querySelector("[data-sidebar-toggle]");
     var glyph = toggle && (toggle.querySelector("[aria-hidden='true']") || toggle.querySelector("span"));
@@ -333,6 +348,7 @@
 
     var nav = document.querySelector(".sidebar .nav");
     if (!nav) return false;
+    if (!nav.querySelector('.nav-btn[data-view="documents"]')) return true;
     if (!nav.querySelector(".nav-group-label")) return true;
 
     return Array.prototype.slice.call(nav.querySelectorAll(".nav-btn[data-view]")).some(function (btn) {
@@ -427,6 +443,7 @@
     var nav = document.querySelector(".sidebar .nav");
     if (!nav) return false;
 
+    ensureRegisteredButton(nav, "documents");
     removeGroupLabels(nav);
 
     var buttons = Array.prototype.slice.call(nav.querySelectorAll(".nav-btn[data-view]"));

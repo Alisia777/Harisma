@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-iudrr-tabs-wrap1';
+  const VERSION = '20260629-iudrr-extra-networks1';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -30,6 +30,9 @@
     leaderboard: 'data/product_leaderboard.json',
     skuMatrix: 'data/sku_matrix.json',
     skus: 'data/skus.json',
+    platformTrends: 'data/platform_trends.json',
+    metrics: 'data/portal_dashboard_metrics.json',
+    adsSummary: 'data/ads_summary.json',
     wbFunnel: 'data/wb_sales_funnel_report.json',
     wbProcurement: 'data/order_procurement_wb.json',
     ozonProcurement: 'data/order_procurement_ozon.json',
@@ -406,6 +409,155 @@
     return [];
   }
 
+  function isCorePlatform(platform) {
+    return ['wb', 'ozon', 'ya'].includes(normalizePlatform(platform));
+  }
+
+  function rowMonthKey(row) {
+    const direct = String(row?.monthKey || row?.month || '').slice(0, 7);
+    if (/^\d{4}-\d{2}$/.test(direct)) return direct;
+    const date = String(row?.date || row?.label || row?.period || '');
+    return /^\d{4}-\d{2}/.test(date) ? date.slice(0, 7) : '';
+  }
+
+  function monthKeyFromRows(rows) {
+    const list = Array.isArray(rows) ? rows : [];
+    for (const row of list) {
+      const key = rowMonthKey(row);
+      if (key) return key;
+    }
+    const payload = getPayload();
+    return selectedMonth(payload);
+  }
+
+  function platformTrendSource() {
+    return getSources().platformTrends || appState().platformTrends || {};
+  }
+
+  function platformTrend(platform) {
+    const key = normalizePlatform(platform);
+    const rows = Array.isArray(platformTrendSource()?.platforms) ? platformTrendSource().platforms : [];
+    return rows.find((item) => normalizePlatform(item?.key || item?.platform || item?.label) === key) || null;
+  }
+
+  function rawRevenueMetric(platform) {
+    const key = normalizePlatform(platform);
+    const metrics = getSources().metrics || appState().portalDashboardMetrics || {};
+    const rows = Array.isArray(metrics?.metrics) ? metrics.metrics : [];
+    return rows.find((item) => item?.metric_id === 'sales.raw_revenue' && normalizePlatform(item?.scope?.platform) === key) || null;
+  }
+
+  function rawRevenueValue(rawMetric) {
+    const drill = rawMetric?.drilldown?.[0] || {};
+    return firstDefined(rawMetric || {}, ['displayed_value', 'raw_value']) ?? drill.revenue;
+  }
+
+  function rawRevenueUnits(rawMetric) {
+    const drill = rawMetric?.drilldown?.[0] || {};
+    return firstDefined(drill, ['units', 'ordersUnits']);
+  }
+
+  function rawRevenueDate(rawMetric, monthKey) {
+    const drill = rawMetric?.drilldown?.[0] || {};
+    const date = firstDefined(rawMetric || {}, ['period_to', 'date']) || firstDefined(drill, ['date', 'period_to']);
+    if (date) return String(date).slice(0, 10);
+    return monthKey && monthKey !== 'latest' ? `${monthKey}-28` : '';
+  }
+
+  function adsSummaryPlatforms() {
+    const source = getSources().adsSummary || appState().adsSummary || {};
+    if (Array.isArray(source?.platforms)) return source.platforms;
+    if (source?.platforms && typeof source.platforms === 'object') return Object.values(source.platforms);
+    return [];
+  }
+
+  function adsSummaryPlatform(platform) {
+    const key = normalizePlatform(platform);
+    return adsSummaryPlatforms().find((item) => normalizePlatform(item?.key || item?.platformKey || item?.platform || item?.id || item?.label) === key) || null;
+  }
+
+  function normalizeExtraDailyRow(platform, row, sourceLabel) {
+    const date = String(row?.date || row?.label || '').slice(0, 10);
+    const views = firstDefined(row, ['views', 'adsViews', 'adsImpressions', 'shows']);
+    const clicks = firstDefined(row, ['clicks', 'adsClicks']);
+    const orders = firstDefined(row, ['orders', 'ordersUnits', 'units', 'adsOrders']);
+    const revenue = firstDefined(row, ['revenue', 'ordersRevenue', 'deliveredRevenue']);
+    const spend = firstDefined(row, ['spend', 'adsSpend']);
+    return {
+      ...row,
+      date,
+      label: date || row?.label || '',
+      platform,
+      source: sourceLabel,
+      views,
+      clicks,
+      carts: firstDefined(row, ['carts', 'toCart', 'adsCarts']),
+      orders,
+      buyouts: firstDefined(row, ['buyouts', 'buyoutUnits', 'deliveredUnits']),
+      revenue,
+      spend,
+      adRevenue: firstDefined(row, ['adRevenue', 'adsRevenue']),
+      units: firstDefined(row, ['units', 'ordersUnits']),
+      drr: firstDefined(row, ['drr', 'adsDrr']) ?? safeRatio(spend, revenue),
+      cpc: safeRatio(spend, clicks),
+      cpo: safeRatio(spend, firstDefined(row, ['adsOrders', 'orders', 'ordersUnits', 'units']))
+    };
+  }
+
+  function extraPlatformRows(platform, rows = []) {
+    const key = normalizePlatform(platform);
+    if (isCorePlatform(key)) return Array.isArray(rows) ? rows : [];
+    const monthKey = monthKeyFromRows(rows);
+    const byDate = new Map();
+    const trendRows = Array.isArray(platformTrend(key)?.series) ? platformTrend(key).series : [];
+    trendRows
+      .filter((row) => !monthKey || rowMonthKey(row) === monthKey)
+      .forEach((row) => {
+        const normalized = normalizeExtraDailyRow(key, row, `${PLATFORM[key]?.label || key} sales trend`);
+        if (normalized.date) byDate.set(normalized.date, normalized);
+      });
+    const adsRows = Array.isArray(adsSummaryPlatform(key)?.series) ? adsSummaryPlatform(key).series : [];
+    adsRows
+      .filter((row) => !monthKey || rowMonthKey(row) === monthKey)
+      .forEach((row) => {
+        const normalized = normalizeExtraDailyRow(key, row, `${PLATFORM[key]?.label || key} ads summary`);
+        if (!normalized.date) return;
+        byDate.set(normalized.date, {
+          ...(byDate.get(normalized.date) || {}),
+          ...normalized,
+          revenue: firstDefined(byDate.get(normalized.date) || {}, ['revenue']) ?? normalized.revenue,
+          units: firstDefined(byDate.get(normalized.date) || {}, ['units']) ?? normalized.units,
+          orders: firstDefined(byDate.get(normalized.date) || {}, ['orders']) ?? normalized.orders
+        });
+      });
+    if (!byDate.size) {
+      const rawMetric = rawRevenueMetric(key);
+      const revenue = numberOrNull(rawRevenueValue(rawMetric));
+      const units = numberOrNull(rawRevenueUnits(rawMetric));
+      const date = rawRevenueDate(rawMetric, monthKey);
+      if (date && (revenue !== null || units !== null)) {
+        byDate.set(date, normalizeExtraDailyRow(key, {
+          date,
+          revenue,
+          units,
+          orders: units
+        }, `${PLATFORM[key]?.label || key} raw revenue`));
+      }
+    }
+    return Array.from(byDate.values()).sort((left, right) => String(left.date).localeCompare(String(right.date)));
+  }
+
+  function extraPlatformRowForDate(platform, date) {
+    const key = normalizePlatform(platform);
+    const day = String(date || '').slice(0, 10);
+    const rows = extraPlatformRows(key, [{ date: day, monthKey: day.slice(0, 7) }]);
+    return rows.find((row) => row.date === day) || {
+      date: day,
+      platform: key,
+      source: `${PLATFORM[key]?.label || key} source not published`
+    };
+  }
+
   function getPayload() {
     return appState().iuDrrSummary || getSources().iu || {};
   }
@@ -498,26 +650,59 @@
         sourceRows: sum(rows, 'ozonAdsSourceRows') || sum(rows, 'ozonFinanceSourceRows')
       };
     }
-    const revenuePlan = sum(rows, 'targetRevenueYandex');
-    const revenueFact = sum(rows, 'revenueYandex');
+    if (platform === 'ya') {
+      const revenuePlan = sum(rows, 'targetRevenueYandex');
+      const revenueFact = sum(rows, 'revenueYandex');
+      return {
+        platform,
+        revenuePlan,
+        revenueFact,
+        revenueCompletion: pctValue(revenueFact, revenuePlan),
+        adsPlan: sum(rows, 'planSpendYandex'),
+        adsFact: sum(rows, 'spendFactYandex'),
+        drrPlan: null,
+        drrFact: null,
+        units: sum(rows, 'unitsYandex') || sum(rows, 'ordersUnitsYandex'),
+        views: sum(rows, 'yandexShows'),
+        clicks: sum(rows, 'yandexClicks'),
+        carts: sum(rows, 'yandexToCart'),
+        orders: sum(rows, 'ordersUnitsYandex'),
+        buyouts: sum(rows, 'deliveredUnitsYandex'),
+        returns: sum(rows, 'yandexReturnsUnits'),
+        cancellations: sum(rows, 'yandexCancellationsUnits'),
+        sourceRows: sum(rows, 'yandexSourceRows')
+      };
+    }
+    const extraRows = extraPlatformRows(platform, rows);
+    const rawMetric = rawRevenueMetric(platform);
+    const rawRevenue = numberOrNull(rawRevenueValue(rawMetric));
+    const rawUnits = numberOrNull(rawRevenueUnits(rawMetric));
+    const adsPlatform = adsSummaryPlatform(platform);
+    const revenueFact = sumBy(extraRows, (row) => row.revenue) ?? rawRevenue ?? 0;
+    const units = sumBy(extraRows, (row) => firstDefined(row, ['units', 'orders'])) ?? rawUnits ?? 0;
+    const adsFact = sumBy(extraRows, (row) => row.spend) ?? numberOrZero(firstDefined(adsPlatform || {}, ['spend', 'adsSpend']));
+    const views = sumBy(extraRows, (row) => row.views) ?? 0;
+    const clicks = sumBy(extraRows, (row) => row.clicks) ?? 0;
+    const orders = sumBy(extraRows, (row) => row.orders) ?? units;
     return {
       platform,
-      revenuePlan,
+      revenuePlan: 0,
       revenueFact,
-      revenueCompletion: pctValue(revenueFact, revenuePlan),
-      adsPlan: sum(rows, 'planSpendYandex'),
-      adsFact: sum(rows, 'spendFactYandex'),
+      revenueCompletion: null,
+      adsPlan: 0,
+      adsFact,
       drrPlan: null,
-      drrFact: null,
-      units: sum(rows, 'unitsYandex') || sum(rows, 'ordersUnitsYandex'),
-      views: sum(rows, 'yandexShows'),
-      clicks: sum(rows, 'yandexClicks'),
-      carts: sum(rows, 'yandexToCart'),
-      orders: sum(rows, 'ordersUnitsYandex'),
-      buyouts: sum(rows, 'deliveredUnitsYandex'),
-      returns: sum(rows, 'yandexReturnsUnits'),
-      cancellations: sum(rows, 'yandexCancellationsUnits'),
-      sourceRows: sum(rows, 'yandexSourceRows')
+      drrFact: safeRatio(adsFact, revenueFact),
+      units,
+      views,
+      clicks,
+      carts: sumBy(extraRows, (row) => row.carts) ?? 0,
+      orders,
+      buyouts: sumBy(extraRows, (row) => row.buyouts) ?? 0,
+      adRevenue: sumBy(extraRows, (row) => row.adRevenue) ?? 0,
+      returns: 0,
+      cancellations: 0,
+      sourceRows: extraRows.length || (rawRevenue !== null ? 1 : 0)
     };
   }
 
@@ -948,6 +1133,17 @@
       ];
       return `<div class="iu-drr-v3-kpis">${cards.join('')}</div>`;
     }
+    if (!isCorePlatform(focus)) {
+      const ctr = safeRatio(total.clicks, total.views);
+      const cards = [
+        kpiCard(`${label} оборот`, fmtMoney(total.revenueFact), total.revenueFact ? 'факт выбранной сети' : 'нет опубликованного оборота', total.revenueFact ? 1 : null, PLATFORM[focus]?.tone),
+        kpiCard(`${label} единицы`, fmtInt(total.units || total.orders), `заказы ${fmtInt(total.orders)} · источник ${fmtInt(total.sourceRows)}`, total.units || total.orders ? 1 : null, '#72e6a0'),
+        kpiCard('Расход рекламы', fmtMoney(total.adsFact), total.adsFact ? `ДРР ${fmtPct(total.drrFact)}` : 'реклама не опубликована', total.drrFact === null ? null : Math.max(0, 1 - total.drrFact), toneForCompletion(total.drrFact, true)),
+        kpiCard('Показы / клики', `${fmtInt(total.views)} / ${fmtInt(total.clicks)}`, `CTR ${fmtPct(ctr)}`, ctr, PLATFORM[focus]?.tone),
+        kpiCard('Источник сети', fmtInt(total.sourceRows), `${label} · platform trends / raw fact`, Math.min(1, numberOrZero(total.sourceRows) / 28), '#e5c16f')
+      ];
+      return `<div class="iu-drr-v3-kpis">${cards.join('')}</div>`;
+    }
 
     const drrProgress = total.drrFact === null ? null : Math.max(0, 1 - total.drrFact);
     const cards = [
@@ -1085,7 +1281,8 @@
   }
 
   function buildIuPanel(rows, focus) {
-    const platforms = platformsForFocus(focus, { includeYandex: false });
+    const selectedPlatforms = platformsForFocus(focus, { includeYandex: false });
+    const platforms = selectedPlatforms.filter((platform) => platform === 'wb' || platform === 'ozon');
     const parts = platforms.map((platform) => section(
       `iu-${platform}`,
       `${PLATFORM[platform].label} · ИУ по дням`,
@@ -1101,7 +1298,7 @@
         'Выбранная площадка · без ИУ',
         'Для текущего глобального фокуса таблица ИУ не строится. Доступная аналитика находится во вкладках «Позиции» и «Дневная матрица».',
         `<div class="iu-drr-v3-empty">Таблица ИУ намеренно не строится для выбранной площадки: это правило расчета, а не потеря данных.</div>`,
-        { platform: 'ya', defaultOpen: true }
+        { platform: focus === 'all' ? 'ya' : focus, defaultOpen: true }
       ));
     }
     return parts.join('');
@@ -1738,27 +1935,47 @@
         cpo: safeRatio(spend, orders)
       };
     }
-    const revenue = firstDefined(row, ['revenueYandex', 'ordersRevenueYandex']);
-    const spend = firstDefined(row, ['spendFactYandex']);
-    const views = firstDefined(row, ['yandexShows']);
-    const clicks = firstDefined(row, ['yandexClicks']);
-    const orders = firstDefined(row, ['ordersUnitsYandex']);
+    if (platform === 'ya') {
+      const revenue = firstDefined(row, ['revenueYandex', 'ordersRevenueYandex']);
+      const spend = firstDefined(row, ['spendFactYandex']);
+      const views = firstDefined(row, ['yandexShows']);
+      const clicks = firstDefined(row, ['yandexClicks']);
+      const orders = firstDefined(row, ['ordersUnitsYandex']);
+      return {
+        date: row.date,
+        platform,
+        source: row.yandexAdsFactMode || 'Yandex Market funnel',
+        views,
+        clicks,
+        ctr: firstDefined(row, ['yandexCtr']) ?? safeRatio(clicks, views),
+        carts: firstDefined(row, ['yandexToCart']),
+        orders,
+        buyouts: firstDefined(row, ['deliveredUnitsYandex']),
+        revenue,
+        spend,
+        adRevenue: null,
+        drr: safeRatio(spend, revenue),
+        cpc: safeRatio(spend, clicks),
+        cpo: safeRatio(spend, orders)
+      };
+    }
+    const extra = row?.platform === platform ? row : extraPlatformRowForDate(platform, row.date);
     return {
-      date: row.date,
+      date: extra.date || row.date,
       platform,
-      source: row.yandexAdsFactMode || 'Yandex Market funnel',
-      views,
-      clicks,
-      ctr: firstDefined(row, ['yandexCtr']) ?? safeRatio(clicks, views),
-      carts: firstDefined(row, ['yandexToCart']),
-      orders,
-      buyouts: firstDefined(row, ['deliveredUnitsYandex']),
-      revenue,
-      spend,
-      adRevenue: null,
-      drr: safeRatio(spend, revenue),
-      cpc: safeRatio(spend, clicks),
-      cpo: safeRatio(spend, orders)
+      source: extra.source || `${PLATFORM[platform]?.label || platform} source not published`,
+      views: extra.views,
+      clicks: extra.clicks,
+      ctr: safeRatio(extra.clicks, extra.views),
+      carts: extra.carts,
+      orders: extra.orders,
+      buyouts: extra.buyouts,
+      revenue: extra.revenue,
+      spend: extra.spend,
+      adRevenue: extra.adRevenue,
+      drr: extra.drr ?? safeRatio(extra.spend, extra.revenue),
+      cpc: extra.cpc ?? safeRatio(extra.spend, extra.clicks),
+      cpo: extra.cpo ?? safeRatio(extra.spend, extra.orders)
     };
   }
 
@@ -1803,8 +2020,9 @@
     const platforms = platformsForFocus(focus, { includeYandex: true });
     if (!platforms.length) return `<div class="iu-drr-v3-empty">Нет площадок для текущего фильтра.</div>`;
     return platforms.map((platform) => {
-      const models = rows.map((row) => platformDayFunnelModel(platform, row));
-      const total = platformMonthSummary(platform, rows);
+      const platformRows = isCorePlatform(platform) ? rows : extraPlatformRows(platform, rows);
+      const models = platformRows.map((row) => platformDayFunnelModel(platform, row));
+      const total = platformMonthSummary(platform, platformRows);
       const tableKey = safeTableKey('funnel-summary', platform);
       const body = models.map((model) => {
         const status = numberOrNull(model.revenue) !== null || numberOrNull(model.orders) !== null ? 'ok' : 'missing';
@@ -1937,6 +2155,25 @@
         ]
       };
     }
+    if (platform !== 'ya') {
+      const extra = row?.platform === platform ? row : extraPlatformRowForDate(platform, row.date);
+      return {
+        date: extra.date || row.date,
+        source: extra.source || `${PLATFORM[platform]?.label || platform} source not published`,
+        values: [
+          ['Оборот сети', extra.revenue, 'money'],
+          ['Единицы / заказы', firstDefined(extra, ['units', 'orders']), 'int'],
+          ['Расход рекламы', extra.spend, 'money'],
+          ['Показы', extra.views, 'int'],
+          ['Клики', extra.clicks, 'int'],
+          ['CTR', safeRatio(extra.clicks, extra.views), 'pct'],
+          ['Заказы рекламы', extra.orders, 'int'],
+          ['CPO', extra.cpo ?? safeRatio(extra.spend, extra.orders), 'money'],
+          ['ДРР', extra.drr ?? safeRatio(extra.spend, extra.revenue), 'pct'],
+          ['Ad revenue', extra.adRevenue, 'money']
+        ]
+      };
+    }
     return {
       date: row.date,
       source: row.yandexAdsFactMode || 'Yandex Market funnel',
@@ -1961,7 +2198,8 @@
     if (sourceBucket(model.source) === 'missing') return 'missing';
     const fact = numberOrNull(model.values.find(([label]) => label.includes('Факт'))?.[1]);
     const completion = numberOrNull(model.values.find(([label]) => label.includes('Выполнение'))?.[1]);
-    if (fact === null && completion === null) return 'missing';
+    const hasAnyValue = model.values.some(([, value]) => numberOrNull(value) !== null);
+    if (fact === null && completion === null) return hasAnyValue ? 'ok' : 'missing';
     if (completion === null) return 'ok';
     if (completion < 0.9) return 'bad';
     if (completion < 1) return 'warn';
@@ -1971,7 +2209,8 @@
   function buildDailyPanel(rows, focus, positions) {
     const platforms = platformsForFocus(focus, { includeYandex: true });
     const sections = platforms.map((platform) => {
-      const models = rows.map((row) => dailyAggregateModel(platform, row));
+      const platformRows = isCorePlatform(platform) ? rows : extraPlatformRows(platform, rows);
+      const models = platformRows.map((row) => dailyAggregateModel(platform, row));
       const headers = models[0]?.values.map(([label]) => label) || [];
       const tableKey = safeTableKey('daily-summary', platform);
       const body = models.map((model) => {
@@ -1998,7 +2237,7 @@
         'День берется из расчетного источника ИУ / ДРР. Здесь видны факты, планы, расходы, воронка и источник, чтобы дневные значения не пропадали при переключении вкладок.',
         `
           <div class="iu-drr-v3-stat-pack">
-            ${buildStatsSummaryCards(platform, rows)}
+            ${buildStatsSummaryCards(platform, platformRows)}
           </div>
           <div class="iu-drr-v3-table-host" data-iu-v3-table-host="${escapeHtml(tableKey)}">
             ${tableFilterMarkup(tableKey, models.length)}
@@ -2048,10 +2287,31 @@
   function platformStatsSource(row, platform) {
     if (platform === 'wb') return row.wbIuFactSource || row.revenueWbSource || row.wbIuFactMode || 'WB API / IU control';
     if (platform === 'ozon') return row.ozonAdsFactMode || row.ozonGmvMode || 'Ozon Finance / realization';
-    return row.yandexAdsFactMode || 'Yandex Market funnel';
+    if (platform === 'ya') return row.yandexAdsFactMode || 'Yandex Market funnel';
+    return row.source || `${PLATFORM[platform]?.label || platform} source`;
+  }
+
+  function extraPlatformStatsMetrics(platform) {
+    const label = PLATFORM[platform]?.label || platform;
+    const source = `${label} source`;
+    const adsSource = `${label} ads`;
+    const unitsOrOrders = (row) => firstDefined(row, ['units', 'orders']);
+    return [
+      statMetric(`${label} \u043e\u0431\u043e\u0440\u043e\u0442, \u20bd`, 'money', '\u043e\u0431\u043e\u0440\u043e\u0442 \u0438\u0437 platform_trends/raw fact', source, (row) => row.revenue, (rows) => sumBy(rows, (row) => row.revenue), { tone: '#72e6a0' }),
+      statMetric('\u0415\u0434\u0438\u043d\u0438\u0446\u044b / \u0437\u0430\u043a\u0430\u0437\u044b, \u0448\u0442', 'int', '\u0435\u0434\u0438\u043d\u0438\u0446\u044b \u0438\u043b\u0438 \u0437\u0430\u043a\u0430\u0437\u044b \u0438\u0437 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0430 \u0441\u0435\u0442\u0438', source, unitsOrOrders, (rows) => sumBy(rows, unitsOrOrders)),
+      statMetric('\u0420\u0430\u0441\u0445\u043e\u0434 \u0440\u0435\u043a\u043b\u0430\u043c\u044b, \u20bd', 'money', '\u0440\u0430\u0441\u0445\u043e\u0434 \u0438\u0437 ads_summary', adsSource, (row) => row.spend, (rows) => sumBy(rows, (row) => row.spend), { tone: PLATFORM[platform]?.tone }),
+      statMetric('\u041f\u043e\u043a\u0430\u0437\u044b, \u0448\u0442', 'int', '\u043f\u043e\u043a\u0430\u0437\u044b \u0438\u0437 ads_summary', adsSource, (row) => row.views, (rows) => sumBy(rows, (row) => row.views)),
+      statMetric('\u041a\u043b\u0438\u043a\u0438, \u0448\u0442', 'int', '\u043a\u043b\u0438\u043a\u0438 \u0438\u0437 ads_summary', adsSource, (row) => row.clicks, (rows) => sumBy(rows, (row) => row.clicks)),
+      statMetric('CTR, %', 'pct', '\u043a\u043b\u0438\u043a\u0438 / \u043f\u043e\u043a\u0430\u0437\u044b', adsSource, (row) => safeRatio(row.clicks, row.views), (rows) => ratioBy(rows, (row) => row.clicks, (row) => row.views)),
+      statMetric('CPC, \u20bd', 'money', '\u0440\u0430\u0441\u0445\u043e\u0434 / \u043a\u043b\u0438\u043a\u0438', adsSource, (row) => safeRatio(row.spend, row.clicks), (rows) => safeRatio(sumBy(rows, (row) => row.spend), sumBy(rows, (row) => row.clicks))),
+      statMetric('CPO, \u20bd', 'money', '\u0440\u0430\u0441\u0445\u043e\u0434 / \u0437\u0430\u043a\u0430\u0437\u044b', adsSource, (row) => row.cpo ?? safeRatio(row.spend, row.orders), (rows) => safeRatio(sumBy(rows, (row) => row.spend), sumBy(rows, (row) => row.orders))),
+      statMetric('\u0414\u0420\u0420, %', 'pct', '\u0440\u0430\u0441\u0445\u043e\u0434 / \u043e\u0431\u043e\u0440\u043e\u0442', adsSource, (row) => row.drr ?? safeRatio(row.spend, row.revenue), (rows) => ratioBy(rows, (row) => row.spend, (row) => row.revenue), { goodLow: true, tone: '#ff746f' }),
+      statMetric('Ad revenue, \u20bd', 'money', 'ad revenue \u0438\u0437 ads_summary', adsSource, (row) => row.adRevenue, (rows) => sumBy(rows, (row) => row.adRevenue), { tone: '#72e6a0' })
+    ];
   }
 
   function platformStatsMetrics(platform) {
+    if (!isCorePlatform(platform)) return extraPlatformStatsMetrics(platform);
     if (platform === 'wb') {
       const wbSpend = (row) => firstDefined(row, ['spendFactDrr', 'spendFact']);
       return [
@@ -2270,24 +2530,27 @@
   function buildStatsPanel(rows, focus) {
     const platforms = platformsForFocus(focus, { includeYandex: true });
     if (!platforms.length) return `<div class="iu-drr-v3-empty">Нет площадок для текущего фильтра.</div>`;
-    return platforms.map((platform) => section(
+    return platforms.map((platform) => {
+      const platformRows = isCorePlatform(platform) ? rows : extraPlatformRows(platform, rows);
+      return section(
       `stats-${platform}`,
       `${PLATFORM[platform].label} · Статистика`,
       'Расходы, показы, клики, CTR, CPC, заказы, оборот, ДРР и контрольные источники по дням. Матрица собрана из тех же API/файлов, что расчет ИУ / ДРР.',
       `
         <div class="iu-drr-v3-stat-pack">
-          ${buildStatsSummaryCards(platform, rows)}
+          ${buildStatsSummaryCards(platform, platformRows)}
           <p class="iu-drr-v3-stat-caption">
             <b>Матрица как в кабинете:</b> строка — метрика, столбец — день, цвет показывает относительную плотность значения внутри строки.
             <b>Ниже:</b> те же значения в фильтруемой таблице для сверки источника, даты и формулы.
             <b>Обновление:</b> новый день появляется автоматически после пересборки data/iu_drr_summary.json, без ручного списка дат в интерфейсе.
           </p>
-          ${buildStatsHeatmap(platform, rows)}
-          ${buildStatsLongTable(platform, rows)}
+          ${buildStatsHeatmap(platform, platformRows)}
+          ${buildStatsLongTable(platform, platformRows)}
         </div>
       `,
       { platform }
-    )).join('');
+    );
+    }).join('');
   }
 
   function monthSelectHtml(payload, monthKey) {

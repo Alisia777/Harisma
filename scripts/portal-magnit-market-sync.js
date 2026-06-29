@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const XLSX = require('xlsx');
 
 const PLATFORM_KEY = 'magnit';
 const PLATFORM_LABEL = 'Магнит Маркет';
@@ -108,7 +109,14 @@ function isoDate(value) {
   match = raw.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})/);
   if (match) {
     const year = match[3].length === 2 ? `20${match[3]}` : match[3];
-    return `${year}-${String(Number(match[2])).padStart(2, '0')}-${String(Number(match[1])).padStart(2, '0')}`;
+    const first = Number(match[1]);
+    const second = Number(match[2]);
+    const delimiter = raw.includes('/') ? '/' : raw.includes('.') ? '.' : '-';
+    const monthFirst = delimiter === '/' && first <= 12;
+    const month = monthFirst || second > 12 ? first : second;
+    const day = monthFirst || second > 12 ? second : first;
+    if (!(month >= 1 && month <= 12 && day >= 1 && day <= 31)) return '';
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   }
   const stamp = Date.parse(raw);
   return Number.isFinite(stamp) ? new Date(stamp).toISOString().slice(0, 10) : '';
@@ -194,6 +202,46 @@ function parseCsv(text) {
   return body.map((cells) => Object.fromEntries(header.map((name, index) => [name, cells[index] ?? ''])));
 }
 
+function workbookRowsByHeaders(filePath, requiredHeaders) {
+  const workbook = XLSX.readFile(filePath, { cellDates: true });
+  const required = requiredHeaders.map(normalizeKey);
+  for (const sheetName of workbook.SheetNames || []) {
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+      header: 1,
+      defval: '',
+      raw: false,
+      blankrows: false
+    });
+    for (let rowIndex = 0; rowIndex < Math.min(rows.length, 20); rowIndex += 1) {
+      const headers = rows[rowIndex].map((header) => normalizeText(header));
+      const headerSet = new Set(headers.map(normalizeKey));
+      if (!required.every((header) => headerSet.has(header))) continue;
+      const body = rows.slice(rowIndex + 1)
+        .map((cells) => Object.fromEntries(headers.map((header, index) => [header, cells[index] ?? ''])))
+        .filter((row) => Object.values(row).some((value) => normalizeText(value)));
+      return { sheetName, rows: body };
+    }
+  }
+  return { sheetName: '', rows: [] };
+}
+
+function salesRowsFromFile(filePath) {
+  const extension = path.extname(filePath).toLowerCase();
+  if (['.xlsx', '.xls', '.xlsm'].includes(extension)) {
+    const selection = workbookRowsByHeaders(filePath, ['Статус', 'Дата создания', 'Seller SKU ID']);
+    return {
+      rows: selection.rows,
+      kind: 'workbook',
+      detail: selection.sheetName ? `${path.basename(filePath)} / ${selection.sheetName}` : path.basename(filePath)
+    };
+  }
+  return {
+    rows: parseCsv(fs.readFileSync(filePath, 'utf8')),
+    kind: 'csv',
+    detail: path.basename(filePath)
+  };
+}
+
 function resolvePath(value) {
   const raw = normalizeText(value);
   if (!raw) return '';
@@ -236,6 +284,21 @@ function resolveOptions(args) {
     path.join(root, '..', 'data', 'external_sources', 'magnit_sales.csv'),
     defaultLocalTemp('magnit_sales.csv')
   );
+  const salesWorkbook = existingPath(
+    args['sales-xlsx'],
+    args['sales-xls'],
+    args['sales-workbook'],
+    process.env.ALTEA_MAGNIT_SALES_XLSX,
+    process.env.ALTEA_MAGNIT_SALES_XLS,
+    process.env.ALTEA_MAGNIT_SALES_WORKBOOK,
+    path.join(baseDataDir, 'external_sources', 'magnit_sales_drive.xlsx'),
+    path.join(baseDataDir, 'external_sources', 'magnit_sales.xlsx'),
+    path.join(root, 'data', 'external_sources', 'magnit_sales_drive.xlsx'),
+    path.join(root, 'data', 'external_sources', 'magnit_sales.xlsx'),
+    path.join(root, '..', 'data', 'external_sources', 'magnit_sales_drive.xlsx'),
+    path.join(root, '..', 'data', 'external_sources', 'magnit_sales.xlsx'),
+    defaultLocalTemp('magnit_sales.xlsx')
+  );
   const servicesCsv = existingPath(
     args['services-csv'],
     process.env.ALTEA_MAGNIT_SERVICES_CSV,
@@ -267,6 +330,7 @@ function resolveOptions(args) {
     apiMaxPages: Math.max(1, Number(args['api-max-pages'] || process.env.ALTEA_MAGNIT_API_MAX_PAGES || 200) || 200),
     preferApi: args['prefer-api'] !== undefined ? asBool(args['prefer-api'], true) : true,
     salesCsv,
+    salesWorkbook,
     servicesCsv,
     from: isoDate(args.from || args['date-from'] || ''),
     to: isoDate(args.to || args['date-to'] || '')
@@ -410,13 +474,15 @@ function inRequestedRange(date, options) {
 }
 
 function buildMagnitSnapshot(options, skus, skuAliases) {
-  if (!options.salesCsv) {
-    const message = 'Magnit sales CSV is missing. Expected ALTEA_MAGNIT_SALES_CSV or data/external_sources/magnit_sales.csv.';
+  const salesSource = options.salesWorkbook || options.salesCsv;
+  if (!salesSource) {
+    const message = 'Magnit sales source is missing. Expected ALTEA_MAGNIT_SALES_XLSX, ALTEA_MAGNIT_SALES_CSV, or data/external_sources/magnit_sales_drive.xlsx.';
     if (options.requireSource) throw new Error(message);
     return { missing: true, message };
   }
 
-  const salesRows = parseCsv(fs.readFileSync(options.salesCsv, 'utf8'));
+  const salesInput = salesRowsFromFile(salesSource);
+  const salesRows = salesInput.rows;
   const serviceRows = options.servicesCsv ? parseCsv(fs.readFileSync(options.servicesCsv, 'utf8')) : [];
   const skuLookup = buildSkuLookup(skus, skuAliases);
   const platformDaily = new Map();
@@ -550,6 +616,8 @@ function buildMagnitSnapshot(options, skus, skuAliases) {
   const diagnostics = articleDiagnostics(articles);
   diagnostics.source = SOURCE_MODE;
   diagnostics.dailyMode = true;
+  diagnostics.inputKind = salesInput.kind;
+  diagnostics.inputDetail = salesInput.detail;
   diagnostics.salesRows = salesRows.length;
   diagnostics.serviceRows = serviceRows.length;
   diagnostics.normalizedSalesRows = normalizedSales.length;
@@ -558,7 +626,7 @@ function buildMagnitSnapshot(options, skus, skuAliases) {
   diagnostics.lastDate = lastDate;
   diagnostics.skipped = skipped;
   diagnostics.files = {
-    sales: sourceFileInfo(options.salesCsv),
+    sales: sourceFileInfo(salesSource),
     services: sourceFileInfo(options.servicesCsv)
   };
 
@@ -1389,6 +1457,7 @@ async function main() {
     outputFile: options.outputFile,
     smartPriceOutputFile: nextOverlay ? options.smartPriceOutputFile : '',
     rawOutputFile: options.rawOutputFile,
+    salesWorkbook: options.salesWorkbook || '',
     salesCsv: options.salesCsv,
     servicesCsv: options.servicesCsv || '',
     series: magnit.series.length,

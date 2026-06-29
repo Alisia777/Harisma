@@ -31,9 +31,12 @@ const LETUAL_DEFAULT_GRAPHQL_PATH = '/api/graphql';
 const LETUAL_DEFAULT_LOCAL_EXPORT_XLSX = 'C:/Users/artiu/Downloads/Letu.xlsx';
 const LETUAL_DEFAULT_PLAN_XLSX = 'C:/Users/artiu/OneDrive/Рабочий стол/План/Лэтуаль.xlsx';
 const ZYA_DEFAULT_SALES_XLSX = path.join('data', 'external_sources', 'zya_plan.xlsx');
+const ZYA_DRIVE_SALES_XLSX = path.join('data', 'external_sources', 'zya_sales_drive.xlsx');
+const MAGNIT_DRIVE_SALES_XLSX = path.join('data', 'external_sources', 'magnit_sales_drive.xlsx');
 const DOWNLOADS_DIR = path.join(os.homedir(), 'Downloads');
 const TELEGRAM_DOWNLOADS_DIR = path.join(DOWNLOADS_DIR, 'Telegram Desktop');
 const ZYA_LOCAL_SALES_XLSX_CANDIDATES = [
+  ZYA_DRIVE_SALES_XLSX,
   path.join(TELEGRAM_DOWNLOADS_DIR, '\u0417\u042f 2.xlsx'),
   path.join(DOWNLOADS_DIR, '\u0417\u043e\u043b\u043e\u0442\u043e\u0435 \u042f\u0431\u043b\u043e\u043a\u043e.xlsx'),
   ZYA_DEFAULT_SALES_XLSX
@@ -371,6 +374,10 @@ function resolveOptions(args) {
     magnitSalesPath: String(args['magnit-sales-path'] || process.env.ALTEA_MAGNIT_SALES_PATH || process.env.ALTEA_MAGNIT_MARKET_SALES_PATH || '').trim(),
     magnitClientId: String(args['magnit-client-id'] || process.env.ALTEA_MAGNIT_CLIENT_ID || process.env.ALTEA_MAGNIT_MARKET_CLIENT_ID || '').trim(),
     magnitSalesCsv: String(args['magnit-sales-csv'] || process.env.ALTEA_MAGNIT_SALES_CSV || '').trim(),
+    magnitSalesXlsx: explicitOrExistingPath(
+      args['magnit-sales-xlsx'] || args['magnit-sales-workbook'] || process.env.ALTEA_MAGNIT_SALES_XLSX || process.env.ALTEA_MAGNIT_SALES_WORKBOOK,
+      [MAGNIT_DRIVE_SALES_XLSX]
+    ),
     magnitServicesCsv: String(args['magnit-services-csv'] || process.env.ALTEA_MAGNIT_SERVICES_CSV || '').trim(),
     megamarketApiToken: String(args['megamarket-token'] || args['megamarket-api-token'] || envValue('ALTEA_MEGAMARKET_API_TOKEN') || envValue('ALTEA_MEGAMARKET_API_KEY') || '').trim(),
     megamarketApiBaseUrl: String(args['megamarket-base-url'] || envValue('ALTEA_MEGAMARKET_API_BASE_URL') || '').trim(),
@@ -2267,6 +2274,25 @@ const ZYA_MONTHLY_HEADERS = {
   avgCheck: '\u0421\u0440. \u0447\u0435\u043a'
 };
 
+const ZYA_ORDER_HEADERS = {
+  brand: 'Бренд',
+  name: 'Наименование',
+  nomenclature: 'Номенклатура',
+  article: 'Артикул',
+  barcode: 'Штрихкод',
+  orderId: 'Номер заказа',
+  orderDate: 'Дата заказа',
+  ordersRevenue: 'Заказано руб',
+  deliveredRevenue: 'Доставлено руб',
+  inTransitRevenue: 'В пути руб',
+  canceledRevenue: 'Отменено руб',
+  ordersUnits: 'Заказано шт',
+  deliveredUnits: 'Доставлено шт',
+  inTransitUnits: 'В пути шт',
+  canceledUnits: 'Отменено шт',
+  returnsUnits: 'Возвраты шт'
+};
+
 function rowValue(row, keys) {
   for (const key of keys) {
     if (row[key] !== undefined && row[key] !== null && row[key] !== '') return row[key];
@@ -2402,6 +2428,57 @@ function addZyaMonthlySalesXlsx(store, workbook, filePath, notes) {
   return count;
 }
 
+function addZyaOrderSalesXlsx(store, workbook, filePath, notes) {
+  const selection = findWorkbookRowsByHeaders(workbook, [
+    ZYA_ORDER_HEADERS.orderDate,
+    ZYA_ORDER_HEADERS.article,
+    ZYA_ORDER_HEADERS.ordersUnits
+  ]);
+  if (!selection) return 0;
+
+  const skuSet = new Set();
+  const months = new Set();
+  let count = 0;
+  for (const row of selection.rows) {
+    const month = monthKey(row[ZYA_ORDER_HEADERS.orderDate]);
+    if (!month) continue;
+    const article = normalizeText(row[ZYA_ORDER_HEADERS.article] || row[ZYA_ORDER_HEADERS.nomenclature] || row[ZYA_ORDER_HEADERS.barcode]);
+    const name = normalizeText(row[ZYA_ORDER_HEADERS.name]) || article;
+    const metricValues = {
+      orders_units: row[ZYA_ORDER_HEADERS.ordersUnits],
+      orders_revenue: row[ZYA_ORDER_HEADERS.ordersRevenue],
+      delivered_units: row[ZYA_ORDER_HEADERS.deliveredUnits],
+      delivered_revenue: row[ZYA_ORDER_HEADERS.deliveredRevenue],
+      buyout_units: row[ZYA_ORDER_HEADERS.deliveredUnits],
+      buyout_revenue: row[ZYA_ORDER_HEADERS.deliveredRevenue],
+      cancellations_units: row[ZYA_ORDER_HEADERS.canceledUnits],
+      cancel_revenue: row[ZYA_ORDER_HEADERS.canceledRevenue],
+      returns_units: row[ZYA_ORDER_HEADERS.returnsUnits]
+    };
+    const hasMetric = Object.values(metricValues).some((value) => numberOrZero(value) !== 0);
+    if (!hasMetric) continue;
+
+    const totalCommon = { level: 'total', platformKey: 'goldapple', source: 'ZYA order sales XLSX' };
+    const skuCommon = { level: 'sku', platformKey: 'goldapple', articleKey: article || `zya-order-${count}`, article: article || `zya-order-${count}`, name, source: 'ZYA order sales XLSX' };
+    for (const [metricKey, value] of Object.entries(metricValues)) {
+      store.add({ ...totalCommon, ...metricParts(metricKey) }, month, value);
+      if (article) store.add({ ...skuCommon, ...metricParts(metricKey) }, month, value);
+    }
+    skuSet.add(article || `zya-order-${count}`);
+    months.add(month);
+    count += 1;
+  }
+
+  const orderedMonths = Array.from(months).sort();
+  sourceNote(
+    notes,
+    'ZYA order sales XLSX',
+    count ? 'loaded' : 'empty',
+    withFileMtime(filePath, `${count} order rows, ${skuSet.size} SKU, ${orderedMonths[0] || ''}..${orderedMonths[orderedMonths.length - 1] || ''} from ${path.basename(filePath)} / ${selection.sheetName}`)
+  );
+  return count;
+}
+
 function addZyaSalesXlsx(store, filePath, notes) {
   if (!filePath) {
     sourceNote(notes, 'ZYA sales XLSX', 'missing file', 'ALTEA_ZYA_SALES_XLSX');
@@ -2413,6 +2490,8 @@ function addZyaSalesXlsx(store, filePath, notes) {
   }
   try {
     const workbook = readWorkbook(filePath);
+    const orderCount = addZyaOrderSalesXlsx(store, workbook, filePath, notes);
+    if (orderCount) return orderCount;
     const selection = findWorkbookRowsByHeaders(workbook, [ZYA_HEADERS.saleDate, ZYA_HEADERS.productCode, ZYA_HEADERS.soldUnits]);
     if (!selection) {
       const monthlyCount = addZyaMonthlySalesXlsx(store, workbook, filePath, notes);
@@ -2527,60 +2606,90 @@ function addZyaAdsXlsx(store, filePath, notes) {
   }
 }
 
+function addMagnitSalesRows(store, rows, notes, sourceLabel, detail) {
+  let count = 0;
+  for (const row of rows) {
+    const orderMonth = monthKey(rowFieldValue(row, ['Дата создания', 'orderDate', 'createdAt']));
+    if (!orderMonth) continue;
+    const deliveryDate = rowFieldValue(row, ['Дата получения', 'deliveryDate', 'receivedAt']);
+    const deliveryMonth = monthKey(deliveryDate) || orderMonth;
+    const status = normalizeText(rowFieldValue(row, ['Статус', 'status'])).toLowerCase();
+    const article = normalizeText(rowFieldValue(row, ['Seller SKU ID', 'sellerSkuId', 'SKU', 'Штрихкод', 'barcode']));
+    const name = normalizeText(rowFieldValue(row, ['Наименование', 'name', 'productName'])) || article;
+    const commonTotal = { level: 'total', platformKey: 'magnitmarket', source: sourceLabel };
+    const commonSku = { level: 'sku', platformKey: 'magnitmarket', articleKey: article || `magnit-${count}`, article: article || `magnit-${count}`, name, source: sourceLabel };
+    const ordersUnits = rowFieldValue(row, ['Количество', 'quantity']);
+    const grossRevenue = rowFieldValue(row, ['Выручка (руб.)', 'revenue']);
+    const netRevenue = rowFieldValue(row, ['Выручка с вычетом комиссии (руб.)', 'netRevenue', 'netPayout']);
+    const returnedUnits = rowFieldValue(row, ['Возвраты', 'returns']);
+    const isDelivered = Boolean(deliveryDate) || /заверш|достав|получ/i.test(status);
+    const isCanceled = /отмен|отказ/i.test(status);
+    const orderMetrics = {
+      orders_units: ordersUnits,
+      orders_revenue: grossRevenue,
+      cancellations_units: isCanceled ? ordersUnits : 0,
+      cancel_revenue: isCanceled ? grossRevenue : 0,
+      returns_units: returnedUnits
+    };
+    const deliveryMetrics = {
+      delivered_units: isDelivered ? ordersUnits : 0,
+      delivered_revenue: isDelivered ? grossRevenue : 0,
+      buyout_units: isDelivered ? ordersUnits : 0,
+      buyout_revenue: isDelivered ? grossRevenue : 0,
+      net_payout: isDelivered ? netRevenue : 0
+    };
+    for (const [metricKey, value] of Object.entries(orderMetrics)) {
+      store.add({ ...commonTotal, ...metricParts(metricKey) }, orderMonth, value);
+      if (article) store.add({ ...commonSku, ...metricParts(metricKey) }, orderMonth, value);
+    }
+    for (const [metricKey, value] of Object.entries(deliveryMetrics)) {
+      store.add({ ...commonTotal, ...metricParts(metricKey) }, deliveryMonth, value);
+      if (article) store.add({ ...commonSku, ...metricParts(metricKey) }, deliveryMonth, value);
+    }
+    count += 1;
+  }
+  sourceNote(notes, sourceLabel, count ? 'loaded' : 'empty', `${count} rows${detail ? ` from ${detail}` : ''}`);
+  return count;
+}
+
 function addMagnitSalesCsv(store, filePath, notes) {
   if (!filePath) {
     sourceNote(notes, 'Magnit Market sales CSV', 'missing file', 'ALTEA_MAGNIT_SALES_CSV');
-    return;
+    return 0;
   }
   if (!fs.existsSync(filePath)) {
     sourceNote(notes, 'Magnit Market sales CSV', 'missing file', filePath);
-    return;
+    return 0;
   }
   try {
     const rows = parseCsv(fs.readFileSync(filePath, 'utf8'));
-    let count = 0;
-    for (const row of rows) {
-      const orderMonth = monthKey(row['Дата создания']);
-      if (!orderMonth) continue;
-      const deliveryMonth = monthKey(row['Дата получения']) || orderMonth;
-      const status = normalizeText(row['Статус']).toLowerCase();
-      const article = normalizeText(row['Seller SKU ID'] || row['SKU'] || row['Штрихкод']);
-      const name = normalizeText(row['Наименование']) || article;
-      const commonTotal = { level: 'total', platformKey: 'magnitmarket', source: 'Magnit Market sales CSV' };
-      const commonSku = { level: 'sku', platformKey: 'magnitmarket', articleKey: article || `magnit-${count}`, article: article || `magnit-${count}`, name, source: 'Magnit Market sales CSV' };
-      const ordersUnits = row['Количество'];
-      const grossRevenue = row['Выручка (руб.)'];
-      const netRevenue = row['Выручка с вычетом комиссии (руб.)'];
-      const returnedUnits = row['Возвраты'];
-      const isDelivered = Boolean(row['Дата получения']) || /заверш|достав|получ/i.test(status);
-      const isCanceled = /отмен|отказ/i.test(status);
-      const orderMetrics = {
-        orders_units: ordersUnits,
-        orders_revenue: grossRevenue,
-        cancellations_units: isCanceled ? ordersUnits : 0,
-        cancel_revenue: isCanceled ? grossRevenue : 0,
-        returns_units: returnedUnits
-      };
-      const deliveryMetrics = {
-        delivered_units: isDelivered ? ordersUnits : 0,
-        delivered_revenue: isDelivered ? grossRevenue : 0,
-        buyout_units: isDelivered ? ordersUnits : 0,
-        buyout_revenue: isDelivered ? grossRevenue : 0,
-        net_payout: isDelivered ? netRevenue : 0
-      };
-      for (const [metricKey, value] of Object.entries(orderMetrics)) {
-        store.add({ ...commonTotal, ...metricParts(metricKey) }, orderMonth, value);
-        if (article) store.add({ ...commonSku, ...metricParts(metricKey) }, orderMonth, value);
-      }
-      for (const [metricKey, value] of Object.entries(deliveryMetrics)) {
-        store.add({ ...commonTotal, ...metricParts(metricKey) }, deliveryMonth, value);
-        if (article) store.add({ ...commonSku, ...metricParts(metricKey) }, deliveryMonth, value);
-      }
-      count += 1;
-    }
-    sourceNote(notes, 'Magnit Market sales CSV', count ? 'loaded' : 'empty', withFileMtime(filePath, `${count} rows from ${path.basename(filePath)}`));
+    return addMagnitSalesRows(store, rows, notes, 'Magnit Market sales CSV', withFileMtime(filePath, path.basename(filePath)));
   } catch (error) {
     sourceNote(notes, 'Magnit Market sales CSV', 'failed', error.message);
+    return 0;
+  }
+}
+
+function addMagnitSalesXlsx(store, filePath, notes) {
+  if (!filePath) {
+    sourceNote(notes, 'Magnit Market sales XLSX', 'missing file', 'ALTEA_MAGNIT_SALES_XLSX');
+    return 0;
+  }
+  if (!fs.existsSync(filePath)) {
+    sourceNote(notes, 'Magnit Market sales XLSX', 'missing file', filePath);
+    return 0;
+  }
+  try {
+    const workbook = readWorkbook(filePath);
+    const selection = findWorkbookRowsByHeaders(workbook, ['Статус', 'Дата создания', 'Seller SKU ID']);
+    if (!selection) {
+      sourceNote(notes, 'Magnit Market sales XLSX', 'empty', `${path.basename(filePath)} has no sales sheet`);
+      return 0;
+    }
+    return addMagnitSalesRows(store, selection.rows, notes, 'Magnit Market sales XLSX', withFileMtime(filePath, `${path.basename(filePath)} / ${selection.sheetName}`));
+  } catch (error) {
+    sourceNote(notes, 'Magnit Market sales XLSX', 'failed', error.message);
+    return 0;
   }
 }
 
@@ -2900,7 +3009,9 @@ async function main() {
   }
   if (magnitApiRows) apiLoadedPlatforms.add('magnitmarket');
   if (platformRequested(options, 'magnit') && !magnitApiRows) {
-    addMagnitSalesCsv(store, options.magnitSalesCsv, notes);
+    let magnitRows = addMagnitSalesXlsx(store, options.magnitSalesXlsx, notes);
+    if (!magnitRows) magnitRows = addMagnitSalesCsv(store, options.magnitSalesCsv, notes);
+    if (magnitRows) apiLoadedPlatforms.add('magnitmarket');
     addMagnitServicesCsv(store, options.magnitServicesCsv, notes);
   }
   const megamarketApiRows = platformRequested(options, 'megamarket')

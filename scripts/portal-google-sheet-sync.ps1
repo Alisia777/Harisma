@@ -229,6 +229,131 @@ function Resolve-FirstExistingPath {
   return ""
 }
 
+function Resolve-GoogleDriveFileId {
+  param([string]$Value)
+
+  $raw = [string]$Value
+  if ([string]::IsNullOrWhiteSpace($raw)) {
+    return ""
+  }
+
+  $match = [regex]::Match($raw, "/d/([^/?#]+)")
+  if ($match.Success) {
+    return $match.Groups[1].Value
+  }
+
+  $match = [regex]::Match($raw, "[?&]id=([^&#]+)")
+  if ($match.Success) {
+    return [System.Uri]::UnescapeDataString($match.Groups[1].Value)
+  }
+
+  if ($raw -notmatch "^https?://") {
+    return $raw.Trim()
+  }
+
+  return ""
+}
+
+function Resolve-GoogleDriveSpreadsheetExportUrl {
+  param([string]$Value)
+
+  $fileId = Resolve-GoogleDriveFileId -Value $Value
+  if ([string]::IsNullOrWhiteSpace($fileId)) {
+    return ""
+  }
+
+  return "https://docs.google.com/spreadsheets/d/$fileId/export?format=xlsx"
+}
+
+function Get-EnvValue {
+  param([string]$Name)
+
+  $processValue = [Environment]::GetEnvironmentVariable($Name, "Process")
+  if (-not [string]::IsNullOrWhiteSpace($processValue)) {
+    return $processValue
+  }
+
+  $userValue = [Environment]::GetEnvironmentVariable($Name, "User")
+  if (-not [string]::IsNullOrWhiteSpace($userValue)) {
+    return $userValue
+  }
+
+  return ""
+}
+
+function Sync-GoogleDriveWorkbookSource {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Name,
+    [Parameter(Mandatory = $true)]
+    [string]$DestinationPath,
+    [string]$UrlEnvName = "",
+    [string]$IdEnvName = "",
+    [string]$DefaultFileId = "",
+    [string[]]$OutputEnvNames = @()
+  )
+
+  $sourceValue = ""
+  if (-not [string]::IsNullOrWhiteSpace($UrlEnvName)) {
+    $sourceValue = Get-EnvValue -Name $UrlEnvName
+  }
+  if ([string]::IsNullOrWhiteSpace($sourceValue) -and -not [string]::IsNullOrWhiteSpace($IdEnvName)) {
+    $sourceValue = Get-EnvValue -Name $IdEnvName
+  }
+  if ([string]::IsNullOrWhiteSpace($sourceValue)) {
+    $sourceValue = $DefaultFileId
+  }
+
+  $downloadUrl = Resolve-GoogleDriveSpreadsheetExportUrl -Value $sourceValue
+  if ([string]::IsNullOrWhiteSpace($downloadUrl)) {
+    Write-Warning "[sync] $Name Drive source skipped: no Google Drive file id/url configured."
+    return ""
+  }
+
+  $destinationDir = Split-Path -Parent $DestinationPath
+  New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
+  $tempPath = "$DestinationPath.download"
+  Remove-Item -LiteralPath $tempPath -Force -ErrorAction SilentlyContinue
+
+  try {
+    Write-Output "[sync] $Name Drive download started"
+    Invoke-WebRequest -UseBasicParsing -Uri $downloadUrl -OutFile $tempPath -TimeoutSec 180 -MaximumRedirection 5
+    $item = Get-Item -LiteralPath $tempPath -ErrorAction Stop
+    if ($item.Length -lt 1024) {
+      throw "downloaded file is unexpectedly small: $($item.Length) bytes"
+    }
+    $bytes = [System.IO.File]::ReadAllBytes($tempPath)
+    $probeLength = [Math]::Min(256, $bytes.Length)
+    $probe = [System.Text.Encoding]::ASCII.GetString($bytes, 0, $probeLength)
+    if ($probe -match "<!DOCTYPE|<html") {
+      throw "download returned HTML instead of workbook"
+    }
+    Move-Item -LiteralPath $tempPath -Destination $DestinationPath -Force
+    foreach ($envName in @($OutputEnvNames)) {
+      if (-not [string]::IsNullOrWhiteSpace($envName)) {
+        [Environment]::SetEnvironmentVariable($envName, $DestinationPath, "Process")
+        Set-Item -Path ("Env:" + $envName) -Value $DestinationPath
+      }
+    }
+    Write-Output "[sync] $Name Drive download completed: $DestinationPath ($($item.Length) bytes)"
+    return $DestinationPath
+  } catch {
+    Remove-Item -LiteralPath $tempPath -Force -ErrorAction SilentlyContinue
+    Write-Warning "[sync] $Name Drive download failed: $($_.Exception.Message)"
+    if (Test-Path -LiteralPath $DestinationPath) {
+      Write-Warning "[sync] $Name Drive source will use previous local copy: $DestinationPath"
+      foreach ($envName in @($OutputEnvNames)) {
+        if (-not [string]::IsNullOrWhiteSpace($envName)) {
+          [Environment]::SetEnvironmentVariable($envName, $DestinationPath, "Process")
+          Set-Item -Path ("Env:" + $envName) -Value $DestinationPath
+        }
+      }
+      return $DestinationPath
+    }
+    return ""
+  }
+}
+
 $resolvedOutputDir = if ($OutputDir) { $OutputDir } else { ".altea-google-sheet-sync-output" }
 New-Item -ItemType Directory -Path $resolvedOutputDir -Force | Out-Null
 $script:retrySteps = @()
@@ -536,6 +661,25 @@ if ([string]::IsNullOrWhiteSpace($envOzonApiKey)) {
   }
 }
 
+$zyaDriveSalesPath = Join-Path $repoRoot "data\external_sources\zya_sales_drive.xlsx"
+$magnitDriveSalesPath = Join-Path $repoRoot "data\external_sources\magnit_sales_drive.xlsx"
+
+Sync-GoogleDriveWorkbookSource `
+  -Name "ZYA sales" `
+  -DestinationPath $zyaDriveSalesPath `
+  -UrlEnvName "ALTEA_ZYA_SALES_GOOGLE_URL" `
+  -IdEnvName "ALTEA_ZYA_SALES_GOOGLE_FILE_ID" `
+  -DefaultFileId "1qYsAC4ksk30ZUQC_joqwnLpboy9UGODi" `
+  -OutputEnvNames @("ALTEA_ZYA_SALES_XLSX")
+
+Sync-GoogleDriveWorkbookSource `
+  -Name "Magnit sales" `
+  -DestinationPath $magnitDriveSalesPath `
+  -UrlEnvName "ALTEA_MAGNIT_SALES_GOOGLE_URL" `
+  -IdEnvName "ALTEA_MAGNIT_SALES_GOOGLE_FILE_ID" `
+  -DefaultFileId "1-dFIGhk0O4gBnS0B-LtnzIL_O1KJZb4Y" `
+  -OutputEnvNames @("ALTEA_MAGNIT_SALES_XLSX", "ALTEA_MAGNIT_SALES_WORKBOOK")
+
 Set-ProcessEnvFallback -Name "ALTEA_YM_API_KEY"
 Set-ProcessEnvFallback -Name "ALTEA_YM_CAMPAIGN_ID"
 Set-ProcessEnvFallback -Name "ALTEA_YM_BUSINESS_ID"
@@ -564,6 +708,7 @@ Set-ProcessEnvFallback -Name "ALTEA_LETUAL_API_BODY_JSON"
 Set-ProcessEnvFallback -Name "ALTEA_LETUAL_GRAPHQL_QUERY"
 Set-ProcessEnvFallback -Name "ALTEA_LETUAL_LOCAL_EXPORT_XLSX"
 Set-ProcessEnvFallback -Name "ALTEA_LETUAL_PLAN_XLSX"
+Set-ProcessEnvFallback -Name "ALTEA_ZYA_SALES_XLSX" $zyaDriveSalesPath
 Set-ProcessEnvFallback -Name "ALTEA_ZYA_SALES_ZIP" (Join-Path $env:LOCALAPPDATA "Temp\zya_sales.zip")
 Set-ProcessEnvFallback -Name "ALTEA_ZYA_ADS_XLSX" (Join-Path $env:LOCALAPPDATA "Temp\zya_ads.xlsx")
 Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_API_TOKEN"
@@ -582,6 +727,8 @@ Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_MARKET_CLIENT_ID"
 Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_MARKET_API_METHOD"
 Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_MARKET_API_BODY_JSON"
 Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_MARKET_GRAPHQL_QUERY"
+Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SALES_XLSX" $magnitDriveSalesPath
+Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SALES_WORKBOOK" $magnitDriveSalesPath
 Set-ProcessEnvFallback -Name "ALTEA_MEGAMARKET_API_TOKEN"
 Set-ProcessEnvFallback -Name "ALTEA_MEGAMARKET_API_KEY"
 Set-ProcessEnvFallback -Name "ALTEA_MEGAMARKET_API_BASE_URL"
@@ -742,11 +889,17 @@ $magnitDailyArguments = @(
 $magnitApiConfigured = (
   (-not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_API_TOKEN) -or -not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_API_KEY) -or -not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_MARKET_API_TOKEN) -or -not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_MARKET_API_KEY))
 )
+$magnitWorkbookConfigured = (-not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_SALES_XLSX) -and (Test-Path -LiteralPath $env:ALTEA_MAGNIT_SALES_XLSX))
+$magnitCsvConfigured = (-not [string]::IsNullOrWhiteSpace($env:ALTEA_MAGNIT_SALES_CSV) -and (Test-Path -LiteralPath $env:ALTEA_MAGNIT_SALES_CSV))
 $retailNetworkSalesConfigured = (-not [string]::IsNullOrWhiteSpace($env:ALTEA_RETAIL_NETWORK_SALES_XLSX) -and (Test-Path -LiteralPath $env:ALTEA_RETAIL_NETWORK_SALES_XLSX))
 if ($magnitApiConfigured) {
   Write-Output "[sync] Magnit Market Partner API normalization started"
   Invoke-NodeStep -StepName "Magnit Market Partner API normalization" -Arguments $magnitDailyArguments -Attempts 2 -RetryDelaySeconds 20
   Write-Output "[sync] Magnit Market Partner API normalization completed"
+} elseif ($magnitWorkbookConfigured -or $magnitCsvConfigured) {
+  Write-Output "[sync] Magnit Market daily normalization started"
+  Invoke-NodeStep -StepName "Magnit Market daily normalization" -Arguments $magnitDailyArguments -Attempts 2 -RetryDelaySeconds 20
+  Write-Output "[sync] Magnit Market daily normalization completed"
 } elseif ($retailNetworkSalesConfigured) {
   Write-Output "[sync] Magnit Market daily normalization skipped because retail-network source is active"
 } else {

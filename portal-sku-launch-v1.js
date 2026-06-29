@@ -2128,6 +2128,11 @@
     return String(item?.launchDate || item?.date || '').slice(0, 10);
   }
 
+  function launchExactDue(item) {
+    const exact = String(item?.launchDate || item?.date || '').trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(exact) ? exact : '';
+  }
+
   function launchDueText(item) {
     if (typeof launchDueDateLabel === 'function') return launchDueDateLabel(item);
     return launchDue(item) || 'Без даты';
@@ -2141,6 +2146,39 @@
   function launchMonthLabel(monthKey = '') {
     if (typeof launchCalendarMonthLabel === 'function') return launchCalendarMonthLabel(monthKey);
     return new Date(`${monthKey || launchMonthKey()}T00:00:00`).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+  }
+
+  function launchMonthKeyFromLabel(label = '') {
+    if (typeof launchMonthDateKey === 'function') {
+      const key = launchMonthDateKey(label);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(key)) return launchMonthKey(key);
+    }
+    const match = String(label || '').trim().toLowerCase().match(/([а-яё]+)\s+(\d{4})/i);
+    if (!match) return '';
+    const monthMap = {
+      январь: '01',
+      февраль: '02',
+      март: '03',
+      апрель: '04',
+      май: '05',
+      июнь: '06',
+      июль: '07',
+      август: '08',
+      сентябрь: '09',
+      октябрь: '10',
+      ноябрь: '11',
+      декабрь: '12'
+    };
+    const month = monthMap[match[1]];
+    return month ? `${match[2]}-${month}-01` : '';
+  }
+
+  function launchItemMonthKey(item) {
+    const exact = launchExactDue(item);
+    if (exact) return launchMonthKey(exact);
+    const due = launchDue(item);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(due)) return launchMonthKey(due);
+    return launchMonthKeyFromLabel(item?.launchMonth || item?.month || '');
   }
 
   function launchMonthDays(monthKey = '') {
@@ -2480,13 +2518,13 @@
     const filters = launchFilters();
     const search = String(filters.search || '').trim().toLowerCase();
     return items.filter((item) => {
-      const due = launchDue(item);
+      const monthKey = launchItemMonthKey(item);
       const owner = launchOwner(item) || '';
       const category = item.reportGroup || item.category || item.subCategory || '';
       const itemReady = readiness(item);
       if (search && !launchText(item).includes(search)) return false;
-      if (filters.month && filters.month !== 'all' && due && launchMonthKey(due) !== filters.month) return false;
-      if (filters.month && filters.month !== 'all' && !due) return false;
+      if (filters.month && filters.month !== 'all' && filters.month === 'missing' && monthKey) return false;
+      if (filters.month && filters.month !== 'all' && filters.month !== 'missing' && monthKey !== filters.month) return false;
       if (filters.owner !== 'all' && owner !== filters.owner) return false;
       if (filters.category !== 'all' && category !== filters.category) return false;
       if (filters.status !== 'all' && String(item.status || '') !== filters.status) return false;
@@ -2577,8 +2615,7 @@
   function launchMonthOptions(items) {
     const map = new Map();
     items.forEach((item) => {
-      const due = launchDue(item);
-      const key = due ? launchMonthKey(due) : 'missing';
+      const key = launchItemMonthKey(item) || 'missing';
       const label = key === 'missing' ? 'Без даты' : launchMonthLabel(key);
       if (!map.has(key)) map.set(key, { key, label, count: 0 });
       map.get(key).count += 1;
@@ -2595,7 +2632,7 @@
     const activeMonth = launchFilters().month;
     const visibleMonthItems = activeMonth && activeMonth !== 'all'
       ? filtered
-      : filtered.filter((item) => launchDue(item) && launchMonthKey(launchDue(item)) === launchMonthKey(todayKey()));
+      : filtered.filter((item) => launchItemMonthKey(item) === launchMonthKey(todayKey()));
     const blockers = filtered.filter((item) => (item.blockers || []).length || stageEntries(item).some((entry) => entry.column?.key === 'blocked')).length;
     const noOwner = filtered.filter((item) => !launchOwner(item)).length;
     const contentRisk = filtered.filter((item) => {
@@ -2643,12 +2680,12 @@
       : launchMonthKey(todayKey());
     const dayItems = new Map();
     filtered.forEach((item) => {
-      const due = launchDue(item);
+      const due = launchExactDue(item);
       if (!due || launchMonthKey(due) !== month) return;
       if (!dayItems.has(due)) dayItems.set(due, []);
       dayItems.get(due).push(item);
     });
-    const noDate = filtered.filter((item) => !launchDue(item));
+    const noDate = filtered.filter((item) => !launchExactDue(item));
     return `
       <section class="launch-v1-calendar-card">
         <div class="launch-v1-calendar-head">

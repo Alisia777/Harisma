@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260629-task-board-columns-v1';
+  const VERSION = '20260629-task-status-lanes-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -30,11 +30,12 @@
   const WAITING_STATUSES = new Set(['waiting', 'waiting_team', 'waiting_rop', 'waiting_decision', 'approval']);
   const DONE_STATUSES = new Set(['done', 'closed', 'complete', 'completed', 'cancelled', 'archive', 'archived', 'deleted', 'removed']);
   const LANES = [
-    { key: 'new', label: 'Новые', hint: 'что взять в работу' },
+    { key: 'new', label: 'Новые', hint: 'ещё не взяли' },
     { key: 'in_progress', label: 'В работе', hint: 'движется сейчас' },
-    { key: 'waiting', label: 'Ожидают', hint: 'команда / РОП / решение' },
-    { key: 'done', label: 'Готово', hint: 'закрыто и зафиксировано' },
-    { key: 'no_date', label: 'Без даты', hint: 'нужно назначить срок' }
+    { key: 'waiting_team', label: 'Ждёт команду', hint: 'нужен вход команды' },
+    { key: 'waiting_rop', label: 'Ожидает РОП', hint: 'нужно решение РОП' },
+    { key: 'waiting_decision', label: 'На решение', hint: 'эскалация / решение' },
+    { key: 'done', label: 'Готово', hint: 'закрыто и зафиксировано' }
   ];
   const PLATFORM_ALIASES = {
     all: 'all',
@@ -94,10 +95,9 @@
     ['all', 'Все статусы'],
     ['new', 'Новые'],
     ['in_progress', 'В работе'],
-    ['waiting', 'Ожидают'],
     ['waiting_team', 'Ждёт команду'],
-    ['waiting_rop', 'Ждёт РОП'],
-    ['waiting_decision', 'Ждёт решение'],
+    ['waiting_rop', 'Ожидает РОП'],
+    ['waiting_decision', 'На решение'],
     ['cancelled', 'Отменено'],
     ['done', 'Готово']
   ];
@@ -284,6 +284,10 @@
     filters.type = filters.type || 'all';
     filters.priority = filters.priority || 'all';
     filters.horizon = filters.horizon || 'all';
+    if (filters.status === 'no_date') {
+      filters.status = 'active';
+      filters.horizon = 'no_date';
+    }
     filters.source = filters.source || 'all';
     filters.platform = filters.platform || 'all';
     return filters;
@@ -311,9 +315,10 @@
   function laneFor(task) {
     const status = normalizeText(task?.status || 'new');
     if (DONE_STATUSES.has(status)) return 'done';
-    if (WAITING_STATUSES.has(status)) return 'waiting';
+    if (status === 'waiting_team' || status === 'waiting') return 'waiting_team';
+    if (status === 'waiting_rop' || status === 'approval') return 'waiting_rop';
+    if (status === 'waiting_decision') return 'waiting_decision';
     if (status === 'active' || status === 'work' || status === 'doing' || status === 'in_progress') return 'in_progress';
-    if (!taskDate(task)) return 'no_date';
     return 'new';
   }
 
@@ -462,7 +467,7 @@
       return;
     }
     if (currentFilter === 'waiting') {
-      if (lane !== 'waiting') filters.status = isActive(task) ? 'active' : 'all';
+      if (!WAITING_STATUSES.has(status)) filters.status = isActive(task) ? 'active' : 'all';
       return;
     }
     if (currentFilter !== lane && currentFilter !== status) {
@@ -497,15 +502,16 @@
     const status = normalizeText(task?.status || 'new');
     if (status === 'waiting_team') return 'Ждёт команду';
     if (status === 'waiting_rop') return 'Ожидает РОП';
-    if (status === 'waiting_decision') return 'Ожидает решения';
+    if (status === 'waiting_decision') return 'На решение';
     if (status === 'in_progress') return 'В работе';
     if (status === 'done') return 'Готово';
     if (status === 'cancelled') return 'Отменено';
     const lane = laneFor(task);
-    if (lane === 'waiting') return 'Ожидает';
+    if (lane === 'waiting_team') return 'Ждёт команду';
+    if (lane === 'waiting_rop') return 'Ожидает РОП';
+    if (lane === 'waiting_decision') return 'На решение';
     if (lane === 'in_progress') return 'В работе';
     if (lane === 'done') return 'Готово';
-    if (lane === 'no_date') return 'Без даты';
     return 'Новая';
   }
 
@@ -967,7 +973,7 @@
       ['in_progress', 'В работе'],
       ['waiting_team', 'Ждёт команду'],
       ['waiting_rop', 'Ожидает РОП'],
-      ['waiting_decision', 'Ожидает решения'],
+      ['waiting_decision', 'На решение'],
       ['done', 'Готово'],
       ['cancelled', 'Отменено']
     ];
@@ -1009,7 +1015,7 @@
     if (status === 'active' && !isActive(task) && !recentMoved) return false;
     if (status && status !== 'active' && status !== 'all') {
       if (status === 'waiting') {
-        if (lane !== 'waiting') return false;
+        if (!WAITING_STATUSES.has(normalizeText(task?.status))) return false;
       } else if (status !== lane && normalizeText(task?.status) !== status) {
         return false;
       }
@@ -1228,7 +1234,7 @@
           const laneTasks = tasks.filter((task) => laneFor(task) === lane.key);
           const visible = laneTasks.slice(0, 70);
           return `
-            <section class="task-design-lane lane-${escapeHtml(lane.key)}" data-kanban-lane="${escapeHtml(lane.key === 'waiting' ? 'waiting_rop' : lane.key)}" data-lane-key="${escapeHtml(lane.key)}">
+            <section class="task-design-lane lane-${escapeHtml(lane.key)}" data-kanban-lane="${escapeHtml(lane.key)}" data-lane-key="${escapeHtml(lane.key)}">
               <header>
                 <div class="task-design-lane-title">
                   <h3>${escapeHtml(lane.label)}</h3>
@@ -1419,7 +1425,7 @@
       .task-design-create-grid{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px}
       .task-design-file-field{grid-column:1/-1}
       .task-design-create-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:8px}
-      .task-design-board{display:grid;grid-template-columns:repeat(5,minmax(228px,1fr));gap:10px;overflow-x:auto;padding-bottom:2px;align-items:stretch}
+      .task-design-board{display:grid;grid-template-columns:repeat(6,minmax(204px,1fr));gap:10px;overflow-x:auto;padding-bottom:2px;align-items:stretch}
       .task-design-lane{min-height:520px;display:grid;grid-template-rows:82px minmax(0,1fr);overflow:hidden}
       .task-design-lane.is-over{border-color:rgba(219,199,163,.82);background:linear-gradient(135deg,rgba(219,199,163,.12),rgba(255,255,255,.02)),var(--task-panel2)}
       .task-design-lane header{display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:start;gap:10px;height:82px;padding:13px 12px 11px;border-bottom:1px solid rgba(219,199,163,.12);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0))}
@@ -1505,8 +1511,8 @@
       .task-detail-empty{border:1px dashed rgba(219,199,163,.2);border-radius:8px;padding:12px;color:rgba(247,241,231,.58);font-size:12px}
       @keyframes taskDesignIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
       @keyframes taskMovedPulse{from{opacity:.9;transform:translateX(-40%)}to{opacity:0;transform:translateX(40%)}}
-      @media(max-width:1520px){.task-design-filters{grid-template-columns:minmax(220px,1.4fr) repeat(3,minmax(132px,1fr));}.task-design-reset{min-height:38px}.task-design-board{grid-template-columns:repeat(5,242px)}}
-      @media(max-width:900px){.task-design-toolbar-top,.task-design-create form,.task-detail-head,.task-detail-form{display:block}.task-design-mode,.task-design-create-actions{justify-content:flex-start;margin-top:10px}.task-design-snapshot{grid-template-columns:repeat(2,1fr)}.task-design-filters{grid-template-columns:1fr}.task-design-board{grid-template-columns:repeat(5,238px)}.task-detail-form label,.task-detail-sku-card,.task-detail-actions{margin-top:10px}.task-detail-comment-row{grid-template-columns:1fr}.task-detail-backdrop{padding:12px}.task-detail-dialog{width:calc(100vw - 24px);max-height:calc(100vh - 24px)}}
+      @media(max-width:1520px){.task-design-filters{grid-template-columns:minmax(220px,1.4fr) repeat(3,minmax(132px,1fr));}.task-design-reset{min-height:38px}.task-design-board{grid-template-columns:repeat(6,224px)}}
+      @media(max-width:900px){.task-design-toolbar-top,.task-design-create form,.task-detail-head,.task-detail-form{display:block}.task-design-mode,.task-design-create-actions{justify-content:flex-start;margin-top:10px}.task-design-snapshot{grid-template-columns:repeat(2,1fr)}.task-design-filters{grid-template-columns:1fr}.task-design-board{grid-template-columns:repeat(6,220px)}.task-detail-form label,.task-detail-sku-card,.task-detail-actions{margin-top:10px}.task-detail-comment-row{grid-template-columns:1fr}.task-detail-backdrop{padding:12px}.task-detail-dialog{width:calc(100vw - 24px);max-height:calc(100vh - 24px)}}
       @media(prefers-reduced-motion:reduce){.task-design-v1,.task-design-v1 *{animation:none!important;transition:none!important}}
     `;
     document.head.appendChild(style);
@@ -1620,7 +1626,8 @@
             <button type="button" data-task-detail-open-sku ${taskArticleKeys(task).length ? '' : 'disabled'}>Открыть первый SKU</button>
           </div>
           <div class="task-detail-actions">
-            <button type="button" data-task-detail-status="in_progress">В работу</button>
+            <button type="button" data-task-detail-status="new">Новые</button>
+            <button type="button" data-task-detail-status="in_progress">В работе</button>
             <button type="button" data-task-detail-status="waiting_team">Ждёт команду</button>
             <button type="button" data-task-detail-status="waiting_rop">Ожидает РОП</button>
             <button type="button" data-task-detail-status="waiting_decision">На решение</button>

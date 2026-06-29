@@ -220,6 +220,37 @@ const MARKETPLACE_TO_PLATFORM = {
   ym: 'ym'
 };
 
+function canonicalRequestedPlatform(value) {
+  const raw = normalizeKey(value);
+  if (!raw || ['all', '*'].includes(raw)) return raw;
+  if (['wb', 'wildberries'].includes(raw)) return 'wb';
+  if (['oz', 'ozon'].includes(raw)) return 'ozon';
+  if (['ya', 'ym', 'yandex', 'yandexmarket', '\u044f\u043c\u0430\u0440\u043a\u0435\u0442'].includes(raw)) return 'ym';
+  if (['ga', 'goldapple', 'goldenapple', 'zya', '\u0437\u044f', '\u0437\u043e\u043b\u043e\u0442\u043e\u0435\u044f\u0431\u043b\u043e\u043a\u043e'].includes(raw)) return 'goldapple';
+  if (['letu', 'letual', 'letoile', '\u043b\u0435\u0442\u0443\u0430\u043b\u044c', '\u043b\u044d\u0442\u0443\u0430\u043b\u044c'].includes(raw)) return 'letu';
+  if (['megamarket', 'sbermegamarket', 'mega', '\u043c\u0435\u0433\u0430\u043c\u0430\u0440\u043a\u0435\u0442'].includes(raw)) return 'megamarket';
+  if (['samokat', '\u0441\u0430\u043c\u043e\u043a\u0430\u0442'].includes(raw)) return 'samokat';
+  if (['magnit', 'magnitmarket', 'mm', '\u043c\u0430\u0433\u043d\u0438\u0442', '\u043c\u0430\u0433\u043d\u0438\u0442\u043c\u0430\u0440\u043a\u0435\u0442'].includes(raw)) return 'magnit';
+  return raw;
+}
+
+function requestedPlatformSet(value) {
+  const requested = normalizeText(value);
+  if (!requested) return null;
+  const keys = requested
+    .split(',')
+    .map(canonicalRequestedPlatform)
+    .filter((key) => key && !['all', '*'].includes(key));
+  return keys.length ? new Set(keys) : null;
+}
+
+function platformRequested(options, platformKey) {
+  const requested = options?.requestedPlatforms;
+  if (!requested) return true;
+  const key = canonicalRequestedPlatform(platformKey);
+  return requested.has(key) || (key === 'ym' && requested.has('ya')) || (key === 'magnit' && requested.has('magnitmarket'));
+}
+
 function parseArgs(argv) {
   const args = { command: 'build' };
   for (let index = 2; index < argv.length; index += 1) {
@@ -267,6 +298,32 @@ function explicitOrExistingPath(explicitValue, fallbackCandidates) {
   return normalized || firstExistingPath(fallbackCandidates);
 }
 
+const USER_ENV_CACHE = new Map();
+
+function userEnv(name) {
+  if (process.env.ALTEA_PORTAL_API_IGNORE_USER_ENV) return '';
+  if (USER_ENV_CACHE.has(name)) return USER_ENV_CACHE.get(name);
+  let value = '';
+  if (process.platform === 'win32') {
+    try {
+      const safeName = String(name).replace(/'/g, "''");
+      value = execFileSync('powershell', [
+        '-NoProfile',
+        '-Command',
+        `[Environment]::GetEnvironmentVariable('${safeName}', 'User')`
+      ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    } catch (_error) {
+      value = '';
+    }
+  }
+  USER_ENV_CACHE.set(name, value);
+  return value;
+}
+
+function envValue(name) {
+  return process.env[name] || userEnv(name) || '';
+}
+
 function timestamp() {
   const now = new Date();
   const pad = (value) => String(value).padStart(2, '0');
@@ -298,13 +355,13 @@ function resolveOptions(args) {
     zyaApiBaseUrl: String(args['zya-base-url'] || process.env.ALTEA_ZYA_API_BASE_URL || process.env.ALTEA_GOLDAPPLE_API_BASE_URL || '').trim(),
     zyaSalesPath: String(args['zya-sales-path'] || process.env.ALTEA_ZYA_SALES_PATH || process.env.ALTEA_GOLDAPPLE_SALES_PATH || '').trim(),
     zyaClientId: String(args['zya-client-id'] || process.env.ALTEA_ZYA_CLIENT_ID || process.env.ALTEA_GOLDAPPLE_CLIENT_ID || '').trim(),
-    letualApiToken: String(args['letual-token'] || process.env.ALTEA_LETUAL_API_TOKEN || '').trim(),
-    letualApiBaseUrl: String(args['letual-base-url'] || process.env.ALTEA_LETUAL_API_BASE_URL || LETUAL_DEFAULT_BASE_URL).trim(),
-    letualSalesPath: String(args['letual-sales-path'] || process.env.ALTEA_LETUAL_SALES_PATH || LETUAL_DEFAULT_GRAPHQL_PATH).trim(),
-    letualClientId: String(args['letual-client-id'] || process.env.ALTEA_LETUAL_CLIENT_ID || '').trim(),
-    letualFullHistory: asBool(args['letual-full-history'] ?? process.env.ALTEA_LETUAL_FULL_HISTORY, false),
-    letualLocalExportXlsx: String(args['letual-local-export-xlsx'] || process.env.ALTEA_LETUAL_LOCAL_EXPORT_XLSX || LETUAL_DEFAULT_LOCAL_EXPORT_XLSX).trim(),
-    letualPlanXlsx: String(args['letual-plan-xlsx'] || process.env.ALTEA_LETUAL_PLAN_XLSX || LETUAL_DEFAULT_PLAN_XLSX).trim(),
+    letualApiToken: String(args['letual-token'] || envValue('ALTEA_LETUAL_API_TOKEN') || '').trim(),
+    letualApiBaseUrl: String(args['letual-base-url'] || envValue('ALTEA_LETUAL_API_BASE_URL') || LETUAL_DEFAULT_BASE_URL).trim(),
+    letualSalesPath: String(args['letual-sales-path'] || envValue('ALTEA_LETUAL_SALES_PATH') || LETUAL_DEFAULT_GRAPHQL_PATH).trim(),
+    letualClientId: String(args['letual-client-id'] || envValue('ALTEA_LETUAL_CLIENT_ID') || '').trim(),
+    letualFullHistory: asBool(args['letual-full-history'] ?? envValue('ALTEA_LETUAL_FULL_HISTORY'), false),
+    letualLocalExportXlsx: String(args['letual-local-export-xlsx'] || envValue('ALTEA_LETUAL_LOCAL_EXPORT_XLSX') || LETUAL_DEFAULT_LOCAL_EXPORT_XLSX).trim(),
+    letualPlanXlsx: String(args['letual-plan-xlsx'] || envValue('ALTEA_LETUAL_PLAN_XLSX') || LETUAL_DEFAULT_PLAN_XLSX).trim(),
     zyaSalesZip: explicitOrExistingPath(args['zya-sales-zip'] || process.env.ALTEA_ZYA_SALES_ZIP, [ZYA_LOCAL_SALES_ZIP]),
     zyaSalesXlsx: explicitOrExistingPath(args['zya-sales-xlsx'] || process.env.ALTEA_ZYA_SALES_XLSX, ZYA_LOCAL_SALES_XLSX_CANDIDATES),
     zyaAdsXlsx: explicitOrExistingPath(args['zya-ads-xlsx'] || process.env.ALTEA_ZYA_ADS_XLSX, [ZYA_LOCAL_ADS_XLSX]),
@@ -315,14 +372,15 @@ function resolveOptions(args) {
     magnitClientId: String(args['magnit-client-id'] || process.env.ALTEA_MAGNIT_CLIENT_ID || process.env.ALTEA_MAGNIT_MARKET_CLIENT_ID || '').trim(),
     magnitSalesCsv: String(args['magnit-sales-csv'] || process.env.ALTEA_MAGNIT_SALES_CSV || '').trim(),
     magnitServicesCsv: String(args['magnit-services-csv'] || process.env.ALTEA_MAGNIT_SERVICES_CSV || '').trim(),
-    megamarketApiToken: String(args['megamarket-token'] || args['megamarket-api-token'] || process.env.ALTEA_MEGAMARKET_API_TOKEN || process.env.ALTEA_MEGAMARKET_API_KEY || '').trim(),
-    megamarketApiBaseUrl: String(args['megamarket-base-url'] || process.env.ALTEA_MEGAMARKET_API_BASE_URL || '').trim(),
-    megamarketSalesPath: String(args['megamarket-sales-path'] || process.env.ALTEA_MEGAMARKET_SALES_PATH || '').trim(),
-    megamarketClientId: String(args['megamarket-client-id'] || process.env.ALTEA_MEGAMARKET_CLIENT_ID || '').trim(),
-    samokatApiToken: String(args['samokat-token'] || args['samokat-api-token'] || process.env.ALTEA_SAMOKAT_API_TOKEN || process.env.ALTEA_SAMOKAT_API_KEY || '').trim(),
-    samokatApiBaseUrl: String(args['samokat-base-url'] || process.env.ALTEA_SAMOKAT_API_BASE_URL || '').trim(),
-    samokatSalesPath: String(args['samokat-sales-path'] || process.env.ALTEA_SAMOKAT_SALES_PATH || '').trim(),
-    samokatClientId: String(args['samokat-client-id'] || process.env.ALTEA_SAMOKAT_CLIENT_ID || '').trim(),
+    megamarketApiToken: String(args['megamarket-token'] || args['megamarket-api-token'] || envValue('ALTEA_MEGAMARKET_API_TOKEN') || envValue('ALTEA_MEGAMARKET_API_KEY') || '').trim(),
+    megamarketApiBaseUrl: String(args['megamarket-base-url'] || envValue('ALTEA_MEGAMARKET_API_BASE_URL') || '').trim(),
+    megamarketSalesPath: String(args['megamarket-sales-path'] || envValue('ALTEA_MEGAMARKET_SALES_PATH') || '').trim(),
+    megamarketClientId: String(args['megamarket-client-id'] || envValue('ALTEA_MEGAMARKET_CLIENT_ID') || '').trim(),
+    samokatApiToken: String(args['samokat-token'] || args['samokat-api-token'] || envValue('ALTEA_SAMOKAT_API_TOKEN') || envValue('ALTEA_SAMOKAT_API_KEY') || '').trim(),
+    samokatApiBaseUrl: String(args['samokat-base-url'] || envValue('ALTEA_SAMOKAT_API_BASE_URL') || '').trim(),
+    samokatSalesPath: String(args['samokat-sales-path'] || envValue('ALTEA_SAMOKAT_SALES_PATH') || '').trim(),
+    samokatClientId: String(args['samokat-client-id'] || envValue('ALTEA_SAMOKAT_CLIENT_ID') || '').trim(),
+    requestedPlatforms: requestedPlatformSet(args.platforms || args['extra-platforms'] || envValue('ALTEA_PORTAL_API_PLATFORMS') || ''),
     from,
     to
   };
@@ -741,7 +799,7 @@ function addWbReport(store, filePath, notes) {
   sourceNote(notes, 'WB seller report XLSX', count ? 'loaded' : 'empty', `${count} month rows from ${path.basename(filePath)}`);
 }
 
-function addFactMarketplace(store, workbook, notes) {
+function addFactMarketplace(store, workbook, notes, options = {}) {
   const rows = sheetRows(workbook, 'fact_marketplace_daily_sku');
   if (!rows.length) {
     sourceNote(notes, 'fact_marketplace_daily_sku', 'missing/empty');
@@ -751,6 +809,7 @@ function addFactMarketplace(store, workbook, notes) {
   for (const row of rows) {
     const platformKey = marketplacePlatformKey(row.marketplace);
     if (!platformKey) continue;
+    if (!platformRequested(options, platformKey)) continue;
     const month = monthKey(row.date);
     if (!month) continue;
     const article = normalizeText(row.item_code);
@@ -772,7 +831,7 @@ function addFactMarketplace(store, workbook, notes) {
   sourceNote(notes, 'Google fact_marketplace_daily_sku', 'loaded', `${count} daily SKU rows`);
 }
 
-function addFactAds(store, workbook, notes) {
+function addFactAds(store, workbook, notes, options = {}) {
   const rows = sheetRows(workbook, 'fact_ads_daily_sku');
   if (!rows.length) {
     sourceNote(notes, 'fact_ads_daily_sku', 'missing/empty');
@@ -782,6 +841,7 @@ function addFactAds(store, workbook, notes) {
   for (const row of rows) {
     const platformKey = marketplacePlatformKey(row.platform);
     if (!platformKey) continue;
+    if (!platformRequested(options, platformKey)) continue;
     const month = monthKey(row.date);
     if (!month) continue;
     const article = normalizeText(row.offer_id || row.sku);
@@ -1799,7 +1859,7 @@ function addGenericMarketplaceRows(store, rows, notes, config) {
 }
 
 function envAny(names) {
-  return names.map((name) => process.env[name]).find((value) => normalizeText(value)) || '';
+  return names.map((name) => envValue(name)).find((value) => normalizeText(value)) || '';
 }
 
 function applyApiTemplate(value, options) {
@@ -1988,6 +2048,9 @@ function addRetailNetworkSalesXlsx(store, filePath, notes, options = {}) {
     let totalRows = 0;
     const details = [];
     for (const config of configs) {
+      if (!platformRequested(options, config.platformKey)) {
+        continue;
+      }
       if (skipPlatforms.has(config.platformKey) || (config.platformKey === 'magnitmarket' && skipPlatforms.has('magnit'))) {
         details.push(`${config.sheet}: skipped because API loaded`);
         continue;
@@ -2771,34 +2834,37 @@ async function main() {
   const notes = [];
   const store = new MetricStore();
 
-  addWbReport(store, options.wbReport, notes);
+  if (platformRequested(options, 'wb')) addWbReport(store, options.wbReport, notes);
 
   const sourceWorkbook = readWorkbook(options.sourceWorkbook);
   if (sourceWorkbook) {
-    addFactMarketplace(store, sourceWorkbook, notes);
-    addFactAds(store, sourceWorkbook, notes);
+    addFactMarketplace(store, sourceWorkbook, notes, options);
+    addFactAds(store, sourceWorkbook, notes, options);
   } else {
     sourceNote(notes, 'Google source workbook', 'missing', options.sourceWorkbook);
   }
 
   const apiLoadedPlatforms = new Set();
-  const zyaApiRows = await addGenericMarketplaceApi(store, options, notes, {
-    platformKey: 'goldapple',
-    sourceLabel: 'ZYA API sales',
-    defaultArticle: 'zya-unmapped',
-    token: options.zyaApiToken,
-    baseUrl: options.zyaApiBaseUrl,
-    salesPath: options.zyaSalesPath,
-    clientId: options.zyaClientId,
-    tokenHelp: 'ALTEA_ZYA_API_TOKEN / ALTEA_ZYA_API_KEY / ALTEA_GOLDAPPLE_API_TOKEN',
-    endpointHelp: 'ALTEA_ZYA_API_BASE_URL + ALTEA_ZYA_SALES_PATH',
-    methodEnv: ['ALTEA_ZYA_API_METHOD', 'ALTEA_GOLDAPPLE_API_METHOD'],
-    bodyEnv: ['ALTEA_ZYA_API_BODY_JSON', 'ALTEA_GOLDAPPLE_API_BODY_JSON'],
-    graphqlQueryEnv: ['ALTEA_ZYA_GRAPHQL_QUERY', 'ALTEA_GOLDAPPLE_GRAPHQL_QUERY'],
-    graphqlQueryHelp: 'ALTEA_ZYA_GRAPHQL_QUERY / ALTEA_GOLDAPPLE_GRAPHQL_QUERY'
-  });
+  let zyaApiRows = 0;
+  if (platformRequested(options, 'goldapple')) {
+    zyaApiRows = await addGenericMarketplaceApi(store, options, notes, {
+      platformKey: 'goldapple',
+      sourceLabel: 'ZYA API sales',
+      defaultArticle: 'zya-unmapped',
+      token: options.zyaApiToken,
+      baseUrl: options.zyaApiBaseUrl,
+      salesPath: options.zyaSalesPath,
+      clientId: options.zyaClientId,
+      tokenHelp: 'ALTEA_ZYA_API_TOKEN / ALTEA_ZYA_API_KEY / ALTEA_GOLDAPPLE_API_TOKEN',
+      endpointHelp: 'ALTEA_ZYA_API_BASE_URL + ALTEA_ZYA_SALES_PATH',
+      methodEnv: ['ALTEA_ZYA_API_METHOD', 'ALTEA_GOLDAPPLE_API_METHOD'],
+      bodyEnv: ['ALTEA_ZYA_API_BODY_JSON', 'ALTEA_GOLDAPPLE_API_BODY_JSON'],
+      graphqlQueryEnv: ['ALTEA_ZYA_GRAPHQL_QUERY', 'ALTEA_GOLDAPPLE_GRAPHQL_QUERY'],
+      graphqlQueryHelp: 'ALTEA_ZYA_GRAPHQL_QUERY / ALTEA_GOLDAPPLE_GRAPHQL_QUERY'
+    });
+  }
   if (zyaApiRows) apiLoadedPlatforms.add('goldapple');
-  if (!zyaApiRows) {
+  if (platformRequested(options, 'goldapple') && !zyaApiRows) {
     const zyaSalesZipExists = Boolean(options.zyaSalesZip && fs.existsSync(options.zyaSalesZip));
     const zyaSalesXlsxExists = Boolean(options.zyaSalesXlsx && fs.existsSync(options.zyaSalesXlsx));
     const useZyaZip = zyaSalesZipExists && (!zyaSalesXlsxExists || fileMtimeMs(options.zyaSalesZip) >= fileMtimeMs(options.zyaSalesXlsx));
@@ -2813,64 +2879,71 @@ async function main() {
     }
     if (zyaRows) apiLoadedPlatforms.add('goldapple');
   }
-  addZyaAdsXlsx(store, options.zyaAdsXlsx, notes);
-  const magnitApiRows = await addGenericMarketplaceApi(store, options, notes, {
-    platformKey: 'magnitmarket',
-    sourceLabel: 'Magnit Market API sales',
-    defaultArticle: 'magnit-unmapped',
-    token: options.magnitApiToken,
-    baseUrl: options.magnitApiBaseUrl,
-    salesPath: options.magnitSalesPath,
-    clientId: options.magnitClientId,
-    tokenHelp: 'ALTEA_MAGNIT_API_TOKEN / ALTEA_MAGNIT_API_KEY / ALTEA_MAGNIT_MARKET_API_TOKEN',
-    endpointHelp: 'ALTEA_MAGNIT_API_BASE_URL + ALTEA_MAGNIT_SALES_PATH',
-    methodEnv: ['ALTEA_MAGNIT_API_METHOD', 'ALTEA_MAGNIT_MARKET_API_METHOD'],
-    bodyEnv: ['ALTEA_MAGNIT_API_BODY_JSON', 'ALTEA_MAGNIT_MARKET_API_BODY_JSON'],
-    graphqlQueryEnv: ['ALTEA_MAGNIT_GRAPHQL_QUERY', 'ALTEA_MAGNIT_MARKET_GRAPHQL_QUERY'],
-    graphqlQueryHelp: 'ALTEA_MAGNIT_GRAPHQL_QUERY / ALTEA_MAGNIT_MARKET_GRAPHQL_QUERY'
-  });
+  if (platformRequested(options, 'goldapple')) addZyaAdsXlsx(store, options.zyaAdsXlsx, notes);
+  let magnitApiRows = 0;
+  if (platformRequested(options, 'magnit')) {
+    magnitApiRows = await addGenericMarketplaceApi(store, options, notes, {
+      platformKey: 'magnitmarket',
+      sourceLabel: 'Magnit Market API sales',
+      defaultArticle: 'magnit-unmapped',
+      token: options.magnitApiToken,
+      baseUrl: options.magnitApiBaseUrl,
+      salesPath: options.magnitSalesPath,
+      clientId: options.magnitClientId,
+      tokenHelp: 'ALTEA_MAGNIT_API_TOKEN / ALTEA_MAGNIT_API_KEY / ALTEA_MAGNIT_MARKET_API_TOKEN',
+      endpointHelp: 'ALTEA_MAGNIT_API_BASE_URL + ALTEA_MAGNIT_SALES_PATH',
+      methodEnv: ['ALTEA_MAGNIT_API_METHOD', 'ALTEA_MAGNIT_MARKET_API_METHOD'],
+      bodyEnv: ['ALTEA_MAGNIT_API_BODY_JSON', 'ALTEA_MAGNIT_MARKET_API_BODY_JSON'],
+      graphqlQueryEnv: ['ALTEA_MAGNIT_GRAPHQL_QUERY', 'ALTEA_MAGNIT_MARKET_GRAPHQL_QUERY'],
+      graphqlQueryHelp: 'ALTEA_MAGNIT_GRAPHQL_QUERY / ALTEA_MAGNIT_MARKET_GRAPHQL_QUERY'
+    });
+  }
   if (magnitApiRows) apiLoadedPlatforms.add('magnitmarket');
-  if (!magnitApiRows) {
+  if (platformRequested(options, 'magnit') && !magnitApiRows) {
     addMagnitSalesCsv(store, options.magnitSalesCsv, notes);
     addMagnitServicesCsv(store, options.magnitServicesCsv, notes);
   }
-  const megamarketApiRows = await addGenericMarketplaceApi(store, options, notes, {
-    platformKey: 'megamarket',
-    sourceLabel: 'Megamarket API sales',
-    defaultArticle: 'megamarket-unmapped',
-    token: options.megamarketApiToken,
-    baseUrl: options.megamarketApiBaseUrl,
-    salesPath: options.megamarketSalesPath,
-    clientId: options.megamarketClientId,
-    tokenHelp: 'ALTEA_MEGAMARKET_API_TOKEN / ALTEA_MEGAMARKET_API_KEY',
-    endpointHelp: 'ALTEA_MEGAMARKET_API_BASE_URL + ALTEA_MEGAMARKET_SALES_PATH',
-    methodEnv: ['ALTEA_MEGAMARKET_API_METHOD'],
-    bodyEnv: ['ALTEA_MEGAMARKET_API_BODY_JSON'],
-    graphqlQueryEnv: ['ALTEA_MEGAMARKET_GRAPHQL_QUERY'],
-    graphqlQueryHelp: 'ALTEA_MEGAMARKET_GRAPHQL_QUERY'
-  });
+  const megamarketApiRows = platformRequested(options, 'megamarket')
+    ? await addGenericMarketplaceApi(store, options, notes, {
+      platformKey: 'megamarket',
+      sourceLabel: 'Megamarket API sales',
+      defaultArticle: 'megamarket-unmapped',
+      token: options.megamarketApiToken,
+      baseUrl: options.megamarketApiBaseUrl,
+      salesPath: options.megamarketSalesPath,
+      clientId: options.megamarketClientId,
+      tokenHelp: 'ALTEA_MEGAMARKET_API_TOKEN / ALTEA_MEGAMARKET_API_KEY',
+      endpointHelp: 'ALTEA_MEGAMARKET_API_BASE_URL + ALTEA_MEGAMARKET_SALES_PATH',
+      methodEnv: ['ALTEA_MEGAMARKET_API_METHOD'],
+      bodyEnv: ['ALTEA_MEGAMARKET_API_BODY_JSON'],
+      graphqlQueryEnv: ['ALTEA_MEGAMARKET_GRAPHQL_QUERY'],
+      graphqlQueryHelp: 'ALTEA_MEGAMARKET_GRAPHQL_QUERY'
+    })
+    : 0;
   if (megamarketApiRows) apiLoadedPlatforms.add('megamarket');
-  const samokatApiRows = await addGenericMarketplaceApi(store, options, notes, {
-    platformKey: 'samokat',
-    sourceLabel: 'Samokat API sales',
-    defaultArticle: 'samokat-unmapped',
-    token: options.samokatApiToken,
-    baseUrl: options.samokatApiBaseUrl,
-    salesPath: options.samokatSalesPath,
-    clientId: options.samokatClientId,
-    tokenHelp: 'ALTEA_SAMOKAT_API_TOKEN / ALTEA_SAMOKAT_API_KEY',
-    endpointHelp: 'ALTEA_SAMOKAT_API_BASE_URL + ALTEA_SAMOKAT_SALES_PATH',
-    methodEnv: ['ALTEA_SAMOKAT_API_METHOD'],
-    bodyEnv: ['ALTEA_SAMOKAT_API_BODY_JSON'],
-    graphqlQueryEnv: ['ALTEA_SAMOKAT_GRAPHQL_QUERY'],
-    graphqlQueryHelp: 'ALTEA_SAMOKAT_GRAPHQL_QUERY'
-  });
+  const samokatApiRows = platformRequested(options, 'samokat')
+    ? await addGenericMarketplaceApi(store, options, notes, {
+      platformKey: 'samokat',
+      sourceLabel: 'Samokat API sales',
+      defaultArticle: 'samokat-unmapped',
+      token: options.samokatApiToken,
+      baseUrl: options.samokatApiBaseUrl,
+      salesPath: options.samokatSalesPath,
+      clientId: options.samokatClientId,
+      tokenHelp: 'ALTEA_SAMOKAT_API_TOKEN / ALTEA_SAMOKAT_API_KEY',
+      endpointHelp: 'ALTEA_SAMOKAT_API_BASE_URL + ALTEA_SAMOKAT_SALES_PATH',
+      methodEnv: ['ALTEA_SAMOKAT_API_METHOD'],
+      bodyEnv: ['ALTEA_SAMOKAT_API_BODY_JSON'],
+      graphqlQueryEnv: ['ALTEA_SAMOKAT_GRAPHQL_QUERY'],
+      graphqlQueryHelp: 'ALTEA_SAMOKAT_GRAPHQL_QUERY'
+    })
+    : 0;
   if (samokatApiRows) apiLoadedPlatforms.add('samokat');
-  await addOzonApi(store, options, notes);
-  await addWbFunnelApi(store, options, notes);
-  await addYandexMarketApi(store, options, notes);
-  if (await addLetualApi(store, options, notes)) apiLoadedPlatforms.add('letu');
-  addRetailNetworkSalesXlsx(store, options.retailNetworkSalesXlsx, notes, { skipPlatforms: apiLoadedPlatforms });
+  if (platformRequested(options, 'ozon')) await addOzonApi(store, options, notes);
+  if (platformRequested(options, 'wb')) await addWbFunnelApi(store, options, notes);
+  if (platformRequested(options, 'ym')) await addYandexMarketApi(store, options, notes);
+  if (platformRequested(options, 'letu') && await addLetualApi(store, options, notes)) apiLoadedPlatforms.add('letu');
+  addRetailNetworkSalesXlsx(store, options.retailNetworkSalesXlsx, notes, { skipPlatforms: apiLoadedPlatforms, requestedPlatforms: options.requestedPlatforms });
   sourceNote(
     notes,
     'Ozon LTV в заказах',

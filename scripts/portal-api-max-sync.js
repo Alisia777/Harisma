@@ -143,7 +143,7 @@ function resolveOptions(args) {
   const from = mode === 'daily' || mode === 'recent'
     ? isoDate(args.from || args['date-from']) || addDays(to, -recentDays + 1)
     : maxFrom;
-  const platforms = normalizeText(args.platforms || envValue(process.env, 'ALTEA_PORTAL_API_PLATFORMS') || 'wb,ozon,ya,goldapple,letu,megamarket,samokat,magnit')
+  const platforms = normalizeText(args.platforms || envValue(process.env, 'ALTEA_PORTAL_API_PLATFORMS') || 'wb,ozon,ya,letu,megamarket,samokat')
     .split(',')
     .map((item) => normalizeText(item).toLowerCase())
     .filter(Boolean);
@@ -613,6 +613,8 @@ function buildSteps(options, env) {
         options.from,
         '--to',
         options.to,
+        '--platforms',
+        options.platforms.join(','),
         '--output',
         extraWorkbook
       ]

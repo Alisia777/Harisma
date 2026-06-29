@@ -1,8 +1,8 @@
 (function () {
   'use strict';
 
-  if (window.__ALTEA_STORAGE_NAV_PIN_20260629_STORAGE6__) return;
-  window.__ALTEA_STORAGE_NAV_PIN_20260629_STORAGE6__ = true;
+  if (window.__ALTEA_STORAGE_NAV_PIN_20260629_STORAGE7__) return;
+  window.__ALTEA_STORAGE_NAV_PIN_20260629_STORAGE7__ = true;
 
   var VIEW = 'documents';
   var TITLE = '\u0425\u0440\u0430\u043d\u0438\u043b\u0438\u0449\u0435';
@@ -205,6 +205,6 @@
 
   window.__ALTEA_STORAGE_NAV_PIN__ = {
     ensure: run,
-    version: '20260629-storage6'
+    version: '20260629-storage7'
   };
 })();

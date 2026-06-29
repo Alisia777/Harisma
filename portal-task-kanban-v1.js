@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260629-task-autosignal-types-v1';
+  const VERSION = '20260629-task-board-columns-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -1230,11 +1230,11 @@
           return `
             <section class="task-design-lane lane-${escapeHtml(lane.key)}" data-kanban-lane="${escapeHtml(lane.key === 'waiting' ? 'waiting_rop' : lane.key)}" data-lane-key="${escapeHtml(lane.key)}">
               <header>
-                <div>
+                <div class="task-design-lane-title">
                   <h3>${escapeHtml(lane.label)}</h3>
                   <p>${escapeHtml(lane.hint)}</p>
                 </div>
-                <b>${laneTasks.length}</b>
+                <b class="task-design-lane-count">${laneTasks.length}</b>
               </header>
               <div class="task-design-dropzone">
                 ${visible.length ? visible.map(taskCard).join('') : '<div class="task-design-empty">Нет задач в этой колонке</div>'}
@@ -1419,15 +1419,19 @@
       .task-design-create-grid{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px}
       .task-design-file-field{grid-column:1/-1}
       .task-design-create-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:8px}
-      .task-design-board{display:grid;grid-template-columns:repeat(5,minmax(224px,1fr));gap:10px;overflow-x:auto;padding-bottom:2px}
-      .task-design-lane{min-height:420px;display:grid;grid-template-rows:auto 1fr}
+      .task-design-board{display:grid;grid-template-columns:repeat(5,minmax(228px,1fr));gap:10px;overflow-x:auto;padding-bottom:2px;align-items:stretch}
+      .task-design-lane{min-height:520px;display:grid;grid-template-rows:82px minmax(0,1fr);overflow:hidden}
       .task-design-lane.is-over{border-color:rgba(219,199,163,.82);background:linear-gradient(135deg,rgba(219,199,163,.12),rgba(255,255,255,.02)),var(--task-panel2)}
-      .task-design-lane header{display:flex;justify-content:space-between;gap:8px;padding:12px;border-bottom:1px solid rgba(219,199,163,.12)}
-      .task-design-lane h3{margin:0;font-size:15px}
-      .task-design-lane p{margin:4px 0 0;color:var(--task-muted);font-size:10px}
-      .task-design-lane b{display:grid;place-items:center;min-width:34px;height:28px;border:1px solid rgba(219,199,163,.18);border-radius:999px;background:rgba(219,199,163,.08)}
-      .task-design-dropzone{display:flex;flex-direction:column;gap:9px;padding:10px;min-height:330px}
-      .task-design-card{position:relative;overflow:hidden;border:1px solid rgba(219,199,163,.16);border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.012)),#0d0b09;padding:11px 11px 10px 14px;cursor:grab;box-shadow:0 12px 28px rgba(0,0,0,.25);transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+      .task-design-lane header{display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:start;gap:10px;height:82px;padding:13px 12px 11px;border-bottom:1px solid rgba(219,199,163,.12);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0))}
+      .task-design-lane-title{display:grid;align-content:start;gap:4px;min-height:54px}
+      .task-design-lane h3{margin:0;font-size:16px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .task-design-lane p{min-height:28px;margin:0;color:var(--task-muted);font-size:10px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+      .task-design-lane b{display:grid;place-items:center;width:38px;height:30px;border:1px solid rgba(219,199,163,.2);border-radius:999px;background:rgba(219,199,163,.08);font-size:13px;line-height:1}
+      .task-design-dropzone{display:flex;flex-direction:column;gap:10px;padding:10px;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:rgba(219,199,163,.32) rgba(255,255,255,.035)}
+      .task-design-dropzone::-webkit-scrollbar{width:8px}
+      .task-design-dropzone::-webkit-scrollbar-track{background:rgba(255,255,255,.035);border-radius:999px}
+      .task-design-dropzone::-webkit-scrollbar-thumb{background:rgba(219,199,163,.26);border-radius:999px}
+      .task-design-card{position:relative;overflow:hidden;display:grid;grid-template-rows:auto auto minmax(44px,auto) auto auto;align-content:start;border:1px solid rgba(219,199,163,.16);border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.012)),#0d0b09;padding:11px 11px 10px 14px;cursor:grab;box-shadow:0 12px 28px rgba(0,0,0,.25);transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
       .task-design-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--card-color,#dbc7a3);box-shadow:0 0 22px var(--card-color,#dbc7a3)}
       .task-design-card:hover,.task-design-card:focus{outline:0;transform:translateY(-2px);border-color:rgba(219,199,163,.54);box-shadow:0 18px 34px rgba(0,0,0,.3)}
       .task-design-card.is-dragging{opacity:.55;cursor:grabbing}
@@ -1435,9 +1439,10 @@
       .task-design-card.is-recently-moved::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,transparent,rgba(114,224,154,.16),transparent);animation:taskMovedPulse 1.8s ease-out 1;pointer-events:none}
       .task-design-card.is-overdue{border-color:rgba(255,117,107,.44);background:linear-gradient(180deg,rgba(125,29,24,.26),rgba(255,255,255,.012)),#100807}
       .task-design-card-top,.task-design-card-meta,.task-design-card-footer{display:flex;justify-content:space-between;gap:8px;align-items:center}
-      .task-design-card strong{display:block;margin-top:9px;font-size:13px;line-height:1.25}
-      .task-design-card p{margin:7px 0 10px;color:rgba(247,241,231,.64);font-size:11px;line-height:1.38}
-      .task-design-card small{display:block;margin-top:7px;color:rgba(247,241,231,.42);font-size:10px;line-height:1.3}
+      .task-design-card-top span,.task-design-card-meta span,.task-design-card-footer span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .task-design-card strong{display:-webkit-box;min-height:32px;margin-top:9px;font-size:13px;line-height:1.25;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+      .task-design-card p{display:-webkit-box;min-height:44px;margin:7px 0 10px;color:rgba(247,241,231,.64);font-size:11px;line-height:1.38;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+      .task-design-card small{display:block;margin-top:7px;color:rgba(247,241,231,.42);font-size:10px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .task-design-card-meta,.task-design-card-footer{color:rgba(247,241,231,.58);font-size:10px;font-weight:800}
       .task-design-pill,.task-design-platform{display:inline-flex;align-items:center;min-height:21px;border:1px solid rgba(219,199,163,.18);border-radius:999px;padding:3px 8px;background:rgba(0,0,0,.28);color:rgba(247,241,231,.72);font-size:9px;font-weight:900;text-transform:uppercase}
       .task-design-pill.source-auto{border-color:rgba(100,184,255,.38);color:#8fc8ff}
@@ -1451,7 +1456,7 @@
       .platform-magnit{--card-color:#e85b55;--platform:#e85b55}
       .platform-product{--card-color:#61d8c7;--platform:#61d8c7}
       .platform-cross,.platform-all{--card-color:#dbc7a3;--platform:#dbc7a3}
-      .task-design-empty,.task-design-more{display:grid;place-items:center;min-height:74px;border:1px dashed rgba(219,199,163,.18);border-radius:8px;color:rgba(247,241,231,.42);font-size:12px;text-align:center}
+      .task-design-empty,.task-design-more{display:grid;place-items:center;min-height:92px;border:1px dashed rgba(219,199,163,.18);border-radius:8px;background:rgba(0,0,0,.12);color:rgba(247,241,231,.42);font-size:12px;text-align:center}
       .task-design-more{min-height:38px}
       .task-design-list{overflow:auto}
       .task-design-list table{width:100%;border-collapse:collapse;min-width:1020px}

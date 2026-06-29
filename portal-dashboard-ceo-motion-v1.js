@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-dashboard-ads-scope3';
+  const VERSION = '20260629-dashboard-ads-scope4';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -1269,6 +1269,15 @@
   function buildDrivers(model) {
     const current = model.total;
     const previous = model.previousTotal;
+    if (current.rawRevenueFallback && !finite(previous.revenue) && !finite(previous.orders)) {
+      return [
+        { key: 'traffic', label: 'Факт сети', value: current.revenue, detail: 'месячный факт без дневной декомпозиции', route: 'sku-plan-fact' },
+        { key: 'conversion', label: 'Выкуп / конверсия', value: 0, detail: 'источник выкупа не опубликован', route: 'product-leaderboard' },
+        { key: 'price', label: 'Цена / чек', value: 0, detail: 'дневной чек по сети не опубликован', route: 'prices' },
+        { key: 'oos', label: 'OOS', value: 0, detail: 'риски доступности не разбиты по сети', route: 'oos-control' },
+        { key: 'ads', label: 'Эффективность рекламы', value: -finite(current.ads), detail: 'рекламные расходы по сети не опубликованы', route: 'iu-drr' }
+      ];
+    }
     const prevAvgCheck = previous.orders > 0 ? previous.revenue / previous.orders : (current.orders > 0 ? current.revenue / current.orders : 0);
     const currentAvgCheck = current.orders > 0 ? current.revenue / current.orders : prevAvgCheck;
     const traffic = (current.orders - previous.orders) * prevAvgCheck;

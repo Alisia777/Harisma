@@ -54,10 +54,9 @@
           "title": "Шаблон обновления цен и скидок",
           "description": "Файл для пакетного обновления цен и скидок.",
           "type": "Таблица",
-          "sizeMb": "0.01",
-          "href": "",
+          "sizeMb": "0.17",
+          "href": "assets/templates/price-discount-upload-template.xlsx",
           "fileName": "Шаблон обновления цен и скидок от 05.05.2026 16.33.xlsx",
-          "storageMode": "missing-file",
           "owner": "Маркетплейсы"
         },
         {
@@ -65,9 +64,17 @@
           "description": "Рабочая таблица с минимальными и максимальными ценовыми границами.",
           "type": "Таблица",
           "sizeMb": "0.09",
-          "href": "",
+          "href": "assets/templates/min-max-prices.xlsx",
           "fileName": "Мин- Макс цены.xlsx",
-          "storageMode": "missing-file",
+          "owner": "Маркетплейсы"
+        },
+        {
+          "title": "Шаблон MIN/MAX для репрайсера",
+          "description": "Файл для загрузки минимальных и максимальных цен в контур репрайсера.",
+          "type": "Таблица",
+          "sizeMb": "0.02",
+          "href": "assets/templates/repricer-minmax-upload-template.xlsx",
+          "fileName": "portal-min-max-template.xlsx",
           "owner": "Маркетплейсы"
         },
         {
@@ -75,9 +82,8 @@
           "description": "Плановая таблица для сверки с фактом и операционными метриками.",
           "type": "Таблица",
           "sizeMb": "0.20",
-          "href": "",
+          "href": "assets/templates/altea-plan.xlsx",
           "fileName": "План Алтея (1).xlsx",
-          "storageMode": "missing-file",
           "owner": "Команда"
         },
         {
@@ -85,9 +91,8 @@
           "description": "Рабочий файл для статусов запуска и подготовки новинок.",
           "type": "Таблица",
           "sizeMb": "0.20",
-          "href": "",
+          "href": "assets/templates/altea-launch-calendar.xlsx",
           "fileName": "Календарь новинок Алтея (2).xlsx",
-          "storageMode": "missing-file",
           "owner": "Продукт"
         }
       ]

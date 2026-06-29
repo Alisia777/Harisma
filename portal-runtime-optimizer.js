@@ -92,7 +92,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
   const deferredPathMap = Object.fromEntries(
     Object.entries(DEFERRED_DATA).map(([key, config]) => [config.path, { key, fallback: config.fallback }])
   );
-  const JSON_REQUEST_VERSION = String(window.__ALTEA_JSON_VERSION__ || '20260505a').trim() || '20260505a';
+  const JSON_REQUEST_VERSION = String(window.__ALTEA_JSON_VERSION__ || '20260629templates1').trim() || '20260629templates1';
   window.__ALTEA_JSON_VERSION__ = JSON_REQUEST_VERSION;
   const deferredReady = Object.fromEntries(Object.keys(DEFERRED_DATA).map((key) => [key, false]));
   const deferredLoads = new Map();

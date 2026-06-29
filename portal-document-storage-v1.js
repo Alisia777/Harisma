@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-storage-v3';
+  const VERSION = '20260629-storage-v4';
   const STORAGE_VIEW = 'documents';
   const RESOURCE_ARTICLE_KEY = '__portal_resource_links__';
   const RESOURCE_LINK_MARKER = '[[resource-link:v1]]';
@@ -79,7 +79,7 @@
   function isKnownInternalHref(href = '') {
     const path = String(href || '').split(/[?#]/)[0].replace(/^\/+/, '');
     return /^docs\/[a-z0-9._/-]+\.md$/i.test(path)
-      || /^assets\/[a-z0-9._/-]+\.(svg|png|jpe?g|webp|pdf)$/i.test(path);
+      || /^assets\/[a-z0-9._/-]+\.(svg|png|jpe?g|webp|pdf|xlsx?|csv|docx?|pptx?|zip|txt)$/i.test(path);
   }
 
   function openableHref(rawHref = '') {

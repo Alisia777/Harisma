@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260629skuworkspaceperf1';
+  const VERSION = '20260629skuworkspaceops1';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -727,7 +727,9 @@
   function renderSkuColumnsPanel(activeMode = 'registry') {
     const labels = activeMode === 'api'
       ? ['Статус', 'Проблема', 'Площадка', 'API / SKU', 'Сумма', 'Следующий шаг']
-      : ['Артикул', 'Карточка', 'Owner / статус', 'Площадки', 'План-факт', 'Маржа', 'Остаток', 'Качество', 'Следующее действие'];
+      : activeMode === 'planfact'
+        ? ['Артикул', 'Owner / статус', 'Факт / план', 'Выполнение', 'Разрыв', 'Маржа', 'Реклама', 'Остаток', 'Действие']
+        : ['Артикул', 'Карточка', 'Owner / статус', 'Площадки', 'План-факт', 'Маржа', 'Остаток', 'Качество', 'Следующее действие'];
     return `
       <div class="sl-v1-column-panel" data-sku-v1-column-panel>
         <strong>Быстрый переход по колонкам</strong>
@@ -742,12 +744,13 @@
     const stateRef = appState();
     const filters = stateRef.filters || {};
     const columnsOpen = Boolean(stateRef.skuV1ColumnsOpen);
+    const title = activeMode === 'api' ? 'API-контур' : activeMode === 'planfact' ? 'План-факт' : 'Реестр SKU';
     return `
       <section class="sl-v1-filter-dock">
         <div class="sl-v1-filter-head">
           <div>
             <span>Фильтры и представления</span>
-            <strong>${activeMode === 'api' ? 'API-контур' : 'Реестр SKU'}</strong>
+            <strong>${escapeValue(title)}</strong>
           </div>
           <div class="sl-v1-market-note">
             <i></i>
@@ -1182,7 +1185,7 @@
           <div class="sl-v1-inline-actions">
             <button type="button" class="${onlyNew ? 'active' : ''}" data-sku-v1-toggle-new>Только новые</button>
             <button type="button" class="${showResolved ? 'active' : ''}" data-sku-v1-toggle-resolved>С решенными</button>
-            <button type="button" data-sku-v1-quality-export>Форма разбора</button>
+            <button type="button" data-sku-v1-review-form>Форма разбора</button>
           </div>
         </div>
         <div class="sl-v1-table-wrap">
@@ -1220,13 +1223,199 @@
     `;
   }
 
+  function planFactRowSku(row = {}) {
+    return findSkuByArticle(row.articleKey || row.article || '') || {};
+  }
+
+  function planFactWorkspaceRows(model = {}, context = {}) {
+    const stateRef = appState();
+    const filters = stateRef.filters || {};
+    const activeMarket = context.activeMarket || 'all';
+    const rows = Array.isArray(model.rows) ? model.rows : (Array.isArray(model.allRows) ? model.allRows : []);
+    const query = String(filters.search || '').trim().toLowerCase();
+    const ownerFilter = String(filters.owner || 'all');
+    const segmentFilter = String(filters.segment || 'all');
+    const lifecycleFilter = String(filters.lifecycle || 'all');
+    const assignment = String(filters.assignment || 'all');
+    const traffic = String(filters.traffic || 'all');
+    const focus = String(filters.focus || 'all');
+
+    return rows.filter((row) => {
+      const sku = planFactRowSku(row);
+      if (sku.articleKey && !skuBelongsToMarket(sku, activeMarket)) return false;
+      const lifecycle = sku.articleKey ? skuLifecycle(sku) : { key: row.status || 'active', label: row.status || '' };
+      const owners = sku.articleKey ? skuOwnersForFilter(sku, activeMarket) : [row.owner].filter(Boolean);
+      const segment = sku.segment || sku.category || row.segment || row.category || '';
+      const metric = displayMetric(row, model);
+      const matrix = row.matrixProblemState || skuMatrixState(sku);
+      const haystack = [
+        row.article,
+        row.articleKey,
+        row.name,
+        row.owner,
+        row.status,
+        lifecycle?.label,
+        segment,
+        matrix,
+        sku.name,
+        sku.brand
+      ].filter(Boolean).join(' ').toLowerCase();
+
+      if (query && !haystack.includes(query)) return false;
+      if (ownerFilter !== 'all' && !owners.includes(ownerFilter) && row.owner !== ownerFilter) return false;
+      if (segmentFilter !== 'all' && segment !== segmentFilter) return false;
+      if (lifecycleFilter !== 'all' && (lifecycle?.key || 'active') !== lifecycleFilter) return false;
+      if (assignment === 'assigned' && !owners.length && !row.owner) return false;
+      if (assignment === 'unassigned' && (owners.length || row.owner)) return false;
+      if (traffic === 'any' && !sku?.flags?.hasExternalTraffic) return false;
+      if (traffic === 'kz' && !sku?.flags?.hasKZ) return false;
+      if (traffic === 'vk' && !sku?.flags?.hasVK) return false;
+      if (traffic === 'none' && sku?.flags?.hasExternalTraffic) return false;
+      if (focus === 'unassigned' && (owners.length || row.owner)) return false;
+      if (focus === 'matrixIssue' && (!matrix || matrix === 'ok')) return false;
+      if (focus === 'underPlan' && !(metric?.completionToDate !== null && metric?.completionToDate !== undefined && metric.completionToDate < 0.9)) return false;
+      if (focus === 'lowStock' && !sku?.flags?.lowStock) return false;
+      if (focus === 'toWork' && !(sku?.flags?.toWork || sku?.flags?.toWorkWB || sku?.flags?.toWorkOzon)) return false;
+      if (focus === 'extAny' && !sku?.flags?.hasExternalTraffic) return false;
+      return true;
+    }).sort((left, right) => {
+      const leftMetric = displayMetric(left, model);
+      const rightMetric = displayMetric(right, model);
+      const leftGap = Number(leftMetric?.gapToDate ?? left.gapToDate);
+      const rightGap = Number(rightMetric?.gapToDate ?? right.gapToDate);
+      const leftCompletion = Number(leftMetric?.completionToDate ?? left.completionToDate);
+      const rightCompletion = Number(rightMetric?.completionToDate ?? right.completionToDate);
+      const safeLeftGap = Number.isFinite(leftGap) ? leftGap : Number.POSITIVE_INFINITY;
+      const safeRightGap = Number.isFinite(rightGap) ? rightGap : Number.POSITIVE_INFINITY;
+      const safeLeftCompletion = Number.isFinite(leftCompletion) ? leftCompletion : Number.POSITIVE_INFINITY;
+      const safeRightCompletion = Number.isFinite(rightCompletion) ? rightCompletion : Number.POSITIVE_INFINITY;
+      return safeLeftGap - safeRightGap
+        || safeLeftCompletion - safeRightCompletion
+        || String(left.article || left.articleKey || '').localeCompare(String(right.article || right.articleKey || ''), 'ru');
+    });
+  }
+
+  function planFactWorkspaceCards(rows = [], model = {}) {
+    const totals = rows.reduce((acc, row) => {
+      const metric = displayMetric(row, model);
+      const fact = toNumber(metric?.factRevenue ?? row.factRevenue);
+      const plan = toNumber(metric?.planToDateRevenue ?? row.planToDateRevenue);
+      const monthPlan = toNumber(metric?.planRevenue ?? row.planRevenue);
+      const adSpend = toNumber(metric?.adSpend ?? row.adSpend);
+      const marginPct = Number(metric?.marginPct ?? row.marginPct);
+      const marginWeight = fact || plan || monthPlan;
+      acc.fact += fact;
+      acc.plan += plan;
+      acc.monthPlan += monthPlan;
+      acc.ads += adSpend;
+      if (Number.isFinite(marginPct) && marginWeight > 0) {
+        acc.marginWeighted += marginPct * marginWeight;
+        acc.marginWeight += marginWeight;
+      }
+      if (plan > 0 && fact < plan) acc.underPlan += 1;
+      if (metric?.completionToDate !== null && metric?.completionToDate !== undefined && metric.completionToDate < 0.9) acc.red += 1;
+      return acc;
+    }, { fact: 0, plan: 0, monthPlan: 0, ads: 0, marginWeighted: 0, marginWeight: 0, underPlan: 0, red: 0 });
+    const completion = totals.plan > 0 ? totals.fact / totals.plan : null;
+    const margin = totals.marginWeight > 0 ? totals.marginWeighted / totals.marginWeight : null;
+    return [
+      { label: 'Факт', value: formatMoney(totals.fact), hint: `план к дате ${formatMoney(totals.plan)}`, tone: completion !== null && completion >= 1 ? 'ok' : completion !== null && completion >= 0.9 ? 'warn' : 'danger' },
+      { label: 'Выполнение', value: completion === null ? '—' : formatPct(completion), hint: `месячный план ${formatMoney(totals.monthPlan)}`, tone: completion !== null && completion >= 1 ? 'ok' : completion !== null && completion >= 0.9 ? 'warn' : 'danger' },
+      { label: 'Разрыв', value: formatMoney(totals.fact - totals.plan), hint: `${formatInt(totals.underPlan)} ниже плана`, tone: totals.fact >= totals.plan ? 'ok' : 'danger' },
+      { label: 'Маржа', value: margin === null ? '—' : formatPct(margin), hint: 'вес по обороту', tone: margin !== null && margin >= 0.35 ? 'ok' : 'warn' },
+      { label: 'Реклама', value: formatMoney(totals.ads), hint: totals.fact > 0 ? `ДРР ${formatPct(totals.ads / totals.fact)}` : 'нет базы', tone: totals.ads > 0 ? 'info' : '' },
+      { label: 'Строк', value: formatInt(rows.length), hint: `${formatInt(totals.red)} красных`, tone: totals.red ? 'warn' : 'ok' }
+    ];
+  }
+
+  function renderPlanFactWorkspaceRows(rows = [], model = {}) {
+    return rows.map((row) => {
+      const metric = displayMetric(row, model);
+      const articleKey = String(row.articleKey || row.article || '').trim();
+      const sku = planFactRowSku(row);
+      const lifecycle = sku.articleKey ? skuLifecycle(sku) : null;
+      const matrix = row.matrixProblemState || skuMatrixState(sku);
+      const stock = typeof totalSkuStock === 'function' && sku.articleKey ? totalSkuStock(sku) : row.stock ?? row.totalStock ?? null;
+      const turnover = metric?.turnoverDays ?? row.turnoverDays ?? row.avgTurnoverDays;
+      const completion = metric?.completionToDate ?? row.completionToDate;
+      const gap = metric?.gapToDate ?? row.gapToDate;
+      const tone = completion !== null && completion !== undefined && completion >= 1 ? 'ok' : completion !== null && completion !== undefined && completion >= 0.9 ? 'warn' : 'danger';
+      return `
+        <tr class="sl-v1-table-row ${row.syntheticUnmapped ? 'is-unmapped' : ''}" ${articleKey ? `data-open-sku="${escapeValue(articleKey)}"` : ''}>
+          <td>
+            ${articleKey && !row.syntheticUnmapped ? `<button type="button" class="sl-v1-link" data-open-sku="${escapeValue(articleKey)}">${escapeValue(row.article || articleKey)}</button>` : `<strong>${escapeValue(row.article || articleKey || '—')}</strong>`}
+            <small>${escapeValue(row.name || sku.name || '')}</small>
+          </td>
+          <td>
+            ${escapeValue(row.owner || skuOwner(sku) || 'без owner')}
+            <small>${escapeValue(lifecycle?.label || row.status || '—')}</small>
+            ${articleKey && !row.syntheticUnmapped ? renderSkuLifecycleSelect({ ...sku, articleKey, article: row.article || articleKey }) : ''}
+          </td>
+          <td><strong>${formatMoney(metric?.factRevenue ?? row.factRevenue)}</strong><small>план ${formatMoney(metric?.planToDateRevenue ?? row.planToDateRevenue)}</small></td>
+          <td>${safeBadge(completion === null || completion === undefined ? '—' : formatPct(completion), tone)}<small>${formatMoney(gap || 0)}</small></td>
+          <td>${formatMoney(gap || 0)}<small>месяц ${formatMoney(metric?.planRevenue ?? row.planRevenue)}</small></td>
+          <td>${metric?.marginPct !== null && metric?.marginPct !== undefined ? formatPct(metric.marginPct) : '—'}<small>${metric?.marginRub ? formatMoney(metric.marginRub) : 'маржа'}</small></td>
+          <td>${formatMoney(metric?.adSpend ?? row.adSpend)}<small>${(metric?.factRevenue ?? row.factRevenue) > 0 ? `ДРР ${formatPct((metric?.adSpend ?? row.adSpend) / (metric?.factRevenue ?? row.factRevenue))}` : 'реклама'}</small></td>
+          <td>${stock !== null && stock !== undefined ? formatInt(stock) : '—'}<small>${turnover ? `${formatInt(turnover)} дн.` : 'остаток'}</small></td>
+          <td>${matrix && matrix !== 'ok' ? safeBadge(skuMatrixLabel(matrix), 'warn') : safeBadge('ok', 'ok')}<small>${escapeValue(row.nextAction || row.action || '')}</small></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function renderPlanFactWorkspaceV1(root, context) {
+    const rows = planFactWorkspaceRows(context.model, context);
+    const tableRows = rows.slice(0, SKU_REGISTRY_RENDER_LIMIT);
+    const cards = planFactWorkspaceCards(rows, context.model);
+    return `
+      ${renderSkuFilters(context)}
+      <section class="sl-v1-kpis">
+        ${cards.map((item) => `
+          <article class="sl-v1-kpi ${escapeValue(item.tone || '')}">
+            <span>${escapeValue(item.label)}</span>
+            <strong>${escapeValue(item.value)}</strong>
+            <em>${escapeValue(item.hint || '')}</em>
+          </article>
+        `).join('')}
+      </section>
+      <section class="sl-v1-panel sl-v1-table-panel">
+        <div class="sl-v1-panel-head">
+          <div>
+            <span>План-факт внутри SKU workspace</span>
+            <h3>Факт, план, маржа и статус товара</h3>
+          </div>
+          ${safeBadge(`${formatInt(tableRows.length)} / ${formatInt(rows.length)} строк`, rows.length ? 'info' : 'warn')}
+        </div>
+        <div class="sl-v1-table-wrap">
+          <table class="sl-v1-table sl-v1-planfact-table">
+            <thead>
+              <tr>
+                <th>Артикул</th>
+                <th>Owner / статус</th>
+                <th>Факт / план</th>
+                <th>Выполнение</th>
+                <th>Разрыв</th>
+                <th>Маржа</th>
+                <th>Реклама</th>
+                <th>Остаток</th>
+                <th>Действие</th>
+              </tr>
+            </thead>
+            <tbody>${renderPlanFactWorkspaceRows(tableRows, context.model) || '<tr><td colspan="9"><div class="sl-v1-empty">План-факт по текущему срезу пуст.</div></td></tr>'}</tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+
   function currentSkuMode() {
     const stateRef = appState();
     if (stateRef.skuWorkspaceMode === 'registry') return 'registry';
     if (stateRef.skuWorkspaceMode === 'contour') return 'api';
+    if (stateRef.skuWorkspaceMode === 'planfact') return 'planfact';
     try {
       const stored = sessionStorage.getItem(SKU_MODE_STORAGE);
-      if (stored === 'registry' || stored === 'api') return stored;
+      if (stored === 'registry' || stored === 'api' || stored === 'planfact') return stored;
     } catch {
       // ignored
     }
@@ -1235,8 +1424,8 @@
 
   function setSkuMode(mode) {
     const stateRef = appState();
-    const next = mode === 'api' ? 'api' : 'registry';
-    stateRef.skuWorkspaceMode = next === 'api' ? 'contour' : 'registry';
+    const next = mode === 'api' ? 'api' : mode === 'planfact' ? 'planfact' : 'registry';
+    stateRef.skuWorkspaceMode = next === 'api' ? 'contour' : next;
     try {
       sessionStorage.setItem(SKU_MODE_STORAGE, next);
     } catch {
@@ -1259,6 +1448,7 @@
     stateRef.filters.assignment = stateRef.filters.assignment || 'all';
     const activeMode = currentSkuMode();
     const isApiMode = activeMode === 'api';
+    const isPlanFactMode = activeMode === 'planfact';
     const taskMap = isApiMode ? new Map() : buildSkuTaskMap();
     const sourceSkus = (stateRef.skus || []).filter((sku) => skuBelongsToMarket(sku, activeMarket));
     const model = planModelForWorkspace(activeMarket);
@@ -1267,7 +1457,7 @@
     const issueRows = rawIssueRows
       .filter((row) => issuePlatformMatches(row, activeMarket))
       .map(applyIssueDecision);
-    const visibleSkus = isApiMode ? sourceSkus : filteredRegistrySkus(sourceSkus, taskMap, activeMarket);
+    const visibleSkus = isApiMode || isPlanFactMode ? sourceSkus : filteredRegistrySkus(sourceSkus, taskMap, activeMarket);
     const owners = activeMode === 'api' ? ownerOptionsForIssues(issueRows, activeMarket) : ownerOptionsForSkus(sourceSkus, activeMarket);
     const segments = activeMode === 'api' ? segmentOptionsForIssues(issueRows) : segmentOptionsForSkus(sourceSkus);
     const lifecycles = activeMode === 'api' ? issueTypeOptions(issueRows) : lifecycleOptionsForSkus(sourceSkus);
@@ -1287,7 +1477,7 @@
           ${renderSkuModeSwitch(activeMode)}
         </header>
         <div class="sl-v1-body" data-sku-v1-body>
-          ${activeMode === 'api' ? renderApiContourV1(root, context) : renderSkuRegistryV1(root, context)}
+          ${activeMode === 'api' ? renderApiContourV1(root, context) : activeMode === 'planfact' ? renderPlanFactWorkspaceV1(root, context) : renderSkuRegistryV1(root, context)}
         </div>
       </div>
     `;
@@ -1604,6 +1794,41 @@
     renderSkuWorkspaceV1(rootId);
   }
 
+  function applySkuV1ProductStatusLocal(articleKey = '', meta = {}, status = '') {
+    const stateRef = appState();
+    stateRef.storage = stateRef.storage || {};
+    stateRef.storage.productLifecycleOverrides = Array.isArray(stateRef.storage.productLifecycleOverrides)
+      ? stateRef.storage.productLifecycleOverrides.filter((item) => String(item?.articleKey || '') !== articleKey)
+      : [];
+    stateRef.storage.productLifecycleOverrides.unshift({
+      articleKey,
+      key: meta.key || status,
+      status: meta.label || status,
+      note: 'Quick status from SKU workspace',
+      updatedAt: new Date().toISOString(),
+      updatedBy: stateRef.team?.member?.name || stateRef.team?.userId || 'portal-user'
+    });
+    const sku = findSkuByArticle(articleKey);
+    if (sku) {
+      sku.productLifecycle = {
+        ...(sku.productLifecycle || {}),
+        ...meta,
+        key: meta.key || status,
+        label: meta.label || status,
+        status: meta.label || status,
+        source: 'sku-workspace'
+      };
+      sku.status = meta.label || status;
+    }
+    try {
+      if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
+      if (typeof invalidateRepricerRowsCache === 'function') invalidateRepricerRowsCache();
+      if (typeof saveLocalStorage === 'function') saveLocalStorage();
+    } catch (error) {
+      console.warn('[sku-launch-v1] local product status save failed', error);
+    }
+  }
+
   async function handleSkuV1ProductStatusChange(select, rootId = 'view-sku-contour') {
     const articleKey = String(select?.dataset?.skuV1ProductStatus || '').trim();
     const status = String(select?.value || 'active').trim();
@@ -1614,38 +1839,168 @@
     const meta = typeof productLifecycleMeta === 'function'
       ? productLifecycleMeta(status)
       : { key: status, label: status };
-    try {
-      if (typeof upsertProductLifecycleStatus === 'function') {
-        await upsertProductLifecycleStatus({
-          articleKey,
-          status: meta.label || status,
-          key: meta.key || status,
-          note: 'Quick status from SKU workspace'
-        });
-      } else {
-        const stateRef = appState();
-        stateRef.storage = stateRef.storage || {};
-        stateRef.storage.productLifecycleOverrides = Array.isArray(stateRef.storage.productLifecycleOverrides)
-          ? stateRef.storage.productLifecycleOverrides.filter((item) => String(item?.articleKey || '') !== articleKey)
-          : [];
-        stateRef.storage.productLifecycleOverrides.unshift({
-          articleKey,
-          key: meta.key || status,
-          status: meta.label || status,
-          note: 'Quick status from SKU workspace',
-          updatedAt: new Date().toISOString(),
-          updatedBy: stateRef.team?.member?.name || stateRef.team?.userId || 'portal-user'
-        });
-        if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
-        if (typeof saveLocalStorage === 'function') saveLocalStorage();
-      }
-      launchV1Toast('Статус товара обновлен.');
-    } catch (error) {
-      console.warn('[sku-launch-v1] product status change failed', error);
-      launchV1Toast('Статус сохранен локально, синхронизация позже.');
-    } finally {
-      renderSkuWorkspaceV1(rootId);
+    applySkuV1ProductStatusLocal(articleKey, meta, status);
+    launchV1Toast('Статус товара обновлен.');
+    renderSkuWorkspaceV1(rootId);
+    if (typeof upsertProductLifecycleStatus === 'function') {
+      Promise.resolve(upsertProductLifecycleStatus({
+        articleKey,
+        status: meta.label || status,
+        key: meta.key || status,
+        note: 'Quick status from SKU workspace'
+      })).catch((error) => {
+        console.warn('[sku-launch-v1] product status background sync failed', error);
+        launchV1Toast('Статус сохранен локально, синхронизация позже.');
+      });
     }
+  }
+
+  function reviewFormRowsCsv(rows = []) {
+    const cells = [
+      ['platform', 'api_sku', 'problem', 'target_sku', 'candidate', 'revenue', 'units', 'status', 'action']
+    ];
+    rows.forEach((row) => {
+      const candidates = issueCandidates(row, 1);
+      const suggestion = issueSuggestion(row, candidates);
+      cells.push([
+        issuePlatform(row, 'all'),
+        issueApiSku(row),
+        issueTypeLabel(row),
+        suggestion.targetSku || row.targetSku || row.target_sku || '',
+        candidates[0]?.articleKey || candidates[0]?.article || '',
+        row.revenue || 0,
+        row.units || 0,
+        row.status || 'new',
+        suggestion.text || row.action || ''
+      ]);
+    });
+    return cells.map((line) => line.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
+  }
+
+  function downloadReviewFormCsv(rows = []) {
+    const blob = new Blob(['\uFEFF', reviewFormRowsCsv(rows)], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `sku-api-review-${todayKey()}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function openSkuV1ReviewForm(rootId = 'view-sku-contour') {
+    const previous = document.querySelector('[data-sku-v1-review-backdrop]');
+    if (previous) previous.remove();
+    const activeMarket = readGlobalMarket();
+    const model = planModelForWorkspace(activeMarket);
+    const sourceSkus = (appState().skus || []).filter((sku) => skuBelongsToMarket(sku, activeMarket));
+    const rawIssueRows = typeof skuContourIssueRows === 'function' ? skuContourIssueRows(model) : [];
+    const issueRows = rawIssueRows
+      .filter((row) => issuePlatformMatches(row, activeMarket))
+      .map(applyIssueDecision);
+    const context = { activeMarket, sourceSkus, issueRows, model };
+    const rows = filteredApiIssues(issueRows.filter((row) => !issueIsResolved(row)), context).slice(0, 120);
+    const backdrop = document.createElement('div');
+    backdrop.className = 'launch-v1-editor-backdrop sl-v1-review-backdrop';
+    backdrop.setAttribute('data-sku-v1-review-backdrop', '');
+    backdrop.innerHTML = `
+      <div class="launch-v1-editor sl-v1-review-dialog" role="dialog" aria-modal="true" aria-label="Форма разбора API SKU">
+        <header>
+          <div>
+            <span>Форма разбора</span>
+            <h3>API SKU без пары</h3>
+            <p>${escapeValue(marketLabel(activeMarket))} · ${formatInt(rows.length)} строк в работе</p>
+          </div>
+          <button type="button" data-sku-v1-review-close aria-label="Закрыть">×</button>
+        </header>
+        <div class="sl-v1-review-tools">
+          <button type="button" data-sku-v1-review-csv>CSV</button>
+          <button type="button" data-sku-v1-review-close>Готово</button>
+        </div>
+        <div class="sl-v1-review-list">
+          ${rows.map((row) => {
+            const candidates = issueCandidates(row, 3);
+            const suggestion = issueSuggestion(row, candidates);
+            const apiSku = issueApiSku(row);
+            const platform = issuePlatform(row, activeMarket);
+            const targetSku = String(suggestion.targetSku || candidates[0]?.articleKey || candidates[0]?.article || '').trim();
+            return `
+              <article class="sl-v1-review-row">
+                <div>
+                  ${safeBadge(issueStatusLabel(row.status || 'new'), issueTone(row))}
+                  <strong>${escapeValue(apiSku || 'API SKU')}</strong>
+                  <span>${escapeValue(issueTypeLabel(row))} · ${escapeValue(marketLabel(platform))}</span>
+                  <small>${formatMoney(row.revenue || 0)} · ${formatInt(row.units || 0)} шт.</small>
+                </div>
+                <select class="sl-v1-inline-select"
+                  data-sku-v1-row-status
+                  data-sku-v1-api-sku="${escapeValue(apiSku)}"
+                  data-sku-v1-platform="${escapeValue(platform)}">
+                  ${[
+                    ['new', 'new'],
+                    ['need_check', 'проверка'],
+                    ['blocked', 'blocked'],
+                    ['ignored', 'игнор']
+                  ].map(([value, label]) => `<option value="${escapeValue(value)}" ${String(row.status || 'new').toLowerCase() === value ? 'selected' : ''}>${escapeValue(label)}</option>`).join('')}
+                </select>
+                <div class="sl-v1-review-candidates">
+                  ${candidates.map((candidate) => {
+                    const articleKey = candidate.articleKey || candidate.article || '';
+                    return `
+                      <button type="button"
+                        data-sku-v1-quick-decision="alias"
+                        data-sku-v1-api-sku="${escapeValue(apiSku)}"
+                        data-sku-v1-platform="${escapeValue(platform)}"
+                        data-sku-v1-target-sku="${escapeValue(articleKey)}">
+                        <b>${escapeValue(articleKey)}</b>
+                        <span>${formatPct(candidate.matchScore || 0)}</span>
+                      </button>
+                    `;
+                  }).join('') || '<em>Кандидатов нет</em>'}
+                </div>
+                <div class="sl-v1-review-actions">
+                  <button type="button"
+                    data-sku-v1-quick-decision="${targetSku ? 'alias' : 'need_check'}"
+                    data-sku-v1-api-sku="${escapeValue(apiSku)}"
+                    data-sku-v1-platform="${escapeValue(platform)}"
+                    data-sku-v1-target-sku="${escapeValue(targetSku)}">${targetSku ? 'Связать SKU' : 'Проверить'}</button>
+                  <button type="button"
+                    data-sku-v1-quick-decision="ignore"
+                    data-sku-v1-api-sku="${escapeValue(apiSku)}"
+                    data-sku-v1-platform="${escapeValue(platform)}"
+                    data-sku-v1-target-sku="">Игнорировать</button>
+                </div>
+              </article>
+            `;
+          }).join('') || '<div class="sl-v1-empty">Неразобранных API SKU по текущему срезу нет.</div>'}
+        </div>
+      </div>
+    `;
+    const close = () => backdrop.remove();
+    backdrop.addEventListener('click', (event) => {
+      if (event.target === backdrop || event.target.closest('[data-sku-v1-review-close]')) close();
+    });
+    backdrop.querySelector('[data-sku-v1-review-csv]')?.addEventListener('click', () => downloadReviewFormCsv(rows));
+    backdrop.querySelectorAll('[data-sku-v1-row-status]').forEach((select) => {
+      select.addEventListener('click', (event) => event.stopPropagation());
+      select.addEventListener('change', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        await handleSkuV1RowStatusChange(event.currentTarget, rootId);
+        close();
+      });
+    });
+    backdrop.querySelectorAll('[data-sku-v1-quick-decision]').forEach((button) => {
+      button.addEventListener('click', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        await handleSkuV1QuickDecision(event.currentTarget, rootId);
+        close();
+      });
+    });
+    document.body.appendChild(backdrop);
+    requestAnimationFrame(() => backdrop.querySelector('[data-sku-v1-review-close]')?.focus?.());
   }
 
   function bindSkuWorkspaceV1(root) {
@@ -1672,11 +2027,6 @@
     root.querySelectorAll('[data-sku-v1-mode]').forEach((button) => {
       button.addEventListener('click', () => {
         const mode = button.dataset.skuV1Mode || 'registry';
-        if (mode === 'planfact') {
-          if (typeof setView === 'function') setView('sku-plan-fact');
-          else document.querySelector('.nav-btn[data-view="sku-plan-fact"]')?.click();
-          return;
-        }
         setSkuMode(mode);
         rerender();
       });
@@ -1755,10 +2105,7 @@
       stateRef.skuContourShowResolved = !stateRef.skuContourShowResolved;
       rerender();
     });
-    root.querySelector('[data-sku-v1-quality-export]')?.addEventListener('click', () => {
-      const model = planModelForWorkspace(readGlobalMarket());
-      if (typeof downloadSkuPlanFactQualityExcel === 'function') downloadSkuPlanFactQualityExcel(model);
-    });
+    root.querySelector('[data-sku-v1-review-form]')?.addEventListener('click', () => openSkuV1ReviewForm(root.id || 'view-sku-contour'));
   }
 
   function launchId(item) {
@@ -2634,6 +2981,7 @@
       .sl-v1-quality-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;border:1px solid var(--sl-line);border-radius:9px;padding:12px;background:rgba(0,0,0,.16)}.sl-v1-quality-row span{font-weight:850}.sl-v1-quality-row strong{font-size:12px}.sl-v1-quality-row em{grid-column:1/-1;color:var(--sl-muted);font-style:normal;font-size:11px}
       .sl-v1-table-panel{overflow:hidden}.sl-v1-table-wrap{overflow:auto;max-width:100%;border:1px solid rgba(224,190,126,.14);border-radius:9px;background:rgba(5,4,3,.62);margin-top:12px}.sl-v1-table{min-width:1380px;width:100%;border-collapse:separate;border-spacing:0}.sl-v1-table th,.sl-v1-table td{border-bottom:1px solid rgba(224,190,126,.09);padding:11px 12px;text-align:left;vertical-align:top;background:rgba(10,9,7,.94);font-size:12px;line-height:1.35}.sl-v1-table th{position:sticky;top:0;z-index:4;color:rgba(247,241,232,.68);font-size:10px;text-transform:uppercase;letter-spacing:.12em;background:rgba(18,15,11,.98)}.sl-v1-table th:nth-child(1),.sl-v1-table td:nth-child(1){position:sticky;left:0;z-index:5;width:190px;background:linear-gradient(90deg,rgba(16,14,11,.99),rgba(11,9,7,.97))}.sl-v1-table th:nth-child(2),.sl-v1-table td:nth-child(2){position:sticky;left:190px;z-index:5;width:310px;background:linear-gradient(90deg,rgba(15,13,10,.99),rgba(10,9,7,.97));box-shadow:10px 0 18px rgba(0,0,0,.22)}.sl-v1-table small{display:block;margin-top:4px;color:var(--sl-muted)}.sl-v1-link{border:0;background:transparent;color:#fff4d8;padding:0;font:inherit;font-weight:950;text-align:left;cursor:pointer}.sl-v1-platform-tags{display:flex;flex-wrap:wrap;gap:5px}.sl-v1-platform-tags span{border:1px solid rgba(224,190,126,.2);border-radius:999px;padding:4px 7px;background:rgba(255,255,255,.035);font-size:10px}
       .sl-v1-api-action{display:grid;gap:8px;min-width:300px}.sl-v1-api-action-main{display:grid;gap:5px}.sl-v1-api-action-main span{color:rgba(247,241,232,.78)}.sl-v1-api-action-buttons{display:flex;flex-wrap:wrap;gap:7px}.sl-v1-api-action-buttons button,.sl-v1-candidate>button:last-child{height:30px;border:1px solid rgba(224,190,126,.22);border-radius:999px;background:rgba(255,255,255,.035);color:#fff4d8;padding:0 10px;font:inherit;font-size:11px;font-weight:900;cursor:pointer}.sl-v1-api-action-buttons button:first-child,.sl-v1-candidate>button:last-child{background:linear-gradient(180deg,rgba(245,223,173,.26),rgba(185,139,71,.16));border-color:rgba(245,218,165,.44)}.sl-v1-candidate-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:7px}.sl-v1-candidate{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:stretch}.sl-v1-candidate>button:first-child{min-width:0;border:1px solid rgba(224,190,126,.16);border-radius:8px;background:rgba(255,255,255,.03);color:var(--sl-text);padding:8px;text-align:left;cursor:pointer;display:grid;gap:2px}.sl-v1-candidate b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sl-v1-candidate em{font-style:normal;color:#ffd98d;font-size:11px}.sl-v1-candidate small,.sl-v1-candidate-empty{color:var(--sl-muted);font-size:11px}
+      .sl-v1-planfact-table{min-width:1480px}.sl-v1-planfact-table .chip{display:inline-flex;margin-bottom:4px}.sl-v1-review-dialog{padding:18px;display:grid;gap:14px}.sl-v1-review-dialog header{padding:0}.sl-v1-review-dialog header p{margin:4px 0 0;color:var(--sl-muted)}.sl-v1-review-tools{display:flex;justify-content:flex-end;gap:8px}.sl-v1-review-tools button{height:34px;border:1px solid rgba(224,190,126,.24);border-radius:8px;background:rgba(255,255,255,.04);color:#f7f1e8;padding:0 12px;font:inherit;font-size:12px;font-weight:850;cursor:pointer}.sl-v1-review-tools button:first-child{background:linear-gradient(180deg,rgba(245,223,173,.24),rgba(185,139,71,.14));border-color:rgba(245,218,165,.42)}.sl-v1-review-list{display:grid;gap:10px;max-height:62vh;overflow:auto;padding-right:4px}.sl-v1-review-row{display:grid;grid-template-columns:minmax(220px,1.1fr) 140px minmax(240px,1.2fr) auto;gap:10px;align-items:start;border:1px solid rgba(224,190,126,.16);border-radius:12px;background:rgba(0,0,0,.18);padding:12px}.sl-v1-review-row>div:first-child{display:grid;gap:4px}.sl-v1-review-row strong{color:#fff4d8}.sl-v1-review-row span,.sl-v1-review-row small,.sl-v1-review-candidates em{color:var(--sl-muted);font-style:normal}.sl-v1-review-candidates{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}.sl-v1-review-candidates button{min-height:42px;border:1px solid rgba(224,190,126,.18);border-radius:8px;background:rgba(255,255,255,.035);color:#f7f1e8;padding:7px 9px;text-align:left;cursor:pointer;display:grid;gap:2px}.sl-v1-review-candidates b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sl-v1-review-candidates span{font-size:10px;color:#ffd98d}.sl-v1-review-actions{display:grid;gap:6px}.sl-v1-review-actions button{height:32px;border:1px solid rgba(224,190,126,.24);border-radius:999px;background:rgba(255,255,255,.04);color:#fff4d8;padding:0 10px;font:inherit;font-size:11px;font-weight:900;cursor:pointer}.sl-v1-review-actions button:first-child{background:linear-gradient(180deg,rgba(245,223,173,.26),rgba(185,139,71,.16));border-color:rgba(245,218,165,.44)}
       .sl-v1-status-cell{display:grid;gap:6px;align-items:start}.sl-v1-inline-select{width:100%;max-width:170px;height:28px;border:1px solid rgba(224,190,126,.24);border-radius:7px;background:rgba(5,4,3,.86);color:var(--sl-text);padding:0 8px;font:inherit;font-size:11px;font-weight:800;outline:none}.sl-v1-inline-select:focus{border-color:rgba(245,218,165,.75);box-shadow:0 0 0 3px rgba(214,169,85,.12)}.sl-v1-table td .sl-v1-inline-select{margin-top:6px}
       .sl-v1-inline-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.sl-v1-inline-actions button{border-color:rgba(224,190,126,.22);background:rgba(255,255,255,.035);padding:0 12px}
       .sl-v1-empty{padding:18px;border:1px dashed rgba(224,190,126,.2);border-radius:9px;color:var(--sl-muted);background:rgba(255,255,255,.018)}
@@ -2659,7 +3007,7 @@
       .launch-v1-kanban-columns{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));gap:10px;overflow:auto}.launch-v1-kanban-col{min-height:520px;border:1px solid var(--sl-line);border-radius:10px;background:rgba(255,255,255,.018);padding:10px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px}.launch-v1-kanban-col header{display:grid;gap:8px}.launch-v1-kanban-col article{border:1px solid rgba(224,190,126,.14);border-radius:9px;padding:12px;background:rgba(0,0,0,.16);display:grid;align-content:start;gap:8px}.launch-v1-kanban-col em,.launch-v1-kanban-col p{color:var(--sl-muted);font-style:normal}.launch-v1-kanban-col b{color:#f0d49a}
       .launch-v1-editor-backdrop{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.62);backdrop-filter:blur(16px)}.launch-v1-editor{width:min(1080px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;border:1px solid rgba(224,190,126,.28);border-radius:16px;background:linear-gradient(145deg,rgba(25,22,18,.98),rgba(8,7,6,.98));box-shadow:0 24px 80px rgba(0,0,0,.58);color:#f7f1e8}.launch-v1-editor form{display:grid;gap:16px;padding:18px}.launch-v1-editor header,.launch-v1-editor footer{display:flex;align-items:center;justify-content:space-between;gap:12px}.launch-v1-editor header span{display:block;color:#d8c08a;font-size:11px;font-weight:850;letter-spacing:.22em;text-transform:uppercase}.launch-v1-editor h3{margin:4px 0 0;font-size:28px}.launch-v1-editor header button{width:38px;height:38px;border:1px solid rgba(224,190,126,.26);border-radius:50%;background:rgba(255,255,255,.04);color:#f7f1e8;font-size:24px;cursor:pointer}.launch-v1-editor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.launch-v1-editor label{display:grid;gap:6px}.launch-v1-editor label.wide{grid-column:1/-1}.launch-v1-editor label span,.launch-v1-editor-stages strong{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:rgba(235,216,174,.64);font-weight:850}.launch-v1-editor input,.launch-v1-editor select,.launch-v1-editor textarea{min-width:0;width:100%;border:1px solid rgba(224,190,126,.22);border-radius:9px;background:rgba(5,4,3,.82);color:#f7f1e8;padding:10px 12px;font:inherit;outline:none}.launch-v1-editor textarea{resize:vertical}.launch-v1-editor-stages{display:grid;gap:10px}.launch-v1-editor-stages fieldset{display:grid;grid-template-columns:1fr 170px 1fr;gap:10px;border:1px solid rgba(224,190,126,.14);border-radius:12px;margin:0;padding:12px;background:rgba(0,0,0,.16)}.launch-v1-editor-stages legend{padding:0 8px;color:#f0d49a;font-weight:900}.launch-v1-editor footer button{height:40px;border:1px solid rgba(224,190,126,.26);border-radius:9px;background:rgba(255,255,255,.04);color:#f7f1e8;padding:0 16px;font:inherit;font-weight:850;cursor:pointer}.launch-v1-editor footer button[type="submit"]{background:linear-gradient(180deg,#f5dfad,#b98b47);color:#120d07}.launch-v1-editor footer button.danger{border-color:rgba(255,116,105,.45);color:#ff8a80}
       .launch-v1-toast{position:fixed;right:22px;bottom:22px;z-index:10000;border:1px solid rgba(103,213,154,.36);border-radius:999px;background:rgba(10,22,16,.94);color:#dfffe9;padding:10px 14px;font-weight:850;box-shadow:0 14px 44px rgba(0,0,0,.35)}
-      @media (max-width:1200px){.sl-v1-hero,.launch-v1-workspace,.sl-v1-focus-grid{grid-template-columns:1fr}.sl-v1-kpis,.launch-v1-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sl-v1-filter-grid,.launch-v1-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.launch-v1-detail{position:relative;top:auto}.launch-v1-kanban-columns{grid-template-columns:repeat(3,minmax(220px,1fr))}}
+      @media (max-width:1200px){.sl-v1-hero,.launch-v1-workspace,.sl-v1-focus-grid{grid-template-columns:1fr}.sl-v1-kpis,.launch-v1-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sl-v1-filter-grid,.launch-v1-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.launch-v1-detail{position:relative;top:auto}.launch-v1-kanban-columns{grid-template-columns:repeat(3,minmax(220px,1fr))}.sl-v1-review-row{grid-template-columns:1fr}}
       @media (max-width:720px){.sl-v1-hero h2{font-size:34px}.sl-v1-filter-grid,.launch-v1-filter-grid,.sl-v1-kpis,.launch-v1-kpis,.launch-v1-gate{grid-template-columns:1fr}.sl-v1-segment{grid-template-columns:1fr}.launch-v1-month-grid,.launch-v1-weekdays{min-width:760px}.launch-v1-calendar-card{overflow:auto}.launch-v1-detail-actions,.launch-v1-full-head{display:grid}.launch-v1-kanban-columns{grid-template-columns:repeat(6,220px)}}
       @media (prefers-reduced-motion:reduce){.sku-launch-v1-shell *{transition:none!important;animation:none!important}}
     `;

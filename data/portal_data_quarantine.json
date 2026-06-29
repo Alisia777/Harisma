@@ -1,13 +1,66 @@
 {
   "schema": "portal-data-quarantine-v1",
-  "generatedAt": "2026-06-22T16:22:31.305Z",
+  "generatedAt": "2026-06-29T06:49:05.137Z",
   "reason": "Rows that need review before the data contour can be trusted.",
   "summary": {
-    "rows": 0,
-    "revenue": 0,
-    "overage": 0,
-    "apiSumAboveAggregateCount": 0,
-    "apiUnmappedHighRevenueCount": 0
+    "rows": 4,
+    "revenue": 1585156,
+    "overage": 490820,
+    "apiSumAboveAggregateCount": 3,
+    "apiUnmappedHighRevenueCount": 1
   },
-  "rows": []
+  "rows": [
+    {
+      "type": "api_sum_above_aggregate",
+      "severity": "critical",
+      "platform": "goldapple",
+      "platformLabel": "ЗЯ",
+      "articleKey": "",
+      "name": "",
+      "revenue": 897442,
+      "aggregateRevenue": 594984,
+      "overage": 302458,
+      "units": 0,
+      "message": "Сумма SKU по API выше агрегата площадки"
+    },
+    {
+      "type": "api_sum_above_aggregate",
+      "severity": "critical",
+      "platform": "letu",
+      "platformLabel": "Лэтуаль",
+      "articleKey": "",
+      "name": "",
+      "revenue": 520203,
+      "aggregateRevenue": 344883,
+      "overage": 175320,
+      "units": 0,
+      "message": "Сумма SKU по API выше агрегата площадки"
+    },
+    {
+      "type": "api_sku_unmapped",
+      "severity": "critical",
+      "platform": "goldapple",
+      "platformLabel": "ЗЯ",
+      "articleKey": "penka_kudryavii_meto",
+      "name": "Пенка для укладки кудрявых волос, кудрявый метод, супер фиксация без склеивания, Алтея 150 мл",
+      "revenue": 128813,
+      "aggregateRevenue": 0,
+      "overage": 0,
+      "units": 151,
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "type": "api_sum_above_aggregate",
+      "severity": "critical",
+      "platform": "magnit",
+      "platformLabel": "Магнит Маркет",
+      "articleKey": "",
+      "name": "",
+      "revenue": 38698,
+      "aggregateRevenue": 25656,
+      "overage": 13042,
+      "units": 0,
+      "message": "Сумма SKU по API выше агрегата площадки"
+    }
+  ]
 }

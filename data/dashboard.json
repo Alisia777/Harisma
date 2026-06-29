@@ -1,2181 +1,1089 @@
 {
-  "generatedAt": "2026-06-26T05:49:28.197Z",
+  "schema": "portal-dashboard-v2",
+  "generatedAt": "2026-06-29T06:32:18.705Z",
+  "snapshot_id": "dashboard:08a7ba234a1ce632",
+  "asOfDate": "2026-06-28",
+  "latestMarketplaceDate": "2026-06-28",
+  "monthKey": "2026-06",
   "dataFreshness": {
-    "planFactMonth": "май 2026 - общий план компании",
-    "ordersSnapshot": "orders (40).csv",
-    "contentPeriods": [
-      "09.03.2026 - 15.03.2026",
-      "16.03.2026 - 22.03.2026"
-    ],
-    "launchPlanHorizon": "Апрель 2026 — Октябрь 2026",
-    "ownerFiles": [
-      "Для Анны (2).xlsx",
-      "Рабочий _ Спецификации v2.xlsx"
-    ],
-    "asOfDate": "2026-05-17",
-    "googleSheetsMonth": "2026-05",
-    "googleSheetsBridge": "scripts/portal-google-sheet-sync.js",
-    "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
-    "googleSheetsSourceGid": "2003059667",
-    "googleSheetsRefreshTimeLocal": "09:00 Europe/Moscow",
-    "planFactSource": "План А.xlsx :: 00_Источник_плана | общий план компании",
-    "portalRefreshTimeLocal": "10:00 Europe/Moscow",
-    "companyPlanSource": "План А.xlsx :: 00_Источник_плана | общий план компании",
-    "companyPlanWorkbook": "План А.xlsx",
-    "companyPlanSheet": "00_Источник_плана",
-    "marketplaceFactSource": "platform_trends.json (API-backed)"
+    "asOfDate": "2026-06-28",
+    "dataDate": "2026-06-28",
+    "expectedFactDate": "2026-06-28",
+    "googleSheetsMonth": "2026-06",
+    "marketplaceFactSource": "platform_trends.json",
+    "companyPlanSource": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
+    "salaryPlanLoadedAt": "2026-05-29T19:18:00+03:00",
+    "salaryPlanControlTotals": {
+      "2026-05": {
+        "revenue": 253796998,
+        "wb": 190405570,
+        "ozon": 53553438,
+        "ya": 9837990
+      },
+      "2026-06": {
+        "revenue": 285818670,
+        "wb": 214476498,
+        "ozon": 60323623,
+        "ya": 11018549
+      },
+      "2026-07": {
+        "revenue": 322540144,
+        "wb": 241590454,
+        "ozon": 67949690,
+        "ya": 13000000
+      },
+      "2026-08": {
+        "revenue": 330493435.777206,
+        "wb": 201066371,
+        "ozon": 112322218.777206,
+        "ya": 6441334
+      },
+      "2026-09": {
+        "revenue": 367451257.701405,
+        "wb": 216150839,
+        "ozon": 131926900.701405,
+        "ya": 7612015
+      },
+      "2026-10": {
+        "revenue": 387055656.371205,
+        "wb": 235531555,
+        "ozon": 129719435.371205,
+        "ya": 8782698
+      },
+      "2026-11": {
+        "revenue": 410817634.188604,
+        "wb": 259373620,
+        "ozon": 126917638.188604,
+        "ya": 9953377
+      },
+      "2026-12": {
+        "revenue": 459872220.351102,
+        "wb": 289011920,
+        "ozon": 143447038.351102,
+        "ya": 11124048
+      }
+    }
+  },
+  "sourceLineage": {
+    "plan": "company_plan.json",
+    "fact": "platform_trends.json",
+    "metrics": "portal_dashboard_metrics.json",
+    "skuRegistry": "skus.json",
+    "warehouse": "warehouse_stock_overlay.json"
+  },
+  "summary": {
+    "metrics": 9,
+    "factRevenue": 340551907.78,
+    "planRevenue": 285818670,
+    "planToDate": 266764092,
+    "completionToDate": 1.276603,
+    "unallocatedRevenue": 965522.92,
+    "cutoffDate": "2026-06-28",
+    "monthKey": "2026-06",
+    "factUnits": 322168,
+    "warehouseStock": 489618,
+    "marketplaceStock": 220574
   },
   "cards": [
     {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
+      "id": "dashboard-cutoff",
+      "label": "Data cutoff",
+      "value": "2026-06-28",
+      "format": "text",
+      "period": "2026-06-28",
+      "hint": "Common marketplace fact date.",
+      "metricId": "dashboard-cutoff"
     },
     {
-      "label": "SKU в работе",
-      "value": 7,
-      "hint": "Ниже плана + отрицательная маржа хотя бы на одном MP"
+      "id": "sku-registry-total",
+      "label": "SKU registry",
+      "value": 143,
+      "period": "2026-06-28",
+      "hint": "Rows from canonical skus.json.",
+      "metricId": "sku-registry-total"
     },
     {
-      "label": "В работе WB",
-      "value": 4,
-      "hint": "Ниже плана + маржа < 0 на WB"
+      "id": "owner-assigned",
+      "label": "SKU with owner",
+      "value": 143,
+      "period": "2026-06-28",
+      "hint": "Owner comes from canonical SKU owner fields.",
+      "metricId": "owner-assigned"
     },
     {
-      "label": "В работе Ozon",
-      "value": 3,
-      "hint": "Ниже плана + маржа < 0 на Ozon"
+      "id": "marketplace-stock-total",
+      "label": "Marketplace stock",
+      "value": 220574,
+      "period": "2026-06-28",
+      "hint": "WB/Ozon/Yandex stock visible in SKU registry.",
+      "metricId": "marketplace-stock-total"
     },
     {
-      "label": "Отрицательная маржа",
-      "value": 16,
-      "hint": "Хотя бы на одном MP маржа < 0"
+      "id": "warehouse-stock-total",
+      "label": "Warehouse stock",
+      "value": 489618,
+      "period": "2026-06-28",
+      "hint": "Warehouse stock overlay remains visible.",
+      "metricId": "warehouse-stock-total"
     },
     {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+      "id": "sales-revenue-wb",
+      "label": "Revenue WB",
+      "value": 266553890,
+      "format": "money",
+      "period": "2026-06-28",
+      "hint": "Fact from platform_trends.json.",
+      "metricId": "sales.raw_revenue:wb"
     },
     {
-      "label": "Р‘РµР· owner",
+      "id": "sales-revenue-ozon",
+      "label": "Revenue OZON",
+      "value": 65282549.85999999,
+      "format": "money",
+      "period": "2026-06-28",
+      "hint": "Fact from platform_trends.json.",
+      "metricId": "sales.raw_revenue:ozon"
+    },
+    {
+      "id": "sales-revenue-ya",
+      "label": "Revenue YA",
+      "value": 7749945,
+      "format": "money",
+      "period": "2026-06-28",
+      "hint": "Fact from platform_trends.json.",
+      "metricId": "sales.raw_revenue:ya"
+    },
+    {
+      "id": "sales-revenue-unallocated",
+      "label": "Revenue unallocated",
+      "value": 965522.92,
+      "format": "money",
+      "period": "2026-06-28",
+      "hint": "Control total remainder stays visible.",
+      "metricId": "sales.raw_revenue.unallocated"
+    },
+    {
+      "id": "company-plan-revenue",
+      "label": "Company plan",
+      "value": 285818670,
+      "format": "money",
+      "period": "2026-06",
+      "hint": "Plan is read only from company_plan.json.",
+      "metricId": "plan.revenue"
+    },
+    {
+      "id": "company-fact-revenue",
+      "label": "Company fact",
+      "value": 340551907.78,
+      "format": "money",
+      "period": "2026-06-28",
+      "hint": "Fact is read only from platform_trends.json.",
+      "metricId": "sales.raw_revenue"
+    },
+    {
+      "id": "company-plan-completion",
+      "label": "Plan completion to date",
+      "value": 1.2766032535593284,
+      "valuePct": 1.2766032535593284,
+      "format": "pct",
+      "period": "2026-06-28",
+      "hint": "Fact divided by linear company plan to date.",
+      "metricId": "plan.completion_revenue"
+    },
+    {
+      "id": "company-forecast-revenue",
+      "label": "Company forecast",
+      "value": 364877044.05,
+      "format": "money",
+      "period": "2026-06",
+      "hint": "Baseline forecast: month-to-date average times month days.",
+      "metricId": "plan.forecast_revenue"
+    },
+    {
+      "id": "ads-drr-wb",
+      "label": "DRR WB",
+      "value": 0.205244,
+      "valuePct": 0.205244,
+      "format": "pct",
+      "period": "2026-06-28",
+      "hint": "Ad spend divided by attributed revenue.",
+      "metricId": "ads.drr:wb"
+    },
+    {
+      "id": "ads-drr-ozon",
+      "label": "DRR OZON",
       "value": 0,
-      "hint": "Нужно дозакрепить вручную"
-    },
-    {
-      "label": "Внешний трафик КЗ",
-      "value": 33,
-      "hint": "По факту/плану/реестрам"
-    },
-    {
-      "label": "Внешний трафик VK",
-      "value": 6,
-      "hint": "По факту/плану/реестрам"
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 83,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "Без owner",
-      "value": 0,
-      "hint": "Нужно дозакрепить вручную"
-    },
-    {
-      "label": "План май 2026, ₽",
-      "value": 291518548.512607,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx. ИУ WB/Ozon считаются отдельно."
-    },
-    {
-      "label": "План к 06.05, ₽",
-      "value": 56422944.873407796,
-      "format": "money",
-      "hint": "Линейный общий план компании с 01.05 по 06.05."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.1438,
-      "valuePct": 1.1438,
+      "valuePct": 0,
       "format": "pct",
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату."
-    },
-    {
-      "label": "Прогноз / план",
-      "value": 0.7284808173734991,
-      "valuePct": 0.7284808173734991,
-      "format": "pct",
-      "hint": "Базовый прогноз 212 365 671 ₽ к концу месяца."
-    },
-    {
-      "label": "План мая, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "План компании май 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-11.05, ₽",
-      "value": 81168463,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.7847,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.7847
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 0.9784,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 0.9784
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-12.05, ₽",
-      "value": 56600448.77,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.5016,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.5016
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 0.9799,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 0.9799
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-12.05, ₽",
-      "value": 56682867.98,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.5023,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.5023
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 0.935,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 0.935
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-12.05, ₽",
-      "value": 108552937,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.962,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.962
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 0.935,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 0.935
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-12.05, ₽",
-      "value": 108552937,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.962,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.962
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 0.8241,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 0.8241
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-12.05, ₽",
-      "value": 102417987.37,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.9076,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.9076
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 0.8251,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 0.8251
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-12.05, ₽",
-      "value": 102547712.37,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.9087,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.9087
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.1515,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.1515
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-12.05, ₽",
-      "value": 85599949.99,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.7586,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.7586
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 0.8017,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 0.8017
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-13.05, ₽",
-      "value": 59302299.6,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.4851,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.4851
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.0395,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.0395
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-13.05, ₽",
-      "value": 79429802.97,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.6497,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.6497
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.2734,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.2734
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-13.05, ₽",
-      "value": 98872992.82,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.8088,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.8088
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.2734,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.2734
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-13.05, ₽",
-      "value": 98872992.82,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.8088,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.8088
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.2386,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.2386
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-15.05, ₽",
-      "value": 109787201.76,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.7783,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.7783
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.2386,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.2386
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-15.05, ₽",
-      "value": 109787201.76,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.7783,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.7783
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.2386,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.2386
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-15.05, ₽",
-      "value": 109787201.76,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.7783,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.7783
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.231,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.231
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-15.05, ₽",
-      "value": 110061994.76,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.7803,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.7803
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.3285,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.3285
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-15.05, ₽",
-      "value": 117308131.77,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.8316,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.8316
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.3328,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.3328
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-15.05, ₽",
-      "value": 117658534.77,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.8341,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.8341
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.3328,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.3328
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-15.05, ₽",
-      "value": 117658534.77,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.8341,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.8341
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.2949,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.2949
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-16.05, ₽",
-      "value": 121904281.77,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.8102,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.8102
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.3666,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.3666
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-17.05, ₽",
-      "value": 137023318.82,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.8571,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.8571
-    },
-    {
-      "label": "SKU в базе",
-      "value": 89,
-      "hint": "В портал попал только бренд Алтея"
-    },
-    {
-      "label": "Закреплено за owner",
-      "value": 89,
-      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
-    },
-    {
-      "label": "Остатки MP, шт.",
-      "value": 909904,
-      "hint": "WB + Ozon по API-�резу platform_trends на 2026-05-17"
-    },
-    {
-      "label": "План ���, шт.",
-      "value": 173171,
-      "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Факт 01-17.05, шт.",
-      "value": 129777.99919999998,
-      "hint": "Факт по API-�резу platform_trends на 2026-05-17."
-    },
-    {
-      "label": "Выполнение к плану на дату",
-      "value": 1.3666,
-      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.3666
-    },
-    {
-      "label": "План компании ��� 2026, ₽",
-      "value": 291518548.51,
-      "format": "money",
-      "hint": "Общий план компании из План А.xlsx."
-    },
-    {
-      "label": "Факт компании 01-17.05, ₽",
-      "value": 137023318.82,
-      "format": "money",
-      "hint": "Факт выручки к общему плану компании."
-    },
-    {
-      "label": "Выполнение компании к плану",
-      "value": 0.8571,
-      "format": "pct",
-      "hint": "Факт выручки / линейный общий план компании на дату.",
-      "valuePct": 0.8571
+      "period": "2026-06-28",
+      "hint": "Ad spend divided by attributed revenue.",
+      "metricId": "ads.drr:ozon"
     }
   ],
   "brandSummary": [
     {
-      "brand": "Алтея",
-      "sku_count": 89,
-      "total_stock": 909904,
-      "orders_value": 161631197.21,
-      "feb_plan_units": 127838,
-      "feb_fact_units": 48829,
-      "plan_completion_feb26_pct": 0.382,
-      "returns_units": 8580,
-      "avg_romi": 93.9518,
-      "negative_margin_sku": 16,
-      "to_work_sku": 7,
-      "assigned_sku": 89,
-      "external_any_sku": 36,
-      "google_sheets_plan_field": "planApr26Units",
-      "google_sheets_month_key": "2026-05",
-      "plan_units": 173171,
-      "fact_units_to_date": 129777.99919999998,
-      "fact_revenue_to_date": 137023318.82,
-      "plan_completion_to_date_pct": 1.3666,
-      "apr_plan_units": 173171,
-      "apr_fact_units_to_date": 152328,
-      "asOfDate": "2026-05-17",
-      "plan_source": "План А.xlsx :: 00_Источник_плана | общий план компании",
-      "apr_plan_revenue": 291518548.512607,
-      "apr_fact_revenue_to_date": 41103033,
-      "apr_plan_to_date_revenue": 56422944.873407796,
-      "apr_forecast_revenue": 212365670.5,
-      "apr_plan_completion_month_pct": 0.1409962872335805,
-      "apr_plan_completion_to_date_pct": 0.7284808173734992,
-      "apr_forecast_pct": 0.7284808173734991,
-      "may_plan_units": 173171,
-      "may_fact_units_to_date": 129777.99919999998,
-      "may_fact_revenue_to_date": 137023318.82,
-      "may_plan_completion_to_date_pct": 1.3666,
-      "company_plan_month_key": "2026-05",
-      "company_plan_month_label": "май 2026",
-      "company_plan_revenue": 291518548.51,
-      "company_fact_revenue_to_date": 137023318.82,
-      "company_plan_to_date_revenue": 159865010.47,
-      "company_plan_completion_month_pct": 0.47,
-      "company_plan_completion_to_date_pct": 0.8571,
-      "company_forecast_revenue": 249866051.97,
-      "company_forecast_pct": 0.8571,
-      "company_plan_source": "План А.xlsx :: 00_Источник_плана",
-      "may_company_plan_revenue": 291518548.51,
-      "may_company_fact_revenue_to_date": 137023318.82,
-      "may_company_plan_to_date_revenue": 159865010.47,
-      "may_company_plan_completion_month_pct": 0.47,
-      "may_company_plan_completion_to_date_pct": 0.8571,
-      "may_company_forecast_revenue": 249866051.97,
-      "may_company_forecast_pct": 0.8571,
-      "google_sheets_company_plan_field": "company_revenue_plan",
-      "latestMarketplaceDate": "2026-05-17"
+      "brand": "Altea",
+      "asOfDate": "2026-06-28",
+      "latestMarketplaceDate": "2026-06-28",
+      "sku_count": 143,
+      "assigned_sku": 143,
+      "total_stock": 220574,
+      "warehouse_stock": 489618,
+      "plan_units": 0,
+      "fact_units_to_date": 322168,
+      "fact_revenue_to_date": 340551907.78,
+      "plan_completion_to_date_pct": 1.276603,
+      "company_plan_month_key": "2026-06",
+      "company_plan_month_label": "июнь 2026",
+      "company_plan_revenue": 285818670,
+      "company_fact_revenue_to_date": 340551907.78,
+      "company_plan_to_date_revenue": 266764092,
+      "company_plan_completion_month_pct": 1.191496,
+      "company_plan_completion_to_date_pct": 1.276603,
+      "company_forecast_revenue": 364877044.05,
+      "company_forecast_pct": 1.276603,
+      "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
+      "platformFacts": {
+        "wb": {
+          "dateFrom": "2026-06-01",
+          "dateTo": "2026-06-28",
+          "revenue": 266553890,
+          "units": 219530
+        },
+        "ozon": {
+          "dateFrom": "2026-06-01",
+          "dateTo": "2026-06-28",
+          "revenue": 65282549.86,
+          "units": 93005
+        },
+        "ya": {
+          "dateFrom": "2026-06-01",
+          "dateTo": "2026-06-22",
+          "revenue": 7749945,
+          "units": 9633
+        }
+      }
     }
   ],
   "focusTop": [
     {
-      "article": "nabor_remuver_40ml",
-      "brand": "Алтея",
-      "product_name_final": "Ремувер для удаления кутикулы, Алтея, 40 мл",
-      "focus_score": 10,
-      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
-      "plan_completion_feb26_pct": 0.2952,
-      "total_mp_stock": 8741,
-      "content_romi": null,
-      "owner_name": "Мария",
-      "external_kz_flag": 0,
-      "external_vk_flag": 0
-    },
-    {
       "article": "kremshelk_100ml",
+      "articleKey": "kremshelk_100ml",
       "brand": "Алтея",
       "product_name_final": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
       "focus_score": 10,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
-      "plan_completion_feb26_pct": 0.3244,
       "total_mp_stock": 9203,
-      "content_romi": 91.145,
-      "owner_name": "Олеся",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
+      "owner_name": "Мария",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 7494622
     },
     {
-      "article": "skrab_babl_gam_200ml",
+      "article": "nabor_remuver_40ml",
+      "articleKey": "nabor_remuver_40ml",
       "brand": "Алтея",
-      "product_name_final": "Скраб пилинг для кожи головы, Алтея, 200 мл",
-      "focus_score": 9,
-      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Есть внешний трафик КЗ",
-      "plan_completion_feb26_pct": 0.2549,
-      "total_mp_stock": 1899,
-      "content_romi": -100,
-      "owner_name": "Кирилл",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
+      "product_name_final": "Ремувер для удаления кутикулы, Алтея, 40 мл",
+      "focus_score": 10,
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
+      "total_mp_stock": 8741,
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Александр Озон",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 1577260
     },
     {
       "article": "matte_wax_50ml",
+      "articleKey": "matte_wax_50ml",
       "brand": "Алтея",
       "product_name_final": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
       "focus_score": 9,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
-      "plan_completion_feb26_pct": 0.3218,
       "total_mp_stock": 1008,
-      "content_romi": null,
-      "owner_name": "Кирилл",
-      "external_kz_flag": 0,
-      "external_vk_flag": 0
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Александр Озон",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 2070641
     },
     {
-      "article": "ekdisteron_ultra_man_60caps",
+      "article": "skrab_babl_gam_200ml",
+      "articleKey": "skrab_babl_gam_200ml",
       "brand": "Алтея",
-      "product_name_final": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
-      "focus_score": 8,
-      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
-      "plan_completion_feb26_pct": 0.2284,
-      "total_mp_stock": 1537,
-      "content_romi": null,
-      "owner_name": "Кирилл",
-      "external_kz_flag": 0,
-      "external_vk_flag": 0
+      "product_name_final": "Скраб пилинг для кожи головы, Алтея, 200 мл",
+      "focus_score": 9,
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Есть внешний трафик КЗ",
+      "total_mp_stock": 1899,
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Александр Озон",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 801764
     },
     {
       "article": "syvorotka_guk_30ml",
+      "articleKey": "syvorotka_guk_30ml",
       "brand": "Алтея",
       "product_name_final": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
       "focus_score": 8,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
-      "plan_completion_feb26_pct": 0.3523,
       "total_mp_stock": 763,
-      "content_romi": null,
-      "owner_name": "Олеся",
-      "external_kz_flag": 0,
-      "external_vk_flag": 0
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 1543576
     },
     {
       "article": "intimvita_300ml",
+      "articleKey": "intimvita_300ml",
       "brand": "Алтея",
-      "product_name_final": "Р“РµР»СЊ РґР»СЏ РёРЅС‚РёРјРЅРѕР№ РіРёРіРёРµРЅС‹ СЃ РјРѕР»РѕС‡РЅРѕР№ РєРёСЃР»РѕС‚РѕР№, РђР»С‚РµСЏ, РРЅС‚РёРјРІРёС‚Р°, 300 РјР»",
+      "product_name_final": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
       "focus_score": 8,
       "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
-      "plan_completion_feb26_pct": 0.3529,
       "total_mp_stock": 1718,
-      "content_romi": null,
-      "owner_name": "Кирилл",
-      "external_kz_flag": 0,
-      "external_vk_flag": 0
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Александр Озон",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 754724
+    },
+    {
+      "article": "ekdisteron_ultra_man_60caps",
+      "articleKey": "ekdisteron_ultra_man_60caps",
+      "brand": "Алтея",
+      "product_name_final": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
+      "focus_score": 8,
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
+      "total_mp_stock": 1537,
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Александр Озон",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 510808
+    },
+    {
+      "article": "krovavii_piling_30ml",
+      "articleKey": "krovavii_piling_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 3935,
+      "owner_name": "Мария",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 17405005
+    },
+    {
+      "article": "curly_method_300ml",
+      "articleKey": "curly_method_300ml",
+      "brand": "Алтея",
+      "product_name_final": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 6986,
+      "owner_name": "Мария",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Александр Озон",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 15948078
+    },
+    {
+      "article": "penka_kudryavii_metod_150ml",
+      "articleKey": "penka_kudryavii_metod_150ml",
+      "brand": "Алтея",
+      "product_name_final": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 2452,
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Александр Озон",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 11518558
+    },
+    {
+      "article": "gel_antiakne_20ml_v2",
+      "articleKey": "gel_antiakne_20ml_v2",
+      "brand": "Алтея",
+      "product_name_final": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 3440,
+      "owner_name": "Мария",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 5347504
     },
     {
       "article": "enzim_pudra_80gr_v2",
+      "articleKey": "enzim_pudra_80gr_v2",
       "brand": "Алтея",
       "product_name_final": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
       "focus_score": 5,
       "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Есть внешний трафик КЗ",
-      "plan_completion_feb26_pct": 0.3127,
       "total_mp_stock": 1,
-      "content_romi": null,
-      "owner_name": "Мария",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "curly_method_300ml",
-      "brand": "Алтея",
-      "product_name_final": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
-      "plan_completion_feb26_pct": 0.3203,
-      "total_mp_stock": 6986,
-      "content_romi": 353.345,
-      "owner_name": "Олеся",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "gel_antiakne_20ml_v2",
-      "brand": "Алтея",
-      "product_name_final": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
-      "plan_completion_feb26_pct": 0.355,
-      "total_mp_stock": 3440,
-      "content_romi": 405.86,
-      "owner_name": "Кирилл",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "penka_kudryavii_metod_150ml",
-      "brand": "Алтея",
-      "product_name_final": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
-      "plan_completion_feb26_pct": 0.373,
-      "total_mp_stock": 2452,
-      "content_romi": 336.99,
-      "owner_name": "Олеся",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "krovavii_piling_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
-      "plan_completion_feb26_pct": 0.373,
-      "total_mp_stock": 3935,
-      "content_romi": 424.545,
-      "owner_name": "Олеся",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "sprei_buster_100ml",
-      "brand": "Алтея",
-      "product_name_final": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-      "focus_score": 4,
-      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
-      "plan_completion_feb26_pct": 0.2358,
-      "total_mp_stock": 1922,
-      "content_romi": 186.11,
-      "owner_name": "Мария",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "solevoy_sprei_200ml",
-      "brand": "Алтея",
-      "product_name_final": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
-      "focus_score": 4,
-      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
-      "plan_completion_feb26_pct": 0.3249,
-      "total_mp_stock": 1083,
-      "content_romi": -2.82,
-      "owner_name": "Мария",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "krem_ot_rastyazhek",
-      "brand": "Алтея",
-      "product_name_final": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
-      "focus_score": 4,
-      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
-      "plan_completion_feb26_pct": 0.3319,
-      "total_mp_stock": 4254,
-      "content_romi": null,
-      "owner_name": "Олеся",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "krem-filler_15ml",
-      "brand": "Алтея",
-      "product_name_final": "Питательный крем для лица антивозрастной, Крем филлер вокруг глаз, с коллагеном с ниацинамидом, Алтея, 15 мл",
-      "focus_score": 4,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; WB ниже min price",
-      "plan_completion_feb26_pct": 0.3333,
-      "total_mp_stock": 1,
-      "content_romi": null,
-      "owner_name": "Олеся",
-      "external_kz_flag": 0,
-      "external_vk_flag": 0
-    }
-  ],
-  "topContent": [
-    {
-      "article": "krovavii_piling_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-      "content_romi": 424.545,
-      "content_income": 4544357.51,
-      "content_revenue": 5607137.34,
-      "content_posts": 1599,
-      "content_clicks": 79455,
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "gel_antiakne_20ml_v2",
-      "brand": "Алтея",
-      "product_name_final": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-      "content_romi": 405.86,
-      "content_income": 3559172.35,
-      "content_revenue": 4417382.13,
-      "content_posts": 999,
-      "content_clicks": 84141,
-      "owner_name": "Кирилл"
-    },
-    {
-      "article": "retinait_syvorotka_1_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
-      "content_romi": 354.13,
-      "content_income": 1487951.29,
-      "content_revenue": 1884996.33,
-      "content_posts": 479,
-      "content_clicks": 17112,
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "curly_method_300ml",
-      "brand": "Алтея",
-      "product_name_final": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
-      "content_romi": 353.345,
-      "content_income": 1246922.52,
-      "content_revenue": 1595093.81,
-      "content_posts": 475,
-      "content_clicks": 24799,
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "penka_kudryavii_metod_150ml",
-      "brand": "Алтея",
-      "product_name_final": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "content_romi": 336.99,
-      "content_income": 871718.01,
-      "content_revenue": 1117825.21,
-      "content_posts": 298,
-      "content_clicks": 13100,
-      "owner_name": "Олеся"
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 4306241
     },
     {
       "article": "retiderm_50ml",
+      "articleKey": "retiderm_50ml",
       "brand": "Алтея",
       "product_name_final": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
-      "content_romi": 332.02,
-      "content_income": 298926.15,
-      "content_revenue": 389710.12,
-      "content_posts": 126,
-      "content_clicks": 26279,
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "maska_dlya_lica_100ml",
-      "brand": "Алтея",
-      "product_name_final": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
-      "content_romi": 304.82,
-      "content_income": 246312.16,
-      "content_revenue": 317327.45,
-      "content_posts": 41,
-      "content_clicks": 21949,
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "maska-batter_dlya_rosta_500ml",
-      "brand": "Алтея",
-      "product_name_final": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
-      "content_romi": 296.005,
-      "content_income": 186863.91,
-      "content_revenue": 252024.28,
-      "content_posts": 102,
-      "content_clicks": 3892,
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "retinol_boost_krem_dlya_vek_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-      "content_romi": 245.935,
-      "content_income": 1350966.84,
-      "content_revenue": 1901458.64,
-      "content_posts": 1238,
-      "content_clicks": 41839,
-      "owner_name": null
-    },
-    {
-      "article": "syvorotka_dlya_lica_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
-      "content_romi": 234.93,
-      "content_income": 1352019.78,
-      "content_revenue": 1926499.82,
-      "content_posts": 1197,
-      "content_clicks": 32080,
-      "owner_name": "Олеся"
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик VK",
+      "total_mp_stock": 40719,
+      "owner_name": "Мария",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 145130986
     },
     {
       "article": "retinait_krem_1_50ml",
+      "articleKey": "retinait_krem_1_50ml",
       "brand": "Алтея",
       "product_name_final": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
-      "content_romi": 198.85,
-      "content_income": 44007.11,
-      "content_revenue": 65382.03,
-      "content_posts": 21,
-      "content_clicks": 724,
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "syvorotka_niacin_05_30ml",
-      "brand": "Алтея",
-      "product_name_final": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
-      "content_romi": 196.555,
-      "content_income": 254731.3,
-      "content_revenue": 385621.71,
-      "content_posts": 477,
-      "content_clicks": 7865,
-      "owner_name": null
-    }
-  ],
-  "underPlan": [
-    {
-      "article": "tonik_dlya_lica_200ml",
-      "brand": "Алтея",
-      "product_name_final": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "plan_feb26_units": 1983,
-      "fact_feb26_units": 248,
-      "plan_completion_feb26_pct": 0.1251,
-      "total_mp_stock": 1083,
-      "negative_margin_flag": 0,
-      "owner_name": "Кирилл"
-    },
-    {
-      "article": "syvorotka_dlya_rosta_6ml_v2",
-      "brand": "Алтея",
-      "product_name_final": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
-      "plan_feb26_units": 252,
-      "fact_feb26_units": 47,
-      "plan_completion_feb26_pct": 0.1865,
-      "total_mp_stock": 1208,
-      "negative_margin_flag": 0,
-      "owner_name": "Кирилл"
-    },
-    {
-      "article": "ekdisteron_ultra_man_60caps",
-      "brand": "Алтея",
-      "product_name_final": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
-      "plan_feb26_units": 359,
-      "fact_feb26_units": 82,
-      "plan_completion_feb26_pct": 0.2284,
-      "total_mp_stock": 1537,
-      "negative_margin_flag": 1,
-      "owner_name": "Кирилл"
-    },
-    {
-      "article": "sprei_buster_100ml",
-      "brand": "Алтея",
-      "product_name_final": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-      "plan_feb26_units": 2642,
-      "fact_feb26_units": 623,
-      "plan_completion_feb26_pct": 0.2358,
-      "total_mp_stock": 1922,
-      "negative_margin_flag": 0,
-      "owner_name": "Мария"
-    },
-    {
-      "article": "skrab_babl_gam_200ml",
-      "brand": "Алтея",
-      "product_name_final": "Скраб пилинг для кожи головы, Алтея, 200 мл",
-      "plan_feb26_units": 710,
-      "fact_feb26_units": 181,
-      "plan_completion_feb26_pct": 0.2549,
-      "total_mp_stock": 1899,
-      "negative_margin_flag": 1,
-      "owner_name": "Кирилл"
-    },
-    {
-      "article": "nabor_remuver_40ml",
-      "brand": "Алтея",
-      "product_name_final": "Ремувер для удаления кутикулы, Алтея, 40 мл",
-      "plan_feb26_units": 1084,
-      "fact_feb26_units": 320,
-      "plan_completion_feb26_pct": 0.2952,
-      "total_mp_stock": 8741,
-      "negative_margin_flag": 1,
-      "owner_name": "Мария"
-    },
-    {
-      "article": "enzim_pudra_80gr_v2",
-      "brand": "Алтея",
-      "product_name_final": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "plan_feb26_units": 275,
-      "fact_feb26_units": 86,
-      "plan_completion_feb26_pct": 0.3127,
-      "total_mp_stock": 1,
-      "negative_margin_flag": 0,
-      "owner_name": "Мария"
-    },
-    {
-      "article": "curly_method_300ml",
-      "brand": "Алтея",
-      "product_name_final": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
-      "plan_feb26_units": 2657,
-      "fact_feb26_units": 851,
-      "plan_completion_feb26_pct": 0.3203,
-      "total_mp_stock": 6986,
-      "negative_margin_flag": 0,
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "matte_wax_50ml",
-      "brand": "Алтея",
-      "product_name_final": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "plan_feb26_units": 519,
-      "fact_feb26_units": 167,
-      "plan_completion_feb26_pct": 0.3218,
-      "total_mp_stock": 1008,
-      "negative_margin_flag": 1,
-      "owner_name": "Кирилл"
-    },
-    {
-      "article": "kremshelk_100ml",
-      "brand": "Алтея",
-      "product_name_final": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
-      "plan_feb26_units": 2907,
-      "fact_feb26_units": 943,
-      "plan_completion_feb26_pct": 0.3244,
-      "total_mp_stock": 9203,
-      "negative_margin_flag": 1,
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "solevoy_sprei_200ml",
-      "brand": "Алтея",
-      "product_name_final": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
-      "plan_feb26_units": 1336,
-      "fact_feb26_units": 434,
-      "plan_completion_feb26_pct": 0.3249,
-      "total_mp_stock": 1083,
-      "negative_margin_flag": 0,
-      "owner_name": "Мария"
-    },
-    {
-      "article": "krem_ot_rastyazhek",
-      "brand": "Алтея",
-      "product_name_final": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
-      "plan_feb26_units": 2642,
-      "fact_feb26_units": 877,
-      "plan_completion_feb26_pct": 0.3319,
-      "total_mp_stock": 4254,
-      "negative_margin_flag": 0,
-      "owner_name": "Олеся"
-    }
-  ],
-  "toWork": [
-    {
-      "article": "ekdisteron_ultra_man_60caps",
-      "brand": "Алтея",
-      "product_name_final": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
-      "plan_completion_feb26_pct": 0.2284,
-      "total_mp_stock": 1537,
-      "wb_margin_pct": -0.0379,
-      "ozon_margin_pct": 0.2267,
-      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
-      "owner_name": "Кирилл",
-      "external_kz_flag": 0,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "skrab_babl_gam_200ml",
-      "brand": "Алтея",
-      "product_name_final": "Скраб пилинг для кожи головы, Алтея, 200 мл",
-      "plan_completion_feb26_pct": 0.2549,
-      "total_mp_stock": 1899,
-      "wb_margin_pct": -0.0867,
-      "ozon_margin_pct": 0.2154,
-      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Есть внешний трафик КЗ",
-      "owner_name": "Кирилл",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "nabor_remuver_40ml",
-      "brand": "Алтея",
-      "product_name_final": "Ремувер для удаления кутикулы, Алтея, 40 мл",
-      "plan_completion_feb26_pct": 0.2952,
-      "total_mp_stock": 8741,
-      "wb_margin_pct": -0.0359,
-      "ozon_margin_pct": null,
-      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
+      "total_mp_stock": 10709,
       "owner_name": "Мария",
-      "external_kz_flag": 0,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "matte_wax_50ml",
-      "brand": "Алтея",
-      "product_name_final": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "plan_completion_feb26_pct": 0.3218,
-      "total_mp_stock": 1008,
-      "wb_margin_pct": 0.3137,
-      "ozon_margin_pct": -0.2824,
-      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
-      "owner_name": "Кирилл",
-      "external_kz_flag": 0,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "kremshelk_100ml",
-      "brand": "Алтея",
-      "product_name_final": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
-      "plan_completion_feb26_pct": 0.3244,
-      "total_mp_stock": 9203,
-      "wb_margin_pct": 0.5005,
-      "ozon_margin_pct": -0.1979,
-      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
-      "owner_name": "Олеся",
-      "external_kz_flag": 1,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "syvorotka_guk_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
-      "plan_completion_feb26_pct": 0.3523,
-      "total_mp_stock": 763,
-      "wb_margin_pct": 0.3548,
-      "ozon_margin_pct": -0.336,
-      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
-      "owner_name": "Олеся",
-      "external_kz_flag": 0,
-      "external_vk_flag": 0
-    },
-    {
-      "article": "intimvita_300ml",
-      "brand": "Алтея",
-      "product_name_final": "Р“РµР»СЊ РґР»СЏ РёРЅС‚РёРјРЅРѕР№ РіРёРіРёРµРЅС‹ СЃ РјРѕР»РѕС‡РЅРѕР№ РєРёСЃР»РѕС‚РѕР№, РђР»С‚РµСЏ, РРЅС‚РёРјРІРёС‚Р°, 300 РјР»",
-      "plan_completion_feb26_pct": 0.3529,
-      "total_mp_stock": 1718,
-      "wb_margin_pct": -0.1019,
-      "ozon_margin_pct": 0.1267,
-      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
-      "owner_name": "Кирилл",
-      "external_kz_flag": 0,
-      "external_vk_flag": 0
-    }
-  ],
-  "lowStock": [
-    {
-      "article": "alteya_young_skin_box",
-      "brand": "Алтея",
-      "product_name_final": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": null,
-      "orders_value": null,
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "b_kompleks_BAD_60tabl",
-      "brand": "Алтея",
-      "product_name_final": "Витамины группы В комплекс Алтея 60 жевательных таблеток",
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": 0,
-      "orders_value": 114927,
-      "owner_name": "Светлана"
-    },
-    {
-      "article": "enzim_pudra_80gr",
-      "brand": "Алтея",
-      "product_name_final": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": null,
-      "orders_value": 5474,
-      "owner_name": "Мария"
-    },
-    {
-      "article": "chudofrukt_BAD_60caps",
-      "brand": "Алтея",
-      "product_name_final": "Таблетки для похудения, жиросжигатель детокс для снижения веса, Алтея, Чудофрукт, 60 капсул",
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": 0,
-      "orders_value": 181867.54,
-      "owner_name": "Светлана"
-    },
-    {
-      "article": "gidrofilnoe_maslo_150ml",
-      "brand": "Алтея",
-      "product_name_final": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": 0,
-      "orders_value": 63575.45,
-      "owner_name": "Мария"
-    },
-    {
-      "article": "piling_100ml",
-      "brand": "Алтея",
-      "product_name_final": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": 0,
-      "orders_value": 33476.53,
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "monarda_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Масло монарды и экстракт зеленого чая для ногтей, универсальное, Алтея, 30 мл",
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": null,
-      "orders_value": null,
-      "owner_name": "Мария"
-    },
-    {
-      "article": "maslo_dlya_volos_parf_110ml",
-      "brand": "Алтея",
-      "product_name_final": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": null,
-      "orders_value": null,
-      "owner_name": "Мария"
-    },
-    {
-      "article": "penka_160ml",
-      "brand": "Алтея",
-      "product_name_final": "Мицеллярная пенка для умывания лица, для снятия макияжа, средство для снятия макияжа, Алтея, 160",
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": 0,
-      "orders_value": 425559.01,
-      "owner_name": "Кирилл"
-    },
-    {
-      "article": "pirantoks_BAD_60caps",
-      "brand": "Алтея",
-      "product_name_final": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, черный орех детокс, Алтея, Пирантокс, 60 капсул",
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": null,
-      "orders_value": null,
-      "owner_name": "Светлана"
-    },
-    {
-      "article": "remuver_40ml",
-      "brand": "Алтея",
-      "product_name_final": null,
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": null,
-      "orders_value": null,
-      "owner_name": null
-    },
-    {
-      "article": "Strong_Hair",
-      "brand": "Алтея",
-      "product_name_final": "Набор для волос шампунь + маска для роста волос",
-      "total_mp_stock": 0,
-      "wb_stock": 0,
-      "ozon_stock_final": 0,
-      "ozon_in_transit": null,
-      "orders_value": null,
-      "owner_name": null
-    }
-  ],
-  "topReturns": [
-    {
-      "article": "nabor_remuver_kremovii",
-      "brand": "Алтея",
-      "product_name_final": "Ремувер для снятия ресниц, Алтея, 18г",
-      "returns_units": 737,
-      "returns_count": 737,
-      "top_return_reason": "Покупатель отказался при вручении: товар не подошел",
-      "owner_name": "Мария"
-    },
-    {
-      "article": "retiderm_50ml",
-      "brand": "Алтея",
-      "product_name_final": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
-      "returns_units": 732,
-      "returns_count": 732,
-      "top_return_reason": "Покупатель отменил заказ",
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "krovavii_piling_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-      "returns_units": 541,
-      "returns_count": 541,
-      "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "maska_dlya_lica_100ml",
-      "brand": "Алтея",
-      "product_name_final": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
-      "returns_units": 355,
-      "returns_count": 355,
-      "top_return_reason": "Покупатель отказался при вручении: товар не подошел",
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "gel_dlya_brovei_6ml",
-      "brand": "Алтея",
-      "product_name_final": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
-      "returns_units": 348,
-      "returns_count": 348,
-      "top_return_reason": "Покупатель получил не те товары",
-      "owner_name": "Кирилл"
-    },
-    {
-      "article": "curly_method_300ml",
-      "brand": "Алтея",
-      "product_name_final": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
-      "returns_units": 330,
-      "returns_count": 330,
-      "top_return_reason": "Покупатель отказался при вручении: товар не подошел",
-      "owner_name": "Олеся"
-    },
-    {
-      "article": "retinait_krem_1_5_50ml",
-      "brand": "Алтея",
-      "product_name_final": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "returns_units": 298,
-      "returns_count": 298,
-      "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
-      "owner_name": "Олеся"
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 44771070
     },
     {
       "article": "syvorotka_dlya_lica_30ml",
+      "articleKey": "syvorotka_dlya_lica_30ml",
       "brand": "Алтея",
       "product_name_final": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
-      "returns_units": 263,
-      "returns_count": 263,
-      "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
-      "owner_name": "Олеся"
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "total_mp_stock": 5680,
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 19008012
     },
     {
-      "article": "krem_spf50_50ml",
+      "article": "retinait_krem_05_50ml",
+      "articleKey": "retinait_krem_05_50ml",
       "brand": "Алтея",
-      "product_name_final": "СПФ для лица База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
-      "returns_units": 262,
-      "returns_count": 262,
-      "top_return_reason": "Покупатель отменил заказ",
-      "owner_name": "Р”Р°С€Р°"
+      "product_name_final": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
+      "total_mp_stock": 9161,
+      "owner_name": "Мария",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 16897529
     },
     {
-      "article": "shampun_dlya_rosta_250ml",
+      "article": "retinait_krem_025_50ml",
+      "articleKey": "retinait_krem_025_50ml",
       "brand": "Алтея",
-      "product_name_final": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
-      "returns_units": 228,
-      "returns_count": 228,
-      "top_return_reason": "Покупатель отменил заказ",
-      "owner_name": "Олеся"
+      "product_name_final": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
+      "total_mp_stock": 7023,
+      "owner_name": "Мария",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 15757994
+    },
+    {
+      "article": "retinait_syvorotka_1_30ml",
+      "articleKey": "retinait_syvorotka_1_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 2931,
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 14108652
+    },
+    {
+      "article": "maska_dlya_lica_100ml",
+      "articleKey": "maska_dlya_lica_100ml",
+      "brand": "Алтея",
+      "product_name_final": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 288,
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 11524515
+    },
+    {
+      "article": "retinait_krem_1_5_50ml",
+      "articleKey": "retinait_krem_1_5_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик VK",
+      "total_mp_stock": 7316,
+      "owner_name": "Мария",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 9429469
+    },
+    {
+      "article": "krem_ot_rastyazhek",
+      "articleKey": "krem_ot_rastyazhek",
+      "brand": "Алтея",
+      "product_name_final": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "total_mp_stock": 4254,
+      "owner_name": "Мария",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Даша",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 7326792
+    },
+    {
+      "article": "maska-batter_dlya_rosta_500ml",
+      "articleKey": "maska-batter_dlya_rosta_500ml",
+      "brand": "Алтея",
+      "product_name_final": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "total_mp_stock": 1734,
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Александр Озон",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 5197341
     },
     {
       "article": "sprei_buster_100ml",
+      "articleKey": "sprei_buster_100ml",
       "brand": "Алтея",
       "product_name_final": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-      "returns_units": 227,
-      "returns_count": 227,
-      "top_return_reason": "Покупатель отменил заказ",
-      "owner_name": "Мария"
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "total_mp_stock": 1922,
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Александр Озон",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 4717237
     },
     {
-      "article": "syvorotka_dlya_lica_30ml_v2",
+      "article": "shampun_dlya_rosta_250ml",
+      "articleKey": "shampun_dlya_rosta_250ml",
       "brand": "Алтея",
-      "product_name_final": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
-      "returns_units": 181,
-      "returns_count": 181,
-      "top_return_reason": "Покупатель отменил заказ",
-      "owner_name": "Олеся"
+      "product_name_final": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "total_mp_stock": 1479,
+      "owner_name": "Максим",
+      "owner_wb": "Лапыгин Максим",
+      "owner_ozon": "Александр Озон",
+      "owner_ya": "Анна",
+      "fact_revenue_to_date": 4614546
     }
   ],
-  "unassigned": [
-    {
-      "article": "maska-batter_500ml",
-      "brand": "Алтея",
-      "product_name_final": "Маска для волос с кератином увлажняющая 500мл Алтея",
-      "focus_score": 3,
-      "focus_reasons": "Низкое выполнение плана; Есть внешний трафик КЗ; Owner не закреплён",
-      "plan_completion_feb26_pct": 0.3927,
-      "wb_margin_pct": 0.5845,
-      "ozon_margin_pct": 0.19
-    },
-    {
-      "article": "remuver_40ml",
-      "brand": "Алтея",
-      "product_name_final": null,
-      "focus_score": 3,
-      "focus_reasons": "Низкий остаток; WB ниже min price; Ozon ниже min price; Owner не закреплён",
-      "plan_completion_feb26_pct": null,
-      "wb_margin_pct": null,
-      "ozon_margin_pct": null
-    },
-    {
-      "article": "retinait_syvorotka_025_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
-      "focus_score": 2,
-      "focus_reasons": "Отрицательная маржа Ozon; Owner не закреплён",
-      "plan_completion_feb26_pct": null,
-      "wb_margin_pct": 0.515,
-      "ozon_margin_pct": -0.1188
-    },
-    {
-      "article": "retinol_boost_krem_dlya_vek_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-      "focus_score": 1,
-      "focus_reasons": "Много возвратов; Owner не закреплён",
-      "plan_completion_feb26_pct": null,
-      "wb_margin_pct": 0.5009,
-      "ozon_margin_pct": 0.4186
-    },
-    {
-      "article": "Retinol_Full_Journey",
-      "brand": "Алтея",
-      "product_name_final": "Набор уходовой косметики для лица антивозрастной",
-      "focus_score": 1,
-      "focus_reasons": "Низкий остаток; Owner не закреплён",
-      "plan_completion_feb26_pct": null,
-      "wb_margin_pct": null,
-      "ozon_margin_pct": null
-    },
-    {
-      "article": "spicul_gel_mask_75ml",
-      "brand": "Алтея",
-      "product_name_final": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
-      "focus_score": 1,
-      "focus_reasons": "Низкий остаток; Owner не закреплён",
-      "plan_completion_feb26_pct": null,
-      "wb_margin_pct": null,
-      "ozon_margin_pct": null
-    },
-    {
-      "article": "spiculboost_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Сыворотка для лица с микроиглами и коллагеном",
-      "focus_score": 1,
-      "focus_reasons": "Низкий остаток; Owner не закреплён",
-      "plan_completion_feb26_pct": null,
-      "wb_margin_pct": null,
-      "ozon_margin_pct": null
-    },
-    {
-      "article": "Strong_Hair",
-      "brand": "Алтея",
-      "product_name_final": "Набор для волос шампунь + маска для роста волос",
-      "focus_score": 1,
-      "focus_reasons": "Низкий остаток; Owner не закреплён",
-      "plan_completion_feb26_pct": null,
-      "wb_margin_pct": null,
-      "ozon_margin_pct": null
-    },
-    {
-      "article": "syvorotka_niacin_05_30ml",
-      "brand": "Алтея",
-      "product_name_final": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
-      "focus_score": 0,
-      "focus_reasons": "Owner не закреплён",
-      "plan_completion_feb26_pct": null,
-      "wb_margin_pct": 0.2971,
-      "ozon_margin_pct": 0.2035
-    },
-    {
-      "article": "retinait_syvorotka_05_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Сыворотка для лица с ретинолом омолаживающая",
-      "focus_score": 0,
-      "focus_reasons": "Owner не закреплён",
-      "plan_completion_feb26_pct": null,
-      "wb_margin_pct": 0.5036,
-      "ozon_margin_pct": 0.2158
-    }
-  ],
-  "asOfDate": "2026-05-17",
-  "apr_plan_revenue": 291518548.512607,
-  "apr_fact_revenue_to_date": 41103033,
-  "apr_plan_to_date_revenue": 56422944.873407796,
-  "apr_forecast_revenue": 212365670.5,
-  "apr_plan_completion_month_pct": 0.1409962872335805,
-  "apr_plan_completion_to_date_pct": 0.7284808173734992,
-  "apr_forecast_pct": 0.7284808173734991,
-  "planFactSource": "План А.xlsx :: 00_Источник_плана | общий план компании",
   "companyPlan": {
-    "generatedAt": "2026-05-07T13:19:17.679Z",
-    "sourceWorkbook": "План А.xlsx",
-    "sourceSheet": "00_Источник_плана",
-    "sourcePath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\План А.xlsx",
-    "planType": "company_revenue",
-    "activeMonthKey": "2026-05",
+    "generatedAt": "2026-05-29T19:18:00+03:00",
+    "sourceWorkbook": "codex_portal_altea_plan_fact_v2_review.xlsx",
+    "sourceSheet": "02_Platforms + salary_contour_review",
+    "sourcePath": "codex_portal_altea_plan_fact_v2_review.xlsx",
+    "planType": "marketplace_salary_revenue",
+    "activeMonthKey": "2026-06",
     "activeMonth": {
-      "monthKey": "2026-05",
-      "label": "май 2026",
-      "days": 31,
-      "dayOfMonth": 17,
-      "planRevenueMonth": 291518548.51,
-      "planRevenueToDate": 159865010.47,
-      "factRevenueToDate": 137023318.82,
-      "completionMonthPct": 0.47,
-      "completionToDatePct": 0.8571,
-      "forecastRevenue": 249866051.97,
-      "forecastPct": 0.8571,
+      "label": "июнь 2026",
+      "days": 30,
+      "revenue": 285818670,
+      "dailyRevenue": 9527289,
       "channels": {
         "wb": {
           "label": "WB",
-          "revenue": 179525953,
-          "dailyRevenue": 5791159.77
+          "revenue": 214476498,
+          "dailyRevenue": 7149216.6,
+          "salaryIncluded": true,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ozon": {
           "label": "Ozon",
-          "revenue": 103407637.512607,
-          "dailyRevenue": 3335730.24
+          "revenue": 60323623,
+          "dailyRevenue": 2010787.43,
+          "salaryIncluded": true,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ya": {
           "label": "Яндекс Маркет",
-          "revenue": 2444312,
-          "dailyRevenue": 78848.77
-        },
-        "goldapple": {
-          "label": "Золотое Яблоко online",
-          "revenue": 2138494,
-          "dailyRevenue": 68983.68
-        },
-        "letu": {
-          "label": "Летуаль online",
-          "revenue": 2336071,
-          "dailyRevenue": 75357.13
-        },
-        "magnit": {
-          "label": "Магнит Маркет",
-          "revenue": 166081,
-          "dailyRevenue": 5357.45
-        },
-        "d2c": {
-          "label": "Сайт / D2C",
-          "revenue": 1500000,
-          "dailyRevenue": 48387.1
+          "revenue": 11018549,
+          "dailyRevenue": 367284.97,
+          "salaryIncluded": true,
+          "planSource": "may_forecast * 1.12; corrective target removed"
         },
         "b2b": {
           "label": "B2B / опт",
           "revenue": 0,
-          "dailyRevenue": 0
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "separate contour"
+        },
+        "d2c": {
+          "label": "Сайт / D2C",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "separate contour"
+        },
+        "goldapple": {
+          "label": "Золотое Яблоко online",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "letu": {
+          "label": "Летуаль online",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "magnit": {
+          "label": "Магнит Маркет",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "all": {
+          "label": "Маркетплейсы salary contour",
+          "revenue": 285818670,
+          "dailyRevenue": 9527289,
+          "salaryIncluded": true
         }
-      }
+      },
+      "salaryContour": {
+        "generatedAt": "2026-05-29T19:10:00+03:00",
+        "revenue": 285818670,
+        "dailyRevenue": 9527289,
+        "includedChannels": [
+          "wb",
+          "ozon",
+          "ya"
+        ],
+        "excludedChannels": {
+          "b2b": {
+            "label": "B2B / опт",
+            "reason": "separate contour"
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "reason": "separate contour"
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "reason": "manual decision below threshold"
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "reason": "manual decision below threshold"
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "reason": "manual decision below threshold"
+          }
+        },
+        "adjustmentCapPct": 0.2,
+        "oosRules": {
+          "hardBlockTurnoverDaysLt": 3,
+          "freezeGrowthTurnoverDaysFrom": 3,
+          "freezeGrowthTurnoverDaysTo": 14,
+          "warningTurnoverDaysTo": 30
+        },
+        "v46Usage": "benchmark_only"
+      },
+      "note": "Marketplace salary revenue contour.",
+      "monthKey": "2026-06",
+      "planRevenueMonth": 285818670,
+      "planRevenueToDate": 266764092,
+      "factRevenueToDate": 340551907.78,
+      "completionMonthPct": 1.191496,
+      "completionToDatePct": 1.276603,
+      "forecastRevenue": 364877044.05,
+      "forecastPct": 1.276603
     },
     "months": {
       "2026-05": {
         "label": "май 2026",
         "days": 31,
-        "revenue": 291518548.512607,
-        "dailyRevenue": 9403824.15,
+        "revenue": 253796998,
+        "dailyRevenue": 8186999.94,
         "channels": {
           "wb": {
             "label": "WB",
-            "revenue": 179525953,
-            "dailyRevenue": 5791159.77
+            "revenue": 190405570,
+            "dailyRevenue": 6142115.16,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ozon": {
             "label": "Ozon",
-            "revenue": 103407637.512607,
-            "dailyRevenue": 3335730.24
+            "revenue": 53553438,
+            "dailyRevenue": 1727530.26,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ya": {
             "label": "Яндекс Маркет",
-            "revenue": 2444312,
-            "dailyRevenue": 78848.77
-          },
-          "goldapple": {
-            "label": "Золотое Яблоко online",
-            "revenue": 2138494,
-            "dailyRevenue": 68983.68
-          },
-          "letu": {
-            "label": "Летуаль online",
-            "revenue": 2336071,
-            "dailyRevenue": 75357.13
-          },
-          "magnit": {
-            "label": "Магнит Маркет",
-            "revenue": 166081,
-            "dailyRevenue": 5357.45
-          },
-          "d2c": {
-            "label": "Сайт / D2C",
-            "revenue": 1500000,
-            "dailyRevenue": 48387.1
+            "revenue": 9837990,
+            "dailyRevenue": 317354.52,
+            "salaryIncluded": true,
+            "planSource": "May forecast from 01-24 fact; corrective target removed"
           },
           "b2b": {
             "label": "B2B / опт",
             "revenue": 0,
-            "dailyRevenue": 0
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold",
+            "separateContourValue": 381676
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold",
+            "separateContourValue": 19519
+          },
+          "all": {
+            "label": "Маркетплейсы salary contour",
+            "revenue": 253796998,
+            "dailyRevenue": 8186999.94,
+            "salaryIncluded": true
           }
-        }
+        },
+        "salaryContour": {
+          "generatedAt": "2026-05-29T19:10:00+03:00",
+          "revenue": 253796998,
+          "dailyRevenue": 8186999.94,
+          "includedChannels": [
+            "wb",
+            "ozon",
+            "ya"
+          ],
+          "excludedChannels": {
+            "b2b": {
+              "label": "B2B / опт",
+              "reason": "separate contour"
+            },
+            "d2c": {
+              "label": "Сайт / D2C",
+              "reason": "separate contour"
+            },
+            "goldapple": {
+              "label": "Золотое Яблоко online",
+              "reason": "manual decision below threshold"
+            },
+            "letu": {
+              "label": "Летуаль online",
+              "reason": "manual decision below threshold"
+            },
+            "magnit": {
+              "label": "Магнит Маркет",
+              "reason": "manual decision below threshold"
+            }
+          },
+          "adjustmentCapPct": 0.2,
+          "oosRules": {
+            "hardBlockTurnoverDaysLt": 3,
+            "freezeGrowthTurnoverDaysFrom": 3,
+            "freezeGrowthTurnoverDaysTo": 14,
+            "warningTurnoverDaysTo": 30
+          },
+          "v46Usage": "benchmark_only"
+        },
+        "note": "May recalculated under marketplace salary revenue contour; B2B/Site and small channels excluded from automatic salary KPI."
       },
       "2026-06": {
         "label": "июнь 2026",
         "days": 30,
-        "revenue": 296565392.79700303,
-        "dailyRevenue": 9885513.09,
+        "revenue": 285818670,
+        "dailyRevenue": 9527289,
         "channels": {
           "wb": {
             "label": "WB",
-            "revenue": 183389907,
-            "dailyRevenue": 6112996.9
+            "revenue": 214476498,
+            "dailyRevenue": 7149216.6,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ozon": {
             "label": "Ozon",
-            "revenue": 102003858.797003,
-            "dailyRevenue": 3400128.63
+            "revenue": 60323623,
+            "dailyRevenue": 2010787.43,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ya": {
             "label": "Яндекс Маркет",
-            "revenue": 3416649,
-            "dailyRevenue": 113888.3
-          },
-          "goldapple": {
-            "label": "Золотое Яблоко online",
-            "revenue": 2905642,
-            "dailyRevenue": 96854.73
-          },
-          "letu": {
-            "label": "Летуаль online",
-            "revenue": 2382807,
-            "dailyRevenue": 79426.9
-          },
-          "magnit": {
-            "label": "Магнит Маркет",
-            "revenue": 166529,
-            "dailyRevenue": 5550.97
-          },
-          "d2c": {
-            "label": "Сайт / D2C",
-            "revenue": 1800000,
-            "dailyRevenue": 60000
+            "revenue": 11018549,
+            "dailyRevenue": 367284.97,
+            "salaryIncluded": true,
+            "planSource": "may_forecast * 1.12; corrective target removed"
           },
           "b2b": {
             "label": "B2B / опт",
-            "revenue": 500000,
-            "dailyRevenue": 16666.67
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "all": {
+            "label": "Маркетплейсы salary contour",
+            "revenue": 285818670,
+            "dailyRevenue": 9527289,
+            "salaryIncluded": true
           }
-        }
+        },
+        "salaryContour": {
+          "generatedAt": "2026-05-29T19:10:00+03:00",
+          "revenue": 285818670,
+          "dailyRevenue": 9527289,
+          "includedChannels": [
+            "wb",
+            "ozon",
+            "ya"
+          ],
+          "excludedChannels": {
+            "b2b": {
+              "label": "B2B / опт",
+              "reason": "separate contour"
+            },
+            "d2c": {
+              "label": "Сайт / D2C",
+              "reason": "separate contour"
+            },
+            "goldapple": {
+              "label": "Золотое Яблоко online",
+              "reason": "manual decision below threshold"
+            },
+            "letu": {
+              "label": "Летуаль online",
+              "reason": "manual decision below threshold"
+            },
+            "magnit": {
+              "label": "Магнит Маркет",
+              "reason": "manual decision below threshold"
+            }
+          },
+          "adjustmentCapPct": 0.2,
+          "oosRules": {
+            "hardBlockTurnoverDaysLt": 3,
+            "freezeGrowthTurnoverDaysFrom": 3,
+            "freezeGrowthTurnoverDaysTo": 14,
+            "warningTurnoverDaysTo": 30
+          },
+          "v46Usage": "benchmark_only"
+        },
+        "note": "Marketplace salary revenue contour."
       },
       "2026-07": {
         "label": "июль 2026",
         "days": 31,
-        "revenue": 311778156.474901,
-        "dailyRevenue": 10057359.89,
+        "revenue": 322540144,
+        "dailyRevenue": 10404520.77,
         "channels": {
           "wb": {
             "label": "WB",
-            "revenue": 191150691,
-            "dailyRevenue": 6166151.32
+            "revenue": 241590454,
+            "dailyRevenue": 7793240.45,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ozon": {
             "label": "Ozon",
-            "revenue": 105625550.474901,
-            "dailyRevenue": 3407275.82
+            "revenue": 67949690,
+            "dailyRevenue": 2191925.48,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ya": {
             "label": "Яндекс Маркет",
-            "revenue": 5270660,
-            "dailyRevenue": 170021.29
-          },
-          "goldapple": {
-            "label": "Золотое Яблоко online",
-            "revenue": 4009784,
-            "dailyRevenue": 129347.87
-          },
-          "letu": {
-            "label": "Летуаль online",
-            "revenue": 2920925,
-            "dailyRevenue": 94223.39
-          },
-          "magnit": {
-            "label": "Магнит Маркет",
-            "revenue": 200546,
-            "dailyRevenue": 6469.23
-          },
-          "d2c": {
-            "label": "Сайт / D2C",
-            "revenue": 2000000,
-            "dailyRevenue": 64516.13
+            "revenue": 13000000,
+            "dailyRevenue": 419354.84,
+            "salaryIncluded": true,
+            "planSource": "manual salary target; corrective target removed"
           },
           "b2b": {
             "label": "B2B / опт",
-            "revenue": 600000,
-            "dailyRevenue": 19354.84
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "all": {
+            "label": "Маркетплейсы salary contour",
+            "revenue": 322540144,
+            "dailyRevenue": 10404520.77,
+            "salaryIncluded": true
           }
-        }
+        },
+        "salaryContour": {
+          "generatedAt": "2026-05-29T19:10:00+03:00",
+          "revenue": 322540144,
+          "dailyRevenue": 10404520.77,
+          "includedChannels": [
+            "wb",
+            "ozon",
+            "ya"
+          ],
+          "excludedChannels": {
+            "b2b": {
+              "label": "B2B / опт",
+              "reason": "separate contour"
+            },
+            "d2c": {
+              "label": "Сайт / D2C",
+              "reason": "separate contour"
+            },
+            "goldapple": {
+              "label": "Золотое Яблоко online",
+              "reason": "manual decision below threshold"
+            },
+            "letu": {
+              "label": "Летуаль online",
+              "reason": "manual decision below threshold"
+            },
+            "magnit": {
+              "label": "Магнит Маркет",
+              "reason": "manual decision below threshold"
+            }
+          },
+          "adjustmentCapPct": 0.2,
+          "oosRules": {
+            "hardBlockTurnoverDaysLt": 3,
+            "freezeGrowthTurnoverDaysFrom": 3,
+            "freezeGrowthTurnoverDaysTo": 14,
+            "warningTurnoverDaysTo": 30
+          },
+          "v46Usage": "benchmark_only"
+        },
+        "note": "Marketplace salary revenue contour."
       },
       "2026-08": {
         "label": "август 2026",
@@ -2186,12 +1094,14 @@
           "wb": {
             "label": "WB",
             "revenue": 201066371,
-            "dailyRevenue": 6486011.97
+            "dailyRevenue": 6486011.97,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ozon": {
             "label": "Ozon",
             "revenue": 112322218.777206,
-            "dailyRevenue": 3623297.38
+            "dailyRevenue": 3623297.38,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ya": {
             "label": "Яндекс Маркет",
@@ -2234,12 +1144,14 @@
           "wb": {
             "label": "WB",
             "revenue": 216150839,
-            "dailyRevenue": 7205027.97
+            "dailyRevenue": 7205027.97,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ozon": {
             "label": "Ozon",
             "revenue": 131926900.701405,
-            "dailyRevenue": 4397563.36
+            "dailyRevenue": 4397563.36,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ya": {
             "label": "Яндекс Маркет",
@@ -2282,12 +1194,14 @@
           "wb": {
             "label": "WB",
             "revenue": 235531555,
-            "dailyRevenue": 7597792.1
+            "dailyRevenue": 7597792.1,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ozon": {
             "label": "Ozon",
             "revenue": 129719435.371205,
-            "dailyRevenue": 4184497.92
+            "dailyRevenue": 4184497.92,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ya": {
             "label": "Яндекс Маркет",
@@ -2330,12 +1244,14 @@
           "wb": {
             "label": "WB",
             "revenue": 259373620,
-            "dailyRevenue": 8645787.33
+            "dailyRevenue": 8645787.33,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ozon": {
             "label": "Ozon",
             "revenue": 126917638.188604,
-            "dailyRevenue": 4230587.94
+            "dailyRevenue": 4230587.94,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ya": {
             "label": "Яндекс Маркет",
@@ -2378,12 +1294,14 @@
           "wb": {
             "label": "WB",
             "revenue": 289011920,
-            "dailyRevenue": 9322965.16
+            "dailyRevenue": 9322965.16,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ozon": {
             "label": "Ozon",
             "revenue": 143447038.351102,
-            "dailyRevenue": 4627323.82
+            "dailyRevenue": 4627323.82,
+            "planSource": "02_Platforms.portal_target_plan"
           },
           "ya": {
             "label": "Яндекс Маркет",
@@ -2418,17 +1336,5 @@
         }
       }
     }
-  },
-  "company_plan_month_key": "2026-05",
-  "company_plan_month_label": "май 2026",
-  "company_plan_revenue": 291518548.51,
-  "company_fact_revenue_to_date": 137023318.82,
-  "company_plan_to_date_revenue": 159865010.47,
-  "company_plan_completion_month_pct": 0.47,
-  "company_plan_completion_to_date_pct": 0.8571,
-  "company_forecast_revenue": 249866051.97,
-  "company_forecast_pct": 0.8571,
-  "company_plan_source": "План А.xlsx :: 00_Источник_плана",
-  "latestMarketplaceDate": "2026-05-17",
-  "marketplaceFactSource": "platform_trends.json (API-backed)"
+  }
 }

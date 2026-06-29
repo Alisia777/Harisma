@@ -1,0 +1,31 @@
+{
+  "schema": "portal-dashboard-reconciliation-v1",
+  "generatedAt": "2026-06-29T06:32:18.705Z",
+  "snapshot_id": "dashboard:08a7ba234a1ce632",
+  "status": "blocked",
+  "publish_allowed": false,
+  "business_fingerprint": "5b5c1d9b59fc28328e201988e4f25e7228b05b2049ceab3401a9abe227043347",
+  "blockingReasons": [
+    "mixed platform fact dates: 2026-06-28, 2026-06-28, 2026-06-22"
+  ],
+  "warnings": [
+    "all platform control has explicit unallocated revenue 965522.92"
+  ],
+  "checks": [
+    {
+      "id": "dashboard:raw-fact-not-scaled",
+      "status": "ok",
+      "details": "Control totals create explicit unallocated rows; raw platform fact is not scaled."
+    },
+    {
+      "id": "dashboard:no-iu-fallback",
+      "status": "ok",
+      "details": "Builder reads company_plan/platform_trends/ads only; IU files are not loaded."
+    },
+    {
+      "id": "dashboard:null-not-zero",
+      "status": "ok",
+      "blockingReasons": []
+    }
+  ]
+}

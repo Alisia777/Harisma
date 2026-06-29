@@ -1,0 +1,28 @@
+{
+  "schema": "portal-plan-reconciliation-v1",
+  "generatedAt": "2026-06-29T06:32:18.705Z",
+  "snapshot_id": "dashboard:08a7ba234a1ce632",
+  "status": "ok",
+  "publish_allowed": true,
+  "plan_namespaces": [
+    "corporate_revenue_monthly",
+    "sku_platform_operational",
+    "salary_kpi_marketplaces",
+    "wb_contract_turnover",
+    "iu"
+  ],
+  "active_plan": {
+    "plan_id": "corporate_revenue_monthly",
+    "month": "2026-06",
+    "unit": "RUB",
+    "included_platforms": [
+      "wb",
+      "ozon",
+      "ya"
+    ],
+    "fact_source": "marketplace_sales_fact",
+    "plan_source": "company_plan"
+  },
+  "blockingReasons": [],
+  "warnings": []
+}

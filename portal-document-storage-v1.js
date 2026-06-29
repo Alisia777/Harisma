@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-storage-v1';
+  const VERSION = '20260629-storage-v2';
   const STORAGE_VIEW = 'documents';
   const RESOURCE_ARTICLE_KEY = '__portal_resource_links__';
   const RESOURCE_LINK_MARKER = '[[resource-link:v1]]';
@@ -423,19 +423,58 @@
     }
   }
 
+  function revealStorageButton(button) {
+    if (!button) return;
+    button.type = 'button';
+    button.dataset.view = STORAGE_VIEW;
+    if (button.hidden) button.hidden = false;
+    button.classList.remove('portal-access-hidden', 'nav-btn-legacy-hidden', 'hidden');
+    if (button.hasAttribute('hidden')) button.removeAttribute('hidden');
+    if (button.getAttribute('aria-hidden') === 'true') button.removeAttribute('aria-hidden');
+    if (button.hasAttribute('tabindex')) button.removeAttribute('tabindex');
+    if (button.getAttribute('data-access-original-hidden') !== '0') button.setAttribute('data-access-original-hidden', '0');
+    if (button.style.display) button.style.removeProperty('display');
+    if (button.style.visibility) button.style.removeProperty('visibility');
+
+    const title = button.querySelector('.nav-title') || button.querySelector('span:not(.nav-icon):not(.nav-copy)');
+    const subtitle = button.querySelector('.nav-subtitle') || button.querySelector('small');
+    if (title) title.textContent = 'Хранилище';
+    if (subtitle) subtitle.textContent = 'файлы · ссылки · описания';
+    if (!button.textContent.trim()) {
+      button.innerHTML = '<span>Хранилище</span><small>файлы · ссылки · описания</small>';
+    }
+  }
+
   function ensureDocumentStorageShell() {
     ensureAccessAllowsStorage();
 
     const nav = document.querySelector('.sidebar .nav') || document.querySelector('.nav');
-    if (nav && !nav.querySelector('.nav-btn[data-view="documents"]')) {
-      const button = document.createElement('button');
-      button.className = 'nav-btn';
-      button.type = 'button';
-      button.dataset.view = STORAGE_VIEW;
-      button.innerHTML = '<span>Хранилище</span><small>файлы · ссылки · описания</small>';
+    if (nav) {
+      let button = nav.querySelector('.nav-btn[data-view="documents"]');
+      if (!button) {
+        button = document.createElement('button');
+        button.className = 'nav-btn';
+        button.type = 'button';
+        button.dataset.view = STORAGE_VIEW;
+        button.innerHTML = '<span>Хранилище</span><small>файлы · ссылки · описания</small>';
+      }
+      revealStorageButton(button);
       const control = nav.querySelector('.nav-btn[data-view="control"]');
-      nav.insertBefore(button, control?.nextSibling || nav.firstChild);
-      if (typeof window.setView === 'function') button.addEventListener('click', () => window.setView(STORAGE_VIEW));
+      if (control && control.nextSibling !== button) {
+        nav.insertBefore(button, control.nextSibling);
+      } else if (!button.parentNode) {
+        nav.appendChild(button);
+      }
+      if (typeof window.setView === 'function' && button.dataset.documentStorageBound !== '1') {
+        button.dataset.documentStorageBound = '1';
+        button.addEventListener('click', () => window.setView(STORAGE_VIEW));
+      }
+    }
+
+    if (window.alteaPortalAccess && typeof window.alteaPortalAccess.apply === 'function') {
+      window.alteaPortalAccess.apply();
+      const button = document.querySelector('.sidebar .nav .nav-btn[data-view="documents"], .nav .nav-btn[data-view="documents"]');
+      revealStorageButton(button);
     }
 
     const main = document.querySelector('.main');
@@ -445,6 +484,31 @@
       section.id = 'view-documents';
       const controlSection = document.getElementById('view-control');
       main.insertBefore(section, controlSection?.nextSibling || main.querySelector('.view') || null);
+    }
+  }
+
+  function startStorageShellGuard() {
+    if (window.__ALTEA_DOCUMENT_STORAGE_SHELL_GUARD__) return;
+    window.__ALTEA_DOCUMENT_STORAGE_SHELL_GUARD__ = true;
+    let queued = false;
+    const schedule = () => {
+      if (queued) return;
+      queued = true;
+      window.setTimeout(() => {
+        queued = false;
+        ensureDocumentStorageShell();
+      }, 30);
+    };
+    [0, 80, 240, 600, 1200, 2400, 5000, 10000].forEach((delay) => {
+      window.setTimeout(ensureDocumentStorageShell, delay);
+    });
+    ['altea:accesschange', 'altea:app-ready', 'altea:data-ready', 'altea:viewchange', 'load'].forEach((eventName) => {
+      window.addEventListener(eventName, schedule);
+    });
+    if (typeof MutationObserver === 'function') {
+      const observer = new MutationObserver(schedule);
+      const target = document.querySelector('.sidebar') || document.body || document.documentElement;
+      if (target) observer.observe(target, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class', 'aria-hidden', 'style'] });
     }
   }
 
@@ -696,9 +760,9 @@
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', ensureDocumentStorageShell, { once: true });
+    document.addEventListener('DOMContentLoaded', startStorageShellGuard, { once: true });
   } else {
-    ensureDocumentStorageShell();
+    startStorageShellGuard();
   }
 })();
 

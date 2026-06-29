@@ -235,8 +235,18 @@
   }
 
   function appendSharedAuthenticatedViews(views, email, configured) {
-    if (!email || !configured) return uniqueViews(views);
-    return uniqueViews((views || []).concat(SHARED_AUTHENTICATED_VIEWS));
+    var normalized = uniqueViews(views || []);
+    if (!email) return normalized;
+    if (!configured && !normalized.length) return normalized;
+    return uniqueViews(normalized.concat(SHARED_AUTHENTICATED_VIEWS));
+  }
+
+  function accessWithSharedAuthenticatedViews(access) {
+    var normalized = access || { allowedViews: [], email: '', roles: [] };
+    if (normalized.email && normalized.allowedViews && normalized.allowedViews.length) {
+      normalized.allowedViews = appendSharedAuthenticatedViews(normalized.allowedViews, normalized.email, true);
+    }
+    return normalized;
   }
 
   function sessionMetadata(session) {
@@ -296,6 +306,7 @@
   function isViewAllowed(view) {
     var normalized = normalizeView(view);
     var access = currentAccess || window.__ALTEA_PORTAL_ACCESS__;
+    if (normalized === 'documents' && access && access.email && access.allowedViews && access.allowedViews.length) return true;
     if (!access || !access.allowedViews || !access.allowedViews.length) return true;
     return contains(access.allowedViews, normalized);
   }
@@ -381,7 +392,7 @@
   }
 
   function publishAccess(access) {
-    currentAccess = access || { allowedViews: ['dashboard'], email: '', roles: [] };
+    currentAccess = accessWithSharedAuthenticatedViews(access || { allowedViews: ['dashboard'], email: '', roles: [] });
     window.__ALTEA_PORTAL_ACCESS__ = currentAccess;
     window.alteaPortalAccess = {
       get: function () { return currentAccess; },

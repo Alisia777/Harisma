@@ -528,14 +528,14 @@ function launchStableId(item = {}) {
 }
 
 function launchDueDateKey(item = {}) {
-  const exact = String(item?.launchDate || '').trim();
+  const exact = String(item?.launchDate || item?.firstStockDate || '').trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(exact)) return exact;
   if (/^\d{4}-\d{2}-\d{2}$/.test(String(item?.launchDateKey || '').trim())) return String(item.launchDateKey).trim();
   return launchMonthDateKey(item?.launchMonth || '');
 }
 
 function launchDueDateLabel(item = {}) {
-  const exact = String(item?.launchDate || '').trim();
+  const exact = String(item?.launchDate || item?.firstStockDate || '').trim();
   if (exact) return exact;
   return item?.launchMonth || 'Без даты';
 }
@@ -624,6 +624,16 @@ function serializeLaunchDraft(item = {}) {
     articleKey: String(item.articleKey || '').trim(),
     article: String(item.article || '').trim(),
     owner: String(item.owner || '').trim(),
+    productFileUrl: String(item.productFileUrl || item.productFile || item.briefUrl || item.presentationUrl || item.fileUrl || '').trim(),
+    firstStockDate: String(item.firstStockDate || item.firstWarehouseDate || item.warehouseDate || item.supplyDate || item.stockDate || item.launchDate || '').trim(),
+    mpStockDate: String(item.mpStockDate || item.marketplaceStockDate || item.marketplaceWarehouseDate || item.mpWarehouseDate || item.marketplaceArrivalDate || item.stockMpDate || '').trim(),
+    repeatOrderDate: String(item.repeatOrderDate || item.nextOrderDate || item.plannedReorderDate || item.reorderDate || item.firstRepeatOrderDate || '').trim(),
+    marketingLead: String(item.marketingLead || item.marketingManager || item.leadOwner || '').trim(),
+    marketingOwner: String(item.marketingOwner || item.marketer || '').trim(),
+    prOwner: String(item.prOwner || item.smmOwner || item.contentOwner || '').trim(),
+    logistOwner: String(item.logistOwner || item.logisticsOwner || item.supplyOwner || item.logist || '').trim(),
+    kzOwner: String(item.kzOwner || item.selfBuyOwner || item.buyoutOwner || '').trim(),
+    ropOwner: String(item.ropOwner || item.salesOwner || item.commercialOwner || '').trim(),
     reportGroup: String(item.reportGroup || item.segment || 'Продукт').trim() || 'Продукт',
     tag: String(item.tag || 'без тега').trim() || 'без тега',
     skuBucket: String(item.skuBucket || '').trim(),
@@ -678,7 +688,7 @@ function serializeLaunchDraft(item = {}) {
     marketplaces: String(item.marketplaces || '').trim(),
     registryStatus: String(item.registryStatus || '').trim(),
     segment: String(item.segment || '').trim(),
-    presentationUrl: String(item.presentationUrl || '').trim(),
+    presentationUrl: String(item.presentationUrl || item.productFileUrl || item.productFile || item.briefUrl || '').trim(),
     notes: String(item.notes || '').trim(),
     targetCost: launchParseNumber(item.targetCost),
     srcWithoutVat: launchParseNumber(item.srcWithoutVat),
@@ -783,7 +793,7 @@ function launchBlockers(item) {
   if (nearLaunch && !String(item?.articleKey || '').trim()) blockers.push('нет связки с реестром SKU');
   if (nearLaunch && !String(item?.marketplaces || '').trim()) blockers.push('не указаны площадки');
   if (!Array.isArray(item?.ganttMonths) || !item.ganttMonths.length) blockers.push('не заполнен календарь запуска');
-  if (soonLaunch && !String(item?.presentationUrl || '').trim()) blockers.push('нет презентации / материалов');
+  if (soonLaunch && !String(item?.presentationUrl || item?.productFileUrl || item?.productFile || item?.briefUrl || '').trim()) blockers.push('нет презентации / материалов');
   return [...new Set(blockers)];
 }
 
@@ -819,6 +829,16 @@ function normalizeLaunchItem(item = {}, options = {}) {
     launchDecisionReason: item.launchDecisionReason || '',
     phase,
     owner,
+    productFileUrl: String(item.productFileUrl || item.productFile || item.briefUrl || item.presentationUrl || item.fileUrl || '').trim(),
+    firstStockDate: String(item.firstStockDate || item.firstWarehouseDate || item.warehouseDate || item.supplyDate || item.stockDate || item.launchDate || '').trim(),
+    mpStockDate: String(item.mpStockDate || item.marketplaceStockDate || item.marketplaceWarehouseDate || item.mpWarehouseDate || item.marketplaceArrivalDate || item.stockMpDate || '').trim(),
+    repeatOrderDate: String(item.repeatOrderDate || item.nextOrderDate || item.plannedReorderDate || item.reorderDate || item.firstRepeatOrderDate || '').trim(),
+    marketingLead: launchOwnerValue(item.marketingLead || item.marketingManager || item.leadOwner || ''),
+    marketingOwner: launchOwnerValue(item.marketingOwner || item.marketer || ''),
+    prOwner: launchOwnerValue(item.prOwner || item.smmOwner || item.contentOwner || ''),
+    logistOwner: launchOwnerValue(item.logistOwner || item.logisticsOwner || item.supplyOwner || item.logist || ''),
+    kzOwner: launchOwnerValue(item.kzOwner || item.selfBuyOwner || item.buyoutOwner || ''),
+    ropOwner: launchOwnerValue(item.ropOwner || item.salesOwner || item.commercialOwner || ''),
     production: item.production || '',
     supplierName: item.supplierName || '',
     factoryName: item.factoryName || '',
@@ -874,7 +894,7 @@ function normalizeLaunchItem(item = {}, options = {}) {
     yearlyPlanValue: launchParseNumber(item.yearlyPlanValue) ?? 0,
     registryStatus: item.registryStatus || '',
     segment: item.segment || '',
-    presentationUrl: String(item.presentationUrl || '').trim(),
+    presentationUrl: String(item.presentationUrl || item.productFileUrl || item.productFile || item.briefUrl || '').trim(),
     notes: String(item.notes || '').trim(),
     skuSuggestions: options.includeSkuSuggestions ? getLaunchSkuSuggestions(item, 3) : (Array.isArray(item.skuSuggestions) ? item.skuSuggestions : []),
     sourceRow: item.sourceRow || '',

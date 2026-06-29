@@ -311,10 +311,19 @@
   let knownTasksCache = null;
 
   function appState() {
-    window.state = window.state && typeof window.state === 'object' ? window.state : {};
-    window.state.storage = window.state.storage && typeof window.state.storage === 'object' ? window.state.storage : {};
-    window.state.storage.tasks = Array.isArray(window.state.storage.tasks) ? window.state.storage.tasks : [];
-    return window.state;
+    let stateRef = null;
+    try {
+      stateRef = typeof state === 'object' && state ? state : null;
+    } catch {
+      stateRef = null;
+    }
+    if (!stateRef) {
+      window.state = window.state && typeof window.state === 'object' ? window.state : {};
+      stateRef = window.state;
+    }
+    stateRef.storage = stateRef.storage && typeof stateRef.storage === 'object' ? stateRef.storage : {};
+    stateRef.storage.tasks = Array.isArray(stateRef.storage.tasks) ? stateRef.storage.tasks : [];
+    return stateRef;
   }
 
   function html(value) {
@@ -945,7 +954,7 @@
   window.createLaunchOpsAutotasksForSelected = createSelectedTasks;
   window.createLaunchOpsAutotasksBulk = createBulkTasks;
 
-  ['altea:app-ready', 'altea:data-ready', 'altea:viewchange', 'altea:portal-storage-updated', 'hashchange'].forEach((eventName) => {
+  ['altea:app-ready', 'altea:data-ready', 'altea:viewchange', 'altea:portal-storage-updated', 'altea:launches-rendered', 'hashchange'].forEach((eventName) => {
     window.addEventListener(eventName, () => queueAugment());
   });
 

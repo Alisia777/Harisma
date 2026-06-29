@@ -68,6 +68,13 @@
       .replace(/'/g, '&#39;');
   }
 
+  function safeUrl(value) {
+    const url = String(value || '').trim();
+    if (!url) return '';
+    if (/^(https?:\/\/|mailto:|\/|#)/i.test(url)) return url;
+    return '';
+  }
+
   function toNumber(value) {
     if (typeof numberOrZero === 'function') return numberOrZero(value);
     const parsed = Number(value);
@@ -2262,6 +2269,16 @@
       name: defaults.name || 'Новая новинка',
       articleKey: defaults.articleKey || '',
       owner: defaults.owner || '',
+      productFileUrl: defaults.productFileUrl || defaults.productFile || defaults.briefUrl || defaults.presentationUrl || defaults.fileUrl || '',
+      firstStockDate: defaults.firstStockDate || defaults.firstWarehouseDate || defaults.warehouseDate || defaults.supplyDate || defaults.stockDate || date,
+      mpStockDate: defaults.mpStockDate || defaults.marketplaceStockDate || defaults.marketplaceWarehouseDate || defaults.mpWarehouseDate || '',
+      repeatOrderDate: defaults.repeatOrderDate || defaults.nextOrderDate || defaults.plannedReorderDate || defaults.reorderDate || '',
+      marketingLead: defaults.marketingLead || defaults.marketingManager || defaults.leadOwner || '',
+      marketingOwner: defaults.marketingOwner || defaults.marketer || '',
+      prOwner: defaults.prOwner || defaults.smmOwner || defaults.contentOwner || '',
+      logistOwner: defaults.logistOwner || defaults.logisticsOwner || defaults.supplyOwner || '',
+      kzOwner: defaults.kzOwner || defaults.selfBuyOwner || defaults.buyoutOwner || '',
+      ropOwner: defaults.ropOwner || defaults.salesOwner || defaults.commercialOwner || '',
       reportGroup: defaults.reportGroup || defaults.category || 'Продукт',
       status: defaults.status || 'в работе',
       marketplaces: defaults.marketplaces || (typeof currentMarketplace === 'function' ? currentMarketplace() : 'WB'),
@@ -2374,7 +2391,17 @@
             <label><span>Категория</span><input name="reportGroup" value="${escapeValue(base.reportGroup || base.category || '')}"></label>
             <label><span>Дата запуска</span><input type="date" name="launchDate" value="${escapeValue(launchDue(base) || todayKey())}"></label>
             <label><span>Площадка</span><input name="marketplaces" value="${escapeValue(base.marketplaces || base.marketplace || 'WB')}"></label>
+            <label><span>Первый склад</span><input type="date" name="firstStockDate" value="${escapeValue(base.firstStockDate || base.firstWarehouseDate || base.warehouseDate || base.supplyDate || base.stockDate || launchDue(base) || '')}"></label>
+            <label><span>Склад МП</span><input type="date" name="mpStockDate" value="${escapeValue(base.mpStockDate || base.marketplaceStockDate || base.marketplaceWarehouseDate || base.mpWarehouseDate || '')}"></label>
+            <label><span>Повторный заказ</span><input type="date" name="repeatOrderDate" value="${escapeValue(base.repeatOrderDate || base.nextOrderDate || base.plannedReorderDate || base.reorderDate || '')}"></label>
             <label><span>Статус</span><select name="status">${launchV1StatusOptions(base.status || '')}</select></label>
+            <label><span>Маркетолог рук</span><input name="marketingLead" value="${escapeValue(base.marketingLead || base.marketingManager || base.leadOwner || '')}"></label>
+            <label><span>Маркетолог</span><input name="marketingOwner" value="${escapeValue(base.marketingOwner || base.marketer || '')}"></label>
+            <label><span>PR / SMM</span><input name="prOwner" value="${escapeValue(base.prOwner || base.smmOwner || base.contentOwner || '')}"></label>
+            <label><span>Логист</span><input name="logistOwner" value="${escapeValue(base.logistOwner || base.logisticsOwner || base.supplyOwner || '')}"></label>
+            <label><span>КЗ</span><input name="kzOwner" value="${escapeValue(base.kzOwner || base.selfBuyOwner || base.buyoutOwner || '')}"></label>
+            <label><span>РОП</span><input name="ropOwner" value="${escapeValue(base.ropOwner || base.salesOwner || base.commercialOwner || '')}"></label>
+            <label class="wide"><span>Продакт-файл / ссылка</span><input name="productFileUrl" value="${escapeValue(base.productFileUrl || base.productFile || base.briefUrl || base.presentationUrl || base.fileUrl || '')}" placeholder="https://..."></label>
             <label class="wide"><span>Комментарий</span><textarea name="productComment" rows="3">${escapeValue(base.productComment || base.notes || '')}</textarea></label>
           </div>
           <div class="launch-v1-editor-stages">
@@ -2433,7 +2460,8 @@
   function readLaunchV1EditorForm(form) {
     const data = new FormData(form);
     const id = String(data.get('id') || '').trim() || launchV1DraftId();
-    const launchDate = String(data.get('launchDate') || '').trim() || todayKey();
+    const firstStockDate = String(data.get('firstStockDate') || '').trim();
+    const launchDate = String(data.get('launchDate') || '').trim() || firstStockDate || todayKey();
     const existing = launchV1FindItem(id);
     const draft = {
       ...(existing || {}),
@@ -2441,6 +2469,16 @@
       name: String(data.get('name') || '').trim() || 'Новая новинка',
       articleKey: String(data.get('articleKey') || '').trim(),
       owner: String(data.get('owner') || '').trim(),
+      productFileUrl: String(data.get('productFileUrl') || '').trim(),
+      firstStockDate: firstStockDate || launchDate,
+      mpStockDate: String(data.get('mpStockDate') || '').trim(),
+      repeatOrderDate: String(data.get('repeatOrderDate') || '').trim(),
+      marketingLead: String(data.get('marketingLead') || '').trim(),
+      marketingOwner: String(data.get('marketingOwner') || '').trim(),
+      prOwner: String(data.get('prOwner') || '').trim(),
+      logistOwner: String(data.get('logistOwner') || '').trim(),
+      kzOwner: String(data.get('kzOwner') || '').trim(),
+      ropOwner: String(data.get('ropOwner') || '').trim(),
       reportGroup: String(data.get('reportGroup') || '').trim(),
       category: String(data.get('reportGroup') || '').trim(),
       launchDate,
@@ -2509,6 +2547,19 @@
       item.status,
       launchOwner(item),
       item.marketplaces,
+      item.productFileUrl,
+      item.productFile,
+      item.briefUrl,
+      item.presentationUrl,
+      item.firstStockDate,
+      item.mpStockDate,
+      item.repeatOrderDate,
+      item.marketingLead,
+      item.marketingOwner,
+      item.prOwner,
+      item.logistOwner,
+      item.kzOwner,
+      item.ropOwner,
       item.productComment,
       item.notes
     ].filter(Boolean).join(' ').toLowerCase();
@@ -2756,6 +2807,7 @@
     const owner = launchOwner(item) || 'Без owner';
     const current = currentStage(item);
     const blockers = (item.blockers || []).length + stageEntries(item).filter((stage) => stage.column?.key === 'blocked').length;
+    const productFileUrl = safeUrl(item.productFileUrl || item.productFile || item.briefUrl || item.presentationUrl || item.fileUrl || '');
     return `
       <aside class="launch-v1-detail">
         <div class="launch-v1-detail-head">
@@ -2775,6 +2827,12 @@
         </div>
         <div class="launch-v1-facts">
           <span><em>Owner</em><strong>${escapeValue(owner)}</strong></span>
+          <span><em>Первый склад</em><strong>${escapeValue(item.firstStockDate || item.firstWarehouseDate || item.warehouseDate || item.supplyDate || item.stockDate || launchDue(item) || 'нет данных')}</strong></span>
+          <span><em>Склад МП</em><strong>${escapeValue(item.mpStockDate || item.marketplaceStockDate || item.marketplaceWarehouseDate || item.mpWarehouseDate || 'нет данных')}</strong></span>
+          <span><em>Повторный заказ</em><strong>${escapeValue(item.repeatOrderDate || item.nextOrderDate || item.plannedReorderDate || item.reorderDate || 'нет данных')}</strong></span>
+          <span><em>Маркетолог</em><strong>${escapeValue(item.marketingOwner || item.marketer || 'не назначен')}</strong></span>
+          <span><em>Логист</em><strong>${escapeValue(item.logistOwner || item.logisticsOwner || item.supplyOwner || 'не назначен')}</strong></span>
+          <span><em>Продакт-файл</em><strong>${productFileUrl ? `<a href="${escapeValue(productFileUrl)}" target="_blank" rel="noopener">открыть</a>` : 'нет ссылки'}</strong></span>
           <span><em>Текущая фаза</em><strong>${escapeValue(current?.config?.title || 'нет данных')}</strong></span>
           <span><em>Готовность</em><strong>${formatPct(ready.pct || 0)}</strong></span>
           <span><em>Блокеры</em><strong>${blockers ? `${formatInt(blockers)} блокера` : 'нет'}</strong></span>
@@ -2885,6 +2943,11 @@
       </div>
     `;
     bindLaunchesV1(root);
+    try {
+      window.dispatchEvent(new CustomEvent('altea:launches-rendered', {
+        detail: { rootId, selectedId, source: VERSION }
+      }));
+    } catch {}
   }
 
   function bindLaunchesV1(root) {
@@ -3040,7 +3103,7 @@
       .launch-v1-no-date{margin-top:12px;border:1px dashed rgba(224,190,126,.2);border-radius:9px;padding:12px}.launch-v1-no-date>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:8px}
       .launch-v1-detail{position:sticky;top:96px;display:grid;gap:14px}.launch-v1-detail-head h3{margin:6px 0 4px;font-size:24px;line-height:1.05}.launch-v1-detail-head p{margin:0;color:var(--sl-muted)}
       .launch-v1-detail-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}.launch-v1-detail-controls label{display:grid;gap:6px}.launch-v1-detail-controls span{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:rgba(235,216,174,.62);font-weight:850}.launch-v1-detail-controls select,.launch-v1-detail-controls button{height:38px;border:1px solid rgba(224,190,126,.22);border-radius:8px;background:rgba(5,4,3,.82);color:var(--sl-text);font:inherit;font-size:12px;font-weight:850;padding:0 10px}.launch-v1-detail-controls button{cursor:pointer;background:linear-gradient(180deg,rgba(245,223,173,.22),rgba(185,139,71,.12))}
-      .launch-v1-facts{display:grid;gap:1px;border:1px solid rgba(224,190,126,.12);border-radius:9px;overflow:hidden}.launch-v1-facts span{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 12px;background:rgba(0,0,0,.16)}.launch-v1-facts em{color:var(--sl-muted);font-style:normal}.launch-v1-facts strong{font-size:12px;text-align:right}
+      .launch-v1-facts{display:grid;gap:1px;border:1px solid rgba(224,190,126,.12);border-radius:9px;overflow:hidden}.launch-v1-facts span{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 12px;background:rgba(0,0,0,.16)}.launch-v1-facts em{color:var(--sl-muted);font-style:normal}.launch-v1-facts strong{font-size:12px;text-align:right}.launch-v1-facts a{color:#f0d49a;text-decoration:none;border-bottom:1px solid rgba(240,212,154,.42)}
       .launch-v1-gate{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.launch-v1-gate span{border:1px solid rgba(224,190,126,.18);border-radius:9px;padding:10px;display:grid;gap:4px;font-size:12px;font-weight:850}.launch-v1-gate span.ok{border-color:rgba(103,213,154,.36)}.launch-v1-gate span.warn{border-color:rgba(255,116,105,.38)}.launch-v1-gate i{width:8px;height:8px;border-radius:50%;background:#f0c469}.launch-v1-gate .ok i{background:#61d89a}.launch-v1-gate em{font-style:normal;color:var(--sl-muted);font-size:10px}
       .launch-v1-stage{display:grid;grid-template-columns:8px minmax(0,1fr);gap:10px;border:1px solid var(--sl-line);border-radius:9px;padding:10px;background:rgba(0,0,0,.14)}.launch-v1-stage i{width:8px;height:100%;min-height:34px;border-radius:999px;background:#f0c469}.launch-v1-stage.ok i{background:#61d89a}.launch-v1-stage.danger i{background:#ff7469}.launch-v1-stage span{display:grid;gap:3px}.launch-v1-stage em,.launch-v1-stage small{font-style:normal;color:var(--sl-muted);font-size:11px}
       .launch-v1-stage-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.launch-v1-stage-actions button{height:26px;border:1px solid rgba(224,190,126,.20);border-radius:999px;background:rgba(255,255,255,.035);color:rgba(247,241,232,.72);padding:0 8px;font:inherit;font-size:10px;font-weight:850;cursor:pointer}.launch-v1-stage-actions button.active{border-color:rgba(245,218,165,.75);background:linear-gradient(180deg,#f5dfad,#b98b47);color:#120d07}

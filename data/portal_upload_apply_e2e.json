@@ -1,0 +1,22 @@
+{
+  "schema": "portal-upload-apply-e2e-v1",
+  "generatedAt": "2026-06-29T10:25:47.578Z",
+  "status": "not_run",
+  "publish_allowed": true,
+  "summary": {
+    "uploads": 0,
+    "accepted": 0,
+    "rejected": 0,
+    "persisted": 0
+  },
+  "steps": [
+    {
+      "id": "templates:generated",
+      "status": "skipped"
+    },
+    {
+      "id": "upload:file-provided",
+      "status": "skipped"
+    }
+  ]
+}

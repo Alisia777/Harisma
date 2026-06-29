@@ -609,6 +609,10 @@ function buildSteps(options, env) {
         'build',
         '--skip-ozon-api',
         '--skip-wb-funnel',
+        '--from',
+        options.from,
+        '--to',
+        options.to,
         '--output',
         extraWorkbook
       ]

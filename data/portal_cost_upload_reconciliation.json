@@ -1,0 +1,21 @@
+{
+  "schema": "portal-cost-upload-reconciliation-v1",
+  "generatedAt": "2026-06-29T10:25:47.578Z",
+  "dataset": "cost_price",
+  "status": "not_run",
+  "publish_allowed": true,
+  "sourceFile": "",
+  "sourceChecksum": "",
+  "batchId": "",
+  "summary": {
+    "rows": 0,
+    "accepted": 0,
+    "rejected": 0,
+    "persisted": 0,
+    "approvalStatus": "none"
+  },
+  "errors": [],
+  "rejectedRows": [],
+  "records": [],
+  "note": "No upload file was provided; registry state was left unchanged."
+}

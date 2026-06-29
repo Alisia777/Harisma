@@ -1,13 +1,13 @@
 {
   "schema": "portal-sku-matrix-v2",
-  "generatedAt": "2026-06-29T08:07:26.601Z",
+  "generatedAt": "2026-06-29T10:25:03.801Z",
   "source": {
     "skus": 143,
     "aliases": 566,
     "externalAliases": 341,
     "embeddedAliases": 1132,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-06-29T08:07:26.513Z"
+    "dataQualityGeneratedAt": "2026-06-29T00:00:00+03:00"
   },
   "summary": {
     "skuCount": 143,
@@ -17,16 +17,16 @@
     "skuTokenConflictCount": 0,
     "ownerConflictCount": 36,
     "ignoredApiSkuCount": 0,
-    "apiUnmappedCount": 1,
+    "apiUnmappedCount": 0,
     "duplicateRiskCount": 3,
     "duplicateRiskOverage": 490820,
     "missingOwnerCount": 0,
-    "issueCount": 4,
-    "infoIssueCount": 87,
+    "issueCount": 139,
+    "infoIssueCount": 88,
     "problemStateCounts": {
       "owner_platform_conflict": 36,
-      "ok": 107,
-      "api_unmapped": 1,
+      "has_warning": 94,
+      "ok": 41,
       "duplicate_risk": 1
     }
   },
@@ -114,15 +114,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "alteya_young_skin_box",
@@ -152,15 +162,23 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
         {
           "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
@@ -199,15 +217,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "berberin_laif_bad_60caps",
@@ -238,15 +273,23 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
         {
           "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
@@ -389,15 +432,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "ekdisteron_ultra_man_60caps",
@@ -436,15 +496,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "enzim_pudra_80gr",
@@ -679,15 +757,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "gel_antiakne_20ml",
@@ -831,15 +918,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "gel_brows_5ml",
@@ -914,15 +1011,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "gel_dlya_britya_300ml",
@@ -997,15 +1112,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "gel_dlya_brovei_6ml",
@@ -1087,15 +1220,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "gel_for_men_3_in_1_1000ml",
@@ -1170,15 +1313,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "gel_parfum_tabacco_vanille_450ml",
@@ -1253,15 +1406,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "gidrofilnoe_maslo_150ml",
@@ -1378,15 +1549,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "i_am_alpha_bad_60caps",
@@ -1416,15 +1596,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "indolakt_bad_60caps",
@@ -1454,15 +1643,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "insulight_bad_60caps",
@@ -1509,15 +1707,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "intimvita_200ml",
@@ -1660,15 +1876,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "krem-filler_15ml",
@@ -1789,15 +2015,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "krem_dlya_ruk_75ml",
@@ -1877,15 +2112,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "krem_dlya_vek_30ml",
@@ -1958,15 +2210,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "krem_ot_rastyazhek",
@@ -2039,15 +2308,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "krem_spf50_50ml",
@@ -2187,15 +2473,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "krovavii_piling_30ml",
@@ -2282,15 +2577,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "limfaks_bad_30caps",
@@ -2320,15 +2632,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "maska-batter_250ml",
@@ -2394,15 +2715,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "maska-batter_500ml",
@@ -2542,15 +2880,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "maska_dlya_lica_100ml",
@@ -2623,15 +2970,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "maslo_dlya_borodi_50ml",
@@ -2720,15 +3076,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "maslo_dlya_volos_parf_110ml",
@@ -2950,15 +3316,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "menoflavon_bad_60caps",
@@ -3109,15 +3485,23 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
         {
           "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
@@ -3201,15 +3585,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "nabor_remuver_40ml_1_1",
@@ -3353,15 +3755,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "penka_160ml",
@@ -3497,15 +3917,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "piling_100ml",
@@ -3571,15 +4000,23 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
         {
           "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
@@ -3654,15 +4091,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "pirantoks_bad_60caps",
@@ -3748,15 +4194,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "remuver_40ml",
@@ -3786,15 +4242,23 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
         {
           "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
@@ -3883,15 +4347,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "retinait_krem_01_50ml",
@@ -3957,15 +4430,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "retinait_krem_025_50ml",
@@ -4038,15 +4520,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "retinait_krem_05_50ml",
@@ -4193,15 +4692,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "retinait_krem_1_5_50ml",
@@ -4267,15 +4783,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "retinait_syvorotka_025_30ml",
@@ -4488,15 +5013,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
@@ -4558,15 +5100,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "retinol_full_journey",
@@ -4842,15 +5393,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "shampun_protiv_perhoti_250ml",
@@ -4997,15 +5565,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "skrab_babl_gam_200ml",
@@ -5080,15 +5657,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "solevoy_sprei_200ml",
@@ -5170,15 +5765,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "spicul_gel_mask_75ml",
@@ -5240,15 +5853,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "spiculboost_30ml",
@@ -5393,15 +6015,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "stik_ot_mozoley",
@@ -5606,15 +6246,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "syvorotka_dlya_lica_30ml_v2",
@@ -5680,15 +6329,23 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
         {
           "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
@@ -5855,15 +6512,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "syvorotka_guk_30ml",
@@ -5929,15 +6596,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "syvorotka_niacin_05_30ml",
@@ -6037,15 +6721,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "termo_sprei_200ml",
@@ -6120,15 +6813,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "tonik_dlya_lica_200ml",
@@ -6210,15 +6921,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "vosk_stik_15ml",
@@ -6293,15 +7014,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "т-34_bad_60caps",
@@ -6398,15 +7129,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "kavmaz",
@@ -6465,15 +7205,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "kavmaz_60ml",
@@ -6532,15 +7281,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "artoks",
@@ -6684,15 +7442,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "activeprost",
@@ -6760,15 +7528,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "synergel_60ml",
@@ -6827,15 +7605,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "vetonus",
@@ -6895,15 +7682,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "allicil_gribok15ml",
@@ -6962,15 +7766,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "cardicin_bad_60caps",
@@ -7025,15 +7846,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "uromax_1_1",
@@ -7168,15 +7998,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "urinofix",
@@ -7244,15 +8091,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "mycoplax",
@@ -7311,15 +8168,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "micardin_1_1",
@@ -7505,15 +8379,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "artoks_1_1",
@@ -7640,15 +8531,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "pantogor_100ml",
@@ -7784,15 +8692,33 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "sustalit",
@@ -7851,15 +8777,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "ekzifol",
@@ -7918,15 +8861,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "artoks_75ml",
@@ -7986,15 +8938,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "otivin",
@@ -8053,15 +9014,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "vetonus_100ml",
@@ -8255,15 +9233,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "urolgan",
@@ -8331,15 +9318,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "dardrakona_1_1",
@@ -8399,15 +9396,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "daoshen",
@@ -8466,15 +9480,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "micardinforte",
@@ -8593,15 +9624,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "micardin",
@@ -8653,15 +9701,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "osteofast",
@@ -8720,15 +9777,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "varifit",
@@ -8788,15 +9854,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "dardrakona",
@@ -9107,15 +10190,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "dolgar",
@@ -9174,15 +10266,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "vetonus_1_1",
@@ -9242,15 +10351,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "sustalit_30ml_1_1",
@@ -9639,15 +10765,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "erobrut",
@@ -9715,15 +10858,25 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "owner_platform_conflict"
+        "owner_platform_conflict",
+        "has_warning"
       ],
       "problemState": "owner_platform_conflict",
       "problemLabel": "Owner conflict",
       "problemTone": "warn",
-      "issueCount": 0,
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "khvoinitsa",
@@ -9782,15 +10935,24 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "micardin_1_1_1",
@@ -9909,15 +11071,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "wbvaritox",
@@ -9970,15 +11149,32 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 2,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        },
+        {
+          "severity": "warning",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately."
+        }
+      ]
     },
     {
       "articleKey": "t34poten10caps",
@@ -10059,39 +11255,29 @@
   ],
   "aliasConflicts": [],
   "skuTokenConflicts": [],
-  "apiUnmapped": [
-    {
-      "platform": "goldapple",
-      "api_sku": "penka_kudryavii_meto",
-      "name": "Пенка для укладки кудрявых волос, кудрявый метод, супер фиксация без склеивания, Алтея 150 мл",
-      "revenue": 128813,
-      "units": 151,
-      "firstDate": "2026-06-01",
-      "lastDate": "2026-06-27"
-    }
-  ],
+  "apiUnmapped": [],
   "duplicateRisks": [
     {
       "platform": "goldapple",
       "platformLabel": "ЗЯ",
-      "revenue": 897442,
-      "aggregateRevenue": 594984,
+      "revenue": 918692,
+      "aggregateRevenue": 616233,
       "overage": 302458,
       "message": "Сумма SKU по API выше агрегата площадки"
     },
     {
       "platform": "letu",
       "platformLabel": "Лэтуаль",
-      "revenue": 520203,
-      "aggregateRevenue": 344883,
+      "revenue": 532520,
+      "aggregateRevenue": 357200,
       "overage": 175320,
       "message": "Сумма SKU по API выше агрегата площадки"
     },
     {
       "platform": "magnit",
       "platformLabel": "Магнит Маркет",
-      "revenue": 38698,
-      "aggregateRevenue": 25656,
+      "revenue": 39614,
+      "aggregateRevenue": 26572,
       "overage": 13042,
       "message": "Сумма SKU по API выше агрегата площадки"
     }

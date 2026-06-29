@@ -15,6 +15,11 @@ function todayIso() {
 }
 
 const TODAY = String(process.env.ALTEA_TODAY || todayIso()).slice(0, 10);
+
+function isoDate(value) {
+  const match = String(value || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : '';
+}
 const DEFAULT_SOURCE_WORKBOOK = path.join('.altea-google-sheet-sync-output', 'tmp-source-google-current.xlsx');
 const DEFAULT_WB_REPORT = 'report 2026-5-5.xlsx';
 const DEFAULT_WB_NM_MAP = '0.xlsx';
@@ -271,6 +276,9 @@ function timestamp() {
 function resolveOptions(args) {
   const outputDir = path.resolve(args['output-dir'] || DEFAULT_OUTPUT_DIR);
   const output = path.resolve(args.output || path.join(outputDir, `altea_max_funnel_2025_2026_${timestamp()}.xlsx`));
+  const from = isoDate(args.from || args['date-from'] || process.env.ALTEA_API_FROM || process.env.ALTEA_PORTAL_API_MAX_FROM || '2025-01-01') || '2025-01-01';
+  const to = isoDate(args.to || args['date-to'] || process.env.ALTEA_API_TO || process.env.ALTEA_PORTAL_API_MAX_TO || TODAY) || TODAY;
+  if (from > to) throw new Error(`Invalid API window: ${from}..${to}`);
   return {
     command: args.command || 'build',
     sourceWorkbook: path.resolve(args['source-xlsx'] || DEFAULT_SOURCE_WORKBOOK),
@@ -315,8 +323,8 @@ function resolveOptions(args) {
     samokatApiBaseUrl: String(args['samokat-base-url'] || process.env.ALTEA_SAMOKAT_API_BASE_URL || '').trim(),
     samokatSalesPath: String(args['samokat-sales-path'] || process.env.ALTEA_SAMOKAT_SALES_PATH || '').trim(),
     samokatClientId: String(args['samokat-client-id'] || process.env.ALTEA_SAMOKAT_CLIENT_ID || '').trim(),
-    from: '2025-01-01',
-    to: TODAY
+    from,
+    to
   };
 }
 

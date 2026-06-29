@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-v2",
-  "generatedAt": "2026-06-29T06:32:18.705Z",
-  "snapshot_id": "dashboard:08a7ba234a1ce632",
+  "generatedAt": "2026-06-29T10:17:39.973Z",
+  "snapshot_id": "dashboard:e18727d1fd5cbae3",
   "asOfDate": "2026-06-28",
   "latestMarketplaceDate": "2026-06-28",
   "monthKey": "2026-06",
@@ -18,49 +18,89 @@
         "revenue": 253796998,
         "wb": 190405570,
         "ozon": 53553438,
-        "ya": 9837990
+        "ya": 9837990,
+        "goldapple": 0,
+        "letu": 0,
+        "megamarket": 0,
+        "samokat": 0,
+        "magnit": 0
       },
       "2026-06": {
         "revenue": 285818670,
         "wb": 214476498,
         "ozon": 60323623,
-        "ya": 11018549
+        "ya": 11018549,
+        "goldapple": 0,
+        "letu": 0,
+        "megamarket": 0,
+        "samokat": 0,
+        "magnit": 0
       },
       "2026-07": {
         "revenue": 322540144,
         "wb": 241590454,
         "ozon": 67949690,
-        "ya": 13000000
+        "ya": 13000000,
+        "goldapple": 0,
+        "letu": 0,
+        "megamarket": 0,
+        "samokat": 0,
+        "magnit": 0
       },
       "2026-08": {
         "revenue": 330493435.777206,
         "wb": 201066371,
         "ozon": 112322218.777206,
-        "ya": 6441334
+        "ya": 6441334,
+        "goldapple": 4611252,
+        "letu": 3000631,
+        "megamarket": 0,
+        "samokat": 0,
+        "magnit": 201629
       },
       "2026-09": {
         "revenue": 367451257.701405,
         "wb": 216150839,
         "ozon": 131926900.701405,
-        "ya": 7612015
+        "ya": 7612015,
+        "goldapple": 5302940,
+        "letu": 3105228,
+        "megamarket": 0,
+        "samokat": 0,
+        "magnit": 203335
       },
       "2026-10": {
         "revenue": 387055656.371205,
         "wb": 235531555,
         "ozon": 129719435.371205,
-        "ya": 8782698
+        "ya": 8782698,
+        "goldapple": 6098382,
+        "letu": 3218044,
+        "megamarket": 0,
+        "samokat": 0,
+        "magnit": 205542
       },
       "2026-11": {
         "revenue": 410817634.188604,
         "wb": 259373620,
         "ozon": 126917638.188604,
-        "ya": 9953377
+        "ya": 9953377,
+        "goldapple": 7013139,
+        "letu": 3350815,
+        "megamarket": 0,
+        "samokat": 0,
+        "magnit": 209045
       },
       "2026-12": {
         "revenue": 459872220.351102,
         "wb": 289011920,
         "ozon": 143447038.351102,
-        "ya": 11124048
+        "ya": 11124048,
+        "goldapple": 8065112,
+        "letu": 3509365,
+        "megamarket": 0,
+        "samokat": 0,
+        "magnit": 214737
       }
     }
   },
@@ -72,15 +112,15 @@
     "warehouse": "warehouse_stock_overlay.json"
   },
   "summary": {
-    "metrics": 9,
+    "metrics": 14,
     "factRevenue": 340551907.78,
     "planRevenue": 285818670,
     "planToDate": 266764092,
     "completionToDate": 1.276603,
-    "unallocatedRevenue": 965522.92,
+    "unallocatedRevenue": -34482.96,
     "cutoffDate": "2026-06-28",
     "monthKey": "2026-06",
-    "factUnits": 322168,
+    "factUnits": 323716.3929,
     "warehouseStock": 408491,
     "marketplaceStock": 220574
   },
@@ -115,7 +155,7 @@
       "label": "Marketplace stock",
       "value": 220574,
       "period": "2026-06-28",
-      "hint": "WB/Ozon/Yandex stock visible in SKU registry.",
+      "hint": "Marketplace stock visible in SKU registry.",
       "metricId": "marketplace-stock-total"
     },
     {
@@ -154,9 +194,54 @@
       "metricId": "sales.raw_revenue:ya"
     },
     {
+      "id": "sales-revenue-goldapple",
+      "label": "Revenue GOLDAPPLE",
+      "value": 616233.4285714286,
+      "format": "money",
+      "period": "2026-06-28",
+      "hint": "Fact from platform_trends.json.",
+      "metricId": "sales.raw_revenue:goldapple"
+    },
+    {
+      "id": "sales-revenue-letu",
+      "label": "Revenue LETU",
+      "value": 357200.2499999999,
+      "format": "money",
+      "period": "2026-06-28",
+      "hint": "Fact from platform_trends.json.",
+      "metricId": "sales.raw_revenue:letu"
+    },
+    {
+      "id": "sales-revenue-megamarket",
+      "label": "Revenue MEGAMARKET",
+      "value": 0,
+      "format": "money",
+      "period": "2026-06-28",
+      "hint": "Fact from platform_trends.json.",
+      "metricId": "sales.raw_revenue:megamarket"
+    },
+    {
+      "id": "sales-revenue-samokat",
+      "label": "Revenue SAMOKAT",
+      "value": 0,
+      "format": "money",
+      "period": "2026-06-28",
+      "hint": "Fact from platform_trends.json.",
+      "metricId": "sales.raw_revenue:samokat"
+    },
+    {
+      "id": "sales-revenue-magnit",
+      "label": "Revenue MAGNIT",
+      "value": 26572.202857142856,
+      "format": "money",
+      "period": "2026-06-28",
+      "hint": "Fact from platform_trends.json.",
+      "metricId": "sales.raw_revenue:magnit"
+    },
+    {
       "id": "sales-revenue-unallocated",
       "label": "Revenue unallocated",
-      "value": 965522.92,
+      "value": -34482.96,
       "format": "money",
       "period": "2026-06-28",
       "hint": "Control total remainder stays visible.",
@@ -230,7 +315,7 @@
       "total_stock": 220574,
       "warehouse_stock": 408491,
       "plan_units": 0,
-      "fact_units_to_date": 322168,
+      "fact_units_to_date": 323716.3929,
       "fact_revenue_to_date": 340551907.78,
       "plan_completion_to_date_pct": 1.276603,
       "company_plan_month_key": "2026-06",
@@ -261,6 +346,36 @@
           "dateTo": "2026-06-22",
           "revenue": 7749945,
           "units": 9633
+        },
+        "goldapple": {
+          "dateFrom": "2026-06-01",
+          "dateTo": "2026-06-28",
+          "revenue": 616233.43,
+          "units": 740.5357
+        },
+        "letu": {
+          "dateFrom": "2026-06-01",
+          "dateTo": "2026-06-28",
+          "revenue": 357200.25,
+          "units": 752.9643
+        },
+        "megamarket": {
+          "dateFrom": "",
+          "dateTo": "",
+          "revenue": 0,
+          "units": 0
+        },
+        "samokat": {
+          "dateFrom": "",
+          "dateTo": "",
+          "revenue": 0,
+          "units": 0
+        },
+        "magnit": {
+          "dateFrom": "2026-06-01",
+          "dateTo": "2026-06-28",
+          "revenue": 26572.2,
+          "units": 54.8929
         }
       }
     }

@@ -1,0 +1,72 @@
+{
+  "schema": "portal-repricing-reconciliation-v1",
+  "generatedAt": "2026-06-29T10:17:40.264Z",
+  "snapshot_id": "repricer:9a9244c868c24e19",
+  "status": "warning",
+  "publish_allowed": true,
+  "feature_publish_allowed": false,
+  "feature_status": "blocked",
+  "business_fingerprint": "bbd1b1263468dfe93f6bab04b4c558d29d10c1b966bced10162e9e9aaf3ae173",
+  "summary": {
+    "rows": 472,
+    "eligible_rows": 472,
+    "publishable_rows": 0,
+    "blocked_rows": 472,
+    "publishable_coverage": 0,
+    "required_publishable_coverage": 0.01,
+    "feature_status": "blocked",
+    "publishable_recommendations": 0,
+    "blocked_recommendations": 472,
+    "duplicate_platform_keys": 0,
+    "normalized_article_collisions": 0,
+    "deduped_exact_duplicates": 1
+  },
+  "blockingReasons": [],
+  "warnings": [
+    "repricer feature blocked: 0/472 publishable recommendations",
+    "472 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
+    "1 exact duplicate source rows were deterministically deduped"
+  ],
+  "duplicatePlatformKeys": [],
+  "normalizedArticleCollisions": [],
+  "dedupedExactDuplicates": [
+    {
+      "key": "ozon|maslodlyavolosparf110ml",
+      "articleKey": "maslo_dlya_volos_parf_110ml"
+    }
+  ],
+  "checks": [
+    {
+      "id": "repricer:no-duplicate-normalized-sku-platform",
+      "status": "ok",
+      "blockingReasons": []
+    },
+    {
+      "id": "repricer:no-normalized-article-collisions",
+      "status": "ok",
+      "blockingReasons": []
+    },
+    {
+      "id": "repricer:feature-readiness",
+      "status": "warning",
+      "blockingReasons": [],
+      "warnings": [
+        "repricer feature blocked: 0/472 publishable recommendations"
+      ],
+      "details": {
+        "eligible_rows": 472,
+        "publishable_rows": 0,
+        "blocked_rows": 472,
+        "publishable_coverage": 0,
+        "required_publishable_coverage": 0.01,
+        "feature_status": "blocked"
+      }
+    },
+    {
+      "id": "repricer:local-storage-not-business-truth",
+      "status": "ok",
+      "blockingReasons": [],
+      "details": "Canonical builder reads only data/*.json and approved server-side override records; browser localStorage is never loaded."
+    }
+  ]
+}

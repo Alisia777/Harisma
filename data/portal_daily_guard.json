@@ -1,6 +1,6 @@
 {
   "schema": "portal-daily-guard-v2",
-  "generatedAt": "2026-06-29T08:07:27.273Z",
+  "generatedAt": "2026-06-29T10:28:27.526Z",
   "manifest": {
     "file": "scripts\\portal-truth-manifest.json",
     "version": "2026-06-20",
@@ -32,33 +32,21 @@
   "publish": {
     "allowed": false,
     "blockingReasons": [
-      "sku_registry: sku_registry_meta.json is missing generatedAt for array payload",
-      "sku_registry: build date unknown is older than expected run date 2026-06-29",
       "ads_fact: data date 2026-06-27 is older than expected 2026-06-28",
-      "order_procurement: build date 2026-06-28 is older than expected run date 2026-06-29",
-      "order_procurement_wb: build date 2026-06-28 is older than expected run date 2026-06-29",
-      "order_procurement_ozon: build date 2026-06-28 is older than expected run date 2026-06-29",
       "order_procurement_ym: build date 2026-06-15 is older than expected run date 2026-06-29",
-      "owner_audit: build date 2026-06-28 is older than expected run date 2026-06-29",
       "platform_trends: WB/Ozon/Yandex do not share one cutoff date (2026-06-28, 2026-06-28, 2026-06-22)",
-      "portal_data_quality: blocking status critical, critical issues 4",
-      "order_procurement: 2222 rows do not use available=inStock+inTransit+inRequest",
-      "order_procurement: 2222 rows are missing canonical 30-day targetNeed30/rawNeed30",
-      "order_procurement: 1494 rows fail need30 formula",
-      "order_procurement: 2222 detail rows are missing canonical 30-day target fields",
-      "order_procurement: combined layer has 0 Yandex rows, detail layer has 935",
+      "portal_data_quality: blocking status critical, critical issues 3",
       "oos task: local storage normalization would drop auto OOS tasks",
       "cutoff date: ads_fact=2026-06-27, platform_fact=2026-06-28",
-      "phase3: required report is missing: portal_repricing_reconciliation.json",
-      "phase3:portal_dashboard_reconciliation.json: mixed platform fact dates: 2026-06-28, 2026-06-28, 2026-06-22",
-      "phase3: required report is missing: portal_upload_apply_e2e.json",
-      "phase3: required report is missing: portal_minmax_upload_reconciliation.json",
-      "phase3: required report is missing: portal_cost_upload_reconciliation.json"
+      "phase3:portal_dashboard_reconciliation.json: mixed platform fact dates: 2026-06-28, 2026-06-28, 2026-06-22, 2026-06-28, 2026-06-28, 2026-06-28"
     ],
     "warningReasons": [
       "platform_trends: all series date 2026-06-28 differs from component cutoff mixed",
       "order_procurement: no rows with inTransit/inRequest were available for live fallback coverage",
       "sku_matrix: 36 platform owner conflicts are visible and require registry decision",
+      "phase3:portal_repricing_reconciliation.json: repricer feature blocked: 0/472 publishable recommendations",
+      "phase3:portal_repricing_reconciliation.json: 472 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
+      "phase3:portal_repricing_reconciliation.json: 1 exact duplicate source rows were deterministically deduped",
       "phase3:portal_runtime_wiring_reconciliation.json: canonical repricer retained as diagnostic snapshot; feature activation is blocked",
       "phase3:portal_feature_readiness.json: portal_feature_readiness.json: warning"
     ],
@@ -68,9 +56,9 @@
     "sources": 24,
     "contracts": 12,
     "views": 16,
-    "blockingChecks": 13,
-    "warningChecks": 1,
-    "fingerprint": "24a2c5233b7f9700c6a60c44321d2e5a36aad17f73e137a5b11fe2c9132d44ad"
+    "blockingChecks": 7,
+    "warningChecks": 2,
+    "fingerprint": "22fa89f6aa217adcd6675530f952bfb6a5afe53182571dc74912319da32b97c9"
   },
   "views": {
     "dashboard": {
@@ -91,7 +79,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "ads_fact",
@@ -115,11 +103,11 @@
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -146,12 +134,12 @@
       ]
     },
     "control": {
-      "status": "blocked",
+      "status": "warning",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -182,7 +170,7 @@
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
       "blockingContracts": [
@@ -203,7 +191,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -259,7 +247,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "warehouse_fact",
@@ -289,7 +277,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "warehouse_fact",
@@ -311,15 +299,15 @@
       "sources": [
         {
           "source": "order_procurement",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "order_procurement_wb",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "order_procurement_ozon",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "order_procurement_ym",
@@ -335,13 +323,12 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
       "blockingContracts": [
         "contract:platform-fact",
         "contract:data-quality",
-        "contract:order-procurement-phase2",
         "contract:cutoff-date"
       ]
     },
@@ -363,7 +350,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
       "blockingContracts": [
@@ -391,7 +378,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
       "blockingContracts": [
@@ -406,7 +393,7 @@
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -418,7 +405,7 @@
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "platform_fact",
@@ -439,7 +426,7 @@
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -451,7 +438,7 @@
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
       "blockingContracts": [
@@ -459,12 +446,12 @@
       ]
     },
     "launches": {
-      "status": "blocked",
+      "status": "ok",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "warehouse_fact",
@@ -482,12 +469,12 @@
       "blockingContracts": []
     },
     "launch-control": {
-      "status": "blocked",
+      "status": "warning",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -501,7 +488,7 @@
       "blockingContracts": []
     },
     "wb-rating": {
-      "status": "blocked",
+      "status": "ok",
       "critical": false,
       "sources": [
         {
@@ -510,7 +497,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
       "blockingContracts": []
@@ -537,7 +524,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
       "blockingContracts": [
@@ -548,7 +535,6 @@
     "__globalBlockingContracts": [
       "contract:platform-fact",
       "contract:data-quality",
-      "contract:order-procurement-phase2",
       "contract:oos-auto-task-code",
       "contract:cutoff-date",
       "contract:phase3-publish-reports"
@@ -582,12 +568,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 25098164,
-      "mtime": "2026-06-29T08:04:03.305Z",
-      "sha256": "9545957172f9601ed6a12571e7333c547d1e73dc2ad034bcc939c2491a7386d1",
+      "bytes": 25205196,
+      "mtime": "2026-06-29T10:17:40.553Z",
+      "sha256": "e2ec272c12ff52ac2a500c81526ae4c715841b4e03a3a28d5d3ebc054dc6dfcd",
       "dataDate": "2026-06-28",
       "dataDatePath": "latestMarketplaceDate",
-      "generatedAt": "2026-06-29T08:04:02.794Z"
+      "generatedAt": "2026-06-29T10:17:39.973Z"
     },
     {
       "id": "source:sku_registry",
@@ -595,20 +581,17 @@
       "source": "sku_registry",
       "file": "skus.json",
       "kind": "dimension-master",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "sku_registry: sku_registry_meta.json is missing generatedAt for array payload",
-        "sku_registry: build date unknown is older than expected run date 2026-06-29"
-      ],
+      "blockingReasons": [],
       "origin": "input",
       "bytes": 797545,
       "mtime": "2026-06-29T08:04:02.982Z",
       "sha256": "acef5e2f9caab2cce68b220180fc7c3ed8ed2a1d25c2db2b3ec1fde78772e1cb",
       "dataDate": "",
       "dataDatePath": "",
-      "generatedAt": "",
-      "metaFile": ""
+      "generatedAt": "2026-06-29T00:00:00+03:00",
+      "metaFile": "data/sku_registry_meta.json"
     },
     {
       "id": "source:dashboard_projection",
@@ -620,12 +603,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 50062,
-      "mtime": "2026-06-29T08:07:25.861Z",
-      "sha256": "657d9f4ceb8d0369f86e3453c98fab479cd4df05e0efb76bbc260d5f8733d3c4",
+      "bytes": 53093,
+      "mtime": "2026-06-29T10:25:47.311Z",
+      "sha256": "eea5bb79a8ba29bbdfc14313e190bef755988b24bb4b67444cefe5f73b1810bc",
       "dataDate": "2026-06-28",
       "dataDatePath": "latestMarketplaceDate",
-      "generatedAt": "2026-06-29T06:32:18.705Z"
+      "generatedAt": "2026-06-29T10:17:39.973Z"
     },
     {
       "id": "source:ads_fact",
@@ -639,12 +622,12 @@
         "ads_fact: data date 2026-06-27 is older than expected 2026-06-28"
       ],
       "origin": "input",
-      "bytes": 21250968,
-      "mtime": "2026-06-29T08:04:03.955Z",
-      "sha256": "0d0a4c36eff3044f4754b6228889ce3a64fc9b9e7e595874c0868e20df82aab5",
+      "bytes": 21557926,
+      "mtime": "2026-06-29T10:17:40.988Z",
+      "sha256": "8230a7f586047f4c492511c44ceba8856acf17c44e2dfd3ebf3e2e866df5b97e",
       "dataDate": "2026-06-27",
       "dataDatePath": "window.to",
-      "generatedAt": "2026-06-29T06:43:28.800Z"
+      "generatedAt": "2026-06-29T10:17:40.917Z"
     },
     {
       "id": "source:warehouse_fact",
@@ -656,9 +639,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 34575,
-      "mtime": "2026-06-29T08:04:03.332Z",
-      "sha256": "2fa0a805ab49a50ce41223a225d03f04dfa20d6dff4334070120e9662bc33c01",
+      "bytes": 36120,
+      "mtime": "2026-06-29T08:46:34.407Z",
+      "sha256": "731e30fc8d7e0d0f6196afd9cd8a22475028efd5732b3f5620bf1fbc0157d6a3",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-06-29T07:35:56.383Z"
@@ -707,12 +690,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 1833908,
-      "mtime": "2026-06-29T06:59:18.836Z",
-      "sha256": "66e16aefc6c9fb00c116b8dfdaa4ad99024f88e0b2e32f5747cda73eb2e091cd",
+      "bytes": 10352512,
+      "mtime": "2026-06-29T10:17:40.667Z",
+      "sha256": "e92c399987f43253d91f20ba3a353668c1d82d207be92994f51590d64dd75164",
       "dataDate": "2026-06-28",
       "dataDatePath": "asOfDate",
-      "generatedAt": "2026-06-29T06:48:22.809Z"
+      "generatedAt": "2026-06-29T10:17:40.264Z"
     },
     {
       "id": "source:repricer",
@@ -737,18 +720,16 @@
       "source": "order_procurement",
       "file": "order_procurement.json",
       "kind": "calculation-master",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "order_procurement: build date 2026-06-28 is older than expected run date 2026-06-29"
-      ],
+      "blockingReasons": [],
       "origin": "input",
-      "bytes": 1347191,
-      "mtime": "2026-06-29T06:59:18.737Z",
-      "sha256": "84c7ed4cc3e29813c324b0b5ac10d4b73e171b663f5cfdc3d6dbd345d9d121c2",
-      "dataDate": "2026-06-28",
+      "bytes": 3767595,
+      "mtime": "2026-06-29T10:25:03.202Z",
+      "sha256": "c830ab2b11f134f405b518fd772acc67b993f608ffee991aaa3e2f732faf7bc3",
+      "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-28T13:33:47.989Z"
+      "generatedAt": "2026-06-29T08:07:25.728Z"
     },
     {
       "id": "source:order_procurement_wb",
@@ -756,18 +737,16 @@
       "source": "order_procurement_wb",
       "file": "order_procurement_wb.json",
       "kind": "calculation-detail",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "order_procurement_wb: build date 2026-06-28 is older than expected run date 2026-06-29"
-      ],
+      "blockingReasons": [],
       "origin": "input",
-      "bytes": 385364,
-      "mtime": "2026-06-29T06:59:18.741Z",
-      "sha256": "c029a81eb7f7d0bd6bdcd156e1bbeb6e1c04560c5b3ed88c1d89f4fb50d53deb",
-      "dataDate": "2026-06-28",
+      "bytes": 668315,
+      "mtime": "2026-06-29T10:25:03.205Z",
+      "sha256": "1e7df0e8be81ec8c47ae74bf34cd9807d4e20a03506d4e9e3f5acd6a28902016",
+      "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-28T13:33:47.989Z"
+      "generatedAt": "2026-06-29T08:07:25.728Z"
     },
     {
       "id": "source:order_procurement_ozon",
@@ -775,18 +754,16 @@
       "source": "order_procurement_ozon",
       "file": "order_procurement_ozon.json",
       "kind": "calculation-detail",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "order_procurement_ozon: build date 2026-06-28 is older than expected run date 2026-06-29"
-      ],
+      "blockingReasons": [],
       "origin": "input",
-      "bytes": 962303,
-      "mtime": "2026-06-29T06:59:18.739Z",
-      "sha256": "aad4a182b0acd3c7dfd3662ab33af3fefa91aeca0dd9982e8b693fdc80f86e3c",
-      "dataDate": "2026-06-28",
+      "bytes": 1736669,
+      "mtime": "2026-06-29T10:25:03.211Z",
+      "sha256": "e1f5b832a42ab5017b0faa399d0ed995c57869d3f65174dcc60195620afa0583",
+      "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-28T13:33:47.989Z"
+      "generatedAt": "2026-06-29T08:07:25.728Z"
     },
     {
       "id": "source:order_procurement_ym",
@@ -800,9 +777,9 @@
         "order_procurement_ym: build date 2026-06-15 is older than expected run date 2026-06-29"
       ],
       "origin": "input",
-      "bytes": 1412765,
-      "mtime": "2026-06-29T06:07:36.387Z",
-      "sha256": "a333b97cff98d3bb1a36bf211b938d5d8d3d1abeecf31840ee38da4f0709f08d",
+      "bytes": 1363672,
+      "mtime": "2026-06-29T10:25:03.216Z",
+      "sha256": "2471c601d8028b3306912c02403153e98c40e19052d5d360ac8af447c4bf5db5",
       "dataDate": "2026-06-15",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-06-15T08:33:08.937Z"
@@ -817,12 +794,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 119326,
-      "mtime": "2026-06-29T08:07:25.944Z",
-      "sha256": "f4b678144ae04d3b8df969f093ef1ac7eb689d8c2a07b387dc32f979cdde6c66",
+      "bytes": 454638,
+      "mtime": "2026-06-29T10:25:03.366Z",
+      "sha256": "3b48c95fc5c6cd782e8f55720a22dae01bb41138241843030b399dee4ad7026c",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T08:07:25.942Z"
+      "generatedAt": "2026-06-29T10:25:03.362Z"
     },
     {
       "id": "source:sku_matrix",
@@ -834,12 +811,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 463065,
-      "mtime": "2026-06-29T08:07:26.605Z",
-      "sha256": "80bbc87d7a55587a14c79dddcd94660ad6c8b5f3ebc219acfc1e5ccfb9645270",
+      "bytes": 510523,
+      "mtime": "2026-06-29T10:25:03.805Z",
+      "sha256": "f20b096c735db96c7ccefb6e041bef8bbdb71c1b7d84977a4540d641c535b782",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T08:07:26.601Z"
+      "generatedAt": "2026-06-29T10:25:03.801Z"
     },
     {
       "id": "source:sku_aliases",
@@ -864,18 +841,16 @@
       "source": "owner_audit",
       "file": "wb_owner_distribution_audit.json",
       "kind": "mapping-audit",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "owner_audit: build date 2026-06-28 is older than expected run date 2026-06-29"
-      ],
+      "blockingReasons": [],
       "origin": "input",
-      "bytes": 53201,
-      "mtime": "2026-06-29T06:59:18.862Z",
-      "sha256": "74eaef938cf80c805f421306f93438e497de3e15fea079ea168ed03c1f5208a2",
-      "dataDate": "2026-06-28",
+      "bytes": 95119,
+      "mtime": "2026-06-29T10:25:03.424Z",
+      "sha256": "1059fba49e637af5466be96a1682a57a382ceedf96a8162b2ab254ab3d6adabe",
+      "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-28T13:33:50.670Z"
+      "generatedAt": "2026-06-29T00:00:00+03:00"
     },
     {
       "id": "source:data_quality",
@@ -887,12 +862,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 47071,
-      "mtime": "2026-06-29T08:07:26.515Z",
-      "sha256": "ead0f8a1820b9a830eb2f3bec16ad1ffdb742f7a2fdfe0c39dfa3e6ceefce689",
+      "bytes": 125800,
+      "mtime": "2026-06-29T10:25:03.715Z",
+      "sha256": "a765f15bdeed39da2a75047d4cbcaacf22eea6b84bfde27eaeb52946df1fe7b8",
       "dataDate": "2026-06-28",
       "dataDatePath": "summary.maxDate",
-      "generatedAt": "2026-06-29T08:07:26.513Z"
+      "generatedAt": "2026-06-29T00:00:00+03:00"
     },
     {
       "id": "source:data_quarantine",
@@ -904,12 +879,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 2020,
-      "mtime": "2026-06-29T08:07:26.926Z",
-      "sha256": "f8d19af6cc08ade2e4a74e166d15c34b0f1288fc1ac7a92824f5e255d1d2328c",
+      "bytes": 15380,
+      "mtime": "2026-06-29T10:25:03.730Z",
+      "sha256": "41372a736707646591a4953c29673233e7615a02a76505c8caa349f5cab3b4d8",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T08:07:26.918Z"
+      "generatedAt": "2026-06-29T00:00:00+03:00"
     },
     {
       "id": "source:product_leaderboard",
@@ -956,9 +931,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 9173985,
-      "mtime": "2026-06-29T08:04:04.080Z",
-      "sha256": "a172ff35d9fb0cf92d3b69876c5e41b08f46a80960b8bc4f7b8d9e7f9b051431",
+      "bytes": 9474277,
+      "mtime": "2026-06-29T08:46:34.432Z",
+      "sha256": "88a9c5e5e83d90857ca569e29313932c2487c74d706539a07f3cfeb77bb1aab7",
       "dataDate": "2026-06-28",
       "dataDatePath": "window.to",
       "generatedAt": "2026-06-28T14:09:06.004Z"
@@ -973,12 +948,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 257336,
-      "mtime": "2026-06-29T06:59:18.863Z",
-      "sha256": "59ddbb497c5e46736e602f217939ace73fb195d731ae23a745cd8698dc975429",
+      "bytes": 248621,
+      "mtime": "2026-06-29T10:25:47.470Z",
+      "sha256": "319e2d7362ab0dcef9096408282d118e95c78c63dddd25eff75ad70c8fdf7c87",
       "dataDate": "2026-06-28",
       "dataDatePath": "period.to",
-      "generatedAt": "2026-06-29T06:35:11.628Z"
+      "generatedAt": "2026-06-29T10:25:47.468Z"
     },
     {
       "id": "contract:company-plan",
@@ -1027,9 +1002,9 @@
       "source": "dashboard",
       "warnings": [],
       "blockingReasons": [],
-      "cardsCount": 15,
-      "uniqueCardSignatures": 15,
-      "uniqueSemanticCards": 15,
+      "cardsCount": 20,
+      "uniqueCardSignatures": 20,
+      "uniqueSemanticCards": 20,
       "exactDuplicateRows": 0,
       "semanticDuplicateRows": 0,
       "duplicateRows": 0,
@@ -1061,13 +1036,13 @@
       "source": "portal_data_quality",
       "warnings": [],
       "blockingReasons": [
-        "portal_data_quality: blocking status critical, critical issues 4"
+        "portal_data_quality: blocking status critical, critical issues 3"
       ],
       "reportStatus": "critical",
-      "criticalIssues": 4,
-      "unmappedRevenue": 131340,
-      "knownOutsideRegistryRevenue": 5769647,
-      "unmappedRevenueRatio": 0.000393,
+      "criticalIssues": 3,
+      "unmappedRevenue": 2527,
+      "knownOutsideRegistryRevenue": 5901510,
+      "unmappedRevenueRatio": 0.000008,
       "status": "blocked"
     },
     {
@@ -1077,92 +1052,25 @@
       "warnings": [
         "order_procurement: no rows with inTransit/inRequest were available for live fallback coverage"
       ],
-      "blockingReasons": [
-        "order_procurement: 2222 rows do not use available=inStock+inTransit+inRequest",
-        "order_procurement: 2222 rows are missing canonical 30-day targetNeed30/rawNeed30",
-        "order_procurement: 1494 rows fail need30 formula",
-        "order_procurement: 2222 detail rows are missing canonical 30-day target fields",
-        "order_procurement: combined layer has 0 Yandex rows, detail layer has 935"
-      ],
-      "rows": 2222,
+      "blockingReasons": [],
+      "rows": 3165,
       "platformCounts": {
-        "wb": 616,
-        "ozon": 1606,
-        "ym": 0
-      },
-      "detailRows": {
-        "wb": 616,
-        "ozon": 1606,
+        "wb": 615,
+        "ozon": 1615,
         "ym": 935
       },
-      "detailHorizonErrors": 2222,
+      "detailRows": {
+        "wb": 615,
+        "ozon": 1615,
+        "ym": 935
+      },
+      "detailHorizonErrors": 0,
       "transitOrRequestRows": 0,
-      "availableErrors": 2222,
-      "horizonErrors": 2222,
-      "formulaErrors": 1494,
-      "sample": [
-        {
-          "index": 0,
-          "article": "krovavii_piling_30ml",
-          "type": "available",
-          "expected": 3904
-        },
-        {
-          "index": 0,
-          "article": "krovavii_piling_30ml",
-          "type": "horizon30"
-        },
-        {
-          "index": 0,
-          "article": "krovavii_piling_30ml",
-          "type": "need30",
-          "expectedRawNeed30": 9843,
-          "expectedTargetNeed30": 9843
-        },
-        {
-          "index": 1,
-          "article": "gel_antiakne_20ml_v2",
-          "type": "available",
-          "expected": 3814
-        },
-        {
-          "index": 1,
-          "article": "gel_antiakne_20ml_v2",
-          "type": "horizon30"
-        },
-        {
-          "index": 1,
-          "article": "gel_antiakne_20ml_v2",
-          "type": "need30",
-          "expectedRawNeed30": 1896,
-          "expectedTargetNeed30": 1896
-        },
-        {
-          "index": 2,
-          "article": "gel_antiakne_20ml_v2",
-          "type": "available",
-          "expected": 3603
-        },
-        {
-          "index": 2,
-          "article": "gel_antiakne_20ml_v2",
-          "type": "horizon30"
-        },
-        {
-          "index": 2,
-          "article": "gel_antiakne_20ml_v2",
-          "type": "need30",
-          "expectedRawNeed30": 1791,
-          "expectedTargetNeed30": 1791
-        },
-        {
-          "index": 3,
-          "article": "retinol_boost_krem_dlya_vek_30ml",
-          "type": "available",
-          "expected": 3595
-        }
-      ],
-      "status": "blocked"
+      "availableErrors": 0,
+      "horizonErrors": 0,
+      "formulaErrors": 0,
+      "sample": [],
+      "status": "warning"
     },
     {
       "id": "contract:oos-control-phase2",
@@ -1170,7 +1078,7 @@
       "source": "oos_control",
       "warnings": [],
       "blockingReasons": [],
-      "rows": 12,
+      "rows": 124,
       "watchDays": 30,
       "badRows": [],
       "status": "ok"
@@ -1248,28 +1156,43 @@
       "scope": "phase3",
       "source": "phase3-reconciliation",
       "warnings": [
+        "phase3:portal_repricing_reconciliation.json: repricer feature blocked: 0/472 publishable recommendations",
+        "phase3:portal_repricing_reconciliation.json: 472 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
+        "phase3:portal_repricing_reconciliation.json: 1 exact duplicate source rows were deterministically deduped",
         "phase3:portal_runtime_wiring_reconciliation.json: canonical repricer retained as diagnostic snapshot; feature activation is blocked",
         "phase3:portal_feature_readiness.json: portal_feature_readiness.json: warning"
       ],
       "blockingReasons": [
-        "phase3: required report is missing: portal_repricing_reconciliation.json",
-        "phase3:portal_dashboard_reconciliation.json: mixed platform fact dates: 2026-06-28, 2026-06-28, 2026-06-22",
-        "phase3: required report is missing: portal_upload_apply_e2e.json",
-        "phase3: required report is missing: portal_minmax_upload_reconciliation.json",
-        "phase3: required report is missing: portal_cost_upload_reconciliation.json"
+        "phase3:portal_dashboard_reconciliation.json: mixed platform fact dates: 2026-06-28, 2026-06-28, 2026-06-22, 2026-06-28, 2026-06-28, 2026-06-28"
       ],
       "reports": [
         {
           "file": "portal_repricing_reconciliation.json",
           "path": "data\\portal_repricing_reconciliation.json",
-          "status": "missing"
+          "status": "warning",
+          "publish_allowed": true,
+          "business_fingerprint": "bbd1b1263468dfe93f6bab04b4c558d29d10c1b966bced10162e9e9aaf3ae173",
+          "summary": {
+            "rows": 472,
+            "eligible_rows": 472,
+            "publishable_rows": 0,
+            "blocked_rows": 472,
+            "publishable_coverage": 0,
+            "required_publishable_coverage": 0.01,
+            "feature_status": "blocked",
+            "publishable_recommendations": 0,
+            "blocked_recommendations": 472,
+            "duplicate_platform_keys": 0,
+            "normalized_article_collisions": 0,
+            "deduped_exact_duplicates": 1
+          }
         },
         {
           "file": "portal_dashboard_reconciliation.json",
           "path": "data\\portal_dashboard_reconciliation.json",
           "status": "blocked",
           "publish_allowed": false,
-          "business_fingerprint": "5b5c1d9b59fc28328e201988e4f25e7228b05b2049ceab3401a9abe227043347",
+          "business_fingerprint": "1e5f2f597a47e4a0a66e8daaa09366f0c1393058b6fb3a787d831b34358aecac",
           "summary": {}
         },
         {
@@ -1277,7 +1200,7 @@
           "path": "data\\portal_plan_reconciliation.json",
           "status": "ok",
           "publish_allowed": true,
-          "business_fingerprint": "dashboard:08a7ba234a1ce632",
+          "business_fingerprint": "dashboard:e18727d1fd5cbae3",
           "summary": {}
         },
         {
@@ -1285,23 +1208,49 @@
           "path": "data\\portal_indicator_audit.json",
           "status": "ok",
           "publish_allowed": true,
-          "business_fingerprint": "dashboard:08a7ba234a1ce632",
+          "business_fingerprint": "dashboard:e18727d1fd5cbae3",
           "summary": {}
         },
         {
           "file": "portal_upload_apply_e2e.json",
           "path": "data\\portal_upload_apply_e2e.json",
-          "status": "missing"
+          "status": "not_run",
+          "publish_allowed": true,
+          "business_fingerprint": "",
+          "summary": {
+            "uploads": 0,
+            "accepted": 0,
+            "rejected": 0,
+            "persisted": 0
+          }
         },
         {
           "file": "portal_minmax_upload_reconciliation.json",
           "path": "data\\portal_minmax_upload_reconciliation.json",
-          "status": "missing"
+          "status": "not_run",
+          "publish_allowed": true,
+          "business_fingerprint": "",
+          "summary": {
+            "rows": 0,
+            "accepted": 0,
+            "rejected": 0,
+            "persisted": 0,
+            "approvalStatus": "none"
+          }
         },
         {
           "file": "portal_cost_upload_reconciliation.json",
           "path": "data\\portal_cost_upload_reconciliation.json",
-          "status": "missing"
+          "status": "not_run",
+          "publish_allowed": true,
+          "business_fingerprint": "",
+          "summary": {
+            "rows": 0,
+            "accepted": 0,
+            "rejected": 0,
+            "persisted": 0,
+            "approvalStatus": "none"
+          }
         },
         {
           "file": "portal_runtime_wiring_reconciliation.json",
@@ -1320,18 +1269,12 @@
           "summary": {}
         }
       ],
-      "businessFingerprint": "69ab0e5517fa10f693ed6cadf9d42f873cc1dd55aaf0f5f19caedccdfc023a33",
+      "businessFingerprint": "761593801fd48af19155b584b7a0af763370206f60a7942c256814ac1ceed98c",
       "status": "blocked"
     }
   ],
   "repair": {
     "suggestedSteps": [
-      {
-        "id": "google-sheet-build",
-        "name": "google sheet build",
-        "reason": "sku_registry: sku_registry_meta.json is missing generatedAt for array payload",
-        "source": "sku_registry"
-      },
       {
         "id": "ads-sync",
         "name": "ads sync",
@@ -1341,14 +1284,8 @@
       {
         "id": "order-procurement",
         "name": "order procurement",
-        "reason": "order_procurement: build date 2026-06-28 is older than expected run date 2026-06-29",
-        "source": "order_procurement"
-      },
-      {
-        "id": "wb-owner-distribution",
-        "name": "wb owner distribution",
-        "reason": "owner_audit: build date 2026-06-28 is older than expected run date 2026-06-29",
-        "source": "owner_audit"
+        "reason": "order_procurement_ym: build date 2026-06-15 is older than expected run date 2026-06-29",
+        "source": "order_procurement_ym"
       },
       {
         "id": "marketplace-api",
@@ -1359,7 +1296,7 @@
       {
         "id": "data-quality",
         "name": "data quality",
-        "reason": "portal_data_quality: blocking status critical, critical issues 4",
+        "reason": "portal_data_quality: blocking status critical, critical issues 3",
         "source": "portal_data_quality"
       },
       {
@@ -1371,7 +1308,7 @@
       {
         "id": "repricer-dashboard-plan-audit",
         "name": "repricer dashboard plan audit",
-        "reason": "phase3: required report is missing: portal_repricing_reconciliation.json",
+        "reason": "phase3:portal_dashboard_reconciliation.json: mixed platform fact dates: 2026-06-28, 2026-06-28, 2026-06-22, 2026-06-28, 2026-06-28, 2026-06-28",
         "source": "phase3-reconciliation"
       }
     ]

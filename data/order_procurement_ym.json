@@ -9,19 +9,19 @@
     "targetNeedD": "max(0, rawNeedD), or 0 when lifecycle is exit/paused/question/archived"
   },
   "sourceFreshness": {
-    "logistics": "2026-06-20T09:09:08.076Z",
-    "logisticsFileMtime": "2026-06-20T10:34:18.104Z",
-    "logisticsFileSize": 1211695,
-    "logisticsRows": 2279,
+    "logistics": "2026-06-29T08:07:25.728Z",
+    "logisticsFileMtime": "2026-06-29T08:07:25.734Z",
+    "logisticsFileSize": 1135212,
+    "logisticsRows": 2230,
     "yandexOrderProcurement": "2026-06-15T08:33:08.937Z",
     "yandexRows": 935,
-    "skusFileMtime": "2026-06-20T10:34:18.246Z",
-    "skusFileSize": 793117,
+    "skusFileMtime": "2026-06-29T08:04:02.982Z",
+    "skusFileSize": 797545,
     "skuRows": 143
   },
   "window": {
-    "from": "2026-05-24",
-    "to": "2026-06-20"
+    "from": "2026-06-02",
+    "to": "2026-06-29"
   },
   "platform": "Я.Маркет",
   "rows": [

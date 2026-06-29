@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-29T06:35:11.628Z",
+  "generatedAt": "2026-06-29T10:25:47.468Z",
   "source": "wb-platform-trends-api",
   "sourceFile": "platform_trends.json",
   "sourceMode": "wb-finance-api-direct-sku",
@@ -31,7 +31,7 @@
   "diagnostics": {
     "sourceArticles": 135,
     "outputItems": 117,
-    "platformTrendsGeneratedAt": "2026-06-29T06:32:18.705Z",
+    "platformTrendsGeneratedAt": "2026-06-29T10:17:39.973Z",
     "platformTrendsLatestMarketplaceDate": "2026-06-28",
     "wbExtraMarketplaceTo": "2026-06-28",
     "wbFeedbacksGeneratedAt": "2026-06-28T14:09:06.004Z",

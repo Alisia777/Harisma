@@ -1,0 +1,11 @@
+{
+  "schema": "portal-sku-registry-meta-v1",
+  "generatedAt": "2026-06-29T00:00:00+03:00",
+  "sourceFile": "skus.json",
+  "sourceSha256": "acef5e2f9caab2cce68b220180fc7c3ed8ed2a1d25c2db2b3ec1fde78772e1cb",
+  "summary": {
+    "rows": 143,
+    "activeRows": 143,
+    "ownerAssignedRows": 143
+  }
+}

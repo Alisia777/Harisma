@@ -4,7 +4,7 @@
   if (window.__ALTEA_TABLE_HEADER_FILTERS__) return;
   window.__ALTEA_TABLE_HEADER_FILTERS__ = true;
 
-  const STATE_VERSION = 'v1';
+  const STATE_VERSION = 'v2';
   const ROOT_KEY = 'altea.table';
   const RU_COLLATOR = new Intl.Collator('ru', { numeric: true, sensitivity: 'base' });
   const controllers = new WeakMap();
@@ -149,6 +149,23 @@
     const clone = th.cloneNode(true);
     clone.querySelectorAll('.altea-th-filter-btn,.altea-th-state').forEach((node) => node.remove());
     return cleanText(clone.textContent || th.getAttribute('aria-label') || th.title || '');
+  }
+
+  function rowSignature(row) {
+    return Array.from(row?.cells || [])
+      .map((cell) => cleanText(cell.textContent || ''))
+      .join('\u001f');
+  }
+
+  function originalDisplayForRow(row, fallback = '') {
+    if (!row?.dataset) return fallback || '';
+    if (Object.prototype.hasOwnProperty.call(row.dataset, 'alteaOriginalDisplay')) {
+      return row.dataset.alteaOriginalDisplay || '';
+    }
+    const current = row.style.display || '';
+    const original = row.dataset.alteaFilteredOut === '1' ? (fallback || '') : current;
+    row.dataset.alteaOriginalDisplay = original;
+    return original;
   }
 
   function getHeaderRecords(table) {
@@ -359,15 +376,33 @@
       const tbody = this.table.tBodies[0];
       if (!tbody) return;
       const rows = Array.from(tbody.rows || []);
-      const needsRefresh = rows.length !== this.rowInfos.length || rows.some((row, index) => this.rowInfos[index]?.row !== row);
-      if (!force && !needsRefresh) return;
+      const previousByRow = new Map(this.rowInfos.map((info) => [info.row, info]));
+      let changed = force || tbody !== this.tbody || rows.length !== this.rowInfos.length;
+      const nextInfos = rows.map((row, index) => {
+        const signature = rowSignature(row);
+        const existing = previousByRow.get(row);
+        if (!existing) {
+          changed = true;
+          return {
+            row,
+            index,
+            values: new Map(),
+            originalDisplay: originalDisplayForRow(row),
+            signature
+          };
+        }
+        if (existing.index !== index || existing.signature !== signature) {
+          existing.values.clear();
+          changed = true;
+        }
+        existing.index = index;
+        existing.signature = signature;
+        existing.originalDisplay = originalDisplayForRow(row, existing.originalDisplay);
+        return existing;
+      });
+      if (!changed) return;
       this.tbody = tbody;
-      this.rowInfos = rows.map((row, index) => ({
-        row,
-        index,
-        values: new Map(),
-        originalDisplay: row.style.display && row.style.display !== 'none' ? row.style.display : ''
-      }));
+      this.rowInfos = nextInfos;
       this.inferColumns();
     }
 

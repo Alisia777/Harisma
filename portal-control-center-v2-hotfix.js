@@ -18,7 +18,7 @@
     goldapple: { label: 'Золотое яблоко', chip: 'Золотое яблоко', kind: 'ok' },
     letu: { label: "Л'Этуаль", chip: "Л'Этуаль", kind: 'ok' },
     magnit: { label: 'Магнит Маркет', chip: 'Магнит Маркет', kind: 'ok' },
-    product: { label: 'Новинки', chip: 'Новинки', kind: 'info' },
+    product: { label: 'Продукт / новинки', chip: 'Продукт', kind: 'info' },
     executive: { label: 'Управленческий финал', chip: 'Финал', kind: 'danger' },
     cross: { label: 'Общий контур', chip: 'Общий контур', kind: '' }
   };
@@ -34,7 +34,6 @@
     { key: 'product', label: 'Продукт', platform: 'product', text: 'новинки' }
   ];
   const CONTROL_ROLE_KEYS = CONTROL_ROLE_PRESETS.map((item) => item.key);
-  const RETAIL_ROP_WORKSTREAMS = new Set(['ya', 'goldapple', 'letu', 'magnit']);
 
   const originalRenderControlCenter = typeof renderControlCenter === 'function' ? renderControlCenter : null;
   const originalGetAllTasks = typeof getAllTasks === 'function' ? getAllTasks : null;
@@ -381,16 +380,12 @@
       ? getAllTasks().find((item) => item.id === taskId)
       : null;
     if (!task || task.source !== 'auto') return;
-    const sku = getSku(task.articleKey);
-    const currentOwner = typeof taskPlatformOwnerName === 'function'
-      ? taskPlatformOwnerName(sku, task.platform, ownerName(sku))
-      : ownerName(sku);
     const manual = normalizeTask({
       ...task,
       id: uid('task'),
       source: 'manual',
       status: 'in_progress',
-      owner: currentOwner || task.owner || '',
+      owner: task.owner || ownerName(getSku(task.articleKey)) || '',
       updatedAt: new Date().toISOString()
     }, 'manual');
     state.storage.tasks.unshift(manual);
@@ -437,6 +432,42 @@
     return materialized;
   }
 
+  function taskStatusLaneForVisibility(task) {
+    const status = String(task?.status || 'new').trim().toLowerCase();
+    if (['done', 'closed', 'complete', 'completed', 'cancelled', 'archive', 'archived'].includes(status)) return 'done';
+    if (['waiting', 'waiting_team', 'waiting_rop', 'waiting_decision', 'approval'].includes(status)) return 'waiting';
+    if (['active', 'work', 'doing', 'in_progress'].includes(status)) return 'in_progress';
+    return 'new';
+  }
+
+  function isTaskActiveForVisibility(task) {
+    if (typeof isTaskActive === 'function') return isTaskActive(task);
+    return taskStatusLaneForVisibility(task) !== 'done';
+  }
+
+  function keepControlTaskVisibleAfterStatusChange(task) {
+    if (!task?.id) return;
+    state.controlFilters = state.controlFilters && typeof state.controlFilters === 'object' ? state.controlFilters : {};
+    const filters = state.controlFilters;
+    const currentFilter = String(filters.status || 'active').trim().toLowerCase();
+    if (filters.horizon && filters.horizon !== 'all') filters.horizon = 'all';
+    if (!currentFilter || currentFilter === 'all') return;
+
+    const lane = taskStatusLaneForVisibility(task);
+    const status = String(task.status || '').trim().toLowerCase();
+    if (currentFilter === 'active') {
+      if (!isTaskActiveForVisibility(task)) filters.status = 'all';
+      return;
+    }
+    if (currentFilter === 'waiting') {
+      if (lane !== 'waiting') filters.status = isTaskActiveForVisibility(task) ? 'active' : 'all';
+      return;
+    }
+    if (currentFilter !== lane && currentFilter !== status) {
+      filters.status = isTaskActiveForVisibility(task) ? 'active' : 'all';
+    }
+  }
+
   async function updateTaskRecord(taskId, patch) {
     const current = await ensureTaskRecordForUpdate(taskId);
     if (!current) return null;
@@ -451,6 +482,7 @@
       articleKey: patch && patch.articleKey !== undefined ? patch.articleKey : current.articleKey
     }, current.source || 'manual');
     Object.assign(current, updated);
+    if (current.status !== before.status) keepControlTaskVisibleAfterStatusChange(current);
     invalidateControlTaskCache();
     saveLocalStorage();
     try {
@@ -936,7 +968,6 @@
     }
 
     if (replacedHistoryCard) {
-      bindTaskAttachmentsInline(taskId, body);
       body.querySelector('#taskCommentForm')?.addEventListener('submit', async (event) => {
         event.preventDefault();
         const form = new FormData(event.currentTarget);
@@ -1072,149 +1103,6 @@
     `;
   }
 
-  function taskAttachmentSizeLabel(size = 0) {
-    const bytes = Number(size || 0);
-    if (!Number.isFinite(bytes) || bytes <= 0) return '';
-    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(bytes >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
-    if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
-    return `${Math.round(bytes)} B`;
-  }
-
-  function taskAttachmentHref(item) {
-    const direct = String(item?.publicUrl || '').trim();
-    if (direct) return direct;
-    if (typeof taskAttachmentPublicUrl === 'function') return taskAttachmentPublicUrl(item?.bucket || '', item?.objectPath || '');
-    return '';
-  }
-
-  function renderTaskAttachmentsInline(task) {
-    const taskId = String(task?.id || '').trim();
-    if (!taskId) return '';
-    const attachments = typeof getTaskAttachments === 'function' ? getTaskAttachments(taskId) : [];
-    const allowed = typeof TASK_ATTACHMENT_ALLOWED_EXTENSIONS !== 'undefined' && Array.isArray(TASK_ATTACHMENT_ALLOWED_EXTENSIONS)
-      ? TASK_ATTACHMENT_ALLOWED_EXTENSIONS.join(', ')
-      : 'xlsx, xls, csv';
-    const limit = typeof TASK_ATTACHMENT_MAX_BYTES !== 'undefined'
-      ? Math.round(TASK_ATTACHMENT_MAX_BYTES / (1024 * 1024))
-      : 20;
-    const rows = attachments.length ? attachments.map((item) => {
-      const href = taskAttachmentHref(item);
-      const size = taskAttachmentSizeLabel(item.size);
-      const meta = [
-        size,
-        item.createdBy ? `\u043e\u0442 ${escapeHtml(item.createdBy)}` : '',
-        item.createdAt ? fmt.date(item.createdAt) : ''
-      ].filter(Boolean).join(' \u00b7 ');
-      return `
-        <div class="task-attachment-row">
-          <div class="task-attachment-main">
-            <strong>${href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(item.fileName || '\u0424\u0430\u0439\u043b')}</a>` : escapeHtml(item.fileName || '\u0424\u0430\u0439\u043b')}</strong>
-            <span>${escapeHtml(meta || '\u0432\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u043a \u0437\u0430\u0434\u0430\u0447\u0435')}</span>
-          </div>
-          <div class="task-attachment-actions">
-            ${href ? `<a class="btn ghost small-btn" href="${escapeHtml(href)}" target="_blank" rel="noopener">\u041e\u0442\u043a\u0440\u044b\u0442\u044c</a>` : ''}
-            <button class="btn ghost small-btn" type="button" data-task-attachment-delete="${escapeHtml(item.id)}">\u0423\u0434\u0430\u043b\u0438\u0442\u044c</button>
-          </div>
-        </div>`;
-    }).join('') : '<div class="empty compact">\u0424\u0430\u0439\u043b\u043e\u0432 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442</div>';
-    return `
-      <div class="task-attachments-card task-attachments-panel" data-task-attachments-card>
-        <div class="section-subhead">
-          <div>
-            <h3>\u0424\u0430\u0439\u043b\u044b \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u0430</h3>
-            <p class="small muted">\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u0435 Excel/CSV \u0438\u043b\u0438 scorecard \u043f\u0440\u044f\u043c\u043e \u043a \u044d\u0442\u043e\u0439 \u0437\u0430\u0434\u0430\u0447\u0435.</p>
-          </div>
-          ${badge(`${fmt.int(attachments.length)} \u0444\u0430\u0439\u043b.`, attachments.length ? 'info' : 'ok')}
-        </div>
-        <div class="ui-stack">
-          <div class="task-attachment-list">${rows}</div>
-          <div class="task-attachment-upload">
-            <label class="btn file-input" data-task-attachment-picker>
-              <span data-task-attachment-label>\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b</span>
-              <input type="file" data-task-attachment-input accept=".xlsx,.xls,.csv">
-            </label>
-            <span class="ui-hint">\u0424\u043e\u0440\u043c\u0430\u0442\u044b: ${escapeHtml(allowed)} \u00b7 \u0434\u043e ${fmt.int(limit)} MB</span>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  function bindTaskAttachmentsInline(taskId, body) {
-    const attachmentInput = body.querySelector('[data-task-attachment-input]');
-    if (attachmentInput && attachmentInput.dataset.boundAttachmentUpload !== '1') {
-      attachmentInput.dataset.boundAttachmentUpload = '1';
-      attachmentInput.addEventListener('change', async (event) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-        const label = body.querySelector('[data-task-attachment-label]');
-        const picker = body.querySelector('[data-task-attachment-picker]');
-        const initialLabel = label?.textContent || '';
-        try {
-          attachmentInput.disabled = true;
-          if (picker) picker.classList.add('is-loading');
-          if (label) label.textContent = '\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u0435\u043c...';
-          const uploadFn = typeof window.uploadTaskAttachment === 'function'
-            ? window.uploadTaskAttachment
-            : (typeof uploadTaskAttachment === 'function' ? uploadTaskAttachment : null);
-          if (typeof uploadFn !== 'function') throw new Error('\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0444\u0430\u0439\u043b\u043e\u0432 \u0435\u0449\u0435 \u043d\u0435 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0430.');
-          const attachment = await uploadFn(taskId, file);
-          const historyFn = typeof window.appendTaskHistorySafe === 'function'
-            ? window.appendTaskHistorySafe
-            : (typeof createTaskHistoryEntry === 'function' ? createTaskHistoryEntry : null);
-          if (typeof historyFn === 'function') {
-            try {
-              await historyFn(taskId, 'comment', `\u041f\u0440\u0438\u043b\u043e\u0436\u0435\u043d \u0444\u0430\u0439\u043b: ${attachment?.fileName || file.name}`, {
-                team: typeof teamMemberLabel === 'function' ? teamMemberLabel() : 'Team'
-              });
-            } catch (error) {
-              console.error(error);
-            }
-          }
-          renderTaskModal(taskId);
-        } catch (error) {
-          console.error(error);
-          alert(error?.message || '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b.');
-        } finally {
-          if (attachmentInput.isConnected) {
-            attachmentInput.value = '';
-            attachmentInput.disabled = false;
-          }
-          if (picker) picker.classList.remove('is-loading');
-          if (label && label.isConnected) label.textContent = initialLabel || '\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b';
-        }
-      });
-    }
-
-    body.querySelectorAll('[data-task-attachment-delete]').forEach((button) => {
-      if (button.dataset.boundAttachmentDelete === '1') return;
-      button.dataset.boundAttachmentDelete = '1';
-      button.addEventListener('click', async () => {
-        const attachmentId = String(button.dataset.taskAttachmentDelete || '').trim();
-        if (!attachmentId) return;
-        if (!window.confirm('\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u044d\u0442\u043e\u0442 \u0444\u0430\u0439\u043b \u0438\u0437 \u0437\u0430\u0434\u0430\u0447\u0438?')) return;
-        const initialText = button.textContent || '';
-        try {
-          button.disabled = true;
-          button.textContent = '\u0423\u0434\u0430\u043b\u044f\u0435\u043c...';
-          const deleteFn = typeof window.deleteTaskAttachment === 'function'
-            ? window.deleteTaskAttachment
-            : (typeof deleteTaskAttachment === 'function' ? deleteTaskAttachment : null);
-          if (typeof deleteFn !== 'function') throw new Error('\u0423\u0434\u0430\u043b\u0435\u043d\u0438\u0435 \u0444\u0430\u0439\u043b\u043e\u0432 \u0435\u0449\u0435 \u043d\u0435 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u043e.');
-          await deleteFn(attachmentId);
-          renderTaskModal(taskId);
-        } catch (error) {
-          console.error(error);
-          alert(error?.message || '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0443\u0434\u0430\u043b\u0438\u0442\u044c \u0444\u0430\u0439\u043b.');
-        } finally {
-          if (button.isConnected) {
-            button.disabled = false;
-            button.textContent = initialText || '\u0423\u0434\u0430\u043b\u0438\u0442\u044c';
-          }
-        }
-      });
-    });
-  }
-
   function renderTaskUpdatesCard(task, history) {
     const historyHtml = history.length
       ? history.map(renderTaskHistoryItem).join('')
@@ -1229,7 +1117,6 @@
           ${badge(`${fmt.int(history.length)} записей`, history.length ? 'info' : 'ok')}
         </div>
         <div class="quick-note ok">Пишем кратко: что сделано, что мешает и что нужно от других.</div>
-        ${renderTaskAttachmentsInline(task)}
         <div class="compact-history" style="margin-top:12px">${historyHtml}</div>
         <form id="taskCommentForm" class="form-stack" style="margin-top:12px">
           <textarea name="text" rows="3" placeholder="Короткий апдейт по задаче" required></textarea>
@@ -1275,17 +1162,61 @@
     return String(candidate?.createdAt || '') > String(current?.createdAt || '');
   }
 
+  function taskWorkflowIntentFromHistoryText(message) {
+    const text = String(message || '').trim().toLowerCase();
+    if (!text) return '';
+    if (
+      text.includes('\u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u043e \u0437\u0430\u043a\u0440\u044b\u043b')
+      || text.includes('\u0437\u0430\u0434\u0430\u0447\u0430 \u0437\u0430\u043a\u0440\u044b\u0442\u0430 \u0441 \u043e\u0442\u0447\u0451\u0442\u043e\u043c')
+      || text.includes('\u0437\u0430\u0434\u0430\u0447\u0430 \u0437\u0430\u043a\u0440\u044b\u0442\u0430 \u0441 \u043e\u0442\u0447\u0435\u0442\u043e\u043c')
+      || text.includes('\u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e \u0438\u0437 \u043f\u0440\u043e\u0441\u0442\u043e\u0433\u043e \u044d\u043a\u0440\u0430\u043d\u0430')
+    ) return 'done';
+    if (text.includes('\u0440\u043e\u043f \u0432\u0435\u0440\u043d\u0443\u043b') && text.includes('\u0432 \u0440\u0430\u0431\u043e\u0442\u0443')) return 'in_progress';
+    if (text.includes('\u0440\u043e\u043f \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043b') && text.includes('\u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044e')) return 'waiting_decision';
+    if (text.includes('\u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c \u0441\u0434\u0430\u043b') && text.includes('\u0440\u043e\u043f')) return 'waiting_rop';
+    return '';
+  }
+
+  function closedTaskIdsFromHistory() {
+    const latest = new Map();
+    const comments = Array.isArray(state?.storage?.comments) ? state.storage.comments : [];
+    comments.forEach((comment, index) => {
+      const parsed = parseTaskLogComment(comment);
+      if (!parsed?.taskId) return;
+      const intent = taskWorkflowIntentFromHistoryText(parsed.text);
+      if (!intent) return;
+      const parsedTime = Date.parse(comment?.createdAt || comment?.created_at || '');
+      const weight = Number.isFinite(parsedTime) ? parsedTime : index;
+      const previous = latest.get(parsed.taskId);
+      if (!previous || weight >= previous.weight) latest.set(parsed.taskId, { intent, weight });
+    });
+    return new Set(
+      [...latest.entries()]
+        .filter(([, entry]) => entry.intent === 'done')
+        .map(([taskId]) => String(taskId || '').trim())
+        .filter(Boolean)
+    );
+  }
+
   function dedupeControlTasks(tasks) {
+    const closedTaskIds = closedTaskIdsFromHistory();
     const manualMeaningKeys = new Set(
       (tasks || [])
         .filter((task) => !isDeprecatedAutoSignalTask(task))
-        .filter((task) => task?.source !== 'auto' && isTaskActive(task))
+        .filter((task) => task?.status !== 'cancelled' && (
+          task?.source !== 'auto'
+          || task?.status === 'done'
+          || closedTaskIds.has(String(task?.id || '').trim())
+        ))
         .map(taskMeaningKey)
     );
     const byKey = new Map();
     for (const task of tasks || []) {
       if (isDeprecatedAutoSignalTask(task)) continue;
-      if (task?.source === 'auto' && manualMeaningKeys.has(taskMeaningKey(task))) continue;
+      if (task?.source === 'auto' && (
+        manualMeaningKeys.has(taskMeaningKey(task))
+        || closedTaskIds.has(String(task?.id || '').trim())
+      )) continue;
       const key = taskDedupeKey(task);
       const existing = byKey.get(key);
       if (shouldPreferTask(task, existing)) byKey.set(key, task);
@@ -1435,84 +1366,6 @@
     return ['now', 'mine', 'urgent', 'waiting', 'no_owner', 'general', 'all'].includes(raw) ? raw : 'now';
   }
 
-  function preferredLazyQueueForWorkstream(workstream = 'all') {
-    return RETAIL_ROP_WORKSTREAMS.has(String(workstream || '').trim().toLowerCase()) ? 'all' : 'now';
-  }
-
-  function taskFilterValue(key, fallback = 'all') {
-    state.controlFilters = state.controlFilters || {};
-    const raw = state.controlFilters[key];
-    return raw === undefined || raw === null || raw === '' ? fallback : String(raw);
-  }
-
-  function taskFilterActiveCount() {
-    const filters = state.controlFilters || {};
-    return [
-      String(filters.search || '').trim(),
-      filters.owner && filters.owner !== 'all',
-      filters.type && filters.type !== 'all',
-      filters.priority && filters.priority !== 'all',
-      filters.horizon && filters.horizon !== 'all',
-      filters.source && filters.source !== 'all',
-      filters.status && filters.status !== 'active'
-    ].filter(Boolean).length;
-  }
-
-  function renderTaskFilterBar(tasks, owners) {
-    const search = taskFilterValue('search', '');
-    const owner = taskFilterValue('owner', 'all');
-    const status = taskFilterValue('status', 'active');
-    const type = taskFilterValue('type', 'all');
-    const priority = taskFilterValue('priority', 'all');
-    const horizon = taskFilterValue('horizon', 'all');
-    const source = taskFilterValue('source', 'all');
-    const activeCount = taskFilterActiveCount();
-    return `
-      <div class="task-filter-panel" data-task-filter-panel>
-        <div class="task-filter-panel-head">
-          <div>
-            <strong>Фильтры поиска</strong>
-            <span>${fmt.int((tasks || []).filter(isTaskActive).length)} активных в текущем срезе</span>
-          </div>
-          ${activeCount ? badge(`фильтров ${fmt.int(activeCount)}`, 'warn') : badge('без лишнего шума', 'ok')}
-        </div>
-        <div class="task-filter-grid">
-          <label class="span-2"><span>Поиск</span><input data-task-filter="search" value="${escapeHtml(search)}" placeholder="SKU, задача, owner, следующий шаг..."></label>
-          <label><span>Owner</span><select data-task-filter="owner">
-            <option value="all">Все owner</option>
-            ${owners.map((name) => `<option value="${escapeHtml(name)}" ${owner === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
-          </select></label>
-          <label><span>Статус</span><select data-task-filter="status">
-            <option value="active" ${status === 'active' ? 'selected' : ''}>Только активные</option>
-            <option value="all" ${status === 'all' ? 'selected' : ''}>Все статусы</option>
-            ${Object.entries(TASK_STATUS_META).map(([value, meta]) => `<option value="${value}" ${status === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}
-          </select></label>
-          <label><span>Тип</span><select data-task-filter="type">
-            <option value="all">Все типы</option>
-            ${Object.entries(TASK_TYPE_META).map(([value, label]) => `<option value="${value}" ${type === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}
-          </select></label>
-          <label><span>Приоритет</span><select data-task-filter="priority">
-            <option value="all">Любой приоритет</option>
-            ${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}" ${priority === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}
-          </select></label>
-          <label><span>Срок</span><select data-task-filter="horizon">
-            <option value="all" ${horizon === 'all' ? 'selected' : ''}>Любой срок</option>
-            <option value="overdue" ${horizon === 'overdue' ? 'selected' : ''}>Просрочено</option>
-            <option value="today" ${horizon === 'today' ? 'selected' : ''}>Сегодня</option>
-            <option value="week" ${horizon === 'week' ? 'selected' : ''}>7 дней</option>
-            <option value="no_owner" ${horizon === 'no_owner' ? 'selected' : ''}>Без owner</option>
-          </select></label>
-          <label><span>Источник</span><select data-task-filter="source">
-            <option value="all" ${source === 'all' ? 'selected' : ''}>Все</option>
-            <option value="manual" ${source === 'manual' ? 'selected' : ''}>Ручные + seed</option>
-            <option value="auto" ${source === 'auto' ? 'selected' : ''}>Авто-сигналы</option>
-          </select></label>
-          <button class="btn ghost small-btn" type="button" data-task-filter-reset>Сбросить</button>
-        </div>
-      </div>
-    `;
-  }
-
   function parseTaskArticleKeysInput(rawValue) {
     const raw = String(rawValue || '').replace(/\r\n?/g, '\n');
     if (!raw.trim()) return [];
@@ -1604,7 +1457,7 @@
                 <option value="goldapple" ${selectedPlatform === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
                 <option value="letu" ${selectedPlatform === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
                 <option value="magnit" ${selectedPlatform === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
-                <option value="product" ${selectedPlatform === 'product' ? 'selected' : ''}>Новинки</option>
+                <option value="product" ${selectedPlatform === 'product' ? 'selected' : ''}>Продукт / новинки</option>
               </select>
               <select name="priority">
                 ${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}" ${value === 'high' ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}
@@ -1727,20 +1580,11 @@
 
   function renderTaskLazyPanel(tasks, owners) {
     const buckets = lazyTaskBuckets(tasks);
+    const queue = currentLazyQueue();
+    const selected = buckets[queue] || buckets.mine;
+    const meta = lazyQueueMeta(queue);
     const selectedWorkstream = selectedTaskWorkstream();
     const selectedWorkstreamMeta = controlWorkstreamMeta(selectedWorkstream);
-    let queue = currentLazyQueue();
-    if (queue === 'now' && RETAIL_ROP_WORKSTREAMS.has(selectedWorkstream)) queue = 'all';
-    let selected = buckets[queue] || buckets.mine;
-    let meta = lazyQueueMeta(queue);
-    if (!selected.length && selectedWorkstream !== 'all' && buckets.all.length) {
-      queue = 'all';
-      selected = buckets.all;
-      meta = {
-        title: `${selectedWorkstreamMeta.label}: \u0432\u0441\u0435 \u0430\u043a\u0442\u0438\u0432\u043d\u044b\u0435`,
-        text: '\u0412 \u043e\u0447\u0435\u0440\u0435\u0434\u0438 "\u0441\u0435\u0439\u0447\u0430\u0441" \u043f\u0443\u0441\u0442\u043e, \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u0432\u0441\u0435 \u0430\u043a\u0442\u0438\u0432\u043d\u044b\u0435 \u0437\u0430\u0434\u0430\u0447\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043a\u043e\u043d\u0442\u0443\u0440\u0430.'
-      };
-    }
     const defaultPlatform = 'cross';
     const rawCount = controlTasksRawCount();
     const duplicatesHidden = Math.max(0, rawCount - (tasks || []).length);
@@ -1758,7 +1602,6 @@
           </div>
         </div>
         <datalist id="taskLazyOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
-        ${renderTaskFilterBar(tasks, owners)}
         ${renderTaskBulkToolbar(owners, [])}
         ${renderGeneralQuickTaskForm(owners, defaultPlatform)}
         <div class="task-lazy-list">
@@ -1923,31 +1766,6 @@
         : 'Открывать задачу, фиксировать короткий апдейт и вести следующий шаг.';
     }
 
-    root.querySelectorAll('[data-task-filter]').forEach((control) => {
-      const eventName = control.tagName === 'INPUT' ? 'input' : 'change';
-      control.addEventListener(eventName, (event) => {
-        const key = event.currentTarget.getAttribute('data-task-filter');
-        if (!key) return;
-        state.controlFilters = state.controlFilters || {};
-        state.controlFilters[key] = event.currentTarget.value;
-        renderControlCenter();
-      });
-    });
-
-    root.querySelector('[data-task-filter-reset]')?.addEventListener('click', () => {
-      state.controlFilters = {
-        ...(state.controlFilters || {}),
-        search: '',
-        owner: 'all',
-        status: 'active',
-        type: 'all',
-        priority: 'all',
-        horizon: 'all',
-        source: 'all'
-      };
-      renderControlCenter();
-    });
-
     root.querySelectorAll('[data-task-lazy-queue]').forEach((button) => button.addEventListener('click', () => {
       state.controlFilters.lazyQueue = button.dataset.taskLazyQueue || 'mine';
       renderControlCenter();
@@ -1958,14 +1776,13 @@
       const roleMeta = CONTROL_ROLE_PRESETS.find((item) => item.key === role) || CONTROL_ROLE_PRESETS[0];
       state.controlFilters.peopleRole = roleMeta.key;
       state.controlFilters.platform = roleMeta.platform;
-      state.controlFilters.lazyQueue = preferredLazyQueueForWorkstream(roleMeta.platform);
+      state.controlFilters.lazyQueue = 'now';
       renderControlCenter();
     }));
 
     root.querySelectorAll('[data-task-platform-filter]').forEach((button) => button.addEventListener('click', () => {
       state.controlFilters.peopleRole = '';
       state.controlFilters.platform = button.dataset.taskPlatformFilter || 'all';
-      state.controlFilters.lazyQueue = preferredLazyQueueForWorkstream(state.controlFilters.platform);
       renderControlCenter();
     }));
 
@@ -2159,7 +1976,6 @@
       if (typeof originalRenderControlCenter === 'function') originalRenderControlCenter();
       const root = document.getElementById('view-control');
       if (!root) return;
-      if (root.dataset.controlSimple && !state?.controlFilters?.taskSimpleFullMode) return;
       renderGeneralTaskEnhancements(root);
     };
 

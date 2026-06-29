@@ -539,15 +539,6 @@ function ownerName(sku) {
   return localOwner || skuMatrixOwnerName(sku, '');
 }
 
-function taskPlatformOwnerName(sku, platform = '', fallback = '') {
-  const normalizedPlatform = normalizeTaskPlatform(platform || '');
-  if (sku && ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'].includes(normalizedPlatform) && typeof platformOwnerName === 'function') {
-    const marketplaceOwner = canonicalOwnerName(platformOwnerName(sku, normalizedPlatform) || '');
-    if (marketplaceOwner) return marketplaceOwner;
-  }
-  return canonicalOwnerName(fallback || '') || ownerName(sku) || '';
-}
-
 function ownerOptions() {
   const pool = new Set();
   const addOwner = (value) => {
@@ -1061,13 +1052,6 @@ function normalizeTask(task, sourceHint = 'manual') {
   const createdAt = task?.createdAt || task?.created_at || new Date().toISOString();
   const updatedAt = task?.updatedAt || task?.updated_at || createdAt;
   const parsedReason = parseTaskReasonMeta(task?.reason || '');
-  const source = task?.source || sourceHint;
-  const platform = detectTaskPlatform(task, sku);
-  const currentMatrixOwner = taskPlatformOwnerName(sku, platform, ownerName(sku));
-  const explicitOwner = canonicalOwnerName(task?.owner || task?.ownerName || '');
-  const resolvedOwner = source === 'auto'
-    ? (currentMatrixOwner || explicitOwner)
-    : (explicitOwner || currentMatrixOwner);
   const coOwner = canonicalOwnerName(
     task?.coOwner
     || task?.co_owner
@@ -1077,25 +1061,20 @@ function normalizeTask(task, sourceHint = 'manual') {
     || parsedReason.coOwner
     || ''
   );
-  const due = task?.due || task?.deadline || task?.endDate || task?.end_date || task?.dateTo || task?.date_to || plusDays(type === 'assignment' ? 1 : 3);
-  const startDate = task?.startDate || task?.start_date || task?.dateFrom || task?.date_from || task?.fromDate || task?.from_date || task?.periodStart || task?.period_start || task?.date || due;
-  const endDate = task?.endDate || task?.end_date || task?.dateTo || task?.date_to || task?.toDate || task?.to_date || task?.periodEnd || task?.period_end || task?.finishDate || task?.finish_date || task?.deadline || due || startDate;
   return {
     id: task?.id || stableId(sourceHint === 'auto' ? 'auto' : 'task', `${task?.articleKey || ''}|${title}|${task?.due || ''}|${createdAt}|${sourceHint}`),
-    source,
+    source: task?.source || sourceHint,
     articleKey: task?.articleKey || '',
     title,
     nextAction: task?.nextAction || '',
     reason: parsedReason.reason,
-    owner: resolvedOwner,
+    owner: canonicalOwnerName(task?.owner || ownerName(sku) || ''),
     coOwner,
-    due,
-    startDate,
-    endDate: endDate && endDate >= startDate ? endDate : startDate,
+    due: task?.due || plusDays(type === 'assignment' ? 1 : 3),
     status: mapTaskStatus(task?.status),
     type,
     priority,
-    platform,
+    platform: detectTaskPlatform(task, sku),
     createdAt,
     updatedAt,
     entityLabel: task?.entityLabel || sku?.name || title,
@@ -1103,16 +1082,15 @@ function normalizeTask(task, sourceHint = 'manual') {
   };
 }
 
-function isNonPersistentTaskSource(source, task = {}) {
+function isNonPersistentTaskSource(source) {
   const normalized = String(source || '').trim().toLowerCase();
-  if (normalized === 'auto' && String(task?.autoCode || '').trim().toLowerCase() === 'oos_control') return false;
   return normalized === 'auto' || normalized === 'seed';
 }
 
 function normalizeStorageTasks(tasks, sourceHint = 'manual') {
   return (tasks || [])
     .map((task) => normalizeTask(task, task?.source || sourceHint))
-    .filter((task) => !isNonPersistentTaskSource(task?.source, task));
+    .filter((task) => !isNonPersistentTaskSource(task?.source));
 }
 
 function isTaskActive(task) {
@@ -1424,13 +1402,9 @@ function buildLeaderboardAutoTask({
 }
 
 const AUTO_SIGNAL_RULES = {
-  stockDays: 5,
+  stockDays: 10,
   priceDropPct: 0.15,
-  ordersDropPct: 0.20,
   revenueDropPct: 0.20,
-  trafficDropPct: 0.20,
-  funnelDeviationPct: 0.20,
-  warehouseLocalizationPct: 0.20,
   aovDropPct: 0.20,
   returnsGrowthPct: 0.20,
   conversionDropPct: 0.10,
@@ -1438,55 +1412,25 @@ const AUTO_SIGNAL_RULES = {
   minRecentOrders: 10,
   minPriceRecentOrders: 80,
   minBaseOrders: 50,
-  minOrdersBaseDay: 8,
-  minOrdersLossDay: 5,
   minBaseRevenueDay: 30000,
   minRevenueLossDay: 30000,
-  minBaseTrafficViews: 800,
-  minTrafficLossDay: 250,
-  minTrafficBaseOrders: 10,
   minReturnsCurrent: 20,
   minReturnsBaseline: 10,
   minReturnsDelta: 8,
   minKzClicks: 700,
   minKzRevenue: 50000,
   minKzSpend: 30000,
-  minFunnelRevenue: 100000,
-  minFunnelRevenueDelta: 30000,
-  minFunnelOrders: 80,
-  minWarehouseShipped: 200,
-  minWarehouseAccepted: 500,
-  totalLimit: 12,
+  totalLimit: 28,
   launchLimit: 5,
-  escalationLimit: 4,
-  escalateAfterDays: 3,
   familyLimits: {
-    stock: 5,
-    warehouse: 3,
-    funnel: 3,
-    price: 3,
-    orders: 4,
-    sales: 3,
-    traffic: 4,
-    kz: 3,
-    aov: 1,
-    returns: 1
+    stock: 10,
+    price: 4,
+    sales: 6,
+    kz: 6,
+    aov: 2,
+    returns: 3
   }
 };
-
-const ROP_AUTO_SIGNAL_CONTROL_CODE = 'rop_auto_signal_control';
-const MANAGED_AUTO_SIGNAL_CODES = new Set([
-  'stock_quality_v2',
-  'price_drop_v2',
-  'orders_drop_v2',
-  'sales_drop_v2',
-  'funnel_swing_v1',
-  'warehouse_localization_drop_v1',
-  'traffic_drop_v2',
-  'aov_drop_v2',
-  'returns_spike_v2',
-  'kz_quality_v2'
-]);
 
 function autoSignalText(value = '') {
   return String(value || '').trim().toLowerCase().replaceAll('ё', 'е');
@@ -1516,117 +1460,6 @@ function autoSignalPlatformLabel(platform = '') {
   const key = normalizeTaskPlatform(platform || 'all');
   const meta = controlWorkstreamMeta(key === 'all' ? 'cross' : key);
   return meta?.chip || platform || 'MP';
-}
-
-function autoSignalOwner(sku, platform = '', fallback = '') {
-  const normalizedPlatform = normalizeTaskPlatform(platform || '');
-  if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'].includes(normalizedPlatform)) {
-    return taskPlatformOwnerName(sku, normalizedPlatform, fallback);
-  }
-  return canonicalOwnerName(fallback || '') || ownerName(sku) || '';
-}
-
-function promoHammerEvents() {
-  const events = Array.isArray(state.storage?.promoEvents) ? state.storage.promoEvents : [];
-  const deleted = new Set((Array.isArray(state.storage?.promoEventDeletedIds) ? state.storage.promoEventDeletedIds : [])
-    .map((item) => String(item?.id || '').trim())
-    .filter(Boolean));
-  return events
-    .map((event) => {
-      const id = String(event?.id || '').trim();
-      const startDate = String(event?.startDate || event?.start_date || event?.date || '').slice(0, 10);
-      const rawEnd = String(event?.endDate || event?.end_date || startDate || '').slice(0, 10);
-      const title = String(event?.title || event?.name || '').trim();
-      const skus = Array.isArray(event?.skus)
-        ? event.skus.map((sku) => String(sku || '').trim()).filter(Boolean)
-        : String(event?.skuText || event?.skusText || event?.sku || '').split(/\r?\n|[,;]/).map((sku) => sku.trim()).filter(Boolean);
-      return {
-        id,
-        title,
-        platform: normalizeTaskPlatform(event?.platform || event?.marketplace || 'cross') || 'cross',
-        startDate,
-        endDate: rawEnd && rawEnd >= startDate ? rawEnd : startDate,
-        skus,
-        comment: String(event?.comment || event?.note || '').trim(),
-        owner: String(event?.owner || '').trim()
-      };
-    })
-    .filter((event) => event.id && event.title && !deleted.has(event.id));
-}
-
-function promoHammerText(event = {}) {
-  return String([event.title, event.comment].filter(Boolean).join(' ')).toLowerCase();
-}
-
-function isPromoHammerEvent(event = {}) {
-  return /хамм?ер|hammer/.test(promoHammerText(event));
-}
-
-function daysFromToday(dateKey = '') {
-  const target = String(dateKey || '').trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(target)) return 0;
-  const targetDate = new Date(`${target}T12:00:00`);
-  const todayDate = new Date(`${plusDays(0)}T12:00:00`);
-  if (Number.isNaN(targetDate.getTime())) return 0;
-  return Math.round((targetDate.getTime() - todayDate.getTime()) / 86400000);
-}
-
-function activePromoHammerTaskMarkers() {
-  const tasks = Array.isArray(state.storage?.tasks) ? state.storage.tasks : [];
-  return new Set(tasks
-    .filter(isTaskActive)
-    .filter((task) => String(task?.autoCode || '').trim().toLowerCase() === 'promo_hammer')
-    .map((task) => String(task?.reason || '').match(/\[\[promoEvent:([^\]]+)\]\]/)?.[1] || '')
-    .filter(Boolean));
-}
-
-function buildPromoHammerAutoTasks() {
-  const today = plusDays(0);
-  const minDate = shiftDateKey(today, -3);
-  const maxDate = shiftDateKey(today, 45);
-  const activeMarkers = activePromoHammerTaskMarkers();
-  return promoHammerEvents().map((event) => {
-    if (!isPromoHammerEvent(event)) return null;
-    if (!event.startDate || event.endDate < minDate || event.startDate > maxDate) return null;
-    if (activeMarkers.has(event.id)) return null;
-    const firstSkuKey = event.skus[0] || '';
-    const firstSku = firstSkuKey ? getSku(firstSkuKey) : null;
-    const platformLabel = autoSignalPlatformLabel(event.platform);
-    const daysUntilStart = daysFromToday(event.startDate);
-    const due = daysUntilStart > 1 ? shiftDateKey(event.startDate, -1) : today;
-    const period = event.endDate && event.endDate !== event.startDate ? `${event.startDate} - ${event.endDate}` : event.startDate;
-    const visibleSkus = event.skus.slice(0, 60);
-    const hiddenSkus = Math.max(0, event.skus.length - visibleSkus.length);
-    const skuSummary = event.skus.length
-      ? `SKU (${event.skus.length}): ${visibleSkus.join(', ')}${hiddenSkus ? `; еще ${hiddenSkus}` : ''}`
-      : 'SKU не выбраны';
-    const urgency = daysUntilStart <= 0 ? 'critical' : daysUntilStart <= 2 ? 'high' : 'medium';
-    return normalizeTask({
-      id: stableId('auto-promo-hammer', `${event.id}|${event.startDate}|${event.title}`),
-      source: 'auto',
-      autoCode: 'promo_hammer',
-      articleKey: firstSkuKey,
-      entityLabel: event.title,
-      title: `Хаммер: подготовить промо ${event.title}`,
-      nextAction: `Проверить ${platformLabel}: цену/скидку, остатки по SKU, РК и креативы до старта Хаммера.`,
-      reason: [
-        `[[promoEvent:${event.id}]]`,
-        `Промо из календаря: ${event.title}`,
-        `Период: ${period}`,
-        `Площадка: ${platformLabel}`,
-        skuSummary,
-        event.comment ? `Комментарий: ${event.comment}` : '',
-        'Автозадача сработала по слову Хаммер в календарном событии.'
-      ].filter(Boolean).join('\n'),
-      owner: autoSignalOwner(firstSku, event.platform, event.owner),
-      due,
-      startDate: due,
-      endDate: event.startDate,
-      priority: urgency,
-      type: 'traffic',
-      platform: event.platform
-    }, 'auto');
-  }).filter(Boolean);
 }
 
 function autoSignalMetric(item, key) {
@@ -1758,43 +1591,6 @@ function autoSignalActiveStockKeys() {
     .map((row) => autoSignalIssueKey(row.platform, row.articleKey || row.article)));
 }
 
-function autoSignalWbFunnelPayload() {
-  const payload = state.wbSalesFunnel || state.wb_sales_funnel_report || {};
-  return payload && typeof payload === 'object' ? payload : {};
-}
-
-function autoSignalWbFunnelItems() {
-  const payload = autoSignalWbFunnelPayload();
-  return Array.isArray(payload.items) ? payload.items : [];
-}
-
-function autoSignalFunnelArticleMap() {
-  const map = new Map();
-  autoSignalWbFunnelItems().forEach((row) => {
-    const articleKey = autoSignalArticleKey(row).toLowerCase();
-    if (articleKey && !map.has(articleKey)) map.set(articleKey, row);
-  });
-  return map;
-}
-
-function autoSignalFunnelDailyRows(row = {}) {
-  return (Array.isArray(row.daily) ? row.daily : [])
-    .filter((point) => point?.date)
-    .map((point) => ({
-      date: String(point.date || '').slice(0, 10),
-      ordersUnits: autoSignalFinite(point.ordersUnits ?? point.orders ?? point.orderCount),
-      revenue: autoSignalFinite(point.ordersRevenue ?? point.revenue ?? point.sales ?? point.gmv),
-      margin: autoSignalFinite(point.estimatedMargin ?? point.margin),
-      avgPrice: autoSignalFinite(point.avgPrice ?? point.price)
-    }))
-    .sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')));
-}
-
-function autoSignalWarehouseRows() {
-  const payload = state.warehouseStockOverlay || state.warehouse_stock_overlay || {};
-  return Array.isArray(payload.rows) ? payload.rows : [];
-}
-
 function buildStockAutoSignalCandidates() {
   const rows = Array.isArray(state.oosControl?.rows) ? state.oosControl.rows : [];
   return rows.map((row) => {
@@ -1833,162 +1629,13 @@ function buildStockAutoSignalCandidates() {
           places ? `кластеры: ${places}` : '',
           `риск выручки ${autoSignalMoney(row.revenueAtRiskDay || 0)}/день`
         ].filter(Boolean).join(' · '),
-        owner: autoSignalOwner(sku, platform),
+        owner: row.owner || ownerName(sku) || '',
         due: autoSignalTaskDue(isOos ? 'critical' : 'high'),
         status: 'new',
         type: 'supply',
         priority: isOos ? 'critical' : 'high',
         platform,
         entityLabel: row.name || sku?.name || row.articleKey || row.article
-      }
-    };
-  }).filter(Boolean);
-}
-
-function buildWarehouseLocalizationAutoSignalCandidates() {
-  const rows = autoSignalWarehouseRows();
-  if (!rows.length) return [];
-  const funnelMap = autoSignalFunnelArticleMap();
-  return rows.map((row) => {
-    const articleKey = autoSignalArticleKey(row);
-    const sku = getSku(articleKey);
-    if (!articleKey || !autoSignalSkuAllowed(sku)) return null;
-
-    const stockWarehouse = Math.max(0, autoSignalFinite(row.stockWarehouse ?? row.warehouseStock ?? row.stock));
-    const shippedWb = Math.max(0, autoSignalFinite(row.shippedWB ?? row.wbShipped ?? row.shipped_wb));
-    const shippedOzon = Math.max(0, autoSignalFinite(row.shippedOzon ?? row.ozonShipped ?? row.shipped_ozon));
-    const shippedTotal = shippedWb + shippedOzon;
-    const accepted = Math.max(0, autoSignalFinite(row.accepted ?? row.acceptedTotal ?? row.acceptance));
-    const funnel = funnelMap.get(articleKey.toLowerCase()) || {};
-    const funnelOrders = Math.max(0, autoSignalFinite(funnel.ordersUnits));
-    const funnelRevenue = Math.max(0, autoSignalFinite(funnel.ordersRevenue));
-    const hasMeaningfulDemand = shippedTotal >= AUTO_SIGNAL_RULES.minWarehouseShipped
-      || accepted >= AUTO_SIGNAL_RULES.minWarehouseAccepted
-      || funnelOrders >= AUTO_SIGNAL_RULES.minFunnelOrders
-      || funnelRevenue >= AUTO_SIGNAL_RULES.minFunnelRevenue;
-    if (!hasMeaningfulDemand) return null;
-
-    const pressureBase = Math.max(shippedTotal, accepted * 0.1, funnelOrders);
-    if (pressureBase <= 0) return null;
-    const warehouseRatio = stockWarehouse / pressureBase;
-    if (warehouseRatio > AUTO_SIGNAL_RULES.warehouseLocalizationPct && stockWarehouse > 0) return null;
-
-    const platform = shippedWb > 0 && shippedOzon > 0 ? 'wb+ozon' : shippedWb > 0 ? 'wb' : shippedOzon > 0 ? 'ozon' : 'cross';
-    const platformLabel = platform === 'wb+ozon' ? 'WB+Ozon' : autoSignalPlatformLabel(platform);
-    const priority = stockWarehouse <= 0 || warehouseRatio <= 0.05 ? 'critical' : 'high';
-    const ratioLabel = autoSignalPct(warehouseRatio, 1);
-    return {
-      family: 'warehouse',
-      dedupeKey: articleKey,
-      articleKey,
-      taskType: 'supply',
-      platform,
-      priority,
-      score: 805 + (1 - Math.min(1, warehouseRatio)) * 120 + shippedTotal / 250 + funnelRevenue / 100000,
-      task: {
-        id: stableId('auto-warehouse-localization-v1', articleKey),
-        source: 'auto',
-        autoCode: 'warehouse_localization_drop_v1',
-        articleKey,
-        title: `${platformLabel}: складская локализация SKU просела`,
-        nextAction: 'Проверить локализацию SKU: остаток на складе, отгрузки WB/Ozon, ближайшую поставку и необходимость перераспределения. В задаче оставить одно действие: довезти, перераспределить или подтвердить, что SKU не трогаем.',
-        reason: [
-          `склад ${autoSignalNum(stockWarehouse, 0)} шт. при отгрузках ${autoSignalNum(shippedTotal, 0)} шт.`,
-          accepted ? `принято/в работе ${autoSignalNum(accepted, 0)} шт.` : '',
-          funnelOrders ? `WB-заказы за окно ${autoSignalNum(funnelOrders, 0)} шт.` : '',
-          `отношение склад/давление ${ratioLabel}, порог ${autoSignalPct(AUTO_SIGNAL_RULES.warehouseLocalizationPct, 0)}`,
-          'антиспам: в работу попадают только top SKU по силе сигнала'
-        ].filter(Boolean).join(' · '),
-        owner: autoSignalOwner(sku, platform),
-        due: autoSignalTaskDue(priority),
-        status: 'new',
-        type: 'supply',
-        priority,
-        platform,
-        entityLabel: sku?.name || articleKey
-      }
-    };
-  }).filter(Boolean);
-}
-
-function buildWbFunnelSwingAutoSignalCandidates() {
-  const items = autoSignalWbFunnelItems();
-  if (!items.length) return [];
-  const activeStockKeys = autoSignalActiveStockKeys();
-  return items.map((row) => {
-    const articleKey = autoSignalArticleKey(row);
-    const sku = getSku(articleKey);
-    if (!articleKey || !autoSignalSkuAllowed(sku)) return null;
-    if (activeStockKeys.has(autoSignalIssueKey('wb', articleKey))) return null;
-
-    const daily = autoSignalFunnelDailyRows(row);
-    const recent = daily.slice(-3);
-    const base = daily.slice(0, Math.max(0, daily.length - 3));
-    const recentDays = Math.max(1, recent.length);
-    const baseDays = Math.max(1, base.length);
-    const recentRevenueDay = autoSignalSum(recent, 'revenue') / recentDays;
-    const baseRevenueDay = autoSignalSum(base, 'revenue') / baseDays;
-    const recentOrdersDay = autoSignalSum(recent, 'ordersUnits') / recentDays;
-    const baseOrdersDay = autoSignalSum(base, 'ordersUnits') / baseDays;
-    const revenueSwing = baseRevenueDay > 0 ? (recentRevenueDay - baseRevenueDay) / baseRevenueDay : 0;
-    const ordersSwing = baseOrdersDay > 0 ? (recentOrdersDay - baseOrdersDay) / baseOrdersDay : 0;
-    const currentRevenue = autoSignalFinite(row.ordersRevenue);
-    const previousRevenue = autoSignalFinite(row.previousOrdersRevenue);
-    const periodSwing = previousRevenue > 0 ? (currentRevenue - previousRevenue) / previousRevenue : 0;
-
-    const dailyRevenueDelta = recentRevenueDay - baseRevenueDay;
-    const dailyOrdersDelta = recentOrdersDay - baseOrdersDay;
-    const periodRevenueDelta = currentRevenue - previousRevenue;
-    const hasDailySignal = base.length >= 3
-      && Math.abs(revenueSwing) >= AUTO_SIGNAL_RULES.funnelDeviationPct
-      && Math.abs(dailyRevenueDelta) >= AUTO_SIGNAL_RULES.minFunnelRevenueDelta
-      && (baseRevenueDay >= AUTO_SIGNAL_RULES.minBaseRevenueDay || baseOrdersDay >= AUTO_SIGNAL_RULES.minOrdersBaseDay);
-    const hasOrdersSignal = base.length >= 3
-      && Math.abs(ordersSwing) >= AUTO_SIGNAL_RULES.funnelDeviationPct
-      && Math.abs(dailyOrdersDelta) >= AUTO_SIGNAL_RULES.minOrdersLossDay
-      && baseOrdersDay >= AUTO_SIGNAL_RULES.minOrdersBaseDay;
-    const hasPeriodSignal = previousRevenue >= AUTO_SIGNAL_RULES.minFunnelRevenue
-      && Math.abs(periodSwing) >= AUTO_SIGNAL_RULES.funnelDeviationPct
-      && Math.abs(periodRevenueDelta) >= AUTO_SIGNAL_RULES.minFunnelRevenueDelta;
-    const volumeGate = currentRevenue >= AUTO_SIGNAL_RULES.minFunnelRevenue
-      || previousRevenue >= AUTO_SIGNAL_RULES.minFunnelRevenue
-      || autoSignalFinite(row.ordersUnits) >= AUTO_SIGNAL_RULES.minFunnelOrders;
-    if (!volumeGate || (!hasDailySignal && !hasOrdersSignal && !hasPeriodSignal)) return null;
-
-    const pickedSwing = Math.abs(revenueSwing) >= Math.abs(ordersSwing) ? revenueSwing : ordersSwing;
-    const strongestSwing = Math.abs(periodSwing) > Math.abs(pickedSwing) ? periodSwing : pickedSwing;
-    const direction = strongestSwing < 0 ? 'просадка' : 'всплеск';
-    const priority = Math.abs(strongestSwing) >= 0.35 || (strongestSwing < 0 && Math.abs(dailyRevenueDelta) >= 100000) ? 'critical' : 'high';
-    const swingLabel = `${strongestSwing > 0 ? '+' : ''}${autoSignalPct(strongestSwing, 0)}`;
-    return {
-      family: 'funnel',
-      dedupeKey: articleKey,
-      articleKey,
-      taskType: 'traffic',
-      platform: 'wb',
-      priority,
-      score: 790 + Math.abs(strongestSwing) * 140 + Math.abs(dailyRevenueDelta) / 8000 + Math.abs(periodRevenueDelta) / 30000,
-      task: {
-        id: stableId('auto-funnel-swing-v1', `wb|${articleKey}`),
-        source: 'auto',
-        autoCode: 'funnel_swing_v1',
-        articleKey,
-        title: `WB: ${direction} воронки SKU ${swingLabel}`,
-        nextAction: 'Проверить SKU по воронке: заказы, оборот, цена, карточка, реклама и позиция. В задаче оставить одну причину и одно действие, чтобы сигнал не превращался в общий список проверок.',
-        reason: [
-          `последние 3 дня: ${autoSignalMoney(recentRevenueDay)}/день и ${autoSignalNum(recentOrdersDay, 1)} заказов/день`,
-          `база: ${autoSignalMoney(baseRevenueDay)}/день и ${autoSignalNum(baseOrdersDay, 1)} заказов/день`,
-          `период к периоду: ${periodSwing ? `${periodSwing > 0 ? '+' : ''}${autoSignalPct(periodSwing, 0)}` : '—'}`,
-          `порог сигнала ${autoSignalPct(AUTO_SIGNAL_RULES.funnelDeviationPct, 0)}`,
-          'OOS не объясняет сигнал, поэтому задача идет по воронке'
-        ].filter(Boolean).join(' · '),
-        owner: autoSignalOwner(sku, 'wb', row.owner),
-        due: autoSignalTaskDue(priority),
-        status: 'new',
-        type: 'traffic',
-        priority,
-        platform: 'wb',
-        entityLabel: row.name || sku?.name || articleKey
       }
     };
   }).filter(Boolean);
@@ -2015,7 +1662,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
       const priceDropLabel = autoSignalPct(priceDrop);
       candidates.push({
         family: 'price',
-        dedupeKey: articleKey,
+        dedupeKey: `${articleKey}|price|${platform}`,
         articleKey,
         taskType: 'price_margin',
         platform,
@@ -2029,7 +1676,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
           title: `${platformLabel}: цена -${priceDropLabel} к среднему уровню`,
           nextAction: 'Проверить цену как аварийный сигнал: это промо, ошибка цены или сбой правил. В задаче зафиксировать решение: оставить промо до даты, вернуть цену или согласовать исключение.',
           reason: `${platformLabel}: текущая цена ${autoSignalMoney(currentPrice)}, средняя за 7 предыдущих дней ${autoSignalMoney(previousPrice)}, отклонение ${priceDropLabel}. Проверка прошла фильтр объёма: ${autoSignalNum(recentOrders7, 0)} заказов за 7 дней.`,
-          owner: autoSignalOwner(sku, platform),
+          owner: ownerName(sku),
           due: autoSignalTaskDue(priority),
           status: 'new',
           type: 'price_margin',
@@ -2048,49 +1695,9 @@ function buildPriceAndSalesAutoSignalCandidates() {
     const baseRevenueDay = autoSignalSum(base, 'revenue') / baseDays;
     const recentOrders = autoSignalSum(recent, 'ordersUnits');
     const baseOrders = autoSignalSum(base, 'ordersUnits');
-    const recentOrdersDay = recentOrders / recentDays;
-    const baseOrdersDay = baseOrders / baseDays;
-    const ordersDrop = baseOrdersDay > 0 ? (baseOrdersDay - recentOrdersDay) / baseOrdersDay : 0;
-    const ordersLossDay = baseOrdersDay - recentOrdersDay;
     const revenueDrop = baseRevenueDay > 0 ? (baseRevenueDay - recentRevenueDay) / baseRevenueDay : 0;
     const revenueLossDay = baseRevenueDay - recentRevenueDay;
     const stockAlreadyExplainsSales = activeStockKeys.has(autoSignalIssueKey(platform, articleKey));
-    if (
-      !stockAlreadyExplainsSales
-      && base.length >= 5
-      && baseOrders >= AUTO_SIGNAL_RULES.minBaseOrders
-      && baseOrdersDay >= AUTO_SIGNAL_RULES.minOrdersBaseDay
-      && ordersDrop >= AUTO_SIGNAL_RULES.ordersDropPct
-      && ordersLossDay >= AUTO_SIGNAL_RULES.minOrdersLossDay
-    ) {
-      const priority = ordersDrop >= 0.50 || recentOrdersDay <= 1 ? 'critical' : 'high';
-      const ordersDropLabel = autoSignalPct(ordersDrop);
-      candidates.push({
-        family: 'orders',
-        dedupeKey: articleKey,
-        articleKey,
-        taskType: 'traffic',
-        platform,
-        priority,
-        score: 780 + ordersDrop * 130 + ordersLossDay * 10 + baseRevenueDay / 10000,
-        task: {
-          id: stableId('auto-orders-drop-v2', `${platform}|${articleKey}`),
-          source: 'auto',
-          autoCode: 'orders_drop_v2',
-          articleKey,
-          title: `${platformLabel}: заказы -${ordersDropLabel}, срочно найти причину`,
-          nextAction: 'Проверить цепочку SKU: наличие, цена, трафик/реклама, карточка и поисковая выдача. В задаче оставить один выбранный рычаг, срок проверки и ожидаемую динамику заказов.',
-          reason: `${platformLabel}: последние 3 дня ${autoSignalNum(recentOrdersDay, 1)} заказов/день против базы ${autoSignalNum(baseOrdersDay, 1)}; падение ${ordersDropLabel}, минус ${autoSignalNum(ordersLossDay, 1)} заказов/день. OOS по площадке не найден, поэтому это отдельный сигнал по спросу, а не дубль остатков.`,
-          owner: autoSignalOwner(sku, platform),
-          due: autoSignalTaskDue(priority),
-          status: 'new',
-          type: 'traffic',
-          priority,
-          platform,
-          entityLabel: sku?.name || articleKey
-        }
-      });
-    }
     if (
       !stockAlreadyExplainsSales
       && base.length >= 5
@@ -2104,7 +1711,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
       const revenueDropLabel = autoSignalPct(revenueDrop);
       candidates.push({
         family: 'sales',
-        dedupeKey: articleKey,
+        dedupeKey: `${articleKey}|sales|${platform}`,
         articleKey,
         taskType: 'traffic',
         platform,
@@ -2118,7 +1725,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
           title: `${platformLabel}: оборот -${revenueDropLabel}, потеря ${autoSignalMoney(revenueLossDay)}/день`,
           nextAction: 'Разобрать корневую причину за 15 минут: остаток, цена, реклама, карточка. В задаче оставить один выбранный рычаг и срок повторной проверки.',
           reason: `${platformLabel}: 3-дневный оборот ${autoSignalMoney(recentRevenueDay)}/день против базы ${autoSignalMoney(baseRevenueDay)}/день; падение ${revenueDropLabel}, минус ${autoSignalMoney(revenueLossDay)}/день. OOS по этой площадке не найден, поэтому это отдельный сигнал, не дубль остатков.`,
-          owner: autoSignalOwner(sku, platform),
+          owner: ownerName(sku),
           due: autoSignalTaskDue(priority),
           status: 'new',
           type: 'traffic',
@@ -2141,7 +1748,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
       const priority = aovDrop >= 0.30 ? 'high' : 'medium';
       candidates.push({
         family: 'aov',
-        dedupeKey: articleKey,
+        dedupeKey: `${articleKey}|aov|${platform}`,
         articleKey,
         taskType: 'price_margin',
         platform,
@@ -2155,7 +1762,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
           title: `${platformLabel}: средний чек заметно упал`,
           nextAction: 'Проверить цену, скидку, наборы и структуру заказов. Если это промо, зафиксировать ожидаемый эффект; если нет — вернуть экономику.',
           reason: `${platformLabel}: средний чек ${autoSignalMoney(recentAov)} против ${autoSignalMoney(baseAov)}, падение ${autoSignalPct(aovDrop)}.`,
-          owner: autoSignalOwner(sku, platform),
+          owner: ownerName(sku),
           due: autoSignalTaskDue(priority),
           status: 'new',
           type: 'price_margin',
@@ -2166,108 +1773,6 @@ function buildPriceAndSalesAutoSignalCandidates() {
       });
     }
   });
-  return candidates;
-}
-
-function buildAdsTrafficAutoSignalCandidates() {
-  const itemRows = Array.isArray(state.adsSummary?.itemSeries) ? state.adsSummary.itemSeries : [];
-  if (!itemRows.length) return [];
-  const activeStockKeys = autoSignalActiveStockKeys();
-  const grouped = new Map();
-
-  itemRows.forEach((row) => {
-    const articleKey = String(row?.articleKey || row?.article || row?.sku || '').trim();
-    const date = String(row?.date || row?.day || '').slice(0, 10);
-    if (!articleKey || !date) return;
-    const platform = normalizeTaskPlatform(row?.platformKey || row?.platform || row?.marketplace || 'all', row?.campaignName || row?.channel || '');
-    if (!platform || platform === 'all' || platform === 'cross') return;
-    const key = `${platform}|${articleKey.toLowerCase()}`;
-    if (!grouped.has(key)) grouped.set(key, { platform, articleKey, rows: [] });
-    grouped.get(key).rows.push(row);
-  });
-
-  const candidates = [];
-  grouped.forEach((group) => {
-    const sku = getSku(group.articleKey);
-    if (!autoSignalSkuAllowed(sku)) return;
-    if (activeStockKeys.has(autoSignalIssueKey(group.platform, group.articleKey))) return;
-
-    const byDate = new Map();
-    group.rows.forEach((row) => {
-      const date = String(row?.date || row?.day || '').slice(0, 10);
-      if (!date) return;
-      if (!byDate.has(date)) byDate.set(date, { date, views: 0, clicks: 0, orders: 0, revenue: 0, spend: 0 });
-      const item = byDate.get(date);
-      item.views += autoSignalFinite(row?.views || row?.impressions || row?.reach);
-      item.clicks += autoSignalFinite(row?.clicks);
-      item.orders += autoSignalFinite(row?.orders || row?.ordersUnits);
-      item.revenue += autoSignalFinite(row?.revenue || row?.sales);
-      item.spend += autoSignalFinite(row?.spend || row?.cost);
-    });
-
-    const daily = [...byDate.values()].sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')));
-    if (daily.length < 6) return;
-    const recent = daily.slice(-3);
-    const base = daily.slice(Math.max(0, daily.length - 10), daily.length - 3);
-    if (base.length < 5) return;
-
-    const recentDays = Math.max(1, recent.length);
-    const baseDays = Math.max(1, base.length);
-    const recentViewsDay = autoSignalSum(recent, 'views') / recentDays;
-    const baseViewsDay = autoSignalSum(base, 'views') / baseDays;
-    const recentClicksDay = autoSignalSum(recent, 'clicks') / recentDays;
-    const baseClicksDay = autoSignalSum(base, 'clicks') / baseDays;
-    const baseOrders = autoSignalSum(base, 'orders');
-    const recentOrders = autoSignalSum(recent, 'orders');
-    const baseRevenueDay = autoSignalSum(base, 'revenue') / baseDays;
-    const recentRevenueDay = autoSignalSum(recent, 'revenue') / recentDays;
-    const baseSpend = autoSignalSum(base, 'spend');
-    const trafficDrop = baseViewsDay > 0 ? (baseViewsDay - recentViewsDay) / baseViewsDay : 0;
-    const trafficLossDay = baseViewsDay - recentViewsDay;
-    const clickDrop = baseClicksDay > 0 ? (baseClicksDay - recentClicksDay) / baseClicksDay : 0;
-    const businessGate = baseOrders >= AUTO_SIGNAL_RULES.minTrafficBaseOrders
-      || baseRevenueDay >= AUTO_SIGNAL_RULES.minBaseRevenueDay
-      || baseSpend >= AUTO_SIGNAL_RULES.minKzSpend;
-
-    if (
-      !businessGate
-      || baseViewsDay < AUTO_SIGNAL_RULES.minBaseTrafficViews
-      || trafficDrop < AUTO_SIGNAL_RULES.trafficDropPct
-      || trafficLossDay < AUTO_SIGNAL_RULES.minTrafficLossDay
-    ) {
-      return;
-    }
-
-    const platformLabel = autoSignalPlatformLabel(group.platform);
-    const trafficDropLabel = autoSignalPct(trafficDrop);
-    const priority = trafficDrop >= 0.50 || clickDrop >= 0.50 ? 'critical' : 'high';
-    candidates.push({
-      family: 'traffic',
-      dedupeKey: group.articleKey,
-      articleKey: group.articleKey,
-      taskType: 'traffic',
-      platform: group.platform,
-      priority,
-      score: 740 + trafficDrop * 120 + Math.max(0, clickDrop) * 60 + trafficLossDay / 200 + baseRevenueDay / 20000,
-      task: {
-        id: stableId('auto-traffic-drop-v2', `${group.platform}|${group.articleKey}`),
-        source: 'auto',
-        autoCode: 'traffic_drop_v2',
-        articleKey: group.articleKey,
-        title: `${platformLabel}: трафик -${trafficDropLabel}, охваты/клики просели`,
-        nextAction: 'Проверить рекламный и органический трафик SKU: показы, клики, ставки, бюджет, карточку и позиции в выдаче. Оставить конкретное действие и контрольную дату, когда ждём восстановление трафика.',
-        reason: `${platformLabel}: показы ${autoSignalNum(recentViewsDay, 0)}/день против базы ${autoSignalNum(baseViewsDay, 0)}/день; клики ${autoSignalNum(recentClicksDay, 0)}/день против ${autoSignalNum(baseClicksDay, 0)}/день; заказы ${autoSignalNum(recentOrders / recentDays, 1)}/день против ${autoSignalNum(baseOrders / baseDays, 1)}. Падение трафика ${trafficDropLabel}, OOS по площадке не найден.`,
-        owner: autoSignalOwner(sku, group.platform),
-        due: autoSignalTaskDue(priority),
-        status: 'new',
-        type: 'traffic',
-        priority,
-        platform: group.platform,
-        entityLabel: sku?.name || group.articleKey
-      }
-    });
-  });
-
   return candidates;
 }
 
@@ -2302,7 +1807,7 @@ function buildReturnsAutoSignalCandidates() {
     const growthLabel = autoSignalPct(growth);
     return {
       family: 'returns',
-      dedupeKey: articleKey,
+      dedupeKey: `${articleKey}|returns|${platform}`,
       articleKey,
       taskType: 'returns',
       platform,
@@ -2322,7 +1827,7 @@ function buildReturnsAutoSignalCandidates() {
           topReason ? `топ-причина: ${topReason}` : '',
           state.autoSignalBaselines?.source ? `сравнение с ${state.autoSignalBaselines.source}` : ''
         ].filter(Boolean).join(' · '),
-        owner: autoSignalOwner(sku, platform),
+        owner: ownerName(sku),
         due: autoSignalTaskDue(priority),
         status: 'new',
         type: 'returns',
@@ -2420,7 +1925,7 @@ function buildKzAutoSignalCandidates(leaderboardPayload = {}) {
         : 'КЗ WB: проверить просадку оборота после КЗ';
     return {
       family: 'kz',
-      dedupeKey: articleKey,
+      dedupeKey: `${articleKey}|kz|wb`,
       articleKey,
       taskType: 'traffic',
       platform: 'wb',
@@ -2438,7 +1943,7 @@ function buildKzAutoSignalCandidates(leaderboardPayload = {}) {
         title,
         nextAction: 'Разобрать только WB/КЗ: найти РК или креатив, который тратит деньги без окупаемости. В задаче оставить одно действие: выключить/урезать, заменить креатив, поправить карточку или подтвердить промо-исключение.',
         reason: `${weekLabel || 'КЗ'}: ${reasons.slice(0, 3).join(' · ')}. Ozon не назначаем: КЗ ведем как WB-контур.`,
-        owner: autoSignalOwner(sku, 'wb'),
+        owner: ownerName(sku),
         due: autoSignalTaskDue(priority),
         status: 'new',
         type: 'traffic',
@@ -2460,7 +1965,7 @@ function selectAutoSignalCandidates(candidates = []) {
   );
   for (const candidate of sorted) {
     const family = candidate.family || 'general';
-    const limit = AUTO_SIGNAL_RULES.familyLimits[family] ?? 6;
+    const limit = AUTO_SIGNAL_RULES.familyLimits[family] || 6;
     const dedupeKey = candidate.dedupeKey || candidate.articleKey || candidate.task?.id;
     if (!dedupeKey || used.has(dedupeKey)) continue;
     if ((familyCounts[family] || 0) >= limit) continue;
@@ -2475,10 +1980,7 @@ function selectAutoSignalCandidates(candidates = []) {
 function buildQualityAutoSignalTasks(keys, leaderboardPayload = {}) {
   return selectAutoSignalCandidates([
     ...buildStockAutoSignalCandidates(),
-    ...buildWarehouseLocalizationAutoSignalCandidates(),
-    ...buildWbFunnelSwingAutoSignalCandidates(),
     ...buildPriceAndSalesAutoSignalCandidates(),
-    ...buildAdsTrafficAutoSignalCandidates(),
     ...buildReturnsAutoSignalCandidates(),
     ...buildKzAutoSignalCandidates(leaderboardPayload)
   ]).map((candidate) => {
@@ -2488,112 +1990,6 @@ function buildQualityAutoSignalTasks(keys, leaderboardPayload = {}) {
     if (!canRegisterAutoSignalTask(keys, task.articleKey || candidate.articleKey, taskType, signalKey)) return null;
     return normalizeTask(task, 'auto');
   }).filter(Boolean);
-}
-
-function autoSignalTaskLastTouchMs(task = {}) {
-  const stamps = [
-    task?.updatedAt,
-    task?.updated_at,
-    task?.createdAt,
-    task?.created_at
-  ]
-    .map((value) => Date.parse(value))
-    .filter((value) => Number.isFinite(value));
-  return stamps.length ? Math.max(...stamps) : Date.now();
-}
-
-function autoSignalTaskAgeDays(task = {}) {
-  return Math.max(0, (Date.now() - autoSignalTaskLastTouchMs(task)) / 86400000);
-}
-
-function isManagedAutoSignalTask(task = {}) {
-  const code = String(task?.autoCode || '').trim().toLowerCase();
-  if (code === ROP_AUTO_SIGNAL_CONTROL_CODE) return false;
-  if (MANAGED_AUTO_SIGNAL_CODES.has(code)) return true;
-  const id = String(task?.id || '').trim().toLowerCase();
-  return task?.source === 'auto'
-    && /^(auto-(stock|price-drop|orders-drop|sales-drop|traffic-drop|aov-drop|returns-spike|kz-quality)-v2|auto-(funnel-swing|warehouse-localization)-v1)/.test(id);
-}
-
-function isEscalatedStaleAutoSignalTask(task = {}) {
-  return isTaskActive(task)
-    && !isDeprecatedAutoSignalTask(task)
-    && isManagedAutoSignalTask(task)
-    && autoSignalTaskAgeDays(task) > AUTO_SIGNAL_RULES.escalateAfterDays;
-}
-
-function ropAutoSignalPlatform(task = {}) {
-  const sku = task?.articleKey ? getSku(task.articleKey) : null;
-  const key = controlWorkstreamKey(task, sku);
-  if (!key || key === 'all' || key === 'wb+ozon' || key === 'executive') return 'cross';
-  return key;
-}
-
-function ropAutoSignalOwner(platform = 'cross') {
-  const key = platform && platform !== 'all' ? platform : 'cross';
-  const meta = controlWorkstreamMeta(key);
-  const label = String(meta?.label || '').trim();
-  if (label.toLowerCase().startsWith('роп')) return label;
-  if (key === 'cross') return 'РОП';
-  return `РОП ${meta?.chip || meta?.label || key}`;
-}
-
-function buildRopEscalationAutoTasks() {
-  const stored = Array.isArray(state.storage?.tasks) ? state.storage.tasks : [];
-  const activeEscalationPlatforms = new Set(stored
-    .filter((task) => isTaskActive(task))
-    .filter((task) => String(task?.autoCode || '').trim().toLowerCase() === ROP_AUTO_SIGNAL_CONTROL_CODE)
-    .map((task) => ropAutoSignalPlatform(task)));
-  const groups = new Map();
-
-  stored.filter(isEscalatedStaleAutoSignalTask).forEach((task) => {
-    const platform = ropAutoSignalPlatform(task);
-    if (activeEscalationPlatforms.has(platform)) return;
-    if (!groups.has(platform)) groups.set(platform, { platform, tasks: [] });
-    groups.get(platform).tasks.push(task);
-  });
-
-  return [...groups.values()]
-    .filter((group) => group.tasks.length)
-    .sort((left, right) =>
-      right.tasks.length - left.tasks.length
-      || Math.max(...right.tasks.map(autoSignalTaskAgeDays)) - Math.max(...left.tasks.map(autoSignalTaskAgeDays))
-    )
-    .slice(0, AUTO_SIGNAL_RULES.escalationLimit)
-    .map((group) => {
-      const owner = ropAutoSignalOwner(group.platform);
-      const meta = controlWorkstreamMeta(group.platform);
-      const normalized = group.tasks
-        .slice()
-        .sort((left, right) => autoSignalTaskAgeDays(right) - autoSignalTaskAgeDays(left))
-        .map((task) => normalizeTask(task, task?.source || 'manual'));
-      const topTasks = normalized.slice(0, 5).map((task) => {
-        const age = autoSignalNum(autoSignalTaskAgeDays(task), 1);
-        return `${task.articleKey || task.entityLabel || 'SKU'}: ${task.title} (${task.owner || 'owner не указан'}, ${age} д.)`;
-      });
-      const moreText = normalized.length > topTasks.length ? `Ещё ${normalized.length - topTasks.length} задач в этом же контуре.` : '';
-      return normalizeTask({
-        id: stableId('auto-rop-control-v1', `${group.platform}|${normalized.map((task) => task.id).sort().join('|')}`),
-        source: 'auto',
-        autoCode: ROP_AUTO_SIGNAL_CONTROL_CODE,
-        articleKey: '',
-        title: `${owner}: личный контроль автосигналов >${AUTO_SIGNAL_RULES.escalateAfterDays} дней`,
-        nextAction: 'Лично проверить, почему SKU-задачи не выполнены: нет владельца, нет действия, нет динамики или заблокирован другой отдел. По итогу оставить одно решение по каждой задаче: закрыть, перезапустить с новым рычагом или эскалировать руководителю.',
-        reason: [
-          `Автосигналы висят больше ${AUTO_SIGNAL_RULES.escalateAfterDays} дней без свежего движения.`,
-          ...topTasks,
-          moreText,
-          'Старые автосигналы скрыты из активной очереди до контроля РОПа, чтобы не спамить команду дублями.'
-        ].filter(Boolean).join(' · '),
-        owner,
-        due: plusDays(1),
-        status: 'new',
-        type: 'general',
-        priority: 'critical',
-        platform: group.platform,
-        entityLabel: `${meta?.chip || owner}: ${normalized.length} автосигналов`
-      }, 'auto');
-    });
 }
 
 function buildAutoTasks() {
@@ -2612,8 +2008,6 @@ function buildAutoTasks() {
       .map((item) => [String(item.articleKey).trim().toLowerCase(), item])
   );
   tasks.push(...buildQualityAutoSignalTasks(keys, leaderboardFresh ? leaderboardPayload : { items: [] }));
-  tasks.push(...buildPromoHammerAutoTasks());
-  tasks.push(...buildRopEscalationAutoTasks());
   const legacyKzAutoTasksEnabled = false;
   const legacySkuFlagAutoTasksEnabled = false;
 
@@ -2807,12 +2201,11 @@ function buildAutoTasks() {
     if (/запущ|live|продаж|готово/.test(statusRaw)) return;
     const linkedSku = item?.articleKey ? getSku(item.articleKey) : null;
     if (linkedSku && !autoSignalSkuAllowed(linkedSku)) return;
-    const launchOwner = autoSignalOwner(linkedSku, 'product', item.owner);
     const dedupeKey = `${String(item?.articleKey || '').trim()}|${String(item?.name || '').trim().toLowerCase()}`;
     if (activeLaunchTaskKeys.has(dedupeKey)) return;
     activeLaunchTaskKeys.add(dedupeKey);
     const blockers = [
-      launchOwner ? '' : 'нет owner',
+      item.owner ? '' : 'нет owner',
       item.articleKey ? '' : 'нет SKU',
       item.presentationUrl ? '' : 'нет презентации'
     ].filter(Boolean);
@@ -2842,7 +2235,7 @@ function buildAutoTasks() {
         item.production || '',
         blockers.length ? `блокеры: ${blockers.join(', ')}` : 'критичных блокеров не найдено'
       ].filter(Boolean).join(' · '),
-      owner: launchOwner,
+      owner: item.owner || '',
       due,
       status: 'new',
       type: 'launch',
@@ -2864,10 +2257,7 @@ function buildAutoTasks() {
 }
 
 function getAllTasks() {
-  const storedTasks = state.storage.tasks
-    .filter((task) => !isDeprecatedAutoSignalTask(task))
-    .filter((task) => !isEscalatedStaleAutoSignalTask(task))
-    .map((task) => normalizeTask(task, task?.source || 'manual'));
+  const storedTasks = state.storage.tasks.filter((task) => !isDeprecatedAutoSignalTask(task));
   return sortTasks([...storedTasks, ...buildAutoTasks()]);
 }
 

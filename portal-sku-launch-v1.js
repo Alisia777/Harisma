@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260624launchcrud1';
+  const VERSION = '20260629skuworkspaceperf1';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -35,11 +35,15 @@
     magnitmarket: 'magnit'
   };
   const SKU_MODE_STORAGE = 'altea:sku-workspace-v1:mode';
+  const SKU_DECISION_STORAGE = 'altea:sku-workspace-v1:decisions';
 
   let originalRenderSkuContour = null;
   let originalRenderLaunches = null;
   let originalRenderLaunchControl = null;
   let installAttempts = 0;
+  let skuV1RenderCache = null;
+  const SKU_REGISTRY_RENDER_LIMIT = 360;
+  const SKU_ATTENTION_SCAN_LIMIT = 180;
 
   function appState() {
     try {
@@ -167,6 +171,20 @@
     return sku?.productLifecycle || { key: 'active', label: sku?.status || 'Активный', tone: 'ok' };
   }
 
+  function skuLifecycleOptions(currentKey = '') {
+    const order = Array.isArray(window.PRODUCT_LIFECYCLE_STATUS_ORDER)
+      ? window.PRODUCT_LIFECYCLE_STATUS_ORDER
+      : ['active', 'new', 'relaunch', 'watch', 'question', 'paused', 'exit', 'archived'];
+    const metaSource = window.PRODUCT_LIFECYCLE_STATUS_META || {};
+    const current = String(currentKey || '').trim() || 'active';
+    return order.map((key) => {
+      const meta = typeof productLifecycleMeta === 'function'
+        ? productLifecycleMeta(key)
+        : { key, label: metaSource[key]?.label || key };
+      return { key, label: meta?.label || key, selected: key === current };
+    });
+  }
+
   function skuMatrixState(sku) {
     if (typeof skuMatrixProblemState === 'function') return skuMatrixProblemState(sku);
     return 'ok';
@@ -192,7 +210,38 @@
     return typeof currentWorkLabel === 'function' ? currentWorkLabel() : 'в работе';
   }
 
+  function resetSkuV1RenderCache() {
+    skuV1RenderCache = {
+      skuLookup: null,
+      issueCandidates: new WeakMap(),
+      issueSuggestions: new WeakMap(),
+      skuReasons: new WeakMap()
+    };
+  }
+
+  function skuV1Cache() {
+    if (!skuV1RenderCache) resetSkuV1RenderCache();
+    return skuV1RenderCache;
+  }
+
   function skuReasons(sku, task, market) {
+    if (sku && typeof sku === 'object') {
+      const cache = skuV1Cache();
+      let skuMap = cache.skuReasons.get(sku);
+      if (!skuMap) {
+        skuMap = new Map();
+        cache.skuReasons.set(sku, skuMap);
+      }
+      const cacheKey = `${normalizeMarket(market || 'all')}|${task?.id || ''}|${sku?.status || ''}|${sku?.productStatus || ''}`;
+      if (skuMap.has(cacheKey)) return skuMap.get(cacheKey);
+      const result = skuReasonsUncached(sku, task, market);
+      skuMap.set(cacheKey, result);
+      return result;
+    }
+    return skuReasonsUncached(sku, task, market);
+  }
+
+  function skuReasonsUncached(sku, task, market) {
     if (typeof skuRegistryReasonList === 'function') return skuRegistryReasonList(sku, task, market);
     const reasons = [];
     if (!skuOwnersForFilter(sku, market).length) reasons.push({ label: 'нет owner', tone: 'danger', focus: 'unassigned', weight: 60 });
@@ -206,6 +255,8 @@
   }
 
   function issueIsResolved(row) {
+    const decision = issueDecisionForRow(row);
+    if (decision?.status) return ['applied', 'ignored', 'known'].includes(String(decision.status || '').toLowerCase());
     return typeof skuContourIssueIsResolved === 'function' ? skuContourIssueIsResolved(row) : Boolean(row?.resolved);
   }
 
@@ -222,11 +273,303 @@
   }
 
   function issueTone(row) {
-    const status = String(row?.status || '').toLowerCase();
+    const status = String(issueDecisionForRow(row)?.status || row?.status || '').toLowerCase();
     if (/block|quarantine|danger|critical/.test(status)) return 'danger';
     if (issueIsResolved(row)) return 'ok';
-    if (/new|warn|missing|unmapped/.test(status)) return 'warn';
+    if (/new|warn|missing|unmapped|need_check/.test(status)) return 'warn';
     return 'info';
+  }
+
+  function stableIssueFallbackKey(row = {}) {
+    const direct = row.id || row.key || row.issueKey || row.problemKey || row.sku || row.api || row.value || row.alias || '';
+    if (direct) return String(direct).trim();
+    const raw = [
+      row.platform,
+      row.marketplace,
+      row.type,
+      row.action,
+      row.name,
+      row.targetSku || row.target_sku,
+      row.revenue,
+      row.units
+    ].filter((value) => String(value ?? '').trim()).join('|');
+    if (!raw) return '';
+    let hash = 0;
+    for (let index = 0; index < raw.length; index += 1) {
+      hash = ((hash << 5) - hash + raw.charCodeAt(index)) | 0;
+    }
+    return `issue-${Math.abs(hash)}`;
+  }
+
+  function issueApiSku(row = {}) {
+    return String(
+      row.apiSku
+      || row.api_sku
+      || row.apiArticle
+      || row.api_article
+      || row.articleKey
+      || row.article
+      || row.sku
+      || stableIssueFallbackKey(row)
+      || ''
+    ).trim();
+  }
+
+  function issuePlatform(row = {}, fallback = 'all') {
+    return normalizeMarket(row.platform || row.marketplace || fallback || 'all');
+  }
+
+  function issueDecisionKey(platform = 'all', apiSku = '') {
+    const sku = String(apiSku || '').trim().toLowerCase();
+    if (!sku) return '';
+    return `${normalizeMarket(platform || 'all')}|${sku}`;
+  }
+
+  function issueDecisionKeys(row = {}) {
+    const apiSku = issueApiSku(row);
+    const platforms = Array.isArray(row.keys) && row.keys.length
+      ? row.keys.map((key) => String(key || '').split('|')[0]).filter(Boolean)
+      : [issuePlatform(row, 'all')];
+    return [...new Set([...platforms, 'all'].map((platform) => issueDecisionKey(platform, apiSku)).filter(Boolean))];
+  }
+
+  function loadIssueDecisions() {
+    const stateRef = appState();
+    if (stateRef.skuV1IssueDecisions && typeof stateRef.skuV1IssueDecisions === 'object') return stateRef.skuV1IssueDecisions;
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SKU_DECISION_STORAGE) || '{}');
+      stateRef.skuV1IssueDecisions = parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      stateRef.skuV1IssueDecisions = {};
+    }
+    return stateRef.skuV1IssueDecisions;
+  }
+
+  function saveIssueDecisions() {
+    const decisions = loadIssueDecisions();
+    try {
+      localStorage.setItem(SKU_DECISION_STORAGE, JSON.stringify(decisions));
+    } catch {
+      // ignored
+    }
+  }
+
+  function issueDecisionForRow(row = {}) {
+    const decisions = loadIssueDecisions();
+    return issueDecisionKeys(row).map((key) => decisions[key]).find(Boolean) || null;
+  }
+
+  function setIssueDecision({ platform = 'all', apiSku = '', status = '', kind = '', targetSku = '', note = '' } = {}) {
+    const key = issueDecisionKey(platform, apiSku);
+    if (!key) return null;
+    const decisions = loadIssueDecisions();
+    if (!status) delete decisions[key];
+    else {
+      decisions[key] = {
+        platform: normalizeMarket(platform || 'all'),
+        apiSku,
+        status,
+        kind: kind || status,
+        targetSku,
+        note,
+        appliedAt: new Date().toISOString(),
+        actor: appState().team?.member?.name || appState().team?.userId || 'portal-user'
+      };
+    }
+    saveIssueDecisions();
+    try {
+      if (typeof saveLocalStorage === 'function') saveLocalStorage();
+    } catch {
+      // ignored
+    }
+    return decisions[key] || null;
+  }
+
+  function applyIssueDecision(row = {}) {
+    const decision = issueDecisionForRow(row);
+    if (!decision) return row;
+    return {
+      ...row,
+      status: decision.status || row.status,
+      targetSku: decision.targetSku || row.targetSku || row.target_sku || '',
+      target_sku: decision.targetSku || row.target_sku || row.targetSku || '',
+      _skuV1Decision: decision
+    };
+  }
+
+  function issueStatusLabel(status = '') {
+    const key = String(status || 'new').trim().toLowerCase();
+    if (key === 'applied') return 'связано';
+    if (key === 'ignored') return 'игнор';
+    if (key === 'need_check') return 'проверка';
+    if (key === 'blocked') return 'blocked';
+    if (key === 'quarantine') return 'quarantine';
+    if (key === 'known') return 'known';
+    if (key === 'warning') return 'warning';
+    return key || 'new';
+  }
+
+  function findSkuByArticle(articleKey = '') {
+    const key = String(articleKey || '').trim().toLowerCase();
+    if (!key) return null;
+    const cache = skuV1Cache();
+    if (!cache.skuLookup) {
+      cache.skuLookup = new Map();
+      (appState().skus || []).forEach((sku) => {
+        [sku.articleKey, sku.article, sku.sku].forEach((value) => {
+          const token = String(value || '').trim().toLowerCase();
+          if (token && !cache.skuLookup.has(token)) cache.skuLookup.set(token, sku);
+        });
+      });
+    }
+    return cache.skuLookup.get(key) || null;
+  }
+
+  function issueCandidates(row = {}, limit = 3) {
+    const cache = row && typeof row === 'object' ? skuV1Cache() : null;
+    const cacheLimit = Math.max(3, Number(limit) || 3);
+    let rowMap = null;
+    if (cache) {
+      rowMap = cache.issueCandidates.get(row);
+      if (!rowMap) {
+        rowMap = new Map();
+        cache.issueCandidates.set(row, rowMap);
+      }
+      if (rowMap.has(cacheLimit)) return rowMap.get(cacheLimit).slice(0, limit);
+    }
+    let candidates = [];
+    if (typeof skuContourLikeForLikeCandidates === 'function') {
+      try {
+        candidates = skuContourLikeForLikeCandidates(row, cacheLimit) || [];
+        if (rowMap) rowMap.set(cacheLimit, candidates);
+        return candidates.slice(0, limit);
+      } catch (error) {
+        console.warn('[sku-launch-v1] candidates failed', error);
+      }
+    }
+    const target = row.targetSku || row.target_sku || row.target || '';
+    const sku = findSkuByArticle(target);
+    candidates = sku ? [{ ...sku, articleKey: sku.articleKey || sku.article || target, matchScore: 1 }] : [];
+    if (rowMap) rowMap.set(cacheLimit, candidates);
+    return candidates.slice(0, limit);
+  }
+
+  function issueSuggestion(row = {}, candidates = null) {
+    if (!candidates && row && typeof row === 'object') {
+      const cached = skuV1Cache().issueSuggestions.get(row);
+      if (cached) return cached;
+    }
+    const list = candidates || issueCandidates(row, 3);
+    let suggestion = null;
+    if (typeof skuContourRecommendedDecision === 'function') {
+      try {
+        suggestion = skuContourRecommendedDecision(row, list) || {};
+        if (!candidates && row && typeof row === 'object') skuV1Cache().issueSuggestions.set(row, suggestion);
+        return suggestion;
+      } catch (error) {
+        console.warn('[sku-launch-v1] suggestion failed', error);
+      }
+    }
+    const best = list[0] || null;
+    suggestion = best
+      ? { decision: 'alias', tone: 'ok', text: `Похоже на ${best.articleKey || best.article}`, targetSku: best.articleKey || best.article || '' }
+      : { decision: 'need_check', tone: 'warn', text: row.action || 'Нужна ручная сверка', targetSku: '' };
+    if (!candidates && row && typeof row === 'object') skuV1Cache().issueSuggestions.set(row, suggestion);
+    return suggestion;
+  }
+
+  function issueTargetSku(row = {}) {
+    const candidates = issueCandidates(row, 1);
+    const suggestion = issueSuggestion(row, candidates);
+    return String(suggestion.targetSku || row.targetSku || row.target_sku || candidates[0]?.articleKey || candidates[0]?.article || '').trim();
+  }
+
+  function issueTargetSkuObject(row = {}) {
+    return findSkuByArticle(issueTargetSku(row));
+  }
+
+  function issueTypeOptions(issueRows = []) {
+    const counts = new Map();
+    issueRows.forEach((row) => {
+      const label = issueTypeLabel(row);
+      if (!label) return;
+      counts.set(label, (counts.get(label) || 0) + 1);
+    });
+    return [...counts.entries()]
+      .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'ru'))
+      .map(([label, count]) => ({ key: label, label, count }));
+  }
+
+  function ownerOptionsForIssues(issueRows = [], market = 'all') {
+    return [...new Set(issueRows.flatMap((row) => {
+      const sku = issueTargetSkuObject(row);
+      return sku ? skuOwnersForFilter(sku, market) : [];
+    }).filter(Boolean))].sort((left, right) => left.localeCompare(right, 'ru'));
+  }
+
+  function segmentOptionsForIssues(issueRows = []) {
+    return [...new Set(issueRows.map((row) => {
+      const sku = issueTargetSkuObject(row);
+      return sku?.segment || sku?.category || '';
+    }).filter(Boolean))].sort((left, right) => left.localeCompare(right, 'ru'));
+  }
+
+  function apiIssueMatchesFilter(row = {}, context = {}) {
+    const stateRef = appState();
+    const filters = stateRef.filters || {};
+    const activeMarket = context.activeMarket || 'all';
+    const query = String(filters.search || '').trim().toLowerCase();
+    const typeFilter = String(filters.lifecycle || 'all');
+    const ownerFilter = String(filters.owner || 'all');
+    const segmentFilter = String(filters.segment || 'all');
+    const assignment = String(filters.assignment || 'all');
+    const traffic = String(filters.traffic || 'all');
+    const focus = String(filters.focus || 'all');
+    const candidates = issueCandidates(row, 3);
+    const suggestion = issueSuggestion(row, candidates);
+    const targetSku = String(suggestion.targetSku || candidates[0]?.articleKey || candidates[0]?.article || '').trim();
+    const target = findSkuByArticle(targetSku);
+    const owners = target ? skuOwnersForFilter(target, activeMarket) : [];
+    const typeLabel = issueTypeLabel(row);
+    const rowText = [
+      issueApiSku(row),
+      row.name,
+      row.action,
+      row.type,
+      row.status,
+      typeLabel,
+      suggestion.text,
+      targetSku,
+      target?.name,
+      target?.category,
+      target?.segment,
+      ...owners,
+      ...candidates.map((candidate) => [candidate.articleKey, candidate.article, candidate.displayName, candidate.name].filter(Boolean).join(' '))
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    if (query && !rowText.includes(query)) return false;
+    if (typeFilter !== 'all' && typeLabel !== typeFilter && String(row.type || '') !== typeFilter && String(row.status || '') !== typeFilter) return false;
+    if (ownerFilter !== 'all' && !owners.includes(ownerFilter)) return false;
+    if (segmentFilter !== 'all' && target?.segment !== segmentFilter && target?.category !== segmentFilter) return false;
+    if (assignment === 'assigned' && !owners.length) return false;
+    if (assignment === 'unassigned' && owners.length) return false;
+    if (traffic === 'any' && !target?.flags?.hasExternalTraffic) return false;
+    if (traffic === 'kz' && !target?.flags?.hasKZ) return false;
+    if (traffic === 'vk' && !target?.flags?.hasVK) return false;
+    if (traffic === 'none' && target?.flags?.hasExternalTraffic) return false;
+    if (focus !== 'all') {
+      if (focus === 'unassigned' && owners.length) return false;
+      if (focus === 'matrixIssue' && !/block|quarantine|aggregate|unmapped|outside|matrix|known/i.test([row.status, row.type, row.action].join(' '))) return false;
+      if (focus === 'underPlan' && !target?.flags?.underPlan) return false;
+      if (focus === 'lowStock' && !target?.flags?.lowStock) return false;
+      if (focus === 'toWork' && !(target?.flags?.toWork || target?.flags?.toWorkWB || target?.flags?.toWorkOzon)) return false;
+      if (focus === 'extAny' && !target?.flags?.hasExternalTraffic) return false;
+    }
+    return true;
+  }
+
+  function filteredApiIssues(rows = [], context = {}) {
+    return rows.filter((row) => apiIssueMatchesFilter(row, context));
   }
 
   function planModelForWorkspace(market = 'all') {
@@ -381,9 +724,24 @@
     `;
   }
 
+  function renderSkuColumnsPanel(activeMode = 'registry') {
+    const labels = activeMode === 'api'
+      ? ['Статус', 'Проблема', 'Площадка', 'API / SKU', 'Сумма', 'Следующий шаг']
+      : ['Артикул', 'Карточка', 'Owner / статус', 'Площадки', 'План-факт', 'Маржа', 'Остаток', 'Качество', 'Следующее действие'];
+    return `
+      <div class="sl-v1-column-panel" data-sku-v1-column-panel>
+        <strong>Быстрый переход по колонкам</strong>
+        <div>
+          ${labels.map((label, index) => `<button type="button" data-sku-v1-column-jump="${index}">${escapeValue(label)}</button>`).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   function renderSkuFilters({ owners, segments, lifecycles, activeMode, activeMarket }) {
     const stateRef = appState();
     const filters = stateRef.filters || {};
+    const columnsOpen = Boolean(stateRef.skuV1ColumnsOpen);
     return `
       <section class="sl-v1-filter-dock">
         <div class="sl-v1-filter-head">
@@ -410,7 +768,7 @@
           </label>
           <label class="sl-v1-control">
             <span>${activeMode === 'api' ? 'Тип проблемы' : 'Статус товара'}</span>
-            <select id="skuV1Lifecycle" ${activeMode === 'api' ? 'disabled' : ''}>
+            <select id="skuV1Lifecycle">
               <option value="all">Все статусы</option>
               ${lifecycles.map((item) => `<option value="${escapeValue(item.key)}" ${filters.lifecycle === item.key ? 'selected' : ''}>${escapeValue(item.label)} · ${formatInt(item.count)}</option>`).join('')}
             </select>
@@ -457,6 +815,7 @@
             <button type="button" data-sku-v1-columns>Колонки</button>
           </div>
         </div>
+        ${columnsOpen ? renderSkuColumnsPanel(activeMode) : ''}
         <div class="sl-v1-chip-row" aria-label="Активные фильтры">
           ${activeMarket !== 'all' ? `<button type="button" disabled>Площадка: ${escapeValue(marketLabel(activeMarket))}</button>` : ''}
           ${filters.owner && filters.owner !== 'all' ? `<button type="button" disabled>Owner: ${escapeValue(filters.owner)}</button>` : ''}
@@ -483,6 +842,7 @@
         articleKey: row.articleKey || row.targetSku || ''
       }));
     const skuItems = skus
+      .slice(0, SKU_ATTENTION_SCAN_LIMIT)
       .map((sku) => {
         const task = taskMap.get(String(sku.articleKey || '').trim()) || null;
         const reasons = skuReasons(sku, task, market);
@@ -567,6 +927,17 @@
     `;
   }
 
+  function renderSkuLifecycleSelect(sku = {}) {
+    const articleKey = sku.articleKey || sku.article || sku.sku || '';
+    const lifecycle = skuLifecycle(sku);
+    const current = lifecycle?.key || 'active';
+    return `
+      <select class="sl-v1-inline-select" data-sku-v1-product-status="${escapeValue(articleKey)}" aria-label="Статус товара">
+        ${skuLifecycleOptions(current).map((item) => `<option value="${escapeValue(item.key)}" ${item.selected ? 'selected' : ''}>${escapeValue(item.label)}</option>`).join('')}
+      </select>
+    `;
+  }
+
   function renderSkuTableRows(skus, taskMap, planMap, model, market) {
     return skus.map((sku) => {
       const articleKey = String(sku.articleKey || sku.article || '').trim();
@@ -593,7 +964,7 @@
             <small>${escapeValue(articleKey)}</small>
           </td>
           <td><strong>${escapeValue(sku.name || 'Без названия')}</strong><small>${escapeValue(sku.category || sku.segment || '—')}</small></td>
-          <td>${escapeValue(owner)}<small>${escapeValue(lifecycle?.label || sku.status || '—')}</small></td>
+          <td>${escapeValue(owner)}<small>${escapeValue(lifecycle?.label || sku.status || '—')}</small>${renderSkuLifecycleSelect(sku)}</td>
           <td><div class="sl-v1-platform-tags">${platforms.slice(0, 5).map((item) => `<span>${escapeValue(item)}</span>`).join('') || '<span>—</span>'}</div></td>
           <td>${metric?.completionToDate !== null && metric?.completionToDate !== undefined ? formatPct(metric.completionToDate) : '—'}<small>${metric?.factRevenue ? formatMoney(metric.factRevenue) : 'факт —'}</small></td>
           <td>${metric?.marginPct !== null && metric?.marginPct !== undefined ? formatPct(metric.marginPct) : '—'}<small>${metric?.marginRub ? formatMoney(metric.marginRub) : 'маржа —'}</small></td>
@@ -605,8 +976,112 @@
     }).join('');
   }
 
+  function renderApiStatusCell(row = {}) {
+    const status = String(row.status || 'new').trim().toLowerCase() || 'new';
+    const apiSku = issueApiSku(row);
+    const platform = issuePlatform(row, 'all');
+    const options = [
+      ['new', 'new'],
+      ['need_check', 'проверка'],
+      ['blocked', 'blocked'],
+      ['ignored', 'игнор']
+    ];
+    if (status === 'applied') options.push(['applied', 'связано']);
+    if (!options.some(([value]) => value === status)) options.push([status, issueStatusLabel(status)]);
+    return `
+      <div class="sl-v1-status-cell">
+        ${safeBadge(issueStatusLabel(status), issueTone(row))}
+        <select class="sl-v1-inline-select"
+          data-sku-v1-row-status
+          data-sku-v1-api-sku="${escapeValue(apiSku)}"
+          data-sku-v1-platform="${escapeValue(platform)}">
+          ${options.map(([value, label]) => `<option value="${escapeValue(value)}" ${value === status ? 'selected' : ''}>${escapeValue(label)}</option>`).join('')}
+        </select>
+      </div>
+    `;
+  }
+
+  function issueHistoryForRow(row = {}) {
+    const local = issueDecisionForRow(row);
+    if (local) {
+      return {
+        kind: local.kind || local.status || 'decision',
+        targetSku: local.targetSku || '',
+        fileName: local.note || '',
+        appliedAt: local.appliedAt || '',
+        actor: local.actor || ''
+      };
+    }
+    if (typeof skuContourAuditForRow === 'function' && typeof skuContourAuditIndex === 'function') {
+      return skuContourAuditForRow(row, skuContourAuditIndex());
+    }
+    return null;
+  }
+
+  function renderApiNextActionV1(row = {}, history = null) {
+    if (history) {
+      return `
+        <div class="sl-v1-api-action">
+          ${safeBadge(history.kind || 'решено', history.kind === 'ignore' ? 'ok' : 'info')}
+          <span>${escapeValue(history.targetSku || history.fileName || '')}</span>
+          <small>${escapeValue(history.appliedAt ? new Date(history.appliedAt).toLocaleString('ru-RU') : '')}</small>
+        </div>
+      `;
+    }
+    const candidates = issueCandidates(row, 3);
+    const suggestion = issueSuggestion(row, candidates);
+    const apiSku = issueApiSku(row);
+    const platform = issuePlatform(row, 'all');
+    const targetSku = String(suggestion.targetSku || candidates[0]?.articleKey || candidates[0]?.article || '').trim();
+    const canAlias = Boolean(apiSku && targetSku);
+    const primaryDecision = canAlias && suggestion.decision === 'alias' ? 'alias' : 'need_check';
+    const primaryLabel = primaryDecision === 'alias' ? 'Связать SKU' : 'Проверить';
+    return `
+      <div class="sl-v1-api-action">
+        <div class="sl-v1-api-action-main">
+          ${safeBadge(primaryLabel, suggestion.tone || (primaryDecision === 'alias' ? 'ok' : 'warn'))}
+          <span>${escapeValue(suggestion.text || row.action || 'Нужна ручная сверка')}</span>
+        </div>
+        <div class="sl-v1-api-action-buttons">
+          <button type="button"
+            data-sku-v1-quick-decision="${escapeValue(primaryDecision)}"
+            data-sku-v1-api-sku="${escapeValue(apiSku)}"
+            data-sku-v1-platform="${escapeValue(platform)}"
+            data-sku-v1-target-sku="${escapeValue(targetSku)}">${escapeValue(primaryLabel)}</button>
+          <button type="button"
+            data-sku-v1-quick-decision="ignore"
+            data-sku-v1-api-sku="${escapeValue(apiSku)}"
+            data-sku-v1-platform="${escapeValue(platform)}"
+            data-sku-v1-target-sku="">Игнорировать</button>
+        </div>
+        ${candidates.length ? `
+          <div class="sl-v1-candidate-list">
+            ${candidates.map((candidate) => {
+              const articleKey = candidate.articleKey || candidate.article || '';
+              return `
+                <span class="sl-v1-candidate">
+                  <button type="button" data-open-sku="${escapeValue(articleKey)}">
+                    <b>${escapeValue(articleKey)}</b>
+                    <em>${formatPct(candidate.matchScore || 0)}</em>
+                    <small>${escapeValue(candidate.displayStatus || candidate.category || '')}</small>
+                  </button>
+                  <button type="button"
+                    data-sku-v1-quick-decision="alias"
+                    data-sku-v1-api-sku="${escapeValue(apiSku)}"
+                    data-sku-v1-platform="${escapeValue(platform)}"
+                    data-sku-v1-target-sku="${escapeValue(articleKey)}">Связать</button>
+                </span>
+              `;
+            }).join('')}
+          </div>
+        ` : '<div class="sl-v1-candidate-empty">Кандидатов в реестре не видно</div>'}
+      </div>
+    `;
+  }
+
   function renderSkuRegistryV1(root, context) {
     const { activeMarket, sourceSkus, visibleSkus, issueRows, taskMap, planMap, model } = context;
+    const tableSkus = visibleSkus.slice(0, SKU_REGISTRY_RENDER_LIMIT);
     const cards = skuStatusCards(sourceSkus, visibleSkus, issueRows, model, activeMarket);
     return `
       ${renderSkuFilters(context)}
@@ -643,7 +1118,7 @@
             <span>Полная таблица</span>
             <h3>Рабочие строки SKU</h3>
           </div>
-          ${safeBadge(`${formatInt(visibleSkus.length)} строк`, visibleSkus.length ? 'info' : 'warn')}
+          ${safeBadge(`${formatInt(tableSkus.length)} / ${formatInt(visibleSkus.length)} строк`, visibleSkus.length ? 'info' : 'warn')}
         </div>
         <div class="sl-v1-table-wrap">
           <table class="sl-v1-table">
@@ -660,7 +1135,7 @@
                 <th>Следующее действие</th>
               </tr>
             </thead>
-            <tbody>${renderSkuTableRows(visibleSkus, taskMap, planMap, model, activeMarket) || '<tr><td colspan="9"><div class="sl-v1-empty">По текущему срезу SKU не найдены.</div></td></tr>'}</tbody>
+            <tbody>${renderSkuTableRows(tableSkus, taskMap, planMap, model, activeMarket) || '<tr><td colspan="9"><div class="sl-v1-empty">По текущему срезу SKU не найдены.</div></td></tr>'}</tbody>
           </table>
         </div>
       </section>
@@ -671,11 +1146,12 @@
     const { activeMarket, issueRows, model, sourceSkus } = context;
     const showResolved = Boolean(appState().skuContourShowResolved);
     const onlyNew = Boolean(appState().skuContourOnlyNew);
-    let rows = showResolved ? issueRows : issueRows.filter((row) => !issueIsResolved(row));
-    if (onlyNew) rows = rows.filter((row) => String(row.status || '').toLowerCase() === 'new');
-    const unresolved = issueRows.filter((row) => !issueIsResolved(row));
+    let baseRows = showResolved ? issueRows : issueRows.filter((row) => !issueIsResolved(row));
+    if (onlyNew) baseRows = baseRows.filter((row) => String(row.status || '').toLowerCase() === 'new');
+    const rows = filteredApiIssues(baseRows, context);
+    const unresolved = filteredApiIssues(issueRows.filter((row) => !issueIsResolved(row)), context);
     const byType = new Map();
-    issueRows.forEach((row) => {
+    rows.forEach((row) => {
       const key = issueTypeLabel(row);
       byType.set(key, (byType.get(key) || 0) + 1);
     });
@@ -723,15 +1199,11 @@
             </thead>
             <tbody>
               ${rows.slice(0, 220).map((row) => {
-                const history = typeof skuContourAuditForRow === 'function' && typeof skuContourAuditIndex === 'function'
-                  ? skuContourAuditForRow(row, skuContourAuditIndex())
-                  : null;
-                const nextAction = typeof skuContourRowNextActionHtml === 'function'
-                  ? skuContourRowNextActionHtml(row, history)
-                  : escapeValue(row.action || 'разобрать');
+                const history = issueHistoryForRow(row);
+                const nextAction = renderApiNextActionV1(row, history);
                 return `
                   <tr>
-                    <td>${safeBadge(row.status || 'new', issueTone(row))}</td>
+                    <td>${renderApiStatusCell(row)}</td>
                     <td><strong>${escapeValue(issueTypeLabel(row))}</strong><small>${escapeValue(row.action || row.type || '')}</small></td>
                     <td>${escapeValue(marketLabel(row.platform || activeMarket))}</td>
                     <td><strong>${escapeValue(row.apiSku || row.articleKey || '—')}</strong><small>${escapeValue(row.name || row.targetSku || '')}</small></td>
@@ -775,6 +1247,7 @@
   function renderSkuWorkspaceV1(rootId = 'view-sku-contour') {
     const root = document.getElementById(rootId);
     if (!root) return;
+    resetSkuV1RenderCache();
     const activeMarket = setRegistryMarketFromHeader();
     const stateRef = appState();
     stateRef.filters = stateRef.filters || {};
@@ -785,16 +1258,22 @@
     stateRef.filters.traffic = stateRef.filters.traffic || 'all';
     stateRef.filters.assignment = stateRef.filters.assignment || 'all';
     const activeMode = currentSkuMode();
-    const taskMap = buildSkuTaskMap();
+    const isApiMode = activeMode === 'api';
+    const taskMap = isApiMode ? new Map() : buildSkuTaskMap();
     const sourceSkus = (stateRef.skus || []).filter((sku) => skuBelongsToMarket(sku, activeMarket));
     const model = planModelForWorkspace(activeMarket);
-    const planMap = buildPlanRowMap(model);
+    const planMap = isApiMode ? new Map() : buildPlanRowMap(model);
     const rawIssueRows = typeof skuContourIssueRows === 'function' ? skuContourIssueRows(model) : [];
-    const issueRows = rawIssueRows.filter((row) => issuePlatformMatches(row, activeMarket));
-    const visibleSkus = filteredRegistrySkus(stateRef.skus || [], taskMap, activeMarket);
-    const owners = ownerOptionsForSkus(sourceSkus, activeMarket);
-    const segments = segmentOptionsForSkus(sourceSkus);
-    const lifecycles = lifecycleOptionsForSkus(sourceSkus);
+    const issueRows = rawIssueRows
+      .filter((row) => issuePlatformMatches(row, activeMarket))
+      .map(applyIssueDecision);
+    const visibleSkus = isApiMode ? sourceSkus : filteredRegistrySkus(sourceSkus, taskMap, activeMarket);
+    const owners = activeMode === 'api' ? ownerOptionsForIssues(issueRows, activeMarket) : ownerOptionsForSkus(sourceSkus, activeMarket);
+    const segments = activeMode === 'api' ? segmentOptionsForIssues(issueRows) : segmentOptionsForSkus(sourceSkus);
+    const lifecycles = activeMode === 'api' ? issueTypeOptions(issueRows) : lifecycleOptionsForSkus(sourceSkus);
+    if (stateRef.filters.owner !== 'all' && !owners.includes(stateRef.filters.owner)) stateRef.filters.owner = 'all';
+    if (stateRef.filters.segment !== 'all' && !segments.includes(stateRef.filters.segment)) stateRef.filters.segment = 'all';
+    if (stateRef.filters.lifecycle !== 'all' && !lifecycles.some((item) => item.key === stateRef.filters.lifecycle)) stateRef.filters.lifecycle = 'all';
     const context = { activeMarket, sourceSkus, visibleSkus, issueRows, taskMap, planMap, model, owners, segments, lifecycles, activeMode };
 
     root.innerHTML = `
@@ -822,6 +1301,351 @@
       window.clearTimeout(timeout);
       timeout = window.setTimeout(() => callback.apply(this, args), delay);
     };
+  }
+
+  function clonePlain(value, fallback) {
+    try {
+      if (typeof cloneJsonValue === 'function') return cloneJsonValue(value ?? fallback);
+    } catch {
+      // ignored
+    }
+    try {
+      return JSON.parse(JSON.stringify(value ?? fallback));
+    } catch {
+      return fallback;
+    }
+  }
+
+  function aliasRowsFromPayload(payload = {}) {
+    if (typeof skuPlanFactAliasRows === 'function') return skuPlanFactAliasRows(payload);
+    if (Array.isArray(payload)) return payload;
+    return Array.isArray(payload?.aliases) ? payload.aliases : [];
+  }
+
+  function ignoreRowsFromPayload(payload = {}) {
+    if (typeof skuPlanFactIgnorePayloadRows === 'function') return skuPlanFactIgnorePayloadRows(payload);
+    if (Array.isArray(payload)) return payload;
+    return Array.isArray(payload?.ignored) ? payload.ignored : [];
+  }
+
+  function normalizeAliasPlatform(value = '') {
+    if (typeof skuPlanFactNormalizePlatform === 'function') return skuPlanFactNormalizePlatform(value || 'all') || 'all';
+    return normalizeMarket(value || 'all') || 'all';
+  }
+
+  function aliasToken(value = '') {
+    if (typeof skuPlanFactToken === 'function') return skuPlanFactToken(value);
+    return String(value || '').trim().toLowerCase().replace(/[^a-z0-9а-яё]+/gi, '');
+  }
+
+  function aliasKey(row = {}) {
+    if (typeof skuPlanFactAliasKey === 'function') return skuPlanFactAliasKey(row);
+    return [
+      normalizeAliasPlatform(row.platform || 'all'),
+      aliasToken(row.api_sku || row.apiSku || ''),
+      aliasToken(row.target_sku || row.targetSku || row.target || '')
+    ].join('|');
+  }
+
+  function ignoreKey(platform = 'all', apiSku = '') {
+    if (typeof skuPlanFactIgnoreKey === 'function') return skuPlanFactIgnoreKey(platform, apiSku);
+    return `${normalizeAliasPlatform(platform || 'all')}|${aliasToken(apiSku)}`;
+  }
+
+  function fallbackAliasReport(row = {}) {
+    const stateRef = appState();
+    const generatedAt = new Date().toISOString();
+    const platform = normalizeAliasPlatform(row.platform || 'all');
+    const apiSku = String(row.api_sku || row.apiSku || '').trim();
+    const targetSku = String(row.target_sku || row.targetSku || '').trim();
+    const note = String(row.note || `Quick action from SKU workspace ${todayKey()}`).trim();
+    const currentAliases = stateRef.skuAliases || { schema: 'sku-api-aliases-v1', aliases: [] };
+    const currentIgnore = stateRef.skuAliasIgnore || { schema: 'sku-api-ignore-v1', ignored: [] };
+    const aliasPayload = Array.isArray(currentAliases)
+      ? { schema: 'sku-api-aliases-v1', columns: ['target_sku', 'platform', 'api_sku', 'status', 'note'], aliases: clonePlain(currentAliases, []) }
+      : {
+        schema: 'sku-api-aliases-v1',
+        columns: currentAliases.columns || ['target_sku', 'platform', 'api_sku', 'status', 'note'],
+        ...clonePlain(currentAliases, {}),
+        aliases: clonePlain(aliasRowsFromPayload(currentAliases), [])
+      };
+    const ignorePayload = Array.isArray(currentIgnore)
+      ? { schema: 'sku-api-ignore-v1', columns: ['platform', 'api_sku', 'status', 'note'], ignored: clonePlain(currentIgnore, []) }
+      : {
+        schema: 'sku-api-ignore-v1',
+        columns: currentIgnore.columns || ['platform', 'api_sku', 'status', 'note'],
+        ...clonePlain(currentIgnore, {}),
+        ignored: clonePlain(ignoreRowsFromPayload(currentIgnore), [])
+      };
+    const action = String(row.decision || row.action || '').toLowerCase();
+    const aliases = [];
+    const ignores = [];
+    const errorRows = [];
+    const duplicateRows = [];
+
+    if (!apiSku) {
+      errorRows.push({ rowNumber: 2, reason: 'api_sku is required' });
+    } else if (action === 'ignore') {
+      const ignore = { platform, api_sku: apiSku, status: 'ignored', note, updatedAt: generatedAt };
+      const key = ignoreKey(platform, apiSku);
+      const existing = new Set(ignorePayload.ignored.map((item) => ignoreKey(item.platform || 'all', item.api_sku || item.apiSku || item.alias || item.value || '')));
+      if (existing.has(key)) duplicateRows.push({ rowNumber: 2, apiSku, platform, reason: 'ignore duplicate' });
+      else {
+        ignorePayload.ignored.push(ignore);
+        ignores.push(ignore);
+      }
+    } else if (!targetSku) {
+      errorRows.push({ rowNumber: 2, apiSku, platform, reason: 'target_sku is required for alias' });
+    } else {
+      const alias = { target_sku: targetSku, platform, api_sku: apiSku, status: row.status || 'active', note };
+      const key = aliasKey(alias);
+      const existing = new Set(aliasPayload.aliases.map(aliasKey));
+      if (existing.has(key)) duplicateRows.push({ rowNumber: 2, apiSku, platform, targetSku, reason: 'alias duplicate' });
+      else {
+        aliasPayload.aliases.push(alias);
+        aliases.push(alias);
+      }
+    }
+
+    aliasPayload.updatedAt = generatedAt;
+    ignorePayload.updatedAt = generatedAt;
+    return {
+      generatedAt,
+      sourceRows: 1,
+      candidateAliases: aliases.length,
+      candidateIgnores: ignores.length,
+      validationWarnings: [],
+      duplicateRows,
+      skippedRows: [],
+      errorRows,
+      newSkuRows: [],
+      needCheckRows: [],
+      aliases,
+      ignores,
+      aliasPayload,
+      ignorePayload
+    };
+  }
+
+  function applySkuV1AliasReportToState(report = {}) {
+    const stateRef = appState();
+    if (!report || typeof report !== 'object') return;
+    if (report.aliasPayload) stateRef.skuAliases = report.aliasPayload;
+    if (report.ignorePayload) stateRef.skuAliasIgnore = report.ignorePayload;
+    try {
+      if (typeof skuPlanFactApplyAliasesToStateSkus === 'function') {
+        skuPlanFactApplyAliasesToStateSkus(report.aliases || []);
+      } else {
+        (report.aliases || []).forEach((alias) => {
+          const targetSku = alias.target_sku || alias.targetSku || alias.target || '';
+          const apiSku = alias.api_sku || alias.apiSku || alias.alias || alias.value || '';
+          const sku = findSkuByArticle(targetSku);
+          if (!sku || !apiSku) return;
+          const platform = normalizeAliasPlatform(alias.platform || 'all');
+          sku.platformAliases = sku.platformAliases && typeof sku.platformAliases === 'object' ? sku.platformAliases : {};
+          const values = Array.isArray(sku.platformAliases[platform]) ? sku.platformAliases[platform] : [];
+          if (!values.some((value) => aliasToken(value) === aliasToken(apiSku))) values.push(apiSku);
+          sku.platformAliases[platform] = values;
+          sku.aliases = Array.isArray(sku.aliases) ? sku.aliases : [];
+          if (!sku.aliases.some((value) => aliasToken(typeof value === 'string' ? value : (value?.value || value?.alias || '')) === aliasToken(apiSku))) {
+            sku.aliases.push({ value: apiSku, platform, source: 'sku-workspace' });
+          }
+        });
+      }
+      if (typeof skuPlanFactBuildRuntimeSkuMatrix === 'function') {
+        stateRef.skuMatrix = skuPlanFactBuildRuntimeSkuMatrix(stateRef.skuAliases || {}, stateRef.skuAliasIgnore || {});
+      }
+      if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
+      if (typeof saveLocalStorage === 'function') saveLocalStorage();
+      window.dispatchEvent(new CustomEvent('altea:sku-workspace-updated', { detail: { source: 'sku-launch-v1' } }));
+    } catch (error) {
+      console.warn('[sku-launch-v1] local alias apply failed', error);
+    }
+  }
+
+  async function handleSkuV1QuickDecision(button, rootId = 'view-sku-contour') {
+    const stateRef = appState();
+    const decision = button?.dataset?.skuV1QuickDecision || 'need_check';
+    const apiSku = String(button?.dataset?.skuV1ApiSku || '').trim();
+    const platform = String(button?.dataset?.skuV1Platform || 'all').trim() || 'all';
+    const targetSku = String(button?.dataset?.skuV1TargetSku || '').trim();
+    if (!apiSku) {
+      launchV1Toast('Не вижу API SKU для действия.');
+      return;
+    }
+    if (decision === 'need_check') {
+      setIssueDecision({
+        platform,
+        apiSku,
+        status: 'need_check',
+        kind: 'need_check',
+        targetSku,
+        note: `Manual check from SKU workspace ${todayKey()}`
+      });
+      stateRef.skuContourOnlyNew = false;
+      launchV1Toast('Строка переведена в ручную проверку.');
+      renderSkuWorkspaceV1(rootId);
+      return;
+      stateRef.filters = stateRef.filters || {};
+      stateRef.filters.search = apiSku;
+      stateRef.skuContourOnlyNew = false;
+      launchV1Toast('Строка в фокусе: проверьте кандидата и выберите связь.');
+      renderSkuWorkspaceV1(rootId);
+      return;
+    }
+    if (decision === 'alias' && !targetSku) {
+      launchV1Toast('Для связи нужен SKU из реестра.');
+      return;
+    }
+    const prepare = typeof skuPlanFactPrepareAliasImport === 'function'
+      ? skuPlanFactPrepareAliasImport
+      : window.skuPlanFactPrepareAliasImport;
+    const apply = typeof handleSkuPlanFactApplyAliasImport === 'function'
+      ? handleSkuPlanFactApplyAliasImport
+      : window.handleSkuPlanFactApplyAliasImport;
+    if (false && (typeof prepare !== 'function' || typeof apply !== 'function')) {
+      launchV1Toast('Механизм связи SKU еще не загружен.');
+      return;
+    }
+    const row = {
+      platform,
+      api_sku: apiSku,
+      target_sku: decision === 'alias' ? targetSku : '',
+      decision: decision === 'ignore' ? 'ignore' : 'alias',
+      action: decision === 'ignore' ? 'ignore' : 'alias',
+      status: decision === 'ignore' ? 'ignored' : 'active',
+      note: `Quick action from SKU workspace ${todayKey()}`
+    };
+    const report = typeof prepare === 'function'
+      ? prepare([row], stateRef.skuAliases || {}, stateRef.skuAliasIgnore || {})
+      : fallbackAliasReport(row);
+    stateRef.skuPlanFactAliasImportReport = { ...report, fileName: `quick-sku-workspace-${todayKey()}.json` };
+    if ((report.errorRows || []).length) {
+      const message = report.errorRows[0]?.reason || 'Не удалось подготовить связь SKU.';
+      if (typeof setAppError === 'function') setAppError(message);
+      launchV1Toast(message);
+      renderSkuWorkspaceV1(rootId);
+      return;
+    }
+    const originalText = button.textContent;
+    try {
+      button.disabled = true;
+      button.textContent = decision === 'ignore' ? 'Исключаем...' : 'Связываем...';
+      applySkuV1AliasReportToState(report);
+      setIssueDecision({
+        platform,
+        apiSku,
+        status: decision === 'ignore' ? 'ignored' : 'applied',
+        kind: decision === 'ignore' ? 'ignore' : 'alias',
+        targetSku: decision === 'alias' ? targetSku : '',
+        note: row.note
+      });
+      if (typeof apply === 'function') {
+        try {
+          await apply(button, rootId);
+        } catch (error) {
+          console.warn('[sku-launch-v1] external alias apply failed', error);
+        }
+      }
+      launchV1Toast(decision === 'ignore' ? 'API SKU исключен.' : 'SKU связан.');
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+      renderSkuWorkspaceV1(rootId);
+    }
+  }
+
+  async function handleSkuV1RowStatusChange(select, rootId = 'view-sku-contour') {
+    const stateRef = appState();
+    const apiSku = String(select?.dataset?.skuV1ApiSku || '').trim();
+    const platform = String(select?.dataset?.skuV1Platform || 'all').trim() || 'all';
+    const status = String(select?.value || 'new').trim();
+    if (!apiSku) {
+      launchV1Toast('Не вижу API SKU для смены статуса.');
+      return;
+    }
+    if (status === 'new') {
+      setIssueDecision({ platform, apiSku, status: '' });
+      launchV1Toast('Строка возвращена в новые.');
+      renderSkuWorkspaceV1(rootId);
+      return;
+    }
+    if (status === 'ignored') {
+      const row = {
+        platform,
+        api_sku: apiSku,
+        decision: 'ignore',
+        action: 'ignore',
+        status: 'ignored',
+        note: `Status changed from SKU workspace ${todayKey()}`
+      };
+      const prepare = typeof skuPlanFactPrepareAliasImport === 'function'
+        ? skuPlanFactPrepareAliasImport
+        : window.skuPlanFactPrepareAliasImport;
+      const report = typeof prepare === 'function'
+        ? prepare([row], stateRef.skuAliases || {}, stateRef.skuAliasIgnore || {})
+        : fallbackAliasReport(row);
+      stateRef.skuPlanFactAliasImportReport = { ...report, fileName: `status-sku-workspace-${todayKey()}.json` };
+      if (!(report.errorRows || []).length) applySkuV1AliasReportToState(report);
+      setIssueDecision({ platform, apiSku, status: 'ignored', kind: 'ignore', note: row.note });
+      launchV1Toast('API SKU исключен из очереди.');
+      renderSkuWorkspaceV1(rootId);
+      return;
+    }
+    setIssueDecision({
+      platform,
+      apiSku,
+      status,
+      kind: status,
+      note: `Status changed from SKU workspace ${todayKey()}`
+    });
+    stateRef.skuContourOnlyNew = false;
+    launchV1Toast('Статус строки обновлен.');
+    renderSkuWorkspaceV1(rootId);
+  }
+
+  async function handleSkuV1ProductStatusChange(select, rootId = 'view-sku-contour') {
+    const articleKey = String(select?.dataset?.skuV1ProductStatus || '').trim();
+    const status = String(select?.value || 'active').trim();
+    if (!articleKey) {
+      launchV1Toast('Не вижу артикул для смены статуса.');
+      return;
+    }
+    const meta = typeof productLifecycleMeta === 'function'
+      ? productLifecycleMeta(status)
+      : { key: status, label: status };
+    try {
+      if (typeof upsertProductLifecycleStatus === 'function') {
+        await upsertProductLifecycleStatus({
+          articleKey,
+          status: meta.label || status,
+          key: meta.key || status,
+          note: 'Quick status from SKU workspace'
+        });
+      } else {
+        const stateRef = appState();
+        stateRef.storage = stateRef.storage || {};
+        stateRef.storage.productLifecycleOverrides = Array.isArray(stateRef.storage.productLifecycleOverrides)
+          ? stateRef.storage.productLifecycleOverrides.filter((item) => String(item?.articleKey || '') !== articleKey)
+          : [];
+        stateRef.storage.productLifecycleOverrides.unshift({
+          articleKey,
+          key: meta.key || status,
+          status: meta.label || status,
+          note: 'Quick status from SKU workspace',
+          updatedAt: new Date().toISOString(),
+          updatedBy: stateRef.team?.member?.name || stateRef.team?.userId || 'portal-user'
+        });
+        if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
+        if (typeof saveLocalStorage === 'function') saveLocalStorage();
+      }
+      launchV1Toast('Статус товара обновлен.');
+    } catch (error) {
+      console.warn('[sku-launch-v1] product status change failed', error);
+      launchV1Toast('Статус сохранен локально, синхронизация позже.');
+    } finally {
+      renderSkuWorkspaceV1(rootId);
+    }
   }
 
   function bindSkuWorkspaceV1(root) {
@@ -883,7 +1707,45 @@
       rerender();
     });
     root.querySelector('[data-sku-v1-columns]')?.addEventListener('click', () => {
-      window.alert('Колонки оставлены рабочими: Артикул, карточка, owner, площадки, план-факт, маржа, остаток, качество, действие.');
+      stateRef.skuV1ColumnsOpen = !stateRef.skuV1ColumnsOpen;
+      rerender();
+    });
+    root.querySelectorAll('[data-sku-v1-column-jump]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const index = Number(button.dataset.skuV1ColumnJump || 0);
+        const wrap = root.querySelector('.sl-v1-table-wrap');
+        const header = wrap?.querySelector(`.sl-v1-table thead th:nth-child(${index + 1})`);
+        if (!wrap || !header) return;
+        wrap.scrollLeft = Math.max(0, header.offsetLeft - 24);
+        header.scrollIntoView({ block: 'nearest', inline: 'center' });
+      });
+    });
+    root.querySelectorAll('[data-sku-v1-quick-decision]').forEach((button) => {
+      button.addEventListener('click', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        await handleSkuV1QuickDecision(event.currentTarget, root.id || 'view-sku-contour');
+      });
+    });
+    root.querySelectorAll('[data-sku-v1-row-status]').forEach((select) => {
+      select.addEventListener('click', (event) => {
+        event.stopPropagation();
+      });
+      select.addEventListener('change', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        await handleSkuV1RowStatusChange(event.currentTarget, root.id || 'view-sku-contour');
+      });
+    });
+    root.querySelectorAll('[data-sku-v1-product-status]').forEach((select) => {
+      select.addEventListener('click', (event) => {
+        event.stopPropagation();
+      });
+      select.addEventListener('change', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        await handleSkuV1ProductStatusChange(event.currentTarget, root.id || 'view-sku-contour');
+      });
     });
     root.querySelector('[data-sku-v1-toggle-new]')?.addEventListener('click', () => {
       stateRef.skuContourOnlyNew = !stateRef.skuContourOnlyNew;
@@ -1754,6 +2616,7 @@
       .sl-v1-filter-actions button{border-color:rgba(224,190,126,.2);background:rgba(255,255,255,.035)}
       .sl-v1-chip-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:30px}
       .sl-v1-chip-row button,.sl-v1-chip-row span{border:1px solid rgba(224,190,126,.24);border-radius:999px;background:rgba(255,255,255,.032);color:rgba(247,241,232,.78);padding:7px 11px;font:inherit;font-size:11px;font-weight:800}
+      .sl-v1-column-panel{display:grid;gap:8px;border:1px solid rgba(224,190,126,.16);border-radius:9px;background:rgba(0,0,0,.18);padding:10px}.sl-v1-column-panel strong{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:rgba(235,216,174,.68)}.sl-v1-column-panel div{display:flex;flex-wrap:wrap;gap:7px}.sl-v1-column-panel button{min-height:30px;border:1px solid rgba(224,190,126,.22);border-radius:999px;background:rgba(255,255,255,.035);color:rgba(247,241,232,.82);padding:0 10px;font:inherit;font-size:11px;font-weight:850;cursor:pointer}
       .sl-v1-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
       .sl-v1-kpi{min-height:106px;border:1px solid var(--sl-line);border-radius:10px;background:linear-gradient(150deg,rgba(255,255,255,.045),rgba(255,255,255,.012));padding:16px;display:grid;align-content:space-between;gap:8px}
       .sl-v1-kpi span{font-size:10px;text-transform:uppercase;letter-spacing:.16em;color:rgba(235,216,174,.62);font-weight:850}
@@ -1770,6 +2633,8 @@
       .sl-v1-queue-row{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:12px;align-items:center;min-height:68px;padding:10px 12px}.sl-v1-queue-row i{width:8px;height:8px;border-radius:50%;background:#f0d49a}.sl-v1-queue-row span{display:grid;gap:2px}.sl-v1-queue-row em,.sl-v1-queue-row small{font-style:normal;color:var(--sl-muted);font-size:11px}.sl-v1-queue-row strong{font-size:13px}.sl-v1-queue-row b{font-size:13px;color:#ffd98d}
       .sl-v1-quality-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;border:1px solid var(--sl-line);border-radius:9px;padding:12px;background:rgba(0,0,0,.16)}.sl-v1-quality-row span{font-weight:850}.sl-v1-quality-row strong{font-size:12px}.sl-v1-quality-row em{grid-column:1/-1;color:var(--sl-muted);font-style:normal;font-size:11px}
       .sl-v1-table-panel{overflow:hidden}.sl-v1-table-wrap{overflow:auto;max-width:100%;border:1px solid rgba(224,190,126,.14);border-radius:9px;background:rgba(5,4,3,.62);margin-top:12px}.sl-v1-table{min-width:1380px;width:100%;border-collapse:separate;border-spacing:0}.sl-v1-table th,.sl-v1-table td{border-bottom:1px solid rgba(224,190,126,.09);padding:11px 12px;text-align:left;vertical-align:top;background:rgba(10,9,7,.94);font-size:12px;line-height:1.35}.sl-v1-table th{position:sticky;top:0;z-index:4;color:rgba(247,241,232,.68);font-size:10px;text-transform:uppercase;letter-spacing:.12em;background:rgba(18,15,11,.98)}.sl-v1-table th:nth-child(1),.sl-v1-table td:nth-child(1){position:sticky;left:0;z-index:5;width:190px;background:linear-gradient(90deg,rgba(16,14,11,.99),rgba(11,9,7,.97))}.sl-v1-table th:nth-child(2),.sl-v1-table td:nth-child(2){position:sticky;left:190px;z-index:5;width:310px;background:linear-gradient(90deg,rgba(15,13,10,.99),rgba(10,9,7,.97));box-shadow:10px 0 18px rgba(0,0,0,.22)}.sl-v1-table small{display:block;margin-top:4px;color:var(--sl-muted)}.sl-v1-link{border:0;background:transparent;color:#fff4d8;padding:0;font:inherit;font-weight:950;text-align:left;cursor:pointer}.sl-v1-platform-tags{display:flex;flex-wrap:wrap;gap:5px}.sl-v1-platform-tags span{border:1px solid rgba(224,190,126,.2);border-radius:999px;padding:4px 7px;background:rgba(255,255,255,.035);font-size:10px}
+      .sl-v1-api-action{display:grid;gap:8px;min-width:300px}.sl-v1-api-action-main{display:grid;gap:5px}.sl-v1-api-action-main span{color:rgba(247,241,232,.78)}.sl-v1-api-action-buttons{display:flex;flex-wrap:wrap;gap:7px}.sl-v1-api-action-buttons button,.sl-v1-candidate>button:last-child{height:30px;border:1px solid rgba(224,190,126,.22);border-radius:999px;background:rgba(255,255,255,.035);color:#fff4d8;padding:0 10px;font:inherit;font-size:11px;font-weight:900;cursor:pointer}.sl-v1-api-action-buttons button:first-child,.sl-v1-candidate>button:last-child{background:linear-gradient(180deg,rgba(245,223,173,.26),rgba(185,139,71,.16));border-color:rgba(245,218,165,.44)}.sl-v1-candidate-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:7px}.sl-v1-candidate{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:stretch}.sl-v1-candidate>button:first-child{min-width:0;border:1px solid rgba(224,190,126,.16);border-radius:8px;background:rgba(255,255,255,.03);color:var(--sl-text);padding:8px;text-align:left;cursor:pointer;display:grid;gap:2px}.sl-v1-candidate b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sl-v1-candidate em{font-style:normal;color:#ffd98d;font-size:11px}.sl-v1-candidate small,.sl-v1-candidate-empty{color:var(--sl-muted);font-size:11px}
+      .sl-v1-status-cell{display:grid;gap:6px;align-items:start}.sl-v1-inline-select{width:100%;max-width:170px;height:28px;border:1px solid rgba(224,190,126,.24);border-radius:7px;background:rgba(5,4,3,.86);color:var(--sl-text);padding:0 8px;font:inherit;font-size:11px;font-weight:800;outline:none}.sl-v1-inline-select:focus{border-color:rgba(245,218,165,.75);box-shadow:0 0 0 3px rgba(214,169,85,.12)}.sl-v1-table td .sl-v1-inline-select{margin-top:6px}
       .sl-v1-inline-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.sl-v1-inline-actions button{border-color:rgba(224,190,126,.22);background:rgba(255,255,255,.035);padding:0 12px}
       .sl-v1-empty{padding:18px;border:1px dashed rgba(224,190,126,.2);border-radius:9px;color:var(--sl-muted);background:rgba(255,255,255,.018)}
       .launch-v1-filter-grid{grid-template-columns:minmax(260px,1.2fr) repeat(5,minmax(140px,.8fr)) minmax(210px,.8fr)}

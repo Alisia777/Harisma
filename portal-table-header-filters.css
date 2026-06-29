@@ -167,7 +167,7 @@
 
 .altea-filter-popover {
   position: fixed;
-  z-index: 120;
+  z-index: 9998;
   width: min(360px, calc(100vw - 24px));
   max-height: min(620px, calc(100vh - 24px));
   overflow: auto;
@@ -181,7 +181,7 @@
 
 .altea-cell-detail-popover {
   position: fixed;
-  z-index: 130;
+  z-index: 9999;
   width: min(360px, calc(100vw - 24px));
   max-height: min(520px, calc(100vh - 24px));
   overflow: auto;

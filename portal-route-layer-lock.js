@@ -4,7 +4,7 @@
   if (window.__ALTEA_ROUTE_LAYER_LOCK_20260623__) return;
   window.__ALTEA_ROUTE_LAYER_LOCK_20260623__ = true;
 
-  const VERSION = '20260623-route-layer-owner-v1';
+  const VERSION = '20260629-route-layer-sku-workspace-v2';
   let cascadeTimers = [];
   let running = false;
   const TRANSIENT_SELECTOR = '.promo-modal-backdrop,.modal,.toast,.portal-loader,.route-loader,.pf-v4-drawer-back,.plb-v2-drawer-back,.launch-v1-editor-backdrop,[data-pf-v4-drawer-back],[data-plb-v2-drawer-back],[data-launch-v1-editor-backdrop]';
@@ -75,7 +75,8 @@
     },
     'sku-contour': {
       rootId: 'view-sku-contour',
-      selector: '.sku-contour-focus-board,.sku-data-focus-board,[data-sku-contour-guide],[data-sku-contour-decision-cards]',
+      selector: '.sku-launch-v1-shell,.sku-v1-shell,.sku-contour-focus-board,.sku-data-focus-board,[data-sku-contour-guide],[data-sku-contour-decision-cards]',
+      keepSelector: '.sku-launch-v1-shell,.sku-v1-shell,.sku-contour-focus-board,.sku-data-focus-board,[data-sku-contour-guide],[data-sku-contour-decision-cards]',
       legacySelector: '[data-workspaces-gtd-v1],.workspace-gtd-v1,.sku-contour-legacy,.sku-workspace-legacy',
       render() {
         if (typeof window.renderSkuContour === 'function') window.renderSkuContour('view-sku-contour');

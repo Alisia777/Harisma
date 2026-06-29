@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260628-tasks-owner-canonical-v1';
+  const VERSION = '20260629-task-autosignal-types-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -73,8 +73,11 @@
     ['all', 'Все типы'],
     ['general', 'Общие'],
     ['price_margin', 'Цена / маржа'],
-    ['stock_oos', 'OOS / склад'],
+    ['supply', 'OOS / склад'],
+    ['traffic', 'Трафик / воронка'],
     ['content', 'Контент'],
+    ['returns', 'Возвраты / отзывы'],
+    ['assignment', 'Закрепление'],
     ['launch', 'Новинки'],
     ['promo', 'Промо'],
     ['api', 'API / данные']
@@ -92,6 +95,10 @@
     ['new', 'Новые'],
     ['in_progress', 'В работе'],
     ['waiting', 'Ожидают'],
+    ['waiting_team', 'Ждёт команду'],
+    ['waiting_rop', 'Ждёт РОП'],
+    ['waiting_decision', 'Ждёт решение'],
+    ['cancelled', 'Отменено'],
     ['done', 'Готово']
   ];
   const HORIZON_OPTIONS = [
@@ -356,7 +363,12 @@
   }
 
   function taskType(task) {
-    return normalizeText(task?.type || 'general') || 'general';
+    const key = normalizeText(task?.type || 'general') || 'general';
+    if (['stock_oos', 'stock', 'oos', 'warehouse', 'logistics'].includes(key)) return 'supply';
+    if (['funnel', 'ads', 'ad', 'marketing', 'kz'].includes(key)) return 'traffic';
+    if (['owner', 'owners', 'assignee'].includes(key)) return 'assignment';
+    if (['return', 'reviews', 'rating'].includes(key)) return 'returns';
+    return key;
   }
 
   function taskSource(task) {
@@ -435,6 +447,29 @@
     saveUi();
   }
 
+  function keepTaskVisibleAfterStatusChange(task) {
+    if (!task?.id) return;
+    markTaskMoved(task.id);
+    const filters = ensureFilters();
+    const currentFilter = normalizeText(filters.status || 'active');
+    if (filters.horizon && filters.horizon !== 'all') filters.horizon = 'all';
+    if (!currentFilter || currentFilter === 'all') return;
+
+    const lane = laneFor(task);
+    const status = normalizeText(task?.status || '');
+    if (currentFilter === 'active') {
+      if (!isActive(task)) filters.status = 'all';
+      return;
+    }
+    if (currentFilter === 'waiting') {
+      if (lane !== 'waiting') filters.status = isActive(task) ? 'active' : 'all';
+      return;
+    }
+    if (currentFilter !== lane && currentFilter !== status) {
+      filters.status = isActive(task) ? 'active' : 'all';
+    }
+  }
+
   function clearStaleRecentMove() {
     if (!TASK_UI.recentMovedId) return;
     const movedAt = Number(TASK_UI.recentMovedAt || 0);
@@ -460,10 +495,12 @@
 
   function statusLabel(task) {
     const status = normalizeText(task?.status || 'new');
+    if (status === 'waiting_team') return 'Ждёт команду';
     if (status === 'waiting_rop') return 'Ожидает РОП';
     if (status === 'waiting_decision') return 'Ожидает решения';
     if (status === 'in_progress') return 'В работе';
     if (status === 'done') return 'Готово';
+    if (status === 'cancelled') return 'Отменено';
     const lane = laneFor(task);
     if (lane === 'waiting') return 'Ожидает';
     if (lane === 'in_progress') return 'В работе';
@@ -916,6 +953,7 @@
     if (!current.title) current.title = 'Новая задача';
     if (!current.status) current.status = 'new';
     rememberTask(current);
+    if (beforeStatus !== current.status) keepTaskVisibleAfterStatusChange(current);
     if (historyText) addTaskHistory(current, beforeStatus !== current.status ? 'status' : 'updated', historyText);
     savePortalState('task-kanban-v1-update');
     persistTaskLater(current);
@@ -927,9 +965,11 @@
     const options = [
       ['new', 'Новая'],
       ['in_progress', 'В работе'],
+      ['waiting_team', 'Ждёт команду'],
       ['waiting_rop', 'Ожидает РОП'],
       ['waiting_decision', 'Ожидает решения'],
-      ['done', 'Готово']
+      ['done', 'Готово'],
+      ['cancelled', 'Отменено']
     ];
     return options.map(([key, label]) => `<option value="${escapeHtml(key)}" ${String(value || 'new') === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('');
   }
@@ -1576,6 +1616,7 @@
           </div>
           <div class="task-detail-actions">
             <button type="button" data-task-detail-status="in_progress">В работу</button>
+            <button type="button" data-task-detail-status="waiting_team">Ждёт команду</button>
             <button type="button" data-task-detail-status="waiting_rop">Ожидает РОП</button>
             <button type="button" data-task-detail-status="waiting_decision">На решение</button>
             <button type="button" data-task-detail-status="done">Готово</button>
@@ -1776,8 +1817,6 @@
     if (updated?.id) {
       markTaskMoved(updated.id);
       const filters = ensureFilters();
-      if (!DONE_STATUSES.has(normalizeText(status)) && filters.status && filters.status !== 'all') filters.status = 'active';
-      if (filters.horizon && filters.horizon !== 'all') filters.horizon = 'all';
       savePortalState('task-kanban-v1-move-visibility');
     }
     if (typeof window.updateTaskStatus === 'function') {

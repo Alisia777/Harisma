@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-dashboard-buyout2';
+  const VERSION = '20260629-dashboard-ads-scope1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -44,7 +44,8 @@
     metrics: 'data/portal_dashboard_metrics.json',
     platformTrends: 'data/platform_trends.json',
     productLeaderboard: 'data/product_leaderboard.json',
-    iuDrr: 'data/iu_drr_summary.json'
+    iuDrr: 'data/iu_drr_summary.json',
+    adsSummary: 'data/ads_summary.json'
   };
   const sourceCache = {};
   let loadingPromise = null;
@@ -231,6 +232,7 @@
     if (name === 'platformTrends') return state.platformTrends;
     if (name === 'productLeaderboard') return state.productLeaderboard;
     if (name === 'iuDrr') return state.iuDrrSummary || state.iuDrr;
+    if (name === 'adsSummary') return state.adsSummary;
     return null;
   }
 
@@ -260,6 +262,7 @@
     if (name === 'dashboard') return Boolean(payload?.companyPlan?.activeMonth?.channels || payload?.cards?.length);
     if (name === 'platformTrends') return hasPlatformSeries(payload);
     if (name === 'iuDrr') return Array.isArray(payload?.daily) && payload.daily.length > 0;
+    if (name === 'adsSummary') return Array.isArray(payload?.platforms) && payload.platforms.length > 0;
     return true;
   }
 
@@ -679,6 +682,127 @@
     return merged;
   }
 
+  function isCoreAdsPlatform(platform) {
+    return ['all', 'wb', 'ozon', 'ya'].includes(normalizePlatform(platform));
+  }
+
+  function adsSummaryPlatforms(adsSummary) {
+    if (Array.isArray(adsSummary?.platforms)) return adsSummary.platforms;
+    if (adsSummary?.platforms && typeof adsSummary.platforms === 'object') return Object.values(adsSummary.platforms);
+    return [];
+  }
+
+  function adsSummaryPlatformKey(row) {
+    return normalizePlatform(row?.platformKey || row?.platform || row?.key || row?.id || row?.label);
+  }
+
+  function adsSummaryPointDate(row) {
+    return dateKey(row?.date || row?.day || row?.dateKey || row?.label);
+  }
+
+  function normalizeAdsSummaryPoint(row, platform) {
+    const key = normalizePlatform(platform || row?.platformKey || row?.platform || row?.key);
+    return {
+      ...row,
+      date: adsSummaryPointDate(row),
+      label: adsSummaryPointDate(row) || row?.label || '',
+      platformKey: key,
+      __adsSummary: true
+    };
+  }
+
+  function aggregateAdsSummarySeries(platforms) {
+    const byDate = new Map();
+    (Array.isArray(platforms) ? platforms : []).forEach((platform) => {
+      const key = adsSummaryPlatformKey(platform);
+      if (!key || key === 'all') return;
+      (Array.isArray(platform?.series) ? platform.series : []).forEach((point) => {
+        const day = adsSummaryPointDate(point);
+        if (!day) return;
+        const current = byDate.get(day) || { date: day, label: day, spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0, platformKey: 'all', __adsSummary: true };
+        current.spend += finite(point?.spend ?? point?.adsSpend);
+        current.views += finite(point?.views ?? point?.adsImpressions ?? point?.shows);
+        current.clicks += finite(point?.clicks ?? point?.adsClicks);
+        current.orders += finite(point?.orders ?? point?.ordersUnits);
+        current.revenue += finite(point?.revenue ?? point?.ordersRevenue ?? point?.deliveredRevenue);
+        byDate.set(day, current);
+      });
+    });
+    return Array.from(byDate.values()).sort((left, right) => left.date.localeCompare(right.date));
+  }
+
+  function adsSummarySeriesForPlatform(adsSummary, platform) {
+    const key = normalizePlatform(platform);
+    const platforms = adsSummaryPlatforms(adsSummary);
+    const direct = platforms.find((item) => adsSummaryPlatformKey(item) === key);
+    if (direct && Array.isArray(direct.series)) {
+      return direct.series.map((point) => normalizeAdsSummaryPoint(point, key));
+    }
+    if (key === 'all') return aggregateAdsSummarySeries(platforms);
+    return [];
+  }
+
+  function adsSummaryHasPlatform(adsSummary, platform) {
+    const key = normalizePlatform(platform);
+    if (!key || key === 'all') return false;
+    return adsSummaryPlatforms(adsSummary).some((item) => adsSummaryPlatformKey(item) === key);
+  }
+
+  function adsSummaryRowsInRange(adsSummary, platform, start, end) {
+    return adsSummarySeriesForPlatform(adsSummary, platform)
+      .filter((row) => row.date && row.date >= start && row.date <= end)
+      .sort((left, right) => left.date.localeCompare(right.date));
+  }
+
+  function latestAdsSummaryDate(adsSummary, platform) {
+    return adsSummarySeriesForPlatform(adsSummary, platform)
+      .map((row) => row.date)
+      .filter(Boolean)
+      .sort()
+      .pop() || '';
+  }
+
+  function adsSummaryRowsForRangeOrLatest(adsSummary, platform, range, periodKey) {
+    const exactRows = adsSummaryRowsInRange(adsSummary, platform, range.start, range.end);
+    if (exactRows.length) {
+      return {
+        rows: exactRows,
+        previousRows: adsSummaryRowsInRange(adsSummary, platform, range.prevStart, range.prevEnd),
+        range,
+        fallback: false,
+        source: 'ads_summary'
+      };
+    }
+    const latest = latestAdsSummaryDate(adsSummary, platform);
+    if (!latest) {
+      return { rows: [], previousRows: [], range, fallback: false, source: 'ads_summary' };
+    }
+    const fallbackRange = currentRange(latest, periodKey);
+    return {
+      rows: adsSummaryRowsInRange(adsSummary, platform, fallbackRange.start, fallbackRange.end),
+      previousRows: adsSummaryRowsInRange(adsSummary, platform, fallbackRange.prevStart, fallbackRange.prevEnd),
+      range: fallbackRange,
+      fallback: true,
+      source: 'ads_summary'
+    };
+  }
+
+  function adsSummaryPointBreakdown(row, platform) {
+    const requested = normalizePlatform(platform);
+    const rowPlatform = normalizePlatform(row?.platformKey || row?.platform || requested);
+    if (requested !== 'all' && rowPlatform !== requested) return emptyAdsBreakdown();
+    const total = finite(row?.spend ?? row?.adsSpend);
+    const breakdown = {
+      ...emptyAdsBreakdown(),
+      total,
+      internal: total
+    };
+    if (rowPlatform === 'ozon') breakdown.ozon = total;
+    else if (rowPlatform === 'ya') breakdown.yandex = total;
+    else if (!['all', 'wb'].includes(rowPlatform)) breakdown.other = total;
+    return breakdown;
+  }
+
   function wbAdsBreakdown(row) {
     const media = positiveFinite(row.wbMedia, row.wbMediaFinanceDeduction);
     const external = finite(row.externalAds) + finite(row.pvzAds) + finite(row.brandZoneAds) + finite(row.overviewsAds);
@@ -737,9 +861,11 @@
 
   function adsDailyBreakdown(row, platform) {
     const key = normalizePlatform(platform);
+    if (row?.__adsSummary) return adsSummaryPointBreakdown(row, key);
     if (key === 'wb') return wbAdsBreakdown(row || {});
     if (key === 'ozon') return ozonAdsBreakdown(row || {});
     if (key === 'ya') return yandexAdsBreakdown(row || {});
+    if (key !== 'all') return emptyAdsBreakdown();
     return [wbAdsBreakdown(row || {}), ozonAdsBreakdown(row || {}), yandexAdsBreakdown(row || {})]
       .reduce((acc, item) => mergeAdsBreakdown(acc, item), emptyAdsBreakdown());
   }
@@ -758,6 +884,7 @@
     if (key === 'wb') return finite(row.planSpendWb, finite(row.controlPlanSpendWb));
     if (key === 'ozon') return finite(row.planSpendOzon);
     if (key === 'ya') return finite(row.planSpendYandex);
+    if (key !== 'all') return 0;
     return finite(row.planSpendWb, finite(row.controlPlanSpendWb))
       + finite(row.planSpendOzon)
       + finite(row.planSpendYandex);
@@ -909,8 +1036,10 @@
         const prevRows = rowsInRange(platform.series, model.range.prevStart, model.range.prevEnd);
         const total = sumRows(rows);
         const previous = sumRows(prevRows);
-        const iuRows = model.adRows || model.iuRows;
-        const ads = iuRows.reduce((sum, row) => sum + adsDailyValue(row, key), 0);
+        const adsRows = !isCoreAdsPlatform(key)
+          ? adsSummaryRowsInRange(model.adsSummary, key, model.range.start, model.range.end)
+          : (model.coreAdRows || model.iuRows || []);
+        const ads = adsRows.reduce((sum, row) => sum + adsDailyValue(row, key), 0);
         return {
           key,
           label: platform.label || platformMeta(key).label,
@@ -1162,6 +1291,7 @@
     const platformTrends = source('platformTrends') || { platforms: [] };
     const productLeaderboard = source('productLeaderboard') || {};
     const iuDrr = source('iuDrr') || {};
+    const adsSummary = source('adsSummary') || {};
     const platform = currentGlobalPlatform();
     const asOf = latestDate(platformTrends, dashboard) || dateKey(dashboard?.dataFreshness?.asOfDate);
     const period = currentPeriod();
@@ -1184,23 +1314,37 @@
     fillBuyoutFromSource(allTotal, platformRangeTotal);
     const iuRows = iuRowsInRange(iuDrr, range.start, range.end);
     const prevIuRows = iuRowsInRange(iuDrr, range.prevStart, range.prevEnd);
-    const adWindow = iuRowsForRangeOrLatest(iuDrr, range, period);
-    let adRows = adWindow.rows;
-    let previousAdRows = adWindow.previousRows;
-    let adRange = adWindow.range;
-    let adsFromFallback = adWindow.fallback;
+    const coreAdWindow = iuRowsForRangeOrLatest(iuDrr, range, period);
+    let coreAdRows = coreAdWindow.rows;
+    let corePreviousAdRows = coreAdWindow.previousRows;
+    let adRows = coreAdWindow.rows;
+    let previousAdRows = coreAdWindow.previousRows;
+    let adRange = coreAdWindow.range;
+    let adsFromFallback = coreAdWindow.fallback;
+    let adsSource = 'iu_drr';
+    if (!isCoreAdsPlatform(platform)) {
+      const adsSummaryWindow = adsSummaryRowsForRangeOrLatest(adsSummary, platform, range, period);
+      adRows = adsSummaryWindow.rows;
+      previousAdRows = adsSummaryWindow.previousRows;
+      adRange = adsSummaryWindow.range;
+      adsFromFallback = adsSummaryWindow.fallback;
+      adsSource = 'ads_summary';
+    }
     const iuRowsByDate = {};
     iuRows.forEach((row) => { iuRowsByDate[row.date] = row; });
     let adsBreakdown = adsRowsBreakdown(adRows, platform);
     let previousAdsBreakdown = adsRowsBreakdown(previousAdRows, platform);
-    if (!adsBreakdown.total && Array.isArray(iuDrr?.daily) && iuDrr.daily.length) {
+    if (isCoreAdsPlatform(platform) && !adsBreakdown.total && Array.isArray(iuDrr?.daily) && iuDrr.daily.length) {
       const latest = latestIuDate(iuDrr);
       if (latest) {
         const fallbackRange = currentRange(latest, period);
         adRows = iuRowsInRange(iuDrr, fallbackRange.start, fallbackRange.end);
         previousAdRows = iuRowsInRange(iuDrr, fallbackRange.prevStart, fallbackRange.prevEnd);
+        coreAdRows = adRows;
+        corePreviousAdRows = previousAdRows;
         adRange = fallbackRange;
         adsFromFallback = true;
+        adsSource = 'iu_drr';
         adsBreakdown = adsRowsBreakdown(adRows, platform);
         previousAdsBreakdown = adsRowsBreakdown(previousAdRows, platform);
       }
@@ -1229,7 +1373,7 @@
       marginPct: total.marginPct ?? .43,
       drr: total.revenue > 0 ? planAds / total.revenue : null
     };
-    const platformCards = buildPlatformCards({ dashboard, metrics, platformTrends, iuRows, adRows, range, total, allTotal });
+    const platformCards = buildPlatformCards({ dashboard, metrics, platformTrends, iuRows, adRows, coreAdRows, range, total, allTotal, adsSummary });
     const skuRows = buildSkuRows({ dashboard, productLeaderboard, platform, platformCards, total, allTotal, plan, range });
     const model = {
       dashboard,
@@ -1237,6 +1381,7 @@
       platformTrends,
       productLeaderboard,
       iuDrr,
+      adsSummary,
       platform,
       period,
       metric,
@@ -1249,7 +1394,10 @@
       prevIuRows,
       adRows,
       previousAdRows,
+      coreAdRows,
+      corePreviousAdRows,
       adsFromFallback,
+      adsSource,
       iuRowsByDate,
       adsBreakdown,
       previousAdsBreakdown,
@@ -2286,7 +2434,10 @@
     if (!sourcesLoaded) scheduleRenderAfterSources();
     const model = buildModel();
     const waitingForAdsSource = model.metric === 'ads'
+      && isCoreAdsPlatform(model.platform)
+      && model.adsSource !== 'ads_summary'
       && model.total.ads <= 0
+      && !(Array.isArray(model.adRows) && model.adRows.length)
       && missingSourceRetries < MAX_MISSING_SOURCE_RETRIES;
     if (waitingForAdsSource) {
       renderLoading(root);

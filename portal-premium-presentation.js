@@ -683,17 +683,90 @@
     if (!modal) return;
     var search = String(modal.querySelector('[data-executive-owner-detail-search]')?.value || '').trim().toLowerCase();
     var status = String(modal.querySelector('[data-executive-owner-detail-status]')?.value || 'all');
+    var skuFilter = String(modal.querySelector('[data-executive-owner-detail-filter="sku"]')?.value || '').trim().toLowerCase();
+    var platformFilter = String(modal.querySelector('[data-executive-owner-detail-filter="platform"]')?.value || 'all');
+    var statusHeaderFilter = String(modal.querySelector('[data-executive-owner-detail-filter="status"]')?.value || 'all');
+    var planMin = executiveOwnerDetailFilterNumber(modal.querySelector('[data-executive-owner-detail-filter="plan"]')?.value);
+    var factMin = executiveOwnerDetailFilterNumber(modal.querySelector('[data-executive-owner-detail-filter="fact"]')?.value);
+    var completionMin = executiveOwnerDetailFilterNumber(modal.querySelector('[data-executive-owner-detail-filter="completion"]')?.value);
+    var marginMin = executiveOwnerDetailFilterNumber(modal.querySelector('[data-executive-owner-detail-filter="margin"]')?.value);
+    var adMin = executiveOwnerDetailFilterNumber(modal.querySelector('[data-executive-owner-detail-filter="ad"]')?.value);
     var rows = Array.from(modal.querySelectorAll('[data-executive-owner-detail-row]'));
     var visible = 0;
     rows.forEach(function (row) {
       var text = String(row.getAttribute('data-search') || '').toLowerCase();
+      var skuText = String(row.getAttribute('data-sku-filter') || '').toLowerCase();
+      var rowPlatform = String(row.getAttribute('data-platform') || 'all');
       var rowStatus = row.getAttribute('data-status') || 'ok';
-      var match = (!search || text.indexOf(search) !== -1) && (status === 'all' || rowStatus === status);
+      var match = (!search || text.indexOf(search) !== -1)
+        && (!skuFilter || skuText.indexOf(skuFilter) !== -1)
+        && (status === 'all' || rowStatus === status)
+        && (platformFilter === 'all' || rowPlatform === platformFilter)
+        && (statusHeaderFilter === 'all' || rowStatus === statusHeaderFilter)
+        && executiveOwnerDetailMinMatch(row, 'plan', planMin)
+        && executiveOwnerDetailMinMatch(row, 'fact', factMin)
+        && executiveOwnerDetailMinMatch(row, 'completion', completionMin)
+        && executiveOwnerDetailMinMatch(row, 'margin', marginMin)
+        && executiveOwnerDetailMinMatch(row, 'ad', adMin);
       row.hidden = !match;
       if (match) visible += 1;
     });
     var counter = modal.querySelector('[data-executive-owner-detail-count]');
     if (counter) counter.textContent = visible + ' из ' + rows.length + ' SKU';
+  }
+
+  function executiveOwnerDetailFilterNumber(value) {
+    var normalized = String(value == null ? '' : value).replace(',', '.').replace(/[^\d.+-]/g, '').trim();
+    if (!normalized) return null;
+    var num = Number(normalized);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  function executiveOwnerDetailRowNumber(row, key) {
+    var raw = row ? row.getAttribute('data-' + key) : '';
+    if (raw == null || raw === '') return null;
+    var num = Number(raw);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  function executiveOwnerDetailMinMatch(row, key, min) {
+    if (min == null) return true;
+    var value = executiveOwnerDetailRowNumber(row, key);
+    return value != null && value >= min;
+  }
+
+  function executiveOwnerDetailMetricValue(value, multiplier) {
+    var num = numberOrNull(value);
+    if (num == null) return '';
+    return String(num * (multiplier || 1));
+  }
+
+  function executiveOwnerDetailPlatformOptions(rows) {
+    var keys = Array.from(new Set((rows || []).map(function (row) {
+      return internalPlatform(row.platform || '');
+    }).filter(Boolean)));
+    return ['<option value="all">Все</option>'].concat(keys.map(function (key) {
+      return '<option value="' + escapeHtml(key) + '">' + escapeHtml(platformMeta(key).label) + '</option>';
+    })).join('');
+  }
+
+  function executiveOwnerDetailHeaderInput(kind, placeholder) {
+    return '<input type="number" inputmode="decimal" data-executive-owner-detail-filter="' + escapeHtml(kind) + '" placeholder="' + escapeHtml(placeholder) + '" aria-label="Фильтр ' + escapeHtml(placeholder) + '">';
+  }
+
+  function executiveOwnerDetailTableHeader(rows) {
+    return [
+      '<thead><tr>',
+      '<th><span class="executive-owner-detail-th-label">SKU</span><input type="search" data-executive-owner-detail-filter="sku" placeholder="SKU / название" aria-label="Фильтр по SKU"></th>',
+      '<th><span class="executive-owner-detail-th-label">Площадка</span><select data-executive-owner-detail-filter="platform" aria-label="Фильтр по площадке">' + executiveOwnerDetailPlatformOptions(rows) + '</select></th>',
+      '<th><span class="executive-owner-detail-th-label">План к дате</span>' + executiveOwnerDetailHeaderInput('plan', 'от ₽') + '</th>',
+      '<th><span class="executive-owner-detail-th-label">Факт</span>' + executiveOwnerDetailHeaderInput('fact', 'от ₽') + '</th>',
+      '<th><span class="executive-owner-detail-th-label">Выполнение</span>' + executiveOwnerDetailHeaderInput('completion', 'от %') + '</th>',
+      '<th><span class="executive-owner-detail-th-label">Маржа</span>' + executiveOwnerDetailHeaderInput('margin', 'от %') + '</th>',
+      '<th><span class="executive-owner-detail-th-label">Реклама</span>' + executiveOwnerDetailHeaderInput('ad', 'от ₽') + '</th>',
+      '<th><span class="executive-owner-detail-th-label">Статус</span><select data-executive-owner-detail-filter="status" aria-label="Фильтр по статусу"><option value="all">Все</option><option value="under">Ниже плана</option><option value="ok">В плане</option><option value="noplan">Без плана</option></select></th>',
+      '</tr></thead>'
+    ].join('');
   }
 
   function openExecutiveOwnerDetail(ownerName) {
@@ -703,9 +776,11 @@
     closeExecutiveOwnerDetail();
     var tableRows = rows.map(function (row) {
       var meta = [row.sku, row.title, platformMeta(row.platform).label].join(' ').toLowerCase();
+      var skuMeta = [row.sku, row.title].join(' ').toLowerCase();
       var statusText = row.status === 'under' ? 'ниже плана' : row.status === 'noplan' ? 'без плана' : 'в плане';
+      var platformKey = internalPlatform(row.platform || '');
       return [
-        '<tr data-executive-owner-detail-row data-status="' + escapeHtml(row.status) + '" data-search="' + escapeHtml(meta) + '">',
+        '<tr data-executive-owner-detail-row data-status="' + escapeHtml(row.status) + '" data-platform="' + escapeHtml(platformKey) + '" data-search="' + escapeHtml(meta) + '" data-sku-filter="' + escapeHtml(skuMeta) + '" data-plan="' + escapeHtml(executiveOwnerDetailMetricValue(row.planToDateRevenue)) + '" data-fact="' + escapeHtml(executiveOwnerDetailMetricValue(row.factRevenue)) + '" data-completion="' + escapeHtml(executiveOwnerDetailMetricValue(row.completionToDate, 100)) + '" data-margin="' + escapeHtml(executiveOwnerDetailMetricValue(row.marginPct, 100)) + '" data-ad="' + escapeHtml(executiveOwnerDetailMetricValue(row.adSpend)) + '">',
         '<td><strong>' + escapeHtml(row.sku) + '</strong><small>' + escapeHtml(row.title || 'без названия') + '</small></td>',
         '<td><span class="platform-pill" style="' + platformStyle(row.platform) + '"><i></i>' + escapeHtml(platformMeta(row.platform).label) + '</span></td>',
         '<td>' + money(row.planToDateRevenue) + '</td>',
@@ -737,7 +812,7 @@
       '<label><span>Статус</span><select data-executive-owner-detail-status><option value="all">Все SKU</option><option value="under">Ниже плана</option><option value="ok">В плане</option><option value="noplan">Без плана</option></select></label>',
       '<em data-executive-owner-detail-count>' + int(rows.length) + ' SKU</em>',
       '</div>',
-      rows.length ? '<div class="executive-owner-detail-table-wrap"><table class="premium-table executive-owner-detail-table"><thead><tr><th>SKU</th><th>Площадка</th><th>План к дате</th><th>Факт</th><th>Выполнение</th><th>Маржа</th><th>Реклама</th><th>Статус</th></tr></thead><tbody>' + tableRows + '</tbody></table></div>' : '<div class="premium-empty">По сотруднику не найдено закрепленных SKU в текущем срезе.</div>',
+      rows.length ? '<div class="executive-owner-detail-table-wrap"><table class="premium-table executive-owner-detail-table">' + executiveOwnerDetailTableHeader(rows) + '<tbody>' + tableRows + '</tbody></table></div>' : '<div class="premium-empty">По сотруднику не найдено закрепленных SKU в текущем срезе.</div>',
       '</section>',
       '</div>'
     ].join(''));
@@ -1994,6 +2069,9 @@
       if (event.target && event.target.matches && event.target.matches('[data-executive-owner-detail-status]')) {
         applyExecutiveOwnerDetailFilters(event.target.closest('[data-executive-owner-detail-modal]'));
       }
+      if (event.target && event.target.matches && event.target.matches('select[data-executive-owner-detail-filter]')) {
+        applyExecutiveOwnerDetailFilters(event.target.closest('[data-executive-owner-detail-modal]'));
+      }
     });
     document.addEventListener('input', function (event) {
       if (!event.target || !event.target.closest || !event.target.closest('#altea-premium-stage-executive')) return;
@@ -2007,6 +2085,9 @@
         scheduleRender(180);
       }
       if (event.target && event.target.matches && event.target.matches('[data-executive-owner-detail-search]')) {
+        applyExecutiveOwnerDetailFilters(event.target.closest('[data-executive-owner-detail-modal]'));
+      }
+      if (event.target && event.target.matches && event.target.matches('input[data-executive-owner-detail-filter]')) {
         applyExecutiveOwnerDetailFilters(event.target.closest('[data-executive-owner-detail-modal]'));
       }
     });

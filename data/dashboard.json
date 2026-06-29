@@ -274,10 +274,10 @@
       "focus_score": 10,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 9203,
-      "owner_name": "Мария",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 7494622
     },
     {
@@ -288,10 +288,10 @@
       "focus_score": 10,
       "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
       "total_mp_stock": 8741,
-      "owner_name": "Максим",
-      "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Александр Озон",
-      "owner_ya": "Анна",
+      "owner_name": "Лапыгин Максим",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 1577260
     },
     {
@@ -302,10 +302,10 @@
       "focus_score": 9,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
       "total_mp_stock": 1008,
-      "owner_name": "Максим",
-      "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Александр Озон",
-      "owner_ya": "Анна",
+      "owner_name": "Лапыгин Максим",
+      "owner_wb": "Кирилл",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 2070641
     },
     {
@@ -316,10 +316,10 @@
       "focus_score": 9,
       "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Есть внешний трафик КЗ",
       "total_mp_stock": 1899,
-      "owner_name": "Максим",
-      "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Александр Озон",
-      "owner_ya": "Анна",
+      "owner_name": "Лапыгин Максим",
+      "owner_wb": "Кирилл",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 801764
     },
     {
@@ -330,10 +330,10 @@
       "focus_score": 8,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
       "total_mp_stock": 763,
-      "owner_name": "Максим",
+      "owner_name": "Лапыгин Максим",
       "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 1543576
     },
     {
@@ -344,10 +344,10 @@
       "focus_score": 8,
       "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
       "total_mp_stock": 1718,
-      "owner_name": "Максим",
-      "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Александр Озон",
-      "owner_ya": "Анна",
+      "owner_name": "Лапыгин Максим",
+      "owner_wb": "Кирилл",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 754724
     },
     {
@@ -358,10 +358,10 @@
       "focus_score": 8,
       "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
       "total_mp_stock": 1537,
-      "owner_name": "Максим",
-      "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Александр Озон",
-      "owner_ya": "Анна",
+      "owner_name": "Лапыгин Максим",
+      "owner_wb": "Кирилл",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 510808
     },
     {
@@ -372,10 +372,10 @@
       "focus_score": 5,
       "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
       "total_mp_stock": 3935,
-      "owner_name": "Мария",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 17405005
     },
     {
@@ -386,10 +386,10 @@
       "focus_score": 5,
       "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
       "total_mp_stock": 6986,
-      "owner_name": "Мария",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
-      "owner_ozon": "Александр Озон",
-      "owner_ya": "Анна",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 15948078
     },
     {
@@ -400,10 +400,10 @@
       "focus_score": 5,
       "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
       "total_mp_stock": 2452,
-      "owner_name": "Максим",
+      "owner_name": "Лапыгин Максим",
       "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Александр Озон",
-      "owner_ya": "Анна",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 11518558
     },
     {
@@ -414,10 +414,10 @@
       "focus_score": 5,
       "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
       "total_mp_stock": 3440,
-      "owner_name": "Мария",
-      "owner_wb": "Васильева Мария",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_name": "Васильева Мария",
+      "owner_wb": "Кирилл",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 5347504
     },
     {
@@ -428,10 +428,10 @@
       "focus_score": 5,
       "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 1,
-      "owner_name": "Максим",
-      "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_name": "Лапыгин Максим",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 4306241
     },
     {
@@ -442,10 +442,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик VK",
       "total_mp_stock": 40719,
-      "owner_name": "Мария",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 145130986
     },
     {
@@ -456,10 +456,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
       "total_mp_stock": 10709,
-      "owner_name": "Мария",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 44771070
     },
     {
@@ -470,10 +470,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 5680,
-      "owner_name": "Максим",
+      "owner_name": "Лапыгин Максим",
       "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 19008012
     },
     {
@@ -484,10 +484,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
       "total_mp_stock": 9161,
-      "owner_name": "Мария",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 16897529
     },
     {
@@ -498,10 +498,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
       "total_mp_stock": 7023,
-      "owner_name": "Мария",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 15757994
     },
     {
@@ -512,10 +512,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
       "total_mp_stock": 2931,
-      "owner_name": "Максим",
+      "owner_name": "Лапыгин Максим",
       "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 14108652
     },
     {
@@ -526,10 +526,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
       "total_mp_stock": 288,
-      "owner_name": "Максим",
+      "owner_name": "Лапыгин Максим",
       "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 11524515
     },
     {
@@ -540,10 +540,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик VK",
       "total_mp_stock": 7316,
-      "owner_name": "Мария",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 9429469
     },
     {
@@ -554,10 +554,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 4254,
-      "owner_name": "Мария",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
-      "owner_ozon": "Даша",
-      "owner_ya": "Анна",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 7326792
     },
     {
@@ -568,10 +568,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 1734,
-      "owner_name": "Максим",
+      "owner_name": "Лапыгин Максим",
       "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Александр Озон",
-      "owner_ya": "Анна",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 5197341
     },
     {
@@ -582,10 +582,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 1922,
-      "owner_name": "Максим",
-      "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Александр Озон",
-      "owner_ya": "Анна",
+      "owner_name": "Лапыгин Максим",
+      "owner_wb": "Васильева Мария",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 4717237
     },
     {
@@ -596,10 +596,10 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 1479,
-      "owner_name": "Максим",
+      "owner_name": "Лапыгин Максим",
       "owner_wb": "Лапыгин Максим",
-      "owner_ozon": "Александр Озон",
-      "owner_ya": "Анна",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 4614546
     }
   ],

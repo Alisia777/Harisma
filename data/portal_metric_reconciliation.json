@@ -1,20 +1,20 @@
 {
   "schema": "portal-metric-reconciliation-v1",
-  "generatedAt": "2026-06-29T07:48:44.036Z",
+  "generatedAt": "2026-06-29T08:07:27.273Z",
   "manifestVersion": "2026-06-20",
   "scope": {
     "included": "all portal views and layers"
   },
   "cutoffDate": "2026-06-28",
   "status": "blocked",
-  "business_fingerprint": "06b5f5583f5662d06335b5655154ac3a6b6529cceccfed4505a77fb199d437ce",
+  "business_fingerprint": "24a2c5233b7f9700c6a60c44321d2e5a36aad17f73e137a5b11fe2c9132d44ad",
   "summary": {
     "sourceCount": 24,
     "contractCount": 12,
     "metricPassportCount": 21,
     "blockingChecks": 13,
-    "warningChecks": 0,
-    "fingerprint": "06b5f5583f5662d06335b5655154ac3a6b6529cceccfed4505a77fb199d437ce"
+    "warningChecks": 1,
+    "fingerprint": "24a2c5233b7f9700c6a60c44321d2e5a36aad17f73e137a5b11fe2c9132d44ad"
   },
   "metricPassports": [
     {
@@ -96,7 +96,7 @@
       "diagnostics": {
         "activeRows": 143,
         "assignedRows": 143,
-        "ownerCount": 11,
+        "ownerCount": 7,
         "conflictingSkuCount": 0
       }
     },
@@ -158,7 +158,7 @@
         "embeddedAliasCount": 1132,
         "aliasConflictCount": 0,
         "skuTokenConflictCount": 0,
-        "ownerConflictCount": 0
+        "ownerConflictCount": 36
       }
     },
     {
@@ -776,7 +776,7 @@
       "activeRows": 143,
       "assignedRows": 143,
       "coverage": 1,
-      "ownerCount": 11,
+      "ownerCount": 7,
       "conflictingSkuCount": 0,
       "conflictingSkuSample": [],
       "suspiciousOwners": [],
@@ -925,16 +925,18 @@
       "id": "contract:sku-matrix-phase2",
       "scope": "mapping",
       "source": "sku_matrix",
-      "warnings": [],
+      "warnings": [
+        "sku_matrix: 36 platform owner conflicts are visible and require registry decision"
+      ],
       "blockingReasons": [],
       "rows": 143,
       "embeddedAliasCount": 1132,
       "aliasCount": 566,
       "aliasConflictCount": 0,
       "skuTokenConflictCount": 0,
-      "ownerConflictCount": 0,
+      "ownerConflictCount": 36,
       "platformOwnerErrors": [],
-      "status": "ok"
+      "status": "warning"
     },
     {
       "id": "contract:executive-direct-fact",

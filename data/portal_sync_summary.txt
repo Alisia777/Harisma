@@ -1,5 +1,5 @@
 Portal sync health: blocked
-Generated: 2026-06-29T07:48:43.691Z
+Generated: 2026-06-29T08:07:26.925Z
 Publish allowed: no
 Max data date: 2026-06-28
 

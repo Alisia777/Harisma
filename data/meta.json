@@ -1,16 +1,10 @@
 {
-  "generatedAt": "2026-06-19T09:58:10.934Z",
-  "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
-  "sourceMode": "google-csv-tabs",
-  "sourceGids": {
-    "dim_sku": "4625365",
-    "dim_sku_aliases": "",
-    "fact_logistics_daily_cluster_warehouse_sku": "2003059667",
-    "dim_warehouse": "1429580252",
-    "loyalty_system": ""
-  },
+  "generatedAt": "2026-06-29T08:04:02.950Z",
+  "sheetSource": "C:\\Users\\artiu\\Downloads\\Для портала.xlsx",
+  "sourceMode": "input-xlsx",
+  "sourceGids": {},
   "sourceWarnings": [
-    "loyalty_system sheet is optional and was not found in the Google workbook"
+    "loyalty_system sheet is optional and was not found in the workbook export"
   ],
   "updatedSkus": 143,
   "skuAliases": {
@@ -22,18 +16,18 @@
     "unmatchedTargets": []
   },
   "dashboard": {
-    "latest_marketplace_date": "2026-06-19",
-    "month_plan_units": 173171,
-    "month_fact_units": 217634.0004,
-    "month_fact_revenue": 228118640.2003,
-    "completion_to_date_pct": 1.9844,
+    "latest_marketplace_date": "2026-06-28",
+    "month_plan_units": 0,
+    "month_fact_units": 323663.0008000002,
+    "month_fact_revenue": 340551907.77869993,
+    "completion_to_date_pct": 0,
     "company_plan_revenue": 285818670,
-    "company_plan_to_date_revenue": 181018491,
-    "company_completion_to_date_pct": 1.2602
+    "company_plan_to_date_revenue": 266764092,
+    "company_completion_to_date_pct": 1.2766
   },
   "platformTrends": {
-    "latest_marketplace_date": "2026-06-19",
-    "points": 19
+    "latest_marketplace_date": "2026-06-28",
+    "points": 59
   },
   "loyaltySystem": {
     "sheet_name": "",
@@ -42,17 +36,17 @@
     "spend": 0
   },
   "iuDrr": {
-    "latest_date": "2026-06-17",
-    "rows": 2,
-    "latest_daily_date": "2026-06-17",
-    "generated_at": "2026-06-18T08:26:12.627Z"
+    "latest_date": "2026-06-28",
+    "rows": 28,
+    "latest_daily_date": "2026-06-28",
+    "generated_at": "2026-06-29T06:43:53.784Z"
   },
   "logistics": {
-    "latest_logistics_date": "2026-06-19",
+    "latest_logistics_date": "2026-06-29",
     "ozon_cluster_count": 31,
     "ozon_warehouse_count": 61,
     "wb_warehouse_count": 29,
-    "central_warehouse_stock": 440341,
-    "warehouse_stock_overlay_rows": 134
+    "central_warehouse_stock": 408491,
+    "warehouse_stock_overlay_rows": 136
   }
 }

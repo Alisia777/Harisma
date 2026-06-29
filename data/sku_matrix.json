@@ -1,13 +1,13 @@
 {
   "schema": "portal-sku-matrix-v2",
-  "generatedAt": "2026-06-29T07:48:43.364Z",
+  "generatedAt": "2026-06-29T08:07:26.601Z",
   "source": {
     "skus": 143,
     "aliases": 566,
     "externalAliases": 341,
     "embeddedAliases": 1132,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-06-29T07:48:43.265Z"
+    "dataQualityGeneratedAt": "2026-06-29T08:07:26.513Z"
   },
   "summary": {
     "skuCount": 143,
@@ -15,7 +15,7 @@
     "aliasCount": 566,
     "aliasConflictCount": 0,
     "skuTokenConflictCount": 0,
-    "ownerConflictCount": 0,
+    "ownerConflictCount": 36,
     "ignoredApiSkuCount": 0,
     "apiUnmappedCount": 1,
     "duplicateRiskCount": 3,
@@ -24,7 +24,8 @@
     "issueCount": 4,
     "infoIssueCount": 87,
     "problemStateCounts": {
-      "ok": 143,
+      "owner_platform_conflict": 36,
+      "ok": 107,
       "api_unmapped": 1,
       "duplicate_risk": 1
     }
@@ -72,22 +73,30 @@
       "articleKey": "alteya_beauty_brows_box",
       "article": "alteya_beauty_brows_box",
       "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 97
+        }
+      ],
       "status": "Вывод",
       "registryStatus": "Вывод",
       "brand": "Алтея",
@@ -105,11 +114,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -119,14 +128,14 @@
       "articleKey": "alteya_young_skin_box",
       "article": "alteya_young_skin_box",
       "name": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
-      "owner": "ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -166,15 +175,14 @@
       "articleKey": "b_kompleks_bad_60tabl",
       "article": "b_kompleks_BAD_60tabl",
       "name": "Витамины группы В комплекс Алтея 60 жевательных таблеток",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -205,15 +213,15 @@
       "articleKey": "berberin_laif_bad_60caps",
       "article": "berberin_laif_BAD_60caps",
       "name": "Берберин + хром + коэнзим + B6 для похудения, контроль аппетита и веса, Алтея, Берберин Лайф, 60 капсул",
-      "owner": "wb: Кирилл; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
         "wb": "Кирилл",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -253,14 +261,14 @@
       "articleKey": "chudofrukt_bad_60caps",
       "article": "chudofrukt_BAD_60caps",
       "name": "Таблетки для похудения, жиросжигатель детокс для снижения веса, Алтея, Чудофрукт, 60 капсул",
-      "owner": "ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -300,15 +308,14 @@
       "articleKey": "curly_method_300ml",
       "article": "curly_method_300ml",
       "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -396,22 +403,30 @@
       "articleKey": "ekdisteron_ultra_man_60caps",
       "article": "ekdisteron_ultra_man_60caps",
       "name": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 92
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -421,11 +436,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -435,15 +450,15 @@
       "articleKey": "enzim_pudra_80gr",
       "article": "enzim_pudra_80gr",
       "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "owner": "wb: Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -519,22 +534,30 @@
       "articleKey": "enzim_pudra_80gr_v2",
       "article": "enzim_pudra_80gr_v2",
       "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Васильева Мария",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 27
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -580,11 +603,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -594,15 +617,14 @@
       "articleKey": "frutaksa_bad_200gr",
       "article": "frutaksa_BAD_200gr",
       "name": "Жиросжигатель, детокс, Алтея, Алтея, Фрутакса, 200 грамм",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -633,15 +655,14 @@
       "articleKey": "frutalika_bad_60caps",
       "article": "frutalika_BAD_60caps",
       "name": "Пиколинат хрома для похудения, детокс, жиросжигатель, Алтея, Фруталика, 60 капсул",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -672,22 +693,30 @@
       "articleKey": "gel_antiakne_20ml",
       "article": "gel_antiakne_20ml",
       "name": "Точечный крем от прыщей. Корректор точечный против прыщей, крем от акне. Салициловая кислота, азелаиновая кислота Алтея 20 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Васильева Мария",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 44
+        }
+      ],
       "status": "Вывод",
       "registryStatus": "Вывод",
       "brand": "Алтея",
@@ -719,11 +748,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -733,22 +762,30 @@
       "articleKey": "gel_antiakne_20ml_v2",
       "article": "gel_antiakne_20ml_v2",
       "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Васильева Мария",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 1
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -794,11 +831,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -808,22 +845,30 @@
       "articleKey": "gel_brows_5ml",
       "article": "gel_brows_5ml",
       "name": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 51
+        }
+      ],
       "status": "Вывод",
       "registryStatus": "Вывод",
       "brand": "Алтея",
@@ -869,11 +914,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -883,22 +928,30 @@
       "articleKey": "gel_dlya_britya_300ml",
       "article": "gel_dlya_britya_300ml",
       "name": "Гель для бритья мужской без пены охлаждающий с ментолом Алтея 300 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 111
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -944,11 +997,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -958,22 +1011,30 @@
       "articleKey": "gel_dlya_brovei_6ml",
       "article": "gel_dlya_brovei_6ml",
       "name": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 45
+        }
+      ],
       "status": "Вывод",
       "registryStatus": "Вывод",
       "brand": "Алтея",
@@ -1026,11 +1087,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -1040,22 +1101,30 @@
       "articleKey": "gel_for_men_3_in_1_1000ml",
       "article": "gel_for_men_3_in_1_1000ml",
       "name": "Гель для душа мужской парфюмированный Алтея 1000 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 95
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -1101,11 +1170,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -1115,22 +1184,30 @@
       "articleKey": "gel_parfum_tabacco_vanille_450ml",
       "article": "gel_parfum_tabacco_vanille_450ml",
       "name": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 103
+        }
+      ],
       "status": "Вывод",
       "registryStatus": "Вывод",
       "brand": "Алтея",
@@ -1176,11 +1253,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -1190,10 +1267,10 @@
       "articleKey": "gidrofilnoe_maslo_150ml",
       "article": "gidrofilnoe_maslo_150ml",
       "name": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
-      "owner": "ozon: Даша",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "ozon": "Даша"
+        "ozon": "Молодякова Дария"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -1269,15 +1346,14 @@
       "articleKey": "glikiron_bad_60caps",
       "article": "glikiron_BAD_60caps",
       "name": "Гликирон БАД для профилактики диабета контроль аппетита",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -1316,15 +1392,14 @@
       "articleKey": "i_am_alpha_bad_60caps",
       "article": "i_am_alpha_BAD_60caps",
       "name": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -1355,15 +1430,14 @@
       "articleKey": "indolakt_bad_60caps",
       "article": "indolakt_BAD_60caps",
       "name": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -1394,22 +1468,30 @@
       "articleKey": "insulight_bad_60caps",
       "article": "insulight_BAD_60caps",
       "name": "Витамины для диабетиков, для профилактики от сахарного диабета, Алтея, Инсулайт, 60 капсул",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 35
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -1427,11 +1509,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -1441,21 +1523,29 @@
       "articleKey": "intimvita_200ml",
       "article": "intimvita_200ml",
       "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
-      "owner": "wb: Лапыгин Максим; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 91
+        }
+      ],
       "status": "Вывод",
       "registryStatus": "Вывод",
       "brand": "Алтея",
@@ -1487,11 +1577,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -1501,22 +1591,30 @@
       "articleKey": "intimvita_300ml",
       "article": "intimvita_300ml",
       "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 112
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -1562,11 +1660,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -1576,14 +1674,14 @@
       "articleKey": "krem-filler_15ml",
       "article": "krem-filler_15ml",
       "name": "Питательный крем для лица антивозрастной, Крем филлер вокруг глаз, с коллагеном с ниацинамидом, Алтея, 15 мл",
-      "owner": "ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -1631,15 +1729,14 @@
       "articleKey": "krem_buster_250ml",
       "article": "krem_buster_250ml",
       "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -1706,15 +1803,14 @@
       "articleKey": "krem_dlya_ruk_75ml",
       "article": "krem_dlya_ruk_75ml",
       "name": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -1795,15 +1891,14 @@
       "articleKey": "krem_dlya_vek_30ml",
       "article": "krem_dlya_vek_30ml",
       "name": "Крем для век и кожи вокруг глаз Жидкие патчи для глаз Алтея 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -1877,15 +1972,14 @@
       "articleKey": "krem_ot_rastyazhek",
       "article": "krem_ot_rastyazhek",
       "name": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -1959,15 +2053,14 @@
       "articleKey": "krem_spf50_50ml",
       "article": "krem_spf50_50ml",
       "name": "СПФ для лица База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -2034,15 +2127,14 @@
       "articleKey": "kremshelk_100ml",
       "article": "kremshelk_100ml",
       "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -2109,15 +2201,14 @@
       "articleKey": "krovavii_piling_30ml",
       "article": "krovavii_piling_30ml",
       "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -2205,15 +2296,14 @@
       "articleKey": "limfaks_bad_30caps",
       "article": "limfaks_BAD_30caps",
       "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -2244,15 +2334,14 @@
       "articleKey": "maska-batter_250ml",
       "article": "maska-batter_250ml",
       "name": "Маска для волос с кератином восстанавливающая увлажняющая, Алтея, 250 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -2319,15 +2408,14 @@
       "articleKey": "maska-batter_500ml",
       "article": "maska-batter_500ml",
       "name": "Маска для волос с кератином увлажняющая 500мл Алтея",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -2394,15 +2482,14 @@
       "articleKey": "maska-batter_dlya_rosta_500ml",
       "article": "maska-batter_dlya_rosta_500ml",
       "name": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -2469,15 +2556,14 @@
       "articleKey": "maska_dlya_lica_100ml",
       "article": "maska_dlya_lica_100ml",
       "name": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -2551,22 +2637,30 @@
       "articleKey": "maslo_dlya_borodi_50ml",
       "article": "maslo_dlya_borodi_50ml",
       "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Васильева Мария; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Васильева Мария",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 31
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -2626,11 +2720,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -2640,15 +2734,15 @@
       "articleKey": "maslo_dlya_volos_parf_110ml",
       "article": "maslo_dlya_volos_parf_110ml",
       "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
-      "owner": "wb: Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -2731,22 +2825,30 @@
       "articleKey": "maslo_dlya_volos_parf_110ml_",
       "article": "maslo_dlya_volos_parf_110ml_",
       "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Васильева Мария; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Васильева Мария",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 71
+        }
+      ],
       "status": "Вывод",
       "registryStatus": "Вывод",
       "brand": "Алтея",
@@ -2756,11 +2858,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 1,
       "criticalIssueCount": 0,
@@ -2779,22 +2881,30 @@
       "articleKey": "matte_wax_50ml",
       "article": "matte_wax_50ml",
       "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 107
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -2840,11 +2950,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -2854,15 +2964,14 @@
       "articleKey": "menoflavon_bad_60caps",
       "article": "menoflavon_BAD_60caps",
       "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -2893,13 +3002,13 @@
       "articleKey": "monarda_30ml",
       "article": "monarda_30ml",
       "name": "Масло монарды и экстракт зеленого чая для ногтей, универсальное, Алтея, 30 мл",
-      "owner": "ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -2939,15 +3048,15 @@
       "articleKey": "nabor_penka_dlya_resnic",
       "article": "nabor_penka_dlya_resnic",
       "name": "Пенка для нарощенных ресниц и для бровей, для умывания и очищения ресниц Алтея 150 мл",
-      "owner": "wb: Кирилл; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
         "wb": "Кирилл",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -3023,22 +3132,30 @@
       "articleKey": "nabor_remuver_40ml",
       "article": "nabor_remuver_40ml",
       "name": "Ремувер для удаления кутикулы, Алтея, 40 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Васильева Мария; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Васильева Мария",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 28
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -3084,11 +3201,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -3098,22 +3215,30 @@
       "articleKey": "nabor_remuver_40ml_1_1",
       "article": "nabor_remuver_40ml_1_1",
       "name": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Васильева Мария",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 94
+        }
+      ],
       "status": "Вывод",
       "registryStatus": "Вывод",
       "brand": "Алтея",
@@ -3145,11 +3270,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -3159,22 +3284,30 @@
       "articleKey": "nabor_remuver_kremovii",
       "article": "nabor_remuver_kremovii",
       "name": "Ремувер для снятия ресниц, Алтея, 18г",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Васильева Мария",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 38
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -3220,11 +3353,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -3234,15 +3367,15 @@
       "articleKey": "penka_160ml",
       "article": "penka_160ml",
       "name": "Мицеллярная пенка для умывания лица, для снятия макияжа, средство для снятия макияжа, Алтея, 160",
-      "owner": "wb: Кирилл; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
         "wb": "Кирилл",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -3304,15 +3437,14 @@
       "articleKey": "penka_kudryavii_metod_150ml",
       "article": "penka_kudryavii_metod_150ml",
       "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -3379,14 +3511,14 @@
       "articleKey": "piling_100ml",
       "article": "piling_100ml",
       "name": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
-      "owner": "ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -3462,15 +3594,14 @@
       "articleKey": "pink_pepper_50ml",
       "article": "pink_pepper_50ml",
       "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -3537,14 +3668,14 @@
       "articleKey": "pirantoks_bad_60caps",
       "article": "pirantoks_BAD_60caps",
       "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, черный орех детокс, Алтея, Пирантокс, 60 капсул",
-      "owner": "ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -3584,22 +3715,30 @@
       "articleKey": "relaksinol_bad_60caps",
       "article": "relaksinol_BAD_60caps",
       "name": "Магний В6 с лавандой, Алтея, Релаксинол, 60 капсул",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 83
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -3609,11 +3748,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -3623,14 +3762,14 @@
       "articleKey": "remuver_40ml",
       "article": "remuver_40ml",
       "name": "",
-      "owner": "ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -3670,15 +3809,14 @@
       "articleKey": "retiderm_50ml",
       "article": "retiderm_50ml",
       "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -3759,15 +3897,14 @@
       "articleKey": "retinait_krem_01_50ml",
       "article": "retinait_krem_01_50ml",
       "name": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -3834,15 +3971,14 @@
       "articleKey": "retinait_krem_025_50ml",
       "article": "retinait_krem_025_50ml",
       "name": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -3916,15 +4052,14 @@
       "articleKey": "retinait_krem_05_50ml",
       "article": "retinait_krem_05_50ml",
       "name": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -3998,15 +4133,14 @@
       "articleKey": "retinait_krem_1_50ml",
       "article": "retinait_krem_1_50ml",
       "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4073,15 +4207,14 @@
       "articleKey": "retinait_krem_1_5_50ml",
       "article": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4148,11 +4281,10 @@
       "articleKey": "retinait_syvorotka_025_30ml",
       "article": "retinait_syvorotka_025_30ml",
       "name": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша"
+        "ozon": "Молодякова Дария"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4219,11 +4351,10 @@
       "articleKey": "retinait_syvorotka_05_30ml",
       "article": "retinait_syvorotka_05_30ml",
       "name": "Сыворотка для лица с ретинолом омолаживающая",
-      "owner": "wb: Лапыгин Максим; ozon: Даша",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша"
+        "ozon": "Молодякова Дария"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4290,15 +4421,14 @@
       "articleKey": "retinait_syvorotka_1_30ml",
       "article": "retinait_syvorotka_1_30ml",
       "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4372,11 +4502,10 @@
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
       "article": "retinol_boost_krem_dlya_vek_30ml",
       "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-      "owner": "wb: Васильева Мария; ozon: Даша",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша"
+        "ozon": "Молодякова Дария"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4443,10 +4572,10 @@
       "articleKey": "retinol_full_journey",
       "article": "Retinol_Full_Journey",
       "name": "Набор уходовой косметики для лица антивозрастной",
-      "owner": "ozon: Даша",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "ozon": "Даша"
+        "ozon": "Молодякова Дария"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4522,11 +4651,10 @@
       "articleKey": "retinol_start_kit",
       "article": "Retinol_Start_Kit",
       "name": "Набор уходовой косметики для лица с ретинолом",
-      "owner": "wb: Васильева Мария; ozon: Даша",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша"
+        "ozon": "Молодякова Дария"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4593,14 +4721,14 @@
       "articleKey": "revmastop_bad_60caps",
       "article": "revmastop_BAD_60caps",
       "name": "Глюкозамин хондроитин МСМ для суставов и связок Ревмастоп Алтея 60 капсул",
-      "owner": "ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4640,15 +4768,14 @@
       "articleKey": "shampun_dlya_rosta_250ml",
       "article": "shampun_dlya_rosta_250ml",
       "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4729,15 +4856,14 @@
       "articleKey": "shampun_protiv_perhoti_250ml",
       "article": "shampun_protiv_perhoti_250ml",
       "name": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4811,15 +4937,14 @@
       "articleKey": "silk_hair_300ml",
       "article": "silk_hair_300ml",
       "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -4886,22 +5011,30 @@
       "articleKey": "skrab_babl_gam_200ml",
       "article": "skrab_babl_gam_200ml",
       "name": "Скраб пилинг для кожи головы, Алтея, 200 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 101
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -4947,11 +5080,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -4961,22 +5094,30 @@
       "articleKey": "solevoy_sprei_200ml",
       "article": "solevoy_sprei_200ml",
       "name": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Васильева Мария; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Васильева Мария",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 23
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -5029,11 +5170,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -5043,11 +5184,10 @@
       "articleKey": "spicul_gel_mask_75ml",
       "article": "spicul_gel_mask_75ml",
       "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
-      "owner": "wb: Васильева Мария; ozon: Даша",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша"
+        "ozon": "Молодякова Дария"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -5114,11 +5254,10 @@
       "articleKey": "spiculboost_30ml",
       "article": "spiculboost_30ml",
       "name": "Сыворотка для лица с микроиглами и коллагеном",
-      "owner": "wb: Лапыгин Максим; ozon: Даша",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша"
+        "ozon": "Молодякова Дария"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -5185,22 +5324,30 @@
       "articleKey": "sprei_buster_100ml",
       "article": "sprei_buster_100ml",
       "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Васильева Мария; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Васильева Мария",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 10
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -5246,11 +5393,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -5260,15 +5407,14 @@
       "articleKey": "stik_ot_mozoley",
       "article": "stik_ot_mozoley",
       "name": "Карандаш от мозолей, стик от натирания, мозольный пластырь, Алтея, 20 г",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -5335,10 +5481,10 @@
       "articleKey": "strong_hair",
       "article": "Strong_Hair",
       "name": "Набор для волос шампунь + маска для роста волос",
-      "owner": "ozon: Александр Озон",
+      "owner": "Питайкин Артём",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "ozon": "Александр Озон"
+        "ozon": "Питайкин Артём"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -5393,15 +5539,14 @@
       "articleKey": "syvorotka_dlya_lica_30ml",
       "article": "syvorotka_dlya_lica_30ml",
       "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -5475,14 +5620,14 @@
       "articleKey": "syvorotka_dlya_lica_30ml_v2",
       "article": "syvorotka_dlya_lica_30ml_v2",
       "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
-      "owner": "ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -5558,22 +5703,30 @@
       "articleKey": "syvorotka_dlya_rosta_6ml",
       "article": "syvorotka_dlya_rosta_6ml",
       "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 105
+        }
+      ],
       "status": "Вывод",
       "registryStatus": "Вывод",
       "brand": "Алтея",
@@ -5619,11 +5772,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -5633,22 +5786,30 @@
       "articleKey": "syvorotka_dlya_rosta_6ml_v2",
       "article": "syvorotka_dlya_rosta_6ml_v2",
       "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 37
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -5694,11 +5855,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -5708,15 +5869,14 @@
       "articleKey": "syvorotka_guk_30ml",
       "article": "syvorotka_guk_30ml",
       "name": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -5783,11 +5943,10 @@
       "articleKey": "syvorotka_niacin_05_30ml",
       "article": "syvorotka_niacin_05_30ml",
       "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
-      "owner": "wb: Лапыгин Максим; ozon: Даша",
-      "productOwner": "Максим",
+      "owner": "ozon: Молодякова Дария",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша"
+        "ozon": "Молодякова Дария"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -5854,15 +6013,14 @@
       "articleKey": "telomeras_60caps",
       "article": "telomeras_60caps",
       "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -5893,22 +6051,30 @@
       "articleKey": "termo_sprei_200ml",
       "article": "termo_sprei_200ml",
       "name": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Васильева Мария; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Васильева Мария",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 39
+        }
+      ],
       "status": "Под вопросом",
       "registryStatus": "Под вопросом",
       "brand": "Алтея",
@@ -5954,11 +6120,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -5968,22 +6134,30 @@
       "articleKey": "tonik_dlya_lica_200ml",
       "article": "tonik_dlya_lica_200ml",
       "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 54
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -6036,11 +6210,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -6050,22 +6224,30 @@
       "articleKey": "vosk_stik_15ml",
       "article": "vosk_stik_15ml",
       "name": "Воск стик для укладки и фиксации волос Алтея 15 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Максим",
+      "owner": "wb: Кирилл; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Лапыгин Максим",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 77
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "Алтея",
@@ -6111,11 +6293,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -6125,15 +6307,14 @@
       "articleKey": "т-34_bad_60caps",
       "article": "Т-34_BAD_60caps",
       "name": "Возбудитель для мужчин, БАД Т-34 возбуждающие для потенции, эрекции, 60 капсул",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
@@ -6164,15 +6345,14 @@
       "articleKey": "sustalit_75ml",
       "article": "sustalit_75ml",
       "name": "Мазь для суставов Сусталит , CPA, 75 мл",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -6232,15 +6412,14 @@
       "articleKey": "kavmaz",
       "article": "kavmaz",
       "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -6300,15 +6479,14 @@
       "articleKey": "kavmaz_60ml",
       "article": "kavmaz_60ml",
       "name": "Мазь для суставов Кавказская мазь , CPA, 60 мл",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -6368,22 +6546,30 @@
       "articleKey": "artoks",
       "article": "artoks",
       "name": "Мазь для суставов Артокс, CPA, 50 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Васильева Мария",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Васильева Мария",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 32
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "CPA",
@@ -6422,11 +6608,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -6436,22 +6622,30 @@
       "articleKey": "uromax",
       "article": "uromax",
       "name": "Пищевая добавка Уромакс , CPA, 20 капсул",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 76
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "CPA",
@@ -6490,11 +6684,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -6504,22 +6698,30 @@
       "articleKey": "activeprost",
       "article": "activeprost",
       "name": "Пищевая добавка Активпрост , CPA, 10 капсул",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 109
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "CPA",
@@ -6558,11 +6760,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -6572,15 +6774,14 @@
       "articleKey": "synergel_60ml",
       "article": "synergel_60ml",
       "name": "Мазь для суставов Синергель, CPA, 60 мл",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -6640,15 +6841,15 @@
       "articleKey": "vetonus",
       "article": "vetonus",
       "name": "Крем от варикоза Ветонус, CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -6708,15 +6909,14 @@
       "articleKey": "allicil_gribok15ml",
       "article": "allicil_gribok15ml",
       "name": "Мазь от грибка ногтей Аллицил, CPA, 15 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -6776,11 +6976,10 @@
       "articleKey": "cardicin_bad_60caps",
       "article": "cardicin_BAD_60caps",
       "name": "cardicin_BAD_60caps",
-      "owner": "wb: Лапыгин Максим; ozon: Даша",
+      "owner": "Молодякова Дария",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша"
+        "ozon": "Молодякова Дария"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -6840,22 +7039,30 @@
       "articleKey": "uromax_1_1",
       "article": "uromax_1_1",
       "name": "Пищевая добавка Уромакс , CPA, 20 капсул, набор из 2 шт",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 99
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "CPA",
@@ -6894,11 +7101,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -6908,15 +7115,14 @@
       "articleKey": "sanatsin",
       "article": "sanatsin",
       "name": "Пищевая добавка Санацин, CPA, 20 штук",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -6976,22 +7182,30 @@
       "articleKey": "urinofix",
       "article": "urinofix",
       "name": "Пищевая добавка Уринофикс, CPA, 20 капсул",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 49
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "CPA",
@@ -7030,11 +7244,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -7044,15 +7258,14 @@
       "articleKey": "mycoplax",
       "article": "mycoplax",
       "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7112,15 +7325,14 @@
       "articleKey": "micardin_1_1",
       "article": "micardin_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7173,15 +7385,14 @@
       "articleKey": "wbbiotrin_1_1_1",
       "article": "wbbiotrin_1_1_1",
       "name": "Мазь для суставов Биотрин, CPA, 30 мл, набор из 3 шт",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7241,15 +7452,14 @@
       "articleKey": "wbsinergel",
       "article": "wbsinergel",
       "name": "Мазь для суставов Синергель, CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7309,15 +7519,15 @@
       "articleKey": "artoks_1_1",
       "article": "artoks_1_1",
       "name": "Мазь для суставов Артокс, CPA, 50 мл, набор из 2 шт",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7377,15 +7587,14 @@
       "articleKey": "gemorekt",
       "article": "gemorekt",
       "name": "Крем от гемороя Геморект, CPA, 15 мл",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7445,15 +7654,15 @@
       "articleKey": "pantogor_100ml",
       "article": "pantogor_100ml",
       "name": "Мазь для суставов Пантогор , CPA, 100 мл",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7513,22 +7722,30 @@
       "articleKey": "sanatsin_1_1",
       "article": "sanatsin_1_1",
       "name": "Пищевая добавка Санацин, CPA, 20 штук",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Кирилл; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 68
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "CPA",
@@ -7567,11 +7784,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -7581,15 +7798,14 @@
       "articleKey": "sustalit",
       "article": "sustalit",
       "name": "Мазь для суставов Сусталит , CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7649,15 +7865,14 @@
       "articleKey": "ekzifol",
       "article": "ekzifol",
       "name": "Мазь от грибка ногтей Экзифол, CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7717,15 +7932,15 @@
       "articleKey": "artoks_75ml",
       "article": "artoks_75ml",
       "name": "Мазь для суставов Артокс, CPA, 75 мл",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7785,15 +8000,14 @@
       "articleKey": "otivin",
       "article": "otivin",
       "name": "Пищевая добавка Отивин , CPA, 10 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7853,15 +8067,15 @@
       "articleKey": "vetonus_100ml",
       "article": "vetonus_100ml",
       "name": "Крем от варикоза Ветонус, CPA, 100 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7921,15 +8135,14 @@
       "articleKey": "sinergel_30ml_1_1",
       "article": "sinergel_30ml_1_1",
       "name": "Мазь для суставов Синергель , CPA, 30 мл, набор из 2 шт",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -7989,15 +8202,14 @@
       "articleKey": "kavmaz_40ml_1_1",
       "article": "kavmaz_40ml_1_1",
       "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл, набор из 2 шт",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8057,22 +8269,30 @@
       "articleKey": "urolgan",
       "article": "urolgan",
       "name": "Пищевая добавка Уролган , CPA, 10 мл",
-      "owner": "wb: Лапыгин Максим; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Кирилл; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 125
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "CPA",
@@ -8111,11 +8331,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -8125,15 +8345,15 @@
       "articleKey": "dardrakona_1_1",
       "article": "dardrakona_1_1",
       "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8193,15 +8413,14 @@
       "articleKey": "daoshen",
       "article": "daoshen",
       "name": "Мазь от грибка ногтей Даошэн, CPA, 15 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8261,15 +8480,14 @@
       "articleKey": "micardinforte",
       "article": "micardinforte",
       "name": "Пищевая добавка Микардин Форте, CPA, 10 капсул",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8322,15 +8540,14 @@
       "articleKey": "daoshen_75ml",
       "article": "daoshen_75ml",
       "name": "Мазь от грибка ногтей Даошэн, CPA, 75 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8390,15 +8607,14 @@
       "articleKey": "micardin",
       "article": "micardin",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8451,15 +8667,14 @@
       "articleKey": "osteofast",
       "article": "osteofast",
       "name": "Мазь для суставов Остеофаст, CPA, 30 мл, набор из 3 шт",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8519,15 +8734,15 @@
       "articleKey": "varifit",
       "article": "varifit",
       "name": "Крем от варикоза Варифит, CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8587,15 +8802,14 @@
       "articleKey": "dardrakona",
       "article": "dardrakona",
       "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8655,15 +8869,14 @@
       "articleKey": "psoral_50ml",
       "article": "psoral_50ml",
       "name": "Мазь от псориаза Псорал, CPA, 50 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8772,15 +8985,15 @@
       "articleKey": "wbgetsizegel",
       "article": "wbgetsizegel",
       "name": "Лубрикант Getsize CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8840,15 +9053,15 @@
       "articleKey": "varifit_1_1",
       "article": "varifit_1_1",
       "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8908,15 +9121,14 @@
       "articleKey": "dolgar",
       "article": "dolgar",
       "name": "Мазь от грибка ногтей Долгар, CPA, 15 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -8976,15 +9188,15 @@
       "articleKey": "vetonus_1_1",
       "article": "vetonus_1_1",
       "name": "Крем от варикоза Ветонус, CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -9044,14 +9256,13 @@
       "articleKey": "sustalit_30ml_1_1",
       "article": "sustalit_30ml_1_1",
       "name": "Мазь для суставов Сусталит , CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
-      "productOwner": "Мария",
+      "owner": "ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
+      "productOwner": "Васильева Мария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry Шаблон_хаммеры_2026 (2).xlsx",
@@ -9104,15 +9315,15 @@
       "articleKey": "wbgetsize",
       "article": "wbgetsize",
       "name": "Игрушка для взрослых Getsize, CPA",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -9172,15 +9383,14 @@
       "articleKey": "psoral",
       "article": "psoral",
       "name": "Мазь от псориаза Псорал, CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -9240,15 +9450,15 @@
       "articleKey": "wbpantogor_1_1",
       "article": "wbpantogor_1_1",
       "name": "Мазь для суставов Пантогор , CPA, 30 мл, набор из 2 шт",
-      "owner": "wb: Васильева Мария; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -9308,15 +9518,14 @@
       "articleKey": "khvoinitsa_1_1",
       "article": "khvoinitsa_1_1",
       "name": "Пищевая добавка Хвойница , CPA, 7 саше",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -9376,15 +9585,15 @@
       "articleKey": "dardrakona_75ml",
       "article": "dardrakona_75ml",
       "name": "Крем от варикоза Дар дракона, CPA, 75 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -9444,22 +9653,30 @@
       "articleKey": "erobrut",
       "article": "erobrut",
       "name": "Пищевая добавка Эробрут, CPA, 20 капсул",
-      "owner": "wb: Лапыгин Максим; ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Кирилл; ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "wb": "Лапыгин Максим",
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "wb": "Кирилл",
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
         "byPlatform": "skus.owner.byPlatform / skus.ownersByPlatform",
         "wbOwnerDistribution": "распределение артикулов.xlsx"
       },
-      "ownerConflicts": [],
+      "ownerConflicts": [
+        {
+          "platform": "wb",
+          "canonicalOwner": "Кирилл",
+          "conflictingOwner": "Лапыгин Максим",
+          "source": "распределение артикулов.xlsx",
+          "sourceRow": 113
+        }
+      ],
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "brand": "CPA",
@@ -9498,11 +9715,11 @@
       "aliasConflicts": [],
       "tokenConflicts": [],
       "problemStates": [
-        "ok"
+        "owner_platform_conflict"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
+      "problemState": "owner_platform_conflict",
+      "problemLabel": "Owner conflict",
+      "problemTone": "warn",
       "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
@@ -9512,15 +9729,14 @@
       "articleKey": "khvoinitsa",
       "article": "khvoinitsa",
       "name": "Пищевая добавка Хвойница , CPA, 7 саше",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -9580,15 +9796,14 @@
       "articleKey": "micardin_1_1_1",
       "article": "micardin_1_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -9641,15 +9856,14 @@
       "articleKey": "mycoplax_1_1",
       "article": "mycoplax_1_1",
       "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл, набор из 2 шт",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
-        "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
@@ -9709,15 +9923,15 @@
       "articleKey": "wbvaritox",
       "article": "wbvaritox",
       "name": "Крем от варикоза Varitox, CPA, 30 мл",
-      "owner": "wb: Васильева Мария; ozon: Даша; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "wb: Васильева Мария; ozon: Молодякова Дария; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Молодякова Дария",
       "platformOwners": {
         "wb": "Васильева Мария",
-        "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Молодякова Дария",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные Озон.xlsx",
@@ -9770,14 +9984,14 @@
       "articleKey": "t34poten10caps",
       "article": "t34poten10caps",
       "name": "Пищевая добавка Т 34, CPA, 20 капсул",
-      "owner": "ozon: Александр Озон; ym: Анна; ga: Екатерина; letu: Екатерина; mm: Екатерина",
+      "owner": "ozon: Питайкин Артём; ym: Пирогова Анна; ga: Доможирова Екатерина; letu: Доможирова Екатерина; mm: Доможирова Екатерина",
       "productOwner": "Питайкин Артём",
       "platformOwners": {
-        "ozon": "Александр Озон",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ozon": "Питайкин Артём",
+        "ym": "Пирогова Анна",
+        "ga": "Доможирова Екатерина",
+        "letu": "Доможирова Екатерина",
+        "mm": "Доможирова Екатерина"
       },
       "ownerSources": {
         "product": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",

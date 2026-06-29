@@ -1,6 +1,6 @@
 {
   "schema": "portal-daily-guard-v2",
-  "generatedAt": "2026-06-29T07:48:44.036Z",
+  "generatedAt": "2026-06-29T08:07:27.273Z",
   "manifest": {
     "file": "scripts\\portal-truth-manifest.json",
     "version": "2026-06-20",
@@ -58,6 +58,7 @@
     "warningReasons": [
       "platform_trends: all series date 2026-06-28 differs from component cutoff mixed",
       "order_procurement: no rows with inTransit/inRequest were available for live fallback coverage",
+      "sku_matrix: 36 platform owner conflicts are visible and require registry decision",
       "phase3:portal_runtime_wiring_reconciliation.json: canonical repricer retained as diagnostic snapshot; feature activation is blocked",
       "phase3:portal_feature_readiness.json: portal_feature_readiness.json: warning"
     ],
@@ -68,8 +69,8 @@
     "contracts": 12,
     "views": 16,
     "blockingChecks": 13,
-    "warningChecks": 0,
-    "fingerprint": "06b5f5583f5662d06335b5655154ac3a6b6529cceccfed4505a77fb199d437ce"
+    "warningChecks": 1,
+    "fingerprint": "24a2c5233b7f9700c6a60c44321d2e5a36aad17f73e137a5b11fe2c9132d44ad"
   },
   "views": {
     "dashboard": {
@@ -581,12 +582,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 25835174,
-      "mtime": "2026-06-29T06:59:18.810Z",
-      "sha256": "ffa5d1295b7e7d2275a7b8b726dae4ea65b9936b126a9655e192446d3c03699e",
+      "bytes": 25098164,
+      "mtime": "2026-06-29T08:04:03.305Z",
+      "sha256": "9545957172f9601ed6a12571e7333c547d1e73dc2ad034bcc939c2491a7386d1",
       "dataDate": "2026-06-28",
       "dataDatePath": "latestMarketplaceDate",
-      "generatedAt": "2026-06-29T06:32:18.705Z"
+      "generatedAt": "2026-06-29T08:04:02.794Z"
     },
     {
       "id": "source:sku_registry",
@@ -601,9 +602,9 @@
         "sku_registry: build date unknown is older than expected run date 2026-06-29"
       ],
       "origin": "input",
-      "bytes": 799793,
-      "mtime": "2026-06-29T06:59:18.830Z",
-      "sha256": "65616990a2e7bbc83f4010cb6a5d727e5077724e01f33167680bf2c14c43b960",
+      "bytes": 797545,
+      "mtime": "2026-06-29T08:04:02.982Z",
+      "sha256": "acef5e2f9caab2cce68b220180fc7c3ed8ed2a1d25c2db2b3ec1fde78772e1cb",
       "dataDate": "",
       "dataDatePath": "",
       "generatedAt": "",
@@ -619,9 +620,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 50343,
-      "mtime": "2026-06-29T07:39:13.592Z",
-      "sha256": "5264c03e41bc71aa3ff8bf63055998c857f880aa9cc21dda3cbc7c427cff1fa6",
+      "bytes": 50062,
+      "mtime": "2026-06-29T08:07:25.861Z",
+      "sha256": "657d9f4ceb8d0369f86e3453c98fab479cd4df05e0efb76bbc260d5f8733d3c4",
       "dataDate": "2026-06-28",
       "dataDatePath": "latestMarketplaceDate",
       "generatedAt": "2026-06-29T06:32:18.705Z"
@@ -638,9 +639,9 @@
         "ads_fact: data date 2026-06-27 is older than expected 2026-06-28"
       ],
       "origin": "input",
-      "bytes": 21883510,
-      "mtime": "2026-06-29T06:59:18.725Z",
-      "sha256": "0cdced8579dd59901d432c2ae10dc02c392666634986bca3a84cae96aebb644f",
+      "bytes": 21250968,
+      "mtime": "2026-06-29T08:04:03.955Z",
+      "sha256": "0d0a4c36eff3044f4754b6228889ce3a64fc9b9e7e595874c0868e20df82aab5",
       "dataDate": "2026-06-27",
       "dataDatePath": "window.to",
       "generatedAt": "2026-06-29T06:43:28.800Z"
@@ -655,9 +656,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 36120,
-      "mtime": "2026-06-29T07:39:13.608Z",
-      "sha256": "731e30fc8d7e0d0f6196afd9cd8a22475028efd5732b3f5620bf1fbc0157d6a3",
+      "bytes": 34575,
+      "mtime": "2026-06-29T08:04:03.332Z",
+      "sha256": "2fa0a805ab49a50ce41223a225d03f04dfa20d6dff4334070120e9662bc33c01",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-06-29T07:35:56.383Z"
@@ -672,12 +673,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 1196934,
-      "mtime": "2026-06-29T07:39:13.595Z",
-      "sha256": "4f5694ab8e5c660e9a133905fcac23e84000b1a6aecedeb972389273c0cd871e",
+      "bytes": 1135212,
+      "mtime": "2026-06-29T08:07:25.734Z",
+      "sha256": "312e26b779fe69878f6983bf43152aaf427f2d76a3c4247d6e536156a84eb3e5",
       "dataDate": "2026-06-28",
       "dataDatePath": "latest_logistics_date",
-      "generatedAt": "2026-06-29T07:35:56.435Z"
+      "generatedAt": "2026-06-29T08:07:25.728Z"
     },
     {
       "id": "source:price_master",
@@ -816,12 +817,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 123289,
-      "mtime": "2026-06-29T07:39:13.596Z",
-      "sha256": "68f095466a11c4e3c8b20b749076c68f1c8ad4d72681a17db7eaabbef4136042",
+      "bytes": 119326,
+      "mtime": "2026-06-29T08:07:25.944Z",
+      "sha256": "f4b678144ae04d3b8df969f093ef1ac7eb689d8c2a07b387dc32f979cdde6c66",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T07:35:56.637Z"
+      "generatedAt": "2026-06-29T08:07:25.942Z"
     },
     {
       "id": "source:sku_matrix",
@@ -833,12 +834,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 432158,
-      "mtime": "2026-06-29T07:48:43.368Z",
-      "sha256": "e2dea0d2d0067ff1426f0285708269e57de285ba8f8bc429adaa0b44af5b1aee",
+      "bytes": 463065,
+      "mtime": "2026-06-29T08:07:26.605Z",
+      "sha256": "80bbc87d7a55587a14c79dddcd94660ad6c8b5f3ebc219acfc1e5ccfb9645270",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T07:48:43.364Z"
+      "generatedAt": "2026-06-29T08:07:26.601Z"
     },
     {
       "id": "source:sku_aliases",
@@ -887,11 +888,11 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 47071,
-      "mtime": "2026-06-29T07:48:43.266Z",
-      "sha256": "e50596c3f54ab893367c8ffa0e84b2ad2242d453e85ac05585397348533c00f0",
+      "mtime": "2026-06-29T08:07:26.515Z",
+      "sha256": "ead0f8a1820b9a830eb2f3bec16ad1ffdb742f7a2fdfe0c39dfa3e6ceefce689",
       "dataDate": "2026-06-28",
       "dataDatePath": "summary.maxDate",
-      "generatedAt": "2026-06-29T07:48:43.265Z"
+      "generatedAt": "2026-06-29T08:07:26.513Z"
     },
     {
       "id": "source:data_quarantine",
@@ -904,11 +905,11 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 2020,
-      "mtime": "2026-06-29T07:48:43.692Z",
-      "sha256": "3f000547eb18acb17e0ad7c19f195d3683c45dcd982341a3efc078c36082ede7",
+      "mtime": "2026-06-29T08:07:26.926Z",
+      "sha256": "f8d19af6cc08ade2e4a74e166d15c34b0f1288fc1ac7a92824f5e255d1d2328c",
       "dataDate": "2026-06-29",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-06-29T07:48:43.684Z"
+      "generatedAt": "2026-06-29T08:07:26.918Z"
     },
     {
       "id": "source:product_leaderboard",
@@ -939,7 +940,7 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 1867008,
-      "mtime": "2026-06-29T07:48:43.008Z",
+      "mtime": "2026-06-29T08:07:26.253Z",
       "sha256": "4358c5313f4e3d5624343d2602963ba30021e92ac670eb3dc024b0bd861d3803",
       "dataDate": "",
       "dataDatePath": "",
@@ -955,9 +956,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 9474277,
-      "mtime": "2026-06-29T06:59:18.861Z",
-      "sha256": "88a9c5e5e83d90857ca569e29313932c2487c74d706539a07f3cfeb77bb1aab7",
+      "bytes": 9173985,
+      "mtime": "2026-06-29T08:04:04.080Z",
+      "sha256": "a172ff35d9fb0cf92d3b69876c5e41b08f46a80960b8bc4f7b8d9e7f9b051431",
       "dataDate": "2026-06-28",
       "dataDatePath": "window.to",
       "generatedAt": "2026-06-28T14:09:06.004Z"
@@ -1048,7 +1049,7 @@
       "activeRows": 143,
       "assignedRows": 143,
       "coverage": 1,
-      "ownerCount": 11,
+      "ownerCount": 7,
       "conflictingSkuCount": 0,
       "conflictingSkuSample": [],
       "suspiciousOwners": [],
@@ -1197,16 +1198,18 @@
       "id": "contract:sku-matrix-phase2",
       "scope": "mapping",
       "source": "sku_matrix",
-      "warnings": [],
+      "warnings": [
+        "sku_matrix: 36 platform owner conflicts are visible and require registry decision"
+      ],
       "blockingReasons": [],
       "rows": 143,
       "embeddedAliasCount": 1132,
       "aliasCount": 566,
       "aliasConflictCount": 0,
       "skuTokenConflictCount": 0,
-      "ownerConflictCount": 0,
+      "ownerConflictCount": 36,
       "platformOwnerErrors": [],
-      "status": "ok"
+      "status": "warning"
     },
     {
       "id": "contract:executive-direct-fact",

@@ -1,8 +1,8 @@
 (function () {
   'use strict';
 
-  if (window.__ALTEA_STORAGE_NAV_PIN_20260629_STORAGE4__) return;
-  window.__ALTEA_STORAGE_NAV_PIN_20260629_STORAGE4__ = true;
+  if (window.__ALTEA_STORAGE_NAV_PIN_20260629_STORAGE6__) return;
+  window.__ALTEA_STORAGE_NAV_PIN_20260629_STORAGE6__ = true;
 
   var VIEW = 'documents';
   var TITLE = '\u0425\u0440\u0430\u043d\u0438\u043b\u0438\u0449\u0435';
@@ -119,6 +119,26 @@
     main.insertBefore(section, control ? control.nextSibling : (main.querySelector('.view') || null));
   }
 
+  function ensureTopAction() {
+    var actions = document.querySelector('.top-actions');
+    if (!actions) return;
+    var link = actions.querySelector('[data-storage-nav-open]');
+    if (!link) {
+      link = document.createElement('a');
+      link.className = 'btn ghost portal-storage-top-link';
+      link.href = '#documents';
+      link.setAttribute('data-storage-nav-open', '');
+      link.textContent = TITLE;
+      var status = actions.querySelector('#syncStatusBadge');
+      actions.insertBefore(link, status ? status.nextSibling : actions.firstChild);
+    }
+    link.hidden = false;
+    link.classList.remove('hidden');
+    link.removeAttribute('hidden');
+    link.removeAttribute('aria-hidden');
+    link.removeAttribute('tabindex');
+  }
+
   function applyAccess() {
     if (window.alteaPortalAccess && typeof window.alteaPortalAccess.apply === 'function') {
       try {
@@ -132,8 +152,10 @@
   function run() {
     ensureAccessAllowsStorage();
     ensureSection();
+    ensureTopAction();
     ensureButton();
     applyAccess();
+    ensureTopAction();
     ensureButton();
   }
 
@@ -157,7 +179,7 @@
   }
 
   document.addEventListener('click', function (event) {
-    var target = event.target && event.target.closest ? event.target.closest('.nav-btn[data-view="' + VIEW + '"]') : null;
+    var target = event.target && event.target.closest ? event.target.closest('.nav-btn[data-view="' + VIEW + '"], [data-storage-nav-open]') : null;
     if (!target) return;
     ensureAccessAllowsStorage();
     revealButton(target);
@@ -183,6 +205,6 @@
 
   window.__ALTEA_STORAGE_NAV_PIN__ = {
     ensure: run,
-    version: '20260629-storage4'
+    version: '20260629-storage6'
   };
 })();

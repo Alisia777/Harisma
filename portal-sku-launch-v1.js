@@ -2438,7 +2438,7 @@
     const stateRef = appState();
     stateRef.launchV1Filters = stateRef.launchV1Filters || {
       search: '',
-      month: '',
+      month: 'all',
       owner: 'all',
       category: 'all',
       status: 'all',
@@ -2446,6 +2446,7 @@
       viewMode: 'month',
       advancedOpen: false
     };
+    if (!stateRef.launchV1Filters.month) stateRef.launchV1Filters.month = 'all';
     return stateRef.launchV1Filters;
   }
 
@@ -2814,11 +2815,11 @@
     if (!root) return;
     const allItems = launchItemsV1();
     const filters = launchFilters();
-    if (!filters.month) {
-      const future = allItems.map(launchDue).filter(Boolean).sort().find((date) => date >= todayKey()) || allItems.map(launchDue).filter(Boolean).sort()[0] || todayKey();
-      filters.month = launchMonthKey(future);
-    }
     const monthOptions = launchMonthOptions(allItems);
+    const validMonths = new Set(monthOptions.map((item) => item.key));
+    if (!filters.month || (filters.month !== 'all' && !validMonths.has(filters.month))) {
+      filters.month = 'all';
+    }
     const filtered = launchFilteredItems(allItems);
     const selectedId = appState().launchV1SelectedId && filtered.some((item) => launchId(item) === appState().launchV1SelectedId)
       ? appState().launchV1SelectedId
@@ -2883,7 +2884,7 @@
       });
     });
     root.querySelector('[data-launch-v1-reset]')?.addEventListener('click', () => {
-      Object.assign(filters, { search: '', owner: 'all', category: 'all', status: 'all', readiness: 'all', viewMode: 'month' });
+      Object.assign(filters, { search: '', month: 'all', owner: 'all', category: 'all', status: 'all', readiness: 'all', viewMode: 'month' });
       rerender();
     });
     root.querySelector('[data-launch-v1-advanced]')?.addEventListener('click', () => {

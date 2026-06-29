@@ -6,7 +6,7 @@ param(
   [ValidateSet("Highest", "Limited")]
   [string]$RunLevel = "Limited",
   [string]$From = "",
-  [string]$Platforms = "wb,ozon,ya,letu,megamarket,samokat",
+  [string]$Platforms = "wb,ozon,ya,goldapple,letu,megamarket,samokat,magnit",
   [switch]$Strict
 )
 

@@ -4,7 +4,7 @@
   if (window.__ALTEA_LAUNCH_AUTOTASKS_V1__) return;
   window.__ALTEA_LAUNCH_AUTOTASKS_V1__ = true;
 
-  const VERSION = '20260629-launch-autotasks-v1';
+  const VERSION = '20260629-launch-autotasks-v2';
   const MAX_BULK_TASKS = 30;
   const REMOVED_STATUSES = new Set(['deleted', 'removed']);
 
@@ -26,6 +26,58 @@
     logist: ['logist', 'logistOwner', 'logisticsOwner', 'supplyOwner', 'owner'],
     kz: ['kzOwner', 'selfBuyOwner', 'buyoutOwner', 'owner'],
     rop: ['ropOwner', 'salesOwner', 'commercialOwner', 'owner']
+  };
+
+  const LAUNCH_MARKETPLACE_LABELS = {
+    wb: 'WB',
+    ozon: 'Ozon',
+    ya: 'Я.Маркет',
+    goldapple: 'ЗЯ',
+    letu: "Л'Этуаль",
+    megamarket: 'Мегамаркет',
+    samokat: 'Самокат',
+    magnit: 'Магнит'
+  };
+
+  const LAUNCH_MARKETPLACE_ALIASES = {
+    wb: 'wb',
+    wildberries: 'wb',
+    вб: 'wb',
+    ozon: 'ozon',
+    озон: 'ozon',
+    ya: 'ya',
+    ym: 'ya',
+    yandex: 'ya',
+    yandexmarket: 'ya',
+    yamarket: 'ya',
+    ям: 'ya',
+    ямаркет: 'ya',
+    яндекс: 'ya',
+    яндексмаркет: 'ya',
+    goldapple: 'goldapple',
+    goldenapple: 'goldapple',
+    zya: 'goldapple',
+    ga: 'goldapple',
+    зя: 'goldapple',
+    золотоеяблоко: 'goldapple',
+    золотойяблоко: 'goldapple',
+    letu: 'letu',
+    letual: 'letu',
+    letoile: 'letu',
+    летуаль: 'letu',
+    лэтуаль: 'letu',
+    megamarket: 'megamarket',
+    sbermegamarket: 'megamarket',
+    мегамаркет: 'megamarket',
+    samokat: 'samokat',
+    самокат: 'samokat',
+    magnit: 'magnit',
+    magnitmarket: 'magnit',
+    magnet: 'magnit',
+    magnetmarket: 'magnit',
+    mm: 'magnit',
+    магнит: 'magnit',
+    магнитмаркет: 'magnit'
   };
 
   const PROCESS_TASKS = [
@@ -198,9 +250,9 @@
       offset: 7,
       role: 'rop',
       priority: 'medium',
-      title: 'Войти в акции WB',
-      nextAction: 'Проверить доступные акции WB, экономику и подать товар в релевантные акции.',
-      evidence: 'Акции проверены'
+      title: 'Проверить акции и промо площадки',
+      nextAction: 'Проверить доступные акции/промо выбранной площадки, экономику и подать товар в релевантные механики.',
+      evidence: 'Акции/промо площадки проверены'
     },
     {
       id: 'd7-review-pin',
@@ -418,6 +470,76 @@
     return '';
   }
 
+  function marketplaceTextValues(value) {
+    if (Array.isArray(value)) return value.flatMap(marketplaceTextValues);
+    if (value && typeof value === 'object') {
+      return ['key', 'id', 'name', 'label', 'marketplace', 'platform', 'network']
+        .map((field) => String(value?.[field] || '').trim())
+        .filter(Boolean);
+    }
+    const text = String(value || '').trim();
+    return text ? [text] : [];
+  }
+
+  function normalizeLaunchMarketplace(value) {
+    const raw = String(value || '').trim().toLowerCase();
+    if (!raw) return '';
+    const compact = raw.replace(/[\s._'`"\u2019-]+/g, '');
+    if (LAUNCH_MARKETPLACE_ALIASES[compact]) return LAUNCH_MARKETPLACE_ALIASES[compact];
+    if (/\bwildberries\b|\bwb\b|(^|\W)вб($|\W)/.test(raw)) return 'wb';
+    if (/\bozon\b|озон/.test(raw)) return 'ozon';
+    if (/яндекс|я\.?\s?маркет|\byandex\b|\bya\b|\bym\b/.test(raw)) return 'ya';
+    if (/gold\s?apple|golden\s?apple|золот.*яблок|(^|\W)з\s?я($|\W)/.test(raw)) return 'goldapple';
+    if (/l['`\u2019\s.-]*etoile|letu|letual|л['`\u2019\s.-]*[еэ]туал|летуаль|лэтуаль/.test(raw)) return 'letu';
+    if (/sber\s?mega\s?market|mega\s?market|мегамаркет/.test(raw)) return 'megamarket';
+    if (/samokat|самокат/.test(raw)) return 'samokat';
+    if (/magnit|magnet|магнит|(^|\W)mm($|\W)/.test(raw)) return 'magnit';
+    return '';
+  }
+
+  function launchMarketplaceKeys(item) {
+    const fields = [
+      'marketplaces',
+      'marketplace',
+      'platforms',
+      'platform',
+      'marketplaceKey',
+      'network',
+      'networks',
+      'retailer',
+      'channel',
+      'market',
+      'salesChannel',
+      'launchPlatform'
+    ];
+    const keys = new Set();
+    fields.flatMap((field) => marketplaceTextValues(item?.[field])).forEach((value) => {
+      const direct = normalizeLaunchMarketplace(value);
+      if (direct) keys.add(direct);
+      String(value || '')
+        .split(/[,+;/|]+|\s+\+\s+|\s+и\s+/i)
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .forEach((part) => {
+          const key = normalizeLaunchMarketplace(part);
+          if (key) keys.add(key);
+        });
+    });
+    return Array.from(keys);
+  }
+
+  function launchMarketplaceKey(item) {
+    const keys = launchMarketplaceKeys(item);
+    if (!keys.length) return 'product';
+    return keys.length === 1 ? keys[0] : 'cross';
+  }
+
+  function launchMarketplaceLabel(item) {
+    const keys = launchMarketplaceKeys(item);
+    if (!keys.length) return firstText(item, ['marketplaces', 'marketplace', 'platform', 'network']);
+    return keys.map((key) => LAUNCH_MARKETPLACE_LABELS[key] || key).join(' + ');
+  }
+
   function ownerForRole(item, role) {
     return firstText(item, ROLE_FIELDS[role] || ['owner']);
   }
@@ -539,15 +661,17 @@
     const status = due && dayDiff(due) <= 0 ? 'in_progress' : 'new';
     const code = taskAutoCode(key, def.id);
     const title = `${productName}: ${def.title}`;
+    const platform = launchMarketplaceKey(item);
+    const platformLabel = launchMarketplaceLabel(item);
     const context = [
       `Процесс запуска: ${def.phaseLabel}`,
       `Роль: ${roleLabel}`,
+      platformLabel ? `Площадка: ${platformLabel}` : '',
       due ? `Срок: ${due}` : 'Срок не рассчитан, нужна дата запуска или склада',
       anchor.source === 'month' ? 'Дата рассчитана от месяца запуска, нужна точная дата склада' : '',
       anchor.source === 'fallback' || String(anchor.source || '').includes('fallback') ? 'Использована резервная дата, уточните дату склада МП' : '',
       def.evidence ? `Результат: ${def.evidence}` : '',
-      firstText(item, ['status']) ? `Статус новинки: ${item.status}` : '',
-      firstText(item, ['marketplaces']) ? `Площадки: ${item.marketplaces}` : ''
+      firstText(item, ['status']) ? `Статус новинки: ${item.status}` : ''
     ].filter(Boolean).join('\n');
     const now = new Date().toISOString();
 
@@ -567,7 +691,7 @@
       status,
       type: 'launch',
       priority: def.priority || 'medium',
-      platform: 'product',
+      platform,
       createdAt: now,
       updatedAt: now,
       generatedBy: VERSION
@@ -662,7 +786,7 @@
       ['Нет owner', noOwner.length, 'Кому уйдут задачи запуска', 'danger'],
       ['Нет точной даты склада', noExactDate.length, 'Сроки считаются от месяца, нужна дата', 'warn'],
       ['Нет продакт-файла', noProductFile.length, 'Нужно вложить или указать ссылку', 'warn'],
-      ['Нет площадки', noMarketplace.length, 'WB/Ozon/Я.Маркет нужны для запуска', 'info'],
+      ['Нет площадки', noMarketplace.length, 'Укажите площадку запуска: WB/Ozon/Я.Маркет/ЗЯ/Лэтуаль/Мегамаркет/Самокат/Магнит', 'info'],
       ['Ждет дату склада МП', waitMp.length, 'Сигналы КЗ/РОП/РК зависят от поступления', 'info']
     ].forEach(([label, count, hint, tone]) => {
       if (count) rows.push({ label, count, hint, tone });

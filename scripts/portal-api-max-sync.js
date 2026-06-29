@@ -143,7 +143,7 @@ function resolveOptions(args) {
   const from = mode === 'daily' || mode === 'recent'
     ? isoDate(args.from || args['date-from']) || addDays(to, -recentDays + 1)
     : maxFrom;
-  const platforms = normalizeText(args.platforms || envValue(process.env, 'ALTEA_PORTAL_API_PLATFORMS') || 'wb,ozon,ya,letu,megamarket,samokat')
+  const platforms = normalizeText(args.platforms || envValue(process.env, 'ALTEA_PORTAL_API_PLATFORMS') || 'wb,ozon,ya,goldapple,letu,megamarket,samokat,magnit')
     .split(',')
     .map((item) => normalizeText(item).toLowerCase())
     .filter(Boolean);

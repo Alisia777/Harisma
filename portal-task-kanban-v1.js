@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260629-task-status-lanes-v1';
+  const VERSION = '20260630-task-platform-scope-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -55,6 +55,10 @@
     letu: 'letu',
     letual: 'letu',
     letoile: 'letu',
+    megamarket: 'megamarket',
+    sbermegamarket: 'megamarket',
+    megamarketru: 'megamarket',
+    samokat: 'samokat',
     magnit: 'magnit',
     magnitmarket: 'magnit',
     product: 'product'
@@ -67,6 +71,8 @@
     ya: 'Я.Маркет',
     goldapple: 'ЗЯ',
     letu: 'Л’Этуаль',
+    megamarket: 'Мегамаркет',
+    samokat: 'Самокат',
     magnit: 'Магнит',
     product: 'Продукт'
   };
@@ -214,6 +220,8 @@
     if (/yandex|яндекс|я\.?\s?маркет|\bym\b|\bya\b/.test(haystack)) return 'ya';
     if (/gold\s?apple|goldapple|золот.*яблок|з\s?я/.test(haystack)) return 'goldapple';
     if (/letu|letoile|л[еэ]туал/.test(haystack)) return 'letu';
+    if (/mega\s?market|megamarket|sbermegamarket|мегамаркет/.test(haystack)) return 'megamarket';
+    if (/samokat|самокат/.test(haystack)) return 'samokat';
     if (/magnit|магнит/.test(haystack)) return 'magnit';
     if (/новин|product|launch|запуск/.test(haystack)) return 'product';
     return 'cross';
@@ -1459,6 +1467,8 @@
       .platform-ya{--card-color:#f2c84b;--platform:#f2c84b}
       .platform-goldapple{--card-color:#72c86a;--platform:#72c86a}
       .platform-letu{--card-color:#d96aa9;--platform:#d96aa9}
+      .platform-megamarket{--card-color:#44b6ff;--platform:#44b6ff}
+      .platform-samokat{--card-color:#39d282;--platform:#39d282}
       .platform-magnit{--card-color:#e85b55;--platform:#e85b55}
       .platform-product{--card-color:#61d8c7;--platform:#61d8c7}
       .platform-cross,.platform-all{--card-color:#dbc7a3;--platform:#dbc7a3}

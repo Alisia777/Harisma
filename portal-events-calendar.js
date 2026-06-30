@@ -8,7 +8,7 @@
   const MAX_SELECTED_SKU_CHIPS = 18;
   const MAX_BULK_SKUS = 500;
   const MAX_TASK_SKU_LINES = 80;
-  const VERSION = '20260626-calendar-no-blink-v1';
+  const VERSION = '20260630-calendar-platform-scope-v1';
   const BACKGROUND_STORAGE_KEY = 'altea.calendar.backgroundMode';
   const BACKGROUND_MODES = ['static', 'motion'];
   const CALENDAR_MOTION_POSTER = 'assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-poster.jpg';
@@ -762,6 +762,30 @@
     return 'product';
   }
 
+  function launchPlatformKeys(item = {}) {
+    const text = [
+      item.platform,
+      item.marketplace,
+      item.marketplaces,
+      item.platforms,
+      item.marketplaceKey,
+      item.network,
+      item.networks,
+      item.retailer,
+      item.channel,
+      item.market,
+      item.salesChannel,
+      item.launchPlatform
+    ].filter(Boolean).join(' ');
+    return uniqueList(platformKeysFromText(text).filter((key) => MARKETPLACE_PLATFORM_KEYS.includes(key)));
+  }
+
+  function launchPlatformKey(item = {}) {
+    const keys = launchPlatformKeys(item);
+    if (!keys.length) return 'product';
+    return keys.length === 1 ? keys[0] : 'cross';
+  }
+
   function launchCalendarDate(item = {}) {
     if (typeof launchDueDateKey === 'function') return validDateKey(launchDueDateKey(item));
     return validDateKey(item.launchDate || item.launchDateKey || item.date || item.startDate);
@@ -791,6 +815,7 @@
   function launchStageCalendarEvents(item = {}, sourceId = '') {
     const name = launchItemName(item);
     const platform = launchPlatformKey(item);
+    const platforms = launchPlatformKeys(item);
     const skus = launchItemSkus(item);
     return LAUNCH_STAGE_DEADLINES.map((stage) => {
       const due = validDateKey(item[stage.due]);
@@ -810,6 +835,7 @@
         readonly: true,
         title: `Новинка: ${stage.label} - ${name}`,
         platform,
+        platforms: platforms.length ? platforms : [platform],
         startDate: due,
         endDate: due,
         skus,
@@ -839,6 +865,8 @@
       const sourceId = launchEventSourceId(item, launchDate);
       const skus = launchItemSkus(item);
       const name = launchItemName(item);
+      const platform = launchPlatformKey(item);
+      const platforms = launchPlatformKeys(item);
       const events = [];
       if (launchDate) {
         events.push({
@@ -847,7 +875,8 @@
           calendarKind: 'launch',
           readonly: true,
           title: `Выход новинки: ${name}`,
-          platform: launchPlatformKey(item),
+          platform,
+          platforms: platforms.length ? platforms : [platform],
           startDate: launchDate,
           endDate: launchDate,
           skus,
@@ -1367,7 +1396,6 @@
     if (eventPlatform === platform) return true;
     if (eventKindKey(event) === 'launch') {
       if (platform === 'product') return true;
-      if (['product', 'cross', 'all'].includes(eventPlatform)) return true;
     }
     return false;
   }

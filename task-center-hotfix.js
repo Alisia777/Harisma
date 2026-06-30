@@ -105,7 +105,7 @@
     if (['magnit', 'mm', 'магнит'].includes(raw)) return 'magnit';
     if (['wb+ozon', 'wb + ozon', 'wb_ozon', 'wb-ozon'].includes(raw)) return 'wb+ozon';
     const marketplacePlatform = inferMarketplacePlatform(text);
-    if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return marketplacePlatform || 'ya';
+    if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return marketplacePlatform || 'cross';
     if (marketplacePlatform) return marketplacePlatform;
     if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
     if (/ozon|озон/.test(text)) return 'ozon';
@@ -132,7 +132,7 @@
     if (platform === 'ozon') return 'ozon';
     if (['ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'].includes(platform)) return platform;
     if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
-    if (platform === 'retail') return inferMarketplacePlatform(text) || 'ya';
+    if (platform === 'retail') return inferMarketplacePlatform(text) || 'cross';
     if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
     if (sku?.flags?.toWorkWB && !sku?.flags?.toWorkOzon) return 'wb';
     if (sku?.flags?.toWorkOzon && !sku?.flags?.toWorkWB) return 'ozon';

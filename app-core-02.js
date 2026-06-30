@@ -893,6 +893,8 @@ function detectMarketplaceKeyList(text = '') {
   if (/яндекс|я[.\s-]?маркет|yandex|(^|[^a-zа-я0-9])(ya|ym|ям)(?=$|[^a-zа-я0-9])/i.test(raw)) push('ya');
   if (isGoldAppleMarketplaceText(raw, compact)) push('goldapple');
   if (/л[\s'`\u2019.-]*[еэ]туал|летуаль?|лэтуаль?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw)) push('letu');
+  if (/мегамаркет|megamarket|sbermegamarket|mega[\s_-]*market/.test(raw) || ['megamarket', 'sbermegamarket'].includes(compact)) push('megamarket');
+  if (/самокат|samokat/.test(raw) || compact === 'samokat') push('samokat');
   if (/магнит|magnit|magnet|(^|\W)mm($|\W)/.test(raw)) push('magnit');
   if (/продукт|новин|launch|ксюш/.test(raw)) push('product');
   return keys;

@@ -4,7 +4,7 @@
   if (window.__ALTEA_ROUTE_LAYER_LOCK_20260623__) return;
   window.__ALTEA_ROUTE_LAYER_LOCK_20260623__ = true;
 
-  const VERSION = '20260629-route-layer-sku-workspace-v2';
+  const VERSION = '20260630-route-layer-control-rescue-v1';
   let cascadeTimers = [];
   let running = false;
   const TRANSIENT_SELECTOR = '.promo-modal-backdrop,.modal,.toast,.portal-loader,.route-loader,.pf-v4-drawer-back,.plb-v2-drawer-back,.launch-v1-editor-backdrop,[data-pf-v4-drawer-back],[data-plb-v2-drawer-back],[data-launch-v1-editor-backdrop]';
@@ -209,6 +209,24 @@
     return true;
   }
 
+  function activateRoute(route, root) {
+    const hash = String(window.location.hash.replace('#', '') || '');
+    if (hash && normalizeView(hash) !== route) return;
+    if (typeof window.setView === 'function') {
+      try {
+        window.setView(route, { persist: true, syncHash: hash !== route });
+        if (root.classList.contains('active')) return;
+      } catch {}
+    }
+    try { appState().activeView = route; } catch {}
+    document.querySelectorAll('.view').forEach((view) => view.classList.toggle('active', view === root));
+    document.querySelectorAll('.nav-btn').forEach((button) => button.classList.toggle('active', button.dataset.view === route));
+    document.body.dataset.portalView = route;
+    if (!hash || hash !== route) {
+      try { history.replaceState(null, '', `${window.location.pathname}${window.location.search}#${route}`); } catch {}
+    }
+  }
+
   function activateAliasRoute(route, root) {
     const hash = String(window.location.hash.replace('#', '') || '');
     if (!hash || normalizeView(hash) !== route || hash === route) return;
@@ -221,6 +239,7 @@
     try { appState().activeView = route; } catch {}
     document.querySelectorAll('.view').forEach((view) => view.classList.toggle('active', view === root));
     document.querySelectorAll('.nav-btn').forEach((button) => button.classList.toggle('active', button.dataset.view === route));
+    document.body.dataset.portalView = route;
     try { history.replaceState(null, '', `${window.location.pathname}${window.location.search}#${route}`); } catch {}
   }
 
@@ -231,7 +250,7 @@
     if (!item) return;
     const root = rootFor(route);
     if (!root) return;
-    if (!root.classList.contains('active')) activateAliasRoute(route, root);
+    if (!root.classList.contains('active')) activateRoute(route, root);
     if (!root.classList.contains('active')) return;
     running = true;
     try {

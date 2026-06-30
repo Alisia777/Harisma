@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-v2",
-  "generatedAt": "2026-06-30T07:08:36.518Z",
-  "snapshot_id": "dashboard:b305e2ace42b6a68",
+  "generatedAt": "2026-06-30T07:30:17.266Z",
+  "snapshot_id": "dashboard:8f1d3524f3cb6fd5",
   "asOfDate": "2026-06-29",
   "latestMarketplaceDate": "2026-06-29",
   "monthKey": "2026-06",
@@ -113,14 +113,14 @@
   },
   "summary": {
     "metrics": 14,
-    "factRevenue": 352242545.27,
+    "factRevenue": 352024076.94,
     "planRevenue": 285818670,
     "planToDate": 276291381,
-    "completionToDate": 1.274895,
-    "unallocatedRevenue": 239869.7,
+    "completionToDate": 1.274104,
+    "unallocatedRevenue": 0,
     "cutoffDate": "2026-06-29",
     "monthKey": "2026-06",
-    "factUnits": 334291.0333,
+    "factUnits": 334317.5161,
     "warehouseStock": 456229,
     "marketplaceStock": 220574
   },
@@ -196,7 +196,7 @@
     {
       "id": "sales-revenue-goldapple",
       "label": "Revenue GOLDAPPLE",
-      "value": 594984,
+      "value": 615500.6896551724,
       "format": "money",
       "period": "2026-06-29",
       "hint": "Fact from platform_trends.json.",
@@ -232,7 +232,7 @@
     {
       "id": "sales-revenue-magnit",
       "label": "Revenue MAGNIT",
-      "value": 25655.92000000002,
+      "value": 26540.606896551744,
       "format": "money",
       "period": "2026-06-29",
       "hint": "Fact from platform_trends.json.",
@@ -241,7 +241,7 @@
     {
       "id": "sales-revenue-unallocated",
       "label": "Revenue unallocated",
-      "value": 239869.7,
+      "value": 0,
       "format": "money",
       "period": "2026-06-29",
       "hint": "Control total remainder stays visible.",
@@ -259,7 +259,7 @@
     {
       "id": "company-fact-revenue",
       "label": "Company fact",
-      "value": 352242545.27,
+      "value": 352024076.94,
       "format": "money",
       "period": "2026-06-29",
       "hint": "Fact is read only from platform_trends.json.",
@@ -268,8 +268,8 @@
     {
       "id": "company-plan-completion",
       "label": "Plan completion to date",
-      "value": 1.2748951631972913,
-      "valuePct": 1.2748951631972913,
+      "value": 1.2741044460594302,
+      "valuePct": 1.2741044460594302,
       "format": "pct",
       "period": "2026-06-29",
       "hint": "Fact divided by linear company plan to date.",
@@ -278,7 +278,7 @@
     {
       "id": "company-forecast-revenue",
       "label": "Company forecast",
-      "value": 364388839.93,
+      "value": 364162838.21,
       "format": "money",
       "period": "2026-06",
       "hint": "Baseline forecast: month-to-date average times month days.",
@@ -315,18 +315,18 @@
       "total_stock": 220574,
       "warehouse_stock": 456229,
       "plan_units": 0,
-      "fact_units_to_date": 334291.0333,
-      "fact_revenue_to_date": 352242545.27,
-      "plan_completion_to_date_pct": 1.274895,
+      "fact_units_to_date": 334317.5161,
+      "fact_revenue_to_date": 352024076.94,
+      "plan_completion_to_date_pct": 1.274104,
       "company_plan_month_key": "2026-06",
       "company_plan_month_label": "июнь 2026",
       "company_plan_revenue": 285818670,
-      "company_fact_revenue_to_date": 352242545.27,
+      "company_fact_revenue_to_date": 352024076.94,
       "company_plan_to_date_revenue": 276291381,
-      "company_plan_completion_month_pct": 1.232399,
-      "company_plan_completion_to_date_pct": 1.274895,
-      "company_forecast_revenue": 364388839.93,
-      "company_forecast_pct": 1.274895,
+      "company_plan_completion_month_pct": 1.231634,
+      "company_plan_completion_to_date_pct": 1.274104,
+      "company_forecast_revenue": 364162838.22,
+      "company_forecast_pct": 1.274104,
       "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
       "platformFacts": {
         "wb": {
@@ -349,9 +349,9 @@
         },
         "goldapple": {
           "dateFrom": "2026-06-01",
-          "dateTo": "2026-06-28",
-          "revenue": 594984,
-          "units": 715
+          "dateTo": "2026-06-29",
+          "revenue": 615500.69,
+          "units": 739.6552
         },
         "letu": {
           "dateFrom": "2026-06-01",
@@ -373,9 +373,9 @@
         },
         "magnit": {
           "dateFrom": "2026-06-01",
-          "dateTo": "2026-06-28",
-          "revenue": 25655.92,
-          "units": 53
+          "dateTo": "2026-06-29",
+          "revenue": 26540.61,
+          "units": 54.8276
         }
       }
     }
@@ -843,11 +843,11 @@
       "monthKey": "2026-06",
       "planRevenueMonth": 285818670,
       "planRevenueToDate": 276291381,
-      "factRevenueToDate": 352242545.27,
-      "completionMonthPct": 1.232399,
-      "completionToDatePct": 1.274895,
-      "forecastRevenue": 364388839.93,
-      "forecastPct": 1.274895
+      "factRevenueToDate": 352024076.94,
+      "completionMonthPct": 1.231634,
+      "completionToDatePct": 1.274104,
+      "forecastRevenue": 364162838.22,
+      "forecastPct": 1.274104
     },
     "months": {
       "2026-05": {

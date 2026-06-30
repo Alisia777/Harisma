@@ -1,17 +1,17 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-30T07:26:14.669Z",
+  "generatedAt": "2026-06-30T07:31:01.662Z",
   "status": "blocked",
   "publish": {
     "allowed": false,
     "blockingReasons": [
       "SKU matrix alias count does not match sku_aliases (566/341).",
-      "API SKU sum is above marketplace aggregate for 1 platform(s)."
+      "API SKU sum is above marketplace aggregate for 2 platform(s)."
     ],
     "warnings": [
-      "Potential duplicated revenue overage: 175320."
+      "Potential duplicated revenue overage: 414296."
     ],
-    "checkedAt": "2026-06-30T07:26:14.669Z"
+    "checkedAt": "2026-06-30T07:31:01.662Z"
   },
   "freshness": {
     "maxDate": "2026-06-29",
@@ -20,7 +20,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-30T07:26:14.664Z",
+      "checkedAt": "2026-06-30T07:31:01.656Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-29",
       "maxDate": "2026-06-29",
@@ -67,7 +67,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-30T07:26:14.669Z",
+      "checkedAt": "2026-06-30T07:31:01.662Z",
       "expectedDate": "2026-06-29",
       "adsSummaryWindowTo": "2026-06-27",
       "iuDrrWindowTo": "2026-06-29",
@@ -109,7 +109,7 @@
     "dashboard": {
       "exists": true,
       "rows": 20,
-      "generatedAt": "2026-06-30T07:08:36.518Z",
+      "generatedAt": "2026-06-30T07:30:17.266Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
@@ -122,15 +122,15 @@
     },
     "platform_trends": {
       "exists": true,
-      "rows": 11,
-      "generatedAt": "2026-06-30T07:08:36.518Z",
+      "rows": 9,
+      "generatedAt": "2026-06-30T07:30:17.266Z",
       "asOfDate": "2026-06-29",
-      "revenue": 1276714511
+      "revenue": 1275938624
     },
     "ads_summary": {
       "exists": true,
       "rows": 6,
-      "generatedAt": "2026-06-30T07:08:36.574Z",
+      "generatedAt": "2026-06-30T07:30:35.304Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
@@ -158,7 +158,7 @@
     "smart_price_overlay": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-30T07:08:36.703Z",
+      "generatedAt": "2026-06-30T07:30:35.701Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
@@ -256,16 +256,16 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-30T07:23:55.566Z",
+      "generatedAt": "2026-06-30T07:31:01.334Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "portal_data_quarantine": {
       "exists": true,
-      "rows": 32,
-      "generatedAt": "2026-06-30T07:23:55.566Z",
+      "rows": 33,
+      "generatedAt": "2026-06-30T07:31:01.334Z",
       "asOfDate": "2026-06-30",
-      "revenue": 692055
+      "revenue": 1546532
     },
     "sku_aliases": {
       "exists": true,
@@ -291,14 +291,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-30T07:24:03.220Z",
+      "generatedAt": "2026-06-30T07:31:01.060Z",
       "asOfDate": "2026-06-30",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-30T07:18:45.038Z",
+      "generatedAt": "2026-06-30T07:30:37.160Z",
       "asOfDate": "2026-06-30",
       "revenue": 0
     }
@@ -356,8 +356,8 @@
     ]
   },
   "quality": {
-    "issueCount": 54,
-    "criticalCount": 1,
+    "issueCount": 55,
+    "criticalCount": 2,
     "warningCount": 0,
     "monthKey": "2026-06",
     "maxDate": "2026-06-29",
@@ -371,10 +371,10 @@
     "apiKnownOutsideRegistryUniqueSku": 4,
     "apiKnownOutsideRegistryRevenue": 126032,
     "apiIgnoredPlatformRows": 0,
-    "apiSumAboveAggregateCount": 1,
-    "apiSumAboveAggregateOverage": 175320,
+    "apiSumAboveAggregateCount": 2,
+    "apiSumAboveAggregateOverage": 414296,
     "skuAliasCount": 341,
-    "priceContourSkuCount": 305,
+    "priceContourSkuCount": 306,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
     "warehouseUnmatchedRows": 25,
@@ -385,14 +385,14 @@
   },
   "apiReconciliation": {
     "blocked": true,
-    "count": 1,
-    "overage": 175320
+    "count": 2,
+    "overage": 414296
   },
   "quarantine": {
-    "rows": 1,
-    "revenue": 544413,
-    "overage": 175320,
-    "apiSumAboveAggregateCount": 1,
+    "rows": 2,
+    "revenue": 1398890,
+    "overage": 414296,
+    "apiSumAboveAggregateCount": 2,
     "apiUnmappedHighRevenueCount": 0
   },
   "lastGood": {
@@ -411,12 +411,12 @@
       },
       {
         "snapshot": "platform_trends",
-        "rows": 11,
+        "rows": 9,
         "previousRows": 7,
-        "rowRatio": 1.5714285714285714,
-        "revenue": 1276714511,
+        "rowRatio": 1.2857142857142858,
+        "revenue": 1275938624,
         "previousRevenue": 100968408,
-        "revenueRatio": 12.644692892454044,
+        "revenueRatio": 12.637008439313018,
         "revenueComparable": true
       },
       {
@@ -475,7 +475,7 @@
     {
       "name": "required:platform_trends",
       "status": "ok",
-      "rows": 11
+      "rows": 9
     },
     {
       "name": "required:order_procurement",

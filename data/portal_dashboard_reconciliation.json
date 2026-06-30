@@ -1,12 +1,12 @@
 {
   "schema": "portal-dashboard-reconciliation-v1",
-  "generatedAt": "2026-06-30T07:08:36.518Z",
-  "snapshot_id": "dashboard:b305e2ace42b6a68",
+  "generatedAt": "2026-06-30T07:30:17.266Z",
+  "snapshot_id": "dashboard:8f1d3524f3cb6fd5",
   "status": "blocked",
   "publish_allowed": false,
-  "business_fingerprint": "160d7b6a52739d0ee6a9bd05ce4e82011f9e1730fb32974ae916a45523a4a37d",
+  "business_fingerprint": "3f69ab0936c0a54622bda082919448b22a7329098d8c97f57716a5e54347e364",
   "blockingReasons": [
-    "mixed platform fact dates: 2026-06-29, 2026-06-29, 2026-06-22, 2026-06-28, 2026-06-29, 2026-06-28"
+    "mixed platform fact dates: 2026-06-29, 2026-06-29, 2026-06-22, 2026-06-29, 2026-06-29, 2026-06-29"
   ],
   "warnings": [],
   "checks": [

@@ -1,13 +1,13 @@
 {
   "schema": "portal-sku-matrix-v2",
-  "generatedAt": "2026-06-30T07:24:03.220Z",
+  "generatedAt": "2026-06-30T07:31:01.060Z",
   "source": {
     "skus": 143,
     "aliases": 566,
     "externalAliases": 341,
     "embeddedAliases": 1132,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-06-30T07:23:55.566Z"
+    "dataQualityGeneratedAt": "2026-06-30T07:30:36.830Z"
   },
   "summary": {
     "skuCount": 143,
@@ -18,10 +18,10 @@
     "ownerConflictCount": 36,
     "ignoredApiSkuCount": 0,
     "apiUnmappedCount": 0,
-    "duplicateRiskCount": 1,
-    "duplicateRiskOverage": 175320,
+    "duplicateRiskCount": 2,
+    "duplicateRiskOverage": 414296,
     "missingOwnerCount": 0,
-    "issueCount": 1,
+    "issueCount": 2,
     "infoIssueCount": 53,
     "problemStateCounts": {
       "owner_platform_conflict": 36,
@@ -10062,6 +10062,14 @@
   "skuTokenConflicts": [],
   "apiUnmapped": [],
   "duplicateRisks": [
+    {
+      "platform": "goldapple",
+      "platformLabel": "ЗЯ",
+      "revenue": 854477,
+      "aggregateRevenue": 615501,
+      "overage": 238976,
+      "message": "Сумма SKU по API выше агрегата площадки"
+    },
     {
       "platform": "letu",
       "platformLabel": "Лэтуаль",

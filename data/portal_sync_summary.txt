@@ -1,11 +1,11 @@
 Portal sync health: blocked
-Generated: 2026-06-30T07:26:14.669Z
+Generated: 2026-06-30T07:31:01.662Z
 Publish allowed: no
 Max data date: 2026-06-29
 
 Blocking reasons:
 - SKU matrix alias count does not match sku_aliases (566/341).
-- API SKU sum is above marketplace aggregate for 1 platform(s).
+- API SKU sum is above marketplace aggregate for 2 platform(s).
 
 Warnings:
-- Potential duplicated revenue overage: 175320.
+- Potential duplicated revenue overage: 414296.

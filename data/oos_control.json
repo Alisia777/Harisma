@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-06-30T07:23:54.665Z",
+  "generatedAt": "2026-06-30T07:39:19.515Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -14,14 +14,14 @@
     "status": "ok",
     "dataDate": "2026-06-29",
     "expectedFactDate": "2026-06-29",
-    "sourceGeneratedAt": "2026-06-30T07:18:33.018Z",
+    "sourceGeneratedAt": "2026-06-30T07:26:14.375Z",
     "message": "Данные свежие: факт до 2026-06-29.",
-    "orderProcurementGeneratedAt": "2026-06-30T07:18:33.018Z",
+    "orderProcurementGeneratedAt": "2026-06-30T07:26:14.375Z",
     "orderWindow": {
       "from": "2026-06-02",
       "to": "2026-06-29"
     },
-    "smartPriceGeneratedAt": "2026-06-30T07:08:36.703Z",
+    "smartPriceGeneratedAt": "2026-06-30T07:30:35.701Z",
     "sources": {
       "orderProcurement": "order_procurement.json",
       "skus": "skus.json",

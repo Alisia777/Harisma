@@ -1080,6 +1080,23 @@ function latestDateFromPlatforms(platforms) {
   return dates.sort().pop() || '';
 }
 
+function latestDateForPlatform(platforms, key) {
+  const dates = [];
+  for (const point of platforms.get(key)?.series || []) {
+    const date = isoDate(point?.label || point?.date);
+    if (date) dates.push(date);
+  }
+  return dates.sort().pop() || '';
+}
+
+function commonBusinessCutoff(platformCutoffDates) {
+  const dates = ['wb', 'ozon', 'ya']
+    .map((key) => isoDate(platformCutoffDates?.[key]))
+    .filter(Boolean)
+    .sort();
+  return dates.length === 3 ? dates[0] : '';
+}
+
 function updatePlatformTrends(existing, layer, options, identities, sourceInfo = {}) {
   const platforms = platformMap(existing);
   const existingYa = platforms.get('ya') || { key: 'ya', label: PLATFORM_LABELS.ya, series: [] };
@@ -1112,6 +1129,13 @@ function updatePlatformTrends(existing, layer, options, identities, sourceInfo =
       .map(([, platform]) => platform)
   ];
   const latestMarketplaceDate = latestDateFromPlatforms(platforms) || existing?.latestMarketplaceDate || options.to;
+  const platformCutoffDates = {
+    ...(existing?.platformCutoffDates || {}),
+    wb: latestDateForPlatform(platforms, 'wb'),
+    ozon: latestDateForPlatform(platforms, 'ozon'),
+    ya: latestDateForPlatform(platforms, 'ya')
+  };
+  const businessCutoffDate = commonBusinessCutoff(platformCutoffDates) || existing?.businessCutoffDate || latestMarketplaceDate;
   const existingExtraMarketplace = existing?.extraMarketplace && typeof existing.extraMarketplace === 'object'
     ? existing.extraMarketplace
     : {};
@@ -1123,6 +1147,9 @@ function updatePlatformTrends(existing, layer, options, identities, sourceInfo =
     ...existing,
     generatedAt: new Date().toISOString(),
     latestMarketplaceDate,
+    businessCutoffDate,
+    sourceLatestMarketplaceDate: latestMarketplaceDate,
+    platformCutoffDates,
     note: 'Marketplace facts refreshed from API-backed platform_trends.json with Yandex Market direct SKU layer.',
     platforms: ordered,
     yandexMarketApiDirect: {

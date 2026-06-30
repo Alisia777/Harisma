@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-metrics-v1",
-  "generatedAt": "2026-06-30T07:30:17.266Z",
-  "snapshot_id": "dashboard:8f1d3524f3cb6fd5",
+  "generatedAt": "2026-06-30T07:43:05.442Z",
+  "snapshot_id": "dashboard:41c676b385f31ec7",
   "metric_registry_version": "2026-06-20.1",
   "indicator_policy_version": "2026-06-20.1",
   "cutoffDate": "2026-06-29",
@@ -9,7 +9,7 @@
   "source_checksums": {
     "platform_trends.json": {
       "exists": true,
-      "sha256": "c04212257b29fe5531744d408013922f83e72463861448b67a3e831bb8fc80d5"
+      "sha256": "9cede2e94d80d0476995360a6d41cb6a7ed5d140c321b35d436862bc84293609"
     },
     "company_plan.json": {
       "exists": true,
@@ -30,11 +30,11 @@
   },
   "summary": {
     "metrics": 14,
-    "factRevenue": 352024076.94,
+    "factRevenue": 351996562.88,
     "planRevenue": 285818670,
     "planToDate": 276291381,
-    "completionToDate": 1.274104,
-    "unallocatedRevenue": 0
+    "completionToDate": 1.274005,
+    "unallocatedRevenue": -1011134.06
   },
   "metrics": [
     {
@@ -55,10 +55,10 @@
       "source_dates": {
         "platform_trends": "2026-06-29"
       },
-      "data_status": "incomplete",
-      "reconciliation_status": "blocked",
+      "data_status": "trusted",
+      "reconciliation_status": "ok",
       "business_status": "neutral",
-      "confidence": "low",
+      "confidence": "high",
       "drilldown": [
         {
           "platform": "wb",
@@ -87,10 +87,10 @@
       "source_dates": {
         "platform_trends": "2026-06-29"
       },
-      "data_status": "incomplete",
-      "reconciliation_status": "blocked",
+      "data_status": "trusted",
+      "reconciliation_status": "ok",
       "business_status": "neutral",
-      "confidence": "low",
+      "confidence": "high",
       "drilldown": [
         {
           "platform": "ozon",
@@ -111,25 +111,25 @@
       },
       "period_from": "2026-06-01",
       "period_to": "2026-06-29",
-      "raw_value": 7749945,
-      "displayed_value": 7749945,
+      "raw_value": 8733565,
+      "displayed_value": 8733565,
       "transforms": [
         "sum_daily_marketplace_sales_fact"
       ],
       "source_dates": {
-        "platform_trends": "2026-06-22"
+        "platform_trends": "2026-06-29"
       },
-      "data_status": "incomplete",
-      "reconciliation_status": "blocked",
+      "data_status": "trusted",
+      "reconciliation_status": "ok",
       "business_status": "neutral",
-      "confidence": "low",
+      "confidence": "high",
       "drilldown": [
         {
           "platform": "ya",
-          "revenue": 7749945,
-          "units": 9633,
+          "revenue": 8733565,
+          "units": 10891,
           "date_from": "2026-06-01",
-          "date_to": "2026-06-22"
+          "date_to": "2026-06-29"
         }
       ]
     },
@@ -151,10 +151,10 @@
       "source_dates": {
         "platform_trends": "2026-06-29"
       },
-      "data_status": "incomplete",
-      "reconciliation_status": "blocked",
+      "data_status": "trusted",
+      "reconciliation_status": "ok",
       "business_status": "neutral",
-      "confidence": "low",
+      "confidence": "high",
       "drilldown": [
         {
           "platform": "goldapple",
@@ -183,10 +183,10 @@
       "source_dates": {
         "platform_trends": "2026-06-29"
       },
-      "data_status": "incomplete",
-      "reconciliation_status": "blocked",
+      "data_status": "trusted",
+      "reconciliation_status": "ok",
       "business_status": "neutral",
-      "confidence": "low",
+      "confidence": "high",
       "drilldown": [
         {
           "platform": "letu",
@@ -279,10 +279,10 @@
       "source_dates": {
         "platform_trends": "2026-06-29"
       },
-      "data_status": "incomplete",
-      "reconciliation_status": "blocked",
+      "data_status": "trusted",
+      "reconciliation_status": "ok",
       "business_status": "neutral",
-      "confidence": "low",
+      "confidence": "high",
       "drilldown": [
         {
           "platform": "magnit",
@@ -303,8 +303,8 @@
       },
       "period_from": "2026-06-01",
       "period_to": "2026-06-29",
-      "raw_value": 0,
-      "displayed_value": 0,
+      "raw_value": -1011134.06,
+      "displayed_value": -1011134.06,
       "transforms": [
         "platform_all_control_minus_included_platforms"
       ],
@@ -312,7 +312,7 @@
         "platform_trends_all": "2026-06-29",
         "wb": "2026-06-29",
         "ozon": "2026-06-29",
-        "ya": "2026-06-22",
+        "ya": "2026-06-29",
         "goldapple": "2026-06-29",
         "letu": "2026-06-29",
         "megamarket": "",
@@ -320,17 +320,17 @@
         "magnit": "2026-06-29"
       },
       "data_status": "trusted",
-      "reconciliation_status": "ok",
+      "reconciliation_status": "warning",
       "business_status": "neutral",
       "confidence": "high",
       "drilldown": [
         {
-          "all_revenue": 352024076.9445,
-          "included_revenue": 352024076.94,
-          "unallocated_revenue": 0,
-          "all_units": 334317.5160999999,
-          "included_units": 334317.516,
-          "unallocated_units": 0.0001
+          "all_revenue": 351996562.87999994,
+          "included_revenue": 353007696.94,
+          "unallocated_revenue": -1011134.06,
+          "all_units": 334003,
+          "included_units": 335575.516,
+          "unallocated_units": -1572.516
         }
       ]
     },
@@ -383,8 +383,8 @@
       },
       "period_from": "2026-06-01",
       "period_to": "2026-06-29",
-      "raw_value": 1.2741044460594302,
-      "displayed_value": 127.41,
+      "raw_value": 1.2740048625693468,
+      "displayed_value": 127.4,
       "transforms": [
         "sales.raw_revenue / plan_to_date"
       ],
@@ -398,10 +398,10 @@
       "confidence": "high",
       "drilldown": [
         {
-          "factRevenue": 352024076.94,
+          "factRevenue": 351996562.88,
           "planToDate": 276291381,
-          "completionMonth": 1.231634,
-          "completionToDate": 1.274104
+          "completionMonth": 1.231538,
+          "completionToDate": 1.274005
         }
       ]
     },
@@ -415,8 +415,8 @@
       },
       "period_from": "2026-06-01",
       "period_to": "2026-06-30",
-      "raw_value": 364162838.21,
-      "displayed_value": 364162838.21,
+      "raw_value": 364134375.39,
+      "displayed_value": 364134375.39,
       "transforms": [
         "forecast_only:not_fact",
         "daily_fact_average * month_days"
@@ -431,7 +431,7 @@
       "confidence": "medium",
       "drilldown": [
         {
-          "factRevenue": 352024076.94,
+          "factRevenue": 351996562.88,
           "elapsedDays": 29,
           "planDays": 30
         }

@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-30T07:31:01.662Z",
+  "generatedAt": "2026-06-30T07:45:13.158Z",
   "status": "blocked",
   "publish": {
     "allowed": false,
@@ -11,7 +11,7 @@
     "warnings": [
       "Potential duplicated revenue overage: 414296."
     ],
-    "checkedAt": "2026-06-30T07:31:01.662Z"
+    "checkedAt": "2026-06-30T07:45:13.158Z"
   },
   "freshness": {
     "maxDate": "2026-06-29",
@@ -20,7 +20,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-30T07:31:01.656Z",
+      "checkedAt": "2026-06-30T07:45:13.152Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-29",
       "maxDate": "2026-06-29",
@@ -67,7 +67,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-30T07:31:01.662Z",
+      "checkedAt": "2026-06-30T07:45:13.157Z",
       "expectedDate": "2026-06-29",
       "adsSummaryWindowTo": "2026-06-27",
       "iuDrrWindowTo": "2026-06-29",
@@ -109,7 +109,7 @@
     "dashboard": {
       "exists": true,
       "rows": 20,
-      "generatedAt": "2026-06-30T07:30:17.266Z",
+      "generatedAt": "2026-06-30T07:43:05.442Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
@@ -123,9 +123,9 @@
     "platform_trends": {
       "exists": true,
       "rows": 9,
-      "generatedAt": "2026-06-30T07:30:17.266Z",
+      "generatedAt": "2026-06-30T07:43:05.442Z",
       "asOfDate": "2026-06-29",
-      "revenue": 1275938624
+      "revenue": 1267348332
     },
     "ads_summary": {
       "exists": true,
@@ -207,21 +207,21 @@
     "order_procurement": {
       "exists": true,
       "rows": 3124,
-      "generatedAt": "2026-06-30T07:18:33.018Z",
+      "generatedAt": "2026-06-30T07:26:14.375Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "order_procurement_wb": {
       "exists": true,
       "rows": 615,
-      "generatedAt": "2026-06-30T07:18:33.018Z",
+      "generatedAt": "2026-06-30T07:26:14.375Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "order_procurement_ozon": {
       "exists": true,
       "rows": 1615,
-      "generatedAt": "2026-06-30T07:18:33.018Z",
+      "generatedAt": "2026-06-30T07:26:14.375Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
@@ -235,14 +235,14 @@
     "oos_control": {
       "exists": true,
       "rows": 29,
-      "generatedAt": "2026-06-30T07:23:54.665Z",
+      "generatedAt": "2026-06-30T07:39:19.515Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "iu_drr_summary": {
       "exists": true,
       "rows": 29,
-      "generatedAt": "2026-06-30T07:26:13.623Z",
+      "generatedAt": "2026-06-30T07:45:12.453Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
@@ -256,16 +256,16 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-30T07:31:01.334Z",
+      "generatedAt": "2026-06-30T07:39:19.861Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "portal_data_quarantine": {
       "exists": true,
-      "rows": 33,
-      "generatedAt": "2026-06-30T07:31:01.334Z",
+      "rows": 2,
+      "generatedAt": "2026-06-30T07:41:32.709Z",
       "asOfDate": "2026-06-30",
-      "revenue": 1546532
+      "revenue": 1398890
     },
     "sku_aliases": {
       "exists": true,
@@ -291,14 +291,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-30T07:31:01.060Z",
+      "generatedAt": "2026-06-30T07:39:19.579Z",
       "asOfDate": "2026-06-30",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-30T07:30:37.160Z",
+      "generatedAt": "2026-06-30T07:41:32.716Z",
       "asOfDate": "2026-06-30",
       "revenue": 0
     }
@@ -414,9 +414,9 @@
         "rows": 9,
         "previousRows": 7,
         "rowRatio": 1.2857142857142858,
-        "revenue": 1275938624,
+        "revenue": 1267348332,
         "previousRevenue": 100968408,
-        "revenueRatio": 12.637008439313018,
+        "revenueRatio": 12.55192943123358,
         "revenueComparable": true
       },
       {

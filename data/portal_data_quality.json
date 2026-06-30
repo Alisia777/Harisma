@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-30T07:31:01.334Z",
+  "generatedAt": "2026-06-30T07:39:19.861Z",
   "status": "critical",
   "summary": {
     "issueCount": 55,
@@ -42,7 +42,7 @@
     {
       "dataset": "platform_trends",
       "asOfDate": "2026-06-29",
-      "generatedAt": "2026-06-30T07:30:17.266Z",
+      "generatedAt": "2026-06-30T07:39:19.214Z",
       "rows": 9,
       "referenceDate": "2026-06-30",
       "lagDays": 1,
@@ -51,7 +51,7 @@
     {
       "dataset": "order_procurement",
       "asOfDate": "2026-06-29",
-      "generatedAt": "2026-06-30T07:18:33.018Z",
+      "generatedAt": "2026-06-30T07:26:14.375Z",
       "rows": 3124,
       "referenceDate": "2026-06-30",
       "lagDays": 1,
@@ -162,6 +162,23 @@
       "directRevenue": 21463,
       "directUnits": 43,
       "aggregateRevenue": 26541,
+      "aggregateDate": "2026-06-29",
+      "unmappedCount": 0,
+      "unmappedRevenue": 0,
+      "unmappedUnits": 0,
+      "ignoredCount": 0,
+      "ignoredRevenue": 0,
+      "ignoredUnits": 0,
+      "knownOutsideRegistryCount": 0,
+      "knownOutsideRegistryRevenue": 0,
+      "knownOutsideRegistryUnits": 0
+    },
+    "ya": {
+      "label": "Я.Маркет",
+      "rows": 105,
+      "directRevenue": 738493,
+      "directUnits": 933,
+      "aggregateRevenue": 8733565,
       "aggregateDate": "2026-06-29",
       "unmappedCount": 0,
       "unmappedRevenue": 0,

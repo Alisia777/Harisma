@@ -4,7 +4,7 @@
   if (window.__ALTEA_LAUNCH_AUTOTASKS_V1__) return;
   window.__ALTEA_LAUNCH_AUTOTASKS_V1__ = true;
 
-  const VERSION = '20260629-launch-autotasks-v2';
+  const VERSION = '20260630-launch-autotasks-working-v1';
   const MAX_BULK_TASKS = 30;
   const REMOVED_STATUSES = new Set(['deleted', 'removed']);
 
@@ -453,13 +453,14 @@
     return String(item.id || item.articleKey || item.article || item.name || stableId('launch', JSON.stringify(item))).trim();
   }
 
-  function launchItems() {
+  function launchItems(options = {}) {
     const source = typeof window.getLaunchItems === 'function'
       ? window.getLaunchItems({ skipTaskLookup: true })
       : appState().launches;
-    return (Array.isArray(source) ? source : [])
+    const items = (Array.isArray(source) ? source : [])
       .filter((item) => item && typeof item === 'object')
       .map((item) => ({ ...item, id: launchId(item) }));
+    return options.skipMarketplaceScope ? items : items.filter((item) => launchMatchesMarketplace(item));
   }
 
   function firstText(item, fields) {
@@ -497,6 +498,27 @@
     return '';
   }
 
+  function activeMarketplaceKey() {
+    const stateRef = appState();
+    const candidates = [
+      document.body?.dataset?.marketplace,
+      document.body?.dataset?.platform,
+      stateRef.filters?.market,
+      stateRef.filters?.platform,
+      stateRef.globalMarket,
+      stateRef.marketplace
+    ];
+    for (const value of candidates) {
+      const raw = String(value || '').trim().toLowerCase();
+      if (!raw) continue;
+      if (raw === 'all' || raw === '\u0432\u0441\u0435' || raw === '\u0432\u0441\u0435 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0438') return 'all';
+      const key = normalizeLaunchMarketplace(raw);
+      if (key) return key;
+      if (['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'].includes(raw)) return raw;
+    }
+    return 'all';
+  }
+
   function launchMarketplaceKeys(item) {
     const fields = [
       'marketplaces',
@@ -526,6 +548,12 @@
         });
     });
     return Array.from(keys);
+  }
+
+  function launchMatchesMarketplace(item, marketplace = activeMarketplaceKey()) {
+    const selected = String(marketplace || 'all').trim();
+    if (!selected || selected === 'all') return true;
+    return launchMarketplaceKeys(item).includes(selected);
   }
 
   function launchMarketplaceKey(item) {
@@ -728,6 +756,78 @@
     return appState().storage.tasks;
   }
 
+  function storageComments() {
+    const stateRef = appState();
+    stateRef.storage.comments = Array.isArray(stateRef.storage.comments) ? stateRef.storage.comments : [];
+    return stateRef.storage.comments;
+  }
+
+  function commentId(seed = '') {
+    if (typeof window.uid === 'function') return window.uid('comment');
+    return stableId('comment-launch-auto', `${seed}|${Date.now()}|${Math.random().toString(36).slice(2, 8)}`);
+  }
+
+  function taskSourceKey(task = {}) {
+    const source = String(task.source || '').trim().toLowerCase();
+    const id = String(task.id || '').trim().toLowerCase();
+    return source === 'auto' || task.autoCode || id.startsWith('auto-') ? 'auto' : 'manual';
+  }
+
+  function persistTaskLater(task) {
+    try {
+      const fn = window.persistTask || (typeof persistTask === 'function' ? persistTask : null);
+      if (typeof fn === 'function') Promise.resolve(fn(task)).catch((error) => console.warn('[launch-autotasks] persist task', error));
+    } catch (error) {
+      console.warn('[launch-autotasks] persist task', error);
+    }
+  }
+
+  function persistCommentLater(comment) {
+    try {
+      const fn = window.persistComment || (typeof persistComment === 'function' ? persistComment : null);
+      if (typeof fn === 'function') Promise.resolve(fn(comment)).catch((error) => console.warn('[launch-autotasks] persist comment', error));
+    } catch (error) {
+      console.warn('[launch-autotasks] persist comment', error);
+    }
+  }
+
+  function createTaskHistory(task, entry) {
+    if (!task?.id) return null;
+    const comments = storageComments();
+    const marker = `[[task:${task.id}]]`;
+    if (comments.some((comment) => String(comment?.text || '').includes(marker) && String(comment?.text || '').includes('[[kind:created]]'))) return null;
+    const message = [
+      '\u0410\u0432\u0442\u043e\u0437\u0430\u0434\u0430\u0447\u0430 \u0441\u043e\u0437\u0434\u0430\u043d\u0430 \u0438\u0437 \u043a\u0430\u043b\u0435\u043d\u0434\u0430\u0440\u044f \u043d\u043e\u0432\u0438\u043d\u043e\u043a.',
+      entry?.def?.phaseLabel ? `\u042d\u0442\u0430\u043f: ${entry.def.phaseLabel}.` : '',
+      task.due ? `\u0421\u0440\u043e\u043a: ${task.due}.` : '\u0421\u0440\u043e\u043a \u043d\u0443\u0436\u043d\u043e \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c.'
+    ].filter(Boolean).join(' ');
+    const comment = {
+      id: commentId(`${task.id}|created`),
+      articleKey: task.articleKey || '',
+      author: appState()?.team?.member?.name || task.owner || '\u041a\u043e\u043c\u0430\u043d\u0434\u0430',
+      team: appState()?.team?.member?.name || '\u041a\u043e\u043c\u0430\u043d\u0434\u0430',
+      type: 'task_log',
+      text: `${marker} [[kind:created]] ${message}`,
+      createdAt: new Date().toISOString()
+    };
+    comments.unshift(comment);
+    persistCommentLater(comment);
+    return comment;
+  }
+
+  function backfillLaunchTaskHistory() {
+    const tasks = allKnownTasks().filter((task) => (
+      task
+      && !isRemoved(task)
+      && String(task.autoCode || '').startsWith('launch_ops:')
+    ));
+    let created = 0;
+    tasks.forEach((task) => {
+      if (createTaskHistory(task, null)) created += 1;
+    });
+    if (created) saveState('launch-autotasks-history-backfill');
+  }
+
   function createTasks(entries, limit = Number.POSITIVE_INFINITY) {
     const created = [];
     const candidates = entries
@@ -741,6 +841,8 @@
       const task = { ...entry.payload, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
       tasks.unshift(task);
       created.push(task);
+      createTaskHistory(task, entry);
+      persistTaskLater(task);
     }
     if (created.length) saveState('launch-autotasks-create');
     return created;
@@ -807,8 +909,8 @@
             <strong>Запуск новинки по Excel</strong>
           </div>
           <div class="launch-ops-actions">
-            <button type="button" data-launch-ops-create-selected ${selected ? '' : 'disabled'}>Создать по выбранной</button>
-            <button type="button" data-launch-ops-create-bulk>Создать пакет ${Math.min(MAX_BULK_TASKS, data.missing.length)}</button>
+            <button type="button" data-launch-ops-create-selected ${selectedMissing.length ? '' : 'disabled'}>Создать по выбранной</button>
+            <button type="button" data-launch-ops-create-bulk ${data.missing.length ? '' : 'disabled'}>Создать пакет ${Math.min(MAX_BULK_TASKS, data.missing.length)}</button>
             <button type="button" data-launch-ops-open-tasks>Открыть задачи</button>
           </div>
         </div>
@@ -879,9 +981,66 @@
             </span>
           `).join('')}
         </div>
-        <button type="button" data-launch-ops-create-selected>Создать недостающие по этой новинке</button>
+        <button type="button" data-launch-ops-create-selected ${missing.length ? '' : 'disabled'}>${missing.length ? 'Создать недостающие по этой новинке' : 'Все автозадачи созданы'}</button>
       </div>
     `;
+  }
+
+  function launchAutoTasksForCalendar() {
+    const marketplace = activeMarketplaceKey();
+    const visibleLaunches = new Set(launchItems().map((item) => launchId(item)));
+    if (marketplace !== 'all' && !visibleLaunches.size) return [];
+    return allKnownTasks().filter((task) => {
+      if (!task || isRemoved(task)) return false;
+      if (!String(task.autoCode || '').startsWith('launch_ops:')) return false;
+      if (!parseDateKey(task.due || task.startDate || task.date)) return false;
+      const key = String(task.launchId || '').trim();
+      if (!key) return marketplace === 'all';
+      return visibleLaunches.has(key);
+    });
+  }
+
+  function shortTaskTitle(task = {}) {
+    const title = String(task.title || task.nextAction || '\u0410\u0432\u0442\u043e\u0437\u0430\u0434\u0430\u0447\u0430').trim();
+    const entity = String(task.entityLabel || '').trim();
+    return entity && title.startsWith(`${entity}:`) ? title.slice(entity.length + 1).trim() : title;
+  }
+
+  function injectTaskChipsIntoCalendar(root) {
+    if (!root) return;
+    root.querySelectorAll('.launch-ops-task-chip,.launch-ops-task-more').forEach((node) => node.remove());
+    const tasksByDay = new Map();
+    launchAutoTasksForCalendar().forEach((task) => {
+      const due = parseDateKey(task.due || task.startDate || task.date);
+      if (!due) return;
+      if (!tasksByDay.has(due)) tasksByDay.set(due, []);
+      tasksByDay.get(due).push(task);
+    });
+    root.querySelectorAll('[data-launch-v1-day]').forEach((dayNode) => {
+      const day = dayNode.dataset.launchV1Day || '';
+      const tasks = (tasksByDay.get(day) || []).sort((left, right) => {
+        const leftScore = taskSourceKey(left) === 'auto' ? 0 : 1;
+        const rightScore = taskSourceKey(right) === 'auto' ? 0 : 1;
+        return leftScore - rightScore || String(left.title || '').localeCompare(String(right.title || ''), 'ru');
+      });
+      if (!tasks.length) return;
+      const holder = Array.from(dayNode.children).find((node) => node.tagName === 'DIV') || dayNode;
+      tasks.slice(0, 3).forEach((task) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `launch-ops-task-chip ${dayDiff(day) < 0 ? 'danger' : ''}`;
+        button.dataset.launchOpsOpenTask = String(task.id || '');
+        button.title = String(task.title || '');
+        button.innerHTML = `<span>${html(shortTaskTitle(task))}</span>`;
+        holder.appendChild(button);
+      });
+      if (tasks.length > 3) {
+        const more = document.createElement('small');
+        more.className = 'launch-ops-task-more';
+        more.textContent = `+\u0435\u0449\u0435 ${tasks.length - 3} \u0437\u0430\u0434\u0430\u0447`;
+        holder.appendChild(more);
+      }
+    });
   }
 
   function injectStyles() {
@@ -896,7 +1055,7 @@
       .launch-ops-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
       .launch-ops-actions button,.launch-ops-detail>button{min-height:38px;border:1px solid rgba(224,190,126,.24);border-radius:8px;background:rgba(255,255,255,.035);color:var(--sl-text,#f7f1e8);padding:0 12px;font-weight:800;cursor:pointer}
       .launch-ops-actions button:first-child,.launch-ops-detail>button{background:linear-gradient(180deg,#ffe1a1,#b98536);color:#130d07;border-color:rgba(255,227,157,.7)}
-      .launch-ops-actions button:disabled{opacity:.48;cursor:not-allowed}
+      .launch-ops-actions button:disabled,.launch-ops-detail>button:disabled{opacity:.48;cursor:not-allowed;filter:saturate(.4)}
       .launch-ops-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
       .launch-ops-kpis span{border:1px solid rgba(224,190,126,.13);border-radius:8px;background:rgba(0,0,0,.18);padding:10px 12px;display:grid;gap:3px;min-height:76px}
       .launch-ops-kpis strong{font-size:26px;line-height:1}
@@ -916,6 +1075,10 @@
       .launch-ops-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
       .launch-ops-detail-grid span{border:1px solid rgba(224,190,126,.13);border-radius:8px;padding:8px;background:rgba(0,0,0,.14);display:grid;grid-template-columns:10px minmax(0,1fr);gap:7px;align-items:center}
       .launch-ops-detail-grid b{font-size:11px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.launch-ops-detail-grid em{grid-column:2}
+      .launch-ops-task-chip{width:100%;display:grid;grid-template-columns:7px minmax(0,1fr);gap:7px;align-items:center;margin-top:5px;border:1px solid rgba(88,214,202,.22);border-radius:7px;background:rgba(24,48,52,.34);color:var(--sl-text,#f7f1e8);padding:6px 7px;text-align:left;font-size:10px;line-height:1.18;cursor:pointer}
+      .launch-ops-task-chip::before{content:"";width:7px;height:7px;border-radius:50%;background:#58d6ca;box-shadow:0 0 0 3px rgba(88,214,202,.12)}
+      .launch-ops-task-chip.danger{border-color:rgba(255,116,105,.32);background:rgba(62,24,22,.34)}.launch-ops-task-chip.danger::before{background:#ff7469;box-shadow:0 0 0 3px rgba(255,116,105,.12)}
+      .launch-ops-task-chip span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.launch-ops-task-more{display:block;margin-top:5px;color:var(--sl-muted,rgba(247,241,232,.62));font-size:10px}
       @media (max-width:1100px){.launch-ops-head,.launch-ops-body{grid-template-columns:1fr;display:grid}.launch-ops-actions{justify-content:start}.launch-ops-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media (max-width:720px){.launch-ops-kpis,.launch-ops-detail-grid{grid-template-columns:1fr}}
     `;
@@ -925,6 +1088,7 @@
   function augmentLaunchView() {
     const root = document.getElementById('view-launches');
     if (!root || !root.querySelector('.launch-v1-shell')) return;
+    backfillLaunchTaskHistory();
     const oldPanel = root.querySelector('[data-launch-ops-panel]');
     if (oldPanel) oldPanel.remove();
     const kpis = root.querySelector('.launch-v1-kpis');
@@ -935,18 +1099,51 @@
     const detail = root.querySelector('.launch-v1-detail');
     if (detail && selected) detail.insertAdjacentHTML('beforeend', renderSelectedOpsBlock(selected));
 
+    injectTaskChipsIntoCalendar(root);
     bindOpsEvents(root);
   }
 
   function openTasksView() {
-    appState().activeView = 'control';
-    appState().controlFilters = appState().controlFilters || {};
-    Object.assign(appState().controlFilters, { type: 'launch', source: 'auto', status: 'active' });
-    if (typeof window.setView === 'function') window.setView('control');
-    else window.location.hash = '#control';
-    window.setTimeout(() => {
-      if (typeof window.renderControlCenter === 'function') window.renderControlCenter('view-control');
-    }, 120);
+    const stateRef = appState();
+    stateRef.activeView = 'control';
+    stateRef.controlFilters = stateRef.controlFilters || {};
+    Object.assign(stateRef.controlFilters, {
+      search: '',
+      owner: 'all',
+      status: 'active',
+      type: 'launch',
+      priority: 'all',
+      platform: 'all',
+      horizon: 'all',
+      source: 'auto'
+    });
+    try {
+      if (typeof window.invalidateControlTaskCache === 'function') window.invalidateControlTaskCache();
+    } catch {}
+    const activateDom = () => {
+      document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.id === 'view-control'));
+      document.querySelectorAll('.nav-btn').forEach((button) => button.classList.toggle('active', button.dataset.view === 'control'));
+      document.body.dataset.portalView = 'control';
+    };
+    try {
+      if (typeof window.setView === 'function') window.setView('control');
+      else window.location.hash = '#control';
+    } catch {
+      window.location.hash = '#control';
+    }
+    activateDom();
+    try { history.replaceState(null, '', `${window.location.pathname}${window.location.search}#control`); } catch {}
+    try { window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view: 'control', source: VERSION } })); } catch {}
+    [0, 80, 220, 600].forEach((delay) => {
+      window.setTimeout(() => {
+        activateDom();
+        try {
+          if (typeof window.renderControlCenter === 'function') window.renderControlCenter('view-control');
+        } catch (error) {
+          console.warn('[launch-autotasks] open tasks render', error);
+        }
+      }, delay);
+    });
   }
 
   function launchToast(message) {
@@ -1022,6 +1219,15 @@
         event.preventDefault();
         event.stopPropagation();
         openTasksView();
+        return;
+      }
+      const openTask = event.target.closest?.('[data-launch-ops-open-task]');
+      if (openTask) {
+        event.preventDefault();
+        event.stopPropagation();
+        const taskId = openTask.dataset.launchOpsOpenTask || '';
+        if (taskId && typeof window.openTaskModal === 'function') window.openTaskModal(taskId);
+        else openTasksView();
         return;
       }
       const single = event.target.closest?.('[data-launch-ops-create-one]');

@@ -1333,8 +1333,13 @@
     if (filters.status !== 'active' && filters.status !== 'all' && status !== filters.status) return false;
     if (filters.priority !== 'all' && String(taskItem?.priority || 'medium') !== filters.priority) return false;
     if (filters.type !== 'all' && String(taskItem?.type || 'general') !== filters.type) return false;
-    if (filters.source === 'manual' && String(taskItem?.source || 'manual').toLowerCase() === 'auto') return false;
-    if (filters.source === 'auto' && String(taskItem?.source || 'manual').toLowerCase() !== 'auto') return false;
+    const sourceKey = String(taskItem?.source || '').trim().toLowerCase() === 'auto'
+      || taskItem?.autoCode
+      || String(taskItem?.id || '').trim().toLowerCase().startsWith('auto-')
+      ? 'auto'
+      : 'manual';
+    if (filters.source === 'manual' && sourceKey === 'auto') return false;
+    if (filters.source === 'auto' && sourceKey !== 'auto') return false;
     if (filters.horizon === 'overdue' && !controlSimpleIsOverdue(taskItem)) return false;
     if (filters.horizon === 'today' && String(taskItem?.due || '') !== todayIso()) return false;
     if (filters.horizon === 'week' && (!taskItem?.due || String(taskItem.due) > plusDays(7))) return false;

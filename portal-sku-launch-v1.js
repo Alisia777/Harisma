@@ -2643,7 +2643,7 @@
       if (filters.readiness === 'ready' && !itemReady.ready) return false;
       if (filters.readiness === 'blocked' && !(item.blockers || []).length && !stageEntries(item).some((entry) => entry.column?.key === 'blocked')) return false;
       if (filters.readiness === 'missing-owner' && owner) return false;
-      if (filters.readiness === 'missing-date' && due) return false;
+      if (filters.readiness === 'missing-date' && launchExactDue(item)) return false;
       return true;
     });
   }

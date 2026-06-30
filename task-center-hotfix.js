@@ -78,6 +78,12 @@
     return '';
   }
 
+  function taskSourceKey(task = {}) {
+    const source = String(task.source || '').trim().toLowerCase();
+    const id = String(task.id || '').trim().toLowerCase();
+    return source === 'auto' || task.autoCode || id.startsWith('auto-') ? 'auto' : 'manual';
+  }
+
   function inferMarketplacePlatform(text = '') {
     const raw = String(text || '').toLowerCase();
     if (/мегамаркет|mega[\s_-]*market|megamarket|sbermegamarket/.test(raw)) return 'megamarket';
@@ -167,8 +173,8 @@
       if (filters.status !== 'active' && filters.status !== 'all' && task.status !== filters.status) return false;
       if (!settings.ignoreType && filters.type !== 'all' && task.type !== filters.type) return false;
       if (!settings.ignorePlatform && selectedWorkstream !== 'all' && workstreamKey(task, sku) !== selectedWorkstream) return false;
-      if (filters.source === 'manual' && task.source === 'auto') return false;
-      if (filters.source === 'auto' && task.source !== 'auto') return false;
+      if (filters.source === 'manual' && taskSourceKey(task) === 'auto') return false;
+      if (filters.source === 'auto' && taskSourceKey(task) !== 'auto') return false;
       if (!settings.ignorePriority && filters.priority === 'critical' && task.priority !== 'critical') return false;
       if (filters.horizon === 'overdue' && !isTaskOverdue(task)) return false;
       if (filters.horizon === 'today' && task.due !== todayIso()) return false;

@@ -1,27 +1,73 @@
 {
   "schema": "portal-api-max-sync-v1",
-  "generatedAt": "2026-06-29T11:11:25.256Z",
-  "startedAt": "2026-06-29T11:09:16.786Z",
+  "generatedAt": "2026-06-30T07:08:37.326Z",
+  "startedAt": "2026-06-30T07:08:04.734Z",
   "mode": "max",
   "window": {
-    "from": "2026-06-01",
-    "to": "2026-06-28"
+    "from": "2026-06-28",
+    "to": "2026-06-29"
   },
   "platforms": [
+    "wb",
+    "ozon",
+    "goldapple",
     "letu",
     "megamarket",
-    "samokat"
+    "samokat",
+    "magnit"
   ],
   "dryRun": false,
   "strict": false,
-  "status": "ok",
+  "status": "failed",
   "steps": [
+    {
+      "id": "wb",
+      "name": "WB API marketplace facts",
+      "status": "ok",
+      "startedAt": "2026-06-30T07:08:04.945Z",
+      "finishedAt": "2026-06-30T07:08:21.893Z",
+      "exitCode": 0,
+      "skippedReason": "",
+      "chunkDays": 31,
+      "chunks": [
+        {
+          "from": "2026-06-28",
+          "to": "2026-06-29",
+          "status": "ok",
+          "exitCode": 0,
+          "merge": {
+            "merged": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ozon",
+      "name": "Ozon API marketplace facts",
+      "status": "ok",
+      "startedAt": "2026-06-30T07:08:21.893Z",
+      "finishedAt": "2026-06-30T07:08:33.247Z",
+      "exitCode": 0,
+      "skippedReason": "",
+      "chunkDays": 31,
+      "chunks": [
+        {
+          "from": "2026-06-28",
+          "to": "2026-06-29",
+          "status": "ok",
+          "exitCode": 0,
+          "merge": {
+            "merged": true
+          }
+        }
+      ]
+    },
     {
       "id": "extra-marketplace-workbook",
       "name": "Extra marketplace API workbook build",
       "status": "ok",
-      "startedAt": "2026-06-29T11:09:16.996Z",
-      "finishedAt": "2026-06-29T11:09:19.032Z",
+      "startedAt": "2026-06-30T07:08:33.247Z",
+      "finishedAt": "2026-06-30T07:08:35.929Z",
       "exitCode": 0,
       "skippedReason": ""
     },
@@ -29,36 +75,33 @@
       "id": "extra-marketplace-merge",
       "name": "Extra marketplace API merge",
       "status": "ok",
-      "startedAt": "2026-06-29T11:09:19.032Z",
-      "finishedAt": "2026-06-29T11:09:19.835Z",
+      "startedAt": "2026-06-30T07:08:35.929Z",
+      "finishedAt": "2026-06-30T07:08:36.999Z",
       "exitCode": 0,
       "skippedReason": ""
     },
     {
-      "id": "iu-drr",
-      "name": "IU/DRR summary rebuild",
-      "status": "ok",
-      "startedAt": "2026-06-29T11:09:19.835Z",
-      "finishedAt": "2026-06-29T11:11:24.970Z",
-      "exitCode": 0,
-      "skippedReason": ""
-    },
-    {
-      "id": "sync-health",
-      "name": "Portal sync health after API max sync",
-      "status": "ok",
-      "startedAt": "2026-06-29T11:11:24.970Z",
-      "finishedAt": "2026-06-29T11:11:25.241Z",
-      "exitCode": 0,
+      "id": "magnit",
+      "name": "Magnit Market daily source normalization",
+      "status": "failed",
+      "startedAt": "2026-06-30T07:08:36.999Z",
+      "finishedAt": "2026-06-30T07:08:37.297Z",
+      "exitCode": 1,
       "skippedReason": ""
     }
   ],
   "platformSummary": {
+    "goldapple": {
+      "points": 90,
+      "from": "2026-04-01",
+      "to": "2026-06-29",
+      "revenue": 2606053
+    },
     "letu": {
-      "points": 179,
+      "points": 180,
       "from": "2026-01-01",
-      "to": "2026-06-28",
-      "revenue": 6934707.25
+      "to": "2026-06-29",
+      "revenue": 6946599.7672
     },
     "megamarket": {
       "points": 0,
@@ -72,17 +115,23 @@
       "to": "",
       "revenue": 0
     },
+    "magnit": {
+      "points": 180,
+      "from": "2026-01-01",
+      "to": "2026-06-29",
+      "revenue": 28862.82
+    },
     "wb": {
-      "points": 59,
+      "points": 60,
       "from": "2026-05-01",
-      "to": "2026-06-28",
-      "revenue": 468419301
+      "to": "2026-06-29",
+      "revenue": 477877095
     },
     "ozon": {
-      "points": 59,
+      "points": 60,
       "from": "2026-05-01",
-      "to": "2026-06-28",
-      "revenue": 123928300.83
+      "to": "2026-06-29",
+      "revenue": 125897064.85
     },
     "ya": {
       "points": 173,
@@ -91,10 +140,10 @@
       "revenue": 23637619.9015
     },
     "all": {
-      "points": 179,
+      "points": 180,
       "from": "2026-01-01",
-      "to": "2026-06-28",
-      "revenue": 622919928.9773
+      "to": "2026-06-29",
+      "revenue": 636993295.3381
     }
   }
 }

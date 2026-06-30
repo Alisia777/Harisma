@@ -1,28 +1,15 @@
 {
   "schema": "portal-data-quarantine-v1",
-  "generatedAt": "2026-06-29T11:11:25.216Z",
+  "generatedAt": "2026-06-30T07:26:14.662Z",
   "reason": "Rows that need review before the data contour can be trusted.",
   "summary": {
-    "rows": 3,
-    "revenue": 1490826,
-    "overage": 490820,
-    "apiSumAboveAggregateCount": 3,
+    "rows": 1,
+    "revenue": 544413,
+    "overage": 175320,
+    "apiSumAboveAggregateCount": 1,
     "apiUnmappedHighRevenueCount": 0
   },
   "rows": [
-    {
-      "type": "api_sum_above_aggregate",
-      "severity": "critical",
-      "platform": "goldapple",
-      "platformLabel": "ЗЯ",
-      "articleKey": "",
-      "name": "",
-      "revenue": 918692,
-      "aggregateRevenue": 616233,
-      "overage": 302458,
-      "units": 0,
-      "message": "Сумма SKU по API выше агрегата площадки"
-    },
     {
       "type": "api_sum_above_aggregate",
       "severity": "critical",
@@ -30,22 +17,9 @@
       "platformLabel": "Лэтуаль",
       "articleKey": "",
       "name": "",
-      "revenue": 532520,
-      "aggregateRevenue": 357200,
+      "revenue": 544413,
+      "aggregateRevenue": 369093,
       "overage": 175320,
-      "units": 0,
-      "message": "Сумма SKU по API выше агрегата площадки"
-    },
-    {
-      "type": "api_sum_above_aggregate",
-      "severity": "critical",
-      "platform": "magnit",
-      "platformLabel": "Магнит Маркет",
-      "articleKey": "",
-      "name": "",
-      "revenue": 39614,
-      "aggregateRevenue": 26572,
-      "overage": 13042,
       "units": 0,
       "message": "Сумма SKU по API выше агрегата площадки"
     }

@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-06-29T08:07:25.728Z",
+  "generatedAt": "2026-06-30T07:18:33.018Z",
   "sourceFreshness": {
-    "logistics": "2026-06-29T08:07:25.728Z",
-    "logisticsFileMtime": "2026-06-29T08:07:25.734Z",
-    "logisticsFileSize": 1135212,
+    "logistics": "2026-06-30T07:18:33.018Z",
+    "logisticsFileMtime": "2026-06-30T07:23:25.116Z",
+    "logisticsFileSize": 1202443,
     "logisticsRows": 2230,
-    "yandexOrderProcurement": "2026-06-15T08:33:08.937Z",
-    "yandexRows": 935,
-    "skusFileMtime": "2026-06-29T08:04:02.982Z",
-    "skusFileSize": 797545,
+    "yandexOrderProcurement": "2026-06-30T07:13:22.012Z",
+    "yandexRows": 894,
+    "skusFileMtime": "2026-06-30T07:23:25.185Z",
+    "skusFileSize": 821325,
     "skuRows": 143
   },
   "window": {

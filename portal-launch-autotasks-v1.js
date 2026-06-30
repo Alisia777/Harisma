@@ -4,7 +4,7 @@
   if (window.__ALTEA_LAUNCH_AUTOTASKS_V1__) return;
   window.__ALTEA_LAUNCH_AUTOTASKS_V1__ = true;
 
-  const VERSION = '20260630-launch-autotasks-working-v1';
+  const VERSION = '20260630-launch-autotasks-control-rescue-v1';
   const MAX_BULK_TASKS = 30;
   const REMOVED_STATUSES = new Set(['deleted', 'removed']);
 
@@ -1121,9 +1121,22 @@
       if (typeof window.invalidateControlTaskCache === 'function') window.invalidateControlTaskCache();
     } catch {}
     const activateDom = () => {
+      try { stateRef.activeView = 'control'; } catch {}
       document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.id === 'view-control'));
       document.querySelectorAll('.nav-btn').forEach((button) => button.classList.toggle('active', button.dataset.view === 'control'));
       document.body.dataset.portalView = 'control';
+    };
+    const renderControl = () => {
+      activateDom();
+      try {
+        if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__?.renderControl) {
+          window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__.renderControl();
+        } else if (typeof window.renderControlCenter === 'function') {
+          window.renderControlCenter('view-control');
+        }
+      } catch (error) {
+        console.warn('[launch-autotasks] open tasks render', error);
+      }
     };
     try {
       if (typeof window.setView === 'function') window.setView('control');
@@ -1131,17 +1144,12 @@
     } catch {
       window.location.hash = '#control';
     }
-    activateDom();
+    renderControl();
     try { history.replaceState(null, '', `${window.location.pathname}${window.location.search}#control`); } catch {}
     try { window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view: 'control', source: VERSION } })); } catch {}
-    [0, 80, 220, 600].forEach((delay) => {
+    [0, 80, 220, 600, 1200].forEach((delay) => {
       window.setTimeout(() => {
-        activateDom();
-        try {
-          if (typeof window.renderControlCenter === 'function') window.renderControlCenter('view-control');
-        } catch (error) {
-          console.warn('[launch-autotasks] open tasks render', error);
-        }
+        renderControl();
       }, delay);
     });
   }
@@ -1196,12 +1204,10 @@
     return created;
   }
 
-  function bindOpsEvents(root) {
-    if (root.__launchOpsBound) return;
-    root.__launchOpsBound = true;
-    root.addEventListener('click', (event) => {
+  function handleOpsClick(event) {
       const selectedButton = event.target.closest?.('[data-launch-ops-create-selected]');
       if (selectedButton) {
+        if (selectedButton.disabled) return;
         event.preventDefault();
         event.stopPropagation();
         createSelectedTasks();
@@ -1209,6 +1215,7 @@
       }
       const bulkButton = event.target.closest?.('[data-launch-ops-create-bulk]');
       if (bulkButton) {
+        if (bulkButton.disabled) return;
         event.preventDefault();
         event.stopPropagation();
         createBulkTasks();
@@ -1216,6 +1223,7 @@
       }
       const openTasks = event.target.closest?.('[data-launch-ops-open-tasks]');
       if (openTasks) {
+        if (openTasks.disabled) return;
         event.preventDefault();
         event.stopPropagation();
         openTasksView();
@@ -1232,11 +1240,23 @@
       }
       const single = event.target.closest?.('[data-launch-ops-create-one]');
       if (single) {
+        if (single.disabled) return;
         event.preventDefault();
         event.stopPropagation();
         createOneTask(single.dataset.launchOpsLaunch || '', single.dataset.launchOpsCreateOne || '');
       }
-    });
+  }
+
+  function bindOpsEvents(root) {
+    if (root.__launchOpsBound) return;
+    root.__launchOpsBound = true;
+    root.addEventListener('click', handleOpsClick);
+  }
+
+  function bindGlobalOpsEvents() {
+    if (window.__ALTEA_LAUNCH_OPS_GLOBAL_CLICK__) return;
+    window.__ALTEA_LAUNCH_OPS_GLOBAL_CLICK__ = true;
+    document.addEventListener('click', handleOpsClick);
   }
 
   function queueAugment() {
@@ -1272,6 +1292,7 @@
 
   function boot() {
     injectStyles();
+    bindGlobalOpsEvents();
     if (!wrapRenderLaunches()) {
       wrapTimer += 1;
       if (wrapTimer < 120) window.setTimeout(boot, 80);

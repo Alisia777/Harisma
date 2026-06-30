@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260630-task-platform-scope-v1';
+  const VERSION = '20260630-task-control-rescue-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -2165,6 +2165,27 @@
     return Boolean(viewRoot?.classList.contains('active') || activeView === 'control' || hash.includes('control'));
   }
 
+  function activateControlRoute() {
+    const viewRoot = root();
+    if (!viewRoot) return null;
+    const stateRef = appState();
+    try { stateRef.activeView = 'control'; } catch (_) {}
+    document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section === viewRoot));
+    document.querySelectorAll('.nav-btn').forEach((button) => button.classList.toggle('active', button.dataset.view === 'control'));
+    document.body.dataset.portalView = 'control';
+    if (window.location.hash !== '#control') {
+      try { history.replaceState(null, '', `${window.location.pathname}${window.location.search}#control`); } catch (_) {}
+    }
+    return viewRoot;
+  }
+
+  function renderControlImmediately() {
+    const viewRoot = activateControlRoute();
+    if (!viewRoot?.classList.contains('active')) return viewRoot;
+    enhanceControl(true);
+    return viewRoot;
+  }
+
   function installWrapper() {
     const current = window.renderControlCenter;
     if (typeof current !== 'function') {
@@ -2177,8 +2198,10 @@
     }
     wrappedRender = function taskDesignRenderControlCenter(...args) {
       if (isControlRouteActive()) {
-        queueEnhance(true);
-        return root();
+        const viewRoot = renderControlImmediately();
+        window.setTimeout(() => enhanceControl(true), 80);
+        window.setTimeout(() => enhanceControl(true), 260);
+        return viewRoot || root();
       }
       const result = current.apply(this, args);
       queueEnhance();
@@ -2204,8 +2227,10 @@
     const onRouteChange = () => {
       installWrapper();
       if (isControlRouteActive()) {
+        activateControlRoute();
         startControlObserver();
-        queueEnhance(true);
+        renderControlImmediately();
+        window.setTimeout(() => enhanceControl(true), 160);
       }
     };
     window.addEventListener('altea:viewchange', onRouteChange);
@@ -2220,6 +2245,11 @@
       }
     }, true);
   }
+
+  window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__ = {
+    renderControl: renderControlImmediately,
+    queue: queueEnhance
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot, { once: true });

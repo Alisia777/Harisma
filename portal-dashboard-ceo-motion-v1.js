@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-dashboard-ads-scope4';
+  const VERSION = '20260630-dashboard-marketplace-fallback1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -173,13 +173,13 @@
   }
 
   function normalizePlatform(value) {
-    const raw = String(value || 'all').trim().toLowerCase();
+    const raw = String(value || 'all').trim().toLowerCase().replace(/\s+/g, '');
     if (!raw || raw === 'marketplaces' || raw === 'all') return 'all';
     if (raw === 'yandex' || raw === 'ym' || raw === 'ya') return 'ya';
-    if (raw === 'goldapple' || raw === 'gold_apple' || raw === 'ga' || raw === 'goldapple-online') return 'goldapple';
+    if (raw === 'goldapple' || raw === 'gold_apple' || raw === 'gold-apple' || raw === 'goldenapple' || raw === 'ga' || raw === 'goldapple-online') return 'goldapple';
     if (raw === 'megamarket' || raw === 'mega_market' || raw === 'sbermegamarket') return 'megamarket';
     if (raw === 'samokat') return 'samokat';
-    if (raw === 'magnitmarket' || raw === 'magnit_market') return 'magnit';
+    if (raw === 'magnitmarket' || raw === 'magnit_market' || raw === 'magnit-market' || raw === 'mm') return 'magnit';
     return PLATFORM_META[raw] ? (PLATFORM_META[raw].alias || raw) : 'all';
   }
 
@@ -215,14 +215,26 @@
 
   function currentGlobalPlatform() {
     const state = appState();
-    return normalizePlatform(
+    const candidates = [
+      document.documentElement?.dataset?.marketplace,
+      document.body?.dataset?.marketplace,
+      document.documentElement?.dataset?.platform,
+      document.body?.dataset?.platform,
+      document.documentElement?.dataset?.market,
+      document.body?.dataset?.market,
+      state.globalMarketplace,
+      state.uiHotfix?.globalMarketplace,
+      state.uiHotfix?.dashboardPlatform,
+      state.filters?.market,
+      state.filters?.platform,
       readStorage(GLOBAL_MARKET_KEY, '')
-      || state.globalMarketplace
-      || state.uiHotfix?.globalMarketplace
-      || state.uiHotfix?.dashboardPlatform
-      || document.body?.dataset?.market
-      || 'all'
-    );
+    ];
+    for (const candidate of candidates) {
+      if (candidate === null || candidate === undefined || String(candidate).trim() === '') continue;
+      const normalized = normalizePlatform(candidate);
+      if (normalized !== 'all') return normalized;
+    }
+    return 'all';
   }
 
   function stateSource(name) {
@@ -471,6 +483,43 @@
     return dates.sort().pop() || '';
   }
 
+  function latestPlatformSeriesDate(platform) {
+    return (Array.isArray(platform?.series) ? platform.series : [])
+      .map((row) => dateKey(row.date || row.label))
+      .filter(Boolean)
+      .sort()
+      .pop() || '';
+  }
+
+  function platformSeriesSignal(platform) {
+    return (Array.isArray(platform?.series) ? platform.series : [])
+      .reduce((sum, row) => sum
+        + Math.abs(finite(row.revenue))
+        + Math.abs(finite(row.ordersUnits, finite(row.orderUnits, finite(row.units))))
+        + Math.abs(finite(row.estimatedMargin, finite(row.financialResult))), 0);
+  }
+
+  function choosePlatformRow(primary, fallback) {
+    if (!primary) return fallback || {};
+    if (!fallback) return primary;
+    const primarySeries = Array.isArray(primary.series) ? primary.series : [];
+    const fallbackSeries = Array.isArray(fallback.series) ? fallback.series : [];
+    if (!primarySeries.length && fallbackSeries.length) return { ...primary, ...fallback, label: primary.label || fallback.label };
+    if (primarySeries.length && !fallbackSeries.length) return primary;
+
+    const primarySignal = platformSeriesSignal(primary);
+    const fallbackSignal = platformSeriesSignal(fallback);
+    if (fallbackSignal > 0 && primarySignal === 0) return { ...primary, ...fallback, label: primary.label || fallback.label };
+    if (primarySignal > 0 && fallbackSignal === 0) return primary;
+
+    const primaryLatest = latestPlatformSeriesDate(primary);
+    const fallbackLatest = latestPlatformSeriesDate(fallback);
+    if (fallbackLatest > primaryLatest) return { ...primary, ...fallback, label: primary.label || fallback.label };
+    if (primaryLatest > fallbackLatest) return primary;
+    if (fallbackSeries.length > primarySeries.length) return { ...primary, ...fallback, label: primary.label || fallback.label };
+    return primary;
+  }
+
   function mergePlatformTrends(statePayload, cachedPayload) {
     const stateCount = platformSeriesCount(statePayload);
     const cachedCount = platformSeriesCount(cachedPayload);
@@ -485,7 +534,10 @@
       const key = normalizePlatform(row.key);
       const cached = byKey.get(key) || {};
       const rowHasSeries = Array.isArray(row.series) && row.series.length > 0;
-      byKey.set(key, rowHasSeries ? { ...cached, ...row } : { ...cached, ...row, series: cached.series || [] });
+      const merged = rowHasSeries
+        ? choosePlatformRow(row, cached)
+        : { ...cached, ...row, series: cached.series || [] };
+      byKey.set(key, merged);
     });
 
     const merged = {
@@ -1049,8 +1101,16 @@
     return MARKETPLACE_ORDER
       .map((key) => {
         const platform = trendByKey.get(key) || { key, label: platformMeta(key).label, series: [] };
-        const rows = rowsInRange(platform.series, model.range.start, model.range.end);
-        const prevRows = rowsInRange(platform.series, model.range.prevStart, model.range.prevEnd);
+        let rows = rowsInRange(platform.series, model.range.start, model.range.end);
+        let prevRows = rowsInRange(platform.series, model.range.prevStart, model.range.prevEnd);
+        if (!rows.length) {
+          const platformLatest = latestPlatformSeriesDate(platform);
+          if (platformLatest) {
+            const platformRange = currentRange(platformLatest, model.period || '14');
+            rows = rowsInRange(platform.series, platformRange.start, platformRange.end);
+            prevRows = rowsInRange(platform.series, platformRange.prevStart, platformRange.prevEnd);
+          }
+        }
         const total = sumRows(rows);
         const previous = sumRows(prevRows);
         applyRawRevenueFallback(total, raw[key], rows);
@@ -1320,14 +1380,25 @@
     const iuDrr = source('iuDrr') || {};
     const adsSummary = source('adsSummary') || {};
     const platform = currentGlobalPlatform();
-    const asOf = latestDate(platformTrends, dashboard) || dateKey(dashboard?.dataFreshness?.asOfDate);
-    const period = currentPeriod();
-    const metric = currentMetric();
-    const range = currentRange(asOf, period);
     const selectedPlatform = findPlatform(platformTrends, platform) || { key: platform, label: platformMeta(platform).label, series: [] };
     const allPlatform = findPlatform(platformTrends, 'all') || selectedPlatform;
-    const currentRows = rowsInRange(selectedPlatform.series, range.start, range.end);
-    const previousRows = rowsInRange(selectedPlatform.series, range.prevStart, range.prevEnd);
+    let asOf = platform === 'all'
+      ? latestDate(platformTrends, dashboard) || dateKey(dashboard?.dataFreshness?.asOfDate)
+      : latestPlatformSeriesDate(selectedPlatform) || latestDate(platformTrends, dashboard) || dateKey(dashboard?.dataFreshness?.asOfDate);
+    const period = currentPeriod();
+    const metric = currentMetric();
+    let range = currentRange(asOf, period);
+    let currentRows = rowsInRange(selectedPlatform.series, range.start, range.end);
+    let previousRows = rowsInRange(selectedPlatform.series, range.prevStart, range.prevEnd);
+    if (platform !== 'all' && !currentRows.length) {
+      const platformLatest = latestPlatformSeriesDate(selectedPlatform);
+      if (platformLatest && platformLatest !== asOf) {
+        asOf = platformLatest;
+        range = currentRange(asOf, period);
+        currentRows = rowsInRange(selectedPlatform.series, range.start, range.end);
+        previousRows = rowsInRange(selectedPlatform.series, range.prevStart, range.prevEnd);
+      }
+    }
     const allRows = rowsInRange(allPlatform.series, range.start, range.end);
     const total = sumRows(currentRows);
     const previousTotal = sumRows(previousRows);

@@ -28,6 +28,9 @@ const WB_ANALYTICS_URL = 'https://seller-analytics-api.wildberries.ru';
 const OZON_SELLER_URL = 'https://api-seller.ozon.ru';
 const LETUAL_DEFAULT_BASE_URL = 'https://partner.letu.ru';
 const LETUAL_DEFAULT_GRAPHQL_PATH = '/api/graphql';
+const MEGAMARKET_DEFAULT_BASE_URL = 'https://api.megamarket.tech';
+const MEGAMARKET_ORDER_SEARCH_PATH = '/api/market/v1/orderService/order/search';
+const MEGAMARKET_ORDER_GET_PATH = '/api/market/v2/orderService/order/get';
 const LETUAL_DEFAULT_LOCAL_EXPORT_XLSX = 'C:/Users/artiu/Downloads/Letu.xlsx';
 const LETUAL_DEFAULT_PLAN_XLSX = 'C:/Users/artiu/OneDrive/Рабочий стол/План/Лэтуаль.xlsx';
 const ZYA_DEFAULT_SALES_XLSX = path.join('data', 'external_sources', 'zya_plan.xlsx');
@@ -380,8 +383,9 @@ function resolveOptions(args) {
     ),
     magnitServicesCsv: String(args['magnit-services-csv'] || process.env.ALTEA_MAGNIT_SERVICES_CSV || '').trim(),
     megamarketApiToken: String(args['megamarket-token'] || args['megamarket-api-token'] || envValue('ALTEA_MEGAMARKET_API_TOKEN') || envValue('ALTEA_MEGAMARKET_API_KEY') || '').trim(),
-    megamarketApiBaseUrl: String(args['megamarket-base-url'] || envValue('ALTEA_MEGAMARKET_API_BASE_URL') || '').trim(),
-    megamarketSalesPath: String(args['megamarket-sales-path'] || envValue('ALTEA_MEGAMARKET_SALES_PATH') || '').trim(),
+    megamarketApiBaseUrl: String(args['megamarket-base-url'] || envValue('ALTEA_MEGAMARKET_API_BASE_URL') || MEGAMARKET_DEFAULT_BASE_URL).trim(),
+    megamarketSalesPath: String(args['megamarket-sales-path'] || envValue('ALTEA_MEGAMARKET_SALES_PATH') || MEGAMARKET_ORDER_SEARCH_PATH).trim(),
+    megamarketOrderGetPath: String(args['megamarket-order-get-path'] || envValue('ALTEA_MEGAMARKET_ORDER_GET_PATH') || MEGAMARKET_ORDER_GET_PATH).trim(),
     megamarketClientId: String(args['megamarket-client-id'] || envValue('ALTEA_MEGAMARKET_CLIENT_ID') || '').trim(),
     samokatApiToken: String(args['samokat-token'] || args['samokat-api-token'] || envValue('ALTEA_SAMOKAT_API_TOKEN') || envValue('ALTEA_SAMOKAT_API_KEY') || '').trim(),
     samokatApiBaseUrl: String(args['samokat-base-url'] || envValue('ALTEA_SAMOKAT_API_BASE_URL') || '').trim(),
@@ -1897,6 +1901,7 @@ function genericApiHeaders(token, clientId) {
     'Api-Key': token,
     'X-Api-Key': token,
     'X-API-Key': token,
+    'X-Merchant-Token': token,
     'X-Client-Id': clientId || '',
     'Content-Type': 'application/json',
     Accept: 'application/json, text/csv;q=0.9, */*;q=0.8'
@@ -1962,6 +1967,132 @@ async function addGenericMarketplaceApi(store, options, notes, config) {
     });
   } catch (error) {
     sourceNote(notes, config.sourceLabel, 'failed', error.message);
+    return 0;
+  }
+}
+
+async function megamarketPost(options, apiPath, token, body) {
+  const url = buildGenericApiUrl(options.megamarketApiBaseUrl || MEGAMARKET_DEFAULT_BASE_URL, apiPath, options);
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: genericApiHeaders(token, options.megamarketClientId),
+    body: JSON.stringify(body)
+  });
+  const text = await response.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = null;
+  }
+  if (!response.ok) throw new Error(`HTTP ${response.status} ${text.slice(0, 700)}`);
+  if (payload?.success === 0) throw new Error(`API error ${JSON.stringify(payload?.error || payload).slice(0, 700)}`);
+  return payload || {};
+}
+
+function megamarketDateTime(dateKey, endOfDay = false) {
+  return `${dateKey}T${endOfDay ? '23:59:59' : '00:00:00'}+03:00`;
+}
+
+function isMegamarketCanceled(value) {
+  return /CANCELED|CANCELLED|RETURN|РћРўРњР•Рќ|Р’РћР—Р’Р РђРў/i.test(normalizeText(value));
+}
+
+function isMegamarketDelivered(value) {
+  return /DELIVERED|Р”РћРЎРўРђР’/i.test(normalizeText(value));
+}
+
+async function addMegamarketApiSales(store, options, notes) {
+  const token = normalizeText(options.megamarketApiToken);
+  if (!token) {
+    sourceNote(notes, 'Megamarket API sales', 'missing credentials', 'ALTEA_MEGAMARKET_API_TOKEN / ALTEA_MEGAMARKET_API_KEY');
+    return 0;
+  }
+  try {
+    const searchPayload = await megamarketPost(options, options.megamarketSalesPath || MEGAMARKET_ORDER_SEARCH_PATH, token, {
+      data: {
+        dateFrom: megamarketDateTime(options.from),
+        dateTo: megamarketDateTime(options.to, true),
+        count: 200
+      }
+    });
+    const shipmentIds = Array.isArray(searchPayload?.data?.shipments) ? searchPayload.data.shipments.map(normalizeText).filter(Boolean) : [];
+    if (!shipmentIds.length) {
+      sourceNote(notes, 'Megamarket API sales', 'empty', `${options.from}..${options.to}: 0 shipments`);
+      return 0;
+    }
+
+    let itemCount = 0;
+    let activeItemCount = 0;
+    let deliveredItemCount = 0;
+    let activeRevenue = 0;
+    let deliveredRevenue = 0;
+    const batches = [];
+    for (let index = 0; index < shipmentIds.length; index += 50) batches.push(shipmentIds.slice(index, index + 50));
+    for (const batch of batches) {
+      const detailPayload = await megamarketPost(options, options.megamarketOrderGetPath || MEGAMARKET_ORDER_GET_PATH, token, {
+        data: { shipments: batch }
+      });
+      for (const shipment of Array.isArray(detailPayload?.data?.shipments) ? detailPayload.data.shipments : []) {
+        const orderMonth = monthKey(shipment.creationDate) || monthKey(shipment.statusDate) || monthKey(options.from);
+        const deliveryMonth = monthKey(shipment.statusDate) || monthKey(shipment.deliveryDate) || orderMonth;
+        for (const item of Array.isArray(shipment.items) ? shipment.items : []) {
+          const status = normalizeText(item.status || shipment.status);
+          const canceled = isMegamarketCanceled(status);
+          const delivered = isMegamarketDelivered(status);
+          const quantity = numberOrZero(item.quantity);
+          const grossRevenue = quantity * numberOrZero(item.price);
+          const article = normalizeText(item.offerId || item.itemId || item.goodsId);
+          const name = normalizeText(item.goodsData?.name || article);
+          const commonTotal = { level: 'total', platformKey: 'megamarket', source: 'Megamarket API sales' };
+          const commonSku = { level: 'sku', platformKey: 'megamarket', articleKey: article || `megamarket-${itemCount}`, article: article || `megamarket-${itemCount}`, name, source: 'Megamarket API sales' };
+
+          if (!canceled) {
+            store.add({ ...commonTotal, metricKey: 'orders_units' }, orderMonth, quantity);
+            store.add({ ...commonTotal, metricKey: 'orders_revenue' }, orderMonth, grossRevenue);
+            if (article) {
+              store.add({ ...commonSku, metricKey: 'orders_units' }, orderMonth, quantity);
+              store.add({ ...commonSku, metricKey: 'orders_revenue' }, orderMonth, grossRevenue);
+            }
+            activeItemCount += 1;
+            activeRevenue += grossRevenue;
+          } else {
+            store.add({ ...commonTotal, metricKey: 'cancellations_units' }, orderMonth, quantity);
+            store.add({ ...commonTotal, metricKey: 'cancel_revenue' }, orderMonth, grossRevenue);
+            if (article) {
+              store.add({ ...commonSku, metricKey: 'cancellations_units' }, orderMonth, quantity);
+              store.add({ ...commonSku, metricKey: 'cancel_revenue' }, orderMonth, grossRevenue);
+            }
+          }
+          if (delivered && !canceled) {
+            store.add({ ...commonTotal, metricKey: 'delivered_units' }, deliveryMonth, quantity);
+            store.add({ ...commonTotal, metricKey: 'delivered_revenue' }, deliveryMonth, grossRevenue);
+            store.add({ ...commonTotal, metricKey: 'buyout_units' }, deliveryMonth, quantity);
+            store.add({ ...commonTotal, metricKey: 'buyout_revenue' }, deliveryMonth, grossRevenue);
+            if (article) {
+              store.add({ ...commonSku, metricKey: 'delivered_units' }, deliveryMonth, quantity);
+              store.add({ ...commonSku, metricKey: 'delivered_revenue' }, deliveryMonth, grossRevenue);
+              store.add({ ...commonSku, metricKey: 'buyout_units' }, deliveryMonth, quantity);
+              store.add({ ...commonSku, metricKey: 'buyout_revenue' }, deliveryMonth, grossRevenue);
+            }
+            deliveredItemCount += 1;
+            deliveredRevenue += grossRevenue;
+          }
+          itemCount += 1;
+        }
+      }
+    }
+
+    sourceNote(
+      notes,
+      'Megamarket API sales',
+      itemCount ? 'loaded' : 'empty',
+      `${shipmentIds.length} shipments, ${itemCount} item rows, active ${activeItemCount} / ${Math.round(activeRevenue * 100) / 100} rub, delivered ${deliveredItemCount} / ${Math.round(deliveredRevenue * 100) / 100} rub, ${options.from}..${options.to}`
+    );
+    if (shipmentIds.length >= 200) sourceNote(notes, 'Megamarket API sales', 'warning', 'Search returned the request count limit; pagination may be needed.');
+    return itemCount;
+  } catch (error) {
+    sourceNote(notes, 'Megamarket API sales', 'failed', error.message);
     return 0;
   }
 }
@@ -3015,21 +3146,7 @@ async function main() {
     addMagnitServicesCsv(store, options.magnitServicesCsv, notes);
   }
   const megamarketApiRows = platformRequested(options, 'megamarket')
-    ? await addGenericMarketplaceApi(store, options, notes, {
-      platformKey: 'megamarket',
-      sourceLabel: 'Megamarket API sales',
-      defaultArticle: 'megamarket-unmapped',
-      token: options.megamarketApiToken,
-      baseUrl: options.megamarketApiBaseUrl,
-      salesPath: options.megamarketSalesPath,
-      clientId: options.megamarketClientId,
-      tokenHelp: 'ALTEA_MEGAMARKET_API_TOKEN / ALTEA_MEGAMARKET_API_KEY',
-      endpointHelp: 'ALTEA_MEGAMARKET_API_BASE_URL + ALTEA_MEGAMARKET_SALES_PATH',
-      methodEnv: ['ALTEA_MEGAMARKET_API_METHOD'],
-      bodyEnv: ['ALTEA_MEGAMARKET_API_BODY_JSON'],
-      graphqlQueryEnv: ['ALTEA_MEGAMARKET_GRAPHQL_QUERY'],
-      graphqlQueryHelp: 'ALTEA_MEGAMARKET_GRAPHQL_QUERY'
-    })
+    ? await addMegamarketApiSales(store, options, notes)
     : 0;
   if (megamarketApiRows) apiLoadedPlatforms.add('megamarket');
   const samokatApiRows = platformRequested(options, 'samokat')

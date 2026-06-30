@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-30T07:45:13.158Z",
+  "generatedAt": "2026-06-30T08:12:59.949Z",
   "status": "blocked",
   "publish": {
     "allowed": false,
@@ -11,7 +11,7 @@
     "warnings": [
       "Potential duplicated revenue overage: 414296."
     ],
-    "checkedAt": "2026-06-30T07:45:13.158Z"
+    "checkedAt": "2026-06-30T08:12:59.949Z"
   },
   "freshness": {
     "maxDate": "2026-06-29",
@@ -20,7 +20,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-30T07:45:13.152Z",
+      "checkedAt": "2026-06-30T08:12:59.943Z",
       "settlementHour": 10,
       "expectedDate": "2026-06-29",
       "maxDate": "2026-06-29",
@@ -67,7 +67,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-30T07:45:13.157Z",
+      "checkedAt": "2026-06-30T08:12:59.948Z",
       "expectedDate": "2026-06-29",
       "adsSummaryWindowTo": "2026-06-27",
       "iuDrrWindowTo": "2026-06-29",
@@ -109,7 +109,7 @@
     "dashboard": {
       "exists": true,
       "rows": 20,
-      "generatedAt": "2026-06-30T07:43:05.442Z",
+      "generatedAt": "2026-06-30T08:04:31.411Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
@@ -123,14 +123,14 @@
     "platform_trends": {
       "exists": true,
       "rows": 9,
-      "generatedAt": "2026-06-30T07:43:05.442Z",
+      "generatedAt": "2026-06-30T08:04:31.411Z",
       "asOfDate": "2026-06-29",
-      "revenue": 1267348332
+      "revenue": 1277919010
     },
     "ads_summary": {
       "exists": true,
-      "rows": 6,
-      "generatedAt": "2026-06-30T07:30:35.304Z",
+      "rows": 7,
+      "generatedAt": "2026-06-30T08:04:31.467Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
@@ -158,7 +158,7 @@
     "smart_price_overlay": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-30T07:30:35.701Z",
+      "generatedAt": "2026-06-30T08:04:31.596Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
@@ -235,14 +235,14 @@
     "oos_control": {
       "exists": true,
       "rows": 29,
-      "generatedAt": "2026-06-30T07:39:19.515Z",
+      "generatedAt": "2026-06-30T08:07:04.722Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "iu_drr_summary": {
       "exists": true,
       "rows": 29,
-      "generatedAt": "2026-06-30T07:45:12.453Z",
+      "generatedAt": "2026-06-30T08:07:04.259Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
@@ -256,14 +256,14 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-30T07:39:19.861Z",
+      "generatedAt": "2026-06-30T08:12:38.591Z",
       "asOfDate": "2026-06-29",
       "revenue": 0
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 2,
-      "generatedAt": "2026-06-30T07:41:32.709Z",
+      "generatedAt": "2026-06-30T08:12:38.895Z",
       "asOfDate": "2026-06-30",
       "revenue": 1398890
     },
@@ -291,14 +291,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-30T07:39:19.579Z",
+      "generatedAt": "2026-06-30T08:12:59.634Z",
       "asOfDate": "2026-06-30",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-30T07:41:32.716Z",
+      "generatedAt": "2026-06-30T08:12:38.902Z",
       "asOfDate": "2026-06-30",
       "revenue": 0
     }
@@ -414,9 +414,9 @@
         "rows": 9,
         "previousRows": 7,
         "rowRatio": 1.2857142857142858,
-        "revenue": 1267348332,
+        "revenue": 1277919010,
         "previousRevenue": 100968408,
-        "revenueRatio": 12.55192943123358,
+        "revenueRatio": 12.656622356569196,
         "revenueComparable": true
       },
       {

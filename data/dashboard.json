@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-v2",
-  "generatedAt": "2026-06-30T07:43:05.442Z",
-  "snapshot_id": "dashboard:41c676b385f31ec7",
+  "generatedAt": "2026-06-30T08:04:31.411Z",
+  "snapshot_id": "dashboard:f6959a20c7fdcc61",
   "asOfDate": "2026-06-29",
   "latestMarketplaceDate": "2026-06-29",
   "monthKey": "2026-06",
@@ -113,14 +113,14 @@
   },
   "summary": {
     "metrics": 14,
-    "factRevenue": 351996562.88,
+    "factRevenue": 353014269.94,
     "planRevenue": 285818670,
     "planToDate": 276291381,
-    "completionToDate": 1.274005,
-    "unallocatedRevenue": -1011134.06,
+    "completionToDate": 1.277688,
+    "unallocatedRevenue": 0,
     "cutoffDate": "2026-06-29",
     "monthKey": "2026-06",
-    "factUnits": 335575.5161,
+    "factUnits": 335582.5161,
     "warehouseStock": 456229,
     "marketplaceStock": 220574
   },
@@ -214,7 +214,7 @@
     {
       "id": "sales-revenue-megamarket",
       "label": "Revenue MEGAMARKET",
-      "value": 0,
+      "value": 6573.000000000003,
       "format": "money",
       "period": "2026-06-29",
       "hint": "Fact from platform_trends.json.",
@@ -241,7 +241,7 @@
     {
       "id": "sales-revenue-unallocated",
       "label": "Revenue unallocated",
-      "value": -1011134.06,
+      "value": 0,
       "format": "money",
       "period": "2026-06-29",
       "hint": "Control total remainder stays visible.",
@@ -259,7 +259,7 @@
     {
       "id": "company-fact-revenue",
       "label": "Company fact",
-      "value": 351996562.88,
+      "value": 353014269.94,
       "format": "money",
       "period": "2026-06-29",
       "hint": "Fact is read only from platform_trends.json.",
@@ -268,8 +268,8 @@
     {
       "id": "company-plan-completion",
       "label": "Plan completion to date",
-      "value": 1.2740048625693468,
-      "valuePct": 1.2740048625693468,
+      "value": 1.2776883182613648,
+      "valuePct": 1.2776883182613648,
       "format": "pct",
       "period": "2026-06-29",
       "hint": "Fact divided by linear company plan to date.",
@@ -278,7 +278,7 @@
     {
       "id": "company-forecast-revenue",
       "label": "Company forecast",
-      "value": 364134375.39,
+      "value": 365187175.8,
       "format": "money",
       "period": "2026-06",
       "hint": "Baseline forecast: month-to-date average times month days.",
@@ -315,18 +315,18 @@
       "total_stock": 220574,
       "warehouse_stock": 456229,
       "plan_units": 0,
-      "fact_units_to_date": 335575.5161,
-      "fact_revenue_to_date": 351996562.88,
-      "plan_completion_to_date_pct": 1.274005,
+      "fact_units_to_date": 335582.5161,
+      "fact_revenue_to_date": 353014269.94,
+      "plan_completion_to_date_pct": 1.277688,
       "company_plan_month_key": "2026-06",
       "company_plan_month_label": "июнь 2026",
       "company_plan_revenue": 285818670,
-      "company_fact_revenue_to_date": 351996562.88,
+      "company_fact_revenue_to_date": 353014269.94,
       "company_plan_to_date_revenue": 276291381,
-      "company_plan_completion_month_pct": 1.231538,
-      "company_plan_completion_to_date_pct": 1.274005,
-      "company_forecast_revenue": 364134375.4,
-      "company_forecast_pct": 1.274005,
+      "company_plan_completion_month_pct": 1.235099,
+      "company_plan_completion_to_date_pct": 1.277688,
+      "company_forecast_revenue": 365187175.8,
+      "company_forecast_pct": 1.277688,
       "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
       "platformFacts": {
         "wb": {
@@ -360,10 +360,10 @@
           "units": 778.0333
         },
         "megamarket": {
-          "dateFrom": "",
-          "dateTo": "",
-          "revenue": 0,
-          "units": 0
+          "dateFrom": "2026-06-01",
+          "dateTo": "2026-06-29",
+          "revenue": 6573,
+          "units": 7
         },
         "samokat": {
           "dateFrom": "",
@@ -843,11 +843,11 @@
       "monthKey": "2026-06",
       "planRevenueMonth": 285818670,
       "planRevenueToDate": 276291381,
-      "factRevenueToDate": 351996562.88,
-      "completionMonthPct": 1.231538,
-      "completionToDatePct": 1.274005,
-      "forecastRevenue": 364134375.4,
-      "forecastPct": 1.274005
+      "factRevenueToDate": 353014269.94,
+      "completionMonthPct": 1.235099,
+      "completionToDatePct": 1.277688,
+      "forecastRevenue": 365187175.8,
+      "forecastPct": 1.277688
     },
     "months": {
       "2026-05": {

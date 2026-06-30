@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-06-30T07:39:19.515Z",
+  "generatedAt": "2026-06-30T08:07:04.722Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -21,7 +21,7 @@
       "from": "2026-06-02",
       "to": "2026-06-29"
     },
-    "smartPriceGeneratedAt": "2026-06-30T07:30:35.701Z",
+    "smartPriceGeneratedAt": "2026-06-30T08:04:31.596Z",
     "sources": {
       "orderProcurement": "order_procurement.json",
       "skus": "skus.json",

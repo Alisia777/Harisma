@@ -105,7 +105,7 @@
     if (['ozon', 'озон'].includes(raw)) return 'ozon';
     if (['wb+ozon', 'wb + ozon', 'wb_ozon', 'wb-ozon'].includes(raw)) return 'wb+ozon';
     const marketplacePlatform = inferMarketplacePlatform(text);
-    if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return marketplacePlatform || 'ya';
+    if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return marketplacePlatform || 'cross';
     if (marketplacePlatform) return marketplacePlatform;
     if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return 'retail';
 

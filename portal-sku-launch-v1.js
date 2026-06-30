@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260629skuworkspaceops1';
+  const VERSION = '20260630launchmarketscope1';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -24,6 +24,10 @@
     ozon: 'ozon',
     ya: 'ya',
     ym: 'ya',
+    ям: 'ya',
+    ямаркет: 'ya',
+    яндекс: 'ya',
+    яндексмаркет: 'ya',
     yandex: 'ya',
     yandexmarket: 'ya',
     yamarket: 'ya',
@@ -31,12 +35,20 @@
     goldenapple: 'goldapple',
     ga: 'goldapple',
     zya: 'goldapple',
+    зя: 'goldapple',
+    золотоеяблоко: 'goldapple',
     letu: 'letu',
     letual: 'letu',
+    летуаль: 'letu',
+    лэтуаль: 'letu',
     megamarket: 'megamarket',
+    мегамаркет: 'megamarket',
     sbermegamarket: 'megamarket',
     samokat: 'samokat',
+    самокат: 'samokat',
     magnit: 'magnit',
+    магнит: 'magnit',
+    магнитмаркет: 'magnit',
     magnitmarket: 'magnit'
   };
   const SKU_MODE_STORAGE = 'altea:sku-workspace-v1:mode';
@@ -104,7 +116,7 @@
   }
 
   function normalizeMarket(value) {
-    const key = String(value || 'all').trim().toLowerCase().replace(/[\s_-]+/g, '');
+    const key = String(value || 'all').trim().toLowerCase().replace(/[\s._'`"\u2019-]+/g, '');
     return MARKET_ALIAS[key] || (MARKET_LABELS[key] ? key : 'all');
   }
 
@@ -132,6 +144,53 @@
       if (normalized !== 'all' || String(candidate).trim().toLowerCase() === 'all') return normalized;
     }
     return 'all';
+  }
+
+  function launchMarketplaceValues(value) {
+    if (Array.isArray(value)) return value.flatMap(launchMarketplaceValues);
+    if (value && typeof value === 'object') {
+      return ['key', 'id', 'name', 'label', 'marketplace', 'platform', 'network']
+        .flatMap((field) => launchMarketplaceValues(value[field]));
+    }
+    const text = String(value || '').trim();
+    return text ? [text] : [];
+  }
+
+  function launchMarketplaceKeys(item = {}) {
+    const keys = new Set();
+    const values = [
+      item.marketplaces,
+      item.marketplace,
+      item.platforms,
+      item.platform,
+      item.marketplaceKey,
+      item.network,
+      item.networks,
+      item.retailer,
+      item.channel,
+      item.market,
+      item.salesChannel,
+      item.launchPlatform
+    ].flatMap(launchMarketplaceValues);
+    values.forEach((value) => {
+      String(value || '')
+        .split(/[,+;/|]+|\s+\+\s+|\s+и\s+/i)
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .forEach((part) => {
+          const normalized = normalizeMarket(part);
+          if (normalized && normalized !== 'all') keys.add(normalized);
+        });
+    });
+    return [...keys];
+  }
+
+  function launchMatchesMarket(item = {}, market = readGlobalMarket()) {
+    const selected = normalizeMarket(market);
+    if (!selected || selected === 'all') return true;
+    const keys = launchMarketplaceKeys(item);
+    if (!keys.length) return false;
+    return keys.includes(selected);
   }
 
   function setRegistryMarketFromHeader() {
@@ -2568,11 +2627,13 @@
   function launchFilteredItems(items) {
     const filters = launchFilters();
     const search = String(filters.search || '').trim().toLowerCase();
+    const activeMarket = readGlobalMarket();
     return items.filter((item) => {
       const monthKey = launchItemMonthKey(item);
       const owner = launchOwner(item) || '';
       const category = item.reportGroup || item.category || item.subCategory || '';
       const itemReady = readiness(item);
+      if (!launchMatchesMarket(item, activeMarket)) return false;
       if (search && !launchText(item).includes(search)) return false;
       if (filters.month && filters.month !== 'all' && filters.month === 'missing' && monthKey) return false;
       if (filters.month && filters.month !== 'all' && filters.month !== 'missing' && monthKey !== filters.month) return false;
@@ -2909,18 +2970,20 @@
     const root = document.getElementById(rootId);
     if (!root) return;
     const allItems = launchItemsV1();
+    const activeMarket = readGlobalMarket();
+    const scopedItems = allItems.filter((item) => launchMatchesMarket(item, activeMarket));
     const filters = launchFilters();
-    const monthOptions = launchMonthOptions(allItems);
+    const monthOptions = launchMonthOptions(scopedItems);
     const validMonths = new Set(monthOptions.map((item) => item.key));
     if (!filters.month || (filters.month !== 'all' && !validMonths.has(filters.month))) {
       filters.month = 'all';
     }
-    const filtered = launchFilteredItems(allItems);
+    const filtered = launchFilteredItems(scopedItems);
     const selectedId = appState().launchV1SelectedId && filtered.some((item) => launchId(item) === appState().launchV1SelectedId)
       ? appState().launchV1SelectedId
-      : launchId(filtered[0] || allItems[0] || {});
-    appState().launchV1SelectedId = selectedId;
-    const selected = filtered.find((item) => launchId(item) === selectedId) || allItems.find((item) => launchId(item) === selectedId) || null;
+      : launchId(filtered[0] || {});
+    appState().launchV1SelectedId = selectedId || '';
+    const selected = selectedId ? (filtered.find((item) => launchId(item) === selectedId) || null) : null;
     const fullKanban = appState().launchV1FullKanban === true;
     root.innerHTML = `
       <div class="sku-launch-v1-shell launch-v1-shell" data-sku-launch-version="${VERSION}">
@@ -2932,8 +2995,8 @@
           </div>
           ${safeBadge(`${formatInt(filtered.length)} в фокусе`, filtered.length ? 'info' : 'warn')}
         </header>
-        ${renderLaunchFilters(allItems, monthOptions)}
-        ${renderLaunchKpis(allItems, filtered)}
+        ${renderLaunchFilters(scopedItems, monthOptions)}
+        ${renderLaunchKpis(scopedItems, filtered)}
         ${fullKanban ? renderFullLaunchKanban(selected) : `
           <section class="launch-v1-workspace">
             ${filters.viewMode === 'list' ? renderLaunchList(filtered, selectedId) : renderLaunchCalendar(filtered, selectedId)}

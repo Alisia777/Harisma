@@ -4,7 +4,7 @@
   if (window.__ALTEA_LAUNCH_AUTOTASKS_V1__) return;
   window.__ALTEA_LAUNCH_AUTOTASKS_V1__ = true;
 
-  const VERSION = '20260630-launch-autotasks-control-rescue-v1';
+  const VERSION = '20260630-launch-autotasks-state-hardwire-v1';
   const MAX_BULK_TASKS = 30;
   const REMOVED_STATUSES = new Set(['deleted', 'removed']);
 
@@ -361,18 +361,21 @@
   let wrapTimer = 0;
   let renderQueued = false;
   let knownTasksCache = null;
+  let lastHandledAction = { key: '', at: 0 };
 
   function appState() {
-    let stateRef = null;
+    let stateRef = window.__alteaAppState || window.__ALTEA_STATE__ || null;
     try {
-      stateRef = typeof state === 'object' && state ? state : null;
+      stateRef = stateRef || (typeof state === 'object' && state ? state : null);
     } catch {
-      stateRef = null;
+      stateRef = stateRef || null;
     }
     if (!stateRef) {
       window.state = window.state && typeof window.state === 'object' ? window.state : {};
       stateRef = window.state;
     }
+    window.__alteaAppState = stateRef;
+    window.__ALTEA_STATE__ = stateRef;
     stateRef.storage = stateRef.storage && typeof stateRef.storage === 'object' ? stateRef.storage : {};
     stateRef.storage.tasks = Array.isArray(stateRef.storage.tasks) ? stateRef.storage.tasks : [];
     return stateRef;
@@ -705,7 +708,7 @@
 
     return {
       id: stableId('task-launch-auto', code),
-      source: 'manual',
+      source: 'auto',
       autoCode: code,
       launchAutoKey: code,
       launchId: key,
@@ -753,11 +756,15 @@
   }
 
   function storageTasks() {
-    return appState().storage.tasks;
+    const stateRef = appState();
+    stateRef.storage = stateRef.storage && typeof stateRef.storage === 'object' ? stateRef.storage : {};
+    stateRef.storage.tasks = Array.isArray(stateRef.storage.tasks) ? stateRef.storage.tasks : [];
+    return stateRef.storage.tasks;
   }
 
   function storageComments() {
     const stateRef = appState();
+    stateRef.storage = stateRef.storage && typeof stateRef.storage === 'object' ? stateRef.storage : {};
     stateRef.storage.comments = Array.isArray(stateRef.storage.comments) ? stateRef.storage.comments : [];
     return stateRef.storage.comments;
   }
@@ -850,13 +857,19 @@
 
   function saveState(reason) {
     knownTasksCache = null;
+    let usedPortalSave = false;
     try {
-      if (typeof window.saveLocalStorage === 'function') window.saveLocalStorage({ reason });
-      else if (typeof saveLocalStorage === 'function') saveLocalStorage({ reason });
+      if (typeof window.saveLocalStorage === 'function') {
+        window.saveLocalStorage({ reason });
+        usedPortalSave = true;
+      } else if (typeof saveLocalStorage === 'function') {
+        saveLocalStorage({ reason });
+        usedPortalSave = true;
+      }
     } catch (error) {
       console.warn('[launch-autotasks] save', error);
     }
-    try {
+    if (!usedPortalSave) try {
       window.dispatchEvent(new CustomEvent('altea:portal-storage-updated', { detail: { source: reason || VERSION } }));
     } catch {}
   }
@@ -909,9 +922,9 @@
             <strong>Запуск новинки по Excel</strong>
           </div>
           <div class="launch-ops-actions">
-            <button type="button" data-launch-ops-create-selected ${selectedMissing.length ? '' : 'disabled'}>Создать по выбранной</button>
-            <button type="button" data-launch-ops-create-bulk ${data.missing.length ? '' : 'disabled'}>Создать пакет ${Math.min(MAX_BULK_TASKS, data.missing.length)}</button>
-            <button type="button" data-launch-ops-open-tasks>Открыть задачи</button>
+            <button type="button" data-launch-ops-action="selected" data-launch-ops-create-selected ${selectedMissing.length ? '' : 'disabled'}>Создать по выбранной</button>
+            <button type="button" data-launch-ops-action="bulk" data-launch-ops-create-bulk ${data.missing.length ? '' : 'disabled'}>Создать пакет ${Math.min(MAX_BULK_TASKS, data.missing.length)}</button>
+            <button type="button" data-launch-ops-action="open" data-launch-ops-open-tasks>Открыть задачи</button>
           </div>
         </div>
         <div class="launch-ops-kpis">
@@ -947,7 +960,7 @@
               <small>${html(selectedMissing.length ? `${selectedMissing.length} автозадач можно создать` : 'все автозадачи по шаблону уже созданы')}</small>
               <div>
                 ${selectedMissing.slice(0, 6).map((entry) => `
-                  <button type="button" data-launch-ops-create-one="${html(entry.def.id)}" data-launch-ops-launch="${html(launchId(selected))}">
+                  <button type="button" data-launch-ops-action="one" data-launch-ops-create-one="${html(entry.def.id)}" data-launch-ops-launch="${html(launchId(selected))}">
                     <span>${html(entry.def.phaseLabel)}</span>
                     <strong>${html(entry.def.title)}</strong>
                     <em>${html(entry.payload.due || 'без даты')} · ${html(ROLE_LABELS[entry.def.role] || '')}</em>
@@ -981,7 +994,7 @@
             </span>
           `).join('')}
         </div>
-        <button type="button" data-launch-ops-create-selected ${missing.length ? '' : 'disabled'}>${missing.length ? 'Создать недостающие по этой новинке' : 'Все автозадачи созданы'}</button>
+        <button type="button" data-launch-ops-action="selected" data-launch-ops-create-selected ${missing.length ? '' : 'disabled'}>${missing.length ? 'Создать недостающие по этой новинке' : 'Все автозадачи созданы'}</button>
       </div>
     `;
   }
@@ -1048,12 +1061,12 @@
     const style = document.createElement('style');
     style.id = 'launch-autotasks-v1-style';
     style.textContent = `
-      .launch-ops-panel{border:1px solid rgba(224,190,126,.18);border-radius:10px;background:linear-gradient(145deg,rgba(18,12,7,.72),rgba(9,17,25,.52));box-shadow:inset 0 1px 0 rgba(255,255,255,.04);padding:16px;display:grid;gap:14px;color:var(--sl-text,#f7f1e8)}
+      .launch-ops-panel{position:relative;z-index:30;pointer-events:auto;border:1px solid rgba(224,190,126,.18);border-radius:10px;background:linear-gradient(145deg,rgba(18,12,7,.72),rgba(9,17,25,.52));box-shadow:inset 0 1px 0 rgba(255,255,255,.04);padding:16px;display:grid;gap:14px;color:var(--sl-text,#f7f1e8)}
       .launch-ops-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
       .launch-ops-head span,.launch-ops-kpis em,.launch-ops-selected small,.launch-ops-queue small,.launch-ops-detail span,.launch-ops-detail em{font-size:11px;color:var(--sl-muted,rgba(247,241,232,.62));font-style:normal}
       .launch-ops-head strong{display:block;font-size:20px;margin-top:2px}
       .launch-ops-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-      .launch-ops-actions button,.launch-ops-detail>button{min-height:38px;border:1px solid rgba(224,190,126,.24);border-radius:8px;background:rgba(255,255,255,.035);color:var(--sl-text,#f7f1e8);padding:0 12px;font-weight:800;cursor:pointer}
+      .launch-ops-actions button,.launch-ops-detail>button{position:relative;z-index:31;pointer-events:auto;min-height:38px;border:1px solid rgba(224,190,126,.24);border-radius:8px;background:rgba(255,255,255,.035);color:var(--sl-text,#f7f1e8);padding:0 12px;font-weight:800;cursor:pointer}
       .launch-ops-actions button:first-child,.launch-ops-detail>button{background:linear-gradient(180deg,#ffe1a1,#b98536);color:#130d07;border-color:rgba(255,227,157,.7)}
       .launch-ops-actions button:disabled,.launch-ops-detail>button:disabled{opacity:.48;cursor:not-allowed;filter:saturate(.4)}
       .launch-ops-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
@@ -1100,6 +1113,7 @@
     if (detail && selected) detail.insertAdjacentHTML('beforeend', renderSelectedOpsBlock(selected));
 
     injectTaskChipsIntoCalendar(root);
+    hardwireOpsButtons(root);
     bindOpsEvents(root);
   }
 
@@ -1204,47 +1218,105 @@
     return created;
   }
 
+  function eventElement(event) {
+    const target = event?.target;
+    if (!target) return null;
+    if (target.nodeType === 1) return target;
+    return target.parentElement || null;
+  }
+
+  function opsButtonFromEvent(event) {
+    const target = eventElement(event);
+    return target?.closest?.('[data-launch-ops-create-selected],[data-launch-ops-create-bulk],[data-launch-ops-open-tasks],[data-launch-ops-open-task],[data-launch-ops-create-one]') || null;
+  }
+
+  function opsActionKey(button) {
+    if (!button) return '';
+    if (button.matches?.('[data-launch-ops-create-selected]')) return 'selected';
+    if (button.matches?.('[data-launch-ops-create-bulk]')) return 'bulk';
+    if (button.matches?.('[data-launch-ops-open-tasks]')) return 'open';
+    if (button.matches?.('[data-launch-ops-open-task]')) return `open-task:${button.dataset.launchOpsOpenTask || ''}`;
+    if (button.matches?.('[data-launch-ops-create-one]')) return `one:${button.dataset.launchOpsLaunch || ''}:${button.dataset.launchOpsCreateOne || ''}`;
+    return button.dataset.launchOpsAction || '';
+  }
+
+  function consumeOpsEvent(event, key) {
+    if (event?.preventDefault) event.preventDefault();
+    if (event?.stopPropagation) event.stopPropagation();
+    if (event?.stopImmediatePropagation) event.stopImmediatePropagation();
+    lastHandledAction = { key, at: Date.now() };
+  }
+
+  function isDuplicateOpsEvent(key) {
+    return key && lastHandledAction.key === key && Date.now() - lastHandledAction.at < 450;
+  }
+
+  function recordOpsAction(stage, key, detail = {}) {
+    window.__ALTEA_LAUNCH_OPS_LAST_ACTION__ = {
+      stage,
+      key,
+      detail,
+      at: new Date().toISOString(),
+      version: VERSION
+    };
+  }
+
   function handleOpsClick(event) {
-      const selectedButton = event.target.closest?.('[data-launch-ops-create-selected]');
-      if (selectedButton) {
-        if (selectedButton.disabled) return;
-        event.preventDefault();
-        event.stopPropagation();
-        createSelectedTasks();
-        return;
+    const button = opsButtonFromEvent(event);
+    if (!button) return false;
+    const key = opsActionKey(button);
+    if (isDuplicateOpsEvent(key)) {
+      consumeOpsEvent(event, key);
+      recordOpsAction('duplicate', key);
+      return true;
+    }
+    if (button.disabled || button.getAttribute('aria-disabled') === 'true') return false;
+    consumeOpsEvent(event, key);
+    try {
+      if (button.matches?.('[data-launch-ops-create-selected]')) {
+        const created = createSelectedTasks();
+        recordOpsAction('created-selected', key, { count: created.length });
+        return true;
       }
-      const bulkButton = event.target.closest?.('[data-launch-ops-create-bulk]');
-      if (bulkButton) {
-        if (bulkButton.disabled) return;
-        event.preventDefault();
-        event.stopPropagation();
-        createBulkTasks();
-        return;
+      if (button.matches?.('[data-launch-ops-create-bulk]')) {
+        const created = createBulkTasks();
+        recordOpsAction('created-bulk', key, { count: created.length });
+        return true;
       }
-      const openTasks = event.target.closest?.('[data-launch-ops-open-tasks]');
-      if (openTasks) {
-        if (openTasks.disabled) return;
-        event.preventDefault();
-        event.stopPropagation();
+      if (button.matches?.('[data-launch-ops-open-tasks]')) {
         openTasksView();
-        return;
+        recordOpsAction('opened-control', key);
+        return true;
       }
-      const openTask = event.target.closest?.('[data-launch-ops-open-task]');
-      if (openTask) {
-        event.preventDefault();
-        event.stopPropagation();
-        const taskId = openTask.dataset.launchOpsOpenTask || '';
+      if (button.matches?.('[data-launch-ops-open-task]')) {
+        const taskId = button.dataset.launchOpsOpenTask || '';
         if (taskId && typeof window.openTaskModal === 'function') window.openTaskModal(taskId);
         else openTasksView();
-        return;
+        recordOpsAction('opened-task', key, { taskId });
+        return true;
       }
-      const single = event.target.closest?.('[data-launch-ops-create-one]');
-      if (single) {
-        if (single.disabled) return;
-        event.preventDefault();
-        event.stopPropagation();
-        createOneTask(single.dataset.launchOpsLaunch || '', single.dataset.launchOpsCreateOne || '');
+      if (button.matches?.('[data-launch-ops-create-one]')) {
+        const created = createOneTask(button.dataset.launchOpsLaunch || '', button.dataset.launchOpsCreateOne || '');
+        recordOpsAction('created-one', key, { count: created.length });
+        return true;
       }
+    } catch (error) {
+      console.warn('[launch-autotasks] action failed', key, error);
+      recordOpsAction('failed', key, { message: error?.message || String(error || '') });
+      launchToast('\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043d\u0435 \u0432\u044b\u043f\u043e\u043b\u043d\u0438\u043b\u043e\u0441\u044c: \u043e\u0431\u043d\u043e\u0432\u043b\u044f\u044e \u0441\u0432\u044f\u0437\u044c \u043a\u043d\u043e\u043f\u043e\u043a.');
+      queueAugment();
+      return true;
+    }
+    return false;
+  }
+
+  function hardwireOpsButtons(root) {
+    if (!root) return;
+    root.querySelectorAll('[data-launch-ops-create-selected],[data-launch-ops-create-bulk],[data-launch-ops-open-tasks],[data-launch-ops-open-task],[data-launch-ops-create-one]').forEach((button) => {
+      if (button.__launchOpsHardwired) return;
+      button.__launchOpsHardwired = true;
+      button.addEventListener('click', handleOpsClick, true);
+    });
   }
 
   function bindOpsEvents(root) {
@@ -1254,9 +1326,9 @@
   }
 
   function bindGlobalOpsEvents() {
-    if (window.__ALTEA_LAUNCH_OPS_GLOBAL_CLICK__) return;
-    window.__ALTEA_LAUNCH_OPS_GLOBAL_CLICK__ = true;
-    document.addEventListener('click', handleOpsClick);
+    if (window.__ALTEA_LAUNCH_OPS_GLOBAL_CLICK_HARDWIRE__) return;
+    window.__ALTEA_LAUNCH_OPS_GLOBAL_CLICK_HARDWIRE__ = true;
+    document.addEventListener('click', handleOpsClick, true);
   }
 
   function queueAugment() {
@@ -1304,6 +1376,14 @@
   window.getLaunchOpsAutotaskSnapshot = snapshot;
   window.createLaunchOpsAutotasksForSelected = createSelectedTasks;
   window.createLaunchOpsAutotasksBulk = createBulkTasks;
+  window.__ALTEA_LAUNCH_OPS_API__ = {
+    version: VERSION,
+    snapshot,
+    createSelected: createSelectedTasks,
+    createBulk: createBulkTasks,
+    openTasks: openTasksView,
+    refresh: queueAugment
+  };
 
   ['altea:app-ready', 'altea:data-ready', 'altea:viewchange', 'altea:portal-storage-updated', 'altea:launches-rendered', 'hashchange'].forEach((eventName) => {
     window.addEventListener(eventName, () => queueAugment());

@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260630-dashboard-marketplace-fallback1';
+  const VERSION = '20260630-dashboard-sku-drivers1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -43,6 +43,7 @@
     dashboard: 'data/dashboard.json',
     metrics: 'data/portal_dashboard_metrics.json',
     platformTrends: 'data/platform_trends.json',
+    platformSkuArticles: 'data/platform_sku_articles.json',
     productLeaderboard: 'data/product_leaderboard.json',
     iuDrr: 'data/iu_drr_summary.json',
     adsSummary: 'data/ads_summary.json'
@@ -242,6 +243,7 @@
     if (name === 'dashboard') return state.dashboard;
     if (name === 'metrics') return state.portalDashboardMetrics;
     if (name === 'platformTrends') return state.platformTrends;
+    if (name === 'platformSkuArticles') return state.platformSkuArticles;
     if (name === 'productLeaderboard') return state.productLeaderboard;
     if (name === 'iuDrr') return state.iuDrrSummary || state.iuDrr;
     if (name === 'adsSummary') return state.adsSummary;
@@ -1257,8 +1259,102 @@
     return key === 'all' ? revenue : revenue * (share || 1);
   }
 
+  function usesSharedSkuFallback(platform) {
+    return ['all', 'wb', 'ozon', 'ya'].includes(normalizePlatform(platform));
+  }
+
+  function platformArticlePlatforms(payload) {
+    if (Array.isArray(payload?.platforms)) return payload.platforms;
+    if (payload?.platforms && typeof payload.platforms === 'object') return Object.values(payload.platforms);
+    return [];
+  }
+
+  function platformArticleSource(platformTrends, platformSkuArticles, platform) {
+    const key = normalizePlatform(platform);
+    if (!key || key === 'all') return null;
+    const external = platformArticlePlatforms(platformSkuArticles).find((item) => normalizePlatform(item.key || item.platformKey) === key);
+    if (external && Array.isArray(external.articles) && external.articles.length) return external;
+    const row = findPlatform(platformTrends, key);
+    const articles = Array.isArray(row?.articles) ? row.articles : [];
+    return articles.length ? row : null;
+  }
+
+  function normalizedArticleDailyRow(row) {
+    if (Array.isArray(row)) {
+      return {
+        date: row[0],
+        label: row[0],
+        units: finite(row[1]),
+        ordersUnits: finite(row[2], finite(row[1])),
+        revenue: finite(row[3]),
+        estimatedMargin: finite(row[4]),
+        price: finite(row[5])
+      };
+    }
+    return row || {};
+  }
+
+  function articleRowsInPeriod(article, range) {
+    const rows = (Array.isArray(article?.daily) ? article.daily : []).map(normalizedArticleDailyRow);
+    return rowsInRange(rows, range.start, range.end);
+  }
+
+  function articleTotalForRange(article, range) {
+    return sumRows(articleRowsInPeriod(article, range));
+  }
+
+  function buildPlatformArticleSkuRows(model, platform) {
+    const source = platformArticleSource(model.platformTrends, model.platformSkuArticles, platform);
+    if (!source) return null;
+    const articleRows = (source.articles || [])
+      .map((article) => {
+        const current = articleTotalForRange(article, model.range);
+        const previous = articleTotalForRange(article, {
+          start: model.range.prevStart,
+          end: model.range.prevEnd
+        });
+        const key = articleKeyOf(article) || article?.sourceArticleKey || article?.name;
+        const previousRevenue = finite(previous.revenue);
+        const currentRevenue = finite(current.revenue);
+        return {
+          key,
+          name: article.name || article.title || article.article || key || 'SKU',
+          owner: article.owner || 'Без owner',
+          revenue: currentRevenue,
+          planRevenue: previousRevenue,
+          orders: finite(current.orders),
+          planUnits: finite(previous.orders),
+          buys: finite(current.buys),
+          completionPct: previousRevenue > 0 ? currentRevenue / previousRevenue : null,
+          marginPct: currentRevenue > 0 ? finite(current.marginRub) / currentRevenue : numberOrNull(article.marginPct ?? article.estimatedMarginPct),
+          delta: currentRevenue - previousRevenue,
+          driver: `${platformMeta(platform).short} · SKU сети`,
+          fallback: false,
+          sourcePlatform: normalizePlatform(platform)
+        };
+      })
+      .filter((item) => item.key && (finite(item.revenue) > 0 || finite(item.planRevenue) > 0 || finite(item.orders) > 0 || finite(item.planUnits) > 0));
+    const positive = articleRows
+      .filter((item) => finite(item.revenue) > 0 || finite(item.orders) > 0)
+      .sort((left, right) => finite(right.revenue) - finite(left.revenue))
+      .slice(0, 6);
+    const focus = articleRows
+      .filter((item) => finite(item.planRevenue) > finite(item.revenue))
+      .sort((left, right) => (finite(right.planRevenue) - finite(right.revenue)) - (finite(left.planRevenue) - finite(left.revenue)))
+      .slice(0, 6)
+      .map((item) => ({
+        ...item,
+        delta: -Math.abs(finite(item.planRevenue) - finite(item.revenue)),
+        driver: `${platformMeta(platform).short} · падение к прошлому периоду`
+      }));
+    return { positive, focus };
+  }
+
   function buildSkuRows(model) {
     const platform = normalizePlatform(model.platform);
+    if (!usesSharedSkuFallback(platform)) {
+      return buildPlatformArticleSkuRows(model, platform) || { positive: [], focus: [] };
+    }
     const platformCard = (model.platformCards || []).find((item) => item.key === platform);
     const platformShare = platform === 'all'
       ? 1
@@ -1299,7 +1395,7 @@
       .slice(0, 6);
     const focusRaw = model.dashboard?.focusTop || model.dashboard?.underPlan || [];
     const focusSource = focusRaw.filter((item) => itemMatchesPlatform(item, platform, false) || platform === 'all');
-    const focusBase = focusSource.length ? focusSource : focusRaw;
+    const focusBase = focusSource.length || usesSharedSkuFallback(platform) ? (focusSource.length ? focusSource : focusRaw) : [];
     const focus = focusBase
       .slice(0, 6)
       .map((item) => {
@@ -1376,6 +1472,7 @@
     const dashboard = source('dashboard') || { cards: [] };
     const metrics = source('metrics') || { metrics: [] };
     const platformTrends = source('platformTrends') || { platforms: [] };
+    const platformSkuArticles = source('platformSkuArticles') || { platforms: [] };
     const productLeaderboard = source('productLeaderboard') || {};
     const iuDrr = source('iuDrr') || {};
     const adsSummary = source('adsSummary') || {};
@@ -1474,11 +1571,12 @@
       drr: total.revenue > 0 ? planAds / total.revenue : null
     };
     const platformCards = buildPlatformCards({ dashboard, metrics, platformTrends, iuRows, adRows, coreAdRows, range, total, allTotal, adsSummary });
-    const skuRows = buildSkuRows({ dashboard, productLeaderboard, platform, platformCards, total, allTotal, plan, range });
+    const skuRows = buildSkuRows({ dashboard, productLeaderboard, platformTrends, platformSkuArticles, platform, platformCards, total, allTotal, plan, range });
     const model = {
       dashboard,
       metrics,
       platformTrends,
+      platformSkuArticles,
       productLeaderboard,
       iuDrr,
       adsSummary,
@@ -1973,7 +2071,7 @@
     const rows = Array.isArray(model.dashboard?.[listName]) ? model.dashboard[listName] : [];
     if (platform === 'all') return rows;
     const filtered = rows.filter((item) => itemMatchesPlatform(item, platform, false));
-    return filtered.length ? filtered : rows;
+    return filtered.length || usesSharedSkuFallback(platform) ? (filtered.length ? filtered : rows) : [];
   }
 
   function rowsForDriver(model, key) {

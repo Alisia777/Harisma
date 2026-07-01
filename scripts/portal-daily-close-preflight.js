@@ -218,6 +218,30 @@ function writeJson(filePath, payload) {
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
+function printBlockedReport(report, reportPath) {
+  console.error('Daily close preflight blocked:');
+  report.publish.blockingReasons.forEach((reason) => console.error(`- ${reason}`));
+  if (report.missingSecrets.length) {
+    console.error('Missing required daily close secrets:');
+    report.missingSecrets.forEach((name) => console.error(`- ${name}`));
+  }
+  if (report.missingConfig.length) {
+    console.error('Missing required daily close config:');
+    report.missingConfig.forEach((name) => console.error(`- ${name}`));
+  }
+  if (!report.priceWorkbookSource.present) {
+    console.error('Missing smart price workbook CI source. Configure one of:');
+    report.priceWorkbookSource.requiredAnyOf.forEach((name) => console.error(`- ${name}`));
+  }
+  if (report.missingExtraMarketplaceSources.length) {
+    console.error('Missing extra marketplace CI sources:');
+    report.extraMarketplaceSources.filter((item) => !item.present).forEach((item) => {
+      console.error(`- ${item.platform}: ${item.requiredAnyOf.join(', ')}`);
+    });
+  }
+  console.error(`Preflight report: ${reportPath}`);
+}
+
 function main(argv = process.argv.slice(2), env = process.env) {
   const args = parseArgs(argv);
   const outputDir = path.resolve(String(args['output-dir'] || '.portal-truth-output'));
@@ -229,30 +253,8 @@ function main(argv = process.argv.slice(2), env = process.env) {
   const reportPath = path.join(outputDir, REPORT_NAME);
   writeJson(reportPath, report);
 
-  if (report.missingSecrets.length) {
-    console.error('Missing required daily close secrets:');
-    report.missingSecrets.forEach((name) => console.error(`- ${name}`));
-    console.error(`Preflight report: ${reportPath}`);
-    return 1;
-  }
-  if (report.missingConfig.length) {
-    console.error('Missing required daily close config:');
-    report.missingConfig.forEach((name) => console.error(`- ${name}`));
-    console.error(`Preflight report: ${reportPath}`);
-    return 1;
-  }
-  if (!report.priceWorkbookSource.present) {
-    console.error('Missing smart price workbook CI source. Configure one of:');
-    report.priceWorkbookSource.requiredAnyOf.forEach((name) => console.error(`- ${name}`));
-    console.error(`Preflight report: ${reportPath}`);
-    return 1;
-  }
-  if (report.missingExtraMarketplaceSources.length) {
-    console.error('Missing extra marketplace CI sources:');
-    report.extraMarketplaceSources.filter((item) => !item.present).forEach((item) => {
-      console.error(`- ${item.platform}: ${item.requiredAnyOf.join(', ')}`);
-    });
-    console.error(`Preflight report: ${reportPath}`);
+  if (report.publish.allowed !== true) {
+    printBlockedReport(report, reportPath);
     return 1;
   }
 
@@ -272,7 +274,8 @@ module.exports = {
   buildPriceWorkbookSourceState,
   buildReport,
   main,
-  parseArgs
+  parseArgs,
+  printBlockedReport
 };
 
 if (require.main === module) {

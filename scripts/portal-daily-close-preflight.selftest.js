@@ -79,8 +79,16 @@ try {
     { encoding: 'utf8', env: {} }
   );
   assert.strictEqual(missingRun.status, 1);
+  assert(missingRun.stderr.includes('Daily close preflight blocked:'));
   assert(missingRun.stderr.includes('Missing required daily close secrets:'));
   assert(missingRun.stderr.includes('ALTEA_WB_API_TOKEN'));
+  assert(missingRun.stderr.includes('Missing smart price workbook CI source.'));
+  assert(missingRun.stderr.includes('Missing extra marketplace CI sources:'));
+  assert(missingRun.stderr.includes('goldapple:'));
+  assert(missingRun.stderr.includes('letu:'));
+  assert(missingRun.stderr.includes('megamarket:'));
+  assert(missingRun.stderr.includes('samokat:'));
+  assert(missingRun.stderr.includes('magnit:'));
   assert(!missingRun.stderr.includes('ALTEA_YM_CAMPAIGN_ID'));
   const missingDiskReport = JSON.parse(fs.readFileSync(path.join(tmp, REPORT_NAME), 'utf8'));
   assert.strictEqual(missingDiskReport.status, 'blocked');

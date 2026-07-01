@@ -4,7 +4,7 @@
   if (window.__ALTEA_ROUTE_LAYER_LOCK_20260623__) return;
   window.__ALTEA_ROUTE_LAYER_LOCK_20260623__ = true;
 
-  const VERSION = '20260630-route-layer-control-rescue-v1';
+  const VERSION = '20260701-route-layer-motion-rescue-v1';
   let cascadeTimers = [];
   let running = false;
   const TRANSIENT_SELECTOR = '.promo-modal-backdrop,.modal,.toast,.portal-loader,.route-loader,.pf-v4-drawer-back,.plb-v2-drawer-back,.launch-v1-editor-backdrop,[data-pf-v4-drawer-back],[data-plb-v2-drawer-back],[data-launch-v1-editor-backdrop]';
@@ -243,6 +243,16 @@
     try { history.replaceState(null, '', `${window.location.pathname}${window.location.search}#${route}`); } catch {}
   }
 
+  function releaseRouteOverlaySoon() {
+    if (document.body.classList.contains('portal-auth-locked')) return;
+    if (!window.AlteaMotion || typeof window.AlteaMotion.hide !== 'function') return;
+    window.setTimeout(() => {
+      const stage = document.querySelector('.altea-motion-stage.is-visible[data-scene="transition"]');
+      if (!stage) return;
+      window.AlteaMotion.hide();
+    }, 80);
+  }
+
   function enforceActiveRoute() {
     if (running) return;
     const route = currentView();
@@ -265,6 +275,7 @@
       cleanSiblings(root, item);
       removeLegacyNodes(root, item);
       root.dataset.routeLayerLock = VERSION;
+      releaseRouteOverlaySoon();
     } catch (error) {
       console.warn('[portal-route-layer-lock]', route, error);
     } finally {

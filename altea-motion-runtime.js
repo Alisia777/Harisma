@@ -13,6 +13,8 @@
   var canvas = null;
   var ctx = null;
   var hideTimer = 0;
+  var hideFinalizeTimer = 0;
+  var hideFinalizeFallbackTimer = 0;
   var bootTimer = 0;
   var bootStartedAt = 0;
   var statusPoll = 0;
@@ -32,7 +34,10 @@
   var readinessHardTimer = 0;
   var readinessObserver = null;
   var overlayFailsafeTimer = 0;
+  var routeHardStopTimer = 0;
   var lastRouteMotionAt = 0;
+  var visibleToken = 0;
+  var visibleStartedAt = 0;
 
   var ROUTE_LOADERS = {
     dashboard: {
@@ -638,6 +643,44 @@
     overlayFailsafeTimer = 0;
   }
 
+  function cancelRouteHardStop() {
+    if (routeHardStopTimer) window.clearTimeout(routeHardStopTimer);
+    routeHardStopTimer = 0;
+  }
+
+  function cancelHideFinalizeTimers() {
+    if (hideFinalizeTimer) window.clearTimeout(hideFinalizeTimer);
+    if (hideFinalizeFallbackTimer) window.clearTimeout(hideFinalizeFallbackTimer);
+    hideFinalizeTimer = 0;
+    hideFinalizeFallbackTimer = 0;
+  }
+
+  function startRouteHardStop(scene, options, token) {
+    if (scene !== "transition") return;
+    options = options || {};
+    var maxMs = Number(options.maxDuration || ROUTE_MAX_MS);
+    var hardStopMs = Math.max(maxMs + 900, ROUTE_MAX_MS + 900, ROUTE_MIN_MS + 1600);
+    routeHardStopTimer = window.setTimeout(function () {
+      routeHardStopTimer = 0;
+      if (token !== visibleToken) return;
+      if (!stage || stage.hidden || !stage.classList.contains("is-visible")) return;
+      if (stage.getAttribute("data-scene") !== "transition") return;
+      hide();
+    }, hardStopMs);
+  }
+
+  function installOverlayWatchdog() {
+    if (window.__ALTEA_MOTION_WATCHDOG_20260701__) return;
+    window.__ALTEA_MOTION_WATCHDOG_20260701__ = true;
+    window.setInterval(function () {
+      if (!stage || stage.hidden || !stage.classList.contains("is-visible")) return;
+      if (document.body.classList.contains("portal-auth-locked")) return;
+      if ((stage.getAttribute("data-scene") || "") !== "transition") return;
+      if (Date.now() - visibleStartedAt < ROUTE_MAX_MS + 1400) return;
+      hide();
+    }, 700);
+  }
+
   function finishVisibleWorkspaceOverlay() {
     if (!stage || stage.hidden || !stage.classList.contains("is-visible")) return true;
     if (bootOverlayShown && !finishingBoot) {
@@ -722,8 +765,12 @@
     if (motionReduced() && !options.force) return;
     var node = ensureStage();
     window.clearTimeout(hideTimer);
+    cancelHideFinalizeTimers();
     cancelReadinessWait();
     cancelOverlayFailsafe();
+    cancelRouteHardStop();
+    var token = ++visibleToken;
+    visibleStartedAt = Date.now();
     node.style.setProperty("pointer-events", "none", "important");
     renderScene(scene || "workspace", options);
     node.hidden = false;
@@ -743,12 +790,14 @@
     } else {
       startOverlayFailsafe(scene || "workspace", options);
     }
+    startRouteHardStop(scene || "workspace", options, token);
   }
 
   function hide() {
     if (!stage) return;
     window.clearTimeout(hideTimer);
     cancelOverlayFailsafe();
+    cancelRouteHardStop();
     cancelReadinessWait();
     if (bootOverlayShown && stage.getAttribute("data-scene") === "workspace" && !finishingBoot) {
       bootOverlayShown = false;
@@ -758,17 +807,20 @@
       bootTimer = 0;
     }
     var settleMs = stage.getAttribute("data-scene") === "transition" ? 360 : 720;
+    var tokenAtHide = visibleToken;
     stage.classList.remove("is-visible");
     stopProgress();
     function finalizeHidden() {
+      if (tokenAtHide !== visibleToken) return;
       if (stage && !stage.classList.contains("is-visible")) {
         stage.hidden = true;
         stage.classList.remove("is-complete");
         stopCanvas();
       }
     }
-    hideTimer = window.setTimeout(finalizeHidden, settleMs);
-    window.setTimeout(finalizeHidden, settleMs + 160);
+    cancelHideFinalizeTimers();
+    hideFinalizeTimer = window.setTimeout(finalizeHidden, settleMs);
+    hideFinalizeFallbackTimer = window.setTimeout(finalizeHidden, settleMs + 160);
   }
 
   function statusReady() {
@@ -1106,6 +1158,7 @@
 
   function boot() {
     ensureStage();
+    installOverlayWatchdog();
     bindAuthUnlock();
     bindRouteTransitions();
     bindConnectionState();

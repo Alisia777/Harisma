@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-dashboard-buyout-source1';
+  const VERSION = '20260701-dashboard-buyout-estimate1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -34,6 +34,7 @@
     magnit: { label: 'Магнит', short: 'Магнит', color: '#e85b55' }
   };
   const MARKETPLACE_ORDER = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
+  const BUYOUT_PROXY_PLATFORMS = new Set(['goldapple', 'letu', 'megamarket', 'samokat', 'magnit']);
   const METRICS = {
     orders: { label: 'Заказы', unit: 'int', chart: 'bars', route: 'product-leaderboard', tone: '#76a9ea' },
     buys: { label: 'Выкупы', unit: 'int', chart: 'bars', route: 'product-leaderboard', tone: '#74c99a' },
@@ -720,7 +721,7 @@
     return firstExplicitNumber(row?.ordersUnits, row?.orderUnits, row?.units) ?? 0;
   }
 
-  function buyoutUnitsForRow(row) {
+  function directBuyoutUnitsForRow(row) {
     const explicit = firstExplicitNumber(
       row?.deliveredUnits,
       row?.buyoutUnits,
@@ -733,20 +734,66 @@
     return null;
   }
 
-  function emptyTotal() {
-    return { orders: 0, buys: 0, revenue: 0, marginRub: 0, orderRows: 0, buyoutRows: 0, buyoutOrders: 0 };
+  function buyoutRevenueForRow(row) {
+    return firstExplicitNumber(
+      row?.buyoutRevenue,
+      row?.boughtRevenue,
+      row?.deliveredRevenue,
+      row?.wbSellerSummarySalesRevenue,
+      row?.wbSellerSummaryFinanceTurnover,
+      row?.financeTurnover,
+      row?.wbSellerSummary?.salesRevenue,
+      row?.wbSellerSummary?.financeTurnover
+    );
   }
 
-  function sumRows(rows) {
+  function orderRevenueForRow(row) {
+    return firstExplicitNumber(row?.ordersRevenue, row?.ordersSumRub, row?.revenue);
+  }
+
+  function buyoutInfoForRow(row, platformKey = '') {
+    const direct = directBuyoutUnitsForRow(row);
+    if (direct !== null) return { units: direct, source: 'direct', estimated: false, proxy: false };
+
+    const orders = orderUnitsForRow(row);
+    if (!(orders > 0)) return null;
+
+    const salesRevenue = buyoutRevenueForRow(row);
+    const orderRevenue = orderRevenueForRow(row);
+    if (salesRevenue > 0 && orderRevenue > 0) {
+      const units = clamp(orders * salesRevenue / orderRevenue, 0, orders);
+      return { units, source: 'sales-revenue', estimated: true, proxy: false };
+    }
+
+    const platform = normalizePlatform(platformKey || row?.platformKey || row?.platform || row?.key);
+    if (BUYOUT_PROXY_PLATFORMS.has(platform) && finite(row?.revenue) > 0) {
+      return { units: orders, source: 'sales-proxy', estimated: true, proxy: true };
+    }
+
+    return null;
+  }
+
+  function buyoutUnitsForRow(row, platformKey = '') {
+    const info = buyoutInfoForRow(row, platformKey);
+    return info ? info.units : null;
+  }
+
+  function emptyTotal() {
+    return { orders: 0, buys: 0, revenue: 0, marginRub: 0, orderRows: 0, buyoutRows: 0, buyoutOrders: 0, buyoutEstimatedRows: 0, buyoutProxyRows: 0 };
+  }
+
+  function sumRows(rows, platformKey = '') {
     return rows.reduce((acc, row) => {
       const orders = orderUnitsForRow(row);
-      const buys = buyoutUnitsForRow(row);
+      const buyout = buyoutInfoForRow(row, platformKey);
       acc.orders += orders;
       if (orders > 0) acc.orderRows += 1;
-      if (buys !== null) {
-        acc.buys += buys;
+      if (buyout) {
+        acc.buys += buyout.units;
         acc.buyoutRows += 1;
         acc.buyoutOrders += orders;
+        if (buyout.estimated) acc.buyoutEstimatedRows += 1;
+        if (buyout.proxy) acc.buyoutProxyRows += 1;
       }
       acc.revenue += finite(row.revenue);
       acc.marginRub += finite(row.estimatedMargin, finite(row.financialResult));
@@ -765,7 +812,7 @@
   function platformTotalsInRange(platformTrends, start, end) {
     return platformRows(platformTrends)
       .filter((platform) => normalizePlatform(platform.key) !== 'all')
-      .map((platform) => sumRows(rowsInRange(platform.series, start, end)))
+      .map((platform) => sumRows(rowsInRange(platform.series, start, end), normalizePlatform(platform.key)))
       .reduce((acc, total) => addTotals(acc, total), emptyTotal());
   }
 
@@ -785,17 +832,21 @@
             buys: 0,
             buyoutRows: 0,
             buyoutOrders: 0,
+            buyoutEstimatedRows: 0,
+            buyoutProxyRows: 0,
             revenue: 0,
             estimatedMargin: 0
           };
           const orders = orderUnitsForRow(row);
-          const buys = buyoutUnitsForRow(row);
+          const buyout = buyoutInfoForRow(row, normalizePlatform(platform.key));
           target.units += orders;
           target.ordersUnits += orders;
-          if (buys !== null) {
-            target.buys += buys;
+          if (buyout) {
+            target.buys += buyout.units;
             target.buyoutRows += 1;
             target.buyoutOrders += orders;
+            if (buyout.estimated) target.buyoutEstimatedRows += 1;
+            if (buyout.proxy) target.buyoutProxyRows += 1;
           }
           target.revenue += finite(row.revenue);
           target.estimatedMargin += finite(row.estimatedMargin, finite(row.financialResult));
@@ -828,8 +879,11 @@
   function buyoutHint(total) {
     const rate = buyoutRate(total);
     if (rate === null) return 'выкуп не опубликован';
-    const suffix = buyoutBase(total) < finite(total?.orders) ? ' по источникам' : '';
-    return `выкуп ${fmtPct(rate)}${suffix}`;
+    const details = [];
+    if (finite(total?.buyoutEstimatedRows) > 0) details.push('расчёт по продажам');
+    if (finite(total?.buyoutProxyRows) > 0) details.push('продажный срез допсетей');
+    if (!details.length && buyoutBase(total) < finite(total?.orders)) details.push('по источникам');
+    return `выкуп ${fmtPct(rate)}${details.length ? ` · ${details.join(', ')}` : ''}`;
   }
 
   function fillBuyoutFromSource(target, source, force = false) {
@@ -837,6 +891,8 @@
     target.buys = finite(source.buys);
     target.buyoutRows = finite(source.buyoutRows);
     target.buyoutOrders = finite(source.buyoutOrders);
+    target.buyoutEstimatedRows = finite(source.buyoutEstimatedRows);
+    target.buyoutProxyRows = finite(source.buyoutProxyRows);
     return target;
   }
 
@@ -1303,9 +1359,9 @@
       const base = current ? row : fallbackPrev;
       const revenue = finite(base.revenue);
       const orders = orderUnitsForRow(base);
-      const buys = buyoutUnitsForRow(base);
+      const buys = buyoutUnitsForRow(base, model.platform);
       const previousOrders = orderUnitsForRow(fallbackPrev);
-      const previousBuys = buyoutUnitsForRow(fallbackPrev);
+      const previousBuys = buyoutUnitsForRow(fallbackPrev, model.platform);
       const marginRub = finite(base.estimatedMargin, finite(base.financialResult));
       const day = dateKey(row.date || row.label || base.date || base.label) || model.range.start;
       const iuRow = model.iuRowsByDate[day] || {};
@@ -1352,8 +1408,8 @@
             prevRows = rowsInRange(platform.series, platformRange.prevStart, platformRange.prevEnd);
           }
         }
-        const total = sumRows(rows);
-        const previous = sumRows(prevRows);
+        const total = sumRows(rows, key);
+        const previous = sumRows(prevRows, key);
         applyRawRevenueFallback(total, raw[key], rows);
         const adsRows = !isCoreAdsPlatform(key)
           ? adsSummaryRowsInRange(model.adsSummary, key, model.range.start, model.range.end)
@@ -1538,8 +1594,8 @@
     return rowsInRange(rows, range.start, range.end);
   }
 
-  function articleTotalForRange(article, range) {
-    return sumRows(articleRowsInPeriod(article, range));
+  function articleTotalForRange(article, range, platformKey = '') {
+    return sumRows(articleRowsInPeriod(article, range), platformKey);
   }
 
   function buildPlatformArticleSkuRows(model, platform) {
@@ -1547,11 +1603,11 @@
     if (!source) return null;
     const articleRows = (source.articles || [])
       .map((article) => {
-        const current = articleTotalForRange(article, model.range);
+        const current = articleTotalForRange(article, model.range, platform);
         const previous = articleTotalForRange(article, {
           start: model.range.prevStart,
           end: model.range.prevEnd
-        });
+        }, platform);
         const key = articleKeyOf(article) || article?.sourceArticleKey || article?.name;
         const previousRevenue = finite(previous.revenue);
         const currentRevenue = finite(current.revenue);
@@ -1739,9 +1795,9 @@
       }
     }
     const allRows = rowsInRange(allPlatform.series, range.start, range.end);
-    const total = sumRows(currentRows);
-    const previousTotal = sumRows(previousRows);
-    const allTotal = sumRows(allRows);
+    const total = sumRows(currentRows, platform);
+    const previousTotal = sumRows(previousRows, platform);
+    const allTotal = sumRows(allRows, 'all');
     const rawRevenue = rawRevenueMetrics(metrics);
     if (platform !== 'all') applyRawRevenueFallback(total, rawRevenue[platform], currentRows);
     const platformRangeTotal = platformTotalsInRange(platformTrends, range.start, range.end);

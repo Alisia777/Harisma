@@ -1,11 +1,13 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-dashboard-ads-dedup1';
+  const VERSION = '20260701-dashboard-period-picker1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
   const PERIOD_KEY = 'altea.dashboard.ceoMotion.period';
+  const DATE_TO_KEY = 'altea.dashboard.ceoMotion.dateTo';
+  const MONTH_KEY = 'altea.dashboard.ceoMotion.month';
   const METRIC_KEY = 'altea.dashboard.ceoMotion.metric';
   const GLOBAL_MARKET_KEY = 'altea.portal.marketplace';
   const ROUTES = {
@@ -173,6 +175,31 @@
     return key ? `${key.slice(8, 10)}.${key.slice(5, 7)}` : '—';
   }
 
+  function monthKey(value) {
+    const date = dateKey(value);
+    if (date) return date.slice(0, 7);
+    const text = String(value || '').slice(0, 7);
+    return /^\d{4}-\d{2}$/.test(text) ? text : '';
+  }
+
+  function monthEndKey(key) {
+    const month = monthKey(key);
+    if (!month) return '';
+    const [year, monthNumber] = month.split('-').map(Number);
+    return iso(new Date(year, monthNumber, 0));
+  }
+
+  function monthLabel(key) {
+    const month = monthKey(key);
+    if (!month) return 'Месяц';
+    const names = {
+      '01': 'январь', '02': 'февраль', '03': 'март', '04': 'апрель',
+      '05': 'май', '06': 'июнь', '07': 'июль', '08': 'август',
+      '09': 'сентябрь', '10': 'октябрь', '11': 'ноябрь', '12': 'декабрь'
+    };
+    return `${names[month.slice(5, 7)] || month.slice(5, 7)} ${month.slice(0, 4)}`;
+  }
+
   function normalizePlatform(value) {
     const raw = String(value || 'all').trim().toLowerCase().replace(/\s+/g, '');
     if (!raw || raw === 'marketplaces' || raw === 'all') return 'all';
@@ -206,7 +233,7 @@
 
   function currentPeriod() {
     const value = String(readStorage(PERIOD_KEY, 'mtd') || 'mtd');
-    return ['7', '14', 'mtd'].includes(value) ? value : 'mtd';
+    return ['7', '14', 'mtd', 'month'].includes(value) ? value : 'mtd';
   }
 
   function currentMetric() {
@@ -318,7 +345,7 @@
     style.textContent = `
       #${ROOT_ID} .ceo-motion-v1{--bg:#070706;--surface:#12100d;--surface2:#17140f;--line:#302a22;--line2:#514536;--text:#f4eee4;--muted:#a59c90;--faint:#70685f;--champ:#dbc7a3;--champ2:#f0dfbf;--ok:#74c99a;--warn:#e0b760;--bad:#e7786b;--info:#76a9ea;--platform:${PLATFORM_META.all.color};--metric:var(--platform);--ease:cubic-bezier(.22,.82,.22,1);position:relative;display:grid;gap:13px;color:var(--text);isolation:isolate;animation:ceoPageReveal 280ms var(--ease) both}
       #${ROOT_ID} .ceo-motion-v1 *{box-sizing:border-box}
-      #${ROOT_ID} .ceo-motion-v1 button,#${ROOT_ID} .ceo-motion-v1 input{font:inherit;color:inherit}
+      #${ROOT_ID} .ceo-motion-v1 button,#${ROOT_ID} .ceo-motion-v1 input,#${ROOT_ID} .ceo-motion-v1 select{font:inherit;color:inherit}
       #${ROOT_ID} .ceo-motion-v1 button{cursor:pointer}
       .ceo-motion-v1.ceo-drawer-back{--bg:#070706;--surface:#12100d;--surface2:#17140f;--line:#302a22;--line2:#514536;--text:#f4eee4;--muted:#a59c90;--faint:#70685f;--champ:#dbc7a3;--champ2:#f0dfbf;--ok:#74c99a;--warn:#e0b760;--bad:#e7786b;--info:#76a9ea;--platform:${PLATFORM_META.all.color};--metric:var(--platform);--ease:cubic-bezier(.22,.82,.22,1);color:var(--text)}
       .ceo-motion-v1.ceo-drawer-back *{box-sizing:border-box}
@@ -335,6 +362,10 @@
       #${ROOT_ID} .ceo-chip-row{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
       #${ROOT_ID} .ceo-chip{display:inline-flex;align-items:center;gap:7px;min-height:31px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:rgba(12,10,8,.86);color:var(--muted);font-size:11px;font-weight:800;white-space:nowrap}
       #${ROOT_ID} .ceo-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--pc,var(--champ));box-shadow:0 0 12px var(--pc,var(--champ))}
+      #${ROOT_ID} .ceo-periodbar{display:grid;grid-template-columns:minmax(132px,.72fr) minmax(132px,.72fr) minmax(320px,1.25fr);gap:7px;align-items:end;max-width:720px}
+      #${ROOT_ID} .ceo-date-field{display:grid;gap:4px;min-width:0;color:var(--faint);font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+      #${ROOT_ID} .ceo-date-field input,#${ROOT_ID} .ceo-date-field select{height:34px;width:100%;border:1px solid var(--line);border-radius:11px;background:#0f0d0b;color:var(--text);padding:0 10px;font-size:11px;font-weight:800;letter-spacing:0;text-transform:none;outline:none}
+      #${ROOT_ID} .ceo-date-field input:focus,#${ROOT_ID} .ceo-date-field select:focus{border-color:var(--champ)}
       #${ROOT_ID} .ceo-periods{display:flex;gap:5px;padding:5px;border:1px solid var(--line);border-radius:999px;background:#0f0d0b}
       #${ROOT_ID} .ceo-period,.ceo-motion-v1.ceo-drawer-back .ceo-period{height:34px;padding:0 15px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--muted);font-size:11px;font-weight:900;transition:background 180ms var(--ease),border-color 180ms var(--ease),color 180ms var(--ease)}
       #${ROOT_ID} .ceo-period.active,.ceo-motion-v1.ceo-drawer-back .ceo-period.active{background:var(--champ2);border-color:var(--champ2);color:#18120a}
@@ -454,7 +485,7 @@
       @keyframes ceoLineDraw{from{stroke-dashoffset:1500}to{stroke-dashoffset:0}}
       @keyframes ceoGrowX{from{transform:scaleX(.04);transform-origin:left;opacity:.2}to{transform:scaleX(1);transform-origin:left}}
       @media(max-width:1380px){#${ROOT_ID} .ceo-main-grid,#${ROOT_ID} .ceo-lower-grid{grid-template-columns:1fr}#${ROOT_ID} .ceo-platform-grid{grid-template-columns:repeat(3,1fr)}#${ROOT_ID} .ceo-kpis{grid-template-columns:repeat(3,1fr)}}
-      @media(max-width:860px){#${ROOT_ID} .ceo-top{flex-direction:column;min-height:0}#${ROOT_ID} .ceo-toolbar{align-items:flex-start}#${ROOT_ID} .ceo-kpis,#${ROOT_ID} .ceo-platform-grid,#${ROOT_ID} .ceo-risk-grid,#${ROOT_ID} .ceo-contrib{grid-template-columns:1fr}#${ROOT_ID} .ceo-chart{height:330px}#${ROOT_ID} .ceo-legend{display:none}}
+      @media(max-width:860px){#${ROOT_ID} .ceo-top{flex-direction:column;min-height:0}#${ROOT_ID} .ceo-toolbar{align-items:flex-start}#${ROOT_ID} .ceo-periodbar{grid-template-columns:1fr;width:100%;max-width:none}#${ROOT_ID} .ceo-periods{border-radius:14px}#${ROOT_ID} .ceo-kpis,#${ROOT_ID} .ceo-platform-grid,#${ROOT_ID} .ceo-risk-grid,#${ROOT_ID} .ceo-contrib{grid-template-columns:1fr}#${ROOT_ID} .ceo-chart{height:330px}#${ROOT_ID} .ceo-legend{display:none}}
       @media(prefers-reduced-motion:reduce){#${ROOT_ID} .ceo-motion-v1 *,#${ROOT_ID} .ceo-motion-v1 *::before,#${ROOT_ID} .ceo-motion-v1 *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
     `;
     document.head.appendChild(style);
@@ -588,6 +619,73 @@
     const prevEnd = addDays(start, -1);
     const prevStart = addDays(prevEnd, -(length - 1));
     return { start: iso(start), end: iso(end), prevStart: iso(prevStart), prevEnd: iso(prevEnd), length };
+  }
+
+  function seriesDateKeys(series) {
+    return Array.from(new Set((Array.isArray(series) ? series : [])
+      .map((row) => dateKey(row?.date || row?.label))
+      .filter(Boolean))).sort();
+  }
+
+  function fallbackDateKeys(platformTrends) {
+    const set = new Set();
+    platformRows(platformTrends).forEach((platform) => {
+      seriesDateKeys(platform.series).forEach((date) => set.add(date));
+    });
+    return Array.from(set).sort();
+  }
+
+  function dateKeysForDashboard(platformTrends, selectedPlatform, allPlatform, fallbackDate) {
+    const selected = seriesDateKeys(selectedPlatform?.series);
+    const all = seriesDateKeys(allPlatform?.series);
+    const fallback = fallbackDateKeys(platformTrends);
+    const dates = selected.length ? selected : all.length ? all : fallback;
+    if (!dates.length && fallbackDate) return [fallbackDate];
+    return dates;
+  }
+
+  function monthKeysFromDates(dates) {
+    return Array.from(new Set((Array.isArray(dates) ? dates : [])
+      .map((date) => date.slice(0, 7))
+      .filter(Boolean))).sort();
+  }
+
+  function lastDateInMonth(dates, key) {
+    const month = monthKey(key);
+    if (!month) return '';
+    return (Array.isArray(dates) ? dates : [])
+      .filter((date) => date.startsWith(`${month}-`))
+      .sort()
+      .pop() || '';
+  }
+
+  function dashboardDateContext(platformTrends, selectedPlatform, allPlatform, dashboard, fallbackAsOf, period) {
+    const fallback = dateKey(fallbackAsOf) || dateKey(dashboard?.dataFreshness?.asOfDate) || latestDate(platformTrends, dashboard);
+    const dates = dateKeysForDashboard(platformTrends, selectedPlatform, allPlatform, fallback);
+    const months = monthKeysFromDates(dates);
+    const maxDate = dates[dates.length - 1] || fallback || '';
+    const minDate = dates[0] || maxDate;
+    const storedDate = dateKey(readStorage(DATE_TO_KEY, ''));
+    const storedMonth = monthKey(readStorage(MONTH_KEY, '')) || monthKey(storedDate);
+    const fallbackMonth = monthKey(fallback) || monthKey(maxDate) || months[months.length - 1] || '';
+    let selectedMonth = storedMonth || fallbackMonth;
+    if (months.length && !months.includes(selectedMonth)) selectedMonth = fallbackMonth || months[months.length - 1];
+    const monthEnd = lastDateInMonth(dates, selectedMonth) || monthEndKey(selectedMonth) || maxDate;
+    let dateTo = storedDate && (!dates.length || dates.includes(storedDate)) ? storedDate : '';
+    if (!dateTo || (selectedMonth && !dateTo.startsWith(`${selectedMonth}-`))) {
+      dateTo = monthEnd || fallback || maxDate;
+    }
+    if (period === 'month' && monthEnd) dateTo = monthEnd;
+    return {
+      dateTo,
+      monthKey: monthKey(dateTo) || selectedMonth,
+      monthEndDate: monthEnd,
+      dates,
+      months,
+      minDate,
+      maxDate,
+      explicit: Boolean(storedDate || storedMonth)
+    };
   }
 
   function rowsInRange(series, start, end) {
@@ -1093,21 +1191,32 @@
     };
   }
 
-  function monthlyPlanChannel(dashboard, platform) {
+  function monthlyPlanChannel(dashboard, platform, planMonthKey = '') {
     const key = normalizePlatform(platform);
     const active = dashboard?.companyPlan?.activeMonth || {};
-    const channels = active.channels || dashboard?.companyPlan?.months?.[active.monthKey]?.channels || {};
+    const requestedMonth = monthKey(planMonthKey) || active.monthKey || '';
+    const month = dashboard?.companyPlan?.months?.[requestedMonth] || (requestedMonth === active.monthKey ? active : null) || active;
+    const channels = month.channels || dashboard?.companyPlan?.months?.[month.monthKey || requestedMonth]?.channels || active.channels || {};
+    const monthRevenue = finite(month.planRevenueMonth, finite(month.revenue));
+    const monthDays = Math.max(1, finite(month.days, active.days || 30));
     if (key === 'all') {
       return {
-        revenue: finite(active.planRevenueMonth, finite(active.revenue)),
-        dailyRevenue: finite(active.planRevenueMonth, finite(active.revenue)) / Math.max(1, finite(active.days, 30)),
-        label: active.label || dashboard?.company_plan_month_label || ''
+        revenue: monthRevenue,
+        dailyRevenue: monthRevenue / monthDays,
+        days: monthDays,
+        monthKey: month.monthKey || requestedMonth || active.monthKey || '',
+        isActive: !requestedMonth || requestedMonth === active.monthKey,
+        label: month.label || active.label || dashboard?.company_plan_month_label || ''
       };
     }
     const channel = channels[key] || {};
+    const channelRevenue = finite(channel.revenue);
     return {
-      revenue: finite(channel.revenue),
-      dailyRevenue: finite(channel.dailyRevenue, finite(channel.revenue) / Math.max(1, finite(active.days, 30))),
+      revenue: channelRevenue,
+      dailyRevenue: finite(channel.dailyRevenue, channelRevenue / monthDays),
+      days: monthDays,
+      monthKey: month.monthKey || requestedMonth || active.monthKey || '',
+      isActive: !requestedMonth || requestedMonth === active.monthKey,
       label: channel.label || platformMeta(key).label
     };
   }
@@ -1116,8 +1225,8 @@
     const meta = METRICS[metricKey] || METRICS.revenue;
     const rows = metricKey === 'ads' ? (model.adRows || model.iuRows || []) : model.currentRows;
     const prev = metricKey === 'ads' ? (model.previousAdRows || model.prevIuRows || []) : model.previousRows;
-    const planChannel = monthlyPlanChannel(model.dashboard, model.platform);
-    const planUnitsPerDay = finite(model.dashboard?.brandSummary?.[0]?.plan_units) / Math.max(1, finite(model.dashboard?.companyPlan?.activeMonth?.days, 30));
+    const planChannel = monthlyPlanChannel(model.dashboard, model.platform, model.planMonthKey);
+    const planUnitsPerDay = finite(model.dashboard?.brandSummary?.[0]?.plan_units) / Math.max(1, finite(planChannel.days, finite(model.dashboard?.companyPlan?.activeMonth?.days, 30)));
     const platformShare = model.total.revenue > 0 && model.allTotal.revenue > 0 ? model.total.revenue / model.allTotal.revenue : 1;
     const buyoutTarget = buyoutRate(model.total);
     const marginTarget = model.plan.marginPct;
@@ -1317,9 +1426,9 @@
     const platform = normalizePlatform(model?.platform);
     const platformCard = (model?.platformCards || []).find((item) => item.key === platform);
     const totalRevenue = finite(model?.total?.revenue) || finite(platformCard?.total?.revenue) || finite(model?.allTotal?.revenue);
-    const planChannel = monthlyPlanChannel(model?.dashboard, platform);
+    const planChannel = monthlyPlanChannel(model?.dashboard, platform, model?.planMonthKey || model?.range?.start);
     const rangeLength = finite(model?.range?.length, 0);
-    const activeDays = Math.max(1, finite(model?.dashboard?.companyPlan?.activeMonth?.days, 30));
+    const activeDays = Math.max(1, finite(planChannel?.days, finite(model?.dashboard?.companyPlan?.activeMonth?.days, 30)));
     const planRevenue = finite(model?.plan?.revenue)
       || finite(planChannel?.revenueToDate)
       || (finite(planChannel?.dailyRevenue) > 0 && rangeLength > 0 ? finite(planChannel.dailyRevenue) * rangeLength : 0)
@@ -1561,13 +1670,16 @@
       : latestPlatformSeriesDate(selectedPlatform) || latestDate(platformTrends, dashboard) || dateKey(dashboard?.dataFreshness?.asOfDate);
     const period = currentPeriod();
     const metric = currentMetric();
+    let dateContext = dashboardDateContext(platformTrends, selectedPlatform, allPlatform, dashboard, asOf, period);
+    if (dateContext.dateTo) asOf = dateContext.dateTo;
     let range = currentRange(asOf, period);
     let currentRows = rowsInRange(selectedPlatform.series, range.start, range.end);
     let previousRows = rowsInRange(selectedPlatform.series, range.prevStart, range.prevEnd);
-    if (platform !== 'all' && !currentRows.length) {
+    if (platform !== 'all' && !currentRows.length && !dateContext.explicit) {
       const platformLatest = latestPlatformSeriesDate(selectedPlatform);
       if (platformLatest && platformLatest !== asOf) {
         asOf = platformLatest;
+        dateContext = dashboardDateContext(platformTrends, selectedPlatform, allPlatform, dashboard, asOf, period);
         range = currentRange(asOf, period);
         currentRows = rowsInRange(selectedPlatform.series, range.start, range.end);
         previousRows = rowsInRange(selectedPlatform.series, range.prevStart, range.prevEnd);
@@ -1629,14 +1741,15 @@
     previousTotal.drr = previousTotal.revenue > 0 ? previousTotal.ads / previousTotal.revenue : null;
     total.marginPct = total.revenue > 0 ? total.marginRub / total.revenue : null;
     previousTotal.marginPct = previousTotal.revenue > 0 ? previousTotal.marginRub / previousTotal.revenue : null;
-    const planChannel = monthlyPlanChannel(dashboard, platform);
+    const planMonthKey = monthKey(range.start);
+    const planChannel = monthlyPlanChannel(dashboard, platform, planMonthKey);
     const planRevenue = planChannel.dailyRevenue * range.length;
     const active = dashboard?.companyPlan?.activeMonth || {};
-    if (platform === 'all' && period === 'mtd' && finite(active.planRevenueToDate) > 0) {
+    if (platform === 'all' && period === 'mtd' && planChannel.isActive && finite(active.planRevenueToDate) > 0) {
       // Keep the existing company plan formula for the default CEO view.
       planChannel.revenueToDate = finite(active.planRevenueToDate);
     }
-    const planOrders = finite(dashboard?.brandSummary?.[0]?.plan_units) / Math.max(1, finite(active.days, 30)) * range.length * (allTotal.revenue > 0 ? total.revenue / allTotal.revenue : 1);
+    const planOrders = finite(dashboard?.brandSummary?.[0]?.plan_units) / Math.max(1, finite(planChannel.days, finite(active.days, 30))) * range.length * (allTotal.revenue > 0 ? total.revenue / allTotal.revenue : 1);
     const planAds = adRows.reduce((sum, row) => sum + adsPlanDailyValue(row, platform), 0);
     const planBuyoutRate = buyoutRate(total);
     const plan = {
@@ -1659,7 +1772,9 @@
       adsSummary,
       platform,
       period,
+      planMonthKey,
       metric,
+      dateContext,
       asOf,
       range,
       adRange,
@@ -1953,8 +2068,12 @@
   }
 
   function renderShell(model) {
-    const periodLabels = { '7': '7 дней', '14': '14 дней', mtd: 'Месяц к дате' };
+    const periodLabels = { '7': '7 дней', '14': '14 дней', mtd: 'Месяц к дате', month: 'Месяц' };
     const platform = platformMeta(model.platform);
+    const dateContext = model.dateContext || {};
+    const months = Array.isArray(dateContext.months) && dateContext.months.length
+      ? dateContext.months
+      : [monthKey(model.asOf || model.range?.end)].filter(Boolean);
     return `
       <section class="ceo-motion-v1" data-dashboard-ceo-motion-version="${VERSION}" style="--platform:${platform.color};--metric:${METRICS[model.metric]?.tone || platform.color}">
         <div class="ceo-motion-bg"></div>
@@ -1968,9 +2087,22 @@
             <div class="ceo-chip-row">
               <span class="ceo-chip" style="--pc:${platform.color}">глобально: ${escapeHtml(platform.short)}</span>
               <span class="ceo-chip" style="--pc:var(--ok)">факт до ${shortDate(model.asOf)} · готов</span>
+              <span class="ceo-chip" style="--pc:var(--champ)">период ${shortDate(model.range.start)} - ${shortDate(model.range.end)}</span>
             </div>
-            <div class="ceo-periods" role="tablist" aria-label="Период дашборда">
-              ${Object.entries(periodLabels).map(([key, label]) => `<button type="button" class="ceo-period ${model.period === key ? 'active' : ''}" data-ceo-period="${key}" aria-selected="${model.period === key ? 'true' : 'false'}">${label}</button>`).join('')}
+            <div class="ceo-periodbar" aria-label="Период дашборда">
+              <label class="ceo-date-field">
+                <span>месяц</span>
+                <select data-ceo-month aria-label="Месяц дашборда">
+                  ${months.map((key) => `<option value="${escapeHtml(key)}" ${key === dateContext.monthKey ? 'selected' : ''}>${escapeHtml(monthLabel(key))}</option>`).join('')}
+                </select>
+              </label>
+              <label class="ceo-date-field">
+                <span>дата до</span>
+                <input type="date" data-ceo-date-to value="${escapeHtml(dateContext.dateTo || model.asOf)}" min="${escapeHtml(dateContext.minDate || '')}" max="${escapeHtml(dateContext.maxDate || '')}" aria-label="Дата окончания периода дашборда">
+              </label>
+              <div class="ceo-periods" role="tablist" aria-label="Быстрый период дашборда">
+                ${Object.entries(periodLabels).map(([key, label]) => `<button type="button" class="ceo-period ${model.period === key ? 'active' : ''}" data-ceo-period="${key}" aria-selected="${model.period === key ? 'true' : 'false'}">${label}</button>`).join('')}
+              </div>
             </div>
           </div>
         </header>
@@ -2251,7 +2383,7 @@
     );
     openDrawer(root, item.label, 'Площадка как drill-down: цифры, план и SKU внутри выбранного контура.', [
       ['Выручка', fmtMoneyFull(item.total.revenue)],
-      ['План', planLabel(monthlyPlanChannel(model.dashboard, normalized).revenue)],
+      ['План', planLabel(monthlyPlanChannel(model.dashboard, normalized, model.planMonthKey).revenue)],
       ['Заказы', fmtInt(item.total.orders)],
       ['Выкупы', buyoutDisplay(item.total)],
       ['ДРР', item.drr == null ? 'нет источника' : fmtPct(item.drr)],
@@ -2627,7 +2759,16 @@
       }
       const period = target.closest?.('[data-ceo-period]');
       if (period && period.hasAttribute('data-ceo-period')) {
-        writeStorage(PERIOD_KEY, period.getAttribute('data-ceo-period') || 'mtd');
+        const nextPeriod = period.getAttribute('data-ceo-period') || 'mtd';
+        writeStorage(PERIOD_KEY, nextPeriod);
+        if (nextPeriod === 'month') {
+          const model = buildModel();
+          const dateTo = model.dateContext?.monthEndDate || model.dateContext?.dateTo || model.asOf;
+          if (dateTo) {
+            writeStorage(DATE_TO_KEY, dateTo);
+            writeStorage(MONTH_KEY, dateTo.slice(0, 7));
+          }
+        }
         renderDashboardCeoMotion();
         return;
       }
@@ -2673,6 +2814,32 @@
       const input = event.target?.closest?.('[data-ceo-drawer-filter]');
       if (!input) return;
       filterDashboardDrawer(document.querySelector('[data-ceo-global-drawer-back]') || root, input);
+    };
+    root.onchange = (event) => {
+      const dateInput = event.target?.closest?.('[data-ceo-date-to]');
+      if (dateInput) {
+        const nextDate = dateKey(dateInput.value);
+        if (nextDate) {
+          writeStorage(DATE_TO_KEY, nextDate);
+          writeStorage(MONTH_KEY, nextDate.slice(0, 7));
+          if (currentPeriod() === 'month') writeStorage(PERIOD_KEY, 'mtd');
+          renderDashboardCeoMotion();
+        }
+        return;
+      }
+      const monthSelect = event.target?.closest?.('[data-ceo-month]');
+      if (monthSelect) {
+        const nextMonth = monthKey(monthSelect.value);
+        if (nextMonth) {
+          const model = buildModel();
+          const dates = model.dateContext?.dates || [];
+          const dateTo = lastDateInMonth(dates, nextMonth) || monthEndKey(nextMonth);
+          writeStorage(MONTH_KEY, nextMonth);
+          writeStorage(DATE_TO_KEY, dateTo);
+          writeStorage(PERIOD_KEY, 'month');
+          renderDashboardCeoMotion();
+        }
+      }
     };
   }
 

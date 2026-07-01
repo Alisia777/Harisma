@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260701-task-filter-scope-v1';
+  const VERSION = '20260701-task-filter-autorecover-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -127,6 +127,8 @@
   let controlObserver = null;
   let controlObserverTimer = 0;
   let renderToken = 0;
+  let lastManualFilterChangeAt = 0;
+  let userTouchedTaskFilters = false;
   let detailEventsBound = false;
   let createEventsBound = false;
   const TASK_CACHE = window.__ALTEA_TASK_DESIGN_CACHE__ instanceof Map ? window.__ALTEA_TASK_DESIGN_CACHE__ : new Map();
@@ -361,6 +363,19 @@
       }
     } catch (_) {}
     return localTasks.map(mergeTaskExtras);
+  }
+
+  function defaultFilters(status = 'active') {
+    return {
+      search: '',
+      owner: 'all',
+      status,
+      type: 'all',
+      priority: 'all',
+      horizon: 'all',
+      source: 'all',
+      platform: 'all'
+    };
   }
 
   function ensureFilters() {
@@ -1166,14 +1181,62 @@
     return score;
   }
 
+  function sortTasks(tasks) {
+    return tasks
+      .sort((a, b) => taskScore(b) - taskScore(a) || String(taskDate(a)).localeCompare(String(taskDate(b))) || String(a?.title || '').localeCompare(String(b?.title || ''), 'ru'));
+  }
+
+  function applyTaskFilters(tasks, filters, platform) {
+    return sortTasks(tasks.filter((task) => matchesFilters(task, filters, platform)));
+  }
+
+  function hasNarrowingTaskFilters(filters) {
+    const owner = normalizeOwnerName(filters.owner || 'all') || 'all';
+    return Boolean(
+      String(filters.search || '').trim()
+      || owner !== 'all'
+      || normalizeText(filters.status || 'active') !== 'active'
+      || normalizeText(filters.type || 'all') !== 'all'
+      || normalizeText(filters.priority || 'all') !== 'all'
+      || normalizeText(filters.horizon || 'all') !== 'all'
+      || normalizeText(filters.source || 'all') !== 'all'
+      || normalizePlatform(filters.platform || 'all') !== 'all'
+    );
+  }
+
+  function applyDefaultFilters(filters, status = 'active') {
+    Object.assign(filters, defaultFilters(status));
+    return filters;
+  }
+
+  function recoverEmptyInitialFilters(tasks, filters, platform, filtered) {
+    if (filtered.length || !tasks.length) return filtered;
+    if (!hasNarrowingTaskFilters(filters)) return filtered;
+    if (userTouchedTaskFilters) return filtered;
+    if (Date.now() - lastManualFilterChangeAt < 1200) return filtered;
+
+    const activeDefaults = defaultFilters('active');
+    const activeFiltered = applyTaskFilters(tasks, activeDefaults, platform);
+    if (activeFiltered.length) {
+      applyDefaultFilters(filters, 'active');
+      return activeFiltered;
+    }
+
+    const allDefaults = defaultFilters('all');
+    const allFiltered = applyTaskFilters(tasks, allDefaults, platform);
+    if (allFiltered.length) {
+      applyDefaultFilters(filters, 'all');
+      return allFiltered;
+    }
+
+    return filtered;
+  }
+
   function filteredTasks() {
     const filters = ensureFilters();
     const platform = globalPlatform();
-    return taskList()
-      .filter(Boolean)
-      .filter(isTaskDisplayable)
-      .filter((task) => matchesFilters(task, filters, platform))
-      .sort((a, b) => taskScore(b) - taskScore(a) || String(taskDate(a)).localeCompare(String(taskDate(b))) || String(a?.title || '').localeCompare(String(b?.title || ''), 'ru'));
+    const tasks = taskList().filter(Boolean).filter(isTaskDisplayable);
+    return applyTaskFilters(tasks, filters, platform);
   }
 
   function scopedTasksForCounters(tasks, filters, platform) {
@@ -1355,7 +1418,7 @@
       <section class="task-design-board" data-task-design-board>
         ${LANES.map((lane) => {
           const laneTasks = tasks.filter((task) => laneFor(task) === lane.key);
-          const visible = laneTasks.slice(0, 70);
+          const visible = laneTasks.slice(0, 40);
           return `
             <section class="task-design-lane lane-${escapeHtml(lane.key)}" data-kanban-lane="${escapeHtml(lane.key)}" data-lane-key="${escapeHtml(lane.key)}">
               <header>
@@ -1367,7 +1430,7 @@
               </header>
               <div class="task-design-dropzone">
                 ${visible.length ? visible.map(taskCard).join('') : '<div class="task-design-empty">Нет задач в этой колонке</div>'}
-                ${laneTasks.length > visible.length ? `<div class="task-design-more">+${laneTasks.length - visible.length} скрыто фильтром</div>` : ''}
+                ${laneTasks.length > visible.length ? `<div class="task-design-more">+${laneTasks.length - visible.length} ещё в колонке. Уточните фильтр.</div>` : ''}
               </div>
             </section>
           `;
@@ -1393,7 +1456,7 @@
             </tr>
           </thead>
           <tbody>
-            ${tasks.slice(0, 220).map((task) => `
+            ${tasks.slice(0, 160).map((task) => `
               <tr data-kanban-task="${escapeHtml(task?.id || '')}" tabindex="0">
                 <td><strong>${escapeHtml(task?.title || task?.entityLabel || 'Задача')}</strong><span>${escapeHtml(task?.nextAction || task?.reason || taskArticleSummary(task) || '')}</span></td>
                 <td>${escapeHtml(taskOwner(task) || 'Без owner')}</td>
@@ -1406,7 +1469,7 @@
             `).join('')}
           </tbody>
         </table>
-        ${tasks.length > 220 ? `<div class="task-design-more">Показано 220 из ${tasks.length}. Уточните фильтры.</div>` : ''}
+        ${tasks.length > 160 ? `<div class="task-design-more">Показано 160 из ${tasks.length}. Уточните фильтры.</div>` : ''}
       </section>
     `;
   }
@@ -1436,14 +1499,16 @@
         horizon: filters.horizon || ''
       },
       counts: [tasks.length, filtered.length],
-      tasks: filtered.slice(0, 260).map((task) => [
+      tasks: filtered.slice(0, 140).map((task) => [
         task?.id,
-        task?.title,
-        task?.entityLabel,
-        task?.nextAction,
-        task?.reason,
+        stableHash([
+          task?.title,
+          task?.entityLabel,
+          task?.nextAction,
+          task?.reason,
+          Array.isArray(task?.articleKeys) ? task.articleKeys.join('|') : ''
+        ].join('|')),
         task?.articleKey,
-        Array.isArray(task?.articleKeys) ? task.articleKeys.join('|') : '',
         task?.status,
         taskOwner(task),
         task?.priority,
@@ -1494,7 +1559,8 @@
       };
     }
     const tasks = taskList().filter(Boolean).filter(isTaskDisplayable);
-    const filtered = filteredTasks();
+    let filtered = applyTaskFilters(tasks, filters, platform);
+    filtered = recoverEmptyInitialFilters(tasks, filters, platform, filtered);
     const markup = `
       <section class="task-design-v1 platform-${escapeHtml(platform)}" data-task-calendar-design-v1 data-task-kanban-v1 data-version="${escapeHtml(VERSION)}">
         ${renderFilters(tasks, filtered, filters, platform)}
@@ -1503,7 +1569,7 @@
       </section>
     `;
     return {
-      signature: stableHash(markup),
+      signature: renderSignature(tasks, filtered, filters, platform),
       markup
     };
   }
@@ -2079,6 +2145,8 @@
 
   function setFilter(name, value) {
     const filters = ensureFilters();
+    lastManualFilterChangeAt = Date.now();
+    userTouchedTaskFilters = true;
     filters[name] = name === 'owner' ? (normalizeOwnerName(value) || 'all') : value;
     if (name === 'search') {
       window.clearTimeout(setFilter.searchTimer);
@@ -2090,20 +2158,16 @@
 
   function resetFilters() {
     const filters = ensureFilters();
-    Object.assign(filters, {
-      search: '',
-      owner: 'all',
-      status: 'active',
-      type: 'all',
-      priority: 'all',
-      horizon: 'all',
-      source: 'all'
-    });
+    lastManualFilterChangeAt = Date.now();
+    userTouchedTaskFilters = true;
+    applyDefaultFilters(filters, 'active');
     queueEnhance();
   }
 
   function applyPreset(preset) {
     const filters = ensureFilters();
+    lastManualFilterChangeAt = Date.now();
+    userTouchedTaskFilters = true;
     if (preset === 'all') {
       filters.status = 'all';
       filters.horizon = 'all';
@@ -2317,8 +2381,7 @@
     wrappedRender = function taskDesignRenderControlCenter(...args) {
       if (isControlRouteActive()) {
         const viewRoot = renderControlImmediately();
-        window.setTimeout(() => enhanceControl(true), 80);
-        window.setTimeout(() => enhanceControl(true), 260);
+        window.setTimeout(() => enhanceControl(true), 180);
         return viewRoot || root();
       }
       const result = current.apply(this, args);
@@ -2341,14 +2404,14 @@
     window.renderTaskModal = openTask;
     const installed = installWrapper();
     if (!installed) window.setTimeout(installWrapper, 450);
-    [0, 220, 700, 1600, 3600, 7200].forEach((delay) => window.setTimeout(() => queueEnhance(true), delay));
+    [0, 350, 1400, 3600].forEach((delay) => window.setTimeout(() => queueEnhance(true), delay));
     const onRouteChange = () => {
       installWrapper();
       if (isControlRouteActive()) {
         activateControlRoute();
         startControlObserver();
         renderControlImmediately();
-        window.setTimeout(() => enhanceControl(true), 160);
+        window.setTimeout(() => enhanceControl(true), 220);
       }
     };
     window.addEventListener('altea:viewchange', onRouteChange);
@@ -2365,6 +2428,7 @@
   }
 
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__ = {
+    version: VERSION,
     renderControl: renderControlImmediately,
     queue: queueEnhance
   };

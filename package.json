@@ -45,6 +45,7 @@
     "portal:security-audit-export": "node scripts/portal-security-audit-export.js",
     "portal:dashboard-ads-dedup-test": "node scripts/portal-dashboard-ceo-ads-dedup.selftest.js",
     "portal:dashboard-period-test": "node scripts/portal-dashboard-period-picker.selftest.js",
+    "portal:task-filter-recovery-test": "node scripts/portal-task-kanban-filter-recovery.selftest.js",
     "portal:iu-drr-date-window-test": "node scripts/portal-iu-drr-date-window.selftest.js"
   },
   "dependencies": {

@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260630-task-control-rescue-v1';
+  const VERSION = '20260701-task-filter-scope-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -225,6 +225,87 @@
     if (/magnit|магнит/.test(haystack)) return 'magnit';
     if (/новин|product|launch|запуск/.test(haystack)) return 'product';
     return 'cross';
+  }
+
+  function marketplaceValues(value) {
+    if (Array.isArray(value)) return value.flatMap(marketplaceValues);
+    if (value && typeof value === 'object') {
+      return ['key', 'id', 'name', 'label', 'marketplace', 'platform', 'network']
+        .map((field) => String(value?.[field] || '').trim())
+        .filter(Boolean);
+    }
+    const text = String(value || '').trim();
+    return text ? [text] : [];
+  }
+
+  function launchTaskKey(task = {}) {
+    const direct = String(task.launchId || task.launchKey || task.launchAutoId || '').trim();
+    if (direct) return direct;
+    const code = String(task.autoCode || task.launchAutoKey || '').trim();
+    const match = code.match(/^launch_ops:([^:]+):/);
+    return match ? match[1] : '';
+  }
+
+  function launchItemId(item = {}) {
+    try {
+      if (typeof window.launchStableId === 'function') return String(window.launchStableId(item) || '').trim();
+    } catch (_) {}
+    return String(item.id || item.articleKey || item.article || item.name || item.title || '').trim();
+  }
+
+  function launchItems() {
+    try {
+      if (typeof window.getLaunchItems === 'function') return window.getLaunchItems({ skipTaskLookup: true }) || [];
+    } catch (_) {}
+    const launches = appState()?.launches;
+    return Array.isArray(launches) ? launches : [];
+  }
+
+  function launchForTask(task = {}) {
+    const key = launchTaskKey(task);
+    const article = normalizeText(task.articleKey || '');
+    const entity = normalizeText(task.entityLabel || '').replace(/\s+/g, '-');
+    return launchItems().find((item) => {
+      const id = launchItemId(item);
+      if (key && id === key) return true;
+      if (key && String(item?.id || '').trim() === key) return true;
+      if (article && [item?.articleKey, item?.article, item?.sku].map(normalizeText).includes(article)) return true;
+      if (key && entity && key.includes(entity)) return true;
+      return false;
+    }) || null;
+  }
+
+  function taskPlatformKeys(task = {}) {
+    const keys = new Set();
+    const add = (value) => {
+      marketplaceValues(value).forEach((entry) => {
+        String(entry || '')
+          .split(/[,+;/|]+|\s+\+\s+/g)
+          .map((part) => part.trim())
+          .filter(Boolean)
+          .forEach((part) => {
+            const key = normalizePlatform(part);
+            if (key && !['product', 'cross', 'all'].includes(key)) keys.add(key);
+          });
+      });
+    };
+    ['marketplaces', 'marketplace', 'platforms', 'platform', 'marketplaceKey', 'network', 'networks', 'retailer', 'channel', 'market', 'salesChannel', 'launchPlatform']
+      .forEach((field) => add(task?.[field]));
+    const launch = launchForTask(task);
+    if (launch) {
+      ['marketplaces', 'marketplace', 'platforms', 'platform', 'marketplaceKey', 'network', 'networks', 'retailer', 'channel', 'market', 'salesChannel', 'launchPlatform']
+        .forEach((field) => add(launch?.[field]));
+    }
+    return [...keys];
+  }
+
+  function matchesPlatform(task, platformFilter) {
+    const filter = normalizePlatform(platformFilter || 'all');
+    if (!filter || filter === 'all') return true;
+    const taskPlatform = normalizePlatform('', task);
+    if (taskPlatform === filter || taskPlatform === 'cross' || taskPlatform === 'all') return true;
+    const keys = taskPlatformKeys(task);
+    return keys.includes(filter);
   }
 
   function globalPlatform() {
@@ -1030,10 +1111,7 @@
     }
 
     const platformFilter = normalizePlatform(platform || filters.platform || 'all');
-    if (platformFilter && platformFilter !== 'all') {
-      const taskPlatform = normalizePlatform('', task);
-      if (taskPlatform !== platformFilter && taskPlatform !== 'cross') return false;
-    }
+    if (!matchesPlatform(task, platformFilter)) return false;
 
     const owner = normalizeText(normalizeOwnerName(filters.owner || 'all') || 'all');
     if (owner && owner !== 'all' && normalizeText(taskOwner(task) || 'Без owner') !== owner) return false;
@@ -1098,6 +1176,15 @@
       .sort((a, b) => taskScore(b) - taskScore(a) || String(taskDate(a)).localeCompare(String(taskDate(b))) || String(a?.title || '').localeCompare(String(b?.title || ''), 'ru'));
   }
 
+  function scopedTasksForCounters(tasks, filters, platform) {
+    const scopeFilters = {
+      ...filters,
+      status: 'all',
+      horizon: 'all'
+    };
+    return tasks.filter((task) => matchesFilters(task, scopeFilters, platform));
+  }
+
   function countBy(tasks, predicate) {
     return tasks.reduce((sum, task) => sum + (predicate(task) ? 1 : 0), 0);
   }
@@ -1113,13 +1200,38 @@
     `;
   }
 
+  function optionText(options, value) {
+    const key = String(value || '').trim();
+    return options.find(([optionKey]) => String(optionKey) === key)?.[1] || key;
+  }
+
+  function activeFilterChips(filters, platform, selectedOwner) {
+    const chips = [];
+    const add = (label, value) => {
+      const text = String(value || '').trim();
+      if (text) chips.push(`<span>${escapeHtml(label)}: ${escapeHtml(text)}</span>`);
+    };
+    const platformKey = normalizePlatform(platform || 'all');
+    if (platformKey && platformKey !== 'all') add('Площадка', platformLabel(platformKey));
+    if (String(filters.search || '').trim()) add('Поиск', filters.search);
+    if (selectedOwner && selectedOwner !== 'all') add('Owner', selectedOwner);
+    if (filters.status && filters.status !== 'active') add('Статус', optionText(STATUS_OPTIONS, filters.status));
+    if (filters.type && filters.type !== 'all') add('Тип', optionText(TYPE_OPTIONS, filters.type));
+    if (filters.priority && filters.priority !== 'all') add('Приоритет', optionText(PRIORITY_OPTIONS, filters.priority));
+    if (filters.horizon && filters.horizon !== 'all') add('Горизонт', optionText(HORIZON_OPTIONS, filters.horizon));
+    if (filters.source && filters.source !== 'all') add('Источник', optionText(SOURCE_OPTIONS, filters.source));
+    return chips.join('');
+  }
+
   function renderFilters(tasks, filtered, filters, platform) {
     const owners = [['all', 'Все ответственные'], ...ownerOptions(tasks).map((owner) => [owner, owner])];
     const selectedOwner = normalizeOwnerName(filters.owner || 'all') || 'all';
-    const activeCount = countBy(tasks, isActive);
-    const overdueCount = countBy(tasks, isOverdue);
-    const noOwnerCount = countBy(tasks, (task) => isActive(task) && !taskOwner(task));
-    const noDateCount = countBy(tasks, (task) => isActive(task) && !taskDate(task));
+    const scopedTasks = scopedTasksForCounters(tasks, filters, platform);
+    const activeCount = countBy(scopedTasks, isActive);
+    const overdueCount = countBy(scopedTasks, isOverdue);
+    const noOwnerCount = countBy(scopedTasks, (task) => isActive(task) && !taskOwner(task));
+    const noDateCount = countBy(scopedTasks, (task) => isActive(task) && !taskDate(task));
+    const activeChips = activeFilterChips(filters, platform, selectedOwner);
     return `
       <section class="task-design-toolbar" data-task-design-toolbar>
         <div class="task-design-toolbar-top">
@@ -1135,7 +1247,7 @@
           </div>
         </div>
         <div class="task-design-snapshot">
-          <button type="button" data-task-preset="all"><strong>${tasks.length}</strong><span>все</span></button>
+          <button type="button" data-task-preset="all"><strong>${scopedTasks.length}</strong><span>все</span></button>
           <button type="button" data-task-preset="active"><strong>${activeCount}</strong><span>активные</span></button>
           <button type="button" data-task-preset="overdue"><strong>${overdueCount}</strong><span>просрочено</span></button>
           <button type="button" data-task-preset="no_owner"><strong>${noOwnerCount}</strong><span>без owner</span></button>
@@ -1153,9 +1265,12 @@
           ${selectHtml('priority', 'Приоритет', filters.priority || 'all', PRIORITY_OPTIONS)}
           ${selectHtml('horizon', 'Горизонт', filters.horizon || 'all', HORIZON_OPTIONS)}
           ${selectHtml('source', 'Источник', filters.source || 'all', SOURCE_OPTIONS)}
-          <button type="button" class="task-design-reset" data-task-reset>Сбросить</button>
+          <button type="button" class="task-design-reset ${activeChips ? 'is-hot' : ''}" data-task-reset>Сбросить</button>
         </div>
-        <div class="task-design-result-line">Показано ${filtered.length} из ${tasks.length}. Старый слой control-simple на этом маршруте выключен.</div>
+        <div class="task-design-result-line">
+          <span>Показано ${filtered.length} из ${scopedTasks.length}</span>
+          ${activeChips ? `<div class="task-design-active-filters">${activeChips}</div>` : ''}
+        </div>
       </section>
     `;
   }
@@ -1421,7 +1536,10 @@
       .task-design-filter span{color:var(--task-muted);font-size:10px;font-weight:900;text-transform:uppercase}
       .task-design-filter input,.task-design-filter select,.task-design-create input,.task-design-create select,.task-design-create textarea{width:100%;min-height:38px;border:1px solid var(--task-line);border-radius:8px;background:#050403;color:var(--task-text);padding:9px 10px;outline:none}
       .task-design-filter input:focus,.task-design-filter select:focus,.task-design-create input:focus,.task-design-create textarea:focus{border-color:rgba(219,199,163,.62);box-shadow:0 0 0 3px rgba(219,199,163,.1)}
-      .task-design-result-line{margin-top:10px;color:rgba(247,241,231,.54);font-size:11px}
+      .task-design-result-line{margin-top:10px;color:rgba(247,241,231,.54);font-size:11px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+      .task-design-active-filters{display:flex;gap:6px;flex-wrap:wrap}
+      .task-design-active-filters span{display:inline-flex;align-items:center;min-height:22px;border:1px solid rgba(219,199,163,.22);border-radius:999px;background:rgba(219,199,163,.08);color:#ead8b7;padding:3px 8px;font-size:10px;font-weight:850}
+      .task-design-reset.is-hot{border-color:rgba(255,225,161,.58);box-shadow:0 0 0 1px rgba(219,199,163,.12),0 10px 22px rgba(0,0,0,.22)}
       .task-design-create{padding:12px 14px;animation:taskDesignIn .2s ease both}
       .task-design-create form{display:grid;grid-template-columns:minmax(260px,1fr) minmax(300px,1.1fr) minmax(240px,.8fr);gap:10px;align-items:start}
       .task-design-create-head{grid-column:1/-1;display:flex;align-items:end;justify-content:space-between;gap:12px}

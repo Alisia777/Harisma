@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-dashboard-period-picker1';
+  const VERSION = '20260701-dashboard-period-picker2';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -339,9 +339,12 @@
   }
 
   function ensureStyle() {
-    if (document.getElementById(STYLE_ID)) return;
+    const existingStyle = document.getElementById(STYLE_ID);
+    if (existingStyle?.dataset?.version === VERSION) return;
+    if (existingStyle) existingStyle.remove();
     const style = document.createElement('style');
     style.id = STYLE_ID;
+    style.dataset.version = VERSION;
     style.textContent = `
       #${ROOT_ID} .ceo-motion-v1{--bg:#070706;--surface:#12100d;--surface2:#17140f;--line:#302a22;--line2:#514536;--text:#f4eee4;--muted:#a59c90;--faint:#70685f;--champ:#dbc7a3;--champ2:#f0dfbf;--ok:#74c99a;--warn:#e0b760;--bad:#e7786b;--info:#76a9ea;--platform:${PLATFORM_META.all.color};--metric:var(--platform);--ease:cubic-bezier(.22,.82,.22,1);position:relative;display:grid;gap:13px;color:var(--text);isolation:isolate;animation:ceoPageReveal 280ms var(--ease) both}
       #${ROOT_ID} .ceo-motion-v1 *{box-sizing:border-box}
@@ -358,16 +361,18 @@
       #${ROOT_ID} .ceo-kicker{color:var(--champ);font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
       #${ROOT_ID} .ceo-title{margin:8px 0 5px;font:500 clamp(34px,4vw,58px)/1 Georgia,'Times New Roman',serif;letter-spacing:0;color:#fff7e7}
       #${ROOT_ID} .ceo-lead{max-width:820px;margin:0;color:var(--muted);font-size:13px;line-height:1.55}
-      #${ROOT_ID} .ceo-toolbar{display:flex;flex-direction:column;align-items:flex-end;gap:10px;min-width:min(420px,100%)}
-      #${ROOT_ID} .ceo-chip-row{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
-      #${ROOT_ID} .ceo-chip{display:inline-flex;align-items:center;gap:7px;min-height:31px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:rgba(12,10,8,.86);color:var(--muted);font-size:11px;font-weight:800;white-space:nowrap}
+      #${ROOT_ID} .ceo-toolbar{display:flex;flex-direction:column;align-items:flex-end;gap:8px;width:min(560px,100%)}
+      #${ROOT_ID} .ceo-chip-row{display:flex;gap:7px;align-items:center;justify-content:flex-end;flex-wrap:wrap;width:100%}
+      #${ROOT_ID} .ceo-chip{display:inline-flex;align-items:center;gap:7px;min-height:28px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:rgba(12,10,8,.86);color:var(--muted);font-size:10px;font-weight:800;white-space:nowrap}
       #${ROOT_ID} .ceo-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--pc,var(--champ));box-shadow:0 0 12px var(--pc,var(--champ))}
-      #${ROOT_ID} .ceo-periodbar{display:grid;grid-template-columns:minmax(132px,.72fr) minmax(132px,.72fr) minmax(320px,1.25fr);gap:7px;align-items:end;max-width:720px}
+      #${ROOT_ID} .ceo-periodbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"month date" "period period";gap:7px;width:min(472px,100%);padding:8px;border:1px solid var(--line);border-radius:14px;background:rgba(15,13,11,.86);box-shadow:inset 0 1px rgba(255,255,255,.025)}
       #${ROOT_ID} .ceo-date-field{display:grid;gap:4px;min-width:0;color:var(--faint);font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
-      #${ROOT_ID} .ceo-date-field input,#${ROOT_ID} .ceo-date-field select{height:34px;width:100%;border:1px solid var(--line);border-radius:11px;background:#0f0d0b;color:var(--text);padding:0 10px;font-size:11px;font-weight:800;letter-spacing:0;text-transform:none;outline:none}
+      #${ROOT_ID} .ceo-date-field:nth-child(1){grid-area:month}
+      #${ROOT_ID} .ceo-date-field:nth-child(2){grid-area:date}
+      #${ROOT_ID} .ceo-date-field input,#${ROOT_ID} .ceo-date-field select{height:32px;width:100%;border:1px solid var(--line);border-radius:10px;background:#090807;color:var(--text);padding:0 10px;font-size:11px;font-weight:800;letter-spacing:0;text-transform:none;outline:none}
       #${ROOT_ID} .ceo-date-field input:focus,#${ROOT_ID} .ceo-date-field select:focus{border-color:var(--champ)}
-      #${ROOT_ID} .ceo-periods{display:flex;gap:5px;padding:5px;border:1px solid var(--line);border-radius:999px;background:#0f0d0b}
-      #${ROOT_ID} .ceo-period,.ceo-motion-v1.ceo-drawer-back .ceo-period{height:34px;padding:0 15px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--muted);font-size:11px;font-weight:900;transition:background 180ms var(--ease),border-color 180ms var(--ease),color 180ms var(--ease)}
+      #${ROOT_ID} .ceo-periods{grid-area:period;display:grid;grid-template-columns:.78fr .8fr 1.25fr .88fr;gap:4px;padding:4px;border:1px solid var(--line);border-radius:12px;background:#090807;min-width:0}
+      #${ROOT_ID} .ceo-period,.ceo-motion-v1.ceo-drawer-back .ceo-period{display:inline-flex;align-items:center;justify-content:center;height:30px;min-width:0;padding:0 7px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--muted);font-size:10px;font-weight:900;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background 180ms var(--ease),border-color 180ms var(--ease),color 180ms var(--ease)}
       #${ROOT_ID} .ceo-period.active,.ceo-motion-v1.ceo-drawer-back .ceo-period.active{background:var(--champ2);border-color:var(--champ2);color:#18120a}
       #${ROOT_ID} .ceo-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
       #${ROOT_ID} .ceo-kpi{--pc:var(--champ);position:relative;min-height:116px;padding:15px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.012));text-align:left;overflow:hidden;contain:layout paint;transition:transform 180ms var(--ease),border-color 180ms var(--ease),background 180ms var(--ease)}
@@ -485,7 +490,7 @@
       @keyframes ceoLineDraw{from{stroke-dashoffset:1500}to{stroke-dashoffset:0}}
       @keyframes ceoGrowX{from{transform:scaleX(.04);transform-origin:left;opacity:.2}to{transform:scaleX(1);transform-origin:left}}
       @media(max-width:1380px){#${ROOT_ID} .ceo-main-grid,#${ROOT_ID} .ceo-lower-grid{grid-template-columns:1fr}#${ROOT_ID} .ceo-platform-grid{grid-template-columns:repeat(3,1fr)}#${ROOT_ID} .ceo-kpis{grid-template-columns:repeat(3,1fr)}}
-      @media(max-width:860px){#${ROOT_ID} .ceo-top{flex-direction:column;min-height:0}#${ROOT_ID} .ceo-toolbar{align-items:flex-start}#${ROOT_ID} .ceo-periodbar{grid-template-columns:1fr;width:100%;max-width:none}#${ROOT_ID} .ceo-periods{border-radius:14px}#${ROOT_ID} .ceo-kpis,#${ROOT_ID} .ceo-platform-grid,#${ROOT_ID} .ceo-risk-grid,#${ROOT_ID} .ceo-contrib{grid-template-columns:1fr}#${ROOT_ID} .ceo-chart{height:330px}#${ROOT_ID} .ceo-legend{display:none}}
+      @media(max-width:860px){#${ROOT_ID} .ceo-top{flex-direction:column;min-height:0}#${ROOT_ID} .ceo-toolbar{align-items:flex-start;width:100%}#${ROOT_ID} .ceo-chip-row{justify-content:flex-start}#${ROOT_ID} .ceo-periodbar{grid-template-columns:1fr;grid-template-areas:"month" "date" "period";width:100%;max-width:none}#${ROOT_ID} .ceo-periods{grid-template-columns:repeat(2,minmax(0,1fr));border-radius:12px}#${ROOT_ID} .ceo-kpis,#${ROOT_ID} .ceo-platform-grid,#${ROOT_ID} .ceo-risk-grid,#${ROOT_ID} .ceo-contrib{grid-template-columns:1fr}#${ROOT_ID} .ceo-chart{height:330px}#${ROOT_ID} .ceo-legend{display:none}}
       @media(prefers-reduced-motion:reduce){#${ROOT_ID} .ceo-motion-v1 *,#${ROOT_ID} .ceo-motion-v1 *::before,#${ROOT_ID} .ceo-motion-v1 *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
     `;
     document.head.appendChild(style);
@@ -2091,13 +2096,13 @@
             </div>
             <div class="ceo-periodbar" aria-label="Период дашборда">
               <label class="ceo-date-field">
-                <span>месяц</span>
+                <span>Месяц</span>
                 <select data-ceo-month aria-label="Месяц дашборда">
                   ${months.map((key) => `<option value="${escapeHtml(key)}" ${key === dateContext.monthKey ? 'selected' : ''}>${escapeHtml(monthLabel(key))}</option>`).join('')}
                 </select>
               </label>
               <label class="ceo-date-field">
-                <span>дата до</span>
+                <span>Срез до</span>
                 <input type="date" data-ceo-date-to value="${escapeHtml(dateContext.dateTo || model.asOf)}" min="${escapeHtml(dateContext.minDate || '')}" max="${escapeHtml(dateContext.maxDate || '')}" aria-label="Дата окончания периода дашборда">
               </label>
               <div class="ceo-periods" role="tablist" aria-label="Быстрый период дашборда">

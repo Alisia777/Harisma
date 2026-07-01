@@ -168,7 +168,7 @@ async function run() {
     await page.selectOption('[data-ceo-month]', '2026-06');
     await page.waitForFunction(() => document.querySelector('[data-ceo-date-to]')?.value === '2026-06-30', null, { timeout: 30000 });
     const june = await snapshot(page);
-    assert.strictEqual(june.version, '20260701-dashboard-period-picker1');
+    assert.strictEqual(june.version, '20260701-dashboard-period-picker2');
     assert.strictEqual(june.period, 'month');
     assert.strictEqual(june.activePeriod, 'month');
     assert.strictEqual(june.month, '2026-06');
@@ -177,6 +177,20 @@ async function run() {
     assert.strictEqual(june.range.end, '2026-06-30');
     assert.strictEqual(june.planMonthKey, '2026-06');
     assert.strictEqual(june.points.length, 30);
+    const layout = await page.evaluate(() => {
+      const bar = document.querySelector('.ceo-periodbar');
+      const buttons = Array.from(document.querySelectorAll('[data-ceo-period]'));
+      return {
+        barOverflow: bar.scrollWidth - bar.clientWidth,
+        buttonOverflows: buttons.map((button) => button.scrollWidth - button.clientWidth),
+        buttonWhiteSpace: buttons.map((button) => getComputedStyle(button).whiteSpace),
+        labels: Array.from(document.querySelectorAll('.ceo-date-field span')).map((node) => node.textContent.trim())
+      };
+    });
+    assert.ok(layout.barOverflow <= 1, `Period filter overflows by ${layout.barOverflow}px`);
+    assert.ok(layout.buttonOverflows.every((value) => value <= 1), `Period buttons overflow: ${layout.buttonOverflows.join(', ')}`);
+    assert.ok(layout.buttonWhiteSpace.every((value) => value === 'nowrap'), `Period buttons must not wrap: ${layout.buttonWhiteSpace.join(', ')}`);
+    assert.deepStrictEqual(layout.labels, ['Месяц', 'Срез до']);
 
     await page.click('[data-ceo-period="7"]');
     await page.waitForFunction(() => window.__ALTEA_DASHBOARD_CEO_MOTION_V1__?.buildModel()?.period === '7', null, { timeout: 30000 });

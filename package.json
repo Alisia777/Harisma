@@ -48,7 +48,8 @@
     "portal:dashboard-period-test": "node scripts/portal-dashboard-period-picker.selftest.js",
     "portal:task-filter-recovery-test": "node scripts/portal-task-kanban-filter-recovery.selftest.js",
     "portal:marketplace-hitbox-test": "node scripts/portal-marketplace-hitbox.selftest.js",
-    "portal:iu-drr-date-window-test": "node scripts/portal-iu-drr-date-window.selftest.js"
+    "portal:iu-drr-date-window-test": "node scripts/portal-iu-drr-date-window.selftest.js",
+    "portal:iu-drr-logic-guard": "node scripts/portal-iu-drr-logic-guard.js --input-dir data"
   },
   "dependencies": {
     "playwright": "^1.59.1",

@@ -3,16 +3,19 @@
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
+const {
+  IU_DRR_RULES,
+  IU_DRR_HISTORY_LOOKBACK_DAYS,
+  OZON_FINANCE_GMV_DRR_MODE,
+  OZON_FINANCE_DRR_EXCLUSION_FIELDS,
+  WB_PLAN_RATE_OVERRIDES
+} = require('./iu-drr-rules');
 
 const DEFAULT_PLAN_PCT = 0.085;
 const DEFAULT_OZON_PLAN_PCT = 0.25;
 const DEFAULT_OZON_SMART_SHARE = 0.4;
 const OZON_API_BASE_URL = 'https://api-seller.ozon.ru';
 const OZON_FINANCE_TRANSACTION_PAGE_SIZE = 1000;
-const OZON_FINANCE_DRR_EXCLUSION_FIELDS = [
-  'drrExcludedPremiumPlus',
-  'drrExcludedOriginalBadge'
-];
 const OZON_FINANCE_FIELDS = [
   'salesGross',
   'realizationRevenue',
@@ -125,6 +128,10 @@ function parseArgs(argv) {
     }
     if (token === '--mirror-local-fallback') {
       args.mirrorLocalFallback = true;
+      continue;
+    }
+    if (token === '--skip-iu-logic-guard') {
+      args.skipIuLogicGuard = true;
       continue;
     }
     const [rawKey, inlineValue] = token.split('=');
@@ -309,6 +316,14 @@ function minDate(left, right) {
   return left < right ? left : right;
 }
 
+function iuDrrDefaultFromDate(to) {
+  const safeTo = isoDate(to);
+  if (!safeTo) return '';
+  const monthStart = `${safeTo.slice(0, 7)}-01`;
+  const lookbackStart = addDays(safeTo, -IU_DRR_HISTORY_LOOKBACK_DAYS + 1);
+  return minDate(monthStart, lookbackStart);
+}
+
 function contractHalfYearForDate(dateKey) {
   return WB_CONTRACT.halfYears.find((period) => dateKey >= period.from && dateKey <= period.to) || null;
 }
@@ -370,6 +385,11 @@ function monthKey(dateKey) {
 
 function periodLabel(dateKey) {
   return String(dateKey || '').slice(8, 10) + '.' + String(dateKey || '').slice(5, 7);
+}
+
+function planRateOverrideForMonth(month) {
+  const rate = numberOrZero(WB_PLAN_RATE_OVERRIDES[String(month || '')]);
+  return Number.isFinite(rate) && rate > 0 ? rate : null;
 }
 
 function findExistingPath(candidates = []) {
@@ -1806,6 +1826,7 @@ function resolveOptions(args) {
     outputDir,
     mirrorDataDir,
     mirrorLocalFallback: Boolean(args.mirrorLocalFallback),
+    skipIuLogicGuard: Boolean(args.skipIuLogicGuard),
     from: isoDate(args.from || args['date-from']),
     to: isoDate(args.to || args['date-to']),
     ozonFinancePath,
@@ -2078,6 +2099,8 @@ function buildReviewPointsMap(wbFeedbacksSummary) {
 }
 
 function planPctForMonth(iuPlan, month) {
+  const overrideRate = planRateOverrideForMonth(month);
+  if (overrideRate) return overrideRate;
   return numberOrZero(WB_CONTRACT.marketingRate) || DEFAULT_PLAN_PCT;
 }
 
@@ -2091,6 +2114,7 @@ function ozonPlanPctForMonth(iuPlan, month) {
 
 function monthPlan(iuPlan, month, companyPlan) {
   const source = iuPlan?.months?.[month] || {};
+  const planRateOverride = planRateOverrideForMonth(month);
   const days = numberOrZero(source.days) || new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0).getDate();
   const iuRevenueWbMin = numberOrZero(source.iuRevenueWb);
   const corporateRevenueWb = companyWbRevenuePlan(companyPlan, month);
@@ -2100,12 +2124,16 @@ function monthPlan(iuPlan, month, companyPlan) {
   const iuRevenueOzon = Math.max(contractRevenueOzon, corporateRevenueOzon);
   const corporateRevenueYandex = companyYandexRevenuePlan(companyPlan, month);
   const iuRevenueYandex = corporateRevenueYandex;
-  const iuAdsWb = numberOrZero(source.iuAdsWb);
+  const iuAdsWb = planRateOverride
+    ? iuRevenueWb * planRateOverride
+    : numberOrZero(source.iuAdsWb);
   const iuAdsOzon = Math.max(numberOrZero(source.iuAdsOzon), iuRevenueOzon * ozonPlanPctForMonth(iuPlan, month));
   const dailyIuRevenueWb = days > 0 ? iuRevenueWb / days : 0;
   const dailyIuRevenueOzon = days > 0 ? iuRevenueOzon / days : 0;
   const dailyIuRevenueYandex = days > 0 ? iuRevenueYandex / days : 0;
-  const dailyIuAdsWb = numberOrZero(source.dailyIuAdsWb) || (days > 0 ? iuAdsWb / days : 0);
+  const dailyIuAdsWb = planRateOverride
+    ? (days > 0 ? iuAdsWb / days : 0)
+    : numberOrZero(source.dailyIuAdsWb) || (days > 0 ? iuAdsWb / days : 0);
   const dailyIuAdsOzon = days > 0 ? iuAdsOzon / days : 0;
   return {
     label: source.label || month,
@@ -2152,6 +2180,25 @@ function buildWbDailyPlanMap(iuPlan) {
       factSpendGross: moneyOrZero(row.adsFactGross),
       share: roundRate(row.share || iuPlan?.wbDailyPlan?.share || iuPlan?.assumptions?.wbIuOurShare || 0.4),
       source: iuPlan?.wbDailyPlan?.sourceWorkbook || ''
+    });
+  }
+  return map;
+}
+
+function buildWbFixedRateMap(wbFixedRateReports) {
+  const map = new Map();
+  for (const row of wbFixedRateReports?.daily || []) {
+    const date = isoDate(row?.date);
+    if (!date) continue;
+    map.set(date, {
+      date,
+      targetRevenue: moneyOrZero(row.targetRevenue),
+      revenue: moneyOrZero(row.revenue),
+      planSpend: moneyOrZero(row.planSpend),
+      planPct: rateOrNull(row.planPct) || null,
+      spendFact: moneyOrZero(row.spendFact),
+      factPct: rateOrNull(row.factPct) || null,
+      source: row.source || wbFixedRateReports?.sourceWorkbook || 'WB fixed-rate cabinet report'
     });
   }
   return map;
@@ -2212,7 +2259,7 @@ function dateRange(platformTrends, adsSummary, explicitFrom, explicitTo, iuPlan,
     .filter(Boolean)
     .sort()[0] || '';
   const to = explicitTo || latestReliableTo || wbWorkbookRange.to || sorted[sorted.length - 1] || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || new Date().toISOString().slice(0, 10);
-  const from = explicitFrom || `${to.slice(0, 7)}-01`;
+  const from = explicitFrom || iuDrrDefaultFromDate(to);
   const extendsBeyondControl = Boolean(wbWorkbookRange.to && latestReliableTo && latestReliableTo > wbWorkbookRange.to);
   return {
     from,
@@ -2431,7 +2478,7 @@ function buildWbIuApiCalibration(range, wbMap, adsMaps, reviewPointsMap, wbDaily
   return diagnostics;
 }
 
-function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedbacksSummary, options) {
+function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedbacksSummary, wbFixedRateReports, options) {
   const wbMap = buildPlatformDateMap(platformTrends, 'wb');
   const ozonMap = buildPlatformDateMap(platformTrends, 'ozon');
   const yandexMap = buildPlatformDateMap(platformTrends, 'ya');
@@ -2443,6 +2490,7 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
   options.wbAdsChannelOverrideRuntime = adsMaps.diagnostics;
   const reviewPointsMap = buildReviewPointsMap(wbFeedbacksSummary);
   const wbDailyPlanMap = buildWbDailyPlanMap(iuPlan);
+  const wbFixedRateMap = buildWbFixedRateMap(wbFixedRateReports);
   const range = dateRange(platformTrends, adsSummary, options.from, options.to, iuPlan, options.ozonFinance);
   options.effectiveIuDrrWindow = range;
   const wbIuApiCalibration = buildWbIuApiCalibration(range, wbMap, adsMaps, reviewPointsMap, wbDailyPlanMap);
@@ -2459,9 +2507,11 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const plan = monthPlan(iuPlan, month, companyPlan);
     const contractPlanPct = planPctForMonth(iuPlan, month);
     const planPctOzon = ozonPlanPctForMonth(iuPlan, month);
+    const planRateOverride = planRateOverrideForMonth(month);
     const contractHalfYear = contractHalfYearForDate(date);
     const wb = wbMap.get(date) || {};
     const wbDailyPlan = wbDailyPlanMap.get(date) || null;
+    const wbFixedRate = wbFixedRateMap.get(date) || null;
     const ozon = ozonMap.get(date) || {};
     const ozonFinance = ozonFinanceDailyMap.get(date) || {};
     const hasOzonFinanceDay = ozonFinanceDailyMap.has(date);
@@ -2472,16 +2522,21 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const wbIuFactRevenue = numberOrZero(wbDailyPlan?.factRevenue);
     const wbIuFactSpend = numberOrZero(wbDailyPlan?.factSpend);
     const hasWbIuControlFact = Boolean(wbDailyPlan && (wbIuFactRevenue > 0 || wbIuFactSpend > 0));
+    const wbFixedRateRevenue = numberOrZero(wbFixedRate?.revenue);
+    const wbFixedRateSpendFact = numberOrZero(wbFixedRate?.spendFact);
+    const hasWbFixedRateFact = Boolean(wbFixedRate && (wbFixedRateRevenue > 0 || wbFixedRateSpendFact > 0));
     const wbRawApiRevenue = wbRawRevenueForIu(wb);
     const wbRevenueCalibrationFactor = numberOrZero(wbIuApiCalibration.dateFactors?.[date]?.revenueFactor)
       || numberOrZero(wbIuApiCalibration.revenueFactor || 1);
     const wbApiRevenue = wbRawApiRevenue > 0
       ? wbRawApiRevenue * wbRevenueCalibrationFactor
       : 0;
-    const revenueWb = hasWbIuControlFact && wbIuFactRevenue > 0
+    const revenueWb = hasWbFixedRateFact && wbFixedRateRevenue > 0
+      ? wbFixedRateRevenue
+      : hasWbIuControlFact && wbIuFactRevenue > 0
       ? wbIuFactRevenue
       : (wbApiRevenue || wbIuFactRevenue);
-    const ordersRevenueWb = revenueWb || numberOrZero(wb.ordersRevenue) || wbIuFactRevenue;
+    const ordersRevenueWb = wbFixedRateRevenue || revenueWb || numberOrZero(wb.ordersRevenue) || wbIuFactRevenue;
     const revenueOzonApiRaw = numberOrZero(ozon.revenue);
     const ozonFinanceGmv = numberOrZero(ozonFinance.ozonGmv);
     const revenueOzon = hasOzonFinanceDay ? ozonFinanceGmv : revenueOzonApiRaw;
@@ -2489,15 +2544,17 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const ordersRevenueYandex = numberOrZero(yandex.ordersRevenue);
     const adsPctBaseWb = revenueWb;
     const adsPctBaseIu = adsPctBaseWb + revenueOzon + revenueYandex;
-    const wbDailyPlanTargetRevenue = numberOrZero(wbDailyPlan?.targetRevenue);
-    const wbDailyPlanSpend = numberOrZero(wbDailyPlan?.planSpend);
+    const wbFixedRateTargetRevenue = numberOrZero(wbFixedRate?.targetRevenue);
+    const wbDailyPlanTargetRevenue = wbFixedRateTargetRevenue || numberOrZero(wbDailyPlan?.targetRevenue);
+    const wbFixedRatePlanSpend = numberOrZero(wbFixedRate?.planSpend);
+    const wbDailyPlanSpend = planRateOverride ? 0 : (wbFixedRatePlanSpend || numberOrZero(wbDailyPlan?.planSpend));
     const planPct = contractPlanPct;
     const selectedDailyRevenueWb = numberOrZero(plan.dailyIuRevenueWb);
     const managementTargetRevenueWb = plan.iuRevenueWbPlanSource === 'corporate_plan'
       ? selectedDailyRevenueWb
       : (wbDailyPlanTargetRevenue || selectedDailyRevenueWb);
     const contractTargetRevenueWb = contractDailyTargetRevenueWb(date);
-    const targetRevenueWb = Math.max(contractTargetRevenueWb, managementTargetRevenueWb);
+    const targetRevenueWb = wbFixedRateTargetRevenue || Math.max(contractTargetRevenueWb, managementTargetRevenueWb);
     const targetRevenueOzon = numberOrZero(plan.dailyIuRevenueOzon);
     const targetRevenueYandex = numberOrZero(plan.dailyIuRevenueYandex);
     const revenueWbDelta = revenueWb - targetRevenueWb;
@@ -2505,7 +2562,7 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const revenueYandexDelta = revenueYandex - targetRevenueYandex;
     const managementPlanSpendWb = targetRevenueWb * contractPlanPct;
     const contractMarketingPlanWb = revenueWb * contractPlanPct;
-    const controlPlanSpendWb = hasWbIuControlFact && wbDailyPlanSpend > 0 ? wbDailyPlanSpend : 0;
+    const controlPlanSpendWb = !planRateOverride && (hasWbIuControlFact || wbFixedRate) && wbDailyPlanSpend > 0 ? wbDailyPlanSpend : 0;
     const planSpendWb = controlPlanSpendWb || contractMarketingPlanWb;
     const selectedPlanPct = revenueWb > 0 && planSpendWb > 0
       ? planSpendWb / revenueWb
@@ -2515,7 +2572,7 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
       ? numberOrZero(ozonFinance.drrSpend)
       : (hasOzonAdsFact ? numberOrZero(ozonAds.spend) : revenueOzon * planPctOzon);
     const ozonAdsFactMode = hasOzonFinanceDay
-      ? 'ozon_finance_balance_gmv_drr_excluding_premium_plus_original_badge'
+      ? OZON_FINANCE_GMV_DRR_MODE
       : hasOzonAdsFact
       ? ozonAdsFactSourceMode
       : 'modeled_from_revenue_25pct_no_ozon_ads_fact';
@@ -2550,7 +2607,9 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const wbApiSpendFact = wbRawApiSpendFact > 0
       ? wbRawApiSpendFact * wbSpendCalibrationFactor
       : 0;
-    const spendFact = hasWbIuControlFact && wbIuFactSpend > 0
+    const spendFact = hasWbFixedRateFact && wbFixedRateSpendFact > 0
+      ? wbFixedRateSpendFact
+      : hasWbIuControlFact && wbIuFactSpend > 0
       ? wbIuFactSpend
       : (wbApiSpendFact || wbIuFactSpend);
     const wbIuSpendChannelAdjustment = spendFact > 0
@@ -2568,19 +2627,33 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
       date,
       period: periodLabel(date),
       monthKey: month,
+      iuDrrRuleVersion: IU_DRR_RULES.version,
+      wbRule: hasWbFixedRateFact ? IU_DRR_RULES.wb.fixedRateRule : IU_DRR_RULES.wb.factPriority.join(' > '),
+      ozonRule: hasOzonFinanceDay ? IU_DRR_RULES.ozon.gmvRule : IU_DRR_RULES.ozon.fallbackRule,
+      ozonDrrRule: hasOzonFinanceDay ? IU_DRR_RULES.ozon.drrSpendRule : IU_DRR_RULES.ozon.fallbackRule,
       contractPeriodKey: contractHalfYear?.key || '',
       targetRevenueWb: roundMoney(targetRevenueWb),
       contractTargetRevenueWb: roundMoney(contractTargetRevenueWb),
       managementTargetRevenueWb: roundMoney(managementTargetRevenueWb),
       selectedDailyRevenueWb: roundMoney(selectedDailyRevenueWb),
       wbIuPlanSource: wbDailyPlan?.source || '',
+      wbFixedRateSource: wbFixedRate?.source || '',
+      wbFixedRateApplied: Boolean(wbFixedRate),
+      wbFixedRateTargetRevenue: roundMoney(wbFixedRate?.targetRevenue),
+      wbFixedRateRevenue: roundMoney(wbFixedRate?.revenue),
+      wbFixedRatePlanSpend: roundMoney(wbFixedRate?.planSpend),
+      wbFixedRateSpendFact: roundMoney(wbFixedRate?.spendFact),
+      wbFixedRatePlanPct: roundRate(wbFixedRate?.planPct),
+      wbFixedRateFactPct: roundRate(wbFixedRate?.factPct),
       wbIuPlanShare: wbDailyPlan ? wbDailyPlan.share : null,
       wbIuPlanGmvGross: roundMoney(wbDailyPlan?.gmvPlanGross),
       wbIuPlanAdsGross: roundMoney(wbDailyPlan?.adsPlanGross),
       wbIuFactRevenueGross: roundMoney(wbDailyPlan?.factRevenueGross),
       wbIuFactAdsGross: roundMoney(wbDailyPlan?.factSpendGross),
-      wbIuFactSource: wbIuFactRevenue || wbIuFactSpend ? wbDailyPlan?.source || '' : '',
-      wbIuFactMode: hasWbIuControlFact ? 'wb_iu_control_workbook' : (wbIuApiCalibration.applied ? 'wb_api_calibrated_to_iu_control' : 'platform_api_raw'),
+      wbIuFactSource: hasWbFixedRateFact
+        ? (wbFixedRate.source || 'WB fixed-rate cabinet report')
+        : wbIuFactRevenue || wbIuFactSpend ? wbDailyPlan?.source || '' : '',
+      wbIuFactMode: hasWbFixedRateFact ? 'wb_fixed_rate_cabinet_reconciled' : hasWbIuControlFact ? 'wb_iu_control_workbook' : (wbIuApiCalibration.applied ? 'wb_api_calibrated_to_iu_control' : 'platform_api_raw'),
       wbIuControlRevenue: roundMoney(wbIuFactRevenue),
       wbIuControlSpend: roundMoney(wbIuFactSpend),
       wbRawApiRevenue: roundMoney(wbRawApiRevenue),
@@ -3070,10 +3143,11 @@ async function buildPayload(options) {
   const companyPlan = readLayer(options, 'company_plan.json', { months: {} });
   const adsSummary = readLayer(options, 'ads_summary.json', { platforms: [], itemSeries: [] });
   const wbFeedbacksSummary = readLayer(options, 'wb_feedbacks_summary.json', { reviewsForPoints: {}, daily: [], cards: [] });
+  const wbFixedRateReports = readLayer(options, 'wb_fixed_rate_reports.json', { daily: [] });
   const ozonPlan = buildOzonPlanDashboardSummary(options);
   const ozonFinance = await buildOzonFinanceSummaryAuto(options);
   options.ozonFinance = ozonFinance;
-  const dailyRows = buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedbacksSummary, options);
+  const dailyRows = buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedbacksSummary, wbFixedRateReports, options);
   const months = buildMonthRows(dailyRows, iuPlan, companyPlan);
   const planTruth = buildPlanTruthRows(iuPlan, companyPlan);
   const currentMonth = months[months.length - 1] || null;
@@ -3099,6 +3173,8 @@ async function buildPayload(options) {
       platformTrendsGeneratedAt: platformTrends.generatedAt || '',
       adsSummaryGeneratedAt: adsSummary.generatedAt || '',
       wbFeedbacksGeneratedAt: wbFeedbacksSummary.generatedAt || '',
+      wbFixedRateGeneratedAt: wbFixedRateReports.generatedAt || '',
+      wbFixedRateSourceFile: wbFixedRateReports.sourceWorkbook || '',
       ozonFinanceSourceMode: ozonFinance.source?.sourceMode || '',
       ozonFinanceEndpoint: ozonFinance.source?.endpoint || '',
       ozonFinanceFile: ozonFinance.source?.financeFile || '',
@@ -3126,8 +3202,10 @@ async function buildPayload(options) {
         * numberOrZero(WB_CONTRACT.marketingRate)
       )
     },
+    iuDrrRules: IU_DRR_RULES,
     planPctDefault: DEFAULT_PLAN_PCT,
     ozonPlanPctDefault: DEFAULT_OZON_PLAN_PCT,
+    wbPlanRateOverrides: WB_PLAN_RATE_OVERRIDES,
     kpis: currentMonth,
     ozonPlan,
     ozonFinance,
@@ -3175,6 +3253,115 @@ async function buildPayload(options) {
   };
 }
 
+function almostEqual(left, right, tolerance = 0.000001) {
+  const a = numberOrZero(left);
+  const b = numberOrZero(right);
+  return Math.abs(a - b) <= tolerance;
+}
+
+function validateIuDrrLogic(payload, wbFixedRateReports = {}) {
+  const errors = [];
+  const warnings = [];
+  const dailyRows = Array.isArray(payload?.daily) ? payload.daily : [];
+  const rowsByDate = new Map(dailyRows.map((row) => [isoDate(row?.date), row]));
+  const wbFixedRateMap = buildWbFixedRateMap(wbFixedRateReports);
+
+  if (payload?.iuDrrRules?.version !== IU_DRR_RULES.version) {
+    errors.push(`IU/DRR rules version mismatch: payload=${payload?.iuDrrRules?.version || 'empty'} expected=${IU_DRR_RULES.version}.`);
+  }
+
+  if (payload?.planRateOverrides) {
+    errors.push('Generic planRateOverrides is not allowed for IU/DRR. Use wbPlanRateOverrides so Ozon cannot inherit the WB rate.');
+  }
+
+  for (const [month, rate] of Object.entries(WB_PLAN_RATE_OVERRIDES)) {
+    if (!almostEqual(payload?.wbPlanRateOverrides?.[month], rate)) {
+      errors.push(`Missing WB plan-rate override ${month}=${rate}.`);
+    }
+  }
+
+  for (const [date, fixedRate] of wbFixedRateMap.entries()) {
+    const row = rowsByDate.get(date);
+    if (!row) continue;
+    if (!row.wbFixedRateApplied) {
+      errors.push(`${date}: WB fixed-rate report is present, but wbFixedRateApplied is false.`);
+    }
+    if (row.wbIuFactMode !== 'wb_fixed_rate_cabinet_reconciled') {
+      errors.push(`${date}: WB fixed-rate fact mode drifted to ${row.wbIuFactMode || 'empty'}.`);
+    }
+    if (!almostEqual(row.revenueWb, fixedRate.revenue, 1)) {
+      errors.push(`${date}: WB revenue ${roundMoney(row.revenueWb)} does not match fixed-rate cabinet revenue ${roundMoney(fixedRate.revenue)}.`);
+    }
+    if (!almostEqual(row.spendFact, fixedRate.spendFact, 1)) {
+      errors.push(`${date}: WB spend ${roundMoney(row.spendFact)} does not match fixed-rate cabinet spend ${roundMoney(fixedRate.spendFact)}.`);
+    }
+    if (!almostEqual(row.targetRevenueWb, fixedRate.targetRevenue, 1)) {
+      errors.push(`${date}: WB target ${roundMoney(row.targetRevenueWb)} does not match fixed-rate cabinet target ${roundMoney(fixedRate.targetRevenue)}.`);
+    }
+  }
+
+  for (const row of dailyRows) {
+    const date = isoDate(row?.date);
+    const month = row?.monthKey || monthKey(date);
+    const wbOverrideRate = numberOrZero(WB_PLAN_RATE_OVERRIDES[month]);
+    if (wbOverrideRate > 0 && numberOrZero(row.revenueWb) > 0) {
+      const selectedRate = numberOrZero(row.planSpendWb) / numberOrZero(row.revenueWb);
+      if (!almostEqual(selectedRate, wbOverrideRate, 0.0001)) {
+        errors.push(`${date}: WB plan rate ${roundRate(selectedRate)} does not match configured WB override ${wbOverrideRate}.`);
+      }
+      if (almostEqual(row.planPctOzon, wbOverrideRate, 0.0001)) {
+        errors.push(`${date}: Ozon plan rate equals WB override ${wbOverrideRate}; Ozon must keep its own benchmark logic.`);
+      }
+    }
+
+    const hasOzonFinance = numberOrZero(row.ozonFinanceSourceRows) > 0 || row.ozonAdsFactMode === OZON_FINANCE_GMV_DRR_MODE;
+    if (!hasOzonFinance) continue;
+    if (row.ozonAdsFactMode !== OZON_FINANCE_GMV_DRR_MODE) {
+      errors.push(`${date}: Ozon finance row uses ${row.ozonAdsFactMode || 'empty'} instead of ${OZON_FINANCE_GMV_DRR_MODE}.`);
+    }
+    if (!almostEqual(row.revenueOzon, row.ozonGmv, 1)) {
+      errors.push(`${date}: Ozon revenue ${roundMoney(row.revenueOzon)} must equal Ozon GMV ${roundMoney(row.ozonGmv)} from sales minus returns.`);
+    }
+    const excludedTotal = numberOrZero(row.ozonDrrExcludedPremiumPlus) + numberOrZero(row.ozonDrrExcludedOriginalBadge);
+    if (!almostEqual(row.ozonDrrExcludedTotal, excludedTotal, 1)) {
+      errors.push(`${date}: Ozon excluded total ${roundMoney(row.ozonDrrExcludedTotal)} does not match Premium Plus + Original Badge ${roundMoney(excludedTotal)}.`);
+    }
+    const expectedOzonSpend = numberOrZero(row.ozonDrrSpendGross) - numberOrZero(row.ozonDrrExcludedTotal);
+    if (!almostEqual(row.spendFactOzon, expectedOzonSpend, 1)) {
+      errors.push(`${date}: Ozon DRR spend ${roundMoney(row.spendFactOzon)} does not match gross spend minus exclusions ${roundMoney(expectedOzonSpend)}.`);
+    }
+  }
+
+  const currentMonth = payload?.kpis?.monthKey || '';
+  const currentWbOverride = numberOrZero(WB_PLAN_RATE_OVERRIDES[currentMonth]);
+  if (currentWbOverride > 0 && almostEqual(payload?.kpis?.planPctOzon, currentWbOverride, 0.0001)) {
+    errors.push(`${currentMonth}: Ozon KPI plan rate equals WB override ${currentWbOverride}; Ozon logic drifted.`);
+  }
+
+  if (!dailyRows.length) {
+    warnings.push('IU/DRR payload has no daily rows.');
+  }
+
+  const guard = {
+    version: '20260701-wb-ozon-logic-guard',
+    rulesVersion: IU_DRR_RULES.version,
+    checkedAt: new Date().toISOString(),
+    status: errors.length ? 'fail' : 'ok',
+    checkedRows: dailyRows.length,
+    fixedRateDatesInWindow: Array.from(wbFixedRateMap.keys()).filter((date) => rowsByDate.has(date)).length,
+    ozonFinanceRows: dailyRows.filter((row) => numberOrZero(row.ozonFinanceSourceRows) > 0 || row.ozonAdsFactMode === OZON_FINANCE_GMV_DRR_MODE).length,
+    warnings,
+    errors
+  };
+
+  if (errors.length) {
+    const preview = errors.slice(0, 8).join('\n- ');
+    throw new Error(`IU/DRR logic guard failed:\n- ${preview}`);
+  }
+
+  return guard;
+}
+
 function writeOutputs(payload, options) {
   const files = [];
   if (options.outputDir) {
@@ -3196,6 +3383,13 @@ function writeOutputs(payload, options) {
 async function main() {
   const options = resolveOptions(parseArgs(process.argv));
   const payload = await buildPayload(options);
+  if (!options.skipIuLogicGuard) {
+    payload.diagnostics = payload.diagnostics || {};
+    payload.diagnostics.logicGuard = validateIuDrrLogic(
+      payload,
+      readLayer(options, 'wb_fixed_rate_reports.json', { daily: [] })
+    );
+  }
   const writtenFiles = options.dryRun ? [] : writeOutputs(payload, options);
   const currentMonthKey = payload.kpis?.monthKey || '';
   const ozonPlanMonthForLog = (payload.ozonPlan?.monthly || []).find((month) => month.monthKey === currentMonthKey)
@@ -3229,6 +3423,15 @@ async function main() {
       smartShareAds: ozonPlanMonthForLog.allocation?.smartAllocatedAds || 0
     },
     dailyRows: payload.daily.length,
+    logicGuard: payload.diagnostics?.logicGuard
+      ? {
+        status: payload.diagnostics.logicGuard.status,
+        rulesVersion: payload.diagnostics.logicGuard.rulesVersion,
+        checkedRows: payload.diagnostics.logicGuard.checkedRows,
+        fixedRateDatesInWindow: payload.diagnostics.logicGuard.fixedRateDatesInWindow,
+        ozonFinanceRows: payload.diagnostics.logicGuard.ozonFinanceRows
+      }
+      : null,
     writtenFiles
   }, null, 2));
 }

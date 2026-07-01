@@ -69,6 +69,17 @@ function monthStart(dateKey) {
   return `${String(dateKey || localDateKey()).slice(0, 7)}-01`;
 }
 
+function minDate(left, right) {
+  if (!left) return right || '';
+  if (!right) return left || '';
+  return left < right ? left : right;
+}
+
+function iuDrrWindowStart(dateKey, lookbackDays = 31) {
+  const to = isoDate(dateKey) || localDateKey(-1);
+  return minDate(monthStart(to), addDays(to, -lookbackDays + 1));
+}
+
 function localDateKey(offsetDays = 0) {
   const date = new Date();
   date.setDate(date.getDate() + offsetDays);
@@ -761,7 +772,7 @@ function buildSteps(options, env) {
         '--output-dir',
         options.baseDataDir,
         '--from',
-        monthStart(options.to),
+        iuDrrWindowStart(options.to),
         '--to',
         options.to,
         '--mirror-local-fallback'

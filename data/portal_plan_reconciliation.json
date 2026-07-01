@@ -1,7 +1,7 @@
 {
   "schema": "portal-plan-reconciliation-v1",
-  "generatedAt": "2026-06-30T08:04:31.411Z",
-  "snapshot_id": "dashboard:f6959a20c7fdcc61",
+  "generatedAt": "2026-07-01T07:15:49.293Z",
+  "snapshot_id": "dashboard:e058b80221bce2e0",
   "status": "ok",
   "publish_allowed": true,
   "plan_namespaces": [
@@ -13,7 +13,7 @@
   ],
   "active_plan": {
     "plan_id": "corporate_revenue_monthly",
-    "month": "2026-06",
+    "month": "2026-07",
     "unit": "RUB",
     "included_platforms": [
       "wb",

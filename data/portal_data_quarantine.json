@@ -1,40 +1,13 @@
 {
   "schema": "portal-data-quarantine-v1",
-  "generatedAt": "2026-06-30T08:12:59.942Z",
+  "generatedAt": "2026-07-01T07:51:57.520Z",
   "reason": "Rows that need review before the data contour can be trusted.",
   "summary": {
-    "rows": 2,
-    "revenue": 1398890,
-    "overage": 414296,
-    "apiSumAboveAggregateCount": 2,
+    "rows": 0,
+    "revenue": 0,
+    "overage": 0,
+    "apiSumAboveAggregateCount": 0,
     "apiUnmappedHighRevenueCount": 0
   },
-  "rows": [
-    {
-      "type": "api_sum_above_aggregate",
-      "severity": "critical",
-      "platform": "goldapple",
-      "platformLabel": "ЗЯ",
-      "articleKey": "",
-      "name": "",
-      "revenue": 854477,
-      "aggregateRevenue": 615501,
-      "overage": 238976,
-      "units": 0,
-      "message": "Сумма SKU по API выше агрегата площадки"
-    },
-    {
-      "type": "api_sum_above_aggregate",
-      "severity": "critical",
-      "platform": "letu",
-      "platformLabel": "Лэтуаль",
-      "articleKey": "",
-      "name": "",
-      "revenue": 544413,
-      "aggregateRevenue": 369093,
-      "overage": 175320,
-      "units": 0,
-      "message": "Сумма SKU по API выше агрегата площадки"
-    }
-  ]
+  "rows": []
 }

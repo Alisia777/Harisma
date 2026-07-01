@@ -1,13 +1,13 @@
 {
   "schema": "portal-sku-matrix-v2",
-  "generatedAt": "2026-06-30T08:12:59.634Z",
+  "generatedAt": "2026-07-01T07:51:57.198Z",
   "source": {
     "skus": 143,
     "aliases": 566,
     "externalAliases": 341,
     "embeddedAliases": 1132,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-06-30T08:12:38.591Z"
+    "dataQualityGeneratedAt": "2026-07-01T07:51:46.018Z"
   },
   "summary": {
     "skuCount": 143,
@@ -18,15 +18,14 @@
     "ownerConflictCount": 36,
     "ignoredApiSkuCount": 0,
     "apiUnmappedCount": 0,
-    "duplicateRiskCount": 2,
-    "duplicateRiskOverage": 414296,
+    "duplicateRiskCount": 0,
+    "duplicateRiskOverage": 0,
     "missingOwnerCount": 0,
-    "issueCount": 2,
-    "infoIssueCount": 53,
+    "issueCount": 1,
+    "infoIssueCount": 49,
     "problemStateCounts": {
       "owner_platform_conflict": 36,
-      "ok": 107,
-      "duplicate_risk": 1
+      "ok": 107
     }
   },
   "problemStates": {
@@ -10061,24 +10060,7 @@
   "aliasConflicts": [],
   "skuTokenConflicts": [],
   "apiUnmapped": [],
-  "duplicateRisks": [
-    {
-      "platform": "goldapple",
-      "platformLabel": "ЗЯ",
-      "revenue": 854477,
-      "aggregateRevenue": 615501,
-      "overage": 238976,
-      "message": "Сумма SKU по API выше агрегата площадки"
-    },
-    {
-      "platform": "letu",
-      "platformLabel": "Лэтуаль",
-      "revenue": 544413,
-      "aggregateRevenue": 369093,
-      "overage": 175320,
-      "message": "Сумма SKU по API выше агрегата площадки"
-    }
-  ],
+  "duplicateRisks": [],
   "ignoredApiSku": [],
   "indexes": {
     "byArticleKey": {

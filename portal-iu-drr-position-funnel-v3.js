@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-iudrr-extra-networks1';
+  const VERSION = '20260701-iudrr-sku-day-fallback1';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -38,6 +38,7 @@
     ozonProcurement: 'data/order_procurement_ozon.json',
     ymProcurement: 'data/order_procurement_ym.json'
   };
+  let adsItemIndexCache = { source: null, byKey: new Map() };
 
   function appState() {
     window.state = window.state || {};
@@ -151,6 +152,26 @@
     if (['samokat'].includes(compact)) return 'samokat';
     if (['mm', 'magnit', 'magnitmarket'].includes(compact)) return 'magnit';
     return '';
+  }
+
+  function normalizeArticleKey(value) {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/[^\p{L}\p{N}_-]+/gu, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '');
+  }
+
+  function addMatchKey(target, value) {
+    const key = normalizeArticleKey(value);
+    if (key) target.add(key);
+    const digits = String(value || '').replace(/\D+/g, '');
+    if (digits) {
+      target.add(digits);
+      target.add(`wb-nm-${digits}`);
+    }
   }
 
   function getGlobalMarketplaceFocus() {
@@ -474,6 +495,101 @@
   function adsSummaryPlatform(platform) {
     const key = normalizePlatform(platform);
     return adsSummaryPlatforms().find((item) => normalizePlatform(item?.key || item?.platformKey || item?.platform || item?.id || item?.label) === key) || null;
+  }
+
+  function adsSummarySource() {
+    return getSources().adsSummary || appState().adsSummary || {};
+  }
+
+  function adsItemMatchKeys(row) {
+    const keys = new Set();
+    [
+      row?.articleKey,
+      row?.article,
+      row?.sku,
+      row?.sellerArticle,
+      row?.supplierArticle,
+      row?.nmId,
+      row?.wbNmId
+    ].forEach((value) => addMatchKey(keys, value));
+    return Array.from(keys).filter(Boolean);
+  }
+
+  function positionMatchKeys(pos) {
+    const keys = new Set();
+    [
+      pos?.articleKey,
+      pos?.article,
+      pos?.sku,
+      pos?.sellerArticle,
+      pos?.supplierArticle,
+      pos?.nmId,
+      pos?.wbNmId,
+      pos?.wbFunnel?.nmId,
+      pos?.skuRaw?.nmId,
+      pos?.skuRaw?.wbNmId,
+      pos?.skuRaw?.wb?.nmId
+    ].forEach((value) => addMatchKey(keys, value));
+    return Array.from(keys).filter(Boolean);
+  }
+
+  function addAdsAggregate(target, row) {
+    target.rows += 1;
+    target.views += numberOrZero(row?.views || row?.adsViews || row?.impressions || row?.shows);
+    target.clicks += numberOrZero(row?.clicks || row?.adsClicks);
+    target.carts += numberOrZero(row?.carts || row?.toCart || row?.adsCarts);
+    target.orders += numberOrZero(row?.orders || row?.adsOrders || row?.ordersUnits || row?.units);
+    target.revenue += numberOrZero(row?.revenue || row?.ordersRevenue || row?.adRevenue || row?.adsRevenue);
+    target.spend += numberOrZero(row?.spend || row?.adsSpend || row?.cost);
+    target.adRevenue += numberOrZero(row?.adRevenue || row?.adsRevenue);
+    target.name = target.name || row?.name || row?.article || row?.articleKey || '';
+    target.source = target.source || 'ads_summary SKU/day';
+    return target;
+  }
+
+  function adsItemIndex() {
+    const source = adsSummarySource();
+    if (adsItemIndexCache.source === source) return adsItemIndexCache.byKey;
+    const byKey = new Map();
+    const rows = Array.isArray(source?.itemSeries) ? source.itemSeries : [];
+    rows.forEach((row) => {
+      const platform = normalizePlatform(row?.platformKey || row?.platform || row?.marketplace || row?.sourcePlatform);
+      const date = String(row?.date || row?.day || row?.label || '').slice(0, 10);
+      if (!platform || !date) return;
+      adsItemMatchKeys(row).forEach((key) => {
+        const mapKey = `${platform}|${date}|${key}`;
+        const current = byKey.get(mapKey) || {
+          date,
+          platform,
+          key,
+          rows: 0,
+          views: 0,
+          clicks: 0,
+          carts: 0,
+          orders: 0,
+          revenue: 0,
+          spend: 0,
+          adRevenue: 0,
+          name: '',
+          source: 'ads_summary SKU/day'
+        };
+        byKey.set(mapKey, addAdsAggregate(current, row));
+      });
+    });
+    adsItemIndexCache = { source, byKey };
+    return byKey;
+  }
+
+  function adsDailyForPosition(pos, platform, date) {
+    const day = String(date || '').slice(0, 10);
+    if (!day) return null;
+    const key = normalizePlatform(platform);
+    const index = adsItemIndex();
+    for (const matchKey of positionMatchKeys(pos)) {
+      const row = index.get(`${key}|${day}|${matchKey}`);
+      if (row?.rows) return row;
+    }
+    return null;
   }
 
   function normalizeExtraDailyRow(platform, row, sourceLabel) {
@@ -1575,20 +1691,32 @@
   }
 
   function selectedPositionRows(pos, platform, rows) {
-    if (platform === 'wb' && Array.isArray(pos.wbFunnel?.daily)) {
-      return pos.wbFunnel.daily.map((row) => ({
-        date: row.date,
-        stableKey: `${platform}|${pos.articleKey}|${row.date}`,
-        ordersUnits: row.ordersUnits,
-        ordersRevenue: row.ordersRevenue,
-        estimatedMargin: row.estimatedMargin,
-        avgPrice: row.avgPrice,
-        source: 'wb_sales_funnel_report'
-      }));
+    const dates = (Array.isArray(rows) ? rows : [])
+      .map((row) => String(row?.date || '').slice(0, 10))
+      .filter(Boolean);
+    if (platform === 'wb') {
+      const wbDailyByDate = new Map((Array.isArray(pos.wbFunnel?.daily) ? pos.wbFunnel.daily : [])
+        .map((row) => [String(row?.date || '').slice(0, 10), row])
+        .filter(([date]) => Boolean(date)));
+      return dates.map((date) => {
+        const row = wbDailyByDate.get(date) || null;
+        const adsDaily = adsDailyForPosition(pos, platform, date);
+        const ordersUnits = row?.ordersUnits ?? adsDaily?.orders ?? null;
+        const ordersRevenue = row?.ordersRevenue ?? adsDaily?.revenue ?? null;
+        return {
+          date,
+          stableKey: `${platform}|${pos.articleKey}|${date}`,
+          ordersUnits,
+          ordersRevenue,
+          estimatedMargin: row?.estimatedMargin ?? null,
+          avgPrice: row?.avgPrice ?? safeRatio(ordersRevenue, ordersUnits),
+          source: row && adsDaily ? 'wb_sales_funnel_report + ads_summary SKU/day' : row ? 'wb_sales_funnel_report' : adsDaily ? 'ads_summary SKU/day' : 'РЅРµС‚ SKU/day РёСЃС‚РѕС‡РЅРёРєР°'
+        };
+      });
     }
-    return rows.map((row) => ({
-      date: row.date,
-      stableKey: `${platform}|${pos.articleKey}|${row.date}`,
+    return dates.map((date) => ({
+      date,
+      stableKey: `${platform}|${pos.articleKey}|${date}`,
       ordersUnits: null,
       ordersRevenue: null,
       estimatedMargin: null,
@@ -1736,21 +1864,23 @@
       : null;
     const platformRow = rowsByDate.get(date) || {};
     if (platform === 'wb') {
-      const ordersRevenue = wbDaily?.ordersRevenue ?? firstDefined(platformRow, ['revenueWb', 'ordersRevenueWb', 'wbApiRevenue', 'wbIuFactRevenueGross']);
-      const ordersUnits = wbDaily?.ordersUnits ?? firstDefined(platformRow, ['adsOrders', 'ordersUnitsWb', 'unitsWb']);
-      const clicks = wbDaily ? positiveOrNull(pos.wbFunnel.clicks) : firstDefined(platformRow, ['adsClicks']);
-      const adsSpend = firstDefined(platformRow, ['spendFactDrr', 'spendFact', 'wbApiSpendFact']);
+      const adsDaily = adsDailyForPosition(pos, platform, date);
+      const ordersRevenue = wbDaily?.ordersRevenue ?? adsDaily?.revenue ?? firstDefined(platformRow, ['revenueWb', 'ordersRevenueWb', 'wbApiRevenue', 'wbIuFactRevenueGross']);
+      const ordersUnits = wbDaily?.ordersUnits ?? adsDaily?.orders ?? firstDefined(platformRow, ['adsOrders', 'ordersUnitsWb', 'unitsWb']);
+      const clicks = adsDaily?.clicks ?? (wbDaily ? positiveOrNull(pos.wbFunnel.clicks) : firstDefined(platformRow, ['adsClicks']));
+      const views = adsDaily?.views ?? (wbDaily ? positiveOrNull(pos.wbFunnel.views) : firstDefined(platformRow, ['adsViews']));
+      const adsSpend = adsDaily?.spend ?? firstDefined(platformRow, ['spendFactDrr', 'spendFact', 'wbApiSpendFact']);
       return {
-        source: wbDaily ? 'WB SKU/day' : 'WB API daily summary',
-        views: wbDaily ? positiveOrNull(pos.wbFunnel.views) : firstDefined(platformRow, ['adsViews']),
+        source: wbDaily && adsDaily ? 'WB SKU/day + ads_summary SKU/day' : wbDaily ? 'WB SKU/day' : adsDaily ? 'ads_summary SKU/day' : 'WB API daily summary',
+        views,
         clicks,
-        carts: wbDaily ? positiveOrNull(pos.wbFunnel.carts) : null,
+        carts: adsDaily?.carts ?? (wbDaily ? positiveOrNull(pos.wbFunnel.carts) : null),
         ordersUnits,
         ordersRevenue,
         buyoutsUnits: wbDaily ? positiveOrNull(pos.wbFunnel.buyoutsUnits) : firstDefined(platformRow, ['unitsWb']),
         cancellationsUnits: wbDaily ? positiveOrNull(pos.wbFunnel.cancellationsUnits) : firstDefined(platformRow, ['cancellationsUnitsWb', 'cancelledUnitsWb']),
         adsSpend,
-        adsRevenue: firstDefined(platformRow, ['adsRevenue']),
+        adsRevenue: adsDaily?.adRevenue ?? firstDefined(platformRow, ['adsRevenue']),
         cpc: safeRatio(adsSpend, clicks),
         cpo: safeRatio(adsSpend, ordersUnits),
         drr: safeRatio(adsSpend, ordersRevenue),

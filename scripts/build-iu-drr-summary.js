@@ -270,6 +270,25 @@ function enumerateDates(from, to) {
   return dates;
 }
 
+function endOfMonth(dateKey) {
+  const date = new Date(`${String(dateKey || '').slice(0, 7)}-01T00:00:00Z`);
+  if (!Number.isFinite(date.getTime())) return '';
+  date.setUTCMonth(date.getUTCMonth() + 1, 0);
+  return date.toISOString().slice(0, 10);
+}
+
+function enumerateMonthWindows(from, to) {
+  const windows = [];
+  let cursor = isoDate(from);
+  const end = isoDate(to);
+  while (cursor && end && cursor <= end) {
+    const windowTo = minDate(end, endOfMonth(cursor));
+    windows.push({ from: cursor, to: windowTo });
+    cursor = addDays(windowTo, 1);
+  }
+  return windows;
+}
+
 function daysInclusive(from, to) {
   if (!from || !to || from > to) return 0;
   const start = Date.parse(`${from}T00:00:00Z`);
@@ -1102,30 +1121,35 @@ async function ozonApiRequest(options, endpoint, body) {
 async function fetchOzonFinanceApiOperations(options) {
   const pageSize = Math.max(1, Math.min(1000, Math.trunc(numberOrZero(options.ozonFinanceApiPageSize || OZON_FINANCE_TRANSACTION_PAGE_SIZE))));
   const operations = [];
-  let pageCount = 1;
   let rowCount = 0;
-  for (let page = 1; page <= pageCount; page += 1) {
-    const payload = await ozonApiRequest(options, '/v3/finance/transaction/list', {
-      filter: {
-        date: {
-          from: `${options.ozonFinanceApiFrom}T00:00:00.000Z`,
-          to: `${options.ozonFinanceApiTo}T23:59:59.999Z`
+  let totalPageCount = 0;
+  const windows = enumerateMonthWindows(options.ozonFinanceApiFrom, options.ozonFinanceApiTo);
+  for (const window of windows) {
+    let pageCount = 1;
+    for (let page = 1; page <= pageCount; page += 1) {
+      const payload = await ozonApiRequest(options, '/v3/finance/transaction/list', {
+        filter: {
+          date: {
+            from: `${window.from}T00:00:00.000Z`,
+            to: `${window.to}T23:59:59.999Z`
+          },
+          operation_type: [],
+          posting_number: '',
+          transaction_type: 'all'
         },
-        operation_type: [],
-        posting_number: '',
-        transaction_type: 'all'
-      },
-      page,
-      page_size: pageSize
-    });
-    const result = payload.result || {};
-    if (page === 1) {
-      pageCount = Math.max(1, Math.trunc(numberOrZero(result.page_count || 1)));
-      rowCount = Math.trunc(numberOrZero(result.row_count || 0));
+        page,
+        page_size: pageSize
+      });
+      const result = payload.result || {};
+      if (page === 1) {
+        pageCount = Math.max(1, Math.trunc(numberOrZero(result.page_count || 1)));
+        rowCount += Math.trunc(numberOrZero(result.row_count || 0));
+        totalPageCount += pageCount;
+      }
+      operations.push(...(Array.isArray(result.operations) ? result.operations : []));
     }
-    operations.push(...(Array.isArray(result.operations) ? result.operations : []));
   }
-  return { operations, pageCount, rowCount, pageSize };
+  return { operations, pageCount: totalPageCount || 1, rowCount, pageSize, windows };
 }
 
 async function buildOzonFinanceSummaryFromApi(options) {
@@ -1159,7 +1183,8 @@ async function buildOzonFinanceSummaryFromApi(options) {
     apiRowCount: fetched.rowCount,
     fetchedRows: fetched.operations.length,
     pageCount: fetched.pageCount,
-    pageSize: fetched.pageSize
+    pageSize: fetched.pageSize,
+    windows: fetched.windows
   }, fetched.operations.length === fetched.rowCount ? [] : [
     `Ozon API row_count ${fetched.rowCount} differs from fetched rows ${fetched.operations.length}; finance data may have changed during pagination.`
   ]);

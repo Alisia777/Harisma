@@ -95,6 +95,35 @@ async function run() {
     }, fixtureState());
     await page.addScriptTag({ url: `http://127.0.0.1:${port}/${MODULE}` });
     await page.waitForSelector('#iuDrrV3DateTo', { timeout: 30000 });
+    const julyResult = await page.evaluate(() => {
+      const dates = Array.from(new Set(Array.from(document.querySelectorAll('[data-iu-v3-row]'))
+        .map((row) => row.getAttribute('data-iu-v3-date'))
+        .filter(Boolean))).sort();
+      return {
+        version: document.querySelector('.iu-drr-v3-shell')?.getAttribute('data-iu-drr-version'),
+        month: document.querySelector('#iuDrrV3Month')?.value,
+        dateTo: document.querySelector('#iuDrrV3DateTo')?.value,
+        selectedPeriod: document.querySelector('[data-iu-v3-period][aria-selected="true"]')?.getAttribute('data-iu-v3-period'),
+        dates,
+        badges: Array.from(document.querySelectorAll('.iu-drr-v3-badge')).map((node) => node.textContent.trim())
+      };
+    });
+
+    assert.strictEqual(julyResult.version, '20260701-iudrr-cross-month-window1');
+    assert.strictEqual(julyResult.month, '2026-07');
+    assert.strictEqual(julyResult.dateTo, '2026-07-01');
+    assert.strictEqual(julyResult.selectedPeriod, '7');
+    assert.deepStrictEqual(julyResult.dates, [
+      '2026-06-25',
+      '2026-06-26',
+      '2026-06-27',
+      '2026-06-28',
+      '2026-06-29',
+      '2026-06-30',
+      '2026-07-01'
+    ]);
+    assert.ok(julyResult.badges.some((badge) => badge.includes('25.06') && badge.includes('01.07')));
+
     await page.fill('#iuDrrV3DateTo', '2026-06-29');
     await page.dispatchEvent('#iuDrrV3DateTo', 'change');
     await page.waitForFunction(() => document.querySelector('#iuDrrV3Month')?.value === '2026-06', null, { timeout: 30000 });
@@ -115,7 +144,7 @@ async function run() {
       };
     });
 
-    assert.strictEqual(result.version, '20260701-iudrr-date-window1');
+    assert.strictEqual(result.version, '20260701-iudrr-cross-month-window1');
     assert.strictEqual(result.month, '2026-06');
     assert.strictEqual(result.dateTo, '2026-06-29');
     assert.strictEqual(result.selectedPeriod, '7');

@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-iudrr-date-window1';
+  const VERSION = '20260701-iudrr-cross-month-window1';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -761,9 +761,13 @@
     return WINDOW_PERIODS.some(([value]) => value === key) ? key : 'month';
   }
 
-  function dateWindowForRows(monthRows, monthKey) {
-    const dates = dateKeysFromRows(monthRows);
-    if (!dates.length) {
+  function dateWindowForRows(allRows, monthRows, monthKey) {
+    const sourceRows = Array.isArray(allRows) ? allRows : [];
+    const scopedMonthRows = Array.isArray(monthRows) ? monthRows : [];
+    const allDates = dateKeysFromRows(sourceRows);
+    const monthDates = dateKeysFromRows(scopedMonthRows);
+    const fallbackDates = monthDates.length ? monthDates : allDates;
+    if (!fallbackDates.length) {
       return {
         period: 'month',
         startDate: '',
@@ -776,22 +780,30 @@
     }
     const state = currentDateWindowState();
     const period = normalizeWindowPeriod(state.period);
-    const minDate = dates[0];
-    const maxDate = dates[dates.length - 1];
+    const minDate = allDates[0] || fallbackDates[0];
+    const maxDate = allDates[allDates.length - 1] || fallbackDates[fallbackDates.length - 1];
     const wantedEnd = String(state.endDate || '').slice(0, 10);
-    const endDate = dates.includes(wantedEnd) ? wantedEnd : maxDate;
+    const wantedEndFitsMonth = !monthKey || monthKey === 'latest' || wantedEnd.startsWith(`${monthKey}-`);
+    let endDate = wantedEnd && wantedEndFitsMonth && allDates.includes(wantedEnd)
+      ? wantedEnd
+      : fallbackDates[fallbackDates.length - 1];
     let startDate = minDate;
     if (period === '7') startDate = addDaysKey(endDate, -6);
     else if (period === '14') startDate = addDaysKey(endDate, -13);
-    else if (monthKey && monthKey !== 'latest') startDate = `${monthKey}-01`;
-    else startDate = `${endDate.slice(0, 7)}-01`;
+    else {
+      if (monthKey && monthKey !== 'latest' && monthDates.length && !endDate.startsWith(`${monthKey}-`)) {
+        endDate = monthDates[monthDates.length - 1];
+      }
+      startDate = `${endDate.slice(0, 7)}-01`;
+    }
     if (startDate < minDate) startDate = minDate;
-    const rows = monthRows.filter((row) => {
+    const rows = sourceRows.filter((row) => {
       const date = rowDate(row);
       return date && date >= startDate && date <= endDate;
     });
-    const firstShown = rows[0] ? rowDate(rows[0]) : startDate;
-    const lastShown = rows[rows.length - 1] ? rowDate(rows[rows.length - 1]) : endDate;
+    const shownDates = dateKeysFromRows(rows);
+    const firstShown = shownDates[0] || startDate;
+    const lastShown = shownDates[shownDates.length - 1] || endDate;
     return {
       period,
       startDate: firstShown || startDate,
@@ -2848,7 +2860,7 @@
     const monthKey = selectedMonth(payload);
     const monthRows = rowsForMonth(payload, monthKey);
     const dateBounds = dateBoundsFromRows(payload.daily);
-    const dateWindow = dateWindowForRows(monthRows, monthKey);
+    const dateWindow = dateWindowForRows(payload.daily, monthRows, monthKey);
     const rows = dateWindow.rows;
     const view = currentView();
     const positions = buildPositions(focus);

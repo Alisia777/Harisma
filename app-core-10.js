@@ -2421,6 +2421,11 @@ function openSkuModal(articleKey) {
 }
 
 const ACTIVE_VIEW_STORAGE_KEY = 'altea-portal-active-view-v1';
+let lastPortalUserScrollAt = 0;
+
+function markPortalUserScroll() {
+  lastPortalUserScrollAt = Date.now();
+}
 
 function normalizeViewName(view) {
   return typeof normalizePortalView === 'function' ? normalizePortalView(view) : view;
@@ -2737,14 +2742,20 @@ function portalAttrSelector(name, value) {
 
 function capturePortalScrollState() {
   const scrollRoot = document.scrollingElement || document.documentElement;
+  const shellContent = document.querySelector('.altea-premium-shell-content');
   const activeView = typeof normalizePortalView === 'function'
     ? normalizePortalView(state.activeView || 'dashboard')
     : (state.activeView || 'dashboard');
   const viewRoot = document.getElementById(`view-${activeView}`);
   const snapshot = {
     view: activeView,
+    capturedAt: Date.now(),
     x: window.scrollX || scrollRoot?.scrollLeft || 0,
     y: window.scrollY || scrollRoot?.scrollTop || 0,
+    shellTop: shellContent?.scrollTop || 0,
+    shellLeft: shellContent?.scrollLeft || 0,
+    viewTop: viewRoot?.scrollTop || 0,
+    viewLeft: viewRoot?.scrollLeft || 0,
     tableWraps: [],
     anchor: null,
     modal: null
@@ -2803,6 +2814,7 @@ function capturePortalScrollState() {
 function restorePortalScrollState(snapshot) {
   if (!snapshot) return;
   const restore = () => {
+    if (lastPortalUserScrollAt > Number(snapshot.capturedAt || 0)) return;
     const activeView = typeof normalizePortalView === 'function'
       ? normalizePortalView(state.activeView || 'dashboard')
       : (state.activeView || 'dashboard');
@@ -2818,6 +2830,15 @@ function restorePortalScrollState(snapshot) {
       }
       if (!restoredByAnchor) window.scrollTo(snapshot.x, snapshot.y);
       const viewRoot = document.getElementById(`view-${activeView}`);
+      const shellContent = document.querySelector('.altea-premium-shell-content');
+      if (shellContent) {
+        shellContent.scrollLeft = snapshot.shellLeft || 0;
+        shellContent.scrollTop = snapshot.shellTop || 0;
+      }
+      if (viewRoot) {
+        viewRoot.scrollLeft = snapshot.viewLeft || 0;
+        viewRoot.scrollTop = snapshot.viewTop || 0;
+      }
       if (viewRoot && Array.isArray(snapshot.tableWraps)) {
         const wraps = Array.from(viewRoot.querySelectorAll('.table-wrap'));
         snapshot.tableWraps.forEach((item) => {
@@ -2911,6 +2932,11 @@ function attachGlobalListeners() {
   initSidebarToggle();
   ensureTaskModal();
   applyPortalAccessToNavigation();
+  window.addEventListener('wheel', markPortalUserScroll, { passive: true, capture: true });
+  window.addEventListener('touchmove', markPortalUserScroll, { passive: true, capture: true });
+  window.addEventListener('keydown', (event) => {
+    if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) markPortalUserScroll();
+  }, true);
   window.addEventListener('altea:accesschange', () => {
     applyPortalAccessToNavigation();
     if (!isPortalViewAllowed(state.activeView || 'dashboard')) setView(firstAllowedPortalView());

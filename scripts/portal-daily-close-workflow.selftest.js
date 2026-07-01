@@ -63,6 +63,21 @@ if (!workflow.includes('Preflight production secrets')) {
 if (!workflow.includes('node scripts/portal-daily-close-preflight.js')) {
   fail('daily close must write a structured preflight report before API refresh');
 }
+if (!workflow.includes('Summarize preflight blockers')) {
+  fail('daily close must publish a readable preflight summary in GitHub Actions');
+}
+if (!workflow.includes('node scripts/portal-daily-close-preflight-summary.js --report .portal-truth-output/portal_daily_close_preflight.json')) {
+  fail('daily close must render the structured preflight report into the GitHub step summary');
+}
+if (workflow.indexOf('Summarize preflight blockers') < workflow.indexOf('Preflight production secrets')) {
+  fail('daily close preflight summary must run after the structured preflight report is written');
+}
+if (workflow.indexOf('Summarize preflight blockers') > workflow.indexOf('Refresh marketplace facts and rolling revisions')) {
+  fail('daily close preflight summary must be visible before marketplace refresh starts');
+}
+if (!workflow.includes('if: always()')) {
+  fail('daily close preflight summary must run even when preflight blocks the job');
+}
 if (!workflow.includes('--output-dir .portal-truth-output')) {
   fail('daily close preflight report must be uploaded with the truth artifacts');
 }

@@ -133,6 +133,10 @@ jobs:
           --cutoff-date '${{ steps.cutoff.outputs.value }}'
           --revision-from '${{ steps.cutoff.outputs.revision_from }}'
 
+      - name: Summarize preflight blockers
+        if: always()
+        run: node scripts/portal-daily-close-preflight-summary.js --report .portal-truth-output/portal_daily_close_preflight.json
+
       - name: Refresh marketplace facts and rolling revisions
         env:
           ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}

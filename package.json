@@ -43,6 +43,7 @@
     "portal:wb-audit": "node scripts/audit-wb-report-reconciliation.js",
     "portal:security-audit-event": "node scripts/portal-security-audit-event.js",
     "portal:security-audit-export": "node scripts/portal-security-audit-export.js",
+    "portal:daily-close-preflight-summary-test": "node scripts/portal-daily-close-preflight-summary.selftest.js",
     "portal:dashboard-ads-dedup-test": "node scripts/portal-dashboard-ceo-ads-dedup.selftest.js",
     "portal:dashboard-buyout-source-test": "node scripts/portal-dashboard-buyout-source.selftest.js",
     "portal:dashboard-money-kpi-realdata-test": "node scripts/portal-dashboard-money-kpi-realdata.selftest.js",

@@ -5,9 +5,9 @@
   var BOOT_MIN_MS = 2200;
   var BOOT_MAX_MS = 6500;
   var BOOT_HARD_MAX_MS = 9000;
-  var ROUTE_MS = 760;
-  var ROUTE_MIN_MS = 980;
-  var ROUTE_MAX_MS = 12000;
+  var ROUTE_MS = 360;
+  var ROUTE_MIN_MS = 260;
+  var ROUTE_MAX_MS = 2600;
   var stage = null;
   var live = null;
   var canvas = null;
@@ -239,6 +239,7 @@
     stage = document.createElement("div");
     stage.className = "altea-motion-stage";
     stage.hidden = true;
+    stage.style.setProperty("pointer-events", "none", "important");
     stage.setAttribute("data-scene", "workspace");
     stage.setAttribute("aria-live", "polite");
     stage.innerHTML = [
@@ -554,7 +555,8 @@
     live.setAttribute("data-theme", theme);
     live.className = "altea-motion-live is-" + (scene || "workspace");
     live.innerHTML = sceneMarkup(scene || "workspace", options);
-    startCanvas(theme);
+    if (scene === "transition") stopCanvas();
+    else startCanvas(theme);
   }
 
   function normalizeMotionView(view) {
@@ -623,13 +625,12 @@
 
   function routeFallbackReady(view, elapsed) {
     var key = normalizeMotionView(view || activeViewName() || "dashboard");
-    if (key !== "control") return false;
-    if (elapsed < 3600) return false;
+    if (elapsed < 900) return false;
     var root = viewRoot(key);
     if (!viewRootVisible(root)) return false;
     var hash = String(window.location.hash || "").replace(/^#/, "").trim();
-    var active = document.querySelector(".view.active[id='view-control']");
-    return normalizeMotionView(hash || "") === "control" || !!active;
+    var active = document.querySelector(".view.active[id='view-" + key + "']");
+    return normalizeMotionView(hash || "") === key || !!active;
   }
 
   function cancelOverlayFailsafe() {
@@ -675,7 +676,7 @@
     var targetView = normalizeMotionView(view || activeViewName() || "dashboard");
     var startedAt = Date.now();
     var minMs = Number(options.minDuration || ROUTE_MIN_MS);
-    var defaultMaxMs = targetView === "control" ? 5200 : ROUTE_MAX_MS;
+    var defaultMaxMs = ROUTE_MAX_MS;
     var maxMs = Number(options.maxDuration || defaultMaxMs);
     var done = false;
     function finish() {
@@ -723,6 +724,7 @@
     window.clearTimeout(hideTimer);
     cancelReadinessWait();
     cancelOverlayFailsafe();
+    node.style.setProperty("pointer-events", "none", "important");
     renderScene(scene || "workspace", options);
     node.hidden = false;
     setLabel(options.label || "Загружаем рабочее пространство");
@@ -880,7 +882,7 @@
   }
 
   function routeMaxDuration(view) {
-    return normalizeMotionView(view || "") === "control" ? 5200 : ROUTE_MAX_MS;
+    return ROUTE_MAX_MS;
   }
 
   function bindRouteTransitions() {

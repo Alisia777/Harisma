@@ -10,6 +10,12 @@ const { chromium } = require('playwright');
 const ROOT = path.resolve(__dirname, '..');
 const MODULE = 'portal-task-kanban-v1.js';
 const MOTION_MODULE = 'altea-motion-runtime.js';
+const MOTION_CSS = 'altea-motion-runtime.css';
+
+const MIME = {
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8'
+};
 
 function fixtureTasks() {
   return Array.from({ length: 25 }, (_, index) => ({
@@ -60,7 +66,7 @@ function serve() {
       res.end('not found');
       return;
     }
-    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream' });
     fs.createReadStream(file).pipe(res);
   });
   return new Promise((resolve) => {
@@ -86,6 +92,7 @@ async function run() {
       window.fetch = () => Promise.resolve({ ok: false, json: async () => null });
       localStorage.setItem('altea.portal.marketplace', 'all');
     }, fixtureState());
+    await page.addStyleTag({ url: `http://127.0.0.1:${port}/${MOTION_CSS}` });
     await page.addScriptTag({ url: `http://127.0.0.1:${port}/${MOTION_MODULE}` });
     await page.waitForFunction(() => Boolean(window.AlteaMotion), null, { timeout: 30000 });
     await page.evaluate(() => window.AlteaMotion.hide());
@@ -102,6 +109,17 @@ async function run() {
       });
     });
     await page.waitForSelector('.altea-motion-stage.is-visible', { timeout: 30000 });
+    await page.waitForTimeout(140);
+    const routeMotionStyle = await page.evaluate(() => {
+      const stage = document.querySelector('.altea-motion-stage.is-visible');
+      const style = stage ? window.getComputedStyle(stage) : null;
+      return {
+        pointerEvents: style?.pointerEvents || '',
+        opacity: Number(style?.opacity || 0)
+      };
+    });
+    assert.strictEqual(routeMotionStyle.pointerEvents, 'none');
+    assert.ok(routeMotionStyle.opacity <= 0.62, `Route overlay opacity blocks work: ${routeMotionStyle.opacity}`);
     await page.waitForFunction(() => !document.querySelector('.altea-motion-stage.is-visible'), null, { timeout: 8000 });
     await page.evaluate(() => {
       window.AlteaMotion.transition({

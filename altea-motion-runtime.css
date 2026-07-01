@@ -32,9 +32,9 @@ body.portal-auth-locked .altea-motion-stage {
 }
 
 .altea-motion-stage.is-visible {
-  opacity: 1;
+  opacity: var(--altea-motion-visible-opacity, 1);
   visibility: visible;
-  pointer-events: auto;
+  pointer-events: none;
   transition: opacity .7s var(--altea-motion-ease), visibility 0s linear 0s;
 }
 
@@ -420,6 +420,7 @@ body.portal-auth-locked .altea-motion-stage {
 
 .altea-motion-stage[data-scene="transition"] {
   inset: 0 0 0 var(--altea-route-left, 0px);
+  --altea-motion-visible-opacity: .46;
   background: transparent;
   transition: opacity .34s var(--altea-motion-ease), visibility 0s linear .34s;
 }
@@ -451,7 +452,7 @@ body.portal-auth-locked .altea-motion-stage {
   inset: -25% -30%;
   background: linear-gradient(110deg, transparent 34%, rgba(255,255,255,.025) 45%, rgba(var(--altea-route-accent-rgb, 207,185,150), .22) 50%, rgba(255,255,255,.035) 56%, transparent 68%);
   transform: translateX(-48%);
-  animation: alteaMotionRouteSweep 3.4s var(--altea-motion-ease-strong) infinite;
+  animation: alteaMotionRouteSweep 1.1s var(--altea-motion-ease-strong) 1 both;
 }
 
 .altea-route-scene::after {
@@ -462,7 +463,6 @@ body.portal-auth-locked .altea-motion-stage {
   border: 1px solid rgba(var(--altea-route-accent-rgb, 207,185,150), .13);
   border-radius: 50%;
   box-shadow: inset 0 0 80px rgba(var(--altea-route-accent-rgb, 207,185,150), .05);
-  animation: alteaMotionSlowTurn 24s linear infinite;
 }
 
 .altea-route-scene .altea-motion-inner {

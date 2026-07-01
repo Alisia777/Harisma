@@ -7,6 +7,7 @@ const {
   IU_DRR_RULES,
   IU_DRR_HISTORY_LOOKBACK_DAYS,
   OZON_IU_LOGIC_RULES,
+  WB_IU_LOGIC_RULES,
   OZON_FINANCE_GMV_DRR_MODE,
   OZON_FINANCE_DRR_EXCLUSION_FIELDS,
   WB_PLAN_RATE_OVERRIDES
@@ -3176,6 +3177,8 @@ async function buildPayload(options) {
       wbFeedbacksGeneratedAt: wbFeedbacksSummary.generatedAt || '',
       wbFixedRateGeneratedAt: wbFixedRateReports.generatedAt || '',
       wbFixedRateSourceFile: wbFixedRateReports.sourceWorkbook || '',
+      wbIuLogicReportFile: WB_IU_LOGIC_RULES.source.reportFile,
+      wbIuLogicReportSha256: WB_IU_LOGIC_RULES.source.reportSha256,
       ozonFinanceSourceMode: ozonFinance.source?.sourceMode || '',
       ozonFinanceEndpoint: ozonFinance.source?.endpoint || '',
       ozonFinanceFile: ozonFinance.source?.financeFile || '',
@@ -3272,6 +3275,14 @@ function validateIuDrrLogic(payload, wbFixedRateReports = {}) {
   if (payload?.iuDrrRules?.version !== IU_DRR_RULES.version) {
     errors.push(`IU/DRR rules version mismatch: payload=${payload?.iuDrrRules?.version || 'empty'} expected=${IU_DRR_RULES.version}.`);
   }
+  if (payload?.iuDrrRules?.wb?.sourceLogic?.reportSha256 !== WB_IU_LOGIC_RULES.source.reportSha256) {
+    errors.push(`WB IU logic report mismatch: payload=${payload?.iuDrrRules?.wb?.sourceLogic?.reportSha256 || 'empty'} expected=${WB_IU_LOGIC_RULES.source.reportSha256}.`);
+  }
+  for (const [key, expected] of Object.entries(WB_IU_LOGIC_RULES.required || {})) {
+    if (expected && payload?.iuDrrRules?.wb?.sourceLogic?.required?.[key] !== true) {
+      errors.push(`WB IU logic flag is missing in payload: ${key}.`);
+    }
+  }
   if (payload?.iuDrrRules?.ozon?.sourceLogic?.sha256 !== OZON_IU_LOGIC_RULES.source.sha256) {
     errors.push(`Ozon IU workbook logic mismatch: payload=${payload?.iuDrrRules?.ozon?.sourceLogic?.sha256 || 'empty'} expected=${OZON_IU_LOGIC_RULES.source.sha256}.`);
   }
@@ -3361,6 +3372,9 @@ function validateIuDrrLogic(payload, wbFixedRateReports = {}) {
     checkedRows: dailyRows.length,
     fixedRateDatesInWindow: Array.from(wbFixedRateMap.keys()).filter((date) => rowsByDate.has(date)).length,
     ozonFinanceRows: dailyRows.filter((row) => numberOrZero(row.ozonFinanceSourceRows) > 0 || row.ozonAdsFactMode === OZON_FINANCE_GMV_DRR_MODE).length,
+    wbIuLogicReportFile: WB_IU_LOGIC_RULES.source.reportFile,
+    wbIuLogicReportSha256: WB_IU_LOGIC_RULES.source.reportSha256,
+    wbIuLogicSourceWorkbook: WB_IU_LOGIC_RULES.source.sourceWorkbook,
     warnings,
     errors
   };
@@ -3440,7 +3454,9 @@ async function main() {
         rulesVersion: payload.diagnostics.logicGuard.rulesVersion,
         checkedRows: payload.diagnostics.logicGuard.checkedRows,
         fixedRateDatesInWindow: payload.diagnostics.logicGuard.fixedRateDatesInWindow,
-        ozonFinanceRows: payload.diagnostics.logicGuard.ozonFinanceRows
+        ozonFinanceRows: payload.diagnostics.logicGuard.ozonFinanceRows,
+        wbIuLogicReportFile: payload.diagnostics.logicGuard.wbIuLogicReportFile,
+        ozonIuLogicWorkbook: payload.diagnostics.logicGuard.ozonIuLogicWorkbook
       }
       : null,
     writtenFiles

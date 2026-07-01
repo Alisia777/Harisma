@@ -6,6 +6,7 @@ const path = require('path');
 const {
   IU_DRR_RULES,
   OZON_IU_LOGIC_RULES,
+  WB_IU_LOGIC_RULES,
   OZON_FINANCE_GMV_DRR_MODE,
   WB_PLAN_RATE_OVERRIDES
 } = require('./iu-drr-rules');
@@ -78,6 +79,14 @@ function validate(summary, fixedReport) {
 
   if (summary?.iuDrrRules?.version !== IU_DRR_RULES.version) {
     errors.push(`IU/DRR rules version mismatch: summary=${summary?.iuDrrRules?.version || 'empty'} expected=${IU_DRR_RULES.version}.`);
+  }
+  if (summary?.iuDrrRules?.wb?.sourceLogic?.reportSha256 !== WB_IU_LOGIC_RULES.source.reportSha256) {
+    errors.push(`WB IU logic report mismatch: summary=${summary?.iuDrrRules?.wb?.sourceLogic?.reportSha256 || 'empty'} expected=${WB_IU_LOGIC_RULES.source.reportSha256}.`);
+  }
+  for (const [key, expected] of Object.entries(WB_IU_LOGIC_RULES.required || {})) {
+    if (expected && summary?.iuDrrRules?.wb?.sourceLogic?.required?.[key] !== true) {
+      errors.push(`WB IU logic flag is missing in summary: ${key}.`);
+    }
   }
   if (summary?.iuDrrRules?.ozon?.sourceLogic?.sha256 !== OZON_IU_LOGIC_RULES.source.sha256) {
     errors.push(`Ozon IU workbook logic mismatch: summary=${summary?.iuDrrRules?.ozon?.sourceLogic?.sha256 || 'empty'} expected=${OZON_IU_LOGIC_RULES.source.sha256}.`);
@@ -161,6 +170,9 @@ function validate(summary, fixedReport) {
     checkedRows: rows.length,
     fixedRateDatesInWindow: Array.from(fixedMap.keys()).filter((date) => rowsByDate.has(date)).length,
     ozonFinanceRows: rows.filter((row) => numberOrZero(row.ozonFinanceSourceRows) > 0 || row.ozonAdsFactMode === OZON_FINANCE_GMV_DRR_MODE).length,
+    wbIuLogicReportFile: WB_IU_LOGIC_RULES.source.reportFile,
+    wbIuLogicReportSha256: WB_IU_LOGIC_RULES.source.reportSha256,
+    wbIuLogicSourceWorkbook: WB_IU_LOGIC_RULES.source.sourceWorkbook,
     warnings,
     errors
   };

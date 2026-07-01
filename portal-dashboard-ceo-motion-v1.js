@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-dashboard-money-orders1';
+  const VERSION = '20260701-dashboard-money-orders3';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -1490,6 +1490,8 @@
         name: item.name || item.title || item.article || 'SKU',
         owner: item.owner || 'Без owner',
         revenue: finite(item.revenue),
+        orderRub: positiveFinite(item.orderRub, item.ordersRevenue, item.ordersSumRub, item.revenue),
+        buyoutRub: positiveFinite(item.buyoutRub, item.buyoutRevenue, item.deliveredRevenue),
         orders: finite(item.orders),
         buys: finite(item.buys),
         marginPct: finite(item.income) && finite(item.revenue) ? finite(item.income) / finite(item.revenue) : null,
@@ -1503,6 +1505,8 @@
         name: item.product_name_final || item.name || item.article || 'SKU',
         owner: item.owner_name || item.owner || 'Без owner',
         revenue: finite(item.orders_value),
+        orderRub: positiveFinite(item.orderRub, item.ordersRevenue, item.orders_value),
+        buyoutRub: positiveFinite(item.buyoutRub, item.buyoutRevenue, item.deliveredRevenue),
         orders: finite(item.fact_feb26_units),
         buys: 0,
         marginPct: null,
@@ -1724,6 +1728,8 @@
           name: item.name || item.title || item.article || 'SKU',
           owner: item.owner || planSource.owner_name || 'Р‘РµР· owner',
           revenue,
+          orderRub: positiveFinite(item.orderRub, item.ordersRevenue, item.ordersSumRub, revenue),
+          buyoutRub: positiveFinite(item.buyoutRub, item.buyoutRevenue, item.deliveredRevenue),
           planRevenue,
           orders: finite(item.orders),
           planUnits,
@@ -1752,6 +1758,8 @@
           name: item.product_name_final || item.name || item.article || 'SKU',
           owner: item.owner_name || item.owner || 'Р‘РµР· owner',
           revenue,
+          orderRub: positiveFinite(item.orderRub, item.ordersRevenue, item.orders_value, revenue),
+          buyoutRub: positiveFinite(item.buyoutRub, item.buyoutRevenue, item.deliveredRevenue),
           planRevenue,
           orders: finite(item.fact_feb26_units),
           planUnits: finite(item.plan_feb26_units),
@@ -2215,6 +2223,30 @@
     return Number.isFinite(Number(value)) ? fmtPct(value) : '—';
   }
 
+  function skuOrderMoney(item) {
+    return positiveFinite(item?.orderRub, item?.ordersRevenue, item?.ordersSumRub, item?.revenue);
+  }
+
+  function skuBuyoutMoney(item) {
+    const direct = positiveFinite(item?.buyoutRub, item?.buyoutRevenue, item?.deliveredRevenue);
+    if (direct > 0) return direct;
+    const orderRub = skuOrderMoney(item);
+    const orders = finite(item?.orders);
+    const buys = finite(item?.buys);
+    if (orderRub > 0 && orders > 0 && buys > 0) return orderRub * clamp(buys / orders, 0, 1);
+    return 0;
+  }
+
+  function skuOrderMoneyLabel(item) {
+    const value = skuOrderMoney(item);
+    return value > 0 ? fmtMoneyFull(value) : 'нет данных';
+  }
+
+  function skuBuyoutMoneyLabel(item) {
+    const value = skuBuyoutMoney(item);
+    return value > 0 ? fmtMoneyFull(value) : 'нет источника';
+  }
+
   function skuRowsHtml(rows, toneClass) {
     if (!rows.length) return '<div class="ceo-empty">Нет источника SKU для этого блока.</div>';
     return `
@@ -2390,8 +2422,8 @@
     if (!item) return;
     openDrawer(root, item.name, `${item.owner} · ${item.driver}`, [
       ['Выручка', fmtMoneyFull(item.revenue)],
-      ['Заказы', fmtInt(item.orders)],
-      ['Выкупы', item.buys ? fmtInt(item.buys) : 'нет источника'],
+      ['Заказы', skuOrderMoneyLabel(item)],
+      ['Выкупы', skuBuyoutMoneyLabel(item)],
       ['Маржа', item.marginPct == null ? 'нет источника' : fmtPct(item.marginPct)]
     ], [
       { label: 'Лидерборд', value: 'контент и трафик', route: 'product-leaderboard' },
@@ -2596,8 +2628,8 @@
       ['Факт', fmtMoneyFull(item.revenue)],
       ['План', planLabel(item.planRevenue)],
       ['Выполнение', completionLabel(item.completionPct)],
-      ['Заказы', fmtInt(item.orders)],
-      ['Выкупы', item.buys ? fmtInt(item.buys) : 'нет источника'],
+      ['Заказы', skuOrderMoneyLabel(item)],
+      ['Выкупы', skuBuyoutMoneyLabel(item)],
       ['Маржа', item.marginPct == null ? 'нет источника' : fmtPct(item.marginPct)]
     ], [
       { label: 'План-факт SKU', value: 'план, факт, маржа', detail: 'открыть детальную таблицу', route: 'sku-plan-fact' },
@@ -2685,13 +2717,13 @@
       },
       {
         label: 'Заказы / план',
-        value: `${fmtInt(item.orders)} шт.`,
-        detail: item.planUnits ? `план ${fmtInt(item.planUnits)} шт.` : 'план по штукам не найден'
+        value: `${skuOrderMoneyLabel(item)} / ${planLabel(item.planRevenue)}`,
+        detail: item.orders ? `${fmtInt(item.orders)} шт.${item.planUnits ? ` · план ${fmtInt(item.planUnits)} шт.` : ''}` : 'штуки не пришли в текущий срез'
       },
       {
         label: 'Маржа',
         value: item.marginPct == null ? 'нет источника' : fmtPct(item.marginPct),
-        detail: item.buys ? `выкупы ${fmtInt(item.buys)} шт.` : 'выкуп не пришёл в текущий срез'
+        detail: item.buys ? `выкупы ${skuBuyoutMoneyLabel(item)} · ${fmtInt(item.buys)} шт.` : 'выкуп не пришёл в текущий срез'
       },
       {
         label: 'Ответственный',
@@ -2850,8 +2882,8 @@
       ['Факт', fmtMoneyFull(item.revenue)],
       ['План', planLabel(item.planRevenue)],
       ['Выполнение', completionLabel(item.completionPct)],
-      ['Заказы', fmtInt(item.orders)],
-      ['Выкупы', item.buys ? fmtInt(item.buys) : 'нет источника'],
+      ['Заказы', skuOrderMoneyLabel(item)],
+      ['Выкупы', skuBuyoutMoneyLabel(item)],
       ['Маржа', item.marginPct == null ? 'нет источника' : fmtPct(item.marginPct)]
     ], skuDetailRows(model, item));
   }

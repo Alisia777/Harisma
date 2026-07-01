@@ -91,6 +91,10 @@ function serve() {
   });
 }
 
+function cleanText(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
 async function run() {
   const server = await serve();
   const port = server.address().port;
@@ -118,10 +122,17 @@ async function run() {
 
     const snapshot = async (platform) => page.evaluate((value) => {
       localStorage.setItem('altea.portal.marketplace', value);
-      const model = window.__ALTEA_DASHBOARD_CEO_MOTION_V1__.buildModel();
+      const api = window.__ALTEA_DASHBOARD_CEO_MOTION_V1__;
+      const model = api.buildModel();
+      api.render();
       const card = (model.platformCards || []).find((item) => item.key === value);
+      const kpis = Array.from(document.querySelectorAll('.ceo-kpi')).map((node) => ({
+        label: node.querySelector('small')?.textContent?.trim(),
+        value: node.querySelector('strong')?.textContent?.trim(),
+        note: node.querySelector('p')?.textContent?.trim()
+      }));
       return {
-        version: window.__ALTEA_DASHBOARD_CEO_MOTION_V1__.version,
+        version: api.version,
         platform: model.platform,
         orders: model.total.orders,
         orderRub: model.total.orderRub,
@@ -135,6 +146,7 @@ async function run() {
         planOrderRub: model.plan.orderRub,
         planBuyoutRub: model.plan.buyoutRub,
         seriesValues: model.series.points.map((point) => point.value),
+        kpis,
         card: card ? {
           orders: card.total.orders,
           orderRub: card.total.orderRub,
@@ -148,7 +160,7 @@ async function run() {
     }, platform);
 
     const wb = await snapshot('wb');
-    assert.strictEqual(wb.version, '20260701-dashboard-money-orders1');
+    assert.strictEqual(wb.version, '20260701-dashboard-money-orders3');
     assert.strictEqual(wb.orders, 100);
     assert.strictEqual(wb.orderRub, 1000);
     assert.strictEqual(wb.buys, 80);
@@ -160,6 +172,9 @@ async function run() {
     assert.notStrictEqual(wb.planBuys, null);
     assert.notStrictEqual(wb.planBuyoutRub, null);
     assert.deepStrictEqual(wb.seriesValues, [800]);
+    assert.strictEqual(cleanText(wb.kpis.find((item) => item.label === 'Заказы')?.value), '1 тыс. ₽');
+    assert.strictEqual(cleanText(wb.kpis.find((item) => item.label === 'Выкупы')?.value), '800 ₽');
+    assert.match(cleanText(wb.kpis.find((item) => item.label === 'Выкупы')?.note), /план .*₽/);
     assert.deepStrictEqual(wb.card, { orders: 100, orderRub: 1000, buys: 80, buyoutRub: 800, buyoutRows: 1, buyoutEstimatedRows: 1, buyoutProxyRows: 0 });
 
     const ozon = await snapshot('ozon');
@@ -172,6 +187,8 @@ async function run() {
     assert.strictEqual(ozon.buyoutEstimatedRows, 1);
     assert.strictEqual(ozon.buyoutProxyRows, 0);
     assert.deepStrictEqual(ozon.seriesValues, [1400]);
+    assert.strictEqual(cleanText(ozon.kpis.find((item) => item.label === 'Заказы')?.value), '2 тыс. ₽');
+    assert.strictEqual(cleanText(ozon.kpis.find((item) => item.label === 'Выкупы')?.value), '1 тыс. ₽');
     assert.deepStrictEqual(ozon.card, { orders: 10, orderRub: 2000, buys: 7, buyoutRub: 1400, buyoutRows: 1, buyoutEstimatedRows: 1, buyoutProxyRows: 0 });
 
     const goldapple = await snapshot('goldapple');

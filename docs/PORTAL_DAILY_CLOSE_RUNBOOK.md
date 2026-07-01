@@ -16,11 +16,12 @@ Current external blocker: required GitHub Actions secrets are not configured.
 Latest verified blocker evidence:
 
 - workflow: `Portal daily close`
-- run: `27912749012`
+- run: `28542257341`
 - branch: `main`
-- head SHA: `20dc3f05193ed9b359d9afa8aea820e36a1047be`
-- artifact: `portal-daily-close-27912749012`
-- artifact digest: `sha256:3b320c08983ce35b70223fd05193020151fb0c2d4cd21f298b48b33724af6efe`
+- head SHA: `40259c071879f471786fdb8217ded471a830d493`
+- preceding `Portal data truth`: `success`
+- artifact: `portal-daily-close-28542257341`
+- artifact digest: `sha256:66a76848619ce2e799340b0a443cffb4c03b14ca856ee7ba62b73b66a77fc663`
 - report inside artifact: `.portal-truth-output/portal_daily_close_preflight.json`
 - report status: `blocked`
 - `publish.allowed`: `false`
@@ -49,11 +50,48 @@ variable `SUPABASE_URL`/`ALTEA_SUPABASE_URL`.
 When they are absent, the Yandex Market runtime discovers campaigns through
 `ALTEA_YM_API_KEY` via the Partner API before refreshing Yandex facts and stock.
 
+## Required CI Source Groups
+
+Daily close also requires one configured source from each group below. These can
+be repository secrets or variables where the workflow maps both forms.
+
+Smart price workbook, one of:
+
+```text
+ALTEA_SMART_PRICE_SHEET_URL
+ALTEA_SMART_PRICE_XLSX_URL
+ALTEA_SMART_PRICE_EXPORT_URL
+ALTEA_SMART_PRICE_INPUT_XLSX
+ALTEA_SMART_PRICE_XLSX_B64
+ALTEA_SMART_PRICE_XLSX_GZIP_B64
+ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON
+GOOGLE_APPLICATION_CREDENTIALS_JSON
+GOOGLE_APPLICATION_CREDENTIALS
+```
+
+Extra marketplace daily sources:
+
+```text
+goldapple: ALTEA_ZYA_API_TOKEN or ALTEA_ZYA_API_KEY or ALTEA_GOLDAPPLE_API_TOKEN or ALTEA_GOLDAPPLE_API_KEY or ALTEA_ZYA_SALES_XLSX or ALTEA_ZYA_SALES_ZIP or ALTEA_RETAIL_NETWORK_SALES_XLSX
+letu: ALTEA_LETUAL_API_TOKEN or ALTEA_LETUAL_LOCAL_EXPORT_XLSX or ALTEA_RETAIL_NETWORK_SALES_XLSX
+megamarket: ALTEA_MEGAMARKET_API_TOKEN or ALTEA_MEGAMARKET_API_KEY or ALTEA_RETAIL_NETWORK_SALES_XLSX
+samokat: ALTEA_SAMOKAT_API_TOKEN or ALTEA_SAMOKAT_API_KEY or ALTEA_RETAIL_NETWORK_SALES_XLSX
+magnit: ALTEA_MAGNIT_API_TOKEN or ALTEA_MAGNIT_API_KEY or ALTEA_MAGNIT_MARKET_API_TOKEN or ALTEA_MAGNIT_MARKET_API_KEY or ALTEA_MAGNIT_SALES_XLSX or ALTEA_MAGNIT_SALES_XLS or ALTEA_MAGNIT_SALES_WORKBOOK or ALTEA_MAGNIT_SALES_CSV or ALTEA_RETAIL_NETWORK_SALES_XLSX
+```
+
+Preflight prints all missing source groups in one failed step and writes the same
+state to `portal_daily_close_preflight.json`. It prints names only, never secret
+values.
+
 ## Workflow Order
 
 `Portal data truth` runs on PRs, pushes to `main`, schedule, and manual dispatch.
 It verifies the guard, self-tests, protected non-IU scope, snapshot activation,
 and publish gate artifacts.
+
+The truth gate also runs `portal-dashboard-money-kpi-realdata.selftest.js`.
+This browser guard renders the dashboard against current repository data and
+fails if `Заказы` or `Выкупы` render as units instead of rubles.
 
 `Portal daily close` runs by schedule, manual dispatch, and automatically after a
 successful `Portal data truth` run on `main`.
@@ -62,7 +100,7 @@ The daily close job order is:
 
 1. Resolve cutoff date and 30-day revision window.
 2. Run `scripts/portal-daily-close-preflight.js`.
-3. Refresh WB/Ozon/Yandex marketplace facts.
+3. Refresh WB/Ozon/Yandex and extra marketplace facts.
 4. Refresh ads, Yandex Market stock, and warehouse stock.
 5. Build canonical non-IU layers and phase 3 publish-gate reconciliation reports.
 6. Run D-1 and numeric gates.
@@ -128,6 +166,7 @@ node scripts/portal-daily-close-preflight.selftest.js
 node scripts/portal-daily-close-workflow.selftest.js
 node scripts/portal-daily-layer-guard.selftest.js
 node scripts/portal-api-max-sync.selftest.js
+node scripts/portal-dashboard-money-kpi-realdata.selftest.js
 python scripts/d1_close_gate.selftest.py
 python scripts/sync_portal_generation_to_supabase.selftest.py
 node scripts/portal-daily-layer-guard.js --input-dir .portal-truth-output --base-data-dir data --output-dir .portal-truth-output

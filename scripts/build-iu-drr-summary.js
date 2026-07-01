@@ -6,6 +6,7 @@ const XLSX = require('xlsx');
 const {
   IU_DRR_RULES,
   IU_DRR_HISTORY_LOOKBACK_DAYS,
+  OZON_IU_LOGIC_RULES,
   OZON_FINANCE_GMV_DRR_MODE,
   OZON_FINANCE_DRR_EXCLUSION_FIELDS,
   WB_PLAN_RATE_OVERRIDES
@@ -3180,6 +3181,8 @@ async function buildPayload(options) {
       ozonFinanceFile: ozonFinance.source?.financeFile || '',
       ozonProductsFile: ozonFinance.source?.productsFile || '',
       ozonPlanFile: ozonPlan.source?.planFile || '',
+      ozonIuLogicWorkbook: OZON_IU_LOGIC_RULES.source.workbook,
+      ozonIuLogicWorkbookSha256: OZON_IU_LOGIC_RULES.source.sha256,
       adsSourceMode: adsSummary.sourceMode || adsSummary.source || '',
       wbAdsChannelOverridesFile: options.wbAdsChannelOverridesPath || ''
     },
@@ -3268,6 +3271,14 @@ function validateIuDrrLogic(payload, wbFixedRateReports = {}) {
 
   if (payload?.iuDrrRules?.version !== IU_DRR_RULES.version) {
     errors.push(`IU/DRR rules version mismatch: payload=${payload?.iuDrrRules?.version || 'empty'} expected=${IU_DRR_RULES.version}.`);
+  }
+  if (payload?.iuDrrRules?.ozon?.sourceLogic?.sha256 !== OZON_IU_LOGIC_RULES.source.sha256) {
+    errors.push(`Ozon IU workbook logic mismatch: payload=${payload?.iuDrrRules?.ozon?.sourceLogic?.sha256 || 'empty'} expected=${OZON_IU_LOGIC_RULES.source.sha256}.`);
+  }
+  for (const [key, expected] of Object.entries(OZON_IU_LOGIC_RULES.required || {})) {
+    if (expected && payload?.iuDrrRules?.ozon?.sourceLogic?.required?.[key] !== true) {
+      errors.push(`Ozon IU workbook logic flag is missing in payload: ${key}.`);
+    }
   }
 
   if (payload?.planRateOverrides) {

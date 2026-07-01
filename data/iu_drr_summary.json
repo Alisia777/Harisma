@@ -15,7 +15,9 @@
     "ozonProductsFile": "products (3).csv",
     "ozonPlanFile": "Дашборд _ ИУ по Оз.xlsx",
     "adsSourceMode": "wb-api+ozon-seller-finance-api",
-    "wbAdsChannelOverridesFile": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\data\\wb_ads_channel_overrides.json"
+    "wbAdsChannelOverridesFile": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\data\\wb_ads_channel_overrides.json",
+    "ozonIuLogicWorkbook": "Расчет показателей ИУ (2).xlsx",
+    "ozonIuLogicWorkbookSha256": "cc10f73adf16472fa2a7ca9edae4ca1c572bb9e2d562777e2b0672539682964f"
   },
   "window": {
     "from": "2026-06-01",
@@ -13232,10 +13234,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 137,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-02",
@@ -13385,10 +13387,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 136,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-03",
@@ -13538,10 +13540,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 156,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-04",
@@ -13691,10 +13693,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 137,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-05",
@@ -13844,10 +13846,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 135,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-06",
@@ -13997,10 +13999,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 133,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-07",
@@ -14150,10 +14152,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 130,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-08",
@@ -14303,10 +14305,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 133,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-09",
@@ -14456,10 +14458,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 135,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-10",
@@ -14609,10 +14611,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 133,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-11",
@@ -14762,10 +14764,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 135,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-12",
@@ -14915,10 +14917,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 135,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-13",
@@ -15068,10 +15070,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 131,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-14",
@@ -15221,10 +15223,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 131,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-15",
@@ -15374,10 +15376,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 133,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-16",
@@ -15527,10 +15529,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 137,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-17",
@@ -15680,10 +15682,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 127,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-18",
@@ -15833,10 +15835,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 128,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-19",
@@ -15986,10 +15988,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 129,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-20",
@@ -16139,10 +16141,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 125,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-21",
@@ -16292,10 +16294,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 127,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-22",
@@ -16445,10 +16447,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 130,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-23",
@@ -16598,10 +16600,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 126,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "wb_fixed_rate_cabinet_report > wb_iu_control_workbook > wb_api_calibrated_to_iu_control > platform_api_raw",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-24",
@@ -16751,10 +16753,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 125,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "When a WB fixed-rate cabinet report has a day, revenue, target and ad spend facts must come from that report.",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-25",
@@ -16904,10 +16906,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 125,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "When a WB fixed-rate cabinet report has a day, revenue, target and ad spend facts must come from that report.",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-26",
@@ -17057,10 +17059,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 122,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "When a WB fixed-rate cabinet report has a day, revenue, target and ad spend facts must come from that report.",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-27",
@@ -17210,10 +17212,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 120,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "When a WB fixed-rate cabinet report has a day, revenue, target and ad spend facts must come from that report.",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-28",
@@ -17363,10 +17365,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 126,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "When a WB fixed-rate cabinet report has a day, revenue, target and ad spend facts must come from that report.",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-29",
@@ -17516,10 +17518,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 122,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "When a WB fixed-rate cabinet report has a day, revenue, target and ad spend facts must come from that report.",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     },
     {
       "date": "2026-06-30",
@@ -17669,10 +17671,10 @@
       "ozonAdsOrders": 0,
       "ozonAdsRevenue": 0,
       "ozonAdsSourceRows": 123,
-      "iuDrrRuleVersion": "20260701-wb-ozon-hardcoded-v1",
+      "iuDrrRuleVersion": "20260701-wb-ozon-workbook-v2",
       "wbRule": "When a WB fixed-rate cabinet report has a day, revenue, target and ad spend facts must come from that report.",
-      "ozonRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "ozonDrrRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows."
+      "ozonRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "ozonDrrRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge."
     }
   ],
   "diagnostics": {
@@ -18847,18 +18849,20 @@
     ],
     "logicGuard": {
       "version": "20260701-wb-ozon-logic-guard",
-      "rulesVersion": "20260701-wb-ozon-hardcoded-v1",
-      "checkedAt": "2026-07-01T16:02:39.308Z",
+      "rulesVersion": "20260701-wb-ozon-workbook-v2",
+      "checkedAt": "2026-07-01T18:22:55.492Z",
       "status": "ok",
       "checkedRows": 30,
       "fixedRateDatesInWindow": 7,
       "ozonFinanceRows": 30,
+      "ozonIuLogicWorkbook": "Расчет показателей ИУ (2).xlsx",
+      "ozonIuLogicWorkbookSha256": "cc10f73adf16472fa2a7ca9edae4ca1c572bb9e2d562777e2b0672539682964f",
       "warnings": [],
       "errors": []
     }
   },
   "iuDrrRules": {
-    "version": "20260701-wb-ozon-hardcoded-v1",
+    "version": "20260701-wb-ozon-workbook-v2",
     "history": {
       "defaultLookbackDays": 31,
       "rule": "Build current month plus lookback history so 7/14-day cross-month views keep previous-month rows."
@@ -18880,8 +18884,28 @@
     "ozon": {
       "platform": "ozon",
       "factMode": "ozon_finance_balance_gmv_drr_excluding_premium_plus_original_badge",
-      "gmvRule": "GMV = sales/revenue minus returns from Ozon Finance/realization balance.",
-      "drrSpendRule": "DRR numerator = Ozon promotion/expense balance spend minus excluded Premium Plus and Original Badge rows.",
+      "sourceLogic": {
+        "workbook": "Расчет показателей ИУ (2).xlsx",
+        "sha256": "cc10f73adf16472fa2a7ca9edae4ca1c572bb9e2d562777e2b0672539682964f",
+        "version": "20260701-ozon-iu-workbook-logic-v1",
+        "sheets": [
+          "GMV",
+          "ДРР"
+        ],
+        "required": {
+          "gmvUsesBuyouts": true,
+          "gmvFormulaSalesMinusReturns": true,
+          "gmvIncludesOzonMarketplaceBuyouts": true,
+          "drrSourceBalanceReport": true,
+          "drrExcludesPremiumPlus": true,
+          "drrExcludesOriginalBadge": true,
+          "drrFormulaPromotionExpenseOverSalesMinusReturns": true
+        }
+      },
+      "gmvRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+      "drrSourceRule": "Ozon IU DRR plan/fact is reconciled to the Ozon Balance report.",
+      "drrSpendRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge.",
+      "drrFormula": "Promotion and Expense / (Sales - Returns)",
       "drrExclusionFields": [
         "drrExcludedPremiumPlus",
         "drrExcludedOriginalBadge"

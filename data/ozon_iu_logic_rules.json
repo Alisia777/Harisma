@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-07-01T18:24:00.113Z",
+  "version": "20260701-ozon-iu-workbook-logic-v1",
+  "source": {
+    "workbook": "Расчет показателей ИУ (2).xlsx",
+    "sha256": "cc10f73adf16472fa2a7ca9edae4ca1c572bb9e2d562777e2b0672539682964f",
+    "sheets": [
+      "GMV",
+      "ДРР"
+    ]
+  },
+  "sheets": {
+    "GMV": [
+      "1. Выполнение GMV",
+      "Выполнение считается от выкупов. Правильно считать Выручка - возврат выручки=GMV",
+      "Так же нужно учитывать импорт, то есть выкупы МП Озон. Он берется из отчета, выкупы маркетплейса."
+    ],
+    "ДРР": [
+      "Выполнение плана по ДРР берется так же из отчета \"Баланс\"",
+      "Исключаем следующие траты:",
+      "1.Подписка Premium Plus",
+      "2.Бейдж оригинал",
+      "Расчет: Продвижение и Расход/(Продажи-Возвраты)"
+    ]
+  },
+  "required": {
+    "gmvUsesBuyouts": true,
+    "gmvFormulaSalesMinusReturns": true,
+    "gmvIncludesOzonMarketplaceBuyouts": true,
+    "drrSourceBalanceReport": true,
+    "drrExcludesPremiumPlus": true,
+    "drrExcludesOriginalBadge": true,
+    "drrFormulaPromotionExpenseOverSalesMinusReturns": true
+  },
+  "canonical": {
+    "gmvRule": "Ozon IU GMV comes from buyouts: revenue/sales minus revenue returns, including Ozon marketplace/import buyouts from the marketplace buyouts report.",
+    "drrSourceRule": "Ozon IU DRR plan/fact is reconciled to the Ozon Balance report.",
+    "drrSpendRule": "Ozon IU DRR numerator is Promotion and Expense divided by Sales minus Returns, excluding Premium Plus and Original Badge.",
+    "exclusions": [
+      "Premium Plus",
+      "Original Badge"
+    ],
+    "formula": "Promotion and Expense / (Sales - Returns)"
+  }
+}

@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const {
   IU_DRR_RULES,
+  OZON_IU_LOGIC_RULES,
   OZON_FINANCE_GMV_DRR_MODE,
   WB_PLAN_RATE_OVERRIDES
 } = require('./iu-drr-rules');
@@ -77,6 +78,14 @@ function validate(summary, fixedReport) {
 
   if (summary?.iuDrrRules?.version !== IU_DRR_RULES.version) {
     errors.push(`IU/DRR rules version mismatch: summary=${summary?.iuDrrRules?.version || 'empty'} expected=${IU_DRR_RULES.version}.`);
+  }
+  if (summary?.iuDrrRules?.ozon?.sourceLogic?.sha256 !== OZON_IU_LOGIC_RULES.source.sha256) {
+    errors.push(`Ozon IU workbook logic mismatch: summary=${summary?.iuDrrRules?.ozon?.sourceLogic?.sha256 || 'empty'} expected=${OZON_IU_LOGIC_RULES.source.sha256}.`);
+  }
+  for (const [key, expected] of Object.entries(OZON_IU_LOGIC_RULES.required || {})) {
+    if (expected && summary?.iuDrrRules?.ozon?.sourceLogic?.required?.[key] !== true) {
+      errors.push(`Ozon IU workbook logic flag is missing in summary: ${key}.`);
+    }
   }
 
   if (summary?.planRateOverrides) {

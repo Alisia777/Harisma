@@ -49,7 +49,8 @@
     "portal:task-filter-recovery-test": "node scripts/portal-task-kanban-filter-recovery.selftest.js",
     "portal:marketplace-hitbox-test": "node scripts/portal-marketplace-hitbox.selftest.js",
     "portal:iu-drr-date-window-test": "node scripts/portal-iu-drr-date-window.selftest.js",
-    "portal:iu-drr-logic-guard": "node scripts/portal-iu-drr-logic-guard.js --input-dir data"
+    "portal:iu-drr-logic-guard": "node scripts/portal-iu-drr-logic-guard.js --input-dir data",
+    "portal:ozon-iu-logic-rules": "node scripts/build-ozon-iu-logic-rules.js --output data/ozon_iu_logic_rules.json"
   },
   "dependencies": {
     "playwright": "^1.59.1",

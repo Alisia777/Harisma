@@ -156,6 +156,20 @@ function shiftDateKey(dateKey, days) {
 function normalizePortalStorageSnapshot(source = {}) {
   const parsed = source && typeof source === 'object' ? source : {};
   const defaults = defaultStorage();
+  const normalizeStringList = (list) => [...new Set(
+    (Array.isArray(list) ? list : [])
+      .flatMap((item) => {
+        if (typeof item === 'string') return [item];
+        if (item && typeof item === 'object') return [item.key, item.id, item.code, ...(Array.isArray(item.keys) ? item.keys : [])];
+        return [];
+      })
+      .map((item) => String(item || '').trim())
+      .filter(Boolean)
+  )];
+  const normalizedAutoTaskTombstones = normalizeStringList([
+    ...(Array.isArray(parsed.autoTaskTombstones) ? parsed.autoTaskTombstones : []),
+    ...(Array.isArray(parsed.launchAutoTaskTombstones) ? parsed.launchAutoTaskTombstones : [])
+  ]);
   return {
     ...defaults,
     comments: Array.isArray(parsed.comments) ? parsed.comments.map(normalizeComment) : [],
@@ -168,6 +182,8 @@ function normalizePortalStorageSnapshot(source = {}) {
     promoEventDeletedIds: Array.isArray(parsed.promoEventDeletedIds) ? parsed.promoEventDeletedIds.filter((item) => item && typeof item === 'object') : [],
     launchOverrides: Array.isArray(parsed.launchOverrides) ? parsed.launchOverrides.filter((item) => item && typeof item === 'object') : [],
     launchDeletedIds: Array.isArray(parsed.launchDeletedIds) ? parsed.launchDeletedIds.map((item) => String(item || '').trim()).filter(Boolean) : [],
+    autoTaskTombstones: normalizedAutoTaskTombstones.slice(0, 2000),
+    launchAutoTaskTombstones: normalizeStringList(parsed.launchAutoTaskTombstones).slice(0, 1200),
     repricerSettings: normalizeRepricerSettings(parsed.repricerSettings || {}),
     repricerSettingsUpdatedAt: String(parsed.repricerSettingsUpdatedAt || '').trim(),
     repricerOverrides: Array.isArray(parsed.repricerOverrides) ? parsed.repricerOverrides.map(normalizeRepricerOverride).filter((item) => item.articleKey) : [],
@@ -234,7 +250,9 @@ function portalStorageHistoryPayload(source = {}) {
     promoEvents: snapshot.promoEvents,
     promoEventDeletedIds: snapshot.promoEventDeletedIds,
     launchOverrides: snapshot.launchOverrides,
-    launchDeletedIds: snapshot.launchDeletedIds
+    launchDeletedIds: snapshot.launchDeletedIds,
+    autoTaskTombstones: snapshot.autoTaskTombstones,
+    launchAutoTaskTombstones: snapshot.launchAutoTaskTombstones
   };
 }
 
@@ -697,6 +715,8 @@ function mergeImportedStorage(imported) {
     promoEventDeletedIds: Array.isArray(imported.promoEventDeletedIds) ? imported.promoEventDeletedIds : [],
     launchOverrides: Array.isArray(imported.launchOverrides) ? imported.launchOverrides : [],
     launchDeletedIds: Array.isArray(imported.launchDeletedIds) ? imported.launchDeletedIds : [],
+    autoTaskTombstones: Array.isArray(imported.autoTaskTombstones) ? imported.autoTaskTombstones : [],
+    launchAutoTaskTombstones: Array.isArray(imported.launchAutoTaskTombstones) ? imported.launchAutoTaskTombstones : [],
     repricerSettings: imported.repricerSettings || {},
     repricerSettingsUpdatedAt: String(imported.repricerSettingsUpdatedAt || '').trim(),
     repricerOverrides: Array.isArray(imported.repricerOverrides) ? imported.repricerOverrides : [],
@@ -743,6 +763,12 @@ function mergeImportedStorage(imported) {
     if (!launchId) continue;
     if (!Array.isArray(state.storage.launchDeletedIds)) state.storage.launchDeletedIds = [];
     if (!state.storage.launchDeletedIds.includes(launchId)) state.storage.launchDeletedIds.unshift(launchId);
+  }
+  for (const rawKey of [...(seed.autoTaskTombstones || []), ...(seed.launchAutoTaskTombstones || [])]) {
+    const key = String(rawKey || '').trim();
+    if (!key) continue;
+    const list = typeof autoTaskTombstoneList === 'function' ? autoTaskTombstoneList() : launchAutoTaskTombstoneList();
+    if (!list.includes(key)) list.unshift(key);
   }
   state.storage.repricerSettings = normalizeRepricerSettings(seed.repricerSettings || state.storage.repricerSettings || {});
   if (seed.repricerSettingsUpdatedAt) {
@@ -1107,6 +1133,213 @@ function isTaskActive(task) {
   return ACTIVE_TASK_STATUSES.has(task?.status);
 }
 
+const LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT = 1200;
+
+function launchAutoTaskKeyToken(value = '') {
+  return String(value ?? '').trim().toLowerCase().replaceAll('ё', 'е').replace(/\s+/g, ' ');
+}
+
+function launchAutoTaskTombstoneList() {
+  state.storage = state.storage && typeof state.storage === 'object' ? state.storage : {};
+  const list = Array.isArray(state.storage.launchAutoTaskTombstones) ? state.storage.launchAutoTaskTombstones : [];
+  state.storage.launchAutoTaskTombstones = [...new Set(
+    list.map((item) => String(item || '').trim()).filter(Boolean)
+  )].slice(0, LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT);
+  return state.storage.launchAutoTaskTombstones;
+}
+
+function launchAutoSuppressionKeysForTask(task = {}) {
+  const keys = new Set();
+  const id = String(task?.id || '').trim();
+  const autoCode = String(task?.autoCode || task?.launchAutoKey || '').trim();
+  const article = launchAutoTaskKeyToken(task?.articleKey || '');
+  const label = launchAutoTaskKeyToken(task?.entityLabel || task?.launchName || task?.title || '');
+  if (id) keys.add(`id:${id}`);
+  if (autoCode) keys.add(`code:${autoCode}`);
+  if (
+    task?.type === 'launch'
+    || autoCode === 'launch_pipeline'
+    || autoCode.startsWith('launch_ops:')
+    || /^auto-launch-/i.test(id)
+  ) {
+    if (article || label) keys.add(`launch:${article}|${label}`);
+  }
+  return [...keys].filter(Boolean);
+}
+
+function launchAutoSuppressionKeysForItem(item = {}, autoId = '') {
+  const keys = new Set();
+  const id = String(autoId || '').trim();
+  const article = launchAutoTaskKeyToken(item?.articleKey || item?.article || item?.sku || '');
+  const label = launchAutoTaskKeyToken(item?.name || item?.entityLabel || item?.title || item?.articleKey || '');
+  if (id) keys.add(`id:${id}`);
+  if (article || label) keys.add(`launch:${article}|${label}`);
+  return [...keys].filter(Boolean);
+}
+
+function launchAutoTaskTombstoneSet() {
+  const keys = new Set(launchAutoTaskTombstoneList());
+  for (const task of state.storage.tasks || []) {
+    if (!task || isTaskActive(task)) continue;
+    launchAutoSuppressionKeysForTask(task).forEach((key) => keys.add(key));
+  }
+  for (const comment of state.storage.comments || []) {
+    const parsed = parseTaskLogComment(comment);
+    if (!parsed?.taskId) continue;
+    const text = String(parsed.text || '').toLowerCase();
+    if (parsed.kind === 'report' || text.includes('задача закрыта') || text.includes('сделано') || text.includes('готово')) {
+      keys.add(`id:${String(parsed.taskId || '').trim()}`);
+    }
+  }
+  return keys;
+}
+
+function isLaunchAutoTaskSuppressed(itemOrTask = {}, autoId = '') {
+  const tombstones = launchAutoTaskTombstoneSet();
+  const keys = autoId
+    ? launchAutoSuppressionKeysForItem(itemOrTask, autoId)
+    : launchAutoSuppressionKeysForTask(itemOrTask);
+  return keys.some((key) => tombstones.has(key));
+}
+
+function recordLaunchAutoTaskTombstone(task = {}) {
+  if (!task || typeof task !== 'object') return false;
+  const autoCode = String(task.autoCode || task.launchAutoKey || '').trim();
+  const id = String(task.id || '').trim();
+  const launchLike = task.type === 'launch' || autoCode === 'launch_pipeline' || autoCode.startsWith('launch_ops:') || /^auto-launch-/i.test(id);
+  if (!launchLike) return false;
+  const list = launchAutoTaskTombstoneList();
+  let changed = false;
+  launchAutoSuppressionKeysForTask(task).forEach((key) => {
+    if (!key || list.includes(key)) return;
+    list.unshift(key);
+    changed = true;
+  });
+  if (list.length > LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT) list.length = LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT;
+  return changed;
+}
+
+window.launchAutoTaskTombstoneSet = launchAutoTaskTombstoneSet;
+window.isLaunchAutoTaskSuppressed = isLaunchAutoTaskSuppressed;
+window.recordLaunchAutoTaskTombstone = recordLaunchAutoTaskTombstone;
+
+const AUTO_TASK_TOMBSTONE_LIMIT = 2000;
+
+function autoTaskKeyToken(value = '') {
+  return String(value ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function autoTaskTombstoneList() {
+  state.storage = state.storage && typeof state.storage === 'object' ? state.storage : {};
+  const combined = [
+    ...(Array.isArray(state.storage.autoTaskTombstones) ? state.storage.autoTaskTombstones : []),
+    ...(Array.isArray(state.storage.launchAutoTaskTombstones) ? state.storage.launchAutoTaskTombstones : [])
+  ];
+  state.storage.autoTaskTombstones = [...new Set(
+    combined.map((item) => String(item || '').trim()).filter(Boolean)
+  )].slice(0, AUTO_TASK_TOMBSTONE_LIMIT);
+  return state.storage.autoTaskTombstones;
+}
+
+function autoTaskPlatformToken(task = {}) {
+  const raw = task?.platform || task?.marketplace || task?.sourcePlatform || 'all';
+  try {
+    if (typeof normalizeTaskPlatform === 'function') return normalizeTaskPlatform(raw || 'all') || 'all';
+  } catch {}
+  return autoTaskKeyToken(raw || 'all') || 'all';
+}
+
+function autoTaskLooksGenerated(task = {}) {
+  if (!task || typeof task !== 'object') return false;
+  const source = autoTaskKeyToken(task.source || task.generatedBy || task.origin || '');
+  const id = String(task.id || '').trim();
+  return Boolean(
+    task.autoCode
+    || task.launchAutoKey
+    || task.launchAutoId
+    || source === 'auto'
+    || source === 'seed'
+    || source.includes('auto')
+    || /^auto[-_]/i.test(id)
+  );
+}
+
+function autoTaskSuppressionKeysForTask(task = {}) {
+  const keys = new Set();
+  const id = String(task?.id || '').trim();
+  const autoCode = String(task?.autoCode || task?.launchAutoKey || '').trim();
+  const article = autoTaskKeyToken(task?.articleKey || task?.article || task?.sku || '');
+  const label = autoTaskKeyToken(task?.entityLabel || task?.launchName || task?.title || '');
+  const type = autoTaskKeyToken(task?.type || '');
+  const platform = autoTaskPlatformToken(task);
+  const meaningCode = autoTaskKeyToken(autoCode || type || label);
+
+  if (id) keys.add(`id:${id}`);
+  if (autoCode && (autoCode.includes(':') || autoCode === 'launch_pipeline')) keys.add(`code:${autoCode}`);
+  if ((article || label) && meaningCode) keys.add(`meaning:${article || label}|${meaningCode}|${platform || 'all'}`);
+  if (article && type && !meaningCode) keys.add(`meaning:${article}|${type}|${platform || 'all'}`);
+  if (task?.type === 'launch' || autoCode === 'launch_pipeline' || autoCode.startsWith('launch_ops:') || /^auto-launch-/i.test(id)) {
+    if (article || label) keys.add(`launch:${article}|${label}`);
+  }
+  return [...keys].filter(Boolean);
+}
+
+function autoTaskTombstoneSet() {
+  const keys = new Set(autoTaskTombstoneList());
+  for (const task of state.storage.tasks || []) {
+    if (!task || isTaskActive(task) || !autoTaskLooksGenerated(task)) continue;
+    autoTaskSuppressionKeysForTask(task).forEach((key) => keys.add(key));
+  }
+  for (const comment of state.storage.comments || []) {
+    const parsed = parseTaskLogComment(comment);
+    if (!parsed?.taskId) continue;
+    const text = String(parsed.text || '').toLowerCase();
+    if (parsed.kind === 'report' || text.includes('Р·Р°РґР°С‡Р° Р·Р°РєСЂС‹С‚Р°') || text.includes('СЃРґРµР»Р°РЅРѕ') || text.includes('РіРѕС‚РѕРІРѕ')) {
+      keys.add(`id:${String(parsed.taskId || '').trim()}`);
+    }
+  }
+  return keys;
+}
+
+function isAutoTaskSuppressed(task = {}) {
+  const tombstones = autoTaskTombstoneSet();
+  return autoTaskSuppressionKeysForTask(task).some((key) => tombstones.has(key));
+}
+
+function recordAutoTaskTombstone(task = {}) {
+  if (!autoTaskLooksGenerated(task)) return false;
+  const generalList = autoTaskTombstoneList();
+  let changed = false;
+  const keys = autoTaskSuppressionKeysForTask(task);
+  keys.forEach((key) => {
+    if (!key || generalList.includes(key)) return;
+    generalList.unshift(key);
+    changed = true;
+  });
+  if (generalList.length > AUTO_TASK_TOMBSTONE_LIMIT) generalList.length = AUTO_TASK_TOMBSTONE_LIMIT;
+
+  const launchLike = keys.some((key) => key.startsWith('launch:') || key.startsWith('code:launch_ops:') || key === 'code:launch_pipeline');
+  if (launchLike) {
+    const launchList = launchAutoTaskTombstoneList();
+    keys.forEach((key) => {
+      if (!key || launchList.includes(key)) return;
+      launchList.unshift(key);
+    });
+    if (launchList.length > LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT) launchList.length = LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT;
+  }
+  return changed;
+}
+
+window.autoTaskTombstoneSet = autoTaskTombstoneSet;
+window.isAutoTaskSuppressed = isAutoTaskSuppressed;
+window.recordAutoTaskTombstone = recordAutoTaskTombstone;
+window.launchAutoTaskTombstoneSet = autoTaskTombstoneSet;
+window.isLaunchAutoTaskSuppressed = (itemOrTask = {}, autoId = '') => {
+  const task = autoId ? { ...itemOrTask, id: autoId, autoCode: itemOrTask?.autoCode || 'launch_pipeline', type: itemOrTask?.type || 'launch' } : itemOrTask;
+  return isAutoTaskSuppressed(task) || isLaunchAutoTaskSuppressed(itemOrTask, autoId);
+};
+window.recordLaunchAutoTaskTombstone = (task = {}) => recordAutoTaskTombstone(task) || recordLaunchAutoTaskTombstone(task);
+
 function isTaskOverdue(task) {
   return Boolean(task?.due) && isTaskActive(task) && task.due < todayIso();
 }
@@ -1273,6 +1506,7 @@ function storedTaskKeys() {
 function canRegisterAutoTask(keys, articleKey, type) {
   const key = `${articleKey}|${type}`;
   if (!articleKey || keys.has(key)) return false;
+  if (isAutoTaskSuppressed({ articleKey, type, autoCode: type, source: 'auto' })) return false;
   keys.add(key);
   return true;
 }
@@ -1564,6 +1798,7 @@ function canRegisterAutoSignalTask(keys, articleKey, taskType, signalKey) {
   if (keys.has(`${article}|${taskType}`)) return false;
   const scopedKey = `${article}|${signalKey || taskType}`;
   if (keys.has(scopedKey)) return false;
+  if (isAutoTaskSuppressed({ articleKey: article, type: taskType, autoCode: signalKey || taskType, source: 'auto' })) return false;
   keys.add(scopedKey);
   return true;
 }
@@ -1998,7 +2233,8 @@ function buildQualityAutoSignalTasks(keys, leaderboardPayload = {}) {
     const taskType = task.type || candidate.taskType || 'general';
     const signalKey = `${taskType}:${candidate.family || task.autoCode || 'auto'}:${candidate.platform || task.platform || 'all'}`;
     if (!canRegisterAutoSignalTask(keys, task.articleKey || candidate.articleKey, taskType, signalKey)) return null;
-    return normalizeTask(task, 'auto');
+    const normalized = normalizeTask(task, 'auto');
+    return isAutoTaskSuppressed(normalized) ? null : normalized;
   }).filter(Boolean);
 }
 
@@ -2198,6 +2434,7 @@ function buildAutoTasks() {
       .filter((task) => task?.type === 'launch' && isTaskActive(task))
       .map((task) => `${String(task.articleKey || '').trim()}|${String(task.entityLabel || task.title || '').trim().toLowerCase()}`)
   );
+  const suppressedLaunchTaskKeys = launchAutoTaskTombstoneSet();
   const launchItems = typeof getLaunchItems === 'function' ? getLaunchItems({ skipTaskLookup: true }) : [];
   const launchCandidates = [];
   launchItems.forEach((item) => {
@@ -2212,6 +2449,8 @@ function buildAutoTasks() {
     const linkedSku = item?.articleKey ? getSku(item.articleKey) : null;
     if (linkedSku && !autoSignalSkuAllowed(linkedSku)) return;
     const dedupeKey = `${String(item?.articleKey || '').trim()}|${String(item?.name || '').trim().toLowerCase()}`;
+    const autoId = `auto-launch-${item.id || item.articleKey || hashString(item.name || launchDate)}`;
+    if (launchAutoSuppressionKeysForItem(item, autoId).some((key) => suppressedLaunchTaskKeys.has(key))) return;
     if (activeLaunchTaskKeys.has(dedupeKey)) return;
     activeLaunchTaskKeys.add(dedupeKey);
     const blockers = [
@@ -2232,7 +2471,7 @@ function buildAutoTasks() {
         + blockers.length * 80
         + Math.max(0, 45 - daysUntilLaunch),
       task: normalizeTask({
-      id: `auto-launch-${item.id || item.articleKey || hashString(item.name || launchDate)}`,
+      id: autoId,
       source: 'auto',
       autoCode: 'launch_pipeline',
       articleKey: item.articleKey || '',
@@ -2268,7 +2507,8 @@ function buildAutoTasks() {
 
 function getAllTasks() {
   const storedTasks = state.storage.tasks.filter((task) => !isDeprecatedAutoSignalTask(task));
-  return sortTasks([...storedTasks, ...buildAutoTasks()]);
+  const autoTasks = buildAutoTasks().filter((task) => !isAutoTaskSuppressed(task));
+  return sortTasks([...storedTasks, ...autoTasks]);
 }
 
 function getSkuControlTasks(articleKey) {

@@ -1756,6 +1756,8 @@ function defaultStorage() {
     promoEventDeletedIds: [],
     launchOverrides: [],
     launchDeletedIds: [],
+    autoTaskTombstones: [],
+    launchAutoTaskTombstones: [],
     repricerSettings: defaultRepricerSettings(),
     repricerSettingsUpdatedAt: '',
     repricerOverrides: [],

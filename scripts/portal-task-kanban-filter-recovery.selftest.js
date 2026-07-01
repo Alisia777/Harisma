@@ -26,7 +26,8 @@ function fixtureTasks() {
     status: 'new',
     priority: 'medium',
     type: 'general',
-    source: 'manual',
+    source: index === 0 ? 'auto' : 'manual',
+    autoCode: index === 0 ? 'fixture_auto_signal' : '',
     due: '2026-07-02',
     platform: 'wb',
     articleKey: `SKU-${index + 1}`
@@ -155,7 +156,7 @@ async function run() {
       motionVisible: Boolean(document.querySelector('.altea-motion-stage.is-visible'))
     }));
 
-    assert.strictEqual(recovered.version, '20260701-task-loader-rescue-v1');
+    assert.strictEqual(recovered.version, '20260701-task-auto-tombstone-v1');
     assert.deepStrictEqual(
       {
         search: recovered.search,
@@ -200,6 +201,31 @@ async function run() {
     await page.evaluate(() => window.AlteaMotion.workspace());
     await page.waitForSelector('.altea-motion-stage.is-visible', { timeout: 30000 });
     await page.waitForFunction(() => !document.querySelector('.altea-motion-stage.is-visible'), null, { timeout: 12000 });
+
+    await page.evaluate(() => {
+      window.__recordedAutoTombstones = [];
+      window.recordAutoTaskTombstone = (task) => {
+        window.__recordedAutoTombstones.push({
+          id: task?.id || '',
+          autoCode: task?.autoCode || '',
+          status: task?.status || '',
+          source: task?.source || ''
+        });
+        return true;
+      };
+    });
+    await page.click('[data-kanban-task="task-entry-1"]');
+    await page.waitForSelector('[data-task-detail-modal]', { timeout: 30000 });
+    await page.click('[data-task-detail-status="done"]');
+    await page.waitForFunction(() => (window.__recordedAutoTombstones || []).length === 1, null, { timeout: 30000 });
+    const tombstoneRecord = await page.evaluate(() => window.__recordedAutoTombstones[0]);
+    assert.deepStrictEqual(tombstoneRecord, {
+      id: 'task-entry-1',
+      autoCode: 'fixture_auto_signal',
+      status: 'done',
+      source: 'auto'
+    });
+    await page.click('[data-task-detail-close]');
 
     await page.fill('[data-task-filter="search"]', 'ручной пустой поиск');
     await page.waitForFunction(() => window.state.controlFilters.search === 'ручной пустой поиск', null, { timeout: 30000 });

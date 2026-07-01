@@ -4634,6 +4634,10 @@ async function portalHealthCreateIssueTasks(options = {}) {
   const existingIds = new Set(state.storage.tasks.map((task) => task.id).filter(Boolean));
   rows.forEach((row) => {
     const task = portalHealthBuildIssueTask(row);
+    if (typeof window.isAutoTaskSuppressed === 'function' && window.isAutoTaskSuppressed(task)) {
+      result.duplicates.push({ issue: row.key, taskId: task.id || '', suppressed: true });
+      return;
+    }
     if (!task.id || existingIds.has(task.id)) {
       result.duplicates.push({ issue: row.key, taskId: task.id || '' });
       return;
@@ -7724,6 +7728,12 @@ async function oosControlSaveTask(issueKey, rootId) {
   task.oosIssueKey = stableIssueKey;
   task.oosSignalIssueKey = String(row.issueKey || '').trim();
   task.autoCode = 'oos_control';
+  if (statusInput === 'done') {
+    const recordAutoTombstone = window.recordAutoTaskTombstone || window.recordLaunchAutoTaskTombstone;
+    if (typeof recordAutoTombstone === 'function') {
+      try { recordAutoTombstone(task); } catch (error) { console.warn('[oos-control]', 'auto tombstone', error); }
+    }
+  }
   state.storage = state.storage || {};
   state.storage.tasks = Array.isArray(state.storage.tasks) ? state.storage.tasks : [];
   const index = state.storage.tasks.findIndex((item) => item.id === task.id);
@@ -10540,6 +10550,10 @@ async function skuPlanFactCreateNewSkuTasks(report = {}, options = {}) {
   const tasksToCreate = [];
   rows.forEach((row) => {
     const task = skuPlanFactBuildNewSkuTask(row, report);
+    if (typeof window.isAutoTaskSuppressed === 'function' && window.isAutoTaskSuppressed(task)) {
+      result.duplicates.push({ rowNumber: row.rowNumber, apiSku: row.apiSku || row.api_sku || '', platform: row.platform || 'all', taskId: task.id || '', suppressed: true });
+      return;
+    }
     if (!task.id || existingIds.has(task.id)) {
       result.duplicates.push({ rowNumber: row.rowNumber, apiSku: row.apiSku || row.api_sku || '', platform: row.platform || 'all', taskId: task.id || '' });
       return;

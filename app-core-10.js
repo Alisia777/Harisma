@@ -2330,6 +2330,12 @@ async function updateTaskRecord(taskId, patch = {}) {
   }, current.source || 'manual');
 
   Object.assign(current, updated);
+  if (['done', 'cancelled'].includes(current.status)) {
+    const recordAutoTombstone = window.recordAutoTaskTombstone || window.recordLaunchAutoTaskTombstone;
+    if (typeof recordAutoTombstone === 'function') {
+      try { recordAutoTombstone(current); } catch (error) { console.warn('[portal-task]', 'auto tombstone', error); }
+    }
+  }
   saveLocalStorage();
   try {
     await persistTask(current);
@@ -3147,6 +3153,8 @@ async function init() {
       repricerLastApiReconcile: local.repricerLastApiReconcile && typeof local.repricerLastApiReconcile === 'object' ? local.repricerLastApiReconcile : null,
       portalDataRules: local.portalDataRules && typeof local.portalDataRules === 'object' ? local.portalDataRules : {},
       portalDataRulesUpdatedAt: String(local.portalDataRulesUpdatedAt || '').trim(),
+      autoTaskTombstones: Array.isArray(local.autoTaskTombstones) ? local.autoTaskTombstones.map((item) => String(item || '').trim()).filter(Boolean) : [],
+      launchAutoTaskTombstones: Array.isArray(local.launchAutoTaskTombstones) ? local.launchAutoTaskTombstones.map((item) => String(item || '').trim()).filter(Boolean) : [],
       portalIssueSnapshot: local.portalIssueSnapshot && typeof local.portalIssueSnapshot === 'object' ? local.portalIssueSnapshot : null
     };
     state.storage = typeof completePortalStorage === 'function'

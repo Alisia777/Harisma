@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260701-task-loader-rescue-v1';
+  const VERSION = '20260701-task-auto-tombstone-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -1068,6 +1068,12 @@
     });
     if (!current.title) current.title = 'Новая задача';
     if (!current.status) current.status = 'new';
+    if (DONE_STATUSES.has(normalizeText(current.status))) {
+      const recordAutoTombstone = window.recordAutoTaskTombstone || window.recordLaunchAutoTaskTombstone;
+      if (typeof recordAutoTombstone === 'function') {
+        try { recordAutoTombstone(current); } catch (error) { console.warn('[task-kanban]', 'auto tombstone', error); }
+      }
+    }
     rememberTask(current);
     if (beforeStatus !== current.status) keepTaskVisibleAfterStatusChange(current);
     if (historyText) addTaskHistory(current, beforeStatus !== current.status ? 'status' : 'updated', historyText);

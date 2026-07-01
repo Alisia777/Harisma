@@ -4,9 +4,10 @@
   if (window.__ALTEA_LAUNCH_AUTOTASKS_V1__) return;
   window.__ALTEA_LAUNCH_AUTOTASKS_V1__ = true;
 
-  const VERSION = '20260701-launch-click-affordance-v1';
+  const VERSION = '20260701-launch-closed-dedupe-v2';
   const MAX_BULK_TASKS = 30;
   const REMOVED_STATUSES = new Set(['deleted', 'removed']);
+  const CLOSED_STATUSES = new Set(['done', 'closed', 'complete', 'completed', 'cancelled', 'canceled', 'archive', 'archived']);
   const TASK_STATUSES = [
     ['new', 'Новая'],
     ['in_progress', 'В работе'],
@@ -664,6 +665,26 @@
     return `launch_ops:${launchKey}:${defId}`;
   }
 
+  function launchOpsSuppressionKeys(launchKey, defId) {
+    const code = taskAutoCode(launchKey, defId);
+    return [`code:${code}`, `id:${stableId('task-launch-auto', code)}`];
+  }
+
+  function launchOpsTombstoneSet() {
+    try {
+      if (typeof window.launchAutoTaskTombstoneSet === 'function') return window.launchAutoTaskTombstoneSet();
+    } catch {}
+    const storage = appState().storage || {};
+    return new Set((Array.isArray(storage.launchAutoTaskTombstones) ? storage.launchAutoTaskTombstones : [])
+      .map((item) => String(item || '').trim())
+      .filter(Boolean));
+  }
+
+  function isLaunchOpsSuppressed(launchKey, defId) {
+    const tombstones = launchOpsTombstoneSet();
+    return launchOpsSuppressionKeys(launchKey, defId).some((key) => tombstones.has(key));
+  }
+
   function allKnownTasks() {
     if (knownTasksCache) return knownTasksCache;
     const storage = appState().storage.tasks || [];
@@ -684,6 +705,10 @@
 
   function isRemoved(task) {
     return REMOVED_STATUSES.has(String(task?.status || '').trim().toLowerCase());
+  }
+
+  function isClosed(task) {
+    return CLOSED_STATUSES.has(String(task?.status || '').trim().toLowerCase());
   }
 
   function existingTaskFor(launchKey, defId) {
@@ -746,14 +771,15 @@
   function plannedTasksForLaunch(item) {
     const key = launchId(item);
     return PROCESS_TASKS.map((def) => {
-      const existing = existingTaskFor(key, def.id);
+      const suppressed = isLaunchOpsSuppressed(key, def.id);
+      const existing = suppressed ? null : existingTaskFor(key, def.id);
       const payload = taskPayload(item, def);
-      return { def, payload, existing, launch: item };
+      return { def, payload, existing, suppressed, launch: item };
     });
   }
 
   function missingTasksForLaunch(item) {
-    return plannedTasksForLaunch(item).filter((entry) => !entry.existing);
+    return plannedTasksForLaunch(item).filter((entry) => !entry.existing && !entry.suppressed);
   }
 
   function missingTasksForAll() {
@@ -982,6 +1008,12 @@
     const task = ensureTaskInStorage(findKnownTask(taskId));
     if (!task) return null;
     Object.assign(task, patch, { updatedAt: new Date().toISOString() });
+    if (isClosed(task)) {
+      const recordAutoTombstone = window.recordAutoTaskTombstone || window.recordLaunchAutoTaskTombstone;
+      if (typeof recordAutoTombstone === 'function') {
+        try { recordAutoTombstone(task); } catch (error) { console.warn('[launch-autotasks] tombstone', error); }
+      }
+    }
     if (logText) addTaskLog(task, logText);
     persistTaskLater(task);
     saveState('launch-task-modal-save');
@@ -1188,16 +1220,17 @@
     const planned = plannedTasksForLaunch(item);
     return planned.map((entry) => {
       const task = entry.existing || null;
-      const stateLabel = task ? statusLabel(task.status || 'new') : 'Не создана';
+      const closedByUser = Boolean(entry.suppressed && !task);
+      const stateLabel = closedByUser ? 'Закрыта' : task ? statusLabel(task.status || 'new') : 'Не создана';
       return `
-        <article class="launch-ops-task-row ${task ? 'ready' : 'missing'}">
+        <article class="launch-ops-task-row ${task || closedByUser ? 'ready' : 'missing'}">
           <div>
             <span>${html(entry.def.phaseLabel)} · ${html(ROLE_LABELS[entry.def.role] || '')}</span>
             <strong>${html(entry.def.title)}</strong>
             <small>${html((task && taskDue(task)) || entry.payload.due || 'без даты')} · ${html(stateLabel)}</small>
           </div>
           <footer>
-            ${task ? `<button type="button" data-launch-ops-open-task="${html(task.id || taskIdentity(task))}">Открыть</button>` : `<button type="button" data-launch-ops-create-one="${html(entry.def.id)}" data-launch-ops-launch="${html(launchId(item))}">Создать</button>`}
+            ${closedByUser ? '<button type="button" disabled>Закрыта</button>' : task ? `<button type="button" data-launch-ops-open-task="${html(task.id || taskIdentity(task))}">Открыть</button>` : `<button type="button" data-launch-ops-create-one="${html(entry.def.id)}" data-launch-ops-launch="${html(launchId(item))}">Создать</button>`}
           </footer>
         </article>
       `;
@@ -1354,7 +1387,7 @@
   function renderSelectedOpsBlock(item) {
     if (!item) return '';
     const planned = plannedTasksForLaunch(item);
-    const missing = planned.filter((entry) => !entry.existing);
+    const missing = planned.filter((entry) => !entry.existing && !entry.suppressed);
     const doneCount = planned.length - missing.length;
     return `
       <div class="launch-ops-detail" data-launch-ops-detail>
@@ -1364,7 +1397,7 @@
         </div>
         <div class="launch-ops-detail-grid">
           ${planned.slice(0, 8).map((entry) => `
-            <span class="${entry.existing ? 'ok' : entry.payload.due && dayDiff(entry.payload.due) < 0 ? 'danger' : 'warn'}">
+            <span class="${entry.existing || entry.suppressed ? 'ok' : entry.payload.due && dayDiff(entry.payload.due) < 0 ? 'danger' : 'warn'}">
               <i></i>
               <b>${html(entry.def.phaseLabel)}</b>
               <em>${html(entry.payload.due || 'без даты')}</em>
@@ -1382,6 +1415,7 @@
     if (marketplace !== 'all' && !visibleLaunches.size) return [];
     return allKnownTasks().filter((task) => {
       if (!task || isRemoved(task)) return false;
+      if (isClosed(task)) return false;
       if (!String(task.autoCode || '').startsWith('launch_ops:')) return false;
       if (!parseDateKey(task.due || task.startDate || task.date)) return false;
       const key = String(task.launchId || '').trim();

@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-metrics-v1",
   "generatedAt": "2026-07-01T07:15:49.293Z",
-  "snapshot_id": "dashboard:e058b80221bce2e0",
+  "snapshot_id": "dashboard:7a284b8751714137",
   "metric_registry_version": "2026-06-20.1",
   "indicator_policy_version": "2026-06-20.1",
   "cutoffDate": "2026-07-01",
@@ -9,7 +9,7 @@
   "source_checksums": {
     "platform_trends.json": {
       "exists": true,
-      "sha256": "d8d76108ec301f79b09d061403adaa4ab5165bbfb04687cb09272116c5a3ff9b"
+      "sha256": "9a998ca2c0b75b7817cbc2f61ed0da54a64503bb6d2b9c88442ec54b4b429357"
     },
     "company_plan.json": {
       "exists": true,
@@ -17,7 +17,7 @@
     },
     "ads_summary.json": {
       "exists": true,
-      "sha256": "a289ad2d2a7485093ca6a25846ee5e4b95b3f97e8301ee20712e9e884e9be863"
+      "sha256": "5219bbcd768639cf07d27b49e3306aeb94ee33bb0ccf2a3d152105353f146b65"
     },
     "portal_metric_registry.json": {
       "exists": true,

@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260630-dashboard-sku-drivers1';
+  const VERSION = '20260701-dashboard-ozon-ads-actuality1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -910,8 +910,21 @@
     };
   }
 
+  function ozonAdSpendFact(row) {
+    const spendFact = numberOrNull(row?.spendFactOzon);
+    if (spendFact !== null) return Math.max(0, spendFact);
+    const alternateFact = positiveFinite(row?.ozonSpendFact, row?.ozonAdsFact, row?.adsFactOzon);
+    if (alternateFact > 0) return alternateFact;
+    const ambiguous = numberOrNull(row?.ozonAds);
+    const plan = numberOrNull(row?.planSpendOzon);
+    if (ambiguous !== null && ambiguous > 0 && (plan === null || Math.abs(ambiguous - plan) > 0.01)) {
+      return ambiguous;
+    }
+    return 0;
+  }
+
   function ozonAdsBreakdown(row) {
-    const internal = positiveFinite(row.spendFactOzon, row.ozonSpendFact, row.ozonAds);
+    const internal = ozonAdSpendFact(row || {});
     return {
       ...emptyAdsBreakdown(),
       total: internal,
@@ -944,6 +957,45 @@
   function adsRowsBreakdown(rows, platform) {
     return (Array.isArray(rows) ? rows : [])
       .reduce((acc, row) => mergeAdsBreakdown(acc, adsDailyBreakdown(row, platform)), emptyAdsBreakdown());
+  }
+
+  function latestFactDate(rows, platform) {
+    return (Array.isArray(rows) ? rows : [])
+      .filter((row) => adsDailyValue(row, platform) > 0)
+      .map((row) => dateKey(row?.date || row?.label))
+      .filter(Boolean)
+      .sort()
+      .pop() || '';
+  }
+
+  function latestRowDate(rows) {
+    return (Array.isArray(rows) ? rows : [])
+      .map((row) => dateKey(row?.date || row?.label))
+      .filter(Boolean)
+      .sort()
+      .pop() || '';
+  }
+
+  function adsFreshnessRow(model) {
+    const platform = normalizePlatform(model?.platform);
+    if (!['ozon', 'wb', 'ya'].includes(platform)) return null;
+    const rows = Array.isArray(model?.adRows) ? model.adRows : [];
+    const latestFact = latestFactDate(rows, platform);
+    const latestRow = latestRowDate(rows);
+    const fallback = model?.adsFromFallback ? ' · fallback' : '';
+    if (platform === 'ozon') {
+      const sourceRows = rows.reduce((sum, row) => sum + finite(row?.ozonFinanceSourceRows, finite(row?.sourceRows)), 0);
+      const excluded = rows.reduce((sum, row) => sum + finite(row?.ozonDrrExcludedTotal), 0);
+      const value = latestFact ? `факт до ${shortDate(latestFact)}` : (latestRow ? `нет рекламного факта до ${shortDate(latestRow)}` : 'нет строк');
+      const detail = [
+        `Ozon Finance API${fallback}`,
+        sourceRows ? `строк ${fmtInt(sourceRows)}` : '',
+        excluded ? `исключено ${fmtMoneyFull(excluded)}` : ''
+      ].filter(Boolean).join(' · ');
+      return { label: 'Актуальность Ozon', value, detail };
+    }
+    const value = latestFact ? `факт до ${shortDate(latestFact)}` : (latestRow ? `нет рекламного факта до ${shortDate(latestRow)}` : 'нет строк');
+    return { label: 'Актуальность рекламы', value, detail: `${model?.adsSource || 'iu_drr'}${fallback}` };
   }
 
   function adsDailyValue(row, platform) {
@@ -2487,6 +2539,7 @@
     const platform = platformMeta(model.platform);
     const shownRange = model.adRange || model.range;
     const drr = model.total.revenue > 0 ? breakdown.total / model.total.revenue : null;
+    const freshness = adsFreshnessRow(model);
     const detailRows = [
       ['Внутренняя реклама', breakdown.internal, 'WB promotion / performance, Ozon / Yandex performance'],
       ['Медийка', breakdown.media, 'Медийные размещения WB и ручные media-расходы'],
@@ -2514,6 +2567,7 @@
       ['КЗ реклама', fmtMoneyFull(breakdown.kz)],
       ['ДРР', drr == null ? 'нет выручки' : fmtPct(drr)]
     ], [
+      ...(freshness ? [freshness] : []),
       ...detailRows,
       { label: 'Открыть ИУ / ДРР', value: 'дневная матрица', detail: 'полная таблица рекламы, расходов и выполнения', route: 'iu-drr' },
       ...dayRows

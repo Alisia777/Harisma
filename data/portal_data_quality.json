@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-01T07:51:46.018Z",
+  "generatedAt": "2026-07-01T08:08:26.223Z",
   "status": "warning",
   "summary": {
     "issueCount": 50,
@@ -71,7 +71,7 @@
     {
       "dataset": "ads_summary",
       "asOfDate": "2026-07-01",
-      "generatedAt": "2026-07-01T07:36:43.173Z",
+      "generatedAt": "2026-07-01T08:06:11.732Z",
       "rows": 8,
       "referenceDate": "2026-07-01",
       "lagDays": 0,

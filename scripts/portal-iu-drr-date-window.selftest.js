@@ -21,8 +21,8 @@ function dateRange(from, to) {
   return result;
 }
 
-function fixtureState() {
-  const daily = dateRange('2026-06-20', '2026-07-01').map((date, index) => ({
+function fixtureState(options = {}) {
+  const fullDaily = dateRange('2026-06-20', '2026-07-01').map((date, index) => ({
     date,
     monthKey: date.slice(0, 7),
     targetRevenueOzon: 1000,
@@ -33,6 +33,9 @@ function fixtureState() {
     ozonFinanceSourceRows: 1,
     ozonAdsFactMode: 'fixture'
   }));
+  const daily = options.partialIu
+    ? fullDaily.filter((row) => row.date === '2026-07-01')
+    : fullDaily;
   return {
     portalMarketplace: 'ozon',
     iuDrrV3View: 'iu',
@@ -90,11 +93,25 @@ async function run() {
     await page.goto(`http://127.0.0.1:${port}/blank`, { waitUntil: 'domcontentloaded' });
     await page.evaluate((payload) => {
       window.state = payload;
-      window.fetch = () => Promise.resolve({ ok: false, json: async () => null });
+      const fullIuSummary = payload.fullIuSummary;
+      delete payload.fullIuSummary;
+      window.fetch = (url) => {
+        const text = String(url || '');
+        if (text.includes('data/iu_drr_summary.json')) {
+          return Promise.resolve({ ok: true, json: async () => fullIuSummary });
+        }
+        return Promise.resolve({ ok: false, json: async () => null });
+      };
       localStorage.setItem('altea.portal.marketplace', 'ozon');
-    }, fixtureState());
+    }, { ...fixtureState({ partialIu: true }), fullIuSummary: fixtureState().iuDrrSummary });
     await page.addScriptTag({ url: `http://127.0.0.1:${port}/${MODULE}` });
     await page.waitForSelector('#iuDrrV3DateTo', { timeout: 30000 });
+    await page.waitForFunction(() => {
+      const dates = Array.from(new Set(Array.from(document.querySelectorAll('[data-iu-v3-row]'))
+        .map((row) => row.getAttribute('data-iu-v3-date'))
+        .filter(Boolean))).sort();
+      return dates.includes('2026-06-25') && dates.includes('2026-07-01');
+    }, null, { timeout: 30000 });
     const julyResult = await page.evaluate(() => {
       const dates = Array.from(new Set(Array.from(document.querySelectorAll('[data-iu-v3-row]'))
         .map((row) => row.getAttribute('data-iu-v3-date'))
@@ -105,14 +122,16 @@ async function run() {
         dateTo: document.querySelector('#iuDrrV3DateTo')?.value,
         selectedPeriod: document.querySelector('[data-iu-v3-period][aria-selected="true"]')?.getAttribute('data-iu-v3-period'),
         dates,
+        animationName: getComputedStyle(document.querySelector('.iu-drr-v3-shell')).animationName,
         badges: Array.from(document.querySelectorAll('.iu-drr-v3-badge')).map((node) => node.textContent.trim())
       };
     });
 
-    assert.strictEqual(julyResult.version, '20260701-iudrr-cross-month-window1');
+    assert.strictEqual(julyResult.version, '20260701-iudrr-cross-month-window2');
     assert.strictEqual(julyResult.month, '2026-07');
     assert.strictEqual(julyResult.dateTo, '2026-07-01');
     assert.strictEqual(julyResult.selectedPeriod, '7');
+    assert.strictEqual(julyResult.animationName, 'none');
     assert.deepStrictEqual(julyResult.dates, [
       '2026-06-25',
       '2026-06-26',
@@ -144,7 +163,7 @@ async function run() {
       };
     });
 
-    assert.strictEqual(result.version, '20260701-iudrr-cross-month-window1');
+    assert.strictEqual(result.version, '20260701-iudrr-cross-month-window2');
     assert.strictEqual(result.month, '2026-06');
     assert.strictEqual(result.dateTo, '2026-06-29');
     assert.strictEqual(result.selectedPeriod, '7');

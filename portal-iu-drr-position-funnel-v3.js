@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-iudrr-cross-month-window1';
+  const VERSION = '20260701-iudrr-cross-month-window2';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -688,7 +688,35 @@
   }
 
   function getPayload() {
-    return appState().iuDrrSummary || getSources().iu || {};
+    const statePayload = appState().iuDrrSummary || {};
+    const sourcePayload = getSources().iu || {};
+    return richerIuPayload(sourcePayload, statePayload) ? sourcePayload : statePayload;
+  }
+
+  function payloadDateKeys(payload) {
+    return dateKeysFromRows(payload?.daily);
+  }
+
+  function richerIuPayload(candidate, current) {
+    const candidateDates = payloadDateKeys(candidate);
+    if (!candidateDates.length) return false;
+    const currentDates = payloadDateKeys(current);
+    if (!currentDates.length) return true;
+    const candidateFirst = candidateDates[0];
+    const candidateLast = candidateDates[candidateDates.length - 1];
+    const currentFirst = currentDates[0];
+    const currentLast = currentDates[currentDates.length - 1];
+    if (candidateLast > currentLast) return true;
+    if (candidateLast === currentLast && candidateFirst < currentFirst) return true;
+    if (candidateDates.length > currentDates.length) return true;
+    return (candidate?.daily?.length || 0) > (current?.daily?.length || 0);
+  }
+
+  function applyRicherIuPayload(state, payload) {
+    if (!payload || typeof payload !== 'object') return false;
+    if (!richerIuPayload(payload, state.iuDrrSummary || {})) return false;
+    state.iuDrrSummary = payload;
+    return true;
   }
 
   function monthOptions(payload) {
@@ -946,9 +974,9 @@
       .then((entries) => {
         const sources = Object.fromEntries(entries.filter(([, data]) => data));
         state.iuDrrV3Sources = { ...(state.iuDrrV3Sources || {}), ...sources };
-        if (!state.iuDrrSummary && sources.iu) state.iuDrrSummary = sources.iu;
+        const replacedIuSummary = applyRicherIuPayload(state, sources.iu);
         const root = document.getElementById(rootId);
-        if (root && root.dataset.alteaIuDrrV3 === 'loading') renderIuDrrV3(rootId);
+        if (root && (root.dataset.alteaIuDrrV3 === 'loading' || replacedIuSummary)) renderIuDrrV3(rootId);
         return sources;
       });
     return state.iuDrrV3SourcesPromise;
@@ -959,7 +987,7 @@
     const style = document.createElement('style');
     style.id = 'altea-iu-drr-position-funnel-v3-style';
     style.textContent = `
-      .iu-drr-v3-shell{--line:rgba(224,183,96,.18);--line2:rgba(255,255,255,.12);--surface:rgba(16,14,12,.76);--surface2:rgba(255,255,255,.035);--champ:#e5c16f;--muted:rgba(255,246,226,.70);--faint:rgba(255,246,226,.48);--bad:#ff746f;--ok:#72e6a0;--info:#69b9ff;--warn:#ffd45f;position:relative;display:block;color:#fff6e2;animation:iuDrrV3Enter 260ms cubic-bezier(.2,.8,.2,1) both}
+      .iu-drr-v3-shell{--line:rgba(224,183,96,.18);--line2:rgba(255,255,255,.12);--surface:rgba(16,14,12,.76);--surface2:rgba(255,255,255,.035);--champ:#e5c16f;--muted:rgba(255,246,226,.70);--faint:rgba(255,246,226,.48);--bad:#ff746f;--ok:#72e6a0;--info:#69b9ff;--warn:#ffd45f;position:relative;display:block;color:#fff6e2}
       .iu-drr-v3-shell *{box-sizing:border-box}
       .iu-drr-v3-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:16px}
       .iu-drr-v3-eyebrow{margin:0 0 7px;color:var(--champ);font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
@@ -2856,6 +2884,7 @@
     }
 
     root.dataset.alteaIuDrrV3 = 'ready';
+    loadSupplementalData(rootId);
     const focus = getGlobalMarketplaceFocus();
     const monthKey = selectedMonth(payload);
     const monthRows = rowsForMonth(payload, monthKey);

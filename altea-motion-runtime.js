@@ -601,7 +601,7 @@
     }
     if (viewHasLoadingSurface(root)) return false;
     if (key === "control") {
-      return !!root.querySelector(".control-simple-title, [data-control-center-v2-block], [data-control-center-v2-form-card]");
+      return !!root.querySelector(".control-simple-title, [data-control-center-v2-block], [data-control-center-v2-form-card], [data-task-calendar-design-v1][data-task-kanban-v1], [data-task-calendar-design-v1]");
     }
     if (key === "executive") {
       if (root.querySelector("[data-rop-strategic-launch]")) return false;

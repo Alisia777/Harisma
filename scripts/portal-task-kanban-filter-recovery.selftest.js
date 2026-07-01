@@ -9,6 +9,7 @@ const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const MODULE = 'portal-task-kanban-v1.js';
+const MOTION_MODULE = 'altea-motion-runtime.js';
 
 function fixtureState() {
   return {
@@ -77,15 +78,35 @@ async function run() {
   });
 
   try {
-    await page.goto(`http://127.0.0.1:${port}/blank`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`http://127.0.0.1:${port}/blank?portal-refresh=fixture#control`, { waitUntil: 'domcontentloaded' });
     await page.evaluate((payload) => {
       window.state = payload;
       window.fetch = () => Promise.resolve({ ok: false, json: async () => null });
       localStorage.setItem('altea.portal.marketplace', 'all');
     }, fixtureState());
+    await page.addScriptTag({ url: `http://127.0.0.1:${port}/${MOTION_MODULE}` });
+    await page.waitForFunction(() => Boolean(window.AlteaMotion), null, { timeout: 30000 });
+    await page.evaluate(() => window.AlteaMotion.hide());
+    await page.waitForFunction(() => {
+      const stage = document.querySelector('.altea-motion-stage');
+      return !stage || stage.hidden || !stage.classList.contains('is-visible');
+    }, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      window.AlteaMotion.transition({
+        waitForView: 'control',
+        view: 'control',
+        minDuration: 80,
+        maxDuration: 1800,
+        label: 'Задачи'
+      });
+    });
     await page.addScriptTag({ url: `http://127.0.0.1:${port}/${MODULE}` });
     await page.waitForSelector('[data-task-calendar-design-v1]', { timeout: 30000 });
     await page.waitForSelector('[data-kanban-task="task-entry-1"]', { timeout: 30000 });
+    await page.waitForFunction(() => {
+      const stage = document.querySelector('.altea-motion-stage');
+      return !stage || stage.hidden || !stage.classList.contains('is-visible');
+    }, null, { timeout: 30000 });
 
     const recovered = await page.evaluate(() => ({
       version: window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__?.version,
@@ -98,10 +119,13 @@ async function run() {
       source: window.state.controlFilters.source,
       platform: window.state.controlFilters.platform,
       visibleTasks: document.querySelectorAll('[data-kanban-task]').length,
-      resultLine: document.querySelector('.task-design-result-line')?.textContent || ''
+      resultLine: document.querySelector('.task-design-result-line')?.textContent || '',
+      hash: window.location.hash,
+      searchParams: window.location.search,
+      motionVisible: Boolean(document.querySelector('.altea-motion-stage.is-visible'))
     }));
 
-    assert.strictEqual(recovered.version, '20260701-task-filter-autorecover-v1');
+    assert.strictEqual(recovered.version, '20260701-task-route-unfreeze-v1');
     assert.deepStrictEqual(
       {
         search: recovered.search,
@@ -126,6 +150,9 @@ async function run() {
     );
     assert.strictEqual(recovered.visibleTasks, 1);
     assert.ok(recovered.resultLine.includes('Показано 1 из 1'), recovered.resultLine);
+    assert.strictEqual(recovered.hash, '#control');
+    assert.strictEqual(recovered.searchParams, '?portal-refresh=fixture');
+    assert.strictEqual(recovered.motionVisible, false);
 
     await page.fill('[data-task-filter="search"]', 'ручной пустой поиск');
     await page.waitForFunction(() => window.state.controlFilters.search === 'ручной пустой поиск', null, { timeout: 30000 });

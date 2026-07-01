@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260701-task-entry-light-v1';
+  const VERSION = '20260701-task-lane-more-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -120,6 +120,8 @@
     ['manual', 'Ручные'],
     ['auto', 'Автосигналы']
   ];
+  const BOARD_LANE_PREVIEW_LIMIT = 18;
+  const LIST_PREVIEW_LIMIT = 90;
 
   let wrappedRender = null;
   let enhanceQueued = false;
@@ -148,10 +150,11 @@
         createOpen: Boolean(parsed.createOpen),
         recentMovedId: String(parsed.recentMovedId || ''),
         recentMovedAt: Number(parsed.recentMovedAt || 0),
+        laneLimits: parsed.laneLimits && typeof parsed.laneLimits === 'object' ? parsed.laneLimits : {},
         draft: parsed.draft && typeof parsed.draft === 'object' ? parsed.draft : {}
       };
     } catch (_) {
-      return { view: 'board', createOpen: false, recentMovedId: '', recentMovedAt: 0, draft: {} };
+      return { view: 'board', createOpen: false, recentMovedId: '', recentMovedAt: 0, laneLimits: {}, draft: {} };
     }
   }
 
@@ -162,6 +165,7 @@
         createOpen: TASK_UI.createOpen,
         recentMovedId: TASK_UI.recentMovedId || '',
         recentMovedAt: Number(TASK_UI.recentMovedAt || 0),
+        laneLimits: TASK_UI.laneLimits || {},
         draft: TASK_UI.draft || {}
       }));
     } catch (_) {}
@@ -1414,6 +1418,27 @@
     `;
   }
 
+  function clearLaneLimits() {
+    if (!TASK_UI.laneLimits || !Object.keys(TASK_UI.laneLimits).length) return;
+    TASK_UI.laneLimits = {};
+    saveUi();
+  }
+
+  function lanePreviewLimit(laneKey, total) {
+    const saved = Number(TASK_UI.laneLimits?.[laneKey] || 0);
+    const limit = Number.isFinite(saved) && saved > 0 ? saved : BOARD_LANE_PREVIEW_LIMIT;
+    return Math.max(0, Math.min(Number(total) || 0, limit));
+  }
+
+  function expandLane(laneKey, total) {
+    const key = String(laneKey || '');
+    if (!key) return;
+    TASK_UI.laneLimits = TASK_UI.laneLimits && typeof TASK_UI.laneLimits === 'object' ? TASK_UI.laneLimits : {};
+    TASK_UI.laneLimits[key] = Math.max(BOARD_LANE_PREVIEW_LIMIT, Number(total) || BOARD_LANE_PREVIEW_LIMIT);
+    saveUi();
+    queueEnhance(true);
+  }
+
   function renderBoard(tasks) {
     const lanes = new Map(LANES.map((lane) => [lane.key, []]));
     tasks.forEach((task) => {
@@ -1425,7 +1450,9 @@
       <section class="task-design-board" data-task-design-board>
         ${LANES.map((lane) => {
           const laneTasks = lanes.get(lane.key) || [];
-          const visible = laneTasks.slice(0, 18);
+          const visibleLimit = lanePreviewLimit(lane.key, laneTasks.length);
+          const visible = laneTasks.slice(0, visibleLimit);
+          const hiddenCount = Math.max(0, laneTasks.length - visible.length);
           return `
             <section class="task-design-lane lane-${escapeHtml(lane.key)}" data-kanban-lane="${escapeHtml(lane.key)}" data-lane-key="${escapeHtml(lane.key)}">
               <header>
@@ -1437,7 +1464,7 @@
               </header>
               <div class="task-design-dropzone">
                 ${visible.length ? visible.map(taskCard).join('') : '<div class="task-design-empty">Нет задач в этой колонке</div>'}
-                ${laneTasks.length > visible.length ? `<div class="task-design-more">+${laneTasks.length - visible.length} ещё в колонке. Уточните фильтр.</div>` : ''}
+                ${hiddenCount ? `<button type="button" class="task-design-more task-design-more-button" data-task-show-more-lane="${escapeHtml(lane.key)}" data-task-show-more-total="${laneTasks.length}">Показать ещё ${hiddenCount}</button>` : ''}
               </div>
             </section>
           `;
@@ -1463,7 +1490,7 @@
             </tr>
           </thead>
           <tbody>
-            ${tasks.slice(0, 90).map((task) => `
+            ${tasks.slice(0, LIST_PREVIEW_LIMIT).map((task) => `
               <tr data-kanban-task="${escapeHtml(task?.id || '')}" tabindex="0">
                 <td><strong>${escapeHtml(task?.title || task?.entityLabel || 'Задача')}</strong><span>${escapeHtml(task?.nextAction || task?.reason || taskArticleSummary(task) || '')}</span></td>
                 <td>${escapeHtml(taskOwner(task) || 'Без owner')}</td>
@@ -1476,7 +1503,7 @@
             `).join('')}
           </tbody>
         </table>
-        ${tasks.length > 90 ? `<div class="task-design-more">Показано 90 из ${tasks.length}. Уточните фильтры.</div>` : ''}
+        ${tasks.length > LIST_PREVIEW_LIMIT ? `<div class="task-design-more">Показано ${LIST_PREVIEW_LIMIT} из ${tasks.length} для быстрого открытия. Используйте поиск или фильтры, если нужна конкретная задача.</div>` : ''}
       </section>
     `;
   }
@@ -1495,6 +1522,7 @@
       version: VERSION,
       view: TASK_UI.view,
       createOpen: TASK_UI.createOpen,
+      laneLimits: TASK_UI.laneLimits || {},
       platform,
       filters: {
         search: filters.search || '',
@@ -1506,7 +1534,7 @@
         horizon: filters.horizon || ''
       },
       counts: [tasks.length, filtered.length],
-      tasks: filtered.slice(0, 90).map((task) => [
+      tasks: filtered.slice(0, LIST_PREVIEW_LIMIT).map((task) => [
         task?.id,
         stableHash([
           task?.title,
@@ -1665,6 +1693,8 @@
       .platform-cross,.platform-all{--card-color:#dbc7a3;--platform:#dbc7a3}
       .task-design-empty,.task-design-more{display:grid;place-items:center;min-height:92px;border:1px dashed rgba(219,199,163,.18);border-radius:8px;background:rgba(0,0,0,.12);color:rgba(247,241,231,.42);font-size:12px;text-align:center}
       .task-design-more{min-height:38px}
+      .task-design-more-button{width:100%;font-family:inherit;font-size:12px;font-weight:700;line-height:1.2;cursor:pointer;color:rgba(247,241,231,.76);transition:border-color .16s ease,background .16s ease,color .16s ease}
+      .task-design-more-button:hover,.task-design-more-button:focus{outline:0;border-color:rgba(219,199,163,.42);background:rgba(219,199,163,.08);color:#f7f1e7}
       .task-design-list{overflow:auto;contain:layout paint style}
       .task-design-list table{width:100%;border-collapse:collapse;min-width:1020px}
       .task-design-list th,.task-design-list td{border-bottom:1px solid rgba(219,199,163,.1);padding:12px;text-align:left;vertical-align:top}
@@ -2154,6 +2184,7 @@
     const filters = ensureFilters();
     lastManualFilterChangeAt = Date.now();
     userTouchedTaskFilters = true;
+    clearLaneLimits();
     filters[name] = name === 'owner' ? (normalizeOwnerName(value) || 'all') : value;
     if (name === 'search') {
       window.clearTimeout(setFilter.searchTimer);
@@ -2167,6 +2198,7 @@
     const filters = ensureFilters();
     lastManualFilterChangeAt = Date.now();
     userTouchedTaskFilters = true;
+    clearLaneLimits();
     applyDefaultFilters(filters, 'active');
     queueEnhance();
   }
@@ -2175,6 +2207,7 @@
     const filters = ensureFilters();
     lastManualFilterChangeAt = Date.now();
     userTouchedTaskFilters = true;
+    clearLaneLimits();
     if (preset === 'all') {
       filters.status = 'all';
       filters.horizon = 'all';
@@ -2218,6 +2251,11 @@
       }
       if (event.target.closest('[data-task-reset]')) {
         resetFilters();
+        return;
+      }
+      const showMore = event.target.closest('[data-task-show-more-lane]');
+      if (showMore) {
+        expandLane(showMore.dataset.taskShowMoreLane || '', showMore.dataset.taskShowMoreTotal || 0);
         return;
       }
       const taskNode = event.target.closest('[data-kanban-task]');
@@ -2436,6 +2474,7 @@
         const forceRender = eventName === 'altea:data-ready'
           || eventName === 'altea:portal-storage-updated'
           || eventName === 'altea:marketplacechange';
+        if (eventName === 'altea:marketplacechange') clearLaneLimits();
         activateControlRoute();
         startControlObserver();
         renderControlImmediately({ skipReady: !forceRender });

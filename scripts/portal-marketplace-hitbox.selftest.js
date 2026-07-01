@@ -90,6 +90,8 @@ async function run() {
     await page.waitForFunction(() => !document.querySelector('.altea-motion-stage.is-visible'), null, { timeout: 60000 });
     const initialCardCount = await page.locator('[data-kanban-task]').count();
     assert.ok(initialCardCount <= 108, `Task entry rendered too many cards: ${initialCardCount}`);
+    const moreCopy = await page.locator('.task-design-more').evaluateAll((nodes) => nodes.map((node) => node.textContent || '').join('\n'));
+    assert.ok(!moreCopy.includes('Уточните фильтр'), moreCopy);
 
     const hitbox = await page.evaluate(() => {
       const chip = document.querySelector('.altea-premium-app:not([hidden]) [data-altea-marketplace="ozon"]');

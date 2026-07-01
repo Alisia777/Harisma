@@ -11,6 +11,22 @@ const ROOT = path.resolve(__dirname, '..');
 const MODULE = 'portal-task-kanban-v1.js';
 const MOTION_MODULE = 'altea-motion-runtime.js';
 
+function fixtureTasks() {
+  return Array.from({ length: 25 }, (_, index) => ({
+    id: `task-entry-${index + 1}`,
+    title: `Task entry ${String(index + 1).padStart(2, '0')}`,
+    nextAction: 'Check that the task board opens fast and can reveal hidden cards',
+    owner: 'РОП Маша',
+    status: 'new',
+    priority: 'medium',
+    type: 'general',
+    source: 'manual',
+    due: '2026-07-02',
+    platform: 'wb',
+    articleKey: `SKU-${index + 1}`
+  }));
+}
+
 function fixtureState() {
   return {
     activeView: 'control',
@@ -25,21 +41,7 @@ function fixtureState() {
       platform: 'all'
     },
     storage: {
-      tasks: [
-        {
-          id: 'task-entry-1',
-          title: 'Проверить карточку SKU 123',
-          nextAction: 'Обновить статус и передать РОП',
-          owner: 'РОП Маша',
-          status: 'new',
-          priority: 'medium',
-          type: 'general',
-          source: 'manual',
-          due: '2026-07-02',
-          platform: 'wb',
-          articleKey: 'SKU-123'
-        }
-      ]
+      tasks: fixtureTasks()
     }
   };
 }
@@ -125,7 +127,7 @@ async function run() {
       motionVisible: Boolean(document.querySelector('.altea-motion-stage.is-visible'))
     }));
 
-    assert.strictEqual(recovered.version, '20260701-task-entry-light-v1');
+    assert.strictEqual(recovered.version, '20260701-task-lane-more-v1');
     assert.deepStrictEqual(
       {
         search: recovered.search,
@@ -148,11 +150,24 @@ async function run() {
         platform: 'all'
       }
     );
-    assert.strictEqual(recovered.visibleTasks, 1);
-    assert.ok(recovered.resultLine.includes('Показано 1 из 1'), recovered.resultLine);
+    assert.strictEqual(recovered.visibleTasks, 18);
+    assert.ok(recovered.resultLine.includes('Показано 25 из 25'), recovered.resultLine);
     assert.strictEqual(recovered.hash, '#control');
     assert.strictEqual(recovered.searchParams, '?portal-refresh=fixture');
     assert.strictEqual(recovered.motionVisible, false);
+
+    const moreControl = await page.evaluate(() => {
+      const button = document.querySelector('[data-task-show-more-lane="new"]');
+      return {
+        text: button?.textContent || '',
+        isButton: button?.tagName === 'BUTTON'
+      };
+    });
+    assert.strictEqual(moreControl.isButton, true);
+    assert.ok(moreControl.text.includes('Показать ещё 7'), moreControl.text);
+    assert.ok(!moreControl.text.includes('Уточните'), moreControl.text);
+    await page.click('[data-task-show-more-lane="new"]');
+    await page.waitForFunction(() => document.querySelectorAll('[data-kanban-task]').length === 25, null, { timeout: 30000 });
 
     await page.fill('[data-task-filter="search"]', 'ручной пустой поиск');
     await page.waitForFunction(() => window.state.controlFilters.search === 'ручной пустой поиск', null, { timeout: 30000 });

@@ -27,7 +27,7 @@
     wrap.setAttribute('role', 'status');
     wrap.style.cssText = [
       'position:fixed',
-      'top:14px',
+      'bottom:max(14px,env(safe-area-inset-bottom,0px))',
       'left:50%',
       'transform:translateX(-50%)',
       'z-index:2147483647',

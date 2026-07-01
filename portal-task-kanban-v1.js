@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260701-task-route-unfreeze-v1';
+  const VERSION = '20260701-task-filter-bind-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -2150,7 +2150,7 @@
     filters[name] = name === 'owner' ? (normalizeOwnerName(value) || 'all') : value;
     if (name === 'search') {
       window.clearTimeout(setFilter.searchTimer);
-      setFilter.searchTimer = window.setTimeout(queueEnhance, 80);
+      setFilter.searchTimer = window.setTimeout(() => queueEnhance(true), 120);
     } else {
       queueEnhance();
     }

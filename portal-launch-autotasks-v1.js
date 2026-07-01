@@ -4,9 +4,23 @@
   if (window.__ALTEA_LAUNCH_AUTOTASKS_V1__) return;
   window.__ALTEA_LAUNCH_AUTOTASKS_V1__ = true;
 
-  const VERSION = '20260630-launch-autotasks-state-hardwire-v1';
+  const VERSION = '20260701-launch-task-modal-v1';
   const MAX_BULK_TASKS = 30;
   const REMOVED_STATUSES = new Set(['deleted', 'removed']);
+  const TASK_STATUSES = [
+    ['new', 'Новая'],
+    ['in_progress', 'В работе'],
+    ['waiting_team', 'Ждет команду'],
+    ['waiting_rop', 'Ожидает РОП'],
+    ['waiting_decision', 'На решение'],
+    ['done', 'Готово']
+  ];
+  const TASK_PRIORITIES = [
+    ['critical', 'Критично'],
+    ['high', 'Высокий'],
+    ['medium', 'Средний'],
+    ['low', 'Низкий']
+  ];
 
   const ROLE_LABELS = {
     product: 'Продакт',
@@ -874,6 +888,369 @@
     } catch {}
   }
 
+  function taskIdentity(task = {}) {
+    return String(task.id || task.autoCode || task.launchAutoKey || '').trim();
+  }
+
+  function taskDue(task = {}) {
+    return parseDateKey(task.due || task.startDate || task.date) || '';
+  }
+
+  function statusLabel(value) {
+    const key = String(value || 'new').trim();
+    return (TASK_STATUSES.find(([status]) => status === key) || TASK_STATUSES[0])[1];
+  }
+
+  function priorityLabel(value) {
+    const key = String(value || 'medium').trim();
+    return (TASK_PRIORITIES.find(([priority]) => priority === key) || TASK_PRIORITIES[2])[1];
+  }
+
+  function optionHtml(options, selected) {
+    return options.map(([value, label]) => (
+      `<option value="${html(value)}" ${String(selected || '') === value ? 'selected' : ''}>${html(label)}</option>`
+    )).join('');
+  }
+
+  function findKnownTask(taskId) {
+    const id = String(taskId || '').trim();
+    if (!id) return null;
+    return allKnownTasks().find((task) => {
+      if (!task || isRemoved(task)) return false;
+      return taskIdentity(task) === id
+        || String(task.autoCode || '').trim() === id
+        || String(task.launchAutoKey || '').trim() === id;
+    }) || null;
+  }
+
+  function findLaunchById(launchKey) {
+    const key = String(launchKey || '').trim();
+    return launchItems({ skipMarketplaceScope: true }).find((item) => launchId(item) === key) || null;
+  }
+
+  function taskLaunchItem(task = {}) {
+    const key = String(task.launchId || '').trim();
+    if (key) {
+      const byKey = findLaunchById(key);
+      if (byKey) return byKey;
+    }
+    const article = String(task.articleKey || '').trim();
+    return launchItems({ skipMarketplaceScope: true }).find((item) => article && articleKey(item) === article) || null;
+  }
+
+  function ensureTaskInStorage(task) {
+    if (!task) return null;
+    const tasks = storageTasks();
+    const id = taskIdentity(task);
+    const code = String(task.autoCode || task.launchAutoKey || '').trim();
+    let stored = tasks.find((item) => {
+      if (!item) return false;
+      return (id && taskIdentity(item) === id)
+        || (code && String(item.autoCode || item.launchAutoKey || '').trim() === code);
+    });
+    if (!stored) {
+      stored = {
+        ...task,
+        id: id || stableId('task-launch-edit', JSON.stringify(task)),
+        source: task.source || 'auto',
+        status: task.status || 'new',
+        createdAt: task.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      tasks.unshift(stored);
+    }
+    return stored;
+  }
+
+  function addTaskLog(task, text) {
+    if (!task?.id || !String(text || '').trim()) return null;
+    const comment = {
+      id: commentId(`${task.id}|manual-edit`),
+      articleKey: task.articleKey || '',
+      author: appState()?.team?.member?.name || task.owner || 'Команда',
+      team: appState()?.team?.member?.name || 'Команда',
+      type: 'task_log',
+      text: `[[task:${task.id}]] [[kind:edit]] ${String(text || '').trim()}`,
+      createdAt: new Date().toISOString()
+    };
+    storageComments().unshift(comment);
+    persistCommentLater(comment);
+    return comment;
+  }
+
+  function saveTaskPatch(taskId, patch, logText = '') {
+    const task = ensureTaskInStorage(findKnownTask(taskId));
+    if (!task) return null;
+    Object.assign(task, patch, { updatedAt: new Date().toISOString() });
+    if (logText) addTaskLog(task, logText);
+    persistTaskLater(task);
+    saveState('launch-task-modal-save');
+    return task;
+  }
+
+  function taskHistoryHtml(task) {
+    const marker = `[[task:${task?.id || ''}]]`;
+    return storageComments()
+      .filter((comment) => marker && String(comment?.text || '').includes(marker))
+      .slice(0, 5)
+      .map((comment) => {
+        const text = String(comment.text || '')
+          .replace(marker, '')
+          .replace(/\[\[kind:[^\]]+\]\]/g, '')
+          .trim();
+        return `<span><b>${html(String(comment.createdAt || '').slice(0, 10) || 'без даты')}</b>${html(text || 'История обновлена')}</span>`;
+      }).join('') || '<p>Истории пока нет.</p>';
+  }
+
+  function closeLaunchOpsModal() {
+    document.querySelectorAll('[data-launch-ops-modal]').forEach((node) => node.remove());
+    document.body.classList.remove('launch-ops-modal-open');
+  }
+
+  function openLaunchOpsModal(content) {
+    closeLaunchOpsModal();
+    const modal = document.createElement('div');
+    modal.className = 'launch-ops-modal-back';
+    modal.setAttribute('data-launch-ops-modal', '');
+    modal.innerHTML = `
+      <section class="launch-ops-modal" role="dialog" aria-modal="true">
+        <button type="button" class="launch-ops-modal-x" data-launch-modal-close aria-label="Закрыть">×</button>
+        ${content}
+      </section>
+    `;
+    modal.addEventListener('submit', (event) => {
+      const form = event.target?.closest?.('[data-launch-task-form]');
+      if (!form) return;
+      event.preventDefault();
+      saveLaunchTaskForm(form);
+    }, true);
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) closeLaunchOpsModal();
+    });
+    modal.__launchOpsEsc = (event) => {
+      if (event.key === 'Escape') closeLaunchOpsModal();
+    };
+    document.addEventListener('keydown', modal.__launchOpsEsc, { once: true });
+    document.body.appendChild(modal);
+    document.body.classList.add('launch-ops-modal-open');
+  }
+
+  function taskMetaHtml(task) {
+    const launch = taskLaunchItem(task);
+    return `
+      <div class="launch-ops-modal-meta">
+        <span><b>Новинка</b>${html(task.entityLabel || (launch ? launchName(launch) : 'без привязки'))}</span>
+        <span><b>Площадка</b>${html(task.platform ? (LAUNCH_MARKETPLACE_LABELS[task.platform] || task.platform) : (launch ? launchMarketplaceLabel(launch) : 'не указана'))}</span>
+        <span><b>Owner</b>${html(task.owner || 'без owner')}</span>
+        <span><b>Срок</b>${html(taskDue(task) || 'без даты')}</span>
+      </div>
+    `;
+  }
+
+  function openLaunchTaskModal(taskId) {
+    const task = findKnownTask(taskId);
+    if (!task) {
+      launchToast('Задача не найдена в календаре.');
+      return false;
+    }
+    const stored = ensureTaskInStorage(task);
+    const due = taskDue(stored);
+    openLaunchOpsModal(`
+      <header class="launch-ops-modal-head">
+        <span>Задача запуска</span>
+        <h2>${html(shortTaskTitle(stored))}</h2>
+        <p>${html(stored.nextAction || stored.reason || 'Можно сразу поправить срок, owner, статус и следующий шаг.')}</p>
+      </header>
+      ${taskMetaHtml(stored)}
+      <form class="launch-ops-task-form" data-launch-task-form data-launch-task-id="${html(stored.id || taskIdentity(stored))}">
+        <label class="wide"><span>Название</span><input name="title" value="${html(stored.title || '')}"></label>
+        <label><span>Owner</span><input name="owner" value="${html(stored.owner || '')}" placeholder="Кому задача"></label>
+        <label><span>Срок</span><input name="due" type="date" value="${html(due)}"></label>
+        <label><span>Статус</span><select name="status">${optionHtml(TASK_STATUSES, stored.status || 'new')}</select></label>
+        <label><span>Приоритет</span><select name="priority">${optionHtml(TASK_PRIORITIES, stored.priority || 'medium')}</select></label>
+        <label class="wide"><span>Что сделать</span><textarea name="nextAction" rows="3">${html(stored.nextAction || '')}</textarea></label>
+        <label class="wide"><span>Контекст / комментарий</span><textarea name="reason" rows="4">${html(stored.reason || '')}</textarea></label>
+        <div class="launch-ops-modal-actions wide">
+          <button type="button" data-launch-task-status="in_progress">В работу</button>
+          <button type="button" data-launch-task-status="waiting_team">Ждет команду</button>
+          <button type="button" data-launch-task-status="done">Готово</button>
+          <button type="button" data-launch-task-open-pool>Открыть пул задач</button>
+          <button type="submit" class="primary" data-launch-task-save>Сохранить</button>
+        </div>
+      </form>
+      <section class="launch-ops-modal-history">
+        <strong>История</strong>
+        ${taskHistoryHtml(stored)}
+      </section>
+    `);
+    window.setTimeout(() => {
+      document.querySelector('[data-launch-task-form] input[name="title"]')?.focus();
+    }, 20);
+    return true;
+  }
+
+  function saveLaunchTaskForm(form) {
+    if (!form) return null;
+    const taskId = form.dataset.launchTaskId || '';
+    const data = new FormData(form);
+    const patch = {
+      title: String(data.get('title') || '').trim() || 'Задача запуска',
+      owner: String(data.get('owner') || '').trim(),
+      due: String(data.get('due') || '').trim(),
+      status: String(data.get('status') || 'new').trim(),
+      priority: String(data.get('priority') || 'medium').trim(),
+      nextAction: String(data.get('nextAction') || '').trim(),
+      reason: String(data.get('reason') || '').trim()
+    };
+    const saved = saveTaskPatch(taskId, patch, `Задача обновлена из календаря новинок. Статус: ${statusLabel(patch.status)}.`);
+    if (saved) {
+      launchToast('Задача сохранена.');
+      rerenderLaunchesSoon();
+      window.setTimeout(() => openLaunchTaskModal(saved.id), 80);
+    }
+    return saved;
+  }
+
+  function updateLaunchTaskStatus(form, status) {
+    const taskId = form?.dataset?.launchTaskId || '';
+    const task = saveTaskPatch(taskId, { status: String(status || 'new') }, `Статус изменен на "${statusLabel(status)}".`);
+    if (task) {
+      launchToast(`Статус: ${statusLabel(status)}.`);
+      rerenderLaunchesSoon();
+      window.setTimeout(() => openLaunchTaskModal(task.id), 80);
+    }
+    return task;
+  }
+
+  function queueItemsForKey(key, items = launchItems()) {
+    const queueKey = String(key || '').trim();
+    if (queueKey === 'noOwner') return items.filter((item) => !ownerForRole(item, 'product'));
+    if (queueKey === 'noExactDate') return items.filter((item) => firstStockDateInfo(item).source !== 'exact');
+    if (queueKey === 'noProductFile') return items.filter((item) => !firstText(item, ['productFileUrl', 'productFile', 'briefUrl', 'presentationUrl', 'fileUrl']));
+    if (queueKey === 'noMarketplace') return items.filter((item) => !String(item.marketplaces || item.marketplace || '').trim());
+    if (queueKey === 'waitMp') return items.filter((item) => !mpStockDateInfo(item).date);
+    return [];
+  }
+
+  function launchQueueActionHint(item, key) {
+    if (key === 'noOwner') return 'Назначьте product owner, чтобы автозадачи ушли конкретному человеку.';
+    if (key === 'noExactDate') return 'Уточните первую дату склада, иначе сроки считаются грубо от месяца.';
+    if (key === 'noProductFile') return 'Добавьте продукт-файл или ссылку, чтобы команда видела вводные.';
+    if (key === 'noMarketplace') return 'Укажите сеть запуска, иначе фильтры по площадкам будут путаться.';
+    if (key === 'waitMp') return 'Заполните дату склада МП, от нее зависят КЗ/РОП/РК сигналы.';
+    return launchName(item);
+  }
+
+  function launchPositionCardHtml(item, key) {
+    const id = launchId(item);
+    const missing = missingTasksForLaunch(item).length;
+    const planned = plannedTasksForLaunch(item);
+    const created = planned.length - missing;
+    return `
+      <article class="launch-ops-position-card">
+        <div>
+          <span>${html(launchMarketplaceLabel(item) || 'площадка не указана')}</span>
+          <strong>${html(launchName(item))}</strong>
+          <small>${html(launchQueueActionHint(item, key))}</small>
+        </div>
+        <dl>
+          <span><dt>Owner</dt><dd>${html(ownerForRole(item, 'product') || 'нет owner')}</dd></span>
+          <span><dt>Склад</dt><dd>${html(firstStockDateInfo(item).date || 'нет точной даты')}</dd></span>
+          <span><dt>Задачи</dt><dd>${html(created)}/${html(planned.length)} создано</dd></span>
+        </dl>
+        <footer>
+          <button type="button" data-launch-queue-select="${html(id)}">Выбрать</button>
+          <button type="button" data-launch-queue-create="${html(id)}" ${missing ? '' : 'disabled'}>Создать ${html(missing || '')}</button>
+          <button type="button" data-launch-queue-open="${html(id)}">Показать задачи</button>
+        </footer>
+      </article>
+    `;
+  }
+
+  function openQueueModal(key) {
+    const rows = launchQueueRows(launchItems());
+    const row = rows.find((item) => item.key === key) || { label: 'Очередь контроля', hint: 'Позиции, требующие действия' };
+    const items = queueItemsForKey(key);
+    openLaunchOpsModal(`
+      <header class="launch-ops-modal-head">
+        <span>Очередь контроля</span>
+        <h2>${html(row.label)}</h2>
+        <p>${html(row.hint)}. Нажмите позицию и сделайте действие сразу, не уходя из календаря.</p>
+      </header>
+      <div class="launch-ops-position-list">
+        ${items.length ? items.map((item) => launchPositionCardHtml(item, key)).join('') : '<p>В этой очереди сейчас нет позиций.</p>'}
+      </div>
+    `);
+    return items;
+  }
+
+  function launchTasksModalListHtml(item) {
+    const planned = plannedTasksForLaunch(item);
+    return planned.map((entry) => {
+      const task = entry.existing || null;
+      const stateLabel = task ? statusLabel(task.status || 'new') : 'Не создана';
+      return `
+        <article class="launch-ops-task-row ${task ? 'ready' : 'missing'}">
+          <div>
+            <span>${html(entry.def.phaseLabel)} · ${html(ROLE_LABELS[entry.def.role] || '')}</span>
+            <strong>${html(entry.def.title)}</strong>
+            <small>${html((task && taskDue(task)) || entry.payload.due || 'без даты')} · ${html(stateLabel)}</small>
+          </div>
+          <footer>
+            ${task ? `<button type="button" data-launch-ops-open-task="${html(task.id || taskIdentity(task))}">Открыть</button>` : `<button type="button" data-launch-ops-create-one="${html(entry.def.id)}" data-launch-ops-launch="${html(launchId(item))}">Создать</button>`}
+          </footer>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function openLaunchTasksModal(launchKey) {
+    const item = findLaunchById(launchKey);
+    if (!item) {
+      launchToast('Новинка не найдена.');
+      return false;
+    }
+    appState().launchV1SelectedId = launchId(item);
+    openLaunchOpsModal(`
+      <header class="launch-ops-modal-head">
+        <span>Пул задач по новинке</span>
+        <h2>${html(launchName(item))}</h2>
+        <p>${html(launchMarketplaceLabel(item) || 'площадка не указана')} · ${html(firstStockDateInfo(item).date || 'без точной даты склада')}</p>
+      </header>
+      <div class="launch-ops-task-list">
+        ${launchTasksModalListHtml(item)}
+      </div>
+    `);
+    rerenderLaunchesSoon();
+    return true;
+  }
+
+  function openDayTasksModal(day) {
+    const tasks = launchAutoTasksForCalendar()
+      .filter((task) => taskDue(task) === day)
+      .sort((left, right) => String(shortTaskTitle(left)).localeCompare(String(shortTaskTitle(right)), 'ru'));
+    openLaunchOpsModal(`
+      <header class="launch-ops-modal-head">
+        <span>Задачи дня</span>
+        <h2>${html(day || 'без даты')}</h2>
+        <p>Все задачи запуска, которые стоят на это число.</p>
+      </header>
+      <div class="launch-ops-task-list">
+        ${tasks.length ? tasks.map((task) => `
+          <article class="launch-ops-task-row ready">
+            <div>
+              <span>${html(task.entityLabel || 'Новинка')}</span>
+              <strong>${html(shortTaskTitle(task))}</strong>
+              <small>${html(statusLabel(task.status || 'new'))} · ${html(task.owner || 'без owner')}</small>
+            </div>
+            <footer><button type="button" data-launch-ops-open-task="${html(task.id || taskIdentity(task))}">Открыть</button></footer>
+          </article>
+        `).join('') : '<p>Задач на этот день не найдено.</p>'}
+      </div>
+    `);
+    return tasks;
+  }
+
   function snapshot() {
     const items = launchItems();
     const missing = missingTasksForAll();
@@ -898,13 +1275,13 @@
     const noMarketplace = items.filter((item) => !String(item.marketplaces || item.marketplace || '').trim());
     const waitMp = items.filter((item) => !mpStockDateInfo(item).date);
     [
-      ['Нет owner', noOwner.length, 'Кому уйдут задачи запуска', 'danger'],
-      ['Нет точной даты склада', noExactDate.length, 'Сроки считаются от месяца, нужна дата', 'warn'],
-      ['Нет продакт-файла', noProductFile.length, 'Нужно вложить или указать ссылку', 'warn'],
-      ['Нет площадки', noMarketplace.length, 'Укажите площадку запуска: WB/Ozon/Я.Маркет/ЗЯ/Лэтуаль/Мегамаркет/Самокат/Магнит', 'info'],
-      ['Ждет дату склада МП', waitMp.length, 'Сигналы КЗ/РОП/РК зависят от поступления', 'info']
-    ].forEach(([label, count, hint, tone]) => {
-      if (count) rows.push({ label, count, hint, tone });
+      ['noOwner', 'Нет owner', noOwner.length, 'Кому уйдут задачи запуска', 'danger'],
+      ['noExactDate', 'Нет точной даты склада', noExactDate.length, 'Сроки считаются от месяца, нужна дата', 'warn'],
+      ['noProductFile', 'Нет продакт-файла', noProductFile.length, 'Нужно вложить или указать ссылку', 'warn'],
+      ['noMarketplace', 'Нет площадки', noMarketplace.length, 'Укажите площадку запуска: WB/Ozon/Я.Маркет/ЗЯ/Лэтуаль/Мегамаркет/Самокат/Магнит', 'info'],
+      ['waitMp', 'Ждет дату склада МП', waitMp.length, 'Сигналы КЗ/РОП/РК зависят от поступления', 'info']
+    ].forEach(([key, label, count, hint, tone]) => {
+      if (count) rows.push({ key, label, count, hint, tone });
     });
     return rows;
   }
@@ -946,7 +1323,7 @@
           <div class="launch-ops-queue">
             <strong>Очереди контроля</strong>
             ${queue.length ? queue.slice(0, 5).map((row) => `
-              <button type="button" class="${html(row.tone)}" data-launch-ops-filter="${html(row.label)}">
+              <button type="button" class="${html(row.tone)}" data-launch-ops-filter="${html(row.label)}" data-launch-ops-queue="${html(row.key)}">
                 <i></i>
                 <span>${html(row.label)}<small>${html(row.hint)}</small></span>
                 <b>${html(row.count)}</b>
@@ -1048,8 +1425,11 @@
         holder.appendChild(button);
       });
       if (tasks.length > 3) {
-        const more = document.createElement('small');
+        const more = document.createElement('button');
+        more.type = 'button';
         more.className = 'launch-ops-task-more';
+        more.dataset.launchOpsDay = day;
+        more.title = `Показать все задачи на ${day}`;
         more.textContent = `+\u0435\u0449\u0435 ${tasks.length - 3} \u0437\u0430\u0434\u0430\u0447`;
         holder.appendChild(more);
       }
@@ -1091,9 +1471,20 @@
       .launch-ops-task-chip{width:100%;display:grid;grid-template-columns:7px minmax(0,1fr);gap:7px;align-items:center;margin-top:5px;border:1px solid rgba(88,214,202,.22);border-radius:7px;background:rgba(24,48,52,.34);color:var(--sl-text,#f7f1e8);padding:6px 7px;text-align:left;font-size:10px;line-height:1.18;cursor:pointer}
       .launch-ops-task-chip::before{content:"";width:7px;height:7px;border-radius:50%;background:#58d6ca;box-shadow:0 0 0 3px rgba(88,214,202,.12)}
       .launch-ops-task-chip.danger{border-color:rgba(255,116,105,.32);background:rgba(62,24,22,.34)}.launch-ops-task-chip.danger::before{background:#ff7469;box-shadow:0 0 0 3px rgba(255,116,105,.12)}
-      .launch-ops-task-chip span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.launch-ops-task-more{display:block;margin-top:5px;color:var(--sl-muted,rgba(247,241,232,.62));font-size:10px}
+      .launch-ops-task-chip span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.launch-ops-task-more{display:block;width:100%;margin-top:5px;border:1px dashed rgba(224,190,126,.25);border-radius:7px;background:rgba(0,0,0,.18);color:var(--sl-muted,rgba(247,241,232,.62));font-size:10px;text-align:left;padding:4px 7px;cursor:pointer}
+      .launch-ops-modal-open{overflow:hidden}
+      .launch-ops-modal-back{position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.62);backdrop-filter:blur(8px);display:grid;place-items:center;padding:24px;color:var(--sl-text,#f7f1e8)}
+      .launch-ops-modal{position:relative;width:min(980px,calc(100vw - 32px));max-height:min(86vh,820px);overflow:auto;border:1px solid rgba(224,190,126,.28);border-radius:12px;background:linear-gradient(145deg,rgba(12,14,18,.98),rgba(18,10,8,.96));box-shadow:0 28px 90px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.05);padding:22px;display:grid;gap:16px}
+      .launch-ops-modal-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border:1px solid rgba(224,190,126,.25);border-radius:9px;background:rgba(255,255,255,.04);color:var(--sl-text,#f7f1e8);font-size:22px;line-height:1;cursor:pointer}
+      .launch-ops-modal-head{display:grid;gap:6px;padding-right:42px}.launch-ops-modal-head span{text-transform:uppercase;letter-spacing:2px;color:#f0d49a;font-size:11px;font-weight:900}.launch-ops-modal-head h2{margin:0;font-size:30px;line-height:1.08}.launch-ops-modal-head p{margin:0;color:var(--sl-muted,rgba(247,241,232,.66))}
+      .launch-ops-modal-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.launch-ops-modal-meta span{border:1px solid rgba(224,190,126,.14);border-radius:8px;background:rgba(0,0,0,.2);padding:9px 10px;display:grid;gap:4px;min-width:0}.launch-ops-modal-meta b{font-size:10px;text-transform:uppercase;color:var(--sl-muted,rgba(247,241,232,.58))}.launch-ops-modal-meta span{font-size:12px}
+      .launch-ops-task-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.launch-ops-task-form label{display:grid;gap:6px}.launch-ops-task-form label.wide,.launch-ops-modal-actions.wide{grid-column:1/-1}.launch-ops-task-form span{font-size:11px;text-transform:uppercase;color:#f0d49a;font-weight:900}.launch-ops-task-form input,.launch-ops-task-form select,.launch-ops-task-form textarea{width:100%;border:1px solid rgba(224,190,126,.22);border-radius:8px;background:rgba(0,0,0,.28);color:var(--sl-text,#f7f1e8);padding:10px 12px;font:inherit}.launch-ops-task-form textarea{resize:vertical}
+      .launch-ops-modal-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.launch-ops-modal-actions button,.launch-ops-position-card footer button,.launch-ops-task-row footer button{min-height:36px;border:1px solid rgba(224,190,126,.24);border-radius:8px;background:rgba(255,255,255,.04);color:var(--sl-text,#f7f1e8);padding:0 12px;font-weight:850;cursor:pointer}.launch-ops-modal-actions button.primary,.launch-ops-position-card footer button:first-child{background:linear-gradient(180deg,#ffe1a1,#b98536);color:#130d07;border-color:rgba(255,227,157,.65)}.launch-ops-position-card footer button:disabled,.launch-ops-task-row footer button:disabled{opacity:.45;cursor:not-allowed}
+      .launch-ops-modal-history,.launch-ops-position-list,.launch-ops-task-list{display:grid;gap:10px}.launch-ops-modal-history{border-top:1px solid rgba(224,190,126,.14);padding-top:12px}.launch-ops-modal-history span{display:grid;gap:3px;border:1px solid rgba(224,190,126,.1);border-radius:8px;background:rgba(0,0,0,.18);padding:9px 10px}.launch-ops-modal-history p,.launch-ops-position-list p,.launch-ops-task-list p{margin:0;color:var(--sl-muted,rgba(247,241,232,.62))}
+      .launch-ops-position-list{grid-template-columns:repeat(2,minmax(0,1fr));max-height:52vh;overflow:auto;padding-right:4px}.launch-ops-position-card,.launch-ops-task-row{border:1px solid rgba(224,190,126,.14);border-radius:9px;background:rgba(0,0,0,.22);padding:12px;display:grid;gap:10px}.launch-ops-position-card strong,.launch-ops-task-row strong{display:block;font-size:14px;line-height:1.25}.launch-ops-position-card span,.launch-ops-task-row span{font-size:10px;text-transform:uppercase;color:#f0d49a;font-weight:850}.launch-ops-position-card small,.launch-ops-task-row small{color:var(--sl-muted,rgba(247,241,232,.62));font-size:11px}.launch-ops-position-card dl{margin:0;display:grid;gap:6px}.launch-ops-position-card dl span{display:flex;justify-content:space-between;gap:10px;text-transform:none;color:inherit;font-weight:500}.launch-ops-position-card dt{color:var(--sl-muted,rgba(247,241,232,.62))}.launch-ops-position-card dd{margin:0;text-align:right}.launch-ops-position-card footer,.launch-ops-task-row footer{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+      .launch-ops-task-list{max-height:58vh;overflow:auto;padding-right:4px}.launch-ops-task-row{grid-template-columns:minmax(0,1fr) auto;align-items:center}.launch-ops-task-row.missing{border-color:rgba(240,196,105,.22)}.launch-ops-task-row.ready{border-color:rgba(88,214,202,.18)}
       @media (max-width:1100px){.launch-ops-head,.launch-ops-body{grid-template-columns:1fr;display:grid}.launch-ops-actions{justify-content:start}.launch-ops-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
-      @media (max-width:720px){.launch-ops-kpis,.launch-ops-detail-grid{grid-template-columns:1fr}}
+      @media (max-width:720px){.launch-ops-kpis,.launch-ops-detail-grid,.launch-ops-modal-meta,.launch-ops-task-form,.launch-ops-position-list,.launch-ops-task-row{grid-template-columns:1fr}.launch-ops-modal{padding:18px}.launch-ops-modal-head h2{font-size:24px}}
     `;
     document.head.appendChild(style);
   }
@@ -1212,9 +1603,7 @@
     const created = entry ? createTasks([entry], 1) : [];
     launchToast(created.length ? 'Автозадача создана.' : 'Эта автозадача уже есть.');
     rerenderLaunchesSoon();
-    if (created[0]?.id && typeof window.openTaskModal === 'function') {
-      window.setTimeout(() => window.openTaskModal(created[0].id), 180);
-    }
+    if (created[0]?.id) window.setTimeout(() => openLaunchTaskModal(created[0].id), 180);
     return created;
   }
 
@@ -1227,11 +1616,19 @@
 
   function opsButtonFromEvent(event) {
     const target = eventElement(event);
-    return target?.closest?.('[data-launch-ops-create-selected],[data-launch-ops-create-bulk],[data-launch-ops-open-tasks],[data-launch-ops-open-task],[data-launch-ops-create-one]') || null;
+    return target?.closest?.('[data-launch-ops-create-selected],[data-launch-ops-create-bulk],[data-launch-ops-open-tasks],[data-launch-ops-open-task],[data-launch-ops-create-one],[data-launch-ops-queue],[data-launch-ops-day],[data-launch-modal-close],[data-launch-task-status],[data-launch-task-open-pool],[data-launch-queue-select],[data-launch-queue-create],[data-launch-queue-open]') || null;
   }
 
   function opsActionKey(button) {
     if (!button) return '';
+    if (button.matches?.('[data-launch-modal-close]')) return 'modal-close';
+    if (button.matches?.('[data-launch-task-status]')) return `task-status:${button.dataset.launchTaskStatus || ''}`;
+    if (button.matches?.('[data-launch-task-open-pool]')) return 'task-open-pool';
+    if (button.matches?.('[data-launch-queue-select]')) return `queue-select:${button.dataset.launchQueueSelect || ''}`;
+    if (button.matches?.('[data-launch-queue-create]')) return `queue-create:${button.dataset.launchQueueCreate || ''}`;
+    if (button.matches?.('[data-launch-queue-open]')) return `queue-open:${button.dataset.launchQueueOpen || ''}`;
+    if (button.matches?.('[data-launch-ops-queue]')) return `queue:${button.dataset.launchOpsQueue || ''}`;
+    if (button.matches?.('[data-launch-ops-day]')) return `day:${button.dataset.launchOpsDay || ''}`;
     if (button.matches?.('[data-launch-ops-create-selected]')) return 'selected';
     if (button.matches?.('[data-launch-ops-create-bulk]')) return 'bulk';
     if (button.matches?.('[data-launch-ops-open-tasks]')) return 'open';
@@ -1273,6 +1670,63 @@
     if (button.disabled || button.getAttribute('aria-disabled') === 'true') return false;
     consumeOpsEvent(event, key);
     try {
+      if (button.matches?.('[data-launch-modal-close]')) {
+        closeLaunchOpsModal();
+        recordOpsAction('modal-close', key);
+        return true;
+      }
+      if (button.matches?.('[data-launch-task-status]')) {
+        const form = button.closest?.('[data-launch-task-form]');
+        const task = updateLaunchTaskStatus(form, button.dataset.launchTaskStatus || 'new');
+        recordOpsAction('task-status', key, { taskId: task?.id || '' });
+        return true;
+      }
+      if (button.matches?.('[data-launch-task-open-pool]')) {
+        const form = button.closest?.('[data-launch-task-form]');
+        const task = findKnownTask(form?.dataset?.launchTaskId || '');
+        const item = taskLaunchItem(task || {});
+        if (item) openLaunchTasksModal(launchId(item));
+        else openTasksView();
+        recordOpsAction('task-open-pool', key, { taskId: task?.id || '' });
+        return true;
+      }
+      if (button.matches?.('[data-launch-queue-select]')) {
+        const launchKey = button.dataset.launchQueueSelect || '';
+        appState().launchV1SelectedId = launchKey;
+        closeLaunchOpsModal();
+        rerenderLaunchesSoon();
+        window.setTimeout(() => {
+          const cssKey = window.CSS?.escape ? window.CSS.escape(launchKey) : String(launchKey).replace(/"/g, '\\"');
+          document.querySelector(`[data-launch-v1-card="${cssKey}"],[data-launch-v1-open="${cssKey}"]`)?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+        }, 140);
+        recordOpsAction('queue-selected', key, { launchKey });
+        return true;
+      }
+      if (button.matches?.('[data-launch-queue-create]')) {
+        const launchKey = button.dataset.launchQueueCreate || '';
+        const item = findLaunchById(launchKey);
+        const created = item ? createTasks(missingTasksForLaunch(item), PROCESS_TASKS.length) : [];
+        launchToast(created.length ? `Создано задач: ${created.length}` : 'Новых задач по этой новинке нет.');
+        if (item) openLaunchTasksModal(launchKey);
+        recordOpsAction('queue-created', key, { launchKey, count: created.length });
+        return true;
+      }
+      if (button.matches?.('[data-launch-queue-open]')) {
+        const launchKey = button.dataset.launchQueueOpen || '';
+        openLaunchTasksModal(launchKey);
+        recordOpsAction('queue-opened-launch-tasks', key, { launchKey });
+        return true;
+      }
+      if (button.matches?.('[data-launch-ops-queue]')) {
+        const items = openQueueModal(button.dataset.launchOpsQueue || '');
+        recordOpsAction('opened-queue', key, { count: items.length });
+        return true;
+      }
+      if (button.matches?.('[data-launch-ops-day]')) {
+        const tasks = openDayTasksModal(button.dataset.launchOpsDay || '');
+        recordOpsAction('opened-day', key, { count: tasks.length });
+        return true;
+      }
       if (button.matches?.('[data-launch-ops-create-selected]')) {
         const created = createSelectedTasks();
         recordOpsAction('created-selected', key, { count: created.length });
@@ -1290,7 +1744,7 @@
       }
       if (button.matches?.('[data-launch-ops-open-task]')) {
         const taskId = button.dataset.launchOpsOpenTask || '';
-        if (taskId && typeof window.openTaskModal === 'function') window.openTaskModal(taskId);
+        if (taskId) openLaunchTaskModal(taskId);
         else openTasksView();
         recordOpsAction('opened-task', key, { taskId });
         return true;
@@ -1312,7 +1766,7 @@
 
   function hardwireOpsButtons(root) {
     if (!root) return;
-    root.querySelectorAll('[data-launch-ops-create-selected],[data-launch-ops-create-bulk],[data-launch-ops-open-tasks],[data-launch-ops-open-task],[data-launch-ops-create-one]').forEach((button) => {
+    root.querySelectorAll('[data-launch-ops-create-selected],[data-launch-ops-create-bulk],[data-launch-ops-open-tasks],[data-launch-ops-open-task],[data-launch-ops-create-one],[data-launch-ops-queue],[data-launch-ops-day],[data-launch-modal-close],[data-launch-task-status],[data-launch-task-open-pool],[data-launch-queue-select],[data-launch-queue-create],[data-launch-queue-open]').forEach((button) => {
       if (button.__launchOpsHardwired) return;
       button.__launchOpsHardwired = true;
       button.addEventListener('click', handleOpsClick, true);
@@ -1381,7 +1835,12 @@
     snapshot,
     createSelected: createSelectedTasks,
     createBulk: createBulkTasks,
+    createOne: createOneTask,
     openTasks: openTasksView,
+    openTask: openLaunchTaskModal,
+    openQueue: openQueueModal,
+    openDay: openDayTasksModal,
+    openLaunchTasks: openLaunchTasksModal,
     refresh: queueAugment
   };
 

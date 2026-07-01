@@ -4,7 +4,7 @@
   if (window.__ALTEA_LAUNCH_ACTION_RESCUE_V1__) return;
   window.__ALTEA_LAUNCH_ACTION_RESCUE_V1__ = true;
 
-  const VERSION = '20260630-launch-action-rescue-v1';
+  const VERSION = '20260701-launch-action-rescue-modal-v1';
   const STORAGE_KEY = 'brand-portal-local-v1';
   const ACTION_SELECTOR = '[data-launch-ops-create-selected],[data-launch-ops-create-bulk],[data-launch-ops-open-tasks],[data-launch-ops-create-one],[data-launch-ops-open-task]';
   let lastAction = { key: '', at: 0 };
@@ -297,7 +297,27 @@
     }
     if (button.disabled && key !== 'open') return;
     consume(event, key);
-    if (key === 'open' || key.startsWith('open-task:')) {
+    if (key.startsWith('open-task:')) {
+      const taskId = key.slice('open-task:'.length);
+      const api = window.__ALTEA_LAUNCH_OPS_API__;
+      try {
+        if (taskId && api?.openTask) {
+          api.openTask(taskId);
+          record('opened-task-modal', key, { taskId });
+          return;
+        }
+        if (taskId && typeof window.openTaskModal === 'function') {
+          window.openTaskModal(taskId);
+          record('opened-task-modal-native', key, { taskId });
+          return;
+        }
+      } catch (error) {
+        console.warn('[launch-action-rescue] open task', error);
+      }
+      openControl();
+      return;
+    }
+    if (key === 'open') {
       openControl();
       return;
     }
@@ -306,6 +326,17 @@
       return;
     }
     if (key.startsWith('one:')) {
+      const [, launchKey, defId] = key.split(':');
+      const api = window.__ALTEA_LAUNCH_OPS_API__;
+      try {
+        if (api?.createOne) {
+          const created = api.createOne(launchKey || '', defId || '') || [];
+          record('created-one', key, { count: created.length });
+          return;
+        }
+      } catch (error) {
+        console.warn('[launch-action-rescue] create one', error);
+      }
       record('one-delegated', key);
     }
   }

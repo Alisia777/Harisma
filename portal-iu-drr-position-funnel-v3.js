@@ -1,13 +1,18 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-iudrr-sku-day-fallback1';
+  const VERSION = '20260701-iudrr-date-window1';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
   const SEARCH_KEY = 'altea.iuDrr.search.v3';
   const TABLE_FILTER_KEY = 'altea.iuDrr.tableFilters.v4';
   const VIEW_KEYS = ['iu', 'summary', 'position', 'daily', 'stats'];
+  const WINDOW_PERIODS = [
+    ['7', '7 дней'],
+    ['14', '14 дней'],
+    ['month', 'Месяц к дате']
+  ];
 
   const PLATFORM = {
     wb: { label: 'WB', full: 'Wildberries', tone: '#b84cff', varName: '--wb' },
@@ -137,6 +142,14 @@
   function compactDate(date) {
     const text = String(date || '');
     return text.length >= 10 ? `${text.slice(8, 10)}.${text.slice(5, 7)}` : text;
+  }
+
+  function addDaysKey(dateKey, delta) {
+    const day = String(dateKey || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return '';
+    const date = new Date(`${day}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + delta);
+    return date.toISOString().slice(0, 10);
   }
 
   function normalizePlatform(value) {
@@ -689,8 +702,13 @@
   function selectedMonth(payload) {
     const state = appState();
     const filters = state.iuDrrFilters || {};
+    const storedMonth = getUiState().month;
     const options = monthOptions(payload);
-    const wanted = filters.month && filters.month !== 'latest' ? filters.month : options[options.length - 1];
+    const wanted = filters.month && filters.month !== 'latest'
+      ? filters.month
+      : storedMonth && storedMonth !== 'latest'
+        ? storedMonth
+        : options[options.length - 1];
     return options.includes(wanted) ? wanted : options[options.length - 1];
   }
 
@@ -699,6 +717,90 @@
     if (!rows.length) return [];
     if (!monthKey || monthKey === 'latest') return rows;
     return rows.filter((row) => row.monthKey === monthKey);
+  }
+
+  function rowDate(row) {
+    return String(row?.date || row?.label || '').slice(0, 10);
+  }
+
+  function dateKeysFromRows(rows) {
+    return Array.from(new Set((Array.isArray(rows) ? rows : []).map(rowDate).filter(Boolean))).sort();
+  }
+
+  function dateBoundsFromRows(rows) {
+    const dates = dateKeysFromRows(rows);
+    return { minDate: dates[0] || '', maxDate: dates[dates.length - 1] || '' };
+  }
+
+  function currentDateWindowState() {
+    const state = appState();
+    const filters = state.iuDrrFilters || {};
+    const stored = getUiState().dateWindow || {};
+    return {
+      period: String(filters.windowPeriod || stored.period || 'month'),
+      endDate: String(filters.windowEndDate || stored.endDate || '')
+    };
+  }
+
+  function writeDateWindowState(patch) {
+    const state = appState();
+    state.iuDrrFilters = state.iuDrrFilters || {};
+    if (patch.period !== undefined) state.iuDrrFilters.windowPeriod = String(patch.period || 'month');
+    if (patch.endDate !== undefined) state.iuDrrFilters.windowEndDate = String(patch.endDate || '');
+    const uiState = getUiState();
+    uiState.dateWindow = {
+      ...(uiState.dateWindow || {}),
+      ...(patch.period !== undefined ? { period: String(patch.period || 'month') } : {}),
+      ...(patch.endDate !== undefined ? { endDate: String(patch.endDate || '') } : {})
+    };
+    writeJsonSetting(UI_KEY, uiState);
+  }
+
+  function normalizeWindowPeriod(period) {
+    const key = String(period || 'month');
+    return WINDOW_PERIODS.some(([value]) => value === key) ? key : 'month';
+  }
+
+  function dateWindowForRows(monthRows, monthKey) {
+    const dates = dateKeysFromRows(monthRows);
+    if (!dates.length) {
+      return {
+        period: 'month',
+        startDate: '',
+        endDate: '',
+        minDate: '',
+        maxDate: '',
+        rows: [],
+        label: 'нет дат'
+      };
+    }
+    const state = currentDateWindowState();
+    const period = normalizeWindowPeriod(state.period);
+    const minDate = dates[0];
+    const maxDate = dates[dates.length - 1];
+    const wantedEnd = String(state.endDate || '').slice(0, 10);
+    const endDate = dates.includes(wantedEnd) ? wantedEnd : maxDate;
+    let startDate = minDate;
+    if (period === '7') startDate = addDaysKey(endDate, -6);
+    else if (period === '14') startDate = addDaysKey(endDate, -13);
+    else if (monthKey && monthKey !== 'latest') startDate = `${monthKey}-01`;
+    else startDate = `${endDate.slice(0, 7)}-01`;
+    if (startDate < minDate) startDate = minDate;
+    const rows = monthRows.filter((row) => {
+      const date = rowDate(row);
+      return date && date >= startDate && date <= endDate;
+    });
+    const firstShown = rows[0] ? rowDate(rows[0]) : startDate;
+    const lastShown = rows[rows.length - 1] ? rowDate(rows[rows.length - 1]) : endDate;
+    return {
+      period,
+      startDate: firstShown || startDate,
+      endDate,
+      minDate,
+      maxDate,
+      rows,
+      label: `${compactDate(firstShown || startDate)} - ${compactDate(lastShown || endDate)}`
+    };
   }
 
   function monthLabel(key) {
@@ -854,8 +956,14 @@
       .iu-drr-v3-badges{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
       .iu-drr-v3-badge{display:inline-flex;align-items:center;gap:7px;min-height:28px;padding:0 11px;border:1px solid var(--line);border-radius:999px;background:rgba(13,11,9,.82);color:var(--muted);font-size:11px;font-weight:800;white-space:nowrap}
       .iu-drr-v3-badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--champ);box-shadow:0 0 12px rgba(229,193,111,.48)}
-      .iu-drr-v3-toolbar{position:sticky;top:0;z-index:12;display:grid;grid-template-columns:minmax(180px,.7fr) minmax(360px,1.3fr) minmax(260px,.9fr) auto;gap:10px;align-items:center;margin:0 0 14px;padding:12px;border:1px solid var(--line);border-radius:16px;background:rgba(10,8,7,.9);backdrop-filter:blur(18px);box-shadow:0 16px 40px rgba(0,0,0,.20)}
+      .iu-drr-v3-toolbar{position:sticky;top:0;z-index:12;display:grid;grid-template-columns:minmax(430px,1.08fr) minmax(360px,1.15fr) minmax(230px,.72fr) auto;gap:10px;align-items:center;margin:0 0 14px;padding:12px;border:1px solid var(--line);border-radius:16px;background:rgba(10,8,7,.9);backdrop-filter:blur(18px);box-shadow:0 16px 40px rgba(0,0,0,.20)}
       .iu-drr-v3-control,.iu-drr-v3-search{height:38px;width:100%;border:1px solid var(--line);border-radius:11px;background:#0b0a08;color:#fff6e2;padding:0 12px;font-size:12px;outline:none}
+      .iu-drr-v3-datebar{display:grid;grid-template-columns:minmax(132px,.78fr) minmax(132px,.62fr) minmax(190px,1fr);gap:7px;align-items:end;min-width:0}
+      .iu-drr-v3-date-field{display:grid;gap:4px;min-width:0;color:var(--faint);font-size:9px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
+      .iu-drr-v3-date-field input{height:38px;width:100%;border:1px solid var(--line);border-radius:11px;background:#0b0a08;color:#fff6e2;padding:0 10px;font-size:12px;letter-spacing:0;text-transform:none;outline:none}
+      .iu-drr-v3-periods{display:flex;gap:5px;min-width:0;padding:4px;border:1px solid var(--line);border-radius:14px;background:#0b0a08}
+      .iu-drr-v3-period{height:28px;flex:1 1 0;min-width:0;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--muted);padding:0 9px;font-size:10px;font-weight:850;white-space:nowrap;cursor:pointer}
+      .iu-drr-v3-period[aria-selected="true"]{background:linear-gradient(180deg,#f6dc9f,#bb8f42);color:#15100a}
       .iu-drr-v3-tabs{display:flex;flex-wrap:wrap;gap:5px;min-width:0;padding:4px;border:1px solid var(--line);border-radius:14px;background:#0b0a08;overflow:visible}
       .iu-drr-v3-tab{height:30px;flex:0 1 auto;min-width:max-content;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--muted);padding:0 12px;font-size:11px;font-weight:850;white-space:nowrap;cursor:pointer;transition:transform 180ms ease,background 180ms ease,color 180ms ease}
       .iu-drr-v3-tab:hover{transform:translateY(-1px)}
@@ -963,8 +1071,8 @@
       @keyframes iuDrrV3Stage{from{opacity:0;transform:translateY(7px) scaleX(.96)}to{opacity:1;transform:none}}
       @keyframes iuDrrV3Bar{from{transform:scaleY(0)}}
       @keyframes iuDrrV3Line{from{stroke-dashoffset:1100}to{stroke-dashoffset:0}}
-      @media(max-width:1400px){.iu-drr-v3-toolbar{grid-template-columns:minmax(160px,.7fr) minmax(0,1.3fr)}.iu-drr-v3-tabs{grid-column:1/-1}.iu-drr-v3-lock{text-align:left}.iu-drr-v3-kpis{grid-template-columns:repeat(3,1fr)}.iu-drr-v3-table-filter{grid-template-columns:repeat(3,minmax(0,1fr))}.iu-drr-v3-funnel{grid-template-columns:repeat(4,1fr)}.iu-drr-v3-metric-grid{grid-template-columns:repeat(3,1fr)}.iu-drr-v3-chart-table{grid-template-columns:1fr}}
-      @media(max-width:920px){.iu-drr-v3-head{flex-direction:column;align-items:flex-start}.iu-drr-v3-toolbar{position:static;grid-template-columns:1fr}.iu-drr-v3-kpis{grid-template-columns:1fr}.iu-drr-v3-table-filter{grid-template-columns:1fr 1fr}.iu-drr-v3-position-layout{grid-template-columns:1fr}.iu-drr-v3-position-list{max-height:340px}.iu-drr-v3-funnel{grid-template-columns:repeat(2,1fr)}.iu-drr-v3-metric-grid{grid-template-columns:repeat(2,1fr)}}
+      @media(max-width:1400px){.iu-drr-v3-toolbar{grid-template-columns:minmax(360px,1fr) minmax(0,1fr)}.iu-drr-v3-tabs{grid-column:1/-1}.iu-drr-v3-lock{text-align:left}.iu-drr-v3-kpis{grid-template-columns:repeat(3,1fr)}.iu-drr-v3-table-filter{grid-template-columns:repeat(3,minmax(0,1fr))}.iu-drr-v3-funnel{grid-template-columns:repeat(4,1fr)}.iu-drr-v3-metric-grid{grid-template-columns:repeat(3,1fr)}.iu-drr-v3-chart-table{grid-template-columns:1fr}}
+      @media(max-width:920px){.iu-drr-v3-head{flex-direction:column;align-items:flex-start}.iu-drr-v3-toolbar{position:static;grid-template-columns:1fr}.iu-drr-v3-datebar{grid-template-columns:1fr}.iu-drr-v3-kpis{grid-template-columns:1fr}.iu-drr-v3-table-filter{grid-template-columns:1fr 1fr}.iu-drr-v3-position-layout{grid-template-columns:1fr}.iu-drr-v3-position-list{max-height:340px}.iu-drr-v3-funnel{grid-template-columns:repeat(2,1fr)}.iu-drr-v3-metric-grid{grid-template-columns:repeat(2,1fr)}}
       @media(prefers-reduced-motion:reduce){.iu-drr-v3-shell *,.iu-drr-v3-shell *::before,.iu-drr-v3-shell *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
     `;
     document.head.appendChild(style);
@@ -2692,6 +2800,23 @@
     `;
   }
 
+  function dateWindowControlsHtml(payload, monthKey, dateWindow, dateBounds) {
+    return `
+      <div class="iu-drr-v3-datebar" aria-label="Период ИУ / ДРР">
+        ${monthSelectHtml(payload, monthKey)}
+        <label class="iu-drr-v3-date-field">
+          <span>Дата до</span>
+          <input id="iuDrrV3DateTo" type="date" value="${escapeHtml(dateWindow.endDate)}" min="${escapeHtml(dateBounds.minDate || dateWindow.minDate)}" max="${escapeHtml(dateBounds.maxDate || dateWindow.maxDate)}" aria-label="Дата окончания периода ИУ / ДРР">
+        </label>
+        <div class="iu-drr-v3-periods" role="tablist" aria-label="Быстрый период ИУ / ДРР">
+          ${WINDOW_PERIODS.map(([key, label]) => `
+            <button class="iu-drr-v3-period" type="button" role="tab" data-iu-v3-period="${escapeHtml(key)}" aria-selected="${key === dateWindow.period ? 'true' : 'false'}">${escapeHtml(label)}</button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   function renderSkeleton(root) {
     root.dataset.alteaIuDrrV3 = 'loading';
     root.innerHTML = `
@@ -2721,7 +2846,10 @@
     root.dataset.alteaIuDrrV3 = 'ready';
     const focus = getGlobalMarketplaceFocus();
     const monthKey = selectedMonth(payload);
-    const rows = rowsForMonth(payload, monthKey);
+    const monthRows = rowsForMonth(payload, monthKey);
+    const dateBounds = dateBoundsFromRows(payload.daily);
+    const dateWindow = dateWindowForRows(monthRows, monthKey);
+    const rows = dateWindow.rows;
     const view = currentView();
     const positions = buildPositions(focus);
     const panelContent = {
@@ -2747,11 +2875,12 @@
           <div class="iu-drr-v3-badges">
             <span class="iu-drr-v3-badge">фокус ${escapeHtml(focus === 'all' ? 'все площадки' : PLATFORM[focus]?.label || focus)}</span>
             <span class="iu-drr-v3-badge">срез ${escapeHtml(payload.asOfDate || monthKey)}</span>
+            <span class="iu-drr-v3-badge">окно ${escapeHtml(dateWindow.label)}</span>
             <span class="iu-drr-v3-badge">${escapeHtml(fmtInt(positions.length))} SKU</span>
           </div>
         </div>
         <div class="iu-drr-v3-toolbar">
-          ${monthSelectHtml(payload, monthKey)}
+          ${dateWindowControlsHtml(payload, monthKey, dateWindow, dateBounds)}
           <div class="iu-drr-v3-tabs" role="tablist" aria-label="Раздел ИУ / ДРР">
             ${[
               ['iu', 'ИУ по дням'],
@@ -2778,8 +2907,37 @@
     root.querySelector('#iuDrrV3Month')?.addEventListener('change', (event) => {
       const state = appState();
       state.iuDrrFilters = state.iuDrrFilters || {};
-      state.iuDrrFilters.month = String(event.target.value || 'latest');
+      const nextMonth = String(event.target.value || 'latest');
+      state.iuDrrFilters.month = nextMonth;
+      if (state.iuDrrFilters.windowEndDate && nextMonth !== 'latest' && !String(state.iuDrrFilters.windowEndDate).startsWith(`${nextMonth}-`)) {
+        state.iuDrrFilters.windowEndDate = '';
+        writeDateWindowState({ endDate: '' });
+      }
+      const uiState = getUiState();
+      uiState.month = nextMonth;
+      writeJsonSetting(UI_KEY, uiState);
       renderIuDrrV3(rootId);
+    });
+    root.querySelector('#iuDrrV3DateTo')?.addEventListener('change', (event) => {
+      const nextDate = String(event.target.value || '');
+      const nextMonth = nextDate.slice(0, 7);
+      const options = monthOptions(getPayload());
+      if (options.includes(nextMonth)) {
+        const state = appState();
+        state.iuDrrFilters = state.iuDrrFilters || {};
+        state.iuDrrFilters.month = nextMonth;
+        const uiState = getUiState();
+        uiState.month = nextMonth;
+        writeJsonSetting(UI_KEY, uiState);
+      }
+      writeDateWindowState({ endDate: nextDate });
+      renderIuDrrV3(rootId);
+    });
+    root.querySelectorAll('[data-iu-v3-period]').forEach((button) => {
+      button.addEventListener('click', () => {
+        writeDateWindowState({ period: button.getAttribute('data-iu-v3-period') || 'month' });
+        renderIuDrrV3(rootId);
+      });
     });
     root.querySelector('#iuDrrV3Search')?.addEventListener('input', (event) => {
       setCurrentSearch(event.target.value);

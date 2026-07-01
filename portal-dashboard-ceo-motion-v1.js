@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-dashboard-ozon-ads-actuality1';
+  const VERSION = '20260701-dashboard-ads-dedup1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -910,15 +910,40 @@
     };
   }
 
+  function nearlyEqualMoney(left, right) {
+    const first = Number(left);
+    const second = Number(right);
+    if (!Number.isFinite(first) || !Number.isFinite(second)) return false;
+    return Math.abs(first - second) <= Math.max(1, Math.abs(second) * 0.001);
+  }
+
+  function ozonFinanceNetSpend(row) {
+    const gross = numberOrNull(row?.ozonDrrSpendGross);
+    if (gross === null) return null;
+    const excluded = finite(row?.ozonDrrExcludedTotal);
+    return Math.max(0, gross - excluded);
+  }
+
+  function dedupeOzonFactSpend(value, row) {
+    const spend = numberOrNull(value);
+    if (spend === null) return null;
+    const plan = numberOrNull(row?.planSpendOzon);
+    const financeNet = ozonFinanceNetSpend(row);
+    if (spend > 0 && plan !== null && plan > 0 && financeNet !== null && nearlyEqualMoney(spend, financeNet + plan)) {
+      return financeNet;
+    }
+    return Math.max(0, spend);
+  }
+
   function ozonAdSpendFact(row) {
     const spendFact = numberOrNull(row?.spendFactOzon);
-    if (spendFact !== null) return Math.max(0, spendFact);
+    if (spendFact !== null) return dedupeOzonFactSpend(spendFact, row);
     const alternateFact = positiveFinite(row?.ozonSpendFact, row?.ozonAdsFact, row?.adsFactOzon);
-    if (alternateFact > 0) return alternateFact;
+    if (alternateFact > 0) return dedupeOzonFactSpend(alternateFact, row);
     const ambiguous = numberOrNull(row?.ozonAds);
     const plan = numberOrNull(row?.planSpendOzon);
     if (ambiguous !== null && ambiguous > 0 && (plan === null || Math.abs(ambiguous - plan) > 0.01)) {
-      return ambiguous;
+      return dedupeOzonFactSpend(ambiguous, row);
     }
     return 0;
   }

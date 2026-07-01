@@ -127,7 +127,7 @@ async function run() {
       motionVisible: Boolean(document.querySelector('.altea-motion-stage.is-visible'))
     }));
 
-    assert.strictEqual(recovered.version, '20260701-task-lane-more-v1');
+    assert.strictEqual(recovered.version, '20260701-task-loader-rescue-v1');
     assert.deepStrictEqual(
       {
         search: recovered.search,
@@ -168,6 +168,10 @@ async function run() {
     assert.ok(!moreControl.text.includes('Уточните'), moreControl.text);
     await page.click('[data-task-show-more-lane="new"]');
     await page.waitForFunction(() => document.querySelectorAll('[data-kanban-task]').length === 25, null, { timeout: 30000 });
+
+    await page.evaluate(() => window.AlteaMotion.workspace());
+    await page.waitForSelector('.altea-motion-stage.is-visible', { timeout: 30000 });
+    await page.waitForFunction(() => !document.querySelector('.altea-motion-stage.is-visible'), null, { timeout: 12000 });
 
     await page.fill('[data-task-filter="search"]', 'ручной пустой поиск');
     await page.waitForFunction(() => window.state.controlFilters.search === 'ручной пустой поиск', null, { timeout: 30000 });

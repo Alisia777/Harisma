@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260701-task-lane-more-v1';
+  const VERSION = '20260701-task-loader-rescue-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -130,6 +130,7 @@
   let controlObserverTimer = 0;
   let renderToken = 0;
   let renderingControl = false;
+  let motionHideTimer = 0;
   let lastManualFilterChangeAt = 0;
   let userTouchedTaskFilters = false;
   let detailEventsBound = false;
@@ -2311,6 +2312,19 @@
     });
   }
 
+  function hideReadyMotionOverlay() {
+    if (motionHideTimer) window.clearTimeout(motionHideTimer);
+    motionHideTimer = window.setTimeout(() => {
+      const viewRoot = root();
+      if (!viewRoot || !viewRoot.classList.contains('active')) return;
+      if (!viewRoot.querySelector('[data-task-calendar-design-v1][data-task-kanban-v1]')) return;
+      if (document.body.classList.contains('portal-auth-locked')) return;
+      try {
+        if (window.AlteaMotion && typeof window.AlteaMotion.hide === 'function') window.AlteaMotion.hide();
+      } catch (_) {}
+    }, 160);
+  }
+
   function enhanceControl(force = false) {
     const viewRoot = root();
     if (!viewRoot || !viewRoot.classList.contains('active')) return;
@@ -2320,6 +2334,7 @@
     const current = viewRoot.querySelector('[data-task-calendar-design-v1]');
     if (current && current.dataset.renderSignature === signature && viewRoot.children.length === 1) {
       cleanupLegacyControl(viewRoot);
+      hideReadyMotionOverlay();
       return;
     }
     const token = ++renderToken;
@@ -2333,6 +2348,7 @@
         bindShell(shell);
       }
       cleanupLegacyControl(viewRoot);
+      hideReadyMotionOverlay();
     } finally {
       renderingControl = false;
     }

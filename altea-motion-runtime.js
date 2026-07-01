@@ -30,6 +30,7 @@
   var canvasDpr = 1;
   var readinessTimer = 0;
   var readinessObserver = null;
+  var overlayFailsafeTimer = 0;
   var lastRouteMotionAt = 0;
 
   var ROUTE_LOADERS = {
@@ -617,6 +618,43 @@
     readinessObserver = null;
   }
 
+  function cancelOverlayFailsafe() {
+    if (overlayFailsafeTimer) window.clearTimeout(overlayFailsafeTimer);
+    overlayFailsafeTimer = 0;
+  }
+
+  function finishVisibleWorkspaceOverlay() {
+    if (!stage || stage.hidden || !stage.classList.contains("is-visible")) return true;
+    if (bootOverlayShown && !finishingBoot) {
+      finishBoot();
+      return true;
+    }
+    hide();
+    return true;
+  }
+
+  function startOverlayFailsafe(scene, options) {
+    cancelOverlayFailsafe();
+    options = options || {};
+    if (options.waitForView || options.duration) return;
+    if (scene !== "workspace" && scene !== "import") return;
+    var targetView = normalizeMotionView(options.view || activeViewName() || "dashboard");
+    var startedAt = Date.now();
+    var minMs = Math.max(BOOT_MIN_MS, Number(options.minDuration || 0));
+    var maxMs = Math.max(minMs + 800, Number(options.maxDuration || BOOT_HARD_MAX_MS));
+    function tick() {
+      overlayFailsafeTimer = 0;
+      if (!stage || stage.hidden || !stage.classList.contains("is-visible")) return;
+      var elapsed = Date.now() - startedAt;
+      if ((elapsed >= minMs && viewIsReady(targetView)) || elapsed >= maxMs) {
+        finishVisibleWorkspaceOverlay();
+        return;
+      }
+      overlayFailsafeTimer = window.setTimeout(tick, 300);
+    }
+    overlayFailsafeTimer = window.setTimeout(tick, 300);
+  }
+
   function waitForViewReady(view, options) {
     cancelReadinessWait();
     options = options || {};
@@ -664,6 +702,7 @@
     var node = ensureStage();
     window.clearTimeout(hideTimer);
     cancelReadinessWait();
+    cancelOverlayFailsafe();
     renderScene(scene || "workspace", options);
     node.hidden = false;
     setLabel(options.label || "Загружаем рабочее пространство");
@@ -679,13 +718,23 @@
       waitForViewReady(options.waitForView, options);
     } else if (options.duration) {
       hideTimer = window.setTimeout(hide, options.duration);
+    } else {
+      startOverlayFailsafe(scene || "workspace", options);
     }
   }
 
   function hide() {
     if (!stage) return;
     window.clearTimeout(hideTimer);
+    cancelOverlayFailsafe();
     cancelReadinessWait();
+    if (bootOverlayShown && stage.getAttribute("data-scene") === "workspace" && !finishingBoot) {
+      bootOverlayShown = false;
+      bootOverlayDone = true;
+      stopStatusPoll();
+      window.clearTimeout(bootTimer);
+      bootTimer = 0;
+    }
     var settleMs = stage.getAttribute("data-scene") === "transition" ? 360 : 720;
     stage.classList.remove("is-visible");
     stopProgress();

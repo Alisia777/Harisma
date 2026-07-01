@@ -29,6 +29,7 @@
   var canvasH = 0;
   var canvasDpr = 1;
   var readinessTimer = 0;
+  var readinessHardTimer = 0;
   var readinessObserver = null;
   var overlayFailsafeTimer = 0;
   var lastRouteMotionAt = 0;
@@ -613,9 +614,22 @@
 
   function cancelReadinessWait() {
     if (readinessTimer) window.clearTimeout(readinessTimer);
+    if (readinessHardTimer) window.clearTimeout(readinessHardTimer);
     readinessTimer = 0;
+    readinessHardTimer = 0;
     if (readinessObserver) readinessObserver.disconnect();
     readinessObserver = null;
+  }
+
+  function routeFallbackReady(view, elapsed) {
+    var key = normalizeMotionView(view || activeViewName() || "dashboard");
+    if (key !== "control") return false;
+    if (elapsed < 3600) return false;
+    var root = viewRoot(key);
+    if (!viewRootVisible(root)) return false;
+    var hash = String(window.location.hash || "").replace(/^#/, "").trim();
+    var active = document.querySelector(".view.active[id='view-control']");
+    return normalizeMotionView(hash || "") === "control" || !!active;
   }
 
   function cancelOverlayFailsafe() {
@@ -661,7 +675,8 @@
     var targetView = normalizeMotionView(view || activeViewName() || "dashboard");
     var startedAt = Date.now();
     var minMs = Number(options.minDuration || ROUTE_MIN_MS);
-    var maxMs = Number(options.maxDuration || ROUTE_MAX_MS);
+    var defaultMaxMs = targetView === "control" ? 5200 : ROUTE_MAX_MS;
+    var maxMs = Number(options.maxDuration || defaultMaxMs);
     var done = false;
     function finish() {
       if (done) return;
@@ -676,12 +691,17 @@
         finish();
         return;
       }
+      if (routeFallbackReady(targetView, elapsed)) {
+        finish();
+        return;
+      }
       if (elapsed >= maxMs) {
         finish();
         return;
       }
       readinessTimer = window.setTimeout(tick, 140);
     }
+    readinessHardTimer = window.setTimeout(finish, Math.max(maxMs + 350, minMs + 900));
     var root = viewRoot(targetView) || document.querySelector("main") || document.body;
     if (window.MutationObserver && root) {
       readinessObserver = new MutationObserver(tick);
@@ -859,6 +879,10 @@
     return String(text || "Открываем раздел").trim();
   }
 
+  function routeMaxDuration(view) {
+    return normalizeMotionView(view || "") === "control" ? 5200 : ROUTE_MAX_MS;
+  }
+
   function bindRouteTransitions() {
     function showForView(view, label) {
       if (!view) return;
@@ -866,7 +890,7 @@
       routeTransition({
         waitForView: view,
         minDuration: ROUTE_MIN_MS,
-        maxDuration: ROUTE_MAX_MS,
+        maxDuration: routeMaxDuration(view),
         label: label || routeForView(view).label,
         view: view
       });
@@ -1095,7 +1119,7 @@
     if (options.view || options.waitForView) {
       options.waitForView = options.waitForView || options.view;
       options.minDuration = options.minDuration || ROUTE_MIN_MS;
-      options.maxDuration = options.maxDuration || ROUTE_MAX_MS;
+      options.maxDuration = options.maxDuration || routeMaxDuration(options.waitForView || options.view);
     } else {
       options.duration = options.duration || ROUTE_MS;
     }

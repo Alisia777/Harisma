@@ -98,6 +98,16 @@ async function run() {
         waitForView: 'control',
         view: 'control',
         minDuration: 80,
+        label: 'Задачи'
+      });
+    });
+    await page.waitForSelector('.altea-motion-stage.is-visible', { timeout: 30000 });
+    await page.waitForFunction(() => !document.querySelector('.altea-motion-stage.is-visible'), null, { timeout: 8000 });
+    await page.evaluate(() => {
+      window.AlteaMotion.transition({
+        waitForView: 'control',
+        view: 'control',
+        minDuration: 80,
         maxDuration: 1800,
         label: 'Задачи'
       });

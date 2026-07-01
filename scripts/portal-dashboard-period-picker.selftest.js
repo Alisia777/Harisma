@@ -168,7 +168,7 @@ async function run() {
     await page.selectOption('[data-ceo-month]', '2026-06');
     await page.waitForFunction(() => document.querySelector('[data-ceo-date-to]')?.value === '2026-06-30', null, { timeout: 30000 });
     const june = await snapshot(page);
-    assert.strictEqual(june.version, '20260701-dashboard-money-orders3');
+    assert.strictEqual(june.version, '20260701-dashboard-money-rub4');
     assert.strictEqual(june.period, 'month');
     assert.strictEqual(june.activePeriod, 'month');
     assert.strictEqual(june.month, '2026-06');

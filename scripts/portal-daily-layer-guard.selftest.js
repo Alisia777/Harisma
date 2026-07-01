@@ -150,7 +150,7 @@ function options(dir) {
     manifestPath,
     syncIssuesPath: path.join(dir, 'portal_sync_issues.json'),
     expectedDate: date,
-    expectedRunDate: '',
+    expectedRunDate: '2026-06-20',
     explicitExpectedDate: true,
     noFail: true,
     noWrite: true,
@@ -193,6 +193,22 @@ try {
   const dateBroken = run(options(dir));
   assert.strictEqual(dateBroken.report.publish.allowed, false);
   assert.ok(dateBroken.report.publish.blockingReasons.some((reason) => reason.includes('do not share one cutoff date')));
+
+  buildFixture(dir);
+  const unitMoney = JSON.parse(fs.readFileSync(path.join(dir, 'platform_trends.json'), 'utf8'));
+  unitMoney.platforms.wb.series[0] = { date, revenue: 10, ordersRevenue: 300, units: 10 };
+  write(dir, 'platform_trends.json', unitMoney);
+  const unitBroken = run(options(dir));
+  assert.strictEqual(unitBroken.report.publish.allowed, false);
+  assert.ok(unitBroken.report.publish.blockingReasons.some((reason) => reason.includes('looks like units')));
+
+  buildFixture(dir);
+  const staleExtra = JSON.parse(fs.readFileSync(path.join(dir, 'platform_trends.json'), 'utf8'));
+  staleExtra.platforms.goldapple = { series: [{ date: '2026-06-10', revenue: 50, units: 1 }] };
+  write(dir, 'platform_trends.json', staleExtra);
+  const staleExtraBroken = run(options(dir));
+  assert.strictEqual(staleExtraBroken.report.publish.allowed, false);
+  assert.ok(staleExtraBroken.report.publish.blockingReasons.some((reason) => reason.includes('goldapple date 2026-06-10')));
 
   buildFixture(dir);
   const badOrder = JSON.parse(fs.readFileSync(path.join(dir, 'order_procurement.json'), 'utf8'));

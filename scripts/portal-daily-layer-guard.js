@@ -19,6 +19,23 @@ const PHASE3_REQUIRED_REPORTS = [
   'portal_feature_readiness.json'
 ];
 const DEFAULT_MANIFEST = path.join(__dirname, 'portal-truth-manifest.json');
+const BUSINESS_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
+const CORE_CUTOFF_PLATFORMS = ['wb', 'ozon', 'ya'];
+const PLATFORM_ALIASES = {
+  ym: 'ya',
+  yandex: 'ya',
+  'yandex market': 'ya',
+  'ya market': 'ya',
+  ga: 'goldapple',
+  zya: 'goldapple',
+  letual: 'letu',
+  "l'etoile": 'letu',
+  letoile: 'letu',
+  mm: 'megamarket',
+  'mega market': 'megamarket',
+  magnitmarket: 'magnit',
+  'magnit market': 'magnit'
+};
 const MOJIBAKE_MARKERS = ['Рџ', 'РЎ', 'Р°С', 'РµС', 'РёС', 'Р»С', 'РЅС', 'Р”', 'Рќ', 'Р’', '���', '\uFFFD'];
 
 function parseArgs(argv) {
@@ -130,6 +147,12 @@ function normalizedText(value) {
     .replace(/ё/g, 'е')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function normalizePlatformKey(value) {
+  const raw = normalizedText(value).replace(/[_-]+/g, ' ');
+  const compact = raw.replace(/\s+/g, '');
+  return PLATFORM_ALIASES[raw] || PLATFORM_ALIASES[compact] || compact || raw;
 }
 
 function stableStringify(value) {
@@ -316,13 +339,10 @@ function dashboardPlanMonth(dashboard, monthKey) {
   }
   const control = dashboard?.dataFreshness?.salaryPlanControlTotals?.[monthKey];
   if (!control) return null;
+  const channels = Object.fromEntries(BUSINESS_PLATFORMS.map((key) => [key, { revenue: control[key] }]));
   return {
     revenue: control.revenue,
-    channels: {
-      wb: { revenue: control.wb },
-      ozon: { revenue: control.ozon },
-      ya: { revenue: control.ya }
-    }
+    channels
   };
 }
 
@@ -338,19 +358,23 @@ function inspectCompanyPlan(loaded, policy, expectedDate, checks, passports) {
     return addCheck(checks, check);
   }
   const total = roundMoney(month.revenue);
-  const channelValues = ['wb', 'ozon', 'ya'].map((key) => roundMoney(month.channels?.[key]?.revenue));
-  const channelSum = channelValues.reduce((sum, value) => sum + value, 0);
+  const channelValues = BUSINESS_PLATFORMS.map((key) => [key, roundMoney(month.channels?.[key]?.revenue)]);
+  const channelSum = channelValues.reduce((sum, [, value]) => sum + value, 0);
   check.totalRevenue = total;
   check.channelRevenueSum = channelSum;
-  check.channels = { wb: channelValues[0], ozon: channelValues[1], ya: channelValues[2] };
+  check.channels = Object.fromEntries(channelValues);
   if (!moneyMatches(total, channelSum, policy)) {
-    check.blockingReasons.push(`company_plan: month total ${total} does not equal WB+Ozon+Yandex ${channelSum}`);
+    check.blockingReasons.push(`company_plan: month total ${total} does not equal included marketplace channels ${channelSum}`);
   }
   passports.push(
     { key: 'plan.marketplace.revenue', source: 'company_plan.json', period: monthKey, value: total, formula: 'months[month].revenue' },
-    { key: 'plan.marketplace.revenue.wb', source: 'company_plan.json', period: monthKey, value: channelValues[0], formula: 'months[month].channels.wb.revenue' },
-    { key: 'plan.marketplace.revenue.ozon', source: 'company_plan.json', period: monthKey, value: channelValues[1], formula: 'months[month].channels.ozon.revenue' },
-    { key: 'plan.marketplace.revenue.ya', source: 'company_plan.json', period: monthKey, value: channelValues[2], formula: 'months[month].channels.ya.revenue' }
+    ...channelValues.map(([key, value]) => ({
+      key: `plan.marketplace.revenue.${key}`,
+      source: 'company_plan.json',
+      period: monthKey,
+      value,
+      formula: `months[month].channels.${key}.revenue`
+    }))
   );
 
   const embeddedMonth = dashboardPlanMonth(dashboard, monthKey);
@@ -362,7 +386,7 @@ function inspectCompanyPlan(loaded, policy, expectedDate, checks, passports) {
     if (!moneyMatches(total, embeddedTotal, policy)) {
       check.blockingReasons.push(`dashboard: embedded plan ${embeddedTotal} differs from company_plan ${total}`);
     }
-    for (const key of ['wb', 'ozon', 'ya']) {
+    for (const key of BUSINESS_PLATFORMS) {
       const master = roundMoney(month.channels?.[key]?.revenue);
       const projection = roundMoney(embeddedMonth.channels?.[key]?.revenue);
       if (!moneyMatches(master, projection, policy)) {
@@ -376,9 +400,10 @@ function inspectCompanyPlan(loaded, policy, expectedDate, checks, passports) {
 function platformCollection(payload) {
   const platforms = payload?.platforms;
   if (Array.isArray(platforms)) {
-    return Object.fromEntries(platforms.map((item) => [normalizedText(item?.key || item?.platformKey || item?.platform), item]));
+    return Object.fromEntries(platforms.map((item) => [normalizePlatformKey(item?.key || item?.platformKey || item?.platform), item]));
   }
-  return platforms && typeof platforms === 'object' ? platforms : {};
+  if (!platforms || typeof platforms !== 'object') return {};
+  return Object.fromEntries(Object.entries(platforms).map(([key, value]) => [normalizePlatformKey(key), value]));
 }
 
 function pointDate(point) {
@@ -394,48 +419,147 @@ function pointRevenue(point) {
   return null;
 }
 
+function firstPointNumber(point, fields) {
+  for (const key of fields) {
+    const value = numberOrNull(point?.[key]);
+    if (value !== null) return value;
+  }
+  return null;
+}
+
+function pointOrderUnits(point) {
+  return firstPointNumber(point, ['ordersUnits', 'orderUnits', 'units', 'orders', 'count']);
+}
+
+function pointOrderRevenue(point) {
+  return firstPointNumber(point, ['ordersRevenue', 'ordersSumRub', 'orderRub', 'revenue', 'factRevenue', 'gmv', 'sales', 'amount', 'value', 'turnover']);
+}
+
+function pointBuyoutUnits(point) {
+  return firstPointNumber(point, ['deliveredUnits', 'buyoutUnits', 'boughtUnits', 'buys']);
+}
+
+function pointBuyoutRevenue(point) {
+  return firstPointNumber(point, [
+    'buyoutRevenue',
+    'buyoutRub',
+    'boughtRevenue',
+    'deliveredRevenue',
+    'financeTurnover',
+    'wbSellerSummarySalesRevenue',
+    'wbSellerSummaryFinanceTurnover'
+  ]);
+}
+
 function latestPoint(platform, expectedDate) {
   const series = Array.isArray(platform?.series) ? platform.series : (Array.isArray(platform?.daily) ? platform.daily : []);
   const candidates = series
-    .map((point) => ({ point, date: pointDate(point), revenue: pointRevenue(point) }))
+    .map((point) => ({
+      point,
+      date: pointDate(point),
+      revenue: pointRevenue(point),
+      orderUnits: pointOrderUnits(point),
+      orderRevenue: pointOrderRevenue(point),
+      buyoutUnits: pointBuyoutUnits(point),
+      buyoutRevenue: pointBuyoutRevenue(point)
+    }))
     .filter((item) => item.date && item.revenue !== null && (!expectedDate || item.date <= expectedDate))
     .sort((left, right) => left.date.localeCompare(right.date));
   return candidates[candidates.length - 1] || null;
 }
 
+function daysBetween(left, right) {
+  if (!left || !right) return null;
+  const leftDate = new Date(`${left}T00:00:00Z`);
+  const rightDate = new Date(`${right}T00:00:00Z`);
+  if (Number.isNaN(leftDate.getTime()) || Number.isNaN(rightDate.getTime())) return null;
+  return Math.round((rightDate - leftDate) / 86400000);
+}
+
+function platformHasSeries(platform) {
+  const series = Array.isArray(platform?.series) ? platform.series : (Array.isArray(platform?.daily) ? platform.daily : []);
+  return series.some((point) => pointDate(point));
+}
+
+function activeFactPlatforms(platforms, companyPlan, expectedDate) {
+  const { month } = currentMonthPlan(companyPlan || {}, expectedDate);
+  return BUSINESS_PLATFORMS.filter((key) => {
+    const planned = numberOrZero(month?.channels?.[key]?.revenue);
+    return planned > 0 || platformHasSeries(platforms[key]);
+  });
+}
+
+function moneyLooksLikeUnits(money, units, referenceRevenue) {
+  if (!(money > 0) || !(units > 0) || !(referenceRevenue > 0)) return false;
+  if (Math.abs(money - units) <= Math.max(1, units * 0.002)) return true;
+  return money <= units * 5 && referenceRevenue >= money * 10;
+}
+
 function inspectPlatformFact(loaded, policy, expectedDate, checks, passports) {
   const payload = loaded.get('platform_fact')?.payload;
+  const companyPlan = loaded.get('company_plan')?.payload;
   const check = { id: 'contract:platform-fact', scope: 'fact', source: 'platform_trends', warnings: [], blockingReasons: [] };
   if (!payload) return addCheck(checks, { ...check, blockingReasons: ['platform_trends: payload is unavailable'] });
   const platforms = platformCollection(payload);
+  const activePlatforms = activeFactPlatforms(platforms, companyPlan, expectedDate);
+  const inactiveEmptyPlatforms = BUSINESS_PLATFORMS.filter((key) => !activePlatforms.includes(key) && !platformHasSeries(platforms[key]));
   const points = {};
-  for (const key of ['wb', 'ozon', 'ya', 'all']) {
+  for (const key of [...activePlatforms, 'all']) {
     points[key] = latestPoint(platforms[key], expectedDate);
     if (key !== 'all' && !points[key]) check.blockingReasons.push(`platform_trends: ${key} has no numeric series point up to ${expectedDate}`);
   }
-  const componentDates = ['wb', 'ozon', 'ya'].map((key) => points[key]?.date).filter(Boolean);
-  const commonDate = componentDates.length === 3 && new Set(componentDates).size === 1 ? componentDates[0] : '';
+  const coreDates = CORE_CUTOFF_PLATFORMS.map((key) => points[key]?.date).filter(Boolean);
+  const commonDate = coreDates.length === CORE_CUTOFF_PLATFORMS.length && new Set(coreDates).size === 1 ? coreDates[0] : '';
+  const toleranceDays = Number(policy.dateToleranceDays ?? 1);
   check.expectedDate = expectedDate;
-  check.componentDates = Object.fromEntries(['wb', 'ozon', 'ya'].map((key) => [key, points[key]?.date || '']));
+  check.activePlatforms = activePlatforms;
+  check.inactiveEmptyPlatforms = inactiveEmptyPlatforms;
+  check.componentDates = Object.fromEntries(BUSINESS_PLATFORMS.map((key) => [key, points[key]?.date || '']));
   if (!commonDate) {
-    check.blockingReasons.push(`platform_trends: WB/Ozon/Yandex do not share one cutoff date (${componentDates.join(', ') || 'none'})`);
+    check.blockingReasons.push(`platform_trends: WB/Ozon/Yandex do not share one cutoff date (${coreDates.join(', ') || 'none'})`);
   }
-  const componentSum = ['wb', 'ozon', 'ya'].reduce((sum, key) => sum + numberOrZero(points[key]?.revenue), 0);
-  check.componentRevenue = Object.fromEntries(['wb', 'ozon', 'ya'].map((key) => [key, roundMoney(points[key]?.revenue)]));
+  for (const key of activePlatforms) {
+    const point = points[key];
+    if (!point) continue;
+    const ageDays = daysBetween(point.date, expectedDate);
+    if (ageDays !== null && ageDays > toleranceDays) {
+      check.blockingReasons.push(`platform_trends: ${key} date ${point.date} is ${ageDays} days older than expected ${expectedDate}`);
+    }
+    if (point.revenue !== null && point.orderUnits !== null && moneyLooksLikeUnits(point.revenue, point.orderUnits, point.orderRevenue || point.revenue)) {
+      check.blockingReasons.push(`platform_trends: ${key} revenue ${roundMoney(point.revenue)} looks like units ${roundMoney(point.orderUnits)}`);
+    }
+    if (point.orderRevenue !== null && point.orderUnits !== null && moneyLooksLikeUnits(point.orderRevenue, point.orderUnits, point.revenue)) {
+      check.blockingReasons.push(`platform_trends: ${key} orders revenue ${roundMoney(point.orderRevenue)} looks like order units ${roundMoney(point.orderUnits)}`);
+    }
+    if (point.buyoutRevenue !== null && point.buyoutUnits !== null && moneyLooksLikeUnits(point.buyoutRevenue, point.buyoutUnits, point.orderRevenue || point.revenue)) {
+      check.blockingReasons.push(`platform_trends: ${key} buyout revenue ${roundMoney(point.buyoutRevenue)} looks like buyout units ${roundMoney(point.buyoutUnits)}`);
+    }
+    if (point.orderRevenue !== null && point.revenue !== null && point.orderRevenue > 0 && point.revenue > 0 && point.orderRevenue < point.orderUnits && point.revenue > point.orderRevenue * 10) {
+      check.blockingReasons.push(`platform_trends: ${key} orders revenue is lower than units while revenue has rubles`);
+    }
+    if (point.buyoutRevenue !== null && point.orderRevenue !== null && point.orderRevenue > 0 && point.buyoutRevenue > point.orderRevenue * 1.05) {
+      check.blockingReasons.push(`platform_trends: ${key} buyout revenue ${roundMoney(point.buyoutRevenue)} exceeds orders revenue ${roundMoney(point.orderRevenue)}`);
+    }
+  }
+  if (inactiveEmptyPlatforms.length) {
+    check.warnings.push(`platform_trends: no active plan/data for ${inactiveEmptyPlatforms.join(', ')}`);
+  }
+  const componentSum = activePlatforms.reduce((sum, key) => sum + numberOrZero(points[key]?.revenue), 0);
+  check.componentRevenue = Object.fromEntries(BUSINESS_PLATFORMS.map((key) => [key, roundMoney(points[key]?.revenue)]));
   check.componentRevenueSum = roundMoney(componentSum);
   if (points.all && commonDate && points.all.date === commonDate) {
     check.allRevenue = roundMoney(points.all.revenue);
     if (!moneyMatches(componentSum, points.all.revenue, policy)) {
-      check.blockingReasons.push(`platform_trends: all=${roundMoney(points.all.revenue)} differs from WB+Ozon+Yandex=${roundMoney(componentSum)}`);
+      check.blockingReasons.push(`platform_trends: all=${roundMoney(points.all.revenue)} differs from active marketplace sum=${roundMoney(componentSum)}`);
     }
   } else if (points.all) {
     check.warnings.push(`platform_trends: all series date ${points.all.date} differs from component cutoff ${commonDate || 'mixed'}`);
   } else {
-    check.warnings.push('platform_trends: all series is absent; total is computed from WB+Ozon+Yandex');
+    check.warnings.push('platform_trends: all series is absent; total is computed from active marketplaces');
   }
   passports.push(
-    { key: 'fact.marketplace.revenue', source: 'platform_trends.json', period: commonDate || expectedDate, value: roundMoney(componentSum), formula: 'WB + Ozon + Yandex on one common cutoff date' },
-    ...['wb', 'ozon', 'ya'].map((key) => ({
+    { key: 'fact.marketplace.revenue', source: 'platform_trends.json', period: commonDate || expectedDate, value: roundMoney(componentSum), formula: 'sum active marketplaces on guarded cutoff dates' },
+    ...BUSINESS_PLATFORMS.map((key) => ({
       key: `fact.marketplace.revenue.${key}`,
       source: 'platform_trends.json',
       period: points[key]?.date || '',

@@ -45,6 +45,9 @@ if (workflow.includes('--no-fail')) {
 if (!workflow.includes('--strict --skip-protected-scope --skip-health --skip-data-guard')) {
   fail('daily close API sync must run in strict non-IU mode');
 }
+if (!workflow.includes('--platforms wb,ozon,ya,goldapple,letu,megamarket,samokat,magnit')) {
+  fail('daily close API sync must refresh every marketplace, including extra networks');
+}
 if (!workflow.includes('--verify-readback')) {
   fail('daily close Supabase publish must verify readback hashes');
 }
@@ -79,6 +82,18 @@ if (workflow.indexOf('Preflight production secrets') > workflow.indexOf('Refresh
 ].forEach((secretName) => {
   if (!workflow.includes(secretName)) {
     fail(`daily close secret preflight is missing ${secretName}`);
+  }
+});
+[
+  'ALTEA_ZYA_API_TOKEN',
+  'ALTEA_LETUAL_API_TOKEN',
+  'ALTEA_MEGAMARKET_API_TOKEN',
+  'ALTEA_SAMOKAT_API_TOKEN',
+  'ALTEA_MAGNIT_API_TOKEN',
+  'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+].forEach((sourceName) => {
+  if (!workflow.includes(sourceName)) {
+    fail(`daily close must pass extra marketplace source env ${sourceName}`);
   }
 });
 ['ALTEA_YM_CAMPAIGN_ID', 'ALTEA_YM_BUSINESS_ID'].forEach((optionalName) => {

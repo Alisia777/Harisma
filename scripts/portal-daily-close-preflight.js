@@ -29,6 +29,58 @@ const PRICE_WORKBOOK_SOURCE_ENV = [
   'GOOGLE_APPLICATION_CREDENTIALS_JSON',
   'GOOGLE_APPLICATION_CREDENTIALS'
 ];
+const EXTRA_MARKETPLACE_SOURCE_GROUPS = [
+  {
+    platform: 'goldapple',
+    requiredAnyOf: [
+      'ALTEA_ZYA_API_TOKEN',
+      'ALTEA_ZYA_API_KEY',
+      'ALTEA_GOLDAPPLE_API_TOKEN',
+      'ALTEA_GOLDAPPLE_API_KEY',
+      'ALTEA_ZYA_SALES_XLSX',
+      'ALTEA_ZYA_SALES_ZIP',
+      'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+    ]
+  },
+  {
+    platform: 'letu',
+    requiredAnyOf: [
+      'ALTEA_LETUAL_API_TOKEN',
+      'ALTEA_LETUAL_LOCAL_EXPORT_XLSX',
+      'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+    ]
+  },
+  {
+    platform: 'megamarket',
+    requiredAnyOf: [
+      'ALTEA_MEGAMARKET_API_TOKEN',
+      'ALTEA_MEGAMARKET_API_KEY',
+      'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+    ]
+  },
+  {
+    platform: 'samokat',
+    requiredAnyOf: [
+      'ALTEA_SAMOKAT_API_TOKEN',
+      'ALTEA_SAMOKAT_API_KEY',
+      'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+    ]
+  },
+  {
+    platform: 'magnit',
+    requiredAnyOf: [
+      'ALTEA_MAGNIT_API_TOKEN',
+      'ALTEA_MAGNIT_API_KEY',
+      'ALTEA_MAGNIT_MARKET_API_TOKEN',
+      'ALTEA_MAGNIT_MARKET_API_KEY',
+      'ALTEA_MAGNIT_SALES_XLSX',
+      'ALTEA_MAGNIT_SALES_XLS',
+      'ALTEA_MAGNIT_SALES_WORKBOOK',
+      'ALTEA_MAGNIT_SALES_CSV',
+      'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+    ]
+  }
+];
 
 const SECRET_ALIASES = {
   SUPABASE_SERVICE_ROLE_KEY: ['ALTEA_SUPABASE_SERVICE_ROLE_KEY']
@@ -86,6 +138,19 @@ function buildPriceWorkbookSourceState(env = {}) {
   };
 }
 
+function buildExtraMarketplaceSourceStates(env = {}) {
+  return EXTRA_MARKETPLACE_SOURCE_GROUPS.map((group) => {
+    const presentSources = group.requiredAnyOf.filter((name) => secretPresent(env, name));
+    return {
+      platform: group.platform,
+      requiredAnyOf: group.requiredAnyOf,
+      present: presentSources.length > 0,
+      presentSources,
+      missingAnyOf: presentSources.length ? [] : group.requiredAnyOf
+    };
+  });
+}
+
 function buildReport({ env = process.env, cutoffDate = '', revisionFrom = '', generatedAt = utcNowIso() } = {}) {
   const secretStates = REQUIRED_SECRETS.map((name) => ({
     name,
@@ -104,19 +169,24 @@ function buildReport({ env = process.env, cutoffDate = '', revisionFrom = '', ge
   const missingConfig = configStates.filter((item) => !item.present).map((item) => item.name);
   const optionalMissingSecrets = optionalSecretStates.filter((item) => !item.present).map((item) => item.name);
   const priceWorkbookSource = buildPriceWorkbookSourceState(env);
-  const status = missingSecrets.length || missingConfig.length || !priceWorkbookSource.present ? 'blocked' : 'ok';
+  const extraMarketplaceSources = buildExtraMarketplaceSourceStates(env);
+  const missingExtraMarketplaceSources = extraMarketplaceSources.filter((item) => !item.present).map((item) => item.platform);
+  const status = missingSecrets.length || missingConfig.length || !priceWorkbookSource.present || missingExtraMarketplaceSources.length ? 'blocked' : 'ok';
   const blockingReasons = [];
   if (missingSecrets.length) blockingReasons.push(`Missing required daily close secrets: ${missingSecrets.join(', ')}`);
   if (missingConfig.length) blockingReasons.push(`Missing required daily close config: ${missingConfig.join(', ')}`);
   if (!priceWorkbookSource.present) {
     blockingReasons.push(`Missing smart price workbook CI source: configure one of ${PRICE_WORKBOOK_SOURCE_ENV.join(', ')}`);
   }
+  extraMarketplaceSources.filter((item) => !item.present).forEach((item) => {
+    blockingReasons.push(`Missing ${item.platform} daily source: configure one of ${item.requiredAnyOf.join(', ')}`);
+  });
   return {
     schema: 'portal-daily-close-preflight-v1',
     generatedAt,
     status,
     publish: {
-      allowed: missingSecrets.length === 0 && missingConfig.length === 0 && priceWorkbookSource.present,
+      allowed: missingSecrets.length === 0 && missingConfig.length === 0 && priceWorkbookSource.present && missingExtraMarketplaceSources.length === 0,
       blockingReasons
     },
     cutoffDate,
@@ -130,6 +200,8 @@ function buildReport({ env = process.env, cutoffDate = '', revisionFrom = '', ge
     missingConfig,
     optionalMissingSecrets,
     priceWorkbookSource,
+    extraMarketplaceSources,
+    missingExtraMarketplaceSources,
     resolvedSources: {
       secrets: Object.fromEntries(secretStates.map((item) => [item.name, item.source])),
       config: Object.fromEntries(configStates.map((item) => [item.name, item.source])),
@@ -175,6 +247,14 @@ function main(argv = process.argv.slice(2), env = process.env) {
     console.error(`Preflight report: ${reportPath}`);
     return 1;
   }
+  if (report.missingExtraMarketplaceSources.length) {
+    console.error('Missing extra marketplace CI sources:');
+    report.extraMarketplaceSources.filter((item) => !item.present).forEach((item) => {
+      console.error(`- ${item.platform}: ${item.requiredAnyOf.join(', ')}`);
+    });
+    console.error(`Preflight report: ${reportPath}`);
+    return 1;
+  }
 
   console.log(`Daily close secret preflight passed. Report: ${reportPath}`);
   return 0;
@@ -183,10 +263,12 @@ function main(argv = process.argv.slice(2), env = process.env) {
 module.exports = {
   DEFAULT_SUPABASE_URL,
   OPTIONAL_SECRETS,
+  EXTRA_MARKETPLACE_SOURCE_GROUPS,
   PRICE_WORKBOOK_SOURCE_ENV,
   REQUIRED_CONFIG,
   REPORT_NAME,
   REQUIRED_SECRETS,
+  buildExtraMarketplaceSourceStates,
   buildPriceWorkbookSourceState,
   buildReport,
   main,

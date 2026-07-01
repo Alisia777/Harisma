@@ -1123,10 +1123,14 @@ function isNonPersistentTaskSource(source) {
   return normalized === 'auto' || normalized === 'seed';
 }
 
+function isPersistentAutoTask(task = {}) {
+  return String(task?.autoCode || '').trim().toLowerCase() === 'oos_control';
+}
+
 function normalizeStorageTasks(tasks, sourceHint = 'manual') {
   return (tasks || [])
     .map((task) => normalizeTask(task, task?.source || sourceHint))
-    .filter((task) => !isNonPersistentTaskSource(task?.source));
+    .filter((task) => !isNonPersistentTaskSource(task?.source) || isPersistentAutoTask(task));
 }
 
 function isTaskActive(task) {

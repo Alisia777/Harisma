@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-dashboard-money-orders3';
+  const VERSION = '20260701-dashboard-money-rub4';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -538,6 +538,85 @@
         + Math.abs(finite(row.estimatedMargin, finite(row.financialResult))), 0);
   }
 
+  function rowMoneySignal(row) {
+    return [
+      row?.revenue,
+      row?.ordersRevenue,
+      row?.ordersSumRub,
+      row?.orderRub,
+      row?.buyoutRevenue,
+      row?.buyoutRub,
+      row?.boughtRevenue,
+      row?.deliveredRevenue,
+      row?.financeTurnover,
+      row?.wbSellerSummarySalesRevenue,
+      row?.wbSellerSummaryFinanceTurnover
+    ].reduce((sum, value) => sum + Math.abs(finite(value)), 0);
+  }
+
+  function platformMoneySignal(platform) {
+    return (Array.isArray(platform?.series) ? platform.series : [])
+      .reduce((sum, row) => sum + rowMoneySignal(row), 0);
+  }
+
+  function valueNumber(value) {
+    if (value === null || value === undefined || value === '') return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function rowUnitSignal(row) {
+    return valueNumber(row?.ordersUnits) ?? valueNumber(row?.orderUnits) ?? valueNumber(row?.units) ?? valueNumber(row?.orders) ?? null;
+  }
+
+  function mergeSeriesRow(primary = {}, fallback = {}) {
+    const merged = { ...fallback, ...primary };
+    [
+      'revenue',
+      'ordersRevenue',
+      'ordersSumRub',
+      'orderRub',
+      'buyoutRevenue',
+      'buyoutRub',
+      'boughtRevenue',
+      'deliveredRevenue',
+      'financeTurnover',
+      'wbSellerSummarySalesRevenue',
+      'wbSellerSummaryFinanceTurnover'
+    ].forEach((field) => {
+      const primaryValue = valueNumber(primary?.[field]);
+      const fallbackValue = valueNumber(fallback?.[field]);
+      if (fallbackValue === null) return;
+      const units = rowUnitSignal(primary) ?? rowUnitSignal(fallback);
+      if (
+        primaryValue === null
+        || (fallbackValue > primaryValue * 5 && fallbackValue > 10000)
+        || moneyLooksLikeUnits(primaryValue, units, fallbackValue)
+      ) {
+        merged[field] = fallbackValue;
+      }
+    });
+    return merged;
+  }
+
+  function mergePlatformRow(primary, fallback) {
+    const byDate = new Map();
+    (Array.isArray(fallback?.series) ? fallback.series : []).forEach((row) => {
+      const key = dateKey(row?.date || row?.label) || `fallback:${byDate.size}`;
+      byDate.set(key, row);
+    });
+    (Array.isArray(primary?.series) ? primary.series : []).forEach((row) => {
+      const key = dateKey(row?.date || row?.label) || `primary:${byDate.size}`;
+      byDate.set(key, mergeSeriesRow(row, byDate.get(key) || {}));
+    });
+    return {
+      ...fallback,
+      ...primary,
+      label: primary?.label || fallback?.label,
+      series: Array.from(byDate.values()).sort((left, right) => dateKey(left?.date || left?.label).localeCompare(dateKey(right?.date || right?.label)))
+    };
+  }
+
   function choosePlatformRow(primary, fallback) {
     if (!primary) return fallback || {};
     if (!fallback) return primary;
@@ -553,10 +632,14 @@
 
     const primaryLatest = latestPlatformSeriesDate(primary);
     const fallbackLatest = latestPlatformSeriesDate(fallback);
-    if (fallbackLatest > primaryLatest) return { ...primary, ...fallback, label: primary.label || fallback.label };
+    if (fallbackLatest > primaryLatest) return mergePlatformRow(primary, fallback);
     if (primaryLatest > fallbackLatest) return primary;
-    if (fallbackSeries.length > primarySeries.length) return { ...primary, ...fallback, label: primary.label || fallback.label };
-    return primary;
+    const primaryMoney = platformMoneySignal(primary);
+    const fallbackMoney = platformMoneySignal(fallback);
+    if (fallbackMoney > primaryMoney * 5 && fallbackMoney > 10000) return mergePlatformRow(primary, fallback);
+    if (primaryMoney > fallbackMoney * 5 && primaryMoney > 10000) return primary;
+    if (fallbackSeries.length > primarySeries.length) return mergePlatformRow(primary, fallback);
+    return mergePlatformRow(primary, fallback);
   }
 
   function mergePlatformTrends(statePayload, cachedPayload) {
@@ -810,7 +893,7 @@
   }
 
   function sumRows(rows, platformKey = '') {
-    return rows.reduce((acc, row) => {
+    const total = rows.reduce((acc, row) => {
       const orders = orderUnitsForRow(row);
       const orderRub = orderRevenueForRow(row);
       const buyout = buyoutInfoForRow(row, platformKey);
@@ -829,6 +912,7 @@
       acc.marginRub += finite(row.estimatedMargin, finite(row.financialResult));
       return acc;
     }, emptyTotal());
+    return normalizeMoneyTotals(total);
   }
 
   function addTotals(left, right) {
@@ -836,7 +920,59 @@
     Object.keys(result).forEach((key) => {
       result[key] = finite(left?.[key]) + finite(right?.[key]);
     });
-    return result;
+    return normalizeMoneyTotals(result);
+  }
+
+  function moneyLooksLikeUnits(money, units, referenceRevenue) {
+    if (!(money > 0) || !(units > 0) || !(referenceRevenue > 0)) return false;
+    if (Math.abs(money - units) <= Math.max(1, units * .002)) return true;
+    return money <= units * 5 && referenceRevenue >= money * 10;
+  }
+
+  function trustedOrderMoney(total) {
+    const orderRub = finite(total?.orderRub);
+    const revenue = finite(total?.revenue);
+    if (moneyLooksLikeUnits(orderRub, finite(total?.orders), revenue)) return revenue;
+    return orderRub > 0 ? orderRub : revenue;
+  }
+
+  function trustedBuyoutMoney(total) {
+    const buyoutRub = finite(total?.buyoutRub);
+    const orderRub = trustedOrderMoney(total);
+    const revenue = finite(total?.revenue);
+    if (!hasBuyoutSource(total)) return null;
+    if (moneyLooksLikeUnits(buyoutRub, finite(total?.buys), orderRub || revenue)) {
+      const orders = finite(total?.orders);
+      const buys = finite(total?.buys);
+      if (orderRub > 0 && orders > 0 && buys > 0) return orderRub * clamp(buys / orders, 0, 1);
+      return orderRub || revenue;
+    }
+    return buyoutRub > 0 ? buyoutRub : null;
+  }
+
+  function normalizeMoneyTotals(total) {
+    if (!total) return total;
+    const orderMoney = trustedOrderMoney(total);
+    if (orderMoney > 0) total.orderRub = orderMoney;
+    const buyoutMoney = trustedBuyoutMoney(total);
+    if (buyoutMoney !== null && buyoutMoney > 0) total.buyoutRub = buyoutMoney;
+    return total;
+  }
+
+  function fillBuyoutEstimateFromReference(target, reference) {
+    if (!target || hasBuyoutSource(target) || !hasBuyoutSource(reference)) return target;
+    const revenueRate = buyoutRevenueRate(reference);
+    const unitRate = buyoutRate(reference);
+    const orderMoney = trustedOrderMoney(target);
+    if (!(revenueRate > 0) || !(orderMoney > 0)) return target;
+    const orderUnits = finite(target.orders);
+    target.buyoutRub = orderMoney * clamp(revenueRate, 0, 1.2);
+    target.buys = orderUnits > 0 ? orderUnits * clamp(unitRate ?? revenueRate, 0, 1) : 0;
+    target.buyoutRows = 1;
+    target.buyoutOrders = orderUnits;
+    target.buyoutEstimatedRows = finite(target.buyoutEstimatedRows) + 1;
+    target.buyoutProxyRows = finite(target.buyoutProxyRows);
+    return normalizeMoneyTotals(target);
   }
 
   function platformTotalsInRange(platformTrends, start, end) {
@@ -909,12 +1045,14 @@
 
   function buyoutRevenueRate(total) {
     if (!hasBuyoutSource(total)) return null;
-    const base = finite(total?.orderRub, finite(total?.revenue));
-    return base > 0 ? finite(total?.buyoutRub) / base : null;
+    const base = trustedOrderMoney(total);
+    const buyoutMoney = trustedBuyoutMoney(total);
+    return base > 0 && buyoutMoney !== null ? buyoutMoney / base : null;
   }
 
   function buyoutDisplay(total) {
-    return hasBuyoutSource(total) ? fmtMoneyFull(total?.buyoutRub) : 'нет источника';
+    const money = trustedBuyoutMoney(total);
+    return money !== null ? fmtMoneyFull(money) : 'нет источника';
   }
 
   function buyoutHint(total) {
@@ -923,7 +1061,7 @@
     const details = [];
     if (finite(total?.buyoutEstimatedRows) > 0) details.push('расчёт по продажам');
     if (finite(total?.buyoutProxyRows) > 0) details.push('продажный срез допсетей');
-    if (!details.length && finite(total?.buyoutRub) < finite(total?.orderRub, finite(total?.revenue))) details.push('по источникам');
+    if (!details.length && finite(trustedBuyoutMoney(total)) < trustedOrderMoney(total)) details.push('по источникам');
     return `выкупная выручка ${fmtPct(rate)}${details.length ? ` · ${details.join(', ')}` : ''}`;
   }
 
@@ -935,7 +1073,7 @@
     target.buyoutOrders = finite(source.buyoutOrders);
     target.buyoutEstimatedRows = finite(source.buyoutEstimatedRows);
     target.buyoutProxyRows = finite(source.buyoutProxyRows);
-    return target;
+    return normalizeMoneyTotals(target);
   }
 
   function rawRevenueMetrics(metrics) {
@@ -1866,6 +2004,9 @@
       fillBuyoutFromSource(previousTotal, platformPreviousRangeTotal, true);
     }
     fillBuyoutFromSource(allTotal, platformRangeTotal, true);
+    fillBuyoutEstimateFromReference(total, previousTotal);
+    fillBuyoutEstimateFromReference(total, platformPreviousRangeTotal);
+    fillBuyoutEstimateFromReference(allTotal, platformPreviousRangeTotal);
     const iuRows = iuRowsInRange(iuDrr, range.start, range.end);
     const prevIuRows = iuRowsInRange(iuDrr, range.prevStart, range.prevEnd);
     const coreAdWindow = iuRowsForRangeOrLatest(iuDrr, range, period);
@@ -1978,8 +2119,8 @@
   }
 
   function metricValueFor(model, metric) {
-    if (metric === 'orders') return finite(model.total.orderRub, model.total.revenue);
-    if (metric === 'buys') return hasBuyoutSource(model.total) ? model.total.buyoutRub : null;
+    if (metric === 'orders') return trustedOrderMoney(model.total);
+    if (metric === 'buys') return trustedBuyoutMoney(model.total);
     if (metric === 'revenue') return model.total.revenue;
     if (metric === 'margin') return model.total.marginPct;
     if (metric === 'ads') return model.total.ads;
@@ -1987,8 +2128,8 @@
   }
 
   function previousMetricValueFor(model, metric) {
-    if (metric === 'orders') return finite(model.previousTotal.orderRub, model.previousTotal.revenue);
-    if (metric === 'buys') return hasBuyoutSource(model.previousTotal) ? model.previousTotal.buyoutRub : null;
+    if (metric === 'orders') return trustedOrderMoney(model.previousTotal);
+    if (metric === 'buys') return trustedBuyoutMoney(model.previousTotal);
     if (metric === 'revenue') return model.previousTotal.revenue;
     if (metric === 'margin') return model.previousTotal.marginPct;
     if (metric === 'ads') return model.previousTotal.ads;

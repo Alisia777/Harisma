@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-dashboard-period-picker-buyouts1';
+  const VERSION = '20260701-dashboard-buyout-source1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -720,7 +720,7 @@
     return firstExplicitNumber(row?.ordersUnits, row?.orderUnits, row?.units) ?? 0;
   }
 
-  function buyoutUnitsForRow(row, options = {}) {
+  function buyoutUnitsForRow(row) {
     const explicit = firstExplicitNumber(
       row?.deliveredUnits,
       row?.buyoutUnits,
@@ -730,19 +730,17 @@
       row?.wbSellerSummary?.buyoutUnits
     );
     if (explicit !== null) return explicit;
-    if (!options.allowOrderFallback) return null;
-    return firstExplicitNumber(row?.units, row?.ordersUnits, row?.orderUnits);
+    return null;
   }
 
   function emptyTotal() {
     return { orders: 0, buys: 0, revenue: 0, marginRub: 0, orderRows: 0, buyoutRows: 0, buyoutOrders: 0 };
   }
 
-  function sumRows(rows, options = {}) {
-    const allowOrderFallback = options.allowOrderFallback === true;
+  function sumRows(rows) {
     return rows.reduce((acc, row) => {
       const orders = orderUnitsForRow(row);
-      const buys = buyoutUnitsForRow(row, { allowOrderFallback });
+      const buys = buyoutUnitsForRow(row);
       acc.orders += orders;
       if (orders > 0) acc.orderRows += 1;
       if (buys !== null) {
@@ -767,7 +765,7 @@
   function platformTotalsInRange(platformTrends, start, end) {
     return platformRows(platformTrends)
       .filter((platform) => normalizePlatform(platform.key) !== 'all')
-      .map((platform) => sumRows(rowsInRange(platform.series, start, end), { allowOrderFallback: true }))
+      .map((platform) => sumRows(rowsInRange(platform.series, start, end)))
       .reduce((acc, total) => addTotals(acc, total), emptyTotal());
   }
 
@@ -785,20 +783,28 @@
             units: 0,
             ordersUnits: 0,
             buys: 0,
+            buyoutRows: 0,
+            buyoutOrders: 0,
             revenue: 0,
             estimatedMargin: 0
           };
           const orders = orderUnitsForRow(row);
-          const buys = buyoutUnitsForRow(row, { allowOrderFallback: true });
+          const buys = buyoutUnitsForRow(row);
           target.units += orders;
           target.ordersUnits += orders;
-          target.buys += finite(buys);
+          if (buys !== null) {
+            target.buys += buys;
+            target.buyoutRows += 1;
+            target.buyoutOrders += orders;
+          }
           target.revenue += finite(row.revenue);
           target.estimatedMargin += finite(row.estimatedMargin, finite(row.financialResult));
           byDate.set(day, target);
         });
       });
-    return Array.from(byDate.values()).sort((left, right) => left.date.localeCompare(right.date));
+    return Array.from(byDate.values())
+      .filter((row) => finite(row.buyoutRows) > 0)
+      .sort((left, right) => left.date.localeCompare(right.date));
   }
 
   function hasBuyoutSource(total) {
@@ -1297,9 +1303,9 @@
       const base = current ? row : fallbackPrev;
       const revenue = finite(base.revenue);
       const orders = orderUnitsForRow(base);
-      const buys = buyoutUnitsForRow(base, { allowOrderFallback: true });
+      const buys = buyoutUnitsForRow(base);
       const previousOrders = orderUnitsForRow(fallbackPrev);
-      const previousBuys = buyoutUnitsForRow(fallbackPrev, { allowOrderFallback: true });
+      const previousBuys = buyoutUnitsForRow(fallbackPrev);
       const marginRub = finite(base.estimatedMargin, finite(base.financialResult));
       const day = dateKey(row.date || row.label || base.date || base.label) || model.range.start;
       const iuRow = model.iuRowsByDate[day] || {};
@@ -1346,8 +1352,8 @@
             prevRows = rowsInRange(platform.series, platformRange.prevStart, platformRange.prevEnd);
           }
         }
-        const total = sumRows(rows, { allowOrderFallback: true });
-        const previous = sumRows(prevRows, { allowOrderFallback: true });
+        const total = sumRows(rows);
+        const previous = sumRows(prevRows);
         applyRawRevenueFallback(total, raw[key], rows);
         const adsRows = !isCoreAdsPlatform(key)
           ? adsSummaryRowsInRange(model.adsSummary, key, model.range.start, model.range.end)
@@ -1733,8 +1739,8 @@
       }
     }
     const allRows = rowsInRange(allPlatform.series, range.start, range.end);
-    const total = sumRows(currentRows, { allowOrderFallback: platform !== 'all' });
-    const previousTotal = sumRows(previousRows, { allowOrderFallback: platform !== 'all' });
+    const total = sumRows(currentRows);
+    const previousTotal = sumRows(previousRows);
     const allTotal = sumRows(allRows);
     const rawRevenue = rawRevenueMetrics(metrics);
     if (platform !== 'all') applyRawRevenueFallback(total, rawRevenue[platform], currentRows);

@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260629-storage-v4';
+  const VERSION = '20260701-storage-audit-v1';
   const STORAGE_VIEW = 'documents';
   const RESOURCE_ARTICLE_KEY = '__portal_resource_links__';
   const RESOURCE_LINK_MARKER = '[[resource-link:v1]]';
@@ -572,16 +572,51 @@
     }
   }
 
+  function auditResourceLink(action, item = {}, extra = {}) {
+    try {
+      if (!window.alteaSecurityAudit || typeof window.alteaSecurityAudit.emit !== 'function') return;
+      const actor = appState()?.team?.member?.name || item.owner || '';
+      window.alteaSecurityAudit.emit(`document_storage.${action}`, {
+        outcome: 'ok',
+        severity: action === 'delete' ? 'warning' : 'info',
+        actorEmail: appState()?.team?.member?.email || '',
+        actorRole: appState()?.team?.member?.role || '',
+        targetType: 'document_storage_resource',
+        targetId: item.id || item.href || item.localFileId || '',
+        targetName: item.title || item.fileName || item.href || '',
+        metadata: {
+          actor,
+          title: item.title || '',
+          fileName: item.fileName || '',
+          href: item.href || '',
+          group: item.group || '',
+          type: item.type || '',
+          storageMode: item.storageMode || '',
+          ...extra
+        }
+      });
+    } catch (_) {}
+  }
+
   async function persistResourceLinkEvent(item, deleted = false) {
     if (typeof window.createComment !== 'function') return;
     const marker = deleted ? RESOURCE_DELETE_MARKER : RESOURCE_LINK_MARKER;
+    const actor = appState().team?.member?.name || item.owner || 'Команда';
     const payload = deleted
-      ? { id: item.id || '', href: item.href || '', deletedAt: new Date().toISOString() }
+      ? {
+          id: item.id || '',
+          href: item.href || '',
+          title: item.title || '',
+          fileName: item.fileName || '',
+          owner: item.owner || '',
+          deletedBy: actor,
+          deletedAt: new Date().toISOString()
+        }
       : item;
     try {
       await window.createComment({
         articleKey: RESOURCE_ARTICLE_KEY,
-        author: item.owner || appState().team?.member?.name || 'Команда',
+        author: deleted ? actor : (item.owner || actor),
         team: 'Хранилище',
         type: deleted ? 'resource_link_delete' : 'resource_link',
         text: `${marker} ${JSON.stringify(payload)}`
@@ -649,6 +684,7 @@
       ...(state.storage.resourceLinks || []).filter((item) => safeHref(item.href || item.url || item.link || '') !== next.href)
     ].slice(0, 500);
     persistStorage('resource-link-add');
+    auditResourceLink('add', next);
     await persistResourceLinkEvent(next, false);
     form.reset();
     setError('');
@@ -662,6 +698,7 @@
     state.storage.resourceLinks = (state.storage.resourceLinks || []).filter((item) => String(item?.id || '').trim() !== resourceId);
     if (current.localFileId) await deleteLocalResourceFile(current.localFileId);
     persistStorage('resource-link-delete');
+    auditResourceLink('delete', current, { resourceId });
     await persistResourceLinkEvent(current, true);
     renderDocumentStorage();
   }

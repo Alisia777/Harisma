@@ -124,16 +124,22 @@ async function run() {
         version: window.__ALTEA_DASHBOARD_CEO_MOTION_V1__.version,
         platform: model.platform,
         orders: model.total.orders,
+        orderRub: model.total.orderRub,
         buys: model.total.buys,
+        buyoutRub: model.total.buyoutRub,
         buyoutRows: model.total.buyoutRows,
         buyoutOrders: model.total.buyoutOrders,
         buyoutEstimatedRows: model.total.buyoutEstimatedRows,
         buyoutProxyRows: model.total.buyoutProxyRows,
         planBuys: model.plan.buys,
+        planOrderRub: model.plan.orderRub,
+        planBuyoutRub: model.plan.buyoutRub,
         seriesValues: model.series.points.map((point) => point.value),
         card: card ? {
           orders: card.total.orders,
+          orderRub: card.total.orderRub,
           buys: card.total.buys,
+          buyoutRub: card.total.buyoutRub,
           buyoutRows: card.total.buyoutRows,
           buyoutEstimatedRows: card.total.buyoutEstimatedRows,
           buyoutProxyRows: card.total.buyoutProxyRows
@@ -142,44 +148,54 @@ async function run() {
     }, platform);
 
     const wb = await snapshot('wb');
-    assert.strictEqual(wb.version, '20260701-dashboard-buyout-estimate1');
+    assert.strictEqual(wb.version, '20260701-dashboard-money-orders1');
     assert.strictEqual(wb.orders, 100);
+    assert.strictEqual(wb.orderRub, 1000);
     assert.strictEqual(wb.buys, 80);
+    assert.strictEqual(wb.buyoutRub, 800);
     assert.strictEqual(wb.buyoutRows, 1);
     assert.strictEqual(wb.buyoutOrders, 100);
     assert.strictEqual(wb.buyoutEstimatedRows, 1);
     assert.strictEqual(wb.buyoutProxyRows, 0);
     assert.notStrictEqual(wb.planBuys, null);
-    assert.deepStrictEqual(wb.seriesValues, [80]);
-    assert.deepStrictEqual(wb.card, { orders: 100, buys: 80, buyoutRows: 1, buyoutEstimatedRows: 1, buyoutProxyRows: 0 });
+    assert.notStrictEqual(wb.planBuyoutRub, null);
+    assert.deepStrictEqual(wb.seriesValues, [800]);
+    assert.deepStrictEqual(wb.card, { orders: 100, orderRub: 1000, buys: 80, buyoutRub: 800, buyoutRows: 1, buyoutEstimatedRows: 1, buyoutProxyRows: 0 });
 
     const ozon = await snapshot('ozon');
     assert.strictEqual(ozon.orders, 10);
+    assert.strictEqual(ozon.orderRub, 2000);
     assert.strictEqual(ozon.buys, 7);
+    assert.strictEqual(ozon.buyoutRub, 1400);
     assert.strictEqual(ozon.buyoutRows, 1);
     assert.strictEqual(ozon.buyoutOrders, 10);
-    assert.strictEqual(ozon.buyoutEstimatedRows, 0);
+    assert.strictEqual(ozon.buyoutEstimatedRows, 1);
     assert.strictEqual(ozon.buyoutProxyRows, 0);
-    assert.deepStrictEqual(ozon.seriesValues, [7]);
-    assert.deepStrictEqual(ozon.card, { orders: 10, buys: 7, buyoutRows: 1, buyoutEstimatedRows: 0, buyoutProxyRows: 0 });
+    assert.deepStrictEqual(ozon.seriesValues, [1400]);
+    assert.deepStrictEqual(ozon.card, { orders: 10, orderRub: 2000, buys: 7, buyoutRub: 1400, buyoutRows: 1, buyoutEstimatedRows: 1, buyoutProxyRows: 0 });
 
     const goldapple = await snapshot('goldapple');
     assert.strictEqual(goldapple.orders, 5);
+    assert.strictEqual(goldapple.orderRub, 500);
     assert.strictEqual(goldapple.buys, 5);
+    assert.strictEqual(goldapple.buyoutRub, 500);
     assert.strictEqual(goldapple.buyoutRows, 1);
     assert.strictEqual(goldapple.buyoutEstimatedRows, 1);
     assert.strictEqual(goldapple.buyoutProxyRows, 1);
-    assert.deepStrictEqual(goldapple.seriesValues, [5]);
-    assert.deepStrictEqual(goldapple.card, { orders: 5, buys: 5, buyoutRows: 1, buyoutEstimatedRows: 1, buyoutProxyRows: 1 });
+    assert.deepStrictEqual(goldapple.seriesValues, [500]);
+    assert.deepStrictEqual(goldapple.card, { orders: 5, orderRub: 500, buys: 5, buyoutRub: 500, buyoutRows: 1, buyoutEstimatedRows: 1, buyoutProxyRows: 1 });
 
     const all = await snapshot('all');
     assert.strictEqual(all.orders, 115);
+    assert.strictEqual(all.orderRub, 3500);
     assert.strictEqual(all.buys, 92);
+    assert.strictEqual(all.buyoutRub, 2700);
     assert.strictEqual(all.buyoutRows, 3);
     assert.strictEqual(all.buyoutOrders, 115);
-    assert.strictEqual(all.buyoutEstimatedRows, 2);
+    assert.strictEqual(all.buyoutEstimatedRows, 3);
     assert.strictEqual(all.buyoutProxyRows, 1);
     assert.notStrictEqual(all.orders, all.buys);
+    assert.notStrictEqual(all.orderRub, all.buyoutRub);
 
     assert.deepStrictEqual(errors, []);
     console.log('portal-dashboard-buyout-source selftest ok');

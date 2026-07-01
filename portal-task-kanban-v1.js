@@ -4,7 +4,7 @@
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
 
-  const VERSION = '20260701-task-filter-bind-v1';
+  const VERSION = '20260701-task-entry-light-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -127,6 +127,7 @@
   let controlObserver = null;
   let controlObserverTimer = 0;
   let renderToken = 0;
+  let renderingControl = false;
   let lastManualFilterChangeAt = 0;
   let userTouchedTaskFilters = false;
   let detailEventsBound = false;
@@ -1414,11 +1415,17 @@
   }
 
   function renderBoard(tasks) {
+    const lanes = new Map(LANES.map((lane) => [lane.key, []]));
+    tasks.forEach((task) => {
+      const laneKey = laneFor(task);
+      const bucket = lanes.get(laneKey) || lanes.get('new');
+      if (bucket) bucket.push(task);
+    });
     return `
       <section class="task-design-board" data-task-design-board>
         ${LANES.map((lane) => {
-          const laneTasks = tasks.filter((task) => laneFor(task) === lane.key);
-          const visible = laneTasks.slice(0, 40);
+          const laneTasks = lanes.get(lane.key) || [];
+          const visible = laneTasks.slice(0, 18);
           return `
             <section class="task-design-lane lane-${escapeHtml(lane.key)}" data-kanban-lane="${escapeHtml(lane.key)}" data-lane-key="${escapeHtml(lane.key)}">
               <header>
@@ -1456,7 +1463,7 @@
             </tr>
           </thead>
           <tbody>
-            ${tasks.slice(0, 160).map((task) => `
+            ${tasks.slice(0, 90).map((task) => `
               <tr data-kanban-task="${escapeHtml(task?.id || '')}" tabindex="0">
                 <td><strong>${escapeHtml(task?.title || task?.entityLabel || 'Задача')}</strong><span>${escapeHtml(task?.nextAction || task?.reason || taskArticleSummary(task) || '')}</span></td>
                 <td>${escapeHtml(taskOwner(task) || 'Без owner')}</td>
@@ -1469,7 +1476,7 @@
             `).join('')}
           </tbody>
         </table>
-        ${tasks.length > 160 ? `<div class="task-design-more">Показано 160 из ${tasks.length}. Уточните фильтры.</div>` : ''}
+        ${tasks.length > 90 ? `<div class="task-design-more">Показано 90 из ${tasks.length}. Уточните фильтры.</div>` : ''}
       </section>
     `;
   }
@@ -1499,7 +1506,7 @@
         horizon: filters.horizon || ''
       },
       counts: [tasks.length, filtered.length],
-      tasks: filtered.slice(0, 140).map((task) => [
+      tasks: filtered.slice(0, 90).map((task) => [
         task?.id,
         stableHash([
           task?.title,
@@ -1617,8 +1624,8 @@
       .task-design-create-grid{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px}
       .task-design-file-field{grid-column:1/-1}
       .task-design-create-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:8px}
-      .task-design-board{display:grid;grid-template-columns:repeat(6,minmax(204px,1fr));gap:10px;overflow-x:auto;padding-bottom:2px;align-items:stretch}
-      .task-design-lane{min-height:520px;display:grid;grid-template-rows:82px minmax(0,1fr);overflow:hidden}
+      .task-design-board{display:grid;grid-template-columns:repeat(6,minmax(204px,1fr));gap:10px;overflow-x:auto;padding-bottom:2px;align-items:stretch;contain:layout paint style}
+      .task-design-lane{min-height:520px;display:grid;grid-template-rows:82px minmax(0,1fr);overflow:hidden;contain:layout paint style}
       .task-design-lane.is-over{border-color:rgba(219,199,163,.82);background:linear-gradient(135deg,rgba(219,199,163,.12),rgba(255,255,255,.02)),var(--task-panel2)}
       .task-design-lane header{display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:start;gap:10px;height:82px;padding:13px 12px 11px;border-bottom:1px solid rgba(219,199,163,.12);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0))}
       .task-design-lane-title{display:grid;align-content:start;gap:4px;min-height:54px}
@@ -1629,7 +1636,7 @@
       .task-design-dropzone::-webkit-scrollbar{width:8px}
       .task-design-dropzone::-webkit-scrollbar-track{background:rgba(255,255,255,.035);border-radius:999px}
       .task-design-dropzone::-webkit-scrollbar-thumb{background:rgba(219,199,163,.26);border-radius:999px}
-      .task-design-card{position:relative;overflow:hidden;display:grid;grid-template-rows:auto auto minmax(44px,auto) auto auto;align-content:start;border:1px solid rgba(219,199,163,.16);border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.012)),#0d0b09;padding:11px 11px 10px 14px;cursor:grab;box-shadow:0 12px 28px rgba(0,0,0,.25);transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+      .task-design-card{position:relative;overflow:hidden;display:grid;grid-template-rows:auto auto minmax(44px,auto) auto auto;align-content:start;border:1px solid rgba(219,199,163,.16);border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.012)),#0d0b09;padding:11px 11px 10px 14px;cursor:grab;box-shadow:0 12px 28px rgba(0,0,0,.25);transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;contain:layout paint style;content-visibility:auto;contain-intrinsic-size:168px}
       .task-design-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--card-color,#dbc7a3);box-shadow:0 0 22px var(--card-color,#dbc7a3)}
       .task-design-card:hover,.task-design-card:focus{outline:0;transform:translateY(-2px);border-color:rgba(219,199,163,.54);box-shadow:0 18px 34px rgba(0,0,0,.3)}
       .task-design-card.is-dragging{opacity:.55;cursor:grabbing}
@@ -1658,7 +1665,7 @@
       .platform-cross,.platform-all{--card-color:#dbc7a3;--platform:#dbc7a3}
       .task-design-empty,.task-design-more{display:grid;place-items:center;min-height:92px;border:1px dashed rgba(219,199,163,.18);border-radius:8px;background:rgba(0,0,0,.12);color:rgba(247,241,231,.42);font-size:12px;text-align:center}
       .task-design-more{min-height:38px}
-      .task-design-list{overflow:auto}
+      .task-design-list{overflow:auto;contain:layout paint style}
       .task-design-list table{width:100%;border-collapse:collapse;min-width:1020px}
       .task-design-list th,.task-design-list td{border-bottom:1px solid rgba(219,199,163,.1);padding:12px;text-align:left;vertical-align:top}
       .task-design-list th{position:sticky;top:0;background:#0b0907;color:var(--task-muted);font-size:10px;text-transform:uppercase;z-index:1}
@@ -2278,14 +2285,19 @@
       return;
     }
     const token = ++renderToken;
-    viewRoot.innerHTML = markup;
-    const shell = viewRoot.querySelector('[data-task-calendar-design-v1]');
-    if (shell) {
-      shell.dataset.renderSignature = signature;
-      shell.dataset.renderToken = String(token);
-      bindShell(shell);
+    renderingControl = true;
+    try {
+      viewRoot.innerHTML = markup;
+      const shell = viewRoot.querySelector('[data-task-calendar-design-v1]');
+      if (shell) {
+        shell.dataset.renderSignature = signature;
+        shell.dataset.renderToken = String(token);
+        bindShell(shell);
+      }
+      cleanupLegacyControl(viewRoot);
+    } finally {
+      renderingControl = false;
     }
-    cleanupLegacyControl(viewRoot);
   }
 
   function cleanupLegacyControl(viewRoot) {
@@ -2328,6 +2340,7 @@
     }
     if (controlObserver) return;
     controlObserver = new MutationObserver(() => {
+      if (renderingControl) return;
       if (!viewRoot.classList.contains('active')) {
         stopControlObserver();
         return;
@@ -2347,6 +2360,15 @@
     return Boolean(viewRoot?.classList.contains('active') || activeView === 'control' || hash.includes('control'));
   }
 
+  function taskDesignReady(viewRoot) {
+    return Boolean(
+      viewRoot
+      && viewRoot.classList.contains('active')
+      && viewRoot.children.length === 1
+      && viewRoot.querySelector('[data-task-calendar-design-v1]')
+    );
+  }
+
   function activateControlRoute() {
     const viewRoot = root();
     if (!viewRoot) return null;
@@ -2363,9 +2385,10 @@
     return viewRoot;
   }
 
-  function renderControlImmediately() {
+  function renderControlImmediately(options = {}) {
     const viewRoot = activateControlRoute();
     if (!viewRoot?.classList.contains('active')) return viewRoot;
+    if (options.skipReady && taskDesignReady(viewRoot)) return viewRoot;
     enhanceControl(true);
     return viewRoot;
   }
@@ -2382,8 +2405,7 @@
     }
     wrappedRender = function taskDesignRenderControlCenter(...args) {
       if (isControlRouteActive()) {
-        const viewRoot = renderControlImmediately();
-        window.setTimeout(() => enhanceControl(true), 180);
+        const viewRoot = renderControlImmediately({ skipReady: true });
         return viewRoot || root();
       }
       const result = current.apply(this, args);
@@ -2406,14 +2428,21 @@
     window.renderTaskModal = openTask;
     const installed = installWrapper();
     if (!installed) window.setTimeout(installWrapper, 450);
-    [0, 350, 1400, 3600].forEach((delay) => window.setTimeout(() => queueEnhance(true), delay));
-    const onRouteChange = () => {
+    [0, 1200].forEach((delay) => window.setTimeout(() => queueEnhance(true), delay));
+    const onRouteChange = (event) => {
       installWrapper();
       if (isControlRouteActive()) {
+        const eventName = String(event?.type || '');
+        const forceRender = eventName === 'altea:data-ready'
+          || eventName === 'altea:portal-storage-updated'
+          || eventName === 'altea:marketplacechange';
         activateControlRoute();
         startControlObserver();
-        renderControlImmediately();
-        window.setTimeout(() => enhanceControl(true), 220);
+        renderControlImmediately({ skipReady: !forceRender });
+        window.setTimeout(() => {
+          const viewRoot = root();
+          if (!taskDesignReady(viewRoot)) enhanceControl(true);
+        }, 260);
       }
     };
     window.addEventListener('altea:viewchange', onRouteChange);

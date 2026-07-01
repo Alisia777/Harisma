@@ -88,6 +88,8 @@ async function run() {
     await page.waitForSelector('[data-task-calendar-design-v1]', { timeout: 60000 });
     await page.waitForSelector('#altea-build-refresh-banner', { timeout: 30000 });
     await page.waitForFunction(() => !document.querySelector('.altea-motion-stage.is-visible'), null, { timeout: 60000 });
+    const initialCardCount = await page.locator('[data-kanban-task]').count();
+    assert.ok(initialCardCount <= 108, `Task entry rendered too many cards: ${initialCardCount}`);
 
     const hitbox = await page.evaluate(() => {
       const chip = document.querySelector('.altea-premium-app:not([hidden]) [data-altea-marketplace="ozon"]');
@@ -129,6 +131,7 @@ async function run() {
       localStorage.getItem('altea.portal.marketplace') === 'ozon'
       && document.body.dataset.marketplace === 'ozon'
       && document.documentElement.dataset.marketplace === 'ozon'
+      && document.querySelector('[data-task-calendar-design-v1]')?.classList.contains('platform-ozon')
     ), null, { timeout: 30000 });
     const after = await page.evaluate(() => ({
       active: document.querySelector('.altea-premium-app:not([hidden]) [data-altea-marketplace="ozon"]')?.classList.contains('is-active'),
@@ -138,7 +141,10 @@ async function run() {
 
     assert.deepStrictEqual(after, { active: true, pressed: 'true', stored: 'ozon' });
     await page.click('.altea-premium-app:not([hidden]) [data-altea-marketplace="all"]', { timeout: 30000 });
-    await page.waitForFunction(() => localStorage.getItem('altea.portal.marketplace') === 'all', null, { timeout: 30000 });
+    await page.waitForFunction(() => (
+      localStorage.getItem('altea.portal.marketplace') === 'all'
+      && document.querySelector('[data-task-calendar-design-v1]')?.classList.contains('platform-all')
+    ), null, { timeout: 30000 });
 
     await page.evaluate(() => {
       const state = window.__alteaAppState || window.state;
@@ -151,10 +157,11 @@ async function run() {
         nextAction: 'Проверить, что поиск реально фильтрует карточки',
         owner: 'РОП Маша',
         status: 'new',
-        priority: 'medium',
+        priority: 'critical',
         type: 'general',
         source: 'manual',
         due: '2026-07-02',
+        createdAt: new Date().toISOString(),
         platform: 'wb',
         articleKey: 'SELFTEST-FILTER-BIND'
       });

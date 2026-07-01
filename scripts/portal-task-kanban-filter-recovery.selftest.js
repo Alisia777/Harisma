@@ -125,7 +125,7 @@ async function run() {
       motionVisible: Boolean(document.querySelector('.altea-motion-stage.is-visible'))
     }));
 
-    assert.strictEqual(recovered.version, '20260701-task-filter-bind-v1');
+    assert.strictEqual(recovered.version, '20260701-task-entry-light-v1');
     assert.deepStrictEqual(
       {
         search: recovered.search,

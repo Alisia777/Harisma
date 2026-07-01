@@ -1048,6 +1048,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildAllSeries,
   commonBusinessCutoff,
   platformSeriesSummary
 };

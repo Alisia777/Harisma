@@ -195,7 +195,8 @@ function resolveOptions(args) {
     explicitExpectedDate: Boolean(dateKey(args['expected-date'])),
     noFail: Boolean(args['no-fail']),
     noWrite: Boolean(args['no-write']),
-    mirrorLocalFallback: Boolean(args['mirror-local-fallback'])
+    mirrorLocalFallback: Boolean(args['mirror-local-fallback']),
+    relaxPlatformFacts: Boolean(args['relax-platform-facts'])
   };
 }
 
@@ -468,6 +469,24 @@ function latestPoint(platform, expectedDate) {
   return candidates[candidates.length - 1] || null;
 }
 
+function pointAtDate(platform, targetDate) {
+  if (!targetDate) return null;
+  const series = Array.isArray(platform?.series) ? platform.series : (Array.isArray(platform?.daily) ? platform.daily : []);
+  const point = series.find((item) => pointDate(item) === targetDate);
+  if (!point) return null;
+  const revenue = pointRevenue(point);
+  if (revenue === null) return null;
+  return {
+    point,
+    date: targetDate,
+    revenue,
+    orderUnits: pointOrderUnits(point),
+    orderRevenue: pointOrderRevenue(point),
+    buyoutUnits: pointBuyoutUnits(point),
+    buyoutRevenue: pointBuyoutRevenue(point)
+  };
+}
+
 function daysBetween(left, right) {
   if (!left || !right) return null;
   const leftDate = new Date(`${left}T00:00:00Z`);
@@ -495,6 +514,11 @@ function moneyLooksLikeUnits(money, units, referenceRevenue) {
   return money <= units * 5 && referenceRevenue >= money * 10;
 }
 
+function addPlatformAvailabilityIssue(check, policy, reason) {
+  if (policy.relaxPlatformFacts) check.warnings.push(reason);
+  else check.blockingReasons.push(reason);
+}
+
 function inspectPlatformFact(loaded, policy, expectedDate, checks, passports) {
   const payload = loaded.get('platform_fact')?.payload;
   const companyPlan = loaded.get('company_plan')?.payload;
@@ -506,7 +530,9 @@ function inspectPlatformFact(loaded, policy, expectedDate, checks, passports) {
   const points = {};
   for (const key of [...activePlatforms, 'all']) {
     points[key] = latestPoint(platforms[key], expectedDate);
-    if (key !== 'all' && !points[key]) check.blockingReasons.push(`platform_trends: ${key} has no numeric series point up to ${expectedDate}`);
+    if (key !== 'all' && !points[key]) {
+      addPlatformAvailabilityIssue(check, policy, `platform_trends: ${key} has no numeric series point up to ${expectedDate}`);
+    }
   }
   const coreDates = CORE_CUTOFF_PLATFORMS.map((key) => points[key]?.date).filter(Boolean);
   const commonDate = coreDates.length === CORE_CUTOFF_PLATFORMS.length && new Set(coreDates).size === 1 ? coreDates[0] : '';
@@ -516,14 +542,14 @@ function inspectPlatformFact(loaded, policy, expectedDate, checks, passports) {
   check.inactiveEmptyPlatforms = inactiveEmptyPlatforms;
   check.componentDates = Object.fromEntries(BUSINESS_PLATFORMS.map((key) => [key, points[key]?.date || '']));
   if (!commonDate) {
-    check.blockingReasons.push(`platform_trends: WB/Ozon/Yandex do not share one cutoff date (${coreDates.join(', ') || 'none'})`);
+    addPlatformAvailabilityIssue(check, policy, `platform_trends: WB/Ozon/Yandex do not share one cutoff date (${coreDates.join(', ') || 'none'})`);
   }
   for (const key of activePlatforms) {
     const point = points[key];
     if (!point) continue;
     const ageDays = daysBetween(point.date, expectedDate);
     if (ageDays !== null && ageDays > toleranceDays) {
-      check.blockingReasons.push(`platform_trends: ${key} date ${point.date} is ${ageDays} days older than expected ${expectedDate}`);
+      addPlatformAvailabilityIssue(check, policy, `platform_trends: ${key} date ${point.date} is ${ageDays} days older than expected ${expectedDate}`);
     }
     if (point.revenue !== null && point.orderUnits !== null && moneyLooksLikeUnits(point.revenue, point.orderUnits, point.orderRevenue || point.revenue)) {
       check.blockingReasons.push(`platform_trends: ${key} revenue ${roundMoney(point.revenue)} looks like units ${roundMoney(point.orderUnits)}`);
@@ -548,9 +574,16 @@ function inspectPlatformFact(loaded, policy, expectedDate, checks, passports) {
   check.componentRevenue = Object.fromEntries(BUSINESS_PLATFORMS.map((key) => [key, roundMoney(points[key]?.revenue)]));
   check.componentRevenueSum = roundMoney(componentSum);
   if (points.all && commonDate && points.all.date === commonDate) {
+    const allDateComponentRevenue = Object.fromEntries(BUSINESS_PLATFORMS.map((key) => {
+      const exactPoint = pointAtDate(platforms[key], points.all.date);
+      return [key, roundMoney(exactPoint?.revenue)];
+    }));
+    const allDateComponentSum = Object.values(allDateComponentRevenue).reduce((sum, value) => sum + numberOrZero(value), 0);
     check.allRevenue = roundMoney(points.all.revenue);
-    if (!moneyMatches(componentSum, points.all.revenue, policy)) {
-      check.blockingReasons.push(`platform_trends: all=${roundMoney(points.all.revenue)} differs from active marketplace sum=${roundMoney(componentSum)}`);
+    check.allDateComponentRevenue = allDateComponentRevenue;
+    check.allDateComponentRevenueSum = roundMoney(allDateComponentSum);
+    if (!moneyMatches(allDateComponentSum, points.all.revenue, policy)) {
+      addPlatformAvailabilityIssue(check, policy, `platform_trends: all=${roundMoney(points.all.revenue)} differs from ${points.all.date} marketplace sum=${roundMoney(allDateComponentSum)}`);
     }
   } else if (points.all) {
     check.warnings.push(`platform_trends: all series date ${points.all.date} differs from component cutoff ${commonDate || 'mixed'}`);
@@ -1246,6 +1279,7 @@ function buildReconciliation(manifest, expectedDate, sourceChecks, contractCheck
 function run(options) {
   const manifest = readJson(options.manifestPath);
   manifest.policy = manifest.policy || {};
+  if (options.relaxPlatformFacts) manifest.policy.relaxPlatformFacts = true;
   const { loaded, checks: sourceChecks } = loadSources(manifest, options);
   const expectedDate = inferExpectedDate(loaded, options.expectedDate);
   const passports = [];

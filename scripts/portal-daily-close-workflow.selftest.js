@@ -42,6 +42,9 @@ for (const scriptRef of scriptRefs) {
 if (workflow.includes('--no-fail')) {
   fail('daily close must not weaken publish or D-1 gates with --no-fail');
 }
+if (workflow.includes('--relax-platform-facts') || workflow.includes('--relax-missing-platform-facts')) {
+  fail('daily close must keep post-sync marketplace fact gates strict');
+}
 if (!workflow.includes('--strict --skip-protected-scope --skip-health --skip-data-guard')) {
   fail('daily close API sync must run in strict non-IU mode');
 }
@@ -136,6 +139,12 @@ if (!dataTruthWorkflow.includes('node scripts/build-sku-registry-meta.js --input
 }
 if (dataTruthWorkflow.indexOf('node scripts/build-sku-registry-meta.js') > dataTruthWorkflow.indexOf('node scripts/portal-daily-layer-guard.js')) {
   fail('data truth workflow must build sku_registry_meta.json before portal-daily-layer-guard');
+}
+if (!dataTruthWorkflow.includes('--relax-missing-platform-facts')) {
+  fail('data truth workflow must downgrade missing pre-sync marketplace raw facts to warnings');
+}
+if (!dataTruthWorkflow.includes('--relax-platform-facts')) {
+  fail('data truth workflow must downgrade pre-sync marketplace freshness drift to warnings');
 }
 
 if (paths.includes('data/portal_dashboard_metrics.json')) {

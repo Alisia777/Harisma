@@ -227,6 +227,35 @@ function runPayloadSabotage(name, mutate) {
   return { name, blocked, reports };
 }
 
+function runRelaxedMissingPlatformFactsTest() {
+  const payloads = baselinePayloads();
+  payloads.dashboardMetrics.metrics.push({
+    metric_id: 'sales.raw_revenue',
+    unit: 'RUB',
+    plan_id: null,
+    scope: { platform: 'letu' },
+    period_from: '2026-07-01',
+    period_to: '2026-07-01',
+    raw_value: null,
+    displayed_value: 'Нет данных',
+    transforms: ['sum_daily_marketplace_sales_fact'],
+    source_dates: { platform_trends: '' },
+    data_status: 'incomplete',
+    reconciliation_status: 'blocked',
+    business_status: 'neutral'
+  });
+  const strictReports = auditPayloads(payloads, path.join(process.cwd(), 'data'));
+  const relaxedReports = auditPayloads(payloads, path.join(process.cwd(), 'data'), { relaxMissingPlatformFacts: true });
+  const strictBlocked = countBlocking(strictReports) > 0;
+  const relaxedBlocked = countBlocking(relaxedReports) > 0;
+  const relaxedWarned = (relaxedReports.dashboard?.summary?.warningChecks || 0) > 0;
+  return {
+    name: 'relaxed pre-sync missing platform facts',
+    blocked: strictBlocked && !relaxedBlocked && relaxedWarned,
+    reports: { strictReports, relaxedReports }
+  };
+}
+
 function runZeroPublishableFeatureTest() {
   const payloads = baselinePayloads();
   payloads.canonicalRepricer.rows.forEach((row) => {
@@ -245,6 +274,7 @@ function main() {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'portal-phase3-selftest-'));
   const cases = [
     { name: 'broken #REF workbook formula', run: () => runBrokenWorkbookTest(tmpDir) },
+    { name: 'relaxed pre-sync missing platform facts', run: runRelaxedMissingPlatformFactsTest },
     { name: 'zero publishable repricer feature', run: runZeroPublishableFeatureTest },
     { name: 'missing cost', mutate: (p) => { p.canonicalRepricer.rows[0].economics.cost = null; p.canonicalRepricer.rows[0].economics.complete = false; } },
     { name: 'missing commission', mutate: (p) => { p.canonicalRepricer.rows[0].economics.commission_pct = null; p.canonicalRepricer.rows[0].economics.complete = false; } },

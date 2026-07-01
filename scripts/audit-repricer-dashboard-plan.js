@@ -41,6 +41,7 @@ function resolveOptions(args = {}) {
     inputDir: path.resolve(args['input-dir'] || path.join(root, '.portal-truth-output')),
     baseDataDir: path.resolve(args['base-data-dir'] || path.join(root, 'data')),
     outputDir: path.resolve(args['output-dir'] || path.join(root, '.portal-truth-output')),
+    relaxMissingPlatformFacts: Boolean(args['relax-missing-platform-facts']),
     noWrite: Boolean(args['no-write']),
     noFail: Boolean(args['no-fail'])
   };
@@ -255,7 +256,17 @@ function metricRows(payload = {}) {
   return Array.isArray(payload.metrics) ? payload.metrics : [];
 }
 
-function auditDashboard(payload = {}) {
+function isMissingPlatformFact(row) {
+  const sourceDates = Object.values(row?.source_dates || {})
+    .map((value) => String(value || '').trim())
+    .filter(Boolean);
+  return row?.metric_id === 'sales.raw_revenue'
+    && row?.raw_value === null
+    && row?.data_status === 'incomplete'
+    && sourceDates.length === 0;
+}
+
+function auditDashboard(payload = {}, options = {}) {
   const metrics = metricRows(payload);
   const checks = [];
   const nullAsZero = metrics.filter((row) => row.raw_value === null && (row.displayed_value === 0 || row.displayed_value === '0' || row.data_status === 'trusted'));
@@ -268,7 +279,11 @@ function auditDashboard(payload = {}) {
     ['iu', 'drr'].join('_')
   ].join('|'), 'i');
   const iuLeaks = metrics.filter((row) => protectedScopePattern.test(stableStringify(row)));
-  const mixedDates = metrics.filter((row) => row.metric_id === 'sales.raw_revenue' && row.reconciliation_status === 'blocked');
+  const mixedDateRows = metrics.filter((row) => row.metric_id === 'sales.raw_revenue' && row.reconciliation_status === 'blocked');
+  const missingPlatformFacts = mixedDateRows.filter(isMissingPlatformFact);
+  const mixedDates = options.relaxMissingPlatformFacts
+    ? mixedDateRows.filter((row) => !isMissingPlatformFact(row))
+    : mixedDateRows;
   addCheck(checks, {
     id: 'dashboard:null-is-incomplete-not-zero',
     blockingReasons: nullAsZero.length ? [`${nullAsZero.length} null metrics are rendered/trusted as zero`] : [],
@@ -297,6 +312,9 @@ function auditDashboard(payload = {}) {
   addCheck(checks, {
     id: 'dashboard:no-mixed-platform-dates',
     blockingReasons: mixedDates.length ? [`${mixedDates.length} platform raw fact metrics have mixed source dates`] : [],
+    warnings: options.relaxMissingPlatformFacts && missingPlatformFacts.length
+      ? [`${missingPlatformFacts.length} platform raw fact metrics are missing before daily sync`]
+      : [],
     samples: mixedDates.slice(0, 25)
   });
   return reportBase('portal-dashboard-reconciliation-v1', payload.generatedAt || '', payload.snapshot_id || '', checks, {
@@ -363,12 +381,12 @@ function auditIndicators(indicatorAudit = {}, dashboardPayload = {}) {
   });
 }
 
-function auditPayloads(payloads, baseDataDir = process.cwd()) {
+function auditPayloads(payloads, baseDataDir = process.cwd(), options = {}) {
   const dashboardPayload = payloads.dashboardMetrics || {};
   const cutoffDate = dashboardPayload.cutoffDate || '';
   return {
     repricing: auditRepricer(payloads.canonicalRepricer || {}, baseDataDir, cutoffDate),
-    dashboard: auditDashboard(dashboardPayload),
+    dashboard: auditDashboard(dashboardPayload, options),
     plan: auditPlan(dashboardPayload),
     indicator: auditIndicators(payloads.indicatorAudit || {}, dashboardPayload)
   };
@@ -380,7 +398,7 @@ function auditRepricerDashboardPlan(options = resolveOptions({})) {
     dashboardMetrics: readJson(path.join(options.inputDir, 'portal_dashboard_metrics.json'), { metrics: [] }),
     indicatorAudit: readJson(path.join(options.inputDir, REPORTS.indicator), { rows: [] })
   };
-  const reports = auditPayloads(payloads, options.baseDataDir);
+  const reports = auditPayloads(payloads, options.baseDataDir, options);
   if (!options.noWrite) {
     writeJson(path.join(options.outputDir, REPORTS.repricing), reports.repricing);
     writeJson(path.join(options.outputDir, REPORTS.dashboard), reports.dashboard);

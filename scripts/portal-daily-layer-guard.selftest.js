@@ -154,7 +154,8 @@ function options(dir) {
     explicitExpectedDate: true,
     noFail: true,
     noWrite: true,
-    mirrorLocalFallback: false
+    mirrorLocalFallback: false,
+    relaxPlatformFacts: false
   };
 }
 
@@ -209,6 +210,20 @@ try {
   const staleExtraBroken = run(options(dir));
   assert.strictEqual(staleExtraBroken.report.publish.allowed, false);
   assert.ok(staleExtraBroken.report.publish.blockingReasons.some((reason) => reason.includes('goldapple date 2026-06-10')));
+  const staleExtraRelaxed = run({ ...options(dir), relaxPlatformFacts: true });
+  assert.strictEqual(staleExtraRelaxed.report.publish.allowed, true);
+  assert.ok(staleExtraRelaxed.report.publish.warningReasons.some((reason) => reason.includes('goldapple date 2026-06-10')));
+
+  buildFixture(dir);
+  const mismatchAll = JSON.parse(fs.readFileSync(path.join(dir, 'platform_trends.json'), 'utf8'));
+  mismatchAll.platforms.all.series[0].revenue = 10000;
+  write(dir, 'platform_trends.json', mismatchAll);
+  const mismatchBroken = run(options(dir));
+  assert.strictEqual(mismatchBroken.report.publish.allowed, false);
+  assert.ok(mismatchBroken.report.publish.blockingReasons.some((reason) => reason.includes('differs from 2026-06-19 marketplace sum')));
+  const mismatchRelaxed = run({ ...options(dir), relaxPlatformFacts: true });
+  assert.strictEqual(mismatchRelaxed.report.publish.allowed, true);
+  assert.ok(mismatchRelaxed.report.publish.warningReasons.some((reason) => reason.includes('differs from 2026-06-19 marketplace sum')));
 
   buildFixture(dir);
   const badOrder = JSON.parse(fs.readFileSync(path.join(dir, 'order_procurement.json'), 'utf8'));

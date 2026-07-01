@@ -16,12 +16,12 @@ Current external blocker: required GitHub Actions secrets are not configured.
 Latest verified blocker evidence:
 
 - workflow: `Portal daily close`
-- run: `28542257341`
+- run: `28542661384`
 - branch: `main`
-- head SHA: `40259c071879f471786fdb8217ded471a830d493`
+- head SHA: `a19d76ff9d84a01325b65278455d3f05dbc816f3`
 - preceding `Portal data truth`: `success`
-- artifact: `portal-daily-close-28542257341`
-- artifact digest: `sha256:66a76848619ce2e799340b0a443cffb4c03b14ca856ee7ba62b73b66a77fc663`
+- artifact: `portal-daily-close-28542661384`
+- artifact digest: `sha256:b16565dac0b9241d2d6aee777c7774c329f0ce906a466cd9dc8da780fa20fc22`
 - report inside artifact: `.portal-truth-output/portal_daily_close_preflight.json`
 - report status: `blocked`
 - `publish.allowed`: `false`

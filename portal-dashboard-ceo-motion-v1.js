@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-dashboard-money-rub5';
+  const VERSION = '20260701-dashboard-mtd-buyouts1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -13,7 +13,7 @@
   const ROUTES = {
     orders: 'product-leaderboard',
     buys: 'product-leaderboard',
-    revenue: 'sku-plan-fact',
+    revenue: 'product-leaderboard',
     margin: 'sku-plan-fact',
     ads: 'iu-drr',
     drr: 'iu-drr',
@@ -38,7 +38,7 @@
   const METRICS = {
     orders: { label: 'Заказы', unit: 'money', chart: 'bars', route: 'product-leaderboard', tone: '#76a9ea' },
     buys: { label: 'Выкупы', unit: 'money', chart: 'bars', route: 'product-leaderboard', tone: '#74c99a' },
-    revenue: { label: 'Выручка', unit: 'money', chart: 'bars', route: 'sku-plan-fact', tone: '#dbc7a3' },
+    revenue: { label: 'Выкупы с 01', unit: 'money', chart: 'bars', route: 'product-leaderboard', tone: '#dbc7a3' },
     margin: { label: 'Маржа', unit: 'pct', chart: 'bars', route: 'sku-plan-fact', tone: '#e0b760' },
     ads: { label: 'Реклама', unit: 'money', chart: 'bars', route: 'iu-drr', tone: '#a855f7' }
   };
@@ -188,6 +188,11 @@
     if (!month) return '';
     const [year, monthNumber] = month.split('-').map(Number);
     return iso(new Date(year, monthNumber, 0));
+  }
+
+  function monthStartKey(value) {
+    const month = monthKey(value);
+    return month ? `${month}-01` : '';
   }
 
   function monthLabel(key) {
@@ -708,6 +713,20 @@
     const prevEnd = addDays(start, -1);
     const prevStart = addDays(prevEnd, -(length - 1));
     return { start: iso(start), end: iso(end), prevStart: iso(prevStart), prevEnd: iso(prevEnd), length };
+  }
+
+  function previousMonthToDateRange(startKey, endKey) {
+    const start = parseDate(startKey);
+    const end = parseDate(endKey);
+    if (!start || !end) return { prevStart: '', prevEnd: '', length: 0 };
+    const length = Math.max(1, Math.round((end - start) / 86400000) + 1);
+    const prevStart = new Date(start.getFullYear(), start.getMonth() - 1, 1);
+    const prevEnd = addDays(prevStart, length - 1);
+    return {
+      prevStart: iso(prevStart),
+      prevEnd: iso(prevEnd),
+      length
+    };
   }
 
   function seriesDateKeys(series) {
@@ -1506,8 +1525,46 @@
     };
   }
 
+  function metricLabel(model, metric) {
+    if (metric === 'revenue') {
+      const start = model?.monthToDate?.range?.start || model?.range?.start;
+      return `Выкупы с ${shortDate(start)}`;
+    }
+    return METRICS[metric]?.label || metric;
+  }
+
+  function buildMonthToDateBuyoutSeries(model) {
+    const rows = Array.isArray(model.monthToDate?.rows) ? model.monthToDate.rows : [];
+    const prev = Array.isArray(model.monthToDate?.previousRows) ? model.monthToDate.previousRows : [];
+    const totalPlan = model.monthToDate?.plan?.buyoutRub;
+    const planDaily = totalPlan == null ? null : finite(totalPlan) / Math.max(1, finite(model.monthToDate?.range?.length, rows.length || 1));
+    let cumulative = 0;
+    let previousCumulative = 0;
+    let planCumulative = 0;
+    return {
+      chart: 'bars',
+      points: rows.map((row, index) => {
+        const day = dateKey(row.date || row.label) || model.monthToDate?.range?.start || model.range.start;
+        const buyout = buyoutInfoForRow(row, model.platform);
+        const prevBuyout = buyoutInfoForRow(prev[index] || {}, model.platform);
+        cumulative += buyout ? finite(buyout.rub) : 0;
+        previousCumulative += prevBuyout ? finite(prevBuyout.rub) : 0;
+        if (planDaily !== null) planCumulative += planDaily;
+        return {
+          date: day,
+          value: cumulative,
+          plan: planDaily === null ? null : planCumulative,
+          prev: previousCumulative
+        };
+      }),
+      title: `${metricLabel(model, 'revenue')} по дням`,
+      caption: 'Накопленные выкупы с начала выбранного месяца до даты среза. Клик по дню откроет drill-down.'
+    };
+  }
+
   function buildSeries(model, metricKey) {
     const meta = METRICS[metricKey] || METRICS.revenue;
+    if (metricKey === 'revenue') return buildMonthToDateBuyoutSeries(model);
     const rows = metricKey === 'ads'
       ? (model.adRows || model.iuRows || [])
       : metricKey === 'buys' && Array.isArray(model.buyoutRows) && model.buyoutRows.length
@@ -1567,7 +1624,7 @@
     return {
       chart: meta.chart,
       points: rows.map((row, index) => make(row, index, true)),
-      title: `${meta.label} по дням`,
+      title: `${metricLabel(model, metricKey)} по дням`,
       caption: meta.chart === 'bars'
         ? 'Текущий период, предыдущий период и плановая линия. Клик по дню откроет drill-down.'
         : 'Ставка показана линией: текущая, предыдущая и целевой ориентир.'
@@ -1993,6 +2050,27 @@
     const total = sumRows(currentRows, platform);
     const previousTotal = sumRows(previousRows, platform);
     const allTotal = sumRows(allRows, 'all');
+    const mtdStart = monthStartKey(range.end) || range.start;
+    const previousMtd = previousMonthToDateRange(mtdStart, range.end);
+    const monthToDateRange = {
+      start: mtdStart,
+      end: range.end,
+      prevStart: previousMtd.prevStart,
+      prevEnd: previousMtd.prevEnd,
+      length: previousMtd.length || range.length
+    };
+    const monthToDateRows = platform === 'all'
+      ? platformBuyoutRowsInRange(platformTrends, monthToDateRange.start, monthToDateRange.end)
+      : rowsInRange(selectedPlatform.series, monthToDateRange.start, monthToDateRange.end);
+    const previousMonthToDateRows = platform === 'all'
+      ? platformBuyoutRowsInRange(platformTrends, monthToDateRange.prevStart, monthToDateRange.prevEnd)
+      : rowsInRange(selectedPlatform.series, monthToDateRange.prevStart, monthToDateRange.prevEnd);
+    const monthToDateTotal = platform === 'all'
+      ? platformTotalsInRange(platformTrends, monthToDateRange.start, monthToDateRange.end)
+      : sumRows(monthToDateRows, platform);
+    const previousMonthToDateTotal = platform === 'all'
+      ? platformTotalsInRange(platformTrends, monthToDateRange.prevStart, monthToDateRange.prevEnd)
+      : sumRows(previousMonthToDateRows, platform);
     const rawRevenue = rawRevenueMetrics(metrics);
     if (platform !== 'all') applyRawRevenueFallback(total, rawRevenue[platform], currentRows);
     const platformRangeTotal = platformTotalsInRange(platformTrends, range.start, range.end);
@@ -2007,6 +2085,8 @@
     fillBuyoutEstimateFromReference(total, previousTotal);
     fillBuyoutEstimateFromReference(total, platformPreviousRangeTotal);
     fillBuyoutEstimateFromReference(allTotal, platformPreviousRangeTotal);
+    fillBuyoutEstimateFromReference(monthToDateTotal, previousMonthToDateTotal);
+    fillBuyoutEstimateFromReference(monthToDateTotal, total);
     const iuRows = iuRowsInRange(iuDrr, range.start, range.end);
     const prevIuRows = iuRowsInRange(iuDrr, range.prevStart, range.prevEnd);
     const coreAdWindow = iuRowsForRangeOrLatest(iuDrr, range, period);
@@ -2072,6 +2152,22 @@
       marginPct: total.marginPct ?? .43,
       drr: total.revenue > 0 ? planAds / total.revenue : null
     };
+    const monthToDatePlanChannel = monthlyPlanChannel(dashboard, platform, monthKey(monthToDateRange.end));
+    const monthToDatePlanOrderRub = finite(monthToDatePlanChannel.dailyRevenue) * Math.max(1, finite(monthToDateRange.length, 1));
+    const monthToDateBuyoutRate = buyoutRevenueRate(monthToDateTotal)
+      ?? buyoutRevenueRate(total)
+      ?? buyoutRevenueRate(previousMonthToDateTotal);
+    const monthToDate = {
+      range: monthToDateRange,
+      rows: monthToDateRows,
+      previousRows: previousMonthToDateRows,
+      total: monthToDateTotal,
+      previousTotal: previousMonthToDateTotal,
+      plan: {
+        orderRub: monthToDatePlanOrderRub,
+        buyoutRub: monthToDateBuyoutRate === null ? null : monthToDatePlanOrderRub * monthToDateBuyoutRate
+      }
+    };
     const platformCards = buildPlatformCards({ dashboard, metrics, platformTrends, iuRows, adRows, coreAdRows, range, total, allTotal, adsSummary });
     const skuRows = buildSkuRows({ dashboard, productLeaderboard, platformTrends, platformSkuArticles, platform, platformCards, total, allTotal, plan, range });
     const model = {
@@ -2109,6 +2205,7 @@
       previousTotal,
       allTotal,
       plan,
+      monthToDate,
       platformCards,
       skuRows
     };
@@ -2121,7 +2218,7 @@
   function metricValueFor(model, metric) {
     if (metric === 'orders') return trustedOrderMoney(model.total);
     if (metric === 'buys') return trustedBuyoutMoney(model.total);
-    if (metric === 'revenue') return model.total.revenue;
+    if (metric === 'revenue') return trustedBuyoutMoney(model.monthToDate?.total);
     if (metric === 'margin') return model.total.marginPct;
     if (metric === 'ads') return model.total.ads;
     return model.total.revenue;
@@ -2130,7 +2227,7 @@
   function previousMetricValueFor(model, metric) {
     if (metric === 'orders') return trustedOrderMoney(model.previousTotal);
     if (metric === 'buys') return trustedBuyoutMoney(model.previousTotal);
-    if (metric === 'revenue') return model.previousTotal.revenue;
+    if (metric === 'revenue') return trustedBuyoutMoney(model.monthToDate?.previousTotal);
     if (metric === 'margin') return model.previousTotal.marginPct;
     if (metric === 'ads') return model.previousTotal.ads;
     return model.previousTotal.revenue;
@@ -2139,7 +2236,7 @@
   function planMetricValueFor(model, metric) {
     if (metric === 'orders') return model.plan.orderRub;
     if (metric === 'buys') return model.plan.buyoutRub;
-    if (metric === 'revenue') return model.plan.revenue;
+    if (metric === 'revenue') return model.monthToDate?.plan?.buyoutRub;
     if (metric === 'margin') return model.plan.marginPct;
     if (metric === 'ads') return model.plan.ads;
     return model.plan.revenue;
@@ -2158,7 +2255,10 @@
     const current = metricValueFor(model, metric);
     if (metric === 'orders') return `план ${fmtMoneyFull(plan)}`;
     if (metric === 'buys') return `${buyoutHint(model.total)} · план ${plan == null ? 'нет данных' : fmtMoneyFull(plan)}`;
-    if (metric === 'revenue') return `к плану ${plan > 0 ? fmtPct(current / plan) : 'нет плана'}`;
+    if (metric === 'revenue') {
+      const range = model.monthToDate?.range || model.range;
+      return `с ${shortDate(range.start)} по ${shortDate(range.end)} · план ${plan == null ? 'нет данных' : fmtMoneyFull(plan)}`;
+    }
     if (metric === 'margin') return `план ${fmtPct(plan)}`;
     if (metric === 'ads') return model.total.revenue ? `ДРР ${fmtPct(model.total.ads / model.total.revenue)}` : 'нет базы ДРР';
     return '';
@@ -2172,7 +2272,7 @@
       const tone = delta == null ? '' : delta >= 0 ? 'is-up' : 'is-down';
       return `
         <button type="button" class="ceo-kpi ${model.metric === key ? 'active' : ''}" data-ceo-metric="${key}" style="--pc:${meta.tone}" aria-pressed="${model.metric === key ? 'true' : 'false'}">
-          <small>${escapeHtml(meta.label)}</small>
+          <small>${escapeHtml(metricLabel(model, key))}</small>
           <strong>${fmtMetric(key, value)}</strong>
           <em class="${tone}">${delta == null ? '—' : signedPct(delta)}</em>
           <p>${escapeHtml(metricHint(model, key))}</p>
@@ -2512,17 +2612,19 @@
   }
 
   function openDay(root, model, day) {
-    const row = model.currentRows.find((item) => dateKey(item.date || item.label) === day) || {};
+    const dayRows = model.metric === 'revenue' ? (model.monthToDate?.rows || []) : model.currentRows;
+    const row = dayRows.find((item) => dateKey(item.date || item.label) === day) || {};
     const point = model.series.points.find((item) => item.date === day) || {};
     const platformRows = model.platformCards.map((item) => ({
       label: item.label,
       value: `${fmtMoney(item.total.revenue)} · ${fmtPct(item.share)}`,
       route: null
     }));
-    openDrawer(root, shortDate(day), `День в выбранном периоде. Сохраняем текущий KPI: ${METRICS[model.metric].label}.`, [
+    openDrawer(root, shortDate(day), `День в выбранном периоде. Сохраняем текущий KPI: ${metricLabel(model, model.metric)}.`, [
       ['Факт KPI', fmtMetric(model.metric, point.value)],
-      ['План дня', fmtMetric(model.metric, point.plan)],
+      [model.metric === 'revenue' ? 'План на дату' : 'План дня', fmtMetric(model.metric, point.plan)],
       ['Выручка', fmtMoneyFull(row.revenue)],
+      ['Выкуп дня', buyoutDisplay(sumRows(row ? [row] : [], model.platform))],
       ['Маржа', row.revenue ? fmtPct(finite(row.estimatedMargin, row.financialResult) / finite(row.revenue)) : 'нет факта']
     ], platformRows);
   }

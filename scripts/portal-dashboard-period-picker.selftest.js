@@ -158,7 +158,7 @@ async function run() {
       window.fetch = () => Promise.resolve({ ok: false, json: async () => null });
       localStorage.setItem('altea.portal.marketplace', 'ozon');
       localStorage.setItem('altea.dashboard.ceoMotion.period', 'mtd');
-      localStorage.setItem('altea.dashboard.ceoMotion.metric', 'revenue');
+      localStorage.setItem('altea.dashboard.ceoMotion.metric', 'orders');
       localStorage.removeItem('altea.dashboard.ceoMotion.dateTo');
       localStorage.removeItem('altea.dashboard.ceoMotion.month');
     }, fixtureState());
@@ -168,7 +168,7 @@ async function run() {
     await page.selectOption('[data-ceo-month]', '2026-06');
     await page.waitForFunction(() => document.querySelector('[data-ceo-date-to]')?.value === '2026-06-30', null, { timeout: 30000 });
     const june = await snapshot(page);
-    assert.strictEqual(june.version, '20260701-dashboard-money-rub5');
+    assert.strictEqual(june.version, '20260701-dashboard-mtd-buyouts1');
     assert.strictEqual(june.period, 'month');
     assert.strictEqual(june.activePeriod, 'month');
     assert.strictEqual(june.month, '2026-06');

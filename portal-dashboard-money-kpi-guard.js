@@ -1,8 +1,8 @@
 (function () {
   'use strict';
 
-  const EXPECTED_VERSION = '20260701-dashboard-money-rub4';
-  const SCRIPT_URL = `portal-dashboard-ceo-motion-v1.js?v=20260701dashboard-money-rub4-force&ts=${Date.now()}`;
+  const EXPECTED_VERSION = '20260701-dashboard-money-rub5';
+  const SCRIPT_URL = `portal-dashboard-ceo-motion-v1.js?v=20260701dashboard-money-rub5-force&ts=${Date.now()}`;
   let loadPromise = null;
   let checks = 0;
 

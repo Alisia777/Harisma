@@ -41,6 +41,16 @@ def platform_month_total(payload, key, month, metric='revenue'):
     return total
 
 
+def platform_keys(payload):
+    keys = []
+    rows = payload.get('platforms', []) if isinstance(payload, dict) else []
+    for item in rows:
+        key = str(item.get('key', '')).lower().strip()
+        if key and key != 'all':
+            keys.append(key)
+    return keys
+
+
 def walk_url_fields(value, errors: list[str], label='root') -> None:
     if isinstance(value, dict):
         for key, item in value.items():
@@ -114,10 +124,12 @@ def main():
     active = dashboard.get('companyPlan', {}).get('activeMonth', {}) if isinstance(dashboard, dict) else {}
     month = str(active.get('monthKey') or dashboard.get('dataFreshness', {}).get('googleSheetsMonth') or '')
     if month and trends:
-        scoped = sum(platform_month_total(trends, platform, month) for platform in ('wb', 'ozon', 'ya'))
+        components = {platform: platform_month_total(trends, platform, month) for platform in platform_keys(trends)}
+        scoped = sum(components.values())
         fact = active.get('factRevenueToDate')
         if fact is not None and abs(float(fact) - scoped) > max(1.0, scoped * 1e-6):
-            fail(errors, f'payroll fact must equal WB+Ozon+Ya: dashboard={fact}, scoped={scoped}')
+            nonzero = {key: round(value, 2) for key, value in components.items() if abs(value) > 0.01}
+            fail(errors, f'payroll fact must equal active marketplace sum: dashboard={fact}, scoped={scoped}, components={nonzero}')
 
     current_aliases = aliases.get('aliases', []) if isinstance(aliases, dict) else aliases or []
     previous_aliases = last_aliases.get('aliases', []) if isinstance(last_aliases, dict) else last_aliases or []

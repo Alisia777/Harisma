@@ -160,7 +160,7 @@ async function run() {
     }, platform);
 
     const wb = await snapshot('wb');
-    assert.strictEqual(wb.version, '20260701-dashboard-money-rub4');
+    assert.strictEqual(wb.version, '20260701-dashboard-money-rub5');
     assert.strictEqual(wb.orders, 100);
     assert.strictEqual(wb.orderRub, 1000);
     assert.strictEqual(wb.buys, 80);

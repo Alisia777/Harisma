@@ -60,6 +60,8 @@
     var installing = false;
     var styleInstalled = false;
     var observer = null;
+    var renderTimer = 0;
+    var lastMotionHideAt = 0;
 
     function appState() {
       return window.__alteaAppState || window.__ALTEA_STATE__ || window.state || {};
@@ -97,10 +99,17 @@
       if (!isControlRoute()) return;
       ensureStyle();
       if (document.body) document.body.classList.add('altea-task-route-gate');
+
+      var stage = document.querySelector('.altea-motion-stage');
+      var stageNeedsHide = !!(stage && (!stage.hidden || stage.classList.contains('is-visible') || stage.style.display !== 'none'));
+      var now = Date.now();
+      if (!stageNeedsHide && now - lastMotionHideAt < 180) return;
+      lastMotionHideAt = now;
+
       try {
         if (window.AlteaMotion && typeof window.AlteaMotion.hide === 'function') window.AlteaMotion.hide();
       } catch (error) {}
-      var stage = document.querySelector('.altea-motion-stage');
+
       if (stage) {
         stage.classList.remove('is-visible', 'is-complete');
         stage.hidden = true;
@@ -129,6 +138,27 @@
       return document.getElementById('view-control');
     }
 
+    function placeholderShell(root) {
+      return root ? root.querySelector('[data-task-route-gate-placeholder]') : null;
+    }
+
+    function realTaskShell(root) {
+      if (!root) return null;
+      return root.querySelector('[data-task-calendar-design-v1]:not([data-task-route-gate-placeholder])');
+    }
+
+    function cleanupLegacyTaskLayers(root) {
+      var shell = realTaskShell(root);
+      if (!root || !shell) return;
+      Array.from(root.children).forEach(function (child) {
+        if (child === shell || child.contains(shell)) return;
+        child.remove();
+      });
+      root.querySelectorAll('.control-simple-panel,[data-task-lazy-panel],.task-center-queues,.task-center-hotfix,[data-control-simple-root],.section-title.control-simple-title,.control-simple-title').forEach(function (node) {
+        if (!node.closest('[data-task-calendar-design-v1]')) node.remove();
+      });
+    }
+
     function renderPlaceholder() {
       var root = controlRoot();
       if (!root) return null;
@@ -152,9 +182,17 @@
 
     function renderTaskLayer() {
       hideMotionHard();
+      var root = controlRoot();
+      if (realTaskShell(root)) {
+        cleanupLegacyTaskLayers(root);
+        return root;
+      }
+
       var api = window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__;
       if (api && typeof api.renderControl === 'function') {
-        try { return api.renderControl({ skipReady: false }); } catch (error) { console.warn('[task-route-gate]', error); }
+        var placeholder = placeholderShell(root);
+        if (placeholder) placeholder.remove();
+        try { return api.renderControl({ skipReady: true }); } catch (error) { console.warn('[task-route-gate]', error); }
       }
       return renderPlaceholder();
     }
@@ -194,20 +232,31 @@
         clearMotionGateIfNeeded();
         return;
       }
-      [0, 40, 120, 320, 900, 1800].forEach(function (delay) {
-        window.setTimeout(function () {
-          install();
-          renderTaskLayer();
-        }, delay);
+      window.clearTimeout(renderTimer);
+      renderTimer = window.setTimeout(function () {
+        install();
+        renderTaskLayer();
+      }, 60);
+    }
+
+    function scheduleTaskBurst() {
+      scheduleTaskRender();
+      [260, 900].forEach(function (delay) {
+        window.setTimeout(scheduleTaskRender, delay);
       });
     }
 
     function watchMotion() {
-      if (!window.MutationObserver || observer || !document.documentElement) return;
+      if (!window.MutationObserver || observer) return;
+      var target = document.body;
+      if (!target) {
+        window.setTimeout(watchMotion, 60);
+        return;
+      }
       observer = new MutationObserver(function () {
         if (isControlRoute()) hideMotionHard();
       });
-      observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'data-scene'] });
+      observer.observe(target, { childList: true, subtree: false });
     }
 
     install();
@@ -221,22 +270,23 @@
       base: function () { return baseRender; }
     };
 
-    var ticks = 0;
-    var timer = window.setInterval(function () {
-      install();
-      if (isControlRoute()) hideMotionHard();
-      ticks += 1;
-      if (ticks > 500 && window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__) window.clearInterval(timer);
-    }, 40);
-
-    ['DOMContentLoaded', 'hashchange', 'altea:viewchange', 'altea:app-ready', 'altea:data-ready', 'altea:portal-storage-updated', 'altea:marketplacechange'].forEach(function (eventName) {
-      window.addEventListener(eventName, scheduleTaskRender, true);
+    [0, 120, 420, 1200].forEach(function (delay) {
+      window.setTimeout(function () {
+        install();
+        if (isControlRoute()) renderTaskLayer();
+      }, delay);
     });
+
+    ['DOMContentLoaded', 'hashchange', 'altea:viewchange', 'altea:app-ready', 'altea:data-ready', 'altea:marketplacechange'].forEach(function (eventName) {
+      window.addEventListener(eventName, scheduleTaskBurst, true);
+    });
+    window.addEventListener('altea:portal-storage-updated', scheduleTaskRender, true);
+
     document.addEventListener('click', function (event) {
       var target = event.target && event.target.closest ? event.target.closest('[data-view="control"],[href$="#control"],[href*="#control"]') : null;
       if (!target) return;
       if (document.body) document.body.classList.add('altea-task-route-gate');
-      scheduleTaskRender();
+      scheduleTaskBurst();
     }, true);
   }
 

@@ -114,7 +114,7 @@ async function run() {
     const rows = [];
     for (const platform of PLATFORMS) {
       const item = await snapshot(page, platform);
-      assert.strictEqual(item.version, '20260701-dashboard-mtd-buyouts1');
+      assert.strictEqual(item.version, '20260702-dashboard-no-buyout-proxy1');
       assert.ok(item.orderRub > 0, `${platform} must have positive order rubles`);
       assert.ok(item.buyoutRub > 0, `${platform} must have positive buyout rubles`);
       assert.ok(item.monthToDateBuyoutRub > 0, `${platform} must have positive month-to-date buyout rubles`);

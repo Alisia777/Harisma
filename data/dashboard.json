@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-v2",
-  "generatedAt": "2026-07-02T08:06:35.566Z",
-  "snapshot_id": "dashboard:2f55fe6487200e34",
+  "generatedAt": "2026-07-02T09:55:46.004Z",
+  "snapshot_id": "dashboard:bce11f2d0625f74a",
   "asOfDate": "2026-07-01",
   "latestMarketplaceDate": "2026-07-01",
   "monthKey": "2026-07",
@@ -113,14 +113,14 @@
   },
   "summary": {
     "metrics": 14,
-    "factRevenue": 14673511.34,
+    "factRevenue": 14677753.34,
     "planRevenue": 322540144,
     "planToDate": 10404520.77,
-    "completionToDate": 1.410302,
+    "completionToDate": 1.410709,
     "unallocatedRevenue": 0,
     "cutoffDate": "2026-07-01",
     "monthKey": "2026-07",
-    "factUnits": 13727,
+    "factUnits": 13731,
     "warehouseStock": 455625,
     "marketplaceStock": 220574
   },
@@ -169,7 +169,7 @@
     {
       "id": "sales-revenue-wb",
       "label": "Revenue WB",
-      "value": 12008887,
+      "value": 12011404,
       "format": "money",
       "period": "2026-07-01",
       "hint": "Fact from platform_trends.json.",
@@ -214,7 +214,7 @@
     {
       "id": "sales-revenue-megamarket",
       "label": "Revenue MEGAMARKET",
-      "value": 0,
+      "value": 1725,
       "format": "money",
       "period": "2026-07-01",
       "hint": "Fact from platform_trends.json.",
@@ -259,7 +259,7 @@
     {
       "id": "company-fact-revenue",
       "label": "Company fact",
-      "value": 14673511.34,
+      "value": 14677753.34,
       "format": "money",
       "period": "2026-07-01",
       "hint": "Fact is read only from platform_trends.json.",
@@ -268,8 +268,8 @@
     {
       "id": "company-plan-completion",
       "label": "Plan completion to date",
-      "value": 1.4103015082054406,
-      "valuePct": 1.4103015082054406,
+      "value": 1.410709215594571,
+      "valuePct": 1.410709215594571,
       "format": "pct",
       "period": "2026-07-01",
       "hint": "Fact divided by linear company plan to date.",
@@ -278,7 +278,7 @@
     {
       "id": "company-forecast-revenue",
       "label": "Company forecast",
-      "value": 454878851.54,
+      "value": 455010353.54,
       "format": "money",
       "period": "2026-07",
       "hint": "Baseline forecast: month-to-date average times month days.",
@@ -315,25 +315,25 @@
       "total_stock": 220574,
       "warehouse_stock": 455625,
       "plan_units": 0,
-      "fact_units_to_date": 13727,
-      "fact_revenue_to_date": 14673511.34,
-      "plan_completion_to_date_pct": 1.410302,
+      "fact_units_to_date": 13731,
+      "fact_revenue_to_date": 14677753.34,
+      "plan_completion_to_date_pct": 1.410709,
       "company_plan_month_key": "2026-07",
       "company_plan_month_label": "июль 2026",
       "company_plan_revenue": 322540144,
-      "company_fact_revenue_to_date": 14673511.34,
+      "company_fact_revenue_to_date": 14677753.34,
       "company_plan_to_date_revenue": 10404520.77,
-      "company_plan_completion_month_pct": 0.045494,
-      "company_plan_completion_to_date_pct": 1.410302,
-      "company_forecast_revenue": 454878851.54,
-      "company_forecast_pct": 1.410302,
+      "company_plan_completion_month_pct": 0.045507,
+      "company_plan_completion_to_date_pct": 1.410709,
+      "company_forecast_revenue": 455010353.54,
+      "company_forecast_pct": 1.410709,
       "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
       "platformFacts": {
         "wb": {
           "dateFrom": "2026-07-01",
           "dateTo": "2026-07-01",
-          "revenue": 12008887,
-          "units": 9399
+          "revenue": 12011404,
+          "units": 9401
         },
         "ozon": {
           "dateFrom": "2026-07-01",
@@ -360,10 +360,10 @@
           "units": 0
         },
         "megamarket": {
-          "dateFrom": "",
-          "dateTo": "",
-          "revenue": 0,
-          "units": 0
+          "dateFrom": "2026-07-01",
+          "dateTo": "2026-07-01",
+          "revenue": 1725,
+          "units": 2
         },
         "samokat": {
           "dateFrom": "",
@@ -843,11 +843,11 @@
       "monthKey": "2026-07",
       "planRevenueMonth": 322540144,
       "planRevenueToDate": 10404520.77,
-      "factRevenueToDate": 14673511.34,
-      "completionMonthPct": 0.045494,
-      "completionToDatePct": 1.410302,
-      "forecastRevenue": 454878851.54,
-      "forecastPct": 1.410302
+      "factRevenueToDate": 14677753.34,
+      "completionMonthPct": 0.045507,
+      "completionToDatePct": 1.410709,
+      "forecastRevenue": 455010353.54,
+      "forecastPct": 1.410709
     },
     "months": {
       "2026-05": {

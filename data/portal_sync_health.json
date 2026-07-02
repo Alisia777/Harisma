@@ -1,12 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-07-02T08:46:41.741Z",
+  "generatedAt": "2026-07-02T12:20:08.058Z",
   "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
     "warnings": [],
-    "checkedAt": "2026-07-02T08:46:41.741Z"
+    "checkedAt": "2026-07-02T12:20:08.058Z"
   },
   "freshness": {
     "maxDate": "2026-07-01",
@@ -15,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-07-02T08:46:41.735Z",
+      "checkedAt": "2026-07-02T12:20:08.053Z",
       "settlementHour": 10,
       "expectedDate": "2026-07-01",
       "maxDate": "2026-07-01",
@@ -36,12 +36,12 @@
           "status": "ok",
           "expectedDate": "2026-07-01",
           "latestDate": "2026-07-01",
-          "currentRevenue": 12008887,
+          "currentRevenue": 12011404,
           "baselineRevenueMedian": 9032684,
-          "revenueRatio": 1.3295,
-          "currentUnits": 9399,
+          "revenueRatio": 1.3298,
+          "currentUnits": 9401,
           "baselineUnitsMedian": 7578,
-          "unitsRatio": 1.2403,
+          "unitsRatio": 1.2406,
           "baselineDays": 7
         },
         {
@@ -62,9 +62,9 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-07-02T08:46:41.740Z",
+      "checkedAt": "2026-07-02T12:20:08.058Z",
       "expectedDate": "2026-07-01",
-      "adsSummaryWindowTo": "2026-07-01",
+      "adsSummaryWindowTo": "2026-06-30",
       "iuDrrWindowTo": "2026-07-01",
       "iuDrrAdsWindowTo": "2026-07-01",
       "iuDrrDailyLatest": "2026-07-01",
@@ -75,7 +75,7 @@
           "name": "iu-drr-ads-window-after-ads-summary",
           "status": "ok",
           "message": "IU/DRR WB ads window covers ads_summary through 2026-07-01.",
-          "adsWindowTo": "2026-07-01",
+          "adsWindowTo": "2026-06-30",
           "iuAdsWindowTo": "2026-07-01"
         },
         {
@@ -83,13 +83,6 @@
           "status": "ok",
           "message": "IU/DRR daily rows cover expected date 2026-07-01.",
           "iuDailyLatest": "2026-07-01",
-          "expectedDate": "2026-07-01"
-        },
-        {
-          "name": "iu-drr-ads-window-expected-date",
-          "status": "ok",
-          "message": "IU/DRR WB ads window covers expected date 2026-07-01.",
-          "iuAdsWindowTo": "2026-07-01",
           "expectedDate": "2026-07-01"
         }
       ]
@@ -111,7 +104,7 @@
     "dashboard": {
       "exists": true,
       "rows": 20,
-      "generatedAt": "2026-07-02T08:06:35.566Z",
+      "generatedAt": "2026-07-02T09:55:46.004Z",
       "asOfDate": "2026-07-01",
       "revenue": 0
     },
@@ -125,14 +118,14 @@
     "platform_trends": {
       "exists": true,
       "rows": 9,
-      "generatedAt": "2026-07-02T08:06:35.566Z",
+      "generatedAt": "2026-07-02T09:55:46.004Z",
       "asOfDate": "2026-07-01",
-      "revenue": 1332711220
+      "revenue": 1332720143
     },
     "ads_summary": {
       "exists": true,
       "rows": 8,
-      "generatedAt": "2026-07-02T08:23:35.407Z",
+      "generatedAt": "2026-07-02T10:24:34.227Z",
       "asOfDate": "2026-07-01",
       "revenue": 0
     },
@@ -146,21 +139,21 @@
     "prices": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-01T07:15:49.480Z",
-      "asOfDate": "2026-07-01",
+      "generatedAt": "2026-07-02T09:21:16.884Z",
+      "asOfDate": "2026-07-02",
       "revenue": 0
     },
     "repricer": {
       "exists": true,
       "rows": 200,
-      "generatedAt": "2026-07-01T07:15:49.480Z",
-      "asOfDate": "2026-07-01",
+      "generatedAt": "2026-07-02T09:21:16.884Z",
+      "asOfDate": "2026-07-02",
       "revenue": 0
     },
     "smart_price_overlay": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-01T07:15:49.480Z",
+      "generatedAt": "2026-07-02T09:21:16.884Z",
       "asOfDate": "2026-07-01",
       "revenue": 0
     },
@@ -230,21 +223,21 @@
     "order_procurement_ym": {
       "exists": true,
       "rows": 898,
-      "generatedAt": "2026-07-02T08:28:26.289Z",
-      "asOfDate": "2026-06-29",
+      "generatedAt": "2026-07-02T12:17:49.763Z",
+      "asOfDate": "2026-07-02",
       "revenue": 0
     },
     "oos_control": {
       "exists": true,
       "rows": 12,
-      "generatedAt": "2026-07-02T08:30:16.068Z",
+      "generatedAt": "2026-07-02T12:07:58.885Z",
       "asOfDate": "2026-07-01",
       "revenue": 0
     },
     "iu_drr_summary": {
       "exists": true,
       "rows": 31,
-      "generatedAt": "2026-07-02T08:30:22.971Z",
+      "generatedAt": "2026-07-02T10:35:24.153Z",
       "asOfDate": "2026-07-01",
       "revenue": 0
     },
@@ -258,14 +251,14 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-02T00:00:00+03:00",
+      "generatedAt": "2026-07-02T12:19:13.995Z",
       "asOfDate": "2026-07-01",
       "revenue": 0
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-07-02T08:41:29.949Z",
+      "generatedAt": "2026-07-02T12:19:44.480Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
@@ -293,14 +286,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-07-02T08:30:16.475Z",
+      "generatedAt": "2026-07-02T12:19:44.075Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-02T08:41:29.956Z",
+      "generatedAt": "2026-07-02T12:19:44.487Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     }
@@ -366,9 +359,9 @@
     ]
   },
   "quality": {
-    "issueCount": 74,
+    "issueCount": 73,
     "criticalCount": 0,
-    "warningCount": 2,
+    "warningCount": 1,
     "monthKey": "2026-07",
     "maxDate": "2026-07-01",
     "apiUnmappedPlatformRows": 0,
@@ -379,7 +372,7 @@
     "apiUnmappedActionRevenue": 0,
     "apiKnownOutsideRegistryRows": 23,
     "apiKnownOutsideRegistryUniqueSku": 20,
-    "apiKnownOutsideRegistryRevenue": 198438,
+    "apiKnownOutsideRegistryRevenue": 198447,
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
@@ -424,9 +417,9 @@
         "rows": 9,
         "previousRows": 7,
         "rowRatio": 1.2857142857142858,
-        "revenue": 1332711220,
+        "revenue": 1332720143,
         "previousRevenue": 100968408,
-        "revenueRatio": 13.199289227180843,
+        "revenueRatio": 13.199377601358238,
         "revenueComparable": false
       },
       {
@@ -560,12 +553,12 @@
       "label": "WB",
       "expectedDate": "2026-07-01",
       "latestDate": "2026-07-01",
-      "currentRevenue": 12008887,
+      "currentRevenue": 12011404,
       "baselineRevenueMedian": 9032684,
-      "revenueRatio": 1.3295,
-      "currentUnits": 9399,
+      "revenueRatio": 1.3298,
+      "currentUnits": 9401,
       "baselineUnitsMedian": 7578,
-      "unitsRatio": 1.2403,
+      "unitsRatio": 1.2406,
       "baselineDays": 7
     },
     {
@@ -587,7 +580,7 @@
       "name": "iu-drr-ads-window-after-ads-summary",
       "status": "ok",
       "message": "IU/DRR WB ads window covers ads_summary through 2026-07-01.",
-      "adsWindowTo": "2026-07-01",
+      "adsWindowTo": "2026-06-30",
       "iuAdsWindowTo": "2026-07-01"
     },
     {
@@ -595,13 +588,6 @@
       "status": "ok",
       "message": "IU/DRR daily rows cover expected date 2026-07-01.",
       "iuDailyLatest": "2026-07-01",
-      "expectedDate": "2026-07-01"
-    },
-    {
-      "name": "iu-drr-ads-window-expected-date",
-      "status": "ok",
-      "message": "IU/DRR WB ads window covers expected date 2026-07-01.",
-      "iuAdsWindowTo": "2026-07-01",
       "expectedDate": "2026-07-01"
     },
     {

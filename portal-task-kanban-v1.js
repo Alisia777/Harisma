@@ -5,7 +5,8 @@
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
   window.__ALTEA_TASK_KANBAN_PRIMARY__ = true;
 
-  const VERSION = '20260702-task-marketplace-sync-v1';
+  const AUTO_TOMBSTONE_VERSION = '20260701-task-auto-tombstone-v1';
+  const VERSION = '20260702-task-marketplace-sync-v2';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
@@ -49,7 +50,7 @@
     ['\u043f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0430\u0440\u0442\u0435\u043c', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c'],
     ['\u043f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0430\u0440\u0442\u0451\u043c', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c']
   ]);
-  const TASK_OWNER_PLATFORM_KEYS = new Set(['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit']);
+  const TASK_OWNER_PLATFORM_KEYS = new Set(['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit']);
   const WAITING_STATUSES = new Set(['waiting', 'waiting_team', 'waiting_rop', 'waiting_decision', 'approval']);
   const DONE_STATUSES = new Set(['done', 'closed', 'complete', 'completed', 'cancelled', 'archive', 'archived', 'deleted', 'removed']);
   const LANES = [
@@ -78,6 +79,10 @@
     letu: 'letu',
     letual: 'letu',
     letoile: 'letu',
+    megamarket: 'megamarket',
+    mega: 'megamarket',
+    sbermegamarket: 'megamarket',
+    samokat: 'samokat',
     magnit: 'magnit',
     magnitmarket: 'magnit',
     product: 'product'
@@ -93,6 +98,8 @@
     magnit: 'Магнит',
     product: 'Продукт'
   };
+  PLATFORM_LABELS.megamarket = 'Мегамаркет';
+  PLATFORM_LABELS.samokat = 'Самокат';
   const PLATFORM_OPTIONS = Object.entries(PLATFORM_LABELS);
   const TASK_FILTER_DEFAULTS = {
     search: '',
@@ -149,6 +156,8 @@
     ['auto', 'Автосигналы']
   ];
 
+  const TASK_LANE_INITIAL_LIMIT = 18;
+
   let wrappedRender = null;
   let enhanceQueued = false;
   let enhanceQueuedForce = false;
@@ -161,13 +170,25 @@
   let taskListCache = { signature: '', expiresAt: 0, tasks: [] };
   const TASK_CACHE = window.__ALTEA_TASK_DESIGN_CACHE__ instanceof Map ? window.__ALTEA_TASK_DESIGN_CACHE__ : new Map();
   window.__ALTEA_TASK_DESIGN_CACHE__ = TASK_CACHE;
+  const STATE_FILTERS = (() => {
+    try {
+      const app = appState();
+      app.controlFilters = app.controlFilters && typeof app.controlFilters === 'object' ? app.controlFilters : {};
+      return app.controlFilters;
+    } catch (_) {
+      return {};
+    }
+  })();
   const TASK_FILTERS = window.__ALTEA_TASK_DESIGN_FILTERS__ && typeof window.__ALTEA_TASK_DESIGN_FILTERS__ === 'object'
     ? window.__ALTEA_TASK_DESIGN_FILTERS__
-    : {};
+    : STATE_FILTERS;
   window.__ALTEA_TASK_DESIGN_FILTERS__ = TASK_FILTERS;
+  try { appState().controlFilters = TASK_FILTERS; } catch (_) {}
   let taskExtraCache = null;
   let taskAttachmentCache = null;
   let renderingControl = false;
+  let recoveredStaleFilters = false;
+  const expandedTaskLanes = new Set();
   const TASK_BOOT_STARTED_AT = Date.now();
   const TASK_SPARSE_BOOT_HOLD_MS = 1200;
   let sparseBootWakeTimer = 0;
@@ -271,6 +292,8 @@
       task?.articleKey,
       task?.queue
     ].map(normalizeText).join(' ');
+    if (/mega\s?market|megamarket|sber\s?mega|sbermegamarket|мега\s?маркет|мегамаркет/.test(haystack)) return 'megamarket';
+    if (/samokat|самокат/.test(haystack)) return 'samokat';
     if (/wildberries|(^|\W)wb($|\W)|\bвб\b/.test(haystack)) return 'wb';
     if (/ozon|озон/.test(haystack)) return 'ozon';
     if (/yandex|яндекс|я\.?\s?маркет|\bym\b|\bya\b/.test(haystack)) return 'ya';
@@ -459,7 +482,20 @@
     }
     filters.owner = normalizeOwnerName(filters.owner || 'all') || 'all';
     filters.platform = normalizePlatform(filters.platform || 'all') || 'all';
+    try { appState().controlFilters = filters; } catch (_) {}
     return filters;
+  }
+
+  function resetFiltersInPlace(filters = ensureFilters()) {
+    Object.assign(filters, TASK_FILTER_DEFAULTS);
+    delete filters.__platformManual;
+    delete filters.__platformSyncedFromPortal;
+    try { appState().controlFilters = filters; } catch (_) {}
+    return filters;
+  }
+
+  function hasNonDefaultFilters(filters = ensureFilters()) {
+    return Object.keys(TASK_FILTER_DEFAULTS).some((key) => String(filters[key] || '') !== String(TASK_FILTER_DEFAULTS[key] || ''));
   }
 
   function taskDate(task) {
@@ -536,6 +572,8 @@
     const key = normalizePlatform(platform);
     if (key === 'ya') return 'ym';
     if (key === 'goldapple') return 'ga';
+    if (key === 'megamarket') return 'megamarket';
+    if (key === 'samokat') return 'samokat';
     if (key === 'magnit') return 'mm';
     return key;
   }
@@ -987,6 +1025,18 @@
     }
   }
 
+  function recordAutoTaskClosure(task) {
+    if (!task?.id || !isAutoTaskLike(task) || !DONE_STATUSES.has(normalizeText(task.status))) return;
+    try {
+      const fn = window.recordAutoTaskTombstone || (typeof recordAutoTaskTombstone === 'function' ? recordAutoTaskTombstone : null);
+      if (typeof fn === 'function') {
+        Promise.resolve(fn(task)).catch((error) => console.warn('[task-kanban-v1] auto task tombstone failed', error));
+      }
+    } catch (error) {
+      console.warn('[task-kanban-v1] auto task tombstone failed', error);
+    }
+  }
+
   function persistCommentLater(comment) {
     try {
       const fn = window.persistComment || (typeof persistComment === 'function' ? persistComment : null);
@@ -1178,7 +1228,10 @@
     if (!current.title) current.title = 'Новая задача';
     if (!current.status) current.status = 'new';
     rememberTask(current);
-    if (beforeStatus !== current.status) keepTaskVisibleAfterStatusChange(current);
+    if (beforeStatus !== current.status) {
+      keepTaskVisibleAfterStatusChange(current);
+      recordAutoTaskClosure(current);
+    }
     if (historyText) addTaskHistory(current, beforeStatus !== current.status ? 'status' : 'updated', historyText);
     savePortalState('task-kanban-v1-update');
     persistTaskLater(current);
@@ -1452,7 +1505,10 @@
       <section class="task-design-board" data-task-design-board>
         ${LANES.map((lane) => {
           const laneTasks = tasks.filter((task) => laneFor(task) === lane.key);
-          const visible = laneTasks.slice(0, 70);
+          const expanded = expandedTaskLanes.has(lane.key);
+          const visibleLimit = expanded ? laneTasks.length : TASK_LANE_INITIAL_LIMIT;
+          const visible = laneTasks.slice(0, visibleLimit);
+          const hiddenCount = laneTasks.length - visible.length;
           return `
             <section class="task-design-lane lane-${escapeHtml(lane.key)}" data-kanban-lane="${escapeHtml(lane.key)}" data-lane-key="${escapeHtml(lane.key)}">
               <header>
@@ -1463,6 +1519,7 @@
                 <b class="task-design-lane-count">${laneTasks.length}</b>
               </header>
               <div class="task-design-dropzone">
+                ${hiddenCount > 0 ? `<button type="button" class="task-design-more" data-task-show-more-lane="${escapeHtml(lane.key)}">Показать ещё ${hiddenCount}</button>` : ''}
                 ${visible.length ? visible.map(taskCard).join('') : '<div class="task-design-empty">Нет задач в этой колонке</div>'}
                 ${laneTasks.length > visible.length ? `<div class="task-design-more">+${laneTasks.length - visible.length} скрыто фильтром</div>` : ''}
               </div>
@@ -1534,6 +1591,7 @@
         platform: filters.platform || ''
       },
       counts: [tasks.length, filtered.length],
+      expandedLanes: Array.from(expandedTaskLanes).sort(),
       tasks: filtered.slice(0, 260).map((task) => [
         task?.id,
         task?.title,
@@ -1614,7 +1672,12 @@
         markup
       };
     }
-    const filtered = filteredTasks(tasks);
+    let filtered = filteredTasks(tasks);
+    if (!filtered.length && tasks.length && !recoveredStaleFilters && hasNonDefaultFilters(filters)) {
+      recoveredStaleFilters = true;
+      resetFiltersInPlace(filters);
+      filtered = filteredTasks(tasks);
+    }
     const markup = `
       <section class="task-design-v1 platform-${escapeHtml(platform)}" data-task-calendar-design-v1 data-task-kanban-v1 data-version="${escapeHtml(VERSION)}">
         ${renderFilters(tasks, filtered, filters, platform)}
@@ -2201,8 +2264,8 @@
     if (name === 'owner') filters[name] = normalizeOwnerName(value) || 'all';
     else if (name === 'platform') {
       filters[name] = normalizePlatform(value || 'all') || 'all';
-      filters.__platformManual = true;
-      filters.__platformSyncedFromPortal = '';
+      filters.__platformManual = filters[name] !== 'all';
+      filters.__platformSyncedFromPortal = filters.__platformManual ? '' : filters.__platformSyncedFromPortal || 'all';
     }
     else filters[name] = value;
     if (name === 'search') {
@@ -2214,19 +2277,8 @@
   }
 
   function resetFilters() {
-    const filters = ensureFilters();
-    Object.assign(filters, {
-      search: '',
-      owner: 'all',
-      status: 'active',
-      type: 'all',
-      priority: 'all',
-      horizon: 'all',
-      source: 'all',
-      platform: readPortalPlatform()
-    });
-    filters.__platformManual = false;
-    filters.__platformSyncedFromPortal = filters.platform;
+    resetFiltersInPlace();
+    syncPlatformFromPortal(null, { force: true });
     invalidateTaskListCache();
     queueEnhance();
   }
@@ -2272,6 +2324,12 @@
       const preset = event.target.closest('[data-task-preset]');
       if (preset) {
         applyPreset(preset.dataset.taskPreset || 'active');
+        return;
+      }
+      const showMoreLane = event.target.closest('[data-task-show-more-lane]');
+      if (showMoreLane) {
+        expandedTaskLanes.add(showMoreLane.getAttribute('data-task-show-more-lane') || '');
+        queueEnhance(true);
         return;
       }
       if (event.target.closest('[data-task-reset]')) {
@@ -2454,6 +2512,15 @@
     window.__ALTEA_TASK_KANBAN_RENDER__ = function renderTaskKanbanNow() {
       enhanceControl(true);
       return root();
+    };
+    window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__ = {
+      version: AUTO_TOMBSTONE_VERSION,
+      renderControl: window.__ALTEA_TASK_KANBAN_RENDER__,
+      invalidate: invalidateTaskListCache,
+      resetFilters: () => {
+        resetFilters();
+        return ensureFilters();
+      }
     };
     window.openTaskModal = openTask;
     window.renderTaskModal = openTask;

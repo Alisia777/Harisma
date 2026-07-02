@@ -1,13 +1,13 @@
 {
   "schema": "portal-sku-matrix-v2",
-  "generatedAt": "2026-07-02T08:30:16.475Z",
+  "generatedAt": "2026-07-02T12:19:44.075Z",
   "source": {
     "skus": 143,
     "aliases": 566,
     "externalAliases": 341,
     "embeddedAliases": 1132,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-07-02T00:00:00+03:00"
+    "dataQualityGeneratedAt": "2026-07-02T12:19:13.995Z"
   },
   "summary": {
     "skuCount": 143,
@@ -21,7 +21,7 @@
     "duplicateRiskCount": 0,
     "duplicateRiskOverage": 0,
     "missingOwnerCount": 0,
-    "issueCount": 2,
+    "issueCount": 1,
     "infoIssueCount": 72,
     "problemStateCounts": {
       "owner_platform_conflict": 36,

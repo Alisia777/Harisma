@@ -529,18 +529,38 @@ function platformMonthlyTotals(rawRows, asOfDate, allowedPlatformOrder = ['wb', 
         unitsPriority: 0,
         revenue: 0,
         revenuePriority: 0,
+        ordersUnits: 0,
+        ordersRevenue: 0,
+        deliveredUnits: 0,
+        deliveredRevenue: 0,
+        buyoutUnits: 0,
+        buyoutRevenue: 0,
         estimatedMargin: 0,
         estimatedMarginPriority: 0,
         adsSpend: 0,
         adsSpendPriority: 0
       };
-      if (metric === 'orders_units') setMonthlyMetric(current, 'units', value, platformKey === 'ya' ? 2 : 3);
-      else if (metric === 'delivered_units') setMonthlyMetric(current, 'units', value, platformKey === 'ya' ? 3 : 2);
-      else if (metric === 'buyout_units') setMonthlyMetric(current, 'units', value, 1);
+      if (metric === 'orders_units') {
+        setMonthlyMetric(current, 'units', value, platformKey === 'ya' ? 2 : 3);
+        current.ordersUnits = value;
+      } else if (metric === 'delivered_units') {
+        setMonthlyMetric(current, 'units', value, platformKey === 'ya' ? 3 : 2);
+        current.deliveredUnits = value;
+      } else if (metric === 'buyout_units') {
+        setMonthlyMetric(current, 'units', value, 1);
+        current.buyoutUnits = value;
+      }
 
-      if (metric === 'orders_revenue') setMonthlyMetric(current, 'revenue', value, platformKey === 'ya' ? 2 : 3);
-      else if (metric === 'buyout_revenue') setMonthlyMetric(current, 'revenue', value, 2);
-      else if (metric === 'delivered_revenue') setMonthlyMetric(current, 'revenue', value, platformKey === 'ya' ? 3 : 1);
+      if (metric === 'orders_revenue') {
+        setMonthlyMetric(current, 'revenue', value, platformKey === 'ya' ? 2 : 3);
+        current.ordersRevenue = value;
+      } else if (metric === 'buyout_revenue') {
+        setMonthlyMetric(current, 'revenue', value, 2);
+        current.buyoutRevenue = value;
+      } else if (metric === 'delivered_revenue') {
+        setMonthlyMetric(current, 'revenue', value, platformKey === 'ya' ? 3 : 1);
+        current.deliveredRevenue = value;
+      }
       else if (metric === 'net_payout') {
         setMonthlyMetric(current, 'revenue', value, 0);
         setMonthlyMetric(current, 'estimatedMargin', value, 3);
@@ -552,6 +572,12 @@ function platformMonthlyTotals(rawRows, asOfDate, allowedPlatformOrder = ['wb', 
     }
     for (const platform of platforms.values()) {
       for (const month of platform.values()) {
+        month.ordersUnits = numberOrZero(month.ordersUnits) || numberOrZero(month.units);
+        month.ordersRevenue = numberOrZero(month.ordersRevenue) || numberOrZero(month.revenue);
+        month.deliveredUnits = numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits) || month.ordersUnits;
+        month.deliveredRevenue = numberOrZero(month.deliveredRevenue) || numberOrZero(month.buyoutRevenue) || month.ordersRevenue;
+        month.buyoutUnits = numberOrZero(month.buyoutUnits) || numberOrZero(month.deliveredUnits) || month.ordersUnits;
+        month.buyoutRevenue = numberOrZero(month.buyoutRevenue) || numberOrZero(month.deliveredRevenue) || month.ordersRevenue;
         if (!(month.estimatedMargin > 0) && month.revenue > 0 && month.adsSpend > 0) {
           month.estimatedMargin = Math.max(0, month.revenue - month.adsSpend);
         }
@@ -620,6 +646,12 @@ function platformMonthlyTotals(rawRows, asOfDate, allowedPlatformOrder = ['wb', 
       const revenue = platformKey === 'ya'
         ? (month.deliveredRevenue || month.ordersRevenue || month.buyoutRevenue || month.netPayout || 0)
         : (month.ordersRevenue || month.buyoutRevenue || month.netPayout || 0);
+      const ordersUnits = numberOrZero(month.ordersUnits) || numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits);
+      const ordersRevenue = numberOrZero(month.ordersRevenue) || revenue;
+      const deliveredUnits = numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits) || ordersUnits;
+      const deliveredRevenue = numberOrZero(month.deliveredRevenue) || numberOrZero(month.buyoutRevenue) || revenue;
+      const buyoutUnits = numberOrZero(month.buyoutUnits) || numberOrZero(month.deliveredUnits) || ordersUnits;
+      const buyoutRevenue = numberOrZero(month.buyoutRevenue) || numberOrZero(month.deliveredRevenue) || revenue;
       const estimatedMargin = month.netPayout > 0
         ? month.netPayout
         : platformKey === 'ya' && revenue > 0 && month.adsSpend > 0
@@ -629,9 +661,15 @@ function platformMonthlyTotals(rawRows, asOfDate, allowedPlatformOrder = ['wb', 
           : month.ordersRevenue > 0 && month.adsSpend > 0
             ? Math.max(0, month.ordersRevenue - month.adsSpend)
             : null;
-      const unitTotal = platformKey === 'ya' ? (month.deliveredUnits || month.ordersUnits) : month.ordersUnits;
+      const unitTotal = platformKey === 'ya' ? (deliveredUnits || ordersUnits) : ordersUnits;
       const dailyUnits = distributeMonthlyValue(unitTotal, days);
       const dailyRevenue = distributeMonthlyValue(revenue, days);
+      const dailyOrdersUnits = distributeMonthlyValue(ordersUnits, days);
+      const dailyOrdersRevenue = distributeMonthlyValue(ordersRevenue, days);
+      const dailyDeliveredUnits = distributeMonthlyValue(deliveredUnits, days);
+      const dailyDeliveredRevenue = distributeMonthlyValue(deliveredRevenue, days);
+      const dailyBuyoutUnits = distributeMonthlyValue(buyoutUnits, days);
+      const dailyBuyoutRevenue = distributeMonthlyValue(buyoutRevenue, days);
       const dailyMargin = estimatedMargin != null ? distributeMonthlyValue(estimatedMargin, days) : [];
       const bounds = monthRange(month.monthKey);
       if (!bounds) continue;
@@ -643,6 +681,12 @@ function platformMonthlyTotals(rawRows, asOfDate, allowedPlatformOrder = ['wb', 
           date: iso(date),
           label: iso(date),
           units: dailyUnits[offset] || 0,
+          ordersUnits: dailyOrdersUnits[offset] || 0,
+          ordersRevenue: dailyOrdersRevenue[offset] || 0,
+          deliveredUnits: dailyDeliveredUnits[offset] || 0,
+          deliveredRevenue: dailyDeliveredRevenue[offset] || 0,
+          buyoutUnits: dailyBuyoutUnits[offset] || 0,
+          buyoutRevenue: dailyBuyoutRevenue[offset] || 0,
           revenue: dailyRevenue[offset] || 0,
           estimatedMargin: dailyMargin[offset] || 0
         });
@@ -780,6 +824,11 @@ function buildArticleRows(rows, skus, skuAliases, asOfDate, extraPlatformOrder =
       if (!days) continue;
       const dailyOrdersUnits = distributeMonthlyValue(month.ordersUnits, days);
       const dailyRevenue = distributeMonthlyValue(month.revenue, days);
+      const dailyOrdersRevenue = distributeMonthlyValue(month.ordersRevenue || month.revenue, days);
+      const dailyDeliveredUnits = distributeMonthlyValue(month.deliveredUnits || month.buyoutUnits || month.ordersUnits, days);
+      const dailyDeliveredRevenue = distributeMonthlyValue(month.deliveredRevenue || month.buyoutRevenue || month.revenue, days);
+      const dailyBuyoutUnits = distributeMonthlyValue(month.buyoutUnits || month.deliveredUnits || month.ordersUnits, days);
+      const dailyBuyoutRevenue = distributeMonthlyValue(month.buyoutRevenue || month.deliveredRevenue || month.revenue, days);
       const dailyAdsSpend = distributeMonthlyValue(month.adsSpend, days);
       const dailyAdsRevenue = distributeMonthlyValue(month.adsRevenue, days);
       const dailyAdsOrders = distributeMonthlyValue(month.adsOrders, days);
@@ -794,7 +843,11 @@ function buildArticleRows(rows, skus, skuAliases, asOfDate, extraPlatformOrder =
           date: iso(date),
           units: dailyOrdersUnits[offset] || 0,
           ordersUnits: dailyOrdersUnits[offset] || 0,
-          deliveredUnits: dailyOrdersUnits[offset] || 0,
+          ordersRevenue: dailyOrdersRevenue[offset] || 0,
+          deliveredUnits: dailyDeliveredUnits[offset] || 0,
+          deliveredRevenue: dailyDeliveredRevenue[offset] || 0,
+          buyoutUnits: dailyBuyoutUnits[offset] || 0,
+          buyoutRevenue: dailyBuyoutRevenue[offset] || 0,
           revenue: dailyRevenue[offset] || 0,
           adsSpend: dailyAdsSpend[offset] || 0,
           adsRevenue: dailyAdsRevenue[offset] || 0,
@@ -1210,8 +1263,22 @@ function buildPlatformSeriesFromMonthly(monthlyTotals, asOfDate) {
     if (!bounds) continue;
     const days = daysCoveredForMonth(month.monthKey, asOfDate);
     if (!days) continue;
-    const dailyUnits = distributeMonthlyValue(month.units, days);
-    const dailyRevenue = distributeMonthlyValue(month.revenue, days);
+    const units = numberOrZero(month.units);
+    const revenue = numberOrZero(month.revenue);
+    const ordersUnits = numberOrZero(month.ordersUnits) || units;
+    const ordersRevenue = numberOrZero(month.ordersRevenue) || revenue;
+    const deliveredUnits = numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits) || ordersUnits;
+    const deliveredRevenue = numberOrZero(month.deliveredRevenue) || numberOrZero(month.buyoutRevenue) || ordersRevenue;
+    const buyoutUnits = numberOrZero(month.buyoutUnits) || numberOrZero(month.deliveredUnits) || ordersUnits;
+    const buyoutRevenue = numberOrZero(month.buyoutRevenue) || numberOrZero(month.deliveredRevenue) || ordersRevenue;
+    const dailyUnits = distributeMonthlyValue(units || ordersUnits, days);
+    const dailyRevenue = distributeMonthlyValue(revenue || ordersRevenue, days);
+    const dailyOrdersUnits = distributeMonthlyValue(ordersUnits, days);
+    const dailyOrdersRevenue = distributeMonthlyValue(ordersRevenue, days);
+    const dailyDeliveredUnits = distributeMonthlyValue(deliveredUnits, days);
+    const dailyDeliveredRevenue = distributeMonthlyValue(deliveredRevenue, days);
+    const dailyBuyoutUnits = distributeMonthlyValue(buyoutUnits, days);
+    const dailyBuyoutRevenue = distributeMonthlyValue(buyoutRevenue, days);
     const dailyMargin = month.estimatedMargin != null ? distributeMonthlyValue(month.estimatedMargin, days) : [];
     const activeEnd = monthKey(asOfDate) === month.monthKey ? asOfDate : bounds.end;
     for (let offset = 0; offset < days; offset += 1) {
@@ -1222,6 +1289,12 @@ function buildPlatformSeriesFromMonthly(monthlyTotals, asOfDate) {
         label: iso(date),
         units: dailyUnits[offset] || 0,
         revenue: dailyRevenue[offset] || 0,
+        ordersUnits: dailyOrdersUnits[offset] || 0,
+        ordersRevenue: dailyOrdersRevenue[offset] || 0,
+        deliveredUnits: dailyDeliveredUnits[offset] || 0,
+        deliveredRevenue: dailyDeliveredRevenue[offset] || 0,
+        buyoutUnits: dailyBuyoutUnits[offset] || 0,
+        buyoutRevenue: dailyBuyoutRevenue[offset] || 0,
         estimatedMargin: dailyMargin[offset] || 0
       });
     }
@@ -1499,12 +1572,32 @@ function buildAllSeries(platformSeriesMap) {
         label: date,
         units: 0,
         revenue: 0,
+        ordersUnits: 0,
+        ordersRevenue: 0,
+        deliveredUnits: 0,
+        deliveredRevenue: 0,
+        buyoutUnits: 0,
+        buyoutRevenue: 0,
         financeTurnover: 0,
         financialResult: 0,
         estimatedMargin: 0
       };
-      current.units += numberOrZero(point.units);
-      current.revenue += numberOrZero(point.revenue);
+      const pointUnits = numberOrZero(point.units);
+      const pointRevenue = numberOrZero(point.revenue);
+      const pointOrdersUnits = numberOrZero(point.ordersUnits) || pointUnits;
+      const pointOrdersRevenue = numberOrZero(point.ordersRevenue) || pointRevenue;
+      const pointDeliveredUnits = numberOrZero(point.deliveredUnits) || numberOrZero(point.buyoutUnits) || pointOrdersUnits;
+      const pointDeliveredRevenue = numberOrZero(point.deliveredRevenue) || numberOrZero(point.buyoutRevenue) || pointOrdersRevenue;
+      const pointBuyoutUnits = numberOrZero(point.buyoutUnits) || numberOrZero(point.deliveredUnits) || pointOrdersUnits;
+      const pointBuyoutRevenue = numberOrZero(point.buyoutRevenue) || numberOrZero(point.deliveredRevenue) || pointOrdersRevenue;
+      current.units += pointUnits;
+      current.revenue += pointRevenue;
+      current.ordersUnits += pointOrdersUnits;
+      current.ordersRevenue += pointOrdersRevenue;
+      current.deliveredUnits += pointDeliveredUnits;
+      current.deliveredRevenue += pointDeliveredRevenue;
+      current.buyoutUnits += pointBuyoutUnits;
+      current.buyoutRevenue += pointBuyoutRevenue;
       const financeTurnover = officialFinanceTurnoverForPoint(key, point);
       const financialResult = officialMarginForPoint(key, point);
       current.financeTurnover += financeTurnover;
@@ -1519,6 +1612,12 @@ function buildAllSeries(platformSeriesMap) {
       ...point,
       units: Number(point.units.toFixed(4)),
       revenue: Number(point.revenue.toFixed(4)),
+      ordersUnits: Number(point.ordersUnits.toFixed(4)),
+      ordersRevenue: Number(point.ordersRevenue.toFixed(4)),
+      deliveredUnits: Number(point.deliveredUnits.toFixed(4)),
+      deliveredRevenue: Number(point.deliveredRevenue.toFixed(4)),
+      buyoutUnits: Number(point.buyoutUnits.toFixed(4)),
+      buyoutRevenue: Number(point.buyoutRevenue.toFixed(4)),
       financeTurnover: Number(point.financeTurnover.toFixed(4)),
       financialResult: Number(point.financialResult.toFixed(4)),
       estimatedMargin: Number(point.estimatedMargin.toFixed(4))

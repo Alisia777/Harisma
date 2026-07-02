@@ -358,7 +358,9 @@ function main() {
     schema: 'portal-order-procurement-ym-v2',
     formulaPassport: combinedPayload.formulaPassport,
     sourceFreshness: combinedPayload.sourceFreshness,
-    window: combinedPayload.window,
+    window: yandexPayload?.window && typeof yandexPayload.window === 'object'
+      ? yandexPayload.window
+      : combinedPayload.window,
     platform: platformLabel('ym'),
     rows: yandexRows
   };

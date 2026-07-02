@@ -49,7 +49,19 @@ function fixtureState() {
         {
           key: 'goldapple',
           label: 'ЗЯ',
-          series: [{ date, label: date, revenue: 500, units: 5, estimatedMargin: 0 }]
+          series: [{
+            date,
+            label: date,
+            revenue: 500,
+            units: 5,
+            ordersUnits: 5,
+            ordersRevenue: 500,
+            deliveredUnits: 5,
+            deliveredRevenue: 500,
+            buyoutUnits: 5,
+            buyoutRevenue: 500,
+            estimatedMargin: 0
+          }]
         },
         {
           key: 'all',
@@ -160,7 +172,7 @@ async function run() {
     }, platform);
 
     const wb = await snapshot('wb');
-    assert.strictEqual(wb.version, '20260701-dashboard-mtd-buyouts1');
+    assert.strictEqual(wb.version, '20260702-dashboard-no-buyout-proxy1');
     assert.strictEqual(wb.orders, 100);
     assert.strictEqual(wb.orderRub, 1000);
     assert.strictEqual(wb.buys, 80);
@@ -197,10 +209,10 @@ async function run() {
     assert.strictEqual(goldapple.buys, 5);
     assert.strictEqual(goldapple.buyoutRub, 500);
     assert.strictEqual(goldapple.buyoutRows, 1);
-    assert.strictEqual(goldapple.buyoutEstimatedRows, 1);
-    assert.strictEqual(goldapple.buyoutProxyRows, 1);
+    assert.strictEqual(goldapple.buyoutEstimatedRows, 0);
+    assert.strictEqual(goldapple.buyoutProxyRows, 0);
     assert.deepStrictEqual(goldapple.seriesValues, [500]);
-    assert.deepStrictEqual(goldapple.card, { orders: 5, orderRub: 500, buys: 5, buyoutRub: 500, buyoutRows: 1, buyoutEstimatedRows: 1, buyoutProxyRows: 1 });
+    assert.deepStrictEqual(goldapple.card, { orders: 5, orderRub: 500, buys: 5, buyoutRub: 500, buyoutRows: 1, buyoutEstimatedRows: 0, buyoutProxyRows: 0 });
 
     const all = await snapshot('all');
     assert.strictEqual(all.orders, 115);
@@ -209,8 +221,8 @@ async function run() {
     assert.strictEqual(all.buyoutRub, 2700);
     assert.strictEqual(all.buyoutRows, 3);
     assert.strictEqual(all.buyoutOrders, 115);
-    assert.strictEqual(all.buyoutEstimatedRows, 3);
-    assert.strictEqual(all.buyoutProxyRows, 1);
+    assert.strictEqual(all.buyoutEstimatedRows, 2);
+    assert.strictEqual(all.buyoutProxyRows, 0);
     assert.notStrictEqual(all.orders, all.buys);
     assert.notStrictEqual(all.orderRub, all.buyoutRub);
 

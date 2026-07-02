@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-metrics-v1",
-  "generatedAt": "2026-07-02T08:06:35.566Z",
-  "snapshot_id": "dashboard:2f55fe6487200e34",
+  "generatedAt": "2026-07-02T09:55:46.004Z",
+  "snapshot_id": "dashboard:bce11f2d0625f74a",
   "metric_registry_version": "2026-06-20.1",
   "indicator_policy_version": "2026-06-20.1",
   "cutoffDate": "2026-07-01",
@@ -9,7 +9,7 @@
   "source_checksums": {
     "platform_trends.json": {
       "exists": true,
-      "sha256": "148b1b0a60aa0839a03dbb89035715ff602059e1982e22a733d0299f5fb795ae"
+      "sha256": "fda7559296faadab2922ca253f93b6dd52566928936e3818c9a54f4d6c83dbeb"
     },
     "company_plan.json": {
       "exists": true,
@@ -17,7 +17,7 @@
     },
     "ads_summary.json": {
       "exists": true,
-      "sha256": "42dc89a927bc853d9c485e82c0d17a2ab75f94a79b68fe9ded5d4dd0e38b051a"
+      "sha256": "476753e935f69a50fef463ca024c5e058dd118d0858ee5d6ece9e4d3d67dc60b"
     },
     "portal_metric_registry.json": {
       "exists": true,
@@ -30,10 +30,10 @@
   },
   "summary": {
     "metrics": 14,
-    "factRevenue": 14673511.34,
+    "factRevenue": 14677753.34,
     "planRevenue": 322540144,
     "planToDate": 10404520.77,
-    "completionToDate": 1.410302,
+    "completionToDate": 1.410709,
     "unallocatedRevenue": 0
   },
   "metrics": [
@@ -47,8 +47,8 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-01",
-      "raw_value": 12008887,
-      "displayed_value": 12008887,
+      "raw_value": 12011404,
+      "displayed_value": 12011404,
       "transforms": [
         "sum_daily_marketplace_sales_fact"
       ],
@@ -62,8 +62,8 @@
       "drilldown": [
         {
           "platform": "wb",
-          "revenue": 12008887,
-          "units": 9399,
+          "revenue": 12011404,
+          "units": 9401,
           "date_from": "2026-07-01",
           "date_to": "2026-07-01"
         }
@@ -207,25 +207,25 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-01",
-      "raw_value": null,
-      "displayed_value": "Нет данных",
+      "raw_value": 1725,
+      "displayed_value": 1725,
       "transforms": [
         "sum_daily_marketplace_sales_fact"
       ],
       "source_dates": {
-        "platform_trends": ""
+        "platform_trends": "2026-07-01"
       },
-      "data_status": "incomplete",
-      "reconciliation_status": "blocked",
+      "data_status": "trusted",
+      "reconciliation_status": "ok",
       "business_status": "neutral",
-      "confidence": "low",
+      "confidence": "high",
       "drilldown": [
         {
           "platform": "megamarket",
-          "revenue": null,
-          "units": null,
-          "date_from": "",
-          "date_to": ""
+          "revenue": 1725,
+          "units": 2,
+          "date_from": "2026-07-01",
+          "date_to": "2026-07-01"
         }
       ]
     },
@@ -315,7 +315,7 @@
         "ya": "2026-07-01",
         "goldapple": "",
         "letu": "",
-        "megamarket": "",
+        "megamarket": "2026-07-01",
         "samokat": "",
         "magnit": "2026-07-01"
       },
@@ -325,11 +325,11 @@
       "confidence": "high",
       "drilldown": [
         {
-          "all_revenue": 14673511.34,
-          "included_revenue": 14673511.34,
+          "all_revenue": 14677753.34,
+          "included_revenue": 14677753.34,
           "unallocated_revenue": 0,
-          "all_units": 13727,
-          "included_units": 13727,
+          "all_units": 13731,
+          "included_units": 13731,
           "unallocated_units": 0
         }
       ]
@@ -383,8 +383,8 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-01",
-      "raw_value": 1.4103015082054406,
-      "displayed_value": 141.03,
+      "raw_value": 1.410709215594571,
+      "displayed_value": 141.07,
       "transforms": [
         "sales.raw_revenue / plan_to_date"
       ],
@@ -398,10 +398,10 @@
       "confidence": "high",
       "drilldown": [
         {
-          "factRevenue": 14673511.34,
+          "factRevenue": 14677753.34,
           "planToDate": 10404520.77,
-          "completionMonth": 0.045494,
-          "completionToDate": 1.410302
+          "completionMonth": 0.045507,
+          "completionToDate": 1.410709
         }
       ]
     },
@@ -415,8 +415,8 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-31",
-      "raw_value": 454878851.54,
-      "displayed_value": 454878851.54,
+      "raw_value": 455010353.54,
+      "displayed_value": 455010353.54,
       "transforms": [
         "forecast_only:not_fact",
         "daily_fact_average * month_days"
@@ -431,7 +431,7 @@
       "confidence": "medium",
       "drilldown": [
         {
-          "factRevenue": 14673511.34,
+          "factRevenue": 14677753.34,
           "elapsedDays": 1,
           "planDays": 31
         }

@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-07-02T08:30:16.068Z",
+  "generatedAt": "2026-07-02T12:07:58.885Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -21,7 +21,7 @@
       "from": "2026-06-02",
       "to": "2026-06-29"
     },
-    "smartPriceGeneratedAt": "2026-07-01T07:15:49.480Z",
+    "smartPriceGeneratedAt": "2026-07-02T09:21:16.884Z",
     "sources": {
       "orderProcurement": "order_procurement.json",
       "skus": "skus.json",
@@ -46,7 +46,7 @@
     "revenueAtRiskMonth": 16263866,
     "newIssues": 0,
     "reopenedIssues": 0,
-    "resolvedToday": 17,
+    "resolvedToday": 0,
     "owners": 5,
     "skuCount": 6,
     "dataStatus": "ok",

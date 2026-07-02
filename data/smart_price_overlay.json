@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-01T07:15:49.480Z",
+  "generatedAt": "2026-07-02T09:21:16.884Z",
   "asOfDate": "2026-07-01",
   "sourceFile": "smart-price-workbook.xlsx",
   "platforms": {
@@ -56930,7 +56930,7 @@
       "key": "letu",
       "label": "Лэтуаль",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-07-01T07:15:49.480Z",
+      "generatedAt": "2026-07-02T09:21:16.884Z",
       "asOfDate": "2026-07-01",
       "rows": [
         {
@@ -128969,7 +128969,7 @@
       "key": "megamarket",
       "label": "Мегамаркет",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-07-01T07:15:49.480Z",
+      "generatedAt": "2026-07-02T09:21:16.884Z",
       "asOfDate": "2026-07-01",
       "rows": [
         {
@@ -128984,9 +128984,9 @@
           "skuMatched": true,
           "name": "СПФ для лица База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
           "owner": "Васильева Мария",
-          "currentPrice": 790.0000000000001,
-          "currentClientPrice": 790.0000000000001,
-          "currentFillPrice": 790.0000000000001,
+          "currentPrice": 790,
+          "currentClientPrice": 790,
+          "currentFillPrice": 790,
           "minPrice": null,
           "stock": 0,
           "turnoverDays": null,
@@ -129037,7 +129037,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-01",
-              "dayOffset": 28
+              "dayOffset": 29
             },
             {
               "date": "2026-06-02",
@@ -129054,7 +129054,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-02",
-              "dayOffset": 27
+              "dayOffset": 28
             },
             {
               "date": "2026-06-03",
@@ -129071,7 +129071,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-03",
-              "dayOffset": 26
+              "dayOffset": 27
             },
             {
               "date": "2026-06-04",
@@ -129088,7 +129088,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-04",
-              "dayOffset": 25
+              "dayOffset": 26
             },
             {
               "date": "2026-06-05",
@@ -129105,7 +129105,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-05",
-              "dayOffset": 24
+              "dayOffset": 25
             },
             {
               "date": "2026-06-06",
@@ -129122,7 +129122,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-06",
-              "dayOffset": 23
+              "dayOffset": 24
             },
             {
               "date": "2026-06-07",
@@ -129139,7 +129139,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-07",
-              "dayOffset": 22
+              "dayOffset": 23
             },
             {
               "date": "2026-06-08",
@@ -129156,7 +129156,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-08",
-              "dayOffset": 21
+              "dayOffset": 22
             },
             {
               "date": "2026-06-09",
@@ -129173,7 +129173,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-09",
-              "dayOffset": 20
+              "dayOffset": 21
             },
             {
               "date": "2026-06-10",
@@ -129190,7 +129190,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-10",
-              "dayOffset": 19
+              "dayOffset": 20
             },
             {
               "date": "2026-06-11",
@@ -129207,7 +129207,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-11",
-              "dayOffset": 18
+              "dayOffset": 19
             },
             {
               "date": "2026-06-12",
@@ -129224,7 +129224,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-12",
-              "dayOffset": 17
+              "dayOffset": 18
             },
             {
               "date": "2026-06-13",
@@ -129241,7 +129241,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-13",
-              "dayOffset": 16
+              "dayOffset": 17
             },
             {
               "date": "2026-06-14",
@@ -129258,7 +129258,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-14",
-              "dayOffset": 15
+              "dayOffset": 16
             },
             {
               "date": "2026-06-15",
@@ -129275,7 +129275,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-15",
-              "dayOffset": 14
+              "dayOffset": 15
             },
             {
               "date": "2026-06-16",
@@ -129292,7 +129292,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-16",
-              "dayOffset": 13
+              "dayOffset": 14
             },
             {
               "date": "2026-06-17",
@@ -129309,7 +129309,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-17",
-              "dayOffset": 12
+              "dayOffset": 13
             },
             {
               "date": "2026-06-18",
@@ -129326,7 +129326,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-18",
-              "dayOffset": 11
+              "dayOffset": 12
             },
             {
               "date": "2026-06-19",
@@ -129343,7 +129343,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-19",
-              "dayOffset": 10
+              "dayOffset": 11
             },
             {
               "date": "2026-06-20",
@@ -129360,7 +129360,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-20",
-              "dayOffset": 9
+              "dayOffset": 10
             },
             {
               "date": "2026-06-21",
@@ -129377,7 +129377,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-21",
-              "dayOffset": 8
+              "dayOffset": 9
             },
             {
               "date": "2026-06-22",
@@ -129394,7 +129394,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-22",
-              "dayOffset": 7
+              "dayOffset": 8
             },
             {
               "date": "2026-06-23",
@@ -129411,7 +129411,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-23",
-              "dayOffset": 6
+              "dayOffset": 7
             },
             {
               "date": "2026-06-24",
@@ -129428,7 +129428,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-24",
-              "dayOffset": 5
+              "dayOffset": 6
             },
             {
               "date": "2026-06-25",
@@ -129445,7 +129445,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-25",
-              "dayOffset": 4
+              "dayOffset": 5
             },
             {
               "date": "2026-06-26",
@@ -129462,7 +129462,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-26",
-              "dayOffset": 3
+              "dayOffset": 4
             },
             {
               "date": "2026-06-27",
@@ -129479,7 +129479,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-27",
-              "dayOffset": 2
+              "dayOffset": 3
             },
             {
               "date": "2026-06-28",
@@ -129496,7 +129496,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-28",
-              "dayOffset": 1
+              "dayOffset": 2
             },
             {
               "date": "2026-06-29",
@@ -129513,6 +129513,23 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-29",
+              "dayOffset": 1
+            },
+            {
+              "date": "2026-06-30",
+              "units": 0.03333333333333333,
+              "ordersUnits": 0.03333333333333333,
+              "deliveredUnits": 0.03333333333333333,
+              "revenue": 26.333333333333332,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 790,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-06-30",
               "dayOffset": 0
             }
           ],
@@ -129584,7 +129601,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-01",
-              "dayOffset": 28
+              "dayOffset": 29
             },
             {
               "date": "2026-06-02",
@@ -129601,7 +129618,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-02",
-              "dayOffset": 27
+              "dayOffset": 28
             },
             {
               "date": "2026-06-03",
@@ -129618,7 +129635,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-03",
-              "dayOffset": 26
+              "dayOffset": 27
             },
             {
               "date": "2026-06-04",
@@ -129635,7 +129652,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-04",
-              "dayOffset": 25
+              "dayOffset": 26
             },
             {
               "date": "2026-06-05",
@@ -129652,7 +129669,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-05",
-              "dayOffset": 24
+              "dayOffset": 25
             },
             {
               "date": "2026-06-06",
@@ -129669,7 +129686,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-06",
-              "dayOffset": 23
+              "dayOffset": 24
             },
             {
               "date": "2026-06-07",
@@ -129686,7 +129703,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-07",
-              "dayOffset": 22
+              "dayOffset": 23
             },
             {
               "date": "2026-06-08",
@@ -129703,7 +129720,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-08",
-              "dayOffset": 21
+              "dayOffset": 22
             },
             {
               "date": "2026-06-09",
@@ -129720,7 +129737,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-09",
-              "dayOffset": 20
+              "dayOffset": 21
             },
             {
               "date": "2026-06-10",
@@ -129737,7 +129754,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-10",
-              "dayOffset": 19
+              "dayOffset": 20
             },
             {
               "date": "2026-06-11",
@@ -129754,7 +129771,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-11",
-              "dayOffset": 18
+              "dayOffset": 19
             },
             {
               "date": "2026-06-12",
@@ -129771,7 +129788,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-12",
-              "dayOffset": 17
+              "dayOffset": 18
             },
             {
               "date": "2026-06-13",
@@ -129788,7 +129805,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-13",
-              "dayOffset": 16
+              "dayOffset": 17
             },
             {
               "date": "2026-06-14",
@@ -129805,7 +129822,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-14",
-              "dayOffset": 15
+              "dayOffset": 16
             },
             {
               "date": "2026-06-15",
@@ -129822,7 +129839,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-15",
-              "dayOffset": 14
+              "dayOffset": 15
             },
             {
               "date": "2026-06-16",
@@ -129839,7 +129856,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-16",
-              "dayOffset": 13
+              "dayOffset": 14
             },
             {
               "date": "2026-06-17",
@@ -129856,7 +129873,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-17",
-              "dayOffset": 12
+              "dayOffset": 13
             },
             {
               "date": "2026-06-18",
@@ -129873,7 +129890,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-18",
-              "dayOffset": 11
+              "dayOffset": 12
             },
             {
               "date": "2026-06-19",
@@ -129890,7 +129907,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-19",
-              "dayOffset": 10
+              "dayOffset": 11
             },
             {
               "date": "2026-06-20",
@@ -129907,7 +129924,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-20",
-              "dayOffset": 9
+              "dayOffset": 10
             },
             {
               "date": "2026-06-21",
@@ -129924,7 +129941,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-21",
-              "dayOffset": 8
+              "dayOffset": 9
             },
             {
               "date": "2026-06-22",
@@ -129941,7 +129958,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-22",
-              "dayOffset": 7
+              "dayOffset": 8
             },
             {
               "date": "2026-06-23",
@@ -129958,7 +129975,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-23",
-              "dayOffset": 6
+              "dayOffset": 7
             },
             {
               "date": "2026-06-24",
@@ -129975,7 +129992,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-24",
-              "dayOffset": 5
+              "dayOffset": 6
             },
             {
               "date": "2026-06-25",
@@ -129992,7 +130009,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-25",
-              "dayOffset": 4
+              "dayOffset": 5
             },
             {
               "date": "2026-06-26",
@@ -130009,7 +130026,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-26",
-              "dayOffset": 3
+              "dayOffset": 4
             },
             {
               "date": "2026-06-27",
@@ -130026,7 +130043,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-27",
-              "dayOffset": 2
+              "dayOffset": 3
             },
             {
               "date": "2026-06-28",
@@ -130043,7 +130060,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-28",
-              "dayOffset": 1
+              "dayOffset": 2
             },
             {
               "date": "2026-06-29",
@@ -130060,6 +130077,23 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-29",
+              "dayOffset": 1
+            },
+            {
+              "date": "2026-06-30",
+              "units": 0.06666666666666667,
+              "ordersUnits": 0.06666666666666667,
+              "deliveredUnits": 0.06666666666666667,
+              "revenue": 51.733333333333334,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 776,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-06-30",
               "dayOffset": 0
             }
           ],
@@ -130131,7 +130165,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-01",
-              "dayOffset": 28
+              "dayOffset": 29
             },
             {
               "date": "2026-06-02",
@@ -130148,7 +130182,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-02",
-              "dayOffset": 27
+              "dayOffset": 28
             },
             {
               "date": "2026-06-03",
@@ -130165,7 +130199,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-03",
-              "dayOffset": 26
+              "dayOffset": 27
             },
             {
               "date": "2026-06-04",
@@ -130182,7 +130216,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-04",
-              "dayOffset": 25
+              "dayOffset": 26
             },
             {
               "date": "2026-06-05",
@@ -130199,7 +130233,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-05",
-              "dayOffset": 24
+              "dayOffset": 25
             },
             {
               "date": "2026-06-06",
@@ -130216,7 +130250,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-06",
-              "dayOffset": 23
+              "dayOffset": 24
             },
             {
               "date": "2026-06-07",
@@ -130233,7 +130267,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-07",
-              "dayOffset": 22
+              "dayOffset": 23
             },
             {
               "date": "2026-06-08",
@@ -130250,7 +130284,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-08",
-              "dayOffset": 21
+              "dayOffset": 22
             },
             {
               "date": "2026-06-09",
@@ -130267,7 +130301,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-09",
-              "dayOffset": 20
+              "dayOffset": 21
             },
             {
               "date": "2026-06-10",
@@ -130284,7 +130318,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-10",
-              "dayOffset": 19
+              "dayOffset": 20
             },
             {
               "date": "2026-06-11",
@@ -130301,7 +130335,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-11",
-              "dayOffset": 18
+              "dayOffset": 19
             },
             {
               "date": "2026-06-12",
@@ -130318,7 +130352,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-12",
-              "dayOffset": 17
+              "dayOffset": 18
             },
             {
               "date": "2026-06-13",
@@ -130335,7 +130369,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-13",
-              "dayOffset": 16
+              "dayOffset": 17
             },
             {
               "date": "2026-06-14",
@@ -130352,7 +130386,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-14",
-              "dayOffset": 15
+              "dayOffset": 16
             },
             {
               "date": "2026-06-15",
@@ -130369,7 +130403,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-15",
-              "dayOffset": 14
+              "dayOffset": 15
             },
             {
               "date": "2026-06-16",
@@ -130386,7 +130420,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-16",
-              "dayOffset": 13
+              "dayOffset": 14
             },
             {
               "date": "2026-06-17",
@@ -130403,7 +130437,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-17",
-              "dayOffset": 12
+              "dayOffset": 13
             },
             {
               "date": "2026-06-18",
@@ -130420,7 +130454,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-18",
-              "dayOffset": 11
+              "dayOffset": 12
             },
             {
               "date": "2026-06-19",
@@ -130437,7 +130471,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-19",
-              "dayOffset": 10
+              "dayOffset": 11
             },
             {
               "date": "2026-06-20",
@@ -130454,7 +130488,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-20",
-              "dayOffset": 9
+              "dayOffset": 10
             },
             {
               "date": "2026-06-21",
@@ -130471,7 +130505,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-21",
-              "dayOffset": 8
+              "dayOffset": 9
             },
             {
               "date": "2026-06-22",
@@ -130488,7 +130522,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-22",
-              "dayOffset": 7
+              "dayOffset": 8
             },
             {
               "date": "2026-06-23",
@@ -130505,7 +130539,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-23",
-              "dayOffset": 6
+              "dayOffset": 7
             },
             {
               "date": "2026-06-24",
@@ -130522,7 +130556,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-24",
-              "dayOffset": 5
+              "dayOffset": 6
             },
             {
               "date": "2026-06-25",
@@ -130539,7 +130573,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-25",
-              "dayOffset": 4
+              "dayOffset": 5
             },
             {
               "date": "2026-06-26",
@@ -130556,7 +130590,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-26",
-              "dayOffset": 3
+              "dayOffset": 4
             },
             {
               "date": "2026-06-27",
@@ -130573,7 +130607,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-27",
-              "dayOffset": 2
+              "dayOffset": 3
             },
             {
               "date": "2026-06-28",
@@ -130590,7 +130624,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-28",
-              "dayOffset": 1
+              "dayOffset": 2
             },
             {
               "date": "2026-06-29",
@@ -130607,6 +130641,23 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-29",
+              "dayOffset": 1
+            },
+            {
+              "date": "2026-06-30",
+              "units": 0.03333333333333333,
+              "ordersUnits": 0.03333333333333333,
+              "deliveredUnits": 0.03333333333333333,
+              "revenue": 28,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 840,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-06-30",
               "dayOffset": 0
             }
           ],
@@ -130678,7 +130729,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-01",
-              "dayOffset": 28
+              "dayOffset": 29
             },
             {
               "date": "2026-06-02",
@@ -130695,7 +130746,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-02",
-              "dayOffset": 27
+              "dayOffset": 28
             },
             {
               "date": "2026-06-03",
@@ -130712,7 +130763,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-03",
-              "dayOffset": 26
+              "dayOffset": 27
             },
             {
               "date": "2026-06-04",
@@ -130729,7 +130780,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-04",
-              "dayOffset": 25
+              "dayOffset": 26
             },
             {
               "date": "2026-06-05",
@@ -130746,7 +130797,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-05",
-              "dayOffset": 24
+              "dayOffset": 25
             },
             {
               "date": "2026-06-06",
@@ -130763,7 +130814,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-06",
-              "dayOffset": 23
+              "dayOffset": 24
             },
             {
               "date": "2026-06-07",
@@ -130780,7 +130831,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-07",
-              "dayOffset": 22
+              "dayOffset": 23
             },
             {
               "date": "2026-06-08",
@@ -130797,7 +130848,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-08",
-              "dayOffset": 21
+              "dayOffset": 22
             },
             {
               "date": "2026-06-09",
@@ -130814,7 +130865,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-09",
-              "dayOffset": 20
+              "dayOffset": 21
             },
             {
               "date": "2026-06-10",
@@ -130831,7 +130882,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-10",
-              "dayOffset": 19
+              "dayOffset": 20
             },
             {
               "date": "2026-06-11",
@@ -130848,7 +130899,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-11",
-              "dayOffset": 18
+              "dayOffset": 19
             },
             {
               "date": "2026-06-12",
@@ -130865,7 +130916,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-12",
-              "dayOffset": 17
+              "dayOffset": 18
             },
             {
               "date": "2026-06-13",
@@ -130882,7 +130933,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-13",
-              "dayOffset": 16
+              "dayOffset": 17
             },
             {
               "date": "2026-06-14",
@@ -130899,7 +130950,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-14",
-              "dayOffset": 15
+              "dayOffset": 16
             },
             {
               "date": "2026-06-15",
@@ -130916,7 +130967,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-15",
-              "dayOffset": 14
+              "dayOffset": 15
             },
             {
               "date": "2026-06-16",
@@ -130933,7 +130984,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-16",
-              "dayOffset": 13
+              "dayOffset": 14
             },
             {
               "date": "2026-06-17",
@@ -130950,7 +131001,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-17",
-              "dayOffset": 12
+              "dayOffset": 13
             },
             {
               "date": "2026-06-18",
@@ -130967,7 +131018,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-18",
-              "dayOffset": 11
+              "dayOffset": 12
             },
             {
               "date": "2026-06-19",
@@ -130984,7 +131035,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-19",
-              "dayOffset": 10
+              "dayOffset": 11
             },
             {
               "date": "2026-06-20",
@@ -131001,7 +131052,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-20",
-              "dayOffset": 9
+              "dayOffset": 10
             },
             {
               "date": "2026-06-21",
@@ -131018,7 +131069,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-21",
-              "dayOffset": 8
+              "dayOffset": 9
             },
             {
               "date": "2026-06-22",
@@ -131035,7 +131086,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-22",
-              "dayOffset": 7
+              "dayOffset": 8
             },
             {
               "date": "2026-06-23",
@@ -131052,7 +131103,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-23",
-              "dayOffset": 6
+              "dayOffset": 7
             },
             {
               "date": "2026-06-24",
@@ -131069,7 +131120,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-24",
-              "dayOffset": 5
+              "dayOffset": 6
             },
             {
               "date": "2026-06-25",
@@ -131086,7 +131137,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-25",
-              "dayOffset": 4
+              "dayOffset": 5
             },
             {
               "date": "2026-06-26",
@@ -131103,7 +131154,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-26",
-              "dayOffset": 3
+              "dayOffset": 4
             },
             {
               "date": "2026-06-27",
@@ -131120,7 +131171,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-27",
-              "dayOffset": 2
+              "dayOffset": 3
             },
             {
               "date": "2026-06-28",
@@ -131137,7 +131188,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-28",
-              "dayOffset": 1
+              "dayOffset": 2
             },
             {
               "date": "2026-06-29",
@@ -131154,6 +131205,23 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-29",
+              "dayOffset": 1
+            },
+            {
+              "date": "2026-06-30",
+              "units": 0.03333333333333333,
+              "ordersUnits": 0.03333333333333333,
+              "deliveredUnits": 0.03333333333333333,
+              "revenue": 28.4,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 852,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-06-30",
               "dayOffset": 0
             }
           ],
@@ -131772,7 +131840,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-01",
-              "dayOffset": 28
+              "dayOffset": 29
             },
             {
               "date": "2026-06-02",
@@ -131789,7 +131857,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-02",
-              "dayOffset": 27
+              "dayOffset": 28
             },
             {
               "date": "2026-06-03",
@@ -131806,7 +131874,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-03",
-              "dayOffset": 26
+              "dayOffset": 27
             },
             {
               "date": "2026-06-04",
@@ -131823,7 +131891,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-04",
-              "dayOffset": 25
+              "dayOffset": 26
             },
             {
               "date": "2026-06-05",
@@ -131840,7 +131908,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-05",
-              "dayOffset": 24
+              "dayOffset": 25
             },
             {
               "date": "2026-06-06",
@@ -131857,7 +131925,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-06",
-              "dayOffset": 23
+              "dayOffset": 24
             },
             {
               "date": "2026-06-07",
@@ -131874,7 +131942,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-07",
-              "dayOffset": 22
+              "dayOffset": 23
             },
             {
               "date": "2026-06-08",
@@ -131891,7 +131959,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-08",
-              "dayOffset": 21
+              "dayOffset": 22
             },
             {
               "date": "2026-06-09",
@@ -131908,7 +131976,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-09",
-              "dayOffset": 20
+              "dayOffset": 21
             },
             {
               "date": "2026-06-10",
@@ -131925,7 +131993,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-10",
-              "dayOffset": 19
+              "dayOffset": 20
             },
             {
               "date": "2026-06-11",
@@ -131942,7 +132010,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-11",
-              "dayOffset": 18
+              "dayOffset": 19
             },
             {
               "date": "2026-06-12",
@@ -131959,7 +132027,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-12",
-              "dayOffset": 17
+              "dayOffset": 18
             },
             {
               "date": "2026-06-13",
@@ -131976,7 +132044,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-13",
-              "dayOffset": 16
+              "dayOffset": 17
             },
             {
               "date": "2026-06-14",
@@ -131993,7 +132061,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-14",
-              "dayOffset": 15
+              "dayOffset": 16
             },
             {
               "date": "2026-06-15",
@@ -132010,7 +132078,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-15",
-              "dayOffset": 14
+              "dayOffset": 15
             },
             {
               "date": "2026-06-16",
@@ -132027,7 +132095,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-16",
-              "dayOffset": 13
+              "dayOffset": 14
             },
             {
               "date": "2026-06-17",
@@ -132044,7 +132112,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-17",
-              "dayOffset": 12
+              "dayOffset": 13
             },
             {
               "date": "2026-06-18",
@@ -132061,7 +132129,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-18",
-              "dayOffset": 11
+              "dayOffset": 12
             },
             {
               "date": "2026-06-19",
@@ -132078,7 +132146,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-19",
-              "dayOffset": 10
+              "dayOffset": 11
             },
             {
               "date": "2026-06-20",
@@ -132095,7 +132163,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-20",
-              "dayOffset": 9
+              "dayOffset": 10
             },
             {
               "date": "2026-06-21",
@@ -132112,7 +132180,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-21",
-              "dayOffset": 8
+              "dayOffset": 9
             },
             {
               "date": "2026-06-22",
@@ -132129,7 +132197,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-22",
-              "dayOffset": 7
+              "dayOffset": 8
             },
             {
               "date": "2026-06-23",
@@ -132146,7 +132214,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-23",
-              "dayOffset": 6
+              "dayOffset": 7
             },
             {
               "date": "2026-06-24",
@@ -132163,7 +132231,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-24",
-              "dayOffset": 5
+              "dayOffset": 6
             },
             {
               "date": "2026-06-25",
@@ -132180,7 +132248,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-25",
-              "dayOffset": 4
+              "dayOffset": 5
             },
             {
               "date": "2026-06-26",
@@ -132197,7 +132265,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-26",
-              "dayOffset": 3
+              "dayOffset": 4
             },
             {
               "date": "2026-06-27",
@@ -132214,7 +132282,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-27",
-              "dayOffset": 2
+              "dayOffset": 3
             },
             {
               "date": "2026-06-28",
@@ -132231,7 +132299,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-28",
-              "dayOffset": 1
+              "dayOffset": 2
             },
             {
               "date": "2026-06-29",
@@ -132248,6 +132316,23 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-29",
+              "dayOffset": 1
+            },
+            {
+              "date": "2026-06-30",
+              "units": 0.03333333333333333,
+              "ordersUnits": 0.03333333333333333,
+              "deliveredUnits": 0.03333333333333333,
+              "revenue": 31.633333333333333,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 949,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-06-30",
               "dayOffset": 0
             }
           ],
@@ -132266,9 +132351,9 @@
           "skuMatched": true,
           "name": "Набор уходовой косметики для лица антивозрастной",
           "owner": "Васильева Мария",
-          "currentPrice": 1590.0000000000002,
-          "currentClientPrice": 1590.0000000000002,
-          "currentFillPrice": 1590.0000000000002,
+          "currentPrice": 1590,
+          "currentClientPrice": 1590,
+          "currentFillPrice": 1590,
           "minPrice": null,
           "stock": 0,
           "turnoverDays": null,
@@ -132319,7 +132404,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-01",
-              "dayOffset": 28
+              "dayOffset": 29
             },
             {
               "date": "2026-06-02",
@@ -132336,7 +132421,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-02",
-              "dayOffset": 27
+              "dayOffset": 28
             },
             {
               "date": "2026-06-03",
@@ -132353,7 +132438,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-03",
-              "dayOffset": 26
+              "dayOffset": 27
             },
             {
               "date": "2026-06-04",
@@ -132370,7 +132455,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-04",
-              "dayOffset": 25
+              "dayOffset": 26
             },
             {
               "date": "2026-06-05",
@@ -132387,7 +132472,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-05",
-              "dayOffset": 24
+              "dayOffset": 25
             },
             {
               "date": "2026-06-06",
@@ -132404,7 +132489,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-06",
-              "dayOffset": 23
+              "dayOffset": 24
             },
             {
               "date": "2026-06-07",
@@ -132421,7 +132506,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-07",
-              "dayOffset": 22
+              "dayOffset": 23
             },
             {
               "date": "2026-06-08",
@@ -132438,7 +132523,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-08",
-              "dayOffset": 21
+              "dayOffset": 22
             },
             {
               "date": "2026-06-09",
@@ -132455,7 +132540,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-09",
-              "dayOffset": 20
+              "dayOffset": 21
             },
             {
               "date": "2026-06-10",
@@ -132472,7 +132557,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-10",
-              "dayOffset": 19
+              "dayOffset": 20
             },
             {
               "date": "2026-06-11",
@@ -132489,7 +132574,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-11",
-              "dayOffset": 18
+              "dayOffset": 19
             },
             {
               "date": "2026-06-12",
@@ -132506,7 +132591,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-12",
-              "dayOffset": 17
+              "dayOffset": 18
             },
             {
               "date": "2026-06-13",
@@ -132523,7 +132608,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-13",
-              "dayOffset": 16
+              "dayOffset": 17
             },
             {
               "date": "2026-06-14",
@@ -132540,7 +132625,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-14",
-              "dayOffset": 15
+              "dayOffset": 16
             },
             {
               "date": "2026-06-15",
@@ -132557,7 +132642,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-15",
-              "dayOffset": 14
+              "dayOffset": 15
             },
             {
               "date": "2026-06-16",
@@ -132574,7 +132659,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-16",
-              "dayOffset": 13
+              "dayOffset": 14
             },
             {
               "date": "2026-06-17",
@@ -132591,7 +132676,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-17",
-              "dayOffset": 12
+              "dayOffset": 13
             },
             {
               "date": "2026-06-18",
@@ -132608,7 +132693,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-18",
-              "dayOffset": 11
+              "dayOffset": 12
             },
             {
               "date": "2026-06-19",
@@ -132625,7 +132710,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-19",
-              "dayOffset": 10
+              "dayOffset": 11
             },
             {
               "date": "2026-06-20",
@@ -132642,7 +132727,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-20",
-              "dayOffset": 9
+              "dayOffset": 10
             },
             {
               "date": "2026-06-21",
@@ -132659,7 +132744,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-21",
-              "dayOffset": 8
+              "dayOffset": 9
             },
             {
               "date": "2026-06-22",
@@ -132676,7 +132761,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-22",
-              "dayOffset": 7
+              "dayOffset": 8
             },
             {
               "date": "2026-06-23",
@@ -132693,7 +132778,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-23",
-              "dayOffset": 6
+              "dayOffset": 7
             },
             {
               "date": "2026-06-24",
@@ -132710,7 +132795,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-24",
-              "dayOffset": 5
+              "dayOffset": 6
             },
             {
               "date": "2026-06-25",
@@ -132727,7 +132812,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-25",
-              "dayOffset": 4
+              "dayOffset": 5
             },
             {
               "date": "2026-06-26",
@@ -132744,7 +132829,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-26",
-              "dayOffset": 3
+              "dayOffset": 4
             },
             {
               "date": "2026-06-27",
@@ -132761,7 +132846,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-27",
-              "dayOffset": 2
+              "dayOffset": 3
             },
             {
               "date": "2026-06-28",
@@ -132778,7 +132863,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-28",
-              "dayOffset": 1
+              "dayOffset": 2
             },
             {
               "date": "2026-06-29",
@@ -132795,6 +132880,23 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-29",
+              "dayOffset": 1
+            },
+            {
+              "date": "2026-06-30",
+              "units": 0.03333333333333333,
+              "ordersUnits": 0.03333333333333333,
+              "deliveredUnits": 0.03333333333333333,
+              "revenue": 53,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 1590,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-06-30",
               "dayOffset": 0
             }
           ],
@@ -133354,7 +133456,7 @@
       "key": "samokat",
       "label": "Самокат",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-07-01T07:15:49.480Z",
+      "generatedAt": "2026-07-02T09:21:16.884Z",
       "asOfDate": "2026-07-01",
       "rows": []
     },
@@ -133362,7 +133464,7 @@
       "key": "goldapple",
       "label": "ЗЯ",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-07-01T07:15:49.480Z",
+      "generatedAt": "2026-07-02T09:21:16.884Z",
       "asOfDate": "2026-07-01",
       "rows": [
         {
@@ -184280,7 +184382,7 @@
       "key": "magnit",
       "label": "Магнит Маркет",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-07-01T07:15:49.480Z",
+      "generatedAt": "2026-07-02T09:21:16.884Z",
       "asOfDate": "2026-07-01",
       "rows": [
         {
@@ -276210,7 +276312,7 @@
     }
   },
   "extraMarketplace": {
-    "generatedAt": "2026-07-01T07:15:49.480Z",
+    "generatedAt": "2026-07-02T09:21:16.884Z",
     "asOfDate": "2026-07-01",
     "source": "platform_trends.extraMarketplace",
     "platforms": {

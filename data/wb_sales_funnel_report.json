@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T08:30:17.239Z",
+  "generatedAt": "2026-07-02T10:02:46.304Z",
   "source": "wb-platform-trends-api",
   "sourceFile": "platform_trends.json",
   "sourceMode": "wb-finance-api-direct-sku",
@@ -17,21 +17,21 @@
   },
   "totals": {
     "items": 115,
-    "ordersRevenue": 67786083.45,
+    "ordersRevenue": 67788600.4,
     "previousOrdersRevenue": 66768569.01,
-    "ordersRevenueDelta": 1017514.34,
+    "ordersRevenueDelta": 1020031.38,
     "ordersUnits": 46423,
     "buyoutRevenue": 0,
     "buyoutsUnits": 0,
     "cancellationsUnits": 0,
-    "estimatedMargin": 33194252.93,
+    "estimatedMargin": 33195492.6,
     "wbStock": 173987,
     "ownStock": 0
   },
   "diagnostics": {
     "sourceArticles": 125,
     "outputItems": 115,
-    "platformTrendsGeneratedAt": "2026-07-02T08:06:35.566Z",
+    "platformTrendsGeneratedAt": "2026-07-02T09:55:46.004Z",
     "platformTrendsLatestMarketplaceDate": "2026-07-01",
     "wbExtraMarketplaceTo": "2026-07-01",
     "wbFeedbacksGeneratedAt": "2026-07-02T08:28:45.177Z",
@@ -56,15 +56,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 9282150.02,
+      "ordersRevenue": 9282570.21,
       "previousOrdersRevenue": 7768450.51,
-      "ordersRevenueDelta": 1513699.51,
+      "ordersRevenueDelta": 1514119.71,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2605.88,
+      "avgPrice": 2606,
       "avgOrdersPerDay": 508.9,
-      "estimatedMargin": 5063412.84,
+      "estimatedMargin": 5063642.05,
       "wbStock": 2210,
       "ownStock": 0,
       "daily": [
@@ -112,10 +112,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2004800.5128,
+          "ordersRevenue": 2005220.7085,
           "ordersUnits": 677,
-          "estimatedMargin": 1093618.6798,
-          "avgPrice": 2961.3006
+          "estimatedMargin": 1093847.8966,
+          "avgPrice": 2961.9213
         }
       ]
     },
@@ -137,15 +137,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 6603053.62,
+      "ordersRevenue": 6603292.55,
       "previousOrdersRevenue": 6739719.53,
-      "ordersRevenueDelta": -136665.9,
+      "ordersRevenueDelta": -136426.97,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1526.72,
+      "avgPrice": 1526.77,
       "avgOrdersPerDay": 617.9,
-      "estimatedMargin": 3868068.81,
+      "estimatedMargin": 3868208.78,
       "wbStock": 36461,
       "ownStock": 0,
       "daily": [
@@ -193,10 +193,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1139955.6671,
+          "ordersRevenue": 1140194.5958,
           "ordersUnits": 648,
-          "estimatedMargin": 667786.0298,
-          "avgPrice": 1759.1908
+          "estimatedMargin": 667925.9942,
+          "avgPrice": 1759.5596
         }
       ]
     },
@@ -218,15 +218,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 6227366.51,
+      "ordersRevenue": 6227587.42,
       "previousOrdersRevenue": 6487218.99,
-      "ordersRevenueDelta": -259852.48,
+      "ordersRevenueDelta": -259631.57,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2126.11,
+      "avgPrice": 2126.18,
       "avgOrdersPerDay": 418.4,
-      "estimatedMargin": 3119287.89,
+      "estimatedMargin": 3119398.54,
       "wbStock": 3164,
       "ownStock": 0,
       "daily": [
@@ -274,10 +274,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1053977.1288,
+          "ordersRevenue": 1054198.0369,
           "ordersUnits": 417,
-          "estimatedMargin": 527937.1438,
-          "avgPrice": 2527.5231
+          "estimatedMargin": 528047.7966,
+          "avgPrice": 2528.0528
         }
       ]
     },
@@ -299,15 +299,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 6078734.08,
+      "ordersRevenue": 6078968.74,
       "previousOrdersRevenue": 5836239.32,
-      "ordersRevenueDelta": 242494.75,
+      "ordersRevenueDelta": 242729.42,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1559.45,
+      "avgPrice": 1559.51,
       "avgOrdersPerDay": 556.9,
-      "estimatedMargin": 3132979.54,
+      "estimatedMargin": 3133100.49,
       "wbStock": 6984,
       "ownStock": 0,
       "daily": [
@@ -355,10 +355,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1119598.2417,
+          "ordersRevenue": 1119832.9037,
           "ordersUnits": 580,
-          "estimatedMargin": 577040.9338,
-          "avgPrice": 1930.3418
+          "estimatedMargin": 577161.8785,
+          "avgPrice": 1930.7464
         }
       ]
     },
@@ -380,15 +380,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 5845802.17,
+      "ordersRevenue": 5846003.87,
       "previousOrdersRevenue": 7072783.98,
-      "ordersRevenueDelta": -1226981.81,
+      "ordersRevenueDelta": -1226780.11,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1546.1,
+      "avgPrice": 1546.15,
       "avgOrdersPerDay": 540.1,
-      "estimatedMargin": 3050339.57,
+      "estimatedMargin": 3050444.82,
       "wbStock": 3439,
       "ownStock": 0,
       "daily": [
@@ -436,10 +436,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 962319.9994,
+          "ordersRevenue": 962521.6967,
           "ordersUnits": 534,
-          "estimatedMargin": 502138.5758,
-          "avgPrice": 1802.0974
+          "estimatedMargin": 502243.8214,
+          "avgPrice": 1802.4751
         }
       ]
     },
@@ -461,15 +461,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 5297676.73,
+      "ordersRevenue": 5297846.41,
       "previousOrdersRevenue": 5038151.63,
-      "ordersRevenueDelta": 259525.09,
+      "ordersRevenueDelta": 259694.77,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1474.44,
+      "avgPrice": 1474.49,
       "avgOrdersPerDay": 513.3,
-      "estimatedMargin": 2736779.8,
+      "estimatedMargin": 2736867.45,
       "wbStock": 3932,
       "ownStock": 0,
       "daily": [
@@ -517,10 +517,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 809554.0905,
+          "ordersRevenue": 809723.7688,
           "ordersUnits": 443,
-          "estimatedMargin": 418215.6431,
-          "avgPrice": 1827.4359
+          "estimatedMargin": 418303.2989,
+          "avgPrice": 1827.8189
         }
       ]
     },
@@ -542,15 +542,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 3883445.29,
+      "ordersRevenue": 3883597.45,
       "previousOrdersRevenue": 4143772,
-      "ordersRevenueDelta": -260326.71,
+      "ordersRevenueDelta": -260174.55,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1176.45,
+      "avgPrice": 1176.49,
       "avgOrdersPerDay": 471.6,
-      "estimatedMargin": 1943664.37,
+      "estimatedMargin": 1943740.52,
       "wbStock": 8723,
       "ownStock": 0,
       "daily": [
@@ -598,10 +598,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 725967.5178,
+          "ordersRevenue": 726119.6768,
           "ordersUnits": 536,
-          "estimatedMargin": 363346.7426,
-          "avgPrice": 1354.417
+          "estimatedMargin": 363422.8982,
+          "avgPrice": 1354.7009
         }
       ]
     },
@@ -623,15 +623,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 2428351.1,
+      "ordersRevenue": 2428443.11,
       "previousOrdersRevenue": 1574039.82,
-      "ordersRevenueDelta": 854311.27,
+      "ordersRevenueDelta": 854403.29,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1091.88,
+      "avgPrice": 1091.93,
       "avgOrdersPerDay": 317.7,
-      "estimatedMargin": 1032292.05,
+      "estimatedMargin": 1032331.17,
       "wbStock": 3966,
       "ownStock": 0,
       "daily": [
@@ -679,10 +679,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 439002.416,
+          "ordersRevenue": 439094.4286,
           "ordersUnits": 341,
-          "estimatedMargin": 186619.927,
-          "avgPrice": 1287.3971
+          "estimatedMargin": 186659.0415,
+          "avgPrice": 1287.6669
         }
       ]
     },
@@ -704,15 +704,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 2425693.64,
+      "ordersRevenue": 2425782.43,
       "previousOrdersRevenue": 2455233.26,
-      "ordersRevenueDelta": -29539.62,
+      "ordersRevenueDelta": -29450.82,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1803.49,
+      "avgPrice": 1803.56,
       "avgOrdersPerDay": 192.1,
-      "estimatedMargin": 1383130.51,
+      "estimatedMargin": 1383181.14,
       "wbStock": 2452,
       "ownStock": 0,
       "daily": [
@@ -760,10 +760,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 423630.6568,
+          "ordersRevenue": 423719.4476,
           "ordersUnits": 198,
-          "estimatedMargin": 241554.2005,
-          "avgPrice": 2139.5488
+          "estimatedMargin": 241604.829,
+          "avgPrice": 2139.9972
         }
       ]
     },
@@ -785,15 +785,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 2337856.47,
+      "ordersRevenue": 2337937.71,
       "previousOrdersRevenue": 2657828.92,
-      "ordersRevenueDelta": -319972.45,
+      "ordersRevenueDelta": -319891.21,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1935.31,
+      "avgPrice": 1935.38,
       "avgOrdersPerDay": 172.6,
-      "estimatedMargin": 1214984.01,
+      "estimatedMargin": 1215026.23,
       "wbStock": 5671,
       "ownStock": 0,
       "daily": [
@@ -841,10 +841,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 387617.5896,
+          "ordersRevenue": 387698.8323,
           "ordersUnits": 167,
-          "estimatedMargin": 201444.8613,
-          "avgPrice": 2321.0634
+          "estimatedMargin": 201487.0831,
+          "avgPrice": 2321.5499
         }
       ]
     },
@@ -866,15 +866,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 1778195.21,
+      "ordersRevenue": 1778258.82,
       "previousOrdersRevenue": 1813013.97,
-      "ordersRevenueDelta": -34818.76,
+      "ordersRevenueDelta": -34755.15,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1635.87,
+      "avgPrice": 1635.93,
       "avgOrdersPerDay": 155.3,
-      "estimatedMargin": 1154226.51,
+      "estimatedMargin": 1154267.8,
       "wbStock": 288,
       "ownStock": 0,
       "daily": [
@@ -922,10 +922,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 303467.595,
+          "ordersRevenue": 303531.2003,
           "ordersUnits": 155,
-          "estimatedMargin": 196980.816,
-          "avgPrice": 1957.8555
+          "estimatedMargin": 197022.1021,
+          "avgPrice": 1958.2658
         }
       ]
     },
@@ -947,15 +947,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 1571159.85,
+      "ordersRevenue": 1571216.46,
       "previousOrdersRevenue": 1569010.93,
-      "ordersRevenueDelta": 2148.93,
+      "ordersRevenueDelta": 2205.54,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2176.12,
+      "avgPrice": 2176.2,
       "avgOrdersPerDay": 103.1,
-      "estimatedMargin": 941438.98,
+      "estimatedMargin": 941472.91,
       "wbStock": 8955,
       "ownStock": 0,
       "daily": [
@@ -1003,10 +1003,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 270091.986,
+          "ordersRevenue": 270148.5958,
           "ordersUnits": 104,
-          "estimatedMargin": 161839.1181,
-          "avgPrice": 2597.0383
+          "estimatedMargin": 161873.0387,
+          "avgPrice": 2597.5827
         }
       ]
     },
@@ -1028,15 +1028,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 1444831.73,
+      "ordersRevenue": 1444879.68,
       "previousOrdersRevenue": 1534930.23,
-      "ordersRevenueDelta": -90098.5,
+      "ordersRevenueDelta": -90050.55,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2040.72,
+      "avgPrice": 2040.79,
       "avgOrdersPerDay": 101.1,
-      "estimatedMargin": 745099.72,
+      "estimatedMargin": 745124.45,
       "wbStock": 4268,
       "ownStock": 0,
       "daily": [
@@ -1084,10 +1084,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 228753.1811,
+          "ordersRevenue": 228801.1266,
           "ordersUnits": 94,
-          "estimatedMargin": 117968.0156,
-          "avgPrice": 2433.5445
+          "estimatedMargin": 117992.7411,
+          "avgPrice": 2434.0545
         }
       ]
     },
@@ -1109,15 +1109,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 1156004.57,
+      "ordersRevenue": 1156043.99,
       "previousOrdersRevenue": 937960.59,
-      "ordersRevenueDelta": 218043.98,
+      "ordersRevenueDelta": 218083.4,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1002.61,
+      "avgPrice": 1002.64,
       "avgOrdersPerDay": 164.7,
-      "estimatedMargin": 605746.39,
+      "estimatedMargin": 605767.05,
       "wbStock": 1,
       "ownStock": 0,
       "daily": [
@@ -1165,10 +1165,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 188105.166,
+          "ordersRevenue": 188144.5918,
           "ordersUnits": 157,
-          "estimatedMargin": 98567.1069,
-          "avgPrice": 1198.1221
+          "estimatedMargin": 98587.7661,
+          "avgPrice": 1198.3732
         }
       ]
     },
@@ -1190,15 +1190,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 978329.25,
+      "ordersRevenue": 978368.85,
       "previousOrdersRevenue": 997727.28,
-      "ordersRevenueDelta": -19398.03,
+      "ordersRevenueDelta": -19358.43,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1447.23,
+      "avgPrice": 1447.29,
       "avgOrdersPerDay": 96.6,
-      "estimatedMargin": 320989.83,
+      "estimatedMargin": 321002.82,
       "wbStock": 2978,
       "ownStock": 0,
       "daily": [
@@ -1246,10 +1246,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 188917.6489,
+          "ordersRevenue": 188957.2451,
           "ordersUnits": 110,
-          "estimatedMargin": 61983.8806,
-          "avgPrice": 1717.4332
+          "estimatedMargin": 61996.8721,
+          "avgPrice": 1717.7931
         }
       ]
     },
@@ -1271,15 +1271,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 967006.95,
+      "ordersRevenue": 967048.25,
       "previousOrdersRevenue": 809897.05,
-      "ordersRevenueDelta": 157109.89,
+      "ordersRevenueDelta": 157151.2,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1158.09,
+      "avgPrice": 1158.14,
       "avgOrdersPerDay": 119.3,
-      "estimatedMargin": 201137.44,
+      "estimatedMargin": 201146.04,
       "wbStock": 1328,
       "ownStock": 0,
       "daily": [
@@ -1327,10 +1327,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 197075.706,
+          "ordersRevenue": 197117.0121,
           "ordersUnits": 150,
-          "estimatedMargin": 40991.7469,
-          "avgPrice": 1313.838
+          "estimatedMargin": 41000.3385,
+          "avgPrice": 1314.1134
         }
       ]
     },
@@ -1352,15 +1352,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 916145.56,
+      "ordersRevenue": 916175.39,
       "previousOrdersRevenue": 450915.56,
-      "ordersRevenueDelta": 465230,
+      "ordersRevenueDelta": 465259.84,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1267.14,
+      "avgPrice": 1267.19,
       "avgOrdersPerDay": 103.3,
-      "estimatedMargin": 439383.41,
+      "estimatedMargin": 439397.72,
       "wbStock": 3071,
       "ownStock": 0,
       "daily": [
@@ -1408,10 +1408,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 142352.4238,
+          "ordersRevenue": 142382.2601,
           "ordersUnits": 94,
-          "estimatedMargin": 68272.2225,
-          "avgPrice": 1514.3875
+          "estimatedMargin": 68286.532,
+          "avgPrice": 1514.7049
         }
       ]
     },
@@ -1433,15 +1433,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 627831.86,
+      "ordersRevenue": 627855.62,
       "previousOrdersRevenue": 556377.17,
-      "ordersRevenueDelta": 71454.7,
+      "ordersRevenueDelta": 71478.46,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1593.48,
+      "avgPrice": 1593.54,
       "avgOrdersPerDay": 56.3,
-      "estimatedMargin": 324589.07,
+      "estimatedMargin": 324601.36,
       "wbStock": 7032,
       "ownStock": 0,
       "daily": [
@@ -1489,10 +1489,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 113359.6158,
+          "ordersRevenue": 113383.3754,
           "ordersUnits": 61,
-          "estimatedMargin": 58606.9214,
-          "avgPrice": 1858.3544
+          "estimatedMargin": 58619.2051,
+          "avgPrice": 1858.7439
         }
       ]
     },
@@ -1514,15 +1514,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 521226.98,
+      "ordersRevenue": 521245.11,
       "previousOrdersRevenue": 581922.16,
-      "ordersRevenueDelta": -60695.18,
+      "ordersRevenueDelta": -60677.05,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1153.16,
+      "avgPrice": 1153.2,
       "avgOrdersPerDay": 64.6,
-      "estimatedMargin": 268431.9,
+      "estimatedMargin": 268441.23,
       "wbStock": 3912,
       "ownStock": 0,
       "daily": [
@@ -1570,10 +1570,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 86488.7697,
+          "ordersRevenue": 86506.8972,
           "ordersUnits": 63,
-          "estimatedMargin": 44541.7163,
-          "avgPrice": 1372.8376
+          "estimatedMargin": 44551.052,
+          "avgPrice": 1373.1254
         }
       ]
     },
@@ -1595,15 +1595,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 446068.09,
+      "ordersRevenue": 446084.38,
       "previousOrdersRevenue": 409838.85,
-      "ordersRevenueDelta": 36229.25,
+      "ordersRevenueDelta": 36245.53,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1249.49,
+      "avgPrice": 1249.54,
       "avgOrdersPerDay": 51,
-      "estimatedMargin": 265722.76,
+      "estimatedMargin": 265732.46,
       "wbStock": 527,
       "ownStock": 0,
       "daily": [
@@ -1651,10 +1651,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 77693.0695,
+          "ordersRevenue": 77709.3536,
           "ordersUnits": 51,
-          "estimatedMargin": 46281.7615,
-          "avgPrice": 1523.3935
+          "estimatedMargin": 46291.462,
+          "avgPrice": 1523.7128
         }
       ]
     },
@@ -1676,15 +1676,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 419379.8,
+      "ordersRevenue": 419394.82,
       "previousOrdersRevenue": 468343.78,
-      "ordersRevenueDelta": -48963.98,
+      "ordersRevenueDelta": -48948.97,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2410.23,
+      "avgPrice": 2410.32,
       "avgOrdersPerDay": 24.9,
-      "estimatedMargin": 124597.74,
+      "estimatedMargin": 124602.2,
       "wbStock": 2483,
       "ownStock": 0,
       "daily": [
@@ -1732,10 +1732,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 71641.6328,
+          "ordersRevenue": 71656.6485,
           "ordersUnits": 25,
-          "estimatedMargin": 21284.7291,
-          "avgPrice": 2865.6653
+          "estimatedMargin": 21289.1902,
+          "avgPrice": 2866.2659
         }
       ]
     },
@@ -1757,13 +1757,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 373022.77,
+      "ordersRevenue": 373033.88,
       "previousOrdersRevenue": 246151.68,
-      "ordersRevenueDelta": 126871.09,
+      "ordersRevenueDelta": 126882.21,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1672.75,
+      "avgPrice": 1672.8,
       "avgOrdersPerDay": 31.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -1813,10 +1813,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 53029.6235,
+          "ordersRevenue": 53040.7382,
           "ordersUnits": 26,
           "estimatedMargin": 0,
-          "avgPrice": 2039.6009
+          "avgPrice": 2040.0284
         }
       ]
     },
@@ -1838,13 +1838,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 356860.72,
+      "ordersRevenue": 356867.75,
       "previousOrdersRevenue": 1043852.32,
-      "ordersRevenueDelta": -686991.6,
+      "ordersRevenueDelta": -686984.57,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1433.18,
+      "avgPrice": 1433.2,
       "avgOrdersPerDay": 35.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -1894,10 +1894,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 33533.2648,
+          "ordersRevenue": 33540.2932,
           "ordersUnits": 19,
           "estimatedMargin": 0,
-          "avgPrice": 1764.9087
+          "avgPrice": 1765.2786
         }
       ]
     },
@@ -1919,13 +1919,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 345991.14,
+      "ordersRevenue": 346003.48,
       "previousOrdersRevenue": 357270.47,
-      "ordersRevenueDelta": -11279.33,
+      "ordersRevenueDelta": -11266.99,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 588.42,
+      "avgPrice": 588.44,
       "avgOrdersPerDay": 84,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -1975,10 +1975,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 58853.3954,
+          "ordersRevenue": 58865.7308,
           "ordersUnits": 88,
           "estimatedMargin": 0,
-          "avgPrice": 668.7886
+          "avgPrice": 668.9288
         }
       ]
     },
@@ -2000,13 +2000,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 328055.88,
+      "ordersRevenue": 328068.03,
       "previousOrdersRevenue": 244160.98,
-      "ordersRevenueDelta": 83894.9,
+      "ordersRevenueDelta": 83907.04,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 408.54,
+      "avgPrice": 408.55,
       "avgOrdersPerDay": 114.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -2056,10 +2056,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 57948.0008,
+          "ordersRevenue": 57960.1464,
           "ordersUnits": 128,
           "estimatedMargin": 0,
-          "avgPrice": 452.7188
+          "avgPrice": 452.8136
         }
       ]
     },
@@ -2081,15 +2081,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 306543.78,
+      "ordersRevenue": 306555.54,
       "previousOrdersRevenue": 400982.1,
-      "ordersRevenueDelta": -94438.32,
+      "ordersRevenueDelta": -94426.56,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1580.12,
+      "avgPrice": 1580.18,
       "avgOrdersPerDay": 27.7,
-      "estimatedMargin": 181320.64,
+      "estimatedMargin": 181327.6,
       "wbStock": 5504,
       "ownStock": 0,
       "daily": [
@@ -2137,10 +2137,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 56126.4771,
+          "ordersRevenue": 56138.2409,
           "ordersUnits": 30,
-          "estimatedMargin": 33198.8111,
-          "avgPrice": 1870.8826
+          "estimatedMargin": 33205.7694,
+          "avgPrice": 1871.2747
         }
       ]
     },
@@ -2162,15 +2162,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 285201.54,
+      "ordersRevenue": 285213.92,
       "previousOrdersRevenue": 178261.26,
-      "ordersRevenueDelta": 106940.28,
+      "ordersRevenueDelta": 106952.65,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1044.69,
+      "avgPrice": 1044.74,
       "avgOrdersPerDay": 39,
-      "estimatedMargin": 148333.32,
+      "estimatedMargin": 148339.76,
       "wbStock": 1115,
       "ownStock": 0,
       "daily": [
@@ -2218,10 +2218,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 59046.297,
+          "ordersRevenue": 59058.6728,
           "ordersUnits": 48,
-          "estimatedMargin": 30709.9791,
-          "avgPrice": 1230.1312
+          "estimatedMargin": 30716.4157,
+          "avgPrice": 1230.389
         }
       ]
     },
@@ -2243,15 +2243,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 228186.85,
+      "ordersRevenue": 228195.57,
       "previousOrdersRevenue": 173039.06,
-      "ordersRevenueDelta": 55147.78,
+      "ordersRevenueDelta": 55156.5,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1391.38,
+      "avgPrice": 1391.44,
       "avgOrdersPerDay": 23.4,
-      "estimatedMargin": 99055.91,
+      "estimatedMargin": 99059.7,
       "wbStock": 865,
       "ownStock": 0,
       "daily": [
@@ -2299,10 +2299,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 41625.0714,
+          "ordersRevenue": 41633.7958,
           "ordersUnits": 25,
-          "estimatedMargin": 18069.4435,
-          "avgPrice": 1665.0029
+          "estimatedMargin": 18073.2308,
+          "avgPrice": 1665.3518
         }
       ]
     },
@@ -2324,13 +2324,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 214873.11,
+      "ordersRevenue": 214880.58,
       "previousOrdersRevenue": 222307.29,
-      "ordersRevenueDelta": -7434.18,
+      "ordersRevenueDelta": -7426.71,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 394.26,
+      "avgPrice": 394.28,
       "avgOrdersPerDay": 77.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -2380,10 +2380,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 35648.119,
+          "ordersRevenue": 35655.5906,
           "ordersUnits": 70,
           "estimatedMargin": 0,
-          "avgPrice": 509.2588
+          "avgPrice": 509.3656
         }
       ]
     },
@@ -2405,15 +2405,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 194268.76,
+      "ordersRevenue": 194274.89,
       "previousOrdersRevenue": 196016.47,
-      "ordersRevenueDelta": -1747.72,
+      "ordersRevenueDelta": -1741.59,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 966.51,
+      "avgPrice": 966.54,
       "avgOrdersPerDay": 28.7,
-      "estimatedMargin": 53210.21,
+      "estimatedMargin": 53211.89,
       "wbStock": 807,
       "ownStock": 0,
       "daily": [
@@ -2461,10 +2461,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 29255.8942,
+          "ordersRevenue": 29262.0261,
           "ordersUnits": 25,
-          "estimatedMargin": 8013.1895,
-          "avgPrice": 1170.2358
+          "estimatedMargin": 8014.869,
+          "avgPrice": 1170.481
         }
       ]
     },
@@ -2486,15 +2486,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 186686.91,
+      "ordersRevenue": 186694.74,
       "previousOrdersRevenue": 118744.32,
-      "ordersRevenueDelta": 67942.59,
+      "ordersRevenueDelta": 67950.43,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 368.22,
+      "avgPrice": 368.23,
       "avgOrdersPerDay": 72.4,
-      "estimatedMargin": -6702.06,
+      "estimatedMargin": -6702.34,
       "wbStock": 7816,
       "ownStock": 0,
       "daily": [
@@ -2542,10 +2542,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 37402.9096,
+          "ordersRevenue": 37410.749,
           "ordersUnits": 86,
-          "estimatedMargin": -1342.7644,
-          "avgPrice": 434.9176
+          "estimatedMargin": -1343.0458,
+          "avgPrice": 435.0087
         }
       ]
     },
@@ -2567,15 +2567,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 186327.84,
+      "ordersRevenue": 186333.98,
       "previousOrdersRevenue": 159360.66,
-      "ordersRevenueDelta": 26967.17,
+      "ordersRevenueDelta": 26973.32,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 486.5,
+      "avgPrice": 486.51,
       "avgOrdersPerDay": 54.7,
-      "estimatedMargin": 49824.06,
+      "estimatedMargin": 49825.71,
       "wbStock": 3040,
       "ownStock": 0,
       "daily": [
@@ -2623,10 +2623,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 29312.3168,
+          "ordersRevenue": 29318.4605,
           "ordersUnits": 49,
-          "estimatedMargin": 7838.1135,
-          "avgPrice": 598.2105
+          "estimatedMargin": 7839.7563,
+          "avgPrice": 598.3359
         }
       ]
     },
@@ -2648,15 +2648,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 179637.24,
+      "ordersRevenue": 179643.15,
       "previousOrdersRevenue": 152847.22,
-      "ordersRevenueDelta": 26790.02,
+      "ordersRevenueDelta": 26795.93,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1320.86,
+      "avgPrice": 1320.91,
       "avgOrdersPerDay": 19.4,
-      "estimatedMargin": 39825.58,
+      "estimatedMargin": 39826.89,
       "wbStock": 3131,
       "ownStock": 0,
       "daily": [
@@ -2704,10 +2704,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 28215.7025,
+          "ordersRevenue": 28221.6164,
           "ordersUnits": 18,
-          "estimatedMargin": 6255.4212,
-          "avgPrice": 1567.539
+          "estimatedMargin": 6256.7323,
+          "avgPrice": 1567.8676
         }
       ]
     },
@@ -2729,15 +2729,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 150835.75,
+      "ordersRevenue": 150844.65,
       "previousOrdersRevenue": 159819.87,
-      "ordersRevenueDelta": -8984.11,
+      "ordersRevenueDelta": -8975.22,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1206.69,
+      "avgPrice": 1206.76,
       "avgOrdersPerDay": 17.9,
-      "estimatedMargin": 47211.59,
+      "estimatedMargin": 47214.37,
       "wbStock": 1201,
       "ownStock": 0,
       "daily": [
@@ -2785,10 +2785,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 42420.8382,
+          "ordersRevenue": 42429.7294,
           "ordersUnits": 30,
-          "estimatedMargin": 13277.7224,
-          "avgPrice": 1414.0279
+          "estimatedMargin": 13280.5054,
+          "avgPrice": 1414.3243
         }
       ]
     },
@@ -2810,15 +2810,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 143717.21,
+      "ordersRevenue": 143722.33,
       "previousOrdersRevenue": 188144.5,
-      "ordersRevenueDelta": -44427.29,
+      "ordersRevenueDelta": -44422.16,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 598.82,
+      "avgPrice": 598.84,
       "avgOrdersPerDay": 34.3,
-      "estimatedMargin": 76400.07,
+      "estimatedMargin": 76402.79,
       "wbStock": 1922,
       "ownStock": 0,
       "daily": [
@@ -2866,10 +2866,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 24465.1771,
+          "ordersRevenue": 24470.3049,
           "ordersUnits": 36,
-          "estimatedMargin": 13005.6881,
-          "avgPrice": 679.5883
+          "estimatedMargin": 13008.414,
+          "avgPrice": 679.7307
         }
       ]
     },
@@ -2891,15 +2891,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 140209.76,
+      "ordersRevenue": 140214.84,
       "previousOrdersRevenue": 100720.85,
-      "ordersRevenueDelta": 39488.9,
+      "ordersRevenueDelta": 39493.99,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 726.48,
+      "avgPrice": 726.5,
       "avgOrdersPerDay": 27.6,
-      "estimatedMargin": 74437.36,
+      "estimatedMargin": 74440.06,
       "wbStock": 1975,
       "ownStock": 0,
       "daily": [
@@ -2947,10 +2947,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 24262.0819,
+          "ordersRevenue": 24267.1671,
           "ordersUnits": 28,
-          "estimatedMargin": 12880.7393,
-          "avgPrice": 866.5029
+          "estimatedMargin": 12883.4391,
+          "avgPrice": 866.6845
         }
       ]
     },
@@ -2972,15 +2972,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 126897.26,
+      "ordersRevenue": 126900.7,
       "previousOrdersRevenue": 89305.43,
-      "ordersRevenueDelta": 37591.83,
+      "ordersRevenueDelta": 37595.27,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 619.01,
+      "avgPrice": 619.03,
       "avgOrdersPerDay": 29.3,
-      "estimatedMargin": -12930.83,
+      "estimatedMargin": -12931.18,
       "wbStock": 1372,
       "ownStock": 0,
       "daily": [
@@ -3028,10 +3028,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 16439.1969,
+          "ordersRevenue": 16442.6425,
           "ordersUnits": 22,
-          "estimatedMargin": -1675.1541,
-          "avgPrice": 747.2362
+          "estimatedMargin": -1675.5052,
+          "avgPrice": 747.3928
         }
       ]
     },
@@ -3053,15 +3053,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 120002.1,
+      "ordersRevenue": 120006.2,
       "previousOrdersRevenue": 83648.69,
-      "ordersRevenueDelta": 36353.41,
+      "ordersRevenueDelta": 36357.5,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 789.49,
+      "avgPrice": 789.51,
       "avgOrdersPerDay": 21.7,
-      "estimatedMargin": 59317.04,
+      "estimatedMargin": 59319.06,
       "wbStock": 1560,
       "ownStock": 0,
       "daily": [
@@ -3109,10 +3109,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 19554.9019,
+          "ordersRevenue": 19559.0005,
           "ordersUnits": 22,
-          "estimatedMargin": 9665.988,
-          "avgPrice": 888.8592
+          "estimatedMargin": 9668.014,
+          "avgPrice": 889.0455
         }
       ]
     },
@@ -3134,15 +3134,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 114630.55,
+      "ordersRevenue": 114633.75,
       "previousOrdersRevenue": 141084.1,
-      "ordersRevenueDelta": -26453.55,
+      "ordersRevenueDelta": -26450.35,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 902.6,
+      "avgPrice": 902.63,
       "avgOrdersPerDay": 18.1,
-      "estimatedMargin": 55607.28,
+      "estimatedMargin": 55608.83,
       "wbStock": 1059,
       "ownStock": 0,
       "daily": [
@@ -3190,10 +3190,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 15244.7716,
+          "ordersRevenue": 15247.9669,
           "ordersUnits": 14,
-          "estimatedMargin": 7395.2387,
-          "avgPrice": 1088.9123
+          "estimatedMargin": 7396.7887,
+          "avgPrice": 1089.1405
         }
       ]
     },
@@ -3215,13 +3215,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 112366.33,
+      "ordersRevenue": 112369.97,
       "previousOrdersRevenue": 52882.69,
-      "ordersRevenueDelta": 59483.65,
+      "ordersRevenueDelta": 59487.29,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1440.59,
+      "avgPrice": 1440.64,
       "avgOrdersPerDay": 11.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -3271,10 +3271,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 17374.3091,
+          "ordersRevenue": 17377.9507,
           "ordersUnits": 10,
           "estimatedMargin": 0,
-          "avgPrice": 1737.4309
+          "avgPrice": 1737.7951
         }
       ]
     },
@@ -3296,13 +3296,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 111921.44,
+      "ordersRevenue": 111925.9,
       "previousOrdersRevenue": 43619.86,
-      "ordersRevenueDelta": 68301.58,
+      "ordersRevenueDelta": 68306.03,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1834.78,
+      "avgPrice": 1834.85,
       "avgOrdersPerDay": 8.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -3352,10 +3352,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 21264.9551,
+          "ordersRevenue": 21269.4121,
           "ordersUnits": 10,
           "estimatedMargin": 0,
-          "avgPrice": 2126.4955
+          "avgPrice": 2126.9412
         }
       ]
     },
@@ -3377,15 +3377,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 105576.64,
+      "ordersRevenue": 105580.88,
       "previousOrdersRevenue": 121084.39,
-      "ordersRevenueDelta": -15507.76,
+      "ordersRevenueDelta": -15503.51,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 844.61,
+      "avgPrice": 844.65,
       "avgOrdersPerDay": 17.9,
-      "estimatedMargin": 37458.59,
+      "estimatedMargin": 37460.1,
       "wbStock": 395,
       "ownStock": 0,
       "daily": [
@@ -3433,10 +3433,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 20263.1536,
+          "ordersRevenue": 20267.4007,
           "ordersUnits": 20,
-          "estimatedMargin": 7189.3668,
-          "avgPrice": 1013.1577
+          "estimatedMargin": 7190.8737,
+          "avgPrice": 1013.37
         }
       ]
     },
@@ -3458,15 +3458,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 91531.56,
+      "ordersRevenue": 91534.41,
       "previousOrdersRevenue": 82763.86,
-      "ordersRevenueDelta": 8767.7,
+      "ordersRevenueDelta": 8770.55,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 709.55,
+      "avgPrice": 709.57,
       "avgOrdersPerDay": 18.4,
-      "estimatedMargin": 14974.56,
+      "estimatedMargin": 14975.03,
       "wbStock": 2706,
       "ownStock": 0,
       "daily": [
@@ -3514,10 +3514,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 13582.3369,
+          "ordersRevenue": 13585.1837,
           "ordersUnits": 16,
-          "estimatedMargin": 2222.0703,
-          "avgPrice": 848.8961
+          "estimatedMargin": 2222.536,
+          "avgPrice": 849.074
         }
       ]
     },
@@ -3539,15 +3539,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 90089.25,
+      "ordersRevenue": 90092.01,
       "previousOrdersRevenue": 82977.02,
-      "ordersRevenueDelta": 7112.22,
+      "ordersRevenueDelta": 7114.99,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 672.31,
+      "avgPrice": 672.33,
       "avgOrdersPerDay": 19.1,
-      "estimatedMargin": 9008.92,
+      "estimatedMargin": 9009.2,
       "wbStock": 1453,
       "ownStock": 0,
       "daily": [
@@ -3595,10 +3595,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 13191.0054,
+          "ordersRevenue": 13193.7702,
           "ordersUnits": 17,
-          "estimatedMargin": 1319.1005,
-          "avgPrice": 775.9415
+          "estimatedMargin": 1319.377,
+          "avgPrice": 776.1041
         }
       ]
     },
@@ -3620,15 +3620,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 88100.22,
+      "ordersRevenue": 88103.12,
       "previousOrdersRevenue": 97019,
-      "ordersRevenueDelta": -8918.77,
+      "ordersRevenueDelta": -8915.88,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 808.26,
+      "avgPrice": 808.29,
       "avgOrdersPerDay": 15.6,
-      "estimatedMargin": 28606.14,
+      "estimatedMargin": 28607.08,
       "wbStock": 416,
       "ownStock": 0,
       "daily": [
@@ -3676,10 +3676,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 13809.5045,
+          "ordersRevenue": 13812.3989,
           "ordersUnits": 15,
-          "estimatedMargin": 4483.9462,
-          "avgPrice": 920.6336
+          "estimatedMargin": 4484.886,
+          "avgPrice": 920.8266
         }
       ]
     },
@@ -3701,13 +3701,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 87424.86,
+      "ordersRevenue": 87427.22,
       "previousOrdersRevenue": 57387.64,
-      "ordersRevenueDelta": 30037.21,
+      "ordersRevenueDelta": 30039.57,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 496.73,
+      "avgPrice": 496.75,
       "avgOrdersPerDay": 25.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -3757,10 +3757,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 11242.4065,
+          "ordersRevenue": 11244.7628,
           "ordersUnits": 22,
           "estimatedMargin": 0,
-          "avgPrice": 511.0185
+          "avgPrice": 511.1256
         }
       ]
     },
@@ -3782,15 +3782,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 87298.99,
+      "ordersRevenue": 87301.42,
       "previousOrdersRevenue": 95480.09,
-      "ordersRevenueDelta": -8181.1,
+      "ordersRevenueDelta": -8178.66,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 980.89,
+      "avgPrice": 980.91,
       "avgOrdersPerDay": 12.7,
-      "estimatedMargin": 45177.23,
+      "estimatedMargin": 45178.49,
       "wbStock": 1235,
       "ownStock": 0,
       "daily": [
@@ -3838,10 +3838,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 11610.2943,
+          "ordersRevenue": 11612.7278,
           "ordersUnits": 11,
-          "estimatedMargin": 6008.3273,
-          "avgPrice": 1055.4813
+          "estimatedMargin": 6009.5866,
+          "avgPrice": 1055.7025
         }
       ]
     },
@@ -3863,15 +3863,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 85050.36,
+      "ordersRevenue": 85052.24,
       "previousOrdersRevenue": 130748.12,
-      "ordersRevenueDelta": -45697.77,
+      "ordersRevenueDelta": -45695.88,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 525,
+      "avgPrice": 525.01,
       "avgOrdersPerDay": 23.1,
-      "estimatedMargin": 20956.41,
+      "estimatedMargin": 20956.87,
       "wbStock": 1190,
       "ownStock": 0,
       "daily": [
@@ -3919,10 +3919,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 8989.6694,
+          "ordersRevenue": 8991.5535,
           "ordersUnits": 14,
-          "estimatedMargin": 2215.0545,
-          "avgPrice": 642.1192
+          "estimatedMargin": 2215.5187,
+          "avgPrice": 642.2538
         }
       ]
     },
@@ -3944,15 +3944,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 84513.61,
+      "ordersRevenue": 84515.61,
       "previousOrdersRevenue": 246761.61,
-      "ordersRevenueDelta": -162248,
+      "ordersRevenueDelta": -162246,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1657.13,
+      "avgPrice": 1657.17,
       "avgOrdersPerDay": 7.3,
-      "estimatedMargin": 42561.05,
+      "estimatedMargin": 42562.06,
       "wbStock": 3458,
       "ownStock": 0,
       "daily": [
@@ -4000,10 +4000,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 9569.0324,
+          "ordersRevenue": 9571.038,
           "ordersUnits": 3,
-          "estimatedMargin": 4818.9647,
-          "avgPrice": 3189.6775
+          "estimatedMargin": 4819.9747,
+          "avgPrice": 3190.346
         }
       ]
     },
@@ -4025,13 +4025,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 80952.36,
+      "ordersRevenue": 80954.54,
       "previousOrdersRevenue": 68902.51,
-      "ordersRevenueDelta": 12049.85,
+      "ordersRevenueDelta": 12052.03,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 674.6,
+      "avgPrice": 674.62,
       "avgOrdersPerDay": 17.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -4081,10 +4081,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 10401.4343,
+          "ordersRevenue": 10403.6144,
           "ordersUnits": 13,
           "estimatedMargin": 0,
-          "avgPrice": 800.1103
+          "avgPrice": 800.278
         }
       ]
     },
@@ -4106,15 +4106,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 72411.87,
+      "ordersRevenue": 72414.3,
       "previousOrdersRevenue": 82304.11,
-      "ordersRevenueDelta": -9892.23,
+      "ordersRevenueDelta": -9889.81,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 574.7,
+      "avgPrice": 574.72,
       "avgOrdersPerDay": 18,
-      "estimatedMargin": 9775.6,
+      "estimatedMargin": 9775.93,
       "wbStock": 722,
       "ownStock": 0,
       "daily": [
@@ -4162,10 +4162,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 11582.1415,
+          "ordersRevenue": 11584.5691,
           "ordersUnits": 17,
-          "estimatedMargin": 1563.5891,
-          "avgPrice": 681.3024
+          "estimatedMargin": 1563.9168,
+          "avgPrice": 681.4452
         }
       ]
     },
@@ -4187,15 +4187,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 71869,
+      "ordersRevenue": 71872.19,
       "previousOrdersRevenue": 41042.85,
-      "ordersRevenueDelta": 30826.15,
+      "ordersRevenueDelta": 30829.34,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1072.67,
+      "avgPrice": 1072.72,
       "avgOrdersPerDay": 9.6,
-      "estimatedMargin": 22545.3,
+      "estimatedMargin": 22546.3,
       "wbStock": 394,
       "ownStock": 0,
       "daily": [
@@ -4243,10 +4243,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 15204.7142,
+          "ordersRevenue": 15207.901,
           "ordersUnits": 12,
-          "estimatedMargin": 4769.7188,
-          "avgPrice": 1267.0595
+          "estimatedMargin": 4770.7185,
+          "avgPrice": 1267.3251
         }
       ]
     },
@@ -4268,13 +4268,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 69798.87,
+      "ordersRevenue": 69802.43,
       "previousOrdersRevenue": 76896.62,
-      "ordersRevenueDelta": -7097.75,
+      "ordersRevenueDelta": -7094.19,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 456.2,
+      "avgPrice": 456.23,
       "avgOrdersPerDay": 21.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -4324,10 +4324,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 16993.0396,
+          "ordersRevenue": 16996.6012,
           "ordersUnits": 36,
           "estimatedMargin": 0,
-          "avgPrice": 472.0289
+          "avgPrice": 472.1278
         }
       ]
     },
@@ -4349,15 +4349,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 61358.1,
+      "ordersRevenue": 61360.04,
       "previousOrdersRevenue": 51359.21,
-      "ordersRevenueDelta": 9998.88,
+      "ordersRevenueDelta": 10000.83,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 562.92,
+      "avgPrice": 562.94,
       "avgOrdersPerDay": 15.6,
-      "estimatedMargin": 14210.53,
+      "estimatedMargin": 14210.99,
       "wbStock": 1461,
       "ownStock": 0,
       "daily": [
@@ -4405,10 +4405,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 9289.6687,
+          "ordersRevenue": 9291.6158,
           "ordersUnits": 14,
-          "estimatedMargin": 2151.4873,
-          "avgPrice": 663.5478
+          "estimatedMargin": 2151.9383,
+          "avgPrice": 663.6868
         }
       ]
     },
@@ -4430,13 +4430,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 54197.08,
+      "ordersRevenue": 54199.35,
       "previousOrdersRevenue": 41786.43,
-      "ordersRevenueDelta": 12410.65,
+      "ordersRevenueDelta": 12412.92,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 488.26,
+      "avgPrice": 488.28,
       "avgOrdersPerDay": 15.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -4486,10 +4486,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 10836.4063,
+          "ordersRevenue": 10838.6776,
           "ordersUnits": 21,
           "estimatedMargin": 0,
-          "avgPrice": 516.0193
+          "avgPrice": 516.1275
         }
       ]
     },
@@ -4511,13 +4511,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 52124.33,
+      "ordersRevenue": 52125.49,
       "previousOrdersRevenue": 47155.4,
-      "ordersRevenueDelta": 4968.93,
+      "ordersRevenueDelta": 4970.09,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 445.51,
+      "avgPrice": 445.52,
       "avgOrdersPerDay": 16.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -4567,10 +4567,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5560.2177,
+          "ordersRevenue": 5561.3831,
           "ordersUnits": 11,
           "estimatedMargin": 0,
-          "avgPrice": 505.4743
+          "avgPrice": 505.5803
         }
       ]
     },
@@ -4592,15 +4592,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 50403.81,
+      "ordersRevenue": 50406.32,
       "previousOrdersRevenue": 63109.29,
-      "ordersRevenueDelta": -12705.49,
+      "ordersRevenueDelta": -12702.98,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 916.43,
+      "avgPrice": 916.48,
       "avgOrdersPerDay": 7.9,
-      "estimatedMargin": 24168.63,
+      "estimatedMargin": 24169.83,
       "wbStock": 1155,
       "ownStock": 0,
       "daily": [
@@ -4648,10 +4648,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 11973.9409,
+          "ordersRevenue": 11976.4506,
           "ordersUnits": 11,
-          "estimatedMargin": 5741.5047,
-          "avgPrice": 1088.5401
+          "estimatedMargin": 5742.7081,
+          "avgPrice": 1088.7682
         }
       ]
     },
@@ -4673,15 +4673,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 50236.44,
+      "ordersRevenue": 50237.69,
       "previousOrdersRevenue": 59956.94,
-      "ordersRevenueDelta": -9720.51,
+      "ordersRevenueDelta": -9719.25,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 728.06,
+      "avgPrice": 728.08,
       "avgOrdersPerDay": 9.9,
-      "estimatedMargin": -1381.5,
+      "estimatedMargin": -1381.54,
       "wbStock": 1675,
       "ownStock": 0,
       "daily": [
@@ -4729,10 +4729,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5983.6799,
+          "ordersRevenue": 5984.934,
           "ordersUnits": 7,
-          "estimatedMargin": -164.5512,
-          "avgPrice": 854.8114
+          "estimatedMargin": -164.5857,
+          "avgPrice": 854.9906
         }
       ]
     },
@@ -4754,15 +4754,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 46944.15,
+      "ordersRevenue": 46945.98,
       "previousOrdersRevenue": 35203.51,
-      "ordersRevenueDelta": 11740.64,
+      "ordersRevenueDelta": 11742.47,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 617.69,
+      "avgPrice": 617.71,
       "avgOrdersPerDay": 10.9,
-      "estimatedMargin": 16491.48,
+      "estimatedMargin": 16492.12,
       "wbStock": 164,
       "ownStock": 0,
       "daily": [
@@ -4810,10 +4810,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 8738.3415,
+          "ordersRevenue": 8740.173,
           "ordersUnits": 12,
-          "estimatedMargin": 3069.7794,
-          "avgPrice": 728.1951
+          "estimatedMargin": 3070.4228,
+          "avgPrice": 728.3478
         }
       ]
     },
@@ -4835,15 +4835,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 46572.89,
+      "ordersRevenue": 46573.66,
       "previousOrdersRevenue": 58849.47,
-      "ordersRevenueDelta": -12276.58,
+      "ordersRevenueDelta": -12275.82,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 589.53,
+      "avgPrice": 589.54,
       "avgOrdersPerDay": 11.3,
-      "estimatedMargin": 17050.34,
+      "estimatedMargin": 17050.62,
       "wbStock": 586,
       "ownStock": 0,
       "daily": [
@@ -4891,10 +4891,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 3655.8881,
+          "ordersRevenue": 3656.6543,
           "ordersUnits": 5,
-          "estimatedMargin": 1338.4207,
-          "avgPrice": 731.1776
+          "estimatedMargin": 1338.7012,
+          "avgPrice": 731.3309
         }
       ]
     },
@@ -4916,15 +4916,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 45917.44,
+      "ordersRevenue": 45918.9,
       "previousOrdersRevenue": 50836.68,
-      "ordersRevenueDelta": -4919.24,
+      "ordersRevenueDelta": -4917.78,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 728.85,
+      "avgPrice": 728.87,
       "avgOrdersPerDay": 9,
-      "estimatedMargin": -3981.04,
+      "estimatedMargin": -3981.17,
       "wbStock": 1514,
       "ownStock": 0,
       "daily": [
@@ -4972,10 +4972,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6976.0484,
+          "ordersRevenue": 6977.5105,
           "ordersUnits": 8,
-          "estimatedMargin": -604.8234,
-          "avgPrice": 872.006
+          "estimatedMargin": -604.9502,
+          "avgPrice": 872.1888
         }
       ]
     },
@@ -4997,13 +4997,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 44994.66,
+      "ordersRevenue": 44997.54,
       "previousOrdersRevenue": 35593.51,
-      "ordersRevenueDelta": 9401.14,
+      "ordersRevenueDelta": 9404.03,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 749.91,
+      "avgPrice": 749.96,
       "avgOrdersPerDay": 8.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5053,10 +5053,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 13766.9462,
+          "ordersRevenue": 13769.8317,
           "ordersUnits": 16,
           "estimatedMargin": 0,
-          "avgPrice": 860.4341
+          "avgPrice": 860.6145
         }
       ]
     },
@@ -5078,13 +5078,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 41436.2,
+      "ordersRevenue": 41437.45,
       "previousOrdersRevenue": 43279.93,
-      "ordersRevenueDelta": -1843.73,
+      "ordersRevenueDelta": -1842.47,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 390.91,
+      "avgPrice": 390.92,
       "avgOrdersPerDay": 15.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5134,10 +5134,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5998.0854,
+          "ordersRevenue": 5999.3425,
           "ordersUnits": 14,
           "estimatedMargin": 0,
-          "avgPrice": 428.4347
+          "avgPrice": 428.5245
         }
       ]
     },
@@ -5159,15 +5159,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 40724.09,
+      "ordersRevenue": 40725.21,
       "previousOrdersRevenue": 56537.45,
-      "ordersRevenueDelta": -15813.36,
+      "ordersRevenueDelta": -15812.24,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1100.65,
+      "avgPrice": 1100.68,
       "avgOrdersPerDay": 5.3,
-      "estimatedMargin": 21465.67,
+      "estimatedMargin": 21466.26,
       "wbStock": 960,
       "ownStock": 0,
       "daily": [
@@ -5215,10 +5215,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5311.61,
+          "ordersRevenue": 5312.7233,
           "ordersUnits": 4,
-          "estimatedMargin": 2799.7497,
-          "avgPrice": 1327.9025
+          "estimatedMargin": 2800.3365,
+          "avgPrice": 1328.1808
         }
       ]
     },
@@ -5240,13 +5240,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 40394.13,
+      "ordersRevenue": 40395.76,
       "previousOrdersRevenue": 38644.2,
-      "ordersRevenueDelta": 1749.93,
+      "ordersRevenueDelta": 1751.56,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 448.82,
+      "avgPrice": 448.84,
       "avgOrdersPerDay": 12.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5296,10 +5296,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 7762.4991,
+          "ordersRevenue": 7764.1261,
           "ordersUnits": 16,
           "estimatedMargin": 0,
-          "avgPrice": 485.1562
+          "avgPrice": 485.2579
         }
       ]
     },
@@ -5321,13 +5321,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 35557.86,
+      "ordersRevenue": 35559.06,
       "previousOrdersRevenue": 40791.71,
-      "ordersRevenueDelta": -5233.86,
+      "ordersRevenueDelta": -5232.66,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 530.71,
+      "avgPrice": 530.73,
       "avgOrdersPerDay": 9.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5377,10 +5377,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5726.6337,
+          "ordersRevenue": 5727.834,
           "ordersUnits": 10,
           "estimatedMargin": 0,
-          "avgPrice": 572.6634
+          "avgPrice": 572.7834
         }
       ]
     },
@@ -5402,15 +5402,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 35249.44,
+      "ordersRevenue": 35250.73,
       "previousOrdersRevenue": 21822.61,
-      "ordersRevenueDelta": 13426.83,
+      "ordersRevenueDelta": 13428.12,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 881.24,
+      "avgPrice": 881.27,
       "avgOrdersPerDay": 5.7,
-      "estimatedMargin": -1304.23,
+      "estimatedMargin": -1304.28,
       "wbStock": 0,
       "ownStock": 0,
       "daily": [
@@ -5458,10 +5458,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6159.9823,
+          "ordersRevenue": 6161.2734,
           "ordersUnits": 6,
-          "estimatedMargin": -227.9193,
-          "avgPrice": 1026.6637
+          "estimatedMargin": -227.9671,
+          "avgPrice": 1026.8789
         }
       ]
     },
@@ -5483,13 +5483,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 35003.97,
+      "ordersRevenue": 35004.34,
       "previousOrdersRevenue": 23197.1,
-      "ordersRevenueDelta": 11806.88,
+      "ordersRevenueDelta": 11807.24,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 397.77,
+      "avgPrice": 397.78,
       "avgOrdersPerDay": 12.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5539,10 +5539,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1752.0558,
+          "ordersRevenue": 1752.423,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 438.0139
+          "avgPrice": 438.1057
         }
       ]
     },
@@ -5564,13 +5564,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 34917.33,
+      "ordersRevenue": 34918.65,
       "previousOrdersRevenue": 19689.99,
-      "ordersRevenueDelta": 15227.34,
+      "ordersRevenueDelta": 15228.66,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1342.97,
+      "avgPrice": 1343.02,
       "avgOrdersPerDay": 3.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5613,10 +5613,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6317.9306,
+          "ordersRevenue": 6319.2548,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 1579.4826
+          "avgPrice": 1579.8137
         }
       ]
     },
@@ -5638,15 +5638,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 34635.28,
+      "ordersRevenue": 34636.74,
       "previousOrdersRevenue": 35103.52,
-      "ordersRevenueDelta": -468.24,
+      "ordersRevenueDelta": -466.78,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 989.58,
+      "avgPrice": 989.62,
       "avgOrdersPerDay": 5,
-      "estimatedMargin": 20244.32,
+      "estimatedMargin": 20245.17,
       "wbStock": 1443,
       "ownStock": 0,
       "daily": [
@@ -5694,10 +5694,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6961.1895,
+          "ordersRevenue": 6962.6485,
           "ordersUnits": 6,
-          "estimatedMargin": 4068.8153,
-          "avgPrice": 1160.1983
+          "estimatedMargin": 4069.6681,
+          "avgPrice": 1160.4414
         }
       ]
     },
@@ -5719,13 +5719,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 33106.6,
+      "ordersRevenue": 33107.72,
       "previousOrdersRevenue": 29346.04,
-      "ordersRevenueDelta": 3760.56,
+      "ordersRevenueDelta": 3761.68,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1504.85,
+      "avgPrice": 1504.9,
       "avgOrdersPerDay": 3.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5775,10 +5775,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5349.7662,
+          "ordersRevenue": 5350.8875,
           "ordersUnits": 5,
           "estimatedMargin": 0,
-          "avgPrice": 1069.9532
+          "avgPrice": 1070.1775
         }
       ]
     },
@@ -5800,13 +5800,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 33017.64,
+      "ordersRevenue": 33019.72,
       "previousOrdersRevenue": 29879.37,
-      "ordersRevenueDelta": 3138.27,
+      "ordersRevenueDelta": 3140.35,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 471.68,
+      "avgPrice": 471.71,
       "avgOrdersPerDay": 10,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5856,10 +5856,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 9949.3513,
+          "ordersRevenue": 9951.4366,
           "ordersUnits": 18,
           "estimatedMargin": 0,
-          "avgPrice": 552.7417
+          "avgPrice": 552.8576
         }
       ]
     },
@@ -5881,15 +5881,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 32248.4,
+      "ordersRevenue": 32249.56,
       "previousOrdersRevenue": 36512.02,
-      "ordersRevenueDelta": -4263.62,
+      "ordersRevenueDelta": -4262.46,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 948.48,
+      "avgPrice": 948.52,
       "avgOrdersPerDay": 4.9,
-      "estimatedMargin": 16804.64,
+      "estimatedMargin": 16805.25,
       "wbStock": 540,
       "ownStock": 0,
       "daily": [
@@ -5937,10 +5937,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5545.3003,
+          "ordersRevenue": 5546.4626,
           "ordersUnits": 5,
-          "estimatedMargin": 2889.656,
-          "avgPrice": 1109.0601
+          "estimatedMargin": 2890.2617,
+          "avgPrice": 1109.2925
         }
       ]
     },
@@ -5962,13 +5962,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 31806.5,
+      "ordersRevenue": 31807.81,
       "previousOrdersRevenue": 32659.9,
-      "ordersRevenueDelta": -853.4,
+      "ordersRevenueDelta": -852.09,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 392.67,
+      "avgPrice": 392.69,
       "avgOrdersPerDay": 11.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6018,10 +6018,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6254.2102,
+          "ordersRevenue": 6255.521,
           "ordersUnits": 14,
           "estimatedMargin": 0,
-          "avgPrice": 446.7293
+          "avgPrice": 446.8229
         }
       ]
     },
@@ -6043,15 +6043,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 31412.32,
+      "ordersRevenue": 31412.93,
       "previousOrdersRevenue": 37599.46,
-      "ordersRevenueDelta": -6187.14,
+      "ordersRevenueDelta": -6186.53,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 615.93,
+      "avgPrice": 615.94,
       "avgOrdersPerDay": 7.3,
-      "estimatedMargin": 18517.56,
+      "estimatedMargin": 18517.92,
       "wbStock": 336,
       "ownStock": 0,
       "daily": [
@@ -6099,10 +6099,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2914.5842,
+          "ordersRevenue": 2915.1951,
           "ordersUnits": 4,
-          "estimatedMargin": 1718.1475,
-          "avgPrice": 728.6461
+          "estimatedMargin": 1718.5076,
+          "avgPrice": 728.7988
         }
       ]
     },
@@ -6124,15 +6124,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 31198.04,
+      "ordersRevenue": 31199.1,
       "previousOrdersRevenue": 32623.81,
-      "ordersRevenueDelta": -1425.78,
+      "ordersRevenueDelta": -1424.72,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 945.4,
+      "avgPrice": 945.43,
       "avgOrdersPerDay": 4.7,
-      "estimatedMargin": -1182.41,
+      "estimatedMargin": -1182.45,
       "wbStock": 1338,
       "ownStock": 0,
       "daily": [
@@ -6180,10 +6180,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5064.4356,
+          "ordersRevenue": 5065.4971,
           "ordersUnits": 5,
-          "estimatedMargin": -191.9421,
-          "avgPrice": 1012.8871
+          "estimatedMargin": -191.9823,
+          "avgPrice": 1013.0994
         }
       ]
     },
@@ -6205,13 +6205,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 31105.98,
+      "ordersRevenue": 31106.56,
       "previousOrdersRevenue": 32667.79,
-      "ordersRevenueDelta": -1561.81,
+      "ordersRevenueDelta": -1561.23,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 777.65,
+      "avgPrice": 777.66,
       "avgOrdersPerDay": 5.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6261,10 +6261,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2773.6593,
+          "ordersRevenue": 2774.2406,
           "ordersUnits": 3,
           "estimatedMargin": 0,
-          "avgPrice": 924.5531
+          "avgPrice": 924.7469
         }
       ]
     },
@@ -6286,13 +6286,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 29748,
+      "ordersRevenue": 29749.31,
       "previousOrdersRevenue": 33851.13,
-      "ordersRevenueDelta": -4103.14,
+      "ordersRevenueDelta": -4101.83,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2704.36,
+      "avgPrice": 2704.48,
       "avgOrdersPerDay": 1.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6328,10 +6328,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6253.5813,
+          "ordersRevenue": 6254.892,
           "ordersUnits": 2,
           "estimatedMargin": 0,
-          "avgPrice": 3126.7906
+          "avgPrice": 3127.446
         }
       ]
     },
@@ -6353,15 +6353,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 27240.2,
+      "ordersRevenue": 27241.28,
       "previousOrdersRevenue": 14788.81,
-      "ordersRevenueDelta": 12451.38,
+      "ordersRevenueDelta": 12452.47,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 716.85,
+      "avgPrice": 716.88,
       "avgOrdersPerDay": 5.4,
-      "estimatedMargin": 8389.98,
+      "estimatedMargin": 8390.31,
       "wbStock": 775,
       "ownStock": 0,
       "daily": [
@@ -6409,10 +6409,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5177.1931,
+          "ordersRevenue": 5178.2782,
           "ordersUnits": 6,
-          "estimatedMargin": 1594.5755,
-          "avgPrice": 862.8655
+          "estimatedMargin": 1594.9097,
+          "avgPrice": 863.0464
         }
       ]
     },
@@ -6434,15 +6434,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 25354.2,
+      "ordersRevenue": 25355.39,
       "previousOrdersRevenue": 18589.51,
-      "ordersRevenueDelta": 6764.69,
+      "ordersRevenueDelta": 6765.88,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 975.16,
+      "avgPrice": 975.21,
       "avgOrdersPerDay": 3.7,
-      "estimatedMargin": -6635.19,
+      "estimatedMargin": -6635.51,
       "wbStock": 1233,
       "ownStock": 0,
       "daily": [
@@ -6490,10 +6490,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5674.4377,
+          "ordersRevenue": 5675.627,
           "ordersUnits": 5,
-          "estimatedMargin": -1485.0003,
-          "avgPrice": 1134.8875
+          "estimatedMargin": -1485.3116,
+          "avgPrice": 1135.1254
         }
       ]
     },
@@ -6582,13 +6582,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 20062.32,
+      "ordersRevenue": 20063.04,
       "previousOrdersRevenue": 21994.02,
-      "ordersRevenueDelta": -1931.7,
+      "ordersRevenueDelta": -1930.98,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 378.53,
+      "avgPrice": 378.55,
       "avgOrdersPerDay": 7.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6638,10 +6638,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 3442.5117,
+          "ordersRevenue": 3443.2332,
           "ordersUnits": 8,
           "estimatedMargin": 0,
-          "avgPrice": 430.314
+          "avgPrice": 430.4042
         }
       ]
     },
@@ -6663,13 +6663,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 19333.99,
+      "ordersRevenue": 19334.52,
       "previousOrdersRevenue": 15363.69,
-      "ordersRevenueDelta": 3970.3,
+      "ordersRevenueDelta": 3970.83,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 966.7,
+      "avgPrice": 966.73,
       "avgOrdersPerDay": 2.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6719,10 +6719,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2532.5103,
+          "ordersRevenue": 2533.0411,
           "ordersUnits": 3,
           "estimatedMargin": 0,
-          "avgPrice": 844.1701
+          "avgPrice": 844.347
         }
       ]
     },
@@ -6744,13 +6744,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 19318.61,
+      "ordersRevenue": 19319.39,
       "previousOrdersRevenue": 18724.21,
-      "ordersRevenueDelta": 594.39,
+      "ordersRevenueDelta": 595.18,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 643.95,
+      "avgPrice": 643.98,
       "avgOrdersPerDay": 4.3,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6800,10 +6800,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 3729.6265,
+          "ordersRevenue": 3730.4082,
           "ordersUnits": 5,
           "estimatedMargin": 0,
-          "avgPrice": 745.9253
+          "avgPrice": 746.0816
         }
       ]
     },
@@ -6825,13 +6825,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 18786.34,
+      "ordersRevenue": 18787.16,
       "previousOrdersRevenue": 20090.26,
-      "ordersRevenueDelta": -1303.92,
+      "ordersRevenueDelta": -1303.1,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 751.45,
+      "avgPrice": 751.49,
       "avgOrdersPerDay": 3.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6881,10 +6881,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 3907.7571,
+          "ordersRevenue": 3908.5761,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 976.9393
+          "avgPrice": 977.144
         }
       ]
     },
@@ -6906,15 +6906,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 18255.56,
+      "ordersRevenue": 18256.63,
       "previousOrdersRevenue": 18580.91,
-      "ordersRevenueDelta": -325.35,
+      "ordersRevenueDelta": -324.28,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 869.31,
+      "avgPrice": 869.36,
       "avgOrdersPerDay": 3,
-      "estimatedMargin": 8439.55,
+      "estimatedMargin": 8440.04,
       "wbStock": 375,
       "ownStock": 0,
       "daily": [
@@ -6962,10 +6962,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5118.6938,
+          "ordersRevenue": 5119.7666,
           "ordersUnits": 5,
-          "estimatedMargin": 2366.3721,
-          "avgPrice": 1023.7388
+          "estimatedMargin": 2366.8681,
+          "avgPrice": 1023.9533
         }
       ]
     },
@@ -6987,15 +6987,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 14873.96,
+      "ordersRevenue": 14874.3,
       "previousOrdersRevenue": 20034.81,
-      "ordersRevenueDelta": -5160.85,
+      "ordersRevenueDelta": -5160.51,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 676.09,
+      "avgPrice": 676.1,
       "avgOrdersPerDay": 3.1,
-      "estimatedMargin": 6239.63,
+      "estimatedMargin": 6239.77,
       "wbStock": 306,
       "ownStock": 0,
       "daily": [
@@ -7043,10 +7043,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1603.4089,
+          "ordersRevenue": 1603.745,
           "ordersUnits": 2,
-          "estimatedMargin": 672.63,
-          "avgPrice": 801.7044
+          "estimatedMargin": 672.771,
+          "avgPrice": 801.8725
         }
       ]
     },
@@ -7068,13 +7068,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 14827.59,
+      "ordersRevenue": 14828,
       "previousOrdersRevenue": 14090.3,
-      "ordersRevenueDelta": 737.29,
+      "ordersRevenueDelta": 737.7,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 449.32,
+      "avgPrice": 449.33,
       "avgOrdersPerDay": 4.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7124,10 +7124,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1936.2556,
+          "ordersRevenue": 1936.6614,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 484.0639
+          "avgPrice": 484.1654
         }
       ]
     },
@@ -7149,13 +7149,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 13181.25,
+      "ordersRevenue": 13181.79,
       "previousOrdersRevenue": 11930.27,
-      "ordersRevenueDelta": 1250.98,
+      "ordersRevenueDelta": 1251.52,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 549.22,
+      "avgPrice": 549.24,
       "avgOrdersPerDay": 3.4,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7205,10 +7205,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2566.2644,
+          "ordersRevenue": 2566.8023,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 641.5661
+          "avgPrice": 641.7006
         }
       ]
     },
@@ -7230,13 +7230,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 11374.47,
+      "ordersRevenue": 11374.86,
       "previousOrdersRevenue": 16347.93,
-      "ordersRevenueDelta": -4973.45,
+      "ordersRevenueDelta": -4973.07,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 568.72,
+      "avgPrice": 568.74,
       "avgOrdersPerDay": 2.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7279,10 +7279,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1816.405,
+          "ordersRevenue": 1816.7858,
           "ordersUnits": 3,
           "estimatedMargin": 0,
-          "avgPrice": 605.4683
+          "avgPrice": 605.5953
         }
       ]
     },
@@ -7304,13 +7304,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 10421.14,
+      "ordersRevenue": 10421.65,
       "previousOrdersRevenue": 11585.86,
-      "ordersRevenueDelta": -1164.72,
+      "ordersRevenueDelta": -1164.21,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 521.06,
+      "avgPrice": 521.08,
       "avgOrdersPerDay": 2.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7360,10 +7360,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2433.8365,
+          "ordersRevenue": 2434.3466,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 608.4591
+          "avgPrice": 608.5867
         }
       ]
     },
@@ -7385,13 +7385,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 9042.25,
+      "ordersRevenue": 9042.71,
       "previousOrdersRevenue": 4370.42,
-      "ordersRevenueDelta": 4671.84,
+      "ordersRevenueDelta": 4672.3,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 376.76,
+      "avgPrice": 376.78,
       "avgOrdersPerDay": 3.4,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7441,10 +7441,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2193.7259,
+          "ordersRevenue": 2194.1857,
           "ordersUnits": 5,
           "estimatedMargin": 0,
-          "avgPrice": 438.7452
+          "avgPrice": 438.8371
         }
       ]
     },
@@ -7466,13 +7466,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 9019.49,
+      "ordersRevenue": 9019.69,
       "previousOrdersRevenue": 1378.51,
-      "ordersRevenueDelta": 7640.98,
+      "ordersRevenueDelta": 7641.18,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 409.98,
+      "avgPrice": 409.99,
       "avgOrdersPerDay": 3.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7522,10 +7522,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 972.4787,
+          "ordersRevenue": 972.6825,
           "ordersUnits": 2,
           "estimatedMargin": 0,
-          "avgPrice": 486.2393
+          "avgPrice": 486.3413
         }
       ]
     },
@@ -7547,13 +7547,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 8952.87,
+      "ordersRevenue": 8953.05,
       "previousOrdersRevenue": 14058.82,
-      "ordersRevenueDelta": -5105.94,
+      "ordersRevenueDelta": -5105.77,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 344.34,
+      "avgPrice": 344.35,
       "avgOrdersPerDay": 3.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7603,10 +7603,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 833.6158,
+          "ordersRevenue": 833.7906,
           "ordersUnits": 2,
           "estimatedMargin": 0,
-          "avgPrice": 416.8079
+          "avgPrice": 416.8953
         }
       ]
     },
@@ -7628,13 +7628,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 8792.93,
+      "ordersRevenue": 8793.14,
       "previousOrdersRevenue": 14198.68,
-      "ordersRevenueDelta": -5405.76,
+      "ordersRevenueDelta": -5405.54,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 799.36,
+      "avgPrice": 799.38,
       "avgOrdersPerDay": 1.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7670,10 +7670,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1004.7265,
+          "ordersRevenue": 1004.937,
           "ordersUnits": 1,
           "estimatedMargin": 0,
-          "avgPrice": 1004.7265
+          "avgPrice": 1004.937
         }
       ]
     },
@@ -7868,13 +7868,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 5372.98,
+      "ordersRevenue": 5373.15,
       "previousOrdersRevenue": 9282.69,
-      "ordersRevenueDelta": -3909.71,
+      "ordersRevenueDelta": -3909.54,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 383.78,
+      "avgPrice": 383.8,
       "avgOrdersPerDay": 2,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7917,10 +7917,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 804.3662,
+          "ordersRevenue": 804.5348,
           "ordersUnits": 2,
           "estimatedMargin": 0,
-          "avgPrice": 402.1831
+          "avgPrice": 402.2674
         }
       ]
     },
@@ -7942,13 +7942,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 5105.71,
+      "ordersRevenue": 5105.91,
       "previousOrdersRevenue": 3957.97,
-      "ordersRevenueDelta": 1147.74,
+      "ordersRevenueDelta": 1147.94,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 850.95,
+      "avgPrice": 850.99,
       "avgOrdersPerDay": 0.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7970,10 +7970,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 956.4645,
+          "ordersRevenue": 956.665,
           "ordersUnits": 1,
           "estimatedMargin": 0,
-          "avgPrice": 956.4645
+          "avgPrice": 956.665
         }
       ]
     },
@@ -8115,15 +8115,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 3092.8,
+      "ordersRevenue": 3092.92,
       "previousOrdersRevenue": 13459.5,
-      "ordersRevenueDelta": -10366.7,
+      "ordersRevenueDelta": -10366.58,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 441.83,
+      "avgPrice": 441.85,
       "avgOrdersPerDay": 1,
-      "estimatedMargin": -495.47,
+      "estimatedMargin": -495.49,
       "wbStock": 437,
       "ownStock": 0,
       "daily": [
@@ -8164,10 +8164,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 542.5815,
+          "ordersRevenue": 542.6953,
           "ordersUnits": 1,
-          "estimatedMargin": -86.9216,
-          "avgPrice": 542.5815
+          "estimatedMargin": -86.9398,
+          "avgPrice": 542.6953
         }
       ]
     },
@@ -8189,13 +8189,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 2802.99,
+      "ordersRevenue": 2803.21,
       "previousOrdersRevenue": 12141.13,
-      "ordersRevenueDelta": -9338.14,
+      "ordersRevenueDelta": -9337.92,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 934.33,
+      "avgPrice": 934.4,
       "avgOrdersPerDay": 0.4,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -8217,10 +8217,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1076.3882,
+          "ordersRevenue": 1076.6138,
           "ordersUnits": 1,
           "estimatedMargin": 0,
-          "avgPrice": 1076.3882
+          "avgPrice": 1076.6138
         }
       ]
     },
@@ -8242,13 +8242,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 2341.79,
+      "ordersRevenue": 2341.88,
       "previousOrdersRevenue": 3187.72,
-      "ordersRevenueDelta": -845.93,
+      "ordersRevenueDelta": -845.84,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 390.3,
+      "avgPrice": 390.31,
       "avgOrdersPerDay": 0.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -8270,10 +8270,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 425.5828,
+          "ordersRevenue": 425.672,
           "ordersUnits": 1,
           "estimatedMargin": 0,
-          "avgPrice": 425.5828
+          "avgPrice": 425.672
         }
       ]
     },
@@ -8387,13 +8387,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 1428.85,
+      "ordersRevenue": 1429.15,
       "previousOrdersRevenue": 0,
-      "ordersRevenueDelta": 1428.85,
+      "ordersRevenueDelta": 1429.15,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1428.85,
+      "avgPrice": 1429.15,
       "avgOrdersPerDay": 0.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -8401,10 +8401,10 @@
       "daily": [
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1428.8468,
+          "ordersRevenue": 1429.1463,
           "ordersUnits": 1,
           "estimatedMargin": 0,
-          "avgPrice": 1428.8468
+          "avgPrice": 1429.1463
         }
       ]
     },

@@ -26,19 +26,18 @@
     { id: 'dashboard', index: '01', group: 'Главное', title: 'Дашборд', caption: 'Пульс · лидеры · сигналы', icon: 'grid' },
     { id: 'executive', index: '02', group: 'Главное', title: 'Руководителю', caption: 'Риски · решения · итог', icon: 'crown' },
     { id: 'control', index: '03', group: 'Главное', title: 'Задачи', caption: 'Задачи · РОП · контроль', icon: 'check' },
-    { id: 'documents', index: '04', group: 'Главное', title: 'Хранилище', caption: 'Файлы · ссылки · описания', icon: 'documents' },
-    { id: 'data-health', index: '05', group: 'Главное', title: 'Календарь', caption: 'Акции · события · SKU', icon: 'calendar' },
-    { id: 'sku-plan-fact', index: '06', group: 'Деньги и товар', title: 'План-факт SKU', caption: 'План · факт · чек · ДРР', icon: 'chart' },
-    { id: 'repricer', index: '07', group: 'Деньги и товар', title: 'Репрайсер', caption: 'Цена · риски · рекомендации', icon: 'diamond' },
-    { id: 'prices', index: '08', group: 'Деньги и товар', title: 'Цены', caption: 'Маржа · оборот · СПП', icon: 'tag' },
-    { id: 'order', index: '09', group: 'Деньги и товар', title: 'Заказ товара', caption: 'Кластеры · склады · поставки', icon: 'box' },
-    { id: 'oos-control', index: '10', group: 'Деньги и товар', title: 'OOS контроль', caption: 'Пустые полки · меры', icon: 'alert' },
-    { id: 'sku-contour', index: '11', group: 'Продукт', title: 'SKU workspace', caption: 'Реестр · API · план-факт', icon: 'blocks' },
-    { id: 'launches', index: '12', group: 'Продукт', title: 'Новинки', caption: 'Товар · экономика', icon: 'rocket' },
-    { id: 'launch-control', index: '13', group: 'Продукт', title: 'Запуск новинок', caption: 'Фазы · просрочки', icon: 'flag' },
-    { id: 'iu-drr', index: '14', group: 'Аналитика', title: 'ИУ / ДРР', caption: 'WB · Ozon · расходы', icon: 'pie' },
-    { id: 'wb-rating', index: '15', group: 'Аналитика', title: 'Рейтинг карточек', caption: 'Отзывы · динамика', icon: 'star' },
-    { id: 'product-leaderboard', index: '16', group: 'Аналитика', title: 'Лидерборд', caption: 'КЗ · воронка · ROMI', icon: 'trophy' }
+    { id: 'data-health', index: '04', group: 'Главное', title: 'Календарь', caption: 'Акции · события · SKU', icon: 'calendar' },
+    { id: 'sku-plan-fact', index: '05', group: 'Деньги и товар', title: 'План-факт SKU', caption: 'План · факт · чек · ДРР', icon: 'chart' },
+    { id: 'repricer', index: '06', group: 'Деньги и товар', title: 'Репрайсер', caption: 'Цена · риски · рекомендации', icon: 'diamond' },
+    { id: 'prices', index: '07', group: 'Деньги и товар', title: 'Цены', caption: 'Маржа · оборот · СПП', icon: 'tag' },
+    { id: 'order', index: '08', group: 'Деньги и товар', title: 'Заказ товара', caption: 'Кластеры · склады · поставки', icon: 'box' },
+    { id: 'oos-control', index: '09', group: 'Деньги и товар', title: 'OOS контроль', caption: 'Пустые полки · меры', icon: 'alert' },
+    { id: 'sku-contour', index: '10', group: 'Продукт', title: 'SKU workspace', caption: 'Реестр · API · план-факт', icon: 'blocks' },
+    { id: 'launches', index: '11', group: 'Продукт', title: 'Новинки', caption: 'Товар · экономика', icon: 'rocket' },
+    { id: 'launch-control', index: '12', group: 'Продукт', title: 'Запуск новинок', caption: 'Фазы · просрочки', icon: 'flag' },
+    { id: 'iu-drr', index: '13', group: 'Аналитика', title: 'ИУ / ДРР', caption: 'WB · Ozon · расходы', icon: 'pie' },
+    { id: 'wb-rating', index: '14', group: 'Аналитика', title: 'Рейтинг карточек', caption: 'Отзывы · динамика', icon: 'star' },
+    { id: 'product-leaderboard', index: '15', group: 'Аналитика', title: 'Лидерборд', caption: 'КЗ · воронка · ROMI', icon: 'trophy' }
   ];
 
   var NAV_BY_ID = NAV_ROUTES.reduce(function (acc, route) {
@@ -54,13 +53,11 @@
     ym: { label: 'Я.Маркет', color: '#F2C84B', rgb: '242,200,75' },
     goldapple: { label: 'ЗЯ', color: '#72C86A', rgb: '114,200,106' },
     letu: { label: 'Л’Этуаль', color: '#D96AA9', rgb: '217,106,169' },
-    megamarket: { label: 'Мегамаркет', color: '#F97316', rgb: '249,115,22' },
-    samokat: { label: 'Самокат', color: '#10B981', rgb: '16,185,129' },
     magnit: { label: 'Магнит', color: '#E85B55', rgb: '232,91,85' }
   };
 
   var MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
-  var MARKETPLACE_IDS = ['all', 'wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
+  var MARKETPLACE_IDS = ['all', 'wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit'];
   var MARKETPLACE_TO_INTERNAL = { ym: 'ya' };
   var INTERNAL_TO_MARKETPLACE = { ya: 'ym' };
 
@@ -149,8 +146,6 @@
     if (key === 'ya' || key === 'yandex' || key === 'yandexmarket' || key === 'yamarket') key = 'ym';
     if (key === 'goldenapple' || key === 'gold-apple' || key === 'gold_apple' || key === 'зя') key = 'goldapple';
     if (key === 'letual' || key === 'letuall' || key === 'летуаль') key = 'letu';
-    if (key === 'mega-market' || key === 'mega_market' || key === 'sbermegamarket' || key === 'мегамаркет') key = 'megamarket';
-    if (key === 'самокат') key = 'samokat';
     if (key === 'magnitmarket' || key === 'magnit-market') key = 'magnit';
     return MARKETPLACE_IDS.indexOf(key) >= 0 ? key : 'all';
   }
@@ -332,7 +327,6 @@
       grid: '<rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect>',
       crown: '<path d="M3 8l4 3 5-7 5 7 4-3v10H3z"></path><path d="M3 18h18"></path>',
       check: '<path d="M9 11l2 2 5-6"></path><rect x="4" y="4" width="16" height="16" rx="2"></rect>',
-      documents: '<path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path><path d="M10 13h6"></path><path d="M10 17h6"></path>',
       calendar: '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path>',
       chart: '<path d="M4 19V5"></path><path d="M4 19h17"></path><path d="M8 15l3-4 3 2 4-7"></path>',
       diamond: '<path d="M12 3l8 7-8 11-8-11z"></path><path d="M4 10h16M9 10l3 11 3-11"></path>',
@@ -569,8 +563,7 @@
     var fromModel = (model && model.platformRows || []).map(function (row) {
       return internalPlatform(row.platform || row.key || '');
     }).filter(Boolean);
-    var knownPlatforms = window.EXECUTIVE_MARKETPLACE_KEYS || window.SKU_PLAN_FACT_PLATFORMS || ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
-    return Array.from(new Set(fromModel.concat(knownPlatforms).filter(function (key) {
+    return Array.from(new Set(fromModel.concat(['wb', 'ozon', 'ya']).filter(function (key) {
       return key && key !== 'all';
     })));
   }
@@ -838,17 +831,43 @@
     return hasPlan && hasSpend && !hasFact;
   }
 
-  function executiveNeedsDataRetry(model, factPending) {
-    if (!model || !model.ready || factPending) return true;
+  function executiveCanRenderDegraded(model) {
+    if (!model || !model.ready) return false;
+    var totals = model.totals || {};
+    var hasPlan = finite(totals.planToDateRevenue || totals.planRevenue) > 0;
+    var hasRows = (model.ownerRows || []).length > 0 || (model.allOwnerRows || []).length > 0;
+    var hasPlatformRows = (model.platformRows || []).length > 0;
+    return hasPlan || hasRows || hasPlatformRows;
+  }
+
+  function executiveHasPlanWithoutFact(model) {
+    if (!model || !model.ready) return false;
     var totals = model.totals || {};
     var hasPlan = finite(totals.planToDateRevenue || totals.planRevenue) > 0;
     var hasFact = finite(totals.factRevenue) > 0 || finite(totals.apiFactRevenue) > 0 || finite(totals.marginRub) > 0;
-    if (hasPlan && !hasFact) return true;
+    return hasPlan && !hasFact;
+  }
+
+  function executiveNeedsDataRetry(model, factPending) {
+    if (!model || !model.ready) return true;
+    if (factPending && executiveCanRenderDegraded(model)) return false;
+    if (factPending) return true;
+    if (executiveHasPlanWithoutFact(model)) return !executiveCanRenderDegraded(model);
     if (typeof window.executiveFunnelBuildModel === 'function') {
       var funnel = window.executiveFunnelBuildModel() || {};
-      if (funnel.ready === false && hasPlan && !hasFact) return true;
+      if (funnel.ready === false && executiveHasPlanWithoutFact(model)) return !executiveCanRenderDegraded(model);
     }
     return false;
+  }
+
+  function executiveFactDegradedNotice(model, factPending) {
+    if (!factPending) return '';
+    var totals = model && model.totals || {};
+    return panel('Факт продаж временно недоступен', list([
+      ['План', totals.planToDateRevenue ? money(totals.planToDateRevenue) : 'есть в модели', 'показываем'],
+      ['Реклама', totals.adSpend ? money(totals.adSpend) : 'нет расхода', 'не блокирует'],
+      ['Факт продаж', 'Supabase/API не отдал слой', 'нужен синк']
+    ]), 'panel-pad route-glow section-gap executive-fact-degraded', 'без блокировки');
   }
 
   function ownerOptions(model) {
@@ -1091,8 +1110,9 @@
     ].join(''), 'panel-pad section-gap executive-native-employees', rows.length + ' показано');
   }
 
-  function executiveNativeBody(model) {
+  function executiveNativeBody(model, factPending) {
     return [
+      executiveFactDegradedNotice(model, factPending),
       executiveNativeKpis(model),
       '<div class="executive-native-controls">' + executiveControls(model) + '</div>',
       '<div class="grid executive-native-main section-gap">',
@@ -1108,14 +1128,18 @@
     window.__ALTEA_PREMIUM_EXECUTIVE_OWNER__ = true;
     var model = buildExecutiveModel();
     var factPending = executiveFactPending(model);
+    var factUnavailable = executiveHasPlanWithoutFact(model);
     var pendingData = executiveNeedsDataRetry(model, factPending);
+    var canRenderBody = model.ready && (!pendingData || executiveCanRenderDegraded(model));
     var platform = model.selectedPlatform || (model.filters && model.filters.platform) || 'all';
     var stage = ensureStage(route.id);
     var signature = JSON.stringify({
       route: route.id,
       ready: model.ready,
       factPending: factPending,
+      factUnavailable: factUnavailable,
       pendingData: pendingData,
+      canRenderBody: canRenderBody,
       periodStart: model.periodStart,
       periodEnd: model.periodEnd,
       filters: model.filters,
@@ -1127,7 +1151,7 @@
     if (root.dataset.premiumSignature === signature && stage.dataset.premiumSignature === signature && stage.querySelector('.altea-premium-route')) {
       pruneLegacyChildren(root);
       positionStage(root, stage);
-      if (pendingData) {
+      if (pendingData && !canRenderBody) {
         scheduleRouteDataRetry(route.id, 1200);
       } else {
         resetRouteDataRetry(route.id);
@@ -1147,10 +1171,10 @@
       '<section class="altea-premium-route altea-premium-route--executive" style="' + routeStyle(route, platform) + '">',
       '<div class="premium-route-body">',
       head(route, '<button class="btn" type="button" data-premium-navigate="control">Открыть задачи</button><button class="btn primary" type="button" data-executive-funnel-status="danger">Показать риски</button>'),
-      model.ready && !pendingData ? executiveNativeBody(model) : executiveLoadingPanel(model, true),
+      canRenderBody ? executiveNativeBody(model, factUnavailable) : executiveLoadingPanel(model, true),
       '</div></section>'
     ].join('');
-    if (pendingData) {
+    if (pendingData && !canRenderBody) {
       scheduleRouteDataRetry(route.id, 1200);
     } else {
       resetRouteDataRetry(route.id);
@@ -1329,9 +1353,7 @@
         });
       });
     }
-    var platformKeys = selected === 'all'
-      ? (window.SKU_PLAN_FACT_PLATFORMS || ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'])
-      : [selected];
+    var platformKeys = selected === 'all' ? ['wb', 'ozon', 'ym'] : [selected];
     platformKeys.forEach(function (platformKey) {
       collectSmart(platformKey);
       collectSupport(platformKey);
@@ -2047,6 +2069,18 @@
         scheduleRouteRepair();
         return;
       }
+      var funnelPlatform = event.target && event.target.closest && event.target.closest('[data-executive-funnel-platform]');
+      if (funnelPlatform) {
+        event.preventDefault();
+        setExecutiveFunnelFilter('platform', funnelPlatform.getAttribute('data-executive-funnel-platform') || 'all');
+        return;
+      }
+      var funnelStatus = event.target && event.target.closest && event.target.closest('[data-executive-funnel-status]');
+      if (funnelStatus) {
+        event.preventDefault();
+        setExecutiveFunnelFilter('status', funnelStatus.getAttribute('data-executive-funnel-status') || 'all');
+        return;
+      }
       if (event.target && event.target.closest && event.target.closest('[data-view], .nav-btn, [data-executive-funnel-platform], [data-executive-funnel-status], [data-executive-funnel-owner-card]')) {
         scheduleRouteRepair();
       }
@@ -2065,8 +2099,11 @@
       }
     }, true);
     document.addEventListener('change', function (event) {
-      if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-owner], [data-executive-funnel-sort]')) {
-        scheduleRender(120);
+      if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-owner]')) {
+        setExecutiveFunnelFilter('owner', event.target.value || 'all', 120);
+      }
+      if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-sort]')) {
+        setExecutiveFunnelFilter('sort', event.target.value || 'completionAsc', 120);
       }
       if (event.target && event.target.matches && event.target.matches('[data-executive-owner-detail-status]')) {
         applyExecutiveOwnerDetailFilters(event.target.closest('[data-executive-owner-detail-modal]'));
@@ -2084,7 +2121,7 @@
     }, true);
     document.addEventListener('input', function (event) {
       if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-search]')) {
-        scheduleRender(180);
+        setExecutiveFunnelFilter('search', event.target.value || '', 180);
       }
       if (event.target && event.target.matches && event.target.matches('[data-executive-owner-detail-search]')) {
         applyExecutiveOwnerDetailFilters(event.target.closest('[data-executive-owner-detail-modal]'));

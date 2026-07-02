@@ -8,6 +8,7 @@
   const STORAGE_KEY = 'brand-portal-local-v1';
   const ACTION_SELECTOR = '[data-launch-ops-create-selected],[data-launch-ops-create-bulk],[data-launch-ops-open-tasks],[data-launch-ops-create-one],[data-launch-ops-open-task]';
   let lastAction = { key: '', at: 0 };
+  let openingControl = false;
 
   function appState() {
     let stateRef = window.__alteaAppState || window.__ALTEA_STATE__ || null;
@@ -187,12 +188,19 @@
   }
 
   function openControl() {
+    if (openingControl) return;
+    openingControl = true;
     setLaunchFilters();
     try {
       if (typeof window.invalidateControlTaskCache === 'function') window.invalidateControlTaskCache();
     } catch (_) {}
     try {
-      if (typeof window.setView === 'function') window.setView('control', { persist: true, syncHash: true });
+      const stateActive = appState().activeView === 'control';
+      const hashActive = String(window.location.hash || '').replace('#', '') === 'control';
+      const rootActive = document.getElementById('view-control')?.classList.contains('active');
+      if (!stateActive && !hashActive && !rootActive && typeof window.setView === 'function') {
+        window.setView('control', { persist: true, syncHash: true });
+      }
     } catch (_) {}
     [0, 80, 220, 650, 1400, 3000].forEach((delay) => {
       window.setTimeout(() => {
@@ -201,6 +209,7 @@
       }, delay);
     });
     record('opened-control', 'open');
+    window.setTimeout(() => { openingControl = false; }, 1800);
   }
 
   function taskIdentity(task = {}) {
@@ -351,6 +360,10 @@
   }
 
   function routeRescue() {
+    if (openingControl) {
+      hardwireButtons();
+      return;
+    }
     const hash = String(window.location.hash || '').replace('#', '');
     const active = appState().activeView;
     const controlRoot = document.getElementById('view-control');

@@ -3,8 +3,9 @@
 
   if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__) return;
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
+  window.__ALTEA_TASK_KANBAN_PRIMARY__ = true;
 
-  const VERSION = '20260701-task-auto-tombstone-v1';
+  const VERSION = '20260702-task-mvp-stable-v3';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
@@ -27,6 +28,27 @@
     ['александр споров', 'РОП Саша'],
     ['роп саша', 'РОП Саша']
   ]);
+  const TASK_EMPLOYEE_ALIASES = new Map([
+    ['\u0430\u043b\u0435\u043a\u0441\u0430\u043d\u0434\u0440', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c'],
+    ['\u0430\u043b\u0435\u043a\u0441\u0430\u043d\u0434\u0440 \u043e\u0437\u043e\u043d', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c'],
+    ['\u0430\u043d\u043d\u0430', '\u041f\u0438\u0440\u043e\u0433\u043e\u0432\u0430 \u0410\u043d\u043d\u0430'],
+    ['\u0430\u043d\u043d\u0430 \u043f\u0438\u0440\u043e\u0433\u043e\u0432\u0430', '\u041f\u0438\u0440\u043e\u0433\u043e\u0432\u0430 \u0410\u043d\u043d\u0430'],
+    ['\u0430\u0440\u0442\u0435\u043c', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c'],
+    ['\u0430\u0440\u0442\u0451\u043c', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c'],
+    ['\u0434\u0430\u0440\u0438\u044f', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+    ['\u0434\u0430\u0440\u044c\u044f', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+    ['\u0434\u0430\u0448\u0430', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+    ['\u043a\u0438\u0440\u0438\u043b\u043b', '\u041a\u0438\u0440\u0438\u043b\u043b'],
+    ['\u043b\u0430\u043f\u044b\u0433\u0438\u043d \u043c\u0430\u043a\u0441\u0438\u043c', '\u041b\u0430\u043f\u044b\u0433\u0438\u043d \u041c\u0430\u043a\u0441\u0438\u043c'],
+    ['\u043c\u0430\u043a\u0441\u0438\u043c', '\u041b\u0430\u043f\u044b\u0433\u0438\u043d \u041c\u0430\u043a\u0441\u0438\u043c'],
+    ['\u043c\u0430\u043a\u0441\u0438\u043c \u043b\u0430\u043f\u044b\u0433\u0438\u043d', '\u041b\u0430\u043f\u044b\u0433\u0438\u043d \u041c\u0430\u043a\u0441\u0438\u043c'],
+    ['\u043c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0434\u0430\u0440\u0438\u044f', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+    ['\u043c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0434\u0430\u0440\u044c\u044f', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+    ['\u043f\u0438\u0440\u043e\u0433\u043e\u0432\u0430 \u0430\u043d\u043d\u0430', '\u041f\u0438\u0440\u043e\u0433\u043e\u0432\u0430 \u0410\u043d\u043d\u0430'],
+    ['\u043f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0430\u0440\u0442\u0435\u043c', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c'],
+    ['\u043f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0430\u0440\u0442\u0451\u043c', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c']
+  ]);
+  const TASK_OWNER_PLATFORM_KEYS = new Set(['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit']);
   const WAITING_STATUSES = new Set(['waiting', 'waiting_team', 'waiting_rop', 'waiting_decision', 'approval']);
   const DONE_STATUSES = new Set(['done', 'closed', 'complete', 'completed', 'cancelled', 'archive', 'archived', 'deleted', 'removed']);
   const LANES = [
@@ -55,10 +77,6 @@
     letu: 'letu',
     letual: 'letu',
     letoile: 'letu',
-    megamarket: 'megamarket',
-    sbermegamarket: 'megamarket',
-    megamarketru: 'megamarket',
-    samokat: 'samokat',
     magnit: 'magnit',
     magnitmarket: 'magnit',
     product: 'product'
@@ -71,10 +89,19 @@
     ya: 'Я.Маркет',
     goldapple: 'ЗЯ',
     letu: 'Л’Этуаль',
-    megamarket: 'Мегамаркет',
-    samokat: 'Самокат',
     magnit: 'Магнит',
     product: 'Продукт'
+  };
+  const PLATFORM_OPTIONS = Object.entries(PLATFORM_LABELS);
+  const TASK_FILTER_DEFAULTS = {
+    search: '',
+    owner: 'all',
+    status: 'active',
+    type: 'all',
+    priority: 'all',
+    horizon: 'all',
+    source: 'all',
+    platform: 'all'
   };
   const TYPE_OPTIONS = [
     ['all', 'Все типы'],
@@ -120,8 +147,6 @@
     ['manual', 'Ручные'],
     ['auto', 'Автосигналы']
   ];
-  const BOARD_LANE_PREVIEW_LIMIT = 18;
-  const LIST_PREVIEW_LIMIT = 90;
 
   let wrappedRender = null;
   let enhanceQueued = false;
@@ -129,16 +154,22 @@
   let controlObserver = null;
   let controlObserverTimer = 0;
   let renderToken = 0;
-  let renderingControl = false;
-  let motionHideTimer = 0;
-  let lastManualFilterChangeAt = 0;
-  let userTouchedTaskFilters = false;
   let detailEventsBound = false;
   let createEventsBound = false;
+  const TASK_LIST_CACHE_TTL_MS = 2500;
+  let taskListCache = { signature: '', expiresAt: 0, tasks: [] };
   const TASK_CACHE = window.__ALTEA_TASK_DESIGN_CACHE__ instanceof Map ? window.__ALTEA_TASK_DESIGN_CACHE__ : new Map();
   window.__ALTEA_TASK_DESIGN_CACHE__ = TASK_CACHE;
+  const TASK_FILTERS = window.__ALTEA_TASK_DESIGN_FILTERS__ && typeof window.__ALTEA_TASK_DESIGN_FILTERS__ === 'object'
+    ? window.__ALTEA_TASK_DESIGN_FILTERS__
+    : {};
+  window.__ALTEA_TASK_DESIGN_FILTERS__ = TASK_FILTERS;
   let taskExtraCache = null;
   let taskAttachmentCache = null;
+  let renderingControl = false;
+  const TASK_BOOT_STARTED_AT = Date.now();
+  const TASK_SPARSE_BOOT_HOLD_MS = 700;
+  let sparseBootWakeTimer = 0;
 
   const TASK_UI = window.__ALTEA_TASK_DESIGN_UI__ || loadUi();
   window.__ALTEA_TASK_DESIGN_UI__ = TASK_UI;
@@ -151,11 +182,10 @@
         createOpen: Boolean(parsed.createOpen),
         recentMovedId: String(parsed.recentMovedId || ''),
         recentMovedAt: Number(parsed.recentMovedAt || 0),
-        laneLimits: parsed.laneLimits && typeof parsed.laneLimits === 'object' ? parsed.laneLimits : {},
         draft: parsed.draft && typeof parsed.draft === 'object' ? parsed.draft : {}
       };
     } catch (_) {
-      return { view: 'board', createOpen: false, recentMovedId: '', recentMovedAt: 0, laneLimits: {}, draft: {} };
+      return { view: 'board', createOpen: false, recentMovedId: '', recentMovedAt: 0, draft: {} };
     }
   }
 
@@ -166,7 +196,6 @@
         createOpen: TASK_UI.createOpen,
         recentMovedId: TASK_UI.recentMovedId || '',
         recentMovedAt: Number(TASK_UI.recentMovedAt || 0),
-        laneLimits: TASK_UI.laneLimits || {},
         draft: TASK_UI.draft || {}
       }));
     } catch (_) {}
@@ -209,6 +238,23 @@
     return OWNER_ALIASES.get(key) || raw;
   }
 
+  function normalizeEmployeeOwnerName(value) {
+    const original = String(value || '').trim();
+    if (!original) return '';
+    try {
+      if (typeof window.canonicalOwnerName === 'function') {
+        const canonical = window.canonicalOwnerName(original);
+        if (canonical) return canonical;
+      }
+    } catch (_) {}
+    const raw = normalizeOwnerName(original);
+    if (!raw) return '';
+    const key = ownerKey(raw);
+    if (TASK_EMPLOYEE_ALIASES.has(key)) return TASK_EMPLOYEE_ALIASES.get(key);
+    const firstToken = key.split(' ')[0] || '';
+    return TASK_EMPLOYEE_ALIASES.get(firstToken) || raw;
+  }
+
   function normalizePlatform(value, task) {
     const rawValue = value || task?.platform || task?.marketplace || task?.marketplaceKey || task?.workstream || '';
     const raw = normalizeText(rawValue);
@@ -228,117 +274,50 @@
     if (/yandex|яндекс|я\.?\s?маркет|\bym\b|\bya\b/.test(haystack)) return 'ya';
     if (/gold\s?apple|goldapple|золот.*яблок|з\s?я/.test(haystack)) return 'goldapple';
     if (/letu|letoile|л[еэ]туал/.test(haystack)) return 'letu';
-    if (/mega\s?market|megamarket|sbermegamarket|мегамаркет/.test(haystack)) return 'megamarket';
-    if (/samokat|самокат/.test(haystack)) return 'samokat';
     if (/magnit|магнит/.test(haystack)) return 'magnit';
     if (/новин|product|launch|запуск/.test(haystack)) return 'product';
     return 'cross';
   }
 
-  function marketplaceValues(value) {
-    if (Array.isArray(value)) return value.flatMap(marketplaceValues);
-    if (value && typeof value === 'object') {
-      return ['key', 'id', 'name', 'label', 'marketplace', 'platform', 'network']
-        .map((field) => String(value?.[field] || '').trim())
-        .filter(Boolean);
-    }
-    const text = String(value || '').trim();
-    return text ? [text] : [];
-  }
-
-  function launchTaskKey(task = {}) {
-    const direct = String(task.launchId || task.launchKey || task.launchAutoId || '').trim();
-    if (direct) return direct;
-    const code = String(task.autoCode || task.launchAutoKey || '').trim();
-    const match = code.match(/^launch_ops:([^:]+):/);
-    return match ? match[1] : '';
-  }
-
-  function launchItemId(item = {}) {
-    try {
-      if (typeof window.launchStableId === 'function') return String(window.launchStableId(item) || '').trim();
-    } catch (_) {}
-    return String(item.id || item.articleKey || item.article || item.name || item.title || '').trim();
-  }
-
-  function launchItems() {
-    try {
-      if (typeof window.getLaunchItems === 'function') return window.getLaunchItems({ skipTaskLookup: true }) || [];
-    } catch (_) {}
-    const launches = appState()?.launches;
-    return Array.isArray(launches) ? launches : [];
-  }
-
-  function launchForTask(task = {}) {
-    const key = launchTaskKey(task);
-    const article = normalizeText(task.articleKey || '');
-    const entity = normalizeText(task.entityLabel || '').replace(/\s+/g, '-');
-    return launchItems().find((item) => {
-      const id = launchItemId(item);
-      if (key && id === key) return true;
-      if (key && String(item?.id || '').trim() === key) return true;
-      if (article && [item?.articleKey, item?.article, item?.sku].map(normalizeText).includes(article)) return true;
-      if (key && entity && key.includes(entity)) return true;
-      return false;
-    }) || null;
-  }
-
-  function taskPlatformKeys(task = {}) {
-    const keys = new Set();
-    const add = (value) => {
-      marketplaceValues(value).forEach((entry) => {
-        String(entry || '')
-          .split(/[,+;/|]+|\s+\+\s+/g)
-          .map((part) => part.trim())
-          .filter(Boolean)
-          .forEach((part) => {
-            const key = normalizePlatform(part);
-            if (key && !['product', 'cross', 'all'].includes(key)) keys.add(key);
-          });
-      });
-    };
-    ['marketplaces', 'marketplace', 'platforms', 'platform', 'marketplaceKey', 'network', 'networks', 'retailer', 'channel', 'market', 'salesChannel', 'launchPlatform']
-      .forEach((field) => add(task?.[field]));
-    const launch = launchForTask(task);
-    if (launch) {
-      ['marketplaces', 'marketplace', 'platforms', 'platform', 'marketplaceKey', 'network', 'networks', 'retailer', 'channel', 'market', 'salesChannel', 'launchPlatform']
-        .forEach((field) => add(launch?.[field]));
-    }
-    return [...keys];
-  }
-
-  function matchesPlatform(task, platformFilter) {
-    const filter = normalizePlatform(platformFilter || 'all');
-    if (!filter || filter === 'all') return true;
-    const taskPlatform = normalizePlatform('', task);
-    if (taskPlatform === filter || taskPlatform === 'cross' || taskPlatform === 'all') return true;
-    const keys = taskPlatformKeys(task);
-    return keys.includes(filter);
-  }
-
   function globalPlatform() {
-    const candidates = [
-      document.documentElement?.dataset?.marketplace,
-      document.body?.dataset?.marketplace,
-      document.documentElement?.dataset?.platform,
-      document.body?.dataset?.platform,
-      appState()?.filters?.platform,
-      appState()?.filters?.market
-    ];
-    try {
-      candidates.push(localStorage.getItem('altea.portal.marketplace'));
-    } catch (_) {}
-    for (const value of candidates) {
-      if (value === null || value === undefined || String(value).trim() === '') continue;
-      const normalized = normalizePlatform(value);
-      if (normalized && normalized !== 'all') return normalized;
-      if (normalized === 'all') return 'all';
-    }
-    return 'all';
+    const filters = ensureFilters();
+    const normalized = normalizePlatform(filters.platform || 'all');
+    return normalized || 'all';
   }
 
   function platformLabel(value) {
     return PLATFORM_LABELS[normalizePlatform(value)] || PLATFORM_LABELS.cross;
+  }
+
+  function taskStamp(tasks) {
+    if (!Array.isArray(tasks) || !tasks.length) return '0';
+    return [
+      tasks.length,
+      tasks.map((task) => [
+        task?.id,
+        task?.status,
+        task?.updatedAt || task?.updated_at,
+        task?.due || task?.deadline || task?.dueDate || task?.due_date,
+        task?.owner
+      ].map((value) => String(value || '').trim()).join(':')).join('|')
+    ].join('#');
+  }
+
+  function taskSourceSignature(localTasks) {
+    const state = appState();
+    return [
+      taskStamp(localTasks),
+      Array.isArray(state?.skus) ? state.skus.length : 0,
+      state?.productLeaderboard?.generatedAt || '',
+      state?.predictiveRisk?.generatedAt || '',
+      state?.autoTaskSignals?.generatedAt || '',
+      state?.team?.mode || '',
+      state?.team?.updatedAt || state?.team?.loadedAt || ''
+    ].map((value) => String(value || '')).join('::');
+  }
+
+  function invalidateTaskListCache() {
+    taskListCache = { signature: '', expiresAt: 0, tasks: [] };
   }
 
   function taskList() {
@@ -346,6 +325,12 @@
       const storage = appState()?.storage?.tasks;
       return Array.isArray(storage) ? storage : [];
     })();
+    const signature = taskSourceSignature(localTasks);
+    const now = Date.now();
+    if (taskListCache.signature === signature && taskListCache.expiresAt > now) {
+      return taskListCache.tasks;
+    }
+    let tasks = [];
     try {
       if (typeof window.getAllTasks === 'function') {
         const remoteTasks = window.getAllTasks() || [];
@@ -365,41 +350,31 @@
             articles: task.articles || remote.articles
           }));
         });
-        return Array.from(byId.values()).map(mergeTaskExtras);
+        tasks = Array.from(byId.values()).map(mergeTaskExtras);
+      } else {
+        tasks = localTasks.map(mergeTaskExtras);
       }
     } catch (_) {}
-    return localTasks.map(mergeTaskExtras);
-  }
-
-  function defaultFilters(status = 'active') {
-    return {
-      search: '',
-      owner: 'all',
-      status,
-      type: 'all',
-      priority: 'all',
-      horizon: 'all',
-      source: 'all',
-      platform: 'all'
+    if (!tasks.length) tasks = localTasks.map(mergeTaskExtras);
+    taskListCache = {
+      signature,
+      expiresAt: now + TASK_LIST_CACHE_TTL_MS,
+      tasks
     };
+    return taskListCache.tasks;
   }
 
   function ensureFilters() {
-    const state = appState();
-    state.controlFilters = state.controlFilters && typeof state.controlFilters === 'object' ? state.controlFilters : {};
-    const filters = state.controlFilters;
-    filters.search = filters.search || '';
-    filters.owner = filters.owner || 'all';
-    filters.status = filters.status || 'active';
-    filters.type = filters.type || 'all';
-    filters.priority = filters.priority || 'all';
-    filters.horizon = filters.horizon || 'all';
+    const filters = TASK_FILTERS;
+    Object.keys(TASK_FILTER_DEFAULTS).forEach((key) => {
+      if (!filters[key]) filters[key] = TASK_FILTER_DEFAULTS[key];
+    });
     if (filters.status === 'no_date') {
       filters.status = 'active';
       filters.horizon = 'no_date';
     }
-    filters.source = filters.source || 'all';
-    filters.platform = filters.platform || 'all';
+    filters.owner = normalizeOwnerName(filters.owner || 'all') || 'all';
+    filters.platform = normalizePlatform(filters.platform || 'all') || 'all';
     return filters;
   }
 
@@ -473,8 +448,75 @@
     return Boolean(due && due >= todayKey() && due <= plusDays(7));
   }
 
+  function taskOwnerPlatformKey(platform = '') {
+    const key = normalizePlatform(platform);
+    if (key === 'ya') return 'ym';
+    if (key === 'goldapple') return 'ga';
+    if (key === 'magnit') return 'mm';
+    return key;
+  }
+
+  function skuPlatformOwner(sku, platform = '') {
+    const platformKey = normalizePlatform(platform);
+    if (!sku || !TASK_OWNER_PLATFORM_KEYS.has(platformKey)) return '';
+    try {
+      if (typeof window.platformOwnerName === 'function') {
+        const owner = normalizeEmployeeOwnerName(window.platformOwnerName(sku, platformKey));
+        if (owner) return owner;
+      }
+    } catch (_) {}
+    const ownerKey = taskOwnerPlatformKey(platformKey);
+    const sources = [sku?.owner?.byPlatform, sku?.ownersByPlatform];
+    for (const source of sources) {
+      if (!source || typeof source !== 'object') continue;
+      const candidate = ownerKey === 'ym'
+        ? (source.ym || source.ya || '')
+        : source[ownerKey];
+      const owner = normalizeEmployeeOwnerName(candidate);
+      if (owner) return owner;
+    }
+    return '';
+  }
+
+  function skuDefaultOwner(sku) {
+    if (!sku) return '';
+    try {
+      if (typeof window.ownerName === 'function') {
+        const owner = normalizeEmployeeOwnerName(window.ownerName(sku));
+        if (owner) return owner;
+      }
+    } catch (_) {}
+    return normalizeEmployeeOwnerName(sku?.owner?.name || sku?.ownerName || sku?.owner || '');
+  }
+
+  function isAutoTaskLike(task = {}) {
+    const source = normalizeText(task?.source || '');
+    const id = normalizeText(task?.id || '');
+    return source === 'auto' || Boolean(task?.autoCode) || id.startsWith('auto-');
+  }
+
+  function taskPrimarySku(task) {
+    for (const key of taskArticleKeys(task)) {
+      const sku = findSku(key);
+      if (sku) return sku;
+    }
+    return null;
+  }
+
+  function resolveTaskOwner(task = {}, sku = null, platform = '') {
+    const taskPlatform = normalizePlatform(platform || task?.platform || '', task);
+    const explicitOwner = normalizeEmployeeOwnerName(task?.owner || '');
+    const coOwner = normalizeEmployeeOwnerName(task?.coOwner || task?.co_owner || '');
+    const skuOwner = skuDefaultOwner(sku);
+    const platformOwner = skuPlatformOwner(sku, taskPlatform);
+    if (platformOwner && (!explicitOwner || explicitOwner === skuOwner || isAutoTaskLike(task))) {
+      return platformOwner;
+    }
+    return explicitOwner || platformOwner || coOwner || skuOwner || '';
+  }
+
   function taskOwner(task) {
-    return normalizeOwnerName(task?.owner || task?.coOwner || '');
+    return resolveTaskOwner(task, taskPrimarySku(task), normalizePlatform('', task));
   }
 
   function taskType(task) {
@@ -565,24 +607,6 @@
   function keepTaskVisibleAfterStatusChange(task) {
     if (!task?.id) return;
     markTaskMoved(task.id);
-    const filters = ensureFilters();
-    const currentFilter = normalizeText(filters.status || 'active');
-    if (filters.horizon && filters.horizon !== 'all') filters.horizon = 'all';
-    if (!currentFilter || currentFilter === 'all') return;
-
-    const lane = laneFor(task);
-    const status = normalizeText(task?.status || '');
-    if (currentFilter === 'active') {
-      if (!isActive(task)) filters.status = 'all';
-      return;
-    }
-    if (currentFilter === 'waiting') {
-      if (!WAITING_STATUSES.has(status)) filters.status = isActive(task) ? 'active' : 'all';
-      return;
-    }
-    if (currentFilter !== lane && currentFilter !== status) {
-      filters.status = isActive(task) ? 'active' : 'all';
-    }
   }
 
   function clearStaleRecentMove() {
@@ -796,7 +820,7 @@
       articleKeys: snapshot.articleKeys,
       articles: snapshot.articles,
       entityLabel: snapshot.entityLabel || previous.entityLabel || taskArticleSummary(snapshot),
-      owner: normalizeOwnerName(snapshot.owner || previous.owner || ''),
+      owner: taskOwner(snapshot) || taskOwner(previous) || normalizeOwnerName(snapshot.owner || previous.owner || ''),
       status: snapshot.status || previous.status || 'new',
       priority: snapshot.priority || previous.priority || 'medium',
       type: snapshot.type || previous.type || 'general',
@@ -857,6 +881,7 @@
   }
 
   function savePortalState(reason = 'task-kanban-v1') {
+    invalidateTaskListCache();
     try {
       if (typeof window.invalidateControlTaskCache === 'function') window.invalidateControlTaskCache();
     } catch (_) {}
@@ -1068,12 +1093,6 @@
     });
     if (!current.title) current.title = 'Новая задача';
     if (!current.status) current.status = 'new';
-    if (DONE_STATUSES.has(normalizeText(current.status))) {
-      const recordAutoTombstone = window.recordAutoTaskTombstone || window.recordLaunchAutoTaskTombstone;
-      if (typeof recordAutoTombstone === 'function') {
-        try { recordAutoTombstone(current); } catch (error) { console.warn('[task-kanban]', 'auto tombstone', error); }
-      }
-    }
     rememberTask(current);
     if (beforeStatus !== current.status) keepTaskVisibleAfterStatusChange(current);
     if (historyText) addTaskHistory(current, beforeStatus !== current.status ? 'status' : 'updated', historyText);
@@ -1127,8 +1146,7 @@
   function matchesFilters(task, filters, platform) {
     const lane = laneFor(task);
     const status = normalizeText(filters.status || 'active');
-    const recentMoved = isRecentMovedTask(task);
-    if (status === 'active' && !isActive(task) && !recentMoved) return false;
+    if (status === 'active' && !isActive(task)) return false;
     if (status && status !== 'active' && status !== 'all') {
       if (status === 'waiting') {
         if (!WAITING_STATUSES.has(normalizeText(task?.status))) return false;
@@ -1138,7 +1156,10 @@
     }
 
     const platformFilter = normalizePlatform(platform || filters.platform || 'all');
-    if (!matchesPlatform(task, platformFilter)) return false;
+    if (platformFilter && platformFilter !== 'all') {
+      const taskPlatform = normalizePlatform('', task);
+      if (taskPlatform !== platformFilter && taskPlatform !== 'cross') return false;
+    }
 
     const owner = normalizeText(normalizeOwnerName(filters.owner || 'all') || 'all');
     if (owner && owner !== 'all' && normalizeText(taskOwner(task) || 'Без owner') !== owner) return false;
@@ -1193,71 +1214,15 @@
     return score;
   }
 
-  function sortTasks(tasks) {
-    return tasks
-      .sort((a, b) => taskScore(b) - taskScore(a) || String(taskDate(a)).localeCompare(String(taskDate(b))) || String(a?.title || '').localeCompare(String(b?.title || ''), 'ru'));
-  }
-
-  function applyTaskFilters(tasks, filters, platform) {
-    return sortTasks(tasks.filter((task) => matchesFilters(task, filters, platform)));
-  }
-
-  function hasNarrowingTaskFilters(filters) {
-    const owner = normalizeOwnerName(filters.owner || 'all') || 'all';
-    return Boolean(
-      String(filters.search || '').trim()
-      || owner !== 'all'
-      || normalizeText(filters.status || 'active') !== 'active'
-      || normalizeText(filters.type || 'all') !== 'all'
-      || normalizeText(filters.priority || 'all') !== 'all'
-      || normalizeText(filters.horizon || 'all') !== 'all'
-      || normalizeText(filters.source || 'all') !== 'all'
-      || normalizePlatform(filters.platform || 'all') !== 'all'
-    );
-  }
-
-  function applyDefaultFilters(filters, status = 'active') {
-    Object.assign(filters, defaultFilters(status));
-    return filters;
-  }
-
-  function recoverEmptyInitialFilters(tasks, filters, platform, filtered) {
-    if (filtered.length || !tasks.length) return filtered;
-    if (!hasNarrowingTaskFilters(filters)) return filtered;
-    if (userTouchedTaskFilters) return filtered;
-    if (Date.now() - lastManualFilterChangeAt < 1200) return filtered;
-
-    const activeDefaults = defaultFilters('active');
-    const activeFiltered = applyTaskFilters(tasks, activeDefaults, platform);
-    if (activeFiltered.length) {
-      applyDefaultFilters(filters, 'active');
-      return activeFiltered;
-    }
-
-    const allDefaults = defaultFilters('all');
-    const allFiltered = applyTaskFilters(tasks, allDefaults, platform);
-    if (allFiltered.length) {
-      applyDefaultFilters(filters, 'all');
-      return allFiltered;
-    }
-
-    return filtered;
-  }
-
-  function filteredTasks() {
+  function filteredTasks(sourceTasks = null) {
     const filters = ensureFilters();
     const platform = globalPlatform();
-    const tasks = taskList().filter(Boolean).filter(isTaskDisplayable);
-    return applyTaskFilters(tasks, filters, platform);
-  }
-
-  function scopedTasksForCounters(tasks, filters, platform) {
-    const scopeFilters = {
-      ...filters,
-      status: 'all',
-      horizon: 'all'
-    };
-    return tasks.filter((task) => matchesFilters(task, scopeFilters, platform));
+    const baseTasks = Array.isArray(sourceTasks)
+      ? sourceTasks
+      : taskList().filter(Boolean).filter(isTaskDisplayable);
+    return baseTasks
+      .filter((task) => matchesFilters(task, filters, platform))
+      .sort((a, b) => taskScore(b) - taskScore(a) || String(taskDate(a)).localeCompare(String(taskDate(b))) || String(a?.title || '').localeCompare(String(b?.title || ''), 'ru'));
   }
 
   function countBy(tasks, predicate) {
@@ -1275,38 +1240,13 @@
     `;
   }
 
-  function optionText(options, value) {
-    const key = String(value || '').trim();
-    return options.find(([optionKey]) => String(optionKey) === key)?.[1] || key;
-  }
-
-  function activeFilterChips(filters, platform, selectedOwner) {
-    const chips = [];
-    const add = (label, value) => {
-      const text = String(value || '').trim();
-      if (text) chips.push(`<span>${escapeHtml(label)}: ${escapeHtml(text)}</span>`);
-    };
-    const platformKey = normalizePlatform(platform || 'all');
-    if (platformKey && platformKey !== 'all') add('Площадка', platformLabel(platformKey));
-    if (String(filters.search || '').trim()) add('Поиск', filters.search);
-    if (selectedOwner && selectedOwner !== 'all') add('Owner', selectedOwner);
-    if (filters.status && filters.status !== 'active') add('Статус', optionText(STATUS_OPTIONS, filters.status));
-    if (filters.type && filters.type !== 'all') add('Тип', optionText(TYPE_OPTIONS, filters.type));
-    if (filters.priority && filters.priority !== 'all') add('Приоритет', optionText(PRIORITY_OPTIONS, filters.priority));
-    if (filters.horizon && filters.horizon !== 'all') add('Горизонт', optionText(HORIZON_OPTIONS, filters.horizon));
-    if (filters.source && filters.source !== 'all') add('Источник', optionText(SOURCE_OPTIONS, filters.source));
-    return chips.join('');
-  }
-
   function renderFilters(tasks, filtered, filters, platform) {
     const owners = [['all', 'Все ответственные'], ...ownerOptions(tasks).map((owner) => [owner, owner])];
     const selectedOwner = normalizeOwnerName(filters.owner || 'all') || 'all';
-    const scopedTasks = scopedTasksForCounters(tasks, filters, platform);
-    const activeCount = countBy(scopedTasks, isActive);
-    const overdueCount = countBy(scopedTasks, isOverdue);
-    const noOwnerCount = countBy(scopedTasks, (task) => isActive(task) && !taskOwner(task));
-    const noDateCount = countBy(scopedTasks, (task) => isActive(task) && !taskDate(task));
-    const activeChips = activeFilterChips(filters, platform, selectedOwner);
+    const activeCount = countBy(tasks, isActive);
+    const overdueCount = countBy(tasks, isOverdue);
+    const noOwnerCount = countBy(tasks, (task) => isActive(task) && !taskOwner(task));
+    const noDateCount = countBy(tasks, (task) => isActive(task) && !taskDate(task));
     return `
       <section class="task-design-toolbar" data-task-design-toolbar>
         <div class="task-design-toolbar-top">
@@ -1322,7 +1262,7 @@
           </div>
         </div>
         <div class="task-design-snapshot">
-          <button type="button" data-task-preset="all"><strong>${scopedTasks.length}</strong><span>все</span></button>
+          <button type="button" data-task-preset="all"><strong>${tasks.length}</strong><span>все</span></button>
           <button type="button" data-task-preset="active"><strong>${activeCount}</strong><span>активные</span></button>
           <button type="button" data-task-preset="overdue"><strong>${overdueCount}</strong><span>просрочено</span></button>
           <button type="button" data-task-preset="no_owner"><strong>${noOwnerCount}</strong><span>без owner</span></button>
@@ -1339,13 +1279,11 @@
           ${selectHtml('type', 'Тип', filters.type || 'all', TYPE_OPTIONS)}
           ${selectHtml('priority', 'Приоритет', filters.priority || 'all', PRIORITY_OPTIONS)}
           ${selectHtml('horizon', 'Горизонт', filters.horizon || 'all', HORIZON_OPTIONS)}
+          ${selectHtml('platform', 'Площадка', filters.platform || 'all', PLATFORM_OPTIONS)}
           ${selectHtml('source', 'Источник', filters.source || 'all', SOURCE_OPTIONS)}
-          <button type="button" class="task-design-reset ${activeChips ? 'is-hot' : ''}" data-task-reset>Сбросить</button>
+          <button type="button" class="task-design-reset" data-task-reset>Сбросить</button>
         </div>
-        <div class="task-design-result-line">
-          <span>Показано ${filtered.length} из ${scopedTasks.length}</span>
-          ${activeChips ? `<div class="task-design-active-filters">${activeChips}</div>` : ''}
-        </div>
+        <div class="task-design-result-line">Показано ${filtered.length} из ${tasks.length}. Старый слой control-simple на этом маршруте выключен.</div>
       </section>
     `;
   }
@@ -1425,41 +1363,12 @@
     `;
   }
 
-  function clearLaneLimits() {
-    if (!TASK_UI.laneLimits || !Object.keys(TASK_UI.laneLimits).length) return;
-    TASK_UI.laneLimits = {};
-    saveUi();
-  }
-
-  function lanePreviewLimit(laneKey, total) {
-    const saved = Number(TASK_UI.laneLimits?.[laneKey] || 0);
-    const limit = Number.isFinite(saved) && saved > 0 ? saved : BOARD_LANE_PREVIEW_LIMIT;
-    return Math.max(0, Math.min(Number(total) || 0, limit));
-  }
-
-  function expandLane(laneKey, total) {
-    const key = String(laneKey || '');
-    if (!key) return;
-    TASK_UI.laneLimits = TASK_UI.laneLimits && typeof TASK_UI.laneLimits === 'object' ? TASK_UI.laneLimits : {};
-    TASK_UI.laneLimits[key] = Math.max(BOARD_LANE_PREVIEW_LIMIT, Number(total) || BOARD_LANE_PREVIEW_LIMIT);
-    saveUi();
-    queueEnhance(true);
-  }
-
   function renderBoard(tasks) {
-    const lanes = new Map(LANES.map((lane) => [lane.key, []]));
-    tasks.forEach((task) => {
-      const laneKey = laneFor(task);
-      const bucket = lanes.get(laneKey) || lanes.get('new');
-      if (bucket) bucket.push(task);
-    });
     return `
       <section class="task-design-board" data-task-design-board>
         ${LANES.map((lane) => {
-          const laneTasks = lanes.get(lane.key) || [];
-          const visibleLimit = lanePreviewLimit(lane.key, laneTasks.length);
-          const visible = laneTasks.slice(0, visibleLimit);
-          const hiddenCount = Math.max(0, laneTasks.length - visible.length);
+          const laneTasks = tasks.filter((task) => laneFor(task) === lane.key);
+          const visible = laneTasks.slice(0, 70);
           return `
             <section class="task-design-lane lane-${escapeHtml(lane.key)}" data-kanban-lane="${escapeHtml(lane.key)}" data-lane-key="${escapeHtml(lane.key)}">
               <header>
@@ -1471,7 +1380,7 @@
               </header>
               <div class="task-design-dropzone">
                 ${visible.length ? visible.map(taskCard).join('') : '<div class="task-design-empty">Нет задач в этой колонке</div>'}
-                ${hiddenCount ? `<button type="button" class="task-design-more task-design-more-button" data-task-show-more-lane="${escapeHtml(lane.key)}" data-task-show-more-total="${laneTasks.length}">Показать ещё ${hiddenCount}</button>` : ''}
+                ${laneTasks.length > visible.length ? `<div class="task-design-more">+${laneTasks.length - visible.length} скрыто фильтром</div>` : ''}
               </div>
             </section>
           `;
@@ -1497,7 +1406,7 @@
             </tr>
           </thead>
           <tbody>
-            ${tasks.slice(0, LIST_PREVIEW_LIMIT).map((task) => `
+            ${tasks.slice(0, 220).map((task) => `
               <tr data-kanban-task="${escapeHtml(task?.id || '')}" tabindex="0">
                 <td><strong>${escapeHtml(task?.title || task?.entityLabel || 'Задача')}</strong><span>${escapeHtml(task?.nextAction || task?.reason || taskArticleSummary(task) || '')}</span></td>
                 <td>${escapeHtml(taskOwner(task) || 'Без owner')}</td>
@@ -1510,7 +1419,7 @@
             `).join('')}
           </tbody>
         </table>
-        ${tasks.length > LIST_PREVIEW_LIMIT ? `<div class="task-design-more">Показано ${LIST_PREVIEW_LIMIT} из ${tasks.length} для быстрого открытия. Используйте поиск или фильтры, если нужна конкретная задача.</div>` : ''}
+        ${tasks.length > 220 ? `<div class="task-design-more">Показано 220 из ${tasks.length}. Уточните фильтры.</div>` : ''}
       </section>
     `;
   }
@@ -1529,7 +1438,6 @@
       version: VERSION,
       view: TASK_UI.view,
       createOpen: TASK_UI.createOpen,
-      laneLimits: TASK_UI.laneLimits || {},
       platform,
       filters: {
         search: filters.search || '',
@@ -1538,19 +1446,18 @@
         priority: filters.priority || '',
         type: filters.type || '',
         source: filters.source || '',
-        horizon: filters.horizon || ''
+        horizon: filters.horizon || '',
+        platform: filters.platform || ''
       },
       counts: [tasks.length, filtered.length],
-      tasks: filtered.slice(0, LIST_PREVIEW_LIMIT).map((task) => [
+      tasks: filtered.slice(0, 260).map((task) => [
         task?.id,
-        stableHash([
-          task?.title,
-          task?.entityLabel,
-          task?.nextAction,
-          task?.reason,
-          Array.isArray(task?.articleKeys) ? task.articleKeys.join('|') : ''
-        ].join('|')),
+        task?.title,
+        task?.entityLabel,
+        task?.nextAction,
+        task?.reason,
         task?.articleKey,
+        Array.isArray(task?.articleKeys) ? task.articleKeys.join('|') : '',
         task?.status,
         taskOwner(task),
         task?.priority,
@@ -1563,10 +1470,25 @@
   }
 
   function isTaskDataHydrating() {
-    const state = appState();
-    const mode = normalizeText(state?.team?.mode || '');
-    const manualTasks = Array.isArray(state?.storage?.tasks) ? state.storage.tasks.length : 0;
-    return manualTasks === 0 && (mode === 'pending' || mode === 'loading' || mode === 'connecting');
+    const bootAge = Date.now() - TASK_BOOT_STARTED_AT;
+    if (bootAge > 9000) return false;
+    const app = appState();
+    if (window.__ALTEA_PRIMARY_INIT_PENDING__ === true) return true;
+    if (app?.boot && app.boot.dataReady === false) return true;
+    return false;
+  }
+
+  function shouldHoldSparseBoot(tasks) {
+    const bootAge = Date.now() - TASK_BOOT_STARTED_AT;
+    if (bootAge >= TASK_SPARSE_BOOT_HOLD_MS) return false;
+    if (Array.isArray(tasks) && tasks.length >= 20) return false;
+    if (!sparseBootWakeTimer) {
+      sparseBootWakeTimer = window.setTimeout(() => {
+        sparseBootWakeTimer = 0;
+        queueEnhance(true);
+      }, Math.max(40, TASK_SPARSE_BOOT_HOLD_MS - bootAge + 30));
+    }
+    return true;
   }
 
   function renderHydratingShell(platform) {
@@ -1601,8 +1523,14 @@
       };
     }
     const tasks = taskList().filter(Boolean).filter(isTaskDisplayable);
-    let filtered = applyTaskFilters(tasks, filters, platform);
-    filtered = recoverEmptyInitialFilters(tasks, filters, platform, filtered);
+    if (shouldHoldSparseBoot(tasks)) {
+      const markup = renderHydratingShell(platform);
+      return {
+        signature: stableHash(markup),
+        markup
+      };
+    }
+    const filtered = filteredTasks(tasks);
     const markup = `
       <section class="task-design-v1 platform-${escapeHtml(platform)}" data-task-calendar-design-v1 data-task-kanban-v1 data-version="${escapeHtml(VERSION)}">
         ${renderFilters(tasks, filtered, filters, platform)}
@@ -1639,15 +1567,12 @@
       .task-design-snapshot strong{font-size:22px;line-height:1}
       .task-design-snapshot span,.task-design-platform-badge span{color:var(--task-muted);font-size:10px;font-weight:900;text-transform:uppercase}
       .task-design-platform-badge i{width:9px;height:9px;border-radius:50%;background:var(--platform,#dbc7a3);box-shadow:0 0 0 4px color-mix(in srgb,var(--platform,#dbc7a3) 18%,transparent),0 0 18px color-mix(in srgb,var(--platform,#dbc7a3) 48%,transparent)}
-      .task-design-filters{display:grid;grid-template-columns:minmax(220px,1.5fr) repeat(6,minmax(128px,1fr)) auto;gap:8px;align-items:end}
+      .task-design-filters{display:grid;grid-template-columns:minmax(220px,1.5fr) repeat(7,minmax(128px,1fr)) auto;gap:8px;align-items:end}
       .task-design-filter{display:grid;gap:6px}
       .task-design-filter span{color:var(--task-muted);font-size:10px;font-weight:900;text-transform:uppercase}
       .task-design-filter input,.task-design-filter select,.task-design-create input,.task-design-create select,.task-design-create textarea{width:100%;min-height:38px;border:1px solid var(--task-line);border-radius:8px;background:#050403;color:var(--task-text);padding:9px 10px;outline:none}
       .task-design-filter input:focus,.task-design-filter select:focus,.task-design-create input:focus,.task-design-create textarea:focus{border-color:rgba(219,199,163,.62);box-shadow:0 0 0 3px rgba(219,199,163,.1)}
-      .task-design-result-line{margin-top:10px;color:rgba(247,241,231,.54);font-size:11px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-      .task-design-active-filters{display:flex;gap:6px;flex-wrap:wrap}
-      .task-design-active-filters span{display:inline-flex;align-items:center;min-height:22px;border:1px solid rgba(219,199,163,.22);border-radius:999px;background:rgba(219,199,163,.08);color:#ead8b7;padding:3px 8px;font-size:10px;font-weight:850}
-      .task-design-reset.is-hot{border-color:rgba(255,225,161,.58);box-shadow:0 0 0 1px rgba(219,199,163,.12),0 10px 22px rgba(0,0,0,.22)}
+      .task-design-result-line{margin-top:10px;color:rgba(247,241,231,.54);font-size:11px}
       .task-design-create{padding:12px 14px;animation:taskDesignIn .2s ease both}
       .task-design-create form{display:grid;grid-template-columns:minmax(260px,1fr) minmax(300px,1.1fr) minmax(240px,.8fr);gap:10px;align-items:start}
       .task-design-create-head{grid-column:1/-1;display:flex;align-items:end;justify-content:space-between;gap:12px}
@@ -1659,8 +1584,8 @@
       .task-design-create-grid{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px}
       .task-design-file-field{grid-column:1/-1}
       .task-design-create-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:8px}
-      .task-design-board{display:grid;grid-template-columns:repeat(6,minmax(204px,1fr));gap:10px;overflow-x:auto;padding-bottom:2px;align-items:stretch;contain:layout paint style}
-      .task-design-lane{min-height:520px;display:grid;grid-template-rows:82px minmax(0,1fr);overflow:hidden;contain:layout paint style}
+      .task-design-board{display:grid;grid-template-columns:repeat(6,minmax(204px,1fr));gap:10px;overflow-x:auto;padding-bottom:2px;align-items:stretch}
+      .task-design-lane{min-height:520px;display:grid;grid-template-rows:82px minmax(0,1fr);overflow:hidden}
       .task-design-lane.is-over{border-color:rgba(219,199,163,.82);background:linear-gradient(135deg,rgba(219,199,163,.12),rgba(255,255,255,.02)),var(--task-panel2)}
       .task-design-lane header{display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:start;gap:10px;height:82px;padding:13px 12px 11px;border-bottom:1px solid rgba(219,199,163,.12);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0))}
       .task-design-lane-title{display:grid;align-content:start;gap:4px;min-height:54px}
@@ -1671,7 +1596,7 @@
       .task-design-dropzone::-webkit-scrollbar{width:8px}
       .task-design-dropzone::-webkit-scrollbar-track{background:rgba(255,255,255,.035);border-radius:999px}
       .task-design-dropzone::-webkit-scrollbar-thumb{background:rgba(219,199,163,.26);border-radius:999px}
-      .task-design-card{position:relative;overflow:hidden;display:grid;grid-template-rows:auto auto minmax(44px,auto) auto auto;align-content:start;border:1px solid rgba(219,199,163,.16);border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.012)),#0d0b09;padding:11px 11px 10px 14px;cursor:grab;box-shadow:0 12px 28px rgba(0,0,0,.25);transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;contain:layout paint style;content-visibility:auto;contain-intrinsic-size:168px}
+      .task-design-card{position:relative;overflow:hidden;display:grid;grid-template-rows:auto auto minmax(44px,auto) auto auto;align-content:start;border:1px solid rgba(219,199,163,.16);border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.012)),#0d0b09;padding:11px 11px 10px 14px;cursor:grab;box-shadow:0 12px 28px rgba(0,0,0,.25);transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
       .task-design-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--card-color,#dbc7a3);box-shadow:0 0 22px var(--card-color,#dbc7a3)}
       .task-design-card:hover,.task-design-card:focus{outline:0;transform:translateY(-2px);border-color:rgba(219,199,163,.54);box-shadow:0 18px 34px rgba(0,0,0,.3)}
       .task-design-card.is-dragging{opacity:.55;cursor:grabbing}
@@ -1693,16 +1618,12 @@
       .platform-ya{--card-color:#f2c84b;--platform:#f2c84b}
       .platform-goldapple{--card-color:#72c86a;--platform:#72c86a}
       .platform-letu{--card-color:#d96aa9;--platform:#d96aa9}
-      .platform-megamarket{--card-color:#44b6ff;--platform:#44b6ff}
-      .platform-samokat{--card-color:#39d282;--platform:#39d282}
       .platform-magnit{--card-color:#e85b55;--platform:#e85b55}
       .platform-product{--card-color:#61d8c7;--platform:#61d8c7}
       .platform-cross,.platform-all{--card-color:#dbc7a3;--platform:#dbc7a3}
       .task-design-empty,.task-design-more{display:grid;place-items:center;min-height:92px;border:1px dashed rgba(219,199,163,.18);border-radius:8px;background:rgba(0,0,0,.12);color:rgba(247,241,231,.42);font-size:12px;text-align:center}
       .task-design-more{min-height:38px}
-      .task-design-more-button{width:100%;font-family:inherit;font-size:12px;font-weight:700;line-height:1.2;cursor:pointer;color:rgba(247,241,231,.76);transition:border-color .16s ease,background .16s ease,color .16s ease}
-      .task-design-more-button:hover,.task-design-more-button:focus{outline:0;border-color:rgba(219,199,163,.42);background:rgba(219,199,163,.08);color:#f7f1e7}
-      .task-design-list{overflow:auto;contain:layout paint style}
+      .task-design-list{overflow:auto}
       .task-design-list table{width:100%;border-collapse:collapse;min-width:1020px}
       .task-design-list th,.task-design-list td{border-bottom:1px solid rgba(219,199,163,.1);padding:12px;text-align:left;vertical-align:top}
       .task-design-list th{position:sticky;top:0;background:#0b0907;color:var(--task-muted);font-size:10px;text-transform:uppercase;z-index:1}
@@ -1905,6 +1826,9 @@
     const articleKeys = parseArticleKeys(data.get('articleKeys') || data.get('articleKey') || '');
     const articleKey = articleKeys[0] || '';
     const sku = findSku(articleKey);
+    const original = taskById(form?.getAttribute('data-task-id') || '') || {};
+    const platform = String(data.get('platform') || original.platform || 'cross');
+    const owner = resolveTaskOwner({ ...original, owner: data.get('owner') || '', platform }, sku, platform);
     return {
       title: String(data.get('title') || '').trim() || 'Новая задача',
       articleKey,
@@ -1912,12 +1836,12 @@
       entityLabel: sku
         ? `${sku.article || sku.articleKey || articleKey} · ${skuTitle(sku)}${articleKeys.length > 1 ? ` +${articleKeys.length - 1}` : ''}`
         : taskArticleSummary({ articleKey, articleKeys }),
-      owner: normalizeOwnerName(data.get('owner') || ''),
+      owner,
       due: String(data.get('due') || '').trim(),
       status: String(data.get('status') || 'new'),
       priority: String(data.get('priority') || 'medium'),
       type: String(data.get('type') || 'general'),
-      platform: String(data.get('platform') || 'cross'),
+      platform,
       nextAction: String(data.get('nextAction') || '').trim(),
       reason: String(data.get('reason') || '').trim()
     };
@@ -2086,20 +2010,21 @@
     const data = new FormData(form);
     const articleKeys = parseArticleKeys(fieldValue(data, draft, 'articleKeys') || fieldValue(data, draft, 'articleKey'));
     const articleKey = articleKeys[0] || '';
+    const platform = String(fieldValue(data, draft, 'platform') || globalPlatform() || 'cross');
+    const sku = findSku(articleKey);
     const payload = {
       title: String(fieldValue(data, draft, 'title')).trim(),
       nextAction: String(fieldValue(data, draft, 'nextAction')).trim(),
       reason: String(fieldValue(data, draft, 'reason')).trim(),
       articleKey,
       articleKeys,
-      owner: normalizeOwnerName(fieldValue(data, draft, 'owner')),
+      owner: resolveTaskOwner({ owner: fieldValue(data, draft, 'owner'), platform, source: 'manual' }, sku, platform),
       due: String(fieldValue(data, draft, 'due')).trim(),
       type: String(fieldValue(data, draft, 'type') || 'general'),
       priority: String(fieldValue(data, draft, 'priority') || 'medium'),
-      platform: String(fieldValue(data, draft, 'platform') || globalPlatform() || 'cross'),
+      platform,
       entityLabel: ''
     };
-    const sku = findSku(articleKey);
     payload.entityLabel = sku
       ? `${sku.article || sku.articleKey || articleKey} · ${skuTitle(sku)}${articleKeys.length > 1 ? ` +${articleKeys.length - 1}` : ''}`
       : taskArticleSummary(payload);
@@ -2189,13 +2114,12 @@
 
   function setFilter(name, value) {
     const filters = ensureFilters();
-    lastManualFilterChangeAt = Date.now();
-    userTouchedTaskFilters = true;
-    clearLaneLimits();
-    filters[name] = name === 'owner' ? (normalizeOwnerName(value) || 'all') : value;
+    if (name === 'owner') filters[name] = normalizeOwnerName(value) || 'all';
+    else if (name === 'platform') filters[name] = normalizePlatform(value || 'all') || 'all';
+    else filters[name] = value;
     if (name === 'search') {
       window.clearTimeout(setFilter.searchTimer);
-      setFilter.searchTimer = window.setTimeout(() => queueEnhance(true), 120);
+      setFilter.searchTimer = window.setTimeout(queueEnhance, 80);
     } else {
       queueEnhance();
     }
@@ -2203,18 +2127,21 @@
 
   function resetFilters() {
     const filters = ensureFilters();
-    lastManualFilterChangeAt = Date.now();
-    userTouchedTaskFilters = true;
-    clearLaneLimits();
-    applyDefaultFilters(filters, 'active');
+    Object.assign(filters, {
+      search: '',
+      owner: 'all',
+      status: 'active',
+      type: 'all',
+      priority: 'all',
+      horizon: 'all',
+      source: 'all',
+      platform: 'all'
+    });
     queueEnhance();
   }
 
   function applyPreset(preset) {
     const filters = ensureFilters();
-    lastManualFilterChangeAt = Date.now();
-    userTouchedTaskFilters = true;
-    clearLaneLimits();
     if (preset === 'all') {
       filters.status = 'all';
       filters.horizon = 'all';
@@ -2258,11 +2185,6 @@
       }
       if (event.target.closest('[data-task-reset]')) {
         resetFilters();
-        return;
-      }
-      const showMore = event.target.closest('[data-task-show-more-lane]');
-      if (showMore) {
-        expandLane(showMore.dataset.taskShowMoreLane || '', showMore.dataset.taskShowMoreTotal || 0);
         return;
       }
       const taskNode = event.target.closest('[data-kanban-task]');
@@ -2318,34 +2240,21 @@
     });
   }
 
-  function hideReadyMotionOverlay() {
-    if (motionHideTimer) window.clearTimeout(motionHideTimer);
-    motionHideTimer = window.setTimeout(() => {
-      const viewRoot = root();
-      if (!viewRoot || !viewRoot.classList.contains('active')) return;
-      if (!viewRoot.querySelector('[data-task-calendar-design-v1][data-task-kanban-v1]')) return;
-      if (document.body.classList.contains('portal-auth-locked')) return;
-      try {
-        if (window.AlteaMotion && typeof window.AlteaMotion.hide === 'function') window.AlteaMotion.hide();
-      } catch (_) {}
-    }, 160);
-  }
-
   function enhanceControl(force = false) {
     const viewRoot = root();
     if (!viewRoot || !viewRoot.classList.contains('active')) return;
-    startControlObserver();
-    ensureStyle();
-    const { signature, markup } = renderShell();
-    const current = viewRoot.querySelector('[data-task-calendar-design-v1]');
-    if (current && current.dataset.renderSignature === signature && viewRoot.children.length === 1) {
-      cleanupLegacyControl(viewRoot);
-      hideReadyMotionOverlay();
-      return;
-    }
-    const token = ++renderToken;
     renderingControl = true;
     try {
+      viewRoot.classList.add('task-route-locked');
+      startControlObserver();
+      ensureStyle();
+      const { signature, markup } = renderShell();
+      const current = viewRoot.querySelector('[data-task-calendar-design-v1]');
+      if (current && current.dataset.renderSignature === signature && viewRoot.children.length === 1) {
+        cleanupLegacyControl(viewRoot);
+        return;
+      }
+      const token = ++renderToken;
       viewRoot.innerHTML = markup;
       const shell = viewRoot.querySelector('[data-task-calendar-design-v1]');
       if (shell) {
@@ -2354,7 +2263,6 @@
         bindShell(shell);
       }
       cleanupLegacyControl(viewRoot);
-      hideReadyMotionOverlay();
     } finally {
       renderingControl = false;
     }
@@ -2420,39 +2328,6 @@
     return Boolean(viewRoot?.classList.contains('active') || activeView === 'control' || hash.includes('control'));
   }
 
-  function taskDesignReady(viewRoot) {
-    return Boolean(
-      viewRoot
-      && viewRoot.classList.contains('active')
-      && viewRoot.children.length === 1
-      && viewRoot.querySelector('[data-task-calendar-design-v1]')
-    );
-  }
-
-  function activateControlRoute() {
-    const viewRoot = root();
-    if (!viewRoot) return null;
-    const activeView = normalizeText(appState().activeView || '');
-    const hash = normalizeText(window.location.hash || '');
-    if (!viewRoot.classList.contains('active') && activeView !== 'control' && !hash.includes('control')) return viewRoot;
-    const stateRef = appState();
-    try { stateRef.activeView = 'control'; } catch (_) {}
-    if (!viewRoot.classList.contains('active')) {
-      document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section === viewRoot));
-      document.querySelectorAll('.nav-btn').forEach((button) => button.classList.toggle('active', button.dataset.view === 'control'));
-    }
-    document.body.dataset.portalView = 'control';
-    return viewRoot;
-  }
-
-  function renderControlImmediately(options = {}) {
-    const viewRoot = activateControlRoute();
-    if (!viewRoot?.classList.contains('active')) return viewRoot;
-    if (options.skipReady && taskDesignReady(viewRoot)) return viewRoot;
-    enhanceControl(true);
-    return viewRoot;
-  }
-
   function installWrapper() {
     const current = window.renderControlCenter;
     if (typeof current !== 'function') {
@@ -2465,8 +2340,8 @@
     }
     wrappedRender = function taskDesignRenderControlCenter(...args) {
       if (isControlRouteActive()) {
-        const viewRoot = renderControlImmediately({ skipReady: true });
-        return viewRoot || root();
+        queueEnhance(true);
+        return root();
       }
       const result = current.apply(this, args);
       queueEnhance();
@@ -2484,31 +2359,30 @@
     ensureStyle();
     bindTaskDetailEvents();
     bindTaskCreateEvents();
+    window.__ALTEA_TASK_KANBAN_INVALIDATE__ = invalidateTaskListCache;
+    window.__ALTEA_TASK_KANBAN_RENDER__ = function renderTaskKanbanNow() {
+      enhanceControl(true);
+      return root();
+    };
     window.openTaskModal = openTask;
     window.renderTaskModal = openTask;
     const installed = installWrapper();
     if (!installed) window.setTimeout(installWrapper, 450);
-    [0, 1200].forEach((delay) => window.setTimeout(() => queueEnhance(true), delay));
+    [0, 320].forEach((delay) => window.setTimeout(() => queueEnhance(delay === 0), delay));
     const onRouteChange = (event) => {
+      if (event?.type === 'altea:portal-storage-updated' || event?.type === 'altea:data-ready' || event?.type === 'altea:task-signals-ready') {
+        invalidateTaskListCache();
+      }
       installWrapper();
       if (isControlRouteActive()) {
-        const eventName = String(event?.type || '');
-        const forceRender = eventName === 'altea:data-ready'
-          || eventName === 'altea:portal-storage-updated'
-          || eventName === 'altea:marketplacechange';
-        if (eventName === 'altea:marketplacechange') clearLaneLimits();
-        activateControlRoute();
         startControlObserver();
-        renderControlImmediately({ skipReady: !forceRender });
-        window.setTimeout(() => {
-          const viewRoot = root();
-          if (!taskDesignReady(viewRoot)) enhanceControl(true);
-        }, 260);
+        queueEnhance(true);
       }
     };
     window.addEventListener('altea:viewchange', onRouteChange);
     window.addEventListener('altea:data-ready', onRouteChange);
     window.addEventListener('altea:app-ready', onRouteChange);
+    window.addEventListener('altea:task-signals-ready', onRouteChange);
     window.addEventListener('altea:portal-storage-updated', onRouteChange);
     window.addEventListener('altea:marketplacechange', onRouteChange);
     window.addEventListener('hashchange', onRouteChange);
@@ -2518,12 +2392,6 @@
       }
     }, true);
   }
-
-  window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__ = {
-    version: VERSION,
-    renderControl: renderControlImmediately,
-    queue: queueEnhance
-  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot, { once: true });

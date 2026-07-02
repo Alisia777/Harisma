@@ -6,7 +6,7 @@
   window.__ALTEA_TASK_KANBAN_PRIMARY__ = true;
 
   const AUTO_TOMBSTONE_VERSION = '20260701-task-auto-tombstone-v1';
-  const VERSION = '20260702-task-move-stability-v1';
+  const VERSION = '20260702-task-user-status-persist-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
@@ -1035,10 +1035,12 @@
     if (!task?.id) return null;
     const tasks = storageTasks();
     let current = tasks.find((item) => String(item?.id || '') === String(task.id));
+    const userSource = isAutoTaskLike(task) ? 'manual' : (task.source || 'manual');
     if (!current) {
       current = {
         ...mergeTaskExtras(task),
-        source: task.source || 'manual',
+        source: userSource,
+        originalSource: isAutoTaskLike(task) ? (task.source || 'auto') : (task.originalSource || ''),
         createdAt: task.createdAt || task.created_at || new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -1052,6 +1054,10 @@
         created_at: current.created_at || current.createdAt || merged.created_at || merged.createdAt,
         updatedAt: current.updatedAt || current.updated_at || merged.updatedAt || merged.updated_at || new Date().toISOString()
       });
+    }
+    if (isAutoTaskLike(current) && current.source !== 'manual') {
+      current.originalSource = current.source || current.originalSource || 'auto';
+      current.source = 'manual';
     }
     rememberTask(current);
     return current;
@@ -2560,7 +2566,7 @@
       return root();
     };
     window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__ = {
-      version: AUTO_TOMBSTONE_VERSION,
+      version: VERSION,
       renderControl: window.__ALTEA_TASK_KANBAN_RENDER__,
       invalidate: invalidateTaskListCache,
       resetFilters: () => {

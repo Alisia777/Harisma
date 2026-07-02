@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260630launchmarketscope1';
+  const VERSION = '20260702launch-identity-persist-v1';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -189,7 +189,7 @@
     const selected = normalizeMarket(market);
     if (!selected || selected === 'all') return true;
     const keys = launchMarketplaceKeys(item);
-    if (!keys.length) return false;
+    if (!keys.length) return true;
     return keys.includes(selected);
   }
 
@@ -2551,7 +2551,7 @@
       ['Status', 'Due', 'Owner', 'Comment'].forEach((suffix) => {
         const key = `${prefix}${suffix}`;
         const value = String(data.get(key) || '').trim();
-        if (value) draft[key] = value;
+        draft[key] = value;
       });
     });
     return draft;

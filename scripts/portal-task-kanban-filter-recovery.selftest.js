@@ -156,7 +156,7 @@ async function run() {
       motionVisible: Boolean(document.querySelector('.altea-motion-stage.is-visible'))
     }));
 
-    assert.strictEqual(recovered.version, '20260701-task-auto-tombstone-v1');
+    assert.strictEqual(recovered.version, '20260702-task-user-status-persist-v1');
     assert.deepStrictEqual(
       {
         search: recovered.search,
@@ -209,7 +209,8 @@ async function run() {
           id: task?.id || '',
           autoCode: task?.autoCode || '',
           status: task?.status || '',
-          source: task?.source || ''
+          source: task?.source || '',
+          originalSource: task?.originalSource || ''
         });
         return true;
       };
@@ -223,7 +224,25 @@ async function run() {
       id: 'task-entry-1',
       autoCode: 'fixture_auto_signal',
       status: 'done',
-      source: 'auto'
+      source: 'manual',
+      originalSource: 'auto'
+    });
+    const persistedAutoTask = await page.evaluate(() => {
+      const task = (window.state.storage.tasks || []).find((item) => item.id === 'task-entry-1') || {};
+      return {
+        id: task.id || '',
+        autoCode: task.autoCode || '',
+        status: task.status || '',
+        source: task.source || '',
+        originalSource: task.originalSource || ''
+      };
+    });
+    assert.deepStrictEqual(persistedAutoTask, {
+      id: 'task-entry-1',
+      autoCode: 'fixture_auto_signal',
+      status: 'done',
+      source: 'manual',
+      originalSource: 'auto'
     });
     await page.click('[data-task-detail-close]');
 

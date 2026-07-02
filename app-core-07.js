@@ -527,6 +527,61 @@ function launchStableId(item = {}) {
   return String(item?.id || '').trim() || stableId('launch', `${item?.articleKey || ''}|${item?.name || item?.title || ''}|${item?.reportGroup || ''}|${item?.launchMonth || ''}`);
 }
 
+function launchIdentityToken(value = '') {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\u0451/g, '\u0435')
+    .replace(/[^a-z0-9\u0430-\u044f]+/g, '');
+}
+
+function launchIdentityTokens(item = {}) {
+  const tokens = [];
+  const article = launchIdentityToken(item.articleKey || item.article || item.sku || '');
+  const name = launchIdentityToken(item.name || item.title || '');
+  const group = launchIdentityToken(item.reportGroup || item.category || item.subCategory || item.segment || '');
+  const sourceRow = launchIdentityToken(item.sourceRow || '');
+  if (article) tokens.push(`article:${article}`);
+  if (name && group) tokens.push(`name-group:${name}|${group}`);
+  if (name && name.length >= 5) tokens.push(`name:${name}`);
+  if (sourceRow) tokens.push(`source:${sourceRow}`);
+  return [...new Set(tokens)];
+}
+
+function launchArticleIdentity(item = {}) {
+  return launchIdentityTokens(item).find((token) => token.startsWith('article:')) || '';
+}
+
+function launchSharesIdentity(left = {}, right = {}) {
+  const leftArticle = launchArticleIdentity(left);
+  const rightArticle = launchArticleIdentity(right);
+  if (leftArticle || rightArticle) return Boolean(leftArticle && leftArticle === rightArticle);
+  const rightTokens = new Set(launchIdentityTokens(right));
+  return launchIdentityTokens(left).some((token) => token.startsWith('name') && rightTokens.has(token));
+}
+
+function launchOverrideIdentityMap(overrides = []) {
+  const map = new Map();
+  overrides.forEach((item) => {
+    launchIdentityTokens(item).forEach((token) => {
+      if (!map.has(token)) map.set(token, item);
+    });
+  });
+  return map;
+}
+
+function findLaunchOverrideForItem(item = {}, overrideMap = new Map(), identityMap = new Map(), usedOverrideIds = new Set()) {
+  const direct = overrideMap.get(launchStableId(item));
+  if (direct && !usedOverrideIds.has(launchStableId(direct))) return direct;
+  for (const token of launchIdentityTokens(item)) {
+    const candidate = identityMap.get(token);
+    if (!candidate) continue;
+    if (usedOverrideIds.has(launchStableId(candidate))) continue;
+    if (launchSharesIdentity(item, candidate)) return candidate;
+  }
+  return null;
+}
+
 function launchDueDateKey(item = {}) {
   const exact = String(item?.launchDate || item?.firstStockDate || '').trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(exact)) return exact;
@@ -711,7 +766,7 @@ function serializeLaunchDraft(item = {}) {
 
 function upsertLaunchDraft(item = {}) {
   const draft = serializeLaunchDraft(item);
-  state.storage.launchOverrides = (state.storage.launchOverrides || []).filter((entry) => launchStableId(entry) !== draft.id);
+  state.storage.launchOverrides = (state.storage.launchOverrides || []).filter((entry) => launchStableId(entry) !== draft.id && !launchSharesIdentity(entry, draft));
   state.storage.launchOverrides.unshift(draft);
   state.storage.launchDeletedIds = (state.storage.launchDeletedIds || []).filter((entry) => String(entry || '').trim() !== draft.id);
   saveLocalStorage();
@@ -949,6 +1004,8 @@ function getLaunchItems(options = {}) {
     const draft = serializeLaunchDraft(item);
     return [draft.id, draft];
   }));
+  const overrideIdentityMap = launchOverrideIdentityMap([...overrideMap.values()]);
+  const usedOverrideIds = new Set();
   const deletedIds = getLaunchDeletedIdSet();
   const baseIds = new Set();
   const merged = [];
@@ -956,11 +1013,16 @@ function getLaunchItems(options = {}) {
     const launchId = launchStableId(item);
     baseIds.add(launchId);
     if (deletedIds.has(launchId)) return;
-    const override = overrideMap.get(launchId);
-    merged.push(override ? normalizeLaunchItem({ ...item, ...override, id: launchId }, options) : item);
+    const override = findLaunchOverrideForItem(item, overrideMap, overrideIdentityMap, usedOverrideIds);
+    if (override) {
+      usedOverrideIds.add(launchStableId(override));
+      merged.push(normalizeLaunchItem({ ...item, ...override, id: launchId }, options));
+    } else {
+      merged.push(item);
+    }
   });
   overrideMap.forEach((item, launchId) => {
-    if (baseIds.has(launchId) || deletedIds.has(launchId)) return;
+    if (baseIds.has(launchId) || usedOverrideIds.has(launchId) || deletedIds.has(launchId)) return;
     merged.push(normalizeLaunchItem(item, options));
   });
   return merged.sort((a, b) => launchMonthSortValue(a.launchMonth) - launchMonthSortValue(b.launchMonth) || a.name.localeCompare(b.name, 'ru'));

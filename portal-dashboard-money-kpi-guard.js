@@ -1,8 +1,8 @@
 (function () {
   'use strict';
 
-  const EXPECTED_VERSION = '20260701-dashboard-mtd-buyouts1';
-  const SCRIPT_URL = `portal-dashboard-ceo-motion-v1.js?v=20260701dashboard-mtd-buyouts1-force&ts=${Date.now()}`;
+  const EXPECTED_VERSION = '20260702-dashboard-no-buyout-proxy1';
+  const SCRIPT_URL = `portal-dashboard-ceo-motion-v1.js?v=20260702dashboardnobuyoutproxy1-force&ts=${Date.now()}`;
   let loadPromise = null;
   let checks = 0;
 

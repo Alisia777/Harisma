@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-dashboard-mtd-buyouts1';
+  const VERSION = '20260702-dashboard-no-buyout-proxy1';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
@@ -34,7 +34,7 @@
     magnit: { label: 'Магнит', short: 'Магнит', color: '#e85b55' }
   };
   const MARKETPLACE_ORDER = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
-  const BUYOUT_PROXY_PLATFORMS = new Set(['goldapple', 'letu', 'megamarket', 'samokat', 'magnit']);
+  const BUYOUT_ESTIMATE_PLATFORMS = new Set(['all', 'wb', 'ozon', 'ya']);
   const METRICS = {
     orders: { label: 'Заказы', unit: 'money', chart: 'bars', route: 'product-leaderboard', tone: '#76a9ea' },
     buys: { label: 'Выкупы', unit: 'money', chart: 'bars', route: 'product-leaderboard', tone: '#74c99a' },
@@ -883,10 +883,6 @@
       return { units, rub: salesRevenue, source: 'sales-revenue', estimated: true, proxy: false };
     }
 
-    if (BUYOUT_PROXY_PLATFORMS.has(platform) && finite(row?.revenue) > 0) {
-      return { units: orders, rub: finite(row.revenue), source: 'sales-proxy', estimated: true, proxy: true };
-    }
-
     return null;
   }
 
@@ -978,7 +974,9 @@
     return total;
   }
 
-  function fillBuyoutEstimateFromReference(target, reference) {
+  function fillBuyoutEstimateFromReference(target, reference, platformKey = '') {
+    const platform = normalizePlatform(platformKey || 'all');
+    if (!BUYOUT_ESTIMATE_PLATFORMS.has(platform)) return target;
     if (!target || hasBuyoutSource(target) || !hasBuyoutSource(reference)) return target;
     const revenueRate = buyoutRevenueRate(reference);
     const unitRate = buyoutRate(reference);
@@ -2082,11 +2080,11 @@
       fillBuyoutFromSource(previousTotal, platformPreviousRangeTotal, true);
     }
     fillBuyoutFromSource(allTotal, platformRangeTotal, true);
-    fillBuyoutEstimateFromReference(total, previousTotal);
-    fillBuyoutEstimateFromReference(total, platformPreviousRangeTotal);
-    fillBuyoutEstimateFromReference(allTotal, platformPreviousRangeTotal);
-    fillBuyoutEstimateFromReference(monthToDateTotal, previousMonthToDateTotal);
-    fillBuyoutEstimateFromReference(monthToDateTotal, total);
+    fillBuyoutEstimateFromReference(total, previousTotal, platform);
+    fillBuyoutEstimateFromReference(total, platformPreviousRangeTotal, platform);
+    fillBuyoutEstimateFromReference(allTotal, platformPreviousRangeTotal, 'all');
+    fillBuyoutEstimateFromReference(monthToDateTotal, previousMonthToDateTotal, platform);
+    fillBuyoutEstimateFromReference(monthToDateTotal, total, platform);
     const iuRows = iuRowsInRange(iuDrr, range.start, range.end);
     const prevIuRows = iuRowsInRange(iuDrr, range.prevStart, range.prevEnd);
     const coreAdWindow = iuRowsForRangeOrLatest(iuDrr, range, period);

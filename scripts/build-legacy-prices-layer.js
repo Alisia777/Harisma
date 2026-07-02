@@ -8,7 +8,6 @@ const {
   firstPositive,
   latestSeriesDate,
   mergeSmartPriceContour,
-  normalizeKey,
   safeReadJson
 } = require('./smart-price-contour');
 
@@ -45,6 +44,20 @@ function sanitizeDiscountPct(...values) {
   return Math.min(1, Math.max(0, parsed));
 }
 
+function roundMetric(value, digits = 6) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return null;
+  const factor = 10 ** digits;
+  return Math.round(number * factor) / factor;
+}
+
+function marginPctFromPrice(price, cost) {
+  const actualPrice = firstPositive(price);
+  const actualCost = firstPositive(cost);
+  if (!(actualPrice > 0) || !(actualCost > 0)) return null;
+  return roundMetric((actualPrice - actualCost) / actualPrice);
+}
+
 function parseArgs(argv) {
   const args = {};
   for (let index = 2; index < argv.length; index += 1) {
@@ -64,7 +77,6 @@ function resolveOptions(args = {}) {
     workbenchPath: path.resolve(args['workbench-file'] || path.join(ROOT, 'data', 'smart_price_workbench.json')),
     overlayPath: path.resolve(args['overlay-file'] || path.join(ROOT, 'data', 'smart_price_overlay.json')),
     livePath: path.resolve(args['live-file'] || path.join(ROOT, 'tmp-smart_price_workbench-live.json')),
-    supportPath: path.resolve(args['support-file'] || path.join(ROOT, 'data', 'price_workbench_support.json')),
     outputPath: path.resolve(args['output-file'] || path.join(ROOT, 'data', 'prices.json'))
   };
 }
@@ -145,41 +157,15 @@ function lastSeriesSpp(series) {
   return { value: null, date: '' };
 }
 
-function supportRows(payload = {}, platform = '') {
-  const rows = payload?.platforms?.[platform]?.rows;
-  if (Array.isArray(rows)) return rows;
-  if (rows && typeof rows === 'object') return Object.values(rows);
-  return [];
-}
-
-function buildSupportMap(payload = {}, platform = '') {
-  const map = new Map();
-  supportRows(payload, platform).forEach((row) => {
-    const key = normalizeKey(row?.articleKey || row?.article || row?.sku);
-    if (!key || map.has(key)) return;
-    map.set(key, row);
-  });
-  return map;
-}
-
-function supportCurrentExportPrice(row = {}) {
-  return firstPositive(
-    row?.currentExportPrice,
-    row?.buyerCurrentExportMinPrice,
-    row?.buyerCurrentExportMaxPrice
-  );
-}
-
-function buildLegacyRow(row = {}, platform = '', supportRow = null) {
+function buildLegacyRow(row = {}, platform = '') {
   const series = normalizeSeries(row);
   const lastPrice = lastSeriesPrice(series);
   const lastClientPrice = lastSeriesClientPrice(series);
   const lastTurnover = lastSeriesValue(series, 'turnoverDays');
   const lastSpp = lastSeriesSpp(series);
   const latestFactDate = asIsoDate(row?.valueDate || row?.historyFreshnessDate || latestSeriesDate(row) || '');
-  const exportCurrentPrice = platform === 'ozon' ? supportCurrentExportPrice(supportRow) : null;
-  const currentPrice = firstPositive(exportCurrentPrice, row?.currentFillPrice, row?.currentPrice, lastPrice.value);
-  const currentClientPrice = firstPositive(exportCurrentPrice, row?.currentClientPrice, lastClientPrice.value);
+  const currentPrice = firstPositive(row?.currentFillPrice, row?.currentPrice, lastPrice.value);
+  const currentClientPrice = firstPositive(row?.currentClientPrice, lastClientPrice.value);
   const currentTurnoverDays = firstNumber(row?.currentTurnoverDays, row?.turnoverCurrentDays, lastTurnover.value);
   const currentSppPct = sanitizeDiscountPct(row?.currentSppPct, lastSpp.value);
   const currentPriceDate = asIsoDate(row?.currentPriceDate || row?.currentFillPriceDate || '') || lastPrice.date || latestFactDate;
@@ -189,6 +175,17 @@ function buildLegacyRow(row = {}, platform = '', supportRow = null) {
   const workingZoneFrom = firstPositive(row?.workingZoneFrom);
   const workingZoneTo = firstPositive(row?.workingZoneTo, row?.maxPrice);
   const hardMinPrice = firstPositive(row?.hardMinPrice);
+  const cost = firstNumber(row?.cost, row?.costRub, row?.costPrice);
+  const currentCostAwareMarginPct = marginPctFromPrice(currentClientPrice || currentPrice || basePrice, cost);
+  const marginPct = currentCostAwareMarginPct ?? firstNumber(
+    row?.costAwareMarginPct,
+    row?.grossMarginPct,
+    row?.avgMargin7dPct,
+    row?.marginTotalPct,
+    row?.marginPct
+  );
+  const minPriceMarginPct = marginPctFromPrice(minPrice, cost) ?? firstNumber(row?.minPriceMarginPct);
+  const maxPriceMarginPct = marginPctFromPrice(maxPrice || workingZoneTo, cost) ?? firstNumber(row?.maxPriceMarginPct);
 
   return {
     articleKey: row?.articleKey || row?.article || '',
@@ -200,11 +197,17 @@ function buildLegacyRow(row = {}, platform = '', supportRow = null) {
     status: row?.status || row?.productStatus || '',
     sourceMode: row?.sourceMode || '',
     allowedMarginPct: firstNumber(row?.allowedMarginPct),
-    avgMargin7dPct: firstNumber(row?.avgMargin7dPct, row?.marginTotalPct),
+    avgMargin7dPct: marginPct,
+    marginPct,
+    marginTotalPct: marginPct,
+    estimatedMarginPct: marginPct,
+    grossMarginPct: marginPct,
+    costAwareMarginPct: currentCostAwareMarginPct ?? marginPct,
+    minPriceMarginPct,
+    maxPriceMarginPct,
     currentTurnoverDays,
     currentPrice,
     currentClientPrice,
-    currentPriceSource: exportCurrentPrice ? 'price_workbench_support_current_export' : (row?.currentPriceSource || row?.currentSellerPriceSource || ''),
     currentSppPct,
     currentPriceDate,
     historyFreshnessDate: latestFactDate,
@@ -214,6 +217,9 @@ function buildLegacyRow(row = {}, platform = '', supportRow = null) {
     workingZoneFrom,
     workingZoneTo,
     basePrice,
+    cost,
+    costRub: cost,
+    costPrice: cost,
     daily: series
   };
 }
@@ -240,13 +246,7 @@ function buildLegacyPricesLayer(options = {}) {
   const workbench = safeReadJson(options.workbenchPath, { generatedAt: '', platforms: {} });
   const overlay = safeReadJson(options.overlayPath, { generatedAt: '', platforms: {} });
   const live = safeReadJson(options.livePath, { generatedAt: '', platforms: {} });
-  const support = safeReadJson(options.supportPath, { generatedAt: '', platforms: {} });
   const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, live || {});
-  const supportMaps = {
-    wb: buildSupportMap(support, 'wb'),
-    ozon: buildSupportMap(support, 'ozon'),
-    ym: buildSupportMap(support, 'ym')
-  };
 
   const platformBuckets = {};
   let latestDate = '';
@@ -259,8 +259,7 @@ function buildLegacyPricesLayer(options = {}) {
       platformBuckets[targetKey] = { label: PLATFORM_LABELS[targetKey], rows: [] };
     }
     sourceRows.forEach((row) => {
-      const supportKey = normalizeKey(row?.articleKey || row?.article || row?.sku);
-      const legacyRow = buildLegacyRow(row, targetKey, supportMaps[targetKey]?.get(supportKey));
+      const legacyRow = buildLegacyRow(row, targetKey);
       platformBuckets[targetKey].rows.push(legacyRow);
       (legacyRow.daily || []).forEach((point) => {
         if (point?.date && point.date > latestDate) latestDate = point.date;
@@ -287,7 +286,6 @@ function buildLegacyPricesLayer(options = {}) {
       workbench: workbench?.generatedAt || '',
       overlay: overlay?.generatedAt || '',
       live: live?.generatedAt || '',
-      support: support?.generatedAt || '',
       merged: merged?.generatedAt || ''
     },
     dates,

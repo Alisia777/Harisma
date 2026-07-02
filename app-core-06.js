@@ -1,60 +1,3 @@
-function taskAttachmentSizeLabel(size = 0) {
-  const bytes = Number(size || 0);
-  if (!Number.isFinite(bytes) || bytes <= 0) return '';
-  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(bytes >= 10 * 1024 * 1024 ? 0 : 1)} МБ`;
-  if (bytes >= 1024) return `${Math.round(bytes / 1024)} КБ`;
-  return `${Math.round(bytes)} Б`;
-}
-
-function renderTaskAttachmentItem(item = {}) {
-  const attachment = normalizeTaskAttachment(item);
-  const sizeLabel = taskAttachmentSizeLabel(attachment.size);
-  const meta = [
-    attachment.createdBy || '',
-    attachment.createdAt ? fmt.date(attachment.createdAt) : '',
-    sizeLabel
-  ].filter(Boolean).join(' · ');
-  const openControl = attachment.publicUrl
-    ? `<a class="btn ghost small-btn" href="${escapeHtml(attachment.publicUrl)}" target="_blank" rel="noopener">Открыть</a>`
-    : `<button class="btn ghost small-btn" type="button" disabled>Нет ссылки</button>`;
-  return `
-    <div class="comment-item task-attachment-item">
-      <div class="head">
-        <div>
-          <strong>${escapeHtml(attachment.fileName || 'Файл')}</strong>
-          <div class="muted small">${escapeHtml(meta || 'Вложение к задаче')}</div>
-        </div>
-        <div class="badge-stack">
-          ${openControl}
-          <button class="btn ghost small-btn" type="button" data-delete-task-attachment="${escapeHtml(attachment.id)}">Удалить</button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderTaskAttachmentsBlock(taskId) {
-  const attachments = typeof getTaskAttachments === 'function' ? getTaskAttachments(taskId) : [];
-  const accept = '.xlsx,.xls,.csv,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-  return `
-    <div class="task-attachments-block" style="margin:12px 0">
-      <div class="modal-section-title">
-        <div>
-          <h3>Файлы к задаче</h3>
-          <p class="small muted">Scorecard, выгрузка, расчет или другой артефакт, на который можно сослаться в отчете.</p>
-        </div>
-        ${badge(`${fmt.int(attachments.length)} файлов`, attachments.length ? 'info' : 'ok')}
-      </div>
-      <div class="list">${attachments.length ? attachments.map(renderTaskAttachmentItem).join('') : '<div class="empty">Файлов пока нет. Добавь XLSX, XLS или CSV прямо здесь.</div>'}</div>
-      <form id="taskAttachmentForm" class="form-grid compact" style="margin-top:12px">
-        <input id="taskAttachmentInput" name="file" type="file" accept="${accept}" required>
-        <button class="btn" type="submit">Прикрепить файл</button>
-        <div class="muted small">Разрешены XLSX, XLS, CSV до 20 МБ. Файл привяжется именно к этой задаче.</div>
-      </form>
-    </div>
-  `;
-}
-
 function renderTaskModal(taskId) {
   const task = getTask(taskId);
   if (!task) return;
@@ -126,8 +69,6 @@ function renderTaskModal(taskId) {
             <option value="ya" ${task.platform === 'ya' ? 'selected' : ''}>Я.Маркет</option>
             <option value="goldapple" ${task.platform === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
             <option value="letu" ${task.platform === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
-            <option value="megamarket" ${task.platform === 'megamarket' ? 'selected' : ''}>Мегамаркет</option>
-            <option value="samokat" ${task.platform === 'samokat' ? 'selected' : ''}>Самокат</option>
             <option value="magnit" ${task.platform === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
             <option value="wb+ozon" ${task.platform === 'wb+ozon' ? 'selected' : ''}>WB + Ozon</option>
           </select>
@@ -145,7 +86,6 @@ function renderTaskModal(taskId) {
           </div>
           ${badge(`${fmt.int(history.length)} записей`, history.length ? 'info' : 'ok')}
         </div>
-        ${renderTaskAttachmentsBlock(taskId)}
         <div class="list">${historyHtml}</div>
         <form id="taskCommentForm" class="form-grid compact" style="margin-top:12px">
           <input name="author" value="${escapeHtml(state.team.member.name || task.owner || 'Команда')}" placeholder="Кто пишет" required>
@@ -203,50 +143,6 @@ function renderTaskModal(taskId) {
     renderTaskModal(taskId);
   });
 
-  body.querySelector('#taskAttachmentForm')?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const input = body.querySelector('#taskAttachmentInput');
-    const file = input?.files?.[0] || null;
-    if (!file) return;
-    const submitButton = event.currentTarget.querySelector('button[type="submit"]');
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = 'Загружаем...';
-    }
-    try {
-      const attachment = await uploadTaskAttachment(taskId, file);
-      if (typeof createTaskHistoryEntry === 'function') {
-        await createTaskHistoryEntry(taskId, 'comment', `Прикреплен файл: ${attachment.fileName}`, {
-          author: state.team.member.name || task.owner || 'Команда',
-          team: teamMemberLabel()
-        });
-      }
-      renderTaskModal(taskId);
-    } catch (error) {
-      window.alert(error?.message || 'Не удалось прикрепить файл.');
-      if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Прикрепить файл';
-      }
-    }
-  });
-
-  body.querySelectorAll('[data-delete-task-attachment]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      const attachmentId = button.getAttribute('data-delete-task-attachment');
-      if (!attachmentId) return;
-      if (!window.confirm('Удалить файл из задачи?')) return;
-      button.disabled = true;
-      try {
-        await deleteTaskAttachment(attachmentId);
-        renderTaskModal(taskId);
-      } catch (error) {
-        window.alert(error?.message || 'Не удалось удалить файл.');
-        button.disabled = false;
-      }
-    });
-  });
-
   body.querySelector('#taskCloseForm')?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -264,8 +160,6 @@ const REGISTRY_MARKET_TABS = [
   { key: 'ya', label: 'Я.Маркет' },
   { key: 'goldapple', label: 'ЗЯ' },
   { key: 'letu', label: 'Лэтуаль' },
-  { key: 'megamarket', label: 'Мегамаркет' },
-  { key: 'samokat', label: 'Самокат' },
   { key: 'magnit', label: 'Магнит Маркет' }
 ];
 const REGISTRY_MARKET_SUPPORT_KEYS = {
@@ -274,8 +168,6 @@ const REGISTRY_MARKET_SUPPORT_KEYS = {
   ya: 'ym',
   goldapple: 'ga',
   letu: 'letu',
-  megamarket: 'megamarket',
-  samokat: 'samokat',
   magnit: 'mm'
 };
 
@@ -495,7 +387,7 @@ function skuJourneyHandleAction(action = '', options = {}) {
   if (key === 'open-contour') {
     state.skuWorkspaceMode = 'contour';
     state.skuContourOnlyNew = true;
-    skuJourneyOpenView('sku-contour');
+    skuJourneyOpenView('sku-contour', { preserveSkuWorkspaceMode: true });
     if (state.activeView === 'sku-contour' && typeof renderSkuContour === 'function') renderSkuContour(options.rootId || 'view-sku-contour');
     return;
   }
@@ -523,7 +415,7 @@ function skuJourneyHandleAction(action = '', options = {}) {
     state.skuWorkspaceMode = 'contour';
     state.skuContourOnlyNew = true;
     if (state.activeView === 'sku-contour' && typeof renderSkuContour === 'function') renderSkuContour(options.rootId || 'view-sku-contour');
-    else skuJourneyOpenView('sku-contour');
+    else skuJourneyOpenView('sku-contour', { preserveSkuWorkspaceMode: true });
     return;
   }
   if (key === 'planfact') {
@@ -553,10 +445,13 @@ function skuJourneyPanelHtml({
 } = {}) {
   const marketLabel = typeof skuDataPlatformLabel === 'function' ? skuDataPlatformLabel(activeMarket) : skuRegistryMarketLabel(activeMarket);
   const activeModeLabel = source === 'contour' ? 'API-контур' : 'Реестр SKU';
+  const workspaceNote = source === 'contour'
+    ? 'Техническая очередь: API-пары, alias/ignore, аудит и синхронизация.'
+    : 'Рабочий реестр: owner, себестоимость, статусы матрицы, план-факт и задачи.';
   const stats = Array.isArray(journeyStats) && journeyStats.length ? journeyStats : [
     {
-      action: source === 'contour' ? 'only-new-contour' : 'open-contour',
-      label: 'API без пары',
+      action: source === 'contour' ? 'only-new-contour' : 'registry-matrix',
+      label: source === 'contour' ? 'В очереди' : 'Сигналы SKU',
       value: fmt.int(unresolvedCount),
       tone: unresolvedCount ? 'warn' : 'ok'
     },
@@ -584,7 +479,7 @@ function skuJourneyPanelHtml({
       <section class="sku-workspace-title">
         <span>${escapeHtml(marketLabel)} · единый SKU workspace</span>
         <strong>${escapeHtml(activeModeLabel)}</strong>
-        <em>Одна очередь: API-пары, owner, матрица и план-факт без лишней витрины.</em>
+        <em>${escapeHtml(workspaceNote)}</em>
       </section>
       <section class="sku-workspace-switch">
         <button class="${source === 'registry' ? 'active' : ''}" type="button" data-sku-journey-action="open-registry">Реестр</button>
@@ -650,8 +545,14 @@ function skuRegistryFocusBoardHtml({ activeMarket = 'all', allMarketSkus = [], i
     { focus: 'toWork', label: 'В работе', count: workCount, help: currentWorkLabel(), tone: workCount ? 'info' : '' },
     { focus: 'extAny', label: 'Трафик', count: externalTrafficCount, help: 'КЗ/VK и внешние хвосты', tone: externalTrafficCount ? 'info' : '' }
   ];
+  const registryJourneyStats = [
+    { action: 'registry-matrix', label: 'Матрица / план', value: fmt.int(matrixIssuesBySku || matrixIssueCount), tone: (matrixIssuesBySku || matrixIssueCount) ? 'warn' : 'ok' },
+    { action: 'registry-unassigned', label: 'Без owner', value: fmt.int(unassigned), tone: unassigned ? 'danger' : 'ok' },
+    { action: 'registry-under-plan', label: 'Ниже плана', value: fmt.int(underPlanCount), tone: underPlanCount ? 'warn' : 'ok' },
+    { action: 'planfact', label: 'В работе', value: fmt.int(workCount), tone: workCount ? 'info' : '' }
+  ];
   return `
-    ${skuJourneyPanelHtml({ source: 'registry', activeMarket, ownerCoverage, contourProgress, unresolvedCount: unresolvedIssueCount, blockerCount, matrixIssueCount: matrixIssuesBySku || matrixIssueCount, workCount, apiRiskRevenue })}
+    ${skuJourneyPanelHtml({ source: 'registry', activeMarket, ownerCoverage, contourProgress, unresolvedCount: unresolvedIssueCount, blockerCount, matrixIssueCount: matrixIssuesBySku || matrixIssueCount, workCount, apiRiskRevenue, journeyStats: registryJourneyStats })}
     <div class="sku-data-focus-board sku-data-focus-board--compact sku-registry-focus-board">
       <section class="sku-data-focus-panel">
         <div class="sku-data-focus-head">
@@ -839,6 +740,7 @@ function renderSkuRegistry(rootId = 'view-skus') {
 
   `;
 
+  root.querySelector('.section-title h2')?.replaceChildren(document.createTextNode('SKU workspace'));
   root.querySelector('#skuSearchInput')?.addEventListener('input', (e) => { state.filters.search = e.target.value; renderSkuRegistry(rootId); });
   root.querySelector('#skuOwnerFilter')?.addEventListener('change', (e) => { state.filters.owner = e.target.value; renderSkuRegistry(rootId); });
   root.querySelector('#skuSegmentFilter')?.addEventListener('change', (e) => { state.filters.segment = e.target.value; renderSkuRegistry(rootId); });

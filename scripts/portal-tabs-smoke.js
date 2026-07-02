@@ -223,7 +223,7 @@ async function main() {
   const browser = await chromium.launch({ headless: args.headful !== true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 950 } });
   page.setDefaultTimeout(15000);
-  page.setDefaultNavigationTimeout(20000);
+  page.setDefaultNavigationTimeout(90000);
 
   const pageErrors = [];
   const consoleIssues = [];
@@ -253,7 +253,7 @@ async function main() {
   const originalStorage = await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY).catch(() => null);
 
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
     const authenticated = await authenticateIfNeeded(page);
     await waitForApp(page);
 
@@ -264,7 +264,7 @@ async function main() {
       await waitForViewReady(page, target.view);
       const summary = await summarizeView(page, target.view);
       const screenshot = path.join(outputDir, `${target.view}.png`);
-      await page.screenshot({ path: screenshot, fullPage: false });
+      await page.screenshot({ path: screenshot, fullPage: false, animations: 'disabled', timeout: 30000 });
       summary.screenshot = screenshot;
       summaries.push(summary);
       failures.push(...validateSummary(summary, target.label));

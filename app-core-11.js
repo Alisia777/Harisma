@@ -1,4 +1,4 @@
-const SKU_PLAN_FACT_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
+const SKU_PLAN_FACT_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
 const SKU_PLAN_FACT_PAYROLL_PLATFORMS = ['wb', 'ozon', 'ya'];
 const SKU_PLAN_FACT_PAYROLL_ALIGNMENT_PLATFORMS = new Set(['wb', 'ozon']);
 const SKU_PLAN_FACT_PLATFORM_LABELS = {
@@ -7,8 +7,6 @@ const SKU_PLAN_FACT_PLATFORM_LABELS = {
   ya: 'Я.Маркет',
   goldapple: 'ЗЯ',
   letu: 'Лэтуаль',
-  megamarket: 'Мегамаркет',
-  samokat: 'Самокат',
   magnit: 'Магнит Маркет'
 };
 const SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS = {
@@ -17,8 +15,6 @@ const SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS = {
   ya: 'ym',
   goldapple: 'ga',
   letu: 'letu',
-  megamarket: 'megamarket',
-  samokat: 'samokat',
   magnit: 'mm'
 };
 const SKU_PLAN_FACT_DIRECT_PLAN_PLATFORMS = new Set(['wb', 'ozon']);
@@ -384,8 +380,6 @@ function skuPlanFactFilters(overrides = null, options = {}) {
     dateFrom: '',
     dateTo: '',
     dateMode: 'latest',
-    fullMonth: false,
-    periodEndCap: '',
     sort: 'gap',
     sortDir: 'asc',
     ...(state.skuPlanFactFilters || {}),
@@ -506,8 +500,6 @@ function skuPlanFactNormalizePlatform(value = '') {
   if (/\bya\b|\bym\b|yandex|яндекс|я\.?маркет|ямаркет/i.test(lower)) detected.push('ya');
   if (/gold\s*apple|золотое\s*яблоко|\bзя\b/i.test(lower)) detected.push('goldapple');
   if (/letu|letual|летуаль/i.test(lower)) detected.push('letu');
-  if (/megamarket|мегамаркет/i.test(lower)) detected.push('megamarket');
-  if (/samokat|самокат/i.test(lower)) detected.push('samokat');
   if (/magnit|магнит/i.test(lower)) detected.push('magnit');
   const uniqueDetected = [...new Set(detected)];
   if (uniqueDetected.length > 1) return 'all';
@@ -519,8 +511,6 @@ function skuPlanFactNormalizePlatform(value = '') {
   if (['ya', 'ym', 'yandex', 'yandexmarket', 'ямаркет'].includes(raw)) return 'ya';
   if (['ga', 'goldapple', 'зя', 'золотоеяблоко'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
-  if (['megamarket', 'мегамаркет'].includes(raw)) return 'megamarket';
-  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   if (['mm', 'magnit', 'magnitmarket', 'магнитмаркет'].includes(raw)) return 'magnit';
   return raw;
 }
@@ -922,18 +912,13 @@ function skuPlanFactSelectedPeriod(indexes, monthKey, maxFactDate = '', filtersO
   const monthStart = skuPlanFactMonthStart(monthKey);
   const maxDate = maxFactDate || skuPlanFactMaxFactDate(indexes, monthKey);
   const monthMode = filters.dateMode === 'month';
-  const capDate = skuPlanFactDateKey(filters.periodEndCap);
-  const cappedMaxDate = capDate && skuPlanFactMonthFromDate(capDate) === monthKey && (!maxDate || capDate < maxDate)
-    ? capDate
-    : maxDate;
-  const periodMaxDate = monthMode && filters.fullMonth === true ? skuPlanFactMonthEnd(monthKey) : cappedMaxDate;
-  let dateTo = monthMode ? periodMaxDate : skuPlanFactSelectedDate(indexes, monthKey, maxDate, filters);
+  let dateTo = monthMode ? maxDate : skuPlanFactSelectedDate(indexes, monthKey, maxDate, filters);
   let dateFrom = monthMode ? monthStart : skuPlanFactDateKey(filters.dateFrom);
   if (!dateFrom || skuPlanFactMonthFromDate(dateFrom) !== monthKey) {
     dateFrom = monthStart;
   }
-  dateFrom = skuPlanFactClampDateToRange(dateFrom, monthStart, dateTo || periodMaxDate);
-  dateTo = skuPlanFactClampDateToRange(dateTo, dateFrom || monthStart, periodMaxDate);
+  dateFrom = skuPlanFactClampDateToRange(dateFrom, monthStart, dateTo || maxDate);
+  dateTo = skuPlanFactClampDateToRange(dateTo, dateFrom || monthStart, maxDate);
   if (dateFrom && dateTo && dateFrom > dateTo) dateFrom = dateTo;
   filters.dateFrom = dateFrom;
   filters.dateTo = dateTo;
@@ -2653,6 +2638,20 @@ function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, maxFa
   const matrixStatus = typeof skuMatrixStatusLabel === 'function' ? skuMatrixStatusLabel(sku, '') : '';
   const ownerBase = ownerName(sku) || 'Без owner';
   const ownerByPlatform = skuPlanFactOwnerMapForSku(sku);
+  const costPrice = [
+    sku?.costPrice,
+    sku?.cost,
+    sku?.costRub,
+    sku?.wb?.costPrice,
+    sku?.wb?.cost,
+    sku?.wb?.costRub,
+    sku?.ozon?.costPrice,
+    sku?.ozon?.cost,
+    sku?.ozon?.costRub,
+    sku?.ym?.costPrice,
+    sku?.ym?.cost,
+    sku?.ym?.costRub
+  ].map((value) => numberOrZero(value)).find((value) => value > 0) || null;
   const row = {
     sku,
     articleKey: skuPrimaryKey(sku),
@@ -2667,6 +2666,9 @@ function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, maxFa
     matrixProblemState,
     matrixProblemMeta,
     matrixStatus,
+    costPrice,
+    cost: costPrice,
+    costRub: costPrice,
     syntheticUnmapped: Boolean(sku.__skuPlanFactUnmapped),
     platforms
   };
@@ -3896,13 +3898,16 @@ function skuContourDownloadPayload() {
     skuMatrix: state.skuMatrix || {},
     syncHealth: state.syncHealth || {},
     portalDataQuality: state.portalDataQuality || {},
-    portalDataQuarantine: state.portalDataQuarantine || {}
+    portalDataQuarantine: state.portalDataQuarantine || {},
+    predictiveRisk: state.predictiveRisk || {},
+    autoTaskSignals: state.autoTaskSignals || {},
+    predictiveRiskOutcomeAudit: state.predictiveRiskOutcomeAudit || {}
   });
 }
 
 async function portalRefreshOperationalDataPayloads() {
   if (typeof loadJsonOrFallback !== 'function') return;
-  const [skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine, lastGoodManifest] = await Promise.all([
+  const [skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine, predictiveRisk, autoTaskSignals, predictiveRiskOutcomeAudit, lastGoodManifest] = await Promise.all([
     loadJsonOrFallback(
       'data/sku_matrix.json',
       { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } },
@@ -3924,6 +3929,21 @@ async function portalRefreshOperationalDataPayloads() {
       'Карантин данных'
     ),
     loadJsonOrFallback(
+      'data/predictive_risk_snapshot.json',
+      { schema: 'qharisma-predictive-risk-v1', generatedAt: '', summary: {}, risks: [], autoTaskSignals: [] },
+      'Прогнозные риски'
+    ),
+    loadJsonOrFallback(
+      'data/auto_task_signals.json',
+      { schema: 'qharisma-auto-task-signals-v1', generatedAt: '', summary: {}, signals: [] },
+      'Прогнозные автосигналы'
+    ),
+    loadJsonOrFallback(
+      'data/predictive_risk_outcome_audit.json',
+      { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 },
+      'Аудит прогнозов'
+    ),
+    loadJsonOrFallback(
       'data/last_good/manifest.json',
       { generatedAt: '', files: [] },
       'last good manifest'
@@ -3941,6 +3961,15 @@ async function portalRefreshOperationalDataPayloads() {
   state.portalDataQuarantine = portalDataQuarantine && typeof portalDataQuarantine === 'object'
     ? portalDataQuarantine
     : { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] };
+  state.predictiveRisk = predictiveRisk && typeof predictiveRisk === 'object'
+    ? predictiveRisk
+    : { schema: 'qharisma-predictive-risk-v1', generatedAt: '', summary: {}, risks: [], autoTaskSignals: [] };
+  state.autoTaskSignals = autoTaskSignals && typeof autoTaskSignals === 'object'
+    ? autoTaskSignals
+    : { schema: 'qharisma-auto-task-signals-v1', generatedAt: '', summary: {}, signals: [] };
+  state.predictiveRiskOutcomeAudit = predictiveRiskOutcomeAudit && typeof predictiveRiskOutcomeAudit === 'object'
+    ? predictiveRiskOutcomeAudit
+    : { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 };
   state.portalLastGoodManifest = lastGoodManifest && typeof lastGoodManifest === 'object'
     ? lastGoodManifest
     : { generatedAt: '', files: [] };
@@ -4028,6 +4057,51 @@ function portalDataRules() {
 
 function portalDataRuleNumber(key) {
   return Number(portalDataRules()[key] ?? PORTAL_DATA_RULE_DEFAULTS[key] ?? 0);
+}
+
+function portalPredictiveContourHtml() {
+  const snapshot = state.predictiveRisk || {};
+  const signalsPayload = state.autoTaskSignals || {};
+  const audit = state.predictiveRiskOutcomeAudit || {};
+  const summary = snapshot.summary || signalsPayload.summary || {};
+  const signals = Array.isArray(signalsPayload.signals)
+    ? signalsPayload.signals
+    : (Array.isArray(snapshot.autoTaskSignals) ? snapshot.autoTaskSignals : []);
+  const sources = Array.isArray(snapshot.dataFreshness?.sources) ? snapshot.dataFreshness.sources : [];
+  const staleSources = sources.filter((source) => ['stale', 'missing'].includes(String(source.status || '').toLowerCase()));
+  const generatedAt = snapshot.generatedAt || signalsPayload.generatedAt || audit.generatedAt || '';
+  const riskCount = numberOrZero(summary.totalRisks || audit.risksDetected || snapshot.risks?.length || 0);
+  const signalCount = numberOrZero(summary.autoTaskSignals || audit.signalsCreated || signals.length || 0);
+  const criticalCount = numberOrZero(summary.critical || signals.filter((signal) => signal.priority === 'critical').length);
+  const highCount = numberOrZero(summary.high || signals.filter((signal) => signal.priority === 'high').length);
+  const tone = staleSources.length ? 'warn' : (criticalCount ? 'danger' : 'ok');
+  const qualityText = audit.generatedAt
+    ? `TP ${fmt.int(audit.confirmedTruePositive || 0)} · FP ${fmt.int(audit.falsePositive || 0)} · закрыто ${fmt.int(audit.tasksClosed || 0)} · игнор ${fmt.int(audit.ignoredByOwner || 0)}`
+    : 'аудит ещё не собран';
+  const avgAction = Number.isFinite(Number(audit.avgTimeToActionHours))
+    ? `${Number(audit.avgTimeToActionHours).toFixed(1)} ч`
+    : '—';
+  return `
+    <section class="data-health-digest" data-health-predictive-contour>
+      <div class="section-subhead">
+        <div>
+          <h3>Прогнозный контур</h3>
+          <p class="small muted">Ранние риски, авто-задачи и качество прогноза.</p>
+        </div>
+        ${badge(staleSources.length ? `${fmt.int(staleSources.length)} stale source` : 'источники свежие', tone)}
+      </div>
+      <div class="data-health-digest-grid">
+        <div class="data-health-digest-card ${riskCount ? 'info' : 'ok'}"><span>рисков найдено</span><strong>${fmt.int(riskCount)}</strong></div>
+        <div class="data-health-digest-card ${signalCount ? 'warn' : 'ok'}"><span>задач создано</span><strong>${fmt.int(signalCount)}</strong></div>
+        <div class="data-health-digest-card ${criticalCount ? 'danger' : highCount ? 'warn' : 'ok'}"><span>critical / high</span><strong>${fmt.int(criticalCount)} / ${fmt.int(highCount)}</strong></div>
+        <div class="data-health-digest-card ${staleSources.length ? 'warn' : 'ok'}"><span>свежесть</span><strong>${fmt.int(sources.length - staleSources.length)} / ${fmt.int(sources.length || 0)}</strong></div>
+        <div class="data-health-digest-card info"><span>последняя сборка</span><strong>${escapeHtml(fmt.date(generatedAt || ''))}</strong></div>
+        <div class="data-health-digest-card info"><span>${fmt.int(audit.windowDays || 14)} дней качества</span><strong>${escapeHtml(qualityText)}</strong></div>
+        <div class="data-health-digest-card info"><span>реакция</span><strong>${escapeHtml(avgAction)}</strong></div>
+        <div class="data-health-digest-card ${snapshot.dataFreshness?.status === 'stale' ? 'warn' : 'ok'}"><span>режим stale</span><strong>${escapeHtml(snapshot.dataFreshness?.status || '—')}</strong></div>
+      </div>
+    </section>
+  `;
 }
 
 function portalSaveDataRules(raw = {}) {
@@ -4641,10 +4715,6 @@ async function portalHealthCreateIssueTasks(options = {}) {
   const existingIds = new Set(state.storage.tasks.map((task) => task.id).filter(Boolean));
   rows.forEach((row) => {
     const task = portalHealthBuildIssueTask(row);
-    if (typeof window.isAutoTaskSuppressed === 'function' && window.isAutoTaskSuppressed(task)) {
-      result.duplicates.push({ issue: row.key, taskId: task.id || '', suppressed: true });
-      return;
-    }
     if (!task.id || existingIds.has(task.id)) {
       result.duplicates.push({ issue: row.key, taskId: task.id || '' });
       return;
@@ -5084,6 +5154,8 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
       </section>
 
       ${importReportHtmlNew ? `<section class="data-health-import-report" data-health-import-report>${importReportHtmlNew}</section>` : ''}
+
+      ${portalPredictiveContourHtml()}
 
       <section class="data-health-focus">
         <div class="section-subhead">
@@ -5573,7 +5645,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
     </details>
   `;
 
-  root.querySelector('.section-title h2')?.replaceChildren(document.createTextNode('SKU workspace'));
+  root.querySelector('.section-title h2')?.replaceChildren(document.createTextNode('API-контур SKU'));
   if (root.dataset.skuJourneyDelegated !== '1') {
     root.dataset.skuJourneyDelegated = '1';
     root.addEventListener('click', (event) => {
@@ -5712,8 +5784,6 @@ function skuPlanFactPlatformHue(platform = '') {
     ya: 42,
     goldapple: 146,
     letu: 330,
-    megamarket: 28,
-    samokat: 168,
     magnit: 4
   }[platform] ?? 205;
 }
@@ -7088,8 +7158,6 @@ const OOS_CONTROL_PLATFORM_META = {
   ya: { label: 'Яндекс Маркет', shortLabel: 'Я.Маркет', color: '#f2c84b' },
   goldapple: { label: 'Золотое Яблоко', shortLabel: 'ЗЯ', color: '#72c86a' },
   letu: { label: 'Л’Этуаль', shortLabel: 'Л’Этуаль', color: '#d96aa9' },
-  megamarket: { label: 'Мегамаркет', shortLabel: 'Мегамаркет', color: '#f97316' },
-  samokat: { label: 'Самокат', shortLabel: 'Самокат', color: '#10b981' },
   magnit: { label: 'Магнит Маркет', shortLabel: 'Магнит', color: '#e85b55' }
 };
 
@@ -7105,15 +7173,11 @@ function oosControlNormalizePlatform(value = 'all') {
   if (['ym', 'yandex', 'yandexmarket', 'yamarket'].includes(key)) key = 'ya';
   if (['goldenapple', 'gold-apple', 'gold_apple', 'зя'].includes(key)) key = 'goldapple';
   if (['letual', 'letuall', 'летуаль'].includes(key)) key = 'letu';
-  if (['mega-market', 'mega_market', 'sbermegamarket', 'мегамаркет'].includes(key)) key = 'megamarket';
-  if (['самокат'].includes(key)) key = 'samokat';
   if (['magnitmarket', 'magnit-market'].includes(key)) key = 'magnit';
   return OOS_CONTROL_PLATFORM_META[key] ? key : 'all';
 }
 
 function oosControlGlobalPlatformFilter(fallback = 'all') {
-  const explicit = oosControlNormalizePlatform(fallback);
-  if (explicit && explicit !== 'all') return explicit;
   let sawAll = false;
   const candidates = [
     typeof document !== 'undefined' ? document.documentElement?.dataset?.marketplace : '',
@@ -7134,7 +7198,7 @@ function oosControlGlobalPlatformFilter(fallback = 'all') {
     if (normalized && normalized !== 'all') return normalized;
     if (normalized === 'all') sawAll = true;
   }
-  return sawAll ? 'all' : explicit;
+  return sawAll ? 'all' : oosControlNormalizePlatform(fallback);
 }
 
 function oosControlOwnerForRow(row = {}) {
@@ -7320,19 +7384,18 @@ function oosControlTeamNotice() {
   `;
 }
 
-function oosControlFilteredRows(options = {}) {
+function oosControlFilteredRows() {
   const rows = oosControlRows();
   const filters = oosControlFilters();
-  const ignoreCluster = !!options.ignoreCluster;
   const search = filters.search.toLowerCase();
-  const requestedCluster = String(filters.cluster || 'all').trim();
-  const matches = (row, rowOptions = {}) => {
+  const cluster = String(filters.cluster || 'all').trim();
+  return rows.filter((row) => {
     const task = oosControlTaskFor(row);
     if (filters.platform !== 'all' && row.platform !== filters.platform) return false;
     if (filters.owner !== 'all' && row.owner !== filters.owner) return false;
     if (filters.department !== 'all' && row.department !== filters.department) return false;
     const rowPlaces = oosControlRowPlaces(row);
-    if (!rowOptions.ignoreCluster && requestedCluster !== 'all' && !rowPlaces.includes(requestedCluster)) return false;
+    if (cluster !== 'all' && !rowPlaces.includes(cluster)) return false;
     if (filters.status === 'has_task' && !task) return false;
     if (filters.status === 'no_task' && task) return false;
     if (!['active', 'all', 'has_task', 'no_task'].includes(filters.status) && row.status !== filters.status) return false;
@@ -7353,16 +7416,7 @@ function oosControlFilteredRows(options = {}) {
       if (!haystack.includes(search)) return false;
     }
     return true;
-  };
-  const baseRows = rows.filter((row) => matches(row, { ignoreCluster: true }));
-  if (ignoreCluster || requestedCluster === 'all') return baseRows;
-  const hasCluster = baseRows.some((row) => oosControlRowPlaces(row).includes(requestedCluster));
-  if (!hasCluster) {
-    state.oosControlFilters = state.oosControlFilters || {};
-    state.oosControlFilters.cluster = 'all';
-    return baseRows;
-  }
-  return baseRows.filter((row) => matches(row));
+  });
 }
 
 function oosControlFreshnessNotice(payload) {
@@ -7735,12 +7789,6 @@ async function oosControlSaveTask(issueKey, rootId) {
   task.oosIssueKey = stableIssueKey;
   task.oosSignalIssueKey = String(row.issueKey || '').trim();
   task.autoCode = 'oos_control';
-  if (statusInput === 'done') {
-    const recordAutoTombstone = window.recordAutoTaskTombstone || window.recordLaunchAutoTaskTombstone;
-    if (typeof recordAutoTombstone === 'function') {
-      try { recordAutoTombstone(task); } catch (error) { console.warn('[oos-control]', 'auto tombstone', error); }
-    }
-  }
   state.storage = state.storage || {};
   state.storage.tasks = Array.isArray(state.storage.tasks) ? state.storage.tasks : [];
   const index = state.storage.tasks.findIndex((item) => item.id === task.id);
@@ -8001,14 +8049,9 @@ function oosControlSignalFromPlace(row = {}, place = {}, index = 0, payload = {}
   const oosGapDays = forecastDate ? Math.max(0, oosControlDiffDays(effectiveInboundDate, forecastDate)) : 0;
   const projectedLostTurnover = Math.max(0, oosGapDays * avgDailyTurnover);
   const alreadyOos = String(row.status || '').toLowerCase() === 'oos' || stockUnits <= 0;
-  const rowStatus = String(row.status || '').toLowerCase();
-  const targetNeed30 = numberOrZero(place.targetNeed30 ?? row.targetNeed30);
   const isRisk = alreadyOos
-    || rowStatus === 'risk'
-    || rowStatus === 'watch'
     || (daysToOos !== null && daysToOos < 10)
     || oosGapDays > 0
-    || targetNeed30 > 0
     || (!inbound.confirmed && daysToOos !== null && daysToOos < OOS_CONTROL_RISK_HORIZON_DAYS);
   if (!isRisk) return null;
   const recommendedReplenishment = Math.max(
@@ -8088,14 +8131,6 @@ function oosControlVisibleSignals(rows = oosControlFilteredRows(), payload = oos
       }
       if (signal) signals.push(signal);
     });
-  });
-  const localizationStats = oosControlPlaceLocalizationStats(rows, payload);
-  const clusterStats = new Map(localizationStats.clusters.map((item) => [item.clusterName, item]));
-  signals.forEach((signal) => {
-    const stat = clusterStats.get(signal.clusterName);
-    signal.localizationPct = stat ? stat.localizedPct : localizationStats.localizedPct;
-    signal.localizationRiskSkuCount = stat ? stat.activeSkuCount : 0;
-    signal.localizationDenominator = stat ? stat.denominator : localizationStats.totalSkuCount;
   });
   return signals.sort((left, right) => (
     numberOrZero(right.projectedLostTurnover) - numberOrZero(left.projectedLostTurnover)
@@ -8209,7 +8244,6 @@ function renderOosControlSignalFocus(signal) {
       <div class="oos-focus-meta">
         <span>Остаток <b>${fmt.int(signal.stockUnits)} шт.</b></span>
         <span>Продажи <b>${fmt.num(signal.avgDailyUnits, 1)} шт./день</b></span>
-        <span>Локализация <b>${fmt.num(signal.localizationPct ?? 0, 1)}%</b></span>
         <span>Разрыв <b>${escapeHtml(gapText)} без товара</b></span>
         <span>Довезти <b>${fmt.int(signal.recommendedReplenishment)} шт.</b></span>
       </div>
@@ -8227,10 +8261,10 @@ function renderOosControlSignalRow(signal, index = 0, selectedKey = '') {
   const isActive = signal.key === selectedKey;
   const daysText = signal.daysToOos === null || signal.daysToOos === undefined ? '—' : `${fmt.num(signal.daysToOos, 1)} д`;
   return `
-    <button type="button" class="oos-signal ${isActive ? 'active' : ''}" data-oos-signal="${escapeHtml(signal.key)}" data-oos-cluster="${escapeHtml(signal.clusterName)}" aria-selected="${isActive ? 'true' : 'false'}" style="--pc:${escapeHtml(signal.platformColor)}">
+    <button type="button" class="oos-signal ${isActive ? 'active' : ''}" data-oos-signal="${escapeHtml(signal.key)}" aria-selected="${isActive ? 'true' : 'false'}" style="--pc:${escapeHtml(signal.platformColor)}">
       <span class="oos-rank">${String(index + 1).padStart(2, '0')}</span>
       <span class="oos-product"><i></i><b>${escapeHtml(signal.skuName)}</b><small>${escapeHtml(signal.platformLabel)} · ${escapeHtml(signal.skuId)}</small></span>
-      <span class="oos-cluster"><small>кластер</small><b>${escapeHtml(signal.clusterName)}</b><em>локализация ${fmt.num(signal.localizationPct ?? 0, 1)}%</em></span>
+      <span class="oos-cluster"><small>кластер</small><b>${escapeHtml(signal.clusterName)}</b></span>
       <span class="oos-when"><small>вылетит</small><b>${escapeHtml(daysText)}</b><em>${escapeHtml(oosControlFormatDate(signal.forecastDate))}</em></span>
       <span class="oos-row-loss"><small>потеря оборота</small><b>${fmt.money(signal.projectedLostTurnover)}</b></span>
       <span class="oos-row-arrow">↗</span>
@@ -8287,94 +8321,11 @@ function renderOosControlSignalFilters(rows = [], signals = [], filters = oosCon
   `;
 }
 
-function oosControlPlaceLocalizationStats(rows = [], payload = {}) {
-  const rowSkuSet = new Set();
-  const clusterMap = new Map();
-  const activePairSet = new Set();
-  const addRiskPlace = (row = {}, place = {}) => {
-    const articleKey = String(row.articleKey || row.article || '').trim();
-    const clusterName = String(place.place || row.place || '').trim();
-    if (!articleKey || !clusterName) return;
-    rowSkuSet.add(articleKey);
-    activePairSet.add(`${articleKey}||${clusterName}`);
-    if (!clusterMap.has(clusterName)) {
-      clusterMap.set(clusterName, {
-        clusterName,
-        activeSkuSet: new Set(),
-        rowCount: 0,
-        riskAmount: 0,
-        minTurnoverDays: null
-      });
-    }
-    const item = clusterMap.get(clusterName);
-    item.activeSkuSet.add(articleKey);
-    item.rowCount += 1;
-    item.riskAmount += numberOrZero(place.revenueAtRiskDay ?? row.revenueAtRiskDay) + numberOrZero(place.lostRevenueDay ?? row.lostRevenueDay);
-    const days = oosControlFiniteOrNull(place.turnoverDays ?? row.turnoverDays);
-    if (days !== null) item.minTurnoverDays = item.minTurnoverDays === null ? days : Math.min(item.minTurnoverDays, days);
-  };
-  rows.forEach((row) => {
-    const articleKey = String(row.articleKey || row.article || '').trim();
-    if (articleKey) rowSkuSet.add(articleKey);
-    const places = Array.isArray(row.placesAtRisk) && row.placesAtRisk.length
-      ? row.placesAtRisk
-      : [{
-          place: row.place,
-          turnoverDays: row.turnoverDays,
-          revenueAtRiskDay: row.revenueAtRiskDay,
-          lostRevenueDay: row.lostRevenueDay
-        }];
-    places.forEach((place) => addRiskPlace(row, place));
-  });
-  const payloadSkuCount = numberOrZero(payload.summary?.skuCount || 0);
-  const totalSkuCount = Math.max(payloadSkuCount, rowSkuSet.size, 1);
-  const clusterCount = Math.max(clusterMap.size, 1);
-  const matrixTotal = Math.max(totalSkuCount * clusterCount, activePairSet.size, 1);
-  const activePairs = activePairSet.size;
-  const localizedPct = Math.max(0, Math.min(100, ((matrixTotal - activePairs) / matrixTotal) * 100));
-  const clusters = [...clusterMap.values()]
-    .map((item) => {
-      const activeSkuCount = item.activeSkuSet.size;
-      const clusterLocalizedPct = Math.max(0, Math.min(100, ((totalSkuCount - activeSkuCount) / totalSkuCount) * 100));
-      return {
-        clusterName: item.clusterName,
-        activeSkuCount,
-        rowCount: item.rowCount,
-        riskAmount: item.riskAmount,
-        minTurnoverDays: item.minTurnoverDays,
-        localizedPct: clusterLocalizedPct,
-        denominator: totalSkuCount
-      };
-    })
-    .sort((left, right) => (
-      numberOrZero(right.riskAmount) - numberOrZero(left.riskAmount)
-      || numberOrZero(left.localizedPct) - numberOrZero(right.localizedPct)
-      || String(left.clusterName).localeCompare(String(right.clusterName), 'ru')
-    ));
-  return {
-    totalSkuCount,
-    clusterCount,
-    matrixTotal,
-    activePairs,
-    localizedPct,
-    clusters
-  };
-}
-
-function oosControlLocalizationTone(value) {
-  const pct = numberOrZero(value);
-  if (pct >= 90) return 'ok';
-  if (pct >= 75) return 'warn';
-  return 'danger';
-}
-
-function oosControlLocalizationHistory(payload = {}, rows = [], matrixStats = null) {
+function oosControlLocalizationHistory(payload = {}, rows = []) {
   const days = Array.isArray(payload.history?.days) ? [...payload.history.days] : [];
   const summary = payload.summary || {};
   const rowPlaceCount = rows.reduce((sum, row) => sum + oosControlPlaceCount(row), 0);
-  const currentStats = matrixStats || oosControlPlaceLocalizationStats(rows, payload);
   const fallbackDenominator = Math.max(
-    numberOrZero(currentStats.matrixTotal || 0),
     numberOrZero(summary.localizationDenominator || 0),
     numberOrZero(summary.placeCount || 0),
     rowPlaceCount,
@@ -8385,17 +8336,13 @@ function oosControlLocalizationHistory(payload = {}, rows = [], matrixStats = nu
     .filter((day) => day?.date)
     .sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')))
     .slice(-21)
-    .map((day, index, source) => {
-      const isLatest = index === source.length - 1;
+    .map((day) => {
       const denominator = Math.max(
-        numberOrZero(currentStats.matrixTotal || 0),
         numberOrZero(day.localizationDenominator || 0),
         numberOrZero(day.placeCount || day.totalPlaces || day.totalIssuePlaces || 0),
         fallbackDenominator
       );
-      const activeRisk = Math.max(0, isLatest
-        ? numberOrZero(currentStats.activePairs || 0)
-        : numberOrZero(day.placeCountAtRisk || day.totalIssuePlaces || day.totalIssues || 0));
+      const activeRisk = Math.max(0, numberOrZero(day.placeCountAtRisk || day.totalIssuePlaces || day.totalIssues || 0));
       const localizedPct = denominator > 0
         ? Math.max(0, Math.min(100, ((denominator - activeRisk) / denominator) * 100))
         : 0;
@@ -8411,14 +8358,8 @@ function oosControlLocalizationHistory(payload = {}, rows = [], matrixStats = nu
     });
 }
 
-function renderOosControlLocalizationTrend(payload = {}, rows = [], signals = [], filters = oosControlFilters()) {
-  const matrixStats = oosControlPlaceLocalizationStats(rows, payload);
-  const points = oosControlLocalizationHistory(payload, rows, matrixStats);
-  const selectedCluster = String(filters.cluster || 'all').trim();
-  const selectedClusterStat = selectedCluster === 'all'
-    ? null
-    : matrixStats.clusters.find((item) => item.clusterName === selectedCluster) || null;
-  const topClusters = matrixStats.clusters.slice(0, selectedClusterStat ? 16 : 12);
+function renderOosControlLocalizationTrend(payload = {}, rows = [], signals = []) {
+  const points = oosControlLocalizationHistory(payload, rows);
   if (!points.length) {
     return `
       <section class="card oos-localization-card">
@@ -8434,96 +8375,36 @@ function renderOosControlLocalizationTrend(payload = {}, rows = [], signals = []
   const latest = points[points.length - 1];
   const avgPct = points.reduce((sum, point) => sum + point.localizedPct, 0) / points.length;
   const minPoint = [...points].sort((left, right) => left.localizedPct - right.localizedPct)[0] || latest;
-  const currentTone = oosControlLocalizationTone(matrixStats.localizedPct);
-  const selectedPct = selectedClusterStat ? selectedClusterStat.localizedPct : matrixStats.localizedPct;
-  const selectedActive = selectedClusterStat ? selectedClusterStat.activeSkuCount : matrixStats.activePairs;
-  const selectedTotal = selectedClusterStat ? selectedClusterStat.denominator : matrixStats.matrixTotal;
-  const selectedTone = oosControlLocalizationTone(selectedPct);
-  const chartWidth = 980;
-  const chartHeight = 255;
-  const chartPadX = 42;
-  const chartPadY = 34;
-  const chartPlotWidth = chartWidth - chartPadX * 2;
-  const chartPlotHeight = chartHeight - chartPadY * 2;
-  const pctValues = points.map((point) => Math.max(0, Math.min(100, numberOrZero(point.localizedPct))));
-  const minPct = pctValues.length ? Math.min(...pctValues) : 0;
-  const chartMin = minPct > 60 ? Math.max(0, Math.floor(minPct / 10) * 10 - 5) : 0;
-  const chartMax = 100;
-  const chartRange = Math.max(1, chartMax - chartMin);
-  const yForPct = (value) => chartPadY + ((chartMax - Math.max(chartMin, Math.min(chartMax, value))) / chartRange) * chartPlotHeight;
-  const baselineY = yForPct(chartMin);
-  const chartStep = points.length > 1 ? chartPlotWidth / points.length : chartPlotWidth;
-  const chartTicks = [chartMax, chartMin + chartRange * 0.66, chartMin + chartRange * 0.33, chartMin];
-  const localizationChartSvg = `
-    <svg viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="Процент локализации по дням">
-      ${chartTicks.map((tick) => {
-        const y = yForPct(tick);
-        return `
-          <line class="oos-localization-chart-line" x1="${chartPadX}" x2="${chartWidth - chartPadX}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"></line>
-          <text class="oos-localization-axis" x="${chartPadX - 10}" y="${(y + 3).toFixed(1)}" text-anchor="end">${fmt.num(tick, tick % 1 ? 1 : 0)}%</text>
-        `;
-      }).join('')}
-      ${points.map((point, index) => {
-        const pct = Math.max(0, Math.min(100, numberOrZero(point.localizedPct)));
-        const tone = oosControlLocalizationTone(pct);
-        const color = tone === 'danger' ? '#ff7b72' : tone === 'warn' ? '#e5c16f' : '#74e59b';
-        const x = chartPadX + index * chartStep + chartStep * 0.24;
-        const barWidth = Math.max(10, Math.min(28, chartStep * 0.52));
-        const y = yForPct(pct);
-        const barHeight = Math.max(6, baselineY - y);
-        const barCenter = x + barWidth / 2;
-        const hitX = chartPadX + index * chartStep;
-        const hitW = chartStep;
-        const label = String(point.date || '').slice(5) || '—';
-        const title = `${point.date}: локализация ${fmt.num(pct, 1)}%, активный риск ${fmt.int(point.activeRisk)} из ${fmt.int(point.denominator)}`;
-        const isLatest = index === points.length - 1;
-        return `
-          <g class="oos-localization-hit ${tone} ${isLatest ? 'active' : ''}" tabindex="0" aria-label="${escapeHtml(title)}">
-            <title>${escapeHtml(title)}</title>
-            <rect class="oos-localization-hotspot" x="${hitX.toFixed(1)}" y="${chartPadY}" width="${hitW.toFixed(1)}" height="${(chartHeight - chartPadY * 1.2).toFixed(1)}" rx="12"></rect>
-            <rect class="oos-localization-bar" style="--i:${index}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${barHeight.toFixed(1)}" rx="8" fill="${color}"></rect>
-            <text class="oos-localization-value" x="${barCenter.toFixed(1)}" y="${Math.max(13, y - 8).toFixed(1)}" text-anchor="middle">${fmt.num(pct, 0)}%</text>
-            <text class="oos-localization-label" x="${barCenter.toFixed(1)}" y="${chartHeight - 8}" text-anchor="middle">${escapeHtml(label)}</text>
-          </g>
-        `;
-      }).join('')}
-    </svg>
-  `;
   return `
     <section class="card oos-localization-card">
       <div class="section-subhead">
         <div>
           <h3>Локализация по дням</h3>
-          <p class="small muted">Общий график считает матрицу SKU × кластер. Ниже можно нажать кластер и увидеть его процент, позиции и риск уже без общего смешения.</p>
+          <p class="small muted">Доля складского контура без активного OOS/риска. Если дневной контур не сохранен, берется текущий контур OOS.</p>
         </div>
         <div class="badge-stack">
-          ${badge(`сейчас ${fmt.num(matrixStats.localizedPct, 1)}%`, currentTone)}
-          ${selectedClusterStat ? badge(`выбран: ${selectedClusterStat.clusterName}`, selectedTone) : badge(`${fmt.int(matrixStats.clusterCount)} кластеров`, signals.length ? 'warn' : 'ok')}
+          ${badge(`сейчас ${fmt.num(latest.localizedPct, 1)}%`, latest.localizedPct >= 85 ? 'ok' : latest.localizedPct >= 70 ? 'warn' : 'danger')}
+          ${badge(`${fmt.int(signals.length)} активных кластеров`, signals.length ? 'warn' : 'ok')}
         </div>
       </div>
       <div class="oos-localization-metrics">
-        <span><b>${fmt.num(matrixStats.localizedPct, 1)}%</b><em>общая локализация</em></span>
+        <span><b>${fmt.num(latest.localizedPct, 1)}%</b><em>последний день</em></span>
         <span><b>${fmt.num(avgPct, 1)}%</b><em>среднее за ${fmt.int(points.length)} дн.</em></span>
-        <span class="${selectedTone}"><b>${fmt.num(selectedPct, 1)}%</b><em>${selectedClusterStat ? 'локализация выбранного кластера' : `минимум ${escapeHtml(minPoint.date.slice(5))}: ${fmt.num(minPoint.localizedPct, 1)}%`}</em></span>
-        <span><b>${fmt.int(selectedActive)} / ${fmt.int(selectedTotal)}</b><em>${selectedClusterStat ? 'SKU в риске по кластеру' : 'SKU × кластер в риске'}</em></span>
+        <span><b>${fmt.num(minPoint.localizedPct, 1)}%</b><em>минимум ${escapeHtml(minPoint.date.slice(5))}</em></span>
+        <span><b>${fmt.int(latest.denominator)}</b><em>контур SKU × склад</em></span>
       </div>
       <div class="oos-localization-chart" aria-label="Процент локализации по дням">
-        ${localizationChartSvg}
-      </div>
-      <div class="oos-localization-clusters" aria-label="Локализация по кластерам">
-        ${selectedCluster !== 'all' ? `<button type="button" class="oos-cluster-pill clear" data-oos-cluster-pick="all">Все кластеры</button>` : ''}
-        ${topClusters.map((cluster) => {
-          const isActive = selectedCluster === cluster.clusterName;
-          const tone = oosControlLocalizationTone(cluster.localizedPct);
-          const daysText = cluster.minTurnoverDays === null ? '—' : `${fmt.num(cluster.minTurnoverDays, 1)} д`;
+        ${points.map((point) => {
+          const tone = point.localizedPct >= 85 ? 'ok' : point.localizedPct >= 70 ? 'warn' : 'danger';
+          const title = `${point.date}: локализация ${fmt.num(point.localizedPct, 1)}%, активный риск ${fmt.int(point.activeRisk)} из ${fmt.int(point.denominator)}`;
           return `
-            <button type="button" class="oos-cluster-pill ${tone} ${isActive ? 'active' : ''}" data-oos-cluster-pick="${escapeHtml(cluster.clusterName)}" title="${escapeHtml(cluster.clusterName)}: ${fmt.num(cluster.localizedPct, 1)}%, ${fmt.int(cluster.activeSkuCount)} SKU в риске">
-              <strong>${escapeHtml(cluster.clusterName)}</strong>
-              <span>${fmt.num(cluster.localizedPct, 1)}%</span>
-              <small>${fmt.int(cluster.activeSkuCount)} из ${fmt.int(cluster.denominator)} SKU · ${escapeHtml(daysText)}</small>
-            </button>
+            <span class="oos-localization-day ${tone}" style="--pct:${point.localizedPct}" title="${escapeHtml(title)}">
+              <i></i>
+              <b>${fmt.num(point.localizedPct, 0)}%</b>
+              <small>${escapeHtml(point.date.slice(5))}</small>
+            </span>
           `;
-        }).join('') || '<div class="empty">Нет кластеров под текущие фильтры</div>'}
+        }).join('')}
       </div>
     </section>
   `;
@@ -9568,26 +9449,9 @@ function bindOosControl(root, rootId) {
       renderOosControl(rootId);
     });
   });
-  root.querySelectorAll('[data-oos-cluster-pick]').forEach((button) => {
-    button.addEventListener('click', () => {
-      state.oosControlFilters = state.oosControlFilters || {};
-      state.oosControlFilters.cluster = button.dataset.oosClusterPick || 'all';
-      state.oosControlSelectedSignal = '';
-      renderOosControl(rootId);
-    });
-  });
   root.querySelectorAll('[data-oos-signal]').forEach((button) => {
     button.addEventListener('click', () => {
-      const signalKey = button.dataset.oosSignal || '';
-      const clusterName = button.dataset.oosCluster || '';
-      if (clusterName && state.oosControlFilters?.cluster !== clusterName) {
-        state.oosControlFilters = state.oosControlFilters || {};
-        state.oosControlFilters.cluster = clusterName;
-        state.oosControlSelectedSignal = signalKey;
-        renderOosControl(rootId);
-        return;
-      }
-      oosControlFocusSignal(root, signalKey);
+      oosControlFocusSignal(root, button.dataset.oosSignal || '');
     });
   });
   root.querySelectorAll('[data-oos-filter]').forEach((control) => {
@@ -9712,10 +9576,8 @@ function renderOosControl(rootId = 'view-oos-control') {
   if (!root) return;
   const payload = oosControlPayload();
   const rows = oosControlRows();
-  let filters = oosControlFilters();
+  const filters = oosControlFilters();
   const filteredRows = oosControlFilteredRows();
-  filters = oosControlFilters();
-  const localizationRows = oosControlFilteredRows({ ignoreCluster: true });
   const summary = oosControlSummarizeRows(filteredRows, payload.summary || {});
   const signals = oosControlVisibleSignals(filteredRows, payload);
   const selectedSignal = signals.find((signal) => signal.key === state.oosControlSelectedSignal) || signals[0] || null;
@@ -9740,15 +9602,15 @@ function renderOosControl(rootId = 'view-oos-control') {
     </div>
     ${renderOosControlCommand(signals, filters)}
     <section class="card oos-focus" data-oos-focus>${renderOosControlSignalFocus(selectedSignal)}</section>
-    ${renderOosControlLocalizationTrend(payload, localizationRows, signals, filters)}
-    ${renderOosControlSignalList(signals, selectedSignal?.key || '', localizationRows, filters)}
+    ${renderOosControlLocalizationTrend(payload, filteredRows, signals)}
+    ${renderOosControlSignalList(signals, selectedSignal?.key || '', rows, filters)}
     ${renderOosControlFormulaNote()}
     <details class="oos-advanced-panel">
       <summary>
         <span>Фильтры, комментарии и служебная таблица</span>
         ${badge(`${fmt.int(filteredRows.length)} агрегированных строк`)}
       </summary>
-      ${renderOosControlFiltersV4(localizationRows, filters)}
+      ${renderOosControlFiltersV4(rows, filters)}
       ${oosControlTeamNotice()}
       <div class="card sku-plan-fact-card oos-detail-card" style="margin-top:14px">
       <div class="section-subhead">
@@ -10557,10 +10419,6 @@ async function skuPlanFactCreateNewSkuTasks(report = {}, options = {}) {
   const tasksToCreate = [];
   rows.forEach((row) => {
     const task = skuPlanFactBuildNewSkuTask(row, report);
-    if (typeof window.isAutoTaskSuppressed === 'function' && window.isAutoTaskSuppressed(task)) {
-      result.duplicates.push({ rowNumber: row.rowNumber, apiSku: row.apiSku || row.api_sku || '', platform: row.platform || 'all', taskId: task.id || '', suppressed: true });
-      return;
-    }
     if (!task.id || existingIds.has(task.id)) {
       result.duplicates.push({ rowNumber: row.rowNumber, apiSku: row.apiSku || row.api_sku || '', platform: row.platform || 'all', taskId: task.id || '' });
       return;
@@ -10728,8 +10586,6 @@ function skuPlanFactSetFilter(rootId, key, value, options = {}) {
     filters.date = nextValue;
     filters.dateTo = nextValue;
     filters.dateMode = nextValue ? 'manual' : 'latest';
-    filters.fullMonth = false;
-    filters.periodEndCap = '';
     if (filters.dateFrom && nextValue && skuPlanFactMonthFromDate(filters.dateFrom) !== skuPlanFactMonthFromDate(nextValue)) {
       filters.dateFrom = `${nextValue.slice(0, 7)}-01`;
     }
@@ -10742,8 +10598,6 @@ function skuPlanFactSetFilter(rootId, key, value, options = {}) {
     nextValue = skuPlanFactDateKey(value);
     filters.month = nextValue ? nextValue.slice(0, 7) : filters.month;
     filters.dateMode = nextValue ? 'manual' : 'latest';
-    filters.fullMonth = false;
-    filters.periodEndCap = '';
     if (filters.dateTo && nextValue && skuPlanFactMonthFromDate(filters.dateTo) !== skuPlanFactMonthFromDate(nextValue)) {
       filters.dateTo = '';
       filters.date = '';
@@ -10760,8 +10614,6 @@ function skuPlanFactSetFilter(rootId, key, value, options = {}) {
     filters.dateFrom = '';
     filters.dateTo = '';
     filters.dateMode = nextValue === 'latest' ? 'latest' : 'month';
-    filters.fullMonth = false;
-    filters.periodEndCap = '';
   }
   if (key === 'sort') {
     filters.sortDir = skuPlanFactDefaultSortDir(nextValue);
@@ -11147,8 +10999,6 @@ function skuPlanFactV1NormalizePlatform(value = 'all') {
   if (['ga', 'goldenapple', 'gold-apple', 'gold_apple'].includes(key)) key = 'goldapple';
   if (['mm', 'magnitmarket', 'magnit-market'].includes(key)) key = 'magnit';
   if (['letual', 'letuall'].includes(key)) key = 'letu';
-  if (['mega-market', 'mega_market', 'sbermegamarket', 'мегамаркет'].includes(key)) key = 'megamarket';
-  if (['самокат'].includes(key)) key = 'samokat';
   return key === 'all' || SKU_PLAN_FACT_PLATFORMS.includes(key) ? key : 'all';
 }
 

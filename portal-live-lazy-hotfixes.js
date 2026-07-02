@@ -2,8 +2,8 @@
   if (window.__ALTEA_LIVE_LAZY_HOTFIXES_20260521__) return;
   window.__ALTEA_LIVE_LAZY_HOTFIXES_20260521__ = true;
 
-  const RENDER_BUDGET_SRC = 'portal-live-render-budget.js?v=20260603novelties-noise1';
-  const LAUNCH_BUDGET_SRC = 'portal-live-launch-budget.js?v=20260603novelties-noise1';
+  const RENDER_BUDGET_SRC = 'portal-live-render-budget.js?v=20260521budget1';
+  const LAUNCH_BUDGET_SRC = 'portal-live-launch-budget.js?v=20260521launchbudget2';
   const TABLE_BUDGET_SRC = 'portal-live-table-budget.js?v=20260531notice2';
   const VIEW_BUDGET_SCRIPTS = {
     'sku-plan-fact': [TABLE_BUDGET_SRC],
@@ -17,16 +17,20 @@
     launches: [LAUNCH_BUDGET_SRC]
   };
   const BUNDLES = {
-    dashboard: [],
+    dashboard: [
+      'portal-dashboard-calendar-stability-hotfix.js?v=20260521prod1',
+      'portal-dashboard-prime-hotfix-20260422e.js?v=20260521prod1',
+      'portal-dashboard-interactive-hotfix.js?v=20260603dashboardmtd1'
+    ],
     control: [
-      'portal-form-visual-refine.js?v=20260622layer-owner1',
-      'portal-control-center-v2-hotfix.js?v=20260619task-noise3',
-      'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3'
+      'portal-control-center-v2-hotfix.js?v=20260529taskzya1',
+      'portal-control-marketplace-scope-hotfix.js?v=20260529taskzya1',
+      'portal-form-visual-refine.js?v=20260529taskfilters1'
     ],
     executive: [
-      'portal-executive-lite-guard.js?v=20260623executivefallback1',
-      'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3',
-      'portal-form-visual-refine.js?v=20260622layer-owner1'
+      'portal-executive-lite-guard.js?v=20260530executiveowner1',
+      'portal-control-marketplace-scope-hotfix.js?v=20260529taskzya1',
+      'portal-form-visual-refine.js?v=20260529taskfilters1'
     ],
     workflow: [
       'portal-loyalty-system-hotfix.js?v=20260521prod1'
@@ -65,24 +69,35 @@
     skus: ['skus']
   };
 
-  const SIDEBAR_LABELS = {};
-  /*
-  const SIDEBAR_LABELS_OLD = {
+  const SIDEBAR_LABELS = {
     'iu-drr': {
-      title: 'РџРѕРєР°Р·Р°С‚РµР»Рё РїР»РѕС‰Р°РґРѕРє',
-      subtitle: 'WB В· Ozon В· РїР»Р°РЅ-С„Р°РєС‚'
+      title: 'Показатели площадок',
+      subtitle: 'WB · Ozon · план-факт'
     },
     'oos-control': {
-      title: 'OOS РєРѕРЅС‚СЂРѕР»СЊ',
-      subtitle: 'РђСѓС‚С‹ В· РїРѕС‚РµСЂРё В· РјРµСЂС‹'
+      title: 'OOS контроль',
+      subtitle: 'Ауты · потери · меры'
     }
   };
 
-  */
-
   const scriptPromises = new Map();
-  const viewAssetPromises = new Map();
   let renderBudgetRerenderScheduled = false;
+  let repricerHydrationPromise = null;
+
+  function taskKanbanOwnsControl() {
+    return window.__ALTEA_TASK_KANBAN_PRIMARY__ !== false;
+  }
+
+  function renderTaskGuardShell(source = 'live-lazy-hotfixes') {
+    const root = document.getElementById('view-control');
+    if (typeof window.__ALTEA_TASK_KANBAN_RENDER__ === 'function') {
+      window.__ALTEA_TASK_KANBAN_RENDER__();
+      return;
+    }
+    if (typeof window.__ALTEA_RENDER_TASK_BOOT_SHELL__ === 'function') {
+      window.__ALTEA_RENDER_TASK_BOOT_SHELL__(root, source);
+    }
+  }
 
   function existingScript(src) {
     const base = String(src || '').split('?')[0];
@@ -108,12 +123,7 @@
     if (scriptPromises.has(src)) return scriptPromises.get(src);
     const existing = existingScript(src);
     if (existing) {
-      const ready = existing.dataset.alteaLazyLoading === '1'
-        ? new Promise((resolve, reject) => {
-          existing.addEventListener('load', () => resolve(existing), { once: true });
-          existing.addEventListener('error', () => reject(new Error(`Failed to load ${src}`)), { once: true });
-        })
-        : Promise.resolve(existing);
+      const ready = Promise.resolve(existing);
       scriptPromises.set(src, ready);
       return ready;
     }
@@ -121,13 +131,8 @@
       const script = document.createElement('script');
       script.src = src;
       script.async = false;
-      script.dataset.alteaLazyLoading = '1';
-      script.onload = () => {
-        script.dataset.alteaLazyLoading = '0';
-        script.dataset.alteaLazyLoaded = '1';
-        resolve(script);
-      };
-      script.onerror = () => reject(new Error(`РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ ${src}`));
+      script.onload = () => resolve(script);
+      script.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
       (document.head || document.body || document.documentElement).appendChild(script);
     });
     scriptPromises.set(src, promise);
@@ -165,38 +170,6 @@
       chain = chain.then(() => loadScript(src));
     });
     return chain;
-  }
-
-  function loadViewAssets(view) {
-    const key = String(view || '');
-    if (viewAssetPromises.has(key)) return viewAssetPromises.get(key);
-    if (key === 'dashboard') {
-      const dashboardChain = loadRenderBudget(view);
-      viewAssetPromises.set(key, dashboardChain);
-      return dashboardChain;
-    }
-    const bundleKeys = VIEW_BUNDLES[view] || [];
-    let chain = loadRenderBudget(view);
-    bundleKeys.forEach((bundleKey) => {
-      chain = chain.then(() => loadBundle(bundleKey));
-    });
-    viewAssetPromises.set(key, chain);
-    return chain;
-  }
-
-  function primeDashboardHotfix() {
-    if (activeView() !== 'dashboard') return;
-    if (window.__ALTEA_DASHBOARD_CEO_MOTION_V1__?.render) {
-      window.__ALTEA_DASHBOARD_CEO_MOTION_V1__.render();
-      return;
-    }
-    const api = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
-    if (!api) return;
-    if (typeof api.hasRoot === 'function' && !api.hasRoot() && typeof api.applyNow === 'function') {
-      Promise.resolve(api.applyNow(false)).catch((error) => console.warn('[portal-live-lazy-hotfixes]', 'dashboard', error));
-      return;
-    }
-    if (typeof api.prime === 'function') api.prime(false);
   }
 
   function installIuDrrOzonFallback() {
@@ -289,17 +262,54 @@
 
   function loadViewHotfixes(view, options = {}) {
     syncSidebarLabels();
+    if (taskKanbanOwnsControl() && view === 'control') {
+      renderTaskGuardShell();
+      return Promise.resolve();
+    }
     if (view === 'iu-drr') installIuDrrOzonFallback();
-    return loadViewAssets(view).then(() => {
+    const bundleKeys = VIEW_BUNDLES[view] || [];
+    const budgetScripts = VIEW_BUDGET_SCRIPTS[String(view || '')] || [];
+    let chain = loadRenderBudget(view);
+    bundleKeys.forEach((bundleKey) => {
+      chain = chain.then(() => loadBundle(bundleKey));
+    });
+    return chain.then(() => {
       syncSidebarLabels();
-      if (view === 'dashboard') {
-        primeDashboardHotfix();
-        return;
-      }
-      if (options.rerender !== false && typeof rerenderCurrentView === 'function') {
+      if (view === 'repricer') ensureRepricerDataAndRender('hotfix-load');
+      if (options.rerender !== false && (bundleKeys.length || budgetScripts.length) && typeof rerenderCurrentView === 'function') {
         rerenderCurrentView();
       }
     }).catch((error) => console.warn('[portal-live-lazy-hotfixes]', view, error));
+  }
+
+  function repricerRowsReady() {
+    const rows = window.__alteaAppState?.repricer?.rows || window.state?.repricer?.rows;
+    return Array.isArray(rows) && rows.length > 0;
+  }
+
+  function ensureRepricerDataAndRender(reason = 'repricer') {
+    if (activeView() !== 'repricer') return;
+    const render = () => {
+      if (activeView() === 'repricer' && typeof window.renderRepricer === 'function') {
+        window.renderRepricer();
+      }
+    };
+    if (repricerRowsReady()) {
+      render();
+      return;
+    }
+    if (typeof window.ensureViewData !== 'function') {
+      window.setTimeout(() => ensureRepricerDataAndRender(`${reason}-wait`), 500);
+      return;
+    }
+    if (!repricerHydrationPromise) {
+      repricerHydrationPromise = Promise.resolve(window.ensureViewData('repricer'))
+        .catch((error) => console.warn('[portal-live-lazy-hotfixes:repricer-data]', reason, error))
+        .finally(() => {
+          repricerHydrationPromise = null;
+        });
+    }
+    repricerHydrationPromise.then(render);
   }
 
   function activeView() {
@@ -317,68 +327,40 @@
     if (!view) return;
     if (view === 'dashboard') {
       const run = () => {
-        if (activeView() !== 'dashboard') return;
-        if (window.__ALTEA_DASHBOARD_CEO_MOTION_V1__?.render) {
-          window.__ALTEA_DASHBOARD_CEO_MOTION_V1__.render();
-          return;
-        }
-        loadViewHotfixes('dashboard', { rerender: false });
+        if (activeView() === 'dashboard') loadViewHotfixes('dashboard');
       };
       window.setTimeout(run, 0);
       return;
     }
-    if (!portalRenderApiReady()) {
-      const waits = scheduleForView._coreWaits || (scheduleForView._coreWaits = {});
-      const waitCount = Number(waits[view] || 0);
-      if (waitCount < 24) {
-        waits[view] = waitCount + 1;
-        window.setTimeout(() => scheduleForView(view), 250);
-      }
-      return;
-    }
-    if (scheduleForView._coreWaits) scheduleForView._coreWaits[view] = 0;
     loadViewHotfixes(view);
-  }
-
-  function portalRenderApiReady() {
-    return typeof window.rerenderCurrentView === 'function' || typeof rerenderCurrentView === 'function';
-  }
-
-  function warmPriorityViews() {
-    if (window.__ALTEA_LIVE_LAZY_WARM_PRIORITY_VIEWS__) return;
-    window.__ALTEA_LIVE_LAZY_WARM_PRIORITY_VIEWS__ = true;
-    let attempts = 0;
-    const waitForCore = () => {
-      attempts += 1;
-      if (!portalRenderApiReady()) {
-        if (attempts < 24) window.setTimeout(waitForCore, 250);
-        return;
-      }
-      const warm = () => {
-        const current = activeView();
-        if (current !== 'control') loadViewHotfixes('control', { rerender: false });
-        if (current !== 'executive') loadViewHotfixes('executive', { rerender: false });
-      };
-      if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(warm, { timeout: 1800 });
-      } else {
-        window.setTimeout(warm, 900);
-      }
-    };
-    window.setTimeout(waitForCore, 350);
   }
 
   window.__alteaLoadLiveHotfixes = loadViewHotfixes;
 
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest && event.target.closest('.nav-btn[data-view]');
+    if (button && button.dataset.view !== 'dashboard') {
+      loadViewHotfixes(button.dataset.view, { rerender: false });
+      if (button.dataset.view === 'repricer') {
+        window.setTimeout(() => ensureRepricerDataAndRender('nav-click'), 120);
+        window.setTimeout(() => ensureRepricerDataAndRender('nav-click-late'), 1600);
+      }
+    }
+  }, true);
+
   window.addEventListener('altea:viewchange', (event) => {
     syncSidebarLabels();
-    scheduleForView(event.detail && event.detail.view);
+    const view = event.detail && event.detail.view;
+    scheduleForView(view);
+    if (view === 'repricer') {
+      window.setTimeout(() => ensureRepricerDataAndRender('viewchange'), 120);
+      window.setTimeout(() => ensureRepricerDataAndRender('viewchange-late'), 1600);
+    }
   });
 
   syncSidebarLabels();
   window.setTimeout(syncSidebarLabels, 300);
   window.setTimeout(syncSidebarLabels, 1200);
-  warmPriorityViews();
 
   if (requestedView()) scheduleForView(requestedView());
 

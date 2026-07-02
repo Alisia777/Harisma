@@ -480,37 +480,8 @@ function repricerHasSkuProfile(profile) {
   return Boolean(String(profile.status || '').trim() || String(profile.role || '').trim() || String(profile.launchReady || '').trim());
 }
 
-function repricerRecordNotExpired(record) {
-  const expiresAt = String(record?.expiresAt || record?.expires_at || '').trim();
-  if (!expiresAt) return true;
-  const stamp = Date.parse(expiresAt);
-  return Number.isNaN(stamp) || stamp >= Date.now();
-}
-
-function repricerOverrideIsApprovedBusinessRecord(record) {
-  if (!record || typeof record !== 'object') return false;
-  const localDraftMarker = 'local_storage_draft_only';
-  const status = String(record.approvalStatus || record.approval_status || record.status || '').trim().toLowerCase();
-  const approved = !status || ['approved', 'active'].includes(status);
-  const sourceStore = String(record.sourceStore || record.source_store || record.source || localDraftMarker).trim().toLowerCase();
-  const serverBacked = Boolean(sourceStore && sourceStore !== localDraftMarker);
-  const metadataComplete = Boolean(
-    String(record.author || record.createdBy || record.created_by || '').trim()
-    && String(record.role || record.authorRole || record.author_role || '').trim()
-    && String(record.reason || record.note || '').trim()
-    && String(record.createdAt || record.created_at || '').trim()
-    && String(record.approvedBy || record.approved_by || '').trim()
-    && String(record.approvedAt || record.approved_at || '').trim()
-  );
-  return approved && serverBacked && metadataComplete && repricerRecordNotExpired(record);
-}
-
-function repricerApprovedBusinessRecords(pool = []) {
-  return (Array.isArray(pool) ? pool : []).filter(repricerOverrideIsApprovedBusinessRecord);
-}
-
 function repricerFindCorridor(articleKey, platform) {
-  const pool = repricerApprovedBusinessRecords(state.storage?.repricerCorridors || []);
+  const pool = state.storage?.repricerCorridors || [];
   return pool.find((item) => item.articleKey === articleKey && item.platform === platform)
     || pool.find((item) => item.articleKey === articleKey && item.platform === 'all')
     || null;
@@ -527,7 +498,7 @@ function repricerHasCorridor(corridor) {
 }
 
 function repricerFindOverride(articleKey, platform) {
-  const pool = repricerApprovedBusinessRecords(state.storage?.repricerOverrides || []);
+  const pool = state.storage?.repricerOverrides || [];
   return pool.find((item) => item.articleKey === articleKey && item.platform === platform)
     || pool.find((item) => item.articleKey === articleKey && item.platform === 'all')
     || null;
@@ -2255,12 +2226,6 @@ function repricerRowsCacheSignature() {
     workbench.liveEnrichmentAt || '',
     Array.isArray(platforms?.wb?.rows) ? platforms.wb.rows.length : 0,
     Array.isArray(platforms?.ozon?.rows) ? platforms.ozon.rows.length : 0,
-    state.canonicalRepricer?.snapshot_id || '',
-    state.canonicalRepricer?.generatedAt || '',
-    state.canonicalRepricer?.summary?.feature_status || state.canonicalRepricer?.feature_status || '',
-    Array.isArray(state.canonicalRepricer?.rows) ? state.canonicalRepricer.rows.length : 0,
-    (state.portalRuntimeWiring?.artifacts || []).map((artifact) => `${artifact.id}:${artifact.checksum || ''}`).join(','),
-    state.portalFeatureReadiness?.features?.repricer?.status || '',
     state.repricer?.generatedAt || '',
     Array.isArray(state.repricer?.rows) ? state.repricer.rows.length : 0,
     state.repricerLive?.generatedAt || '',
@@ -2316,155 +2281,7 @@ function buildRepricerRows(forceFresh = false) {
   return rows;
 }
 
-function canonicalRepricerRowsAvailable() {
-  return state.canonicalRepricer?.schema === 'canonical-repricer-v1'
-    && Array.isArray(state.canonicalRepricer.rows)
-    && state.canonicalRepricer.rows.length > 0;
-}
-
-function canonicalRepricerRuntimeSide(canonical = {}) {
-  const facts = canonical.facts || {};
-  const economics = canonical.economics || {};
-  const policy = canonical.policy || {};
-  const recommendation = canonical.recommendation || {};
-  const price = facts.seller_price == null ? null : numberOrZero(facts.seller_price);
-  const proposedPrice = recommendation.price == null ? null : numberOrZero(recommendation.price);
-  const finalPrice = proposedPrice == null ? price : proposedPrice;
-  const ready = recommendation.status === 'ready' && proposedPrice != null;
-  const floor = policy.floor == null ? 0 : numberOrZero(policy.floor);
-  const cap = policy.cap == null ? 0 : numberOrZero(policy.cap);
-  const reasonCodes = Array.isArray(recommendation.reason_codes) ? recommendation.reason_codes : [];
-  const changed = ready && price != null && Math.abs(numberOrZero(finalPrice) - numberOrZero(price)) >= 1;
-  return {
-    canonicalSource: true,
-    sourceStore: 'canonical_repricer',
-    snapshotId: canonical.snapshot_id || state.canonicalRepricer?.snapshot_id || '',
-    platform: canonical.platform,
-    articleKey: canonical.article_key,
-    currentPrice: price,
-    buyerPrice: facts.client_price == null ? null : numberOrZero(facts.client_price),
-    currentClientPrice: facts.client_price == null ? null : numberOrZero(facts.client_price),
-    currentSppPct: facts.spp_pct == null ? null : numberOrZero(facts.spp_pct),
-    stock: facts.stock == null ? null : numberOrZero(facts.stock),
-    inboundUnits: facts.inbound == null ? null : numberOrZero(facts.inbound),
-    stockStatus: facts.stock_status || '',
-    stockGateBlocksAutoprice: !ready,
-    currentPriceDate: facts.as_of || '',
-    sourceAsOf: facts.as_of || '',
-    costRub: economics.cost == null ? null : numberOrZero(economics.cost),
-    rawCostPresent: economics.cost != null && numberOrZero(economics.cost) > 0,
-    commissionPctValue: economics.commission_pct == null ? null : numberOrZero(economics.commission_pct),
-    logisticsRubValue: economics.logistics_per_unit == null ? null : numberOrZero(economics.logistics_per_unit),
-    taxPctValue: economics.tax_pct == null ? null : numberOrZero(economics.tax_pct),
-    pricingProxyPresent: false,
-    hardFloor: floor,
-    b2bFloor: floor,
-    effectiveFloor: floor,
-    economicFloor: floor,
-    marginFloor: floor,
-    finalGuardFloor: floor,
-    finalGuardFloorRounded: floor,
-    capPrice: cap,
-    stretchCap: cap,
-    finalGuardCap: cap,
-    finalGuardCapRounded: cap,
-    recommendedPrice: finalPrice,
-    finalPrice,
-    preAlignPrice: finalPrice,
-    cappedPrice: finalPrice,
-    marginPct: recommendation.margin_pct == null ? null : numberOrZero(recommendation.margin_pct),
-    currentMarginPct: recommendation.current_margin_pct == null ? null : numberOrZero(recommendation.current_margin_pct),
-    requiredMarginPct: policy.target_margin_pct == null ? null : numberOrZero(policy.target_margin_pct),
-    changeRub: price != null && finalPrice != null ? numberOrZero(finalPrice) - numberOrZero(price) : null,
-    changePct: recommendation.change_pct == null ? null : numberOrZero(recommendation.change_pct),
-    changed,
-    belowFloorNow: price != null && floor > 0 && numberOrZero(price) + 0.001 < floor,
-    confidence: ready ? 'green' : 'red',
-    criticalGate: ready ? '' : 'BLOCK',
-    finalReasonCode: ready ? 'CANONICAL_READY' : 'CANONICAL_BLOCKED',
-    decisionMode: ready ? 'ready' : 'blocked',
-    decisionText: ready ? 'canonical ready' : 'canonical blocked',
-    reasonCodes,
-    reason: reasonCodes.join(' · '),
-    stopReason: reasonCodes.join(' · '),
-    safeToExport: ready && changed,
-    promoSafeToExport: false,
-    promoActive: false,
-    promoConfigured: false,
-    promoOfferConfigured: false,
-    hasOverride: false,
-    hasManualOverride: false,
-    outOfSpec: false,
-    launchHold: '',
-    floorRaiseReady: false,
-    floorRaiseSafeToExport: false,
-    lowStockRisk: false,
-    marginRisk: recommendation.margin_pct != null && policy.target_margin_pct != null
-      && numberOrZero(recommendation.margin_pct) + 0.0001 < numberOrZero(policy.target_margin_pct),
-    liveDeltaRub: null,
-    liveDeltaPct: null,
-    liveDrift: false,
-    hasLiveBenchmark: false,
-    economicFloorSource: economics.complete ? 'canonical_economics' : 'canonical_incomplete',
-    floorSourceSummary: 'canonical policy',
-    capSourceSummary: 'canonical policy',
-    baseSourceSummary: 'canonical recommendation',
-    passports: canonical.passports || {},
-    audit: canonical.audit || {}
-  };
-}
-
-function buildCanonicalRepricerRowsFresh() {
-  if (!canonicalRepricerRowsAvailable()) return [];
-  const skuMap = repricerSkuFactMap();
-  const byArticle = new Map();
-  state.canonicalRepricer.rows.forEach((canonical) => {
-    const platform = String(canonical.platform || '').trim().toLowerCase();
-    if (!['wb', 'ozon', 'ym'].includes(platform)) return;
-    const articleKey = String(canonical.article_key || canonical.articleKey || '').trim();
-    const normalizedKey = repricerNormalizeArticleKey(articleKey);
-    if (!articleKey || !normalizedKey) return;
-    const skuFact = skuMap.get(normalizedKey) || null;
-    if (!byArticle.has(articleKey)) {
-      byArticle.set(articleKey, {
-        articleKey,
-        article: articleKey,
-        brand: skuFact?.brand || '',
-        name: skuFact?.name || '',
-        owner: typeof platformOwnerName === 'function'
-          ? (platformOwnerName(skuFact, platform) || (typeof skuFact?.owner === 'object' ? skuFact.owner?.name : skuFact?.owner) || '')
-          : ((typeof skuFact?.owner === 'object' ? skuFact.owner?.name : skuFact?.owner) || ''),
-        ownerByPlatform: {},
-        status: skuFact?.status || skuFact?.registryStatus || '',
-        productLifecycle: null,
-        role: '',
-        launchReady: '',
-        segment: skuFact?.segment || '',
-        abc: skuFact?.abc || '',
-        profile: null,
-        liveRow: null,
-        skuFact,
-        wb: null,
-        ozon: null,
-        ym: null,
-        canonicalSource: true,
-        canonicalSnapshotId: canonical.snapshot_id || state.canonicalRepricer?.snapshot_id || ''
-      });
-    }
-    const row = byArticle.get(articleKey);
-    const owner = typeof platformOwnerName === 'function' ? platformOwnerName(skuFact, platform) : '';
-    if (owner) row.ownerByPlatform[platform] = owner;
-    if (platform === 'wb' || platform === 'ozon' || platform === 'ym') {
-      row[platform] = canonicalRepricerRuntimeSide(canonical);
-    }
-  });
-  return [...byArticle.values()]
-    .sort((left, right) => String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru'));
-}
-
 function buildRepricerRowsFresh() {
-  const canonicalRows = buildCanonicalRepricerRowsFresh();
-  if (canonicalRows.length) return canonicalRows;
   const settings = normalizeRepricerSettings(state.storage?.repricerSettings || {});
   const platforms = state.smartPriceWorkbench?.platforms || {};
   const liveMap = repricerLiveMap();
@@ -4197,15 +4014,8 @@ function repricerImportNumber(value) {
 
 function repricerImportPlatform(value) {
   const raw = String(value || '').trim().toLowerCase();
-  const compact = raw.replace(/[\s_.-]+/g, '');
   if (raw.includes('ozon') || raw.includes('озон')) return 'ozon';
   if (raw.includes('wb') || raw.includes('wild') || raw.includes('вайлд')) return 'wb';
-  if (['ym', 'ya', 'yandex', 'yandexmarket', 'yamarket'].includes(compact)) return 'ym';
-  if (['ga', 'goldapple', 'goldenapple'].includes(compact)) return 'goldapple';
-  if (['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
-  if (['megamarket', 'sbermegamarket'].includes(compact)) return 'megamarket';
-  if (['samokat'].includes(compact)) return 'samokat';
-  if (['mm', 'magnit', 'magnitmarket'].includes(compact)) return 'magnit';
   return 'all';
 }
 
@@ -4446,10 +4256,7 @@ function repricerTeamActor() {
 
 function repricerQueuePlatform(platform = 'all') {
   const raw = String(platform || '').trim().toLowerCase();
-  const compact = raw.replace(/[\s_.-]+/g, '');
-  const normalized = repricerImportPlatform(compact);
-  if (normalized !== 'all') return normalized;
-  return ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'all'].includes(compact) ? compact : 'all';
+  return ['wb', 'ozon', 'all'].includes(raw) ? raw : 'all';
 }
 
 function repricerQueueTaskKey(item = {}) {
@@ -6339,38 +6146,36 @@ function attachRepricerEvents(root) {
   }
 }
 
-function repricerRuntimeStatusBadges() {
-  const readiness = state.portalFeatureReadiness?.features?.repricer || {};
-  const runtime = state.portalRuntimeWiring || {};
-  const canonicalRows = Array.isArray(state.canonicalRepricer?.rows) ? state.canonicalRepricer.rows.length : 0;
-  const badges = [];
-  if (canonicalRows) badges.push(badge(`canonical ${fmt.int(canonicalRows)}`, 'info'));
-  const status = String(readiness.status || state.canonicalRepricer?.feature_status || '').trim().toLowerCase();
-  if (status) {
-    const tone = status === 'ok' ? 'ok' : (status === 'blocked' ? 'danger' : 'warn');
-    const publishable = readiness.publishable_rows ?? state.canonicalRepricer?.summary?.publishable_rows;
-    const eligible = readiness.eligible_rows ?? state.canonicalRepricer?.summary?.eligible_rows;
-    const suffix = eligible != null ? ` ${fmt.int(publishable || 0)}/${fmt.int(eligible)}` : '';
-    badges.push(badge(`repricer ${status}${suffix}`, tone));
-  }
-  if (runtime.status && runtime.status !== 'ok') {
-    badges.push(badge(`runtime ${runtime.status}`, runtime.status === 'blocked' ? 'danger' : 'warn'));
-  }
-  return badges;
-}
-
 function renderRepricer() {
   const root = document.getElementById('view-repricer');
   if (!root) return;
   const operatorLayer = repricerOperatorLayer();
-  const renderSignature = repricerRenderSignature(operatorLayer);
-  if (root.dataset.repricerRenderSignature === renderSignature && root.children.length) return;
   const sourceRows = buildRepricerRows();
+  const renderSignature = `${repricerRenderSignature(operatorLayer)}|rows:${sourceRows.length}|repricer:${state.repricer?.generatedAt || ''}|workbench:${state.smartPriceWorkbench?.generatedAt || ''}`;
+  if (root.dataset.repricerRenderSignature === renderSignature && root.children.length) return;
   if (!sourceRows.length) {
     root.dataset.repricerRenderSignature = renderSignature;
+    const attempts = Number(root.dataset.repricerLazyAttempts || 0);
+    if (attempts < 12) {
+      root.dataset.repricerLazyAttempts = String(attempts + 1);
+      const retryRender = () => {
+        const isActive = state.activeView === 'repricer' || root.classList.contains('active');
+        if (!isActive) return;
+        root.dataset.repricerRenderSignature = '';
+        renderRepricer();
+      };
+      if (typeof window.ensureViewData === 'function') {
+        Promise.resolve(window.ensureViewData('repricer'))
+          .then(retryRender)
+          .catch((error) => console.warn('[repricer-lazy-data]', error));
+      } else {
+        window.setTimeout(retryRender, 500);
+      }
+    }
     root.innerHTML = `<div class="card"><div class="head"><div><h3>Репрайсер</h3><div class="muted small">Контур пока не получил smart price workbench.</div></div>${badge('нет данных', 'warn')}</div><div class="muted" style="margin-top:10px">Нужно дождаться загрузки снапшота цен, после этого вкладка начнет считать рекомендации и хранить override прямо в портале.</div></div>`;
     return;
   }
+  delete root.dataset.repricerLazyAttempts;
   const operatorSimple = operatorLayer !== 'advanced';
   const health = repricerHealthcheck(sourceRows);
   const smokeTests = health.smokeTests;
@@ -6411,7 +6216,6 @@ function renderRepricer() {
   };
   const smokePassed = health.metrics.smoke_passed;
   const summaryBadges = [
-    ...repricerRuntimeStatusBadges(),
     badge(`нужны решения ${fmt.int(actionableRows)}`, actionableRows ? 'warn' : 'ok'),
     badge(`ручные решения ${fmt.int(manualOverrideRows)}`, manualOverrideRows ? 'info' : 'ok'),
     badge(`поднять до MIN ${fmt.int(floorRaiseSafeSides)}`, floorRaiseSafeSides ? 'ok' : 'info'),

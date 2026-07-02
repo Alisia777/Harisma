@@ -1,0 +1,145 @@
+{
+  "schema": "qharisma-auto-task-signals-v1",
+  "generatedAt": "2026-07-02T07:52:31.227Z",
+  "asOfDate": "2026-07-01",
+  "source": "predictive_risk_snapshot",
+  "sourceFile": "predictive_risk_snapshot.json",
+  "summary": {
+    "totalRisks": 90,
+    "autoTaskSignals": 2,
+    "critical": 54,
+    "high": 28,
+    "medium": 8,
+    "watch": 0,
+    "byRule": {
+      "demand_slowdown_early_warning": 65,
+      "price_position_risk": 10,
+      "forecast_iu_miss_risk": 1,
+      "data_freshness_predictive_blocker": 2,
+      "stockout_forecast_risk": 12
+    },
+    "byPriority": {
+      "critical": 54,
+      "high": 28,
+      "medium": 8
+    },
+    "byPlatform": {
+      "ozon": 57,
+      "cross": 10,
+      "wb": 21,
+      "all": 2
+    }
+  },
+  "signals": [
+    {
+      "id": "auto-predictive-c50dbee5ad5f",
+      "source": "auto",
+      "autoCode": "data_freshness_predictive_blocker|skus|2026-07-01",
+      "articleKey": "",
+      "title": "SKU registry — данные устарели",
+      "nextAction": "Проверить источник skus.json и перезапустить синхронизацию.",
+      "reason": "Что видно заранее: свежесть данных отклоняется от нормального уровня: ожидалось 2026-07-01, стало нет даты, отклонение -100,0%, период текущий период.\nПрогноз: пока источник отстает, бизнес-сигналы по этим данным лучше не создавать.\nВероятная причина: data_layer_stale, confidence=high.\nЧто проверить:\n1. проверить источник/API и дату последнего факта\n2. перезапустить синхронизацию слоя\n3. после восстановления пересобрать прогнозные сигналы\nКритерий закрытия: причина зафиксирована, действие выполнено, метрика восстановилась или РОП согласовал решение.",
+      "owner": "",
+      "due": "2026-07-02",
+      "status": "new",
+      "type": "data_quality",
+      "priority": "critical",
+      "platform": "cross",
+      "entityLabel": "SKU registry",
+      "riskScore": 84,
+      "horizon": "H0",
+      "whatChanged": "свежесть данных отклоняется от нормального уровня",
+      "baseline": "2026-07-01",
+      "current": "нет даты",
+      "deltaPct": -1,
+      "forecastText": "пока источник отстает, бизнес-сигналы по этим данным лучше не создавать.",
+      "probableCause": "data_layer_stale",
+      "confidence": "high",
+      "recommendedAction": "Проверить источник skus.json и перезапустить синхронизацию.",
+      "closeCriteria": "Причина зафиксирована, действие выполнено, метрика восстановилась или РОП согласовал решение.",
+      "deadline": "2026-07-02",
+      "predictiveRiskId": "risk-data_freshness_predictive_blocker-all-sku_registry-2026_07_01",
+      "forecast": {
+        "metric": "freshness",
+        "metricLabel": "свежесть данных",
+        "currentValue": 999,
+        "expectedValue": 0,
+        "deltaPct": -1,
+        "period": {
+          "from": "",
+          "to": "2026-07-01",
+          "days": 999
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "нет даты",
+        "expectedValueLabel": "2026-07-01"
+      },
+      "drivers": [
+        {
+          "key": "stale_layer",
+          "label": "skus.json: факт до нет даты, ожидался 2026-07-01",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "auto-predictive-20d3f4b6e081",
+      "source": "auto",
+      "autoCode": "data_freshness_predictive_blocker|oos_control|2026-07-01",
+      "articleKey": "",
+      "title": "OOS control — данные устарели",
+      "nextAction": "Проверить источник oos_control.json и перезапустить синхронизацию.",
+      "reason": "Что видно заранее: свежесть данных отклоняется от нормального уровня: ожидалось 2026-07-01, стало 2026-06-30, отклонение -100,0%, период 2026-06-30 - 2026-07-01.\nПрогноз: пока источник отстает, бизнес-сигналы по этим данным лучше не создавать.\nВероятная причина: data_layer_stale, confidence=high.\nЧто проверить:\n1. проверить источник/API и дату последнего факта\n2. перезапустить синхронизацию слоя\n3. после восстановления пересобрать прогнозные сигналы\nКритерий закрытия: причина зафиксирована, действие выполнено, метрика восстановилась или РОП согласовал решение.",
+      "owner": "",
+      "due": "2026-07-03",
+      "status": "new",
+      "type": "data_quality",
+      "priority": "high",
+      "platform": "cross",
+      "entityLabel": "OOS control",
+      "riskScore": 66,
+      "horizon": "H0",
+      "whatChanged": "свежесть данных отклоняется от нормального уровня",
+      "baseline": "2026-07-01",
+      "current": "2026-06-30",
+      "deltaPct": -1,
+      "forecastText": "пока источник отстает, бизнес-сигналы по этим данным лучше не создавать.",
+      "probableCause": "data_layer_stale",
+      "confidence": "high",
+      "recommendedAction": "Проверить источник oos_control.json и перезапустить синхронизацию.",
+      "closeCriteria": "Причина зафиксирована, действие выполнено, метрика восстановилась или РОП согласовал решение.",
+      "deadline": "2026-07-03",
+      "predictiveRiskId": "risk-data_freshness_predictive_blocker-all-oos_control-2026_07_01",
+      "forecast": {
+        "metric": "freshness",
+        "metricLabel": "свежесть данных",
+        "currentValue": 1,
+        "expectedValue": 0,
+        "deltaPct": -1,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "2026-06-30",
+        "expectedValueLabel": "2026-07-01"
+      },
+      "drivers": [
+        {
+          "key": "stale_layer",
+          "label": "oos_control.json: факт до 2026-06-30, ожидался 2026-07-01",
+          "weight": 1
+        }
+      ]
+    }
+  ]
+}

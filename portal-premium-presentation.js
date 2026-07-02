@@ -1,4 +1,7 @@
 (function () {
+  if (window.__ALTEA_PREMIUM_PRESENTATION__) return;
+  window.__ALTEA_PREMIUM_PRESENTATION__ = true;
+
   var ROUTES = {
     dashboard: {
       id: 'dashboard',
@@ -2242,16 +2245,19 @@
         event.preventDefault();
         event.stopImmediatePropagation();
         setExecutiveFunnelFilter('month', event.target.value || 'latest', 120);
+        return;
       }
       if (event.target.matches && event.target.matches('[data-executive-funnel-owner]')) {
         event.preventDefault();
         event.stopImmediatePropagation();
         setExecutiveFunnelFilter('owner', event.target.value || 'all', 120);
+        return;
       }
       if (event.target.matches && event.target.matches('[data-executive-funnel-sort]')) {
         event.preventDefault();
         event.stopImmediatePropagation();
         setExecutiveFunnelFilter('sort', event.target.value || 'completionAsc', 120);
+        return;
       }
     }, true);
     document.addEventListener('change', function (event) {

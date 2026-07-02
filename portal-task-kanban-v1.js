@@ -304,10 +304,11 @@
     ].join('#');
   }
 
-  function taskSourceSignature(localTasks) {
+  function taskSourceSignature(localTasks, remoteTasks = []) {
     const state = appState();
     return [
       taskStamp(localTasks),
+      taskStamp(remoteTasks),
       Array.isArray(state?.skus) ? state.skus.length : 0,
       state?.productLeaderboard?.generatedAt || '',
       state?.predictiveRisk?.generatedAt || '',
@@ -336,15 +337,24 @@
       const storage = appState()?.storage?.tasks;
       return Array.isArray(storage) ? storage : [];
     })();
-    const signature = taskSourceSignature(localTasks);
+    let remoteTasks = [];
+    const hasRemoteProvider = typeof window.getAllTasks === 'function';
+    if (hasRemoteProvider) {
+      try {
+        remoteTasks = window.getAllTasks() || [];
+      } catch (_) {
+        remoteTasks = [];
+      }
+    }
+    remoteTasks = Array.isArray(remoteTasks) ? remoteTasks : [];
+    const signature = taskSourceSignature(localTasks, remoteTasks);
     const now = Date.now();
     if (taskListCache.signature === signature && taskListCache.expiresAt > now) {
       return taskListCache.tasks;
     }
     let tasks = [];
     try {
-      if (typeof window.getAllTasks === 'function') {
-        const remoteTasks = window.getAllTasks() || [];
+      if (hasRemoteProvider) {
         const byId = new Map();
         remoteTasks.filter(Boolean).forEach((task) => {
           const id = String(task?.id || '').trim();

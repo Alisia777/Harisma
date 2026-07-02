@@ -43,7 +43,7 @@
   ];
 
   window.ALTEA_PORTAL_ACCESS_RULES = window.ALTEA_PORTAL_ACCESS_RULES || {
-    version: '2026-07-01',
+    version: '2026-07-02',
     allViews: ALL_VIEWS,
 
     // Unknown authenticated users see only the dashboard until they are assigned below
@@ -85,6 +85,7 @@
       'a.v.pirogova@qeep.life': { role: 'employee' },
       'e.a.domozhirova@qeep.life': { role: 'employee' },
       's.s.artyukhin@qeep.life': { role: 'owner' },
+      'a.a.ivanova@ya.qeep.life': { role: 'owner' },
       'k.labin@qeep.life': { role: 'employee' },
       'a.zarovskaya@qeep.life': { role: 'employee' },
       'v.klimov@qeep.life': { role: 'employee' },

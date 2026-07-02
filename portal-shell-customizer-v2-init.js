@@ -66,6 +66,7 @@
     var loadingReleaseTimer = 0;
     var lastMotionHideAt = 0;
     var taskLoadingStartedAt = 0;
+    var filtersResetApplied = false;
 
     function appState() {
       return window.__alteaAppState || window.__ALTEA_STATE__ || window.state || {};
@@ -139,6 +140,7 @@
       if (isControlRoute()) return;
       if (document.body) document.body.classList.remove('altea-task-route-gate');
       taskLoadingStartedAt = 0;
+      filtersResetApplied = false;
       window.clearTimeout(loadingReleaseTimer);
       var stage = document.querySelector('.altea-motion-stage');
       if (stage) {
@@ -166,7 +168,8 @@
     }
 
     function resetInitialTaskFilters() {
-      if (!isControlRoute() || window[TASK_FILTER_TOUCHED_KEY]) return;
+      if (!isControlRoute() || window[TASK_FILTER_TOUCHED_KEY] || filtersResetApplied) return;
+      filtersResetApplied = true;
       var state = appState();
       state.controlFilters = state.controlFilters && typeof state.controlFilters === 'object' ? state.controlFilters : {};
       var filters = state.controlFilters;
@@ -186,9 +189,6 @@
       delete filters.peopleRole;
       delete filters.lazyQueue;
       delete filters.taskFullMode;
-      try {
-        if (typeof window.invalidateControlTaskCache === 'function') window.invalidateControlTaskCache();
-      } catch (error) {}
     }
 
     function cleanupLegacyTaskLayers(root) {
@@ -349,6 +349,7 @@
       if (!target) return;
       if (document.body) document.body.classList.add('altea-task-route-gate');
       taskLoadingStartedAt = 0;
+      filtersResetApplied = false;
       scheduleTaskBurst();
     }, true);
   }

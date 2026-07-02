@@ -4,11 +4,12 @@
   if (window.__ALTEA_LAUNCH_ACTION_RESCUE_V1__) return;
   window.__ALTEA_LAUNCH_ACTION_RESCUE_V1__ = true;
 
-  const VERSION = '20260701-launch-action-rescue-modal-v1';
+  const VERSION = '20260702-control-route-rescue1';
   const STORAGE_KEY = 'brand-portal-local-v1';
   const ACTION_SELECTOR = '[data-launch-ops-create-selected],[data-launch-ops-create-bulk],[data-launch-ops-open-tasks],[data-launch-ops-create-one],[data-launch-ops-open-task]';
   let lastAction = { key: '', at: 0 };
   let openingControl = false;
+  let routeControlRenderAt = 0;
 
   function appState() {
     let stateRef = window.__alteaAppState || window.__ALTEA_STATE__ || null;
@@ -108,8 +109,8 @@
     return root;
   }
 
-  function activateControlDom() {
-    const stateRef = setLaunchFilters();
+  function activateControlDom(options = {}) {
+    const stateRef = options.applyLaunchFilters ? setLaunchFilters() : appState();
     stateRef.activeView = 'control';
     const root = ensureControlRoot();
     document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section === root || section.id === 'view-control'));
@@ -167,10 +168,14 @@
     `;
   }
 
-  function renderControlNow() {
-    const root = activateControlDom();
+  function renderControlNow(options = {}) {
+    const applyLaunchFilters = options.applyLaunchFilters === true;
+    const allowFallback = options.allowFallback !== false;
+    const root = activateControlDom({ applyLaunchFilters });
     try {
-      if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__?.renderControl) {
+      if (typeof window.__ALTEA_TASK_KANBAN_RENDER__ === 'function') {
+        window.__ALTEA_TASK_KANBAN_RENDER__();
+      } else if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__?.renderControl) {
         window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__.renderControl();
       } else if (typeof window.renderControlCenter === 'function') {
         window.renderControlCenter('view-control');
@@ -178,22 +183,30 @@
     } catch (error) {
       console.warn('[launch-action-rescue] render control', error);
     }
-    window.setTimeout(() => {
-      const controlRoot = activateControlDom();
-      const hasDesign = !!controlRoot.querySelector('[data-task-calendar-design-v1]');
-      const hasText = String(controlRoot.textContent || '').trim().length > 30;
-      if (!hasDesign || !hasText) renderFallbackControl(controlRoot);
-    }, 900);
+    if (allowFallback) {
+      window.setTimeout(() => {
+        const controlRoot = activateControlDom({ applyLaunchFilters });
+        const hasDesign = !!controlRoot.querySelector('[data-task-calendar-design-v1]');
+        const hasText = String(controlRoot.textContent || '').trim().length > 30;
+        if (!hasDesign || !hasText) renderFallbackControl(controlRoot);
+      }, 900);
+    }
     return root;
   }
 
-  function openControl() {
+  function openControl(options = {}) {
     if (openingControl) return;
     openingControl = true;
-    setLaunchFilters();
-    try {
-      if (typeof window.invalidateControlTaskCache === 'function') window.invalidateControlTaskCache();
-    } catch (_) {}
+    const applyLaunchFilters = options.applyLaunchFilters !== false;
+    const repeat = options.repeat !== false;
+    const notify = options.notify !== false;
+    const allowFallback = options.allowFallback !== false;
+    if (applyLaunchFilters) setLaunchFilters();
+    if (options.invalidateCache !== false) {
+      try {
+        if (typeof window.invalidateControlTaskCache === 'function') window.invalidateControlTaskCache();
+      } catch (_) {}
+    }
     try {
       const stateActive = appState().activeView === 'control';
       const hashActive = String(window.location.hash || '').replace('#', '') === 'control';
@@ -202,14 +215,17 @@
         window.setView('control', { persist: true, syncHash: true });
       }
     } catch (_) {}
-    [0, 80, 220, 650, 1400, 3000].forEach((delay) => {
+    const delays = repeat ? [0, 80, 220, 650, 1400, 3000] : [0, 180];
+    delays.forEach((delay) => {
       window.setTimeout(() => {
-        renderControlNow();
-        try { window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view: 'control', source: VERSION } })); } catch (_) {}
+        renderControlNow({ applyLaunchFilters, allowFallback });
+        if (notify) {
+          try { window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view: 'control', source: VERSION } })); } catch (_) {}
+        }
       }, delay);
     });
     record('opened-control', 'open');
-    window.setTimeout(() => { openingControl = false; }, 1800);
+    window.setTimeout(() => { openingControl = false; }, repeat ? 1800 : 450);
   }
 
   function taskIdentity(task = {}) {
@@ -369,7 +385,13 @@
     const controlRoot = document.getElementById('view-control');
     const routeWantsControl = hash === 'control' || active === 'control';
     const controlBroken = routeWantsControl && (!controlRoot?.classList.contains('active') || String(controlRoot.textContent || '').trim().length < 30);
-    if (controlBroken) openControl();
+    if (controlBroken) {
+      const now = Date.now();
+      if (now - routeControlRenderAt > 700) {
+        routeControlRenderAt = now;
+        renderControlNow({ applyLaunchFilters: false, allowFallback: false });
+      }
+    }
     hardwireButtons();
   }
 

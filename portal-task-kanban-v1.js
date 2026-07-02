@@ -168,8 +168,9 @@
   let taskAttachmentCache = null;
   let renderingControl = false;
   const TASK_BOOT_STARTED_AT = Date.now();
-  const TASK_SPARSE_BOOT_HOLD_MS = 700;
+  const TASK_SPARSE_BOOT_HOLD_MS = 1200;
   let sparseBootWakeTimer = 0;
+  let sparseDataRefreshTimer = 0;
 
   const TASK_UI = window.__ALTEA_TASK_DESIGN_UI__ || loadUi();
   window.__ALTEA_TASK_DESIGN_UI__ = TASK_UI;
@@ -320,6 +321,16 @@
     taskListCache = { signature: '', expiresAt: 0, tasks: [] };
   }
 
+  function scheduleSparseDataRefresh(delay = 320) {
+    if (sparseDataRefreshTimer) return;
+    if (Date.now() - TASK_BOOT_STARTED_AT > 7000) return;
+    sparseDataRefreshTimer = window.setTimeout(() => {
+      sparseDataRefreshTimer = 0;
+      invalidateTaskListCache();
+      queueEnhance(true);
+    }, delay);
+  }
+
   function taskList() {
     const localTasks = (() => {
       const storage = appState()?.storage?.tasks;
@@ -356,11 +367,14 @@
       }
     } catch (_) {}
     if (!tasks.length) tasks = localTasks.map(mergeTaskExtras);
+    const bootAge = Date.now() - TASK_BOOT_STARTED_AT;
+    const sparseBootList = bootAge < 7000 && tasks.length > 0 && tasks.length < 20;
     taskListCache = {
       signature,
-      expiresAt: now + TASK_LIST_CACHE_TTL_MS,
+      expiresAt: now + (sparseBootList ? 120 : TASK_LIST_CACHE_TTL_MS),
       tasks
     };
+    if (sparseBootList) scheduleSparseDataRefresh();
     return taskListCache.tasks;
   }
 
@@ -2137,6 +2151,7 @@
       source: 'all',
       platform: 'all'
     });
+    invalidateTaskListCache();
     queueEnhance();
   }
 

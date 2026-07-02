@@ -58,10 +58,12 @@
 
     var TASK_FILTER_TOUCHED_KEY = '__ALTEA_TASK_FILTERS_TOUCHED_THIS_SESSION__';
     var TASK_LOADING_MIN_MS = 900;
+    var LEGACY_CONTROL_SELECTOR = '.control-simple-panel,[data-task-lazy-panel],.task-center-queues,.task-center-hotfix,[data-control-simple-root],.section-title.control-simple-title,.control-simple-title,[data-control-center-v2-block],.task-general-create,.task-lazy-row';
     var baseRender = typeof window.renderControlCenter === 'function' ? window.renderControlCenter : null;
     var installing = false;
     var styleInstalled = false;
-    var observer = null;
+    var motionObserver = null;
+    var controlObserver = null;
     var renderTimer = 0;
     var loadingReleaseTimer = 0;
     var lastMotionHideAt = 0;
@@ -162,6 +164,13 @@
       return root.querySelector('[data-task-calendar-design-v1]:not([data-task-route-gate-placeholder])');
     }
 
+    function hasLegacyTaskLayer(root) {
+      if (!root) return false;
+      if (root.querySelector(LEGACY_CONTROL_SELECTOR)) return true;
+      var text = String(root.textContent || '').replace(/\s+/g, ' ').trim();
+      return text.indexOf('Задачи на сегодня') !== -1 || text.indexOf('Что делать сейчас') !== -1 || text.indexOf('Контуры задач') !== -1;
+    }
+
     function markTaskFiltersTouched(event) {
       var target = event && event.target && event.target.closest ? event.target.closest('[data-task-filter],[data-task-preset],[data-task-reset]') : null;
       if (target) window[TASK_FILTER_TOUCHED_KEY] = true;
@@ -192,13 +201,13 @@
     }
 
     function cleanupLegacyTaskLayers(root) {
-      var shell = realTaskShell(root);
+      var shell = realTaskShell(root) || placeholderShell(root);
       if (!root || !shell) return;
       Array.from(root.children).forEach(function (child) {
         if (child === shell || child.contains(shell)) return;
         child.remove();
       });
-      root.querySelectorAll('.control-simple-panel,[data-task-lazy-panel],.task-center-queues,.task-center-hotfix,[data-control-simple-root],.section-title.control-simple-title,.control-simple-title').forEach(function (node) {
+      root.querySelectorAll(LEGACY_CONTROL_SELECTOR).forEach(function (node) {
         if (!node.closest('[data-task-calendar-design-v1]')) node.remove();
       });
     }
@@ -226,6 +235,20 @@
       return root;
     }
 
+    function removeLegacyNow() {
+      if (!isControlRoute()) return;
+      var root = controlRoot();
+      if (!root || !hasLegacyTaskLayer(root)) return;
+      var real = realTaskShell(root);
+      if (real) {
+        cleanupLegacyTaskLayers(root);
+        return;
+      }
+      root.innerHTML = '';
+      renderPlaceholder();
+      scheduleTaskRender();
+    }
+
     function releaseLoadingAfterMinDelay() {
       var elapsed = taskLoadingStartedAt ? Date.now() - taskLoadingStartedAt : TASK_LOADING_MIN_MS;
       if (elapsed >= TASK_LOADING_MIN_MS) return true;
@@ -242,6 +265,10 @@
         taskLoadingStartedAt = 0;
         cleanupLegacyTaskLayers(root);
         return root;
+      }
+      if (hasLegacyTaskLayer(root)) {
+        root.innerHTML = '';
+        return renderPlaceholder();
       }
 
       var api = window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__;
@@ -294,6 +321,7 @@
       renderTimer = window.setTimeout(function () {
         install();
         renderTaskLayer();
+        removeLegacyNow();
       }, 60);
     }
 
@@ -305,27 +333,43 @@
     }
 
     function watchMotion() {
-      if (!window.MutationObserver || observer) return;
+      if (!window.MutationObserver || motionObserver) return;
       var target = document.body;
       if (!target) {
         window.setTimeout(watchMotion, 60);
         return;
       }
-      observer = new MutationObserver(function () {
+      motionObserver = new MutationObserver(function () {
         if (isControlRoute()) hideMotionHard();
       });
-      observer.observe(target, { childList: true, subtree: false });
+      motionObserver.observe(target, { childList: true, subtree: false });
+    }
+
+    function watchControlRoot() {
+      if (!window.MutationObserver || controlObserver) return;
+      var root = controlRoot();
+      if (!root) {
+        window.setTimeout(watchControlRoot, 80);
+        return;
+      }
+      controlObserver = new MutationObserver(function () {
+        removeLegacyNow();
+      });
+      controlObserver.observe(root, { childList: true, subtree: false });
+      removeLegacyNow();
     }
 
     install();
     ensureStyle();
     watchMotion();
+    watchControlRoot();
 
     window.__ALTEA_TASK_ROUTE_GATE__ = {
       install: install,
       render: renderTaskLayer,
       hideMotion: hideMotionHard,
       resetFilters: resetInitialTaskFilters,
+      removeLegacy: removeLegacyNow,
       base: function () { return baseRender; }
     };
 

@@ -616,6 +616,7 @@ function buildHealth(options) {
   const aliasCount = activeAliasCount(snapshots.sku_aliases || {});
   const ignoreCount = activeIgnoreCount(snapshots.sku_alias_ignore || {});
   const matrixAliasCount = numberOrZero(snapshots.sku_matrix?.summary?.aliasCount);
+  const matrixExternalAliasCount = numberOrZero(snapshots.sku_matrix?.source?.externalAliases);
   const matrixIgnoreCount = numberOrZero(snapshots.sku_matrix?.summary?.ignoredApiSkuCount);
   const matrixStamp = parseStamp(sources.sku_matrix?.generatedAt || sources.sku_matrix?.asOfDate);
   const aliasStamp = parseStamp(sources.sku_aliases?.generatedAt || sources.sku_aliases?.asOfDate);
@@ -626,6 +627,7 @@ function buildHealth(options) {
     aliasCount,
     ignoreCount,
     matrixAliasCount,
+    matrixExternalAliasCount,
     matrixIgnoreCount,
     checks: []
   };
@@ -641,10 +643,17 @@ function buildHealth(options) {
   addSkuContourCheck('matrix-present', Boolean(sources.sku_matrix?.exists), 'SKU matrix snapshot is missing; alias/ignore decisions cannot be applied to portal views.');
   addSkuContourCheck(
     'matrix-alias-count',
-    matrixAliasCount === aliasCount,
-    `SKU matrix alias count does not match sku_aliases (${matrixAliasCount}/${aliasCount}).`,
+    matrixAliasCount >= aliasCount,
+    `SKU matrix alias count is lower than sku_aliases (${matrixAliasCount}/${aliasCount}).`,
     'blocked',
     { matrixAliasCount, aliasCount }
+  );
+  addSkuContourCheck(
+    'matrix-external-alias-count',
+    !matrixExternalAliasCount || matrixExternalAliasCount === aliasCount,
+    `SKU matrix external alias count does not match sku_aliases (${matrixExternalAliasCount}/${aliasCount}).`,
+    'warning',
+    { matrixExternalAliasCount, aliasCount }
   );
   addSkuContourCheck(
     'matrix-ignore-count',

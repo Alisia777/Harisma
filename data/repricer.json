@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-06-30T07:08:36.703Z",
+  "generatedAt": "2026-07-01T07:15:49.480Z",
   "note": "Legacy repricer fallback rebuilt from merged smart-price contour, support rows and local live repricer hints. Used for coldstart, price bridge and compatibility until managed repricer finishes hydration.",
   "sourceFreshness": {
     "workbench": "2026-05-18T14:34:19.064Z",
-    "overlay": "2026-06-30T07:08:36.703Z",
+    "overlay": "2026-07-01T07:15:49.480Z",
     "liveWorkbench": "2026-05-12T11:58:47.377Z",
     "liveRepricer": "2026-04-16T23:59:00",
     "liveRepricerFileMtime": "2026-06-29T06:07:36.800Z",
     "liveRepricerStatus": "stale-ignored",
-    "liveRepricerAgeDays": 74.42,
+    "liveRepricerAgeDays": 75.43,
     "liveRepricerMaxAgeDays": 7,
     "liveRepricerRowsUsed": 0,
     "support": "2026-04-20T14:28:01.203171Z",
-    "prices": "2026-06-30T07:08:36.703Z",
-    "merged": "2026-06-30T07:08:36.703Z"
+    "prices": "2026-07-01T07:15:49.480Z",
+    "merged": "2026-07-01T07:15:49.480Z"
   },
   "summary": {
     "skuCount": 200,
@@ -157,7 +157,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -275,7 +275,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "OZ",
@@ -342,7 +342,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "OZ",
@@ -409,7 +409,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -528,7 +528,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -647,7 +647,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Молодякова Дария"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -764,9 +764,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
-      },
+      "ownerByPlatform": {},
       "status": "Не продается",
       "tag": "OZ",
       "cost": null,
@@ -832,7 +830,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -899,7 +897,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -966,7 +964,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -1034,7 +1032,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -1152,7 +1150,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -1220,7 +1218,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -1456,9 +1454,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
-      },
+      "ownerByPlatform": {},
       "status": "Готов к продаже",
       "tag": "OZ",
       "cost": null,
@@ -1525,7 +1521,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуально",
       "tag": "WB + OZ",
@@ -1642,9 +1638,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
-      },
+      "ownerByPlatform": {},
       "status": "Готов к продаже",
       "tag": "OZ",
       "cost": null,
@@ -1709,9 +1703,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
-      },
+      "ownerByPlatform": {},
       "status": "Готов к продаже",
       "tag": "OZ",
       "cost": null,
@@ -1777,7 +1769,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -1844,7 +1836,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -1961,9 +1953,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
-      },
+      "ownerByPlatform": {},
       "status": "Готов к продаже",
       "tag": "OZ",
       "cost": null,
@@ -2028,9 +2018,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
-      },
+      "ownerByPlatform": {},
       "status": "Готов к продаже",
       "tag": "OZ",
       "cost": null,
@@ -2215,7 +2203,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -2283,7 +2271,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -2401,7 +2389,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -2519,7 +2507,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -2637,7 +2625,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -2756,7 +2744,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -2875,7 +2863,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -3112,7 +3100,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -3230,7 +3218,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -3347,9 +3335,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
-      },
+      "ownerByPlatform": {},
       "status": "Не продается",
       "tag": "OZ",
       "cost": null,
@@ -3535,7 +3521,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -3654,7 +3640,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -3772,7 +3758,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуально",
       "tag": "WB + OZ",
@@ -3891,7 +3877,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -4010,7 +3996,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -4248,7 +4234,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -4367,7 +4353,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -4486,7 +4472,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -4605,7 +4591,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -4724,7 +4710,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -4843,7 +4829,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -4961,7 +4947,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -5198,7 +5184,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -5266,7 +5252,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -5384,7 +5370,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -5452,7 +5438,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -5571,7 +5557,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -5689,7 +5675,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -5756,7 +5742,7 @@
       "legalEntity": "#N/A",
       "owner": "#N/A",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "#N/A"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -5824,7 +5810,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -5943,7 +5929,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Олеся"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -6062,7 +6048,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -6180,7 +6166,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "OZ",
@@ -6247,7 +6233,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -6314,7 +6300,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -6381,7 +6367,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -6499,7 +6485,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -6566,7 +6552,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -6684,7 +6670,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -6802,7 +6788,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -6921,7 +6907,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -7039,7 +7025,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -7107,7 +7093,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -7226,7 +7212,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -7345,7 +7331,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -7464,7 +7450,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -7583,7 +7569,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -7821,7 +7807,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -7940,7 +7926,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -8059,7 +8045,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -8178,7 +8164,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -8297,7 +8283,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -8416,7 +8402,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -8535,7 +8521,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -8654,7 +8640,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -8773,7 +8759,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -8892,7 +8878,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -9011,7 +8997,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -9129,7 +9115,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -9247,7 +9233,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -9365,7 +9351,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -9483,7 +9469,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -9550,7 +9536,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -9616,9 +9602,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
-      },
+      "ownerByPlatform": {},
       "status": "Готов к продаже",
       "tag": "OZ",
       "cost": null,
@@ -9685,7 +9669,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Питайкин Артём"
+        "ozon": "Мария"
       },
       "status": "На вывод",
       "tag": "WB + OZ",
@@ -9803,7 +9787,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -9921,7 +9905,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -9989,7 +9973,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуально",
       "tag": "WB + OZ",
@@ -10108,7 +10092,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Перерабатываем",
       "tag": "WB + OZ",
@@ -10227,7 +10211,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -10346,7 +10330,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -10464,7 +10448,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -10531,7 +10515,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "OZ",
@@ -10598,7 +10582,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -10665,7 +10649,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -10783,7 +10767,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -10966,7 +10950,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "OZ",
@@ -11033,7 +11017,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -11287,7 +11271,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -11525,7 +11509,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -11762,7 +11746,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "OZ",
@@ -11947,7 +11931,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -12131,7 +12115,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -12369,7 +12353,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -12488,7 +12472,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -12607,7 +12591,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -12726,7 +12710,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -12845,7 +12829,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -12964,7 +12948,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -13083,7 +13067,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -13202,7 +13186,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Новинка",
       "tag": "WB + OZ",
@@ -13321,7 +13305,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -13440,7 +13424,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Новинка",
       "tag": "WB + OZ",
@@ -13678,7 +13662,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -13797,7 +13781,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "На вывод",
       "tag": "WB + OZ",
@@ -13914,9 +13898,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
-      },
+      "ownerByPlatform": {},
       "status": "Готов к продаже",
       "tag": "OZ",
       "cost": null,
@@ -13982,7 +13964,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -14101,7 +14083,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -14220,7 +14202,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -14338,7 +14320,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Новинка",
       "tag": "WB + OZ",
@@ -14457,7 +14439,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -14576,7 +14558,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -14694,7 +14676,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -14813,7 +14795,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -14999,7 +14981,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -15118,7 +15100,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Новинка",
       "tag": "WB + OZ",
@@ -15237,7 +15219,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Новинка",
       "tag": "WB + OZ",
@@ -15356,7 +15338,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -15711,7 +15693,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -15829,7 +15811,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -15947,7 +15929,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -16066,7 +16048,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -16185,7 +16167,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -16304,7 +16286,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -16423,7 +16405,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -16542,7 +16524,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -16661,7 +16643,7 @@
       "owner": "Лапыгин Максим",
       "ownerByPlatform": {
         "wb": "Лапыгин Максим",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -16779,7 +16761,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Новинка",
       "tag": "WB + OZ",
@@ -16897,7 +16879,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -16965,7 +16947,7 @@
       "owner": "Васильева Мария",
       "ownerByPlatform": {
         "wb": "Васильева Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Молодякова Дария"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -17084,7 +17066,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Под вопросом",
       "tag": "WB + OZ",
@@ -17203,7 +17185,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -17321,7 +17303,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -17388,7 +17370,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -17455,7 +17437,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -17522,7 +17504,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -17590,7 +17572,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -17708,7 +17690,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -17776,7 +17758,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -17895,7 +17877,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -18014,7 +17996,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -18133,7 +18115,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -18252,7 +18234,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -18371,7 +18353,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -18490,7 +18472,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -18608,7 +18590,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -18674,9 +18656,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
-      },
+      "ownerByPlatform": {},
       "status": "Готов к продаже",
       "tag": "OZ",
       "cost": null,
@@ -18743,7 +18723,7 @@
       "owner": "Кирилл",
       "ownerByPlatform": {
         "wb": "Кирилл",
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -18861,7 +18841,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "OZ",
@@ -18928,7 +18908,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -18995,7 +18975,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -19113,7 +19093,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -19180,7 +19160,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -19246,9 +19226,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
-      },
+      "ownerByPlatform": {},
       "status": "Готов к продаже",
       "tag": "OZ",
       "cost": null,
@@ -19315,7 +19293,7 @@
       "owner": "Мария",
       "ownerByPlatform": {
         "wb": "Мария",
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -19498,7 +19476,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -19565,7 +19543,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -19764,7 +19742,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -19831,7 +19809,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Актуальный",
       "tag": "OZ",
@@ -19898,7 +19876,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -20015,9 +19993,7 @@
       "brand": "",
       "legalEntity": "",
       "owner": "",
-      "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
-      },
+      "ownerByPlatform": {},
       "status": "Готов к продаже",
       "tag": "OZ",
       "cost": null,
@@ -20083,8 +20059,7 @@
       "legalEntity": "Мария",
       "owner": "Мария",
       "ownerByPlatform": {
-        "wb": "Мария",
-        "ozon": "Молодякова Дария"
+        "wb": "Мария"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -20269,7 +20244,7 @@
       "legalEntity": "Даша",
       "owner": "Даша",
       "ownerByPlatform": {
-        "ozon": "Молодякова Дария"
+        "ozon": "Даша"
       },
       "status": "Актуальный",
       "tag": "OZ",
@@ -20336,7 +20311,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",
@@ -20403,7 +20378,7 @@
       "legalEntity": "Артем",
       "owner": "Артем",
       "ownerByPlatform": {
-        "ozon": "Питайкин Артём"
+        "ozon": "Артем"
       },
       "status": "Вывод",
       "tag": "OZ",

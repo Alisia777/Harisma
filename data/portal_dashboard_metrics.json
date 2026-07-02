@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-metrics-v1",
-  "generatedAt": "2026-07-01T07:15:49.293Z",
-  "snapshot_id": "dashboard:7a284b8751714137",
+  "generatedAt": "2026-07-02T08:06:35.566Z",
+  "snapshot_id": "dashboard:2f55fe6487200e34",
   "metric_registry_version": "2026-06-20.1",
   "indicator_policy_version": "2026-06-20.1",
   "cutoffDate": "2026-07-01",
@@ -9,7 +9,7 @@
   "source_checksums": {
     "platform_trends.json": {
       "exists": true,
-      "sha256": "9a998ca2c0b75b7817cbc2f61ed0da54a64503bb6d2b9c88442ec54b4b429357"
+      "sha256": "148b1b0a60aa0839a03dbb89035715ff602059e1982e22a733d0299f5fb795ae"
     },
     "company_plan.json": {
       "exists": true,
@@ -17,7 +17,7 @@
     },
     "ads_summary.json": {
       "exists": true,
-      "sha256": "5219bbcd768639cf07d27b49e3306aeb94ee33bb0ccf2a3d152105353f146b65"
+      "sha256": "42dc89a927bc853d9c485e82c0d17a2ab75f94a79b68fe9ded5d4dd0e38b051a"
     },
     "portal_metric_registry.json": {
       "exists": true,
@@ -30,10 +30,10 @@
   },
   "summary": {
     "metrics": 14,
-    "factRevenue": 4229243.32,
+    "factRevenue": 14673511.34,
     "planRevenue": 322540144,
     "planToDate": 10404520.77,
-    "completionToDate": 0.406481,
+    "completionToDate": 1.410302,
     "unallocatedRevenue": 0
   },
   "metrics": [
@@ -47,8 +47,8 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-01",
-      "raw_value": 3539196,
-      "displayed_value": 3539196,
+      "raw_value": 12008887,
+      "displayed_value": 12008887,
       "transforms": [
         "sum_daily_marketplace_sales_fact"
       ],
@@ -62,8 +62,8 @@
       "drilldown": [
         {
           "platform": "wb",
-          "revenue": 3539196,
-          "units": 2744,
+          "revenue": 12008887,
+          "units": 9399,
           "date_from": "2026-07-01",
           "date_to": "2026-07-01"
         }
@@ -79,8 +79,8 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-01",
-      "raw_value": 669291,
-      "displayed_value": 669291,
+      "raw_value": 2643868.02,
+      "displayed_value": 2643868.02,
       "transforms": [
         "sum_daily_marketplace_sales_fact"
       ],
@@ -94,8 +94,8 @@
       "drilldown": [
         {
           "platform": "ozon",
-          "revenue": 669291,
-          "units": 970,
+          "revenue": 2643868.02,
+          "units": 4298,
           "date_from": "2026-07-01",
           "date_to": "2026-07-01"
         }
@@ -325,11 +325,11 @@
       "confidence": "high",
       "drilldown": [
         {
-          "all_revenue": 4229243.32,
-          "included_revenue": 4229243.32,
+          "all_revenue": 14673511.34,
+          "included_revenue": 14673511.34,
           "unallocated_revenue": 0,
-          "all_units": 3744,
-          "included_units": 3744,
+          "all_units": 13727,
+          "included_units": 13727,
           "unallocated_units": 0
         }
       ]
@@ -383,8 +383,8 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-01",
-      "raw_value": 0.40648131824483846,
-      "displayed_value": 40.65,
+      "raw_value": 1.4103015082054406,
+      "displayed_value": 141.03,
       "transforms": [
         "sales.raw_revenue / plan_to_date"
       ],
@@ -394,14 +394,14 @@
       },
       "data_status": "trusted",
       "reconciliation_status": "ok",
-      "business_status": "red",
+      "business_status": "green",
       "confidence": "high",
       "drilldown": [
         {
-          "factRevenue": 4229243.32,
+          "factRevenue": 14673511.34,
           "planToDate": 10404520.77,
-          "completionMonth": 0.013112,
-          "completionToDate": 0.406481
+          "completionMonth": 0.045494,
+          "completionToDate": 1.410302
         }
       ]
     },
@@ -415,8 +415,8 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-31",
-      "raw_value": 131106542.92,
-      "displayed_value": 131106542.92,
+      "raw_value": 454878851.54,
+      "displayed_value": 454878851.54,
       "transforms": [
         "forecast_only:not_fact",
         "daily_fact_average * month_days"
@@ -431,7 +431,7 @@
       "confidence": "medium",
       "drilldown": [
         {
-          "factRevenue": 4229243.32,
+          "factRevenue": 14673511.34,
           "elapsedDays": 1,
           "planDays": 31
         }
@@ -447,8 +447,8 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-01",
-      "raw_value": 0.391879,
-      "displayed_value": 39.19,
+      "raw_value": 0.298592,
+      "displayed_value": 29.86,
       "transforms": [
         "ad_spend / attributed_revenue"
       ],
@@ -461,8 +461,8 @@
       "confidence": "medium",
       "drilldown": [
         {
-          "spend": 284497.12,
-          "attributedRevenue": 725982
+          "spend": 685724,
+          "attributedRevenue": 2296526
         }
       ]
     },

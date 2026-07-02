@@ -1,10 +1,10 @@
 {
   "schema": "portal-wb-owner-distribution-audit-v1",
-  "generatedAt": "2026-06-29T00:00:00+03:00",
+  "generatedAt": "2026-07-02T00:00:00+03:00",
   "source": {
     "kind": "canonical-sku-registry",
     "file": "skus.json",
-    "previousSourceFile": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\распределение артикулов.xlsx",
+    "previousSourceFile": "skus.json",
     "sourceRowCount": 143,
     "mappedRowCount": 125,
     "duplicateCount": 1,

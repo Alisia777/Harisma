@@ -1,7 +1,7 @@
 {
   "schema": "portal-indicator-audit-v1",
-  "generatedAt": "2026-07-01T07:15:49.293Z",
-  "snapshot_id": "dashboard:7a284b8751714137",
+  "generatedAt": "2026-07-02T08:06:35.566Z",
+  "snapshot_id": "dashboard:2f55fe6487200e34",
   "status": "ok",
   "publish_allowed": true,
   "policy_version": "2026-06-20.1",
@@ -11,8 +11,8 @@
       "surface": "dashboard",
       "expected": {
         "data_status": "trusted",
-        "business_status": "red",
-        "label": "red",
+        "business_status": "green",
+        "label": "green",
         "reason_codes": [],
         "policy_id": "completion_default",
         "policy_version": "2026-06-20.1",
@@ -20,8 +20,8 @@
       },
       "actual": {
         "data_status": "trusted",
-        "business_status": "red",
-        "label": "red",
+        "business_status": "green",
+        "label": "green",
         "reason_codes": [],
         "policy_id": "completion_default",
         "policy_version": "2026-06-20.1",

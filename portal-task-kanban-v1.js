@@ -6,7 +6,7 @@
   window.__ALTEA_TASK_KANBAN_PRIMARY__ = true;
 
   const AUTO_TOMBSTONE_VERSION = '20260701-task-auto-tombstone-v1';
-  const VERSION = '20260702-task-marketplace-sync-v2';
+  const VERSION = '20260702-task-move-stability-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
@@ -167,7 +167,10 @@
   let detailEventsBound = false;
   let createEventsBound = false;
   const TASK_LIST_CACHE_TTL_MS = 2500;
+  const POST_MUTATION_SPARSE_GUARD_MS = 18000;
   let taskListCache = { signature: '', expiresAt: 0, tasks: [] };
+  let lastStableTaskList = [];
+  let recentTaskMutationAt = 0;
   const TASK_CACHE = window.__ALTEA_TASK_DESIGN_CACHE__ instanceof Map ? window.__ALTEA_TASK_DESIGN_CACHE__ : new Map();
   window.__ALTEA_TASK_DESIGN_CACHE__ = TASK_CACHE;
   const STATE_FILTERS = (() => {
@@ -405,14 +408,64 @@
     taskListCache = { signature: '', expiresAt: 0, tasks: [] };
   }
 
-  function scheduleSparseDataRefresh(delay = 320) {
+  function scheduleSparseDataRefresh(delay = 320, options = {}) {
     if (sparseDataRefreshTimer) return;
-    if (Date.now() - TASK_BOOT_STARTED_AT > 7000) return;
+    if (!options.force && Date.now() - TASK_BOOT_STARTED_AT > 7000) return;
     sparseDataRefreshTimer = window.setTimeout(() => {
       sparseDataRefreshTimer = 0;
       invalidateTaskListCache();
       queueEnhance(true);
     }, delay);
+  }
+
+  function cloneTaskForStableList(task) {
+    if (!task || typeof task !== 'object') return task;
+    return {
+      ...task,
+      articleKeys: Array.isArray(task.articleKeys) ? [...task.articleKeys] : task.articleKeys,
+      articles: Array.isArray(task.articles) ? [...task.articles] : task.articles
+    };
+  }
+
+  function mergeTaskListsById(baseTasks = [], overrideTasks = []) {
+    const byId = new Map();
+    baseTasks.filter(Boolean).forEach((task) => {
+      const id = String(task?.id || '').trim();
+      if (id) byId.set(id, mergeTaskExtras(cloneTaskForStableList(task)));
+    });
+    overrideTasks.filter(Boolean).forEach((task) => {
+      const id = String(task?.id || '').trim();
+      if (!id) return;
+      const previous = byId.get(id) || {};
+      byId.set(id, mergeTaskExtras({
+        ...previous,
+        ...cloneTaskForStableList(task),
+        articleKeys: task.articleKeys || previous.articleKeys,
+        articles: task.articles || previous.articles
+      }));
+    });
+    return Array.from(byId.values()).map(mergeTaskExtras);
+  }
+
+  function rememberStableTaskList(tasks = []) {
+    if (!Array.isArray(tasks) || !tasks.length) return;
+    if (tasks.length >= lastStableTaskList.length || Date.now() - recentTaskMutationAt > POST_MUTATION_SPARSE_GUARD_MS) {
+      lastStableTaskList = tasks.map(cloneTaskForStableList);
+    }
+  }
+
+  function guardSparseTaskListAfterMutation(tasks = []) {
+    if (!Array.isArray(tasks) || !lastStableTaskList.length) return tasks;
+    const mutationAge = Date.now() - recentTaskMutationAt;
+    if (!recentTaskMutationAt || !Number.isFinite(mutationAge) || mutationAge > POST_MUTATION_SPARSE_GUARD_MS) return tasks;
+    if (lastStableTaskList.length < 20) return tasks;
+    if (tasks.length >= Math.floor(lastStableTaskList.length * 0.8)) return tasks;
+    scheduleSparseDataRefresh(700, { force: true });
+    return mergeTaskListsById(lastStableTaskList, tasks);
+  }
+
+  function noteTaskMutation() {
+    recentTaskMutationAt = Date.now();
   }
 
   function taskList() {
@@ -460,6 +513,7 @@
       }
     } catch (_) {}
     if (!tasks.length) tasks = localTasks.map(mergeTaskExtras);
+    tasks = guardSparseTaskListAfterMutation(tasks);
     const bootAge = Date.now() - TASK_BOOT_STARTED_AT;
     const sparseBootList = bootAge < 7000 && tasks.length > 0 && tasks.length < 20;
     taskListCache = {
@@ -468,6 +522,7 @@
       tasks
     };
     if (sparseBootList) scheduleSparseDataRefresh();
+    rememberStableTaskList(tasks);
     return taskListCache.tasks;
   }
 
@@ -1228,6 +1283,7 @@
     if (!current.title) current.title = 'Новая задача';
     if (!current.status) current.status = 'new';
     rememberTask(current);
+    noteTaskMutation();
     if (beforeStatus !== current.status) {
       keepTaskVisibleAfterStatusChange(current);
       recordAutoTaskClosure(current);
@@ -2137,17 +2193,6 @@
     const updated = updateTaskLocal(taskId, patch, `Task moved by drag and drop: ${status}.`);
     if (updated?.id) {
       markTaskMoved(updated.id);
-      const filters = ensureFilters();
-      savePortalState('task-kanban-v1-move-visibility');
-    }
-    if (typeof window.updateTaskStatus === 'function') {
-      try {
-        Promise.resolve(window.updateTaskStatus(taskId, status)).catch((error) => {
-          console.warn('[task-kanban-v1] background updateTaskStatus failed', error);
-        });
-      } catch (error) {
-        console.warn('[task-kanban-v1] background updateTaskStatus failed', error);
-      }
     }
     queueEnhance(true);
   }
@@ -2197,6 +2242,7 @@
       });
       task = current;
       rememberTask(task);
+      noteTaskMutation();
       addTaskHistory(task, 'created', 'Задача создана из вкладки Задачи.');
       const filesInput = form.querySelector('input[name="files"]');
       await handleTaskFiles(task.id, filesInput?.files || []);

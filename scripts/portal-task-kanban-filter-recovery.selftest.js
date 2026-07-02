@@ -227,6 +227,49 @@ async function run() {
     });
     await page.click('[data-task-detail-close]');
 
+    await page.evaluate(() => {
+      const fullTasks = (window.state.storage.tasks || []).map((task) => ({ ...task }));
+      window.__kanbanRemoteFullTasks = fullTasks;
+      window.__kanbanRemoteSparseTasks = fullTasks.slice(0, 10);
+      window.__kanbanRemoteTasks = window.__kanbanRemoteFullTasks;
+      window.__externalUpdateTaskStatusCalled = false;
+      window.updateTaskStatus = () => {
+        window.__externalUpdateTaskStatusCalled = true;
+        throw new Error('external updateTaskStatus should not run for task-kanban-v1 moves');
+      };
+      window.state.storage.tasks = [];
+      window.getAllTasks = () => window.__kanbanRemoteTasks || [];
+      window.__ALTEA_TASK_KANBAN_INVALIDATE__?.();
+      window.__ALTEA_TASK_KANBAN_RENDER__?.();
+    });
+    await page.waitForFunction(() => document.querySelectorAll('[data-kanban-task]').length >= 24, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      window.__kanbanRemoteTasks = window.__kanbanRemoteSparseTasks;
+    });
+    await page.click('[data-kanban-task="task-entry-2"]');
+    await page.waitForSelector('[data-task-detail-modal]', { timeout: 30000 });
+    await page.click('[data-task-detail-status="waiting_rop"]');
+    await page.waitForFunction(() => {
+      const visible = document.querySelectorAll('[data-kanban-task]').length;
+      const waiting = document.querySelector('[data-kanban-lane="waiting_rop"] [data-kanban-task="task-entry-2"]');
+      return visible >= 24 && Boolean(waiting);
+    }, null, { timeout: 30000 });
+    const sparseGuard = await page.evaluate(() => ({
+      visibleTasks: document.querySelectorAll('[data-kanban-task]').length,
+      resultLine: document.querySelector('.task-design-result-line')?.textContent || '',
+      statusFilter: window.state.controlFilters.status,
+      sourceFilter: window.state.controlFilters.source,
+      horizonFilter: window.state.controlFilters.horizon,
+      externalUpdateCalled: Boolean(window.__externalUpdateTaskStatusCalled)
+    }));
+    assert.ok(sparseGuard.visibleTasks >= 24, sparseGuard.resultLine);
+    assert.ok(/24\s+\D+\s+25/.test(sparseGuard.resultLine), sparseGuard.resultLine);
+    assert.strictEqual(sparseGuard.statusFilter, 'active');
+    assert.strictEqual(sparseGuard.sourceFilter, 'all');
+    assert.strictEqual(sparseGuard.horizonFilter, 'all');
+    assert.strictEqual(sparseGuard.externalUpdateCalled, false);
+    await page.click('[data-task-detail-close]');
+
     await page.fill('[data-task-filter="search"]', 'ручной пустой поиск');
     await page.waitForFunction(() => window.state.controlFilters.search === 'ручной пустой поиск', null, { timeout: 30000 });
     await page.waitForFunction(() => !document.querySelector('[data-kanban-task="task-entry-1"]'), null, { timeout: 30000 });

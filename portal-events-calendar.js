@@ -8,7 +8,7 @@
   const MAX_SELECTED_SKU_CHIPS = 18;
   const MAX_BULK_SKUS = 500;
   const MAX_TASK_SKU_LINES = 80;
-  const VERSION = '20260630-calendar-platform-scope-v1';
+  const VERSION = '20260702-calendar-tasks-scope-v1';
   const BACKGROUND_STORAGE_KEY = 'altea.calendar.backgroundMode';
   const BACKGROUND_MODES = ['static', 'motion'];
   const CALENDAR_MOTION_POSTER = 'assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-poster.jpg';
@@ -39,7 +39,8 @@
     taskSyncing: false,
     activityLoaded: false,
     activityLoading: false,
-    backgroundMode: ''
+    backgroundMode: '',
+    platformTouched: false
   };
   window.__ALTEA_PROMO_CALENDAR_STATE__ = CALENDAR_STATE;
   if (!CALENDAR_STATE.kind) CALENDAR_STATE.kind = 'all';
@@ -48,6 +49,10 @@
   if (!('readonlyEventId' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEventId = '';
   if (!('readonlyEvent' in CALENDAR_STATE)) CALENDAR_STATE.readonlyEvent = null;
   if (!('modalAnchor' in CALENDAR_STATE)) CALENDAR_STATE.modalAnchor = null;
+  if (!('platformTouched' in CALENDAR_STATE)) {
+    CALENDAR_STATE.platformTouched = false;
+    CALENDAR_STATE.platform = 'all';
+  }
   if (!BACKGROUND_MODES.includes(CALENDAR_STATE.backgroundMode)) CALENDAR_STATE.backgroundMode = calendarStoredBackgroundMode();
   let calendarOwnerQueued = false;
   let calendarObserver = null;
@@ -1394,6 +1399,7 @@
     ].map(platformKey)).filter((key) => key && key !== 'all');
     if (eventPlatforms.includes(platform)) return true;
     if (eventPlatform === platform) return true;
+    if (eventKindKey(event).startsWith('task-') && (eventPlatform === 'all' || eventPlatform === 'cross' || eventPlatforms.includes('cross'))) return true;
     if (eventKindKey(event) === 'launch') {
       if (platform === 'product') return true;
     }
@@ -2124,6 +2130,7 @@
   function renderStats(events) {
     const autoTasks = events.filter((event) => eventKindKey(event) === 'task-auto').length;
     const manualTasks = events.filter((event) => eventKindKey(event) === 'task-manual').length;
+    const visibleTasks = autoTasks + manualTasks;
     const launches = events.filter((event) => eventKindKey(event) === 'launch').length;
     const coverage = taskCoverageModel(allEvents());
     const skuCount = new Set(events.flatMap((event) => event.skus)).size;
@@ -2133,7 +2140,7 @@
     })).size;
     return `
       <div class="promo-calendar-stats">
-        <button class="promo-task-coverage-stat" type="button" data-calendar-task-coverage data-total="${coverage.total}" data-covered="${coverage.covered}" data-dated="${coverage.dated}" data-undated="${coverage.undated}"><span>задачи в календаре</span><strong>${formatInt(coverage.covered)} / ${formatInt(coverage.total)}</strong><em>${formatInt(coverage.undated)} без даты · ${formatInt(coverage.taskEvents)} сроков</em></button>
+        <button class="promo-task-coverage-stat" type="button" data-calendar-task-coverage data-total="${coverage.total}" data-covered="${coverage.covered}" data-dated="${coverage.dated}" data-undated="${coverage.undated}"><span>задачи в календаре</span><strong>${formatInt(coverage.covered)} / ${formatInt(coverage.total)}</strong><em>${formatInt(coverage.undated)} без даты · ${formatInt(coverage.taskEvents)} сроков · ${formatInt(visibleTasks)} в фильтре</em></button>
         <button class="${CALENDAR_STATE.kind === 'all' ? 'active' : ''}" type="button" data-calendar-kind-stat="all"><span>все события</span><strong>${events.length}</strong><em>${formatInt(days)} дней · ${formatInt(skuCount)} SKU</em></button>
         <button class="${CALENDAR_STATE.kind === 'task-auto' ? 'active' : ''}" type="button" data-calendar-kind-stat="task-auto"><span>автозадачи</span><strong>${autoTasks}</strong></button>
         <button class="${CALENDAR_STATE.kind === 'task-manual' ? 'active' : ''}" type="button" data-calendar-kind-stat="task-manual"><span>сроки задач</span><strong>${manualTasks}</strong></button>
@@ -2527,7 +2534,7 @@
     root.dataset.promoCalendarOwner = VERSION;
     if (isCalendarActive()) startCalendarObserver(rootId);
     patchCalendarChrome();
-    CALENDAR_STATE.platform = calendarGlobalPlatform(CALENDAR_STATE.platform);
+    CALENDAR_STATE.platform = platformKey(CALENDAR_STATE.platform || 'all');
     const month = CALENDAR_STATE.month || startOfMonth(todayKey());
     CALENDAR_STATE.month = month;
     if (!CALENDAR_STATE.dateFrom) CALENDAR_STATE.dateFrom = startOfMonth(month);
@@ -2569,6 +2576,7 @@
           </label>
         </section>
 
+        ${renderPlatformRail()}
         ${renderKindRail()}
         ${renderStats(events)}
 
@@ -3028,6 +3036,7 @@
     root.querySelectorAll('[data-calendar-platform-chip]').forEach((button) => {
       button.addEventListener('click', () => {
         CALENDAR_STATE.platform = button.dataset.calendarPlatformChip || 'all';
+        CALENDAR_STATE.platformTouched = true;
         renderEventCalendar(rootId);
       });
     });

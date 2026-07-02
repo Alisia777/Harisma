@@ -244,7 +244,6 @@
       '[data-ads-platform]',
       '[data-rating-platform]',
       '[data-altea-order-platform]',
-      '[data-calendar-platform-chip]',
       '[data-task-platform-filter]'
     ];
     scopedSelectors.some(function (selector) {
@@ -258,7 +257,6 @@
           || button.getAttribute('data-ads-platform')
           || button.getAttribute('data-rating-platform')
           || button.getAttribute('data-altea-order-platform')
-          || button.getAttribute('data-calendar-platform-chip')
           || button.getAttribute('data-task-platform-filter');
         return marketplaceFromInternal(attr) === marketplace || String(attr || '').toLowerCase() === platform;
       });

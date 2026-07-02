@@ -86,6 +86,7 @@
       'e.a.domozhirova@qeep.life': { role: 'employee' },
       's.s.artyukhin@qeep.life': { role: 'owner' },
       'a.a.ivanova@ya.qeep.life': { role: 'owner' },
+      'guest@qeep.life': { role: 'owner', name: '\u0413\u043e\u0441\u0442\u0435\u0432\u043e\u0439 \u0432\u0445\u043e\u0434' },
       'k.labin@qeep.life': { role: 'employee' },
       'a.zarovskaya@qeep.life': { role: 'employee' },
       'v.klimov@qeep.life': { role: 'employee' },

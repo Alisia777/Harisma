@@ -95,8 +95,10 @@
   });
 
   var renderFrame = 0;
+  var renderTimers = {};
   var renderLock = false;
   var routeDataRetryTimers = {};
+  var executiveModelCache = { key: '', model: null, time: 0 };
 
   function state() {
     return window.__alteaAppState || window.state || {};
@@ -523,14 +525,68 @@
     }
   }
 
+  function resetExecutiveModelCache() {
+    executiveModelCache = { key: '', model: null, time: 0 };
+  }
+
+  function executiveModelCacheKey() {
+    var s = state();
+    var filters = window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ || {};
+    return JSON.stringify({
+      filters: {
+        platform: filters.platform || 'all',
+        month: filters.month || 'latest',
+        owner: filters.owner || 'all',
+        status: filters.status || 'all',
+        search: filters.search || '',
+        sort: filters.sort || 'completionAsc'
+      },
+      marketplace: currentMarketplace(),
+      dashboardAsOf: s.dashboard && (s.dashboard.dataFreshness && s.dashboard.dataFreshness.asOfDate || s.dashboard.asOfDate || s.dashboard.latestMarketplaceDate),
+      platformTrends: s.platformTrends && (s.platformTrends.generatedAt || s.platformTrends.asOfDate),
+      extraMarketplace: s.platformTrends && s.platformTrends.extraMarketplace && s.platformTrends.extraMarketplace.generatedAt,
+      ads: s.adsSummary && (s.adsSummary.generatedAt || s.adsSummary.asOfDate),
+      skus: Array.isArray(s.skus) ? s.skus.length : 0
+    });
+  }
+
   function buildExecutiveModel() {
-    var funnel = typeof window.executiveFunnelBuildModel === 'function'
-      ? window.executiveFunnelBuildModel()
-      : {};
-    var model = typeof window.executiveFunnelBuildOwnerPlanFact === 'function'
-      ? window.executiveFunnelBuildOwnerPlanFact(funnel || {})
-      : null;
-    if (model && model.ready) return model;
+    var cacheKey = executiveModelCacheKey();
+    var now = Date.now();
+    if (executiveModelCache.model && executiveModelCache.key === cacheKey && now - executiveModelCache.time < 2000) {
+      return executiveModelCache.model;
+    }
+    var funnel = {};
+    var model = null;
+    if (typeof window.executiveFunnelBuildOwnerPlanFact === 'function') {
+      try {
+        model = window.executiveFunnelBuildOwnerPlanFact({});
+      } catch (error) {
+        console.warn('[premium-executive] owner plan-fact failed', error);
+      }
+    }
+    if (model && model.ready) {
+      executiveModelCache = { key: cacheKey, model: model, time: Date.now() };
+      return model;
+    }
+    if (typeof window.executiveFunnelBuildModel === 'function') {
+      try {
+        funnel = window.executiveFunnelBuildModel() || {};
+      } catch (error) {
+        console.warn('[premium-executive] legacy funnel failed', error);
+      }
+    }
+    if (!model && typeof window.executiveFunnelBuildOwnerPlanFact === 'function') {
+      try {
+        model = window.executiveFunnelBuildOwnerPlanFact(funnel || {});
+      } catch (error) {
+        console.warn('[premium-executive] owner plan-fact failed', error);
+      }
+    }
+    if (model && model.ready) {
+      executiveModelCache = { key: cacheKey, model: model, time: Date.now() };
+      return model;
+    }
     return {
       ready: false,
       reason: funnel && funnel.reason ? funnel.reason : 'Данные управленческого контура еще загружаются.',
@@ -539,6 +595,30 @@
       ownerRows: [],
       allOwnerRows: [],
       totals: {}
+    };
+  }
+
+  function executiveSignatureRatio(value) {
+    var num = Number(value);
+    return Number.isFinite(num) ? Math.round(num * 10000) / 10000 : null;
+  }
+
+  function executiveTotalsSignature(totals) {
+    totals = totals || {};
+    return {
+      revenue: Math.round(finite(totals.revenue)),
+      factRevenue: Math.round(finite(totals.factRevenue)),
+      planToDateRevenue: Math.round(finite(totals.planToDateRevenue)),
+      planRevenue: Math.round(finite(totals.planRevenue)),
+      gapToDate: Math.round(finite(totals.gapToDate)),
+      marginRub: Math.round(finite(totals.marginRub)),
+      adSpend: Math.round(finite(totals.adSpend)),
+      employeeCount: Math.round(finite(totals.employeeCount)),
+      underPlanCount: Math.round(finite(totals.underPlanCount)),
+      okCount: Math.round(finite(totals.okCount)),
+      completionToDate: executiveSignatureRatio(totals.completionToDate),
+      marginPct: executiveSignatureRatio(totals.marginPct),
+      drr: executiveSignatureRatio(totals.drr)
     };
   }
 
@@ -1199,7 +1279,7 @@
       monthKey: model.monthKey,
       isFullMonth: model.isFullMonth,
       filters: model.filters,
-      totals: model.totals,
+      totals: executiveTotalsSignature(model.totals),
       owners: (model.ownerRows || []).slice(0, 12).map(function (row) {
         return [row.owner, row.factRevenue, row.planToDateRevenue, row.completionToDate, row.gapToDate];
       })
@@ -2007,11 +2087,16 @@
   }
 
   function scheduleRender(delay) {
-    if (renderFrame) window.cancelAnimationFrame(renderFrame);
-    if (delay) {
-      window.setTimeout(scheduleRender, delay);
+    var wait = Math.max(0, Math.round(finite(delay)));
+    if (wait) {
+      if (renderTimers[wait]) window.clearTimeout(renderTimers[wait]);
+      renderTimers[wait] = window.setTimeout(function () {
+        renderTimers[wait] = 0;
+        scheduleRender(0);
+      }, wait);
       return;
     }
+    if (renderFrame) window.cancelAnimationFrame(renderFrame);
     renderFrame = window.requestAnimationFrame(function () {
       renderFrame = 0;
       renderActive();
@@ -2047,7 +2132,16 @@
     Object.keys(defaults).forEach(function (name) {
       if (filters[name] == null) filters[name] = defaults[name];
     });
-    filters[key] = String(value == null ? defaults[key] : value);
+    var next = String(value == null ? defaults[key] : value);
+    if (key === 'platform') next = internalPlatform(marketplaceFromInternal(next));
+    var shouldClearSearch = key === 'owner' && next !== 'all' && filters.search;
+    var unchanged = filters[key] === next && !shouldClearSearch;
+    if (key === 'platform') {
+      applyMarketplace(marketplaceFromInternal(next), { persist: true, rerender: false, silent: true });
+    }
+    if (unchanged) return false;
+    filters[key] = next;
+    if (key === 'owner' && next !== 'all') filters.search = '';
     window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ = filters;
     var root = document.getElementById('view-executive');
     if (root) root.dataset.premiumSignature = '';
@@ -2128,12 +2222,14 @@
       }
       var funnelPlatform = event.target && event.target.closest && event.target.closest('[data-executive-funnel-platform]');
       if (funnelPlatform) {
+        if (funnelPlatform.closest && funnelPlatform.closest('#altea-premium-stage-executive')) return;
         event.preventDefault();
         setExecutiveFunnelFilter('platform', funnelPlatform.getAttribute('data-executive-funnel-platform') || 'all');
         return;
       }
       var funnelStatus = event.target && event.target.closest && event.target.closest('[data-executive-funnel-status]');
       if (funnelStatus) {
+        if (funnelStatus.closest && funnelStatus.closest('#altea-premium-stage-executive')) return;
         event.preventDefault();
         setExecutiveFunnelFilter('status', funnelStatus.getAttribute('data-executive-funnel-status') || 'all');
         return;
@@ -2161,6 +2257,8 @@
       }
     }, true);
     document.addEventListener('change', function (event) {
+      var inPremiumExecutive = event.target && event.target.closest && event.target.closest('#altea-premium-stage-executive');
+      if (inPremiumExecutive && event.target.matches && event.target.matches('[data-executive-funnel-month], [data-executive-funnel-owner], [data-executive-funnel-sort]')) return;
       if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-month]')) {
         setExecutiveFunnelFilter('month', event.target.value || 'latest', 120);
       }
@@ -2185,6 +2283,7 @@
       }
     }, true);
     document.addEventListener('input', function (event) {
+      if (event.target && event.target.closest && event.target.closest('#altea-premium-stage-executive') && event.target.matches && event.target.matches('[data-executive-funnel-search]')) return;
       if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-search]')) {
         setExecutiveFunnelFilter('search', event.target.value || '', 180);
       }
@@ -2210,8 +2309,8 @@
     });
     window.addEventListener('hashchange', scheduleRouteRepair);
     window.addEventListener('altea:themechange', function () { scheduleRender(40); });
-    window.addEventListener('altea:marketplacechange', function () { scheduleRender(40); });
-    window.addEventListener('altea:data-ready', function () { scheduleRender(80); });
+    window.addEventListener('altea:marketplacechange', function () { resetExecutiveModelCache(); scheduleRender(40); });
+    window.addEventListener('altea:data-ready', function () { resetExecutiveModelCache(); scheduleRender(80); });
     window.addEventListener('load', function () { scheduleRouteRepair(); });
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) scheduleRouteRepair();

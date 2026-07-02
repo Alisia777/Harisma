@@ -2012,9 +2012,16 @@ function executiveFunnelForceRender() {
   else if (typeof window.renderExecutive === 'function') window.renderExecutive();
 }
 
+function executiveFunnelEventHandledByPremium(event) {
+  return Boolean(event?.target?.closest?.('#altea-premium-stage-executive'));
+}
+
 function executiveFunnelSetFilter(key, value) {
   if (!Object.prototype.hasOwnProperty.call(EXECUTIVE_FUNNEL_DEFAULT_FILTERS, key)) return;
-  executiveFunnelFilters[key] = String(value ?? EXECUTIVE_FUNNEL_DEFAULT_FILTERS[key]);
+  const next = String(value ?? EXECUTIVE_FUNNEL_DEFAULT_FILTERS[key]);
+  const shouldClearSearch = key === 'owner' && next !== 'all' && executiveFunnelFilters.search;
+  if (executiveFunnelFilters[key] === next && !shouldClearSearch) return;
+  executiveFunnelFilters[key] = next;
   if (key === 'owner' && executiveFunnelFilters[key] !== 'all') {
     executiveFunnelFilters.search = '';
   }
@@ -2026,6 +2033,7 @@ function executiveFunnelInstallFilterEvents() {
   if (window.__ALTEA_EXECUTIVE_FUNNEL_FILTER_EVENTS__) return;
   window.__ALTEA_EXECUTIVE_FUNNEL_FILTER_EVENTS__ = true;
   document.addEventListener('click', (event) => {
+    if (executiveFunnelEventHandledByPremium(event)) return;
     const platformButton = event.target.closest?.('[data-executive-funnel-platform]');
     if (platformButton) {
       executiveFunnelSetFilter('platform', platformButton.getAttribute('data-executive-funnel-platform') || 'all');
@@ -2042,11 +2050,13 @@ function executiveFunnelInstallFilterEvents() {
     }
   });
   document.addEventListener('input', (event) => {
+    if (executiveFunnelEventHandledByPremium(event)) return;
     const input = event.target?.matches?.('[data-executive-funnel-search]') ? event.target : null;
     if (!input) return;
     executiveFunnelSetFilter('search', input.value || '');
   });
   document.addEventListener('change', (event) => {
+    if (executiveFunnelEventHandledByPremium(event)) return;
     const monthSelect = event.target?.matches?.('[data-executive-funnel-month]') ? event.target : null;
     if (monthSelect) {
       executiveFunnelSetFilter('month', monthSelect.value || 'latest');

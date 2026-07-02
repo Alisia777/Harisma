@@ -92,6 +92,7 @@ async function run() {
   try {
     await page.goto(`http://127.0.0.1:${port}/blank`, { waitUntil: 'domcontentloaded' });
     await page.evaluate((payload) => {
+      delete payload.iuDrrFilters.month;
       window.state = payload;
       const fullIuSummary = payload.fullIuSummary;
       delete payload.fullIuSummary;
@@ -103,6 +104,10 @@ async function run() {
         return Promise.resolve({ ok: false, json: async () => null });
       };
       localStorage.setItem('altea.portal.marketplace', 'ozon');
+      localStorage.setItem('altea.iuDrr.ui.v3', JSON.stringify({
+        month: '2026-06',
+        dateWindow: { period: '7', endDate: '2026-06-30' }
+      }));
     }, { ...fixtureState({ partialIu: true }), fullIuSummary: fixtureState().iuDrrSummary });
     await page.addScriptTag({ url: `http://127.0.0.1:${port}/${MODULE}` });
     await page.waitForSelector('#iuDrrV3DateTo', { timeout: 30000 });
@@ -127,7 +132,7 @@ async function run() {
       };
     });
 
-    assert.strictEqual(julyResult.version, '20260701-iudrr-cross-month-window2');
+    assert.strictEqual(julyResult.version, '20260702-iudrr-latest-month-default1');
     assert.strictEqual(julyResult.month, '2026-07');
     assert.strictEqual(julyResult.dateTo, '2026-07-01');
     assert.strictEqual(julyResult.selectedPeriod, '7');
@@ -163,7 +168,7 @@ async function run() {
       };
     });
 
-    assert.strictEqual(result.version, '20260701-iudrr-cross-month-window2');
+    assert.strictEqual(result.version, '20260702-iudrr-latest-month-default1');
     assert.strictEqual(result.month, '2026-06');
     assert.strictEqual(result.dateTo, '2026-06-29');
     assert.strictEqual(result.selectedPeriod, '7');

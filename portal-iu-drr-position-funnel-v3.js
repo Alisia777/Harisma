@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-iudrr-cross-month-window2';
+  const VERSION = '20260702-iudrr-latest-month-default1';
   const UI_KEY = 'altea.iuDrr.ui.v3';
   const VIEW_KEY = 'altea.iuDrr.view.v3';
   const SELECTED_KEY = 'altea.iuDrr.position.v3';
@@ -721,10 +721,20 @@
 
   function monthOptions(payload) {
     const monthSet = new Set();
-    (payload.months || []).forEach((month) => month?.key && monthSet.add(month.key));
+    (payload.months || []).forEach((month) => {
+      const key = month?.key || month?.monthKey || month?.month;
+      if (key) monthSet.add(String(key).slice(0, 7));
+    });
     (payload.daily || []).forEach((row) => row?.monthKey && monthSet.add(row.monthKey));
     const options = Array.from(monthSet).sort();
     return options.length ? options : ['latest'];
+  }
+
+  function latestMonthKey(payload) {
+    const explicit = String(payload?.asOfDate || payload?.window?.to || '').slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(explicit)) return explicit.slice(0, 7);
+    const dates = dateKeysFromRows(payload?.daily || []);
+    return dates.length ? dates[dates.length - 1].slice(0, 7) : '';
   }
 
   function selectedMonth(payload) {
@@ -732,11 +742,16 @@
     const filters = state.iuDrrFilters || {};
     const storedMonth = getUiState().month;
     const options = monthOptions(payload);
-    const wanted = filters.month && filters.month !== 'latest'
-      ? filters.month
-      : storedMonth && storedMonth !== 'latest'
-        ? storedMonth
-        : options[options.length - 1];
+    const latestMonth = latestMonthKey(payload);
+    const fallback = options.includes(latestMonth) ? latestMonth : options[options.length - 1];
+    const filterMonth = filters.month && filters.month !== 'latest' ? filters.month : '';
+    const explicitFilterMonth = filters.monthUserSelected || (filterMonth && (!latestMonth || filterMonth >= latestMonth))
+      ? filterMonth
+      : '';
+    const savedMonth = storedMonth && storedMonth !== 'latest' ? storedMonth : '';
+    const wanted = explicitFilterMonth
+      || (savedMonth && (!latestMonth || savedMonth >= latestMonth) ? savedMonth : '')
+      || fallback;
     return options.includes(wanted) ? wanted : options[options.length - 1];
   }
 
@@ -2950,6 +2965,7 @@
       state.iuDrrFilters = state.iuDrrFilters || {};
       const nextMonth = String(event.target.value || 'latest');
       state.iuDrrFilters.month = nextMonth;
+      state.iuDrrFilters.monthUserSelected = true;
       if (state.iuDrrFilters.windowEndDate && nextMonth !== 'latest' && !String(state.iuDrrFilters.windowEndDate).startsWith(`${nextMonth}-`)) {
         state.iuDrrFilters.windowEndDate = '';
         writeDateWindowState({ endDate: '' });
@@ -2967,6 +2983,7 @@
         const state = appState();
         state.iuDrrFilters = state.iuDrrFilters || {};
         state.iuDrrFilters.month = nextMonth;
+        state.iuDrrFilters.monthUserSelected = true;
         const uiState = getUiState();
         uiState.month = nextMonth;
         writeJsonSetting(UI_KEY, uiState);

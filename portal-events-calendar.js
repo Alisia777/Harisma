@@ -8,7 +8,8 @@
   const MAX_SELECTED_SKU_CHIPS = 18;
   const MAX_BULK_SKUS = 500;
   const MAX_TASK_SKU_LINES = 80;
-  const VERSION = '20260702-calendar-tasks-scope-v1';
+  const VERSION = '20260702-calendar-market-sync-v1';
+  const fmt = window.fmt || {};
   const BACKGROUND_STORAGE_KEY = 'altea.calendar.backgroundMode';
   const BACKGROUND_MODES = ['static', 'motion'];
   const CALENDAR_MOTION_POSTER = 'assets/altea-portal-all-themes/altea_portal_all_themes/motion/altea-theme-route-motion-poster.jpg';
@@ -159,7 +160,8 @@
   }
 
   function formatInt(value) {
-    return typeof fmt?.int === 'function' ? fmt.int(value) : String(Math.round(number(value)));
+    const formatter = window.fmt || (typeof fmt !== 'undefined' ? fmt : null);
+    return typeof formatter?.int === 'function' ? formatter.int(value) : String(Math.round(number(value)));
   }
 
   function formatMoney(value) {
@@ -230,7 +232,8 @@
   }
 
   function formatDate(key) {
-    if (typeof fmt?.date === 'function') return fmt.date(key);
+    const formatter = window.fmt || (typeof fmt !== 'undefined' ? fmt : null);
+    if (typeof formatter?.date === 'function') return formatter.date(key);
     return String(key || '');
   }
 
@@ -240,11 +243,26 @@
   }
 
   function platformKey(value) {
+    const raw = String(value || '').trim().toLowerCase();
+    if (!raw) return 'cross';
+    const compact = raw.replace(/[\s._'`"\u2019-]+/g, '');
+    if (['all', 'все', 'vse'].includes(compact)) return 'all';
+    if (['cross', 'common', 'general', 'shared', 'mix', 'mixed', 'wb+ozon', 'wbplusozon'].includes(compact)) return 'cross';
+    if (['ym', 'ya', 'yamarket', 'yandex', 'yandexmarket', 'яндекс', 'ямаркет'].includes(compact)) return 'ya';
+    if (['goldapple', 'goldenapple', 'goldapplemarket', 'zya', 'ga', 'зя'].includes(compact)) return 'goldapple';
+    if (['letu', 'letual', 'letoile', 'летуаль'].includes(compact)) return 'letu';
+    if (['megamarket', 'sbermegamarket', 'megamarketplace'].includes(compact)) return 'megamarket';
+    if (['samokat', 'самокат'].includes(compact)) return 'samokat';
+    if (['magnit', 'magnitmarket', 'magnet', 'mm', 'магнит'].includes(compact)) return 'magnit';
+    if (['product', 'products', 'launch', 'launches', 'новинки', 'продукт'].includes(compact)) return 'product';
+    if (['wb', 'wildberries', 'вб'].includes(compact)) return 'wb';
+    if (['ozon', 'озон'].includes(compact)) return 'ozon';
     if (typeof normalizeTaskPlatform === 'function') {
-      const normalized = normalizeTaskPlatform(value || 'cross');
-      return normalized === 'wb+ozon' ? 'cross' : normalized;
+      const normalized = normalizeTaskPlatform(raw);
+      if (normalized === 'wb+ozon') return 'cross';
+      if (normalized === 'ym') return 'ya';
+      if (PLATFORMS.some(([key]) => key === normalized)) return normalized;
     }
-    const raw = String(value || 'cross').trim().toLowerCase();
     return PLATFORMS.some(([key]) => key === raw) ? raw : 'cross';
   }
 
@@ -279,6 +297,59 @@
       if (normalized === 'all' || key === 'all') return 'all';
     }
     return 'all';
+  }
+
+  function portalMarketplaceKey(value) {
+    const key = platformKey(value || 'all');
+    return key === 'ya' ? 'ym' : key;
+  }
+
+  function calendarPlatformFromPortal(value) {
+    const raw = String(value || '').trim().toLowerCase();
+    if (raw === 'ym' || raw === 'yamarket') return 'ya';
+    return platformKey(raw || 'all');
+  }
+
+  function syncCalendarPlatformFromPortal(fallback = CALENDAR_STATE.platform || 'all') {
+    const next = calendarPlatformFromPortal(calendarGlobalPlatform(fallback));
+    CALENDAR_STATE.platform = next || 'all';
+    return CALENDAR_STATE.platform;
+  }
+
+  function syncCalendarPlatformFromEvent(event) {
+    const detail = event?.detail || {};
+    const candidate = detail.internalPlatform || detail.marketplace || detail.platform || '';
+    if (candidate) {
+      CALENDAR_STATE.platform = calendarPlatformFromPortal(candidate);
+      return CALENDAR_STATE.platform;
+    }
+    return syncCalendarPlatformFromPortal();
+  }
+
+  function publishCalendarPlatform(value) {
+    const next = platformKey(value || 'all');
+    const marketplace = portalMarketplaceKey(next);
+    CALENDAR_STATE.platform = next;
+    CALENDAR_STATE.platformTouched = true;
+    const premium = window.AlteaPremiumPresentation;
+    if (premium && typeof premium.applyMarketplace === 'function') {
+      premium.applyMarketplace(marketplace, { persist: true, rerender: false, silent: false });
+      return next;
+    }
+    try { localStorage.setItem('altea.portal.marketplace', marketplace); } catch (_) {}
+    [document.documentElement, document.body].forEach((element) => {
+      if (!element) return;
+      element.dataset.marketplace = marketplace;
+      element.dataset.platform = marketplace;
+    });
+    const state = appState();
+    state.filters = state.filters || {};
+    state.filters.market = next;
+    state.filters.platform = next;
+    const detail = { marketplace, platform: marketplace, internalPlatform: next };
+    try { window.dispatchEvent(new CustomEvent('altea:marketplacechange', { detail })); } catch (_) {}
+    try { document.dispatchEvent(new CustomEvent('altea:marketplacechange', { detail })); } catch (_) {}
+    return next;
   }
 
   function addPlatformKey(target, value) {
@@ -325,6 +396,7 @@
 
   function taskPlatformKeys(task = {}) {
     const keys = [];
+    const explicitKeys = [];
     [
       task.platform,
       task.marketplace,
@@ -339,7 +411,13 @@
       task.queue,
       task.project,
       task.topic
-    ].forEach((value) => addPlatformKey(keys, value));
+    ].forEach((value) => addPlatformKey(explicitKeys, value));
+    const explicitMarketplaces = explicitKeys.filter((key) => MARKETPLACE_PLATFORM_KEYS.includes(key));
+    if (explicitMarketplaces.length === 1) {
+      addPlatformKey(keys, explicitMarketplaces[0]);
+      return keys;
+    }
+    explicitKeys.forEach((key) => addPlatformKey(keys, key));
     try {
       if (typeof detectTaskPlatform === 'function') addPlatformKey(keys, detectTaskPlatform(task));
     } catch {}
@@ -726,10 +804,18 @@
     }).filter(Boolean);
   }
 
+  function taskMatchesCalendarPlatform(task = {}, selected = CALENDAR_STATE.platform) {
+    const platforms = taskPlatformKeys(task);
+    const platform = primaryTaskPlatform(task, platforms);
+    return eventMatchesPlatform({ platform, platforms, calendarKind: taskEventKind(task) }, selected);
+  }
+
   function taskCoverageModel(manualEvents = allEvents()) {
-    const tasks = activeCalendarTasks();
-    const taskEvents = taskCalendarEvents(manualEvents);
-    const linkedTaskIds = new Set(manualEvents.map((event) => String(event.taskId || '').trim()).filter(Boolean));
+    const selectedPlatform = CALENDAR_STATE.platform;
+    const tasks = activeCalendarTasks().filter((task) => taskMatchesCalendarPlatform(task, selectedPlatform));
+    const selectedManualEvents = manualEvents.filter((event) => eventMatchesPlatform(event, selectedPlatform));
+    const taskEvents = taskCalendarEvents(selectedManualEvents).filter((event) => eventMatchesPlatform(event, selectedPlatform));
+    const linkedTaskIds = new Set(selectedManualEvents.map((event) => String(event.taskId || '').trim()).filter(Boolean));
     const eventTaskIds = new Set(taskEvents.map((event) => String(event.taskId || event.sourceId || '').trim()).filter(Boolean));
     const dated = [];
     const undated = [];
@@ -1399,7 +1485,6 @@
     ].map(platformKey)).filter((key) => key && key !== 'all');
     if (eventPlatforms.includes(platform)) return true;
     if (eventPlatform === platform) return true;
-    if (eventKindKey(event).startsWith('task-') && (eventPlatform === 'all' || eventPlatform === 'cross' || eventPlatforms.includes('cross'))) return true;
     if (eventKindKey(event) === 'launch') {
       if (platform === 'product') return true;
     }
@@ -2303,7 +2388,7 @@
       if (taskDateRange(task).startDate) return false;
       const platforms = taskPlatformKeys(task);
       const platform = primaryTaskPlatform(task, platforms);
-      if (!eventMatchesPlatform({ platform, platforms, calendarKind: taskEventKind(task) }, CALENDAR_STATE.platform)) return false;
+      if (!taskMatchesCalendarPlatform(task, CALENDAR_STATE.platform)) return false;
       if (!query) return true;
       return [
         task.title,
@@ -2534,7 +2619,7 @@
     root.dataset.promoCalendarOwner = VERSION;
     if (isCalendarActive()) startCalendarObserver(rootId);
     patchCalendarChrome();
-    CALENDAR_STATE.platform = platformKey(CALENDAR_STATE.platform || 'all');
+    syncCalendarPlatformFromPortal(CALENDAR_STATE.platform || 'all');
     const month = CALENDAR_STATE.month || startOfMonth(todayKey());
     CALENDAR_STATE.month = month;
     if (!CALENDAR_STATE.dateFrom) CALENDAR_STATE.dateFrom = startOfMonth(month);
@@ -3035,8 +3120,7 @@
     });
     root.querySelectorAll('[data-calendar-platform-chip]').forEach((button) => {
       button.addEventListener('click', () => {
-        CALENDAR_STATE.platform = button.dataset.calendarPlatformChip || 'all';
-        CALENDAR_STATE.platformTouched = true;
+        publishCalendarPlatform(button.dataset.calendarPlatformChip || 'all');
         renderEventCalendar(rootId);
       });
     });
@@ -3273,9 +3357,11 @@
   install();
   window.addEventListener('DOMContentLoaded', install, { once: true });
   ['hashchange', 'altea:viewchange', 'altea:app-ready', 'altea:data-ready', 'altea:portal-storage-updated', 'altea:marketplacechange'].forEach((eventName) => {
-    window.addEventListener(eventName, () => {
+    window.addEventListener(eventName, (event) => {
+      if (eventName === 'altea:marketplacechange') syncCalendarPlatformFromEvent(event);
       install();
       if (isCalendarActive()) {
+        if (!CALENDAR_STATE.modalOpen) renderEventCalendar('view-data-health');
         [0, 220, 900, 2200, 5200].forEach((delay) => {
           window.setTimeout(() => {
             startCalendarObserver('view-data-health');

@@ -102,10 +102,6 @@ function skuPlanFactIsStaleWbOwner(owner = '') {
 
 function skuPlanFactPlatformOwner(sku = {}, platform = '') {
   const normalizedPlatform = String(platform || '').toLowerCase();
-  if (normalizedPlatform === 'wb') {
-    const auditOwner = skuPlanFactWbAuditOwner(sku);
-    if (auditOwner) return auditOwner;
-  }
   const supportKey = skuPlanFactPlatformSupportKey(normalizedPlatform);
   const ownerSources = [
     sku?.ownersByPlatform,
@@ -124,6 +120,10 @@ function skuPlanFactPlatformOwner(sku = {}, platform = '') {
       if (normalizedPlatform === 'wb' && skuPlanFactIsStaleWbOwner(owner)) continue;
       if (owner) return owner;
     }
+  }
+  if (normalizedPlatform === 'wb') {
+    const auditOwner = skuPlanFactWbAuditOwner(sku);
+    if (auditOwner && !skuPlanFactIsStaleWbOwner(auditOwner)) return auditOwner;
   }
   if (normalizedPlatform === 'wb') {
     const baseOwner = skuPlanFactCanonicalOwner(

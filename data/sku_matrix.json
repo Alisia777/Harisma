@@ -1,11 +1,11 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-07-02T20:14:39.803Z",
+  "generatedAt": "2026-07-02T20:47:06.638Z",
   "source": {
     "skus": 209,
     "aliases": 341,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-07-02T16:23:07.021Z"
+    "dataQualityGeneratedAt": "2026-07-02T20:14:40.201Z"
   },
   "summary": {
     "skuCount": 209,
@@ -18,12 +18,12 @@
     "missingOwnerCount": 0,
     "planNeedsAssignmentCount": 20,
     "planAssignedCount": 75,
-    "issueCount": 24,
+    "issueCount": 21,
     "infoIssueCount": 49,
     "problemStateCounts": {
-      "ok": 186,
+      "ok": 189,
       "missing_plan": 20,
-      "has_warning": 23
+      "has_warning": 20
     }
   },
   "problemStates": {
@@ -3446,24 +3446,15 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": [
-        {
-          "severity": "warning",
-          "type": "sku_missing_plan",
-          "platform": "",
-          "revenue": 0,
-          "units": 0,
-          "message": "SKU active in matrix but has no assigned unit plan"
-        }
-      ]
+      "issues": []
     },
     {
       "articleKey": "gel_dlya_britya_300ml",
@@ -10293,24 +10284,15 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": [
-        {
-          "severity": "warning",
-          "type": "sku_missing_plan",
-          "platform": "",
-          "revenue": 0,
-          "units": 0,
-          "message": "SKU active in matrix but has no assigned unit plan"
-        }
-      ]
+      "issues": []
     },
     {
       "articleKey": "revmastop_bad_60caps",
@@ -10667,8 +10649,8 @@
           "severity": "info",
           "type": "wb_owner_distribution_missing_in_portal",
           "platform": "wb",
-          "revenue": 201846,
-          "units": 132,
+          "revenue": 147642,
+          "units": 95,
           "message": "SKU is present in WB owner distribution but absent in portal skus.json"
         }
       ]
@@ -13695,24 +13677,15 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
       "criticalIssueCount": 0,
-      "issues": [
-        {
-          "severity": "warning",
-          "type": "sku_missing_plan",
-          "platform": "",
-          "revenue": 0,
-          "units": 0,
-          "message": "SKU active in matrix but has no assigned unit plan"
-        }
-      ]
+      "issues": []
     },
     {
       "articleKey": "wbalkotoxic",

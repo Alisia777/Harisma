@@ -2733,7 +2733,7 @@ function normalizeOwnerOverride(item = {}) {
     ownerRole: String(item.ownerRole || '').trim(),
     ownerByPlatform,
     note: parsedNote.note,
-    updatedAt: item.updatedAt || new Date().toISOString(),
+    updatedAt: String(item.updatedAt || item.updated_at || '').trim(),
     assignedBy: String(item.assignedBy || state.team.member.name || 'Команда').trim() || 'Команда'
   };
 }

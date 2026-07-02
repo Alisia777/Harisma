@@ -1,12 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-07-02T20:14:49.623Z",
+  "generatedAt": "2026-07-02T20:50:50.550Z",
   "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
     "warnings": [],
-    "checkedAt": "2026-07-02T20:14:49.623Z"
+    "checkedAt": "2026-07-02T20:50:50.550Z"
   },
   "freshness": {
     "maxDate": "2026-07-01",
@@ -15,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-07-02T20:14:49.616Z",
+      "checkedAt": "2026-07-02T20:50:50.543Z",
       "settlementHour": 10,
       "expectedDate": "2026-07-01",
       "maxDate": "2026-07-01",
@@ -62,7 +62,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-07-02T20:14:49.622Z",
+      "checkedAt": "2026-07-02T20:50:50.550Z",
       "expectedDate": "2026-07-01",
       "adsSummaryWindowTo": "2026-06-30",
       "iuDrrWindowTo": "2026-07-01",
@@ -230,7 +230,7 @@
     "oos_control": {
       "exists": true,
       "rows": 12,
-      "generatedAt": "2026-07-02T12:07:58.885Z",
+      "generatedAt": "2026-07-02T20:50:16.942Z",
       "asOfDate": "2026-07-01",
       "revenue": 0
     },
@@ -251,14 +251,14 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-02T20:14:40.201Z",
+      "generatedAt": "2026-07-02T20:50:39.182Z",
       "asOfDate": "2026-07-01",
       "revenue": 0
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-07-02T12:20:08.052Z",
+      "generatedAt": "2026-07-02T20:47:16.069Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
@@ -286,14 +286,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 209,
-      "generatedAt": "2026-07-02T20:14:39.803Z",
+      "generatedAt": "2026-07-02T20:47:06.638Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-02T16:23:17.130Z",
+      "generatedAt": "2026-07-02T20:47:16.077Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     }

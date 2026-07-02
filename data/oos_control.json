@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-07-02T12:07:58.885Z",
+  "generatedAt": "2026-07-02T20:50:16.942Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -21,7 +21,7 @@
       "from": "2026-06-02",
       "to": "2026-06-29"
     },
-    "smartPriceGeneratedAt": "2026-07-02T09:21:16.884Z",
+    "smartPriceGeneratedAt": "2026-07-02T20:14:28.197Z",
     "sources": {
       "orderProcurement": "order_procurement.json",
       "skus": "skus.json",
@@ -40,14 +40,14 @@
     "watchCount": 10,
     "placeCount": 234,
     "lostRevenueDay": 0,
-    "revenueAtRiskDay": 8064044,
+    "revenueAtRiskDay": 8085627,
     "monthKey": "2026-07",
     "lostRevenueMonth": 0,
-    "revenueAtRiskMonth": 16263866,
+    "revenueAtRiskMonth": 16285449,
     "newIssues": 0,
     "reopenedIssues": 0,
     "resolvedToday": 0,
-    "owners": 5,
+    "owners": 3,
     "skuCount": 6,
     "dataStatus": "ok",
     "dataDate": "2026-07-01",
@@ -63,7 +63,7 @@
       "risk": 1,
       "watch": 5,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 5818833
+      "revenueAtRiskDay": 5851700
     },
     {
       "key": "ozon",
@@ -74,64 +74,42 @@
       "risk": 1,
       "watch": 5,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 2245211
+      "revenueAtRiskDay": 2233927
     }
   ],
   "byOwner": [
     {
-      "key": "Васильева Мария",
-      "label": "Васильева Мария",
+      "key": "Мария Васильева",
+      "label": "Мария Васильева",
+      "total": 6,
+      "oos": 0,
+      "critical": 0,
+      "risk": 1,
+      "watch": 5,
+      "lostRevenueDay": 0,
+      "revenueAtRiskDay": 5851700
+    },
+    {
+      "key": "Артем",
+      "label": "Артем",
       "total": 4,
       "oos": 0,
       "critical": 0,
       "risk": 1,
       "watch": 3,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 3570129
+      "revenueAtRiskDay": 1755630
     },
     {
-      "key": "Молодякова Дария",
-      "label": "Молодякова Дария",
-      "total": 3,
+      "key": "Даша",
+      "label": "Даша",
+      "total": 2,
       "oos": 0,
       "critical": 0,
-      "risk": 1,
+      "risk": 0,
       "watch": 2,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 1882366
-    },
-    {
-      "key": "Кирилл",
-      "label": "Кирилл",
-      "total": 1,
-      "oos": 0,
-      "critical": 0,
-      "risk": 0,
-      "watch": 1,
-      "lostRevenueDay": 0,
-      "revenueAtRiskDay": 1760852
-    },
-    {
-      "key": "Лапыгин Максим",
-      "label": "Лапыгин Максим",
-      "total": 1,
-      "oos": 0,
-      "critical": 0,
-      "risk": 0,
-      "watch": 1,
-      "lostRevenueDay": 0,
-      "revenueAtRiskDay": 487852
-    },
-    {
-      "key": "Питайкин Артём",
-      "label": "Питайкин Артём",
-      "total": 3,
-      "oos": 0,
-      "critical": 0,
-      "risk": 0,
-      "watch": 3,
-      "lostRevenueDay": 0,
-      "revenueAtRiskDay": 362845
+      "revenueAtRiskDay": 478297
     }
   ],
   "byDepartment": [
@@ -144,7 +122,7 @@
       "risk": 2,
       "watch": 10,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 8064044
+      "revenueAtRiskDay": 8085627
     }
   ],
   "rows": [
@@ -157,7 +135,7 @@
       "article": "krovavii_piling_30ml",
       "articleKey": "krovavii_piling_30ml",
       "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-      "owner": "Васильева Мария",
+      "owner": "Мария Васильева",
       "department": "Закуп",
       "status": "risk",
       "statusLabel": "OOS скоро <10 д",
@@ -184,10 +162,10 @@
       "targetNeed28": 39231,
       "targetNeed30": 43260,
       "targetHorizonDays": 30,
-      "averagePrice": 1200,
+      "averagePrice": 1231,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 2416197,
+      "revenueAtRiskDay": 2477869,
       "recommendation": "Проверить WB: 19 кластер(ов) с покрытием меньше 10 дней (Коледино, Невинномысск, Екатеринбург - Перспективная 14, Рязань (Тюшевское)). Минимальное покрытие 8.5 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 19,
       "placesAtRisk": [
@@ -200,7 +178,7 @@
           "avgDaily": 449.4131,
           "turnoverDays": 8.52,
           "targetNeed30": 9654,
-          "revenueAtRiskDay": 539295,
+          "revenueAtRiskDay": 553061,
           "lostRevenueDay": 0
         },
         {
@@ -212,7 +190,7 @@
           "avgDaily": 271.1268,
           "turnoverDays": 8.52,
           "targetNeed30": 5824,
-          "revenueAtRiskDay": 325352,
+          "revenueAtRiskDay": 333657,
           "lostRevenueDay": 0
         },
         {
@@ -224,7 +202,7 @@
           "avgDaily": 239.9061,
           "turnoverDays": 8.52,
           "targetNeed30": 5154,
-          "revenueAtRiskDay": 287887,
+          "revenueAtRiskDay": 295235,
           "lostRevenueDay": 0
         },
         {
@@ -236,7 +214,7 @@
           "avgDaily": 191.6667,
           "turnoverDays": 8.52,
           "targetNeed30": 4118,
-          "revenueAtRiskDay": 230000,
+          "revenueAtRiskDay": 235871,
           "lostRevenueDay": 0
         },
         {
@@ -248,7 +226,7 @@
           "avgDaily": 151.5258,
           "turnoverDays": 8.52,
           "targetNeed30": 3255,
-          "revenueAtRiskDay": 181831,
+          "revenueAtRiskDay": 186472,
           "lostRevenueDay": 0
         },
         {
@@ -260,7 +238,7 @@
           "avgDaily": 134.1549,
           "turnoverDays": 8.52,
           "targetNeed30": 2882,
-          "revenueAtRiskDay": 160986,
+          "revenueAtRiskDay": 165095,
           "lostRevenueDay": 0
         },
         {
@@ -272,7 +250,7 @@
           "avgDaily": 133.3333,
           "turnoverDays": 8.52,
           "targetNeed30": 2864,
-          "revenueAtRiskDay": 160000,
+          "revenueAtRiskDay": 164084,
           "lostRevenueDay": 0
         },
         {
@@ -284,7 +262,7 @@
           "avgDaily": 97.77,
           "turnoverDays": 8.52,
           "targetNeed30": 2101,
-          "revenueAtRiskDay": 117324,
+          "revenueAtRiskDay": 120319,
           "lostRevenueDay": 0
         },
         {
@@ -296,7 +274,7 @@
           "avgDaily": 86.385,
           "turnoverDays": 8.52,
           "targetNeed30": 1856,
-          "revenueAtRiskDay": 103662,
+          "revenueAtRiskDay": 106308,
           "lostRevenueDay": 0
         },
         {
@@ -308,7 +286,7 @@
           "avgDaily": 75,
           "turnoverDays": 8.52,
           "targetNeed30": 1611,
-          "revenueAtRiskDay": 90000,
+          "revenueAtRiskDay": 92297,
           "lostRevenueDay": 0
         },
         {
@@ -320,7 +298,7 @@
           "avgDaily": 72.77,
           "turnoverDays": 8.52,
           "targetNeed30": 1564,
-          "revenueAtRiskDay": 87324,
+          "revenueAtRiskDay": 89553,
           "lostRevenueDay": 0
         },
         {
@@ -332,7 +310,7 @@
           "avgDaily": 69.3662,
           "turnoverDays": 8.52,
           "targetNeed30": 1490,
-          "revenueAtRiskDay": 83239,
+          "revenueAtRiskDay": 85364,
           "lostRevenueDay": 0
         },
         {
@@ -344,7 +322,7 @@
           "avgDaily": 17.1362,
           "turnoverDays": 8.52,
           "targetNeed30": 369,
-          "revenueAtRiskDay": 20563,
+          "revenueAtRiskDay": 21088,
           "lostRevenueDay": 0
         },
         {
@@ -356,7 +334,7 @@
           "avgDaily": 12.2066,
           "turnoverDays": 8.52,
           "targetNeed30": 263,
-          "revenueAtRiskDay": 14648,
+          "revenueAtRiskDay": 15022,
           "lostRevenueDay": 0
         },
         {
@@ -368,7 +346,7 @@
           "avgDaily": 10.6808,
           "turnoverDays": 8.52,
           "targetNeed30": 230,
-          "revenueAtRiskDay": 12817,
+          "revenueAtRiskDay": 13144,
           "lostRevenueDay": 0
         },
         {
@@ -380,7 +358,7 @@
           "avgDaily": 0.3521,
           "turnoverDays": 8.52,
           "targetNeed30": 8,
-          "revenueAtRiskDay": 423,
+          "revenueAtRiskDay": 433,
           "lostRevenueDay": 0
         },
         {
@@ -392,7 +370,7 @@
           "avgDaily": 0.3521,
           "turnoverDays": 8.52,
           "targetNeed30": 8,
-          "revenueAtRiskDay": 423,
+          "revenueAtRiskDay": 433,
           "lostRevenueDay": 0
         },
         {
@@ -404,7 +382,7 @@
           "avgDaily": 0.2347,
           "turnoverDays": 8.52,
           "targetNeed30": 6,
-          "revenueAtRiskDay": 282,
+          "revenueAtRiskDay": 289,
           "lostRevenueDay": 0
         },
         {
@@ -416,7 +394,7 @@
           "avgDaily": 0.1174,
           "turnoverDays": 8.52,
           "targetNeed30": 3,
-          "revenueAtRiskDay": 141,
+          "revenueAtRiskDay": 144,
           "lostRevenueDay": 0
         }
       ],
@@ -435,7 +413,7 @@
       "article": "krovavii_piling_30ml",
       "articleKey": "krovavii_piling_30ml",
       "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Артем",
       "department": "Закуп",
       "status": "risk",
       "statusLabel": "OOS скоро <10 д",
@@ -462,10 +440,10 @@
       "targetNeed28": 15070,
       "targetNeed30": 16619,
       "targetHorizonDays": 30,
-      "averagePrice": 1055,
+      "averagePrice": 1061,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 815482,
+      "revenueAtRiskDay": 819864,
       "recommendation": "Проверить Ozon: 25 кластер(ов) с покрытием меньше 10 дней (Казахстан, Астана, Новосибирск, Юг). Минимальное покрытие 8.5 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 25,
       "placesAtRisk": [
@@ -478,7 +456,7 @@
           "avgDaily": 171.4789,
           "turnoverDays": 8.52,
           "targetNeed30": 3684,
-          "revenueAtRiskDay": 180902,
+          "revenueAtRiskDay": 181874,
           "lostRevenueDay": 0
         },
         {
@@ -490,7 +468,7 @@
           "avgDaily": 167.3709,
           "turnoverDays": 8.52,
           "targetNeed30": 3596,
-          "revenueAtRiskDay": 176568,
+          "revenueAtRiskDay": 177517,
           "lostRevenueDay": 0
         },
         {
@@ -502,7 +480,7 @@
           "avgDaily": 54.108,
           "turnoverDays": 8.52,
           "targetNeed30": 1163,
-          "revenueAtRiskDay": 57081,
+          "revenueAtRiskDay": 57388,
           "lostRevenueDay": 0
         },
         {
@@ -514,7 +492,7 @@
           "avgDaily": 43.0751,
           "turnoverDays": 8.52,
           "targetNeed30": 926,
-          "revenueAtRiskDay": 45442,
+          "revenueAtRiskDay": 45686,
           "lostRevenueDay": 0
         },
         {
@@ -526,7 +504,7 @@
           "avgDaily": 35.9156,
           "turnoverDays": 8.52,
           "targetNeed30": 772,
-          "revenueAtRiskDay": 37889,
+          "revenueAtRiskDay": 38093,
           "lostRevenueDay": 0
         },
         {
@@ -538,7 +516,7 @@
           "avgDaily": 33.9202,
           "turnoverDays": 8.52,
           "targetNeed30": 729,
-          "revenueAtRiskDay": 35784,
+          "revenueAtRiskDay": 35976,
           "lostRevenueDay": 0
         },
         {
@@ -550,7 +528,7 @@
           "avgDaily": 31.8075,
           "turnoverDays": 8.52,
           "targetNeed30": 684,
-          "revenueAtRiskDay": 33555,
+          "revenueAtRiskDay": 33736,
           "lostRevenueDay": 0
         },
         {
@@ -562,7 +540,7 @@
           "avgDaily": 30.1644,
           "turnoverDays": 8.52,
           "targetNeed30": 648,
-          "revenueAtRiskDay": 31822,
+          "revenueAtRiskDay": 31993,
           "lostRevenueDay": 0
         },
         {
@@ -574,7 +552,7 @@
           "avgDaily": 28.7558,
           "turnoverDays": 8.52,
           "targetNeed30": 618,
-          "revenueAtRiskDay": 30336,
+          "revenueAtRiskDay": 30499,
           "lostRevenueDay": 0
         },
         {
@@ -586,7 +564,7 @@
           "avgDaily": 22.0657,
           "turnoverDays": 8.52,
           "targetNeed30": 474,
-          "revenueAtRiskDay": 23278,
+          "revenueAtRiskDay": 23403,
           "lostRevenueDay": 0
         },
         {
@@ -598,7 +576,7 @@
           "avgDaily": 19.601,
           "turnoverDays": 8.52,
           "targetNeed30": 422,
-          "revenueAtRiskDay": 20678,
+          "revenueAtRiskDay": 20789,
           "lostRevenueDay": 0
         },
         {
@@ -610,7 +588,7 @@
           "avgDaily": 19.4836,
           "turnoverDays": 8.52,
           "targetNeed30": 419,
-          "revenueAtRiskDay": 20554,
+          "revenueAtRiskDay": 20665,
           "lostRevenueDay": 0
         },
         {
@@ -622,7 +600,7 @@
           "avgDaily": 14.2019,
           "turnoverDays": 8.52,
           "targetNeed30": 306,
-          "revenueAtRiskDay": 14982,
+          "revenueAtRiskDay": 15063,
           "lostRevenueDay": 0
         },
         {
@@ -634,7 +612,7 @@
           "avgDaily": 13.2629,
           "turnoverDays": 8.52,
           "targetNeed30": 285,
-          "revenueAtRiskDay": 13992,
+          "revenueAtRiskDay": 14067,
           "lostRevenueDay": 0
         },
         {
@@ -646,7 +624,7 @@
           "avgDaily": 13.1455,
           "turnoverDays": 8.52,
           "targetNeed30": 283,
-          "revenueAtRiskDay": 13868,
+          "revenueAtRiskDay": 13942,
           "lostRevenueDay": 0
         },
         {
@@ -658,7 +636,7 @@
           "avgDaily": 12.6761,
           "turnoverDays": 8.52,
           "targetNeed30": 273,
-          "revenueAtRiskDay": 13373,
+          "revenueAtRiskDay": 13445,
           "lostRevenueDay": 0
         },
         {
@@ -670,7 +648,7 @@
           "avgDaily": 10.6808,
           "turnoverDays": 8.52,
           "targetNeed30": 230,
-          "revenueAtRiskDay": 11268,
+          "revenueAtRiskDay": 11328,
           "lostRevenueDay": 0
         },
         {
@@ -682,7 +660,7 @@
           "avgDaily": 9.2723,
           "turnoverDays": 8.52,
           "targetNeed30": 200,
-          "revenueAtRiskDay": 9782,
+          "revenueAtRiskDay": 9834,
           "lostRevenueDay": 0
         },
         {
@@ -694,7 +672,7 @@
           "avgDaily": 8.9202,
           "turnoverDays": 8.52,
           "targetNeed30": 192,
-          "revenueAtRiskDay": 9410,
+          "revenueAtRiskDay": 9461,
           "lostRevenueDay": 0
         },
         {
@@ -706,7 +684,7 @@
           "avgDaily": 7.277,
           "turnoverDays": 8.52,
           "targetNeed30": 157,
-          "revenueAtRiskDay": 7677,
+          "revenueAtRiskDay": 7718,
           "lostRevenueDay": 0
         },
         {
@@ -718,7 +696,7 @@
           "avgDaily": 7.277,
           "turnoverDays": 8.52,
           "targetNeed30": 157,
-          "revenueAtRiskDay": 7677,
+          "revenueAtRiskDay": 7718,
           "lostRevenueDay": 0
         },
         {
@@ -730,7 +708,7 @@
           "avgDaily": 7.277,
           "turnoverDays": 8.52,
           "targetNeed30": 157,
-          "revenueAtRiskDay": 7677,
+          "revenueAtRiskDay": 7718,
           "lostRevenueDay": 0
         },
         {
@@ -742,7 +720,7 @@
           "avgDaily": 4.108,
           "turnoverDays": 8.52,
           "targetNeed30": 89,
-          "revenueAtRiskDay": 4334,
+          "revenueAtRiskDay": 4357,
           "lostRevenueDay": 0
         },
         {
@@ -754,7 +732,7 @@
           "avgDaily": 3.6385,
           "turnoverDays": 8.52,
           "targetNeed30": 79,
-          "revenueAtRiskDay": 3838,
+          "revenueAtRiskDay": 3859,
           "lostRevenueDay": 0
         },
         {
@@ -766,7 +744,7 @@
           "avgDaily": 3.5211,
           "turnoverDays": 8.52,
           "targetNeed30": 76,
-          "revenueAtRiskDay": 3715,
+          "revenueAtRiskDay": 3735,
           "lostRevenueDay": 0
         }
       ],
@@ -785,7 +763,7 @@
       "article": "gel_antiakne_20ml_v2",
       "articleKey": "gel_antiakne_20ml_v2",
       "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-      "owner": "Кирилл",
+      "owner": "Мария Васильева",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -812,10 +790,10 @@
       "targetNeed28": 11202,
       "targetNeed30": 14014,
       "targetHorizonDays": 30,
-      "averagePrice": 1253,
+      "averagePrice": 1231,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 1760852,
+      "revenueAtRiskDay": 1730800,
       "recommendation": "Поставить в контроль WB: 24 кластер(ов) с покрытием меньше 30 дней (СЦ Хабаровск, Краснодар, Склад СПБ Шушары Московское, Владивосток WB). Минимальное покрытие 20.0 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 24,
       "placesAtRisk": [
@@ -828,7 +806,7 @@
           "avgDaily": 189.6707,
           "turnoverDays": 20.04,
           "targetNeed30": 1890,
-          "revenueAtRiskDay": 237576,
+          "revenueAtRiskDay": 233522,
           "lostRevenueDay": 0
         },
         {
@@ -840,7 +818,7 @@
           "avgDaily": 177.8942,
           "turnoverDays": 20.04,
           "targetNeed30": 1772,
-          "revenueAtRiskDay": 222825,
+          "revenueAtRiskDay": 219022,
           "lostRevenueDay": 0
         },
         {
@@ -852,7 +830,7 @@
           "avgDaily": 165.2695,
           "turnoverDays": 20.04,
           "targetNeed30": 1647,
-          "revenueAtRiskDay": 207012,
+          "revenueAtRiskDay": 203479,
           "lostRevenueDay": 0
         },
         {
@@ -864,7 +842,7 @@
           "avgDaily": 150.8982,
           "turnoverDays": 20.04,
           "targetNeed30": 1503,
-          "revenueAtRiskDay": 189011,
+          "revenueAtRiskDay": 185785,
           "lostRevenueDay": 0
         },
         {
@@ -876,7 +854,7 @@
           "avgDaily": 138.7725,
           "turnoverDays": 20.04,
           "targetNeed30": 1383,
-          "revenueAtRiskDay": 173822,
+          "revenueAtRiskDay": 170856,
           "lostRevenueDay": 0
         },
         {
@@ -888,7 +866,7 @@
           "avgDaily": 101.2475,
           "turnoverDays": 20.04,
           "targetNeed30": 1009,
-          "revenueAtRiskDay": 126820,
+          "revenueAtRiskDay": 124655,
           "lostRevenueDay": 0
         },
         {
@@ -900,7 +878,7 @@
           "avgDaily": 64.6208,
           "turnoverDays": 20.04,
           "targetNeed30": 644,
-          "revenueAtRiskDay": 80942,
+          "revenueAtRiskDay": 79561,
           "lostRevenueDay": 0
         },
         {
@@ -912,7 +890,7 @@
           "avgDaily": 64.0719,
           "turnoverDays": 20.04,
           "targetNeed30": 639,
-          "revenueAtRiskDay": 80255,
+          "revenueAtRiskDay": 78885,
           "lostRevenueDay": 0
         },
         {
@@ -924,7 +902,7 @@
           "avgDaily": 52.6447,
           "turnoverDays": 20.04,
           "targetNeed30": 525,
-          "revenueAtRiskDay": 65941,
+          "revenueAtRiskDay": 64816,
           "lostRevenueDay": 0
         },
         {
@@ -936,7 +914,7 @@
           "avgDaily": 46.8064,
           "turnoverDays": 20.04,
           "targetNeed30": 467,
-          "revenueAtRiskDay": 58628,
+          "revenueAtRiskDay": 57628,
           "lostRevenueDay": 0
         },
         {
@@ -948,7 +926,7 @@
           "avgDaily": 45.8583,
           "turnoverDays": 20.04,
           "targetNeed30": 457,
-          "revenueAtRiskDay": 57441,
+          "revenueAtRiskDay": 56461,
           "lostRevenueDay": 0
         },
         {
@@ -960,7 +938,7 @@
           "avgDaily": 42.6647,
           "turnoverDays": 20.04,
           "targetNeed30": 425,
-          "revenueAtRiskDay": 53441,
+          "revenueAtRiskDay": 52529,
           "lostRevenueDay": 0
         },
         {
@@ -972,7 +950,7 @@
           "avgDaily": 39.7705,
           "turnoverDays": 20.04,
           "targetNeed30": 397,
-          "revenueAtRiskDay": 49815,
+          "revenueAtRiskDay": 48965,
           "lostRevenueDay": 0
         },
         {
@@ -984,7 +962,7 @@
           "avgDaily": 33.6327,
           "turnoverDays": 20.04,
           "targetNeed30": 335,
-          "revenueAtRiskDay": 42127,
+          "revenueAtRiskDay": 41408,
           "lostRevenueDay": 0
         },
         {
@@ -996,7 +974,7 @@
           "avgDaily": 28.0439,
           "turnoverDays": 20.04,
           "targetNeed30": 280,
-          "revenueAtRiskDay": 35127,
+          "revenueAtRiskDay": 34528,
           "lostRevenueDay": 0
         },
         {
@@ -1008,7 +986,7 @@
           "avgDaily": 24.1018,
           "turnoverDays": 20.04,
           "targetNeed30": 241,
-          "revenueAtRiskDay": 30189,
+          "revenueAtRiskDay": 29674,
           "lostRevenueDay": 0
         },
         {
@@ -1020,7 +998,7 @@
           "avgDaily": 22.8543,
           "turnoverDays": 20.04,
           "targetNeed30": 228,
-          "revenueAtRiskDay": 28627,
+          "revenueAtRiskDay": 28138,
           "lostRevenueDay": 0
         },
         {
@@ -1032,7 +1010,7 @@
           "avgDaily": 16.0679,
           "turnoverDays": 20.04,
           "targetNeed30": 161,
-          "revenueAtRiskDay": 20126,
+          "revenueAtRiskDay": 19783,
           "lostRevenueDay": 0
         },
         {
@@ -1044,7 +1022,7 @@
           "avgDaily": 0.3493,
           "turnoverDays": 20.04,
           "targetNeed30": 4,
-          "revenueAtRiskDay": 438,
+          "revenueAtRiskDay": 430,
           "lostRevenueDay": 0
         },
         {
@@ -1056,7 +1034,7 @@
           "avgDaily": 0.1996,
           "turnoverDays": 20.04,
           "targetNeed30": 2,
-          "revenueAtRiskDay": 250,
+          "revenueAtRiskDay": 246,
           "lostRevenueDay": 0
         },
         {
@@ -1068,7 +1046,7 @@
           "avgDaily": 0.1996,
           "turnoverDays": 20.04,
           "targetNeed30": 2,
-          "revenueAtRiskDay": 250,
+          "revenueAtRiskDay": 246,
           "lostRevenueDay": 0
         },
         {
@@ -1080,7 +1058,7 @@
           "avgDaily": 0.0499,
           "turnoverDays": 20.04,
           "targetNeed30": 1,
-          "revenueAtRiskDay": 63,
+          "revenueAtRiskDay": 61,
           "lostRevenueDay": 0
         },
         {
@@ -1092,7 +1070,7 @@
           "avgDaily": 0.0499,
           "turnoverDays": 20.04,
           "targetNeed30": 1,
-          "revenueAtRiskDay": 63,
+          "revenueAtRiskDay": 61,
           "lostRevenueDay": 0
         },
         {
@@ -1104,7 +1082,7 @@
           "avgDaily": 0.0499,
           "turnoverDays": 20.04,
           "targetNeed30": 1,
-          "revenueAtRiskDay": 63,
+          "revenueAtRiskDay": 61,
           "lostRevenueDay": 0
         }
       ],
@@ -1123,7 +1101,7 @@
       "article": "retinol_boost_krem_dlya_vek_30ml",
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
       "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-      "owner": "Васильева Мария",
+      "owner": "Мария Васильева",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -1150,10 +1128,10 @@
       "targetNeed28": 1420,
       "targetNeed30": 2262,
       "targetHorizonDays": 30,
-      "averagePrice": 1723,
+      "averagePrice": 1731,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 726380,
+      "revenueAtRiskDay": 729428,
       "recommendation": "Поставить в контроль WB: 6 кластер(ов) с покрытием меньше 30 дней (Тула, Краснодар, Екатеринбург - Перспективная 14, Склад СПБ Шушары Московское). Минимальное покрытие 24.6 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 6,
       "placesAtRisk": [
@@ -1166,7 +1144,7 @@
           "avgDaily": 144.4399,
           "turnoverDays": 24.64,
           "targetNeed30": 775,
-          "revenueAtRiskDay": 248935,
+          "revenueAtRiskDay": 249979,
           "lostRevenueDay": 0
         },
         {
@@ -1178,7 +1156,7 @@
           "avgDaily": 110.7549,
           "turnoverDays": 24.64,
           "targetNeed30": 594,
-          "revenueAtRiskDay": 190880,
+          "revenueAtRiskDay": 191681,
           "lostRevenueDay": 0
         },
         {
@@ -1190,7 +1168,7 @@
           "avgDaily": 110.3084,
           "turnoverDays": 24.64,
           "targetNeed30": 592,
-          "revenueAtRiskDay": 190111,
+          "revenueAtRiskDay": 190909,
           "lostRevenueDay": 0
         },
         {
@@ -1202,7 +1180,7 @@
           "avgDaily": 50.7305,
           "turnoverDays": 24.64,
           "targetNeed30": 272,
-          "revenueAtRiskDay": 87431,
+          "revenueAtRiskDay": 87798,
           "lostRevenueDay": 0
         },
         {
@@ -1214,7 +1192,7 @@
           "avgDaily": 5.0731,
           "turnoverDays": 24.64,
           "targetNeed30": 28,
-          "revenueAtRiskDay": 8743,
+          "revenueAtRiskDay": 8780,
           "lostRevenueDay": 0
         },
         {
@@ -1226,7 +1204,7 @@
           "avgDaily": 0.1623,
           "turnoverDays": 24.65,
           "targetNeed30": 1,
-          "revenueAtRiskDay": 280,
+          "revenueAtRiskDay": 281,
           "lostRevenueDay": 0
         }
       ],
@@ -1245,7 +1223,7 @@
       "article": "gel_antiakne_20ml_v2",
       "articleKey": "gel_antiakne_20ml_v2",
       "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Артем",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -1272,10 +1250,10 @@
       "targetNeed28": 3734,
       "targetNeed30": 4670,
       "targetHorizonDays": 30,
-      "averagePrice": 1387,
+      "averagePrice": 1351,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 648169,
+      "revenueAtRiskDay": 631403,
       "recommendation": "Поставить в контроль Ozon: 27 кластер(ов) с покрытием меньше 30 дней (Москва, МО и Дальние регионы, Юг, Ростов, Астана). Минимальное покрытие 20.0 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 27,
       "placesAtRisk": [
@@ -1288,7 +1266,7 @@
           "avgDaily": 96.4072,
           "turnoverDays": 20.04,
           "targetNeed30": 961,
-          "revenueAtRiskDay": 133689,
+          "revenueAtRiskDay": 130231,
           "lostRevenueDay": 0
         },
         {
@@ -1300,7 +1278,7 @@
           "avgDaily": 44.2614,
           "turnoverDays": 20.04,
           "targetNeed30": 441,
-          "revenueAtRiskDay": 61378,
+          "revenueAtRiskDay": 59790,
           "lostRevenueDay": 0
         },
         {
@@ -1312,7 +1290,7 @@
           "avgDaily": 37.2754,
           "turnoverDays": 20.04,
           "targetNeed30": 372,
-          "revenueAtRiskDay": 51690,
+          "revenueAtRiskDay": 50353,
           "lostRevenueDay": 0
         },
         {
@@ -1324,7 +1302,7 @@
           "avgDaily": 35.7784,
           "turnoverDays": 20.04,
           "targetNeed30": 357,
-          "revenueAtRiskDay": 49614,
+          "revenueAtRiskDay": 48331,
           "lostRevenueDay": 0
         },
         {
@@ -1336,7 +1314,7 @@
           "avgDaily": 35.7784,
           "turnoverDays": 20.04,
           "targetNeed30": 357,
-          "revenueAtRiskDay": 49614,
+          "revenueAtRiskDay": 48331,
           "lostRevenueDay": 0
         },
         {
@@ -1348,7 +1326,7 @@
           "avgDaily": 26.9461,
           "turnoverDays": 20.04,
           "targetNeed30": 269,
-          "revenueAtRiskDay": 37366,
+          "revenueAtRiskDay": 36400,
           "lostRevenueDay": 0
         },
         {
@@ -1360,7 +1338,7 @@
           "avgDaily": 24.4511,
           "turnoverDays": 20.04,
           "targetNeed30": 244,
-          "revenueAtRiskDay": 33907,
+          "revenueAtRiskDay": 33030,
           "lostRevenueDay": 0
         },
         {
@@ -1372,7 +1350,7 @@
           "avgDaily": 20.3593,
           "turnoverDays": 20.04,
           "targetNeed30": 203,
-          "revenueAtRiskDay": 28232,
+          "revenueAtRiskDay": 27502,
           "lostRevenueDay": 0
         },
         {
@@ -1384,7 +1362,7 @@
           "avgDaily": 16.1677,
           "turnoverDays": 20.04,
           "targetNeed30": 162,
-          "revenueAtRiskDay": 22420,
+          "revenueAtRiskDay": 21840,
           "lostRevenueDay": 0
         },
         {
@@ -1396,7 +1374,7 @@
           "avgDaily": 16.1677,
           "turnoverDays": 20.04,
           "targetNeed30": 162,
-          "revenueAtRiskDay": 22420,
+          "revenueAtRiskDay": 21840,
           "lostRevenueDay": 0
         },
         {
@@ -1408,7 +1386,7 @@
           "avgDaily": 13.9721,
           "turnoverDays": 20.04,
           "targetNeed30": 140,
-          "revenueAtRiskDay": 19375,
+          "revenueAtRiskDay": 18874,
           "lostRevenueDay": 0
         },
         {
@@ -1420,7 +1398,7 @@
           "avgDaily": 12.3752,
           "turnoverDays": 20.04,
           "targetNeed30": 124,
-          "revenueAtRiskDay": 17161,
+          "revenueAtRiskDay": 16717,
           "lostRevenueDay": 0
         },
         {
@@ -1432,7 +1410,7 @@
           "avgDaily": 11.6267,
           "turnoverDays": 20.04,
           "targetNeed30": 116,
-          "revenueAtRiskDay": 16123,
+          "revenueAtRiskDay": 15706,
           "lostRevenueDay": 0
         },
         {
@@ -1444,7 +1422,7 @@
           "avgDaily": 11.3273,
           "turnoverDays": 20.04,
           "targetNeed30": 113,
-          "revenueAtRiskDay": 15708,
+          "revenueAtRiskDay": 15301,
           "lostRevenueDay": 0
         },
         {
@@ -1456,7 +1434,7 @@
           "avgDaily": 10.7285,
           "turnoverDays": 20.04,
           "targetNeed30": 107,
-          "revenueAtRiskDay": 14877,
+          "revenueAtRiskDay": 14493,
           "lostRevenueDay": 0
         },
         {
@@ -1468,7 +1446,7 @@
           "avgDaily": 9.5808,
           "turnoverDays": 20.04,
           "targetNeed30": 96,
-          "revenueAtRiskDay": 13286,
+          "revenueAtRiskDay": 12942,
           "lostRevenueDay": 0
         },
         {
@@ -1480,7 +1458,7 @@
           "avgDaily": 8.5828,
           "turnoverDays": 20.04,
           "targetNeed30": 86,
-          "revenueAtRiskDay": 11902,
+          "revenueAtRiskDay": 11594,
           "lostRevenueDay": 0
         },
         {
@@ -1492,7 +1470,7 @@
           "avgDaily": 6.5868,
           "turnoverDays": 20.04,
           "targetNeed30": 66,
-          "revenueAtRiskDay": 9134,
+          "revenueAtRiskDay": 8898,
           "lostRevenueDay": 0
         },
         {
@@ -1504,7 +1482,7 @@
           "avgDaily": 6.5868,
           "turnoverDays": 20.04,
           "targetNeed30": 66,
-          "revenueAtRiskDay": 9134,
+          "revenueAtRiskDay": 8898,
           "lostRevenueDay": 0
         },
         {
@@ -1516,7 +1494,7 @@
           "avgDaily": 6.1377,
           "turnoverDays": 20.04,
           "targetNeed30": 62,
-          "revenueAtRiskDay": 8511,
+          "revenueAtRiskDay": 8291,
           "lostRevenueDay": 0
         },
         {
@@ -1528,7 +1506,7 @@
           "avgDaily": 5.988,
           "turnoverDays": 20.04,
           "targetNeed30": 60,
-          "revenueAtRiskDay": 8304,
+          "revenueAtRiskDay": 8089,
           "lostRevenueDay": 0
         },
         {
@@ -1540,7 +1518,7 @@
           "avgDaily": 3.4431,
           "turnoverDays": 20.04,
           "targetNeed30": 35,
-          "revenueAtRiskDay": 4775,
+          "revenueAtRiskDay": 4651,
           "lostRevenueDay": 0
         },
         {
@@ -1552,7 +1530,7 @@
           "avgDaily": 3.4431,
           "turnoverDays": 20.04,
           "targetNeed30": 35,
-          "revenueAtRiskDay": 4775,
+          "revenueAtRiskDay": 4651,
           "lostRevenueDay": 0
         },
         {
@@ -1564,7 +1542,7 @@
           "avgDaily": 1.7465,
           "turnoverDays": 20.04,
           "targetNeed30": 18,
-          "revenueAtRiskDay": 2422,
+          "revenueAtRiskDay": 2359,
           "lostRevenueDay": 0
         },
         {
@@ -1576,7 +1554,7 @@
           "avgDaily": 1.0978,
           "turnoverDays": 20.04,
           "targetNeed30": 11,
-          "revenueAtRiskDay": 1522,
+          "revenueAtRiskDay": 1483,
           "lostRevenueDay": 0
         },
         {
@@ -1588,7 +1566,7 @@
           "avgDaily": 0.5489,
           "turnoverDays": 20.04,
           "targetNeed30": 6,
-          "revenueAtRiskDay": 761,
+          "revenueAtRiskDay": 741,
           "lostRevenueDay": 0
         },
         {
@@ -1600,7 +1578,7 @@
           "avgDaily": 0.0499,
           "turnoverDays": 20.04,
           "targetNeed30": 1,
-          "revenueAtRiskDay": 69,
+          "revenueAtRiskDay": 67,
           "lostRevenueDay": 0
         }
       ],
@@ -1619,7 +1597,7 @@
       "article": "penka_kudryavii_metod_150ml",
       "articleKey": "penka_kudryavii_metod_150ml",
       "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "owner": "Лапыгин Максим",
+      "owner": "Мария Васильева",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -1646,10 +1624,10 @@
       "targetNeed28": 1162,
       "targetNeed30": 1827,
       "targetHorizonDays": 30,
-      "averagePrice": 1464,
+      "averagePrice": 1466,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 487852,
+      "revenueAtRiskDay": 488264,
       "recommendation": "Поставить в контроль WB: 9 кластер(ов) с покрытием меньше 30 дней (Электросталь, Краснодар, Екатеринбург - Перспективная 14, Склад СПБ Шушары Московское). Минимальное покрытие 24.5 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 9,
       "placesAtRisk": [
@@ -1662,7 +1640,7 @@
           "avgDaily": 99.1847,
           "turnoverDays": 24.53,
           "targetNeed30": 543,
-          "revenueAtRiskDay": 145245,
+          "revenueAtRiskDay": 145368,
           "lostRevenueDay": 0
         },
         {
@@ -1674,7 +1652,7 @@
           "avgDaily": 65.5932,
           "turnoverDays": 24.53,
           "targetNeed30": 359,
-          "revenueAtRiskDay": 96054,
+          "revenueAtRiskDay": 96135,
           "lostRevenueDay": 0
         },
         {
@@ -1686,7 +1664,7 @@
           "avgDaily": 59.9266,
           "turnoverDays": 24.53,
           "targetNeed30": 328,
-          "revenueAtRiskDay": 87756,
+          "revenueAtRiskDay": 87830,
           "lostRevenueDay": 0
         },
         {
@@ -1698,7 +1676,7 @@
           "avgDaily": 51.3249,
           "turnoverDays": 24.53,
           "targetNeed30": 281,
-          "revenueAtRiskDay": 75160,
+          "revenueAtRiskDay": 75223,
           "lostRevenueDay": 0
         },
         {
@@ -1710,7 +1688,7 @@
           "avgDaily": 26.2536,
           "turnoverDays": 24.53,
           "targetNeed30": 144,
-          "revenueAtRiskDay": 38445,
+          "revenueAtRiskDay": 38478,
           "lostRevenueDay": 0
         },
         {
@@ -1722,7 +1700,7 @@
           "avgDaily": 15.4097,
           "turnoverDays": 24.53,
           "targetNeed30": 85,
-          "revenueAtRiskDay": 22566,
+          "revenueAtRiskDay": 22585,
           "lostRevenueDay": 0
         },
         {
@@ -1734,7 +1712,7 @@
           "avgDaily": 15.3689,
           "turnoverDays": 24.53,
           "targetNeed30": 85,
-          "revenueAtRiskDay": 22506,
+          "revenueAtRiskDay": 22525,
           "lostRevenueDay": 0
         },
         {
@@ -1777,7 +1755,7 @@
       "article": "retinol_boost_krem_dlya_vek_30ml",
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
       "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-      "owner": "Молодякова Дария",
+      "owner": "Даша",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -1804,10 +1782,10 @@
       "targetNeed28": 1016,
       "targetNeed30": 1609,
       "targetHorizonDays": 30,
-      "averagePrice": 1409,
+      "averagePrice": 1418,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 418715,
+      "revenueAtRiskDay": 421381,
       "recommendation": "Поставить в контроль Ozon: 28 кластер(ов) с покрытием меньше 30 дней (Москва, МО и Дальние регионы, Урал, Екатеринбург, Новосибирск). Минимальное покрытие 24.6 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 28,
       "placesAtRisk": [
@@ -1820,7 +1798,7 @@
           "avgDaily": 45.7792,
           "turnoverDays": 24.64,
           "targetNeed30": 246,
-          "revenueAtRiskDay": 64514,
+          "revenueAtRiskDay": 64925,
           "lostRevenueDay": 0
         },
         {
@@ -1832,7 +1810,7 @@
           "avgDaily": 44.6023,
           "turnoverDays": 24.64,
           "targetNeed30": 240,
-          "revenueAtRiskDay": 62856,
+          "revenueAtRiskDay": 63256,
           "lostRevenueDay": 0
         },
         {
@@ -1844,7 +1822,7 @@
           "avgDaily": 33.8068,
           "turnoverDays": 24.64,
           "targetNeed30": 182,
-          "revenueAtRiskDay": 47642,
+          "revenueAtRiskDay": 47945,
           "lostRevenueDay": 0
         },
         {
@@ -1856,7 +1834,7 @@
           "avgDaily": 17.7354,
           "turnoverDays": 24.64,
           "targetNeed30": 96,
-          "revenueAtRiskDay": 24994,
+          "revenueAtRiskDay": 25153,
           "lostRevenueDay": 0
         },
         {
@@ -1868,7 +1846,7 @@
           "avgDaily": 17.289,
           "turnoverDays": 24.64,
           "targetNeed30": 93,
-          "revenueAtRiskDay": 24365,
+          "revenueAtRiskDay": 24520,
           "lostRevenueDay": 0
         },
         {
@@ -1880,7 +1858,7 @@
           "avgDaily": 17.289,
           "turnoverDays": 24.64,
           "targetNeed30": 93,
-          "revenueAtRiskDay": 24365,
+          "revenueAtRiskDay": 24520,
           "lostRevenueDay": 0
         },
         {
@@ -1892,7 +1870,7 @@
           "avgDaily": 15.5033,
           "turnoverDays": 24.64,
           "targetNeed30": 84,
-          "revenueAtRiskDay": 21848,
+          "revenueAtRiskDay": 21987,
           "lostRevenueDay": 0
         },
         {
@@ -1904,7 +1882,7 @@
           "avgDaily": 14.8539,
           "turnoverDays": 24.64,
           "targetNeed30": 80,
-          "revenueAtRiskDay": 20933,
+          "revenueAtRiskDay": 21066,
           "lostRevenueDay": 0
         },
         {
@@ -1916,7 +1894,7 @@
           "avgDaily": 11.1607,
           "turnoverDays": 24.64,
           "targetNeed30": 60,
-          "revenueAtRiskDay": 15728,
+          "revenueAtRiskDay": 15828,
           "lostRevenueDay": 0
         },
         {
@@ -1928,7 +1906,7 @@
           "avgDaily": 10.7955,
           "turnoverDays": 24.64,
           "targetNeed30": 58,
-          "revenueAtRiskDay": 15214,
+          "revenueAtRiskDay": 15310,
           "lostRevenueDay": 0
         },
         {
@@ -1940,7 +1918,7 @@
           "avgDaily": 7.1834,
           "turnoverDays": 24.64,
           "targetNeed30": 39,
-          "revenueAtRiskDay": 10123,
+          "revenueAtRiskDay": 10188,
           "lostRevenueDay": 0
         },
         {
@@ -1952,7 +1930,7 @@
           "avgDaily": 6.6964,
           "turnoverDays": 24.64,
           "targetNeed30": 36,
-          "revenueAtRiskDay": 9437,
+          "revenueAtRiskDay": 9497,
           "lostRevenueDay": 0
         },
         {
@@ -1964,7 +1942,7 @@
           "avgDaily": 5.9659,
           "turnoverDays": 24.64,
           "targetNeed30": 32,
-          "revenueAtRiskDay": 8407,
+          "revenueAtRiskDay": 8461,
           "lostRevenueDay": 0
         },
         {
@@ -1976,7 +1954,7 @@
           "avgDaily": 5.8442,
           "turnoverDays": 24.64,
           "targetNeed30": 32,
-          "revenueAtRiskDay": 8236,
+          "revenueAtRiskDay": 8288,
           "lostRevenueDay": 0
         },
         {
@@ -1988,7 +1966,7 @@
           "avgDaily": 5.8442,
           "turnoverDays": 24.64,
           "targetNeed30": 32,
-          "revenueAtRiskDay": 8236,
+          "revenueAtRiskDay": 8288,
           "lostRevenueDay": 0
         },
         {
@@ -2000,7 +1978,7 @@
           "avgDaily": 5.6818,
           "turnoverDays": 24.64,
           "targetNeed30": 31,
-          "revenueAtRiskDay": 8007,
+          "revenueAtRiskDay": 8058,
           "lostRevenueDay": 0
         },
         {
@@ -2012,7 +1990,7 @@
           "avgDaily": 5.4383,
           "turnoverDays": 24.64,
           "targetNeed30": 30,
-          "revenueAtRiskDay": 7664,
+          "revenueAtRiskDay": 7713,
           "lostRevenueDay": 0
         },
         {
@@ -2024,7 +2002,7 @@
           "avgDaily": 5.276,
           "turnoverDays": 24.64,
           "targetNeed30": 29,
-          "revenueAtRiskDay": 7435,
+          "revenueAtRiskDay": 7483,
           "lostRevenueDay": 0
         },
         {
@@ -2036,7 +2014,7 @@
           "avgDaily": 4.6672,
           "turnoverDays": 24.64,
           "targetNeed30": 26,
-          "revenueAtRiskDay": 6577,
+          "revenueAtRiskDay": 6619,
           "lostRevenueDay": 0
         },
         {
@@ -2048,7 +2026,7 @@
           "avgDaily": 4.5455,
           "turnoverDays": 24.64,
           "targetNeed30": 25,
-          "revenueAtRiskDay": 6406,
+          "revenueAtRiskDay": 6447,
           "lostRevenueDay": 0
         },
         {
@@ -2060,7 +2038,7 @@
           "avgDaily": 3.2873,
           "turnoverDays": 24.64,
           "targetNeed30": 18,
-          "revenueAtRiskDay": 4633,
+          "revenueAtRiskDay": 4662,
           "lostRevenueDay": 0
         },
         {
@@ -2072,7 +2050,7 @@
           "avgDaily": 2.7192,
           "turnoverDays": 24.64,
           "targetNeed30": 15,
-          "revenueAtRiskDay": 3832,
+          "revenueAtRiskDay": 3856,
           "lostRevenueDay": 0
         },
         {
@@ -2084,7 +2062,7 @@
           "avgDaily": 2.7192,
           "turnoverDays": 24.64,
           "targetNeed30": 15,
-          "revenueAtRiskDay": 3832,
+          "revenueAtRiskDay": 3856,
           "lostRevenueDay": 0
         },
         {
@@ -2096,7 +2074,7 @@
           "avgDaily": 1.5016,
           "turnoverDays": 24.64,
           "targetNeed30": 9,
-          "revenueAtRiskDay": 2116,
+          "revenueAtRiskDay": 2130,
           "lostRevenueDay": 0
         },
         {
@@ -2108,7 +2086,7 @@
           "avgDaily": 0.7711,
           "turnoverDays": 24.64,
           "targetNeed30": 5,
-          "revenueAtRiskDay": 1087,
+          "revenueAtRiskDay": 1094,
           "lostRevenueDay": 0
         },
         {
@@ -2120,7 +2098,7 @@
           "avgDaily": 0.0812,
           "turnoverDays": 24.63,
           "targetNeed30": 1,
-          "revenueAtRiskDay": 114,
+          "revenueAtRiskDay": 115,
           "lostRevenueDay": 0
         },
         {
@@ -2132,7 +2110,7 @@
           "avgDaily": 0.0406,
           "turnoverDays": 24.63,
           "targetNeed30": 1,
-          "revenueAtRiskDay": 57,
+          "revenueAtRiskDay": 58,
           "lostRevenueDay": 0
         },
         {
@@ -2144,7 +2122,7 @@
           "avgDaily": 0.0406,
           "turnoverDays": 24.63,
           "targetNeed30": 1,
-          "revenueAtRiskDay": 57,
+          "revenueAtRiskDay": 58,
           "lostRevenueDay": 0
         }
       ],
@@ -2163,7 +2141,7 @@
       "article": "sprei_buster_100ml",
       "articleKey": "sprei_buster_100ml",
       "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-      "owner": "Васильева Мария",
+      "owner": "Мария Васильева",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -2190,10 +2168,10 @@
       "targetNeed28": 4110,
       "targetNeed30": 4623,
       "targetHorizonDays": 30,
-      "averagePrice": 912,
+      "averagePrice": 894,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 234135,
+      "revenueAtRiskDay": 229587,
       "recommendation": "Поставить в контроль WB: 11 кластер(ов) с покрытием меньше 30 дней (Екатеринбург - Перспективная 14, Электросталь, Склад СПБ Шушары Московское, Сарапул WB). Минимальное покрытие 12.0 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 11,
       "placesAtRisk": [
@@ -2206,7 +2184,7 @@
           "avgDaily": 89.1847,
           "turnoverDays": 12.02,
           "targetNeed30": 1604,
-          "revenueAtRiskDay": 81333,
+          "revenueAtRiskDay": 79753,
           "lostRevenueDay": 0
         },
         {
@@ -2218,7 +2196,7 @@
           "avgDaily": 38.2696,
           "turnoverDays": 12.02,
           "targetNeed30": 689,
-          "revenueAtRiskDay": 34900,
+          "revenueAtRiskDay": 34222,
           "lostRevenueDay": 0
         },
         {
@@ -2230,7 +2208,7 @@
           "avgDaily": 33.9434,
           "turnoverDays": 12.02,
           "targetNeed30": 611,
-          "revenueAtRiskDay": 30955,
+          "revenueAtRiskDay": 30354,
           "lostRevenueDay": 0
         },
         {
@@ -2242,7 +2220,7 @@
           "avgDaily": 20.9651,
           "turnoverDays": 12.02,
           "targetNeed30": 377,
-          "revenueAtRiskDay": 19119,
+          "revenueAtRiskDay": 18748,
           "lostRevenueDay": 0
         },
         {
@@ -2254,7 +2232,7 @@
           "avgDaily": 17.4709,
           "turnoverDays": 12.02,
           "targetNeed30": 315,
-          "revenueAtRiskDay": 15933,
+          "revenueAtRiskDay": 15623,
           "lostRevenueDay": 0
         },
         {
@@ -2266,7 +2244,7 @@
           "avgDaily": 15.7238,
           "turnoverDays": 12.02,
           "targetNeed30": 283,
-          "revenueAtRiskDay": 14339,
+          "revenueAtRiskDay": 14061,
           "lostRevenueDay": 0
         },
         {
@@ -2278,7 +2256,7 @@
           "avgDaily": 12.4792,
           "turnoverDays": 12.02,
           "targetNeed30": 225,
-          "revenueAtRiskDay": 11381,
+          "revenueAtRiskDay": 11159,
           "lostRevenueDay": 0
         },
         {
@@ -2290,7 +2268,7 @@
           "avgDaily": 9.401,
           "turnoverDays": 12.02,
           "targetNeed30": 170,
-          "revenueAtRiskDay": 8573,
+          "revenueAtRiskDay": 8407,
           "lostRevenueDay": 0
         },
         {
@@ -2302,7 +2280,7 @@
           "avgDaily": 8.7354,
           "turnoverDays": 12.02,
           "targetNeed30": 158,
-          "revenueAtRiskDay": 7966,
+          "revenueAtRiskDay": 7812,
           "lostRevenueDay": 0
         },
         {
@@ -2314,7 +2292,7 @@
           "avgDaily": 7.2379,
           "turnoverDays": 12.02,
           "targetNeed30": 131,
-          "revenueAtRiskDay": 6601,
+          "revenueAtRiskDay": 6472,
           "lostRevenueDay": 0
         },
         {
@@ -2326,7 +2304,7 @@
           "avgDaily": 3.3278,
           "turnoverDays": 12.02,
           "targetNeed30": 60,
-          "revenueAtRiskDay": 3035,
+          "revenueAtRiskDay": 2976,
           "lostRevenueDay": 0
         }
       ],
@@ -2345,7 +2323,7 @@
       "article": "penka_kudryavii_metod_150ml",
       "articleKey": "penka_kudryavii_metod_150ml",
       "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "owner": "Питайкин Артём",
+      "owner": "Артем",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -2372,10 +2350,10 @@
       "targetNeed28": 559,
       "targetNeed30": 872,
       "targetHorizonDays": 30,
-      "averagePrice": 1378,
+      "averagePrice": 1369,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 216771,
+      "revenueAtRiskDay": 215396,
       "recommendation": "Поставить в контроль Ozon: 22 кластер(ов) с покрытием меньше 30 дней (Москва, МО и Дальние регионы, Юг, Новосибирск, Урал). Минимальное покрытие 24.5 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 22,
       "placesAtRisk": [
@@ -2388,7 +2366,7 @@
           "avgDaily": 34.04,
           "turnoverDays": 24.53,
           "targetNeed30": 187,
-          "revenueAtRiskDay": 46892,
+          "revenueAtRiskDay": 46595,
           "lostRevenueDay": 0
         },
         {
@@ -2400,7 +2378,7 @@
           "avgDaily": 16.9181,
           "turnoverDays": 24.53,
           "targetNeed30": 93,
-          "revenueAtRiskDay": 23306,
+          "revenueAtRiskDay": 23158,
           "lostRevenueDay": 0
         },
         {
@@ -2412,7 +2390,7 @@
           "avgDaily": 13.9013,
           "turnoverDays": 24.53,
           "targetNeed30": 77,
-          "revenueAtRiskDay": 19150,
+          "revenueAtRiskDay": 19029,
           "lostRevenueDay": 0
         },
         {
@@ -2424,7 +2402,7 @@
           "avgDaily": 11.6999,
           "turnoverDays": 24.53,
           "targetNeed30": 64,
-          "revenueAtRiskDay": 16117,
+          "revenueAtRiskDay": 16015,
           "lostRevenueDay": 0
         },
         {
@@ -2436,7 +2414,7 @@
           "avgDaily": 10.7215,
           "turnoverDays": 24.53,
           "targetNeed30": 59,
-          "revenueAtRiskDay": 14770,
+          "revenueAtRiskDay": 14676,
           "lostRevenueDay": 0
         },
         {
@@ -2448,7 +2426,7 @@
           "avgDaily": 10.477,
           "turnoverDays": 24.53,
           "targetNeed30": 58,
-          "revenueAtRiskDay": 14433,
+          "revenueAtRiskDay": 14341,
           "lostRevenueDay": 0
         },
         {
@@ -2460,7 +2438,7 @@
           "avgDaily": 9.6616,
           "turnoverDays": 24.53,
           "targetNeed30": 53,
-          "revenueAtRiskDay": 13309,
+          "revenueAtRiskDay": 13225,
           "lostRevenueDay": 0
         },
         {
@@ -2472,7 +2450,7 @@
           "avgDaily": 6.4411,
           "turnoverDays": 24.53,
           "targetNeed30": 36,
-          "revenueAtRiskDay": 8873,
+          "revenueAtRiskDay": 8817,
           "lostRevenueDay": 0
         },
         {
@@ -2484,7 +2462,7 @@
           "avgDaily": 5.4627,
           "turnoverDays": 24.53,
           "targetNeed30": 30,
-          "revenueAtRiskDay": 7525,
+          "revenueAtRiskDay": 7478,
           "lostRevenueDay": 0
         },
         {
@@ -2496,7 +2474,7 @@
           "avgDaily": 4.7289,
           "turnoverDays": 24.53,
           "targetNeed30": 26,
-          "revenueAtRiskDay": 6514,
+          "revenueAtRiskDay": 6473,
           "lostRevenueDay": 0
         },
         {
@@ -2508,7 +2486,7 @@
           "avgDaily": 4.7289,
           "turnoverDays": 24.53,
           "targetNeed30": 26,
-          "revenueAtRiskDay": 6514,
+          "revenueAtRiskDay": 6473,
           "lostRevenueDay": 0
         },
         {
@@ -2520,7 +2498,7 @@
           "avgDaily": 4.3212,
           "turnoverDays": 24.53,
           "targetNeed30": 24,
-          "revenueAtRiskDay": 5953,
+          "revenueAtRiskDay": 5915,
           "lostRevenueDay": 0
         },
         {
@@ -2532,7 +2510,7 @@
           "avgDaily": 4.0766,
           "turnoverDays": 24.53,
           "targetNeed30": 23,
-          "revenueAtRiskDay": 5616,
+          "revenueAtRiskDay": 5580,
           "lostRevenueDay": 0
         },
         {
@@ -2544,7 +2522,7 @@
           "avgDaily": 4.0766,
           "turnoverDays": 24.53,
           "targetNeed30": 23,
-          "revenueAtRiskDay": 5616,
+          "revenueAtRiskDay": 5580,
           "lostRevenueDay": 0
         },
         {
@@ -2556,7 +2534,7 @@
           "avgDaily": 4.0766,
           "turnoverDays": 24.53,
           "targetNeed30": 23,
-          "revenueAtRiskDay": 5616,
+          "revenueAtRiskDay": 5580,
           "lostRevenueDay": 0
         },
         {
@@ -2568,7 +2546,7 @@
           "avgDaily": 2.6091,
           "turnoverDays": 24.53,
           "targetNeed30": 15,
-          "revenueAtRiskDay": 3594,
+          "revenueAtRiskDay": 3571,
           "lostRevenueDay": 0
         },
         {
@@ -2580,7 +2558,7 @@
           "avgDaily": 2.4868,
           "turnoverDays": 24.53,
           "targetNeed30": 14,
-          "revenueAtRiskDay": 3426,
+          "revenueAtRiskDay": 3404,
           "lostRevenueDay": 0
         },
         {
@@ -2592,7 +2570,7 @@
           "avgDaily": 2.0383,
           "turnoverDays": 24.53,
           "targetNeed30": 12,
-          "revenueAtRiskDay": 2808,
+          "revenueAtRiskDay": 2790,
           "lostRevenueDay": 0
         },
         {
@@ -2604,7 +2582,7 @@
           "avgDaily": 1.6714,
           "turnoverDays": 24.53,
           "targetNeed30": 10,
-          "revenueAtRiskDay": 2302,
+          "revenueAtRiskDay": 2288,
           "lostRevenueDay": 0
         },
         {
@@ -2616,7 +2594,7 @@
           "avgDaily": 1.223,
           "turnoverDays": 24.53,
           "targetNeed30": 7,
-          "revenueAtRiskDay": 1685,
+          "revenueAtRiskDay": 1674,
           "lostRevenueDay": 0
         },
         {
@@ -2628,7 +2606,7 @@
           "avgDaily": 1.223,
           "turnoverDays": 24.53,
           "targetNeed30": 7,
-          "revenueAtRiskDay": 1685,
+          "revenueAtRiskDay": 1674,
           "lostRevenueDay": 0
         },
         {
@@ -2640,7 +2618,7 @@
           "avgDaily": 0.7746,
           "turnoverDays": 24.53,
           "targetNeed30": 5,
-          "revenueAtRiskDay": 1067,
+          "revenueAtRiskDay": 1060,
           "lostRevenueDay": 0
         }
       ],
@@ -2659,7 +2637,7 @@
       "article": "silk_hair_300ml",
       "articleKey": "silk_hair_300ml",
       "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
-      "owner": "Васильева Мария",
+      "owner": "Мария Васильева",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -2686,10 +2664,10 @@
       "targetNeed28": 1153,
       "targetNeed30": 1498,
       "targetHorizonDays": 30,
-      "averagePrice": 1124,
+      "averagePrice": 1138,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 193417,
+      "revenueAtRiskDay": 195752,
       "recommendation": "Поставить в контроль WB: 13 кластер(ов) с покрытием меньше 30 дней (Коледино, Краснодар, Екатеринбург - Перспективная 14, Казань). Минимальное покрытие 21.3 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 13,
       "placesAtRisk": [
@@ -2702,7 +2680,7 @@
           "avgDaily": 36.662,
           "turnoverDays": 21.33,
           "targetNeed30": 318,
-          "revenueAtRiskDay": 41224,
+          "revenueAtRiskDay": 41722,
           "lostRevenueDay": 0
         },
         {
@@ -2714,7 +2692,7 @@
           "avgDaily": 21.7065,
           "turnoverDays": 21.33,
           "targetNeed30": 189,
-          "revenueAtRiskDay": 24408,
+          "revenueAtRiskDay": 24702,
           "lostRevenueDay": 0
         },
         {
@@ -2726,7 +2704,7 @@
           "avgDaily": 17.7215,
           "turnoverDays": 21.33,
           "targetNeed30": 154,
-          "revenueAtRiskDay": 19927,
+          "revenueAtRiskDay": 20167,
           "lostRevenueDay": 0
         },
         {
@@ -2738,7 +2716,7 @@
           "avgDaily": 15.3774,
           "turnoverDays": 21.33,
           "targetNeed30": 134,
-          "revenueAtRiskDay": 17291,
+          "revenueAtRiskDay": 17500,
           "lostRevenueDay": 0
         },
         {
@@ -2750,7 +2728,7 @@
           "avgDaily": 14.8148,
           "turnoverDays": 21.33,
           "targetNeed30": 129,
-          "revenueAtRiskDay": 16658,
+          "revenueAtRiskDay": 16860,
           "lostRevenueDay": 0
         },
         {
@@ -2762,7 +2740,7 @@
           "avgDaily": 11.9081,
           "turnoverDays": 21.33,
           "targetNeed30": 104,
-          "revenueAtRiskDay": 13390,
+          "revenueAtRiskDay": 13552,
           "lostRevenueDay": 0
         },
         {
@@ -2774,7 +2752,7 @@
           "avgDaily": 10.4548,
           "turnoverDays": 21.33,
           "targetNeed30": 91,
-          "revenueAtRiskDay": 11756,
+          "revenueAtRiskDay": 11898,
           "lostRevenueDay": 0
         },
         {
@@ -2786,7 +2764,7 @@
           "avgDaily": 9.1889,
           "turnoverDays": 21.33,
           "targetNeed30": 80,
-          "revenueAtRiskDay": 10332,
+          "revenueAtRiskDay": 10457,
           "lostRevenueDay": 0
         },
         {
@@ -2798,7 +2776,7 @@
           "avgDaily": 8.9076,
           "turnoverDays": 21.33,
           "targetNeed30": 78,
-          "revenueAtRiskDay": 10016,
+          "revenueAtRiskDay": 10137,
           "lostRevenueDay": 0
         },
         {
@@ -2810,7 +2788,7 @@
           "avgDaily": 8.4857,
           "turnoverDays": 21.33,
           "targetNeed30": 74,
-          "revenueAtRiskDay": 9542,
+          "revenueAtRiskDay": 9657,
           "lostRevenueDay": 0
         },
         {
@@ -2822,7 +2800,7 @@
           "avgDaily": 6.5166,
           "turnoverDays": 21.33,
           "targetNeed30": 57,
-          "revenueAtRiskDay": 7328,
+          "revenueAtRiskDay": 7416,
           "lostRevenueDay": 0
         },
         {
@@ -2834,7 +2812,7 @@
           "avgDaily": 6.2822,
           "turnoverDays": 21.33,
           "targetNeed30": 55,
-          "revenueAtRiskDay": 7064,
+          "revenueAtRiskDay": 7149,
           "lostRevenueDay": 0
         },
         {
@@ -2846,7 +2824,7 @@
           "avgDaily": 3.985,
           "turnoverDays": 21.33,
           "targetNeed30": 35,
-          "revenueAtRiskDay": 4481,
+          "revenueAtRiskDay": 4535,
           "lostRevenueDay": 0
         }
       ],
@@ -2865,7 +2843,7 @@
       "article": "sprei_buster_100ml",
       "articleKey": "sprei_buster_100ml",
       "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-      "owner": "Питайкин Артём",
+      "owner": "Артем",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -2892,10 +2870,10 @@
       "targetNeed28": 1609,
       "targetNeed30": 1806,
       "targetHorizonDays": 30,
-      "averagePrice": 891,
+      "averagePrice": 890,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 89022,
+      "revenueAtRiskDay": 88967,
       "recommendation": "Поставить в контроль Ozon: 26 кластер(ов) с покрытием меньше 30 дней (Москва, МО и Дальние регионы, Казань, Юг, Кавказ). Минимальное покрытие 12.0 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 26,
       "placesAtRisk": [
@@ -2908,7 +2886,7 @@
           "avgDaily": 19.3011,
           "turnoverDays": 12.02,
           "targetNeed30": 348,
-          "revenueAtRiskDay": 17197,
+          "revenueAtRiskDay": 17186,
           "lostRevenueDay": 0
         },
         {
@@ -2920,7 +2898,7 @@
           "avgDaily": 8.8186,
           "turnoverDays": 12.02,
           "targetNeed30": 159,
-          "revenueAtRiskDay": 7857,
+          "revenueAtRiskDay": 7852,
           "lostRevenueDay": 0
         },
         {
@@ -2932,7 +2910,7 @@
           "avgDaily": 7.4875,
           "turnoverDays": 12.02,
           "targetNeed30": 135,
-          "revenueAtRiskDay": 6671,
+          "revenueAtRiskDay": 6667,
           "lostRevenueDay": 0
         },
         {
@@ -2944,7 +2922,7 @@
           "avgDaily": 7.1547,
           "turnoverDays": 12.02,
           "targetNeed30": 129,
-          "revenueAtRiskDay": 6375,
+          "revenueAtRiskDay": 6371,
           "lostRevenueDay": 0
         },
         {
@@ -2956,7 +2934,7 @@
           "avgDaily": 6.1564,
           "turnoverDays": 12.02,
           "targetNeed30": 111,
-          "revenueAtRiskDay": 5485,
+          "revenueAtRiskDay": 5482,
           "lostRevenueDay": 0
         },
         {
@@ -2968,7 +2946,7 @@
           "avgDaily": 5.4908,
           "turnoverDays": 12.02,
           "targetNeed30": 99,
-          "revenueAtRiskDay": 4892,
+          "revenueAtRiskDay": 4889,
           "lostRevenueDay": 0
         },
         {
@@ -2980,7 +2958,7 @@
           "avgDaily": 5.4908,
           "turnoverDays": 12.02,
           "targetNeed30": 99,
-          "revenueAtRiskDay": 4892,
+          "revenueAtRiskDay": 4889,
           "lostRevenueDay": 0
         },
         {
@@ -2992,7 +2970,7 @@
           "avgDaily": 5.3245,
           "turnoverDays": 12.02,
           "targetNeed30": 96,
-          "revenueAtRiskDay": 4744,
+          "revenueAtRiskDay": 4741,
           "lostRevenueDay": 0
         },
         {
@@ -3004,7 +2982,7 @@
           "avgDaily": 4.4093,
           "turnoverDays": 12.02,
           "targetNeed30": 80,
-          "revenueAtRiskDay": 3929,
+          "revenueAtRiskDay": 3926,
           "lostRevenueDay": 0
         },
         {
@@ -3016,7 +2994,7 @@
           "avgDaily": 3.5774,
           "turnoverDays": 12.02,
           "targetNeed30": 65,
-          "revenueAtRiskDay": 3187,
+          "revenueAtRiskDay": 3185,
           "lostRevenueDay": 0
         },
         {
@@ -3028,7 +3006,7 @@
           "avgDaily": 3.4942,
           "turnoverDays": 12.02,
           "targetNeed30": 63,
-          "revenueAtRiskDay": 3113,
+          "revenueAtRiskDay": 3111,
           "lostRevenueDay": 0
         },
         {
@@ -3040,7 +3018,7 @@
           "avgDaily": 3.0782,
           "turnoverDays": 12.02,
           "targetNeed30": 56,
-          "revenueAtRiskDay": 2743,
+          "revenueAtRiskDay": 2741,
           "lostRevenueDay": 0
         },
         {
@@ -3052,7 +3030,7 @@
           "avgDaily": 2.9118,
           "turnoverDays": 12.02,
           "targetNeed30": 53,
-          "revenueAtRiskDay": 2594,
+          "revenueAtRiskDay": 2593,
           "lostRevenueDay": 0
         },
         {
@@ -3064,7 +3042,7 @@
           "avgDaily": 2.8286,
           "turnoverDays": 12.02,
           "targetNeed30": 51,
-          "revenueAtRiskDay": 2520,
+          "revenueAtRiskDay": 2519,
           "lostRevenueDay": 0
         },
         {
@@ -3076,7 +3054,7 @@
           "avgDaily": 2.6622,
           "turnoverDays": 12.02,
           "targetNeed30": 48,
-          "revenueAtRiskDay": 2372,
+          "revenueAtRiskDay": 2370,
           "lostRevenueDay": 0
         },
         {
@@ -3088,7 +3066,7 @@
           "avgDaily": 2.4127,
           "turnoverDays": 12.02,
           "targetNeed30": 44,
-          "revenueAtRiskDay": 2150,
+          "revenueAtRiskDay": 2148,
           "lostRevenueDay": 0
         },
         {
@@ -3100,7 +3078,7 @@
           "avgDaily": 1.9967,
           "turnoverDays": 12.02,
           "targetNeed30": 36,
-          "revenueAtRiskDay": 1779,
+          "revenueAtRiskDay": 1778,
           "lostRevenueDay": 0
         },
         {
@@ -3112,7 +3090,7 @@
           "avgDaily": 1.7471,
           "turnoverDays": 12.02,
           "targetNeed30": 32,
-          "revenueAtRiskDay": 1557,
+          "revenueAtRiskDay": 1556,
           "lostRevenueDay": 0
         },
         {
@@ -3124,7 +3102,7 @@
           "avgDaily": 1.4975,
           "turnoverDays": 12.02,
           "targetNeed30": 27,
-          "revenueAtRiskDay": 1334,
+          "revenueAtRiskDay": 1333,
           "lostRevenueDay": 0
         },
         {
@@ -3184,7 +3162,7 @@
           "avgDaily": 0.3328,
           "turnoverDays": 12.02,
           "targetNeed30": 6,
-          "revenueAtRiskDay": 297,
+          "revenueAtRiskDay": 296,
           "lostRevenueDay": 0
         },
         {
@@ -3227,7 +3205,7 @@
       "article": "silk_hair_300ml",
       "articleKey": "silk_hair_300ml",
       "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
-      "owner": "Питайкин Артём",
+      "owner": "Даша",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -3254,10 +3232,10 @@
       "targetNeed28": 413,
       "targetNeed30": 536,
       "targetHorizonDays": 30,
-      "averagePrice": 948,
+      "averagePrice": 946,
       "priceSource": "smart_price_overlay",
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 57052,
+      "revenueAtRiskDay": 56916,
       "recommendation": "Поставить в контроль Ozon: 24 кластер(ов) с покрытием меньше 30 дней (Юг, Урал, Екатеринбург, Ростов). Минимальное покрытие 21.3 д; нужен срок поставки, перемещение или лимит продаж.",
       "clusterCount": 24,
       "placesAtRisk": [
@@ -3270,7 +3248,7 @@
           "avgDaily": 7.5481,
           "turnoverDays": 21.33,
           "targetNeed30": 66,
-          "revenueAtRiskDay": 7153,
+          "revenueAtRiskDay": 7137,
           "lostRevenueDay": 0
         },
         {
@@ -3282,7 +3260,7 @@
           "avgDaily": 6.7042,
           "turnoverDays": 21.33,
           "targetNeed30": 59,
-          "revenueAtRiskDay": 6354,
+          "revenueAtRiskDay": 6339,
           "lostRevenueDay": 0
         },
         {
@@ -3294,7 +3272,7 @@
           "avgDaily": 6.4229,
           "turnoverDays": 21.33,
           "targetNeed30": 56,
-          "revenueAtRiskDay": 6087,
+          "revenueAtRiskDay": 6073,
           "lostRevenueDay": 0
         },
         {
@@ -3306,7 +3284,7 @@
           "avgDaily": 4.3601,
           "turnoverDays": 21.33,
           "targetNeed30": 38,
-          "revenueAtRiskDay": 4132,
+          "revenueAtRiskDay": 4122,
           "lostRevenueDay": 0
         },
         {
@@ -3318,7 +3296,7 @@
           "avgDaily": 4.3132,
           "turnoverDays": 21.33,
           "targetNeed30": 38,
-          "revenueAtRiskDay": 4088,
+          "revenueAtRiskDay": 4078,
           "lostRevenueDay": 0
         },
         {
@@ -3330,7 +3308,7 @@
           "avgDaily": 3.7038,
           "turnoverDays": 21.33,
           "targetNeed30": 33,
-          "revenueAtRiskDay": 3510,
+          "revenueAtRiskDay": 3502,
           "lostRevenueDay": 0
         },
         {
@@ -3342,7 +3320,7 @@
           "avgDaily": 3.2349,
           "turnoverDays": 21.33,
           "targetNeed30": 29,
-          "revenueAtRiskDay": 3066,
+          "revenueAtRiskDay": 3059,
           "lostRevenueDay": 0
         },
         {
@@ -3354,7 +3332,7 @@
           "avgDaily": 3.0005,
           "turnoverDays": 21.33,
           "targetNeed30": 27,
-          "revenueAtRiskDay": 2844,
+          "revenueAtRiskDay": 2837,
           "lostRevenueDay": 0
         },
         {
@@ -3366,7 +3344,7 @@
           "avgDaily": 2.6723,
           "turnoverDays": 21.33,
           "targetNeed30": 24,
-          "revenueAtRiskDay": 2533,
+          "revenueAtRiskDay": 2527,
           "lostRevenueDay": 0
         },
         {
@@ -3378,7 +3356,7 @@
           "avgDaily": 2.4379,
           "turnoverDays": 21.33,
           "targetNeed30": 22,
-          "revenueAtRiskDay": 2310,
+          "revenueAtRiskDay": 2305,
           "lostRevenueDay": 0
         },
         {
@@ -3390,7 +3368,7 @@
           "avgDaily": 2.3441,
           "turnoverDays": 21.33,
           "targetNeed30": 21,
-          "revenueAtRiskDay": 2222,
+          "revenueAtRiskDay": 2216,
           "lostRevenueDay": 0
         },
         {
@@ -3402,7 +3380,7 @@
           "avgDaily": 2.2504,
           "turnoverDays": 21.33,
           "targetNeed30": 20,
-          "revenueAtRiskDay": 2133,
+          "revenueAtRiskDay": 2128,
           "lostRevenueDay": 0
         },
         {
@@ -3414,7 +3392,7 @@
           "avgDaily": 1.9222,
           "turnoverDays": 21.33,
           "targetNeed30": 17,
-          "revenueAtRiskDay": 1822,
+          "revenueAtRiskDay": 1817,
           "lostRevenueDay": 0
         },
         {
@@ -3426,7 +3404,7 @@
           "avgDaily": 1.6409,
           "turnoverDays": 21.33,
           "targetNeed30": 15,
-          "revenueAtRiskDay": 1555,
+          "revenueAtRiskDay": 1551,
           "lostRevenueDay": 0
         },
         {
@@ -3438,7 +3416,7 @@
           "avgDaily": 1.3596,
           "turnoverDays": 21.33,
           "targetNeed30": 12,
-          "revenueAtRiskDay": 1289,
+          "revenueAtRiskDay": 1286,
           "lostRevenueDay": 0
         },
         {
@@ -3450,7 +3428,7 @@
           "avgDaily": 1.2189,
           "turnoverDays": 21.33,
           "targetNeed30": 11,
-          "revenueAtRiskDay": 1155,
+          "revenueAtRiskDay": 1152,
           "lostRevenueDay": 0
         },
         {
@@ -3462,7 +3440,7 @@
           "avgDaily": 0.8908,
           "turnoverDays": 21.33,
           "targetNeed30": 8,
-          "revenueAtRiskDay": 844,
+          "revenueAtRiskDay": 842,
           "lostRevenueDay": 0
         },
         {
@@ -3474,7 +3452,7 @@
           "avgDaily": 0.8908,
           "turnoverDays": 21.33,
           "targetNeed30": 8,
-          "revenueAtRiskDay": 844,
+          "revenueAtRiskDay": 842,
           "lostRevenueDay": 0
         },
         {
@@ -3486,7 +3464,7 @@
           "avgDaily": 0.8439,
           "turnoverDays": 21.33,
           "targetNeed30": 8,
-          "revenueAtRiskDay": 800,
+          "revenueAtRiskDay": 798,
           "lostRevenueDay": 0
         },
         {
@@ -3498,7 +3476,7 @@
           "avgDaily": 0.7501,
           "turnoverDays": 21.33,
           "targetNeed30": 7,
-          "revenueAtRiskDay": 711,
+          "revenueAtRiskDay": 709,
           "lostRevenueDay": 0
         },
         {
@@ -3510,7 +3488,7 @@
           "avgDaily": 0.7501,
           "turnoverDays": 21.33,
           "targetNeed30": 7,
-          "revenueAtRiskDay": 711,
+          "revenueAtRiskDay": 709,
           "lostRevenueDay": 0
         },
         {
@@ -3534,7 +3512,7 @@
           "avgDaily": 0.2813,
           "turnoverDays": 21.33,
           "targetNeed30": 3,
-          "revenueAtRiskDay": 267,
+          "revenueAtRiskDay": 266,
           "lostRevenueDay": 0
         },
         {
@@ -3546,7 +3524,7 @@
           "avgDaily": 0.2813,
           "turnoverDays": 21.33,
           "targetNeed30": 3,
-          "revenueAtRiskDay": 267,
+          "revenueAtRiskDay": 266,
           "lostRevenueDay": 0
         }
       ],
@@ -3917,7 +3895,7 @@
         "watchCount": 10,
         "placeCount": 234,
         "lostRevenueDay": 0,
-        "revenueAtRiskDay": 8064044
+        "revenueAtRiskDay": 8085627
       }
     ],
     "latest": {
@@ -3930,7 +3908,7 @@
       "watchCount": 10,
       "placeCount": 234,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 8064044
+      "revenueAtRiskDay": 8085627
     },
     "issueStates": [
       {
@@ -3941,7 +3919,7 @@
         "place": "19 кластеров <10 д",
         "article": "krovavii_piling_30ml",
         "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-        "owner": "Васильева Мария",
+        "owner": "Мария Васильева",
         "department": "Закуп",
         "status": "risk",
         "severity": "high",
@@ -3958,7 +3936,7 @@
         "place": "25 кластеров <10 д",
         "article": "krovavii_piling_30ml",
         "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-        "owner": "Молодякова Дария",
+        "owner": "Артем",
         "department": "Закуп",
         "status": "risk",
         "severity": "high",
@@ -3975,7 +3953,7 @@
         "place": "24 кластеров <30 д",
         "article": "gel_antiakne_20ml_v2",
         "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-        "owner": "Кирилл",
+        "owner": "Мария Васильева",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",
@@ -3992,7 +3970,7 @@
         "place": "6 кластеров <30 д",
         "article": "retinol_boost_krem_dlya_vek_30ml",
         "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-        "owner": "Васильева Мария",
+        "owner": "Мария Васильева",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",
@@ -4009,7 +3987,7 @@
         "place": "27 кластеров <30 д",
         "article": "gel_antiakne_20ml_v2",
         "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-        "owner": "Молодякова Дария",
+        "owner": "Артем",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",
@@ -4026,7 +4004,7 @@
         "place": "9 кластеров <30 д",
         "article": "penka_kudryavii_metod_150ml",
         "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-        "owner": "Лапыгин Максим",
+        "owner": "Мария Васильева",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",
@@ -4043,7 +4021,7 @@
         "place": "28 кластеров <30 д",
         "article": "retinol_boost_krem_dlya_vek_30ml",
         "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-        "owner": "Молодякова Дария",
+        "owner": "Даша",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",
@@ -4060,7 +4038,7 @@
         "place": "11 кластеров <30 д",
         "article": "sprei_buster_100ml",
         "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-        "owner": "Васильева Мария",
+        "owner": "Мария Васильева",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",
@@ -4077,7 +4055,7 @@
         "place": "22 кластеров <30 д",
         "article": "penka_kudryavii_metod_150ml",
         "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-        "owner": "Питайкин Артём",
+        "owner": "Артем",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",
@@ -4094,7 +4072,7 @@
         "place": "13 кластеров <30 д",
         "article": "silk_hair_300ml",
         "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
-        "owner": "Васильева Мария",
+        "owner": "Мария Васильева",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",
@@ -4111,7 +4089,7 @@
         "place": "26 кластеров <30 д",
         "article": "sprei_buster_100ml",
         "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-        "owner": "Питайкин Артём",
+        "owner": "Артем",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",
@@ -4128,7 +4106,7 @@
         "place": "24 кластеров <30 д",
         "article": "silk_hair_300ml",
         "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
-        "owner": "Питайкин Артём",
+        "owner": "Даша",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",

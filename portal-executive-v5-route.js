@@ -157,8 +157,15 @@
   }
 
   function ownerFor(row, platform) {
+    const supportKey = platform === 'ya' ? 'ym' : (platform === 'ym' ? 'ya' : platform);
     const scoped = platform && platform !== 'all'
-      ? (row?.ownerByPlatform?.[platform] || row?.ownersByPlatform?.[platform] || row?.ownersByPlatform?.[`${platform}Support`])
+      ? (
+        row?.ownerByPlatform?.[platform]
+        || row?.ownerByPlatform?.[supportKey]
+        || row?.ownersByPlatform?.[platform]
+        || row?.ownersByPlatform?.[supportKey]
+        || row?.ownersByPlatform?.[`${platform}Support`]
+      )
       : '';
     return String(scoped || row?.owner || row?.ownerBase || NO_OWNER).trim() || NO_OWNER;
   }

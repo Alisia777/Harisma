@@ -7,6 +7,7 @@ const zlib = require('zlib');
 const CANONICAL_ORDER_DAYS = 30;
 const LEGACY_COMPAT_DAYS = 28;
 const NEED_HORIZONS = [7, 14, LEGACY_COMPAT_DAYS, CANONICAL_ORDER_DAYS];
+const MONTH_PREFIX_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const BLOCKED_LIFECYCLE_RE = /вывод|на вывод|вывед|снят|снимаем|spa|архив|archive|paused|pause|freeze|hold|под вопрос|question/i;
 
 const OWNER_CANONICAL_NAMES = new Map([
@@ -148,7 +149,10 @@ function skuOwnerForPlatform(sku, platform = '') {
 function planMonthField(anchorDate) {
   const raw = String(anchorDate || '').slice(0, 7);
   if (!/^\d{4}-\d{2}$/.test(raw)) return '';
-  return `plan${raw.replace('-', '')}Units`;
+  const [year, month] = raw.split('-').map((value) => Number(value));
+  const prefix = MONTH_PREFIX_EN[month - 1] || '';
+  const year2 = String(year).slice(-2);
+  return prefix && year2 ? `plan${prefix}${year2}Units` : '';
 }
 
 function projectedUnits(avgDaily, days) {
@@ -184,6 +188,39 @@ function lifecycleStatus(sku = {}) {
     label,
     blocked: candidates.some((item) => BLOCKED_LIFECYCLE_RE.test(item))
   };
+}
+
+function skuLookupScore(sku = {}) {
+  let score = 0;
+  const source = [sku?.matrixSource, sku?.owner?.source, sku?.ownerSource].filter(Boolean).join(' ');
+  if (source.includes('ksenia-merged-statuses-minmax')) score += 1000;
+  if (sku?.matrixImportedAt) score += 500;
+  const article = normalizeText(sku?.articleKey || sku?.article || '');
+  if (article && !/_+$/.test(article)) score += 25;
+  if (!lifecycleStatus(sku).blocked) score += 10;
+  return score;
+}
+
+function addSkuLookup(lookup, key, sku) {
+  const normalized = normalizeKey(key);
+  if (!normalized) return;
+  const current = lookup.get(normalized);
+  if (!current || skuLookupScore(sku) > skuLookupScore(current)) lookup.set(normalized, sku);
+}
+
+function buildSkuLookup(skus = []) {
+  const lookup = new Map();
+  (Array.isArray(skus) ? skus : []).forEach((sku) => {
+    [
+      sku?.articleKey,
+      sku?.article,
+      sku?.sourceArticleKey,
+      sku?.sku,
+      sku?.vendorCode,
+      sku?.supplierArticle
+    ].forEach((key) => addSkuLookup(lookup, key, sku));
+  });
+  return lookup;
 }
 
 function buildRow(sourceRow, sku, monthField) {
@@ -241,22 +278,29 @@ function buildRow(sourceRow, sku, monthField) {
   };
 }
 
-function normalizeExistingYandexRows(payload) {
+function normalizeExistingYandexRows(payload, skuMap, monthField) {
   return (Array.isArray(payload?.rows) ? payload.rows : [])
     .map((row) => {
+      const article = normalizeText(row?.articleKey || row?.article || row?.sku);
+      const articleKey = normalizeKey(article);
+      const sku = skuMap.get(articleKey) || null;
       const avgDaily = numberOrZero(row?.avgDaily);
       const inStock = numberOrZero(row?.inStock);
       const inTransit = numberOrZero(row?.inTransit);
       const inRequest = numberOrZero(row?.inRequest);
       const available = inStock + inTransit + inRequest;
       const safetyStock = numberOrZero(row?.safetyStock);
+      const lifecycle = lifecycleStatus(sku || {});
       const rawNeed28 = projectedNeedRaw(avgDaily, available, LEGACY_COMPAT_DAYS, safetyStock);
       const rawNeed30 = projectedNeedRaw(avgDaily, available, CANONICAL_ORDER_DAYS, safetyStock);
       return {
         ...row,
         platform: platformLabel('ym'),
         platformKey: 'ym',
-        articleKey: normalizeText(row?.articleKey || row?.article || row?.sku),
+        article: article || normalizeText(row?.article),
+        articleKey: article,
+        name: normalizeText(sku?.name || row?.name || article) || article,
+        owner: skuOwnerForPlatform(sku, 'ym') || canonicalOwnerName(row?.owner || ''),
         inStock,
         inTransit,
         inRequest,
@@ -267,10 +311,13 @@ function normalizeExistingYandexRows(payload) {
         sales30: projectedUnits(avgDaily, CANONICAL_ORDER_DAYS),
         rawNeed28,
         rawNeed30,
-        targetNeed28: targetNeedFromRaw(rawNeed28),
-        targetNeed30: targetNeedFromRaw(rawNeed30),
+        targetNeed28: targetNeedFromRaw(rawNeed28, lifecycle.blocked),
+        targetNeed30: targetNeedFromRaw(rawNeed30, lifecycle.blocked),
         targetHorizonDays: CANONICAL_ORDER_DAYS,
-        needFormula: 'max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))'
+        needFormula: 'max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))',
+        lifecycleStatus: lifecycle.label || row?.lifecycleStatus || '',
+        needSuppressedByLifecycle: lifecycle.blocked,
+        planMonth: numberOrNull(row?.planMonth ?? sku?.planFact?.[monthField])
       };
     });
 }
@@ -284,11 +331,7 @@ function main() {
   const skus = readJson(skusPath);
   const logisticsMeta = fileMeta(logisticsPath);
   const skusMeta = fileMeta(skusPath);
-  const skuMap = new Map(
-    (Array.isArray(skus) ? skus : [])
-      .map((item) => [normalizeKey(item?.articleKey || item?.article), item])
-      .filter(([key]) => key)
-  );
+  const skuMap = buildSkuLookup(skus);
 
   const monthField = planMonthField(logistics?.window?.to || logistics?.generatedAt || '');
   const rows = (Array.isArray(logistics?.allRows) ? logistics.allRows : [])
@@ -304,7 +347,7 @@ function main() {
       return null;
     }
   })();
-  const yandexRows = normalizeExistingYandexRows(yandexPayload);
+  const yandexRows = normalizeExistingYandexRows(yandexPayload, skuMap, monthField);
   const combinedRows = rows.concat(yandexRows);
 
   const combinedPayload = {

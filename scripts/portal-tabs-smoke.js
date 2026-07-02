@@ -14,6 +14,14 @@ const TARGET_VIEWS = [
   { view: 'control', label: 'Tasks' },
   { view: 'data-health', label: 'Calendar' }
 ];
+const VIEW_LABELS = {
+  executive: 'Executive',
+  control: 'Tasks',
+  'data-health': 'Calendar',
+  order: 'Order procurement',
+  'oos-control': 'OOS control',
+  'sku-plan-fact': 'SKU plan fact'
+};
 
 function parseArgs(argv) {
   const args = {};
@@ -35,6 +43,17 @@ function parseArgs(argv) {
     }
   }
   return args;
+}
+
+function resolveTargetViews(rawViews = '') {
+  const raw = String(rawViews || '').trim();
+  if (!raw) return TARGET_VIEWS;
+  const views = raw.split(',')
+    .map((view) => view.trim())
+    .filter(Boolean);
+  return views.length
+    ? views.map((view) => ({ view, label: VIEW_LABELS[view] || view }))
+    : TARGET_VIEWS;
 }
 
 function isLocalUrl(url) {
@@ -114,11 +133,13 @@ async function waitForViewReady(page, view) {
     if (!root) return false;
     if (!premiumNav && !premium && !root.classList.contains('active')) return false;
     const textLength = ((root.innerText || root.textContent) || '').trim().length;
+    const text = ((root.innerText || root.textContent) || '').trim().toLowerCase();
     const hasUsableSurface = root.children.length > 0
       && (textLength > 80 || root.querySelector('button, table, .data-table, [data-task-calendar-design-v1]'));
     const stillBooting = root.querySelector('[data-task-loading="boot"], [data-task-loading="team"]');
-    return hasUsableSurface && !stillBooting;
-  }, view, { timeout: 30000 });
+    const stillLoadingText = /подтягиваю данные|загрузка данных|loading/.test(text);
+    return hasUsableSurface && !stillBooting && !stillLoadingText;
+  }, view, { timeout: 60000 });
   await page.waitForTimeout(1000);
 }
 
@@ -217,6 +238,7 @@ async function clickIfPresent(page, selectors, label) {
 async function main() {
   const args = parseArgs(process.argv);
   const url = args.url || process.env.PORTAL_TABS_URL || DEFAULT_URL;
+  const targetViews = resolveTargetViews(args.views || process.env.PORTAL_TABS_VIEWS || '');
   const outputDir = path.resolve(args.outputDir || path.join('tmp_screens', `portal-tabs-smoke-${Date.now()}`));
   fs.mkdirSync(outputDir, { recursive: true });
 
@@ -259,7 +281,7 @@ async function main() {
 
     const summaries = [];
     const failures = [];
-    for (const target of TARGET_VIEWS) {
+    for (const target of targetViews) {
       await clickView(page, target.view);
       await waitForViewReady(page, target.view);
       const summary = await summarizeView(page, target.view);
@@ -271,35 +293,42 @@ async function main() {
     }
 
     const clickChecks = [];
-    await clickView(page, 'executive');
-    await waitForViewReady(page, 'executive');
-    clickChecks.push(await clickIfPresent(page, [
-      '[data-premium-stage="executive"].is-active button:not([disabled])',
-      '[data-premium-content] button:not([disabled])',
-      '#view-executive.active button:not([disabled])'
-    ], 'executive-primary-button'));
+    const selectedViews = new Set(targetViews.map((target) => target.view));
+    if (selectedViews.has('executive')) {
+      await clickView(page, 'executive');
+      await waitForViewReady(page, 'executive');
+      clickChecks.push(await clickIfPresent(page, [
+        '[data-premium-stage="executive"].is-active button:not([disabled])',
+        '[data-premium-content] button:not([disabled])',
+        '#view-executive.active button:not([disabled])'
+      ], 'executive-primary-button'));
+    }
 
-    await clickView(page, 'control');
-    await waitForViewReady(page, 'control');
-    clickChecks.push(await clickIfPresent(page, [
-      '[data-premium-stage="control"].is-active [data-open-task]',
-      '[data-premium-stage="control"].is-active button:not([disabled])',
-      '[data-premium-content] [data-open-task]',
-      '[data-premium-content] button:not([disabled])',
-      '#view-control.active [data-open-task]',
-      '#view-control.active button:not([disabled])'
-    ], 'tasks-open-button'));
+    if (selectedViews.has('control')) {
+      await clickView(page, 'control');
+      await waitForViewReady(page, 'control');
+      clickChecks.push(await clickIfPresent(page, [
+        '[data-premium-stage="control"].is-active [data-open-task]',
+        '[data-premium-stage="control"].is-active button:not([disabled])',
+        '[data-premium-content] [data-open-task]',
+        '[data-premium-content] button:not([disabled])',
+        '#view-control.active [data-open-task]',
+        '#view-control.active button:not([disabled])'
+      ], 'tasks-open-button'));
+    }
 
-    await clickView(page, 'data-health');
-    await waitForViewReady(page, 'data-health');
-    clickChecks.push(await clickIfPresent(page, [
-      '[data-premium-stage="data-health"].is-active [data-health-refresh]',
-      '[data-premium-stage="data-health"].is-active button:not([disabled])',
-      '[data-premium-content] [data-health-refresh]',
-      '[data-premium-content] button:not([disabled])',
-      '#view-data-health.active [data-health-refresh]',
-      '#view-data-health.active button:not([disabled])'
-    ], 'calendar-primary-button'));
+    if (selectedViews.has('data-health')) {
+      await clickView(page, 'data-health');
+      await waitForViewReady(page, 'data-health');
+      clickChecks.push(await clickIfPresent(page, [
+        '[data-premium-stage="data-health"].is-active [data-health-refresh]',
+        '[data-premium-stage="data-health"].is-active button:not([disabled])',
+        '[data-premium-content] [data-health-refresh]',
+        '[data-premium-content] button:not([disabled])',
+        '#view-data-health.active [data-health-refresh]',
+        '#view-data-health.active button:not([disabled])'
+      ], 'calendar-primary-button'));
+    }
 
     for (const check of clickChecks) {
       if (!check.ok) failures.push(`${check.label} failed: ${check.error || (check.missing ? 'missing' : 'not ok')}`);

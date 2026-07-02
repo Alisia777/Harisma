@@ -59,6 +59,59 @@ function pushIssue(issues, severity, type, detail = {}) {
   issues.push({ severity, type, ...detail });
 }
 
+const OWNER_CANONICAL_NAMES = new Map([
+  ['алексей', 'Алексей'],
+  ['александр', 'Питайкин Артём'],
+  ['анна', 'Пирогова Анна'],
+  ['артем', 'Питайкин Артём'],
+  ['артём', 'Питайкин Артём'],
+  ['дария', 'Молодякова Дария'],
+  ['дарья', 'Молодякова Дария'],
+  ['даша', 'Молодякова Дария'],
+  ['екатерина', 'Доможирова Екатерина'],
+  ['кирилл', 'Кирилл'],
+  ['ксения', 'Ксения'],
+  ['максим', 'Лапыгин Максим'],
+  ['мария', 'Васильева Мария'],
+  ['олеся', 'Олеся'],
+  ['светлана', 'Светлана']
+]);
+
+const OWNER_NAME_ALIASES = new Map([
+  ['александр озон', 'Питайкин Артём'],
+  ['питайкин артем', 'Питайкин Артём'],
+  ['питайкин артём', 'Питайкин Артём'],
+  ['артем питайкин', 'Питайкин Артём'],
+  ['артём питайкин', 'Питайкин Артём'],
+  ['молодякова дария', 'Молодякова Дария'],
+  ['молодякова дарья', 'Молодякова Дария'],
+  ['дария молодякова', 'Молодякова Дария'],
+  ['дарья молодякова', 'Молодякова Дария'],
+  ['анна пирогова', 'Пирогова Анна'],
+  ['пирогова анна', 'Пирогова Анна'],
+  ['екатерина доброжирова', 'Доможирова Екатерина'],
+  ['екатерина доможирова', 'Доможирова Екатерина'],
+  ['доможирова екатерина', 'Доможирова Екатерина'],
+  ['доброжирова екатерина', 'Доможирова Екатерина'],
+  ['мария васильева', 'Васильева Мария'],
+  ['мария васильевна', 'Васильева Мария'],
+  ['васильева мария', 'Васильева Мария'],
+  ['лапыгин максим', 'Лапыгин Максим'],
+  ['максим лапыгин', 'Лапыгин Максим'],
+  ['олеся савинова', 'Олеся']
+]);
+
+function canonicalOwnerName(value = '') {
+  const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!normalized) return '';
+  const lowered = normalized.toLowerCase().replaceAll('ё', 'е');
+  if (OWNER_NAME_ALIASES.has(lowered)) return OWNER_NAME_ALIASES.get(lowered);
+  if (OWNER_CANONICAL_NAMES.has(lowered)) return OWNER_CANONICAL_NAMES.get(lowered);
+  const [firstToken = ''] = lowered.split(' ');
+  if (OWNER_CANONICAL_NAMES.has(firstToken)) return OWNER_CANONICAL_NAMES.get(firstToken);
+  return normalized;
+}
+
 function platformRows(pricesPayload = {}) {
   const rows = [];
   for (const [platform, payload] of Object.entries(pricesPayload.platforms || {})) {
@@ -196,6 +249,51 @@ function skuKeys(sku = {}) {
   ].map(compactKey).filter(Boolean);
 }
 
+function normalizePlatformKey(value = '') {
+  const raw = String(value || '').trim().toLowerCase();
+  if (['wb', 'wildberries'].includes(raw)) return 'wb';
+  if (['ozon', 'oz'].includes(raw)) return 'ozon';
+  if (['ym', 'ya', 'yandex', 'yandex market', 'яндекс', 'я.маркет', 'я маркет'].includes(raw)) return 'ym';
+  return raw;
+}
+
+function buildSkuLookup(skus = []) {
+  const lookup = new Map();
+  (Array.isArray(skus) ? skus : []).forEach((sku) => {
+    skuKeys(sku).forEach((key) => {
+      if (!lookup.has(key)) lookup.set(key, sku);
+    });
+  });
+  return lookup;
+}
+
+function expectedOwnerForPlatform(sku = {}, platform = '') {
+  const key = normalizePlatformKey(platform);
+  const byPlatform = {
+    ...(sku?.owner?.byPlatform || {}),
+    ...(sku?.ownersByPlatform || {})
+  };
+  const platformOwner = key === 'ym'
+    ? (byPlatform.ym || byPlatform.ya || '')
+    : (byPlatform[key] || '');
+  return String(platformOwner || sku?.owner?.name || '').trim();
+}
+
+function ownerMismatch(row = {}, skuLookup = new Map()) {
+  const rowKey = compactKey(row.articleKey || row.article || row.sku || '');
+  const sku = skuLookup.get(rowKey);
+  if (!sku) return null;
+  const expected = expectedOwnerForPlatform(sku, row.platformKey || row.platform || '');
+  const actual = String(row.owner || '').trim();
+  if (!expected || !actual || canonicalOwnerName(expected) === canonicalOwnerName(actual)) return null;
+  return {
+    articleKey: row.articleKey || row.article || '',
+    platform: row.platformKey || row.platform || '',
+    owner: actual,
+    expected
+  };
+}
+
 function auditPlanFactCost(sku = {}, issues) {
   const planFact = sku.planFact && typeof sku.planFact === 'object' ? sku.planFact : {};
   const articleKey = sku.articleKey || sku.article || '';
@@ -302,14 +400,16 @@ function auditSkus(skus, matrix, issues, planBackfillMap = new Map()) {
   };
 }
 
-function auditOrderProcurement(order = {}, issues) {
+function auditOrderProcurement(order = {}, issues, skus = []) {
   const rows = Array.isArray(order.rows) ? order.rows : [];
+  const skuLookup = buildSkuLookup(skus);
   let disabledRows = 0;
   let disabledNeedRows = 0;
   let missingOwnerNeedRows = 0;
   let unmatchedNeedRows = 0;
   let negativeMetricRows = 0;
   let targetNeed30 = 0;
+  const ownerMismatches = [];
   rows.forEach((row) => {
     const need30 = toNumber(row.targetNeed30) || 0;
     targetNeed30 += need30;
@@ -319,6 +419,8 @@ function auditOrderProcurement(order = {}, issues) {
     }
     if (need30 > 0 && !String(row.owner || '').trim()) missingOwnerNeedRows += 1;
     if (need30 > 0 && String(row.matchState || '').toLowerCase() === 'unmatched') unmatchedNeedRows += 1;
+    const mismatch = ownerMismatch(row, skuLookup);
+    if (mismatch) ownerMismatches.push(mismatch);
     ['inStock', 'inTransit', 'inRequest', 'available', 'avgDaily', 'targetNeed7', 'targetNeed14', 'targetNeed28', 'targetNeed30'].forEach((field) => {
       const value = toNumber(row[field]);
       if (value !== null && value < 0) negativeMetricRows += 1;
@@ -328,20 +430,25 @@ function auditOrderProcurement(order = {}, issues) {
   if (disabledNeedRows) pushIssue(issues, 'critical', 'order_disabled_sku_has_need', { count: disabledNeedRows });
   if (missingOwnerNeedRows) pushIssue(issues, 'critical', 'order_need_missing_owner', { count: missingOwnerNeedRows });
   if (unmatchedNeedRows) pushIssue(issues, 'critical', 'order_need_unmatched_sku', { count: unmatchedNeedRows });
+  if (ownerMismatches.length) pushIssue(issues, 'critical', 'order_owner_mismatch', { count: ownerMismatches.length, examples: ownerMismatches.slice(0, 10) });
   if (negativeMetricRows) pushIssue(issues, 'critical', 'order_negative_metric', { count: negativeMetricRows });
-  return { rows: rows.length, disabledRows, disabledNeedRows, missingOwnerNeedRows, unmatchedNeedRows, negativeMetricRows, targetNeed30: Number(targetNeed30.toFixed(2)) };
+  return { rows: rows.length, disabledRows, disabledNeedRows, missingOwnerNeedRows, unmatchedNeedRows, ownerMismatchRows: ownerMismatches.length, negativeMetricRows, targetNeed30: Number(targetNeed30.toFixed(2)) };
 }
 
-function auditOosControl(oos = {}, issues) {
+function auditOosControl(oos = {}, issues, skus = []) {
   const rows = Array.isArray(oos.rows) ? oos.rows : [];
+  const skuLookup = buildSkuLookup(skus);
   let missingOwnerRows = 0;
   let missingArticleRows = 0;
   let disabledRows = 0;
   let negativeMetricRows = 0;
+  const ownerMismatches = [];
   rows.forEach((row) => {
     if (!String(row.articleKey || row.article || '').trim()) missingArticleRows += 1;
     if (!String(row.owner || '').trim() || String(row.owner || '').toLowerCase() === 'без owner') missingOwnerRows += 1;
     if (statusIsOld(row.lifecycleStatus || row.lifecycleLabel || row.status)) disabledRows += 1;
+    const mismatch = ownerMismatch(row, skuLookup);
+    if (mismatch) ownerMismatches.push(mismatch);
     ['inStock', 'inTransit', 'inRequest', 'available', 'avgDaily', 'targetNeed30', 'revenueAtRiskDay', 'lostRevenueDay'].forEach((field) => {
       const value = toNumber(row[field]);
       if (value !== null && value < 0) negativeMetricRows += 1;
@@ -352,8 +459,9 @@ function auditOosControl(oos = {}, issues) {
   if (missingArticleRows) pushIssue(issues, 'critical', 'oos_missing_article', { count: missingArticleRows });
   if (missingOwnerRows) pushIssue(issues, 'critical', 'oos_missing_owner', { count: missingOwnerRows });
   if (disabledRows) pushIssue(issues, 'critical', 'oos_disabled_sku_actionable', { count: disabledRows });
+  if (ownerMismatches.length) pushIssue(issues, 'critical', 'oos_owner_mismatch', { count: ownerMismatches.length, examples: ownerMismatches.slice(0, 10) });
   if (negativeMetricRows) pushIssue(issues, 'critical', 'oos_negative_metric', { count: negativeMetricRows });
-  return { rows: rows.length, dataStatus: oos.summary?.dataStatus || '', dataDate: oos.summary?.dataDate || '', missingOwnerRows, missingArticleRows, disabledRows, negativeMetricRows };
+  return { rows: rows.length, dataStatus: oos.summary?.dataStatus || '', dataDate: oos.summary?.dataDate || '', missingOwnerRows, missingArticleRows, disabledRows, ownerMismatchRows: ownerMismatches.length, negativeMetricRows };
 }
 
 function auditTaskLayers(ropTasks = {}, autoTasks = {}, issues) {
@@ -439,8 +547,8 @@ function main() {
   const priceAudit = auditPriceRows(prices, issues);
   const repricerAudit = auditRepricer(repricer, issues);
   const iuDrrAudit = auditIuDrr(iuDrr, issues);
-  const oosAudit = auditOosControl(oos, issues);
-  const orderAudit = auditOrderProcurement(order, issues);
+  const oosAudit = auditOosControl(oos, issues, Array.isArray(skus) ? skus : []);
+  const orderAudit = auditOrderProcurement(order, issues, Array.isArray(skus) ? skus : []);
   const taskAudit = auditTaskLayers(ropTasks, autoTasks, issues);
 
   const qualitySummary = quality.summary || {};

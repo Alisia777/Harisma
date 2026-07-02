@@ -196,6 +196,51 @@ function platformLabel(platform) {
   return String(platform || key || '').trim() || 'Площадка';
 }
 
+function skuOwnerForPlatform(sku = {}, platform = '') {
+  const key = normalizePlatform(platform);
+  const byPlatform = {
+    ...(sku?.owner?.byPlatform || {}),
+    ...(sku?.ownersByPlatform || {})
+  };
+  const platformOwner = key === 'ya' || key === 'ym'
+    ? (byPlatform.ya || byPlatform.ym || '')
+    : (byPlatform[key] || '');
+  return String(platformOwner || sku?.owner?.name || '').trim();
+}
+
+function skuLookupScore(sku = {}) {
+  let score = 0;
+  const source = [sku?.matrixSource, sku?.owner?.source, sku?.ownerSource].filter(Boolean).join(' ');
+  if (source.includes('ksenia-merged-statuses-minmax')) score += 1000;
+  if (sku?.matrixImportedAt) score += 500;
+  const article = String(sku?.articleKey || sku?.article || '').trim();
+  if (article && !/_+$/.test(article)) score += 25;
+  if (isSignalLifecycle(lifecycleForSku(sku))) score += 10;
+  return score;
+}
+
+function addSkuLookup(lookup, key, sku) {
+  const normalized = normalizeKey(key);
+  if (!normalized) return;
+  const current = lookup.get(normalized);
+  if (!current || skuLookupScore(sku) > skuLookupScore(current)) lookup.set(normalized, sku);
+}
+
+function buildSkuLookup(skus = []) {
+  const lookup = new Map();
+  (Array.isArray(skus) ? skus : []).forEach((sku) => {
+    [
+      sku?.articleKey,
+      sku?.article,
+      sku?.sourceArticleKey,
+      sku?.sku,
+      sku?.vendorCode,
+      sku?.supplierArticle
+    ].forEach((key) => addSkuLookup(lookup, key, sku));
+  });
+  return lookup;
+}
+
 function hashShort(value) {
   return crypto.createHash('sha1').update(String(value || '')).digest('hex').slice(0, 14);
 }
@@ -308,7 +353,7 @@ function classifyRow(row, rules, lifecycle) {
 
 function buildRowsLegacy(orderProcurement, skus, smartPriceOverlay, rules) {
   const priceLookup = buildPriceLookup(smartPriceOverlay, skus);
-  const skuByKey = new Map((Array.isArray(skus) ? skus : []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku]));
+  const skuByKey = buildSkuLookup(skus);
   const sourceRows = Array.isArray(orderProcurement?.rows) ? orderProcurement.rows : [];
 
   return sourceRows
@@ -338,7 +383,7 @@ function buildRowsLegacy(orderProcurement, skus, smartPriceOverlay, rules) {
         article,
         articleKey: article,
         name: String(row?.name || sku?.name || article).trim() || article,
-        owner: String(row?.owner || sku?.ownersByPlatform?.[platform] || sku?.owner?.name || '').trim() || 'Без owner',
+        owner: skuOwnerForPlatform(sku, platform) || String(row?.owner || '').trim() || 'Без owner',
         department,
         status: classification.status,
         statusLabel: classification.statusLabel,
@@ -488,7 +533,7 @@ function aggregateSignalRows(rawRows, rules) {
 
 function buildRows(orderProcurement, skus, smartPriceOverlay, rules) {
   const priceLookup = buildPriceLookup(smartPriceOverlay, skus);
-  const skuByKey = new Map((Array.isArray(skus) ? skus : []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku]));
+  const skuByKey = buildSkuLookup(skus);
   const sourceRows = Array.isArray(orderProcurement?.rows) ? orderProcurement.rows : [];
 
   const rawRows = sourceRows
@@ -518,7 +563,7 @@ function buildRows(orderProcurement, skus, smartPriceOverlay, rules) {
         article,
         articleKey,
         name: String(row?.name || sku?.name || article).trim() || article,
-        owner: String(row?.owner || sku?.ownersByPlatform?.[platform] || sku?.owner?.name || '').trim() || 'Без owner',
+        owner: skuOwnerForPlatform(sku, platform) || String(row?.owner || '').trim() || 'Без owner',
         department,
         status: classification.status,
         statusLabel: classification.statusLabel,

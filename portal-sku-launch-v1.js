@@ -2302,13 +2302,15 @@
     return '';
   }
 
-  function launchV1StatusOptions(current = '') {
+  function launchV1StatusOptions(current = '', options = {}) {
+    const emptyValue = Object.prototype.hasOwnProperty.call(options, 'emptyValue') ? String(options.emptyValue || '') : '';
     const normalized = String(current || '').trim().toLowerCase();
-    const base = ['', 'в работе', 'готово', 'блокер', 'переговоры', 'пробный образец', 'производство'];
+    const base = [emptyValue, 'в работе', 'готово', 'блокер', 'переговоры', 'пробный образец', 'производство'];
     const values = [...new Set([...base, current].filter((value) => value !== undefined))];
     return values.map((value) => {
       const label = value || 'не начато';
-      return `<option value="${escapeValue(value)}"${String(value || '').trim().toLowerCase() === normalized ? ' selected' : ''}>${escapeValue(label)}</option>`;
+      const selected = String(value || '').trim().toLowerCase() === normalized || (!normalized && value === emptyValue);
+      return `<option value="${escapeValue(value)}"${selected ? ' selected' : ''}>${escapeValue(label)}</option>`;
     }).join('');
   }
 
@@ -2453,7 +2455,7 @@
             <label><span>Первый склад</span><input type="date" name="firstStockDate" value="${escapeValue(base.firstStockDate || base.firstWarehouseDate || base.warehouseDate || base.supplyDate || base.stockDate || launchDue(base) || '')}"></label>
             <label><span>Склад МП</span><input type="date" name="mpStockDate" value="${escapeValue(base.mpStockDate || base.marketplaceStockDate || base.marketplaceWarehouseDate || base.mpWarehouseDate || '')}"></label>
             <label><span>Повторный заказ</span><input type="date" name="repeatOrderDate" value="${escapeValue(base.repeatOrderDate || base.nextOrderDate || base.plannedReorderDate || base.reorderDate || '')}"></label>
-            <label><span>Статус</span><select name="status">${launchV1StatusOptions(base.status || '')}</select></label>
+            <label><span>Статус</span><select name="status">${launchV1StatusOptions(base.status || '', { emptyValue: 'не начато' })}</select></label>
             <label><span>Маркетолог рук</span><input name="marketingLead" value="${escapeValue(base.marketingLead || base.marketingManager || base.leadOwner || '')}"></label>
             <label><span>Маркетолог</span><input name="marketingOwner" value="${escapeValue(base.marketingOwner || base.marketer || '')}"></label>
             <label><span>PR / SMM</span><input name="prOwner" value="${escapeValue(base.prOwner || base.smmOwner || base.contentOwner || '')}"></label>
@@ -2632,6 +2634,7 @@
       const monthKey = launchItemMonthKey(item);
       const owner = launchOwner(item) || '';
       const category = item.reportGroup || item.category || item.subCategory || '';
+      const due = launchExactDue(item) || launchDue(item) || '';
       const itemReady = readiness(item);
       if (!launchMatchesMarket(item, activeMarket)) return false;
       if (search && !launchText(item).includes(search)) return false;
@@ -2643,7 +2646,7 @@
       if (filters.readiness === 'ready' && !itemReady.ready) return false;
       if (filters.readiness === 'blocked' && !(item.blockers || []).length && !stageEntries(item).some((entry) => entry.column?.key === 'blocked')) return false;
       if (filters.readiness === 'missing-owner' && owner) return false;
-      if (filters.readiness === 'missing-date' && launchExactDue(item)) return false;
+      if (filters.readiness === 'missing-date' && due) return false;
       return true;
     });
   }
@@ -2881,7 +2884,7 @@
           <label>
             <span>Статус новинки</span>
             <select data-launch-v1-status-select="${escapeValue(launchId(item))}">
-              ${launchV1StatusOptions(item.status || '')}
+              ${launchV1StatusOptions(item.status || '', { emptyValue: 'не начато' })}
             </select>
           </label>
           <button type="button" data-launch-v1-edit="${escapeValue(launchId(item))}">Открыть карточку</button>
@@ -2920,6 +2923,7 @@
           }).join('')}
         </div>
         <div class="launch-v1-detail-actions">
+          <button type="button" data-launch-v1-task="${escapeValue(launchId(item))}">${item.activeTasks ? 'Открыть задачу' : 'Поставить задачу'}</button>
           <button type="button" data-launch-v1-edit="${escapeValue(launchId(item))}">Редактировать</button>
           <button type="button" data-launch-v1-kanban="${escapeValue(launchId(item))}">Открыть полный канбан</button>
         </div>
@@ -3066,6 +3070,29 @@
     root.querySelectorAll('[data-launch-v1-edit]').forEach((button) => {
       button.addEventListener('click', () => {
         openLaunchV1Editor(button.dataset.launchV1Edit || '');
+      });
+    });
+    root.querySelectorAll('[data-launch-v1-task]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const item = launchV1FindItem(button.dataset.launchV1Task || '');
+        const taskAction = typeof window.createOrOpenLaunchTask === 'function'
+          ? window.createOrOpenLaunchTask
+          : (typeof createOrOpenLaunchTask === 'function' ? createOrOpenLaunchTask : null);
+        if (!item || !taskAction) {
+          launchV1Toast('Контур задач еще загружается');
+          return;
+        }
+        button.disabled = true;
+        try {
+          await taskAction(item);
+          launchV1Toast(item.activeTasks ? 'Задача запуска открыта' : 'Задача запуска поставлена');
+        } catch (error) {
+          console.warn('[launch-v1] launch task action failed', error);
+          launchV1Toast('Не удалось открыть задачу запуска');
+        } finally {
+          button.disabled = false;
+          renderLaunchesV1(root.id || 'view-launches');
+        }
       });
     });
     root.querySelectorAll('[data-launch-v1-stage-status]').forEach((button) => {

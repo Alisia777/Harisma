@@ -560,6 +560,11 @@ function launchSharesIdentity(left = {}, right = {}) {
   return launchIdentityTokens(left).some((token) => token.startsWith('name') && rightTokens.has(token));
 }
 
+function launchIsCalendarImport(item = {}) {
+  const source = String(item.sourceFile || '').toLowerCase();
+  return source.includes('календарь новинок') || source.includes('launch_calendar');
+}
+
 function launchOverrideIdentityMap(overrides = []) {
   const map = new Map();
   overrides.forEach((item) => {
@@ -1008,6 +1013,7 @@ function getLaunchItems(options = {}) {
   const usedOverrideIds = new Set();
   const deletedIds = getLaunchDeletedIdSet();
   const baseIds = new Set();
+  const staleCalendarOverrideIds = [];
   const merged = [];
   source.forEach((item) => {
     const launchId = launchStableId(item);
@@ -1015,7 +1021,13 @@ function getLaunchItems(options = {}) {
     if (deletedIds.has(launchId)) return;
     const override = findLaunchOverrideForItem(item, overrideMap, overrideIdentityMap, usedOverrideIds);
     if (override) {
-      usedOverrideIds.add(launchStableId(override));
+      const overrideId = launchStableId(override);
+      if (overrideId !== launchId && launchIsCalendarImport(override)) {
+        staleCalendarOverrideIds.push(overrideId);
+        merged.push(item);
+        return;
+      }
+      usedOverrideIds.add(overrideId);
       merged.push(normalizeLaunchItem({ ...item, ...override, id: launchId }, options));
     } else {
       merged.push(item);
@@ -1023,8 +1035,24 @@ function getLaunchItems(options = {}) {
   });
   overrideMap.forEach((item, launchId) => {
     if (baseIds.has(launchId) || usedOverrideIds.has(launchId) || deletedIds.has(launchId)) return;
+    if (launchIsCalendarImport(item)) {
+      staleCalendarOverrideIds.push(launchId);
+      return;
+    }
     merged.push(normalizeLaunchItem(item, options));
   });
+  if (staleCalendarOverrideIds.length && Array.isArray(state.storage?.launchOverrides)) {
+    const staleSet = new Set(staleCalendarOverrideIds);
+    const nextOverrides = state.storage.launchOverrides.filter((entry) => !staleSet.has(launchStableId(entry)));
+    if (nextOverrides.length !== state.storage.launchOverrides.length) {
+      state.storage.launchOverrides = nextOverrides;
+      try {
+        saveLocalStorage({ skipBackup: true, reason: 'launch-prune-stale-calendar-imports' });
+      } catch {
+        try { saveLocalStorage(); } catch {}
+      }
+    }
+  }
   return merged.sort((a, b) => launchMonthSortValue(a.launchMonth) - launchMonthSortValue(b.launchMonth) || a.name.localeCompare(b.name, 'ru'));
 }
 

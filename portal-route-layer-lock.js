@@ -4,7 +4,7 @@
   if (window.__ALTEA_ROUTE_LAYER_LOCK_20260702_TASK_DIRECT__) return;
   window.__ALTEA_ROUTE_LAYER_LOCK_20260702_TASK_DIRECT__ = true;
 
-  const VERSION = '20260702-route-layer-task-direct-v2';
+  const VERSION = '20260702-route-layer-task-direct-v3';
   let cascadeTimers = [];
   let running = false;
 
@@ -72,7 +72,7 @@
         return;
       }
       if (window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__?.renderControl) {
-        window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__.renderControl({ skipReady: false });
+        window.__ALTEA_TASKS_CALENDAR_DESIGN_V1_API__.renderControl({ skipReady: true });
         return;
       }
       if (typeof window.renderControlCenter === 'function') window.renderControlCenter();
@@ -98,7 +98,7 @@
 
   function cleanupControlRoot(root) {
     if (!root) return;
-    const design = root.querySelector('[data-task-calendar-design-v1]');
+    const design = root.querySelector('[data-task-calendar-design-v1]:not([data-task-route-gate-placeholder])');
     if (!design) return;
     Array.from(root.children).forEach((child) => {
       if (child === design || child.contains(design)) return;
@@ -140,7 +140,7 @@
   function cascade() {
     cascadeTimers.forEach((timer) => window.clearTimeout(timer));
     const view = currentView();
-    const delays = view === 'control' ? [0, 80, 220, 700, 1600] : [0, 120, 700, 2200, 6000, 14000];
+    const delays = view === 'control' ? [0, 320] : [0, 120, 700, 2200, 6000, 14000];
     cascadeTimers = delays.map((delay) => window.setTimeout(enforceActiveRoute, delay));
   }
 

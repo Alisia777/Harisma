@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-02T20:50:39.182Z",
+  "generatedAt": "2026-07-02T21:33:37.693Z",
   "status": "warning",
   "summary": {
-    "issueCount": 70,
+    "issueCount": 50,
     "criticalCount": 0,
-    "warningCount": 21,
+    "warningCount": 1,
     "monthKey": "2026-07",
     "maxDate": "2026-07-01",
     "apiUnmappedPlatformRows": 0,
@@ -23,8 +23,8 @@
     "priceContourSkuCount": 318,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
-    "skuMissingPlan": 20,
-    "skuAssignedPlan": 75,
+    "skuMissingPlan": 0,
+    "skuAssignedPlan": 95,
     "warehouseUnmatchedRows": 25,
     "wbOwnerMatchedSku": 125,
     "wbOwnerUpdatedSku": 36,
@@ -225,8 +225,8 @@
   "planSummary": {
     "totalSku": 209,
     "activeSku": 60,
-    "assignedPlan": 75,
-    "missingPlan": 20
+    "assignedPlan": 95,
+    "missingPlan": 0
   },
   "warehouseSummary": {
     "sourceRows": 306,
@@ -251,186 +251,6 @@
       "referenceDate": "2026-07-02",
       "lagDays": 3,
       "message": "Данные отстают на 3 дн."
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "balzam_kudryavii_metod_500ml",
-      "name": "Бальзам для кудрявых волос с кератином 50 0мл",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "gel_kudryavii_metod_300ml",
-      "name": "gel_kudryavii_metod_300ml",
-      "owner": "Максим Лапыгин",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "gel-penka_dlya_lica_150ml",
-      "name": "gel-penka_dlya_lica_150ml",
-      "owner": "Максим Лапыгин",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "krem_dlya_lica_pdrn_50_ml",
-      "name": "krem_dlya_lica_pdrn_50 ml",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "lifting_maska_pdrn_75ml",
-      "name": "lifting_maska_pdrn_75ml",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "retinait_syvorotka_025_30ml",
-      "name": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "retinait_syvorotka_05_30ml",
-      "name": "Сыворотка для лица с ретинолом омолаживающая",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "retinol_boost_krem_dlya_vek_30ml",
-      "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "retinol_full_journey",
-      "name": "Набор уходовой косметики для лица антивозрастной",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "shampun_badd_500ml",
-      "name": "shampun_BADD_500ml",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "shampun_kudryavii_metod_500ml",
-      "name": "shampun_kudryavii_metod_500ml",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "spicul_gel_mask_75ml",
-      "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "spiculboost_30ml",
-      "name": "Сыворотка для лица с микроиглами и коллагеном",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "spray-syvorotka_pdrn_100ml",
-      "name": "spray-syvorotka_pdrn_100ml",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "strong_hair",
-      "name": "Набор для волос шампунь + маска для роста волос",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "syvorotka_dlya_lica_intens_uvl_30ml",
-      "name": "syvorotka_dlya_lica_intens_uvl_30ml",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "syvorotka_niacin_05_30ml",
-      "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "syvorotka_vit_c_30ml",
-      "name": "syvorotka_vit_C_30ml",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "termo_maslo_100ml",
-      "name": "termo_maslo_100ml",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
-    },
-    {
-      "severity": "warning",
-      "type": "sku_missing_plan",
-      "dataset": "skus",
-      "articleKey": "termo_sprei_200ml_v2",
-      "name": "termo_sprei_200ml_v2",
-      "owner": "Мария Васильева",
-      "message": "SKU active in matrix but has no assigned unit plan"
     },
     {
       "severity": "info",

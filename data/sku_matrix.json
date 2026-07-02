@@ -1,11 +1,11 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-07-02T20:47:06.638Z",
+  "generatedAt": "2026-07-02T21:31:36.787Z",
   "source": {
     "skus": 209,
     "aliases": 341,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-07-02T20:14:40.201Z"
+    "dataQualityGeneratedAt": "2026-07-02T20:50:39.182Z"
   },
   "summary": {
     "skuCount": 209,
@@ -16,13 +16,12 @@
     "duplicateRiskCount": 0,
     "duplicateRiskOverage": 0,
     "missingOwnerCount": 0,
-    "planNeedsAssignmentCount": 20,
-    "planAssignedCount": 75,
+    "planNeedsAssignmentCount": 0,
+    "planAssignedCount": 95,
     "issueCount": 21,
     "infoIssueCount": 49,
     "problemStateCounts": {
       "ok": 189,
-      "missing_plan": 20,
       "has_warning": 20
     }
   },
@@ -87,12 +86,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 5590.2,
         "factFeb26GrossMarginRub": 10792.8,
         "factFeb26MarginPreviousPct": 0.674,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 123682,
         "planMay26Units": 205,
         "planMay26Revenue": 132564,
@@ -240,7 +239,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -277,7 +276,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -314,7 +313,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -351,7 +350,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -395,12 +394,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 6109,
         "factFeb26GrossMarginRub": 26048,
         "factFeb26MarginPreviousPct": 0.81,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 132388,
         "planMay26Units": 178,
         "planMay26Revenue": 140515,
@@ -563,7 +562,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "Алтея",
@@ -609,7 +608,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -646,7 +645,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -683,7 +682,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -720,7 +719,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -757,7 +756,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -794,7 +793,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -831,7 +830,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -875,12 +874,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 20162.8,
         "factFeb26GrossMarginRub": 43525.2,
         "factFeb26MarginPreviousPct": 0.706,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 207859,
         "planMay26Units": 522,
         "planMay26Revenue": 223235,
@@ -1017,30 +1016,138 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 166.7,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 1,
@@ -1090,12 +1197,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 35930.26,
         "factFeb26GrossMarginRub": 168165.74,
         "factFeb26MarginPreviousPct": 0.825,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 1063474,
         "planMay26Units": 948,
         "planMay26Revenue": 1214457,
@@ -1252,7 +1359,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -1289,7 +1396,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -1326,7 +1433,7 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0,
         "planApr26Revenue": 1066361,
         "planMay26Units": 965,
@@ -1475,7 +1582,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -1512,7 +1619,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -1556,12 +1663,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 47560,
         "factFeb26GrossMarginRub": 49727,
         "factFeb26MarginPreviousPct": 0.502,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 604798,
         "planMay26Units": 1906,
         "planMay26Revenue": 604921,
@@ -1718,7 +1825,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -1755,7 +1862,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z"
+        "planCheckedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "",
       "category": "",
@@ -1798,12 +1905,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 112332,
         "factFeb26GrossMarginRub": 1416253,
         "factFeb26MarginPreviousPct": 0.929,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -1875,7 +1982,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -1912,7 +2019,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -1949,7 +2056,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -1986,7 +2093,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -2023,7 +2130,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -2060,7 +2167,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -2104,12 +2211,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 14815.76,
         "factFeb26GrossMarginRub": 79020.24,
         "factFeb26MarginPreviousPct": 0.844,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Спортивное питание",
@@ -2145,7 +2252,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -2182,7 +2289,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -2226,12 +2333,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 119.4,
         "factFeb26GrossMarginRub": 625.6,
         "factFeb26MarginPreviousPct": 0.846,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 16966,
         "planMay26Units": 25,
         "planMay26Revenue": 16966,
@@ -2431,12 +2538,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 10689.8,
         "factFeb26GrossMarginRub": 123195.2,
         "factFeb26MarginPreviousPct": 0.925,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -2508,7 +2615,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -2545,7 +2652,7 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0,
         "planApr26Revenue": 78767,
         "planMay26Units": 213,
@@ -2701,12 +2808,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 33016.06,
         "factFeb26GrossMarginRub": 79751.94,
         "factFeb26MarginPreviousPct": 0.724,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 364024,
         "planMay26Units": 553,
         "planMay26Revenue": 417699,
@@ -2861,12 +2968,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 18028.55,
         "factFeb26GrossMarginRub": 38483.45,
         "factFeb26MarginPreviousPct": 0.724,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 167842,
         "planMay26Units": 380,
         "planMay26Revenue": 192821,
@@ -3021,12 +3128,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 6209.2,
         "factFeb26GrossMarginRub": 37564.8,
         "factFeb26MarginPreviousPct": 0.866,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 1674696,
         "planMay26Units": 2794,
         "planMay26Revenue": 1674696,
@@ -3202,12 +3309,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 127340.58,
         "factFeb26GrossMarginRub": 818328.42,
         "factFeb26MarginPreviousPct": 0.882,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -3286,12 +3393,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 5436,
         "factFeb26GrossMarginRub": 43437,
         "factFeb26MarginPreviousPct": 0.91,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 349694,
         "planMay26Units": 538,
         "planMay26Revenue": 369776,
@@ -3482,12 +3589,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 35190.4,
         "factFeb26GrossMarginRub": 256416.6,
         "factFeb26MarginPreviousPct": 0.879,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Средства для бритья и груминг",
@@ -3566,12 +3673,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 34329.4,
         "factFeb26GrossMarginRub": 225453.6,
         "factFeb26MarginPreviousPct": 0.87,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 1138039,
         "planMay26Units": 2433,
         "planMay26Revenue": 1244728,
@@ -3769,12 +3876,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 17434.2,
         "factFeb26GrossMarginRub": 115651.8,
         "factFeb26MarginPreviousPct": 0.87,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Средства для гигиены тела",
@@ -3835,30 +3942,138 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 150,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -3900,12 +4115,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 4796.4,
         "factFeb26GrossMarginRub": 29454.6,
         "factFeb26MarginPreviousPct": 0.86,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 243256,
         "planMay26Units": 367,
         "planMay26Revenue": 263482,
@@ -4078,30 +4293,138 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 130.25,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -4136,7 +4459,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -4180,12 +4503,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 11027.84,
         "factFeb26GrossMarginRub": 21618.16,
         "factFeb26MarginPreviousPct": 0.662,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 135647,
         "planMay26Units": 289,
         "planMay26Revenue": 135647,
@@ -4377,7 +4700,7 @@
         "planAssigned": false,
         "planStatus": "not_required_for_disabled_sku",
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "planNeedsAssignment": false,
         "factFeb26CostRub": 0
       },
@@ -4422,12 +4745,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 7328.16,
         "factFeb26GrossMarginRub": 33044.84,
         "factFeb26MarginPreviousPct": 0.822,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "БАДы и витамины",
@@ -4463,7 +4786,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -4507,12 +4830,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 23780,
         "factFeb26GrossMarginRub": 45615,
         "factFeb26MarginPreviousPct": 0.669,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 722660,
         "planMay26Units": 715,
         "planMay26Revenue": 752076,
@@ -4667,12 +4990,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 22187.55,
         "factFeb26GrossMarginRub": 93475.45,
         "factFeb26MarginPreviousPct": 0.815,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 675717,
         "planMay26Units": 763,
         "planMay26Revenue": 717379,
@@ -4819,7 +5142,7 @@
         "planAssigned": false,
         "planStatus": "not_required_for_disabled_sku",
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "planNeedsAssignment": false,
         "factFeb26CostRub": 0
       },
@@ -4857,7 +5180,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -4901,12 +5224,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 55829.91,
         "factFeb26GrossMarginRub": 308988.09,
         "factFeb26MarginPreviousPct": 0.848,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Парафармацевтика",
@@ -4942,7 +5265,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z"
+        "planCheckedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "",
       "category": "",
@@ -4985,12 +5308,12 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 5600,
         "factFeb26GrossMarginRub": 18524,
         "factFeb26MarginPreviousPct": 0.768,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Средства для гигиены тела",
@@ -5055,12 +5378,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 11958.6,
         "factFeb26GrossMarginRub": 89629.4,
         "factFeb26MarginPreviousPct": 0.883,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Средства для гигиены тела",
@@ -5132,7 +5455,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -5169,7 +5492,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -5206,7 +5529,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -5243,7 +5566,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -5280,7 +5603,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -5317,7 +5640,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -5354,7 +5677,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -5391,7 +5714,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -5428,7 +5751,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -5465,7 +5788,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -5518,12 +5841,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 67813.5,
         "factFeb26GrossMarginRub": 384307.5,
         "factFeb26MarginPreviousPct": 0.858,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -5584,30 +5907,138 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 178.3,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -5649,12 +6080,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 45619.6,
         "factFeb26GrossMarginRub": 335781.4,
         "factFeb26MarginPreviousPct": 0.898,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -5747,12 +6178,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 78880.1,
         "factFeb26GrossMarginRub": 228602.9,
         "factFeb26MarginPreviousPct": 0.746,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -5838,12 +6269,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 131111.5,
         "factFeb26GrossMarginRub": 730255.5,
         "factFeb26MarginPreviousPct": 0.871,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -5929,12 +6360,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 50653.2,
         "factFeb26GrossMarginRub": 527115.8,
         "factFeb26MarginPreviousPct": 0.918,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -6011,7 +6442,7 @@
         "factTotalRevenue": 165510,
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
-        "planCheckedAt": "2026-07-02T20:14:28.197Z"
+        "planCheckedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -6071,12 +6502,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 82984,
         "factFeb26GrossMarginRub": 664941,
         "factFeb26MarginPreviousPct": 0.912,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -6155,12 +6586,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 263221.2,
         "factFeb26GrossMarginRub": 1973204.8,
         "factFeb26MarginPreviousPct": 0.895,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -6242,29 +6673,137 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 0,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z"
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 1,
@@ -6314,12 +6853,12 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 127006.05,
         "factFeb26GrossMarginRub": 708913.95,
         "factFeb26MarginPreviousPct": 0.872,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "БАДы и витамины",
@@ -6362,12 +6901,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 442537.2,
         "factFeb26GrossMarginRub": 3447807.8,
         "factFeb26MarginPreviousPct": 0.893,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Маска косметическая",
@@ -6446,12 +6985,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 27328,
         "factFeb26GrossMarginRub": 219948,
         "factFeb26MarginPreviousPct": 0.89,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -6530,12 +7069,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 28585.9,
         "factFeb26GrossMarginRub": 282899.1,
         "factFeb26MarginPreviousPct": 0.909,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -6614,12 +7153,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 66001.95,
         "factFeb26GrossMarginRub": 494031.05,
         "factFeb26MarginPreviousPct": 0.883,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -6698,12 +7237,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 53487.16,
         "factFeb26GrossMarginRub": 256935.84,
         "factFeb26MarginPreviousPct": 0.851,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Средства для бритья и груминг",
@@ -6789,7 +7328,7 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0,
         "planApr26Revenue": 315132,
         "planMay26Units": 451,
@@ -7043,12 +7582,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 19355.3,
         "factFeb26GrossMarginRub": 165031.7,
         "factFeb26MarginPreviousPct": 0.896,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -7127,12 +7666,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 13252.5,
         "factFeb26GrossMarginRub": 59259.5,
         "factFeb26MarginPreviousPct": 0.829,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 485534,
         "planMay26Units": 519,
         "planMay26Revenue": 518741,
@@ -7280,7 +7819,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -7317,7 +7856,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -7354,7 +7893,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -7391,7 +7930,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -7428,7 +7967,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z"
+        "planCheckedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "",
       "category": "",
@@ -7464,7 +8003,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -7501,7 +8040,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -7543,7 +8082,7 @@
         "factTotalRevenue": null,
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
-        "planCheckedAt": "2026-07-02T20:14:28.197Z"
+        "planCheckedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -7588,7 +8127,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -7625,7 +8164,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -7669,12 +8208,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 12237.75,
         "factFeb26GrossMarginRub": 137959.25,
         "factFeb26MarginPreviousPct": 0.92,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -7755,12 +8294,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 17702.4,
         "factFeb26GrossMarginRub": 160779.6,
         "factFeb26MarginPreviousPct": 0.913,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -7839,12 +8378,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 2766,
         "factFeb26GrossMarginRub": 13664,
         "factFeb26MarginPreviousPct": 0.849,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 230373,
         "planMay26Units": 370,
         "planMay26Revenue": 239043,
@@ -8021,12 +8560,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 89766.63,
         "factFeb26GrossMarginRub": 677215.37,
         "factFeb26MarginPreviousPct": 0.905,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Декоративная косметика",
@@ -8098,7 +8637,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -8135,7 +8674,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -8172,7 +8711,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -8209,7 +8748,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z"
+        "planCheckedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "",
       "category": "",
@@ -8245,7 +8784,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -8282,7 +8821,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -8319,7 +8858,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -8356,7 +8895,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -8393,7 +8932,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -8437,12 +8976,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 28507.6,
         "factFeb26GrossMarginRub": 132899.4,
         "factFeb26MarginPreviousPct": 0.826,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 423645,
         "planMay26Units": 596,
         "planMay26Revenue": 434399,
@@ -8628,12 +9167,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 375216.7,
         "factFeb26GrossMarginRub": 2664337.3,
         "factFeb26MarginPreviousPct": 0.882,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -8712,12 +9251,12 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 208.4,
         "factFeb26GrossMarginRub": 245.6,
         "factFeb26MarginPreviousPct": 0.545,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -8805,12 +9344,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 52634.6,
         "factFeb26GrossMarginRub": 293694.4,
         "factFeb26MarginPreviousPct": 0.86,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -8889,7 +9428,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "Алтея",
@@ -8935,7 +9474,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -8972,7 +9511,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -9059,12 +9598,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 70908.2,
         "factFeb26GrossMarginRub": 154155.8,
         "factFeb26MarginPreviousPct": 0.683,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Парафармацевтика",
@@ -9107,7 +9646,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "Алтея",
@@ -9160,12 +9699,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 1138525.2,
         "factFeb26GrossMarginRub": 15966338.8,
         "factFeb26MarginPreviousPct": 0.941,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -9258,12 +9797,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 24205.32,
         "factFeb26GrossMarginRub": 460120.68,
         "factFeb26MarginPreviousPct": 0.952,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -9342,12 +9881,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 96751.76,
         "factFeb26GrossMarginRub": 1528753.24,
         "factFeb26MarginPreviousPct": 0.95,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -9426,12 +9965,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 143873.26,
         "factFeb26GrossMarginRub": 2190456.74,
         "factFeb26MarginPreviousPct": 0.94,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -9510,12 +10049,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 373164,
         "factFeb26GrossMarginRub": 6326572,
         "factFeb26MarginPreviousPct": 0.945,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -9594,12 +10133,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 171841.04,
         "factFeb26GrossMarginRub": 3468411.96,
         "factFeb26MarginPreviousPct": 0.96,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -9660,9 +10199,9 @@
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "costPrice": 122,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "factFeb26Units": null,
@@ -9674,12 +10213,121 @@
         "factFeb26NetRevenue": null,
         "factFeb26MarginPct": null,
         "factTotalRevenue": null,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -9722,11 +10370,10 @@
         }
       ],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -9750,9 +10397,9 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 132,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "factFeb26Units": null,
@@ -9764,12 +10411,121 @@
         "factFeb26NetRevenue": null,
         "factFeb26MarginPct": null,
         "factTotalRevenue": null,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -9812,11 +10568,10 @@
         }
       ],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -9858,12 +10613,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 204804.16,
         "factFeb26GrossMarginRub": 1896738.84,
         "factFeb26MarginPreviousPct": 0.913,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -9924,9 +10679,9 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 147.36,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "factFeb26Units": null,
@@ -9938,12 +10693,121 @@
         "factFeb26NetRevenue": null,
         "factFeb26MarginPct": null,
         "factTotalRevenue": null,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -9986,11 +10850,10 @@
         }
       ],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -10014,9 +10877,9 @@
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "costPrice": 324.07,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "factFeb26Units": null,
@@ -10028,12 +10891,121 @@
         "factFeb26NetRevenue": null,
         "factFeb26MarginPct": null,
         "factTotalRevenue": null,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -10076,11 +11048,10 @@
         }
       ],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 1,
@@ -10130,7 +11101,7 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0,
         "planApr26Revenue": 5000,
         "planMay26Units": 2,
@@ -10320,12 +11291,12 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 24502.7,
         "factFeb26GrossMarginRub": 79876.3,
         "factFeb26MarginPreviousPct": 0.765,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "БАДы и витамины",
@@ -10370,7 +11341,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -10407,7 +11378,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -10444,7 +11415,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -10470,30 +11441,138 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 153.88,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -10535,12 +11614,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 93274.72,
         "factFeb26GrossMarginRub": 700842.28,
         "factFeb26MarginPreviousPct": 0.895,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -10608,30 +11687,138 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 171.7,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "Алтея",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 1,
@@ -10681,12 +11868,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 38444.4,
         "factFeb26GrossMarginRub": 352028.6,
         "factFeb26MarginPreviousPct": 0.903,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -10765,12 +11952,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 112068,
         "factFeb26GrossMarginRub": 569279,
         "factFeb26MarginPreviousPct": 0.87,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -10842,7 +12029,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -10886,12 +12073,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 22154.4,
         "factFeb26GrossMarginRub": 124794.6,
         "factFeb26MarginPreviousPct": 0.855,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -10970,12 +12157,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 45005.8,
         "factFeb26GrossMarginRub": 350716.2,
         "factFeb26MarginPreviousPct": 0.895,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -11043,9 +12230,9 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 130,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "factFeb26Units": null,
@@ -11057,12 +12244,121 @@
         "factFeb26NetRevenue": null,
         "factFeb26MarginPct": null,
         "factTotalRevenue": null,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "Алтея",
       "category": "Маска косметическая",
@@ -11105,11 +12401,10 @@
         }
       ],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -11133,9 +12428,9 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 166.63,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "factFeb26Units": null,
@@ -11147,12 +12442,121 @@
         "factFeb26NetRevenue": null,
         "factFeb26MarginPct": null,
         "factTotalRevenue": null,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -11195,11 +12599,10 @@
         }
       ],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -11223,30 +12626,138 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 145.54,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -11288,12 +12799,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 84977.2,
         "factFeb26GrossMarginRub": 641442.8,
         "factFeb26MarginPreviousPct": 0.892,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -11372,12 +12883,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 7138.83,
         "factFeb26GrossMarginRub": 9149.17,
         "factFeb26MarginPreviousPct": 0.576,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 196449,
         "planMay26Units": 702,
         "planMay26Revenue": 196449,
@@ -11550,9 +13061,9 @@
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "costPrice": 286.12,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "factFeb26Units": null,
@@ -11564,12 +13075,121 @@
         "factFeb26NetRevenue": null,
         "factFeb26MarginPct": null,
         "factTotalRevenue": null,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
@@ -11591,11 +13211,10 @@
         }
       ],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 1,
@@ -11638,7 +13257,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -11675,7 +13294,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -11712,7 +13331,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -11749,7 +13368,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -11793,12 +13412,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 177944,
         "factFeb26GrossMarginRub": 1738495,
         "factFeb26MarginPreviousPct": 0.911,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -11884,12 +13503,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 41769,
         "factFeb26GrossMarginRub": 454269,
         "factFeb26MarginPreviousPct": 0.919,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -11959,30 +13578,138 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 136,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -12024,12 +13751,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 11749.78,
         "factFeb26GrossMarginRub": 55852.22,
         "factFeb26MarginPreviousPct": 0.876,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 436360,
         "planMay26Units": 1169,
         "planMay26Revenue": 446626,
@@ -12220,12 +13947,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 3962.57,
         "factFeb26GrossMarginRub": 99052.43,
         "factFeb26MarginPreviousPct": 0.976,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Средства по уходу за бровями и ресницами",
@@ -12304,12 +14031,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 11609,
         "factFeb26GrossMarginRub": 148936,
         "factFeb26MarginPreviousPct": 0.933,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -12370,9 +14097,9 @@
       "status": "Актуальный",
       "registryStatus": "Актуальный",
       "costPrice": 120,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "factFeb26Units": null,
@@ -12384,12 +14111,121 @@
         "factFeb26NetRevenue": null,
         "factFeb26MarginPct": null,
         "factTotalRevenue": null,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -12432,11 +14268,10 @@
         }
       ],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -12460,30 +14295,138 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 120,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "Алтея",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -12518,7 +14461,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -12571,12 +14514,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 70957.32,
         "factFeb26GrossMarginRub": 220441.68,
         "factFeb26MarginPreviousPct": 0.765,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Парафармацевтика",
@@ -12601,30 +14544,138 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 160,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
-        "factFeb26CostRub": 0
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "factFeb26CostRub": 0,
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 1,
@@ -12674,12 +14725,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 16137.9,
         "factFeb26GrossMarginRub": 93405.1,
         "factFeb26MarginPreviousPct": 0.856,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 499570,
         "planMay26Units": 692,
         "planMay26Revenue": 555763,
@@ -12852,29 +14903,137 @@
       "status": "Новинка",
       "registryStatus": "Новинка",
       "costPrice": 0,
-      "planAssigned": false,
-      "planStatus": "needs_plan_assignment",
-      "planNeedsAssignment": true,
+      "planAssigned": true,
+      "planStatus": "assigned_zero_until_plan_source",
+      "planNeedsAssignment": false,
       "planFact": {
         "planFeb26Units": 0,
         "planMar26Units": 0,
         "planApr26Units": 0,
-        "planAssigned": false,
-        "planStatus": "needs_plan_assignment",
-        "planNeedsAssignment": true,
-        "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z"
+        "planAssigned": true,
+        "planStatus": "assigned_zero_until_plan_source",
+        "planNeedsAssignment": false,
+        "planSource": "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
+        "planApr26Revenue": 0,
+        "planMay26Units": 0,
+        "planMay26Revenue": 0,
+        "planJun26Units": 0,
+        "planJun26Revenue": 0,
+        "planJul26Units": 0,
+        "planJul26Revenue": 0,
+        "planAug26Units": 0,
+        "planAug26Revenue": 0,
+        "planSep26Units": 0,
+        "planSep26Revenue": 0,
+        "planOct26Units": 0,
+        "planOct26Revenue": 0,
+        "planNov26Units": 0,
+        "planNov26Revenue": 0,
+        "planDec26Units": 0,
+        "planDec26Revenue": 0,
+        "planMonthKey": "2026-07",
+        "planMonthUnits": 0,
+        "planMonthRevenue": 0,
+        "planUnits": 0,
+        "planRevenue": 0,
+        "planMonths": [
+          {
+            "monthKey": "2026-04",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-05",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-06",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-07",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-08",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-09",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-10",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-11",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          },
+          {
+            "monthKey": "2026-12",
+            "days": null,
+            "units": 0,
+            "revenue": 0,
+            "sources": [
+              "ksenia-merged-statuses-minmax-2026-07-02:zero-baseline-no-plan-source"
+            ]
+          }
+        ],
+        "planPlatforms": [],
+        "planBackfillSource": "zero-baseline-no-plan-source",
+        "planBackfilledAt": "2026-07-02T21:31:10.263Z",
+        "planZeroBaseline": true
       },
       "brand": "",
       "category": "",
       "type": "",
       "aliases": [],
       "problemStates": [
-        "missing_plan",
         "has_warning"
       ],
-      "problemState": "missing_plan",
-      "problemLabel": "Нет плана",
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
       "problemTone": "warn",
       "issueCount": 1,
       "infoIssueCount": 0,
@@ -12916,12 +15075,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "existing_portal_plan",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 26709.6,
         "factFeb26GrossMarginRub": 120303.4,
         "factFeb26MarginPreviousPct": 0.821,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z"
+        "marginImportedAt": "2026-07-02T21:31:10.263Z"
       },
       "brand": "Алтея",
       "category": "Косметика для ухода",
@@ -12993,7 +15152,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13030,7 +15189,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13067,7 +15226,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13104,7 +15263,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13141,7 +15300,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13178,7 +15337,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13215,7 +15374,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13252,7 +15411,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13289,7 +15448,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13326,7 +15485,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13363,7 +15522,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13400,7 +15559,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13437,7 +15596,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13474,7 +15633,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13518,12 +15677,12 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 10261.2,
         "factFeb26GrossMarginRub": 142618.8,
         "factFeb26MarginPreviousPct": 0.932,
         "marginSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "marginImportedAt": "2026-07-02T20:14:28.197Z",
+        "marginImportedAt": "2026-07-02T21:31:10.263Z",
         "planApr26Revenue": 760182,
         "planMay26Units": 777,
         "planMay26Revenue": 760182,
@@ -13706,7 +15865,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -13743,7 +15902,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13789,7 +15948,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13826,7 +15985,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13863,7 +16022,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13900,7 +16059,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -13937,7 +16096,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -13973,7 +16132,7 @@
         "planAssigned": false,
         "planStatus": "not_required_for_disabled_sku",
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "planNeedsAssignment": false,
         "factFeb26CostRub": 0
       },
@@ -14011,7 +16170,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -14048,7 +16207,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -14085,7 +16244,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -14122,7 +16281,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -14159,7 +16318,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -14196,7 +16355,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -14233,7 +16392,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -14270,7 +16429,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -14307,7 +16466,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "",
@@ -14344,7 +16503,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -14381,7 +16540,7 @@
         "planStatus": "assigned",
         "planNeedsAssignment": false,
         "planSource": "price_workbench_support.planMonths",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0,
         "planApr26Revenue": 460978,
         "planMay26Units": 374,
@@ -14529,7 +16688,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",
@@ -14566,7 +16725,7 @@
         "planStatus": "not_required_for_disabled_sku",
         "planNeedsAssignment": false,
         "planSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "planCheckedAt": "2026-07-02T20:14:28.197Z",
+        "planCheckedAt": "2026-07-02T21:31:10.263Z",
         "factFeb26CostRub": 0
       },
       "brand": "CPA",

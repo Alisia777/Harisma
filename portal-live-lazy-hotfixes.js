@@ -284,7 +284,11 @@
 
   function repricerRowsReady() {
     const rows = window.__alteaAppState?.repricer?.rows || window.state?.repricer?.rows;
-    return Array.isArray(rows) && rows.length > 0;
+    if (Array.isArray(rows) && rows.length > 0) return true;
+    const workbench = window.__alteaAppState?.smartPriceWorkbench || window.state?.smartPriceWorkbench || {};
+    const wbRows = workbench?.platforms?.wb?.rows;
+    const ozonRows = workbench?.platforms?.ozon?.rows;
+    return (Array.isArray(wbRows) && wbRows.length > 0) || (Array.isArray(ozonRows) && ozonRows.length > 0);
   }
 
   function ensureRepricerDataAndRender(reason = 'repricer') {

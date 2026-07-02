@@ -3536,6 +3536,8 @@ function repricerStopReasonSummary(sideRows) {
 function repricerHealthcheck(rows, platform = 'all') {
   const sideRows = repricerCollectSides(rows, platform);
   const activeSideRows = sideRows.filter(({ side }) => !side.outOfSpec);
+  const deferredPricingReasons = new Set(['LAUNCH_HOLD', 'OFF', 'OOS']);
+  const isDeferredPricingSide = (side) => deferredPricingReasons.has(String(side?.reasonCode || '').toUpperCase());
   const stopReasons = repricerStopReasonSummary(activeSideRows.filter(({ side }) => side.confidence !== 'green'));
   const smokeTests = repricerRunWorkbookSmokeTests(normalizeRepricerSettings(state.storage?.repricerSettings || {}));
   const metrics = {
@@ -3549,7 +3551,7 @@ function repricerHealthcheck(rows, platform = 'all') {
     protected_without_cost: activeSideRows.filter(({ side }) => !side.rawCostPresent && side.pricingProxyPresent && numberOrZero(side.effectiveFloor) > 0).length,
     missing_cost_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent).length,
     missing_effective_floor: activeSideRows.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0).length,
-    missing_effective_floor_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(String(side.reasonCode || ''))).length,
+    missing_effective_floor_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0 && !isDeferredPricingSide(side)).length,
     missing_status: activeSideRows.filter(({ side }) => !String(side.status || '').trim()).length,
     fallback_rows: activeSideRows.filter(({ side }) => side.economicFloorSource === 'snapshot_fallback').length,
     launch_hold_rows: activeSideRows.filter(({ side }) => side.launchHold === 'LAUNCH_HOLD').length,
@@ -3591,6 +3593,8 @@ function repricerTemplateStats(rows, platform = 'wb') {
   const sides = repricerCollectSides(rows, platform).filter(({ side }) => side);
   const active = sides.filter(({ side }) => !side.outOfSpec);
   const nonPromo = active.filter(({ side }) => !side.promoActive);
+  const deferredPricingReasons = new Set(['LAUNCH_HOLD', 'OFF', 'OOS']);
+  const isDeferredPricingSide = (side) => deferredPricingReasons.has(String(side?.reasonCode || '').toUpperCase());
   const green = active.filter(({ side }) => side.confidence === 'green');
   const regularSafe = nonPromo.filter(({ side }) => side.safeToExport);
   const promoSafe = active.filter(({ side }) => side.promoSafeToExport);
@@ -3615,7 +3619,7 @@ function repricerTemplateStats(rows, platform = 'wb') {
     floorRaiseReady: nonPromo.filter(({ side }) => side.floorRaiseReady).length,
     floorRaiseSafe: nonPromo.filter(({ side }) => side.floorRaiseSafeToExport).length,
     blocked: active.filter(({ side }) => side.criticalGate === 'BLOCK').length,
-    missingMin: active.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0).length,
+    missingMin: active.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0 && !isDeferredPricingSide(side)).length,
     missingCost: active.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent).length,
     promo: active.filter(({ side }) => side.promoActive).length,
     outOfSpec: sides.filter(({ side }) => side.outOfSpec).length
@@ -5529,7 +5533,7 @@ function repricerEconomicSourceLabel(source = 'all') {
     ready: 'экономика подтверждена',
     fee_stack: 'себестоимость + комиссии',
     snapshot_guard: 'себестоимость есть, с guard',
-    snapshot_fallback: 'без себестоимости (fallback)'
+    snapshot_fallback: 'fallback экономика'
   };
   return map[source] || map.all;
 }
@@ -6172,7 +6176,8 @@ function renderRepricer() {
         window.setTimeout(retryRender, 500);
       }
     }
-    root.innerHTML = `<div class="card"><div class="head"><div><h3>Репрайсер</h3><div class="muted small">Контур пока не получил smart price workbench.</div></div>${badge('нет данных', 'warn')}</div><div class="muted" style="margin-top:10px">Нужно дождаться загрузки снапшота цен, после этого вкладка начнет считать рекомендации и хранить override прямо в портале.</div></div>`;
+    const stillLoading = attempts < 12;
+    root.innerHTML = `<div class="card"><div class="head"><div><h3>Репрайсер</h3><div class="muted small">${stillLoading ? 'Загружаю smart price workbench и себестоимость.' : 'Контур не получил smart price workbench.'}</div></div>${badge(stillLoading ? 'загрузка' : 'нет данных', stillLoading ? 'info' : 'warn')}</div><div class="muted" style="margin-top:10px">${stillLoading ? 'Собираю MIN/MAX, себестоимость и текущие цены. Вкладка перерисуется автоматически после загрузки снапшота.' : 'Нужно проверить загрузку снапшота цен: без него рекомендации и выгрузки репрайсера не строятся.'}</div></div>`;
     return;
   }
   delete root.dataset.repricerLazyAttempts;
@@ -6185,6 +6190,8 @@ function renderRepricer() {
   const feeStackSides = sideRows.filter((side) => side.economicFloorSource === 'fee_stack').length;
   const mixedGuardSides = sideRows.filter((side) => side.economicFloorSource === 'snapshot_guard').length;
   const fallbackSides = sideRows.filter((side) => side.economicFloorSource === 'snapshot_fallback').length;
+  const missingCostActionable = numberOrZero(health.metrics?.missing_cost_actionable);
+  const missingFloorActionable = numberOrZero(health.metrics?.missing_effective_floor_actionable);
   const liveBenchmarkSides = sideRows.filter((side) => side.hasLiveBenchmark).length;
   const liveDriftSides = sideRows.filter((side) => side.liveDrift).length;
   const promoSides = sideRows.filter((side) => side.promoActive).length;
@@ -6222,13 +6229,14 @@ function renderRepricer() {
     badge(`ниже MIN вручную ${fmt.int(belowMinSides)}`, belowMinSides ? 'danger' : 'ok'),
     badge(`пришёл → цена ${fmt.int(arrivalSignalStats.total.check)}`, arrivalSignalStats.total.check ? 'warn' : 'ok'),
     badge(`нет входов ${fmt.int(blockedGateSides)}`, blockedGateSides ? 'danger' : 'ok'),
-    badge(`без себестоимости ${fmt.int(fallbackSides)}`, fallbackSides ? 'warn' : 'ok'),
+    badge(`нет себеса к решению ${fmt.int(missingCostActionable)}`, missingCostActionable ? 'danger' : 'ok'),
+    badge(`нет MIN к решению ${fmt.int(missingFloorActionable)}`, missingFloorActionable ? 'danger' : 'ok'),
     badge(`расходятся с live ${fmt.int(liveDriftSides)}`, liveDriftSides ? 'warn' : 'ok')
   ].join('');
   const techBadges = [
     badge(`полная экономика ${fmt.int(feeStackSides)}`, feeStackSides ? 'ok' : 'warn'),
     badge(`защита snapshot ${fmt.int(mixedGuardSides)}`, mixedGuardSides ? 'info' : ''),
-    badge(`без себестоимости ${fmt.int(fallbackSides)}`, fallbackSides ? 'warn' : 'ok'),
+    badge(`fallback экономика ${fmt.int(fallbackSides)}`, fallbackSides ? 'info' : 'ok'),
     badge(`промо активно ${fmt.int(promoSides)}`, promoSides ? 'warn' : 'info'),
     badge(`предложения акций ${fmt.int(promoOfferSides)}`, promoOfferSides ? 'info' : ''),
     badge(`акция ведёт цену ${fmt.int(promoOfferActiveSides)}`, promoOfferActiveSides ? 'ok' : ''),
@@ -6520,7 +6528,7 @@ function renderRepricer() {
     { label: 'Проверка сценариев', value: `${fmt.int(smokePassed)}/${fmt.int(smokeTests.length)}`, hint: 'Базовые тест-кейсы: AUTO, LAUNCH, FREEZE, OOS, KEEP и PROMO_OFFER.' },
     { label: 'Полная экономика', value: feeStackSides, hint: 'Площадки, где economic floor считается прямо из себестоимости и fee stack.' },
     { label: 'Защита snapshot', value: mixedGuardSides, hint: 'Есть cost, но итоговый economic floor всё ещё держится на страхующем snapshot-ограничении.' },
-    { label: 'Без себестоимости', value: fallbackSides, hint: 'Расчёт идёт без cost, только по текущему smart-срезу.' },
+    { label: 'Fallback экономика', value: fallbackSides, hint: 'Нет полного fee-stack, расчет защищен snapshot и текущим smart-срезом.' },
     { label: 'Предложения акций', value: promoOfferSides, hint: 'Read-only promo offers из текущих слоев фактов, без новых таблиц.' },
     { label: 'Есть live-ориентир', value: liveBenchmarkSides, hint: 'Площадки, где есть живая рекомендация текущего репрайсера.' },
     { label: 'Расходятся с live', value: liveDriftSides, hint: 'Наш финал заметно расходится с живым repricer rec.' },

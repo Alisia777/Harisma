@@ -1018,6 +1018,7 @@ function createSkuFromGroup(group) {
 }
 
 function hasAssignedPlan(planFact = {}) {
+  if (planFact.planAssigned === true) return true;
   return [
     planFact.planFeb26Units,
     planFact.planMar26Units,
@@ -1130,6 +1131,35 @@ function applyPlanBackfill(planFact = {}, backfill) {
   return hasAssignedPlan(planFact);
 }
 
+function applyZeroBaselinePlan(planFact = {}) {
+  const months = Object.keys(PLAN_MONTH_FIELDS).map((monthKey) => ({
+    monthKey,
+    days: null,
+    units: 0,
+    revenue: 0,
+    sources: [`${SOURCE_NOTE}:zero-baseline-no-plan-source`]
+  }));
+  months.forEach((month) => {
+    const fields = PLAN_MONTH_FIELDS[month.monthKey];
+    if (!fields) return;
+    if (planFact[fields.units] === null || planFact[fields.units] === undefined || planFact[fields.units] === '') planFact[fields.units] = 0;
+    if (planFact[fields.revenue] === null || planFact[fields.revenue] === undefined || planFact[fields.revenue] === '') planFact[fields.revenue] = 0;
+  });
+  planFact.planMonthKey = planFact.planMonthKey || '2026-07';
+  planFact.planMonthUnits = planFact.planMonthUnits ?? 0;
+  planFact.planMonthRevenue = planFact.planMonthRevenue ?? 0;
+  planFact.planUnits = planFact.planUnits ?? 0;
+  planFact.planRevenue = planFact.planRevenue ?? 0;
+  planFact.planMonths = months;
+  planFact.planPlatforms = Array.isArray(planFact.planPlatforms) ? planFact.planPlatforms : [];
+  planFact.planSource = `${SOURCE_NOTE}:zero-baseline-no-plan-source`;
+  planFact.planBackfillSource = 'zero-baseline-no-plan-source';
+  planFact.planBackfilledAt = IMPORT_STAMP;
+  planFact.planZeroBaseline = true;
+  planFact.planAssigned = true;
+  return true;
+}
+
 function ensurePlanFact(sku, group, planBackfill = null) {
   sku.planFact = sku.planFact && typeof sku.planFact === 'object' ? sku.planFact : {};
   ['planFeb26Units', 'planMar26Units', 'planApr26Units'].forEach((field) => {
@@ -1137,11 +1167,12 @@ function ensurePlanFact(sku, group, planBackfill = null) {
   });
   const hadAssignedPlan = hasAssignedPlan(sku.planFact);
   const backfilled = !hadAssignedPlan && applyPlanBackfill(sku.planFact, planBackfill);
-  const assigned = hasAssignedPlan(sku.planFact);
   const active = isMatrixActive(group.status || sku.status || sku.registryStatus || '');
+  const zeroBaseline = !hadAssignedPlan && !backfilled && active && applyZeroBaselinePlan(sku.planFact);
+  const assigned = zeroBaseline || hasAssignedPlan(sku.planFact);
   sku.planFact.planAssigned = assigned;
   sku.planFact.planStatus = assigned
-    ? 'assigned'
+    ? (zeroBaseline ? 'assigned_zero_until_plan_source' : 'assigned')
     : (active ? 'needs_plan_assignment' : 'not_required_for_disabled_sku');
   sku.planFact.planNeedsAssignment = active && !assigned;
   sku.planFact.planSource = assigned ? (sku.planFact.planSource || 'existing_portal_plan') : SOURCE_NOTE;
@@ -1149,7 +1180,7 @@ function ensurePlanFact(sku, group, planBackfill = null) {
   sku.planAssigned = assigned;
   sku.planStatus = sku.planFact.planStatus;
   sku.planNeedsAssignment = sku.planFact.planNeedsAssignment;
-  return { assigned, backfilled };
+  return { assigned, backfilled, zeroBaseline };
 }
 
 function applyPlanFactCost(sku, cost) {
@@ -1312,6 +1343,7 @@ function updateSkus(skus, articleGroups, planBackfillMap = new Map()) {
     planNeedsAssignment: 0,
     planBackfillAvailable: 0,
     planBackfilled: 0,
+    planZeroBaseline: 0,
     activeMatrixSku: 0
   };
   articleGroups.forEach((group) => {
@@ -1327,6 +1359,7 @@ function updateSkus(skus, articleGroups, planBackfillMap = new Map()) {
     if (planBackfill?.months?.size) stats.planBackfillAvailable += 1;
     const planResult = applySkuGroup(sku, group, planBackfill);
     if (planResult?.backfilled) stats.planBackfilled += 1;
+    if (planResult?.zeroBaseline) stats.planZeroBaseline += 1;
     skuCanonicalTokens(sku).forEach((key) => {
       if (key && !skuMap.has(key)) skuMap.set(key, sku);
     });

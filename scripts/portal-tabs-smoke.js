@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
+const http = require('http');
 const path = require('path');
 const { chromium } = require('playwright');
 
@@ -18,9 +19,27 @@ const VIEW_LABELS = {
   executive: 'Executive',
   control: 'Tasks',
   'data-health': 'Calendar',
+  prices: 'Prices',
+  repricer: 'Repricer',
   order: 'Order procurement',
   'oos-control': 'OOS control',
-  'sku-plan-fact': 'SKU plan fact'
+  'sku-plan-fact': 'SKU plan fact',
+  'sku-contour': 'SKU workspace',
+  'iu-drr': 'IU/DRR'
+};
+
+const CONTENT_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.gz': 'application/gzip'
 };
 
 function parseArgs(argv) {
@@ -54,6 +73,61 @@ function resolveTargetViews(rawViews = '') {
   return views.length
     ? views.map((view) => ({ view, label: VIEW_LABELS[view] || view }))
     : TARGET_VIEWS;
+}
+
+function safeDecodePathname(pathname = '/') {
+  try {
+    return decodeURIComponent(pathname);
+  } catch {
+    return '/';
+  }
+}
+
+function createStaticPortalServer(rootDir = process.cwd()) {
+  const rootPath = path.resolve(rootDir);
+  const server = http.createServer((request, response) => {
+    const requestUrl = new URL(request.url || '/', 'http://127.0.0.1');
+    const rawPath = safeDecodePathname(requestUrl.pathname || '/');
+    const relativePath = rawPath === '/' ? 'index.html' : rawPath.replace(/^[/\\]+/, '');
+    const filePath = path.resolve(rootPath, relativePath);
+    const insideRoot = filePath === rootPath || filePath.startsWith(`${rootPath}${path.sep}`);
+
+    if (!insideRoot) {
+      response.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' });
+      response.end('Forbidden');
+      return;
+    }
+
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      response.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+      response.end('Not found');
+      return;
+    }
+
+    fs.readFile(filePath, (error, buffer) => {
+      if (error) {
+        response.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+        response.end('Not found');
+        return;
+      }
+      const type = CONTENT_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
+      response.writeHead(200, { 'content-type': type });
+      if (request.method === 'HEAD') response.end();
+      else response.end(buffer);
+    });
+  });
+
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      server.off('error', reject);
+      const address = server.address();
+      resolve({
+        server,
+        url: `http://127.0.0.1:${address.port}/index.html`
+      });
+    });
+  });
 }
 
 function isLocalUrl(url) {
@@ -129,16 +203,35 @@ async function waitForViewReady(page, view) {
     const premiumContent = document.querySelector('.altea-premium-app:not([hidden]) [data-premium-content]');
     const premiumNav = document.querySelector(`[data-premium-nav="${targetView}"].is-active`);
     const premium = document.querySelector(`[data-premium-stage="${targetView}"].is-active`);
-    const root = (premiumNav && premiumContent) ? premiumContent : (premium || document.querySelector(`#view-${targetView}`));
+    const root = premium || ((premiumNav && premiumContent) ? premiumContent : document.querySelector(`#view-${targetView}`));
     if (!root) return false;
     if (!premiumNav && !premium && !root.classList.contains('active')) return false;
     const textLength = ((root.innerText || root.textContent) || '').trim().length;
     const text = ((root.innerText || root.textContent) || '').trim().toLowerCase();
+    const visibleButtons = Array.from(root.querySelectorAll('button')).filter((button) => {
+      const rect = button.getBoundingClientRect();
+      const style = getComputedStyle(button);
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    }).length;
     const hasUsableSurface = root.children.length > 0
       && (textLength > 80 || root.querySelector('button, table, .data-table, [data-task-calendar-design-v1]'));
     const stillBooting = root.querySelector('[data-task-loading="boot"], [data-task-loading="team"]');
     const stillLoadingText = /подтягиваю данные|загрузка данных|loading/.test(text);
-    return hasUsableSurface && !stillBooting && !stillLoadingText;
+    const viewLoadingText = stillLoadingText
+      || /подгружаем данные|загрузка данных|контур пока не получил|нужно дождаться|подключаю фактические|демонстрационные цифры/.test(text);
+    if (targetView === 'repricer') {
+      let repricerRows = 0;
+      try {
+        repricerRows = typeof window.buildRepricerRows === 'function' ? window.buildRepricerRows().length : 0;
+      } catch (_) {
+        repricerRows = 0;
+      }
+      return hasUsableSurface && !stillBooting && !viewLoadingText && repricerRows > 0 && visibleButtons > 0;
+    }
+    if (targetView === 'iu-drr') {
+      return hasUsableSurface && !stillBooting && !viewLoadingText && textLength > 300 && visibleButtons > 0;
+    }
+    return hasUsableSurface && !stillBooting && !viewLoadingText;
   }, view, { timeout: 60000 });
   await page.waitForTimeout(1000);
 }
@@ -148,7 +241,7 @@ async function summarizeView(page, view) {
     const premiumContent = document.querySelector('.altea-premium-app:not([hidden]) [data-premium-content]');
     const premiumNav = document.querySelector(`[data-premium-nav="${targetView}"].is-active`);
     const premium = document.querySelector(`[data-premium-stage="${targetView}"].is-active`);
-    const root = (premiumNav && premiumContent) ? premiumContent : (premium || document.querySelector(`#view-${targetView}`));
+    const root = premium || ((premiumNav && premiumContent) ? premiumContent : document.querySelector(`#view-${targetView}`));
     const text = ((root?.innerText || root?.textContent) || '').trim();
     const buttons = Array.from(root?.querySelectorAll('button') || []);
     const visibleButtons = buttons.filter((button) => {
@@ -237,7 +330,12 @@ async function clickIfPresent(page, selectors, label) {
 
 async function main() {
   const args = parseArgs(process.argv);
-  const url = args.url || process.env.PORTAL_TABS_URL || DEFAULT_URL;
+  let staticServer = null;
+  let url = args.url || process.env.PORTAL_TABS_URL || DEFAULT_URL;
+  if (args.serve || process.env.PORTAL_TABS_SERVE === '1') {
+    staticServer = await createStaticPortalServer(process.cwd());
+    if (!args.url && !process.env.PORTAL_TABS_URL) url = staticServer.url;
+  }
   const targetViews = resolveTargetViews(args.views || process.env.PORTAL_TABS_VIEWS || '');
   const outputDir = path.resolve(args.outputDir || path.join('tmp_screens', `portal-tabs-smoke-${Date.now()}`));
   fs.mkdirSync(outputDir, { recursive: true });
@@ -359,6 +457,7 @@ async function main() {
       else localStorage.setItem(key, value);
     }, { key: STORAGE_KEY, value: originalStorage }).catch(() => {});
     await browser.close();
+    if (staticServer?.server) await new Promise((resolve) => staticServer.server.close(resolve));
   }
 }
 

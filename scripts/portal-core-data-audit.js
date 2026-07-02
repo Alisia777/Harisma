@@ -253,6 +253,8 @@ function normalizePlatformKey(value = '') {
   const raw = String(value || '').trim().toLowerCase();
   if (['wb', 'wildberries'].includes(raw)) return 'wb';
   if (['ozon', 'oz'].includes(raw)) return 'ozon';
+  if (['ga', 'goldapple', 'gold_apple', 'gold-apple'].includes(raw)) return 'goldapple';
+  if (['mm', 'megamarket', 'mega_market', 'mega-market'].includes(raw)) return 'megamarket';
   if (['ym', 'ya', 'yandex', 'yandex market', 'яндекс', 'я.маркет', 'я маркет'].includes(raw)) return 'ym';
   return raw;
 }
@@ -275,7 +277,11 @@ function expectedOwnerForPlatform(sku = {}, platform = '') {
   };
   const platformOwner = key === 'ym'
     ? (byPlatform.ym || byPlatform.ya || '')
-    : (byPlatform[key] || '');
+    : key === 'goldapple'
+      ? (byPlatform.goldapple || byPlatform.ga || '')
+      : key === 'megamarket'
+        ? (byPlatform.megamarket || byPlatform.mm || '')
+        : (byPlatform[key] || '');
   return String(platformOwner || sku?.owner?.name || '').trim();
 }
 
@@ -291,6 +297,176 @@ function ownerMismatch(row = {}, skuLookup = new Map()) {
     platform: row.platformKey || row.platform || '',
     owner: actual,
     expected
+  };
+}
+
+function ownerValue(row = {}) {
+  if (typeof row.owner === 'object' && row.owner) return String(row.owner.name || '').trim();
+  return String(row.owner || row.ownerName || row.manager || '').trim();
+}
+
+function lifecycleText(row = {}) {
+  return [
+    row.status,
+    row.productStatus,
+    row.repricerStatus,
+    row.lifecycleStatus,
+    row.lifecycleLabel,
+    row.registryStatus
+  ].map((value) => String(value || '')).join(' ').toLowerCase();
+}
+
+function isDisabledLifecycle(row = {}) {
+  const text = lifecycleText(row);
+  return text.includes('\u0432\u044b\u0432\u043e\u0434')
+    || text.includes('\u0430\u0440\u0445')
+    || text.includes('archive')
+    || text.includes('disabled')
+    || text.includes('paused')
+    || text.includes('stop');
+}
+
+function rowIsOwnerAuditable(row = {}) {
+  const articleKey = compactKey(row.articleKey || row.article || row.sku || '');
+  if (!articleKey || articleKey === '0' || /^total|итого$/i.test(String(row.articleKey || row.article || row.sku || ''))) return false;
+  if (row.matrixActive === false || row.disabled === true || row.hidden === true) return false;
+  if (isDisabledLifecycle(row)) return false;
+  return true;
+}
+
+function platformRowsFromPayload(payload = {}, source = '') {
+  const rows = [];
+  for (const [platform, platformPayload] of Object.entries(payload.platforms || {})) {
+    const rawRows = platformPayload?.rows;
+    const list = Array.isArray(rawRows) ? rawRows : Object.values(rawRows || {});
+    list.forEach((row) => {
+      if (!row || typeof row !== 'object') return;
+      rows.push({
+        source,
+        platform: normalizePlatformKey(row.platformKey || row.platform || row.marketplace || platform),
+        row: {
+          ...row,
+          platformKey: normalizePlatformKey(row.platformKey || row.platform || row.marketplace || platform)
+        }
+      });
+    });
+  }
+  return rows;
+}
+
+function rowHasPlanOrFact(row = {}) {
+  const planMonths = Array.isArray(row.planMonths) ? row.planMonths : [];
+  const actualMonths = Array.isArray(row.actualMonths) ? row.actualMonths : [];
+  const hasPlanMonths = planMonths.some((month) => (toNumber(month.units) || 0) > 0 || (toNumber(month.revenue) || 0) > 0);
+  const hasActualMonths = actualMonths.some((month) => (toNumber(month.units) || 0) > 0 || (toNumber(month.revenue) || 0) > 0);
+  return hasPlanMonths
+    || hasActualMonths
+    || (toNumber(row.planMonthUnits) || 0) > 0
+    || (toNumber(row.planMonthRevenue) || 0) > 0
+    || (toNumber(row.currentPrice) || 0) > 0
+    || (toNumber(row.currentClientPrice) || 0) > 0;
+}
+
+function auditOwnerDataset(label, rows, skuLookup, issues, options = {}) {
+  let checkedRows = 0;
+  let plannedRows = 0;
+  let missingOwnerRows = 0;
+  let ownerMismatchRows = 0;
+  let unmatchedRows = 0;
+  const mismatchExamples = [];
+  const missingExamples = [];
+  const unmatchedExamples = [];
+  rows.forEach(({ platform, row }) => {
+    if (!rowIsOwnerAuditable(row)) return;
+    const rowKey = compactKey(row.articleKey || row.article || row.sku || '');
+    const sku = skuLookup.get(rowKey);
+    if (!sku) {
+      unmatchedRows += 1;
+      if (unmatchedExamples.length < 10) unmatchedExamples.push({ articleKey: row.articleKey || row.article || '', platform });
+      return;
+    }
+    checkedRows += 1;
+    if (rowHasPlanOrFact(row)) plannedRows += 1;
+    const actualOwner = ownerValue(row);
+    if (!actualOwner) {
+      missingOwnerRows += 1;
+      if (missingExamples.length < 10) missingExamples.push({ articleKey: row.articleKey || row.article || '', platform });
+      return;
+    }
+    const mismatch = ownerMismatch(row, skuLookup);
+    if (mismatch) {
+      ownerMismatchRows += 1;
+      if (mismatchExamples.length < 10) mismatchExamples.push(mismatch);
+    }
+  });
+  if (missingOwnerRows) pushIssue(issues, options.missingSeverity || 'critical', `${label}_owner_missing`, { count: missingOwnerRows, examples: missingExamples });
+  if (ownerMismatchRows) pushIssue(issues, options.mismatchSeverity || 'critical', `${label}_owner_mismatch`, { count: ownerMismatchRows, examples: mismatchExamples });
+  if (unmatchedRows && options.unmatchedSeverity) pushIssue(issues, options.unmatchedSeverity, `${label}_owner_unmatched_sku`, { count: unmatchedRows, examples: unmatchedExamples });
+  return { checkedRows, plannedRows, missingOwnerRows, ownerMismatchRows, unmatchedRows };
+}
+
+function auditExecutiveOwnerBindings(skus = [], issues) {
+  const activeSkus = (Array.isArray(skus) ? skus : []).filter((sku) => rowIsOwnerAuditable(sku));
+  let ownerCardSkuRows = 0;
+  let missingOwnerRows = 0;
+  const ownerBuckets = new Map();
+  const missingExamples = [];
+  activeSkus.forEach((sku) => {
+    const planFact = sku.planFact && typeof sku.planFact === 'object' ? sku.planFact : {};
+    const participates = hasAssignedPlan(planFact, sku)
+      || (toNumber(planFact.factTotalRevenue) || 0) > 0
+      || (toNumber(planFact.factFeb26Revenue) || 0) > 0
+      || (toNumber(planFact.factFeb26Units) || 0) > 0;
+    if (!participates) return;
+    ownerCardSkuRows += 1;
+    const owner = ownerValue(sku);
+    if (!owner) {
+      missingOwnerRows += 1;
+      if (missingExamples.length < 10) missingExamples.push(sku.articleKey || sku.article || '');
+      return;
+    }
+    const canonical = canonicalOwnerName(owner);
+    ownerBuckets.set(canonical, (ownerBuckets.get(canonical) || 0) + 1);
+  });
+  if (missingOwnerRows) pushIssue(issues, 'critical', 'executive_owner_card_missing_binding', { count: missingOwnerRows, examples: missingExamples });
+  return {
+    ownerCardSkuRows,
+    missingOwnerRows,
+    ownerCards: ownerBuckets.size,
+    topOwners: [...ownerBuckets.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([owner, count]) => ({ owner, count }))
+  };
+}
+
+function auditOwnerPropagation(layers = {}, issues) {
+  const skus = Array.isArray(layers.skus) ? layers.skus : [];
+  const skuLookup = buildSkuLookup(skus);
+  const pricesAudit = auditOwnerDataset(
+    'prices',
+    platformRowsFromPayload(layers.prices, 'prices'),
+    skuLookup,
+    issues,
+    { unmatchedSeverity: 'warning' }
+  );
+  const smartAudit = auditOwnerDataset(
+    'smart_price_workbench',
+    platformRowsFromPayload(layers.smartPriceWorkbench, 'smart_price_workbench'),
+    skuLookup,
+    issues,
+    { unmatchedSeverity: 'warning' }
+  );
+  const planFactAudit = auditOwnerDataset(
+    'plan_fact',
+    platformRowsFromPayload(layers.priceSupport, 'price_workbench_support').filter(({ row }) => rowHasPlanOrFact(row)),
+    skuLookup,
+    issues,
+    { unmatchedSeverity: 'warning' }
+  );
+  const executiveAudit = auditExecutiveOwnerBindings(skus, issues);
+  return {
+    executive: executiveAudit,
+    prices: pricesAudit,
+    smartPriceWorkbench: smartAudit,
+    planFact: planFactAudit
   };
 }
 
@@ -500,6 +676,7 @@ function main() {
     'skus.json',
     'sku_matrix.json',
     'prices.json',
+    'smart_price_workbench.json',
     'repricer.json',
     'price_workbench_support.json',
     'portal_data_quality.json',
@@ -532,6 +709,7 @@ function main() {
   const skus = payloads['skus.json'];
   const matrix = payloads['sku_matrix.json'];
   const prices = payloads['prices.json'];
+  const smartPriceWorkbench = payloads['smart_price_workbench.json'];
   const repricer = payloads['repricer.json'];
   const priceSupport = payloads['price_workbench_support.json'];
   const quality = payloads['portal_data_quality.json'];
@@ -545,6 +723,12 @@ function main() {
   const planBackfillMap = buildPlanBackfillMap(priceSupport);
   const skuAudit = auditSkus(Array.isArray(skus) ? skus : [], matrix, issues, planBackfillMap);
   const priceAudit = auditPriceRows(prices, issues);
+  const ownerPropagationAudit = auditOwnerPropagation({
+    skus: Array.isArray(skus) ? skus : [],
+    prices,
+    smartPriceWorkbench,
+    priceSupport
+  }, issues);
   const repricerAudit = auditRepricer(repricer, issues);
   const iuDrrAudit = auditIuDrr(iuDrr, issues);
   const oosAudit = auditOosControl(oos, issues, Array.isArray(skus) ? skus : []);
@@ -570,6 +754,7 @@ function main() {
     summary: {
       skuAudit,
       priceAudit,
+      ownerPropagation: ownerPropagationAudit,
       repricerAudit,
       portalDataQuality: {
         status: quality.status || '',

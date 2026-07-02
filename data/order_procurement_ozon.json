@@ -7,8 +7,8 @@
     "logisticsRows": 2230,
     "yandexOrderProcurement": "2026-07-02T12:17:49.763Z",
     "yandexRows": 898,
-    "skusFileMtime": "2026-07-02T20:14:30.251Z",
-    "skusFileSize": 1785957,
+    "skusFileMtime": "2026-07-02T21:31:12.324Z",
+    "skusFileSize": 1846977,
     "skuRows": 209
   },
   "window": {
@@ -213,7 +213,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -279,7 +279,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -444,7 +444,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -1335,7 +1335,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -1467,7 +1467,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -1500,7 +1500,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -1896,7 +1896,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -2028,7 +2028,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -2721,7 +2721,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -3579,7 +3579,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -3612,7 +3612,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -4041,7 +4041,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -4767,7 +4767,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -4965,7 +4965,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -6681,7 +6681,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -6846,7 +6846,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -7407,7 +7407,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -8265,7 +8265,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -8529,7 +8529,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -8562,7 +8562,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -8892,7 +8892,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -9486,7 +9486,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -10014,7 +10014,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -11301,7 +11301,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -11730,7 +11730,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -11895,7 +11895,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -11928,7 +11928,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -12027,7 +12027,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -13182,7 +13182,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -13281,7 +13281,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -13479,7 +13479,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -14667,7 +14667,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -14832,7 +14832,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -15195,7 +15195,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -16779,7 +16779,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -17505,7 +17505,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -17538,7 +17538,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -17769,7 +17769,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -17802,7 +17802,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -18066,7 +18066,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -18231,7 +18231,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -18264,7 +18264,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -18627,7 +18627,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -18825,7 +18825,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -18858,7 +18858,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -19584,7 +19584,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -20376,7 +20376,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -20409,7 +20409,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -20442,7 +20442,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -20739,7 +20739,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -21861,7 +21861,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -22851,7 +22851,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -23181,7 +23181,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -23478,7 +23478,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -23511,7 +23511,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -23544,7 +23544,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -24534,7 +24534,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -24567,7 +24567,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -24600,7 +24600,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -25722,7 +25722,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -26811,7 +26811,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -27735,7 +27735,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -27801,7 +27801,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -28197,7 +28197,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -28230,7 +28230,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -28263,7 +28263,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -28791,7 +28791,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -28923,7 +28923,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -30012,7 +30012,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -30045,7 +30045,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -30507,7 +30507,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -30540,7 +30540,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -30573,7 +30573,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -31266,7 +31266,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -31662,7 +31662,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -31695,7 +31695,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -32256,7 +32256,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -32289,7 +32289,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -32751,7 +32751,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -33576,7 +33576,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -34005,7 +34005,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -34170,7 +34170,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -34929,7 +34929,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -35754,7 +35754,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -35886,7 +35886,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -36381,7 +36381,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -36414,7 +36414,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -36612,7 +36612,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -38196,7 +38196,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -39351,7 +39351,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -39384,7 +39384,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -40341,7 +40341,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -40473,7 +40473,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -42123,7 +42123,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -42156,7 +42156,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -43806,7 +43806,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -44532,7 +44532,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -44565,7 +44565,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -45918,7 +45918,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -45951,7 +45951,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -45984,7 +45984,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -46149,7 +46149,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -46215,7 +46215,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -47139,7 +47139,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -47172,7 +47172,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -47898,7 +47898,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -47931,7 +47931,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -48096,7 +48096,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -49086,7 +49086,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -49119,7 +49119,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -49251,7 +49251,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -49317,7 +49317,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -50142,7 +50142,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -50175,7 +50175,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -50241,7 +50241,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -52320,7 +52320,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -52353,7 +52353,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -52386,7 +52386,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -52419,7 +52419,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -52452,7 +52452,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -52518,7 +52518,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",
@@ -52551,7 +52551,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": null
+      "planMonth": 0
     },
     {
       "platform": "Ozon",

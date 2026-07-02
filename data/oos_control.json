@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-07-02T20:50:16.942Z",
+  "generatedAt": "2026-07-02T21:31:36.929Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -11,17 +11,17 @@
     ]
   },
   "dataFreshness": {
-    "status": "ok",
+    "status": "stale",
     "dataDate": "2026-07-01",
-    "expectedFactDate": "2026-07-01",
+    "expectedFactDate": "2026-07-02",
     "sourceGeneratedAt": "2026-07-02T00:00:00+03:00",
-    "message": "Данные свежие: факт до 2026-07-01.",
+    "message": "Данные отстают: факт до 2026-07-01, ожидается минимум 2026-07-02.",
     "orderProcurementGeneratedAt": "2026-07-02T00:00:00+03:00",
     "orderWindow": {
       "from": "2026-06-02",
       "to": "2026-06-29"
     },
-    "smartPriceGeneratedAt": "2026-07-02T20:14:28.197Z",
+    "smartPriceGeneratedAt": "2026-07-02T21:31:10.263Z",
     "sources": {
       "orderProcurement": "order_procurement.json",
       "skus": "skus.json",
@@ -49,9 +49,9 @@
     "resolvedToday": 0,
     "owners": 3,
     "skuCount": 6,
-    "dataStatus": "ok",
+    "dataStatus": "stale",
     "dataDate": "2026-07-01",
-    "expectedFactDate": "2026-07-01"
+    "expectedFactDate": "2026-07-02"
   },
   "byPlatform": [
     {

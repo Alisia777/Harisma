@@ -5,9 +5,10 @@
   window.__ALTEA_TASKS_CALENDAR_DESIGN_V1__ = true;
   window.__ALTEA_TASK_KANBAN_PRIMARY__ = true;
 
-  const VERSION = '20260702-task-mvp-stable-v3';
+  const VERSION = '20260702-task-marketplace-sync-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
+  const MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
   const EXTRA_KEY = 'altea.tasks.design.extras.v1';
   const ATTACHMENTS_KEY = 'altea.tasks.design.attachments.v1';
   const OWNER_PINNED = ['РОП Маша', 'РОП Миша', 'РОП Саша'];
@@ -280,10 +281,69 @@
     return 'cross';
   }
 
+  function readPortalPlatform() {
+    const candidates = [];
+    if (document.documentElement) {
+      candidates.push(document.documentElement.getAttribute('data-marketplace'));
+    }
+    if (document.body) {
+      candidates.push(document.body.getAttribute('data-marketplace'));
+    }
+    try {
+      candidates.push(window.localStorage.getItem(MARKETPLACE_STORAGE_KEY));
+    } catch (_) {}
+    try {
+      const app = appState();
+      candidates.push(app?.filters?.platform, app?.filters?.market);
+    } catch (_) {}
+    if (document.documentElement) {
+      candidates.push(document.documentElement.getAttribute('data-platform'));
+    }
+    if (document.body) {
+      candidates.push(document.body.getAttribute('data-platform'));
+    }
+    for (const candidate of candidates) {
+      const raw = String(candidate || '').trim();
+      if (!raw) continue;
+      const normalized = normalizePlatform(raw) || 'all';
+      if (normalized && normalized !== 'cross') return normalized;
+    }
+    return 'all';
+  }
+
+  function platformFromMarketplaceEvent(event) {
+    const detail = event?.detail || {};
+    return normalizePlatform(
+      detail.internalPlatform
+      || detail.internal
+      || detail.platform
+      || detail.marketplace
+      || detail.value
+      || readPortalPlatform()
+      || 'all'
+    ) || 'all';
+  }
+
+  function syncPlatformFromPortal(value, options = {}) {
+    const filters = ensureFilters();
+    if (!options.force && filters.__platformManual === true) {
+      filters.platform = normalizePlatform(filters.platform || 'all') || 'all';
+      return filters.platform;
+    }
+    const next = normalizePlatform(value || readPortalPlatform() || 'all') || 'all';
+    filters.platform = next;
+    filters.__platformManual = false;
+    filters.__platformSyncedFromPortal = next;
+    return next;
+  }
+
   function globalPlatform() {
     const filters = ensureFilters();
-    const normalized = normalizePlatform(filters.platform || 'all');
-    return normalized || 'all';
+    if (filters.__platformManual === true) {
+      filters.platform = normalizePlatform(filters.platform || 'all') || 'all';
+      return filters.platform;
+    }
+    return syncPlatformFromPortal();
   }
 
   function platformLabel(value) {
@@ -2139,7 +2199,11 @@
   function setFilter(name, value) {
     const filters = ensureFilters();
     if (name === 'owner') filters[name] = normalizeOwnerName(value) || 'all';
-    else if (name === 'platform') filters[name] = normalizePlatform(value || 'all') || 'all';
+    else if (name === 'platform') {
+      filters[name] = normalizePlatform(value || 'all') || 'all';
+      filters.__platformManual = true;
+      filters.__platformSyncedFromPortal = '';
+    }
     else filters[name] = value;
     if (name === 'search') {
       window.clearTimeout(setFilter.searchTimer);
@@ -2159,8 +2223,10 @@
       priority: 'all',
       horizon: 'all',
       source: 'all',
-      platform: 'all'
+      platform: readPortalPlatform()
     });
+    filters.__platformManual = false;
+    filters.__platformSyncedFromPortal = filters.platform;
     invalidateTaskListCache();
     queueEnhance();
   }
@@ -2396,6 +2462,10 @@
     [0, 320].forEach((delay) => window.setTimeout(() => queueEnhance(delay === 0), delay));
     const onRouteChange = (event) => {
       if (event?.type === 'altea:portal-storage-updated' || event?.type === 'altea:data-ready' || event?.type === 'altea:task-signals-ready') {
+        invalidateTaskListCache();
+      }
+      if (event?.type === 'altea:marketplacechange') {
+        syncPlatformFromPortal(platformFromMarketplaceEvent(event), { force: true });
         invalidateTaskListCache();
       }
       installWrapper();

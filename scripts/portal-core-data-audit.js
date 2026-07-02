@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { buildPlanBackfillMap, compactKey } = require('./import-ksenia-minmax-matrix');
 
 function parseArgs(argv) {
   const args = {};
@@ -35,6 +36,11 @@ function toNumber(value) {
 }
 
 function pctClose(actual, expected, tolerance = 0.006) {
+  if (!Number.isFinite(actual) || !Number.isFinite(expected)) return true;
+  return Math.abs(actual - expected) <= tolerance;
+}
+
+function moneyClose(actual, expected, tolerance = 0.05) {
   if (!Number.isFinite(actual) || !Number.isFinite(expected)) return true;
   return Math.abs(actual - expected) <= tolerance;
 }
@@ -167,7 +173,71 @@ function auditRepricer(repricer, issues) {
   return { rows: rows.length, checkedSides, checkedMargins, checkedNewMargins, checkedMinMaxMargins };
 }
 
-function auditSkus(skus, matrix, issues) {
+function hasAssignedPlan(planFact = {}, sku = {}) {
+  return Boolean(planFact.planAssigned || sku.planAssigned || [
+    planFact.planFeb26Units,
+    planFact.planMar26Units,
+    planFact.planApr26Units,
+    planFact.planMay26Units,
+    planFact.planJun26Units,
+    planFact.planJul26Units,
+    planFact.planUnits,
+    planFact.planMonthUnits
+  ].some((value) => (toNumber(value) || 0) > 0));
+}
+
+function skuKeys(sku = {}) {
+  return [
+    sku.articleKey,
+    sku.article,
+    sku.sku,
+    sku.vendorCode,
+    sku.supplierArticle
+  ].map(compactKey).filter(Boolean);
+}
+
+function auditPlanFactCost(sku = {}, issues) {
+  const planFact = sku.planFact && typeof sku.planFact === 'object' ? sku.planFact : {};
+  const articleKey = sku.articleKey || sku.article || '';
+  const cost = toNumber(sku.cost ?? sku.costRub ?? sku.costPrice);
+  const revenue = toNumber(planFact.factFeb26Revenue);
+  const units = toNumber(planFact.factFeb26Units);
+  if (!(cost > 0) || !(revenue > 0) || !(units > 0)) return { checkedCost: 0, checkedMargin: 0 };
+  const expectedCostRub = Number((units * cost).toFixed(2));
+  const actualCostRub = toNumber(planFact.factFeb26CostRub);
+  let checkedCost = 0;
+  let checkedMargin = 0;
+  if (actualCostRub !== null) {
+    checkedCost += 1;
+    if (!moneyClose(actualCostRub, expectedCostRub)) {
+      pushIssue(issues, 'critical', 'plan_fact_cost_mismatch', {
+        articleKey,
+        units,
+        cost,
+        actualCostRub,
+        expectedCostRub
+      });
+    }
+  }
+  const expectedMargin = (revenue - expectedCostRub) / revenue;
+  const actualMargin = toNumber(planFact.factFeb26MarginPct);
+  if (actualMargin !== null) {
+    checkedMargin += 1;
+    if (!pctClose(actualMargin, expectedMargin)) {
+      pushIssue(issues, 'critical', 'plan_fact_margin_mismatch', {
+        articleKey,
+        revenue,
+        units,
+        cost,
+        actualMargin,
+        expected: Number(expectedMargin.toFixed(6))
+      });
+    }
+  }
+  return { checkedCost, checkedMargin };
+}
+
+function auditSkus(skus, matrix, issues, planBackfillMap = new Map()) {
   const activeSkus = skus.filter((sku) => !statusIsOld(sku.status || sku.registryStatus));
   const missingCost = activeSkus.filter((sku) => {
     const cost = toNumber(sku.cost ?? sku.costRub ?? sku.costPrice);
@@ -182,6 +252,29 @@ function auditSkus(skus, matrix, issues) {
   if (oldActive.length) pushIssue(issues, 'critical', 'old_sku_still_active', { count: oldActive.length, examples: oldActive.slice(0, 10).map((sku) => sku.articleKey || sku.article) });
   if (missingCost.length) pushIssue(issues, 'warning', 'active_sku_missing_cost', { count: missingCost.length, examples: missingCost.slice(0, 10).map((sku) => sku.articleKey || sku.article) });
 
+  let planBackfillAvailable = 0;
+  let planBackfillAssigned = 0;
+  let checkedPlanFactCost = 0;
+  let checkedPlanFactMargins = 0;
+  activeSkus.forEach((sku) => {
+    const planFact = sku.planFact && typeof sku.planFact === 'object' ? sku.planFact : {};
+    const hasBackfill = skuKeys(sku).some((key) => planBackfillMap.get(key)?.months?.size);
+    if (hasBackfill) {
+      planBackfillAvailable += 1;
+      if (hasAssignedPlan(planFact, sku)) {
+        planBackfillAssigned += 1;
+      } else {
+        pushIssue(issues, 'critical', 'plan_backfill_not_assigned', {
+          articleKey: sku.articleKey || sku.article,
+          planStatus: planFact.planStatus || sku.planStatus || ''
+        });
+      }
+    }
+    const planCost = auditPlanFactCost(sku, issues);
+    checkedPlanFactCost += planCost.checkedCost;
+    checkedPlanFactMargins += planCost.checkedMargin;
+  });
+
   const summary = matrix.summary || {};
   if (toNumber(summary.missingOwnerCount) > 0) pushIssue(issues, 'critical', 'matrix_missing_owner', { count: summary.missingOwnerCount });
   if (toNumber(summary.apiUnmappedCount) > 0) pushIssue(issues, 'critical', 'matrix_api_unmapped', { count: summary.apiUnmappedCount });
@@ -194,6 +287,10 @@ function auditSkus(skus, matrix, issues) {
     activeMissingCost: missingCost.length,
     activeMissingOwner: missingOwner.length,
     oldActive: oldActive.length,
+    planBackfillAvailable,
+    planBackfillAssigned,
+    checkedPlanFactCost,
+    checkedPlanFactMargins,
     matrixSummary: {
       skuCount: summary.skuCount,
       activeSkuCount: summary.activeSkuCount,
@@ -205,6 +302,88 @@ function auditSkus(skus, matrix, issues) {
   };
 }
 
+function auditOrderProcurement(order = {}, issues) {
+  const rows = Array.isArray(order.rows) ? order.rows : [];
+  let disabledRows = 0;
+  let disabledNeedRows = 0;
+  let missingOwnerNeedRows = 0;
+  let unmatchedNeedRows = 0;
+  let negativeMetricRows = 0;
+  let targetNeed30 = 0;
+  rows.forEach((row) => {
+    const need30 = toNumber(row.targetNeed30) || 0;
+    targetNeed30 += need30;
+    if (statusIsOld(row.lifecycleStatus || row.lifecycleLabel || row.status)) {
+      disabledRows += 1;
+      if (need30 > 0 || row.needSuppressedByLifecycle === false) disabledNeedRows += 1;
+    }
+    if (need30 > 0 && !String(row.owner || '').trim()) missingOwnerNeedRows += 1;
+    if (need30 > 0 && String(row.matchState || '').toLowerCase() === 'unmatched') unmatchedNeedRows += 1;
+    ['inStock', 'inTransit', 'inRequest', 'available', 'avgDaily', 'targetNeed7', 'targetNeed14', 'targetNeed28', 'targetNeed30'].forEach((field) => {
+      const value = toNumber(row[field]);
+      if (value !== null && value < 0) negativeMetricRows += 1;
+    });
+  });
+  if (!rows.length) pushIssue(issues, 'critical', 'order_procurement_empty');
+  if (disabledNeedRows) pushIssue(issues, 'critical', 'order_disabled_sku_has_need', { count: disabledNeedRows });
+  if (missingOwnerNeedRows) pushIssue(issues, 'critical', 'order_need_missing_owner', { count: missingOwnerNeedRows });
+  if (unmatchedNeedRows) pushIssue(issues, 'critical', 'order_need_unmatched_sku', { count: unmatchedNeedRows });
+  if (negativeMetricRows) pushIssue(issues, 'critical', 'order_negative_metric', { count: negativeMetricRows });
+  return { rows: rows.length, disabledRows, disabledNeedRows, missingOwnerNeedRows, unmatchedNeedRows, negativeMetricRows, targetNeed30: Number(targetNeed30.toFixed(2)) };
+}
+
+function auditOosControl(oos = {}, issues) {
+  const rows = Array.isArray(oos.rows) ? oos.rows : [];
+  let missingOwnerRows = 0;
+  let missingArticleRows = 0;
+  let disabledRows = 0;
+  let negativeMetricRows = 0;
+  rows.forEach((row) => {
+    if (!String(row.articleKey || row.article || '').trim()) missingArticleRows += 1;
+    if (!String(row.owner || '').trim() || String(row.owner || '').toLowerCase() === 'без owner') missingOwnerRows += 1;
+    if (statusIsOld(row.lifecycleStatus || row.lifecycleLabel || row.status)) disabledRows += 1;
+    ['inStock', 'inTransit', 'inRequest', 'available', 'avgDaily', 'targetNeed30', 'revenueAtRiskDay', 'lostRevenueDay'].forEach((field) => {
+      const value = toNumber(row[field]);
+      if (value !== null && value < 0) negativeMetricRows += 1;
+    });
+  });
+  if (!rows.length) pushIssue(issues, 'warning', 'oos_control_empty');
+  if (oos.summary?.dataStatus && oos.summary.dataStatus !== 'ok') pushIssue(issues, 'warning', 'oos_control_data_status', { dataStatus: oos.summary.dataStatus, dataDate: oos.summary.dataDate || '' });
+  if (missingArticleRows) pushIssue(issues, 'critical', 'oos_missing_article', { count: missingArticleRows });
+  if (missingOwnerRows) pushIssue(issues, 'critical', 'oos_missing_owner', { count: missingOwnerRows });
+  if (disabledRows) pushIssue(issues, 'critical', 'oos_disabled_sku_actionable', { count: disabledRows });
+  if (negativeMetricRows) pushIssue(issues, 'critical', 'oos_negative_metric', { count: negativeMetricRows });
+  return { rows: rows.length, dataStatus: oos.summary?.dataStatus || '', dataDate: oos.summary?.dataDate || '', missingOwnerRows, missingArticleRows, disabledRows, negativeMetricRows };
+}
+
+function auditTaskLayers(ropTasks = {}, autoTasks = {}, issues) {
+  const tasks = Array.isArray(ropTasks.tasks) ? ropTasks.tasks : [];
+  const signals = Array.isArray(autoTasks.signals) ? autoTasks.signals : [];
+  const missingTaskFields = tasks.filter((task) => !String(task.id || '').trim() || !String(task.owner || task.rop || '').trim() || !String(task.title || '').trim());
+  const missingSignalFields = signals.filter((signal) => !String(signal.id || '').trim() || !String(signal.title || '').trim() || !String(signal.nextAction || '').trim());
+  if (!tasks.length) pushIssue(issues, 'critical', 'rop_tasks_empty');
+  if (missingTaskFields.length) pushIssue(issues, 'critical', 'rop_task_required_field_missing', { count: missingTaskFields.length });
+  if (missingSignalFields.length) pushIssue(issues, 'critical', 'auto_task_signal_required_field_missing', { count: missingSignalFields.length });
+  const expectedSignals = toNumber(autoTasks.summary?.autoTaskSignals);
+  if (expectedSignals !== null && expectedSignals !== signals.length) pushIssue(issues, 'critical', 'auto_task_signal_count_mismatch', { expected: expectedSignals, actual: signals.length });
+  return { ropTasks: tasks.length, autoSignals: signals.length, missingTaskFields: missingTaskFields.length, missingSignalFields: missingSignalFields.length };
+}
+
+function auditIuDrr(iuDrr = {}, issues) {
+  const kpis = iuDrr.kpis || {};
+  const dailyRows = Array.isArray(iuDrr.daily) ? iuDrr.daily.length : 0;
+  const monthRows = Array.isArray(iuDrr.months) ? iuDrr.months.length : 0;
+  const channelRows = Array.isArray(iuDrr.channels) ? iuDrr.channels.length : 0;
+  const requiredNumbers = ['iuRevenuePlanToDate', 'iuRevenueFactToDate', 'iuRevenueCompletionToDate'];
+  const missingNumbers = requiredNumbers.filter((field) => toNumber(kpis[field]) === null);
+  const logicErrors = Array.isArray(iuDrr.diagnostics?.logicGuard?.errors) ? iuDrr.diagnostics.logicGuard.errors : [];
+  if (!iuDrr.generatedAt || !Object.keys(kpis).length) pushIssue(issues, 'critical', 'iu_drr_summary_empty', { generatedAt: iuDrr.generatedAt || '' });
+  if (!dailyRows || !monthRows || !channelRows) pushIssue(issues, 'critical', 'iu_drr_required_rows_missing', { dailyRows, monthRows, channelRows });
+  if (missingNumbers.length) pushIssue(issues, 'critical', 'iu_drr_kpi_missing', { fields: missingNumbers });
+  if (logicErrors.length) pushIssue(issues, 'critical', 'iu_drr_logic_errors', { count: logicErrors.length });
+  return { generatedAt: iuDrr.generatedAt || '', kpis: Object.keys(kpis).length, dailyRows, monthRows, channelRows, logicErrors: logicErrors.length };
+}
+
 function main() {
   const args = parseArgs(process.argv);
   const dataDir = path.resolve(args.dataDir || 'data');
@@ -214,11 +393,14 @@ function main() {
     'sku_matrix.json',
     'prices.json',
     'repricer.json',
+    'price_workbench_support.json',
     'portal_data_quality.json',
     'portal_sync_health.json',
     'iu_drr_summary.json',
     'oos_control.json',
-    'order_procurement.json'
+    'order_procurement.json',
+    'rop_strategic_tasks.json',
+    'auto_task_signals.json'
   ];
   const payloads = {};
   for (const file of required) {
@@ -243,15 +425,23 @@ function main() {
   const matrix = payloads['sku_matrix.json'];
   const prices = payloads['prices.json'];
   const repricer = payloads['repricer.json'];
+  const priceSupport = payloads['price_workbench_support.json'];
   const quality = payloads['portal_data_quality.json'];
   const syncHealth = payloads['portal_sync_health.json'];
   const iuDrr = payloads['iu_drr_summary.json'];
   const oos = payloads['oos_control.json'];
   const order = payloads['order_procurement.json'];
+  const ropTasks = payloads['rop_strategic_tasks.json'];
+  const autoTasks = payloads['auto_task_signals.json'];
 
-  const skuAudit = auditSkus(Array.isArray(skus) ? skus : [], matrix, issues);
+  const planBackfillMap = buildPlanBackfillMap(priceSupport);
+  const skuAudit = auditSkus(Array.isArray(skus) ? skus : [], matrix, issues, planBackfillMap);
   const priceAudit = auditPriceRows(prices, issues);
   const repricerAudit = auditRepricer(repricer, issues);
+  const iuDrrAudit = auditIuDrr(iuDrr, issues);
+  const oosAudit = auditOosControl(oos, issues);
+  const orderAudit = auditOrderProcurement(order, issues);
+  const taskAudit = auditTaskLayers(ropTasks, autoTasks, issues);
 
   const qualitySummary = quality.summary || {};
   if (toNumber(qualitySummary.criticalCount) > 0) pushIssue(issues, 'critical', 'portal_data_quality_critical', { count: qualitySummary.criticalCount });
@@ -260,16 +450,6 @@ function main() {
 
   const syncStatus = String(syncHealth.status || syncHealth.publish?.status || '').toLowerCase();
   if (/blocked|critical|error/.test(syncStatus)) pushIssue(issues, 'critical', 'sync_health_blocked', { status: syncStatus });
-
-  const iuKpis = iuDrr.kpis || {};
-  if (!iuDrr.generatedAt || !Object.keys(iuKpis).length) pushIssue(issues, 'critical', 'iu_drr_summary_empty', { generatedAt: iuDrr.generatedAt || '' });
-
-  const oosRows = Array.isArray(oos.rows) ? oos.rows.length : 0;
-  if (!oosRows) pushIssue(issues, 'warning', 'oos_control_empty');
-  if (oos.summary?.dataStatus && oos.summary.dataStatus !== 'ok') pushIssue(issues, 'warning', 'oos_control_data_status', { dataStatus: oos.summary.dataStatus, dataDate: oos.summary.dataDate || '' });
-
-  const orderRows = Array.isArray(order.rows) ? order.rows.length : 0;
-  if (!orderRows) pushIssue(issues, 'critical', 'order_procurement_empty');
 
   const critical = issues.filter((issue) => issue.severity === 'critical');
   const warnings = issues.filter((issue) => issue.severity === 'warning');
@@ -294,20 +474,10 @@ function main() {
         generatedAt: syncHealth.generatedAt || '',
         status: syncHealth.status || syncHealth.publish?.status || ''
       },
-      iuDrr: {
-        generatedAt: iuDrr.generatedAt || '',
-        kpis: Object.keys(iuKpis).length
-      },
-      oosControl: {
-        generatedAt: oos.generatedAt || '',
-        rows: oosRows,
-        dataStatus: oos.summary?.dataStatus || '',
-        dataDate: oos.summary?.dataDate || ''
-      },
-      orderProcurement: {
-        generatedAt: order.generatedAt || '',
-        rows: orderRows
-      }
+      iuDrr: iuDrrAudit,
+      oosControl: oosAudit,
+      orderProcurement: { generatedAt: order.generatedAt || '', ...orderAudit },
+      tasks: taskAudit
     },
     issues
   };

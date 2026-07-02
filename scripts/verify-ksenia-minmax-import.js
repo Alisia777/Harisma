@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const {
   SOURCE_NOTE,
+  buildPlanBackfillMap,
   compactKey,
   isDisabledStatus,
   readSourceMatrix,
@@ -560,7 +561,7 @@ function skuCanonicalKeys(sku = {}) {
   ].map(compactKey).filter(Boolean);
 }
 
-function verifySkus(skus, articleGroups, issues) {
+function verifySkus(skus, articleGroups, issues, planBackfillMap = new Map()) {
   const map = buildSkuMap(Array.isArray(skus) ? skus : []);
   const sourceKeys = new Set(articleGroups.keys());
   const summary = {
@@ -572,6 +573,8 @@ function verifySkus(skus, articleGroups, issues) {
     ownerChecked: 0,
     planAssigned: 0,
     planNeedsAssignment: 0,
+    planBackfillAvailable: 0,
+    planBackfilled: 0,
     activeSourceArticles: 0
   };
   articleGroups.forEach((group) => {
@@ -607,6 +610,17 @@ function verifySkus(skus, articleGroups, issues) {
       }
     });
     const plan = planInfo(sku);
+    const planBackfillAvailable = planBackfillMap.get(group.key)?.months?.size > 0;
+    if (planBackfillAvailable) summary.planBackfillAvailable += 1;
+    if (plan.planFact?.planBackfillSource === 'price_workbench_support.planMonths') summary.planBackfilled += 1;
+    if (planBackfillAvailable && !plan.assigned) {
+      pushIssue(issues, 'critical', 'sku_plan_backfill_not_assigned', {
+        articleKey: group.articleKey,
+        status: group.status,
+        owner: ownerValue(sku),
+        planStatus: plan.status || null
+      });
+    }
     if (plan.assigned) summary.planAssigned += 1;
     if (plan.needsAssignment) {
       summary.planNeedsAssignment += 1;
@@ -652,6 +666,7 @@ function runVerification(options) {
   const source = readSourceMatrix(options.inputPath);
   const grouped = groupSourceRows(source.rows);
   const articleGroups = buildArticleGroups(grouped.groupedRows);
+  const planBackfillMap = buildPlanBackfillMap(readJson(path.join(options.dataDir, 'price_workbench_support.json'), { platforms: {} }));
   const issues = [];
   const summary = {
     source: {
@@ -693,7 +708,7 @@ function runVerification(options) {
 
   const skus = readJson(path.join(options.dataDir, 'skus.json'), null);
   if (!skus) pushIssue(issues, 'critical', 'file_missing', { fileName: 'skus.json' });
-  else summary.skus = verifySkus(skus, articleGroups, issues);
+  else summary.skus = verifySkus(skus, articleGroups, issues, planBackfillMap);
 
   const criticalCount = issues.filter((issue) => issue.severity === 'critical').length;
   const report = {

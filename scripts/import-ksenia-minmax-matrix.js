@@ -215,7 +215,14 @@ function ownerPlatformKeys(platform) {
 
 function isDisabledStatus(value = '') {
   const token = normalizeToken(value);
-  return token.includes('вывод') || token.includes('архив') || token.includes('inactive') || token.includes('disabled');
+  return token.includes('вывод')
+    || token.includes('архив')
+    || token.includes('стоп')
+    || token.includes('inactive')
+    || token.includes('disabled')
+    || token.includes('paused')
+    || token.includes('archive')
+    || token.includes('stop');
 }
 
 function isMatrixActive(status = '') {
@@ -1023,11 +1030,113 @@ function hasAssignedPlan(planFact = {}) {
   ].some((value) => (parseNumber(value) || 0) > 0);
 }
 
-function ensurePlanFact(sku, group) {
+const PLAN_MONTH_FIELDS = {
+  '2026-04': { units: 'planApr26Units', revenue: 'planApr26Revenue' },
+  '2026-05': { units: 'planMay26Units', revenue: 'planMay26Revenue' },
+  '2026-06': { units: 'planJun26Units', revenue: 'planJun26Revenue' },
+  '2026-07': { units: 'planJul26Units', revenue: 'planJul26Revenue' },
+  '2026-08': { units: 'planAug26Units', revenue: 'planAug26Revenue' },
+  '2026-09': { units: 'planSep26Units', revenue: 'planSep26Revenue' },
+  '2026-10': { units: 'planOct26Units', revenue: 'planOct26Revenue' },
+  '2026-11': { units: 'planNov26Units', revenue: 'planNov26Revenue' },
+  '2026-12': { units: 'planDec26Units', revenue: 'planDec26Revenue' }
+};
+
+function numericPlanValue(value) {
+  const parsed = parseNumber(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function createPlanBackfillBucket() {
+  return {
+    months: new Map(),
+    platforms: new Set(),
+    sources: new Set()
+  };
+}
+
+function mergePlanBackfill(target, platform, month = {}) {
+  const monthKey = normalizeText(month.monthKey || month.key || month.month || '');
+  if (!monthKey) return false;
+  const units = numericPlanValue(month.units ?? month.planUnits ?? month.quantity);
+  const revenue = numericPlanValue(month.revenue ?? month.planRevenue);
+  if (!(units > 0) && !(revenue > 0)) return false;
+  const current = target.months.get(monthKey) || { monthKey, days: null, units: 0, revenue: 0, sources: new Set() };
+  current.days = current.days || parseNumber(month.days);
+  current.units += units;
+  current.revenue += revenue;
+  current.sources.add(normalizeText(month.source || 'plan_workbook_2026'));
+  target.months.set(monthKey, current);
+  target.platforms.add(platform);
+  current.sources.forEach((source) => target.sources.add(source));
+  return true;
+}
+
+function buildPlanBackfillMap(payload = {}) {
+  const map = new Map();
+  Object.entries(payload?.platforms || {}).forEach(([platform, bucket]) => {
+    rowEntries(bucket).forEach(({ row, keyHint }) => {
+      const months = Array.isArray(row?.planMonths) ? row.planMonths : [];
+      if (!months.length) return;
+      const keys = Array.from(new Set(rowKeyValues(row, keyHint)));
+      const rowBackfill = createPlanBackfillBucket();
+      months.forEach((month) => mergePlanBackfill(rowBackfill, platform, month));
+      if (!rowBackfill.months.size) return;
+      keys.forEach((key) => {
+        const target = map.get(key) || createPlanBackfillBucket();
+        rowBackfill.months.forEach((month) => {
+          mergePlanBackfill(target, platform, month);
+        });
+        map.set(key, target);
+      });
+    });
+  });
+  return map;
+}
+
+function serializePlanBackfill(backfill) {
+  if (!backfill?.months?.size) return [];
+  return Array.from(backfill.months.values())
+    .sort((left, right) => String(left.monthKey).localeCompare(String(right.monthKey)))
+    .map((month) => ({
+      monthKey: month.monthKey,
+      days: month.days,
+      units: roundMetric(month.units, 4),
+      revenue: roundMoney(month.revenue),
+      sources: Array.from(month.sources || []).sort()
+    }));
+}
+
+function applyPlanBackfill(planFact = {}, backfill) {
+  const months = serializePlanBackfill(backfill);
+  if (!months.length) return false;
+  months.forEach((month) => {
+    const fields = PLAN_MONTH_FIELDS[month.monthKey];
+    if (!fields) return;
+    planFact[fields.units] = month.units;
+    planFact[fields.revenue] = month.revenue;
+  });
+  const currentMonth = months.find((month) => month.monthKey === '2026-07') || months[months.length - 1];
+  planFact.planMonthKey = currentMonth.monthKey;
+  planFact.planMonthUnits = currentMonth.units;
+  planFact.planMonthRevenue = currentMonth.revenue;
+  planFact.planUnits = planFact.planUnits || currentMonth.units;
+  planFact.planRevenue = planFact.planRevenue || currentMonth.revenue;
+  planFact.planMonths = months;
+  planFact.planPlatforms = Array.from(backfill.platforms || []).sort();
+  planFact.planSource = 'price_workbench_support.planMonths';
+  planFact.planBackfillSource = 'price_workbench_support.planMonths';
+  planFact.planBackfilledAt = IMPORT_STAMP;
+  return hasAssignedPlan(planFact);
+}
+
+function ensurePlanFact(sku, group, planBackfill = null) {
   sku.planFact = sku.planFact && typeof sku.planFact === 'object' ? sku.planFact : {};
   ['planFeb26Units', 'planMar26Units', 'planApr26Units'].forEach((field) => {
     if (sku.planFact[field] === null || sku.planFact[field] === undefined || sku.planFact[field] === '') sku.planFact[field] = 0;
   });
+  const hadAssignedPlan = hasAssignedPlan(sku.planFact);
+  const backfilled = !hadAssignedPlan && applyPlanBackfill(sku.planFact, planBackfill);
   const assigned = hasAssignedPlan(sku.planFact);
   const active = isMatrixActive(group.status || sku.status || sku.registryStatus || '');
   sku.planFact.planAssigned = assigned;
@@ -1040,6 +1149,7 @@ function ensurePlanFact(sku, group) {
   sku.planAssigned = assigned;
   sku.planStatus = sku.planFact.planStatus;
   sku.planNeedsAssignment = sku.planFact.planNeedsAssignment;
+  return { assigned, backfilled };
 }
 
 function applyPlanFactCost(sku, cost) {
@@ -1091,7 +1201,7 @@ function applySkuSideMargin(side = {}, cost) {
   return currentMarginPct !== null || minMarginPct !== null || maxMarginPct !== null;
 }
 
-function applySkuGroup(sku, group) {
+function applySkuGroup(sku, group, planBackfill = null) {
   sku.articleKey = sku.articleKey || group.articleKey;
   sku.article = sku.article || group.article || group.articleKey;
   sku.name = sku.name || group.name || group.article || group.articleKey;
@@ -1105,7 +1215,7 @@ function applySkuGroup(sku, group) {
   sku.matrixImportedAt = IMPORT_STAMP;
   sku.matrixSourceRows = group.sourceRows;
   sku.matrixBarcodes = group.barcodes;
-  ensurePlanFact(sku, group);
+  const planResult = ensurePlanFact(sku, group, planBackfill);
   if (group.cost > 0) {
     sku.costPrice = group.cost;
     sku.cost = group.cost;
@@ -1166,6 +1276,7 @@ function applySkuGroup(sku, group) {
   if (sku.wb && group.cost > 0 && !sideCostApplied.has('wb')) applySkuSideMargin(sku.wb, group.cost);
   if (sku.ozon && group.cost > 0 && !sideCostApplied.has('ozon')) applySkuSideMargin(sku.ozon, group.cost);
   if (sku.ym && group.cost > 0 && !sideCostApplied.has('ym')) applySkuSideMargin(sku.ym, group.cost);
+  return planResult;
 }
 
 function disableOldSku(sku) {
@@ -1188,7 +1299,7 @@ function disableOldSku(sku) {
   return wasActive;
 }
 
-function updateSkus(skus, articleGroups) {
+function updateSkus(skus, articleGroups, planBackfillMap = new Map()) {
   const target = Array.isArray(skus) ? skus : [];
   const skuMap = buildSkuMap(target, skuCanonicalTokens);
   const stats = {
@@ -1199,6 +1310,8 @@ function updateSkus(skus, articleGroups) {
     sourceArticles: articleGroups.size,
     planAssigned: 0,
     planNeedsAssignment: 0,
+    planBackfillAvailable: 0,
+    planBackfilled: 0,
     activeMatrixSku: 0
   };
   articleGroups.forEach((group) => {
@@ -1210,7 +1323,10 @@ function updateSkus(skus, articleGroups) {
     } else {
       stats.updated += 1;
     }
-    applySkuGroup(sku, group);
+    const planBackfill = planBackfillMap.get(group.key);
+    if (planBackfill?.months?.size) stats.planBackfillAvailable += 1;
+    const planResult = applySkuGroup(sku, group, planBackfill);
+    if (planResult?.backfilled) stats.planBackfilled += 1;
     skuCanonicalTokens(sku).forEach((key) => {
       if (key && !skuMap.has(key)) skuMap.set(key, sku);
     });
@@ -1285,16 +1401,19 @@ function runImport(options) {
   ];
   if (!options.dryRun && !options.skipBackup) backupFiles(options.dataDir, backupDir, targetFileNames);
 
+  let supportPayload = null;
   PRICE_TARGET_FILES.forEach((target) => {
     const filePath = path.join(options.dataDir, target.fileName);
     const payload = readJson(filePath, { generatedAt: '', platforms: {} });
     const stats = updatePricePayload(payload, target.fileName, grouped.byPlatformRows, target);
     report.targets.push(stats);
+    if (target.fileName === 'price_workbench_support.json') supportPayload = payload;
     if (!options.dryRun) writeJson(filePath, payload, Boolean(target.compact));
   });
 
   const skusPath = path.join(options.dataDir, 'skus.json');
-  const { skus, stats: skuStats } = updateSkus(readJson(skusPath, []), articleGroups);
+  const planBackfillMap = buildPlanBackfillMap(supportPayload || readJson(path.join(options.dataDir, 'price_workbench_support.json'), { platforms: {} }));
+  const { skus, stats: skuStats } = updateSkus(readJson(skusPath, []), articleGroups, planBackfillMap);
   report.skus = skuStats;
   if (!options.dryRun) writeJson(skusPath, skus, false);
 
@@ -1375,6 +1494,7 @@ module.exports = {
   parseArgs,
   readSourceMatrix,
   resolveOptions,
+  buildPlanBackfillMap,
   groupSourceRows,
   buildArticleGroups,
   rowsFromBucket,

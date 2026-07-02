@@ -15,6 +15,7 @@ const EXECUTIVE_FUNNEL_SUPPORT_KEYS = {
 window.EXECUTIVE_MARKETPLACE_KEYS = EXECUTIVE_MARKETPLACE_KEYS;
 const EXECUTIVE_FUNNEL_DEFAULT_FILTERS = {
   platform: 'all',
+  month: 'latest',
   owner: 'all',
   status: 'all',
   search: '',
@@ -30,6 +31,52 @@ function executiveFunnelNumber(value) {
 
 function executiveFunnelDateKey(value = '') {
   return String(value || '').slice(0, 10);
+}
+
+function executiveFunnelActiveDate() {
+  return executiveFunnelDateKey(
+    state.dashboard?.dataFreshness?.asOfDate
+    || state.dashboard?.latestMarketplaceDate
+    || state.dashboard?.brandSummary?.[0]?.latestMarketplaceDate
+    || state.dashboard?.asOfDate
+    || state.platformTrends?.asOfDate
+    || state.adsSummary?.asOfDate
+    || ''
+  );
+}
+
+function executiveFunnelMonthKey(value = '') {
+  const key = String(value || '').slice(0, 7);
+  return /^\d{4}-\d{2}$/.test(key) ? key : '';
+}
+
+function executiveFunnelMonthDays(monthKey = '') {
+  if (typeof skuPlanFactMonthDays === 'function') return skuPlanFactMonthDays(monthKey);
+  const [year, month] = String(monthKey || '').split('-').map(Number);
+  if (!year || !month) return 30;
+  return new Date(year, month, 0).getDate();
+}
+
+function executiveFunnelMonthEnd(monthKey = '') {
+  if (typeof skuPlanFactMonthEnd === 'function') return skuPlanFactMonthEnd(monthKey);
+  const key = executiveFunnelMonthKey(monthKey);
+  return key ? `${key}-${String(executiveFunnelMonthDays(key)).padStart(2, '0')}` : '';
+}
+
+function executiveFunnelMonthLabel(monthKey = '') {
+  if (typeof skuPlanFactMonthLabel === 'function') return skuPlanFactMonthLabel(monthKey);
+  const key = executiveFunnelMonthKey(monthKey);
+  const [year, month] = key.split('-').map(Number);
+  if (!year || !month) return '';
+  return new Date(year, month - 1, 1).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+}
+
+function executiveFunnelSelectableMonths(months = []) {
+  const activeMonth = executiveFunnelMonthKey(executiveFunnelActiveDate());
+  return [...new Set((months || []).map(executiveFunnelMonthKey).filter(Boolean))]
+    .filter((monthKey) => !activeMonth || monthKey <= activeMonth)
+    .sort()
+    .reverse();
 }
 
 function executiveFunnelRatio(value) {
@@ -549,23 +596,30 @@ function executiveFunnelSortRows(rows = [], sort = 'completionAsc') {
 function executiveFunnelBuildPlanModel(selectedPlatform = 'all') {
   if (typeof skuPlanFactBuildModel !== 'function') return null;
   const platform = EXECUTIVE_FUNNEL_PLATFORMS.includes(selectedPlatform) ? selectedPlatform : 'all';
-  const activeDate = executiveFunnelDateKey(
-    state.dashboard?.dataFreshness?.asOfDate
-    || state.dashboard?.latestMarketplaceDate
-    || state.dashboard?.brandSummary?.[0]?.latestMarketplaceDate
-    || state.dashboard?.asOfDate
-    || ''
-  );
+  const filters = { ...EXECUTIVE_FUNNEL_DEFAULT_FILTERS, ...executiveFunnelFilters };
+  const activeDate = executiveFunnelActiveDate();
+  const activeMonth = executiveFunnelMonthKey(activeDate);
+  let monthKey = filters.month && filters.month !== 'latest'
+    ? executiveFunnelMonthKey(filters.month)
+    : activeMonth;
+  if (monthKey && activeMonth && monthKey > activeMonth) monthKey = activeMonth;
+  if (!monthKey) monthKey = activeMonth || 'latest';
+  const monthStart = monthKey !== 'latest' ? `${monthKey}-01` : '';
+  const monthEnd = monthKey !== 'latest' ? executiveFunnelMonthEnd(monthKey) : activeDate;
+  const fullMonth = Boolean(monthKey !== 'latest' && activeMonth && monthKey < activeMonth);
   try {
     return skuPlanFactBuildModel({
       search: '',
       owner: 'all',
       status: 'all',
       platform,
-      month: activeDate ? activeDate.slice(0, 7) : 'latest',
-      date: activeDate,
-      dateFrom: activeDate ? `${activeDate.slice(0, 7)}-01` : '',
-      dateTo: activeDate,
+      month: monthKey,
+      dateMode: monthKey !== 'latest' ? 'month' : 'latest',
+      date: fullMonth ? monthEnd : (activeDate || monthEnd),
+      dateFrom: monthStart,
+      dateTo: fullMonth ? monthEnd : (activeDate || monthEnd),
+      fullMonth,
+      periodEndCap: fullMonth ? '' : activeDate,
       sort: 'gap',
       sortDir: 'asc'
     }, { persistFilters: false });
@@ -836,6 +890,10 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
   if (!planModel) return null;
   const periodStart = executiveFunnelDateKey(planModel.periodStart || funnel.periodStart || `${planModel.monthKey || ''}-01`);
   const periodEnd = executiveFunnelDateKey(planModel.periodEnd || funnel.periodEnd || planModel.selectedDate || planModel.maxFactDate);
+  const activeMonth = executiveFunnelMonthKey(executiveFunnelActiveDate());
+  const monthKey = executiveFunnelMonthKey(planModel.monthKey || funnel.monthKey || periodEnd);
+  const monthEnd = monthKey ? executiveFunnelMonthEnd(monthKey) : '';
+  const months = executiveFunnelSelectableMonths(planModel.months || funnel.months || []);
   const ownerMap = new Map();
   const sourceRows = Array.isArray(planModel.allRows) ? planModel.allRows : [];
   const excluded = { rows: 0, revenue: 0, planToDateRevenue: 0 };
@@ -934,7 +992,13 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     selectedPlatform,
     periodStart,
     periodEnd,
+    monthKey,
     monthLabel: planModel.monthLabel || funnel.monthLabel || '',
+    months,
+    activeMonth,
+    isFullMonth: Boolean(monthKey && monthEnd && periodEnd >= monthEnd),
+    monthDays: monthKey ? executiveFunnelMonthDays(monthKey) : null,
+    periodDays: planModel.periodDays || planModel.elapsedDays || null,
     ownerRows: visibleRows,
     allOwnerRows: executiveFunnelSortRows(ownerRows, filters.sort),
     scopedOwnerRows: executiveFunnelSortRows(scopedOwnerRows, filters.sort),
@@ -1145,6 +1209,9 @@ function executiveFunnelBuildModel() {
   }
   const periodStart = executiveFunnelDateKey(planModel.periodStart || `${planModel.monthKey}-01`);
   const periodEnd = executiveFunnelDateKey(planModel.periodEnd || planModel.selectedDate || planModel.maxFactDate);
+  const activeMonth = executiveFunnelMonthKey(executiveFunnelActiveDate());
+  const monthKey = executiveFunnelMonthKey(planModel.monthKey || periodEnd);
+  const monthEnd = monthKey ? executiveFunnelMonthEnd(monthKey) : '';
   const ownerMap = new Map();
   const platformTotals = new Map(EXECUTIVE_FUNNEL_PLATFORMS.map((platform) => [platform, {
     platform,
@@ -1270,7 +1337,13 @@ function executiveFunnelBuildModel() {
     ready: true,
     periodStart,
     periodEnd,
+    monthKey,
     monthLabel: planModel.monthLabel,
+    months: executiveFunnelSelectableMonths(planModel.months || []),
+    activeMonth,
+    isFullMonth: Boolean(monthKey && monthEnd && periodEnd >= monthEnd),
+    monthDays: monthKey ? executiveFunnelMonthDays(monthKey) : null,
+    periodDays: planModel.periodDays || planModel.elapsedDays || null,
     ownerRows,
     ownerByName,
     dailyRows,
@@ -1753,6 +1826,23 @@ function renderExecutiveOwnerFilterButton(kind, value, label, active) {
   `;
 }
 
+function executiveFunnelMonthOptionsHtml(model = {}, selected = 'latest') {
+  const activeMonth = model.activeMonth || executiveFunnelMonthKey(executiveFunnelActiveDate());
+  const monthKey = model.monthKey || activeMonth;
+  const selectedValue = selected && selected !== 'latest' ? executiveFunnelMonthKey(selected) : 'latest';
+  const months = executiveFunnelSelectableMonths(model.months || model.planModel?.months || []);
+  const latestLabel = activeMonth
+    ? `Текущий срез (${executiveFunnelMonthLabel(activeMonth)})`
+    : 'Текущий срез';
+  const options = [`<option value="latest" ${selectedValue === 'latest' ? 'selected' : ''}>${escapeHtml(latestLabel)}</option>`];
+  months.forEach((value) => {
+    const full = value !== activeMonth || (model.isFullMonth && value === monthKey);
+    const label = `${executiveFunnelMonthLabel(value)} ${full ? 'целиком' : 'к дате'}`;
+    options.push(`<option value="${escapeHtml(value)}" ${selectedValue === value ? 'selected' : ''}>${escapeHtml(label)}</option>`);
+  });
+  return options.join('');
+}
+
 function renderExecutiveOwnerFilters(model = {}) {
   const filters = model.filters || EXECUTIVE_FUNNEL_DEFAULT_FILTERS;
   const platformButtons = [
@@ -1773,8 +1863,15 @@ function renderExecutiveOwnerFilters(model = {}) {
     const selected = selectedOwner !== 'all' && executiveFunnelCanonicalOwner(value) === selectedOwner;
     return `<option value="${escapeHtml(value)}" ${selected ? 'selected' : ''}>${escapeHtml(value)}</option>`;
   }).join('');
+  const monthOptions = executiveFunnelMonthOptionsHtml(model, filters.month || 'latest');
   return `
     <div class="executive-owner-toolbar">
+      <label class="executive-owner-sort executive-owner-picker">
+        <span>Месяц</span>
+        <select data-executive-funnel-month>
+          ${monthOptions}
+        </select>
+      </label>
       <div class="executive-owner-segment" aria-label="Площадка">${platformButtons}</div>
       <div class="executive-owner-segment" aria-label="Выполнение">${statusButtons}</div>
       <label class="executive-owner-sort executive-owner-picker">
@@ -1950,6 +2047,11 @@ function executiveFunnelInstallFilterEvents() {
     executiveFunnelSetFilter('search', input.value || '');
   });
   document.addEventListener('change', (event) => {
+    const monthSelect = event.target?.matches?.('[data-executive-funnel-month]') ? event.target : null;
+    if (monthSelect) {
+      executiveFunnelSetFilter('month', monthSelect.value || 'latest');
+      return;
+    }
     const ownerSelect = event.target?.matches?.('[data-executive-funnel-owner]') ? event.target : null;
     if (ownerSelect) {
       executiveFunnelSetFilter('owner', ownerSelect.value || 'all');

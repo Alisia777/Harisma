@@ -880,6 +880,55 @@
     return options.join('');
   }
 
+  function executiveMonthKey(value) {
+    var key = String(value || '').slice(0, 7);
+    return /^\d{4}-\d{2}$/.test(key) ? key : '';
+  }
+
+  function executiveMonthLabel(monthKey) {
+    var key = executiveMonthKey(monthKey);
+    if (!key) return '';
+    var parts = key.split('-').map(Number);
+    return new Date(parts[0], parts[1] - 1, 1).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+  }
+
+  function executiveDateLabel(value) {
+    var raw = String(value || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return '';
+    var parts = raw.split('-');
+    return parts[2] + '.' + parts[1] + '.' + parts[0];
+  }
+
+  function executiveMonthOptions(model) {
+    var filters = model.filters || {};
+    var selected = filters.month && filters.month !== 'latest' ? executiveMonthKey(filters.month) : 'latest';
+    var activeMonth = executiveMonthKey(model.activeMonth || model.periodEnd || '');
+    var months = (model.months || (model.planModel && model.planModel.months) || [])
+      .map(executiveMonthKey)
+      .filter(Boolean)
+      .filter(function (monthKey, index, list) {
+        return list.indexOf(monthKey) === index && (!activeMonth || monthKey <= activeMonth);
+      })
+      .sort()
+      .reverse();
+    var latestLabel = activeMonth ? 'Текущий срез (' + executiveMonthLabel(activeMonth) + ')' : 'Текущий срез';
+    var options = ['<option value="latest"' + (selected === 'latest' ? ' selected' : '') + '>' + escapeHtml(latestLabel) + '</option>'];
+    months.forEach(function (monthKey) {
+      var full = monthKey !== activeMonth || Boolean(model.isFullMonth && model.monthKey === monthKey);
+      var label = executiveMonthLabel(monthKey) + ' ' + (full ? 'целиком' : 'к дате');
+      options.push('<option value="' + escapeHtml(monthKey) + '"' + (selected === monthKey ? ' selected' : '') + '>' + escapeHtml(label) + '</option>');
+    });
+    return options.join('');
+  }
+
+  function executivePeriodCaption(model) {
+    var monthLabel = model.monthLabel || executiveMonthLabel(model.monthKey);
+    if (model.isFullMonth) return monthLabel ? monthLabel + ' целиком' : 'месяц целиком';
+    var end = executiveDateLabel(model.periodEnd);
+    if (monthLabel && end) return monthLabel + ' к ' + end;
+    return end ? 'срез к ' + end : 'текущий срез';
+  }
+
   function executiveControls(model) {
     var filters = model.filters || {};
     var platform = filters.platform || 'all';
@@ -889,6 +938,7 @@
     }
     return [
       '<div class="premium-controlbar">',
+      '<label class="panel"><span class="premium-mini-label">Месяц</span><select data-executive-funnel-month>' + executiveMonthOptions(model) + '</select></label>',
       '<div class="panel"><span class="premium-mini-label">Площадка</span><div class="premium-segment">',
       button('platform', 'all', 'Все', platform === 'all'),
       button('platform', 'wb', 'WB', platform === 'wb'),
@@ -1013,9 +1063,11 @@
     var criticalCount = (model.ownerRows || model.allOwnerRows || []).filter(function (row) {
       return row.planToDateRevenue > 0 && numberOrNull(row.completionToDate) !== null && row.completionToDate < .8;
     }).length;
+    var periodCaption = executivePeriodCaption(model);
+    var paceHint = model.isFullMonth ? 'месяц закрыт целиком' : 'месяц еще идет, факт по ' + (executiveDateLabel(model.periodEnd) || 'срезу');
     return '<div class="grid executive-native-kpis section-gap">' + [
-      metric('План команды к дате', totals.completionToDate == null ? 'нет данных' : pct(totals.completionToDate), 'план ' + money(totals.planToDateRevenue) + ' · факт ' + money(totals.factRevenue), totals.completionToDate == null ? 0 : clampPct(totals.completionToDate), 'executive-native-kpi'),
-      metric('Прогноз месяца', totals.completionToDate == null ? 'нет данных' : pct(totals.completionToDate), 'по текущему темпу к плану', totals.completionToDate == null ? 0 : clampPct(totals.completionToDate), 'executive-native-kpi'),
+      metric('План команды', totals.completionToDate == null ? 'нет данных' : pct(totals.completionToDate), periodCaption + ' · план ' + money(totals.planToDateRevenue) + ' · факт ' + money(totals.factRevenue), totals.completionToDate == null ? 0 : clampPct(totals.completionToDate), 'executive-native-kpi'),
+      metric('Темп месяца', totals.completionToDate == null ? 'нет данных' : pct(totals.completionToDate), paceHint, totals.completionToDate == null ? 0 : clampPct(totals.completionToDate), 'executive-native-kpi'),
       metric('В плане', employeeCount ? int(okCount) + ' / ' + int(employeeCount) : 'нет данных', 'сотрудники с выполнением 100%+', employeeCount ? okCount / employeeCount * 100 : 0, 'executive-native-kpi'),
       metric('В зоне риска', riskCount ? int(riskCount) : '0', 'ниже плана к дате', employeeCount ? riskCount / Math.max(1, employeeCount) * 100 : 0, 'executive-native-kpi'),
       metric('Критично', criticalCount ? int(criticalCount) : '0', 'ниже 80% выполнения', employeeCount ? criticalCount / Math.max(1, employeeCount) * 100 : 0, 'executive-native-kpi')
@@ -1142,12 +1194,15 @@
       canRenderBody: canRenderBody,
       periodStart: model.periodStart,
       periodEnd: model.periodEnd,
+      monthKey: model.monthKey,
+      isFullMonth: model.isFullMonth,
       filters: model.filters,
       totals: model.totals,
       owners: (model.ownerRows || []).slice(0, 12).map(function (row) {
         return [row.owner, row.factRevenue, row.planToDateRevenue, row.completionToDate, row.gapToDate];
       })
     });
+    window.__ALTEA_PREMIUM_EXECUTIVE_LAST__ = model;
     if (root.dataset.premiumSignature === signature && stage.dataset.premiumSignature === signature && stage.querySelector('.altea-premium-route')) {
       pruneLegacyChildren(root);
       positionStage(root, stage);
@@ -1983,7 +2038,7 @@
   }
 
   function setExecutiveFunnelFilter(key, value, delay) {
-    var defaults = { platform: 'all', status: 'all', owner: 'all', search: '', sort: 'completionAsc' };
+    var defaults = { platform: 'all', month: 'latest', status: 'all', owner: 'all', search: '', sort: 'completionAsc' };
     if (!Object.prototype.hasOwnProperty.call(defaults, key)) return false;
     var filters = window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__;
     if (!filters || typeof filters !== 'object') filters = {};
@@ -2087,6 +2142,11 @@
     });
     document.addEventListener('change', function (event) {
       if (!event.target || !event.target.closest || !event.target.closest('#altea-premium-stage-executive')) return;
+      if (event.target.matches && event.target.matches('[data-executive-funnel-month]')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setExecutiveFunnelFilter('month', event.target.value || 'latest', 120);
+      }
       if (event.target.matches && event.target.matches('[data-executive-funnel-owner]')) {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -2099,6 +2159,9 @@
       }
     }, true);
     document.addEventListener('change', function (event) {
+      if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-month]')) {
+        setExecutiveFunnelFilter('month', event.target.value || 'latest', 120);
+      }
       if (event.target && event.target.matches && event.target.matches('[data-executive-funnel-owner]')) {
         setExecutiveFunnelFilter('owner', event.target.value || 'all', 120);
       }

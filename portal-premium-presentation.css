@@ -1002,7 +1002,7 @@ body.v87-imperial.altea-premium-shell .altea-premium-route .chart-dot {
 
 body.v87-imperial.altea-premium-shell .altea-premium-route .premium-controlbar {
   display: grid;
-  grid-template-columns: minmax(220px, .85fr) minmax(220px, 1fr) minmax(180px, .75fr) minmax(210px, .8fr);
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 10px;
   margin-bottom: 14px;
 }

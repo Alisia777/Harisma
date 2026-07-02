@@ -384,6 +384,8 @@ function skuPlanFactFilters(overrides = null, options = {}) {
     dateFrom: '',
     dateTo: '',
     dateMode: 'latest',
+    fullMonth: false,
+    periodEndCap: '',
     sort: 'gap',
     sortDir: 'asc',
     ...(state.skuPlanFactFilters || {}),
@@ -920,13 +922,18 @@ function skuPlanFactSelectedPeriod(indexes, monthKey, maxFactDate = '', filtersO
   const monthStart = skuPlanFactMonthStart(monthKey);
   const maxDate = maxFactDate || skuPlanFactMaxFactDate(indexes, monthKey);
   const monthMode = filters.dateMode === 'month';
-  let dateTo = monthMode ? maxDate : skuPlanFactSelectedDate(indexes, monthKey, maxDate, filters);
+  const capDate = skuPlanFactDateKey(filters.periodEndCap);
+  const cappedMaxDate = capDate && skuPlanFactMonthFromDate(capDate) === monthKey && (!maxDate || capDate < maxDate)
+    ? capDate
+    : maxDate;
+  const periodMaxDate = monthMode && filters.fullMonth === true ? skuPlanFactMonthEnd(monthKey) : cappedMaxDate;
+  let dateTo = monthMode ? periodMaxDate : skuPlanFactSelectedDate(indexes, monthKey, maxDate, filters);
   let dateFrom = monthMode ? monthStart : skuPlanFactDateKey(filters.dateFrom);
   if (!dateFrom || skuPlanFactMonthFromDate(dateFrom) !== monthKey) {
     dateFrom = monthStart;
   }
-  dateFrom = skuPlanFactClampDateToRange(dateFrom, monthStart, dateTo || maxDate);
-  dateTo = skuPlanFactClampDateToRange(dateTo, dateFrom || monthStart, maxDate);
+  dateFrom = skuPlanFactClampDateToRange(dateFrom, monthStart, dateTo || periodMaxDate);
+  dateTo = skuPlanFactClampDateToRange(dateTo, dateFrom || monthStart, periodMaxDate);
   if (dateFrom && dateTo && dateFrom > dateTo) dateFrom = dateTo;
   filters.dateFrom = dateFrom;
   filters.dateTo = dateTo;
@@ -10721,6 +10728,8 @@ function skuPlanFactSetFilter(rootId, key, value, options = {}) {
     filters.date = nextValue;
     filters.dateTo = nextValue;
     filters.dateMode = nextValue ? 'manual' : 'latest';
+    filters.fullMonth = false;
+    filters.periodEndCap = '';
     if (filters.dateFrom && nextValue && skuPlanFactMonthFromDate(filters.dateFrom) !== skuPlanFactMonthFromDate(nextValue)) {
       filters.dateFrom = `${nextValue.slice(0, 7)}-01`;
     }
@@ -10733,6 +10742,8 @@ function skuPlanFactSetFilter(rootId, key, value, options = {}) {
     nextValue = skuPlanFactDateKey(value);
     filters.month = nextValue ? nextValue.slice(0, 7) : filters.month;
     filters.dateMode = nextValue ? 'manual' : 'latest';
+    filters.fullMonth = false;
+    filters.periodEndCap = '';
     if (filters.dateTo && nextValue && skuPlanFactMonthFromDate(filters.dateTo) !== skuPlanFactMonthFromDate(nextValue)) {
       filters.dateTo = '';
       filters.date = '';
@@ -10749,6 +10760,8 @@ function skuPlanFactSetFilter(rootId, key, value, options = {}) {
     filters.dateFrom = '';
     filters.dateTo = '';
     filters.dateMode = nextValue === 'latest' ? 'latest' : 'month';
+    filters.fullMonth = false;
+    filters.periodEndCap = '';
   }
   if (key === 'sort') {
     filters.sortDir = skuPlanFactDefaultSortDir(nextValue);

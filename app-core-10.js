@@ -599,12 +599,48 @@ function executiveFunnelApplyPayrollPlatformMetric(row = {}, metric = {}) {
   return executiveFunnelFinalizePlanBucket(row);
 }
 
+function executiveFunnelPayrollMetricForPlatform(planModel = {}, platform = 'all') {
+  const payroll = planModel?.payrollKpi;
+  if (!payroll || !payroll.payrollKpi && !payroll.isPayrollCritical) return null;
+  const key = String(platform || 'all').toLowerCase();
+  if (key === 'all') {
+    return {
+      ...payroll,
+      platform: 'all',
+      label: payroll.label || payroll.displayTitle || executiveFunnelPlatformLabel('all'),
+      payrollKpi: true
+    };
+  }
+  const aliases = [
+    key,
+    EXECUTIVE_FUNNEL_SUPPORT_KEYS[key],
+    key === 'ya' ? 'ym' : '',
+    key === 'ym' ? 'ya' : ''
+  ].filter(Boolean);
+  const direct = aliases
+    .map((alias) => payroll.platforms?.[alias])
+    .find(Boolean);
+  if (direct) {
+    return {
+      ...direct,
+      platform: key,
+      label: direct.label || executiveFunnelPlatformLabel(key),
+      payrollKpi: true
+    };
+  }
+  if (typeof skuPlanFactPlatformSummary === 'function') {
+    const summary = skuPlanFactPlatformSummary(planModel, key, { scope: 'allRows', includePayroll: true });
+    if (summary?.payrollKpi) return summary;
+  }
+  return null;
+}
+
 function executiveFunnelApplyPayrollPlatformRows(platformRows = [], planModel = {}, selectedPlatform = 'all') {
-  if (!planModel?.payrollKpi?.platforms || typeof skuPlanFactPlatformSummary !== 'function') return platformRows;
+  if (!planModel?.payrollKpi?.platforms) return platformRows;
   Object.keys(planModel.payrollKpi.platforms || {}).forEach((platform) => {
     if (!EXECUTIVE_FUNNEL_PLATFORMS.includes(platform)) return;
     if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
-    const metric = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false });
+    const metric = executiveFunnelPayrollMetricForPlatform(planModel, platform);
     if (!metric?.payrollKpi || metric.salaryIncluded === false) return;
 
     let row = platformRows.find((item) => item.platform === platform);
@@ -749,11 +785,11 @@ function executiveFunnelRebuildOwnerFromPlatforms(bucket = {}) {
 }
 
 function executiveFunnelApplyPayrollOwnerControls(ownerMap = new Map(), planModel = {}, selectedPlatform = 'all') {
-  if (!planModel?.payrollKpi?.platforms || typeof skuPlanFactPlatformSummary !== 'function') return null;
+  if (!planModel?.payrollKpi?.platforms) return null;
   const controls = {};
   EXECUTIVE_FUNNEL_PLATFORMS.forEach((platform) => {
     if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
-    const target = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false });
+    const target = executiveFunnelPayrollMetricForPlatform(planModel, platform);
     if (!target?.payrollKpi || target.salaryIncluded === false) return;
     const raw = [...ownerMap.values()].reduce((acc, ownerBucket) => {
       const metric = ownerBucket.platforms?.get(platform);
@@ -884,9 +920,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     return acc;
   }, executiveFunnelOwnerPlanBucket('Итого')));
   const payrollTotalMetric = selectedPlatform === 'all'
-    ? (typeof skuPlanFactPlatformSummary === 'function'
-      ? skuPlanFactPlatformSummary(planModel, 'all', { scope: 'allRows', includePayroll: true })
-      : planModel.payrollKpi)
+    ? executiveFunnelPayrollMetricForPlatform(planModel, 'all')
     : null;
   if (payrollTotalMetric?.payrollKpi) {
     executiveFunnelApplyPayrollPlatformMetric(totals, payrollTotalMetric || planModel.payrollKpi);
@@ -1869,6 +1903,9 @@ function renderExecutiveFunnel(funnel) {
 }
 
 function executiveFunnelForceRender() {
+  if (typeof window.__ALTEA_INVALIDATE_EXECUTIVE_PRESENTATION__ === 'function') {
+    window.__ALTEA_INVALIDATE_EXECUTIVE_PRESENTATION__();
+  }
   const root = document.getElementById('view-executive');
   if (root) root.dataset.executiveSignature = '';
   if (typeof rerenderCurrentView === 'function') rerenderCurrentView();

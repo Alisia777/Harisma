@@ -86,26 +86,34 @@ async function clickView(page, view) {
   const selector = `[data-premium-nav="${view}"], .nav-btn[data-view="${view}"]`;
   const count = await page.locator(selector).count();
   if (!count) throw new Error(`Navigation button not found: ${view}`);
-  await page.evaluate((targetSelector) => {
-    const candidates = [...document.querySelectorAll(targetSelector)];
-    const target = candidates.find((button) => {
-      const style = getComputedStyle(button);
-      const rect = button.getBoundingClientRect();
-      return style.display !== 'none'
-        && style.visibility !== 'hidden'
-        && Number(style.opacity || 1) > 0
-        && rect.width > 0
-        && rect.height > 0;
-    }) || candidates[0];
-    target?.click();
-  }, selector);
-  await page.waitForTimeout(400);
+
+  const alreadyActive = await page.evaluate((targetView) => Boolean(
+    document.querySelector(`[data-premium-nav="${targetView}"].is-active`)
+      || document.querySelector(`#view-${targetView}`)?.classList.contains('active')
+      || document.querySelector(`[data-premium-stage="${targetView}"].is-active`)
+      || document.querySelector('#altea-premium-app')?.getAttribute('data-premium-active-route') === targetView
+  ), view).catch(() => false);
+
+  if (!alreadyActive) {
+    const premiumNav = page.locator(`[data-premium-nav="${view}"]`).first();
+    if (await premiumNav.count().then(Boolean).catch(() => false)) {
+      await premiumNav.waitFor({ state: 'visible', timeout: 10000 });
+      await premiumNav.click({ timeout: 10000, noWaitAfter: true });
+    } else {
+      const nav = page.locator(`.nav-btn[data-view="${view}"]`).first();
+      await nav.waitFor({ state: 'visible', timeout: 10000 });
+      await nav.click({ timeout: 10000, noWaitAfter: true });
+    }
+    await page.waitForTimeout(400);
+  }
+
   const active = await page.evaluate((targetView) => Boolean(
     document.querySelector(`[data-premium-nav="${targetView}"].is-active`)
       || document.querySelector(`#view-${targetView}`)?.classList.contains('active')
       || document.querySelector(`[data-premium-stage="${targetView}"].is-active`)
       || document.querySelector('#altea-premium-app')?.getAttribute('data-premium-active-route') === targetView
   ), view).catch(() => false);
+
   if (!active) {
     await page.evaluate((targetView) => {
       if (typeof window.setView === 'function') {

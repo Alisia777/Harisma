@@ -290,6 +290,53 @@ const OWNER_NAME_ALIASES = new Map([
   ['олеся савинова', 'Олеся']
 ]);
 
+const ACTIVE_OWNER_NAMES_BY_PLATFORM = {
+  wb: ['Мария Васильева', 'Максим Лапыгин'],
+  ozon: ['Молодякова Дария', 'Питайкин Артём'],
+  ym: ['Анна Пирогова'],
+  ya: ['Анна Пирогова'],
+  ga: ['Екатерина Доможирова'],
+  goldapple: ['Екатерина Доможирова'],
+  letu: ['Екатерина Доможирова'],
+  mm: ['Екатерина Доможирова'],
+  magnit: ['Екатерина Доможирова'],
+  megamarket: ['Екатерина Доможирова'],
+  samokat: ['Екатерина Доможирова']
+};
+
+const ACTIVE_OWNER_NAME_ALIASES = new Map([
+  ['анна', 'Анна Пирогова'],
+  ['анна пирогова', 'Анна Пирогова'],
+  ['пирогова анна', 'Анна Пирогова'],
+  ['артем', 'Питайкин Артём'],
+  ['артём', 'Питайкин Артём'],
+  ['питайкин артем', 'Питайкин Артём'],
+  ['питайкин артём', 'Питайкин Артём'],
+  ['артем питайкин', 'Питайкин Артём'],
+  ['артём питайкин', 'Питайкин Артём'],
+  ['даша', 'Молодякова Дария'],
+  ['дария', 'Молодякова Дария'],
+  ['дарья', 'Молодякова Дария'],
+  ['молодякова дария', 'Молодякова Дария'],
+  ['молодякова дарья', 'Молодякова Дария'],
+  ['дария молодякова', 'Молодякова Дария'],
+  ['дарья молодякова', 'Молодякова Дария'],
+  ['екатерина', 'Екатерина Доможирова'],
+  ['катя', 'Екатерина Доможирова'],
+  ['екатерина доможирова', 'Екатерина Доможирова'],
+  ['екатерина доброжирова', 'Екатерина Доможирова'],
+  ['доможирова екатерина', 'Екатерина Доможирова'],
+  ['доброжирова екатерина', 'Екатерина Доможирова'],
+  ['мария', 'Мария Васильева'],
+  ['маша', 'Мария Васильева'],
+  ['мария васильева', 'Мария Васильева'],
+  ['мария васильевна', 'Мария Васильева'],
+  ['васильева мария', 'Мария Васильева'],
+  ['максим', 'Максим Лапыгин'],
+  ['максим лапыгин', 'Максим Лапыгин'],
+  ['лапыгин максим', 'Максим Лапыгин']
+]);
+
 function normalizeOwnerToken(value = '') {
   return String(value ?? '')
     .replace(/\s+/g, ' ')
@@ -308,6 +355,26 @@ function canonicalOwnerName(value = '') {
   return normalized;
 }
 
+function activeCanonicalOwnerName(value = '') {
+  const candidates = [value, canonicalOwnerName(value)];
+  for (const candidate of candidates) {
+    const normalized = normalizeOwnerToken(candidate).toLowerCase().replace(/\u0451/g, 'е');
+    if (!normalized) continue;
+    if (ACTIVE_OWNER_NAME_ALIASES.has(normalized)) return ACTIVE_OWNER_NAME_ALIASES.get(normalized);
+    const [firstToken = ''] = normalized.split(/\s+/);
+    if (ACTIVE_OWNER_NAME_ALIASES.has(firstToken)) return ACTIVE_OWNER_NAME_ALIASES.get(firstToken);
+  }
+  return '';
+}
+
+function activeOwnerName(value = '', platform = 'all') {
+  const owner = activeCanonicalOwnerName(value);
+  if (!owner) return '';
+  const key = normalizeOwnerPlatformKey(platform);
+  if (!key || key === 'all') return owner;
+  return (ACTIVE_OWNER_NAMES_BY_PLATFORM[key] || []).includes(owner) ? owner : '';
+}
+
 function isActualSkuStatus(value = '') {
   const normalized = normalizeText(value).toLowerCase();
   return normalized === 'актуальный' || normalized === 'актуально';
@@ -318,20 +385,22 @@ function shouldReplaceGenericOwnerName(currentOwnerName = '', sheetStatus = '') 
 }
 
 function primaryOwnerName(ownersByPlatform = {}) {
-  return canonicalOwnerName(
-    ownersByPlatform.wb
-    || ownersByPlatform.ozon
-    || ownersByPlatform.ym
-    || ownersByPlatform.letu
-    || ownersByPlatform.ga
-    || ownersByPlatform.mm
-    || ''
-  );
+  return activeOwnerName(ownersByPlatform.wb, 'wb')
+    || activeOwnerName(ownersByPlatform.ozon, 'ozon')
+    || activeOwnerName(ownersByPlatform.ym || ownersByPlatform.ya, 'ym')
+    || activeOwnerName(ownersByPlatform.letu, 'letu')
+    || activeOwnerName(ownersByPlatform.ga || ownersByPlatform.goldapple, 'ga')
+    || activeOwnerName(ownersByPlatform.mm || ownersByPlatform.magnit, 'mm')
+    || activeOwnerName(ownersByPlatform.megamarket, 'megamarket')
+    || activeOwnerName(ownersByPlatform.samokat, 'samokat')
+    || '';
 }
 
 function normalizeOwnerPlatformKey(platform = '') {
   const normalized = String(platform || '').trim().toLowerCase();
   if (normalized === 'ya' || normalized === 'yandex' || normalized === 'yandex_market' || normalized === 'market') return 'ym';
+  if (normalized === 'goldapple' || normalized === 'zya') return 'ga';
+  if (normalized === 'magnit' || normalized === 'magnitmarket') return 'mm';
   return normalized;
 }
 
@@ -341,7 +410,7 @@ function skuOwnerForPlatform(sku, platform = '') {
   const platformOwner = key === 'ym'
     ? (byPlatform.ym || byPlatform.ya || '')
     : (byPlatform[key] || '');
-  return canonicalOwnerName(platformOwner || sku?.owner?.name || '');
+  return activeOwnerName(platformOwner || sku?.owner?.name || '', key);
 }
 
 function hasText(value) {
@@ -1051,15 +1120,20 @@ function buildSkuOverlay(baseSkus, dimSkuRows) {
     if (!sheetRow) return deepClone(item);
     updatedCount += 1;
     const next = deepClone(item);
+    const existingOwners = { ...(next.owner?.byPlatform || {}), ...(next.ownersByPlatform || {}) };
+    const scopedOwner = (value, platform, fallback = '') => (
+      activeOwnerName(normalizeText(value), platform)
+      || activeOwnerName(fallback, platform)
+    );
     const ownersByPlatform = {
-      wb: canonicalOwnerName(normalizeText(sheetRow.owner_wb)),
-      ozon: canonicalOwnerName(normalizeText(sheetRow.owner_oz)),
-      ym: canonicalOwnerName(normalizeText(sheetRow.owner_ym)),
-      ga: canonicalOwnerName(normalizeText(sheetRow.owner_ga)),
-      letu: canonicalOwnerName(normalizeText(sheetRow.owner_letu)),
-      megamarket: canonicalOwnerName(normalizeText(sheetRow.owner_megamarket)),
-      samokat: canonicalOwnerName(normalizeText(sheetRow.owner_samokat)),
-      mm: canonicalOwnerName(normalizeText(sheetRow.owner_mm))
+      wb: scopedOwner(sheetRow.owner_wb, 'wb', existingOwners.wb),
+      ozon: scopedOwner(sheetRow.owner_oz, 'ozon', existingOwners.ozon),
+      ym: scopedOwner(sheetRow.owner_ym, 'ym', existingOwners.ym || existingOwners.ya),
+      ga: scopedOwner(sheetRow.owner_ga, 'ga', existingOwners.ga || existingOwners.goldapple),
+      letu: scopedOwner(sheetRow.owner_letu, 'letu', existingOwners.letu),
+      megamarket: scopedOwner(sheetRow.owner_megamarket, 'megamarket', existingOwners.megamarket),
+      samokat: scopedOwner(sheetRow.owner_samokat, 'samokat', existingOwners.samokat),
+      mm: scopedOwner(sheetRow.owner_mm, 'mm', existingOwners.mm || existingOwners.magnit)
     };
     const categoriesByPlatform = {
       wb: normalizeText(sheetRow.catygory_wb),
@@ -1075,8 +1149,8 @@ function buildSkuOverlay(baseSkus, dimSkuRows) {
     next.categoriesByPlatform = categoriesByPlatform;
     next.costPrice = numberOrNull(sheetRow.cost_price);
     next.sheetStatus = normalizeText(sheetRow.status);
-    const currentOwnerName = canonicalOwnerName(next?.owner?.name || '');
-    const nextOwnerName = shouldReplaceGenericOwnerName(currentOwnerName, next.sheetStatus)
+    const currentOwnerName = activeOwnerName(next?.owner?.name || '');
+    const nextOwnerName = !currentOwnerName || shouldReplaceGenericOwnerName(currentOwnerName, next.sheetStatus)
       ? primaryOwnerName(ownersByPlatform)
       : currentOwnerName;
     next.owner = {

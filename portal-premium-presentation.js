@@ -527,6 +527,22 @@
     executiveModelCache = { key: '', model: null, time: 0 };
   }
 
+  function invalidateExecutivePresentation() {
+    resetExecutiveModelCache();
+    var root = document.getElementById('view-executive');
+    if (root) {
+      root.dataset.executiveSignature = '';
+      root.dataset.premiumSignature = '';
+    }
+    var stage = document.getElementById(stageId('executive'));
+    if (stage) {
+      stage.dataset.premiumSignature = '';
+      stage.dataset.premiumDataRetryCount = '0';
+    }
+  }
+
+  window.__ALTEA_INVALIDATE_EXECUTIVE_PRESENTATION__ = invalidateExecutivePresentation;
+
   function executivePlanFactReady() {
     var s = state();
     if (!s.boot || !s.boot.dataReady) return false;
@@ -2288,10 +2304,7 @@
     filters[key] = next;
     if (key === 'owner' && next !== 'all') filters.search = '';
     window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ = filters;
-    var root = document.getElementById('view-executive');
-    if (root) root.dataset.premiumSignature = '';
-    var stage = document.getElementById(stageId('executive'));
-    if (stage) stage.dataset.premiumSignature = '';
+    invalidateExecutivePresentation();
     scheduleRender(delay || 0);
     return true;
   }
@@ -2454,8 +2467,8 @@
     });
     window.addEventListener('hashchange', scheduleRouteRepair);
     window.addEventListener('altea:themechange', function () { scheduleRender(40); });
-    window.addEventListener('altea:marketplacechange', function () { resetExecutiveModelCache(); scheduleRender(40); });
-    window.addEventListener('altea:data-ready', function () { resetExecutiveModelCache(); scheduleRender(80); });
+    window.addEventListener('altea:marketplacechange', function () { invalidateExecutivePresentation(); scheduleRender(40); });
+    window.addEventListener('altea:data-ready', function () { invalidateExecutivePresentation(); scheduleRender(80); });
     window.addEventListener('load', function () { scheduleRouteRepair(); });
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) scheduleRouteRepair();

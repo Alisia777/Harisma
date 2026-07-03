@@ -67,17 +67,44 @@ function numberOrZero(value) {
   return Number.isFinite(number) ? number : 0;
 }
 
+const OWNER_NAME_ALIASES = new Map([
+  ['васильева мария', 'Мария Васильева'],
+  ['мария васильева', 'Мария Васильева'],
+  ['лапыгин максим', 'Максим Лапыгин'],
+  ['максим лапыгин', 'Максим Лапыгин'],
+  ['молодякова дария', 'Молодякова Дария'],
+  ['дария молодякова', 'Молодякова Дария'],
+  ['даша', 'Молодякова Дария'],
+  ['питайкин артем', 'Питайкин Артём'],
+  ['питайкин артём', 'Питайкин Артём'],
+  ['артем питайкин', 'Питайкин Артём'],
+  ['артём питайкин', 'Питайкин Артём'],
+  ['пирогова анна', 'Анна Пирогова'],
+  ['анна пирогова', 'Анна Пирогова'],
+  ['доможирова екатерина', 'Екатерина Доможирова'],
+  ['екатерина доможирова', 'Екатерина Доможирова']
+]);
+
+function normalizeOwnerName(value = '') {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  return OWNER_NAME_ALIASES.get(text.toLowerCase().replace(/\u0451/g, 'е')) || text;
+}
+
 function ownerText(sku = {}) {
-  if (typeof sku.owner === 'string') return sku.owner.trim();
-  const directOwner = String(sku.owner?.name || '').trim();
-  if (directOwner) return directOwner;
-  const byPlatform = sku.owner?.byPlatform && typeof sku.owner.byPlatform === 'object' ? sku.owner.byPlatform : {};
+  const byPlatform = {
+    ...((sku.owner?.byPlatform && typeof sku.owner.byPlatform === 'object') ? sku.owner.byPlatform : {}),
+    ...((sku.ownersByPlatform && typeof sku.ownersByPlatform === 'object') ? sku.ownersByPlatform : {})
+  };
   const platformOrder = ['wb', 'ozon', 'ym', 'ya', 'ga', 'goldapple', 'letu', 'mm', 'magnit'];
   for (const platform of platformOrder) {
-    const platformOwner = String(byPlatform[platform] || '').trim();
+    const platformOwner = normalizeOwnerName(byPlatform[platform]);
     if (platformOwner) return platformOwner;
   }
-  return Object.values(byPlatform).map((value) => String(value || '').trim()).find(Boolean) || '';
+  const fallback = Object.values(byPlatform).map(normalizeOwnerName).find(Boolean) || '';
+  if (fallback) return fallback;
+  if (typeof sku.owner === 'string') return normalizeOwnerName(sku.owner);
+  return normalizeOwnerName(sku.owner?.name || '');
 }
 
 function skuTokens(sku = {}) {
@@ -219,7 +246,8 @@ function planInfo(sku = {}) {
 function problemStatesForItem(owner = '', issues = [], sku = {}) {
   const states = [];
   const plan = planInfo(sku);
-  if (isMissingOwnerText(owner)) states.push('missing_owner');
+  const ownerRequired = sku.matrixPresent !== false && !isDisabledSkuStatus(sku.status || sku.registryStatus || sku.owner?.registryStatus || '');
+  if (ownerRequired && isMissingOwnerText(owner)) states.push('missing_owner');
   if (plan.planNeedsAssignment) states.push('missing_plan');
   if (issues.some((issue) => issue.severity === 'critical' || issue.severity === 'danger')) {
     states.push('has_critical_issue');
@@ -347,7 +375,7 @@ function buildMatrix(options) {
       apiUnmappedCount: apiUnmapped.length,
       duplicateRiskCount: duplicateRisks.length,
       duplicateRiskOverage: duplicateRisks.reduce((sum, item) => sum + numberOrZero(item.overage), 0),
-      missingOwnerCount: items.filter((item) => isMissingOwnerText(item.owner)).length,
+      missingOwnerCount: items.filter((item) => (item.problemStates || []).includes('missing_owner')).length,
       planNeedsAssignmentCount: items.filter((item) => item.planNeedsAssignment).length,
       planAssignedCount: items.filter((item) => item.planAssigned).length,
       issueCount: actionIssues.length,

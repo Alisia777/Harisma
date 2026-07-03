@@ -2,6 +2,22 @@
   const marker = 'direct_fact_only';
   if (typeof window === 'undefined') return;
   if (typeof executiveFunnelNumber !== 'function' || typeof executiveFunnelFinalizePlanBucket !== 'function') return;
+  const nativeApplyMissingPayrollFacts = typeof window.executiveFunnelApplyMissingPayrollFacts === 'function'
+    ? window.executiveFunnelApplyMissingPayrollFacts
+    : (typeof executiveFunnelApplyMissingPayrollFacts === 'function' ? executiveFunnelApplyMissingPayrollFacts : null);
+  const nativeScalePlanBucket = typeof window.executiveFunnelScalePlanBucket === 'function'
+    ? window.executiveFunnelScalePlanBucket
+    : (typeof executiveFunnelScalePlanBucket === 'function' ? executiveFunnelScalePlanBucket : null);
+
+  function directFactBucketHasKpiPlan(metric = {}) {
+    return Boolean(metric && (
+      executiveFunnelNumber(metric.planToDateRevenue) > 0
+      || executiveFunnelNumber(metric.planRevenue) > 0
+      || executiveFunnelNumber(metric.planUnits) > 0
+      || executiveFunnelNumber(metric.planMarginRub) > 0
+      || metric.planAdSpend !== null && metric.planAdSpend !== undefined
+    ));
+  }
 
   function directFactMissingPayrollFacts(ownerMap = new Map(), platform = '', target = {}, raw = {}) {
     const targetRevenue = executiveFunnelNumber(target.factRevenue);
@@ -19,7 +35,7 @@
         owner: ownerBucket.owner,
         metric: ownerBucket.platforms?.get(platform) || null
       }))
-      .filter(({ metric }) => metric && executiveFunnelPlanBucketHasKpiPlan(metric));
+      .filter(({ metric }) => metric && directFactBucketHasKpiPlan(metric));
     if (!entries.length) return null;
 
     return {
@@ -55,12 +71,24 @@
     return executiveFunnelFinalizePlanBucket(bucket);
   }
 
-  window.executiveFunnelApplyMissingPayrollFacts = executiveFunnelApplyMissingPayrollFacts = directFactMissingPayrollFacts;
-  window.executiveFunnelScalePlanBucket = executiveFunnelScalePlanBucket = directFactScalePlanBucket;
+  window.executiveFunnelApplyMissingPayrollFacts = executiveFunnelApplyMissingPayrollFacts = function guardedMissingPayrollFacts(ownerMap, platform, target, raw) {
+    const allocation = nativeApplyMissingPayrollFacts
+      ? nativeApplyMissingPayrollFacts(ownerMap, platform, target, raw)
+      : directFactMissingPayrollFacts(ownerMap, platform, target, raw);
+    if (allocation && typeof allocation === 'object') allocation.guard = marker;
+    return allocation;
+  };
+  window.executiveFunnelScalePlanBucket = executiveFunnelScalePlanBucket = function guardedScalePlanBucket(bucket, ratios) {
+    const scaled = nativeScalePlanBucket
+      ? nativeScalePlanBucket(bucket, ratios)
+      : directFactScalePlanBucket(bucket, ratios);
+    if (scaled && typeof scaled === 'object') scaled.guard = marker;
+    return scaled;
+  };
   window.__ALTEA_EXECUTIVE_DIRECT_FACT_GUARD__ = {
     mode: marker,
-    syntheticAllocationBlocked: true,
-    payrollControlScalingBlocked: true
+    syntheticAllocationBlocked: false,
+    payrollControlScalingBlocked: false
   };
 
   window.setTimeout(() => {

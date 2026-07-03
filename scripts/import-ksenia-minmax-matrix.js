@@ -100,12 +100,17 @@ function normalizeArticleKey(value = '') {
     .toLowerCase()
     .replace(/ё/g, 'е')
     .replace(/[^\p{L}\p{N}_-]+/gu, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_+|_+$/g, '');
+    .replace(/_+/g, '_');
 }
 
 function compactKey(value = '') {
   return normalizeArticleKey(value).replace(/[_-]+/g, '');
+}
+
+function articleMatchKeys(value = '') {
+  const exact = normalizeArticleKey(value);
+  const compact = compactKey(value);
+  return Array.from(new Set([exact, compact].filter(Boolean)));
 }
 
 function normalizeToken(value = '') {
@@ -213,6 +218,92 @@ function ownerPlatformKeys(platform) {
   return [platform];
 }
 
+function sourcePlatformKeys(platform = '') {
+  const normalized = normalizePlatform(platform) || platform;
+  const keys = ownerPlatformKeys(normalized);
+  if (normalized === 'ym' || normalized === 'ya') keys.push('ym', 'ya');
+  return Array.from(new Set(keys.filter(Boolean)));
+}
+
+const ACTIVE_OWNER_NAMES_BY_PLATFORM = {
+  wb: ['Мария Васильева', 'Максим Лапыгин'],
+  ozon: ['Молодякова Дария', 'Питайкин Артём'],
+  ym: ['Анна Пирогова'],
+  ga: ['Екатерина Доможирова'],
+  goldapple: ['Екатерина Доможирова'],
+  letu: ['Екатерина Доможирова'],
+  magnit: ['Екатерина Доможирова'],
+  mm: ['Екатерина Доможирова'],
+  megamarket: ['Екатерина Доможирова'],
+  samokat: ['Екатерина Доможирова']
+};
+
+const OWNER_NAME_ALIASES = new Map([
+  ['анна', 'Анна Пирогова'],
+  ['анна пирогова', 'Анна Пирогова'],
+  ['пирогова анна', 'Анна Пирогова'],
+  ['артем', 'Питайкин Артём'],
+  ['артём', 'Питайкин Артём'],
+  ['питайкин артем', 'Питайкин Артём'],
+  ['питайкин артём', 'Питайкин Артём'],
+  ['артем питайкин', 'Питайкин Артём'],
+  ['артём питайкин', 'Питайкин Артём'],
+  ['даша', 'Молодякова Дария'],
+  ['дария', 'Молодякова Дария'],
+  ['дарья', 'Молодякова Дария'],
+  ['молодякова дария', 'Молодякова Дария'],
+  ['молодякова дарья', 'Молодякова Дария'],
+  ['дария молодякова', 'Молодякова Дария'],
+  ['дарья молодякова', 'Молодякова Дария'],
+  ['екатерина', 'Екатерина Доможирова'],
+  ['катя', 'Екатерина Доможирова'],
+  ['екатерина доможирова', 'Екатерина Доможирова'],
+  ['екатерина доброжирова', 'Екатерина Доможирова'],
+  ['доможирова екатерина', 'Екатерина Доможирова'],
+  ['доброжирова екатерина', 'Екатерина Доможирова'],
+  ['мария', 'Мария Васильева'],
+  ['маша', 'Мария Васильева'],
+  ['мария васильева', 'Мария Васильева'],
+  ['мария васильевна', 'Мария Васильева'],
+  ['васильева мария', 'Мария Васильева'],
+  ['максим', 'Максим Лапыгин'],
+  ['максим лапыгин', 'Максим Лапыгин'],
+  ['лапыгин максим', 'Максим Лапыгин']
+]);
+
+const OWNER_PLATFORM_SCOPE_KEYS = ['wb', 'ozon', 'ym', 'ya', 'ga', 'goldapple', 'letu', 'magnit', 'mm', 'megamarket', 'samokat'];
+const OWNER_MATRIX_PLATFORM_KEYS = ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit', 'megamarket', 'samokat'];
+
+function canonicalOwnerName(value = '') {
+  const normalized = normalizeText(value).toLowerCase().replace(/\u0451/g, 'е');
+  if (!normalized) return '';
+  if (OWNER_NAME_ALIASES.has(normalized)) return OWNER_NAME_ALIASES.get(normalized);
+  const [firstToken = ''] = normalized.split(/\s+/);
+  return OWNER_NAME_ALIASES.get(firstToken) || '';
+}
+
+function canonicalOwnerForPlatform(value = '', platform = '') {
+  const owner = canonicalOwnerName(value);
+  const keys = ownerPlatformKeys(platform);
+  return keys.some((key) => (ACTIVE_OWNER_NAMES_BY_PLATFORM[key] || []).includes(owner)) ? owner : '';
+}
+
+function clearScopedOwners(sku, groupPlatforms = {}) {
+  ensureOwnerObject(sku);
+  delete sku.wbOwnerDistribution;
+  OWNER_PLATFORM_SCOPE_KEYS.forEach((key) => {
+    delete sku.owner.byPlatform[key];
+    delete sku.ownersByPlatform[key];
+  });
+  sku.platformMatrix = sku.platformMatrix && typeof sku.platformMatrix === 'object' ? sku.platformMatrix : {};
+  OWNER_MATRIX_PLATFORM_KEYS.forEach((platform) => {
+    if (!groupPlatforms[platform]) delete sku.platformMatrix[platform];
+  });
+  ['wb', 'ozon', 'ym'].forEach((platform) => {
+    if (!groupPlatforms[platform] && sku[platform] && typeof sku[platform] === 'object') sku[platform].owner = '';
+  });
+}
+
 function isDisabledStatus(value = '') {
   const token = normalizeToken(value);
   return token.includes('вывод')
@@ -244,7 +335,7 @@ function chooseStatus(statuses = []) {
 }
 
 function chooseOwner(values = []) {
-  return values.map(normalizeText).filter(Boolean)[0] || '';
+  return values.map(canonicalOwnerName).filter(Boolean)[0] || '';
 }
 
 function rowsFromBucket(bucket = {}) {
@@ -301,7 +392,7 @@ function rowKeyValues(row = {}, keyHint = '') {
     if (Array.isArray(aliases)) values.push(...aliases);
     else values.push(aliases);
   });
-  return values.map(compactKey).filter(Boolean);
+  return Array.from(new Set(values.flatMap(articleMatchKeys).filter(Boolean)));
 }
 
 function buildRowMap(bucket = {}) {
@@ -441,10 +532,11 @@ function readSourceMatrix(inputPath) {
       platform,
       article,
       articleKey,
-      key: compactKey(articleKey),
+      key: articleKey,
+      compactKey: compactKey(articleKey),
       status: normalizeText(values[2]),
       barcode: normalizeText(values[3]),
-      owner: normalizeText(values[4]),
+      owner: canonicalOwnerForPlatform(values[4], platform),
       rawCost,
       cost: rawCost > 0 ? rawCost : null,
       rawMinPrice,
@@ -514,6 +606,7 @@ function groupSourceRows(rows = []) {
         article: row.article,
         articleKey: row.articleKey,
         key: row.key,
+        compactKey: row.compactKey,
         status: row.status,
         owner: row.owner,
         cost: row.cost,
@@ -566,15 +659,17 @@ function groupSourceRows(rows = []) {
 function buildKnownInfo(dataDir) {
   const info = new Map();
   function remember(article, values = {}) {
-    const key = compactKey(article);
-    if (!key) return;
-    const current = info.get(key) || {};
-    info.set(key, {
-      articleKey: current.articleKey || values.articleKey || values.article || article,
-      article: current.article || values.article || values.articleKey || article,
-      name: current.name || values.name || '',
-      brand: current.brand || values.brand || '',
-      legalEntity: current.legalEntity || values.legalEntity || ''
+    const keys = articleMatchKeys(article);
+    if (!keys.length) return;
+    keys.forEach((key) => {
+      const current = info.get(key) || {};
+      info.set(key, {
+        articleKey: current.articleKey || values.articleKey || values.article || article,
+        article: current.article || values.article || values.articleKey || article,
+        name: current.name || values.name || '',
+        brand: current.brand || values.brand || '',
+        legalEntity: current.legalEntity || values.legalEntity || ''
+      });
     });
   }
   const skus = readJson(path.join(dataDir, 'skus.json'), []);
@@ -664,7 +759,7 @@ function applyMatrixRow(row, sourceRow, platform) {
   row.marketplace = row.marketplace || platform;
   row.platformKey = row.platformKey || platform;
   row.platformLabel = row.platformLabel || platformLabel(platform);
-  row.owner = sourceRow.owner || row.owner || '';
+  row.owner = sourceRow.owner || '';
   row.ownerSource = SOURCE_NOTE;
   row.status = sourceRow.status || row.status || '';
   row.productStatus = sourceRow.status || row.productStatus || row.status || '';
@@ -766,6 +861,7 @@ function disableOldRow(row, platform) {
   row.status = DISABLED_STATUS;
   row.productStatus = DISABLED_STATUS;
   row.repricerStatus = DISABLED_STATUS;
+  row.owner = '';
   row.matrixPresent = false;
   row.matrixActive = false;
   row.matrixDisabledAt = IMPORT_STAMP;
@@ -946,7 +1042,7 @@ function skuTokens(sku = {}) {
     if (Array.isArray(aliases)) values.push(...aliases);
     else values.push(aliases);
   });
-  return values.map(compactKey).filter(Boolean);
+  return Array.from(new Set(values.flatMap(articleMatchKeys).filter(Boolean)));
 }
 
 function skuCanonicalTokens(sku = {}) {
@@ -956,7 +1052,53 @@ function skuCanonicalTokens(sku = {}) {
     sku.sku,
     sku.vendorCode,
     sku.supplierArticle
-  ].map(compactKey).filter(Boolean);
+  ].map(normalizeArticleKey).filter(Boolean);
+}
+
+function aliasValue(alias) {
+  if (typeof alias === 'string') return alias;
+  return alias?.value || alias?.alias || alias?.sku || alias?.article || alias?.articleKey || alias?.offerId || alias?.vendorCode || alias?.nmId || '';
+}
+
+function aliasPlatform(alias, fallback = '') {
+  if (typeof alias === 'string') return fallback;
+  return alias?.platform || alias?.marketplace || fallback || '';
+}
+
+function buildSourceKeysByPlatform(articleGroups = new Map()) {
+  const byPlatform = new Map();
+  articleGroups.forEach((group) => {
+    Object.keys(group.platforms || {}).forEach((platform) => {
+      sourcePlatformKeys(platform).forEach((key) => {
+        if (!byPlatform.has(key)) byPlatform.set(key, new Set());
+        byPlatform.get(key).add(group.key);
+      });
+    });
+  });
+  return byPlatform;
+}
+
+function aliasTargetsAnotherSourceArticle(value = '', platform = '', ownKeys = new Set(), sourceKeysByPlatform = new Map()) {
+  const key = normalizeArticleKey(value);
+  if (!key || ownKeys.has(key)) return false;
+  return sourcePlatformKeys(platform).some((platformKey) => sourceKeysByPlatform.get(platformKey)?.has(key));
+}
+
+function pruneSourceArticleAliases(sku, sourceKeysByPlatform = new Map()) {
+  const ownKeys = new Set(skuCanonicalTokens(sku));
+  if (Array.isArray(sku.aliases)) {
+    sku.aliases = sku.aliases.filter((alias) => !aliasTargetsAnotherSourceArticle(aliasValue(alias), aliasPlatform(alias), ownKeys, sourceKeysByPlatform));
+    if (!sku.aliases.length) delete sku.aliases;
+  }
+  if (sku.platformAliases && typeof sku.platformAliases === 'object') {
+    Object.entries(sku.platformAliases).forEach(([platform, aliases]) => {
+      const values = Array.isArray(aliases) ? aliases : [aliases];
+      const next = values.filter((alias) => !aliasTargetsAnotherSourceArticle(alias, platform, ownKeys, sourceKeysByPlatform));
+      if (next.length) sku.platformAliases[platform] = next;
+      else delete sku.platformAliases[platform];
+    });
+    if (!Object.keys(sku.platformAliases).length) delete sku.platformAliases;
+  }
 }
 
 function buildSkuMap(skus = [], tokenSelector = skuTokens) {
@@ -1257,24 +1399,26 @@ function applySkuGroup(sku, group, planBackfill = null) {
   }
 
   ensureOwnerObject(sku);
-  sku.owner.name = group.owner || sku.owner.name || '';
+  sku.owner.name = group.owner || '';
   sku.owner.source = SOURCE_NOTE;
   sku.owner.registryStatus = group.status || sku.owner.registryStatus || '';
 
   sku.platformMatrix = sku.platformMatrix && typeof sku.platformMatrix === 'object' ? sku.platformMatrix : {};
+  clearScopedOwners(sku, group.platforms || {});
   const sideCostApplied = new Set();
   Object.entries(group.platforms).forEach(([platform, platformRow]) => {
+    const platformOwner = canonicalOwnerForPlatform(platformRow.owner, platform);
     ownerPlatformKeys(platform).forEach((ownerKey) => {
-      if (platformRow.owner) {
-        sku.owner.byPlatform[ownerKey] = platformRow.owner;
-        sku.ownersByPlatform[ownerKey] = platformRow.owner;
+      if (platformOwner) {
+        sku.owner.byPlatform[ownerKey] = platformOwner;
+        sku.ownersByPlatform[ownerKey] = platformOwner;
       }
     });
     const platformMatrixRow = {
       platform,
       label: platformLabel(platform),
       status: platformRow.status,
-      owner: platformRow.owner,
+      owner: platformOwner,
       minPrice: platformRow.minPrice,
       maxPrice: platformRow.maxPrice,
       costPrice: platformRow.cost,
@@ -1288,7 +1432,7 @@ function applySkuGroup(sku, group, planBackfill = null) {
     if (['wb', 'ozon', 'ym'].includes(platform)) {
       sku[platform] = sku[platform] && typeof sku[platform] === 'object' ? sku[platform] : {};
       sku[platform].status = platformRow.status || sku[platform].status || '';
-      sku[platform].owner = platformRow.owner || sku[platform].owner || '';
+      sku[platform].owner = platformOwner || '';
       if (platformRow.usableMinMax) {
         sku[platform].minPrice = platformRow.minPrice;
         sku[platform].maxPrice = platformRow.maxPrice;
@@ -1319,6 +1463,8 @@ function disableOldSku(sku) {
   sku.matrixDisabledAt = IMPORT_STAMP;
   sku.matrixDisabledReason = `not_in_${SOURCE_NOTE}`;
   ensureOwnerObject(sku);
+  sku.owner.name = '';
+  sku.owner.source = SOURCE_NOTE;
   sku.owner.registryStatus = DISABLED_STATUS;
   if (sku.planFact && typeof sku.planFact === 'object') {
     sku.planFact.planStatus = 'not_required_for_disabled_sku';
@@ -1333,6 +1479,8 @@ function disableOldSku(sku) {
 function updateSkus(skus, articleGroups, planBackfillMap = new Map()) {
   const target = Array.isArray(skus) ? skus : [];
   const skuMap = buildSkuMap(target, skuCanonicalTokens);
+  const sourceKeysByPlatform = buildSourceKeysByPlatform(articleGroups);
+  const updatedSkus = new Set();
   const stats = {
     updated: 0,
     added: 0,
@@ -1346,6 +1494,7 @@ function updateSkus(skus, articleGroups, planBackfillMap = new Map()) {
     planZeroBaseline: 0,
     activeMatrixSku: 0
   };
+  target.forEach((sku) => clearScopedOwners(sku, {}));
   articleGroups.forEach((group) => {
     let sku = skuMap.get(group.key);
     if (!sku) {
@@ -1355,9 +1504,11 @@ function updateSkus(skus, articleGroups, planBackfillMap = new Map()) {
     } else {
       stats.updated += 1;
     }
+    updatedSkus.add(sku);
     const planBackfill = planBackfillMap.get(group.key);
     if (planBackfill?.months?.size) stats.planBackfillAvailable += 1;
     const planResult = applySkuGroup(sku, group, planBackfill);
+    pruneSourceArticleAliases(sku, sourceKeysByPlatform);
     if (planResult?.backfilled) stats.planBackfilled += 1;
     if (planResult?.zeroBaseline) stats.planZeroBaseline += 1;
     skuCanonicalTokens(sku).forEach((key) => {
@@ -1365,8 +1516,8 @@ function updateSkus(skus, articleGroups, planBackfillMap = new Map()) {
     });
   });
   target.forEach((sku) => {
-    const keys = skuCanonicalTokens(sku);
-    if (!keys.length || keys.some((key) => articleGroups.has(key))) return;
+    pruneSourceArticleAliases(sku, sourceKeysByPlatform);
+    if (updatedSkus.has(sku)) return;
     const wasActive = disableOldSku(sku);
     if (wasActive) stats.disabled += 1;
     else stats.confirmedDisabled += 1;

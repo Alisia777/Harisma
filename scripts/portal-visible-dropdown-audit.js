@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
+const { canonicalOwnerName } = require('./owner-normalization');
 
 const DEFAULT_URL = 'http://127.0.0.1:4187/index.html';
 const GUEST_EMAIL = 'guest@qeep.life';
@@ -42,20 +43,6 @@ function statusIsInactive(value = '') {
 function uniqueSorted(values = []) {
   return [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))]
     .sort((left, right) => left.localeCompare(right, 'ru'));
-}
-
-function canonicalOwnerName(value = '') {
-  const normalized = String(value || '').replace(/\s+/g, ' ').trim();
-  const aliases = new Map([
-    ['Артем', 'Питайкин Артём'],
-    ['Артём', 'Питайкин Артём'],
-    ['Даша', 'Молодякова Дария'],
-    ['Пирогова Анна', 'Анна Пирогова'],
-    ['Доможирова Екатерина', 'Екатерина Доможирова'],
-    ['Васильева Мария', 'Мария Васильева'],
-    ['Лапыгин Максим', 'Максим Лапыгин']
-  ]);
-  return aliases.get(normalized) || normalized;
 }
 
 function activeMatrixOwners(dataDir) {

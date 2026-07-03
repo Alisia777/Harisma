@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
+const { canonicalOwnerName, canonicalOwnerForPlatform } = require('./owner-normalization');
 
 const ROOT = process.cwd();
 const DEFAULT_SOURCE_DIR = path.join(process.env.USERPROFILE || '', 'Downloads', 'Данные от команды');
@@ -121,19 +122,14 @@ function cleanOwner(value = '') {
     ['лапыгин максим', 'Лапыгин Максим'],
     ['максим лапыгин', 'Лапыгин Максим']
   ]);
-  return known.get(normalized) || text;
+  return canonicalOwnerName(known.get(normalized) || text);
 }
 
 function cleanOwnerForPlatform(value = '', platformKey = '', currentOwner = '') {
-  const owner = cleanOwner(value);
+  const owner = canonicalOwnerForPlatform(value, platformKey, currentOwner);
   if (!owner) return '';
-  const current = cleanOwner(currentOwner);
-  if (platformKey === 'wb') {
-    if (owner === 'Васильева Мария' || owner === 'Лапыгин Максим') return owner;
-    if ((current === 'Васильева Мария' || current === 'Лапыгин Максим') && ['Кирилл', 'Олеся', 'Светлана'].includes(owner)) return current;
-  }
-  if (platformKey === 'ym') return 'Пирогова Анна';
-  if (platformKey === 'goldapple' || platformKey === 'letu' || platformKey === 'megamarket' || platformKey === 'samokat' || platformKey === 'magnit') return 'Доможирова Екатерина';
+  if (platformKey === 'ym') return 'Анна Пирогова';
+  if (platformKey === 'goldapple' || platformKey === 'letu' || platformKey === 'megamarket' || platformKey === 'samokat' || platformKey === 'magnit') return 'Екатерина Доможирова';
   return owner;
 }
 

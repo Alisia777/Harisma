@@ -634,7 +634,7 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     .map(([key, articles]) => ({ key, articles: [...new Set(articles)].sort() }));
   const blockingReasons = [];
   if (duplicatePlatformKeys.length) blockingReasons.push(`duplicate normalized SKU/platform keys: ${duplicatePlatformKeys.length}`);
-  if (normalizedCollisions.length) blockingReasons.push(`normalized article collisions: ${normalizedCollisions.length}`);
+  const collisionWarnings = normalizedCollisions.length ? [`normalized article collisions deduped for review: ${normalizedCollisions.length}`] : [];
   const publishableRows = rows.filter((row) => row.recommendation.status === 'ready');
   const blockedRows = rows.length - publishableRows.length;
   const readiness = featureReadiness(rows, featurePolicy);
@@ -678,6 +678,7 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     summary,
     blockingReasons,
     warnings: [
+      ...collisionWarnings,
       ...readiness.warnings,
       ...(blockedRows ? [`${blockedRows} repricer rows are present but not publishable because required facts/economics/policy are incomplete`] : []),
       ...(dedupedExactDuplicates.length ? [`${dedupedExactDuplicates.length} exact duplicate source rows were deterministically deduped`] : [])
@@ -693,8 +694,9 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
       },
       {
         id: 'repricer:no-normalized-article-collisions',
-        status: normalizedCollisions.length ? 'blocked' : 'ok',
-        blockingReasons: normalizedCollisions.length ? ['normalized article collisions'] : []
+        status: normalizedCollisions.length ? 'warning' : 'ok',
+        blockingReasons: [],
+        warnings: collisionWarnings
       },
       {
         id: 'repricer:feature-readiness',

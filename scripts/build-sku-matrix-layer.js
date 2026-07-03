@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { canonicalOwnerName } = require('./owner-normalization');
 
 function parseArgs(argv) {
   const args = {};
@@ -88,7 +89,7 @@ const OWNER_NAME_ALIASES = new Map([
 function normalizeOwnerName(value = '') {
   const text = String(value || '').trim();
   if (!text) return '';
-  return OWNER_NAME_ALIASES.get(text.toLowerCase().replace(/\u0451/g, 'е')) || text;
+  return canonicalOwnerName(OWNER_NAME_ALIASES.get(text.toLowerCase().replace(/\u0451/g, 'е')) || text);
 }
 
 function ownerText(sku = {}) {

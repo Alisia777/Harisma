@@ -264,7 +264,9 @@ function checkOosTaskCode() {
     taskSourceAuto: /source:\s*['"]auto['"]/.test(saveBlock),
     taskNormalizeAuto: /normalizeTask\([^]*,\s*['"]auto['"]\)/.test(saveBlock),
     taskForStableMarker: taskForBlock.includes('oosControlTaskMarkers'),
-    localAutoOosPersistent: storageText.includes("autoCode || '').trim().toLowerCase() === 'oos_control'")
+    localAutoOosPersistent: storageText.includes('function isPersistentAutoTask')
+      && storageText.includes("code === 'oos_control'")
+      && storageText.includes('|| isPersistentAutoTask(task)')
   };
   if (!markers.hasStableIssueKey || !markers.hasStableMarker) blockingReasons.push('stable OOS task marker is absent');
   if (!markers.hasLegacyMarker) blockingReasons.push('legacy OOS issue marker is absent');

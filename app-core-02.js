@@ -693,6 +693,11 @@ function isAutoTaskLike(task = {}, sourceHint = '') {
   return source === 'auto' || Boolean(task?.autoCode) || id.startsWith('auto-');
 }
 
+function isPersistentAutoTask(task = {}) {
+  const code = String(task?.autoCode || '').trim().toLowerCase();
+  return code === 'oos_control';
+}
+
 function resolveTaskOwner(task = {}, sku = null, platform = '', sourceHint = '') {
   const taskPlatform = normalizeTaskPlatform(platform || task?.platform || '', taskMarketplaceContext(task, sku));
   const explicitOwner = canonicalOwnerName(task?.owner || '');
@@ -1335,7 +1340,7 @@ function normalizeStorageTasks(tasks, sourceHint = 'manual') {
     .map((task) => normalizeTask(task, task?.source || sourceHint))
     .filter((task) => !isSuppressedAutoStockTask(task))
     .filter((task) => !isNonPersistentTaskSource(task?.source))
-    .filter((task) => !isAutoTaskLike(task, task?.source));
+    .filter((task) => !isAutoTaskLike(task, task?.source) || isPersistentAutoTask(task));
 }
 
 function isTaskActive(task) {

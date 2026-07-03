@@ -1,5 +1,5 @@
-Portal sync health: warning
-Generated: 2026-07-03T11:13:43.904Z
+Portal sync health: ok
+Generated: 2026-07-03T13:06:39.889Z
 Publish allowed: yes
 Max data date: 2026-07-02
 
@@ -7,4 +7,4 @@ Blocking reasons:
 - none
 
 Warnings:
-- SKU matrix is older than portal_data_quality; SKU contour may show stale unresolved issues.
+- none

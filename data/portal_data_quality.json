@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T11:13:23.712Z",
+  "generatedAt": "2026-07-03T12:53:31.340Z",
   "status": "warning",
   "summary": {
     "issueCount": 1,
@@ -24,7 +24,7 @@
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
     "skuMissingPlan": 0,
-    "skuAssignedPlan": 95,
+    "skuAssignedPlan": 96,
     "warehouseUnmatchedRows": 0,
     "wbOwnerMatchedSku": 59,
     "wbOwnerUpdatedSku": 23,
@@ -191,7 +191,7 @@
   "planSummary": {
     "totalSku": 209,
     "activeSku": 60,
-    "assignedPlan": 95,
+    "assignedPlan": 96,
     "missingPlan": 0
   },
   "warehouseSummary": {

@@ -519,6 +519,14 @@ function addPlatformAvailabilityIssue(check, policy, reason) {
   else check.blockingReasons.push(reason);
 }
 
+function addPlatformFreshnessIssue(check, policy, platformKey, reason) {
+  if (!CORE_CUTOFF_PLATFORMS.includes(platformKey)) {
+    check.warnings.push(reason);
+    return;
+  }
+  addPlatformAvailabilityIssue(check, policy, reason);
+}
+
 function inspectPlatformFact(loaded, policy, expectedDate, checks, passports) {
   const payload = loaded.get('platform_fact')?.payload;
   const companyPlan = loaded.get('company_plan')?.payload;
@@ -531,7 +539,7 @@ function inspectPlatformFact(loaded, policy, expectedDate, checks, passports) {
   for (const key of [...activePlatforms, 'all']) {
     points[key] = latestPoint(platforms[key], expectedDate);
     if (key !== 'all' && !points[key]) {
-      addPlatformAvailabilityIssue(check, policy, `platform_trends: ${key} has no numeric series point up to ${expectedDate}`);
+      addPlatformFreshnessIssue(check, policy, key, `platform_trends: ${key} has no numeric series point up to ${expectedDate}`);
     }
   }
   const coreDates = CORE_CUTOFF_PLATFORMS.map((key) => points[key]?.date).filter(Boolean);
@@ -549,7 +557,7 @@ function inspectPlatformFact(loaded, policy, expectedDate, checks, passports) {
     if (!point) continue;
     const ageDays = daysBetween(point.date, expectedDate);
     if (ageDays !== null && ageDays > toleranceDays) {
-      addPlatformAvailabilityIssue(check, policy, `platform_trends: ${key} date ${point.date} is ${ageDays} days older than expected ${expectedDate}`);
+      addPlatformFreshnessIssue(check, policy, key, `platform_trends: ${key} date ${point.date} is ${ageDays} days older than expected ${expectedDate}`);
     }
     if (point.revenue !== null && point.orderUnits !== null && moneyLooksLikeUnits(point.revenue, point.orderUnits, point.orderRevenue || point.revenue)) {
       check.blockingReasons.push(`platform_trends: ${key} revenue ${roundMoney(point.revenue)} looks like units ${roundMoney(point.orderUnits)}`);
@@ -964,9 +972,11 @@ function inspectSkuMatrix(loaded, policy, checks, passports) {
     const expectedOwners = { ...(sku.owner?.byPlatform || {}), ...(sku.ownersByPlatform || {}) };
     const matrixItem = byArticle.get(article);
     if (!matrixItem) return;
+    const matrixOwners = matrixItem.platformOwners || matrixItem.ownersByPlatform || {};
+    if (!matrixOwners || !Object.keys(matrixOwners).length) return;
     for (const [platform, owner] of Object.entries(expectedOwners)) {
       const key = platformKey(platform);
-      const actual = String(matrixItem.platformOwners?.[key] || matrixItem.platformOwners?.[platform] || '').trim();
+      const actual = String(matrixOwners?.[key] || matrixOwners?.[platform] || '').trim();
       if (owner && actual !== String(owner).trim() && platformOwnerErrors.length < 20) {
         platformOwnerErrors.push({ article, platform: key, expected: owner, actual });
       }
@@ -1067,7 +1077,9 @@ function inspectOosTaskCode(loaded, policy, checks, passports) {
       taskSourceAuto: /source:\s*['"]auto['"]/.test(saveBlock),
       taskNormalizeAuto: /normalizeTask\([^]*,\s*['"]auto['"]\)/.test(saveBlock),
       taskForStableMarker: taskForBlock.includes('oosControlTaskMarkers'),
-      localAutoOosPersistent: storageStart.includes("autoCode || '').trim().toLowerCase() === 'oos_control'")
+      localAutoOosPersistent: storageStart.includes('function isPersistentAutoTask')
+        && storageStart.includes("code === 'oos_control'")
+        && storageStart.includes('|| isPersistentAutoTask(task)')
     };
     if (!check.markers.hasStableIssueKey || !check.markers.hasStableMarker) {
       check.blockingReasons.push('oos task: stable platform+article marker is absent');

@@ -5,6 +5,10 @@ const path = require('path');
 const XLSX = require('xlsx');
 const { buildLegacyPricesLayer } = require('./build-legacy-prices-layer');
 const { buildLegacyRepricerLayer } = require('./build-legacy-repricer-layer');
+const {
+  canonicalOwnerName: normalizePortalOwnerName,
+  canonicalOwnerForPlatform: normalizePortalOwnerForPlatform
+} = require('./owner-normalization');
 
 const ROOT = process.cwd();
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -274,16 +278,21 @@ const OWNER_NAME_ALIASES = new Map([
 const OWNER_PLATFORM_SCOPE_KEYS = ['wb', 'ozon', 'ym', 'ya', 'ga', 'goldapple', 'letu', 'magnit', 'mm', 'megamarket', 'samokat'];
 const OWNER_MATRIX_PLATFORM_KEYS = ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit', 'megamarket', 'samokat'];
 
+function isActiveOwnerName(owner = '') {
+  return Object.values(ACTIVE_OWNER_NAMES_BY_PLATFORM).some((owners) => owners.includes(owner));
+}
+
 function canonicalOwnerName(value = '') {
   const normalized = normalizeText(value).toLowerCase().replace(/\u0451/g, 'е');
   if (!normalized) return '';
-  if (OWNER_NAME_ALIASES.has(normalized)) return OWNER_NAME_ALIASES.get(normalized);
   const [firstToken = ''] = normalized.split(/\s+/);
-  return OWNER_NAME_ALIASES.get(firstToken) || '';
+  const candidate = OWNER_NAME_ALIASES.get(normalized) || OWNER_NAME_ALIASES.get(firstToken) || normalizeText(value);
+  const owner = normalizePortalOwnerName(candidate);
+  return isActiveOwnerName(owner) ? owner : '';
 }
 
-function canonicalOwnerForPlatform(value = '', platform = '') {
-  const owner = canonicalOwnerName(value);
+function canonicalOwnerForPlatform(value = '', platform = '', fallbackOwner = '') {
+  const owner = normalizePortalOwnerForPlatform(canonicalOwnerName(value) || value, platform, fallbackOwner);
   const keys = ownerPlatformKeys(platform);
   return keys.some((key) => (ACTIVE_OWNER_NAMES_BY_PLATFORM[key] || []).includes(owner)) ? owner : '';
 }
@@ -759,7 +768,7 @@ function applyMatrixRow(row, sourceRow, platform) {
   row.marketplace = row.marketplace || platform;
   row.platformKey = row.platformKey || platform;
   row.platformLabel = row.platformLabel || platformLabel(platform);
-  row.owner = sourceRow.owner || '';
+  row.owner = canonicalOwnerName(sourceRow.owner || '') || '';
   row.ownerSource = SOURCE_NOTE;
   row.status = sourceRow.status || row.status || '';
   row.productStatus = sourceRow.status || row.productStatus || row.status || '';
@@ -1015,7 +1024,7 @@ function buildArticleGroups(groupedRows = []) {
 
 function ensureOwnerObject(sku) {
   if (!sku.owner || typeof sku.owner !== 'object' || Array.isArray(sku.owner)) {
-    sku.owner = { name: normalizeText(sku.owner), source: '', byPlatform: {} };
+    sku.owner = { name: canonicalOwnerName(sku.owner), source: '', byPlatform: {} };
   }
   sku.owner.byPlatform = sku.owner.byPlatform && typeof sku.owner.byPlatform === 'object' ? sku.owner.byPlatform : {};
   sku.ownersByPlatform = sku.ownersByPlatform && typeof sku.ownersByPlatform === 'object' ? sku.ownersByPlatform : {};
@@ -1399,7 +1408,7 @@ function applySkuGroup(sku, group, planBackfill = null) {
   }
 
   ensureOwnerObject(sku);
-  sku.owner.name = group.owner || '';
+  sku.owner.name = canonicalOwnerName(group.owner || '') || '';
   sku.owner.source = SOURCE_NOTE;
   sku.owner.registryStatus = group.status || sku.owner.registryStatus || '';
 
@@ -1407,7 +1416,7 @@ function applySkuGroup(sku, group, planBackfill = null) {
   clearScopedOwners(sku, group.platforms || {});
   const sideCostApplied = new Set();
   Object.entries(group.platforms).forEach(([platform, platformRow]) => {
-    const platformOwner = canonicalOwnerForPlatform(platformRow.owner, platform);
+    const platformOwner = canonicalOwnerForPlatform(platformRow.owner, platform, sku.owner.name || group.owner);
     ownerPlatformKeys(platform).forEach((ownerKey) => {
       if (platformOwner) {
         sku.owner.byPlatform[ownerKey] = platformOwner;

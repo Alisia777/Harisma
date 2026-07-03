@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-metrics-v1",
   "generatedAt": "2026-07-03T09:27:54.183Z",
-  "snapshot_id": "dashboard:c26af17b25323e68",
+  "snapshot_id": "dashboard:db4344d88579f99e",
   "metric_registry_version": "2026-06-20.1",
   "indicator_policy_version": "2026-06-20.1",
   "cutoffDate": "2026-07-02",
@@ -17,7 +17,7 @@
     },
     "ads_summary.json": {
       "exists": true,
-      "sha256": "5da8040332637ba2f9ef6994611d79ee9809357b2bd3be87b7bf09ecf35e17f7"
+      "sha256": "cb065bb3602aa4d4333ef96134050a537da66c7ac349f663da1de271673dc561"
     },
     "portal_metric_registry.json": {
       "exists": true,

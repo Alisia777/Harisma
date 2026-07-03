@@ -567,6 +567,8 @@ function buildOwnerQuality(skus = []) {
   const issues = [];
   let missingOwner = 0;
   skus.forEach((sku) => {
+    const status = sku?.status || sku?.registryStatus || sku?.owner?.registryStatus || '';
+    if (isDisabledSkuStatus(status)) return;
     const owner = ownerText(sku);
     if (!owner || /^не в реестре$/i.test(owner)) {
       missingOwner += 1;

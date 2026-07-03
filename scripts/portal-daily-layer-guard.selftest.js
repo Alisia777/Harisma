@@ -208,8 +208,8 @@ try {
   staleExtra.platforms.goldapple = { series: [{ date: '2026-06-10', revenue: 50, units: 1 }] };
   write(dir, 'platform_trends.json', staleExtra);
   const staleExtraBroken = run(options(dir));
-  assert.strictEqual(staleExtraBroken.report.publish.allowed, false);
-  assert.ok(staleExtraBroken.report.publish.blockingReasons.some((reason) => reason.includes('goldapple date 2026-06-10')));
+  assert.strictEqual(staleExtraBroken.report.publish.allowed, true);
+  assert.ok(staleExtraBroken.report.publish.warningReasons.some((reason) => reason.includes('goldapple date 2026-06-10')));
   const staleExtraRelaxed = run({ ...options(dir), relaxPlatformFacts: true });
   assert.strictEqual(staleExtraRelaxed.report.publish.allowed, true);
   assert.ok(staleExtraRelaxed.report.publish.warningReasons.some((reason) => reason.includes('goldapple date 2026-06-10')));

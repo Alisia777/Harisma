@@ -1,14 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-07-03T11:13:43.904Z",
-  "status": "warning",
+  "generatedAt": "2026-07-03T13:06:39.889Z",
+  "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
-    "warnings": [
-      "SKU matrix is older than portal_data_quality; SKU contour may show stale unresolved issues."
-    ],
-    "checkedAt": "2026-07-03T11:13:43.904Z"
+    "warnings": [],
+    "checkedAt": "2026-07-03T13:06:39.889Z"
   },
   "freshness": {
     "maxDate": "2026-07-02",
@@ -17,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-07-03T11:13:43.898Z",
+      "checkedAt": "2026-07-03T13:06:39.883Z",
       "settlementHour": 10,
       "expectedDate": "2026-07-02",
       "maxDate": "2026-07-02",
@@ -64,7 +62,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-07-03T11:13:43.904Z",
+      "checkedAt": "2026-07-03T13:06:39.889Z",
       "expectedDate": "2026-07-02",
       "adsSummaryWindowTo": "2026-07-02",
       "iuDrrWindowTo": "2026-07-02",
@@ -148,21 +146,21 @@
     "prices": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-03T08:54:35.641Z",
+      "generatedAt": "2026-07-03T12:18:18.127Z",
       "asOfDate": "2026-07-03",
       "revenue": 0
     },
     "repricer": {
       "exists": true,
       "rows": 213,
-      "generatedAt": "2026-07-03T08:54:35.641Z",
+      "generatedAt": "2026-07-03T12:18:18.127Z",
       "asOfDate": "2026-07-03",
       "revenue": 0
     },
     "smart_price_overlay": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-03T08:54:35.641Z",
+      "generatedAt": "2026-07-03T12:18:18.127Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
@@ -239,7 +237,7 @@
     "oos_control": {
       "exists": true,
       "rows": 26,
-      "generatedAt": "2026-07-03T09:42:18.515Z",
+      "generatedAt": "2026-07-03T10:53:14.089Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
@@ -260,14 +258,14 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-03T11:13:23.712Z",
+      "generatedAt": "2026-07-03T12:53:31.340Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-07-03T10:09:39.869Z",
+      "generatedAt": "2026-07-03T12:54:18.903Z",
       "asOfDate": "2026-07-03",
       "revenue": 0
     },
@@ -295,14 +293,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 209,
-      "generatedAt": "2026-07-03T09:42:47.996Z",
+      "generatedAt": "2026-07-03T12:54:18.343Z",
       "asOfDate": "2026-07-03",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-03T10:09:39.881Z",
+      "generatedAt": "2026-07-03T12:54:18.910Z",
       "asOfDate": "2026-07-03",
       "revenue": 0
     }
@@ -312,7 +310,7 @@
     "issues": []
   },
   "skuContour": {
-    "status": "warning",
+    "status": "ok",
     "aliasCount": 341,
     "ignoreCount": 0,
     "matrixAliasCount": 341,
@@ -362,8 +360,8 @@
       },
       {
         "name": "matrix-after-quality",
-        "status": "warning",
-        "message": "SKU matrix is older than portal_data_quality; SKU contour may show stale unresolved issues."
+        "status": "ok",
+        "message": "SKU matrix is aligned with portal_data_quality."
       }
     ]
   },
@@ -390,7 +388,7 @@
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
     "skuMissingPlan": 0,
-    "skuAssignedPlan": 95,
+    "skuAssignedPlan": 96,
     "warehouseUnmatchedRows": 0,
     "wbOwnerMatchedSku": 59,
     "wbOwnerUpdatedSku": 23,
@@ -554,8 +552,8 @@
     },
     {
       "name": "sku-contour:matrix-after-quality",
-      "status": "warning",
-      "message": "SKU matrix is older than portal_data_quality; SKU contour may show stale unresolved issues."
+      "status": "ok",
+      "message": "SKU matrix is aligned with portal_data_quality."
     },
     {
       "name": "freshness-completeness:wb",

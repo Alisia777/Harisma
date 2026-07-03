@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { canonicalOwnerName, canonicalOwnerForPlatform } = require('./owner-normalization');
 
 const OUTPUT_FILE = 'dashboard.json';
 const PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
@@ -141,7 +142,7 @@ function ownerNames(sku = {}) {
   const names = [];
   const add = (value) => {
     const text = typeof value === 'object' ? value?.name : value;
-    const name = String(text || '').trim();
+    const name = canonicalOwnerName(text);
     if (name) names.push(name);
   };
   add(sku.owner);
@@ -152,11 +153,12 @@ function ownerNames(sku = {}) {
 
 function platformOwner(sku = {}, platform = '') {
   const aliases = platform === 'ya' ? ['ya', 'ym', 'yandex'] : [platform];
+  const fallbackOwner = ownerNames(sku)[0] || '';
   for (const key of aliases) {
     const direct = String(sku.ownersByPlatform?.[key] || sku.owner?.byPlatform?.[key] || '').trim();
-    if (direct) return direct;
+    if (direct) return canonicalOwnerForPlatform(direct, key, fallbackOwner);
   }
-  return ownerNames(sku)[0] || '';
+  return fallbackOwner;
 }
 
 function marketplaceStock(sku = {}) {

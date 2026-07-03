@@ -1116,6 +1116,128 @@ body.v87-imperial.altea-premium-shell .altea-premium-route .premium-empty {
   font-size: 12px;
 }
 
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-loading-grid {
+  align-items: stretch;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-loader {
+  min-height: 258px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-head h2 {
+  margin: 8px 0 9px;
+  color: var(--text, #fff3df);
+  font: 500 28px/1.08 Georgia, "Times New Roman", serif;
+  letter-spacing: 0;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-head p {
+  max-width: 720px;
+  color: var(--premium-muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-mark {
+  display: grid;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--route-accent) 48%, var(--premium-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--route-accent) 10%, var(--premium-surface));
+  box-shadow: 0 0 34px rgba(var(--route-rgb), .12);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-mark i {
+  width: 28px;
+  height: 28px;
+  border: 2px solid color-mix(in srgb, var(--route-accent) 30%, transparent);
+  border-top-color: var(--route-accent);
+  border-radius: 50%;
+  animation: alteaExecutiveSpin .85s linear infinite;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-progress {
+  position: relative;
+  z-index: 1;
+  height: 5px;
+  margin-top: 26px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--premium-line) 72%, transparent);
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-progress i {
+  display: block;
+  width: 38%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, var(--route-accent), color-mix(in srgb, var(--route-accent) 48%, #fff), transparent);
+  animation: alteaExecutiveSweep 1.45s var(--ease-soft, cubic-bezier(.2, .8, .2, 1)) infinite;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-skeleton {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 9px;
+  margin-top: 24px;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-skeleton span {
+  height: 14px;
+  border-radius: 999px;
+  background:
+    linear-gradient(100deg, transparent 0 36%, color-mix(in srgb, var(--text, #fff) 10%, transparent) 48%, transparent 60%),
+    color-mix(in srgb, var(--premium-line) 54%, transparent);
+  background-size: 220% 100%, 100% 100%;
+  animation: alteaExecutiveSkeleton 1.65s linear infinite;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-skeleton span:nth-child(2) {
+  width: 88%;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-skeleton span:nth-child(3) {
+  width: 72%;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-skeleton span:nth-child(4) {
+  width: 93%;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-route .executive-calc-skeleton span:nth-child(5) {
+  width: 64%;
+}
+
+@keyframes alteaExecutiveSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes alteaExecutiveSweep {
+  0% { transform: translateX(-105%); }
+  100% { transform: translateX(265%); }
+}
+
+@keyframes alteaExecutiveSkeleton {
+  0% { background-position: 180% 0, 0 0; }
+  100% { background-position: -80% 0, 0 0; }
+}
+
 body.v87-imperial.altea-premium-shell .altea-premium-route.altea-ceo-dashboard .ceo-hero {
   min-height: 230px;
 }

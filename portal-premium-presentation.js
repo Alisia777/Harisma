@@ -99,7 +99,8 @@
   var renderLock = false;
   var routeDataRetryTimers = {};
   var executiveModelCache = { key: '', model: null, time: 0 };
-  var EXECUTIVE_MODEL_CACHE_TTL_MS = 8000;
+  var executiveDeferredBuild = { key: '', pending: false, token: 0 };
+  var EXECUTIVE_MODEL_CACHE_TTL_MS = 15000;
 
   function state() {
     return window.__alteaAppState || window.state || {};
@@ -526,6 +527,9 @@
 
   function resetExecutiveModelCache() {
     executiveModelCache = { key: '', model: null, time: 0 };
+    executiveDeferredBuild.pending = false;
+    executiveDeferredBuild.key = '';
+    executiveDeferredBuild.token += 1;
   }
 
   function invalidateExecutivePresentation() {
@@ -590,12 +594,61 @@
     });
   }
 
-  function buildExecutiveModel() {
-    var cacheKey = executiveModelCacheKey();
+  function freshExecutiveModel(cacheKey) {
     var now = Date.now();
     if (executiveModelCache.model && executiveModelCache.key === cacheKey && now - executiveModelCache.time < EXECUTIVE_MODEL_CACHE_TTL_MS) {
       return executiveModelCache.model;
     }
+    return null;
+  }
+
+  function executiveLoadingModel(reason) {
+    return {
+      ready: false,
+      reason: reason || 'Считаем управленческий слой по закрепленным SKU.',
+      calculating: true,
+      filters: window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ || {},
+      ownerRows: [],
+      allOwnerRows: [],
+      platformRows: [],
+      totals: {}
+    };
+  }
+
+  function requestDeferredExecutiveModelBuild(cacheKey) {
+    if (!cacheKey) return;
+    if (freshExecutiveModel(cacheKey)) return;
+    if (executiveDeferredBuild.pending && executiveDeferredBuild.key === cacheKey) return;
+    executiveDeferredBuild.pending = true;
+    executiveDeferredBuild.key = cacheKey;
+    executiveDeferredBuild.token += 1;
+    var token = executiveDeferredBuild.token;
+    var start = function () {
+      window.setTimeout(function () {
+        if (token !== executiveDeferredBuild.token) return;
+        try {
+          buildExecutiveModel();
+        } finally {
+          if (token === executiveDeferredBuild.token) {
+            executiveDeferredBuild.pending = false;
+            executiveDeferredBuild.key = '';
+          }
+          var active = activeRoute();
+          if (active && active.id === 'executive') scheduleRender(0);
+        }
+      }, 0);
+    };
+    if (typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(start);
+    } else {
+      window.setTimeout(start, 16);
+    }
+  }
+
+  function buildExecutiveModel() {
+    var cacheKey = executiveModelCacheKey();
+    var cached = freshExecutiveModel(cacheKey);
+    if (cached) return cached;
     var funnel = {};
     var model = null;
     if (typeof window.executiveFunnelBuildOwnerPlanFact === 'function') {
@@ -1092,10 +1145,6 @@
     if (factPending && executiveCanRenderDegraded(model)) return false;
     if (factPending) return true;
     if (executiveHasPlanWithoutFact(model)) return !executiveCanRenderDegraded(model);
-    if (typeof window.executiveFunnelBuildModel === 'function') {
-      var funnel = window.executiveFunnelBuildModel() || {};
-      if (funnel.ready === false && executiveHasPlanWithoutFact(model)) return !executiveCanRenderDegraded(model);
-    }
     return false;
   }
 
@@ -1431,15 +1480,15 @@
     window.__ALTEA_PREMIUM_EXECUTIVE_OWNER__ = true;
     var planFactReady = executivePlanFactReady();
     if (!planFactReady) requestExecutivePlanFactData();
-    var model = planFactReady ? buildExecutiveModel() : {
-      ready: false,
-      reason: 'Загружаем план-факт SKU для управленческого экрана.',
-      filters: window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ || {},
-      ownerRows: [],
-      allOwnerRows: [],
-      platformRows: [],
-      totals: {}
-    };
+    var cacheKey = planFactReady ? executiveModelCacheKey() : '';
+    var model = planFactReady ? freshExecutiveModel(cacheKey) : null;
+    if (!model && planFactReady) {
+      requestDeferredExecutiveModelBuild(cacheKey);
+      model = executiveLoadingModel('Считаем управленческий слой по закрепленным SKU.');
+    }
+    if (!model) {
+      model = executiveLoadingModel('Загружаем план-факт SKU для управленческого экрана.');
+    }
     var factPending = executiveFactPending(model);
     var factUnavailable = executiveHasPlanWithoutFact(model);
     var pendingData = !planFactReady || executiveNeedsDataRetry(model, factPending);
@@ -1449,6 +1498,7 @@
     var signature = JSON.stringify({
       route: route.id,
       ready: model.ready,
+      calculating: Boolean(model.calculating),
       factPending: factPending,
       factUnavailable: factUnavailable,
       pendingData: pendingData,
@@ -1502,14 +1552,25 @@
     var text = factPending
       ? 'План и рекламный слой уже на месте, фактические продажи еще догружаются. Нулевые KPI скрыты, чтобы не выпускать кривую картину.'
       : (model.reason || 'Данные управленческого контура еще загружаются.');
+    var planText = model && model.totals && model.totals.planToDateRevenue ? money(model.totals.planToDateRevenue) : 'собирается';
+    var adsText = model && model.totals && model.totals.adSpend ? money(model.totals.adSpend) : 'собирается';
     return [
-      '<div class="grid g3">',
-      panel('Собираем фактический слой', '<div class="premium-empty">' + escapeHtml(text) + '</div>', 'panel-pad route-glow span2', 'ждем факт'),
+      '<div class="grid g3 executive-loading-grid">',
+      '<section class="panel panel-pad route-glow span2 executive-calc-loader">',
+      '<div class="executive-calc-head">',
+      '<div><span class="micro">Управленческий слой</span><h2>Считаем закрепленные SKU</h2><p>' + escapeHtml(text) + '</p></div>',
+      '<div class="executive-calc-mark" aria-hidden="true"><i></i></div>',
+      '</div>',
+      '<div class="executive-calc-progress" aria-hidden="true"><i></i></div>',
+      '<div class="executive-calc-skeleton" aria-hidden="true">',
+      '<span></span><span></span><span></span><span></span><span></span>',
+      '</div>',
+      '</section>',
       panel('Что уже готово', list([
-        ['План', model && model.totals && model.totals.planToDateRevenue ? money(model.totals.planToDateRevenue) : 'ожидается', 'контур'],
-        ['Реклама', model && model.totals && model.totals.adSpend ? money(model.totals.adSpend) : 'ожидается', 'API'],
-        ['Факт продаж', 'подгружается', 'без нулей']
-      ]), 'panel-pad platform-focus', 'без шума'),
+        ['План', planText, 'контур'],
+        ['Реклама', adsText, 'API'],
+        ['Факт продаж', factPending ? 'догружается' : 'сверяется', 'без нулей']
+      ]), 'panel-pad platform-focus executive-calc-status', 'без шума'),
       '</div>'
     ].join('');
   }

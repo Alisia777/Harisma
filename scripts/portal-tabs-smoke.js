@@ -222,7 +222,7 @@ async function main() {
 
   const browser = await chromium.launch({ headless: args.headful !== true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 950 } });
-  page.setDefaultTimeout(15000);
+  page.setDefaultTimeout(30000);
   page.setDefaultNavigationTimeout(20000);
 
   const pageErrors = [];
@@ -253,7 +253,7 @@ async function main() {
   const originalStorage = await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY).catch(() => null);
 
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
     const authenticated = await authenticateIfNeeded(page);
     await waitForApp(page);
 

@@ -22648,8 +22648,13 @@
           "sourceMode": "ksenia-minmax-matrix",
           "matrixMinMaxSkipped": true,
           "matrixMinMaxSkipReason": "missing_min_price,missing_max_price",
-          "matrixCostSkipped": true,
-          "matrixCostSkipReason": "missing_cost"
+          "matrixCostSkipped": false,
+          "cost": 130,
+          "costRub": 130,
+          "costPrice": 130,
+          "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405"
         },
         {
           "marketplace": "wb",
@@ -53639,8 +53644,14 @@
           "sourceMode": "ksenia-minmax-matrix",
           "matrixMinMaxSkipped": true,
           "matrixMinMaxSkipReason": "missing_min_price,missing_max_price",
-          "matrixCostSkipped": true,
-          "matrixCostSkipReason": "missing_cost"
+          "matrixCostSkipped": false,
+          "cost": 116.1,
+          "costRub": 116.1,
+          "costPrice": 116.1,
+          "costSource": "base-sku-cost:termo_sprei_200ml",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+          "costInheritedFromArticleKey": "termo_sprei_200ml"
         },
         {
           "marketplace": "wb",
@@ -121041,8 +121052,13 @@
           "sourceMode": "ksenia-minmax-matrix",
           "matrixMinMaxSkipped": true,
           "matrixMinMaxSkipReason": "missing_min_price,missing_max_price",
-          "matrixCostSkipped": true,
-          "matrixCostSkipReason": "missing_cost"
+          "matrixCostSkipped": false,
+          "cost": 130,
+          "costRub": 130,
+          "costPrice": 130,
+          "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405"
         },
         {
           "marketplace": "ozon",
@@ -185067,8 +185083,14 @@
           "sourceMode": "ksenia-minmax-matrix",
           "matrixMinMaxSkipped": true,
           "matrixMinMaxSkipReason": "missing_min_price,missing_max_price",
-          "matrixCostSkipped": true,
-          "matrixCostSkipReason": "missing_cost"
+          "matrixCostSkipped": false,
+          "cost": 116.1,
+          "costRub": 116.1,
+          "costPrice": 116.1,
+          "costSource": "base-sku-cost:termo_sprei_200ml",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+          "costInheritedFromArticleKey": "termo_sprei_200ml"
         },
         {
           "marketplace": "ozon",
@@ -217242,8 +217264,15 @@
           "manualMaxPrice": 849,
           "minMaxSource": "ksenia-merged-statuses-minmax-2026-07-02",
           "minMaxImportedAt": "2026-07-02T21:31:10.263Z",
-          "matrixCostSkipped": true,
-          "matrixCostSkipReason": "missing_cost"
+          "matrixCostSkipped": false,
+          "cost": 130,
+          "costRub": 130,
+          "costPrice": 130,
+          "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+          "minPriceMarginPct": 0.83891,
+          "maxPriceMarginPct": 0.846879
         },
         {
           "articleKey": "limfaks_bad_30caps",
@@ -220852,8 +220881,16 @@
           "manualMaxPrice": 540,
           "minMaxSource": "ksenia-merged-statuses-minmax-2026-07-02",
           "minMaxImportedAt": "2026-07-02T21:31:10.263Z",
-          "matrixCostSkipped": true,
-          "matrixCostSkipReason": "missing_cost"
+          "matrixCostSkipped": false,
+          "cost": 116.1,
+          "costRub": 116.1,
+          "costPrice": 116.1,
+          "costSource": "base-sku-cost:termo_sprei_200ml",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+          "costInheritedFromArticleKey": "termo_sprei_200ml",
+          "minPriceMarginPct": 0.773684,
+          "maxPriceMarginPct": 0.785
         },
         {
           "articleKey": "tonik_dlya_lica_200ml",
@@ -223229,8 +223266,15 @@
           "manualMaxPrice": 849,
           "minMaxSource": "ksenia-merged-statuses-minmax-2026-07-02",
           "minMaxImportedAt": "2026-07-02T21:31:10.263Z",
-          "matrixCostSkipped": true,
-          "matrixCostSkipReason": "missing_cost"
+          "matrixCostSkipped": false,
+          "cost": 130,
+          "costRub": 130,
+          "costPrice": 130,
+          "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+          "minPriceMarginPct": 0.83891,
+          "maxPriceMarginPct": 0.846879
         },
         {
           "articleKey": "maska_dlya_lica_100ml",
@@ -228194,8 +228238,15 @@
           "manualMaxPrice": 849,
           "minMaxSource": "ksenia-merged-statuses-minmax-2026-07-02",
           "minMaxImportedAt": "2026-07-02T21:31:10.263Z",
-          "matrixCostSkipped": true,
-          "matrixCostSkipReason": "missing_cost"
+          "matrixCostSkipped": false,
+          "cost": 130,
+          "costRub": 130,
+          "costPrice": 130,
+          "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+          "minPriceMarginPct": 0.779661,
+          "maxPriceMarginPct": 0.846879
         },
         {
           "articleKey": "limfaks_bad_30caps",
@@ -231771,8 +231822,15 @@
           "manualMaxPrice": 849,
           "minMaxSource": "ksenia-merged-statuses-minmax-2026-07-02",
           "minMaxImportedAt": "2026-07-02T21:31:10.263Z",
-          "matrixCostSkipped": true,
-          "matrixCostSkipReason": "missing_cost"
+          "matrixCostSkipped": false,
+          "cost": 130,
+          "costRub": 130,
+          "costPrice": 130,
+          "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+          "minPriceMarginPct": 0.83891,
+          "maxPriceMarginPct": 0.846879
         },
         {
           "articleKey": "maska_dlya_lica_100ml",

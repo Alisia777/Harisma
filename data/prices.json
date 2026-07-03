@@ -15544,7 +15544,14 @@
           "workingZoneFrom": null,
           "workingZoneTo": null,
           "basePrice": null,
-          "daily": []
+          "daily": [],
+          "cost": 130,
+          "costRub": 130,
+          "costPrice": 130,
+          "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+          "matrixCostSkipped": false
         },
         {
           "articleKey": "limfaks_bad_30caps",
@@ -36199,7 +36206,15 @@
           "workingZoneFrom": null,
           "workingZoneTo": null,
           "basePrice": null,
-          "daily": []
+          "daily": [],
+          "cost": 116.1,
+          "costRub": 116.1,
+          "costPrice": 116.1,
+          "costSource": "base-sku-cost:termo_sprei_200ml",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+          "costInheritedFromArticleKey": "termo_sprei_200ml",
+          "matrixCostSkipped": false
         },
         {
           "articleKey": "tonik_dlya_lica_200ml",
@@ -64136,7 +64151,14 @@
           "workingZoneFrom": null,
           "workingZoneTo": null,
           "basePrice": null,
-          "daily": []
+          "daily": [],
+          "cost": 130,
+          "costRub": 130,
+          "costPrice": 130,
+          "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+          "matrixCostSkipped": false
         },
         {
           "articleKey": "limfaks_bad_30caps",
@@ -88594,7 +88616,15 @@
           "workingZoneFrom": null,
           "workingZoneTo": null,
           "basePrice": null,
-          "daily": []
+          "daily": [],
+          "cost": 116.1,
+          "costRub": 116.1,
+          "costPrice": 116.1,
+          "costSource": "base-sku-cost:termo_sprei_200ml",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+          "costInheritedFromArticleKey": "termo_sprei_200ml",
+          "matrixCostSkipped": false
         },
         {
           "articleKey": "tonik_dlya_lica_200ml",
@@ -101564,7 +101594,16 @@
           "workingZoneFrom": 807,
           "workingZoneTo": 849,
           "basePrice": null,
-          "daily": []
+          "daily": [],
+          "cost": 130,
+          "costRub": 130,
+          "costPrice": 130,
+          "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+          "matrixCostSkipped": false,
+          "minPriceMarginPct": 0.83891,
+          "maxPriceMarginPct": 0.846879
         },
         {
           "articleKey": "limfaks_bad_30caps",
@@ -103202,7 +103241,17 @@
           "workingZoneFrom": 513,
           "workingZoneTo": 540,
           "basePrice": null,
-          "daily": []
+          "daily": [],
+          "cost": 116.1,
+          "costRub": 116.1,
+          "costPrice": 116.1,
+          "costSource": "base-sku-cost:termo_sprei_200ml",
+          "costImportedAt": "2026-07-03T10:22:27.487Z",
+          "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+          "costInheritedFromArticleKey": "termo_sprei_200ml",
+          "matrixCostSkipped": false,
+          "minPriceMarginPct": 0.773684,
+          "maxPriceMarginPct": 0.785
         },
         {
           "articleKey": "tonik_dlya_lica_200ml",

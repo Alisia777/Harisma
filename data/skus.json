@@ -23727,7 +23727,7 @@
         "owner": "Мария Васильева",
         "minPrice": null,
         "maxPrice": null,
-        "costPrice": null,
+        "costPrice": 130,
         "barcodes": [
           "4660417421964"
         ],
@@ -23736,7 +23736,13 @@
         ],
         "matrixActive": true,
         "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+        "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+        "cost": 130,
+        "costRub": 130,
+        "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+        "costImportedAt": "2026-07-03T10:22:27.487Z",
+        "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+        "matrixCostSkipped": false
       },
       "ozon": {
         "platform": "ozon",
@@ -23745,7 +23751,7 @@
         "owner": "Молодякова Дария",
         "minPrice": null,
         "maxPrice": null,
-        "costPrice": null,
+        "costPrice": 130,
         "barcodes": [
           "4660417421964"
         ],
@@ -23754,7 +23760,13 @@
         ],
         "matrixActive": true,
         "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+        "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+        "cost": 130,
+        "costRub": 130,
+        "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+        "costImportedAt": "2026-07-03T10:22:27.487Z",
+        "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+        "matrixCostSkipped": false
       },
       "ym": {
         "platform": "ym",
@@ -23763,7 +23775,7 @@
         "owner": "Анна Пирогова",
         "minPrice": 807,
         "maxPrice": 849,
-        "costPrice": null,
+        "costPrice": 130,
         "barcodes": [
           "4660417421964"
         ],
@@ -23772,7 +23784,15 @@
         ],
         "matrixActive": true,
         "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+        "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+        "cost": 130,
+        "costRub": 130,
+        "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+        "costImportedAt": "2026-07-03T10:22:27.487Z",
+        "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+        "matrixCostSkipped": false,
+        "minPriceMarginPct": 0.83891,
+        "maxPriceMarginPct": 0.846879
       },
       "goldapple": {
         "platform": "goldapple",
@@ -23781,7 +23801,7 @@
         "owner": "Екатерина Доможирова",
         "minPrice": 807,
         "maxPrice": 849,
-        "costPrice": null,
+        "costPrice": 130,
         "barcodes": [
           "4660417421964"
         ],
@@ -23790,7 +23810,15 @@
         ],
         "matrixActive": true,
         "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+        "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+        "cost": 130,
+        "costRub": 130,
+        "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+        "costImportedAt": "2026-07-03T10:22:27.487Z",
+        "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+        "matrixCostSkipped": false,
+        "minPriceMarginPct": 0.83891,
+        "maxPriceMarginPct": 0.846879
       },
       "megamarket": {
         "platform": "megamarket",
@@ -23799,7 +23827,7 @@
         "owner": "Екатерина Доможирова",
         "minPrice": 590,
         "maxPrice": 849,
-        "costPrice": null,
+        "costPrice": 130,
         "barcodes": [
           "4660417421964"
         ],
@@ -23808,7 +23836,15 @@
         ],
         "matrixActive": true,
         "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+        "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+        "cost": 130,
+        "costRub": 130,
+        "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+        "costImportedAt": "2026-07-03T10:22:27.487Z",
+        "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+        "matrixCostSkipped": false,
+        "minPriceMarginPct": 0.779661,
+        "maxPriceMarginPct": 0.846879
       },
       "letu": {
         "platform": "letu",
@@ -23817,7 +23853,7 @@
         "owner": "Екатерина Доможирова",
         "minPrice": 807,
         "maxPrice": 849,
-        "costPrice": null,
+        "costPrice": 130,
         "barcodes": [
           "4660417421964"
         ],
@@ -23826,20 +23862,42 @@
         ],
         "matrixActive": true,
         "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+        "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+        "cost": 130,
+        "costRub": 130,
+        "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+        "costImportedAt": "2026-07-03T10:22:27.487Z",
+        "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+        "matrixCostSkipped": false,
+        "minPriceMarginPct": 0.83891,
+        "maxPriceMarginPct": 0.846879
       }
     },
     "wb": {
       "status": "Новинка",
       "owner": "Мария Васильева",
       "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-      "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+      "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+      "cost": 130,
+      "costRub": 130,
+      "costPrice": 130,
+      "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+      "costImportedAt": "2026-07-03T10:22:27.487Z",
+      "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+      "matrixCostSkipped": false
     },
     "ozon": {
       "status": "Новинка",
       "owner": "Молодякова Дария",
       "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-      "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+      "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+      "cost": 130,
+      "costRub": 130,
+      "costPrice": 130,
+      "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+      "costImportedAt": "2026-07-03T10:22:27.487Z",
+      "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+      "matrixCostSkipped": false
     },
     "ym": {
       "status": "Новинка",
@@ -23849,7 +23907,16 @@
       "workingZoneFrom": 807,
       "workingZoneTo": 849,
       "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-      "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+      "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+      "cost": 130,
+      "costRub": 130,
+      "costPrice": 130,
+      "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+      "costImportedAt": "2026-07-03T10:22:27.487Z",
+      "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+      "matrixCostSkipped": false,
+      "minPriceMarginPct": 0.83891,
+      "maxPriceMarginPct": 0.846879
     },
     "planFact": {
       "planFeb26Units": 0,
@@ -23983,7 +24050,13 @@
       "samokat": "",
       "mm": ""
     },
-    "sheetStatus": "Новинка"
+    "sheetStatus": "Новинка",
+    "cost": 130,
+    "costRub": 130,
+    "costSource": "google-export-dim_sku-2026-07-03:cost_price",
+    "costImportedAt": "2026-07-03T10:22:27.487Z",
+    "costBackfillReason": "cost_price found in .codex-temp-google-export-full.xlsx dim_sku row 405",
+    "matrixCostSkipped": false
   },
   {
     "article": "limfaks_BAD_30caps",
@@ -53150,7 +53223,7 @@
     "leadTimeDays": null,
     "status": "Новинка",
     "registryStatus": "Новинка",
-    "costPrice": 0,
+    "costPrice": 116.1,
     "owner": {
       "name": "Васильева Мария",
       "source": "ksenia-merged-statuses-minmax-2026-07-02",
@@ -53209,7 +53282,7 @@
         "owner": "Мария Васильева",
         "minPrice": null,
         "maxPrice": null,
-        "costPrice": null,
+        "costPrice": 116.1,
         "barcodes": [
           "2052604842690"
         ],
@@ -53218,7 +53291,14 @@
         ],
         "matrixActive": true,
         "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+        "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+        "cost": 116.1,
+        "costRub": 116.1,
+        "costSource": "base-sku-cost:termo_sprei_200ml",
+        "costImportedAt": "2026-07-03T10:22:27.487Z",
+        "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+        "costInheritedFromArticleKey": "termo_sprei_200ml",
+        "matrixCostSkipped": false
       },
       "ozon": {
         "platform": "ozon",
@@ -53227,7 +53307,7 @@
         "owner": "Питайкин Артём",
         "minPrice": null,
         "maxPrice": null,
-        "costPrice": null,
+        "costPrice": 116.1,
         "barcodes": [
           "4670020497960"
         ],
@@ -53236,7 +53316,14 @@
         ],
         "matrixActive": true,
         "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+        "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+        "cost": 116.1,
+        "costRub": 116.1,
+        "costSource": "base-sku-cost:termo_sprei_200ml",
+        "costImportedAt": "2026-07-03T10:22:27.487Z",
+        "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+        "costInheritedFromArticleKey": "termo_sprei_200ml",
+        "matrixCostSkipped": false
       },
       "ym": {
         "platform": "ym",
@@ -53245,7 +53332,7 @@
         "owner": "Анна Пирогова",
         "minPrice": 513,
         "maxPrice": 540,
-        "costPrice": null,
+        "costPrice": 116.1,
         "barcodes": [
           "4670020497960"
         ],
@@ -53254,20 +53341,45 @@
         ],
         "matrixActive": true,
         "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-        "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+        "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+        "cost": 116.1,
+        "costRub": 116.1,
+        "costSource": "base-sku-cost:termo_sprei_200ml",
+        "costImportedAt": "2026-07-03T10:22:27.487Z",
+        "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+        "costInheritedFromArticleKey": "termo_sprei_200ml",
+        "matrixCostSkipped": false,
+        "minPriceMarginPct": 0.773684,
+        "maxPriceMarginPct": 0.785
       }
     },
     "wb": {
       "status": "Новинка",
       "owner": "Мария Васильева",
       "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-      "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+      "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+      "cost": 116.1,
+      "costRub": 116.1,
+      "costPrice": 116.1,
+      "costSource": "base-sku-cost:termo_sprei_200ml",
+      "costImportedAt": "2026-07-03T10:22:27.487Z",
+      "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+      "costInheritedFromArticleKey": "termo_sprei_200ml",
+      "matrixCostSkipped": false
     },
     "ozon": {
       "status": "Новинка",
       "owner": "Питайкин Артём",
       "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-      "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+      "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+      "cost": 116.1,
+      "costRub": 116.1,
+      "costPrice": 116.1,
+      "costSource": "base-sku-cost:termo_sprei_200ml",
+      "costImportedAt": "2026-07-03T10:22:27.487Z",
+      "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+      "costInheritedFromArticleKey": "termo_sprei_200ml",
+      "matrixCostSkipped": false
     },
     "ym": {
       "status": "Новинка",
@@ -53277,7 +53389,17 @@
       "workingZoneFrom": 513,
       "workingZoneTo": 540,
       "matrixSource": "ksenia-merged-statuses-minmax-2026-07-02",
-      "matrixImportedAt": "2026-07-02T21:31:10.263Z"
+      "matrixImportedAt": "2026-07-02T21:31:10.263Z",
+      "cost": 116.1,
+      "costRub": 116.1,
+      "costPrice": 116.1,
+      "costSource": "base-sku-cost:termo_sprei_200ml",
+      "costImportedAt": "2026-07-03T10:22:27.487Z",
+      "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+      "costInheritedFromArticleKey": "termo_sprei_200ml",
+      "matrixCostSkipped": false,
+      "minPriceMarginPct": 0.773684,
+      "maxPriceMarginPct": 0.785
     },
     "planFact": {
       "planFeb26Units": 0,
@@ -53411,7 +53533,14 @@
       "samokat": "",
       "mm": ""
     },
-    "sheetStatus": "Новинка"
+    "sheetStatus": "Новинка",
+    "cost": 116.1,
+    "costRub": 116.1,
+    "costSource": "base-sku-cost:termo_sprei_200ml",
+    "costImportedAt": "2026-07-03T10:22:27.487Z",
+    "costBackfillReason": "new v2 SKU inherits cost from base termo_sprei_200ml until direct source row is populated",
+    "costInheritedFromArticleKey": "termo_sprei_200ml",
+    "matrixCostSkipped": false
   },
   {
     "article": "tonik_dlya_lica_200ml",

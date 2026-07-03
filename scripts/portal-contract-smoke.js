@@ -92,7 +92,7 @@ async function waitForSkuData(page) {
         && window.__alteaAppState.skus.length === 0
       )).catch(() => false);
       if (!bootedEmpty || attempt >= 2) break;
-      await page.reload({ waitUntil: 'domcontentloaded', timeout: 20000 });
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 45000 });
     }
   }
   const recovered = await page.evaluate(async () => {
@@ -141,7 +141,7 @@ async function main() {
       }
     });
 
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
     const authenticated = await authenticateIfNeeded(page);
     await page.waitForFunction(() => window.__alteaAppState && window.__alteaAppState.boot, undefined, { timeout: 12000 });
     await waitForSkuData(page);

@@ -765,6 +765,14 @@ function repricerArrivalStockLabel(signal = {}) {
   return parts.join(' · ') || 'движения нет';
 }
 
+const REPRICER_DEFERRED_PRICING_REASONS = new Set(['LAUNCH_HOLD', 'OFF', 'OOS', 'NO_STOCK']);
+
+function repricerDeferredPricingSide(side = {}) {
+  const reasonCode = String(side?.reasonCode || '').toUpperCase();
+  return REPRICER_DEFERRED_PRICING_REASONS.has(reasonCode)
+    || String(side?.launchHold || '').toUpperCase() === 'LAUNCH_HOLD';
+}
+
 function repricerBuildArrivalPriceSignal(side, fact = {}) {
   const platformStock = numberOrZero(fact?.platformStock);
   const historicalShippedUnits = numberOrZero(fact?.shippedUnits);
@@ -777,8 +785,8 @@ function repricerBuildArrivalPriceSignal(side, fact = {}) {
   const floor = numberOrZero(side?.effectiveFloor);
   const changed = Math.abs(numberOrZero(side?.changeRub)) >= 1;
 
-  if (currentPrice <= 0) reasons.push('нет текущей цены');
-  if (floor <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(String(side?.reasonCode || ''))) reasons.push('нет рабочего MIN');
+  if (currentPrice <= 0 && !repricerDeferredPricingSide(side)) reasons.push('нет текущей цены');
+  if (floor <= 0 && !repricerDeferredPricingSide(side)) reasons.push('нет рабочего MIN');
   if (repricerBelowMinNeedsManual(side)) reasons.push('ниже MIN вручную');
   if (side?.marginRisk) reasons.push('риск маржи');
   if (side?.criticalGate === 'BLOCK') reasons.push('стоп входов');
@@ -3333,9 +3341,11 @@ function repricerPrimaryStopReason(side) {
   if (!side) return 'нет стороны';
   if (side.outOfSpec || side.criticalGate === 'SKIP') return 'вне спецификации';
   if (side.criticalGate === 'BLOCK') return 'нет входов';
-  if (numberOrZero(side.currentPrice) <= 0) return 'нет цены';
-  if (numberOrZero(side.effectiveFloor) <= 0) return 'нет MIN';
-  if (repricerBelowMinNeedsManual(side)) return 'ниже MIN';
+  const flags = repricerIssueFlags(side);
+  if (flags.missingPrice) return 'нет цены';
+  if (flags.missingMin) return 'нет MIN';
+  if (flags.belowMin) return 'ниже MIN';
+  if (flags.fallbackEconomy) return 'fallback экономика';
   if (!side.rawCostPresent && side.economicFloorSource === 'snapshot_fallback') return 'fallback экономика';
   if (side.marginRisk) return 'риск маржи';
   if (side.launchHold === 'LAUNCH_HOLD') return 'не READY';
@@ -3349,9 +3359,7 @@ function repricerPrimaryStopReason(side) {
 }
 
 function repricerIssueFlags(side) {
-  const reasonCode = String(side?.reasonCode || '').toUpperCase();
-  const deferredPricingReasons = new Set(['LAUNCH_HOLD', 'OFF', 'OOS', 'NO_STOCK']);
-  const deferredPricing = deferredPricingReasons.has(reasonCode);
+  const deferredPricing = repricerDeferredPricingSide(side);
   return {
     missingMin: numberOrZero(side?.effectiveFloor) <= 0 && !deferredPricing,
     missingCost: numberOrZero(side?.costRub) <= 0 && !side?.pricingProxyPresent && !deferredPricing,
@@ -3540,8 +3548,6 @@ function repricerStopReasonSummary(sideRows) {
 function repricerHealthcheck(rows, platform = 'all') {
   const sideRows = repricerCollectSides(rows, platform);
   const activeSideRows = sideRows.filter(({ side }) => !side.outOfSpec);
-  const deferredPricingReasons = new Set(['LAUNCH_HOLD', 'OFF', 'OOS']);
-  const isDeferredPricingSide = (side) => deferredPricingReasons.has(String(side?.reasonCode || '').toUpperCase());
   const stopReasons = repricerStopReasonSummary(activeSideRows.filter(({ side }) => side.confidence !== 'green'));
   const smokeTests = repricerRunWorkbookSmokeTests(normalizeRepricerSettings(state.storage?.repricerSettings || {}));
   const metrics = {
@@ -3550,12 +3556,12 @@ function repricerHealthcheck(rows, platform = 'all') {
     out_of_spec_rows: sideRows.filter(({ side }) => side.outOfSpec).length,
     blocked_gate: activeSideRows.filter(({ side }) => side.criticalGate === 'BLOCK').length,
     missing_current_price: activeSideRows.filter(({ side }) => numberOrZero(side.currentPrice) <= 0).length,
-    missing_current_price_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.currentPrice) <= 0 && !['LAUNCH_HOLD', 'OOS', 'OFF'].includes(String(side.reasonCode || ''))).length,
+    missing_current_price_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.currentPrice) <= 0 && !repricerDeferredPricingSide(side)).length,
     missing_cost: activeSideRows.filter(({ side }) => numberOrZero(side.costRub) <= 0).length,
     protected_without_cost: activeSideRows.filter(({ side }) => !side.rawCostPresent && side.pricingProxyPresent && numberOrZero(side.effectiveFloor) > 0).length,
-    missing_cost_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent).length,
+    missing_cost_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent && !repricerDeferredPricingSide(side)).length,
     missing_effective_floor: activeSideRows.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0).length,
-    missing_effective_floor_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0 && !isDeferredPricingSide(side)).length,
+    missing_effective_floor_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0 && !repricerDeferredPricingSide(side)).length,
     missing_status: activeSideRows.filter(({ side }) => !String(side.status || '').trim()).length,
     fallback_rows: activeSideRows.filter(({ side }) => side.economicFloorSource === 'snapshot_fallback').length,
     launch_hold_rows: activeSideRows.filter(({ side }) => side.launchHold === 'LAUNCH_HOLD').length,
@@ -3596,8 +3602,6 @@ function repricerTemplateStats(rows, platform = 'wb') {
   const sides = repricerCollectSides(rows, platform).filter(({ side }) => side);
   const active = sides.filter(({ side }) => !side.outOfSpec);
   const nonPromo = active.filter(({ side }) => !side.promoActive);
-  const deferredPricingReasons = new Set(['LAUNCH_HOLD', 'OFF', 'OOS']);
-  const isDeferredPricingSide = (side) => deferredPricingReasons.has(String(side?.reasonCode || '').toUpperCase());
   const green = active.filter(({ side }) => side.confidence === 'green');
   const regularSafe = nonPromo.filter(({ side }) => side.safeToExport);
   const promoSafe = active.filter(({ side }) => side.promoSafeToExport);
@@ -3622,8 +3626,8 @@ function repricerTemplateStats(rows, platform = 'wb') {
     floorRaiseReady: nonPromo.filter(({ side }) => side.floorRaiseReady).length,
     floorRaiseSafe: nonPromo.filter(({ side }) => side.floorRaiseSafeToExport).length,
     blocked: active.filter(({ side }) => side.criticalGate === 'BLOCK').length,
-    missingMin: active.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0 && !isDeferredPricingSide(side)).length,
-    missingCost: active.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent).length,
+    missingMin: active.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0 && !repricerDeferredPricingSide(side)).length,
+    missingCost: active.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent && !repricerDeferredPricingSide(side)).length,
     promo: active.filter(({ side }) => side.promoActive).length,
     outOfSpec: sides.filter(({ side }) => side.outOfSpec).length
   };
@@ -5764,8 +5768,8 @@ function repricerOperatorTaskPlan(health, stats = {}) {
     },
     {
       title: 'Заполнить MIN',
-      count: metrics.missing_effective_floor_actionable || metrics.missing_effective_floor || 0,
-      hint: 'Без рабочего MIN цена не уходит в шаблон.',
+      count: metrics.missing_effective_floor_actionable || 0,
+      hint: 'Только строки, где MIN реально блокирует цену без отложенного статуса или fallback-защиты.',
       mode: 'blocked',
       tone: 'danger',
       source: 'Цены'
@@ -5780,8 +5784,8 @@ function repricerOperatorTaskPlan(health, stats = {}) {
     },
     {
       title: 'Дособрать себестоимость',
-      count: metrics.missing_cost_actionable || metrics.missing_cost || 0,
-      hint: 'Без cost расчёт держится на guard/fallback.',
+      count: metrics.missing_cost_actionable || 0,
+      hint: 'Только строки без cost и без защитного proxy; fallback-экономика не блокирует выгрузку.',
       mode: 'blocked',
       tone: 'warn',
       source: 'Себестоимость'
@@ -5835,15 +5839,13 @@ function repricerIssueBatchCounts(rows) {
 function repricerOperatorQueueRows(rows, limit = 6) {
   const scored = repricerCollectSides(rows).filter(({ side }) => side && !side.outOfSpec && (side.confidence !== 'green' || side.arrivalPriceSignal?.needsCheck))
     .map(({ row, side }) => {
-      const missingMin = numberOrZero(side.effectiveFloor) <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(String(side.reasonCode || ''));
-      const missingPrice = numberOrZero(side.currentPrice) <= 0 && !['LAUNCH_HOLD', 'OOS', 'OFF'].includes(String(side.reasonCode || ''));
-      const missingCost = numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent;
-      const score = (missingMin ? 120 : 0)
-        + (repricerBelowMinNeedsManual(side) ? 90 : 0)
+      const flags = repricerIssueFlags(side);
+      const score = (flags.missingMin ? 120 : 0)
+        + (flags.belowMin ? 90 : 0)
         + (side.criticalGate === 'BLOCK' ? 70 : 0)
         + (side.marginRisk ? 55 : 0)
-        + (missingPrice ? 45 : 0)
-        + (missingCost ? 35 : 0)
+        + (flags.missingPrice ? 45 : 0)
+        + (flags.missingCost ? 35 : 0)
         + (side.arrivalPriceSignal?.needsCheck ? 65 : 0)
         + (side.liveDrift ? 18 : 0)
         + numberOrZero(side.confidenceScore);
@@ -6584,12 +6586,13 @@ function renderRepricer() {
         ${badge(`нет входов ${fmt.int(health.metrics.blocked_gate)}`, health.metrics.blocked_gate ? 'danger' : 'ok')}
         ${badge(`вне спецификации ${fmt.int(health.metrics.out_of_spec_rows)}`, health.metrics.out_of_spec_rows ? 'info' : '')}
         ${badge(`промо ${fmt.int(health.metrics.promo_rows)}`, health.metrics.promo_rows ? 'warn' : 'info')}
-        ${badge(`нет цены ${fmt.int(health.metrics.missing_current_price)}`, health.metrics.missing_current_price ? 'warn' : 'ok')}
-        ${badge(`в работе без цены ${fmt.int(health.metrics.missing_current_price_actionable)}`, health.metrics.missing_current_price_actionable ? 'danger' : 'ok')}
-        ${badge(`нет себестоимости ${fmt.int(health.metrics.missing_cost)}`, health.metrics.missing_cost ? 'warn' : 'ok')}
+        ${badge(`нет цены к решению ${fmt.int(health.metrics.missing_current_price_actionable)}`, health.metrics.missing_current_price_actionable ? 'danger' : 'ok')}
+        ${badge(`без цены, не блокирует ${fmt.int(Math.max(0, numberOrZero(health.metrics.missing_current_price) - numberOrZero(health.metrics.missing_current_price_actionable)))}`, numberOrZero(health.metrics.missing_current_price) > numberOrZero(health.metrics.missing_current_price_actionable) ? 'info' : '')}
+        ${badge(`нет себестоимости к решению ${fmt.int(health.metrics.missing_cost_actionable)}`, health.metrics.missing_cost_actionable ? 'danger' : 'ok')}
+        ${badge(`fallback экономика ${fmt.int(health.metrics.fallback_rows)}`, health.metrics.fallback_rows ? 'info' : 'ok')}
         ${badge(`без cost, но защищено ${fmt.int(health.metrics.protected_without_cost)}`, health.metrics.protected_without_cost ? 'info' : '')}
-        ${badge(`нет MIN ${fmt.int(health.metrics.missing_effective_floor)}`, health.metrics.missing_effective_floor ? 'warn' : 'ok')}
-        ${badge(`в работе без MIN ${fmt.int(health.metrics.missing_effective_floor_actionable)}`, health.metrics.missing_effective_floor_actionable ? 'danger' : 'ok')}
+        ${badge(`нет MIN к решению ${fmt.int(health.metrics.missing_effective_floor_actionable)}`, health.metrics.missing_effective_floor_actionable ? 'danger' : 'ok')}
+        ${badge(`без MIN, не блокирует ${fmt.int(Math.max(0, numberOrZero(health.metrics.missing_effective_floor) - numberOrZero(health.metrics.missing_effective_floor_actionable)))}`, numberOrZero(health.metrics.missing_effective_floor) > numberOrZero(health.metrics.missing_effective_floor_actionable) ? 'info' : '')}
         ${badge(`изменения WB ${fmt.int(health.metrics.wb_change_rows)}`, health.metrics.wb_change_rows ? 'info' : '')}
         ${badge(`изменения Ozon ${fmt.int(health.metrics.ozon_change_rows)}`, health.metrics.ozon_change_rows ? 'info' : '')}
       </div>

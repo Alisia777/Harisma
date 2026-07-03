@@ -44,6 +44,20 @@ function uniqueSorted(values = []) {
     .sort((left, right) => left.localeCompare(right, 'ru'));
 }
 
+function canonicalOwnerName(value = '') {
+  const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+  const aliases = new Map([
+    ['Артем', 'Питайкин Артём'],
+    ['Артём', 'Питайкин Артём'],
+    ['Даша', 'Молодякова Дария'],
+    ['Пирогова Анна', 'Анна Пирогова'],
+    ['Доможирова Екатерина', 'Екатерина Доможирова'],
+    ['Васильева Мария', 'Мария Васильева'],
+    ['Лапыгин Максим', 'Максим Лапыгин']
+  ]);
+  return aliases.get(normalized) || normalized;
+}
+
 function activeMatrixOwners(dataDir) {
   const skus = readJson(path.join(dataDir, 'skus.json'), []);
   const active = (Array.isArray(skus) ? skus : []).filter((sku) => (
@@ -57,7 +71,7 @@ function activeMatrixOwners(dataDir) {
       sku.owner?.byPlatform,
       sku.ownersByPlatform
     ].filter((map) => map && typeof map === 'object');
-    return maps.flatMap((map) => Object.values(map));
+    return maps.flatMap((map) => Object.values(map)).map(canonicalOwnerName);
   }));
 }
 

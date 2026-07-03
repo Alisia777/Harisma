@@ -45,6 +45,13 @@ function sanitizeDiscountPct(...values) {
   return Math.min(1, Math.max(0, parsed));
 }
 
+function marginPctFromPrice(price, cost) {
+  const actualPrice = firstPositive(price);
+  const actualCost = firstPositive(cost);
+  if (!(actualPrice > 0) || !(actualCost > 0)) return null;
+  return Number(((actualPrice - actualCost) / actualPrice).toFixed(6));
+}
+
 function parseArgs(argv) {
   const args = {};
   for (let index = 2; index < argv.length; index += 1) {
@@ -189,6 +196,15 @@ function buildLegacyRow(row = {}, platform = '', supportRow = null) {
   const workingZoneFrom = firstPositive(row?.workingZoneFrom);
   const workingZoneTo = firstPositive(row?.workingZoneTo, row?.maxPrice);
   const hardMinPrice = firstPositive(row?.hardMinPrice);
+  const cost = firstPositive(
+    row?.cost,
+    row?.costRub,
+    row?.costPrice,
+    supportRow?.cost,
+    supportRow?.costRub,
+    supportRow?.costPrice
+  );
+  const currentMarginPct = marginPctFromPrice(firstPositive(currentClientPrice, currentPrice, basePrice), cost);
 
   return {
     articleKey: row?.articleKey || row?.article || '',
@@ -201,6 +217,17 @@ function buildLegacyRow(row = {}, platform = '', supportRow = null) {
     sourceMode: row?.sourceMode || '',
     allowedMarginPct: firstNumber(row?.allowedMarginPct),
     avgMargin7dPct: firstNumber(row?.avgMargin7dPct, row?.marginTotalPct),
+    cost,
+    costRub: cost,
+    costPrice: cost,
+    costSource: row?.costSource || supportRow?.costSource || '',
+    costImportedAt: row?.costImportedAt || supportRow?.costImportedAt || '',
+    costBackfillReason: row?.costBackfillReason || supportRow?.costBackfillReason || '',
+    costInheritedFromArticleKey: row?.costInheritedFromArticleKey || supportRow?.costInheritedFromArticleKey || undefined,
+    costAwareMarginPct: currentMarginPct,
+    marginPct: currentMarginPct,
+    marginTotalPct: currentMarginPct,
+    grossMarginPct: currentMarginPct,
     currentTurnoverDays,
     currentPrice,
     currentClientPrice,

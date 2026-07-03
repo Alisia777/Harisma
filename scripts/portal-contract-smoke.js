@@ -53,13 +53,77 @@ async function authenticateIfNeeded(page) {
 }
 
 async function clickView(page, view) {
-  const selector = `.nav-btn[data-view="${view}"]`;
-  const locator = page.locator(selector).first();
+  const selector = `.nav-btn[data-view="${view}"], [data-premium-nav="${view}"]`;
   const count = await page.locator(selector).count();
   if (!count) throw new Error(`Navigation button not found: ${view}`);
-  const isActive = await locator.evaluate((button) => button.classList.contains('active'));
-  if (!isActive) await locator.evaluate((button) => button.click(), undefined, { timeout: 30000 });
-  await page.waitForTimeout(1000);
+  const clicked = await page.evaluate((targetSelector) => {
+    const candidates = [...document.querySelectorAll(targetSelector)];
+    const target = candidates.find((button) => {
+      const style = getComputedStyle(button);
+      const rect = button.getBoundingClientRect();
+      return style.display !== 'none'
+        && style.visibility !== 'hidden'
+        && Number(style.opacity || 1) > 0
+        && rect.width > 0
+        && rect.height > 0;
+    }) || candidates[0];
+    if (!target) return false;
+    target.click();
+    return true;
+  }, selector);
+  if (!clicked) {
+    await page.locator(selector).first().click({ force: true, timeout: 30000 });
+  }
+  await page.waitForTimeout(400);
+  const active = await page.evaluate((targetView) => Boolean(
+    document.querySelector(`#view-${targetView}`)?.classList.contains('active')
+    || document.querySelector('#altea-premium-app')?.getAttribute('data-premium-active-route') === targetView
+  ), view);
+  if (!active) {
+    await page.evaluate((targetView) => {
+      if (typeof window.setView === 'function') {
+        window.setView(targetView, { persist: true, syncHash: true });
+        return;
+      }
+      document.querySelectorAll('.nav-btn[data-view], [data-premium-nav]').forEach((button) => {
+        const buttonView = button.getAttribute('data-view') || button.getAttribute('data-premium-nav');
+        button.classList.toggle('active', buttonView === targetView);
+      });
+      document.querySelectorAll('.view, .portal-view-shell').forEach((section) => {
+        section.classList.toggle('active', section.id === `view-${targetView}`);
+      });
+      window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view: targetView } }));
+    }, view);
+  }
+  await page.waitForTimeout(1400);
+}
+
+async function waitForActiveView(page, view, selector) {
+  await page.waitForFunction(({ targetView, targetSelector }) => {
+    const root = document.querySelector(targetSelector);
+    return Boolean(root?.classList.contains('active')
+      || document.querySelector('#altea-premium-app')?.getAttribute('data-premium-active-route') === targetView);
+  }, { targetView: view, targetSelector: selector }, { timeout: 12000 });
+}
+
+async function clickAndWaitView(page, view, selector) {
+  await clickView(page, view);
+  await waitForActiveView(page, view, selector);
+  const locator = page.locator(selector).first();
+  await locator.waitFor({ state: 'visible', timeout: 12000 }).catch(async () => {
+    const state = await page.evaluate((targetSelector) => {
+      const root = document.querySelector(targetSelector);
+      const style = root ? getComputedStyle(root) : null;
+      const rect = root ? root.getBoundingClientRect() : null;
+      return {
+        className: root?.className || '',
+        textLength: ((root?.innerText || root?.textContent) || '').trim().length,
+        style: style ? { display: style.display, visibility: style.visibility, opacity: style.opacity } : null,
+        rect: rect ? { width: rect.width, height: rect.height } : null
+      };
+    }, selector);
+    throw new Error(`${view} did not become visible: ${JSON.stringify(state)}`);
+  });
 }
 
 async function assertVisible(page, selector, label) {

@@ -241,9 +241,11 @@ function buildRow(sourceRow, sku, monthField) {
   };
 }
 
-function normalizeExistingYandexRows(payload) {
+function normalizeExistingYandexRows(payload, skuMap = new Map()) {
   return (Array.isArray(payload?.rows) ? payload.rows : [])
     .map((row) => {
+      const articleKey = normalizeKey(row?.articleKey || row?.article || row?.sku);
+      const sku = skuMap.get(articleKey) || null;
       const avgDaily = numberOrZero(row?.avgDaily);
       const inStock = numberOrZero(row?.inStock);
       const inTransit = numberOrZero(row?.inTransit);
@@ -256,7 +258,8 @@ function normalizeExistingYandexRows(payload) {
         ...row,
         platform: platformLabel('ym'),
         platformKey: 'ym',
-        articleKey: normalizeText(row?.articleKey || row?.article || row?.sku),
+        articleKey,
+        owner: skuOwnerForPlatform(sku, 'ym') || canonicalOwnerName(row?.owner || ''),
         inStock,
         inTransit,
         inRequest,
@@ -304,7 +307,7 @@ function main() {
       return null;
     }
   })();
-  const yandexRows = normalizeExistingYandexRows(yandexPayload);
+  const yandexRows = normalizeExistingYandexRows(yandexPayload, skuMap);
   const combinedRows = rows.concat(yandexRows);
 
   const combinedPayload = {

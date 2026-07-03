@@ -38,6 +38,7 @@ function resolveOptions(args = {}) {
     liveRepricerMaxAgeDays: numberOption(args['live-repricer-max-age-days'] || process.env.ALTEA_LIVE_REPRICER_MAX_AGE_DAYS, 7),
     supportPath: path.resolve(args['support-file'] || path.join(ROOT, 'data', 'price_workbench_support.json')),
     pricesPath: path.resolve(args['prices-file'] || path.join(ROOT, 'data', 'prices.json')),
+    skusPath: path.resolve(args['skus-file'] || path.join(ROOT, 'data', 'skus.json')),
     procurementWbPath: path.resolve(args['procurement-wb-file'] || path.join(ROOT, 'data', 'order_procurement_wb.json')),
     procurementOzonPath: path.resolve(args['procurement-ozon-file'] || path.join(ROOT, 'data', 'order_procurement_ozon.json')),
     outputPath: path.resolve(args['output-file'] || path.join(ROOT, 'data', 'repricer.json'))
@@ -275,6 +276,19 @@ function estimateNewBuyerPrice(currentBuyerPrice, currentPrice, recPrice, seedTa
   return positiveValue(currentBuyerPrice, recPrice);
 }
 
+function platformMatrixRow(sku, platform) {
+  if (!sku || !platform) return null;
+  const matrix = sku.platformMatrix && typeof sku.platformMatrix === 'object' ? sku.platformMatrix : {};
+  return matrix[platform] || null;
+}
+
+function marginPctFromPrice(price, cost) {
+  const actualPrice = positiveValue(price);
+  const actualCost = positiveValue(cost);
+  if (!(actualPrice > 0) || !(actualCost > 0)) return null;
+  return Number(((actualPrice - actualCost) / actualPrice).toFixed(6));
+}
+
 function formatRub(value) {
   const amount = numberValue(value);
   if (amount === null) return '';
@@ -418,11 +432,27 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
   const targetTurnoverDays = numberValue(
     liveSide?.targetTurnoverDays
   ) || defaultTargetTurnoverDays(sourceRow?.status || priceRow?.status || supportRow?.productStatus || '', platform);
-  const marginPct = numberValue(
+  const cost = positiveValue(
+    sourceRow?.cost,
+    sourceRow?.costRub,
+    sourceRow?.costPrice,
+    supportRow?.cost,
+    supportRow?.costRub,
+    supportRow?.costPrice,
+    priceRow?.cost,
+    priceRow?.costRub,
+    priceRow?.costPrice,
+    liveSide?.cost
+  );
+  const sourceMarginPct = numberValue(
     sourceRow?.avgMargin7dPct,
     sourceRow?.marginTotalPct,
+    priceRow?.costAwareMarginPct,
+    priceRow?.marginPct,
+    priceRow?.marginTotalPct,
     liveSide?.marginPct
   );
+  const marginPct = marginPctFromPrice(positiveValue(currentBuyerPrice, currentPrice, basePrice), cost) ?? sourceMarginPct;
   const thresholdMarginPct = numberValue(
     sourceRow?.allowedMarginPct,
     supportRow?.allowedMarginPct,
@@ -468,6 +498,7 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
   const changePct = currentPrice > 0 && recPrice > 0
     ? Number((((recPrice - currentPrice) / currentPrice)).toFixed(6))
     : 0;
+  const newMarginPct = marginPctFromPrice(newBuyerPrice, cost) ?? marginPct;
 
   return {
     basePrice,
@@ -485,19 +516,26 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     stockGateBlocksAutoprice,
     turnoverDays: turnoverDays === null ? null : turnoverDays,
     targetTurnoverDays,
+    cost,
+    costRub: cost,
+    costPrice: cost,
+    costSource: textValue(sourceRow?.costSource, supportRow?.costSource, priceRow?.costSource),
+    costImportedAt: textValue(sourceRow?.costImportedAt, supportRow?.costImportedAt, priceRow?.costImportedAt),
+    costBackfillReason: textValue(sourceRow?.costBackfillReason, supportRow?.costBackfillReason, priceRow?.costBackfillReason),
+    costInheritedFromArticleKey: textValue(sourceRow?.costInheritedFromArticleKey, supportRow?.costInheritedFromArticleKey, priceRow?.costInheritedFromArticleKey),
     marginPct: marginPct === null ? null : marginPct,
     recPrice,
     changePct,
     newBuyerPrice,
-    newMarginPct: marginPct === null ? null : marginPct,
+    newMarginPct: newMarginPct === null ? null : newMarginPct,
     action: strategy,
     strategy,
-    costState: 'unknown',
+    costState: cost > 0 ? 'known' : 'unknown',
     reason,
     marginNoAdsMinPct: thresholdMarginPct === null ? null : thresholdMarginPct,
     marginNoAdsBasePct: marginPct === null ? null : marginPct,
     marginNoAdsCurrentPct: marginPct === null ? null : marginPct,
-    marginNoAdsNewPct: marginPct === null ? null : marginPct,
+    marginNoAdsNewPct: newMarginPct === null ? null : newMarginPct,
     currentPriceDate: textValue(sourceRow?.valueDate, priceRow?.currentPriceDate, sourceRow?.historyFreshnessDate, priceRow?.historyFreshnessDate),
     historyFreshnessDate: textValue(sourceRow?.historyFreshnessDate, priceRow?.historyFreshnessDate),
     sourceMode: textValue(sourceRow?.sourceMode, priceRow?.sourceMode),
@@ -603,6 +641,7 @@ function buildLegacyRepricerLayer(options = {}) {
   const liveWorkbench = safeReadJson(options.liveWorkbenchPath, { generatedAt: '', platforms: {} });
   const support = safeReadJson(options.supportPath, { generatedAt: '', platforms: {} });
   const prices = safeReadJson(options.pricesPath, { generatedAt: '', platforms: {} });
+  const skus = safeReadJson(options.skusPath, []);
   const procurementWb = safeReadJson(options.procurementWbPath, { generatedAt: '', rows: [] });
   const procurementOzon = safeReadJson(options.procurementOzonPath, { generatedAt: '', rows: [] });
   const liveRepricer = safeReadLooseJson(options.liveRepricerPath, { generatedAt: '', rows: [] });
@@ -621,6 +660,9 @@ function buildLegacyRepricerLayer(options = {}) {
     wb: buildProcurementMap(procurementWb),
     ozon: buildProcurementMap(procurementOzon)
   };
+  const skuMap = new Map((Array.isArray(skus) ? skus : [])
+    .map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
+    .filter(([key]) => key));
   const byArticle = new Map();
 
   PLATFORM_KEYS.forEach((platform) => {
@@ -631,6 +673,8 @@ function buildLegacyRepricerLayer(options = {}) {
       const liveRow = liveRepricerMap.get(key) || null;
       const supportRow = supportMaps[platform].get(key) || null;
       const priceRow = pricesMaps[platform].get(key) || null;
+      const sku = skuMap.get(key) || null;
+      const matrixRow = platformMatrixRow(sku, platform);
       const procurementBucket = procurementMaps[platform] || { snapshotAvailable: false, map: new Map() };
       const procurementFact = procurementBucket.map.get(key) || {
         snapshotAvailable: Boolean(procurementBucket.snapshotAvailable),
@@ -641,6 +685,18 @@ function buildLegacyRepricerLayer(options = {}) {
       };
       if (!byArticle.has(key)) {
         const owner = textValue(sourceRow?.owner, priceRow?.owner, supportRow?.owner, liveRow?.owner);
+        const cost = positiveValue(
+          sourceRow?.cost,
+          sourceRow?.costRub,
+          sourceRow?.costPrice,
+          supportRow?.cost,
+          supportRow?.costRub,
+          supportRow?.costPrice,
+          priceRow?.cost,
+          priceRow?.costRub,
+          priceRow?.costPrice,
+          liveRow?.cost
+        );
         byArticle.set(key, {
           articleKey,
           article: textValue(sourceRow?.article, articleKey),
@@ -651,7 +707,7 @@ function buildLegacyRepricerLayer(options = {}) {
           ownerByPlatform: {},
           status: normalizeStatus(sourceRow?.status || sourceRow?.productStatus || priceRow?.status || supportRow?.repricerStatus || supportRow?.productStatus || liveRow?.status),
           tag: '',
-          cost: positiveValue(liveRow?.cost),
+          cost,
           wb: null,
           ozon: null
         });
@@ -665,8 +721,31 @@ function buildLegacyRepricerLayer(options = {}) {
       target.legalEntity = textValue(target.legalEntity, owner, liveRow?.legalEntity);
       target.owner = textValue(target.owner, owner);
       target.status = normalizeStatus(target.status || sourceRow?.status || sourceRow?.productStatus || priceRow?.status || supportRow?.repricerStatus || supportRow?.productStatus || liveRow?.status);
-      target.cost = positiveValue(target.cost, liveRow?.cost);
+      target.cost = positiveValue(
+        target.cost,
+        sourceRow?.cost,
+        sourceRow?.costRub,
+        sourceRow?.costPrice,
+        supportRow?.cost,
+        supportRow?.costRub,
+        supportRow?.costPrice,
+        priceRow?.cost,
+        priceRow?.costRub,
+        priceRow?.costPrice,
+        liveRow?.cost
+      );
       target[platform] = buildSide(sourceRow, platform, supportRow, priceRow, liveRow?.[platform] || null, liveRepricer?.generatedAt || '', procurementFact);
+      if (target[platform]) {
+        const matrixStatus = normalizeStatus(matrixRow?.status || matrixRow?.productStatus || '');
+        if (matrixStatus) {
+          target[platform].status = matrixStatus;
+          target[platform].productStatus = matrixStatus;
+        } else if (sku && !matrixRow) {
+          target[platform].status = 'Вывод';
+          target[platform].productStatus = 'Вывод';
+          target[platform].statusSource = 'sku-platform-matrix-absent';
+        }
+      }
     });
   });
 

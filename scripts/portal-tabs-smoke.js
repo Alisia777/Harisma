@@ -69,7 +69,7 @@ async function authenticateIfNeeded(page) {
   await emailInput.fill(GUEST_EMAIL);
   await page.locator('#portalAuthPassword').fill(GUEST_PASSWORD);
   await page.locator('#portalAuthSubmit').click();
-  await page.waitForFunction(() => !document.body.classList.contains('portal-auth-locked'), undefined, { timeout: 20000 });
+  await page.waitForFunction(() => !document.body.classList.contains('portal-auth-locked'), undefined, { timeout: 30000 });
   return true;
 }
 

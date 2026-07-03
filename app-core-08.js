@@ -480,37 +480,8 @@ function repricerHasSkuProfile(profile) {
   return Boolean(String(profile.status || '').trim() || String(profile.role || '').trim() || String(profile.launchReady || '').trim());
 }
 
-function repricerRecordNotExpired(record) {
-  const expiresAt = String(record?.expiresAt || record?.expires_at || '').trim();
-  if (!expiresAt) return true;
-  const stamp = Date.parse(expiresAt);
-  return Number.isNaN(stamp) || stamp >= Date.now();
-}
-
-function repricerOverrideIsApprovedBusinessRecord(record) {
-  if (!record || typeof record !== 'object') return false;
-  const localDraftMarker = 'local_storage_draft_only';
-  const status = String(record.approvalStatus || record.approval_status || record.status || '').trim().toLowerCase();
-  const approved = !status || ['approved', 'active'].includes(status);
-  const sourceStore = String(record.sourceStore || record.source_store || record.source || localDraftMarker).trim().toLowerCase();
-  const serverBacked = Boolean(sourceStore && sourceStore !== localDraftMarker);
-  const metadataComplete = Boolean(
-    String(record.author || record.createdBy || record.created_by || '').trim()
-    && String(record.role || record.authorRole || record.author_role || '').trim()
-    && String(record.reason || record.note || '').trim()
-    && String(record.createdAt || record.created_at || '').trim()
-    && String(record.approvedBy || record.approved_by || '').trim()
-    && String(record.approvedAt || record.approved_at || '').trim()
-  );
-  return approved && serverBacked && metadataComplete && repricerRecordNotExpired(record);
-}
-
-function repricerApprovedBusinessRecords(pool = []) {
-  return (Array.isArray(pool) ? pool : []).filter(repricerOverrideIsApprovedBusinessRecord);
-}
-
 function repricerFindCorridor(articleKey, platform) {
-  const pool = repricerApprovedBusinessRecords(state.storage?.repricerCorridors || []);
+  const pool = state.storage?.repricerCorridors || [];
   return pool.find((item) => item.articleKey === articleKey && item.platform === platform)
     || pool.find((item) => item.articleKey === articleKey && item.platform === 'all')
     || null;
@@ -527,7 +498,7 @@ function repricerHasCorridor(corridor) {
 }
 
 function repricerFindOverride(articleKey, platform) {
-  const pool = repricerApprovedBusinessRecords(state.storage?.repricerOverrides || []);
+  const pool = state.storage?.repricerOverrides || [];
   return pool.find((item) => item.articleKey === articleKey && item.platform === platform)
     || pool.find((item) => item.articleKey === articleKey && item.platform === 'all')
     || null;
@@ -794,6 +765,14 @@ function repricerArrivalStockLabel(signal = {}) {
   return parts.join(' · ') || 'движения нет';
 }
 
+const REPRICER_DEFERRED_PRICING_REASONS = new Set(['LAUNCH_HOLD', 'OFF', 'OOS', 'NO_STOCK']);
+
+function repricerDeferredPricingSide(side = {}) {
+  const reasonCode = String(side?.reasonCode || '').toUpperCase();
+  return REPRICER_DEFERRED_PRICING_REASONS.has(reasonCode)
+    || String(side?.launchHold || '').toUpperCase() === 'LAUNCH_HOLD';
+}
+
 function repricerBuildArrivalPriceSignal(side, fact = {}) {
   const platformStock = numberOrZero(fact?.platformStock);
   const historicalShippedUnits = numberOrZero(fact?.shippedUnits);
@@ -806,8 +785,8 @@ function repricerBuildArrivalPriceSignal(side, fact = {}) {
   const floor = numberOrZero(side?.effectiveFloor);
   const changed = Math.abs(numberOrZero(side?.changeRub)) >= 1;
 
-  if (currentPrice <= 0) reasons.push('нет текущей цены');
-  if (floor <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(String(side?.reasonCode || ''))) reasons.push('нет рабочего MIN');
+  if (currentPrice <= 0 && !repricerDeferredPricingSide(side)) reasons.push('нет текущей цены');
+  if (floor <= 0 && !repricerDeferredPricingSide(side)) reasons.push('нет рабочего MIN');
   if (repricerBelowMinNeedsManual(side)) reasons.push('ниже MIN вручную');
   if (side?.marginRisk) reasons.push('риск маржи');
   if (side?.criticalGate === 'BLOCK') reasons.push('стоп входов');
@@ -2255,12 +2234,6 @@ function repricerRowsCacheSignature() {
     workbench.liveEnrichmentAt || '',
     Array.isArray(platforms?.wb?.rows) ? platforms.wb.rows.length : 0,
     Array.isArray(platforms?.ozon?.rows) ? platforms.ozon.rows.length : 0,
-    state.canonicalRepricer?.snapshot_id || '',
-    state.canonicalRepricer?.generatedAt || '',
-    state.canonicalRepricer?.summary?.feature_status || state.canonicalRepricer?.feature_status || '',
-    Array.isArray(state.canonicalRepricer?.rows) ? state.canonicalRepricer.rows.length : 0,
-    (state.portalRuntimeWiring?.artifacts || []).map((artifact) => `${artifact.id}:${artifact.checksum || ''}`).join(','),
-    state.portalFeatureReadiness?.features?.repricer?.status || '',
     state.repricer?.generatedAt || '',
     Array.isArray(state.repricer?.rows) ? state.repricer.rows.length : 0,
     state.repricerLive?.generatedAt || '',
@@ -2288,7 +2261,8 @@ function repricerOutOfScopeBrandLabel(value) {
   const compact = String(value || '').trim().toLowerCase().replace(/[\s._-]+/g, '');
   if (!compact) return '';
   if (compact.includes('qeep')) return 'QEEP';
-  if (compact.includes('harly') || compact.includes('harley') || compact.includes('харли')) return 'Harly';
+  if (compact.includes('zarli')) return 'Zarli';
+  if (compact.includes('harly') || compact.includes('harley') || compact.includes('харли')) return 'HArly';
   return '';
 }
 
@@ -2316,155 +2290,7 @@ function buildRepricerRows(forceFresh = false) {
   return rows;
 }
 
-function canonicalRepricerRowsAvailable() {
-  return state.canonicalRepricer?.schema === 'canonical-repricer-v1'
-    && Array.isArray(state.canonicalRepricer.rows)
-    && state.canonicalRepricer.rows.length > 0;
-}
-
-function canonicalRepricerRuntimeSide(canonical = {}) {
-  const facts = canonical.facts || {};
-  const economics = canonical.economics || {};
-  const policy = canonical.policy || {};
-  const recommendation = canonical.recommendation || {};
-  const price = facts.seller_price == null ? null : numberOrZero(facts.seller_price);
-  const proposedPrice = recommendation.price == null ? null : numberOrZero(recommendation.price);
-  const finalPrice = proposedPrice == null ? price : proposedPrice;
-  const ready = recommendation.status === 'ready' && proposedPrice != null;
-  const floor = policy.floor == null ? 0 : numberOrZero(policy.floor);
-  const cap = policy.cap == null ? 0 : numberOrZero(policy.cap);
-  const reasonCodes = Array.isArray(recommendation.reason_codes) ? recommendation.reason_codes : [];
-  const changed = ready && price != null && Math.abs(numberOrZero(finalPrice) - numberOrZero(price)) >= 1;
-  return {
-    canonicalSource: true,
-    sourceStore: 'canonical_repricer',
-    snapshotId: canonical.snapshot_id || state.canonicalRepricer?.snapshot_id || '',
-    platform: canonical.platform,
-    articleKey: canonical.article_key,
-    currentPrice: price,
-    buyerPrice: facts.client_price == null ? null : numberOrZero(facts.client_price),
-    currentClientPrice: facts.client_price == null ? null : numberOrZero(facts.client_price),
-    currentSppPct: facts.spp_pct == null ? null : numberOrZero(facts.spp_pct),
-    stock: facts.stock == null ? null : numberOrZero(facts.stock),
-    inboundUnits: facts.inbound == null ? null : numberOrZero(facts.inbound),
-    stockStatus: facts.stock_status || '',
-    stockGateBlocksAutoprice: !ready,
-    currentPriceDate: facts.as_of || '',
-    sourceAsOf: facts.as_of || '',
-    costRub: economics.cost == null ? null : numberOrZero(economics.cost),
-    rawCostPresent: economics.cost != null && numberOrZero(economics.cost) > 0,
-    commissionPctValue: economics.commission_pct == null ? null : numberOrZero(economics.commission_pct),
-    logisticsRubValue: economics.logistics_per_unit == null ? null : numberOrZero(economics.logistics_per_unit),
-    taxPctValue: economics.tax_pct == null ? null : numberOrZero(economics.tax_pct),
-    pricingProxyPresent: false,
-    hardFloor: floor,
-    b2bFloor: floor,
-    effectiveFloor: floor,
-    economicFloor: floor,
-    marginFloor: floor,
-    finalGuardFloor: floor,
-    finalGuardFloorRounded: floor,
-    capPrice: cap,
-    stretchCap: cap,
-    finalGuardCap: cap,
-    finalGuardCapRounded: cap,
-    recommendedPrice: finalPrice,
-    finalPrice,
-    preAlignPrice: finalPrice,
-    cappedPrice: finalPrice,
-    marginPct: recommendation.margin_pct == null ? null : numberOrZero(recommendation.margin_pct),
-    currentMarginPct: recommendation.current_margin_pct == null ? null : numberOrZero(recommendation.current_margin_pct),
-    requiredMarginPct: policy.target_margin_pct == null ? null : numberOrZero(policy.target_margin_pct),
-    changeRub: price != null && finalPrice != null ? numberOrZero(finalPrice) - numberOrZero(price) : null,
-    changePct: recommendation.change_pct == null ? null : numberOrZero(recommendation.change_pct),
-    changed,
-    belowFloorNow: price != null && floor > 0 && numberOrZero(price) + 0.001 < floor,
-    confidence: ready ? 'green' : 'red',
-    criticalGate: ready ? '' : 'BLOCK',
-    finalReasonCode: ready ? 'CANONICAL_READY' : 'CANONICAL_BLOCKED',
-    decisionMode: ready ? 'ready' : 'blocked',
-    decisionText: ready ? 'canonical ready' : 'canonical blocked',
-    reasonCodes,
-    reason: reasonCodes.join(' · '),
-    stopReason: reasonCodes.join(' · '),
-    safeToExport: ready && changed,
-    promoSafeToExport: false,
-    promoActive: false,
-    promoConfigured: false,
-    promoOfferConfigured: false,
-    hasOverride: false,
-    hasManualOverride: false,
-    outOfSpec: false,
-    launchHold: '',
-    floorRaiseReady: false,
-    floorRaiseSafeToExport: false,
-    lowStockRisk: false,
-    marginRisk: recommendation.margin_pct != null && policy.target_margin_pct != null
-      && numberOrZero(recommendation.margin_pct) + 0.0001 < numberOrZero(policy.target_margin_pct),
-    liveDeltaRub: null,
-    liveDeltaPct: null,
-    liveDrift: false,
-    hasLiveBenchmark: false,
-    economicFloorSource: economics.complete ? 'canonical_economics' : 'canonical_incomplete',
-    floorSourceSummary: 'canonical policy',
-    capSourceSummary: 'canonical policy',
-    baseSourceSummary: 'canonical recommendation',
-    passports: canonical.passports || {},
-    audit: canonical.audit || {}
-  };
-}
-
-function buildCanonicalRepricerRowsFresh() {
-  if (!canonicalRepricerRowsAvailable()) return [];
-  const skuMap = repricerSkuFactMap();
-  const byArticle = new Map();
-  state.canonicalRepricer.rows.forEach((canonical) => {
-    const platform = String(canonical.platform || '').trim().toLowerCase();
-    if (!['wb', 'ozon', 'ym'].includes(platform)) return;
-    const articleKey = String(canonical.article_key || canonical.articleKey || '').trim();
-    const normalizedKey = repricerNormalizeArticleKey(articleKey);
-    if (!articleKey || !normalizedKey) return;
-    const skuFact = skuMap.get(normalizedKey) || null;
-    if (!byArticle.has(articleKey)) {
-      byArticle.set(articleKey, {
-        articleKey,
-        article: articleKey,
-        brand: skuFact?.brand || '',
-        name: skuFact?.name || '',
-        owner: typeof platformOwnerName === 'function'
-          ? (platformOwnerName(skuFact, platform) || (typeof skuFact?.owner === 'object' ? skuFact.owner?.name : skuFact?.owner) || '')
-          : ((typeof skuFact?.owner === 'object' ? skuFact.owner?.name : skuFact?.owner) || ''),
-        ownerByPlatform: {},
-        status: skuFact?.status || skuFact?.registryStatus || '',
-        productLifecycle: null,
-        role: '',
-        launchReady: '',
-        segment: skuFact?.segment || '',
-        abc: skuFact?.abc || '',
-        profile: null,
-        liveRow: null,
-        skuFact,
-        wb: null,
-        ozon: null,
-        ym: null,
-        canonicalSource: true,
-        canonicalSnapshotId: canonical.snapshot_id || state.canonicalRepricer?.snapshot_id || ''
-      });
-    }
-    const row = byArticle.get(articleKey);
-    const owner = typeof platformOwnerName === 'function' ? platformOwnerName(skuFact, platform) : '';
-    if (owner) row.ownerByPlatform[platform] = owner;
-    if (platform === 'wb' || platform === 'ozon' || platform === 'ym') {
-      row[platform] = canonicalRepricerRuntimeSide(canonical);
-    }
-  });
-  return [...byArticle.values()]
-    .sort((left, right) => String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru'));
-}
-
 function buildRepricerRowsFresh() {
-  const canonicalRows = buildCanonicalRepricerRowsFresh();
-  if (canonicalRows.length) return canonicalRows;
   const settings = normalizeRepricerSettings(state.storage?.repricerSettings || {});
   const platforms = state.smartPriceWorkbench?.platforms || {};
   const liveMap = repricerLiveMap();
@@ -3143,7 +2969,7 @@ function renderRepricerSide(title, side) {
     lifecycleBadge,
     badge(`действие: ${repricerTurnoverActionLabel(side.turnoverAction)}`, side.criticalGate === 'BLOCK' ? 'danger' : 'info'),
     side.autopriceAllowed ? badge('авторежим: включен', 'ok') : badge('авторежим: выключен', 'warn'),
-    side.economicFloorSource === 'snapshot_fallback' ? badge('себестоимость: нет', 'warn') : badge('себестоимость: есть', 'ok'),
+    side.economicFloorSource === 'snapshot_fallback' ? badge('fallback экономика', 'info') : badge('себестоимость: есть', 'ok'),
     side.launchHold ? badge('стоп до READY', 'warn') : '',
     side.hasOverride ? badge('ручное решение', 'warn') : ''
   ].filter(Boolean).join('');
@@ -3515,10 +3341,12 @@ function repricerPrimaryStopReason(side) {
   if (!side) return 'нет стороны';
   if (side.outOfSpec || side.criticalGate === 'SKIP') return 'вне спецификации';
   if (side.criticalGate === 'BLOCK') return 'нет входов';
-  if (numberOrZero(side.currentPrice) <= 0) return 'нет цены';
-  if (numberOrZero(side.effectiveFloor) <= 0) return 'нет MIN';
-  if (repricerBelowMinNeedsManual(side)) return 'ниже MIN';
-  if (!side.rawCostPresent && side.economicFloorSource === 'snapshot_fallback') return 'нет себестоимости';
+  const flags = repricerIssueFlags(side);
+  if (flags.missingPrice) return 'нет цены';
+  if (flags.missingMin) return 'нет MIN';
+  if (flags.belowMin) return 'ниже MIN';
+  if (flags.fallbackEconomy) return 'fallback экономика';
+  if (!side.rawCostPresent && side.economicFloorSource === 'snapshot_fallback') return 'fallback экономика';
   if (side.marginRisk) return 'риск маржи';
   if (side.launchHold === 'LAUNCH_HOLD') return 'не READY';
   if (side.arrivalPriceSignal?.needsCheck) return 'пришёл → цена';
@@ -3531,11 +3359,12 @@ function repricerPrimaryStopReason(side) {
 }
 
 function repricerIssueFlags(side) {
-  const reasonCode = String(side?.reasonCode || '');
+  const deferredPricing = repricerDeferredPricingSide(side);
   return {
-    missingMin: numberOrZero(side?.effectiveFloor) <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(reasonCode),
-    missingCost: numberOrZero(side?.costRub) <= 0 && (!side?.pricingProxyPresent || side?.economicFloorSource === 'snapshot_fallback'),
-    missingPrice: numberOrZero(side?.currentPrice) <= 0 && !['LAUNCH_HOLD', 'OOS', 'OFF'].includes(reasonCode),
+    missingMin: numberOrZero(side?.effectiveFloor) <= 0 && !deferredPricing,
+    missingCost: numberOrZero(side?.costRub) <= 0 && !side?.pricingProxyPresent && !deferredPricing,
+    fallbackEconomy: !side?.rawCostPresent && side?.economicFloorSource === 'snapshot_fallback' && Boolean(side?.pricingProxyPresent),
+    missingPrice: numberOrZero(side?.currentPrice) <= 0 && !deferredPricing,
     belowMin: repricerBelowMinNeedsManual(side),
     liveDrift: Boolean(side?.liveDrift),
     marginRisk: Boolean(side?.marginRisk),
@@ -3727,12 +3556,12 @@ function repricerHealthcheck(rows, platform = 'all') {
     out_of_spec_rows: sideRows.filter(({ side }) => side.outOfSpec).length,
     blocked_gate: activeSideRows.filter(({ side }) => side.criticalGate === 'BLOCK').length,
     missing_current_price: activeSideRows.filter(({ side }) => numberOrZero(side.currentPrice) <= 0).length,
-    missing_current_price_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.currentPrice) <= 0 && !['LAUNCH_HOLD', 'OOS', 'OFF'].includes(String(side.reasonCode || ''))).length,
+    missing_current_price_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.currentPrice) <= 0 && !repricerDeferredPricingSide(side)).length,
     missing_cost: activeSideRows.filter(({ side }) => numberOrZero(side.costRub) <= 0).length,
     protected_without_cost: activeSideRows.filter(({ side }) => !side.rawCostPresent && side.pricingProxyPresent && numberOrZero(side.effectiveFloor) > 0).length,
-    missing_cost_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent).length,
+    missing_cost_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent && !repricerDeferredPricingSide(side)).length,
     missing_effective_floor: activeSideRows.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0).length,
-    missing_effective_floor_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(String(side.reasonCode || ''))).length,
+    missing_effective_floor_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0 && !repricerDeferredPricingSide(side)).length,
     missing_status: activeSideRows.filter(({ side }) => !String(side.status || '').trim()).length,
     fallback_rows: activeSideRows.filter(({ side }) => side.economicFloorSource === 'snapshot_fallback').length,
     launch_hold_rows: activeSideRows.filter(({ side }) => side.launchHold === 'LAUNCH_HOLD').length,
@@ -3759,7 +3588,6 @@ function repricerHealthcheck(rows, platform = 'all') {
   if (metrics.missing_cost_actionable > 0) issues.push(`нет себестоимости без защитного proxy: ${fmt.int(metrics.missing_cost_actionable)}`);
   if (metrics.missing_effective_floor_actionable > 0) issues.push(`нет effective floor в активном контуре: ${fmt.int(metrics.missing_effective_floor_actionable)}`);
   if (metrics.missing_status > 0) issues.push(`не задан статус товара: ${fmt.int(metrics.missing_status)}`);
-  if (metrics.fallback_rows > 0) issues.push(`economic fallback rows: ${fmt.int(metrics.fallback_rows)}`);
   if (metrics.smoke_passed < metrics.smoke_total) issues.push(`smoke tests: ${fmt.int(metrics.smoke_passed)}/${fmt.int(metrics.smoke_total)}`);
   return {
     metrics,
@@ -3798,8 +3626,8 @@ function repricerTemplateStats(rows, platform = 'wb') {
     floorRaiseReady: nonPromo.filter(({ side }) => side.floorRaiseReady).length,
     floorRaiseSafe: nonPromo.filter(({ side }) => side.floorRaiseSafeToExport).length,
     blocked: active.filter(({ side }) => side.criticalGate === 'BLOCK').length,
-    missingMin: active.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0).length,
-    missingCost: active.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent).length,
+    missingMin: active.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0 && !repricerDeferredPricingSide(side)).length,
+    missingCost: active.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent && !repricerDeferredPricingSide(side)).length,
     promo: active.filter(({ side }) => side.promoActive).length,
     outOfSpec: sides.filter(({ side }) => side.outOfSpec).length
   };
@@ -3908,9 +3736,8 @@ function repricerGameReadinessModel(health = {}, templateStats = {}, context = {
     + numberOrZero(metrics.missing_effective_floor_actionable);
   const softStops = yellow
     + numberOrZero(context.belowMinSides)
-    + numberOrZero(metrics.missing_cost_actionable || metrics.missing_cost)
-    + numberOrZero(context.liveDriftSides)
-    + numberOrZero(context.fallbackSides);
+    + numberOrZero(metrics.missing_cost_actionable)
+    + numberOrZero(context.liveDriftSides);
   const completion = active > 0 ? (green + yellow) / active : null;
   const tone = safe > 0 || hardStops <= 0 ? 'ok' : 'danger';
   const title = safe > 0
@@ -4197,15 +4024,8 @@ function repricerImportNumber(value) {
 
 function repricerImportPlatform(value) {
   const raw = String(value || '').trim().toLowerCase();
-  const compact = raw.replace(/[\s_.-]+/g, '');
   if (raw.includes('ozon') || raw.includes('озон')) return 'ozon';
   if (raw.includes('wb') || raw.includes('wild') || raw.includes('вайлд')) return 'wb';
-  if (['ym', 'ya', 'yandex', 'yandexmarket', 'yamarket'].includes(compact)) return 'ym';
-  if (['ga', 'goldapple', 'goldenapple'].includes(compact)) return 'goldapple';
-  if (['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
-  if (['megamarket', 'sbermegamarket'].includes(compact)) return 'megamarket';
-  if (['samokat'].includes(compact)) return 'samokat';
-  if (['mm', 'magnit', 'magnitmarket'].includes(compact)) return 'magnit';
   return 'all';
 }
 
@@ -4446,10 +4266,7 @@ function repricerTeamActor() {
 
 function repricerQueuePlatform(platform = 'all') {
   const raw = String(platform || '').trim().toLowerCase();
-  const compact = raw.replace(/[\s_.-]+/g, '');
-  const normalized = repricerImportPlatform(compact);
-  if (normalized !== 'all') return normalized;
-  return ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'all'].includes(compact) ? compact : 'all';
+  return ['wb', 'ozon', 'all'].includes(raw) ? raw : 'all';
 }
 
 function repricerQueueTaskKey(item = {}) {
@@ -5722,7 +5539,7 @@ function repricerEconomicSourceLabel(source = 'all') {
     ready: 'экономика подтверждена',
     fee_stack: 'себестоимость + комиссии',
     snapshot_guard: 'себестоимость есть, с guard',
-    snapshot_fallback: 'без себестоимости (fallback)'
+    snapshot_fallback: 'fallback экономика'
   };
   return map[source] || map.all;
 }
@@ -5951,8 +5768,8 @@ function repricerOperatorTaskPlan(health, stats = {}) {
     },
     {
       title: 'Заполнить MIN',
-      count: metrics.missing_effective_floor_actionable || metrics.missing_effective_floor || 0,
-      hint: 'Без рабочего MIN цена не уходит в шаблон.',
+      count: metrics.missing_effective_floor_actionable || 0,
+      hint: 'Только строки, где MIN реально блокирует цену без отложенного статуса или fallback-защиты.',
       mode: 'blocked',
       tone: 'danger',
       source: 'Цены'
@@ -5967,8 +5784,8 @@ function repricerOperatorTaskPlan(health, stats = {}) {
     },
     {
       title: 'Дособрать себестоимость',
-      count: metrics.missing_cost_actionable || metrics.missing_cost || 0,
-      hint: 'Без cost расчёт держится на guard/fallback.',
+      count: metrics.missing_cost_actionable || 0,
+      hint: 'Только строки без cost и без защитного proxy; fallback-экономика не блокирует выгрузку.',
       mode: 'blocked',
       tone: 'warn',
       source: 'Себестоимость'
@@ -6022,15 +5839,13 @@ function repricerIssueBatchCounts(rows) {
 function repricerOperatorQueueRows(rows, limit = 6) {
   const scored = repricerCollectSides(rows).filter(({ side }) => side && !side.outOfSpec && (side.confidence !== 'green' || side.arrivalPriceSignal?.needsCheck))
     .map(({ row, side }) => {
-      const missingMin = numberOrZero(side.effectiveFloor) <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(String(side.reasonCode || ''));
-      const missingPrice = numberOrZero(side.currentPrice) <= 0 && !['LAUNCH_HOLD', 'OOS', 'OFF'].includes(String(side.reasonCode || ''));
-      const missingCost = numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent;
-      const score = (missingMin ? 120 : 0)
-        + (repricerBelowMinNeedsManual(side) ? 90 : 0)
+      const flags = repricerIssueFlags(side);
+      const score = (flags.missingMin ? 120 : 0)
+        + (flags.belowMin ? 90 : 0)
         + (side.criticalGate === 'BLOCK' ? 70 : 0)
         + (side.marginRisk ? 55 : 0)
-        + (missingPrice ? 45 : 0)
-        + (missingCost ? 35 : 0)
+        + (flags.missingPrice ? 45 : 0)
+        + (flags.missingCost ? 35 : 0)
         + (side.arrivalPriceSignal?.needsCheck ? 65 : 0)
         + (side.liveDrift ? 18 : 0)
         + numberOrZero(side.confidenceScore);
@@ -6339,38 +6154,37 @@ function attachRepricerEvents(root) {
   }
 }
 
-function repricerRuntimeStatusBadges() {
-  const readiness = state.portalFeatureReadiness?.features?.repricer || {};
-  const runtime = state.portalRuntimeWiring || {};
-  const canonicalRows = Array.isArray(state.canonicalRepricer?.rows) ? state.canonicalRepricer.rows.length : 0;
-  const badges = [];
-  if (canonicalRows) badges.push(badge(`canonical ${fmt.int(canonicalRows)}`, 'info'));
-  const status = String(readiness.status || state.canonicalRepricer?.feature_status || '').trim().toLowerCase();
-  if (status) {
-    const tone = status === 'ok' ? 'ok' : (status === 'blocked' ? 'danger' : 'warn');
-    const publishable = readiness.publishable_rows ?? state.canonicalRepricer?.summary?.publishable_rows;
-    const eligible = readiness.eligible_rows ?? state.canonicalRepricer?.summary?.eligible_rows;
-    const suffix = eligible != null ? ` ${fmt.int(publishable || 0)}/${fmt.int(eligible)}` : '';
-    badges.push(badge(`repricer ${status}${suffix}`, tone));
-  }
-  if (runtime.status && runtime.status !== 'ok') {
-    badges.push(badge(`runtime ${runtime.status}`, runtime.status === 'blocked' ? 'danger' : 'warn'));
-  }
-  return badges;
-}
-
 function renderRepricer() {
   const root = document.getElementById('view-repricer');
   if (!root) return;
   const operatorLayer = repricerOperatorLayer();
-  const renderSignature = repricerRenderSignature(operatorLayer);
-  if (root.dataset.repricerRenderSignature === renderSignature && root.children.length) return;
   const sourceRows = buildRepricerRows();
+  const renderSignature = `${repricerRenderSignature(operatorLayer)}|rows:${sourceRows.length}|repricer:${state.repricer?.generatedAt || ''}|workbench:${state.smartPriceWorkbench?.generatedAt || ''}`;
+  if (root.dataset.repricerRenderSignature === renderSignature && root.children.length) return;
   if (!sourceRows.length) {
     root.dataset.repricerRenderSignature = renderSignature;
-    root.innerHTML = `<div class="card"><div class="head"><div><h3>Репрайсер</h3><div class="muted small">Контур пока не получил smart price workbench.</div></div>${badge('нет данных', 'warn')}</div><div class="muted" style="margin-top:10px">Нужно дождаться загрузки снапшота цен, после этого вкладка начнет считать рекомендации и хранить override прямо в портале.</div></div>`;
+    const attempts = Number(root.dataset.repricerLazyAttempts || 0);
+    if (attempts < 12) {
+      root.dataset.repricerLazyAttempts = String(attempts + 1);
+      const retryRender = () => {
+        const isActive = state.activeView === 'repricer' || root.classList.contains('active');
+        if (!isActive) return;
+        root.dataset.repricerRenderSignature = '';
+        renderRepricer();
+      };
+      if (typeof window.ensureViewData === 'function') {
+        Promise.resolve(window.ensureViewData('repricer'))
+          .then(retryRender)
+          .catch((error) => console.warn('[repricer-lazy-data]', error));
+      } else {
+        window.setTimeout(retryRender, 500);
+      }
+    }
+    const stillLoading = attempts < 12;
+    root.innerHTML = `<div class="card"><div class="head"><div><h3>Репрайсер</h3><div class="muted small">${stillLoading ? 'Загружаю smart price workbench и себестоимость.' : 'Контур не получил smart price workbench.'}</div></div>${badge(stillLoading ? 'загрузка' : 'нет данных', stillLoading ? 'info' : 'warn')}</div><div class="muted" style="margin-top:10px">${stillLoading ? 'Собираю MIN/MAX, себестоимость и текущие цены. Вкладка перерисуется автоматически после загрузки снапшота.' : 'Нужно проверить загрузку снапшота цен: без него рекомендации и выгрузки репрайсера не строятся.'}</div></div>`;
     return;
   }
+  delete root.dataset.repricerLazyAttempts;
   const operatorSimple = operatorLayer !== 'advanced';
   const health = repricerHealthcheck(sourceRows);
   const smokeTests = health.smokeTests;
@@ -6380,6 +6194,8 @@ function renderRepricer() {
   const feeStackSides = sideRows.filter((side) => side.economicFloorSource === 'fee_stack').length;
   const mixedGuardSides = sideRows.filter((side) => side.economicFloorSource === 'snapshot_guard').length;
   const fallbackSides = sideRows.filter((side) => side.economicFloorSource === 'snapshot_fallback').length;
+  const missingCostActionable = numberOrZero(health.metrics?.missing_cost_actionable);
+  const missingFloorActionable = numberOrZero(health.metrics?.missing_effective_floor_actionable);
   const liveBenchmarkSides = sideRows.filter((side) => side.hasLiveBenchmark).length;
   const liveDriftSides = sideRows.filter((side) => side.liveDrift).length;
   const promoSides = sideRows.filter((side) => side.promoActive).length;
@@ -6411,20 +6227,20 @@ function renderRepricer() {
   };
   const smokePassed = health.metrics.smoke_passed;
   const summaryBadges = [
-    ...repricerRuntimeStatusBadges(),
     badge(`нужны решения ${fmt.int(actionableRows)}`, actionableRows ? 'warn' : 'ok'),
     badge(`ручные решения ${fmt.int(manualOverrideRows)}`, manualOverrideRows ? 'info' : 'ok'),
     badge(`поднять до MIN ${fmt.int(floorRaiseSafeSides)}`, floorRaiseSafeSides ? 'ok' : 'info'),
     badge(`ниже MIN вручную ${fmt.int(belowMinSides)}`, belowMinSides ? 'danger' : 'ok'),
     badge(`пришёл → цена ${fmt.int(arrivalSignalStats.total.check)}`, arrivalSignalStats.total.check ? 'warn' : 'ok'),
     badge(`нет входов ${fmt.int(blockedGateSides)}`, blockedGateSides ? 'danger' : 'ok'),
-    badge(`без себестоимости ${fmt.int(fallbackSides)}`, fallbackSides ? 'warn' : 'ok'),
+    badge(`нет себеса к решению ${fmt.int(missingCostActionable)}`, missingCostActionable ? 'danger' : 'ok'),
+    badge(`нет MIN к решению ${fmt.int(missingFloorActionable)}`, missingFloorActionable ? 'danger' : 'ok'),
     badge(`расходятся с live ${fmt.int(liveDriftSides)}`, liveDriftSides ? 'warn' : 'ok')
   ].join('');
   const techBadges = [
     badge(`полная экономика ${fmt.int(feeStackSides)}`, feeStackSides ? 'ok' : 'warn'),
     badge(`защита snapshot ${fmt.int(mixedGuardSides)}`, mixedGuardSides ? 'info' : ''),
-    badge(`без себестоимости ${fmt.int(fallbackSides)}`, fallbackSides ? 'warn' : 'ok'),
+    badge(`fallback экономика ${fmt.int(fallbackSides)}`, fallbackSides ? 'info' : 'ok'),
     badge(`промо активно ${fmt.int(promoSides)}`, promoSides ? 'warn' : 'info'),
     badge(`предложения акций ${fmt.int(promoOfferSides)}`, promoOfferSides ? 'info' : ''),
     badge(`акция ведёт цену ${fmt.int(promoOfferActiveSides)}`, promoOfferActiveSides ? 'ok' : ''),
@@ -6716,7 +6532,7 @@ function renderRepricer() {
     { label: 'Проверка сценариев', value: `${fmt.int(smokePassed)}/${fmt.int(smokeTests.length)}`, hint: 'Базовые тест-кейсы: AUTO, LAUNCH, FREEZE, OOS, KEEP и PROMO_OFFER.' },
     { label: 'Полная экономика', value: feeStackSides, hint: 'Площадки, где economic floor считается прямо из себестоимости и fee stack.' },
     { label: 'Защита snapshot', value: mixedGuardSides, hint: 'Есть cost, но итоговый economic floor всё ещё держится на страхующем snapshot-ограничении.' },
-    { label: 'Без себестоимости', value: fallbackSides, hint: 'Расчёт идёт без cost, только по текущему smart-срезу.' },
+    { label: 'Fallback экономика', value: fallbackSides, hint: 'Нет полного fee-stack, расчет защищен snapshot и текущим smart-срезом.' },
     { label: 'Предложения акций', value: promoOfferSides, hint: 'Read-only promo offers из текущих слоев фактов, без новых таблиц.' },
     { label: 'Есть live-ориентир', value: liveBenchmarkSides, hint: 'Площадки, где есть живая рекомендация текущего репрайсера.' },
     { label: 'Расходятся с live', value: liveDriftSides, hint: 'Наш финал заметно расходится с живым repricer rec.' },
@@ -6770,12 +6586,13 @@ function renderRepricer() {
         ${badge(`нет входов ${fmt.int(health.metrics.blocked_gate)}`, health.metrics.blocked_gate ? 'danger' : 'ok')}
         ${badge(`вне спецификации ${fmt.int(health.metrics.out_of_spec_rows)}`, health.metrics.out_of_spec_rows ? 'info' : '')}
         ${badge(`промо ${fmt.int(health.metrics.promo_rows)}`, health.metrics.promo_rows ? 'warn' : 'info')}
-        ${badge(`нет цены ${fmt.int(health.metrics.missing_current_price)}`, health.metrics.missing_current_price ? 'warn' : 'ok')}
-        ${badge(`в работе без цены ${fmt.int(health.metrics.missing_current_price_actionable)}`, health.metrics.missing_current_price_actionable ? 'danger' : 'ok')}
-        ${badge(`нет себестоимости ${fmt.int(health.metrics.missing_cost)}`, health.metrics.missing_cost ? 'warn' : 'ok')}
+        ${badge(`нет цены к решению ${fmt.int(health.metrics.missing_current_price_actionable)}`, health.metrics.missing_current_price_actionable ? 'danger' : 'ok')}
+        ${badge(`без цены, не блокирует ${fmt.int(Math.max(0, numberOrZero(health.metrics.missing_current_price) - numberOrZero(health.metrics.missing_current_price_actionable)))}`, numberOrZero(health.metrics.missing_current_price) > numberOrZero(health.metrics.missing_current_price_actionable) ? 'info' : '')}
+        ${badge(`нет себестоимости к решению ${fmt.int(health.metrics.missing_cost_actionable)}`, health.metrics.missing_cost_actionable ? 'danger' : 'ok')}
+        ${badge(`fallback экономика ${fmt.int(health.metrics.fallback_rows)}`, health.metrics.fallback_rows ? 'info' : 'ok')}
         ${badge(`без cost, но защищено ${fmt.int(health.metrics.protected_without_cost)}`, health.metrics.protected_without_cost ? 'info' : '')}
-        ${badge(`нет MIN ${fmt.int(health.metrics.missing_effective_floor)}`, health.metrics.missing_effective_floor ? 'warn' : 'ok')}
-        ${badge(`в работе без MIN ${fmt.int(health.metrics.missing_effective_floor_actionable)}`, health.metrics.missing_effective_floor_actionable ? 'danger' : 'ok')}
+        ${badge(`нет MIN к решению ${fmt.int(health.metrics.missing_effective_floor_actionable)}`, health.metrics.missing_effective_floor_actionable ? 'danger' : 'ok')}
+        ${badge(`без MIN, не блокирует ${fmt.int(Math.max(0, numberOrZero(health.metrics.missing_effective_floor) - numberOrZero(health.metrics.missing_effective_floor_actionable)))}`, numberOrZero(health.metrics.missing_effective_floor) > numberOrZero(health.metrics.missing_effective_floor_actionable) ? 'info' : '')}
         ${badge(`изменения WB ${fmt.int(health.metrics.wb_change_rows)}`, health.metrics.wb_change_rows ? 'info' : '')}
         ${badge(`изменения Ozon ${fmt.int(health.metrics.ozon_change_rows)}`, health.metrics.ozon_change_rows ? 'info' : '')}
       </div>
@@ -6807,7 +6624,7 @@ function renderRepricer() {
         <option value="ready" ${state.repricerFilters.economicSource === 'ready' ? 'selected' : ''}>Экономика подтверждена</option>
         <option value="fee_stack" ${state.repricerFilters.economicSource === 'fee_stack' ? 'selected' : ''}>Себестоимость + комиссии</option>
         <option value="snapshot_guard" ${state.repricerFilters.economicSource === 'snapshot_guard' ? 'selected' : ''}>Себестоимость есть, но с guard</option>
-        <option value="snapshot_fallback" ${state.repricerFilters.economicSource === 'snapshot_fallback' ? 'selected' : ''}>Без себестоимости (fallback)</option>
+        <option value="snapshot_fallback" ${state.repricerFilters.economicSource === 'snapshot_fallback' ? 'selected' : ''}>Fallback экономика</option>
       </select>
       <select id="repricerListSizeFilter">
         <option value="focus" ${listSize === 'focus' ? 'selected' : ''}>Первые 20 SKU</option>

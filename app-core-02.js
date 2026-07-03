@@ -442,6 +442,41 @@ function prepareSkuBaseState() {
   }
 }
 
+function ownerOverrideStamp(override = {}) {
+  const value = override?.updatedAt || override?.updated_at || '';
+  const stamp = Date.parse(String(value || ''));
+  return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function matrixOwnerStamp(sku = {}, baseOwner = {}) {
+  const stampValue = sku?.matrixImportedAt || baseOwner?.matrixImportedAt || sku?.owner?.matrixImportedAt || '';
+  const stamp = Date.parse(String(stampValue || ''));
+  return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function hasMatrixOwnerSource(sku = {}, baseOwner = {}) {
+  return [
+    sku?.matrixSource,
+    sku?.ownerSource,
+    baseOwner?.source,
+    sku?.owner?.source
+  ].some((value) => String(value || '').includes('ksenia-merged-statuses-minmax'));
+}
+
+function ownerHasAssignment(owner = {}) {
+  if (canonicalOwnerName(owner?.name || '')) return true;
+  return Boolean(owner?.byPlatform && Object.values(owner.byPlatform).some((value) => canonicalOwnerName(value || '')));
+}
+
+function shouldApplyOwnerOverride(sku = {}, baseOwner = {}, override = {}) {
+  if (!override) return false;
+  const matrixStamp = matrixOwnerStamp(sku, baseOwner);
+  if (matrixStamp > 0 && hasMatrixOwnerSource(sku, baseOwner)) {
+    return ownerOverrideStamp(override) > matrixStamp;
+  }
+  return true;
+}
+
 function applyOwnerOverridesToSkus() {
   prepareSkuBaseState();
   const overrideMap = new Map((state.storage.ownerOverrides || []).map((item) => [item.articleKey, item]));
@@ -449,7 +484,7 @@ function applyOwnerOverridesToSkus() {
     const baseOwner = JSON.parse(JSON.stringify(sku.__baseOwner || {}));
     baseOwner.name = canonicalOwnerName(baseOwner.name || '');
     const override = overrideMap.get(sku.articleKey);
-    if (override) {
+    if (override && shouldApplyOwnerOverride(sku, baseOwner, override)) {
       const assignedOwnerName = canonicalOwnerName(override.ownerName || '');
       const hasAssignedOwner = Boolean(assignedOwnerName);
       const baseOwnerByPlatform = typeof normalizeOwnerOverridePlatforms === 'function'
@@ -481,7 +516,7 @@ function applyOwnerOverridesToSkus() {
     } else {
       sku.owner = baseOwner;
       sku.flags = sku.flags || {};
-      sku.flags.assigned = Boolean(baseOwner?.name);
+      sku.flags.assigned = ownerHasAssignment(baseOwner);
     }
 
     const lifecycle = typeof productLifecycleForSku === 'function'
@@ -577,7 +612,11 @@ function ownerOptions() {
       Object.values(sku.owner.byPlatform).forEach(addOwner);
     }
   }
-  for (const item of state.storage.ownerOverrides || []) addOwner(item.ownerName);
+  for (const item of state.storage.ownerOverrides || []) {
+    const sku = typeof getSku === 'function' ? getSku(item.articleKey) : null;
+    const baseOwner = sku?.__baseOwner || sku?.owner || {};
+    if (!sku || shouldApplyOwnerOverride(sku, baseOwner, item)) addOwner(item.ownerName);
+  }
   for (const task of state.storage.tasks || []) {
     addOwner(task.owner);
     addOwner(task.coOwner);

@@ -8,6 +8,8 @@ const DEFAULT_SUPABASE_URL = 'https://iyckwryrucqrxwlowxow.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw';
 const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const DEFAULT_SNAPSHOTS = ['sku_aliases', 'sku_alias_ignore', 'sku_alias_audit'];
+const DEFAULT_BATCH_SIZE = 40;
+const DEFAULT_RETRY_COUNT = 5;
 
 function parseArgs(argv) {
   const args = {};
@@ -35,7 +37,9 @@ function resolveOptions(args) {
     supabaseKey: args['supabase-key'] || process.env.ALTEA_SUPABASE_KEY || DEFAULT_SUPABASE_KEY,
     snapshots: args.snapshot
       ? String(args.snapshot).split(',').map((value) => value.trim()).filter(Boolean)
-      : DEFAULT_SNAPSHOTS
+      : DEFAULT_SNAPSHOTS,
+    batchSize: Math.max(1, Math.trunc(Number(args['batch-size'] || process.env.ALTEA_SNAPSHOT_PULL_BATCH_SIZE || DEFAULT_BATCH_SIZE)) || DEFAULT_BATCH_SIZE),
+    retries: Math.max(1, Math.trunc(Number(args.retries || process.env.ALTEA_SNAPSHOT_PULL_RETRIES || DEFAULT_RETRY_COUNT)) || DEFAULT_RETRY_COUNT)
   };
 }
 
@@ -61,20 +65,34 @@ function buildSnapshotUrl(options, keys = []) {
 
 async function requestRows(options, keys = []) {
   const rows = [];
-  for (let index = 0; index < keys.length; index += 40) {
-    const batch = keys.slice(index, index + 40);
-    const response = await fetch(buildSnapshotUrl(options, batch), {
-      cache: 'no-store',
-      headers: {
-        apikey: options.supabaseKey,
-        Authorization: `Bearer ${options.supabaseKey}`,
-        Accept: 'application/json'
+  for (let index = 0; index < keys.length; index += options.batchSize) {
+    const batch = keys.slice(index, index + options.batchSize);
+    let lastError = null;
+    for (let attempt = 1; attempt <= options.retries; attempt += 1) {
+      try {
+        const response = await fetch(buildSnapshotUrl(options, batch), {
+          cache: 'no-store',
+          headers: {
+            apikey: options.supabaseKey,
+            Authorization: `Bearer ${options.supabaseKey}`,
+            Accept: 'application/json'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`Supabase snapshot pull failed: HTTP ${response.status} ${await response.text()}`);
+        }
+        rows.push(...await response.json());
+        lastError = null;
+        break;
+      } catch (error) {
+        lastError = error;
+        if (attempt >= options.retries) break;
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
       }
-    });
-    if (!response.ok) {
-      throw new Error(`Supabase snapshot pull failed: HTTP ${response.status} ${await response.text()}`);
     }
-    rows.push(...await response.json());
+    if (lastError) {
+      throw lastError;
+    }
   }
   return rows;
 }

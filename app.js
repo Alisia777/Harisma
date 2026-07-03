@@ -619,7 +619,7 @@ function normalizeOwnerOverride(item = {}) {
     ownerName: String(item.ownerName || item.owner || '').trim(),
     ownerRole: String(item.ownerRole || '').trim(),
     note: String(item.note || '').trim(),
-    updatedAt: item.updatedAt || new Date().toISOString(),
+    updatedAt: String(item.updatedAt || item.updated_at || '').trim(),
     assignedBy: String(item.assignedBy || state.team.member.name || 'Команда').trim() || 'Команда'
   };
 }
@@ -876,13 +876,43 @@ function prepareSkuBaseState() {
   }
 }
 
+function ownerOverrideStamp(override = {}) {
+  const value = override?.updatedAt || override?.updated_at || '';
+  const stamp = Date.parse(String(value || ''));
+  return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function matrixOwnerStamp(sku = {}, baseOwner = {}) {
+  const stampValue = sku?.matrixImportedAt || baseOwner?.matrixImportedAt || sku?.owner?.matrixImportedAt || '';
+  const stamp = Date.parse(String(stampValue || ''));
+  return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function hasMatrixOwnerSource(sku = {}, baseOwner = {}) {
+  return [
+    sku?.matrixSource,
+    sku?.ownerSource,
+    baseOwner?.source,
+    sku?.owner?.source
+  ].some((value) => String(value || '').includes('ksenia-merged-statuses-minmax'));
+}
+
+function shouldApplyOwnerOverride(sku = {}, baseOwner = {}, override = {}) {
+  if (!override) return false;
+  const matrixStamp = matrixOwnerStamp(sku, baseOwner);
+  if (matrixStamp > 0 && hasMatrixOwnerSource(sku, baseOwner)) {
+    return ownerOverrideStamp(override) > matrixStamp;
+  }
+  return true;
+}
+
 function applyOwnerOverridesToSkus() {
   prepareSkuBaseState();
   const overrideMap = new Map((state.storage.ownerOverrides || []).map((item) => [item.articleKey, item]));
   for (const sku of state.skus) {
     const baseOwner = JSON.parse(JSON.stringify(sku.__baseOwner || {}));
     const override = overrideMap.get(sku.articleKey);
-    if (override) {
+    if (override && shouldApplyOwnerOverride(sku, baseOwner, override)) {
       sku.owner = {
         ...baseOwner,
         name: override.ownerName || '',
@@ -910,7 +940,11 @@ function ownerName(sku) {
 function ownerOptions() {
   const pool = new Set();
   for (const sku of state.skus) if (ownerName(sku)) pool.add(ownerName(sku));
-  for (const item of state.storage.ownerOverrides || []) if (item.ownerName) pool.add(item.ownerName);
+  for (const item of state.storage.ownerOverrides || []) {
+    const sku = getSku(item.articleKey);
+    const baseOwner = sku?.__baseOwner || sku?.owner || {};
+    if (item.ownerName && (!sku || shouldApplyOwnerOverride(sku, baseOwner, item))) pool.add(item.ownerName);
+  }
   for (const task of state.storage.tasks || []) if (task.owner) pool.add(task.owner);
   if (state.team.member?.name) pool.add(state.team.member.name);
   return [...pool].sort((a, b) => a.localeCompare(b, 'ru'));

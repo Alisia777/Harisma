@@ -57,11 +57,13 @@
     ym: { label: 'Я.Маркет', color: '#F2C84B', rgb: '242,200,75' },
     goldapple: { label: 'ЗЯ', color: '#72C86A', rgb: '114,200,106' },
     letu: { label: 'Л’Этуаль', color: '#D96AA9', rgb: '217,106,169' },
-    magnit: { label: 'Магнит', color: '#E85B55', rgb: '232,91,85' }
+    magnit: { label: 'Магнит', color: '#E85B55', rgb: '232,91,85' },
+    megamarket: { label: 'МегаМаркет', color: '#33B6A6', rgb: '51,182,166' },
+    samokat: { label: 'Самокат', color: '#56C271', rgb: '86,194,113' }
   };
 
   var MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
-  var MARKETPLACE_IDS = ['all', 'wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit'];
+  var MARKETPLACE_IDS = ['all', 'wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit', 'megamarket', 'samokat'];
   var MARKETPLACE_TO_INTERNAL = { ym: 'ya' };
   var INTERNAL_TO_MARKETPLACE = { ya: 'ym' };
 
@@ -1016,6 +1018,11 @@
     var filters = model.filters || {};
     var platform = filters.platform || 'all';
     var statusFilter = filters.status || 'all';
+    var platformButtons = [['all', 'Все']]
+      .concat(((model.platforms && model.platforms.length) ? model.platforms : ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'megamarket', 'samokat'])
+        .map(function (key) { return [key, platformMeta(key).label || key]; }))
+      .map(function (item) { return button('platform', item[0], item[1], platform === item[0]); })
+      .join('');
     function button(kind, value, label, active) {
       return '<button type="button" class="' + (active ? 'is-active' : '') + '" data-executive-funnel-' + kind + '="' + escapeHtml(value) + '">' + escapeHtml(label) + '</button>';
     }
@@ -1023,10 +1030,7 @@
       '<div class="premium-controlbar">',
       '<label class="panel"><span class="premium-mini-label">Месяц</span><select data-executive-funnel-month>' + executiveMonthOptions(model) + '</select></label>',
       '<div class="panel"><span class="premium-mini-label">Площадка</span><div class="premium-segment">',
-      button('platform', 'all', 'Все', platform === 'all'),
-      button('platform', 'wb', 'WB', platform === 'wb'),
-      button('platform', 'ozon', 'Ozon', platform === 'ozon'),
-      button('platform', 'ya', 'Яндекс', platform === 'ya'),
+      platformButtons,
       '</div></div>',
       '<div class="panel"><span class="premium-mini-label">Статус</span><div class="premium-segment">',
       button('status', 'all', 'Все', statusFilter === 'all'),

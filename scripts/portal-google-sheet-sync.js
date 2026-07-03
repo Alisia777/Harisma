@@ -344,6 +344,39 @@ function skuOwnerForPlatform(sku, platform = '') {
   return canonicalOwnerName(platformOwner || sku?.owner?.name || '');
 }
 
+function skuLookupScore(sku = {}) {
+  let score = 0;
+  const source = [sku?.matrixSource, sku?.owner?.source, sku?.ownerSource].filter(Boolean).join(' ');
+  if (source.includes('ksenia-merged-statuses-minmax')) score += 1000;
+  if (sku?.matrixImportedAt) score += 500;
+  const article = normalizeText(sku?.articleKey || sku?.article || '');
+  if (article && !/_+$/.test(article)) score += 25;
+  if (isActualSkuStatus(sku?.status || sku?.registryStatus || sku?.productStatus || '')) score += 10;
+  return score;
+}
+
+function addPreferredSkuLookup(lookup, key, sku) {
+  const normalized = normalizeKey(key);
+  if (!normalized) return;
+  const current = lookup.get(normalized);
+  if (!current || skuLookupScore(sku) > skuLookupScore(current)) lookup.set(normalized, sku);
+}
+
+function buildPreferredSkuLookup(skus = []) {
+  const lookup = new Map();
+  (Array.isArray(skus) ? skus : []).forEach((sku) => {
+    [
+      sku?.articleKey,
+      sku?.article,
+      sku?.sourceArticleKey,
+      sku?.sku,
+      sku?.vendorCode,
+      sku?.supplierArticle
+    ].forEach((key) => addPreferredSkuLookup(lookup, key, sku));
+  });
+  return lookup;
+}
+
 function hasText(value) {
   return normalizeText(value).length > 0;
 }
@@ -412,6 +445,15 @@ function monthPrefixForDate(dateValue) {
   const date = new Date(`${isoDate(dateValue)}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return '';
   return MONTH_PREFIX[date.getUTCMonth()];
+}
+
+function planUnitsFieldForMonthKey(monthKey = '') {
+  const raw = String(monthKey || '').slice(0, 7);
+  if (!/^\d{4}-\d{2}$/.test(raw)) return '';
+  const [yearText, monthText] = raw.split('-');
+  const prefix = MONTH_PREFIX[Number(monthText) - 1] || '';
+  const year2 = String(yearText).slice(-2);
+  return prefix && year2 ? `plan${prefix[0].toUpperCase()}${prefix.slice(1)}${year2}Units` : '';
 }
 
 function formatFactCardLabel(dateValue) {
@@ -1091,7 +1133,7 @@ function portalSkuKeySet(skus) {
 }
 
 function buildPlatformTrends(baseSkus, factRows, options) {
-  const skuByKey = new Map(baseSkus.map((item) => [normalizeKey(item.articleKey || item.article), item]));
+  const skuByKey = buildPreferredSkuLookup(baseSkus);
   const relevantSkuKeys = portalSkuKeySet(baseSkus);
   const buckets = new Map();
   for (const row of factRows) {
@@ -1723,8 +1765,8 @@ function buildDashboard(baseDashboard, skus, factRows, logisticsRows, options, p
 
 function buildLogistics(baseLogistics, skus, factLogisticsRows, options, warehouseStockOverlay) {
   const next = deepClone(baseLogistics);
-  const skuByKey = new Map(skus.map((item) => [normalizeKey(item.articleKey || item.article), item]));
-  const planMonthField = `plan${String(options?.monthKey || '').replace('-', '')}Units`;
+  const skuByKey = buildPreferredSkuLookup(skus);
+  const planMonthField = planUnitsFieldForMonthKey(options?.monthKey || '');
   const latestLogisticsDate = latestDateOf(
     factLogisticsRows
       .filter((row) => skuByKey.has(normalizeKey(row.article)))

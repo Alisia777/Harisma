@@ -1,0 +1,4599 @@
+{
+  "schema": "qharisma-predictive-risk-v1",
+  "generatedAt": "2026-07-02T07:52:31.227Z",
+  "asOfDate": "2026-07-01",
+  "expectedFactDate": "2026-07-01",
+  "rulesVersion": "predictive-rules-seed-v1",
+  "summary": {
+    "totalRisks": 90,
+    "autoTaskSignals": 2,
+    "critical": 54,
+    "high": 28,
+    "medium": 8,
+    "watch": 0,
+    "byRule": {
+      "demand_slowdown_early_warning": 65,
+      "price_position_risk": 10,
+      "forecast_iu_miss_risk": 1,
+      "data_freshness_predictive_blocker": 2,
+      "stockout_forecast_risk": 12
+    },
+    "byPriority": {
+      "critical": 54,
+      "high": 28,
+      "medium": 8
+    },
+    "byPlatform": {
+      "ozon": 57,
+      "cross": 10,
+      "wb": 21,
+      "all": 2
+    }
+  },
+  "dataFreshness": {
+    "status": "stale",
+    "expectedFactDate": "2026-07-01",
+    "sources": [
+      {
+        "fileName": "platform_trends.json",
+        "label": "Marketplace trends",
+        "status": "fresh",
+        "dataDate": "2026-07-01",
+        "expected": "2026-07-01",
+        "staleDays": 0
+      },
+      {
+        "fileName": "ads_summary.json",
+        "label": "Ads summary",
+        "status": "fresh",
+        "dataDate": "2026-07-01",
+        "expected": "2026-07-01",
+        "staleDays": 0
+      },
+      {
+        "fileName": "iu_drr_summary.json",
+        "label": "IU/DRR summary",
+        "status": "fresh",
+        "dataDate": "2026-07-01",
+        "expected": "2026-07-01",
+        "staleDays": 0
+      },
+      {
+        "fileName": "oos_control.json",
+        "label": "OOS control",
+        "status": "stale",
+        "dataDate": "2026-06-30",
+        "expected": "2026-07-01",
+        "staleDays": 1
+      },
+      {
+        "fileName": "smart_price_overlay.json",
+        "label": "Smart price overlay",
+        "status": "fresh",
+        "dataDate": "2026-07-01",
+        "expected": "2026-07-01",
+        "staleDays": 0
+      },
+      {
+        "fileName": "skus.json",
+        "label": "SKU registry",
+        "status": "stale",
+        "dataDate": "",
+        "expected": "2026-07-01",
+        "staleDays": 999
+      }
+    ]
+  },
+  "risks": [
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-krem_dlya_ruk_75ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "ozon",
+      "articleKey": "krem_dlya_ruk_75ml",
+      "entityLabel": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 100,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 494920,
+        "expectedValue": 1131704,
+        "deltaPct": -0.5626771664675568,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "494 920 ₽",
+        "expectedValueLabel": "1 131 704 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -56,3%",
+          "weight": 0.55
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 2 547 136 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "sales_slowdown_needs_check",
+      "moneyAtRiskRub": 2547136,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 2 547 136 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-insulight-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "ozon",
+      "articleKey": "insulight",
+      "entityLabel": "insulight",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 100,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 132322,
+        "expectedValue": 434130.04000000004,
+        "deltaPct": -0.6952019261325477,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "132 322 ₽",
+        "expectedValueLabel": "434 130 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -69,5%",
+          "weight": 0.55
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 1 207 232 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "sales_slowdown_needs_check",
+      "moneyAtRiskRub": 1207232.1600000001,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 1 207 232 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-price_position_risk-cross-allicil_gribok15ml-2026_07_01",
+      "rule": "price_position_risk",
+      "subRule": "ozon_cheaper_than_wb",
+      "platform": "cross",
+      "articleKey": "allicil_gribok15ml",
+      "entityLabel": "Мазь от грибка ногтей Аллицил, CPA, 15 мл",
+      "owner": "Васильева Мария",
+      "horizon": "H4",
+      "riskScore": 100,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "high",
+      "forecast": {
+        "metric": "crossMarketPriceGap",
+        "metricLabel": "разрыв цены Ozon дешевле WB",
+        "currentValue": 0.24508871989860587,
+        "expectedValue": 0.07,
+        "deltaPct": 2.5012674271229405,
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "24,5%",
+        "expectedValueLabel": "до 7%"
+      },
+      "drivers": [
+        {
+          "key": "ozon_cheaper",
+          "label": "Ozon дешевле WB на 24,5%",
+          "weight": 0.55
+        },
+        {
+          "key": "wb_sales_drop",
+          "label": "WB выручка просела на -46,4%",
+          "weight": 0.25
+        }
+      ],
+      "probableCause": "cross_market_price_leakage",
+      "moneyAtRiskRub": 5300.190100000001,
+      "recommendedAction": "Сверить цену WB/Ozon и решить, где исправлять цену, СПП или промо.",
+      "forecastText": "если разрыв сохранится, часть спроса может перетекать между площадками и ломать план WB/Ozon.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-micardinforte-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "ozon",
+      "articleKey": "micardinforte",
+      "entityLabel": "Пищевая добавка Микардин Форте, CPA, 10 капсул",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 99,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 13404,
+        "expectedValue": 283408,
+        "deltaPct": -0.9527042285327161,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "13 404 ₽",
+        "expectedValueLabel": "283 408 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -95,3%",
+          "weight": 0.55
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 1 080 016 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "sales_slowdown_needs_check",
+      "moneyAtRiskRub": 1080016,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 1 080 016 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-price_position_risk-cross-khvoinitsa-2026_07_01",
+      "rule": "price_position_risk",
+      "subRule": "ozon_cheaper_than_wb",
+      "platform": "cross",
+      "articleKey": "khvoinitsa",
+      "entityLabel": "Пищевая добавка Хвойница , CPA, 7 саше",
+      "owner": "Васильева Мария",
+      "horizon": "H4",
+      "riskScore": 98,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "high",
+      "forecast": {
+        "metric": "crossMarketPriceGap",
+        "metricLabel": "разрыв цены Ozon дешевле WB",
+        "currentValue": 0.1887565152643335,
+        "expectedValue": 0.07,
+        "deltaPct": 1.6965216466333357,
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "18,9%",
+        "expectedValueLabel": "до 7%"
+      },
+      "drivers": [
+        {
+          "key": "ozon_cheaper",
+          "label": "Ozon дешевле WB на 18,9%",
+          "weight": 0.55
+        },
+        {
+          "key": "wb_sales_drop",
+          "label": "WB выручка просела на -22,6%",
+          "weight": 0.25
+        }
+      ],
+      "probableCause": "cross_market_price_leakage",
+      "moneyAtRiskRub": 3069.017799999998,
+      "recommendedAction": "Сверить цену WB/Ozon и решить, где исправлять цену, СПП или промо.",
+      "forecastText": "если разрыв сохранится, часть спроса может перетекать между площадками и ломать план WB/Ozon.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-forecast_iu_miss_risk-ozon-ozon_иу_2026_07-2026_07_01",
+      "rule": "forecast_iu_miss_risk",
+      "subRule": "month_completion_forecast",
+      "platform": "ozon",
+      "articleKey": "",
+      "entityLabel": "Ozon · ИУ 2026-07",
+      "owner": "",
+      "horizon": "H4",
+      "riskScore": 96,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "low",
+      "forecast": {
+        "metric": "forecastCompletion",
+        "metricLabel": "прогноз выполнения ИУ",
+        "currentValue": 0.7940647858731954,
+        "expectedValue": 1,
+        "deltaPct": -0.2059352141268046,
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "79,4%",
+        "expectedValueLabel": "100%"
+      },
+      "drivers": [
+        {
+          "key": "fact_to_date",
+          "label": "Факт 1 740 531 ₽ из плана 67 949 690 ₽",
+          "weight": 0.4
+        },
+        {
+          "key": "forecast_gap",
+          "label": "Прогнозный разрыв 13 993 234 ₽",
+          "weight": 0.45
+        }
+      ],
+      "probableCause": "iu_month_plan_miss",
+      "moneyAtRiskRub": 13993233.959999993,
+      "recommendedAction": "Проверить прогноз выполнения ИУ Ozon до конца месяца.",
+      "forecastText": "при текущем темпе выполнение месяца будет 79,4%, разрыв к плану около 13 993 234 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-price_position_risk-cross-khvoinitsa_1_1-2026_07_01",
+      "rule": "price_position_risk",
+      "subRule": "ozon_cheaper_than_wb",
+      "platform": "cross",
+      "articleKey": "khvoinitsa_1_1",
+      "entityLabel": "Пищевая добавка Хвойница , CPA, 7 саше",
+      "owner": "Васильева Мария",
+      "horizon": "H4",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "crossMarketPriceGap",
+        "metricLabel": "разрыв цены Ozon дешевле WB",
+        "currentValue": 0.4873641304347826,
+        "expectedValue": 0.07,
+        "deltaPct": 5.962344720496894,
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "48,7%",
+        "expectedValueLabel": "до 7%"
+      },
+      "drivers": [
+        {
+          "key": "ozon_cheaper",
+          "label": "Ozon дешевле WB на 48,7%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "cross_market_price_leakage",
+      "moneyAtRiskRub": 13.167999999997846,
+      "recommendedAction": "Сверить цену WB/Ozon и решить, где исправлять цену, СПП или промо.",
+      "forecastText": "если разрыв сохранится, часть спроса может перетекать между площадками и ломать план WB/Ozon.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-arterol_1_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "arterol_1_1_1",
+      "entityLabel": "arterol_1_1_1",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 0,
+        "expectedValue": 24,
+        "deltaPct": -1,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "0",
+        "expectedValueLabel": "24"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -100,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-arterol_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "arterol_1_1",
+      "entityLabel": "arterol_1_1",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 4,
+        "expectedValue": 120,
+        "deltaPct": -0.9666666666666667,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "4",
+        "expectedValueLabel": "120"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -96,7%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-artoks_75ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "artoks_75ml",
+      "entityLabel": "Мазь для суставов Артокс, CPA, 75 мл",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 2,
+        "expectedValue": 170,
+        "deltaPct": -0.9882352941176471,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "2",
+        "expectedValueLabel": "170"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -98,8%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-chudogrib-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "chudogrib",
+      "entityLabel": "chudogrib",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 67,
+        "expectedValue": 188,
+        "deltaPct": -0.6436170212765957,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "67",
+        "expectedValueLabel": "188"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -64,4%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-daoshen_75ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "daoshen_75ml",
+      "entityLabel": "Мазь от грибка ногтей Даошэн, CPA, 75 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 47,
+        "expectedValue": 494,
+        "deltaPct": -0.9048582995951417,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "47",
+        "expectedValueLabel": "494"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -90,5%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-dardrakona_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "dardrakona_1_1",
+      "entityLabel": "Крем от варикоза Дар дракона, CPA, 30 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 62,
+        "expectedValue": 304,
+        "deltaPct": -0.7960526315789473,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "62",
+        "expectedValueLabel": "304"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -79,6%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-gel_parfum_tabacco_vanille_450ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "gel_parfum_tabacco_vanille_450ml",
+      "entityLabel": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 4,
+        "expectedValue": 12,
+        "deltaPct": -0.6666666666666666,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "4",
+        "expectedValueLabel": "12"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -66,7%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-insulight-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "insulight",
+      "entityLabel": "insulight",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 227,
+        "expectedValue": 1988,
+        "deltaPct": -0.885814889336016,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "227",
+        "expectedValueLabel": "1 988"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -88,6%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-kardicin_1_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "kardicin_1_1_1",
+      "entityLabel": "kardicin_1_1_1",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 8,
+        "expectedValue": 28,
+        "deltaPct": -0.7142857142857143,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "8",
+        "expectedValueLabel": "28"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -71,4%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-khvoinitsa_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "khvoinitsa_1_1",
+      "entityLabel": "Пищевая добавка Хвойница , CPA, 7 саше",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 1,
+        "expectedValue": 28,
+        "deltaPct": -0.9642857142857143,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "1",
+        "expectedValueLabel": "28"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -96,4%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-krem_dlya_ruk_75ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "krem_dlya_ruk_75ml",
+      "entityLabel": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 568,
+        "expectedValue": 1900,
+        "deltaPct": -0.7010526315789474,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "568",
+        "expectedValueLabel": "1 900"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -70,1%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-micardinforte-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "micardinforte",
+      "entityLabel": "Пищевая добавка Микардин Форте, CPA, 10 капсул",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 28,
+        "expectedValue": 514,
+        "deltaPct": -0.9455252918287937,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "28",
+        "expectedValueLabel": "514"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -94,6%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-micolan-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "micolan",
+      "entityLabel": "micolan",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 4,
+        "expectedValue": 16,
+        "deltaPct": -0.75,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "4",
+        "expectedValueLabel": "16"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -75,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-oftalmol-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "oftalmol",
+      "entityLabel": "oftalmol",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 393,
+        "expectedValue": 1224,
+        "deltaPct": -0.678921568627451,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "393",
+        "expectedValueLabel": "1 224"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -67,9%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-okucin-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "okucin",
+      "entityLabel": "okucin",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 6,
+        "expectedValue": 18,
+        "deltaPct": -0.6666666666666666,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "6",
+        "expectedValueLabel": "18"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -66,7%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-otivin-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "otivin",
+      "entityLabel": "Пищевая добавка Отивин , CPA, 10 мл",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 4,
+        "expectedValue": 32,
+        "deltaPct": -0.875,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "4",
+        "expectedValueLabel": "32"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -87,5%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-relaksinol_bad_60caps-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "relaksinol_bad_60caps",
+      "entityLabel": "Магний В6 с лавандой, Алтея, Релаксинол, 60 капсул",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 40,
+        "expectedValue": 118,
+        "deltaPct": -0.6610169491525424,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "40",
+        "expectedValueLabel": "118"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -66,1%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-trezax-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "trezax",
+      "entityLabel": "trezax",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 366,
+        "expectedValue": 800,
+        "deltaPct": -0.5425,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "366",
+        "expectedValueLabel": "800"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -54,3%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-trezor-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "trezor",
+      "entityLabel": "trezor",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 17,
+        "expectedValue": 252,
+        "deltaPct": -0.9325396825396826,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "17",
+        "expectedValueLabel": "252"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -93,3%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-uromax-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "uromax",
+      "entityLabel": "Пищевая добавка Уромакс , CPA, 20 капсул",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 211,
+        "expectedValue": 1308,
+        "deltaPct": -0.8386850152905199,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "211",
+        "expectedValueLabel": "1 308"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -83,9%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-varifit_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "varifit_1_1",
+      "entityLabel": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 24,
+        "expectedValue": 60,
+        "deltaPct": -0.6,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "24",
+        "expectedValueLabel": "60"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -60,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-vetonus_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "vetonus_1_1",
+      "entityLabel": "Крем от варикоза Ветонус, CPA, 30 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 4,
+        "expectedValue": 298,
+        "deltaPct": -0.9865771812080537,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "4",
+        "expectedValueLabel": "298"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -98,7%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-vetonus-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "vetonus",
+      "entityLabel": "Крем от варикоза Ветонус, CPA, 30 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 2,
+        "expectedValue": 10,
+        "deltaPct": -0.8,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "2",
+        "expectedValueLabel": "10"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -80,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-wbbiotrin-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "wbbiotrin",
+      "entityLabel": "wbbiotrin",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 8,
+        "expectedValue": 224,
+        "deltaPct": -0.9642857142857143,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "8",
+        "expectedValueLabel": "224"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -96,4%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-intimvita_200ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "intimvita_200ml",
+      "entityLabel": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
+      "owner": "Лапыгин Максим",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 17,
+        "expectedValue": 57,
+        "deltaPct": -0.7017543859649122,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "17",
+        "expectedValueLabel": "57"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -70,2%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-otivin-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "otivin",
+      "entityLabel": "Пищевая добавка Отивин , CPA, 10 мл",
+      "owner": "Лапыгин Максим",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 15,
+        "expectedValue": 34,
+        "deltaPct": -0.5588235294117647,
+        "period": {
+          "from": "2026-05-26",
+          "to": "2026-06-15",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-05-18",
+          "to": "2026-05-25",
+          "days": 7
+        },
+        "currentValueLabel": "15",
+        "expectedValueLabel": "34"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -55,9%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-pantogor_100ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "pantogor_100ml",
+      "entityLabel": "Мазь для суставов Пантогор , CPA, 100 мл",
+      "owner": "Васильева Мария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 10,
+        "expectedValue": 33,
+        "deltaPct": -0.696969696969697,
+        "period": {
+          "from": "2026-05-16",
+          "to": "2026-06-03",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-05-09",
+          "to": "2026-05-15",
+          "days": 7
+        },
+        "currentValueLabel": "10",
+        "expectedValueLabel": "33"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -69,7%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-telomeras_60caps-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "telomeras_60caps",
+      "entityLabel": "Теломераза NMN ТА-65 Алтея 60 капсул",
+      "owner": "Васильева Мария",
+      "horizon": "H1",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 14,
+        "expectedValue": 71,
+        "deltaPct": -0.8028169014084507,
+        "period": {
+          "from": "2026-05-30",
+          "to": "2026-06-12",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-05-23",
+          "to": "2026-05-29",
+          "days": 7
+        },
+        "currentValueLabel": "14",
+        "expectedValueLabel": "71"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -80,3%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-price_position_risk-cross-artoks_75ml-2026_07_01",
+      "rule": "price_position_risk",
+      "subRule": "ozon_cheaper_than_wb",
+      "platform": "cross",
+      "articleKey": "artoks_75ml",
+      "entityLabel": "Мазь для суставов Артокс, CPA, 75 мл",
+      "owner": "Васильева Мария",
+      "horizon": "H4",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "crossMarketPriceGap",
+        "metricLabel": "разрыв цены Ozon дешевле WB",
+        "currentValue": 0.7101851851851851,
+        "expectedValue": 0.07,
+        "deltaPct": 9.145502645502646,
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "71,0%",
+        "expectedValueLabel": "до 7%"
+      },
+      "drivers": [
+        {
+          "key": "ozon_cheaper",
+          "label": "Ozon дешевле WB на 71,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "cross_market_price_leakage",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Сверить цену WB/Ozon и решить, где исправлять цену, СПП или промо.",
+      "forecastText": "если разрыв сохранится, часть спроса может перетекать между площадками и ломать план WB/Ozon.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-price_position_risk-cross-frutalika_bad_60caps-2026_07_01",
+      "rule": "price_position_risk",
+      "subRule": "ozon_cheaper_than_wb",
+      "platform": "cross",
+      "articleKey": "frutalika_bad_60caps",
+      "entityLabel": "Пиколинат хрома для похудения, детокс, жиросжигатель, Алтея, Фруталика, 60 капсул",
+      "owner": "Васильева Мария",
+      "horizon": "H4",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "crossMarketPriceGap",
+        "metricLabel": "разрыв цены Ozon дешевле WB",
+        "currentValue": 0.3932400932400933,
+        "expectedValue": 0.07,
+        "deltaPct": 4.617715617715618,
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "39,3%",
+        "expectedValueLabel": "до 7%"
+      },
+      "drivers": [
+        {
+          "key": "ozon_cheaper",
+          "label": "Ozon дешевле WB на 39,3%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "cross_market_price_leakage",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Сверить цену WB/Ozon и решить, где исправлять цену, СПП или промо.",
+      "forecastText": "если разрыв сохранится, часть спроса может перетекать между площадками и ломать план WB/Ozon.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-price_position_risk-cross-sanatsin_1_1-2026_07_01",
+      "rule": "price_position_risk",
+      "subRule": "ozon_cheaper_than_wb",
+      "platform": "cross",
+      "articleKey": "sanatsin_1_1",
+      "entityLabel": "Пищевая добавка Санацин, CPA, 20 штук",
+      "owner": "Лапыгин Максим",
+      "horizon": "H4",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "crossMarketPriceGap",
+        "metricLabel": "разрыв цены Ozon дешевле WB",
+        "currentValue": 0.5332086061739943,
+        "expectedValue": 0.07,
+        "deltaPct": 6.617265802485633,
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "53,3%",
+        "expectedValueLabel": "до 7%"
+      },
+      "drivers": [
+        {
+          "key": "ozon_cheaper",
+          "label": "Ozon дешевле WB на 53,3%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "cross_market_price_leakage",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Сверить цену WB/Ozon и решить, где исправлять цену, СПП или промо.",
+      "forecastText": "если разрыв сохранится, часть спроса может перетекать между площадками и ломать план WB/Ozon.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-price_position_risk-cross-skrab_babl_gam_200ml-2026_07_01",
+      "rule": "price_position_risk",
+      "subRule": "ozon_cheaper_than_wb",
+      "platform": "cross",
+      "articleKey": "skrab_babl_gam_200ml",
+      "entityLabel": "Скраб пилинг для кожи головы, Алтея, 200 мл",
+      "owner": "Лапыгин Максим",
+      "horizon": "H4",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "crossMarketPriceGap",
+        "metricLabel": "разрыв цены Ozon дешевле WB",
+        "currentValue": 0.9816857926026703,
+        "expectedValue": 0.07,
+        "deltaPct": 13.024082751466716,
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "98,2%",
+        "expectedValueLabel": "до 7%"
+      },
+      "drivers": [
+        {
+          "key": "ozon_cheaper",
+          "label": "Ozon дешевле WB на 98,2%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "cross_market_price_leakage",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Сверить цену WB/Ozon и решить, где исправлять цену, СПП или промо.",
+      "forecastText": "если разрыв сохранится, часть спроса может перетекать между площадками и ломать план WB/Ozon.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-price_position_risk-cross-wbbiotrin_1_1-2026_07_01",
+      "rule": "price_position_risk",
+      "subRule": "ozon_cheaper_than_wb",
+      "platform": "cross",
+      "articleKey": "wbbiotrin_1_1",
+      "entityLabel": "wbbiotrin_1_1",
+      "owner": "Питайкин Артём",
+      "horizon": "H4",
+      "riskScore": 92,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "crossMarketPriceGap",
+        "metricLabel": "разрыв цены Ozon дешевле WB",
+        "currentValue": 0.4683882457702582,
+        "expectedValue": 0.07,
+        "deltaPct": 5.691260653860831,
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "46,8%",
+        "expectedValueLabel": "до 7%"
+      },
+      "drivers": [
+        {
+          "key": "ozon_cheaper",
+          "label": "Ozon дешевле WB на 46,8%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "cross_market_price_leakage",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Сверить цену WB/Ozon и решить, где исправлять цену, СПП или промо.",
+      "forecastText": "если разрыв сохранится, часть спроса может перетекать между площадками и ломать план WB/Ozon.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-gel_antiakne_20ml_v2-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "ozon",
+      "articleKey": "gel_antiakne_20ml_v2",
+      "entityLabel": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 91,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 1143092.6,
+        "expectedValue": 1720309.8199999998,
+        "deltaPct": -0.3355309684856649,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "1 143 093 ₽",
+        "expectedValueLabel": "1 720 310 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -33,6%",
+          "weight": 0.55
+        },
+        {
+          "key": "stockout_forecast_risk",
+          "label": "Одновременно есть риск OOS/дефицита",
+          "weight": 0.25
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 2 308 869 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "stock_or_oos",
+      "moneyAtRiskRub": 2308868.879999999,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 2 308 869 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-cardicin_bad_60caps-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "cardicin_bad_60caps",
+      "entityLabel": "cardicin_BAD_60caps",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 91,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 282,
+        "expectedValue": 564,
+        "deltaPct": -0.5,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "282",
+        "expectedValueLabel": "564"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -50,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-pink_pepper_50ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "pink_pepper_50ml",
+      "entityLabel": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 91,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 86,
+        "expectedValue": 170,
+        "deltaPct": -0.49411764705882355,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "86",
+        "expectedValueLabel": "170"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -49,4%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-allicil_gribok15ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "allicil_gribok15ml",
+      "entityLabel": "Мазь от грибка ногтей Аллицил, CPA, 15 мл",
+      "owner": "Васильева Мария",
+      "horizon": "H1",
+      "riskScore": 91,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 11,
+        "expectedValue": 22,
+        "deltaPct": -0.5,
+        "period": {
+          "from": "2026-06-12",
+          "to": "2026-06-23",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-05",
+          "to": "2026-06-11",
+          "days": 7
+        },
+        "currentValueLabel": "11",
+        "expectedValueLabel": "22"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -50,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-artoks-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "artoks",
+      "entityLabel": "Мазь для суставов Артокс, CPA, 50 мл",
+      "owner": "Лапыгин Максим",
+      "horizon": "H1",
+      "riskScore": 91,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 16,
+        "expectedValue": 31,
+        "deltaPct": -0.4838709677419355,
+        "period": {
+          "from": "2026-06-22",
+          "to": "2026-06-30",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-15",
+          "to": "2026-06-21",
+          "days": 7
+        },
+        "currentValueLabel": "16",
+        "expectedValueLabel": "31"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -48,4%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-kavmaz_40ml_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "kavmaz_40ml_1_1",
+      "entityLabel": "Мазь для суставов Кавказская мазь , CPA, 40 мл, набор из 2 шт",
+      "owner": "Васильева Мария",
+      "horizon": "H1",
+      "riskScore": 91,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 13,
+        "expectedValue": 25,
+        "deltaPct": -0.48,
+        "period": {
+          "from": "2026-05-09",
+          "to": "2026-05-19",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-05-02",
+          "to": "2026-05-08",
+          "days": 7
+        },
+        "currentValueLabel": "13",
+        "expectedValueLabel": "25"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -48,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-sustalit_30ml_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "sustalit_30ml_1_1",
+      "entityLabel": "Мазь для суставов Сусталит , CPA, 30 мл",
+      "owner": "Васильева Мария",
+      "horizon": "H1",
+      "riskScore": 91,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 11,
+        "expectedValue": 22,
+        "deltaPct": -0.5,
+        "period": {
+          "from": "2026-05-19",
+          "to": "2026-05-31",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-05-07",
+          "to": "2026-05-18",
+          "days": 7
+        },
+        "currentValueLabel": "11",
+        "expectedValueLabel": "22"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -50,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-tonik_dlya_lica_200ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "tonik_dlya_lica_200ml",
+      "entityLabel": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
+      "owner": "Лапыгин Максим",
+      "horizon": "H1",
+      "riskScore": 91,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 7,
+        "expectedValue": 14,
+        "deltaPct": -0.5,
+        "period": {
+          "from": "2026-06-17",
+          "to": "2026-06-28",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-06",
+          "to": "2026-06-15",
+          "days": 7
+        },
+        "currentValueLabel": "7",
+        "expectedValueLabel": "14"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -50,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-uromax_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "uromax_1_1",
+      "entityLabel": "Пищевая добавка Уромакс , CPA, 20 капсул, набор из 2 шт",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 90,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 323,
+        "expectedValue": 592,
+        "deltaPct": -0.4543918918918919,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "323",
+        "expectedValueLabel": "592"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -45,4%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-frutaksa_bad_200gr-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "frutaksa_bad_200gr",
+      "entityLabel": "Жиросжигатель, детокс, Алтея, Алтея, Фрутакса, 200 грамм",
+      "owner": "Васильева Мария",
+      "horizon": "H1",
+      "riskScore": 90,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 12,
+        "expectedValue": 22,
+        "deltaPct": -0.45454545454545453,
+        "period": {
+          "from": "2026-06-08",
+          "to": "2026-06-16",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-05-31",
+          "to": "2026-06-07",
+          "days": 7
+        },
+        "currentValueLabel": "12",
+        "expectedValueLabel": "22"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -45,5%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-retinol_boost_krem_dlya_vek_30ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "ozon",
+      "articleKey": "retinol_boost_krem_dlya_vek_30ml",
+      "entityLabel": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 89,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 904174.96,
+        "expectedValue": 1284407.67,
+        "deltaPct": -0.29603740220579655,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "904 175 ₽",
+        "expectedValueLabel": "1 284 408 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -29,6%",
+          "weight": 0.55
+        },
+        {
+          "key": "stockout_forecast_risk",
+          "label": "Одновременно есть риск OOS/дефицита",
+          "weight": 0.25
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 1 520 931 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "stock_or_oos",
+      "moneyAtRiskRub": 1520930.8399999999,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 1 520 931 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-price_position_risk-cross-kinzhal-2026_07_01",
+      "rule": "price_position_risk",
+      "subRule": "ozon_cheaper_than_wb",
+      "platform": "cross",
+      "articleKey": "kinzhal",
+      "entityLabel": "kinzhal",
+      "owner": "Кирилл",
+      "horizon": "H4",
+      "riskScore": 89,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "crossMarketPriceGap",
+        "metricLabel": "разрыв цены Ozon дешевле WB",
+        "currentValue": 0.18635926993275703,
+        "expectedValue": 0.07,
+        "deltaPct": 1.6622752847536717,
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "18,6%",
+        "expectedValueLabel": "до 7%"
+      },
+      "drivers": [
+        {
+          "key": "ozon_cheaper",
+          "label": "Ozon дешевле WB на 18,6%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "cross_market_price_leakage",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Сверить цену WB/Ozon и решить, где исправлять цену, СПП или промо.",
+      "forecastText": "если разрыв сохранится, часть спроса может перетекать между площадками и ломать план WB/Ozon.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-data_freshness_predictive_blocker-all-sku_registry-2026_07_01",
+      "rule": "data_freshness_predictive_blocker",
+      "subRule": "stale_layer",
+      "platform": "all",
+      "articleKey": "",
+      "entityLabel": "SKU registry",
+      "owner": "",
+      "horizon": "H0",
+      "riskScore": 84,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "high",
+      "forecast": {
+        "metric": "freshness",
+        "metricLabel": "свежесть данных",
+        "currentValue": 999,
+        "expectedValue": 0,
+        "deltaPct": -1,
+        "period": {
+          "from": "",
+          "to": "2026-07-01",
+          "days": 999
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "нет даты",
+        "expectedValueLabel": "2026-07-01"
+      },
+      "drivers": [
+        {
+          "key": "stale_layer",
+          "label": "skus.json: факт до нет даты, ожидался 2026-07-01",
+          "weight": 1
+        }
+      ],
+      "probableCause": "data_layer_stale",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить источник skus.json и перезапустить синхронизацию.",
+      "forecastText": "пока источник отстает, бизнес-сигналы по этим данным лучше не создавать.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01",
+      "autoTask": {
+        "autoCode": "data_freshness_predictive_blocker|skus|2026-07-01",
+        "type": "data_quality",
+        "source": "auto",
+        "duePolicy": "same_day"
+      }
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-spiculboost_30ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "wb",
+      "articleKey": "spiculboost_30ml",
+      "entityLabel": "Сыворотка для лица с микроиглами и коллагеном",
+      "owner": "Лапыгин Максим",
+      "horizon": "H1",
+      "riskScore": 83,
+      "riskBand": "critical",
+      "priority": "critical",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 787271.2357999999,
+        "expectedValue": 1292735.3192999999,
+        "deltaPct": -0.3910035379660722,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "787 271 ₽",
+        "expectedValueLabel": "1 292 735 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -39,1%",
+          "weight": 0.55
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 2 021 856 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "sales_slowdown_needs_check",
+      "moneyAtRiskRub": 2021856.3339999998,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 2 021 856 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-telomeras_60caps-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "wb",
+      "articleKey": "telomeras_60caps",
+      "entityLabel": "Теломераза NMN ТА-65 Алтея 60 капсул",
+      "owner": "Васильева Мария",
+      "horizon": "H1",
+      "riskScore": 79,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 44042.157499999994,
+        "expectedValue": 235893.1096,
+        "deltaPct": -0.8132961256279102,
+        "period": {
+          "from": "2026-05-30",
+          "to": "2026-06-12",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-05-23",
+          "to": "2026-05-29",
+          "days": 7
+        },
+        "currentValueLabel": "44 042 ₽",
+        "expectedValueLabel": "235 893 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -81,3%",
+          "weight": 0.55
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 767 404 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "sales_slowdown_needs_check",
+      "moneyAtRiskRub": 767403.8084,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 767 404 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-uromax-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "ozon",
+      "articleKey": "uromax",
+      "entityLabel": "Пищевая добавка Уромакс , CPA, 20 капсул",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 79,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 158786,
+        "expectedValue": 349534.01,
+        "deltaPct": -0.5457208870747656,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "158 786 ₽",
+        "expectedValueLabel": "349 534 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -54,6%",
+          "weight": 0.55
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 762 992 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "sales_slowdown_needs_check",
+      "moneyAtRiskRub": 762992.04,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 762 992 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-gel_antiakne_20ml_v2-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "gel_antiakne_20ml_v2",
+      "entityLabel": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 79,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 844,
+        "expectedValue": 1258,
+        "deltaPct": -0.32909379968203495,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "844",
+        "expectedValueLabel": "1 258"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -32,9%",
+          "weight": 0.55
+        },
+        {
+          "key": "stockout_forecast_risk",
+          "label": "Одновременно есть риск OOS/дефицита",
+          "weight": 0.25
+        }
+      ],
+      "probableCause": "stock_or_oos",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-daoshen_75ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "ozon",
+      "articleKey": "daoshen_75ml",
+      "entityLabel": "Мазь от грибка ногтей Даошэн, CPA, 75 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 78,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 20481,
+        "expectedValue": 167638,
+        "deltaPct": -0.8778260298977559,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "20 481 ₽",
+        "expectedValueLabel": "167 638 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -87,8%",
+          "weight": 0.55
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 588 628 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "sales_slowdown_needs_check",
+      "moneyAtRiskRub": 588628,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 588 628 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-vetonus_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "ozon",
+      "articleKey": "vetonus_1_1",
+      "entityLabel": "Крем от варикоза Ветонус, CPA, 30 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 77,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 1828,
+        "expectedValue": 108466,
+        "deltaPct": -0.9831467925432854,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "1 828 ₽",
+        "expectedValueLabel": "108 466 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -98,3%",
+          "weight": 0.55
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 426 552 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "sales_slowdown_needs_check",
+      "moneyAtRiskRub": 426552,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 426 552 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-uromax_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "ozon",
+      "articleKey": "uromax_1_1",
+      "entityLabel": "Пищевая добавка Уромакс , CPA, 20 капсул, набор из 2 шт",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 75,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 134893,
+        "expectedValue": 245826,
+        "deltaPct": -0.4512663428603972,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "134 893 ₽",
+        "expectedValueLabel": "245 826 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -45,1%",
+          "weight": 0.55
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 443 732 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "sales_slowdown_needs_check",
+      "moneyAtRiskRub": 443732,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 443 732 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-retinait_krem_1_50ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersRevenue_drop",
+      "platform": "ozon",
+      "articleKey": "retinait_krem_1_50ml",
+      "entityLabel": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 73,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersRevenue",
+        "metricLabel": "выручка",
+        "currentValue": 401050,
+        "expectedValue": 563036,
+        "deltaPct": -0.28770096405913653,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "401 050 ₽",
+        "expectedValueLabel": "563 036 ₽"
+      },
+      "drivers": [
+        {
+          "key": "ordersRevenue_drop",
+          "label": "выручка просели на -28,8%",
+          "weight": 0.55
+        },
+        {
+          "key": "money_at_risk",
+          "label": "Оценка денег под риском 647 944 ₽",
+          "weight": 0.2
+        }
+      ],
+      "probableCause": "sales_slowdown_needs_check",
+      "moneyAtRiskRub": 647944,
+      "recommendedAction": "Проверить, почему выручка уже идет ниже базового темпа.",
+      "forecastText": "при сохранении темпа за 30 дней риск недовыручки около 647 944 ₽.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-vetonus-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "vetonus",
+      "entityLabel": "Крем от варикоза Ветонус, CPA, 30 мл",
+      "owner": "Васильева Мария",
+      "horizon": "H1",
+      "riskScore": 72,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 10,
+        "expectedValue": 18,
+        "deltaPct": -0.4444444444444444,
+        "period": {
+          "from": "2026-06-04",
+          "to": "2026-06-19",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-05-25",
+          "to": "2026-06-03",
+          "days": 7
+        },
+        "currentValueLabel": "10",
+        "expectedValueLabel": "18"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -44,4%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-wbvaritox-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "wbvaritox",
+      "entityLabel": "Крем от варикоза Varitox, CPA, 30 мл",
+      "owner": "Васильева Мария",
+      "horizon": "H1",
+      "riskScore": 72,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 10,
+        "expectedValue": 18,
+        "deltaPct": -0.4444444444444444,
+        "period": {
+          "from": "2026-06-03",
+          "to": "2026-06-15",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-05-24",
+          "to": "2026-06-02",
+          "days": 7
+        },
+        "currentValueLabel": "10",
+        "expectedValueLabel": "18"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -44,4%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-stockout_forecast_risk-wb-krovavii_piling_30ml-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_14d",
+      "platform": "wb",
+      "articleKey": "krovavii_piling_30ml",
+      "entityLabel": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
+      "owner": "Васильева Мария",
+      "horizon": "H3",
+      "riskScore": 71,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "high",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 8.52,
+        "expectedValue": 30,
+        "deltaPct": -0.716,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "8,5 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 8,5 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 2 439 880 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 52408622.4,
+      "recommendedAction": "Проверить WB: 16 кластер(ов) с покрытием меньше 10 дней (Коледино, Невинномысск, Краснодар, Екатеринбург - Перспективная 14). Минимальное покрытие 8.5 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 8,5 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-shampun_protiv_perhoti_250ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "shampun_protiv_perhoti_250ml",
+      "entityLabel": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 71,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 19,
+        "expectedValue": 32,
+        "deltaPct": -0.40625,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "19",
+        "expectedValueLabel": "32"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -40,6%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-syvorotka_guk_30ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "syvorotka_guk_30ml",
+      "entityLabel": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 71,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 33,
+        "expectedValue": 58,
+        "deltaPct": -0.43103448275862066,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "33",
+        "expectedValueLabel": "58"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -43,1%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-vosk_stik_15ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "vosk_stik_15ml",
+      "entityLabel": "Воск стик для укладки и фиксации волос Алтея 15 мл",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 71,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 69,
+        "expectedValue": 116,
+        "deltaPct": -0.4051724137931034,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "69",
+        "expectedValueLabel": "116"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -40,5%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-wbgetsize-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "wbgetsize",
+      "entityLabel": "Игрушка для взрослых Getsize, CPA",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 71,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 8,
+        "expectedValue": 14,
+        "deltaPct": -0.42857142857142855,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "8",
+        "expectedValueLabel": "14"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -42,9%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-wb-spiculboost_30ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "wb",
+      "articleKey": "spiculboost_30ml",
+      "entityLabel": "Сыворотка для лица с микроиглами и коллагеном",
+      "owner": "Лапыгин Максим",
+      "horizon": "H1",
+      "riskScore": 71,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 558,
+        "expectedValue": 941,
+        "deltaPct": -0.4070138150903294,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "558",
+        "expectedValueLabel": "941"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -40,7%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-erobrut-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "erobrut",
+      "entityLabel": "Пищевая добавка Эробрут, CPA, 20 капсул",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 70,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 186,
+        "expectedValue": 294,
+        "deltaPct": -0.3673469387755102,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "186",
+        "expectedValueLabel": "294"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -36,7%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-retinait_krem_01_50ml-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "retinait_krem_01_50ml",
+      "entityLabel": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 70,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 13,
+        "expectedValue": 20,
+        "deltaPct": -0.35,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "13",
+        "expectedValueLabel": "20"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -35,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-sustalit-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "sustalit",
+      "entityLabel": "Мазь для суставов Сусталит , CPA, 30 мл",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 70,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 9,
+        "expectedValue": 14,
+        "deltaPct": -0.35714285714285715,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "9",
+        "expectedValueLabel": "14"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -35,7%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-stockout_forecast_risk-ozon-krovavii_piling_30ml-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_14d",
+      "platform": "ozon",
+      "articleKey": "krovavii_piling_30ml",
+      "entityLabel": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H3",
+      "riskScore": 69,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "high",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 8.52,
+        "expectedValue": 30,
+        "deltaPct": -0.716,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "8,5 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 8,5 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 905 134 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 19442278.32,
+      "recommendedAction": "Проверить Ozon: 25 кластер(ов) с покрытием меньше 10 дней (Казахстан, Астана, Алматы, Новосибирск). Минимальное покрытие 8.5 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 8,5 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-daoshen-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "daoshen",
+      "entityLabel": "Мазь от грибка ногтей Даошэн, CPA, 15 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 69,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 114,
+        "expectedValue": 166,
+        "deltaPct": -0.3132530120481928,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "114",
+        "expectedValueLabel": "166"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -31,3%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-kavmaz_40ml_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "kavmaz_40ml_1_1",
+      "entityLabel": "Мазь для суставов Кавказская мазь , CPA, 40 мл, набор из 2 шт",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 69,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 191,
+        "expectedValue": 276,
+        "deltaPct": -0.3079710144927536,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "191",
+        "expectedValueLabel": "276"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -30,8%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-mycoplax_1_1-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "mycoplax_1_1",
+      "entityLabel": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл, набор из 2 шт",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 69,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 7,
+        "expectedValue": 10,
+        "deltaPct": -0.3,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "7",
+        "expectedValueLabel": "10"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -30,0%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-urinofix-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "urinofix",
+      "entityLabel": "Пищевая добавка Уринофикс, CPA, 20 капсул",
+      "owner": "Молодякова Дария",
+      "horizon": "H1",
+      "riskScore": 69,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 273,
+        "expectedValue": 400,
+        "deltaPct": -0.3175,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "273",
+        "expectedValueLabel": "400"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -31,8%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-demand_slowdown_early_warning-ozon-wboptitrin-2026_07_01",
+      "rule": "demand_slowdown_early_warning",
+      "subRule": "ordersUnits_drop",
+      "platform": "ozon",
+      "articleKey": "wboptitrin",
+      "entityLabel": "wboptitrin",
+      "owner": "Питайкин Артём",
+      "horizon": "H1",
+      "riskScore": 69,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "ordersUnits",
+        "metricLabel": "заказы",
+        "currentValue": 8,
+        "expectedValue": 12,
+        "deltaPct": -0.3333333333333333,
+        "period": {
+          "from": "2026-06-25",
+          "to": "2026-07-01",
+          "days": 7
+        },
+        "previousPeriod": {
+          "from": "2026-06-18",
+          "to": "2026-06-24",
+          "days": 7
+        },
+        "currentValueLabel": "8",
+        "expectedValueLabel": "12"
+      },
+      "drivers": [
+        {
+          "key": "ordersUnits_drop",
+          "label": "заказы просели на -33,3%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "card_or_offer_conversion",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить раннее отклонение: заказы.",
+      "forecastText": "если отклонение сохранится, через 7-14 дней оно может перейти в падение заказов/выручки.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-stockout_forecast_risk-wb-sprei_buster_100ml-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_14d",
+      "platform": "wb",
+      "articleKey": "sprei_buster_100ml",
+      "entityLabel": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
+      "owner": "Лапыгин Максим",
+      "horizon": "H3",
+      "riskScore": 68,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 12.02,
+        "expectedValue": 30,
+        "deltaPct": -0.5993333333333334,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "12,0 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 12,0 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 231 968 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 4170784.64,
+      "recommendedAction": "Поставить в контроль WB: 12 кластер(ов) с покрытием меньше 30 дней (Екатеринбург - Перспективная 14, Склад СПБ Шушары Московское, Электросталь, Краснодар). Минимальное покрытие 12.0 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 12,0 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-stockout_forecast_risk-ozon-sprei_buster_100ml-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_14d",
+      "platform": "ozon",
+      "articleKey": "sprei_buster_100ml",
+      "entityLabel": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
+      "owner": "Питайкин Артём",
+      "horizon": "H3",
+      "riskScore": 68,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 12.02,
+        "expectedValue": 30,
+        "deltaPct": -0.5993333333333334,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "12,0 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 12,0 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 88 598 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 1592992.04,
+      "recommendedAction": "Поставить в контроль Ozon: 25 кластер(ов) с покрытием меньше 30 дней (Москва, МО и Дальние регионы, Казань, Юг, Кавказ). Минимальное покрытие 12.0 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 12,0 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-price_position_risk-cross-glikiron_bad_60caps-2026_07_01",
+      "rule": "price_position_risk",
+      "subRule": "ozon_cheaper_than_wb",
+      "platform": "cross",
+      "articleKey": "glikiron_bad_60caps",
+      "entityLabel": "Гликирон БАД для профилактики диабета контроль аппетита",
+      "owner": "Васильева Мария",
+      "horizon": "H4",
+      "riskScore": 68,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "crossMarketPriceGap",
+        "metricLabel": "разрыв цены Ozon дешевле WB",
+        "currentValue": 0.11169924812030071,
+        "expectedValue": 0.07,
+        "deltaPct": 0.5957035445757244,
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "11,2%",
+        "expectedValueLabel": "до 7%"
+      },
+      "drivers": [
+        {
+          "key": "ozon_cheaper",
+          "label": "Ozon дешевле WB на 11,2%",
+          "weight": 0.55
+        }
+      ],
+      "probableCause": "cross_market_price_leakage",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Сверить цену WB/Ozon и решить, где исправлять цену, СПП или промо.",
+      "forecastText": "если разрыв сохранится, часть спроса может перетекать между площадками и ломать план WB/Ozon.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-data_freshness_predictive_blocker-all-oos_control-2026_07_01",
+      "rule": "data_freshness_predictive_blocker",
+      "subRule": "stale_layer",
+      "platform": "all",
+      "articleKey": "",
+      "entityLabel": "OOS control",
+      "owner": "",
+      "horizon": "H0",
+      "riskScore": 66,
+      "riskBand": "high",
+      "priority": "high",
+      "confidence": "high",
+      "forecast": {
+        "metric": "freshness",
+        "metricLabel": "свежесть данных",
+        "currentValue": 1,
+        "expectedValue": 0,
+        "deltaPct": -1,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "2026-06-30",
+        "expectedValueLabel": "2026-07-01"
+      },
+      "drivers": [
+        {
+          "key": "stale_layer",
+          "label": "oos_control.json: факт до 2026-06-30, ожидался 2026-07-01",
+          "weight": 1
+        }
+      ],
+      "probableCause": "data_layer_stale",
+      "moneyAtRiskRub": 0,
+      "recommendedAction": "Проверить источник oos_control.json и перезапустить синхронизацию.",
+      "forecastText": "пока источник отстает, бизнес-сигналы по этим данным лучше не создавать.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01",
+      "autoTask": {
+        "autoCode": "data_freshness_predictive_blocker|oos_control|2026-07-01",
+        "type": "data_quality",
+        "source": "auto",
+        "duePolicy": "next_day"
+      }
+    },
+    {
+      "id": "risk-stockout_forecast_risk-wb-gel_antiakne_20ml_v2-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_30d",
+      "platform": "wb",
+      "articleKey": "gel_antiakne_20ml_v2",
+      "entityLabel": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
+      "owner": "Васильева Мария",
+      "horizon": "H3",
+      "riskScore": 44,
+      "riskBand": "medium",
+      "priority": "medium",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 20.04,
+        "expectedValue": 30,
+        "deltaPct": -0.332,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "20,0 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 20,0 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 1 674 586 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 16678876.56,
+      "recommendedAction": "Поставить в контроль WB: 22 кластер(ов) с покрытием меньше 30 дней (СЦ Хабаровск, Краснодар, Склад СПБ Шушары Московское, Владивосток WB). Минимальное покрытие 20.0 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 20,0 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-stockout_forecast_risk-ozon-gel_antiakne_20ml_v2-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_30d",
+      "platform": "ozon",
+      "articleKey": "gel_antiakne_20ml_v2",
+      "entityLabel": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H3",
+      "riskScore": 43,
+      "riskBand": "medium",
+      "priority": "medium",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 20.04,
+        "expectedValue": 30,
+        "deltaPct": -0.332,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "20,0 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 20,0 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 662 210 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 6595611.600000001,
+      "recommendedAction": "Поставить в контроль Ozon: 27 кластер(ов) с покрытием меньше 30 дней (Москва, МО и Дальние регионы, Казахстан, Юг, Ростов). Минимальное покрытие 20.0 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 20,0 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-stockout_forecast_risk-wb-retinol_boost_krem_dlya_vek_30ml-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_30d",
+      "platform": "wb",
+      "articleKey": "retinol_boost_krem_dlya_vek_30ml",
+      "entityLabel": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
+      "owner": "Васильева Мария",
+      "horizon": "H3",
+      "riskScore": 43,
+      "riskBand": "medium",
+      "priority": "medium",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 24.64,
+        "expectedValue": 30,
+        "deltaPct": -0.17866666666666664,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "24,6 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 24,6 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 1 045 853 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 5605772.079999999,
+      "recommendedAction": "Поставить в контроль WB: 8 кластер(ов) с покрытием меньше 30 дней (Тула, Краснодар, Коледино, Екатеринбург - Перспективная 14). Минимальное покрытие 24.6 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 24,6 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-stockout_forecast_risk-wb-penka_kudryavii_metod_150ml-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_30d",
+      "platform": "wb",
+      "articleKey": "penka_kudryavii_metod_150ml",
+      "entityLabel": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
+      "owner": "Лапыгин Максим",
+      "horizon": "H3",
+      "riskScore": 42,
+      "riskBand": "medium",
+      "priority": "medium",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 24.53,
+        "expectedValue": 30,
+        "deltaPct": -0.1823333333333333,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "24,5 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 24,5 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 467 651 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 2558050.9699999993,
+      "recommendedAction": "Поставить в контроль WB: 8 кластер(ов) с покрытием меньше 30 дней (Электросталь, Краснодар, Екатеринбург - Перспективная 14, Склад СПБ Шушары Московское). Минимальное покрытие 24.5 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 24,5 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-stockout_forecast_risk-ozon-retinol_boost_krem_dlya_vek_30ml-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_30d",
+      "platform": "ozon",
+      "articleKey": "retinol_boost_krem_dlya_vek_30ml",
+      "entityLabel": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
+      "owner": "Молодякова Дария",
+      "horizon": "H3",
+      "riskScore": 42,
+      "riskBand": "medium",
+      "priority": "medium",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 24.64,
+        "expectedValue": 30,
+        "deltaPct": -0.17866666666666664,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "24,6 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 24,6 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 443 886 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 2379228.96,
+      "recommendedAction": "Поставить в контроль Ozon: 29 кластер(ов) с покрытием меньше 30 дней (Москва, МО и Дальние регионы, Урал, Екатеринбург, Новосибирск). Минимальное покрытие 24.6 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 24,6 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-stockout_forecast_risk-wb-silk_hair_300ml-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_30d",
+      "platform": "wb",
+      "articleKey": "silk_hair_300ml",
+      "entityLabel": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
+      "owner": "Васильева Мария",
+      "horizon": "H3",
+      "riskScore": 42,
+      "riskBand": "medium",
+      "priority": "medium",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 21.33,
+        "expectedValue": 30,
+        "deltaPct": -0.28900000000000003,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "21,3 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 21,3 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 193 138 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 1674506.4600000004,
+      "recommendedAction": "Поставить в контроль WB: 14 кластер(ов) с покрытием меньше 30 дней (Коледино, Краснодар, Екатеринбург - Перспективная 14, Казань). Минимальное покрытие 21.3 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 21,3 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-stockout_forecast_risk-ozon-penka_kudryavii_metod_150ml-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_30d",
+      "platform": "ozon",
+      "articleKey": "penka_kudryavii_metod_150ml",
+      "entityLabel": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
+      "owner": "Питайкин Артём",
+      "horizon": "H3",
+      "riskScore": 42,
+      "riskBand": "medium",
+      "priority": "medium",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 24.53,
+        "expectedValue": 30,
+        "deltaPct": -0.1823333333333333,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "24,5 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 24,5 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 229 183 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 1253631.0099999998,
+      "recommendedAction": "Поставить в контроль Ozon: 25 кластер(ов) с покрытием меньше 30 дней (Москва, МО и Дальние регионы, Юг, Новосибирск, Урал). Минимальное покрытие 24.5 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 24,5 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    },
+    {
+      "id": "risk-stockout_forecast_risk-ozon-silk_hair_300ml-2026_07_01",
+      "rule": "stockout_forecast_risk",
+      "subRule": "stockout_lte_30d",
+      "platform": "ozon",
+      "articleKey": "silk_hair_300ml",
+      "entityLabel": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
+      "owner": "Питайкин Артём",
+      "horizon": "H3",
+      "riskScore": 42,
+      "riskBand": "medium",
+      "priority": "medium",
+      "confidence": "medium",
+      "forecast": {
+        "metric": "turnoverDays",
+        "metricLabel": "покрытие остатком",
+        "currentValue": 21.33,
+        "expectedValue": 30,
+        "deltaPct": -0.28900000000000003,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-06-30",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "21,3 д.",
+        "expectedValueLabel": "30 д."
+      },
+      "drivers": [
+        {
+          "key": "stock_coverage",
+          "label": "Запас закончится примерно через 21,3 д.",
+          "weight": 0.6
+        },
+        {
+          "key": "revenue_at_risk",
+          "label": "Выручка под риском 56 295 ₽/день",
+          "weight": 0.4
+        }
+      ],
+      "probableCause": "future_oos_or_cluster_stock",
+      "moneyAtRiskRub": 488077.6500000001,
+      "recommendedAction": "Поставить в контроль Ozon: 24 кластер(ов) с покрытием меньше 30 дней (Юг, Урал, Екатеринбург, Ростов). Минимальное покрытие 21.3 д; нужен срок поставки, перемещение или лимит продаж.",
+      "forecastText": "если темп продаж сохранится, через 21,3 д. карточка уйдет в OOS/дефицит.",
+      "checklist": null,
+      "createdAt": "2026-07-02T07:52:31.227Z",
+      "asOfDate": "2026-07-01"
+    }
+  ],
+  "autoTaskSignals": [
+    {
+      "id": "auto-predictive-c50dbee5ad5f",
+      "source": "auto",
+      "autoCode": "data_freshness_predictive_blocker|skus|2026-07-01",
+      "articleKey": "",
+      "title": "SKU registry — данные устарели",
+      "nextAction": "Проверить источник skus.json и перезапустить синхронизацию.",
+      "reason": "Что видно заранее: свежесть данных отклоняется от нормального уровня: ожидалось 2026-07-01, стало нет даты, отклонение -100,0%, период текущий период.\nПрогноз: пока источник отстает, бизнес-сигналы по этим данным лучше не создавать.\nВероятная причина: data_layer_stale, confidence=high.\nЧто проверить:\n1. проверить источник/API и дату последнего факта\n2. перезапустить синхронизацию слоя\n3. после восстановления пересобрать прогнозные сигналы\nКритерий закрытия: причина зафиксирована, действие выполнено, метрика восстановилась или РОП согласовал решение.",
+      "owner": "",
+      "due": "2026-07-02",
+      "status": "new",
+      "type": "data_quality",
+      "priority": "critical",
+      "platform": "cross",
+      "entityLabel": "SKU registry",
+      "riskScore": 84,
+      "horizon": "H0",
+      "whatChanged": "свежесть данных отклоняется от нормального уровня",
+      "baseline": "2026-07-01",
+      "current": "нет даты",
+      "deltaPct": -1,
+      "forecastText": "пока источник отстает, бизнес-сигналы по этим данным лучше не создавать.",
+      "probableCause": "data_layer_stale",
+      "confidence": "high",
+      "recommendedAction": "Проверить источник skus.json и перезапустить синхронизацию.",
+      "closeCriteria": "Причина зафиксирована, действие выполнено, метрика восстановилась или РОП согласовал решение.",
+      "deadline": "2026-07-02",
+      "predictiveRiskId": "risk-data_freshness_predictive_blocker-all-sku_registry-2026_07_01",
+      "forecast": {
+        "metric": "freshness",
+        "metricLabel": "свежесть данных",
+        "currentValue": 999,
+        "expectedValue": 0,
+        "deltaPct": -1,
+        "period": {
+          "from": "",
+          "to": "2026-07-01",
+          "days": 999
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "нет даты",
+        "expectedValueLabel": "2026-07-01"
+      },
+      "drivers": [
+        {
+          "key": "stale_layer",
+          "label": "skus.json: факт до нет даты, ожидался 2026-07-01",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "auto-predictive-20d3f4b6e081",
+      "source": "auto",
+      "autoCode": "data_freshness_predictive_blocker|oos_control|2026-07-01",
+      "articleKey": "",
+      "title": "OOS control — данные устарели",
+      "nextAction": "Проверить источник oos_control.json и перезапустить синхронизацию.",
+      "reason": "Что видно заранее: свежесть данных отклоняется от нормального уровня: ожидалось 2026-07-01, стало 2026-06-30, отклонение -100,0%, период 2026-06-30 - 2026-07-01.\nПрогноз: пока источник отстает, бизнес-сигналы по этим данным лучше не создавать.\nВероятная причина: data_layer_stale, confidence=high.\nЧто проверить:\n1. проверить источник/API и дату последнего факта\n2. перезапустить синхронизацию слоя\n3. после восстановления пересобрать прогнозные сигналы\nКритерий закрытия: причина зафиксирована, действие выполнено, метрика восстановилась или РОП согласовал решение.",
+      "owner": "",
+      "due": "2026-07-03",
+      "status": "new",
+      "type": "data_quality",
+      "priority": "high",
+      "platform": "cross",
+      "entityLabel": "OOS control",
+      "riskScore": 66,
+      "horizon": "H0",
+      "whatChanged": "свежесть данных отклоняется от нормального уровня",
+      "baseline": "2026-07-01",
+      "current": "2026-06-30",
+      "deltaPct": -1,
+      "forecastText": "пока источник отстает, бизнес-сигналы по этим данным лучше не создавать.",
+      "probableCause": "data_layer_stale",
+      "confidence": "high",
+      "recommendedAction": "Проверить источник oos_control.json и перезапустить синхронизацию.",
+      "closeCriteria": "Причина зафиксирована, действие выполнено, метрика восстановилась или РОП согласовал решение.",
+      "deadline": "2026-07-03",
+      "predictiveRiskId": "risk-data_freshness_predictive_blocker-all-oos_control-2026_07_01",
+      "forecast": {
+        "metric": "freshness",
+        "metricLabel": "свежесть данных",
+        "currentValue": 1,
+        "expectedValue": 0,
+        "deltaPct": -1,
+        "period": {
+          "from": "2026-06-30",
+          "to": "2026-07-01",
+          "days": 1
+        },
+        "previousPeriod": {
+          "from": "",
+          "to": "",
+          "days": 0
+        },
+        "currentValueLabel": "2026-06-30",
+        "expectedValueLabel": "2026-07-01"
+      },
+      "drivers": [
+        {
+          "key": "stale_layer",
+          "label": "oos_control.json: факт до 2026-06-30, ожидался 2026-07-01",
+          "weight": 1
+        }
+      ]
+    }
+  ],
+  "diagnostics": {
+    "articleSeries": 477,
+    "stockIndex": 12,
+    "missingLayers": [],
+    "suppressBusinessTasksWhenDataStale": true
+  }
+}

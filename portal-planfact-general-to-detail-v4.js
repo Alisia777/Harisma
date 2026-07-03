@@ -236,9 +236,17 @@
   }
 
   function fallbackOwner(sku, platform) {
+    if (platform && platform !== 'all' && typeof skuPlanFactPlatformOwner === 'function') {
+      const scopedOwner = skuPlanFactPlatformOwner(sku, platform);
+      if (scopedOwner) return String(scopedOwner).trim();
+    }
     const owner = sku?.owner;
     if (platform && platform !== 'all') {
-      const platformOwner = owner?.byPlatform?.[platform] || sku?.ownersByPlatform?.[platform];
+      const supportKey = platform === 'ya' ? 'ym' : (platform === 'ym' ? 'ya' : platform);
+      const platformOwner = owner?.byPlatform?.[platform]
+        || owner?.byPlatform?.[supportKey]
+        || sku?.ownersByPlatform?.[platform]
+        || sku?.ownersByPlatform?.[supportKey];
       if (platformOwner) return String(platformOwner).trim();
     }
     if (typeof owner === 'string') return owner.trim();

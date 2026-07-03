@@ -1,0 +1,22 @@
+{
+  "schema": "qharisma-predictive-risk-outcome-audit-v1",
+  "generatedAt": "2026-07-02T07:52:31.912Z",
+  "asOfDate": "2026-07-01",
+  "windowDays": 14,
+  "signalsCreated": 2,
+  "risksDetected": 90,
+  "tasksClosed": 0,
+  "confirmedTruePositive": 0,
+  "falsePositive": 0,
+  "ignoredByOwner": 0,
+  "reopenedRisks": 0,
+  "avgTimeToActionHours": null,
+  "summary": {
+    "criticalSignals": 1,
+    "highSignals": 1,
+    "dataQualitySignals": 2,
+    "matchedOutcomeCount": 0,
+    "staleSourceCount": 2
+  },
+  "outcomes": []
+}

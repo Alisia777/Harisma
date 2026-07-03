@@ -281,6 +281,20 @@ function formatRub(value) {
   return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(amount)} ₽`;
 }
 
+function roundMetric(value, digits = 6) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return null;
+  const factor = 10 ** digits;
+  return Math.round(number * factor) / factor;
+}
+
+function marginPctFromPrice(price, cost) {
+  const actualPrice = positiveValue(price);
+  const actualCost = positiveValue(cost);
+  if (!(actualPrice > 0) || !(actualCost > 0)) return null;
+  return roundMetric((actualPrice - actualCost) / actualPrice);
+}
+
 function resolveUpperCap(sourceRow, supportRow) {
   return positiveValue(
     sourceRow?.workingZoneTo,
@@ -362,6 +376,18 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     priceRow?.minPrice,
     liveSide?.minPrice
   ) || 0;
+  const cost = positiveValue(
+    sourceRow?.cost,
+    sourceRow?.costRub,
+    sourceRow?.costPrice,
+    supportRow?.cost,
+    supportRow?.costRub,
+    supportRow?.costPrice,
+    priceRow?.cost,
+    priceRow?.costRub,
+    priceRow?.costPrice,
+    liveSide?.cost
+  );
   const basePrice = positiveValue(
     sourceRow?.basePrice,
     supportRow?.historicalMinProfitablePrice,
@@ -418,11 +444,19 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
   const targetTurnoverDays = numberValue(
     liveSide?.targetTurnoverDays
   ) || defaultTargetTurnoverDays(sourceRow?.status || priceRow?.status || supportRow?.productStatus || '', platform);
-  const marginPct = numberValue(
+  const legacyMarginPct = numberValue(
+    sourceRow?.costAwareMarginPct,
+    sourceRow?.grossMarginPct,
     sourceRow?.avgMargin7dPct,
     sourceRow?.marginTotalPct,
+    priceRow?.costAwareMarginPct,
+    priceRow?.grossMarginPct,
+    priceRow?.marginPct,
+    liveSide?.costAwareMarginPct,
     liveSide?.marginPct
   );
+  const currentCostAwareMarginPct = marginPctFromPrice(positiveValue(currentBuyerPrice, currentPrice), cost);
+  const marginPct = currentCostAwareMarginPct ?? legacyMarginPct;
   const thresholdMarginPct = numberValue(
     sourceRow?.allowedMarginPct,
     supportRow?.allowedMarginPct,
@@ -465,17 +499,24 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     recGuard.capApplied ? null : sourceRow?.seedTargetClientPrice,
     recGuard.capApplied ? null : liveSide?.newBuyerPrice
   ) || 0;
+  const newCostAwareMarginPct = marginPctFromPrice(positiveValue(newBuyerPrice, recPrice), cost);
+  const newMarginPct = newCostAwareMarginPct ?? marginPct;
+  const minPriceMarginPct = marginPctFromPrice(minPrice, cost);
+  const maxPriceMarginPct = marginPctFromPrice(upperCap || positiveValue(sourceRow?.workingZoneTo, supportRow?.workingZoneTo, supportRow?.maxPrice), cost);
   const changePct = currentPrice > 0 && recPrice > 0
     ? Number((((recPrice - currentPrice) / currentPrice)).toFixed(6))
     : 0;
 
   return {
+    status: normalizeStatus(sourceRow?.status || sourceRow?.productStatus || supportRow?.repricerStatus || supportRow?.productStatus || priceRow?.status || liveSide?.status),
+    productStatus: normalizeStatus(sourceRow?.productStatus || sourceRow?.status || supportRow?.productStatus || priceRow?.productStatus || liveSide?.productStatus),
+    repricerStatus: normalizeStatus(sourceRow?.repricerStatus || sourceRow?.status || supportRow?.repricerStatus || priceRow?.repricerStatus || liveSide?.repricerStatus),
     basePrice,
+    cost,
     minPrice,
     currentPrice,
     buyerPrice: currentBuyerPrice,
     stock,
-    stockState: procurementSnapshotAvailable ? 'known' : 'unknown',
     stockSource,
     inboundUnits,
     procurementSnapshotAvailable,
@@ -486,18 +527,21 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     turnoverDays: turnoverDays === null ? null : turnoverDays,
     targetTurnoverDays,
     marginPct: marginPct === null ? null : marginPct,
+    grossMarginPct: marginPct === null ? null : marginPct,
+    costAwareMarginPct: currentCostAwareMarginPct ?? marginPct,
     recPrice,
     changePct,
     newBuyerPrice,
-    newMarginPct: marginPct === null ? null : marginPct,
-    action: strategy,
+    newMarginPct: newMarginPct === null ? null : newMarginPct,
+    newCostAwareMarginPct: newCostAwareMarginPct ?? newMarginPct,
     strategy,
-    costState: 'unknown',
     reason,
     marginNoAdsMinPct: thresholdMarginPct === null ? null : thresholdMarginPct,
     marginNoAdsBasePct: marginPct === null ? null : marginPct,
     marginNoAdsCurrentPct: marginPct === null ? null : marginPct,
-    marginNoAdsNewPct: marginPct === null ? null : marginPct,
+    marginNoAdsNewPct: newMarginPct === null ? null : newMarginPct,
+    minPriceMarginPct,
+    maxPriceMarginPct,
     currentPriceDate: textValue(sourceRow?.valueDate, priceRow?.currentPriceDate, sourceRow?.historyFreshnessDate, priceRow?.historyFreshnessDate),
     historyFreshnessDate: textValue(sourceRow?.historyFreshnessDate, priceRow?.historyFreshnessDate),
     sourceMode: textValue(sourceRow?.sourceMode, priceRow?.sourceMode),
@@ -520,36 +564,6 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     floorApplied: Boolean(recGuard.floorApplied),
     upperCapApplied: recGuard.capApplied
   };
-}
-
-function applyUnknownDataBlock(row) {
-  const costKnown = row?.cost !== null && row?.cost !== undefined && row?.cost !== '';
-  PLATFORM_KEYS.forEach((platform) => {
-    const side = row?.[platform];
-    if (!side) return;
-    const stockKnown = side.procurementSnapshotAvailable !== false && side.stockState !== 'unknown';
-    side.stockState = stockKnown ? (side.stockState || 'known') : 'unknown';
-    side.costState = costKnown ? 'known' : 'unknown';
-    if (stockKnown && costKnown) return;
-
-    const currentPrice = Number(side.currentPrice) || 0;
-    side.recPrice = currentPrice;
-    side.changePct = 0;
-    side.newBuyerPrice = Number(side.buyerPrice) || currentPrice;
-    side.newMarginPct = side.marginPct === null || side.marginPct === undefined ? null : side.marginPct;
-    side.action = 'BLOCK_DATA';
-    side.strategy = 'BLOCK_DATA';
-    side.stockGateBlocksAutoprice = true;
-    side.blockReason = !stockKnown && !costKnown
-      ? 'unknown_stock_and_cost'
-      : (!stockKnown ? 'unknown_stock_snapshot' : 'unknown_cost');
-    side.reason = !stockKnown && !costKnown
-      ? 'Нет надежного snapshot по остаткам и себестоимости: автопрайс удерживает текущую цену.'
-      : (!stockKnown
-        ? 'Нет надежного snapshot по остаткам: автопрайс удерживает текущую цену.'
-        : 'Нет надежной себестоимости: автопрайс удерживает текущую цену.');
-  });
-  return row;
 }
 
 function buildSummary(rows = []) {
@@ -651,7 +665,7 @@ function buildLegacyRepricerLayer(options = {}) {
           ownerByPlatform: {},
           status: normalizeStatus(sourceRow?.status || sourceRow?.productStatus || priceRow?.status || supportRow?.repricerStatus || supportRow?.productStatus || liveRow?.status),
           tag: '',
-          cost: positiveValue(liveRow?.cost),
+          cost: positiveValue(sourceRow?.cost, sourceRow?.costRub, sourceRow?.costPrice, supportRow?.cost, supportRow?.costRub, supportRow?.costPrice, priceRow?.cost, priceRow?.costRub, priceRow?.costPrice, liveRow?.cost),
           wb: null,
           ozon: null
         });
@@ -665,7 +679,7 @@ function buildLegacyRepricerLayer(options = {}) {
       target.legalEntity = textValue(target.legalEntity, owner, liveRow?.legalEntity);
       target.owner = textValue(target.owner, owner);
       target.status = normalizeStatus(target.status || sourceRow?.status || sourceRow?.productStatus || priceRow?.status || supportRow?.repricerStatus || supportRow?.productStatus || liveRow?.status);
-      target.cost = positiveValue(target.cost, liveRow?.cost);
+      target.cost = positiveValue(target.cost, sourceRow?.cost, sourceRow?.costRub, sourceRow?.costPrice, supportRow?.cost, supportRow?.costRub, supportRow?.costPrice, priceRow?.cost, priceRow?.costRub, priceRow?.costPrice, liveRow?.cost);
       target[platform] = buildSide(sourceRow, platform, supportRow, priceRow, liveRow?.[platform] || null, liveRepricer?.generatedAt || '', procurementFact);
     });
   });
@@ -673,7 +687,7 @@ function buildLegacyRepricerLayer(options = {}) {
   const rows = Array.from(byArticle.values())
     .map((row) => {
       row.tag = normalizeTag(Boolean(row.wb), Boolean(row.ozon));
-      return applyUnknownDataBlock(row);
+      return row;
     })
     .sort((left, right) => {
       const leftChange = Math.max(

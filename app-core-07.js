@@ -97,7 +97,11 @@ function renderSkuModal(articleKey) {
   const owners = ownerOptions();
   const currentOwner = ownerName(sku);
   const currentOwnerOverride = (state.storage.ownerOverrides || [])
-    .find((item) => item.articleKey === resolvedArticleKey) || {};
+    .find((item) => (
+      item.articleKey === resolvedArticleKey
+      && (typeof shouldApplyOwnerOverride !== 'function'
+        || shouldApplyOwnerOverride(sku, sku.__baseOwner || sku.owner || {}, item))
+    )) || {};
   const currentLifecycle = typeof productLifecycleForSku === 'function'
     ? productLifecycleForSku(sku, resolvedArticleKey)
     : { key: 'active', label: sku.status || 'Актуальный', tone: 'ok', note: '' };

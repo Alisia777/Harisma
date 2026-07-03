@@ -2339,8 +2339,16 @@ const EMPTY_OWNER_NAMES = new Set([
   'none'
 ]);
 
+const ACTIVE_OWNER_NAMES = new Set([
+  'Анна Пирогова',
+  'Екатерина Доможирова',
+  'Максим Лапыгин',
+  'Мария Васильева',
+  'Молодякова Дария',
+  'Питайкин Артём'
+]);
+
 const OWNER_CANONICAL_NAMES = new Map([
-  ['алексей', 'Алексей'],
   ['александр', 'Питайкин Артём'],
   ['анна', 'Анна Пирогова'],
   ['артем', 'Питайкин Артём'],
@@ -2349,12 +2357,8 @@ const OWNER_CANONICAL_NAMES = new Map([
   ['дарья', 'Молодякова Дария'],
   ['даша', 'Молодякова Дария'],
   ['екатерина', 'Екатерина Доможирова'],
-  ['кирилл', 'Кирилл'],
-  ['ксения', 'Ксения'],
   ['максим', 'Максим Лапыгин'],
-  ['мария', 'Мария Васильева'],
-  ['олеся', 'Олеся'],
-  ['светлана', 'Светлана']
+  ['мария', 'Мария Васильева']
 ]);
 
 const OWNER_NAME_ALIASES = new Map([
@@ -2377,8 +2381,7 @@ const OWNER_NAME_ALIASES = new Map([
   ['мария васильевна', 'Мария Васильева'],
   ['васильева мария', 'Мария Васильева'],
   ['лапыгин максим', 'Максим Лапыгин'],
-  ['максим лапыгин', 'Максим Лапыгин'],
-  ['олеся савинова', 'Олеся']
+  ['максим лапыгин', 'Максим Лапыгин']
 ]);
 
 function normalizeOwnerToken(value = '') {
@@ -2391,20 +2394,36 @@ function normalizeOwnerToken(value = '') {
   return normalized === '[object Object]' ? '' : normalized;
 }
 
+function activeOwnerList() {
+  return [...ACTIVE_OWNER_NAMES];
+}
+
 function canonicalOwnerName(value = '') {
   const normalized = normalizeOwnerToken(value);
   if (!normalized) return '';
 
   const lowered = normalized.toLowerCase();
   if (EMPTY_OWNER_NAMES.has(lowered)) return '';
-  if (OWNER_NAME_ALIASES.has(lowered)) return OWNER_NAME_ALIASES.get(lowered);
-  if (OWNER_CANONICAL_NAMES.has(lowered)) return OWNER_CANONICAL_NAMES.get(lowered);
+  let canonical = '';
+  if (OWNER_NAME_ALIASES.has(lowered)) canonical = OWNER_NAME_ALIASES.get(lowered);
+  else if (OWNER_CANONICAL_NAMES.has(lowered)) canonical = OWNER_CANONICAL_NAMES.get(lowered);
 
-  const [firstToken = ''] = normalized.split(' ');
-  const firstTokenLowered = firstToken.toLowerCase();
-  if (OWNER_CANONICAL_NAMES.has(firstTokenLowered)) return OWNER_CANONICAL_NAMES.get(firstTokenLowered);
+  if (!canonical) {
+    const [firstToken = ''] = normalized.split(' ');
+    const firstTokenLowered = firstToken.toLowerCase();
+    if (OWNER_CANONICAL_NAMES.has(firstTokenLowered)) canonical = OWNER_CANONICAL_NAMES.get(firstTokenLowered);
+  }
 
-  return normalized;
+  canonical = canonical || normalized;
+  return ACTIVE_OWNER_NAMES.has(canonical) ? canonical : '';
+}
+
+function activeOwnerName(value = '') {
+  return canonicalOwnerName(value);
+}
+
+function isActiveOwnerName(value = '') {
+  return Boolean(activeOwnerName(value));
 }
 
 function normalizeOwnerPlatformKey(platform = '') {

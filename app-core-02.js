@@ -704,9 +704,11 @@ function resolveTaskOwner(task = {}, sku = null, platform = '', sourceHint = '')
 }
 
 function ownerOptions() {
-  const pool = new Set();
+  const pool = new Set(typeof activeOwnerList === 'function' ? activeOwnerList() : []);
   const addOwner = (value) => {
-    const normalized = canonicalOwnerName(value || '');
+    const normalized = typeof activeOwnerName === 'function'
+      ? activeOwnerName(value || '')
+      : canonicalOwnerName(value || '');
     if (normalized) pool.add(normalized);
   };
   for (const sku of state.skus) {

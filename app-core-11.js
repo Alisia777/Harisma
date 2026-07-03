@@ -80,7 +80,9 @@ function skuPlanFactWbOwnerAuditMap() {
   const map = new Map();
   const matched = Array.isArray(source?.matched) ? source.matched : [];
   matched.forEach((item) => {
-    const owner = skuPlanFactCanonicalOwner(item.ownerWb || item.owner || '');
+    const owner = typeof activeOwnerName === 'function'
+      ? activeOwnerName(item.ownerWb || item.owner || '')
+      : skuPlanFactCanonicalOwner(item.ownerWb || item.owner || '');
     if (!owner) return;
     [item.articleKey, item.article, item.sourceArticle]
       .map((value) => String(value || '').trim().toLowerCase())

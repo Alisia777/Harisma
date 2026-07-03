@@ -1295,9 +1295,38 @@ function isNonPersistentTaskSource(source) {
   return normalized === 'auto' || normalized === 'seed';
 }
 
+const FBS_ONLY_STOCK_SIGNAL_SKUS = new Map([
+  ['retinol_full_journey', new Set(['*'])]
+]);
+
+function fbsOnlyStockSignalSuppressed(articleKey = '', platform = '') {
+  const key = String(articleKey || '').trim().toLowerCase();
+  if (!key) return false;
+  const blockedPlatforms = FBS_ONLY_STOCK_SIGNAL_SKUS.get(key);
+  if (!blockedPlatforms) return false;
+  const normalizedPlatform = normalizeTaskPlatform(platform || 'all');
+  return blockedPlatforms.has('*')
+    || blockedPlatforms.has(normalizedPlatform)
+    || blockedPlatforms.has('all');
+}
+
+function isSuppressedAutoStockTask(task = {}) {
+  const source = String(task?.source || '').trim().toLowerCase();
+  const code = String(task?.autoCode || '').trim().toLowerCase();
+  const id = String(task?.id || '').trim().toLowerCase();
+  const type = String(task?.type || '').trim().toLowerCase();
+  const autoLike = source === 'auto' || id.startsWith('auto-') || Boolean(code);
+  const stockLike = type === 'supply'
+    || code === 'low_stock'
+    || code.includes('stock')
+    || /^auto-stock[_-]/.test(id);
+  return autoLike && stockLike && fbsOnlyStockSignalSuppressed(task?.articleKey, task?.platform);
+}
+
 function normalizeStorageTasks(tasks, sourceHint = 'manual') {
   return (tasks || [])
     .map((task) => normalizeTask(task, task?.source || sourceHint))
+    .filter((task) => !isSuppressedAutoStockTask(task))
     .filter((task) => !isNonPersistentTaskSource(task?.source))
     .filter((task) => !isAutoTaskLike(task, task?.source));
 }
@@ -2086,6 +2115,7 @@ function autoSignalActiveStockKeys() {
   const rows = Array.isArray(state.oosControl?.rows) ? state.oosControl.rows : [];
   return new Set(rows
     .filter((row) => row?.articleKey || row?.article)
+    .filter((row) => !fbsOnlyStockSignalSuppressed(row.articleKey || row.article, row.platform))
     .filter((row) => {
       const level = autoSignalStockSignalLevel(row);
       return level === 'oos' || level === 'risk';
@@ -2099,6 +2129,7 @@ function buildStockAutoSignalCandidates() {
     const sku = getSku(row.articleKey || row.article);
     if (!autoSignalSkuAllowed(sku)) return null;
     const platform = normalizeTaskPlatform(row.platform || 'all');
+    if (fbsOnlyStockSignalSuppressed(row.articleKey || row.article, platform)) return null;
     const platformLabel = row.platformLabel || autoSignalPlatformLabel(platform);
     const days = autoSignalFinite(row.turnoverDays, NaN);
     const signalLevel = autoSignalStockSignalLevel(row);
@@ -3246,7 +3277,7 @@ function buildAutoTasks() {
       }, 'auto'));
     }
 
-    if (legacySkuFlagAutoTasksEnabled && sku?.flags?.lowStock && !exitSku && canRegisterAutoTask(keys, articleKey, 'supply')) {
+    if (legacySkuFlagAutoTasksEnabled && sku?.flags?.lowStock && !exitSku && !fbsOnlyStockSignalSuppressed(articleKey, platform) && canRegisterAutoTask(keys, articleKey, 'supply')) {
       tasks.push(normalizeTask({
         id: `auto-stock-${articleKey}`,
         source: 'auto',
@@ -3416,6 +3447,7 @@ function buildAutoTasks() {
 
 function getAllTasks() {
   const storedTasks = normalizeStorageTasks(state.storage.tasks || [], 'manual')
+    .filter((task) => !isSuppressedAutoStockTask(task))
     .filter((task) => !isDeprecatedAutoSignalTask(task));
   return sortTasks([...storedTasks, ...buildAutoTasks()]);
 }

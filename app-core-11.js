@@ -31,6 +31,8 @@ const SKU_PLAN_FACT_UNMAPPED_OWNER = 'Не в реестре';
 const SKU_PLAN_FACT_UNMAPPED_STATUS = 'API SKU без пары';
 const SKU_PLAN_FACT_UNALLOCATED_STATUS = 'Агрегат без SKU';
 const SKU_PLAN_FACT_FILTER_VERSION = '20260623-status-top-filters-v1';
+globalThis.__ALTEA_SKU_WORKSPACE_SOURCE_ONLY__ = true;
+const SKU_WORKSPACE_SOURCE_ONLY = globalThis.__ALTEA_SKU_WORKSPACE_SOURCE_ONLY__ !== false;
 let skuPlanFactSearchTimer = 0;
 let skuPlanFactExcelDownloadLockUntil = 0;
 let skuPlanFactTruthWarmupPromise = null;
@@ -2878,17 +2880,22 @@ function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
   const selectedDate = selectedPeriod.end;
   const elapsedDays = selectedPeriod.days;
   const adIndex = skuPlanFactAdIndex(monthKey, selectedDate, periodStart);
+  const includeDerivedSkuRows = !SKU_WORKSPACE_SOURCE_ONLY;
   const modelSkus = [
     ...(state.skus || []),
-    ...skuPlanFactUnmappedSkus(indexes, monthKey, selectedDate, periodStart)
+    ...(includeDerivedSkuRows ? skuPlanFactUnmappedSkus(indexes, monthKey, selectedDate, periodStart) : [])
   ];
   const rows = modelSkus.map((sku) => skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, selectedDate, periodStart));
   const selectedOwnerPlatform = SKU_PLAN_FACT_PLATFORMS.includes(filters.platform) ? filters.platform : 'all';
   skuPlanFactApplyOwnerScope(rows, selectedOwnerPlatform);
-  skuPlanFactAppendUnallocatedAggregateRows(rows, monthKey, selectedDate, periodStart);
-  skuPlanFactApplyOwnerScope(rows, selectedOwnerPlatform);
-  const reconciliation = skuPlanFactReconcilePlatformFacts(rows, monthKey, selectedDate, periodStart);
-  skuPlanFactMarkDuplicateRiskRows(rows);
+  if (includeDerivedSkuRows) {
+    skuPlanFactAppendUnallocatedAggregateRows(rows, monthKey, selectedDate, periodStart);
+    skuPlanFactApplyOwnerScope(rows, selectedOwnerPlatform);
+  }
+  const reconciliation = includeDerivedSkuRows
+    ? skuPlanFactReconcilePlatformFacts(rows, monthKey, selectedDate, periodStart)
+    : [];
+  if (includeDerivedSkuRows) skuPlanFactMarkDuplicateRiskRows(rows);
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => skuPlanFactAllocatePlatformPlan(rows, monthKey, platform, elapsedDays, periodStart, selectedDate));
   skuPlanFactApplyCorporateRevenuePlan(rows, monthKey, periodStart, selectedDate);
   skuPlanFactApplyCompanyPlanZeroChannels(rows, monthKey);
@@ -2917,7 +2924,21 @@ function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
   const sortedRows = skuPlanFactSortRows(filteredRows, filters.sort, filters.sortDir);
   const unmappedRows = rows.filter((row) => row.syntheticUnmapped);
   const unmappedRevenue = unmappedRows.reduce((sum, row) => sum + numberOrZero(row.factRevenue), 0);
-  const quality = skuPlanFactBuildDataQuality(rows, reconciliation, monthKey, selectedDate);
+  const quality = includeDerivedSkuRows
+    ? skuPlanFactBuildDataQuality(rows, reconciliation, monthKey, selectedDate)
+    : {
+      issueCount: 0,
+      dangerCount: 0,
+      warningCount: 0,
+      unmappedCount: 0,
+      unallocatedCount: 0,
+      unresolvedRevenue: 0,
+      topIssues: [],
+      issues: [],
+      reconciliation: [],
+      monthKey,
+      maxDate: selectedDate
+    };
   const totals = sortedRows.reduce((acc, row) => {
     acc.planRevenue += row.planRevenue;
     acc.planToDateRevenue += row.planToDateRevenue;
@@ -3641,6 +3662,7 @@ function skuContourKnownKeysFromIssue(issue = {}) {
 }
 
 function skuContourIssueRows(model = {}) {
+  if (SKU_WORKSPACE_SOURCE_ONLY) return [];
   const aliasKeys = new Set(
     skuPlanFactAliasRows(state.skuAliases || {})
       .filter(skuPlanFactAliasIsActive)
@@ -5354,6 +5376,11 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
 function renderSkuContour(rootId = 'view-sku-contour') {
   const root = document.getElementById(rootId);
   if (!root) return;
+  if (SKU_WORKSPACE_SOURCE_ONLY && rootId === 'view-sku-contour' && typeof renderSkuRegistry === 'function') {
+    state.skuWorkspaceMode = 'registry';
+    renderSkuRegistry(rootId);
+    return;
+  }
   if (rootId === 'view-sku-contour' && state.skuWorkspaceMode === 'registry' && typeof renderSkuRegistry === 'function') {
     renderSkuRegistry(rootId);
     return;

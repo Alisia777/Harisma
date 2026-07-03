@@ -38,6 +38,9 @@ function skuOperationalStatusMeta(sku) {
   const rawStatus = String(sku?.status || matrixStatus || '').toLowerCase();
   const registryStatus = String(sku?.owner?.registryStatus || matrixStatus || '').toLowerCase();
   const matrixProblemState = typeof skuMatrixProblemState === 'function' ? skuMatrixProblemState(sku) : '';
+  if (sku?.flags?.lowStock && typeof fbsOnlyStockSignalSuppressed === 'function' && fbsOnlyStockSignalSuppressed(sku.articleKey || sku.article || '', 'all')) {
+    sku = { ...sku, flags: { ...(sku.flags || {}), lowStock: false } };
+  }
 
   if (rawStatus.includes('вывод') || registryStatus.includes('вывод')) return { label: 'На вывод', tone: '' };
   if (rawStatus.includes('нов') || registryStatus.includes('нов')) return { label: 'Новинка', tone: 'info' };

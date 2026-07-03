@@ -349,6 +349,14 @@ function filterSkuByWorkLogic(sku) {
   return sku?.flags?.toWork || Boolean(registryOwnerByMarket(sku, market));
 }
 
+function skuRegistryLowStockSignal(sku = {}, activeMarket = state.filters.market) {
+  if (!sku?.flags?.lowStock) return false;
+  const articleKey = sku.articleKey || sku.article || '';
+  const market = String(activeMarket || 'all').toLowerCase();
+  if (typeof fbsOnlyStockSignalSuppressed === 'function' && fbsOnlyStockSignalSuppressed(articleKey, market)) return false;
+  return true;
+}
+
 function buildSkuRegistryTaskMap() {
   const taskMap = new Map();
   getAllTasks().forEach((task) => {
@@ -412,7 +420,7 @@ function getFilteredSkus(taskMap = null) {
       case 'focus4':
         return (sku?.focusScore || 0) >= 4;
       case 'lowStock':
-        return sku?.flags?.lowStock;
+        return skuRegistryLowStockSignal(sku);
       case 'highReturn':
         return sku?.flags?.highReturn;
       case 'extAny':
@@ -450,6 +458,9 @@ function skuRegistryOwnerCount(sku, activeMarket = state.filters.market) {
 
 function skuRegistryReasonList(sku, task = null, activeMarket = state.filters.market) {
   const reasons = [];
+  if (sku?.flags?.lowStock && !skuRegistryLowStockSignal(sku, activeMarket)) {
+    sku = { ...sku, flags: { ...(sku.flags || {}), lowStock: false } };
+  }
   const matrixProblemState = typeof skuMatrixProblemState === 'function' ? skuMatrixProblemState(sku) : 'ok';
   const matrixProblemMeta = typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(matrixProblemState) : null;
   if (!skuRegistryOwnerCount(sku, activeMarket)) reasons.push({ label: 'нет owner', tone: 'danger', focus: 'unassigned', weight: 60 });
@@ -611,7 +622,7 @@ function skuRegistryFocusBoardHtml({ activeMarket = 'all', allMarketSkus = [], i
   const ownerCoverage = total ? assigned / total : null;
   const workCount = allMarketSkus.filter((sku) => filterSkuByWorkLogic(sku)).length;
   const underPlanCount = allMarketSkus.filter((sku) => sku?.flags?.underPlan).length;
-  const lowStockCount = allMarketSkus.filter((sku) => sku?.flags?.lowStock).length;
+  const lowStockCount = allMarketSkus.filter((sku) => skuRegistryLowStockSignal(sku, activeMarket)).length;
   const externalTrafficCount = allMarketSkus.filter((sku) => sku?.flags?.hasExternalTraffic).length;
   const marketIssueRows = activeMarket === 'all' || typeof skuDataIssueMatchesPlatform !== 'function'
     ? registryIssueRows
@@ -693,6 +704,7 @@ function skuRegistryFocusBoardHtml({ activeMarket = 'all', allMarketSkus = [], i
 function renderSkuRegistry(rootId = 'view-skus') {
   const root = document.getElementById(rootId);
   if (!root) return;
+  const sourceOnlyWorkspace = globalThis.__ALTEA_SKU_WORKSPACE_SOURCE_ONLY__ !== false;
   const skuTaskMap = buildSkuRegistryTaskMap();
   const skuPlanModel = typeof skuPlanFactBuildModel === 'function' ? skuPlanFactBuildModel() : {};
   state.filters.lifecycle = state.filters.lifecycle || 'all';
@@ -771,14 +783,14 @@ function renderSkuRegistry(rootId = 'view-skus') {
       </div>
     </div>
 
-    ${skuRegistryFocusBoardHtml({ activeMarket, allMarketSkus, items, skuTaskMap, matrixIssueCount, registryIssueRows })}
-    <details class="sku-data-technical sku-data-metrics-drawer">
+    ${sourceOnlyWorkspace ? '' : skuRegistryFocusBoardHtml({ activeMarket, allMarketSkus, items, skuTaskMap, matrixIssueCount, registryIssueRows })}
+    ${sourceOnlyWorkspace ? '' : `<details class="sku-data-technical sku-data-metrics-drawer">
       <summary class="sku-data-technical-summary">Подробные метрики площадок</summary>
       <div class="sku-data-technical-body">
         ${registryPlatformBoardHtml}
         ${registryGameCardsHtml}
       </div>
-    </details>
+    </details>`}
 
     <div class="filters filters-advanced">
       <input id="skuSearchInput" placeholder="Поиск по артикулу, названию, категории, owner…" value="${escapeHtml(state.filters.search)}">

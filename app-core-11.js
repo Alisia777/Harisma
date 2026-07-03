@@ -1,4 +1,4 @@
-const SKU_PLAN_FACT_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+const SKU_PLAN_FACT_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'megamarket', 'samokat'];
 const SKU_PLAN_FACT_PAYROLL_PLATFORMS = ['wb', 'ozon', 'ya'];
 const SKU_PLAN_FACT_PAYROLL_ALIGNMENT_PLATFORMS = new Set(['wb', 'ozon']);
 const SKU_PLAN_FACT_PLATFORM_LABELS = {
@@ -7,7 +7,9 @@ const SKU_PLAN_FACT_PLATFORM_LABELS = {
   ya: 'Я.Маркет',
   goldapple: 'ЗЯ',
   letu: 'Лэтуаль',
-  magnit: 'Магнит Маркет'
+  magnit: 'Магнит Маркет',
+  megamarket: 'МегаМаркет',
+  samokat: 'Самокат'
 };
 const SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS = {
   wb: 'wb',
@@ -15,7 +17,9 @@ const SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS = {
   ya: 'ym',
   goldapple: 'ga',
   letu: 'letu',
-  magnit: 'mm'
+  magnit: 'mm',
+  megamarket: 'megamarket',
+  samokat: 'samokat'
 };
 const SKU_PLAN_FACT_DIRECT_PLAN_PLATFORMS = new Set(['wb', 'ozon']);
 const SKU_PLAN_FACT_AD_PLAN_PLATFORMS = new Set(['wb', 'ozon']);
@@ -104,6 +108,7 @@ function skuPlanFactPlatformOwner(sku = {}, platform = '') {
   const normalizedPlatform = String(platform || '').toLowerCase();
   const supportKey = skuPlanFactPlatformSupportKey(normalizedPlatform);
   const ownerSources = [
+    sku?.ownerByPlatform,
     sku?.ownersByPlatform,
     sku?.owner?.byPlatform
   ];
@@ -111,7 +116,11 @@ function skuPlanFactPlatformOwner(sku = {}, platform = '') {
     normalizedPlatform,
     supportKey,
     normalizedPlatform === 'ya' ? 'ym' : '',
-    normalizedPlatform === 'ym' ? 'ya' : ''
+    normalizedPlatform === 'ym' ? 'ya' : '',
+    normalizedPlatform === 'goldapple' ? 'ga' : '',
+    normalizedPlatform === 'ga' ? 'goldapple' : '',
+    normalizedPlatform === 'magnit' ? 'mm' : '',
+    normalizedPlatform === 'mm' ? 'magnit' : ''
   ].filter(Boolean))];
   for (const source of ownerSources) {
     if (!source || typeof source !== 'object') continue;
@@ -501,6 +510,8 @@ function skuPlanFactNormalizePlatform(value = '') {
   if (/gold\s*apple|золотое\s*яблоко|\bзя\b/i.test(lower)) detected.push('goldapple');
   if (/letu|letual|летуаль/i.test(lower)) detected.push('letu');
   if (/magnit|магнит/i.test(lower)) detected.push('magnit');
+  if (/mega\s*market|megamarket|мега\s*маркет|мегамаркет/i.test(lower)) detected.push('megamarket');
+  if (/samokat|самокат/i.test(lower)) detected.push('samokat');
   const uniqueDetected = [...new Set(detected)];
   if (uniqueDetected.length > 1) return 'all';
   if (uniqueDetected.length === 1) return uniqueDetected[0];
@@ -512,6 +523,8 @@ function skuPlanFactNormalizePlatform(value = '') {
   if (['ga', 'goldapple', 'зя', 'золотоеяблоко'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
   if (['mm', 'magnit', 'magnitmarket', 'магнитмаркет'].includes(raw)) return 'magnit';
+  if (['megamarket', 'mega_market', 'mega', 'мегамаркет'].includes(raw)) return 'megamarket';
+  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   return raw;
 }
 
@@ -3631,6 +3644,40 @@ function skuContourIssueKey(platform = '', apiSku = '') {
   return skuPlanFactIgnoreKey(platform || 'all', apiSku || '');
 }
 
+function skuContourOutOfScopeText(...values) {
+  return values
+    .map((value) => String(value || '').trim().toLowerCase())
+    .filter(Boolean)
+    .some((value) => /qeep|zarli|harly|harley|харли/.test(value));
+}
+
+function skuContourRegistryTokenSet() {
+  const set = new Set();
+  (state.skus || []).forEach((sku) => {
+    [
+      sku?.articleKey,
+      sku?.article,
+      sku?.sku,
+      sku?.vendorCode,
+      ...(Array.isArray(sku?.aliases) ? sku.aliases.map((item) => typeof item === 'string' ? item : (item?.value || item?.alias || '')) : [])
+    ].forEach((value) => {
+      const token = skuPlanFactToken(value || '');
+      if (token) set.add(token);
+    });
+  });
+  return set;
+}
+
+function skuContourAuditRowInScope(row = {}, registryTokens = null) {
+  if (skuContourOutOfScopeText(row.apiSku, row.targetSku, row.fileName)) return false;
+  const tokens = registryTokens || skuContourRegistryTokenSet();
+  const targetToken = skuPlanFactToken(row.targetSku || '');
+  const apiToken = skuPlanFactToken(row.apiSku || '');
+  if (targetToken && tokens.has(targetToken)) return true;
+  if (apiToken && tokens.has(apiToken)) return true;
+  return row.kind === 'ignore' && !targetToken;
+}
+
 function skuContourPlatformKeys(rawPlatform = '') {
   const raw = String(rawPlatform || '').split(',').map((part) => part.trim()).filter(Boolean);
   const keys = raw.map((item) => skuPlanFactNormalizePlatform(item)).filter(Boolean);
@@ -3661,6 +3708,7 @@ function skuContourIssueRows(model = {}) {
   return combined
     .map((issue) => {
       const apiSku = issue.articleKey || issue.api_sku || issue.apiSku || '';
+      if (skuContourOutOfScopeText(apiSku, issue.name, issue.action, issue.type)) return null;
       const keys = skuContourKnownKeysFromIssue(issue);
       const type = String(issue.type || '').toLowerCase();
       let status = 'new';
@@ -3685,6 +3733,7 @@ function skuContourIssueRows(model = {}) {
       };
     })
     .filter((row) => {
+      if (!row) return false;
       if (!row.apiSku && !row.type) return false;
       if (seen.has(row.key)) return false;
       seen.add(row.key);
@@ -3860,6 +3909,7 @@ function skuContourAuditForRow(row = {}, auditIndex = null) {
 
 function skuContourAuditJournalRows(limit = 24) {
   const rows = [];
+  const registryTokens = skuContourRegistryTokenSet();
   skuPlanFactAuditEvents(state.skuAliasAudit || {}).forEach((event) => {
     (event.aliasKeys || []).forEach((rawKey) => {
       const parts = String(rawKey || '').split('|');
@@ -3886,7 +3936,9 @@ function skuContourAuditJournalRows(limit = 24) {
       });
     });
   });
-  return rows.slice(0, limit);
+  return rows
+    .filter((row) => skuContourAuditRowInScope(row, registryTokens))
+    .slice(0, limit);
 }
 
 function skuContourDownloadPayload() {

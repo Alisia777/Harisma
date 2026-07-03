@@ -2612,8 +2612,12 @@ function canonicalOwnerName(value = '') {
 }
 
 function normalizeOwnerPlatformKey(platform = '') {
-  const normalized = String(platform || '').trim().toLowerCase();
+  const normalized = String(platform || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
   if (normalized === 'ya' || normalized === 'yandex' || normalized === 'yandex_market' || normalized === 'market') return 'ym';
+  if (normalized === 'ga' || normalized === 'goldapple' || normalized === 'gold_apple' || normalized === 'goldenapple' || normalized === 'golden_apple' || normalized === 'зя') return 'ga';
+  if (normalized === 'mm' || normalized === 'magnit' || normalized === 'magnit_market' || normalized === 'магнит') return 'mm';
+  if (normalized === 'mega' || normalized === 'megamarket' || normalized === 'mega_market' || normalized === 'мегамаркет') return 'megamarket';
+  if (normalized === 'letual' || normalized === 'лэтуаль' || normalized === 'летуаль') return 'letu';
   return normalized;
 }
 
@@ -2627,7 +2631,7 @@ function normalizeOwnerOverridePlatformKey(platform = '') {
   if (raw === 'ozon' || raw === 'oz' || raw === 'озон') return 'ozon';
   if (raw === 'ym' || raw === 'ya' || raw === 'yandex' || raw === 'yandex_market' || raw === 'market' || raw === 'ям' || raw === 'яндекс') return 'ym';
   if (raw === 'letu' || raw === 'letual' || raw === 'лэтуаль' || raw === 'летуаль') return 'letu';
-  if (raw === 'ga' || raw === 'goldenapple' || raw === 'зя' || raw === 'зя') return 'ga';
+  if (raw === 'ga' || raw === 'goldapple' || raw === 'goldenapple' || raw === 'gold_apple' || raw === 'golden_apple' || raw === 'зя' || raw === 'зя') return 'ga';
   if (raw === 'megamarket' || raw === 'mega_market' || raw === 'мегамаркет') return 'megamarket';
   if (raw === 'samokat' || raw === 'самокат') return 'samokat';
   if (raw === 'mm' || raw === 'magnit' || raw === 'магнит') return 'mm';
@@ -2684,19 +2688,27 @@ function composeOwnerOverrideNote(noteValue = '', ownerByPlatform = {}) {
 function platformOwnerName(sku, platform = '') {
   const key = normalizeOwnerPlatformKey(platform);
   if (!sku || !key) return '';
+  const lookupKeys = {
+    ym: ['ym', 'ya'],
+    ga: ['ga', 'goldapple', 'gold_apple', 'goldenapple', 'golden_apple'],
+    mm: ['mm', 'magnit', 'magnit_market'],
+    megamarket: ['megamarket', 'mega_market', 'mega'],
+    letu: ['letu', 'letual'],
+    samokat: ['samokat']
+  }[key] || [key];
 
   const sources = [
+    sku?.ownerByPlatform,
     sku?.owner?.byPlatform,
     sku?.ownersByPlatform
   ];
 
   for (const source of sources) {
     if (!source || typeof source !== 'object') continue;
-    const candidate = key === 'ym'
-      ? (source.ym || source.ya || '')
-      : source[key];
-    const normalized = canonicalOwnerName(candidate || '');
-    if (normalized) return normalized;
+    for (const ownerKey of lookupKeys) {
+      const normalized = canonicalOwnerName(source[ownerKey] || '');
+      if (normalized) return normalized;
+    }
   }
 
   return '';

@@ -2253,7 +2253,8 @@ function repricerOutOfScopeBrandLabel(value) {
   const compact = String(value || '').trim().toLowerCase().replace(/[\s._-]+/g, '');
   if (!compact) return '';
   if (compact.includes('qeep')) return 'QEEP';
-  if (compact.includes('harly') || compact.includes('harley') || compact.includes('харли')) return 'Harly';
+  if (compact.includes('zarli')) return 'Zarli';
+  if (compact.includes('harly') || compact.includes('harley') || compact.includes('харли')) return 'HArly';
   return '';
 }
 
@@ -2960,7 +2961,7 @@ function renderRepricerSide(title, side) {
     lifecycleBadge,
     badge(`действие: ${repricerTurnoverActionLabel(side.turnoverAction)}`, side.criticalGate === 'BLOCK' ? 'danger' : 'info'),
     side.autopriceAllowed ? badge('авторежим: включен', 'ok') : badge('авторежим: выключен', 'warn'),
-    side.economicFloorSource === 'snapshot_fallback' ? badge('себестоимость: нет', 'warn') : badge('себестоимость: есть', 'ok'),
+    side.economicFloorSource === 'snapshot_fallback' ? badge('fallback экономика', 'info') : badge('себестоимость: есть', 'ok'),
     side.launchHold ? badge('стоп до READY', 'warn') : '',
     side.hasOverride ? badge('ручное решение', 'warn') : ''
   ].filter(Boolean).join('');
@@ -3335,7 +3336,7 @@ function repricerPrimaryStopReason(side) {
   if (numberOrZero(side.currentPrice) <= 0) return 'нет цены';
   if (numberOrZero(side.effectiveFloor) <= 0) return 'нет MIN';
   if (repricerBelowMinNeedsManual(side)) return 'ниже MIN';
-  if (!side.rawCostPresent && side.economicFloorSource === 'snapshot_fallback') return 'нет себестоимости';
+  if (!side.rawCostPresent && side.economicFloorSource === 'snapshot_fallback') return 'fallback экономика';
   if (side.marginRisk) return 'риск маржи';
   if (side.launchHold === 'LAUNCH_HOLD') return 'не READY';
   if (side.arrivalPriceSignal?.needsCheck) return 'пришёл → цена';
@@ -3348,11 +3349,14 @@ function repricerPrimaryStopReason(side) {
 }
 
 function repricerIssueFlags(side) {
-  const reasonCode = String(side?.reasonCode || '');
+  const reasonCode = String(side?.reasonCode || '').toUpperCase();
+  const deferredPricingReasons = new Set(['LAUNCH_HOLD', 'OFF', 'OOS', 'NO_STOCK']);
+  const deferredPricing = deferredPricingReasons.has(reasonCode);
   return {
-    missingMin: numberOrZero(side?.effectiveFloor) <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(reasonCode),
-    missingCost: numberOrZero(side?.costRub) <= 0 && (!side?.pricingProxyPresent || side?.economicFloorSource === 'snapshot_fallback'),
-    missingPrice: numberOrZero(side?.currentPrice) <= 0 && !['LAUNCH_HOLD', 'OOS', 'OFF'].includes(reasonCode),
+    missingMin: numberOrZero(side?.effectiveFloor) <= 0 && !deferredPricing,
+    missingCost: numberOrZero(side?.costRub) <= 0 && !side?.pricingProxyPresent && !deferredPricing,
+    fallbackEconomy: !side?.rawCostPresent && side?.economicFloorSource === 'snapshot_fallback' && Boolean(side?.pricingProxyPresent),
+    missingPrice: numberOrZero(side?.currentPrice) <= 0 && !deferredPricing,
     belowMin: repricerBelowMinNeedsManual(side),
     liveDrift: Boolean(side?.liveDrift),
     marginRisk: Boolean(side?.marginRisk),
@@ -3578,7 +3582,6 @@ function repricerHealthcheck(rows, platform = 'all') {
   if (metrics.missing_cost_actionable > 0) issues.push(`нет себестоимости без защитного proxy: ${fmt.int(metrics.missing_cost_actionable)}`);
   if (metrics.missing_effective_floor_actionable > 0) issues.push(`нет effective floor в активном контуре: ${fmt.int(metrics.missing_effective_floor_actionable)}`);
   if (metrics.missing_status > 0) issues.push(`не задан статус товара: ${fmt.int(metrics.missing_status)}`);
-  if (metrics.fallback_rows > 0) issues.push(`economic fallback rows: ${fmt.int(metrics.fallback_rows)}`);
   if (metrics.smoke_passed < metrics.smoke_total) issues.push(`smoke tests: ${fmt.int(metrics.smoke_passed)}/${fmt.int(metrics.smoke_total)}`);
   return {
     metrics,
@@ -3729,9 +3732,8 @@ function repricerGameReadinessModel(health = {}, templateStats = {}, context = {
     + numberOrZero(metrics.missing_effective_floor_actionable);
   const softStops = yellow
     + numberOrZero(context.belowMinSides)
-    + numberOrZero(metrics.missing_cost_actionable || metrics.missing_cost)
-    + numberOrZero(context.liveDriftSides)
-    + numberOrZero(context.fallbackSides);
+    + numberOrZero(metrics.missing_cost_actionable)
+    + numberOrZero(context.liveDriftSides);
   const completion = active > 0 ? (green + yellow) / active : null;
   const tone = safe > 0 || hardStops <= 0 ? 'ok' : 'danger';
   const title = safe > 0
@@ -6619,7 +6621,7 @@ function renderRepricer() {
         <option value="ready" ${state.repricerFilters.economicSource === 'ready' ? 'selected' : ''}>Экономика подтверждена</option>
         <option value="fee_stack" ${state.repricerFilters.economicSource === 'fee_stack' ? 'selected' : ''}>Себестоимость + комиссии</option>
         <option value="snapshot_guard" ${state.repricerFilters.economicSource === 'snapshot_guard' ? 'selected' : ''}>Себестоимость есть, но с guard</option>
-        <option value="snapshot_fallback" ${state.repricerFilters.economicSource === 'snapshot_fallback' ? 'selected' : ''}>Без себестоимости (fallback)</option>
+        <option value="snapshot_fallback" ${state.repricerFilters.economicSource === 'snapshot_fallback' ? 'selected' : ''}>Fallback экономика</option>
       </select>
       <select id="repricerListSizeFilter">
         <option value="focus" ${listSize === 'focus' ? 'selected' : ''}>Первые 20 SKU</option>

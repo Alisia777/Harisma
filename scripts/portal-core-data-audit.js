@@ -254,7 +254,10 @@ function normalizePlatformKey(value = '') {
   if (['wb', 'wildberries'].includes(raw)) return 'wb';
   if (['ozon', 'oz'].includes(raw)) return 'ozon';
   if (['ga', 'goldapple', 'gold_apple', 'gold-apple'].includes(raw)) return 'goldapple';
-  if (['mm', 'megamarket', 'mega_market', 'mega-market'].includes(raw)) return 'megamarket';
+  if (['letu', 'letual'].includes(raw)) return 'letu';
+  if (['mm', 'magnit', 'magnit_market', 'magnit-market'].includes(raw)) return 'magnit';
+  if (['megamarket', 'mega_market', 'mega-market'].includes(raw)) return 'megamarket';
+  if (['samokat'].includes(raw)) return 'samokat';
   if (['ym', 'ya', 'yandex', 'yandex market', 'яндекс', 'я.маркет', 'я маркет'].includes(raw)) return 'ym';
   return raw;
 }
@@ -272,17 +275,46 @@ function buildSkuLookup(skus = []) {
 function expectedOwnerForPlatform(sku = {}, platform = '') {
   const key = normalizePlatformKey(platform);
   const byPlatform = {
+    ...(sku?.ownerByPlatform || {}),
     ...(sku?.owner?.byPlatform || {}),
     ...(sku?.ownersByPlatform || {})
   };
-  const platformOwner = key === 'ym'
-    ? (byPlatform.ym || byPlatform.ya || '')
-    : key === 'goldapple'
-      ? (byPlatform.goldapple || byPlatform.ga || '')
-      : key === 'megamarket'
-        ? (byPlatform.megamarket || byPlatform.mm || '')
-        : (byPlatform[key] || '');
+  const ownerKeys = {
+    ym: ['ym', 'ya'],
+    goldapple: ['goldapple', 'ga'],
+    magnit: ['magnit', 'mm'],
+    megamarket: ['megamarket'],
+    letu: ['letu'],
+    samokat: ['samokat']
+  }[key] || [key];
+  let platformOwner = '';
+  for (const ownerKey of ownerKeys) {
+    platformOwner = byPlatform[ownerKey] || '';
+    if (platformOwner) break;
+  }
   return String(platformOwner || sku?.owner?.name || '').trim();
+}
+
+function explicitOwnerForPlatform(sku = {}, platform = '') {
+  const key = normalizePlatformKey(platform);
+  const byPlatform = {
+    ...(sku?.ownerByPlatform || {}),
+    ...(sku?.owner?.byPlatform || {}),
+    ...(sku?.ownersByPlatform || {})
+  };
+  const ownerKeys = {
+    ym: ['ym', 'ya'],
+    goldapple: ['goldapple', 'ga'],
+    magnit: ['magnit', 'mm'],
+    megamarket: ['megamarket'],
+    letu: ['letu'],
+    samokat: ['samokat']
+  }[key] || [key];
+  for (const ownerKey of ownerKeys) {
+    const owner = String(byPlatform[ownerKey] || '').trim();
+    if (owner) return owner;
+  }
+  return '';
 }
 
 function ownerMismatch(row = {}, skuLookup = new Map()) {
@@ -406,10 +438,14 @@ function auditOwnerDataset(label, rows, skuLookup, issues, options = {}) {
 }
 
 function auditExecutiveOwnerBindings(skus = [], issues) {
+  const executivePlatforms = ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit', 'megamarket', 'samokat'];
   const activeSkus = (Array.isArray(skus) ? skus : []).filter((sku) => rowIsOwnerAuditable(sku));
   let ownerCardSkuRows = 0;
+  let platformOwnerRows = 0;
   let missingOwnerRows = 0;
   const ownerBuckets = new Map();
+  const platformOwnerBuckets = new Map();
+  const ownersByPlatform = {};
   const missingExamples = [];
   activeSkus.forEach((sku) => {
     const planFact = sku.planFact && typeof sku.planFact === 'object' ? sku.planFact : {};
@@ -427,13 +463,35 @@ function auditExecutiveOwnerBindings(skus = [], issues) {
     }
     const canonical = canonicalOwnerName(owner);
     ownerBuckets.set(canonical, (ownerBuckets.get(canonical) || 0) + 1);
+    executivePlatforms.forEach((platform) => {
+      const platformOwner = explicitOwnerForPlatform(sku, platform);
+      if (!platformOwner) return;
+      const platformCanonical = canonicalOwnerName(platformOwner);
+      if (!platformCanonical) return;
+      platformOwnerRows += 1;
+      platformOwnerBuckets.set(platformCanonical, (platformOwnerBuckets.get(platformCanonical) || 0) + 1);
+      ownersByPlatform[platform] = ownersByPlatform[platform] || {};
+      ownersByPlatform[platform][platformCanonical] = (ownersByPlatform[platform][platformCanonical] || 0) + 1;
+    });
   });
   if (missingOwnerRows) pushIssue(issues, 'critical', 'executive_owner_card_missing_binding', { count: missingOwnerRows, examples: missingExamples });
+  const networkOwnerCount = ['goldapple', 'letu', 'magnit', 'megamarket', 'samokat']
+    .reduce((sum, platform) => sum + Object.keys(ownersByPlatform[platform] || {}).length, 0);
+  if (platformOwnerRows > 0 && networkOwnerCount <= 0) {
+    pushIssue(issues, 'critical', 'executive_network_owner_bindings_missing', {
+      count: platformOwnerRows,
+      platforms: ['goldapple', 'letu', 'magnit', 'megamarket', 'samokat']
+    });
+  }
   return {
     ownerCardSkuRows,
+    platformOwnerRows,
     missingOwnerRows,
     ownerCards: ownerBuckets.size,
-    topOwners: [...ownerBuckets.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([owner, count]) => ({ owner, count }))
+    platformOwnerCards: platformOwnerBuckets.size,
+    topOwners: [...ownerBuckets.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([owner, count]) => ({ owner, count })),
+    topPlatformOwners: [...platformOwnerBuckets.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([owner, count]) => ({ owner, count })),
+    ownersByPlatform
   };
 }
 
@@ -668,6 +726,20 @@ function auditIuDrr(iuDrr = {}, issues) {
   return { generatedAt: iuDrr.generatedAt || '', kpis: Object.keys(kpis).length, dailyRows, monthRows, channelRows, logicErrors: logicErrors.length };
 }
 
+function auditOutOfScopeBrands(layers = {}, issues) {
+  const pattern = /qeep|zarli|harly|harley/i;
+  const matches = [];
+  Object.entries(layers || {}).forEach(([label, payload]) => {
+    const text = JSON.stringify(payload || {});
+    const count = (text.match(new RegExp(pattern, 'gi')) || []).length;
+    if (count > 0) matches.push({ layer: label, count });
+  });
+  if (matches.length) {
+    pushIssue(issues, 'critical', 'out_of_scope_brand_in_core_layers', { matches });
+  }
+  return { matches };
+}
+
 function main() {
   const args = parseArgs(process.argv);
   const dataDir = path.resolve(args.dataDir || 'data');
@@ -730,6 +802,14 @@ function main() {
     priceSupport
   }, issues);
   const repricerAudit = auditRepricer(repricer, issues);
+  const outOfScopeAudit = auditOutOfScopeBrands({
+    skus,
+    skuMatrix: matrix,
+    prices,
+    smartPriceWorkbench,
+    priceSupport,
+    repricer
+  }, issues);
   const iuDrrAudit = auditIuDrr(iuDrr, issues);
   const oosAudit = auditOosControl(oos, issues, Array.isArray(skus) ? skus : []);
   const orderAudit = auditOrderProcurement(order, issues, Array.isArray(skus) ? skus : []);
@@ -755,6 +835,7 @@ function main() {
       skuAudit,
       priceAudit,
       ownerPropagation: ownerPropagationAudit,
+      outOfScopeBrands: outOfScopeAudit,
       repricerAudit,
       portalDataQuality: {
         status: quality.status || '',

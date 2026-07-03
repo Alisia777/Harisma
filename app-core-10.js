@@ -1,8 +1,17 @@
-const EXECUTIVE_MARKETPLACE_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+const EXECUTIVE_MARKETPLACE_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'megamarket', 'samokat'];
 const EXECUTIVE_SUPPORT_KEYS = ['cross', 'product'];
 const EXECUTIVE_WORKSTREAM_KEYS = [...EXECUTIVE_MARKETPLACE_KEYS, ...EXECUTIVE_SUPPORT_KEYS];
-const EXECUTIVE_FUNNEL_PLATFORMS = ['wb', 'ozon', 'ya'];
-const EXECUTIVE_FUNNEL_SUPPORT_KEYS = { wb: 'wb', ozon: 'ozon', ya: 'ym' };
+const EXECUTIVE_FUNNEL_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'megamarket', 'samokat'];
+const EXECUTIVE_FUNNEL_SUPPORT_KEYS = {
+  wb: 'wb',
+  ozon: 'ozon',
+  ya: 'ym',
+  goldapple: 'ga',
+  letu: 'letu',
+  magnit: 'mm',
+  megamarket: 'megamarket',
+  samokat: 'samokat'
+};
 const EXECUTIVE_FUNNEL_DEFAULT_FILTERS = {
   platform: 'all',
   status: 'all',
@@ -46,17 +55,36 @@ function executiveFunnelScoreTone(score = 0) {
 function executiveFunnelPlatformLabel(platform = '') {
   return typeof skuPlanFactPlatformLabel === 'function'
     ? skuPlanFactPlatformLabel(platform)
-    : ({ wb: 'WB', ozon: 'Ozon', ya: 'Я.Маркет' }[platform] || platform);
+    : ({ wb: 'WB', ozon: 'Ozon', ya: 'Я.Маркет', goldapple: 'ЗЯ', letu: 'Лэтуаль', magnit: 'Магнит Маркет', megamarket: 'МегаМаркет', samokat: 'Самокат' }[platform] || platform);
+}
+
+function executiveFunnelOwnerLookupKeys(platform = '') {
+  const key = String(platform || '').toLowerCase();
+  const supportKey = EXECUTIVE_FUNNEL_SUPPORT_KEYS[key] || key;
+  const extra = {
+    ya: ['ym', 'ya'],
+    ym: ['ym', 'ya'],
+    goldapple: ['goldapple', 'ga'],
+    ga: ['ga', 'goldapple'],
+    magnit: ['magnit', 'mm'],
+    mm: ['mm', 'magnit']
+  }[key] || [];
+  return [...new Set([key, supportKey, ...extra].filter(Boolean))];
 }
 
 function executiveFunnelOwner(row = {}, platform = '') {
   const sku = row.sku || row || {};
-  const supportKey = EXECUTIVE_FUNNEL_SUPPORT_KEYS[platform] || platform;
-  const raw = sku?.ownersByPlatform?.[supportKey]
-    || sku?.owner?.byPlatform?.[supportKey]
-    || row.owner
-    || sku?.owner?.name
-    || '';
+  const sources = [sku?.ownerByPlatform, sku?.ownersByPlatform, sku?.owner?.byPlatform];
+  let raw = '';
+  for (const source of sources) {
+    if (!source || typeof source !== 'object') continue;
+    for (const key of executiveFunnelOwnerLookupKeys(platform)) {
+      raw = source[key] || '';
+      if (raw) break;
+    }
+    if (raw) break;
+  }
+  raw = raw || row.owner || sku?.owner?.name || '';
   const owner = typeof canonicalOwnerName === 'function' ? canonicalOwnerName(raw) : String(raw || '').trim();
   return owner || 'Без owner';
 }
@@ -68,15 +96,13 @@ function executiveFunnelCanonicalOwner(owner = '') {
 }
 
 function executiveFunnelExplicitOwnerForSku(sku = {}, platform = '') {
-  const supportKey = EXECUTIVE_FUNNEL_SUPPORT_KEYS[platform] || platform;
-  const sources = [sku?.ownersByPlatform, sku?.owner?.byPlatform];
+  const sources = [sku?.ownerByPlatform, sku?.ownersByPlatform, sku?.owner?.byPlatform];
   for (const source of sources) {
     if (!source || typeof source !== 'object') continue;
-    const candidate = supportKey === 'ym'
-      ? (source.ym || source.ya || '')
-      : source[supportKey];
-    const owner = executiveFunnelCanonicalOwner(candidate || '');
-    if (owner) return owner;
+    for (const key of executiveFunnelOwnerLookupKeys(platform)) {
+      const owner = executiveFunnelCanonicalOwner(source[key] || '');
+      if (owner) return owner;
+    }
   }
   return '';
 }
@@ -356,6 +382,66 @@ function executiveFunnelAddPlanMetric(target, metric = {}, platform = '', row = 
   if (articleKey && target.skuKeys) target.skuKeys.add(`${platform}:${articleKey}`);
 }
 
+function executiveFunnelAssignmentArticleKey(row = {}) {
+  const sku = row.sku || {};
+  const candidates = [
+    row.articleKey,
+    row.article,
+    row.nmId,
+    row.skuId,
+    sku.articleKey,
+    sku.article,
+    sku.nmId,
+    sku.sku,
+    sku.id
+  ];
+  for (const value of candidates) {
+    const key = String(value || '').trim();
+    if (key) return key;
+  }
+  return '';
+}
+
+function executiveFunnelAssignmentRowEligible(row = {}) {
+  if (row?.syntheticUnmapped || row?.syntheticUnallocated) return false;
+  if (typeof skuPlanFactKpiEligible === 'function') return skuPlanFactKpiEligible(row);
+  return true;
+}
+
+function executiveFunnelSeedOwnerAssignment(ownerMap, platformTotals, row = {}, platform = '') {
+  if (!executiveFunnelAssignmentRowEligible(row)) return false;
+  const metric = row.platforms?.[platform] || row[platform] || null;
+  if (executiveFunnelPlanMetricActive(metric)) return false;
+  const sku = row.sku || row || {};
+  const owner = executiveFunnelExplicitOwnerForSku(sku, platform);
+  if (!owner) return false;
+  if (executiveFunnelOwnerIsNoise(owner, row) || !executiveFunnelOwnerAllowedForPlatform(owner, platform)) return false;
+  const articleKey = executiveFunnelAssignmentArticleKey(row);
+  if (!articleKey) return false;
+  const skuKey = `${platform}:${articleKey}`;
+  const ownerBucket = executiveFunnelEnsureOwnerPlan(ownerMap, owner);
+  const ownerPlatform = executiveFunnelEnsureOwnerPlatform(ownerBucket, platform);
+  ownerBucket.skuKeys.add(skuKey);
+  ownerPlatform.skuKeys.add(skuKey);
+  ownerBucket.assignmentOnly = true;
+  ownerPlatform.assignmentOnly = true;
+  if (platformTotals?.has(platform)) {
+    const platformBucket = platformTotals.get(platform);
+    platformBucket.skuKeys.add(skuKey);
+    platformBucket.assignmentOnly = true;
+  }
+  return true;
+}
+
+function executiveFunnelSeedOwnerAssignments(ownerMap, platformTotals, sourceRows = [], selectedPlatform = 'all') {
+  sourceRows.forEach((row) => {
+    EXECUTIVE_FUNNEL_PLATFORMS.forEach((platform) => {
+      if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
+      executiveFunnelSeedOwnerAssignment(ownerMap, platformTotals, row, platform);
+    });
+  });
+}
+
 function executiveFunnelFinalizePlanBucket(row) {
   row.articleCount = row.skuKeys?.size || 0;
   row.completionToDate = row.planToDateRevenue > 0 ? row.factRevenue / row.planToDateRevenue : null;
@@ -377,7 +463,8 @@ function executiveFunnelPlanBucketHasSignal(row = {}) {
     || executiveFunnelNumber(row.planRevenue) > 0
     || executiveFunnelNumber(row.adSpend) > 0
     || planAdSpend > 0
-    || executiveFunnelNumber(row.externalExcludedSpend) > 0;
+    || executiveFunnelNumber(row.externalExcludedSpend) > 0
+    || row.assignmentOnly === true;
 }
 
 function executiveFunnelSortRows(rows = [], sort = 'completionAsc') {
@@ -684,6 +771,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
       executiveFunnelAddPlanMetric(ownerPlatform, metric, platform, row);
     });
   });
+  executiveFunnelSeedOwnerAssignments(ownerMap, platformTotals, sourceRows, selectedPlatform);
 
   (state.adsSummary?.itemSeries || []).forEach((item) => {
     if (!executiveFunnelIsExternalAd(item)) return;
@@ -722,7 +810,14 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
       return finalized;
     })
     .filter((row) => selectedPlatform === 'all' || row.platform === selectedPlatform)
-    .filter((row) => row.factRevenue > 0 || row.planToDateRevenue > 0 || row.adSpend > 0 || row.hasPlanAdSpend);
+    .filter((row) => (
+      row.factRevenue > 0
+      || row.planToDateRevenue > 0
+      || row.adSpend > 0
+      || row.hasPlanAdSpend
+      || row.articleCount > 0
+      || row.assignmentOnly === true
+    ));
 
   executiveFunnelApplyPayrollPlatformRows(platformRows, planModel, selectedPlatform);
 
@@ -1586,9 +1681,7 @@ function renderExecutiveOwnerFilters(model = {}) {
   const filters = model.filters || EXECUTIVE_FUNNEL_DEFAULT_FILTERS;
   const platformButtons = [
     ['all', 'Все'],
-    ['wb', 'WB'],
-    ['ozon', 'Ozon'],
-    ['ya', 'Яндекс']
+    ...EXECUTIVE_FUNNEL_PLATFORMS.map((platform) => [platform, executiveFunnelPlatformLabel(platform)])
   ].map(([value, label]) => renderExecutiveOwnerFilterButton('platform', value, label, filters.platform === value)).join('');
   const statusButtons = [
     ['all', 'Все'],

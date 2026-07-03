@@ -799,9 +799,96 @@
     return completion !== null && completion < 1 ? 'under' : 'ok';
   }
 
-  function executiveOwnerDetailNormalizeItem(item) {
+  function executiveOwnerDetailRatio(value) {
+    var num = numberOrNull(value);
+    if (num === null) return null;
+    return Math.abs(num) > 2 ? num / 100 : num;
+  }
+
+  function executiveOwnerDetailMarginSources(primary, fallback) {
+    var sources = [];
+    if (primary) sources.push(primary);
+    if (fallback && fallback !== primary) sources.push(fallback);
+    return sources;
+  }
+
+  function executiveOwnerDetailHasMarginRubSignal(source) {
+    if (!source) return false;
+    var marginRub = numberOrNull(source.marginRub);
+    if (marginRub === null) return false;
+    if (marginRub !== 0) return true;
+    return finite(source.marginWeight) > 0
+      || finite(source.factWeightRevenue) > 0
+      || executiveOwnerDetailRatio(source.factMarginPct) !== null
+      || String(source.marginSource || '') === 'fact-margin';
+  }
+
+  function executiveOwnerDetailMarginPct(source, factRevenue, planToDateRevenue, fallbackSource) {
+    var sources = executiveOwnerDetailMarginSources(source, fallbackSource);
+
+    for (var directIndex = 0; directIndex < sources.length; directIndex += 1) {
+      var directSource = sources[directIndex] || {};
+      var direct = executiveOwnerDetailRatio(directSource.marginPct);
+      if (direct !== null) return direct;
+      var factMargin = executiveOwnerDetailRatio(directSource.factMarginPct || directSource.marginTotalPct || directSource.estimatedMarginPct);
+      if (factMargin !== null) return factMargin;
+    }
+
+    var fact = finite(factRevenue);
+    for (var rubIndex = 0; rubIndex < sources.length; rubIndex += 1) {
+      var rubSource = sources[rubIndex] || {};
+      var marginRub = numberOrNull(rubSource.marginRub);
+      if (marginRub !== null && fact > 0 && executiveOwnerDetailHasMarginRubSignal(rubSource)) return marginRub / fact;
+    }
+
+    for (var planIndex = 0; planIndex < sources.length; planIndex += 1) {
+      var planSource = sources[planIndex] || {};
+      var planMargin = executiveOwnerDetailRatio(planSource.planMarginPct);
+      if (planMargin !== null) return planMargin;
+    }
+
+    var planToDate = finite(planToDateRevenue);
+    for (var planRubIndex = 0; planRubIndex < sources.length; planRubIndex += 1) {
+      var planRubSource = sources[planRubIndex] || {};
+      var planMarginRub = numberOrNull(planRubSource.planMarginRub);
+      var planRubRatio = planMarginRub !== null && planToDate > 0 ? planMarginRub / planToDate : null;
+      if (planRubRatio !== null && Math.abs(planRubRatio) <= 2) return planRubRatio;
+    }
+
+    for (var planValueIndex = 0; planValueIndex < sources.length; planValueIndex += 1) {
+      var planValueSource = sources[planValueIndex] || {};
+      var planMarginValue = numberOrNull(planValueSource.planMarginValue);
+      var planMarginWeight = numberOrNull(planValueSource.planMarginWeight);
+      if (planMarginValue !== null && planMarginWeight !== null && planMarginWeight > 0) {
+        return planMarginValue / planMarginWeight;
+      }
+    }
+    return null;
+  }
+
+  function executiveOwnerDetailPlanMetricLookup(model) {
+    var lookup = new Map();
+    var planModel = executiveOwnerDetailPlanModel(model);
+    var sourceRows = Array.isArray(planModel && planModel.allRows)
+      ? planModel.allRows
+      : (Array.isArray(planModel && planModel.rows) ? planModel.rows : []);
+    sourceRows.forEach(function (row) {
+      var articleKey = executiveOwnerDetailRowArticleKey(row);
+      if (!articleKey) return;
+      var rowPlatforms = row && row.platforms && typeof row.platforms === 'object' ? Object.keys(row.platforms) : [];
+      var platformKeys = rowPlatforms.length ? rowPlatforms : executiveOwnerDetailPlatforms(model);
+      platformKeys.forEach(function (platform) {
+        var metric = executiveOwnerDetailMetric(row, platform);
+        if (metric) lookup.set(executiveOwnerDetailKey(platform, articleKey), metric);
+      });
+    });
+    return lookup;
+  }
+
+  function executiveOwnerDetailNormalizeItem(item, metricLookup) {
     var platform = internalPlatform(item && item.platform || '');
     var sku = executiveOwnerDetailRowArticleKey(item) || String(item && (item.sku || item.articleKey || item.article) || '').trim();
+    var metric = metricLookup && platform && sku ? metricLookup.get(executiveOwnerDetailKey(platform, sku)) : null;
     var planToDate = finite(item && item.planToDateRevenue);
     var fact = finite(item && item.factRevenue);
     var completion = numberOrNull(item && item.completionToDate);
@@ -814,7 +901,7 @@
       factRevenue: fact,
       completionToDate: completion,
       gapToDate: numberOrNull(item && item.gapToDate) !== null ? finite(item.gapToDate) : fact - planToDate,
-      marginPct: numberOrNull(item && item.marginPct),
+      marginPct: executiveOwnerDetailMarginPct(item, fact, planToDate, metric),
       adSpend: finite(item && item.adSpend),
       drr: numberOrNull(item && item.drr) !== null ? numberOrNull(item.drr) : (fact > 0 ? finite(item && item.adSpend) / fact : null),
       status: executiveOwnerDetailStatus(planToDate, fact, completion)
@@ -823,9 +910,10 @@
 
   function executiveOwnerDetailRowsFromOwnerItems(model, ownerRow) {
     var platformSet = executiveOwnerDetailPlatformSet(model);
+    var metricLookup = executiveOwnerDetailPlanMetricLookup(model);
     var seen = new Set();
     return executiveOwnerDetailItemSource(ownerRow)
-      .map(executiveOwnerDetailNormalizeItem)
+      .map(function (item) { return executiveOwnerDetailNormalizeItem(item, metricLookup); })
       .filter(function (row) {
         var platform = internalPlatform(row.platform || '');
         if (!platform || platform === 'all' || !platformSet.has(platform)) return false;
@@ -931,7 +1019,7 @@
           factRevenue: fact,
           completionToDate: completion,
           gapToDate: gap,
-          marginPct: numberOrNull(metric.marginPct),
+          marginPct: executiveOwnerDetailMarginPct(metric, fact, planToDate),
           adSpend: finite(metric.adSpend),
           drr: fact > 0 ? finite(metric.adSpend) / fact : null,
           status: status

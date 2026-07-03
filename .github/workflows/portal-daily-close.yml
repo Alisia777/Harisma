@@ -263,6 +263,7 @@ jobs:
           node scripts/build-canonical-repricer.js --input-dir data --output-dir data
           node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir data
           node scripts/build-portal-dashboard.js --input-dir data --output-dir data
+          node scripts/build-product-leaderboard-history.js
           node scripts/build-wb-sales-funnel-from-platform-trends.js --platform-trends data/platform_trends.json --skus data/skus.json --wb-feedbacks data/wb_feedbacks_summary.json --output-file data/wb_sales_funnel_report.json --to '${{ steps.cutoff.outputs.value }}'
           node scripts/portal-upload-apply-runtime.js --input-dir data --output-dir data
 
@@ -299,6 +300,7 @@ jobs:
             data/portal_plan_reconciliation.json
             data/portal_indicator_audit.json
             data/portal_repricing_reconciliation.json
+            data/product_leaderboard_history.json
             data/portal_upload_apply_e2e.json
             data/portal_minmax_upload_reconciliation.json
             data/portal_cost_upload_reconciliation.json

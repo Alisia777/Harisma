@@ -94,6 +94,7 @@ jobs:
           node scripts/audit-source-workbooks.js --manifest data/portal_source_registry.json --output-dir .portal-truth-output
           node scripts/build-canonical-repricer.js --input-dir data --output-dir .portal-truth-output
           node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir .portal-truth-output
+          node scripts/build-product-leaderboard-history.js
           node scripts/audit-repricer-dashboard-plan.js --input-dir .portal-truth-output --base-data-dir data --output-dir .portal-truth-output --relax-missing-platform-facts
           node scripts/portal-runtime-promote.js --input-dir .portal-truth-output --data-dir data --output-dir .portal-truth-output --no-data-write
       - name: Audit current portal snapshot

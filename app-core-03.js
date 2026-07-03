@@ -22,7 +22,15 @@ async function initTeamStore() {
     state.team.note = 'Подключаем командную базу…';
     updateSyncBadge();
 
-    if ((cfg.supabase.auth || 'anonymous') === 'anonymous') {
+    if ((cfg.supabase.auth || 'anonymous') !== 'anonymous') {
+      const session = window.alteaPortalAuthGate?.getSession?.() || window.__ALTEA_AUTH_SESSION__ || null;
+      state.team.accessToken = session?.access_token || '';
+      state.team.userId = session?.user?.id || '';
+      if (!state.team.accessToken) throw new Error('Supabase auth session is missing');
+      const email = String(session?.user?.email || '').trim();
+      if (email) state.team.member = { ...(state.team.member || {}), name: email };
+      state.team.client = createRestTeamClient();
+    } else if ((cfg.supabase.auth || 'anonymous') === 'anonymous') {
       const signIn = await signInTeamAnonymously();
       state.team.accessToken = signIn?.access_token || '';
       state.team.userId = signIn?.user?.id || '';
@@ -291,85 +299,8 @@ function taskAttachmentSetupHint() {
   return 'Supabase setup is incomplete. Create table public.portal_task_attachments and bucket portal-task-files.';
 }
 
-const TASK_ATTACHMENT_UPLOAD_TIMEOUT_MS = 120000;
-const TASK_ATTACHMENT_UPLOAD_ATTEMPTS = 3;
-const TASK_ATTACHMENT_PERSIST_TIMEOUT_MS = 120000;
-const TASK_ATTACHMENT_PERSIST_ATTEMPTS = 3;
-
-function taskAttachmentUploadErrorLabel() {
-  return '\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u044f';
-}
-
-function taskAttachmentPersistErrorLabel() {
-  return '\u0417\u0430\u043f\u0438\u0441\u044c \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u044f';
-}
-
-function isRetriableTaskAttachmentUpload(error) {
-  const status = Number(error?.status || 0);
-  const message = String(error?.message || error || '');
-  return status === 408
-    || status === 429
-    || status >= 500
-    || /timeout|timed out|abort|network|fetch|\u043f\u0440\u0435\u0432\u044b\u0441/i.test(message);
-}
-
-function taskAttachmentUploadDelay(attempt) {
-  return new Promise((resolve) => setTimeout(resolve, Math.max(800, attempt * 1500)));
-}
-
-async function fetchTaskAttachmentWithTimeout(url, options, timeoutMs, label) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, {
-      ...options,
-      signal: controller.signal
-    });
-  } catch (error) {
-    if (error?.name === 'AbortError') {
-      throw new Error(`${label} \u043f\u0440\u0435\u0432\u044b\u0441\u0438\u043b ${Math.round(timeoutMs / 1000)} \u0441\u0435\u043a.`);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-async function uploadTaskAttachmentObject(uploadUrl, cfg, file) {
-  const label = taskAttachmentUploadErrorLabel();
-  let lastError = null;
-  for (let attempt = 1; attempt <= TASK_ATTACHMENT_UPLOAD_ATTEMPTS; attempt += 1) {
-    try {
-      const response = await fetchTaskAttachmentWithTimeout(uploadUrl, {
-        method: 'POST',
-        headers: {
-          apikey: cfg.anonKey,
-          Authorization: `Bearer ${cfg.accessToken}`,
-          'Content-Type': file.type || 'application/octet-stream',
-          'x-upsert': 'false'
-        },
-        body: file
-      }, TASK_ATTACHMENT_UPLOAD_TIMEOUT_MS, label);
-
-      if (response.ok) return response;
-
-      const body = await response.text();
-      if (isTaskAttachmentBucketMissingError(body)) {
-        throw new Error(taskAttachmentSetupHint());
-      }
-      const error = new Error(`${label}: ${body || response.status || 'request failed'}`);
-      error.status = response.status;
-      error.body = body;
-      throw error;
-    } catch (error) {
-      lastError = error;
-      if (attempt >= TASK_ATTACHMENT_UPLOAD_ATTEMPTS || !isRetriableTaskAttachmentUpload(error)) {
-        throw error;
-      }
-      await taskAttachmentUploadDelay(attempt);
-    }
-  }
-  throw lastError || new Error(`${label}: request failed`);
+function taskAttachmentDeferredSyncMessage() {
+  return '\u0424\u0430\u0439\u043b \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d, \u043d\u043e \u0431\u0430\u0437\u0430 \u043d\u0435 \u0443\u0441\u043f\u0435\u043b\u0430 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c \u0437\u0430\u043f\u0438\u0441\u044c. \u041e\u043d \u043e\u0441\u0442\u0430\u043b\u0441\u044f \u0432 \u044d\u0442\u043e\u0439 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0435; \u0441\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437\u0430\u0446\u0438\u044f \u0434\u043e\u0433\u043e\u043d\u0438\u0442\u0441\u044f \u043f\u0440\u0438 \u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0435\u0439 \u043e\u0442\u043f\u0440\u0430\u0432\u043a\u0435.';
 }
 
 const REPRICER_CONTROLS_SNAPSHOT_KEY = 'repricer_controls';
@@ -684,10 +615,13 @@ function teamRestConfig() {
   const cfg = currentConfig();
   if (!cfg.supabase?.url || !cfg.supabase?.anonKey || typeof fetch !== 'function') return null;
   const baseUrl = String(cfg.supabase.url || '').replace(/\/+$/, '');
+  const passwordAuth = String(cfg.supabase?.auth || '').trim().toLowerCase() !== 'anonymous';
+  const authToken = window.alteaPortalAuthGate?.getSession?.()?.access_token || window.__ALTEA_AUTH_SESSION__?.access_token || '';
+  const accessToken = state.team.accessToken || authToken || (passwordAuth ? '' : cfg.supabase.anonKey);
   return {
     baseUrl,
     anonKey: cfg.supabase.anonKey,
-    accessToken: state.team.accessToken || '',
+    accessToken,
     brand: currentBrand()
   };
 }
@@ -695,9 +629,52 @@ function teamRestConfig() {
 async function readSupabaseJson(response, label) {
   const bodyText = await response.text();
   if (!response.ok) {
-    throw new Error(`${label}: ${bodyText || response.status || 'request failed'}`);
+    const error = new Error(`${label}: ${bodyText || response.status || 'request failed'}`);
+    error.status = response.status;
+    error.body = bodyText;
+    try {
+      const bodyJson = bodyText ? JSON.parse(bodyText) : null;
+      if (bodyJson && typeof bodyJson === 'object') {
+        error.code = bodyJson.code || '';
+        error.statusCode = bodyJson.statusCode || response.status;
+        error.supabaseError = bodyJson;
+      }
+    } catch (_) {}
+    throw error;
   }
   return bodyText ? JSON.parse(bodyText) : [];
+}
+
+function waitMs(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isTransientSupabaseError(error) {
+  const message = String(error?.message || error || '');
+  const body = String(error?.body || '');
+  const code = String(error?.code || error?.supabaseError?.code || '');
+  const status = Number(error?.status || error?.statusCode || error?.supabaseError?.statusCode || 0);
+  return status === 544
+    || status === 502
+    || status === 503
+    || status === 504
+    || /DatabaseTimeout|timed out|timeout|statement timeout|connection.*timed out/i.test(`${message} ${body} ${code}`);
+}
+
+async function retryTransientSupabase(action, options = {}) {
+  const retries = Number.isFinite(options.retries) ? options.retries : 1;
+  const delayMs = Number.isFinite(options.delayMs) ? options.delayMs : 900;
+  let lastError = null;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await action(attempt);
+    } catch (error) {
+      lastError = error;
+      if (attempt >= retries || !isTransientSupabaseError(error)) throw error;
+      await waitMs(delayMs * (attempt + 1));
+    }
+  }
+  throw lastError;
 }
 
 async function signInTeamViaRest() {
@@ -719,6 +696,14 @@ async function signInTeamViaRest() {
 async function signInTeamAnonymously() {
   const cfg = currentConfig();
   const cacheKey = 'altea-team-anon-session-v1';
+  const fallbackAnonKeySession = (error) => {
+    if (error) console.warn('[team-store] anonymous auth fallback', error);
+    return {
+      access_token: cfg.supabase?.anonKey || '',
+      user: null,
+      anon_key_fallback: true
+    };
+  };
   const readCachedSession = () => {
     try {
       const cached = JSON.parse(window.sessionStorage?.getItem(cacheKey) || 'null');
@@ -744,26 +729,34 @@ async function signInTeamAnonymously() {
   const cached = readCachedSession();
   if (cached) return cached;
   if (window.supabase?.createClient) {
-    const client = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
-        storageKey: 'altea-team-store'
-      }
-    });
-    const response = await client.auth.signInAnonymously();
-    if (response?.error) throw response.error;
-    const payload = {
-      access_token: response?.data?.session?.access_token || '',
-      user: response?.data?.user || null
-    };
-    writeCachedSession(payload, Number(response?.data?.session?.expires_at || 0) * 1000);
-    return payload;
+    try {
+      const client = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false,
+          storageKey: 'altea-team-store'
+        }
+      });
+      const response = await client.auth.signInAnonymously();
+      if (response?.error) throw response.error;
+      const payload = {
+        access_token: response?.data?.session?.access_token || '',
+        user: response?.data?.user || null
+      };
+      writeCachedSession(payload, Number(response?.data?.session?.expires_at || 0) * 1000);
+      return payload;
+    } catch (error) {
+      return fallbackAnonKeySession(error);
+    }
   }
-  const payload = await signInTeamViaRest();
-  writeCachedSession(payload, Date.now() + Number(payload?.expires_in || 2700) * 1000);
-  return payload;
+  try {
+    const payload = await signInTeamViaRest();
+    writeCachedSession(payload, Date.now() + Number(payload?.expires_in || 2700) * 1000);
+    return payload;
+  } catch (error) {
+    return fallbackAnonKeySession(error);
+  }
 }
 
 function createRestTeamClient() {
@@ -803,7 +796,7 @@ function createRestTeamClient() {
       this.method = 'POST';
       this.body = rows;
       this.onConflict = options?.onConflict || '';
-      this.prefer = 'resolution=merge-duplicates,return=representation';
+      this.prefer = 'resolution=merge-duplicates,return=minimal';
       return this;
     },
     insert(rows) {
@@ -899,9 +892,8 @@ async function queryRemote(table) {
   if (!hasRemoteStore()) return [];
   const isTaskTable = table === TEAM_TABLES.tasks;
   const isAttachmentTable = table === TEAM_TABLES.attachments;
-  if (state.team.accessToken) {
-    const cfg = teamRestConfig();
-    if (!cfg) return [];
+  const cfg = teamRestConfig();
+  if (cfg?.accessToken) {
     const url = new URL(`${cfg.baseUrl}/rest/v1/${table}`);
     url.searchParams.set('brand', `eq.${cfg.brand}`);
     if (isTaskTable) {
@@ -944,9 +936,8 @@ async function purgeRemoteAutoTasks(rows = []) {
     .filter(Boolean))];
   if (!ids.length) return 0;
 
-  if (state.team.accessToken) {
-    const cfg = teamRestConfig();
-    if (!cfg) return 0;
+  const cfg = teamRestConfig();
+  if (cfg?.accessToken) {
     const url = new URL(`${cfg.baseUrl}/rest/v1/${TEAM_TABLES.tasks}`);
     url.searchParams.set('brand', `eq.${cfg.brand}`);
     url.searchParams.set('source', 'eq.auto');
@@ -980,106 +971,47 @@ async function purgeRemoteAutoTasks(rows = []) {
 
 async function upsertRemote(table, rows, onConflict) {
   if (!hasRemoteStore() || !rows.length) return;
-  if (state.team.accessToken) {
-    const cfg = teamRestConfig();
-    if (!cfg) return;
+  const label = `\u0421\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437\u0430\u0446\u0438\u044f ${table}`;
+  const cfg = teamRestConfig();
+  if (cfg?.accessToken) {
     const url = new URL(`${cfg.baseUrl}/rest/v1/${table}`);
     url.searchParams.set('on_conflict', onConflict);
-    const response = await withTimeout(fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        apikey: cfg.anonKey,
-        Authorization: `Bearer ${cfg.accessToken}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates,return=representation'
-      },
-      body: JSON.stringify(rows)
+    await retryTransientSupabase(async () => {
+      const response = await withTimeout(fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          apikey: cfg.anonKey,
+          Authorization: `Bearer ${cfg.accessToken}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=merge-duplicates,return=minimal'
+        },
+        body: JSON.stringify(rows)
     }), 8000, `Синхронизация ${table}`);
     await readSupabaseJson(response, `Синхронизация ${table}`);
+    }, { retries: 1, delayMs: 1000 });
     return;
   }
-  const response = await withTimeout(
+  const response = await retryTransientSupabase(() => withTimeout(
     state.team.client.from(table).upsert(rows, { onConflict }),
     8000,
     `Синхронизация ${table}`
-  );
+  ), { retries: 1, delayMs: 1000 });
   if (response.error) throw response.error;
-}
-
-async function upsertTaskAttachmentRows(rows = [], timeoutMs = TASK_ATTACHMENT_PERSIST_TIMEOUT_MS) {
-  const preparedRows = Array.isArray(rows) ? rows.filter(Boolean) : [];
-  if (!hasRemoteStore() || !preparedRows.length) return [];
-  const label = taskAttachmentPersistErrorLabel();
-
-  if (state.team.accessToken) {
-    const cfg = teamRestConfig();
-    if (!cfg) return [];
-    const url = new URL(`${cfg.baseUrl}/rest/v1/${TEAM_TABLES.attachments}`);
-    url.searchParams.set('on_conflict', 'id');
-    const response = await fetchTaskAttachmentWithTimeout(url.toString(), {
-      method: 'POST',
-      headers: {
-        apikey: cfg.anonKey,
-        Authorization: `Bearer ${cfg.accessToken}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates,return=representation'
-      },
-      body: JSON.stringify(preparedRows)
-    }, timeoutMs, label);
-    const bodyText = await response.text();
-    if (!response.ok) {
-      const error = new Error(`${label}: ${bodyText || response.status || 'request failed'}`);
-      error.status = response.status;
-      error.body = bodyText;
-      throw error;
-    }
-    return bodyText ? JSON.parse(bodyText) : [];
-  }
-
-  const response = await withTimeout(
-    state.team.client.from(TEAM_TABLES.attachments).upsert(preparedRows, { onConflict: 'id' }),
-    timeoutMs,
-    label
-  );
-  if (response.error) {
-    if (response.status) response.error.status = response.status;
-    throw response.error;
-  }
-  return response.data || [];
-}
-
-async function upsertTaskAttachmentRowsWithRetry(rows = []) {
-  const preparedRows = Array.isArray(rows) ? rows.filter(Boolean) : [];
-  if (!preparedRows.length) return [];
-  let lastError = null;
-  for (let attempt = 1; attempt <= TASK_ATTACHMENT_PERSIST_ATTEMPTS; attempt += 1) {
-    try {
-      return await upsertTaskAttachmentRows(preparedRows);
-    } catch (error) {
-      lastError = error;
-      if (isTaskAttachmentSchemaMissingError(error)) {
-        throw new Error(taskAttachmentSetupHint());
-      }
-      if (attempt >= TASK_ATTACHMENT_PERSIST_ATTEMPTS || !isRetriableTaskAttachmentUpload(error)) {
-        throw error;
-      }
-      await taskAttachmentUploadDelay(attempt);
-    }
-  }
-  throw lastError || new Error(`${taskAttachmentPersistErrorLabel()}: request failed`);
 }
 
 async function upsertTaskAttachmentsSafe(rows = []) {
   const preparedRows = Array.isArray(rows) ? rows : [];
   if (!preparedRows.length) return { skipped: false, warning: '' };
   try {
-    await upsertTaskAttachmentRowsWithRetry(preparedRows);
+    await upsertRemote(TEAM_TABLES.attachments, preparedRows, 'id');
     return { skipped: false, warning: '' };
   } catch (error) {
     if (isTaskAttachmentSchemaMissingError(error)) {
       return { skipped: true, warning: taskAttachmentSetupHint() };
+    }
+    if (isTransientSupabaseError(error)) {
+      return { skipped: true, warning: taskAttachmentDeferredSyncMessage() };
     }
     throw error;
   }
@@ -1148,13 +1080,7 @@ async function pullRemoteState(rerender = true) {
         normalizeOwnerOverride,
         (item) => item.articleKey
       );
-      if (attachmentsLoaded) {
-        state.storage.taskAttachments = mergeRemoteListWithLocal(
-          state.storage.taskAttachments || [],
-          attachmentRows.map(fromRemoteTaskAttachment).filter((item) => item.taskId && item.objectPath),
-          normalizeTaskAttachment
-        );
-      }
+      if (attachmentsLoaded) state.storage.taskAttachments = attachmentRows.map(fromRemoteTaskAttachment).filter((item) => item.taskId && item.objectPath);
       if (repricerControls) applyRepricerControlsPayload(repricerControls);
       applyOwnerOverridesToSkus();
       saveLocalStorage();
@@ -1261,20 +1187,64 @@ async function persistOwnerOverride(item) {
 
 async function persistTaskAttachment(item) {
   if (!hasRemoteStore()) return;
-  await upsertTaskAttachmentRowsWithRetry([remoteTaskAttachmentRow(item)]);
+  try {
+    await upsertRemote(TEAM_TABLES.attachments, [remoteTaskAttachmentRow(item)], 'id');
+  } catch (error) {
+    if (isTaskAttachmentSchemaMissingError(error)) {
+      throw new Error(taskAttachmentSetupHint());
+    }
+    throw error;
+  }
   state.team.lastSyncAt = new Date().toISOString();
   state.team.note = `Вложение синхронизировано · ${fmt.date(state.team.lastSyncAt)}`;
   state.team.mode = 'ready';
   updateSyncBadge();
 }
 
+function retryTaskAttachmentPersistInBackground(attachment) {
+  if (!attachment || typeof setTimeout !== 'function') return;
+  setTimeout(async () => {
+    try {
+      await persistTaskAttachment(attachment);
+      state.team.error = '';
+      state.team.note = `\u0412\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0441\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u00b7 ${fmt.date(state.team.lastSyncAt)}`;
+      state.team.mode = 'ready';
+      updateSyncBadge();
+    } catch (error) {
+      console.warn('[task-attachment] deferred persist retry', error);
+    }
+  }, 6000);
+}
+
+let taskAttachmentRemoteInitPromise = null;
+
+async function ensureTaskAttachmentRemoteStore() {
+  if (hasRemoteStore()) return;
+  const cfg = currentConfig();
+  const canInitRemote = cfg.teamMode === 'supabase'
+    && cfg.supabase?.url
+    && cfg.supabase?.anonKey
+    && typeof initTeamStore === 'function';
+  if (!canInitRemote) return;
+  if (!taskAttachmentRemoteInitPromise) {
+    taskAttachmentRemoteInitPromise = Promise.resolve()
+      .then(() => initTeamStore())
+      .catch((error) => {
+        console.warn('[task-attachment] remote init retry', error);
+      })
+      .finally(() => {
+        taskAttachmentRemoteInitPromise = null;
+      });
+  }
+  await taskAttachmentRemoteInitPromise;
+}
+
 async function deleteTaskAttachmentRecord(attachmentId) {
   const normalizedId = String(attachmentId || '').trim();
   if (!normalizedId || !hasRemoteStore()) return;
   try {
-    if (state.team.accessToken) {
-      const cfg = teamRestConfig();
-      if (!cfg) return;
+    const cfg = teamRestConfig();
+    if (cfg?.accessToken) {
       const url = new URL(`${cfg.baseUrl}/rest/v1/${TEAM_TABLES.attachments}`);
       url.searchParams.set('brand', `eq.${cfg.brand}`);
       url.searchParams.set('id', `eq.${normalizedId}`);
@@ -1308,9 +1278,8 @@ async function deleteTaskAttachmentRecord(attachmentId) {
 
 async function removeTaskAttachmentObject(item) {
   const attachment = normalizeTaskAttachment(item || {});
-  if (!attachment.bucket || !attachment.objectPath || !state.team.accessToken) return;
   const cfg = teamRestConfig();
-  if (!cfg) return;
+  if (!attachment.bucket || !attachment.objectPath || !cfg?.accessToken) return;
   const objectUrl = `${cfg.baseUrl}/storage/v1/object/${encodeURIComponent(attachment.bucket)}/${encodeStoragePath(attachment.objectPath)}`;
   const response = await withTimeout(fetch(objectUrl, {
     method: 'DELETE',
@@ -1365,19 +1334,36 @@ async function uploadTaskAttachment(taskId, file, options = {}) {
   if (Number(file.size || 0) > TASK_ATTACHMENT_MAX_BYTES) {
     throw new Error(`Файл больше ${Math.round(TASK_ATTACHMENT_MAX_BYTES / (1024 * 1024))} МБ.`);
   }
-  if (!hasRemoteStore() || !state.team.accessToken) {
+  if (!hasRemoteStore()) await ensureTaskAttachmentRemoteStore();
+  const cfg = teamRestConfig();
+  if (!hasRemoteStore() || !cfg?.accessToken) {
     throw new Error('Нужна активная синхронизация с Supabase, чтобы загрузить вложение.');
   }
   const task = typeof getTask === 'function' ? getTask(normalizedTaskId) : null;
   if (!task) throw new Error('Задача не найдена.');
 
-  const cfg = teamRestConfig();
-  if (!cfg) throw new Error('Supabase REST недоступен.');
   const bucket = String(options.bucket || TASK_ATTACHMENTS_BUCKET).trim() || TASK_ATTACHMENTS_BUCKET;
   const objectPath = taskAttachmentObjectPath(normalizedTaskId, file.name || 'file');
   const uploadUrl = `${cfg.baseUrl}/storage/v1/object/${encodeURIComponent(bucket)}/${encodeStoragePath(objectPath)}`;
 
-  await uploadTaskAttachmentObject(uploadUrl, cfg, file);
+  const uploadResponse = await withTimeout(fetch(uploadUrl, {
+    method: 'POST',
+    headers: {
+      apikey: cfg.anonKey,
+      Authorization: `Bearer ${cfg.accessToken}`,
+      'Content-Type': file.type || 'application/octet-stream',
+      'x-upsert': 'false'
+    },
+    body: file
+  }), 30000, 'Загрузка вложения');
+
+  if (!uploadResponse.ok) {
+    const body = await uploadResponse.text();
+    if (isTaskAttachmentBucketMissingError(body)) {
+      throw new Error(taskAttachmentSetupHint());
+    }
+    throw new Error(`Загрузка вложения: ${body || uploadResponse.status || 'request failed'}`);
+  }
 
   const attachment = normalizeTaskAttachment({
     id: uid('attach'),
@@ -1400,21 +1386,14 @@ async function uploadTaskAttachment(taskId, file, options = {}) {
   try {
     await persistTaskAttachment(attachment);
   } catch (error) {
-    if (isRetriableTaskAttachmentUpload(error)) {
-      const pendingAttachment = {
-        ...attachment,
-        syncStatus: 'pending',
-        syncError: error?.message || String(error || 'request failed')
-      };
-      state.storage.taskAttachments = (state.storage.taskAttachments || []).filter((item) => item.id !== pendingAttachment.id);
-      state.storage.taskAttachments.unshift(pendingAttachment);
-      saveLocalStorage();
-      state.team.lastSyncAt = new Date().toISOString();
-      state.team.note = `\u0424\u0430\u0439\u043b \u043f\u0440\u0438\u043a\u0440\u0435\u043f\u043b\u0435\u043d, \u0437\u0430\u043f\u0438\u0441\u044c \u0432 \u0431\u0430\u0437\u0443 \u043f\u043e\u0439\u0434\u0435\u0442 \u0447\u0435\u0440\u0435\u0437 \u0441\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437\u0430\u0446\u0438\u044e - ${fmt.date(state.team.lastSyncAt)}`;
-      state.team.error = pendingAttachment.syncError;
-      state.team.mode = 'ready';
+    if (isTransientSupabaseError(error)) {
+      console.warn('[task-attachment] metadata persist deferred', error);
+      state.team.mode = 'error';
+      state.team.error = taskAttachmentDeferredSyncMessage();
+      state.team.note = '\u0412\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0436\u0434\u0435\u0442 \u043f\u043e\u0432\u0442\u043e\u0440\u043d\u043e\u0439 \u0441\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437\u0430\u0446\u0438\u0438';
       updateSyncBadge();
-      return pendingAttachment;
+      retryTaskAttachmentPersistInBackground(attachment);
+      return attachment;
     }
     try {
       await removeTaskAttachmentObject(attachment);
@@ -1433,9 +1412,8 @@ async function deleteOwnerOverride(articleKey) {
   const normalizedArticleKey = String(articleKey || '').trim();
   if (!normalizedArticleKey || !hasRemoteStore()) return;
 
-  if (state.team.accessToken) {
-    const cfg = teamRestConfig();
-    if (!cfg) return;
+  const cfg = teamRestConfig();
+  if (cfg?.accessToken) {
     const url = new URL(`${cfg.baseUrl}/rest/v1/${TEAM_TABLES.owners}`);
     url.searchParams.set('brand', `eq.${cfg.brand}`);
     url.searchParams.set('article_key', `eq.${normalizedArticleKey}`);
@@ -1505,9 +1483,12 @@ function filteredControlTasks(options = {}) {
   return getAllTasks().filter((task) => {
     const sku = getSku(task.articleKey);
     const workstream = controlWorkstreamMeta(controlWorkstreamKey(task, sku));
-    const hay = [task.title, task.nextAction, task.reason, task.owner, task.articleKey, sku?.article, sku?.name, sku?.category, workstream.label, workstream.chip].filter(Boolean).join(' ').toLowerCase();
+    const taskOwner = typeof canonicalOwnerName === 'function'
+      ? canonicalOwnerName(task.owner || '')
+      : String(task.owner || '').trim();
+    const hay = [task.title, task.nextAction, task.reason, task.owner, taskOwner, task.articleKey, sku?.article, sku?.name, sku?.category, workstream.label, workstream.chip].filter(Boolean).join(' ').toLowerCase();
     if (search && !hay.includes(search)) return false;
-    if (f.owner !== 'all' && (task.owner || 'Без ответственного') !== f.owner) return false;
+    if (f.owner !== 'all' && taskOwner !== f.owner) return false;
     if (f.status === 'active' && !isTaskActive(task)) return false;
     if (f.status !== 'active' && f.status !== 'all' && task.status !== f.status) return false;
     if (f.type !== 'all' && task.type !== f.type) return false;

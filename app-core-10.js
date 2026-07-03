@@ -1,23 +1,12 @@
-const EXECUTIVE_MARKETPLACE_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
+const EXECUTIVE_MARKETPLACE_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
 const EXECUTIVE_SUPPORT_KEYS = ['cross', 'product'];
 const EXECUTIVE_WORKSTREAM_KEYS = [...EXECUTIVE_MARKETPLACE_KEYS, ...EXECUTIVE_SUPPORT_KEYS];
-const EXECUTIVE_FUNNEL_PLATFORMS = EXECUTIVE_MARKETPLACE_KEYS.slice();
-const EXECUTIVE_FUNNEL_SUPPORT_KEYS = {
-  wb: 'wb',
-  ozon: 'ozon',
-  ya: 'ym',
-  goldapple: 'ga',
-  letu: 'letu',
-  megamarket: 'megamarket',
-  samokat: 'samokat',
-  magnit: 'mm'
-};
-window.EXECUTIVE_MARKETPLACE_KEYS = EXECUTIVE_MARKETPLACE_KEYS;
+const EXECUTIVE_FUNNEL_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+const EXECUTIVE_FUNNEL_SUPPORT_KEYS = { wb: 'wb', ozon: 'ozon', ya: 'ym', goldapple: 'goldapple', letu: 'letu', magnit: 'magnit' };
 const EXECUTIVE_FUNNEL_DEFAULT_FILTERS = {
   platform: 'all',
-  month: 'latest',
-  owner: 'all',
   status: 'all',
+  owner: 'all',
   search: '',
   sort: 'completionAsc'
 };
@@ -31,52 +20,6 @@ function executiveFunnelNumber(value) {
 
 function executiveFunnelDateKey(value = '') {
   return String(value || '').slice(0, 10);
-}
-
-function executiveFunnelActiveDate() {
-  return executiveFunnelDateKey(
-    state.dashboard?.dataFreshness?.asOfDate
-    || state.dashboard?.latestMarketplaceDate
-    || state.dashboard?.brandSummary?.[0]?.latestMarketplaceDate
-    || state.dashboard?.asOfDate
-    || state.platformTrends?.asOfDate
-    || state.adsSummary?.asOfDate
-    || ''
-  );
-}
-
-function executiveFunnelMonthKey(value = '') {
-  const key = String(value || '').slice(0, 7);
-  return /^\d{4}-\d{2}$/.test(key) ? key : '';
-}
-
-function executiveFunnelMonthDays(monthKey = '') {
-  if (typeof skuPlanFactMonthDays === 'function') return skuPlanFactMonthDays(monthKey);
-  const [year, month] = String(monthKey || '').split('-').map(Number);
-  if (!year || !month) return 30;
-  return new Date(year, month, 0).getDate();
-}
-
-function executiveFunnelMonthEnd(monthKey = '') {
-  if (typeof skuPlanFactMonthEnd === 'function') return skuPlanFactMonthEnd(monthKey);
-  const key = executiveFunnelMonthKey(monthKey);
-  return key ? `${key}-${String(executiveFunnelMonthDays(key)).padStart(2, '0')}` : '';
-}
-
-function executiveFunnelMonthLabel(monthKey = '') {
-  if (typeof skuPlanFactMonthLabel === 'function') return skuPlanFactMonthLabel(monthKey);
-  const key = executiveFunnelMonthKey(monthKey);
-  const [year, month] = key.split('-').map(Number);
-  if (!year || !month) return '';
-  return new Date(year, month - 1, 1).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
-}
-
-function executiveFunnelSelectableMonths(months = []) {
-  const activeMonth = executiveFunnelMonthKey(executiveFunnelActiveDate());
-  return [...new Set((months || []).map(executiveFunnelMonthKey).filter(Boolean))]
-    .filter((monthKey) => !activeMonth || monthKey <= activeMonth)
-    .sort()
-    .reverse();
 }
 
 function executiveFunnelRatio(value) {
@@ -108,10 +51,6 @@ function executiveFunnelPlatformLabel(platform = '') {
 
 function executiveFunnelOwner(row = {}, platform = '') {
   const sku = row.sku || row || {};
-  if (typeof skuPlanFactPlatformOwner === 'function') {
-    const platformOwner = skuPlanFactPlatformOwner(sku, platform);
-    if (platformOwner) return platformOwner;
-  }
   const supportKey = EXECUTIVE_FUNNEL_SUPPORT_KEYS[platform] || platform;
   const raw = sku?.ownersByPlatform?.[supportKey]
     || sku?.owner?.byPlatform?.[supportKey]
@@ -129,10 +68,6 @@ function executiveFunnelCanonicalOwner(owner = '') {
 }
 
 function executiveFunnelExplicitOwnerForSku(sku = {}, platform = '') {
-  if (typeof skuPlanFactPlatformOwner === 'function') {
-    const platformOwner = skuPlanFactPlatformOwner(sku, platform);
-    if (platformOwner) return platformOwner;
-  }
   const supportKey = EXECUTIVE_FUNNEL_SUPPORT_KEYS[platform] || platform;
   const sources = [sku?.ownersByPlatform, sku?.owner?.byPlatform];
   for (const source of sources) {
@@ -155,12 +90,6 @@ function executiveFunnelAllowedOwnersForPlatform(platform = '') {
       const normalized = executiveFunnelCanonicalOwner(owner);
       if (normalized) owners.add(normalized);
     });
-    (state.skus || []).forEach((sku) => {
-      if (!sku?.wbOwnerDistribution || sku.wbOwnerDistribution.missingInDistribution) return;
-      const normalized = executiveFunnelCanonicalOwner(sku.wbOwnerDistribution.owner || '');
-      if (normalized) owners.add(normalized);
-    });
-    if (owners.size) return owners;
   }
   (state.skus || []).forEach((sku) => {
     const owner = executiveFunnelExplicitOwnerForSku(sku, key);
@@ -346,9 +275,6 @@ function executiveFunnelOwnerPlanBucket(owner = '') {
     adSpend: 0,
     planAdSpend: 0,
     hasPlanAdSpend: false,
-    apiFactRevenue: 0,
-    apiPlanToDateRevenue: 0,
-    apiMarginRub: 0,
     externalExcludedSpend: 0,
     externalExcludedOrders: 0
   };
@@ -371,10 +297,7 @@ function executiveFunnelOwnerPlatformBucket(platform = '') {
     planMarginWeight: 0,
     adSpend: 0,
     planAdSpend: 0,
-    hasPlanAdSpend: false,
-    apiFactRevenue: 0,
-    apiPlanToDateRevenue: 0,
-    apiMarginRub: 0
+    hasPlanAdSpend: false
   };
 }
 
@@ -457,126 +380,6 @@ function executiveFunnelPlanBucketHasSignal(row = {}) {
     || executiveFunnelNumber(row.externalExcludedSpend) > 0;
 }
 
-function executiveFunnelPlanBucketHasKpiPlan(row = {}) {
-  return executiveFunnelNumber(row.planToDateRevenue) > 0
-    || executiveFunnelNumber(row.planRevenue) > 0;
-}
-
-function executiveFunnelSourcePlatformRows(row = {}) {
-  if (Array.isArray(row.platformRows) && row.platformRows.length) return row.platformRows;
-  if (row.platforms instanceof Map) return [...row.platforms.values()];
-  return [];
-}
-
-function executiveFunnelMergePlanBucket(target = {}, source = {}) {
-  if (!target || !source) return target;
-  [
-    'planRevenue',
-    'planToDateRevenue',
-    'factRevenue',
-    'planUnits',
-    'factUnits',
-    'marginRub',
-    'marginWeight',
-    'planMarginValue',
-    'planMarginWeight',
-    'adSpend',
-    'apiFactRevenue',
-    'apiPlanToDateRevenue',
-    'apiMarginRub',
-    'externalExcludedSpend',
-    'externalExcludedOrders'
-  ].forEach((key) => {
-    target[key] = executiveFunnelNumber(target[key]) + executiveFunnelNumber(source[key]);
-  });
-  if (source.planAdSpend !== null && source.planAdSpend !== undefined) {
-    target.planAdSpend = executiveFunnelNumber(target.planAdSpend) + executiveFunnelNumber(source.planAdSpend);
-    target.hasPlanAdSpend = true;
-  }
-  if (source.payrollKpi || source.payrollControlScaled) target.payrollKpi = true;
-  if (source.salaryIncluded !== undefined) target.salaryIncluded = source.salaryIncluded;
-  const skuKeys = source.skuKeys instanceof Set
-    ? [...source.skuKeys]
-    : (Array.isArray(source.skuKeys) ? source.skuKeys : []);
-  skuKeys.forEach((key) => target.skuKeys?.add(key));
-  return target;
-}
-
-function executiveFunnelKpiOwnerRow(row = {}, selectedPlatform = 'all') {
-  const platformRows = executiveFunnelSourcePlatformRows(row)
-    .filter((metric) => {
-      const platform = metric.platform || '';
-      if (selectedPlatform !== 'all' && platform !== selectedPlatform) return false;
-      return executiveFunnelPlanBucketHasKpiPlan(metric);
-    });
-  if (!platformRows.length) return null;
-
-  const bucket = executiveFunnelOwnerPlanBucket(row.owner || '');
-  bucket.externalExcludedSpend = executiveFunnelNumber(row.externalExcludedSpend);
-  bucket.externalExcludedOrders = executiveFunnelNumber(row.externalExcludedOrders);
-  platformRows.forEach((metric) => {
-    const platform = metric.platform || selectedPlatform || 'all';
-    const platformBucket = executiveFunnelOwnerPlatformBucket(platform);
-    executiveFunnelMergePlanBucket(platformBucket, metric);
-    executiveFunnelFinalizePlanBucket(platformBucket);
-    bucket.platforms.set(platform, platformBucket);
-    executiveFunnelMergePlanBucket(bucket, platformBucket);
-  });
-  bucket.platformRows = [...bucket.platforms.values()]
-    .map(executiveFunnelFinalizePlanBucket)
-    .filter(executiveFunnelPlanBucketHasKpiPlan)
-    .sort((left, right) => right.factRevenue - left.factRevenue);
-  bucket.primaryPlatform = bucket.platformRows[0]?.platform || selectedPlatform || 'all';
-  return executiveFunnelFinalizePlanBucket(bucket);
-}
-
-function executiveFunnelBuildKpiPlatformRows(ownerRows = [], selectedPlatform = 'all') {
-  const rows = new Map(EXECUTIVE_FUNNEL_PLATFORMS.map((platform) => [platform, executiveFunnelOwnerPlatformBucket(platform)]));
-  ownerRows.forEach((ownerRow) => {
-    executiveFunnelSourcePlatformRows(ownerRow).forEach((metric) => {
-      const platform = metric.platform || '';
-      if (!rows.has(platform)) return;
-      if (selectedPlatform !== 'all' && platform !== selectedPlatform) return;
-      if (!executiveFunnelPlanBucketHasKpiPlan(metric)) return;
-      executiveFunnelMergePlanBucket(rows.get(platform), metric);
-    });
-  });
-  return [...rows.values()]
-    .map((row) => {
-      const finalized = executiveFunnelFinalizePlanBucket(row);
-      finalized.articleCount = finalized.skuKeys?.size || 0;
-      return finalized;
-    })
-    .filter((row) => selectedPlatform === 'all' || row.platform === selectedPlatform)
-    .filter(executiveFunnelPlanBucketHasKpiPlan);
-}
-
-function executiveFunnelBuildTotalsFromPlatformRows(platformRows = []) {
-  return executiveFunnelFinalizePlanBucket(platformRows.reduce((acc, row) => {
-    acc.planRevenue += row.planRevenue;
-    acc.planToDateRevenue += row.planToDateRevenue;
-    acc.factRevenue += row.factRevenue;
-    acc.planUnits += row.planUnits;
-    acc.factUnits += row.factUnits;
-    acc.marginRub += row.marginRub;
-    acc.marginWeight += row.marginWeight;
-    acc.planMarginValue += row.planMarginValue;
-    acc.planMarginWeight += row.planMarginWeight;
-    acc.adSpend += row.adSpend;
-    acc.apiFactRevenue += executiveFunnelNumber(row.apiFactRevenue);
-    acc.apiPlanToDateRevenue += executiveFunnelNumber(row.apiPlanToDateRevenue);
-    acc.apiMarginRub += executiveFunnelNumber(row.apiMarginRub);
-    if (row.planAdSpend !== null && row.planAdSpend !== undefined) {
-      acc.planAdSpend += executiveFunnelNumber(row.planAdSpend);
-      acc.hasPlanAdSpend = true;
-    }
-    acc.externalExcludedSpend += row.externalExcludedSpend;
-    acc.externalExcludedOrders += row.externalExcludedOrders;
-    row.skuKeys.forEach((key) => acc.skuKeys.add(key));
-    return acc;
-  }, executiveFunnelOwnerPlanBucket('Итого')));
-}
-
 function executiveFunnelSortRows(rows = [], sort = 'completionAsc') {
   const list = [...rows];
   const cmpNum = (getter, dir = 'desc') => (left, right) => {
@@ -595,37 +398,28 @@ function executiveFunnelSortRows(rows = [], sort = 'completionAsc') {
 
 function executiveFunnelBuildPlanModel(selectedPlatform = 'all') {
   if (typeof skuPlanFactBuildModel !== 'function') return null;
+  const previous = { ...(state.skuPlanFactFilters || {}) };
   const platform = EXECUTIVE_FUNNEL_PLATFORMS.includes(selectedPlatform) ? selectedPlatform : 'all';
-  const filters = { ...EXECUTIVE_FUNNEL_DEFAULT_FILTERS, ...executiveFunnelFilters };
-  const activeDate = executiveFunnelActiveDate();
-  const activeMonth = executiveFunnelMonthKey(activeDate);
-  let monthKey = filters.month && filters.month !== 'latest'
-    ? executiveFunnelMonthKey(filters.month)
-    : activeMonth;
-  if (monthKey && activeMonth && monthKey > activeMonth) monthKey = activeMonth;
-  if (!monthKey) monthKey = activeMonth || 'latest';
-  const monthStart = monthKey !== 'latest' ? `${monthKey}-01` : '';
-  const monthEnd = monthKey !== 'latest' ? executiveFunnelMonthEnd(monthKey) : activeDate;
-  const fullMonth = Boolean(monthKey !== 'latest' && activeMonth && monthKey < activeMonth);
   try {
-    return skuPlanFactBuildModel({
+    state.skuPlanFactFilters = {
+      ...previous,
       search: '',
       owner: 'all',
       status: 'all',
       platform,
-      month: monthKey,
-      dateMode: monthKey !== 'latest' ? 'month' : 'latest',
-      date: fullMonth ? monthEnd : (activeDate || monthEnd),
-      dateFrom: monthStart,
-      dateTo: fullMonth ? monthEnd : (activeDate || monthEnd),
-      fullMonth,
-      periodEndCap: fullMonth ? '' : activeDate,
+      month: 'latest',
+      date: '',
+      dateFrom: '',
+      dateTo: '',
       sort: 'gap',
       sortDir: 'asc'
-    }, { persistFilters: false });
+    };
+    return skuPlanFactBuildModel();
   } catch (error) {
     console.warn('[executive-funnel] plan-fact model failed', error);
     return null;
+  } finally {
+    state.skuPlanFactFilters = previous;
   }
 }
 
@@ -640,15 +434,9 @@ function executiveFunnelApplyPayrollPlatformMetric(row = {}, metric = {}) {
     row[key] = executiveFunnelNumber(metric[key]);
   };
 
-  const apiFactRevenue = executiveFunnelNumber(row.apiFactRevenue || row.factRevenue);
-  const apiPlanToDateRevenue = executiveFunnelNumber(row.apiPlanToDateRevenue || row.planToDateRevenue);
-  const apiMarginRub = executiveFunnelNumber(row.apiMarginRub || row.marginRub);
   row.payrollKpi = true;
   row.salaryIncluded = metric.salaryIncluded !== false;
   row.truthSource = 'company_plan';
-  row.apiFactRevenue = apiFactRevenue;
-  row.apiPlanToDateRevenue = apiPlanToDateRevenue;
-  row.apiMarginRub = apiMarginRub;
   copyNumber('planRevenue');
   copyNumber('planToDateRevenue');
   copyNumber('factRevenue');
@@ -677,8 +465,6 @@ function executiveFunnelApplyPayrollPlatformMetric(row = {}, metric = {}) {
     row.planMarginWeight = planMarginWeight;
   }
 
-  row.kpiFactRevenue = row.factRevenue;
-  row.kpiFactDelta = row.apiFactRevenue > 0 ? row.factRevenue - row.apiFactRevenue : 0;
   return executiveFunnelFinalizePlanBucket(row);
 }
 
@@ -687,7 +473,7 @@ function executiveFunnelApplyPayrollPlatformRows(platformRows = [], planModel = 
   Object.keys(planModel.payrollKpi.platforms || {}).forEach((platform) => {
     if (!EXECUTIVE_FUNNEL_PLATFORMS.includes(platform)) return;
     if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
-    const metric = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false, kpiOnly: true });
+    const metric = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false });
     if (!metric?.payrollKpi || metric.salaryIncluded === false) return;
 
     let row = platformRows.find((item) => item.platform === platform);
@@ -733,7 +519,7 @@ function executiveFunnelApplyMissingPayrollFacts(ownerMap = new Map(), platform 
       owner: ownerBucket.owner,
       metric: ownerBucket.platforms?.get(platform) || null
     }))
-    .filter(({ metric }) => metric && executiveFunnelPlanBucketHasKpiPlan(metric));
+    .filter(({ metric }) => metric && executiveFunnelPlanBucketHasSignal(metric));
   if (!entries.length) return null;
 
   const revenueWeightSum = entries.reduce((sum, { metric }) => sum + executiveFunnelPlanControlWeight(metric), 0) || entries.length;
@@ -776,9 +562,6 @@ function executiveFunnelScalePlanBucket(bucket = {}, ratios = {}) {
   const planAdRatio = Number.isFinite(Number(ratios.planAd)) ? Number(ratios.planAd) : 1;
   const marginRatio = Number.isFinite(Number(ratios.margin)) ? Number(ratios.margin) : revenueRatio;
   const planMarginRatio = Number.isFinite(Number(ratios.planMargin)) ? Number(ratios.planMargin) : planToDateRatio;
-  const apiFactRevenue = executiveFunnelNumber(bucket.apiFactRevenue || bucket.factRevenue);
-  const apiPlanToDateRevenue = executiveFunnelNumber(bucket.apiPlanToDateRevenue || bucket.planToDateRevenue);
-  const apiMarginRub = executiveFunnelNumber(bucket.apiMarginRub || bucket.marginRub);
 
   bucket.factRevenue = executiveFunnelNumber(bucket.factRevenue) * revenueRatio;
   bucket.factUnits = executiveFunnelNumber(bucket.factUnits) * revenueRatio;
@@ -796,12 +579,6 @@ function executiveFunnelScalePlanBucket(bucket = {}, ratios = {}) {
   bucket.planMarginWeight = executiveFunnelNumber(bucket.planMarginWeight) * planToDateRatio;
   bucket.planMarginRub = executiveFunnelNumber(bucket.planMarginRub) * planMarginRatio;
   bucket.payrollControlScaled = true;
-  bucket.payrollKpi = true;
-  bucket.apiFactRevenue = apiFactRevenue;
-  bucket.apiPlanToDateRevenue = apiPlanToDateRevenue;
-  bucket.apiMarginRub = apiMarginRub;
-  bucket.kpiFactRevenue = bucket.factRevenue;
-  bucket.kpiFactDelta = bucket.apiFactRevenue > 0 ? bucket.factRevenue - bucket.apiFactRevenue : 0;
   return executiveFunnelFinalizePlanBucket(bucket);
 }
 
@@ -827,10 +604,6 @@ function executiveFunnelRebuildOwnerFromPlatforms(bucket = {}) {
     bucket.planMarginValue += executiveFunnelNumber(metric.planMarginValue);
     bucket.planMarginWeight += executiveFunnelNumber(metric.planMarginWeight);
     bucket.adSpend += executiveFunnelNumber(metric.adSpend);
-    bucket.apiFactRevenue += executiveFunnelNumber(metric.apiFactRevenue);
-    bucket.apiPlanToDateRevenue += executiveFunnelNumber(metric.apiPlanToDateRevenue);
-    bucket.apiMarginRub += executiveFunnelNumber(metric.apiMarginRub);
-    if (metric.payrollKpi || metric.payrollControlScaled) bucket.payrollKpi = true;
     if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
       bucket.planAdSpend += executiveFunnelNumber(metric.planAdSpend);
       bucket.hasPlanAdSpend = true;
@@ -845,7 +618,7 @@ function executiveFunnelApplyPayrollOwnerControls(ownerMap = new Map(), planMode
   const controls = {};
   EXECUTIVE_FUNNEL_PLATFORMS.forEach((platform) => {
     if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
-    const target = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false, kpiOnly: true });
+    const target = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows', includePayroll: false });
     if (!target?.payrollKpi || target.salaryIncluded === false) return;
     const raw = [...ownerMap.values()].reduce((acc, ownerBucket) => {
       const metric = ownerBucket.platforms?.get(platform);
@@ -881,29 +654,22 @@ function executiveFunnelApplyPayrollOwnerControls(ownerMap = new Map(), planMode
 
 function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
   const filters = { ...EXECUTIVE_FUNNEL_DEFAULT_FILTERS, ...executiveFunnelFilters };
-  if (filters.status === 'noPlan') {
-    filters.status = 'all';
-    executiveFunnelFilters.status = 'all';
-  }
   const selectedPlatform = EXECUTIVE_FUNNEL_PLATFORMS.includes(filters.platform) ? filters.platform : 'all';
   const planModel = funnel.planModel || executiveFunnelBuildPlanModel(selectedPlatform);
   if (!planModel) return null;
   const periodStart = executiveFunnelDateKey(planModel.periodStart || funnel.periodStart || `${planModel.monthKey || ''}-01`);
   const periodEnd = executiveFunnelDateKey(planModel.periodEnd || funnel.periodEnd || planModel.selectedDate || planModel.maxFactDate);
-  const activeMonth = executiveFunnelMonthKey(executiveFunnelActiveDate());
-  const monthKey = executiveFunnelMonthKey(planModel.monthKey || funnel.monthKey || periodEnd);
-  const monthEnd = monthKey ? executiveFunnelMonthEnd(monthKey) : '';
-  const months = executiveFunnelSelectableMonths(planModel.months || funnel.months || []);
   const ownerMap = new Map();
+  const platformTotals = new Map(EXECUTIVE_FUNNEL_PLATFORMS.map((platform) => [platform, executiveFunnelOwnerPlatformBucket(platform)]));
   const sourceRows = Array.isArray(planModel.allRows) ? planModel.allRows : [];
   const excluded = { rows: 0, revenue: 0, planToDateRevenue: 0 };
 
   sourceRows.forEach((row) => {
-    if (typeof skuPlanFactKpiEligible === 'function' && !skuPlanFactKpiEligible(row)) return;
     EXECUTIVE_FUNNEL_PLATFORMS.forEach((platform) => {
       if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
       const metric = row.platforms?.[platform] || row[platform] || null;
       if (!executiveFunnelPlanMetricActive(metric)) return;
+      if (platformTotals.has(platform)) executiveFunnelAddPlanMetric(platformTotals.get(platform), metric, platform, row);
       const owner = executiveFunnelOwner(row, platform);
       if (executiveFunnelOwnerIsNoise(owner, row) || !executiveFunnelOwnerAllowedForPlatform(owner, platform)) {
         excluded.rows += 1;
@@ -927,7 +693,6 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     if (!EXECUTIVE_FUNNEL_PLATFORMS.includes(platform)) return;
     if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
     const sku = executiveFunnelSkuForArticle(item.articleKey || item.article || item.sku || item.nmId);
-    if (sku && typeof skuPlanFactKpiEligible === 'function' && !skuPlanFactKpiEligible(sku)) return;
     const owner = sku
       ? executiveFunnelOwner({ sku, owner: item.owner || '' }, platform)
       : (typeof canonicalOwnerName === 'function' ? canonicalOwnerName(item.owner || '') : String(item.owner || '').trim());
@@ -939,7 +704,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
 
   const payrollOwnerControls = executiveFunnelApplyPayrollOwnerControls(ownerMap, planModel, selectedPlatform);
 
-  const rawOwnerRows = [...ownerMap.values()]
+  const ownerRows = [...ownerMap.values()]
     .map((row) => {
       row.platformRows = [...row.platforms.values()]
         .map(executiveFunnelFinalizePlanBucket)
@@ -949,39 +714,61 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
       return executiveFunnelFinalizePlanBucket(row);
     })
     .filter(executiveFunnelPlanBucketHasSignal);
-  const noPlanOwnerRows = rawOwnerRows.filter((row) => !executiveFunnelPlanBucketHasKpiPlan(row));
-  const ownerRows = rawOwnerRows
-    .map((row) => executiveFunnelKpiOwnerRow(row, selectedPlatform))
-    .filter(Boolean);
-  const ownerOptions = ownerRows
-    .map((row) => row.owner)
-    .filter(Boolean)
-    .sort((left, right) => left.localeCompare(right, 'ru'));
-  let ownerFilter = executiveFunnelCanonicalOwner(filters.owner || 'all');
-  let scopedOwnerRows = ownerRows;
-  if (ownerFilter && ownerFilter !== 'all') {
-    scopedOwnerRows = ownerRows.filter((row) => executiveFunnelCanonicalOwner(row.owner) === ownerFilter);
-    if (!scopedOwnerRows.length) {
-      filters.owner = 'all';
-      executiveFunnelFilters.owner = 'all';
-      ownerFilter = 'all';
-      scopedOwnerRows = ownerRows;
+
+  const platformRows = [...platformTotals.values()]
+    .map((row) => {
+      const finalized = executiveFunnelFinalizePlanBucket(row);
+      finalized.articleCount = finalized.skuKeys?.size || 0;
+      return finalized;
+    })
+    .filter((row) => selectedPlatform === 'all' || row.platform === selectedPlatform)
+    .filter((row) => row.factRevenue > 0 || row.planToDateRevenue > 0 || row.adSpend > 0 || row.hasPlanAdSpend);
+
+  executiveFunnelApplyPayrollPlatformRows(platformRows, planModel, selectedPlatform);
+
+  const totals = executiveFunnelFinalizePlanBucket(platformRows.reduce((acc, row) => {
+    acc.planRevenue += row.planRevenue;
+    acc.planToDateRevenue += row.planToDateRevenue;
+    acc.factRevenue += row.factRevenue;
+    acc.planUnits += row.planUnits;
+    acc.factUnits += row.factUnits;
+    acc.marginRub += row.marginRub;
+    acc.marginWeight += row.marginWeight;
+    acc.planMarginValue += row.planMarginValue;
+    acc.planMarginWeight += row.planMarginWeight;
+    acc.adSpend += row.adSpend;
+    if (row.planAdSpend !== null && row.planAdSpend !== undefined) {
+      acc.planAdSpend += executiveFunnelNumber(row.planAdSpend);
+      acc.hasPlanAdSpend = true;
     }
+    acc.externalExcludedSpend += row.externalExcludedSpend;
+    acc.externalExcludedOrders += row.externalExcludedOrders;
+    row.skuKeys.forEach((key) => acc.skuKeys.add(key));
+    return acc;
+  }, executiveFunnelOwnerPlanBucket('Итого')));
+  const payrollTotalMetric = selectedPlatform === 'all'
+    ? (typeof skuPlanFactPlatformSummary === 'function'
+      ? skuPlanFactPlatformSummary(planModel, 'all', { scope: 'allRows', includePayroll: true })
+      : planModel.payrollKpi)
+    : null;
+  if (payrollTotalMetric?.payrollKpi) {
+    executiveFunnelApplyPayrollPlatformMetric(totals, payrollTotalMetric || planModel.payrollKpi);
   }
 
-  const platformRows = executiveFunnelBuildKpiPlatformRows(scopedOwnerRows, selectedPlatform);
-
-  const totals = executiveFunnelBuildTotalsFromPlatformRows(platformRows);
-  totals.employeeCount = scopedOwnerRows.length;
-  totals.underPlanCount = scopedOwnerRows.filter((row) => row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue).length;
-  totals.okCount = scopedOwnerRows.filter((row) => row.completionToDate !== null && row.completionToDate >= 1).length;
+  totals.employeeCount = ownerRows.length;
+  totals.underPlanCount = ownerRows.filter((row) => row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue).length;
+  totals.okCount = ownerRows.filter((row) => row.completionToDate !== null && row.completionToDate >= 1).length;
+  const ownerOptions = [...new Set(ownerRows.map((row) => String(row.owner || '').trim()).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right, 'ru'));
 
   const search = String(filters.search || '').trim().toLowerCase();
-  let visibleRows = scopedOwnerRows.filter((row) => {
+  let visibleRows = ownerRows.filter((row) => {
+    if (filters.owner && filters.owner !== 'all' && String(row.owner || '') !== String(filters.owner)) return false;
     if (search && !String(row.owner || '').toLowerCase().includes(search)) return false;
     if (filters.status === 'danger' && !(row.completionToDate !== null && row.completionToDate < 0.9)) return false;
     if (filters.status === 'watch' && !(row.completionToDate !== null && row.completionToDate >= 0.9 && row.completionToDate < 1)) return false;
     if (filters.status === 'ok' && !(row.completionToDate !== null && row.completionToDate >= 1)) return false;
+    if (filters.status === 'noPlan' && row.planToDateRevenue > 0) return false;
     return true;
   });
   visibleRows = executiveFunnelSortRows(visibleRows, filters.sort);
@@ -992,22 +779,13 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     selectedPlatform,
     periodStart,
     periodEnd,
-    monthKey,
     monthLabel: planModel.monthLabel || funnel.monthLabel || '',
-    months,
-    activeMonth,
-    isFullMonth: Boolean(monthKey && monthEnd && periodEnd >= monthEnd),
-    monthDays: monthKey ? executiveFunnelMonthDays(monthKey) : null,
-    periodDays: planModel.periodDays || planModel.elapsedDays || null,
+    ownerOptions,
     ownerRows: visibleRows,
     allOwnerRows: executiveFunnelSortRows(ownerRows, filters.sort),
-    scopedOwnerRows: executiveFunnelSortRows(scopedOwnerRows, filters.sort),
-    ownerOptions,
-    selectedOwner: ownerFilter && ownerFilter !== 'all' ? scopedOwnerRows[0]?.owner || '' : '',
     platformRows,
     totals,
     excluded,
-    noPlanOwnerRows,
     payrollOwnerControls,
     planModel
   };
@@ -1209,9 +987,6 @@ function executiveFunnelBuildModel() {
   }
   const periodStart = executiveFunnelDateKey(planModel.periodStart || `${planModel.monthKey}-01`);
   const periodEnd = executiveFunnelDateKey(planModel.periodEnd || planModel.selectedDate || planModel.maxFactDate);
-  const activeMonth = executiveFunnelMonthKey(executiveFunnelActiveDate());
-  const monthKey = executiveFunnelMonthKey(planModel.monthKey || periodEnd);
-  const monthEnd = monthKey ? executiveFunnelMonthEnd(monthKey) : '';
   const ownerMap = new Map();
   const platformTotals = new Map(EXECUTIVE_FUNNEL_PLATFORMS.map((platform) => [platform, {
     platform,
@@ -1337,13 +1112,7 @@ function executiveFunnelBuildModel() {
     ready: true,
     periodStart,
     periodEnd,
-    monthKey,
     monthLabel: planModel.monthLabel,
-    months: executiveFunnelSelectableMonths(planModel.months || []),
-    activeMonth,
-    isFullMonth: Boolean(monthKey && monthEnd && periodEnd >= monthEnd),
-    monthDays: monthKey ? executiveFunnelMonthDays(monthKey) : null,
-    periodDays: planModel.periodDays || planModel.elapsedDays || null,
     ownerRows,
     ownerByName,
     dailyRows,
@@ -1717,7 +1486,7 @@ function renderExecutiveOwnerMetricBars(row = {}) {
       ratio: revenueRatio,
       tone: executiveFunnelCompletionLevel(revenueRatio),
       planText: `план ${fmt.money(row.planToDateRevenue)}`,
-      factText: executiveFunnelRevenueFactText(row)
+      factText: `факт ${fmt.money(row.factRevenue)}`
     })}
     ${renderExecutivePlanFactBar({
       label: 'Маржа',
@@ -1757,24 +1526,12 @@ function renderExecutiveHeroKpi(options = {}) {
   `;
 }
 
-function executiveFunnelApiFactSuffix(row = {}, label = 'API-факт') {
-  const apiFact = executiveFunnelNumber(row.apiFactRevenue);
-  const kpiFact = executiveFunnelNumber(row.factRevenue);
-  if (!row.payrollKpi || !(apiFact > 0) || Math.abs(kpiFact - apiFact) < 1) return '';
-  return ` · ${label} ${fmt.money(apiFact)}`;
-}
-
-function executiveFunnelRevenueFactText(row = {}) {
-  const prefix = row.payrollKpi ? 'KPI-факт' : 'факт';
-  return `${prefix} ${fmt.money(row.factRevenue)}${executiveFunnelApiFactSuffix(row)}`;
-}
-
 function renderExecutiveOwnerCard(row = {}, index = 0) {
   const level = executiveFunnelCompletionLevel(row.completionToDate);
   const style = executiveFunnelCardStyle(row.primaryPlatform || 'all', row.completionToDate);
   const gapTone = row.gapToDate >= 0 ? 'ok-text' : 'danger-text';
   return `
-    <article class="executive-owner-card level-${level}" data-platform="${escapeHtml(row.primaryPlatform || 'all')}" data-executive-funnel-owner-card="${escapeHtml(row.owner || '')}" tabindex="0" role="button" style="${style}">
+    <article class="executive-owner-card level-${level}" data-platform="${escapeHtml(row.primaryPlatform || 'all')}" style="${style}">
       <div class="executive-owner-card-head">
         <div>
           <span class="executive-owner-rank">#${fmt.int(index + 1)}</span>
@@ -1800,7 +1557,6 @@ function renderExecutiveOwnerCard(row = {}, index = 0) {
 
 function renderExecutivePlatformPlanCard(row = {}) {
   const level = executiveFunnelCompletionLevel(row.completionToDate);
-  const factLabel = row.payrollKpi ? 'KPI-факт' : 'API-факт';
   return `
     <div class="executive-platform-plan-card level-${level}" data-platform="${escapeHtml(row.platform)}" style="${executiveFunnelCardStyle(row.platform, row.completionToDate)}">
       <div>
@@ -1810,7 +1566,7 @@ function renderExecutivePlatformPlanCard(row = {}) {
       <i><b></b></i>
       <div class="executive-platform-plan-grid">
         <span><b>${fmt.money(row.planToDateRevenue)}</b><em>план оборота</em></span>
-        <span><b>${fmt.money(row.factRevenue)}</b><em>${factLabel}${executiveFunnelApiFactSuffix(row)}</em></span>
+        <span><b>${fmt.money(row.factRevenue)}</b><em>факт оборота</em></span>
         <span><b>${executiveFunnelMoney(row.planAdSpend)}</b><em>план рекламы</em></span>
         <span><b>${fmt.money(row.adSpend)}</b><em>факт рекламы</em></span>
       </div>
@@ -1826,61 +1582,28 @@ function renderExecutiveOwnerFilterButton(kind, value, label, active) {
   `;
 }
 
-function executiveFunnelMonthOptionsHtml(model = {}, selected = 'latest') {
-  const activeMonth = model.activeMonth || executiveFunnelMonthKey(executiveFunnelActiveDate());
-  const monthKey = model.monthKey || activeMonth;
-  const selectedValue = selected && selected !== 'latest' ? executiveFunnelMonthKey(selected) : 'latest';
-  const months = executiveFunnelSelectableMonths(model.months || model.planModel?.months || []);
-  const latestLabel = activeMonth
-    ? `Текущий срез (${executiveFunnelMonthLabel(activeMonth)})`
-    : 'Текущий срез';
-  const options = [`<option value="latest" ${selectedValue === 'latest' ? 'selected' : ''}>${escapeHtml(latestLabel)}</option>`];
-  months.forEach((value) => {
-    const full = value !== activeMonth || (model.isFullMonth && value === monthKey);
-    const label = `${executiveFunnelMonthLabel(value)} ${full ? 'целиком' : 'к дате'}`;
-    options.push(`<option value="${escapeHtml(value)}" ${selectedValue === value ? 'selected' : ''}>${escapeHtml(label)}</option>`);
-  });
-  return options.join('');
-}
-
 function renderExecutiveOwnerFilters(model = {}) {
   const filters = model.filters || EXECUTIVE_FUNNEL_DEFAULT_FILTERS;
   const platformButtons = [
     ['all', 'Все'],
     ['wb', 'WB'],
     ['ozon', 'Ozon'],
-    ['ya', 'Яндекс']
+    ['ya', 'Яндекс'],
+    ['goldapple', 'ЗЯ'],
+    ['letu', 'Лэтуаль'],
+    ['magnit', 'Магнит']
   ].map(([value, label]) => renderExecutiveOwnerFilterButton('platform', value, label, filters.platform === value)).join('');
   const statusButtons = [
     ['all', 'Все'],
     ['danger', '< 90%'],
     ['watch', '90-100%'],
-    ['ok', 'OK']
+    ['ok', 'OK'],
+    ['noPlan', 'Без плана']
   ].map(([value, label]) => renderExecutiveOwnerFilterButton('status', value, label, filters.status === value)).join('');
-  const selectedOwner = executiveFunnelCanonicalOwner(filters.owner || 'all');
-  const ownerOptions = (model.ownerOptions || []).map((owner) => {
-    const value = String(owner || '');
-    const selected = selectedOwner !== 'all' && executiveFunnelCanonicalOwner(value) === selectedOwner;
-    return `<option value="${escapeHtml(value)}" ${selected ? 'selected' : ''}>${escapeHtml(value)}</option>`;
-  }).join('');
-  const monthOptions = executiveFunnelMonthOptionsHtml(model, filters.month || 'latest');
   return `
     <div class="executive-owner-toolbar">
-      <label class="executive-owner-sort executive-owner-picker">
-        <span>Месяц</span>
-        <select data-executive-funnel-month>
-          ${monthOptions}
-        </select>
-      </label>
       <div class="executive-owner-segment" aria-label="Площадка">${platformButtons}</div>
       <div class="executive-owner-segment" aria-label="Выполнение">${statusButtons}</div>
-      <label class="executive-owner-sort executive-owner-picker">
-        <span>Сотрудник</span>
-        <select data-executive-funnel-owner>
-          <option value="all" ${selectedOwner === 'all' ? 'selected' : ''}>Все сотрудники</option>
-          ${ownerOptions}
-        </select>
-      </label>
       <label class="executive-owner-search">
         <span>Поиск сотрудника</span>
         <input type="search" value="${escapeHtml(filters.search || '')}" placeholder="Имя" data-executive-funnel-search>
@@ -1940,7 +1663,7 @@ function renderExecutiveFunnel(funnel) {
         <div class="section-subhead">
           <div>
             <h3>План-факт по сотрудникам</h3>
-            <p class="small muted">Период ${escapeHtml(model.periodStart)}-${escapeHtml(model.periodEnd)} · KPI-факт из company_plan для WB / Ozon / Яндекс; API-факт показан рядом, когда отличается.</p>
+            <p class="small muted">Период ${escapeHtml(model.periodStart)}-${escapeHtml(model.periodEnd)} · зарплатный KPI WB / Ozon / Яндекс / ЗЯ / Лэтуаль / Магнит.</p>
           </div>
           <div class="badge-stack">
             ${badge(`выполнение ${executiveFunnelPct(totals.completionToDate)}`, executiveFunnelTone(totals.completionToDate, 0.9, 1))}
@@ -1954,7 +1677,7 @@ function renderExecutiveFunnel(funnel) {
             ratio: totals.completionToDate,
             tone: executiveFunnelCompletionLevel(totals.completionToDate),
             value: executiveFunnelPct(totals.completionToDate),
-            detail: `план ${fmt.money(totals.planToDateRevenue)} · KPI-факт ${fmt.money(totals.factRevenue)}${executiveFunnelApiFactSuffix(totals)}`
+            detail: `план ${fmt.money(totals.planToDateRevenue)} · факт ${fmt.money(totals.factRevenue)}`
           })}
           ${renderExecutiveHeroKpi({
             label: 'Маржа',
@@ -2012,19 +1735,9 @@ function executiveFunnelForceRender() {
   else if (typeof window.renderExecutive === 'function') window.renderExecutive();
 }
 
-function executiveFunnelEventHandledByPremium(event) {
-  return Boolean(event?.target?.closest?.('#altea-premium-stage-executive'));
-}
-
 function executiveFunnelSetFilter(key, value) {
   if (!Object.prototype.hasOwnProperty.call(EXECUTIVE_FUNNEL_DEFAULT_FILTERS, key)) return;
-  const next = String(value ?? EXECUTIVE_FUNNEL_DEFAULT_FILTERS[key]);
-  const shouldClearSearch = key === 'owner' && next !== 'all' && executiveFunnelFilters.search;
-  if (executiveFunnelFilters[key] === next && !shouldClearSearch) return;
-  executiveFunnelFilters[key] = next;
-  if (key === 'owner' && executiveFunnelFilters[key] !== 'all') {
-    executiveFunnelFilters.search = '';
-  }
+  executiveFunnelFilters[key] = String(value ?? EXECUTIVE_FUNNEL_DEFAULT_FILTERS[key]);
   window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ = executiveFunnelFilters;
   executiveFunnelForceRender();
 }
@@ -2033,7 +1746,6 @@ function executiveFunnelInstallFilterEvents() {
   if (window.__ALTEA_EXECUTIVE_FUNNEL_FILTER_EVENTS__) return;
   window.__ALTEA_EXECUTIVE_FUNNEL_FILTER_EVENTS__ = true;
   document.addEventListener('click', (event) => {
-    if (executiveFunnelEventHandledByPremium(event)) return;
     const platformButton = event.target.closest?.('[data-executive-funnel-platform]');
     if (platformButton) {
       executiveFunnelSetFilter('platform', platformButton.getAttribute('data-executive-funnel-platform') || 'all');
@@ -2042,33 +1754,22 @@ function executiveFunnelInstallFilterEvents() {
     const statusButton = event.target.closest?.('[data-executive-funnel-status]');
     if (statusButton) {
       executiveFunnelSetFilter('status', statusButton.getAttribute('data-executive-funnel-status') || 'all');
-      return;
-    }
-    const ownerCard = event.target.closest?.('[data-executive-funnel-owner-card]');
-    if (ownerCard && !event.target.closest?.('button,a,input,select,textarea')) {
-      executiveFunnelSetFilter('owner', ownerCard.getAttribute('data-executive-funnel-owner-card') || 'all');
     }
   });
   document.addEventListener('input', (event) => {
-    if (executiveFunnelEventHandledByPremium(event)) return;
     const input = event.target?.matches?.('[data-executive-funnel-search]') ? event.target : null;
     if (!input) return;
     executiveFunnelSetFilter('search', input.value || '');
   });
   document.addEventListener('change', (event) => {
-    if (executiveFunnelEventHandledByPremium(event)) return;
-    const monthSelect = event.target?.matches?.('[data-executive-funnel-month]') ? event.target : null;
-    if (monthSelect) {
-      executiveFunnelSetFilter('month', monthSelect.value || 'latest');
-      return;
-    }
     const ownerSelect = event.target?.matches?.('[data-executive-funnel-owner]') ? event.target : null;
     if (ownerSelect) {
       executiveFunnelSetFilter('owner', ownerSelect.value || 'all');
       return;
     }
-    const sortSelect = event.target?.matches?.('[data-executive-funnel-sort]') ? event.target : null;
-    if (sortSelect) executiveFunnelSetFilter('sort', sortSelect.value || 'completionAsc');
+    const select = event.target?.matches?.('[data-executive-funnel-sort]') ? event.target : null;
+    if (!select) return;
+    executiveFunnelSetFilter('sort', select.value || 'completionAsc');
   });
 }
 
@@ -2442,12 +2143,6 @@ async function updateTaskRecord(taskId, patch = {}) {
   }, current.source || 'manual');
 
   Object.assign(current, updated);
-  if (['done', 'cancelled'].includes(current.status)) {
-    const recordAutoTombstone = window.recordAutoTaskTombstone || window.recordLaunchAutoTaskTombstone;
-    if (typeof recordAutoTombstone === 'function') {
-      try { recordAutoTombstone(current); } catch (error) { console.warn('[portal-task]', 'auto tombstone', error); }
-    }
-  }
   saveLocalStorage();
   try {
     await persistTask(current);
@@ -2539,11 +2234,6 @@ function openSkuModal(articleKey) {
 }
 
 const ACTIVE_VIEW_STORAGE_KEY = 'altea-portal-active-view-v1';
-let lastPortalUserScrollAt = 0;
-
-function markPortalUserScroll() {
-  lastPortalUserScrollAt = Date.now();
-}
 
 function normalizeViewName(view) {
   return typeof normalizePortalView === 'function' ? normalizePortalView(view) : view;
@@ -2617,34 +2307,22 @@ function applyPortalAccessToNavigation() {
   if (api?.apply) api.apply();
 }
 
-function dispatchPortalEvent(name, detail = {}) {
-  try {
-    window.dispatchEvent(new CustomEvent(name, { detail }));
-  } catch (error) {
-    console.warn('[portal:event]', name, error);
-  }
-}
+let scheduledViewRenderToken = 0;
 
-function publishPrimaryDataReady() {
-  window.__alteaAppState = state;
-  window.__ALTEA_STATE__ = state;
-  dispatchPortalEvent('altea:data-ready', {
-    view: state.activeView || resolveInitialView(),
-    dataReady: true
-  });
-}
-
-function publishPrimaryInitFinished(status = 'ready') {
-  window.__alteaAppState = state;
-  window.__ALTEA_STATE__ = state;
-  dispatchPortalEvent('altea:app-ready', {
-    view: state.activeView || resolveInitialView(),
-    dataReady: Boolean(state.boot?.dataReady),
-    status
-  });
-  if (window.AlteaMotion && typeof window.AlteaMotion.hide === 'function' && !document.body.classList.contains('portal-auth-locked')) {
-    window.setTimeout(() => window.AlteaMotion.hide(), status === 'ready' ? 120 : 360);
+function scheduleViewRender(view) {
+  const targetView = normalizeViewName(view || state.activeView || 'dashboard');
+  const token = ++scheduledViewRenderToken;
+  const run = () => {
+    if (token !== scheduledViewRenderToken) return;
+    const activeView = normalizeViewName(state.activeView || 'dashboard');
+    if (activeView !== targetView) return;
+    rerenderCurrentView();
+  };
+  if (typeof window.requestAnimationFrame === 'function') {
+    window.requestAnimationFrame(() => window.setTimeout(run, 0));
+    return;
   }
+  window.setTimeout(run, 0);
 }
 
 function setView(view, options = {}) {
@@ -2653,25 +2331,39 @@ function setView(view, options = {}) {
   const persist = options.persist !== false;
   const syncHash = options.syncHash !== false;
   state.activeView = view;
-  if (view === 'sku-contour' && options.preserveSkuWorkspaceMode !== true) state.skuWorkspaceMode = 'contour';
+  if (view === 'sku-contour' && options.preserveSkuWorkspaceMode !== true) state.skuWorkspaceMode = options.skuWorkspaceMode || 'registry';
   if (persist) persistActiveView(view);
   if (syncHash) syncHashWithView(view);
   applyPortalAccessToNavigation();
   document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
   document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
+  if (view === 'control' && window.__ALTEA_TASK_KANBAN_PRIMARY__ !== false) {
+    document.getElementById('view-control')?.classList.add('task-route-locked');
+  }
   window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view } }));
   void prepareView(view);
+}
+
+function viewHasReusableShell(view) {
+  const root = document.getElementById(`view-${view}`);
+  if (!root) return false;
+  if (view === 'control') {
+    return Boolean(root.querySelector('[data-task-calendar-design-v1][data-task-kanban-v1],[data-task-route-boot]'));
+  }
+  return false;
 }
 
 async function prepareView(view) {
   view = typeof normalizePortalView === 'function' ? normalizePortalView(view) : view;
   if (!state.boot.dataReady) {
-    rerenderCurrentView();
+    scheduleViewRender(view);
     return;
   }
 
   const lazyKey = VIEW_DATA_REQUIREMENTS[view];
-  if (lazyKey && !state.boot.lazyReady?.[lazyKey]) {
+  const lazyReady = !lazyKey || state.boot.lazyReady?.[lazyKey];
+  const lazyPending = lazyKey && state.boot.lazyLoads?.[lazyKey];
+  if (view !== 'control' && lazyKey && !lazyReady && !lazyPending && !viewHasReusableShell(view)) {
     renderViewLoading(`view-${view}`, VIEW_TITLES[view] || 'Экран');
   }
 
@@ -2685,7 +2377,7 @@ async function prepareView(view) {
   }
 
   if (state.activeView !== view) return;
-  rerenderCurrentView();
+  scheduleViewRender(view);
 }
 
 function renderViewFailure(rootId, title, error) {
@@ -2707,60 +2399,12 @@ function renderViewFailure(rootId, title, error) {
 }
 
 function renderDashboardView() {
-  const root = document.getElementById('view-dashboard');
   const interactiveApi = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
-  const ceoMotionApi = window.__ALTEA_DASHBOARD_CEO_MOTION_V1__;
-  const isCeoMotionReady = () => Boolean(
-    window.__ALTEA_DASHBOARD_CEO_MOTION_V1__?.render
-      || root?.querySelector('.ceo-motion-v1')
-      || root?.dataset.dashboardCeoMotion
-  );
-  const requestDashboardHotfixes = () => {
-    if (typeof window.__alteaLoadLiveHotfixes !== 'function') return;
-    Promise.resolve(window.__alteaLoadLiveHotfixes('dashboard', { rerender: false }))
-      .catch((error) => console.warn('[portal-dashboard]', error));
-  };
-
-  if (ceoMotionApi && typeof ceoMotionApi.render === 'function') {
-    ceoMotionApi.render();
+  if (interactiveApi && typeof interactiveApi.prime === 'function') {
+    interactiveApi.prime(false);
     return;
   }
-
-  if (isCeoMotionReady()) return;
-
-  if (interactiveApi && window.__ALTEA_DASHBOARD_ALLOW_LEGACY__ === true) {
-    if (isCeoMotionReady()) return;
-    requestDashboardHotfixes();
-    if (typeof interactiveApi.hasRoot === 'function' && !interactiveApi.hasRoot() && typeof interactiveApi.applyNow === 'function') {
-      Promise.resolve(interactiveApi.applyNow(false)).catch((error) => console.warn('[portal-dashboard]', error));
-      return;
-    }
-    if (typeof interactiveApi.prime === 'function') interactiveApi.prime(false);
-    return;
-  }
-
-  if (root) {
-    if (typeof renderViewLoading === 'function') {
-      renderViewLoading('view-dashboard', VIEW_TITLES.dashboard || 'Dashboard');
-    } else {
-      root.innerHTML = '<div class="card"><div class="head"><div><h3>Dashboard</h3><div class="muted small">Loading dashboard layer.</div></div></div></div>';
-    }
-  }
-  requestDashboardHotfixes();
-  window.setTimeout(() => {
-    const ceoApi = window.__ALTEA_DASHBOARD_CEO_MOTION_V1__;
-    if (ceoApi && typeof ceoApi.render === 'function') {
-      ceoApi.render();
-      return;
-    }
-    if (isCeoMotionReady()) return;
-    const api = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
-    if (api && window.__ALTEA_DASHBOARD_ALLOW_LEGACY__ === true && typeof api.prime === 'function') {
-      api.prime(false);
-      return;
-    }
-    if (!document.getElementById('portalDashboardExecutiveRoot') && typeof renderDashboard === 'function' && renderDashboard.__dashboardCeoMotionV1) renderDashboard();
-  }, 700);
+  renderDashboard();
 }
 
 function initSidebarToggle() {
@@ -2799,16 +2443,6 @@ function initSidebarToggle() {
 
 function ensureSkuContourShell() {
   const nav = document.querySelector('.nav');
-  if (nav && !document.querySelector('.nav-btn[data-view="documents"]')) {
-    const button = document.createElement('button');
-    button.className = 'nav-btn';
-    button.type = 'button';
-    button.dataset.view = 'documents';
-    button.innerHTML = '<span>&#1061;&#1088;&#1072;&#1085;&#1080;&#1083;&#1080;&#1097;&#1077;</span><small>&#1092;&#1072;&#1081;&#1083;&#1099; &middot; &#1089;&#1089;&#1099;&#1083;&#1082;&#1080; &middot; &#1086;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1103;</small>';
-    const controlButton = nav.querySelector('.nav-btn[data-view="control"]');
-    const dataHealthButton = nav.querySelector('.nav-btn[data-view="data-health"]');
-    nav.insertBefore(button, controlButton?.nextSibling || dataHealthButton || nav.firstChild);
-  }
   if (nav && !document.querySelector('.nav-btn[data-view="data-health"]')) {
     const button = document.createElement('button');
     button.className = 'nav-btn';
@@ -2836,14 +2470,6 @@ function ensureSkuContourShell() {
     const dashboardSection = document.getElementById('view-dashboard');
     main.insertBefore(section, dashboardSection?.nextSibling || main.querySelector('.view') || null);
   }
-  if (main && !document.getElementById('view-documents')) {
-    const section = document.createElement('section');
-    section.className = 'view';
-    section.id = 'view-documents';
-    const controlSection = document.getElementById('view-control');
-    const dataHealthSection = document.getElementById('view-data-health');
-    main.insertBefore(section, controlSection?.nextSibling || dataHealthSection?.nextSibling || main.querySelector('.view') || null);
-  }
   if (main && !document.getElementById('view-sku-contour')) {
     const section = document.createElement('section');
     section.className = 'view';
@@ -2860,20 +2486,14 @@ function portalAttrSelector(name, value) {
 
 function capturePortalScrollState() {
   const scrollRoot = document.scrollingElement || document.documentElement;
-  const shellContent = document.querySelector('.altea-premium-shell-content');
   const activeView = typeof normalizePortalView === 'function'
     ? normalizePortalView(state.activeView || 'dashboard')
     : (state.activeView || 'dashboard');
   const viewRoot = document.getElementById(`view-${activeView}`);
   const snapshot = {
     view: activeView,
-    capturedAt: Date.now(),
     x: window.scrollX || scrollRoot?.scrollLeft || 0,
     y: window.scrollY || scrollRoot?.scrollTop || 0,
-    shellTop: shellContent?.scrollTop || 0,
-    shellLeft: shellContent?.scrollLeft || 0,
-    viewTop: viewRoot?.scrollTop || 0,
-    viewLeft: viewRoot?.scrollLeft || 0,
     tableWraps: [],
     anchor: null,
     modal: null
@@ -2932,7 +2552,6 @@ function capturePortalScrollState() {
 function restorePortalScrollState(snapshot) {
   if (!snapshot) return;
   const restore = () => {
-    if (lastPortalUserScrollAt > Number(snapshot.capturedAt || 0)) return;
     const activeView = typeof normalizePortalView === 'function'
       ? normalizePortalView(state.activeView || 'dashboard')
       : (state.activeView || 'dashboard');
@@ -2948,15 +2567,6 @@ function restorePortalScrollState(snapshot) {
       }
       if (!restoredByAnchor) window.scrollTo(snapshot.x, snapshot.y);
       const viewRoot = document.getElementById(`view-${activeView}`);
-      const shellContent = document.querySelector('.altea-premium-shell-content');
-      if (shellContent) {
-        shellContent.scrollLeft = snapshot.shellLeft || 0;
-        shellContent.scrollTop = snapshot.shellTop || 0;
-      }
-      if (viewRoot) {
-        viewRoot.scrollLeft = snapshot.viewLeft || 0;
-        viewRoot.scrollTop = snapshot.viewTop || 0;
-      }
       if (viewRoot && Array.isArray(snapshot.tableWraps)) {
         const wraps = Array.from(viewRoot.querySelectorAll('.table-wrap'));
         snapshot.tableWraps.forEach((item) => {
@@ -2985,6 +2595,23 @@ function restorePortalScrollState(snapshot) {
 function rerenderCurrentView() {
   const scrollSnapshot = capturePortalScrollState();
   applyOwnerOverridesToSkus();
+  function renderControlRoute() {
+    const root = document.getElementById('view-control');
+    if (root && window.__ALTEA_TASK_KANBAN_PRIMARY__ !== false) root.classList.add('task-route-locked');
+    if (typeof window.__ALTEA_TASK_KANBAN_RENDER__ === 'function') {
+      return window.__ALTEA_TASK_KANBAN_RENDER__();
+    }
+    if (window.__ALTEA_TASK_KANBAN_PRIMARY__ !== false) {
+      if (typeof window.__ALTEA_RENDER_TASK_BOOT_SHELL__ === 'function') {
+        return window.__ALTEA_RENDER_TASK_BOOT_SHELL__(root, 'app-core-10');
+      }
+      if (root) {
+        root.innerHTML = '<section class="task-route-boot" data-task-route-boot data-task-calendar-design-v1 data-task-loading="boot"><h2>Tasks</h2><p>Preparing task workspace...</p></section>';
+      }
+      return root;
+    }
+    return renderControlCenter();
+  }
   const renderPlan = [
     ['view-data-health', 'Календарь', () => { if (typeof renderPortalDataHealth === 'function') renderPortalDataHealth('view-data-health'); }],
     ['view-oos-control', 'OOS контроль', () => { if (typeof renderOosControl === 'function') renderOosControl('view-oos-control'); }],
@@ -2997,10 +2624,11 @@ function rerenderCurrentView() {
     ['view-repricer', 'Репрайсер', renderRepricer],
     ['view-prices', 'Цены', () => { if (typeof window.renderPriceWorkbench === 'function') window.renderPriceWorkbench(); }],
     ['view-order', 'Логистика и заказ', () => { if (typeof renderOrderCalculator === 'function') renderOrderCalculator(); }],
-    ['view-control', 'Задачи', renderControlCenter],
+    ['view-control', 'Задачи', renderControlRoute],
     ['view-skus', 'Реестр SKU', renderSkuRegistry],
-    ['view-launches', 'Новинки', renderLaunches],
+    ['view-launches', 'Продукт / новинки', renderLaunches],
     ['view-product-leaderboard', 'Продуктовый лидерборд', renderProductLeaderboard],
+    ['view-launch-control', 'Запуск новинок', renderLaunchControl],
     ['view-meetings', 'Ритм работы', renderMeetings],
     ['view-executive', 'Руководителю', renderExecutive]
   ];
@@ -3050,24 +2678,11 @@ function attachGlobalListeners() {
   initSidebarToggle();
   ensureTaskModal();
   applyPortalAccessToNavigation();
-  window.addEventListener('wheel', markPortalUserScroll, { passive: true, capture: true });
-  window.addEventListener('touchmove', markPortalUserScroll, { passive: true, capture: true });
-  window.addEventListener('keydown', (event) => {
-    if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) markPortalUserScroll();
-  }, true);
   window.addEventListener('altea:accesschange', () => {
     applyPortalAccessToNavigation();
     if (!isPortalViewAllowed(state.activeView || 'dashboard')) setView(firstAllowedPortalView());
   });
-  const sidebarNav = document.querySelector('.sidebar .nav');
-  if (sidebarNav) {
-    sidebarNav.addEventListener('click', (event) => {
-      const btn = event.target.closest('.nav-btn[data-view]');
-      if (!btn || !sidebarNav.contains(btn)) return;
-      event.preventDefault();
-      setView(btn.dataset.view);
-    });
-  }
+  document.querySelectorAll('.nav-btn').forEach((btn) => btn.addEventListener('click', () => setView(btn.dataset.view)));
   window.addEventListener('hashchange', () => {
     const hashView = readViewFromHash();
     if (!hashView || hashView === state.activeView) return;
@@ -3144,6 +2759,9 @@ function attachGlobalListeners() {
 }
 
 async function init() {
+  if (window.alteaPortalAuthGate?.ensureAuthenticated) {
+    await window.alteaPortalAuthGate.ensureAuthenticated();
+  }
   ensureSkuContourShell();
   attachGlobalListeners();
   state.boot.dataWarnings = [];
@@ -3176,6 +2794,13 @@ async function init() {
       }
     };
     const loadBootJsonOrFallback = async (path, fallback, label = path) => {
+      if (!state.boot.dataReady && (
+        path === 'data/predictive_risk_snapshot.json'
+        || path === 'data/auto_task_signals.json'
+        || path === 'data/predictive_risk_outcome_audit.json'
+      )) {
+        return cloneBootFallback(fallback);
+      }
       try {
         if (typeof loadJson === 'function') return await loadJson(path);
         return await loadJsonOrFallback(path, fallback, label);
@@ -3189,20 +2814,62 @@ async function init() {
         return cloneBootFallback(fallback);
       }
     };
+    const predictiveRiskFallback = { schema: 'qharisma-predictive-risk-v1', generatedAt: '', summary: {}, risks: [], autoTaskSignals: [] };
+    const autoTaskSignalsFallback = { schema: 'qharisma-auto-task-signals-v1', generatedAt: '', summary: {}, signals: [] };
+    const predictiveRiskOutcomeAuditFallback = { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 };
+    const schedulePostBootTaskSignalLoad = () => {
+      const run = async () => {
+        try {
+          const [predictiveRiskPayload, autoTaskSignalsPayload, predictiveRiskOutcomeAuditPayload] = await Promise.all([
+            loadBootJsonOrFallback('data/predictive_risk_snapshot.json', predictiveRiskFallback, 'Predictive risks'),
+            loadBootJsonOrFallback('data/auto_task_signals.json', autoTaskSignalsFallback, 'Auto task signals'),
+            loadBootJsonOrFallback('data/predictive_risk_outcome_audit.json', predictiveRiskOutcomeAuditFallback, 'Predictive risk audit')
+          ]);
+          state.predictiveRisk = predictiveRiskPayload && typeof predictiveRiskPayload === 'object'
+            ? predictiveRiskPayload
+            : cloneBootFallback(predictiveRiskFallback);
+          state.autoTaskSignals = autoTaskSignalsPayload && typeof autoTaskSignalsPayload === 'object'
+            ? autoTaskSignalsPayload
+            : cloneBootFallback(autoTaskSignalsFallback);
+          state.predictiveRiskOutcomeAudit = predictiveRiskOutcomeAuditPayload && typeof predictiveRiskOutcomeAuditPayload === 'object'
+            ? predictiveRiskOutcomeAuditPayload
+            : cloneBootFallback(predictiveRiskOutcomeAuditFallback);
+          try {
+            if (typeof window.__ALTEA_TASK_KANBAN_INVALIDATE__ === 'function') window.__ALTEA_TASK_KANBAN_INVALIDATE__();
+          } catch (_) {}
+          try {
+            window.dispatchEvent(new CustomEvent('altea:task-signals-ready'));
+          } catch (_) {}
+          if (state.activeView === 'control') {
+            if (typeof window.__ALTEA_TASK_KANBAN_RENDER__ === 'function') window.__ALTEA_TASK_KANBAN_RENDER__();
+            else rerenderCurrentView();
+          }
+        } catch (error) {
+          console.warn('[portal-boot]', 'task signals lazy load failed', error);
+        }
+      };
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(run, { timeout: 3500 });
+        return;
+      }
+      window.setTimeout(run, 900);
+    };
     const local = loadLocalStorage();
-    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory, skuAliases, skuAliasIgnore, skuAliasAudit, skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine] = await Promise.all([
+    const [dashboard, skus, seed, productLeaderboard, skuAliases, skuAliasIgnore, skuAliasAudit, skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine, predictiveRisk, autoTaskSignals, predictiveRiskOutcomeAudit] = await Promise.all([
       loadBootJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
       loadBootJsonOrFallback('data/skus.json', [], 'SKU'),
       loadBootJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments'),
       loadBootJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
-      loadBootJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
       loadBootJsonOrFallback('data/sku_aliases.json', { schema: 'sku-api-aliases-v1', aliases: [] }, 'SKU aliases'),
       loadBootJsonOrFallback('data/sku_alias_ignore.json', { schema: 'sku-api-ignore-v1', ignored: [] }, 'SKU alias ignore'),
       loadBootJsonOrFallback('data/sku_alias_audit.json', { schema: 'sku-alias-audit-v1', events: [] }, 'SKU alias audit'),
       loadBootJsonOrFallback('data/sku_matrix.json', { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } }, 'SKU matrix'),
       loadBootJsonOrFallback('data/portal_sync_health.json', { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} }, 'Состояние sync'),
       loadBootJsonOrFallback('data/portal_data_quality.json', { generatedAt: '', status: '', summary: {}, issues: [] }, 'Контроль данных'),
-      loadBootJsonOrFallback('data/portal_data_quarantine.json', { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] }, 'Карантин данных')
+      loadBootJsonOrFallback('data/portal_data_quarantine.json', { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] }, 'Карантин данных'),
+      loadBootJsonOrFallback('data/predictive_risk_snapshot.json', { schema: 'qharisma-predictive-risk-v1', generatedAt: '', summary: {}, risks: [], autoTaskSignals: [] }, 'Прогнозные риски'),
+      loadBootJsonOrFallback('data/auto_task_signals.json', { schema: 'qharisma-auto-task-signals-v1', generatedAt: '', summary: {}, signals: [] }, 'Прогнозные автосигналы'),
+      loadBootJsonOrFallback('data/predictive_risk_outcome_audit.json', { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 }, 'Аудит прогнозов')
     ]);
 
     state.dashboard = dashboard || { cards: [] };
@@ -3213,7 +2880,7 @@ async function init() {
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
       ? normalizeProductLeaderboardPayload(productLeaderboard)
       : (productLeaderboard || { generatedAt: '', items: [], summary: {} });
-    state.productLeaderboardHistory = Array.isArray(productLeaderboardHistory) ? productLeaderboardHistory : [];
+    state.productLeaderboardHistory = [];
     state.skuAliases = skuAliases && typeof skuAliases === 'object'
       ? skuAliases
       : { schema: 'sku-api-aliases-v1', aliases: [] };
@@ -3235,7 +2902,16 @@ async function init() {
     state.portalDataQuarantine = portalDataQuarantine && typeof portalDataQuarantine === 'object'
       ? portalDataQuarantine
       : { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] };
-    state.boot.lazyReady.productLeaderboard = Array.isArray(productLeaderboardHistory) && productLeaderboardHistory.length > 1;
+    state.predictiveRisk = predictiveRisk && typeof predictiveRisk === 'object'
+      ? predictiveRisk
+      : { schema: 'qharisma-predictive-risk-v1', generatedAt: '', summary: {}, risks: [], autoTaskSignals: [] };
+    state.autoTaskSignals = autoTaskSignals && typeof autoTaskSignals === 'object'
+      ? autoTaskSignals
+      : { schema: 'qharisma-auto-task-signals-v1', generatedAt: '', summary: {}, signals: [] };
+    state.predictiveRiskOutcomeAudit = predictiveRiskOutcomeAudit && typeof predictiveRiskOutcomeAudit === 'object'
+      ? predictiveRiskOutcomeAudit
+      : { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 };
+    state.boot.lazyReady.productLeaderboard = false;
     state.repricer = { generatedAt: '', summary: {}, rows: [] };
     if (!state.orderCalc.articleKey) state.orderCalc.articleKey = state.skus[0]?.articleKey || '';
     if (!state.orderCalc.daysToNextReceipt) state.orderCalc.daysToNextReceipt = String(Math.round(numberOrZero(state.skus[0]?.leadTimeDays) || 30));
@@ -3244,6 +2920,7 @@ async function init() {
       tasks: Array.isArray(local.tasks) ? local.tasks : [],
       decisions: Array.isArray(local.decisions) ? local.decisions : [],
       ownerOverrides: Array.isArray(local.ownerOverrides) ? local.ownerOverrides : [],
+      resourceLinks: Array.isArray(local.resourceLinks) ? local.resourceLinks : [],
       repricerSettings: normalizeRepricerSettings(local.repricerSettings || {}),
       repricerSettingsUpdatedAt: String(local.repricerSettingsUpdatedAt || '').trim(),
       repricerOverrides: Array.isArray(local.repricerOverrides) ? local.repricerOverrides.map(normalizeRepricerOverride).filter((item) => item.articleKey) : [],
@@ -3265,8 +2942,6 @@ async function init() {
       repricerLastApiReconcile: local.repricerLastApiReconcile && typeof local.repricerLastApiReconcile === 'object' ? local.repricerLastApiReconcile : null,
       portalDataRules: local.portalDataRules && typeof local.portalDataRules === 'object' ? local.portalDataRules : {},
       portalDataRulesUpdatedAt: String(local.portalDataRulesUpdatedAt || '').trim(),
-      autoTaskTombstones: Array.isArray(local.autoTaskTombstones) ? local.autoTaskTombstones.map((item) => String(item || '').trim()).filter(Boolean) : [],
-      launchAutoTaskTombstones: Array.isArray(local.launchAutoTaskTombstones) ? local.launchAutoTaskTombstones.map((item) => String(item || '').trim()).filter(Boolean) : [],
       portalIssueSnapshot: local.portalIssueSnapshot && typeof local.portalIssueSnapshot === 'object' ? local.portalIssueSnapshot : null
     };
     state.storage = typeof completePortalStorage === 'function'
@@ -3276,24 +2951,19 @@ async function init() {
     mergeSeedStorage(seed || {});
     state.boot.dataReady = true;
     setView(resolveInitialView(), { persist: true, syncHash: true });
-    publishPrimaryDataReady();
+    schedulePostBootTaskSignalLoad();
     if (typeof window.portalStartOperationalAutoRefresh === 'function') window.portalStartOperationalAutoRefresh();
     window.setTimeout(() => {
-      if (typeof ensureViewData !== 'function') return;
-      ['sku-plan-fact', 'oos-control'].forEach((viewKey) => {
-        ensureViewData(viewKey).catch((error) => console.warn('[portal-prefetch]', viewKey, error));
-      });
-    }, 800);
-    window.setTimeout(() => {
-      if (typeof window.__alteaRefreshProductLeaderboardSnapshotFast !== 'function') return;
-      window.__alteaRefreshProductLeaderboardSnapshotFast({ reason: 'portal-prefetch', rerender: false })
-        .catch((error) => console.warn('[portal-prefetch]', 'product-leaderboard:fast-history', error));
-    }, 900);
-    window.setTimeout(() => {
-      if (typeof loadProductLeaderboardSupplementalData !== 'function') return;
-      loadProductLeaderboardSupplementalData({ rerender: false })
-        .catch((error) => console.warn('[portal-prefetch]', 'product-leaderboard:supplementals', error));
-    }, 1200);
+      const runPrefetch = () => {
+        if (typeof ensureViewData !== 'function' || document.hidden || state.activeView !== 'dashboard') return;
+        ensureViewData('oos-control').catch((error) => console.warn('[portal-prefetch]', 'oos-control', error));
+      };
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(runPrefetch, { timeout: 12000 });
+        return;
+      }
+      window.setTimeout(runPrefetch, 4500);
+    }, 4500);
     if (state.boot.dataWarnings.length) setAppError(`Часть данных загружена с исправлениями: ${state.boot.dataWarnings[0]}`);
     else setAppError('');
   } catch (error) {
@@ -3302,7 +2972,6 @@ async function init() {
   } finally {
     window.__ALTEA_PRIMARY_INIT_PENDING__ = false;
     window.__ALTEA_PRIMARY_INIT_FINISHED__ = true;
-    publishPrimaryInitFinished(state.boot.dataReady ? 'ready' : 'error');
   }
 
   return teamInitPromise;

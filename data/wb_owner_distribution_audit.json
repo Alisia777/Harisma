@@ -1,33 +1,25 @@
 {
   "schema": "portal-wb-owner-distribution-audit-v1",
-  "generatedAt": "2026-07-02T00:00:00+03:00",
+  "generatedAt": "2026-07-03T06:44:03.327Z",
   "source": {
-    "kind": "canonical-sku-registry",
-    "file": "skus.json",
-    "previousSourceFile": "skus.json",
-    "sourceRowCount": 143,
-    "mappedRowCount": 125,
-    "duplicateCount": 1,
-    "note": "Rebuilt from canonical skus.json fields so daily close is reproducible on CI."
+    "file": "C:\\Users\\artiu\\Downloads\\portal_merged_statuses_from_ksenia_minmax.xlsx",
+    "sheetName": "Для выгрузки",
+    "ownerSource": "portal_merged_statuses_from_ksenia_minmax.xlsx / Для выгрузки",
+    "sourceRowCount": 848,
+    "mappedRowCount": 177,
+    "duplicateCount": 50
   },
   "summary": {
-    "portalSkuCount": 143,
-    "wbSkuCount": 143,
-    "matchedSkuCount": 125,
-    "updatedOwnerCount": 36,
-    "unchangedOwnerCount": 89,
-    "missingInPortalCount": 6,
-    "missingInDistributionCount": 18,
-    "ownerConflictCount": 36,
+    "portalSkuCount": 209,
+    "wbSkuCount": 59,
+    "matchedSkuCount": 177,
+    "updatedOwnerCount": 0,
+    "unchangedOwnerCount": 177,
+    "missingInPortalCount": 0,
+    "missingInDistributionCount": 0,
     "ownerCounts": {
-      "Лапыгин Максим": 52,
-      "Васильева Мария": 73
-    },
-    "platformOwnerCounts": {
-      "wb": {
-        "Кирилл": 29,
-        "Васильева Мария": 26
-      }
+      "Мария Васильева": 158,
+      "Максим Лапыгин": 19
     }
   },
   "matched": [
@@ -35,2359 +27,2579 @@
       "articleKey": "т-34_bad_60caps",
       "article": "Т-34_BAD_60caps",
       "name": "Возбудитель для мужчин, БАД Т-34 возбуждающие для потенции, эрекции, 60 капсул",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
       "changed": false,
-      "sourceRow": 127,
-      "revenue": 802312,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
+      "sourceRow": 61,
+      "sourceRows": [
+        61
+      ]
     },
     {
       "articleKey": "activeprost",
       "article": "activeprost",
       "name": "Пищевая добавка Активпрост , CPA, 10 капсул",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Молодякова Дария",
-      "changed": true,
-      "sourceRow": 109,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 41,
+      "sourceRows": [
+        41
+      ]
+    },
+    {
+      "articleKey": "adenofrin",
+      "article": "adenofrin",
+      "name": "Возбудитель для мужчин, для эрекции, для потенции, для секса. 18+ / Аденофрин",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 24,
+      "sourceRows": [
+        24
+      ]
+    },
+    {
+      "articleKey": "adenofringreen",
+      "article": "adenofringreen",
+      "name": "Таблетки от простатита для мужчин для потенции Алтея, Аденофрин, 20 шт",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 38,
+      "sourceRows": [
+        38
+      ]
     },
     {
       "articleKey": "allicil_gribok15ml",
       "article": "allicil_gribok15ml",
       "name": "Мазь от грибка ногтей Аллицил, CPA, 15 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
       "changed": false,
-      "sourceRow": 63,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
+      "sourceRow": 49,
+      "sourceRows": [
+        49
+      ]
     },
     {
       "articleKey": "alteya_beauty_brows_box",
       "article": "alteya_beauty_brows_box",
       "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Васильева Мария",
-      "changed": true,
-      "sourceRow": 97,
-      "revenue": 324002,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 152,
+      "sourceRows": [
+        152
+      ]
+    },
+    {
+      "articleKey": "alteya_young_skin_box",
+      "article": "alteya_young_skin_box",
+      "name": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 149,
+      "sourceRows": [
+        149
+      ]
+    },
+    {
+      "articleKey": "antigiperton",
+      "article": "antigiperton",
+      "name": "Антигипертон витамины для сердца и сосудов от давления 10 шт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 203,
+      "sourceRows": [
+        203
+      ]
     },
     {
       "articleKey": "artoks",
       "article": "artoks",
       "name": "Мазь для суставов Артокс, CPA, 50 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Питайкин Артём",
-      "changed": true,
-      "sourceRow": 32,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 27,
+      "sourceRows": [
+        27,
+        28,
+        29,
+        30
+      ]
     },
     {
       "articleKey": "artoks_1_1",
       "article": "artoks_1_1",
       "name": "Мазь для суставов Артокс, CPA, 50 мл, набор из 2 шт",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Питайкин Артём",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
       "changed": false,
-      "sourceRow": 43,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
+      "sourceRow": 53,
+      "sourceRows": [
+        53
+      ]
     },
     {
       "articleKey": "artoks_75ml",
       "article": "artoks_75ml",
       "name": "Мазь для суставов Артокс, CPA, 75 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Питайкин Артём",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
       "changed": false,
       "sourceRow": 72,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
+      "sourceRows": [
+        72,
+        73
+      ]
     },
     {
       "articleKey": "b_kompleks_bad_60tabl",
       "article": "b_kompleks_BAD_60tabl",
       "name": "Витамины группы В комплекс Алтея 60 жевательных таблеток",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
       "changed": false,
-      "sourceRow": 126,
-      "revenue": 1331958,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
+      "sourceRow": 147,
+      "sourceRows": [
+        147
+      ]
+    },
+    {
+      "articleKey": "balzam_kudryavii_metod_500ml",
+      "article": "balzam_kudryavii_metod_500ml",
+      "name": "Бальзам для кудрявых волос с кератином 50 0мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 217,
+      "sourceRows": [
+        217
+      ]
+    },
+    {
+      "articleKey": "biotrin_60ml",
+      "article": "biotrin_60ml",
+      "name": "Мазь для суставов обезболивающая, панты морала, хондротин, глюкозамин, Биотрин, 60 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 66,
+      "sourceRows": [
+        66
+      ]
+    },
+    {
+      "articleKey": "brutalax",
+      "article": "brutalax",
+      "name": "Возбудитель для мужчин, таблетки для потенции у мужчин, для секса, Бруталакс, 18+",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 33,
+      "sourceRows": [
+        33
+      ]
     },
     {
       "articleKey": "cardicin_bad_60caps",
       "article": "cardicin_BAD_60caps",
       "name": "cardicin_BAD_60caps",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 46,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "curly_method_300ml",
-      "article": "curly_method_300ml",
-      "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 3,
-      "revenue": 15948078,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "daoshen",
-      "article": "daoshen",
-      "name": "Мазь от грибка ногтей Даошэн, CPA, 15 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 81,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "daoshen_75ml",
-      "article": "daoshen_75ml",
-      "name": "Мазь от грибка ногтей Даошэн, CPA, 75 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 75,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "dardrakona",
-      "article": "dardrakona",
-      "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 108,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "dardrakona_1_1",
-      "article": "dardrakona_1_1",
-      "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 87,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "dardrakona_75ml",
-      "article": "dardrakona_75ml",
-      "name": "Крем от варикоза Дар дракона, CPA, 75 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 98,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "dolgar",
-      "article": "dolgar",
-      "name": "Мазь от грибка ногтей Долгар, CPA, 15 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 104,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "ekdisteron_ultra_man_60caps",
-      "article": "ekdisteron_ultra_man_60caps",
-      "name": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 92,
-      "revenue": 510808,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "ekzifol",
-      "article": "ekzifol",
-      "name": "Мазь от грибка ногтей Экзифол, CPA, 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 62,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "enzim_pudra_80gr_v2",
-      "article": "enzim_pudra_80gr_v2",
-      "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 27,
-      "revenue": 4306241,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "erobrut",
-      "article": "erobrut",
-      "name": "Пищевая добавка Эробрут, CPA, 20 капсул",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Питайкин Артём",
-      "changed": true,
-      "sourceRow": 113,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "frutaksa_bad_200gr",
-      "article": "frutaksa_BAD_200gr",
-      "name": "Жиросжигатель, детокс, Алтея, Алтея, Фрутакса, 200 грамм",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 67,
-      "revenue": 692156,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "frutalika_bad_60caps",
-      "article": "frutalika_BAD_60caps",
-      "name": "Пиколинат хрома для похудения, детокс, жиросжигатель, Алтея, Фруталика, 60 капсул",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 69,
-      "revenue": 276311,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "gel_antiakne_20ml",
-      "article": "gel_antiakne_20ml",
-      "name": "Точечный крем от прыщей. Корректор точечный против прыщей, крем от акне. Салициловая кислота, азелаиновая кислота Алтея 20 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Васильева Мария",
-      "changed": true,
-      "sourceRow": 44,
-      "revenue": 335163,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "gel_antiakne_20ml_v2",
-      "article": "gel_antiakne_20ml_v2",
-      "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Васильева Мария",
-      "changed": true,
-      "sourceRow": 1,
-      "revenue": 5347504,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "gel_brows_5ml",
-      "article": "gel_brows_5ml",
-      "name": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 51,
-      "revenue": 440850,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "gel_dlya_britya_300ml",
-      "article": "gel_dlya_britya_300ml",
-      "name": "Гель для бритья мужской без пены охлаждающий с ментолом Алтея 300 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 111,
-      "revenue": 2494667,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "gel_dlya_brovei_6ml",
-      "article": "gel_dlya_brovei_6ml",
-      "name": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 45,
-      "revenue": 1262886,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "gel_for_men_3_in_1_1000ml",
-      "article": "gel_for_men_3_in_1_1000ml",
-      "name": "Гель для душа мужской парфюмированный Алтея 1000 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 95,
-      "revenue": 554229,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "gel_parfum_tabacco_vanille_450ml",
-      "article": "gel_parfum_tabacco_vanille_450ml",
-      "name": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 103,
-      "revenue": 593244,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "gemorekt",
-      "article": "gemorekt",
-      "name": "Крем от гемороя Геморект, CPA, 15 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 88,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "glikiron_bad_60caps",
-      "article": "glikiron_BAD_60caps",
-      "name": "Гликирон БАД для профилактики диабета контроль аппетита",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 80,
-      "revenue": 418777,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "i_am_alpha_bad_60caps",
-      "article": "i_am_alpha_BAD_60caps",
-      "name": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 96,
-      "revenue": 859149,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "indolakt_bad_60caps",
-      "article": "indolakt_BAD_60caps",
-      "name": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 58,
-      "revenue": 2019902,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "insulight_bad_60caps",
-      "article": "insulight_BAD_60caps",
-      "name": "Витамины для диабетиков, для профилактики от сахарного диабета, Алтея, Инсулайт, 60 капсул",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 35,
-      "revenue": 3989810,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "intimvita_200ml",
-      "article": "intimvita_200ml",
-      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 91,
-      "revenue": 187787,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "intimvita_300ml",
-      "article": "intimvita_300ml",
-      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 112,
-      "revenue": 754724,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "kavmaz",
-      "article": "kavmaz",
-      "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 41,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "kavmaz_40ml_1_1",
-      "article": "kavmaz_40ml_1_1",
-      "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл, набор из 2 шт",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 59,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "kavmaz_60ml",
-      "article": "kavmaz_60ml",
-      "name": "Мазь для суставов Кавказская мазь , CPA, 60 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 30,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "khvoinitsa",
-      "article": "khvoinitsa",
-      "name": "Пищевая добавка Хвойница , CPA, 7 саше",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 119,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "khvoinitsa_1_1",
-      "article": "khvoinitsa_1_1",
-      "name": "Пищевая добавка Хвойница , CPA, 7 саше",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 118,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "krem_buster_250ml",
-      "article": "krem_buster_250ml",
-      "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 29,
-      "revenue": 3404021,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "krem_dlya_ruk_75ml",
-      "article": "krem_dlya_ruk_75ml",
-      "name": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 50,
-      "revenue": 3356907,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "krem_dlya_vek_30ml",
-      "article": "krem_dlya_vek_30ml",
-      "name": "Крем для век и кожи вокруг глаз Жидкие патчи для глаз Алтея 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 17,
-      "revenue": 1990335,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "krem_ot_rastyazhek",
-      "article": "krem_ot_rastyazhek",
-      "name": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 11,
-      "revenue": 7326792,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "krem_spf50_50ml",
-      "article": "krem_spf50_50ml",
-      "name": "СПФ для лица База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 16,
-      "revenue": 2094580,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "kremshelk_100ml",
-      "article": "kremshelk_100ml",
-      "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 15,
-      "revenue": 7494622,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "krovavii_piling_30ml",
-      "article": "krovavii_piling_30ml",
-      "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 5,
-      "revenue": 17405005,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "limfaks_bad_30caps",
-      "article": "limfaks_BAD_30caps",
-      "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 7,
-      "revenue": 2711841,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "maska_dlya_lica_100ml",
-      "article": "maska_dlya_lica_100ml",
-      "name": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 24,
-      "revenue": 11524515,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "maska-batter_250ml",
-      "article": "maska-batter_250ml",
-      "name": "Маска для волос с кератином восстанавливающая увлажняющая, Алтея, 250 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 57,
-      "revenue": 2671904,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "maska-batter_500ml",
-      "article": "maska-batter_500ml",
-      "name": "Маска для волос с кератином увлажняющая 500мл Алтея",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 65,
-      "revenue": 578665,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "maska-batter_dlya_rosta_500ml",
-      "article": "maska-batter_dlya_rosta_500ml",
-      "name": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 18,
-      "revenue": 5197341,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "maslo_dlya_borodi_50ml",
-      "article": "maslo_dlya_borodi_50ml",
-      "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 31,
-      "revenue": 2351722,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "maslo_dlya_volos_parf_110ml_",
-      "article": "maslo_dlya_volos_parf_110ml_",
-      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 71,
-      "revenue": 392549,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "matte_wax_50ml",
-      "article": "matte_wax_50ml",
-      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 107,
-      "revenue": 2070641,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "menoflavon_bad_60caps",
-      "article": "menoflavon_BAD_60caps",
-      "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 64,
-      "revenue": 857351,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "micardin",
-      "article": "micardin",
-      "name": "Пищевая добавка Микардин, CPA, 10 капсул",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 73,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "micardin_1_1",
-      "article": "micardin_1_1",
-      "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 55,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "micardin_1_1_1",
-      "article": "micardin_1_1_1",
-      "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 82,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "micardinforte",
-      "article": "micardinforte",
-      "name": "Пищевая добавка Микардин Форте, CPA, 10 капсул",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
       "changed": false,
       "sourceRow": 60,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
+      "sourceRows": [
+        60
+      ]
     },
     {
-      "articleKey": "mycoplax",
-      "article": "mycoplax",
-      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
+      "articleKey": "chudofrukt",
+      "article": "chudofrukt",
+      "name": "Шипучие таблетки для похудения, детокс, жиросжигатель, Алтея, Чудо фрукт, 10 таблеток",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
       "changed": false,
-      "sourceRow": 47,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
+      "sourceRow": 44,
+      "sourceRows": [
+        44
+      ]
     },
     {
-      "articleKey": "mycoplax_1_1",
-      "article": "mycoplax_1_1",
-      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл, набор из 2 шт",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 100,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "nabor_remuver_40ml",
-      "article": "nabor_remuver_40ml",
-      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 28,
-      "revenue": 1577260,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "nabor_remuver_40ml_1_1",
-      "article": "nabor_remuver_40ml_1_1",
-      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 94,
-      "revenue": 1113250,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "nabor_remuver_kremovii",
-      "article": "nabor_remuver_kremovii",
-      "name": "Ремувер для снятия ресниц, Алтея, 18г",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 38,
-      "revenue": 6133460,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "osteofast",
-      "article": "osteofast",
-      "name": "Мазь для суставов Остеофаст, CPA, 30 мл, набор из 3 шт",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 78,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "otivin",
-      "article": "otivin",
-      "name": "Пищевая добавка Отивин , CPA, 10 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 74,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "pantogor_100ml",
-      "article": "pantogor_100ml",
-      "name": "Мазь для суставов Пантогор , CPA, 100 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 36,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "penka_kudryavii_metod_150ml",
-      "article": "penka_kudryavii_metod_150ml",
-      "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 14,
-      "revenue": 11518558,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "pink_pepper_50ml",
-      "article": "pink_pepper_50ml",
-      "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 26,
-      "revenue": 2621129,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "psoral",
-      "article": "psoral",
-      "name": "Мазь от псориаза Псорал, CPA, 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 106,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "psoral_50ml",
-      "article": "psoral_50ml",
-      "name": "Мазь от псориаза Псорал, CPA, 50 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 86,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "relaksinol_bad_60caps",
-      "article": "relaksinol_BAD_60caps",
-      "name": "Магний В6 с лавандой, Алтея, Релаксинол, 60 капсул",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 83,
-      "revenue": 2404036,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "retiderm_50ml",
-      "article": "retiderm_50ml",
-      "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 2,
-      "revenue": 145130986,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "retinait_krem_01_50ml",
-      "article": "retinait_krem_01_50ml",
-      "name": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 42,
-      "revenue": 3235066,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "retinait_krem_025_50ml",
-      "article": "retinait_krem_025_50ml",
-      "name": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 21,
-      "revenue": 15757994,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "retinait_krem_05_50ml",
-      "article": "retinait_krem_05_50ml",
-      "name": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 19,
-      "revenue": 16897529,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "retinait_krem_1_5_50ml",
-      "article": "retinait_krem_1_5_50ml",
-      "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 13,
-      "revenue": 9429469,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "retinait_krem_1_50ml",
-      "article": "retinait_krem_1_50ml",
-      "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 8,
-      "revenue": 44771070,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "retinait_syvorotka_025_30ml",
-      "article": "retinait_syvorotka_025_30ml",
-      "name": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 34,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "retinait_syvorotka_05_30ml",
-      "article": "retinait_syvorotka_05_30ml",
-      "name": "Сыворотка для лица с ретинолом омолаживающая",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 20,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "retinait_syvorotka_1_30ml",
-      "article": "retinait_syvorotka_1_30ml",
-      "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 6,
-      "revenue": 14108652,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "retinol_boost_krem_dlya_vek_30ml",
-      "article": "retinol_boost_krem_dlya_vek_30ml",
-      "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 9,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "retinol_start_kit",
-      "article": "Retinol_Start_Kit",
-      "name": "Набор уходовой косметики для лица с ретинолом",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 117,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "sanatsin",
-      "article": "sanatsin",
-      "name": "Пищевая добавка Санацин, CPA, 20 штук",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 66,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "sanatsin_1_1",
-      "article": "sanatsin_1_1",
-      "name": "Пищевая добавка Санацин, CPA, 20 штук",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Питайкин Артём",
-      "changed": true,
-      "sourceRow": 68,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "shampun_dlya_rosta_250ml",
-      "article": "shampun_dlya_rosta_250ml",
-      "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
+      "articleKey": "chudofrukt_1_1",
+      "article": "chudofrukt_1_1",
+      "name": "Шипучие таблетки для похудения, детокс, жиросжигатель, Алтея, Чудо фрукт, 10 шт х 2",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
       "changed": false,
       "sourceRow": 52,
-      "revenue": 4614546,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "shampun_protiv_perhoti_250ml",
-      "article": "shampun_protiv_perhoti_250ml",
-      "name": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 70,
-      "revenue": 2549505,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "silk_hair_300ml",
-      "article": "silk_hair_300ml",
-      "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 61,
-      "revenue": 4454477,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "sinergel_30ml_1_1",
-      "article": "sinergel_30ml_1_1",
-      "name": "Мазь для суставов Синергель , CPA, 30 мл, набор из 2 шт",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 48,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "skrab_babl_gam_200ml",
-      "article": "skrab_babl_gam_200ml",
-      "name": "Скраб пилинг для кожи головы, Алтея, 200 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 101,
-      "revenue": 801764,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "solevoy_sprei_200ml",
-      "article": "solevoy_sprei_200ml",
-      "name": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 23,
-      "revenue": 3958588,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "spicul_gel_mask_75ml",
-      "article": "spicul_gel_mask_75ml",
-      "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 129,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "spiculboost_30ml",
-      "article": "spiculboost_30ml",
-      "name": "Сыворотка для лица с микроиглами и коллагеном",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 22,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "sprei_buster_100ml",
-      "article": "sprei_buster_100ml",
-      "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 10,
-      "revenue": 4717237,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "stik_ot_mozoley",
-      "article": "stik_ot_mozoley",
-      "name": "Карандаш от мозолей, стик от натирания, мозольный пластырь, Алтея, 20 г",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 124,
-      "revenue": 396300,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "sustalit",
-      "article": "sustalit",
-      "name": "Мазь для суставов Сусталит , CPA, 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 90,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "sustalit_30ml_1_1",
-      "article": "sustalit_30ml_1_1",
-      "name": "Мазь для суставов Сусталит , CPA, 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 79,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "sustalit_75ml",
-      "article": "sustalit_75ml",
-      "name": "Мазь для суставов Сусталит , CPA, 75 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 33,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "synergel_60ml",
-      "article": "synergel_60ml",
-      "name": "Мазь для суставов Синергель, CPA, 60 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 40,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "syvorotka_dlya_lica_30ml",
-      "article": "syvorotka_dlya_lica_30ml",
-      "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 4,
-      "revenue": 19008012,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "syvorotka_dlya_rosta_6ml",
-      "article": "syvorotka_dlya_rosta_6ml",
-      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 105,
-      "revenue": 710181,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "syvorotka_dlya_rosta_6ml_v2",
-      "article": "syvorotka_dlya_rosta_6ml_v2",
-      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 37,
-      "revenue": 1308026,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "syvorotka_guk_30ml",
-      "article": "syvorotka_guk_30ml",
-      "name": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 53,
-      "revenue": 1543576,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "syvorotka_niacin_05_30ml",
-      "article": "syvorotka_niacin_05_30ml",
-      "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
-      "previousOwnerWb": "",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "",
-      "productOwner": "Лапыгин Максим",
-      "changed": false,
-      "sourceRow": 12,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "telomeras_60caps",
-      "article": "telomeras_60caps",
-      "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Васильева Мария",
-      "changed": false,
-      "sourceRow": 25,
-      "revenue": 1957790,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "termo_sprei_200ml",
-      "article": "termo_sprei_200ml",
-      "name": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 39,
-      "revenue": 838688,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "tonik_dlya_lica_200ml",
-      "article": "tonik_dlya_lica_200ml",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 54,
-      "revenue": 580524,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "urinofix",
-      "article": "urinofix",
-      "name": "Пищевая добавка Уринофикс, CPA, 20 капсул",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Молодякова Дария",
-      "changed": true,
-      "sourceRow": 49,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "urolgan",
-      "article": "urolgan",
-      "name": "Пищевая добавка Уролган , CPA, 10 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Молодякова Дария",
-      "changed": true,
-      "sourceRow": 125,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "uromax",
-      "article": "uromax",
-      "name": "Пищевая добавка Уромакс , CPA, 20 капсул",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Молодякова Дария",
-      "changed": true,
-      "sourceRow": 76,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "uromax_1_1",
-      "article": "uromax_1_1",
-      "name": "Пищевая добавка Уромакс , CPA, 20 капсул, набор из 2 шт",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Молодякова Дария",
-      "changed": true,
-      "sourceRow": 99,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "varifit",
-      "article": "varifit",
-      "name": "Крем от варикоза Варифит, CPA, 30 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 85,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "varifit_1_1",
-      "article": "varifit_1_1",
-      "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 114,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "vetonus",
-      "article": "vetonus",
-      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 93,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "vetonus_1_1",
-      "article": "vetonus_1_1",
-      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 89,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "vetonus_100ml",
-      "article": "vetonus_100ml",
-      "name": "Крем от варикоза Ветонус, CPA, 100 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 84,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "vosk_stik_15ml",
-      "article": "vosk_stik_15ml",
-      "name": "Воск стик для укладки и фиксации волос Алтея 15 мл",
-      "previousOwnerWb": "Кирилл",
-      "ownerWb": "Лапыгин Максим",
-      "canonicalOwnerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим",
-      "changed": true,
-      "sourceRow": 77,
-      "revenue": 192032,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "wbbiotrin_1_1_1",
-      "article": "wbbiotrin_1_1_1",
-      "name": "Мазь для суставов Биотрин, CPA, 30 мл, набор из 3 шт",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 110,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "wbgetsize",
-      "article": "wbgetsize",
-      "name": "Игрушка для взрослых Getsize, CPA",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 123,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "wbgetsizegel",
-      "article": "wbgetsizegel",
-      "name": "Лубрикант Getsize CPA, 30 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 116,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "wbpantogor_1_1",
-      "article": "wbpantogor_1_1",
-      "name": "Мазь для суставов Пантогор , CPA, 30 мл, набор из 2 шт",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 122,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "wbsinergel",
-      "article": "wbsinergel",
-      "name": "Мазь для суставов Синергель, CPA, 30 мл",
-      "previousOwnerWb": "",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "",
-      "productOwner": "Питайкин Артём",
-      "changed": false,
-      "sourceRow": 56,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    },
-    {
-      "articleKey": "wbvaritox",
-      "article": "wbvaritox",
-      "name": "Крем от варикоза Varitox, CPA, 30 мл",
-      "previousOwnerWb": "Васильева Мария",
-      "ownerWb": "Васильева Мария",
-      "canonicalOwnerWb": "Васильева Мария",
-      "productOwner": "Молодякова Дария",
-      "changed": false,
-      "sourceRow": 115,
-      "revenue": 0,
-      "units": 0,
-      "appliedAt": "2026-06-28T13:33:50.670Z",
-      "sourceFile": "распределение артикулов.xlsx"
-    }
-  ],
-  "missingInPortal": [
-    {
-      "sourceRow": 120,
-      "sourceArticle": "wbbiotrin",
-      "articleKey": "wbbiotrin",
-      "ownerWb": "Васильева Мария",
-      "revenue": 0,
-      "units": 0,
-      "message": "SKU is present in WB owner distribution but absent in portal skus.json"
-    },
-    {
-      "sourceRow": 121,
-      "sourceArticle": "kinzhal_1_1",
-      "articleKey": "kinzhal_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 0,
-      "units": 0,
-      "message": "SKU is present in WB owner distribution but absent in portal skus.json"
-    },
-    {
-      "sourceRow": 128,
-      "sourceArticle": "lifting_maska_pdrn_75ml",
-      "articleKey": "lifting_maska_pdrn_75ml",
-      "ownerWb": "Васильева Мария",
-      "revenue": 0,
-      "units": 0,
-      "message": "SKU is present in WB owner distribution but absent in portal skus.json"
-    },
-    {
-      "sourceRow": 130,
-      "sourceArticle": "shampun_kudryavii_metod_500ml",
-      "articleKey": "shampun_kudryavii_metod_500ml",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 147642,
-      "units": 95,
-      "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
-    },
-    {
-      "sourceRow": 131,
-      "sourceArticle": "balzam_kudryavii_metod_500ml",
-      "articleKey": "balzam_kudryavii_metod_500ml",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 0,
-      "units": 0,
-      "message": "SKU is present in WB owner distribution but absent in portal skus.json"
-    },
-    {
-      "sourceRow": 132,
-      "sourceArticle": "termo_maslo_100ml",
-      "articleKey": "termo_maslo_100ml",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 0,
-      "units": 0,
-      "message": "SKU is present in WB owner distribution but absent in portal skus.json"
-    }
-  ],
-  "missingInDistribution": [
-    {
-      "articleKey": "alteya_young_skin_box",
-      "article": "alteya_young_skin_box",
-      "name": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
-      "ownerWb": "",
-      "productOwner": "Васильева Мария"
-    },
-    {
-      "articleKey": "berberin_laif_bad_60caps",
-      "article": "berberin_laif_BAD_60caps",
-      "name": "Берберин + хром + коэнзим + B6 для похудения, контроль аппетита и веса, Алтея, Берберин Лайф, 60 капсул",
-      "ownerWb": "Кирилл",
-      "productOwner": "Лапыгин Максим"
+      "sourceRows": [
+        52
+      ]
     },
     {
       "articleKey": "chudofrukt_bad_60caps",
       "article": "chudofrukt_BAD_60caps",
       "name": "Таблетки для похудения, жиросжигатель детокс для снижения веса, Алтея, Чудофрукт, 60 капсул",
-      "ownerWb": "",
-      "productOwner": "Лапыгин Максим"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 50,
+      "sourceRows": [
+        50,
+        51
+      ]
+    },
+    {
+      "articleKey": "copywbgetsize1gel2",
+      "article": "copywbgetsize1gel2",
+      "name": "copywbgetsize1gel2",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 95,
+      "sourceRows": [
+        95
+      ]
+    },
+    {
+      "articleKey": "curly_method_300ml",
+      "article": "curly_method_300ml",
+      "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 173,
+      "sourceRows": [
+        173
+      ]
+    },
+    {
+      "articleKey": "daoshen",
+      "article": "daoshen",
+      "name": "Мазь от грибка ногтей Даошэн, CPA, 15 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 39,
+      "sourceRows": [
+        39,
+        40
+      ]
+    },
+    {
+      "articleKey": "daoshen_75ml",
+      "article": "daoshen_75ml",
+      "name": "Мазь от грибка ногтей Даошэн, CPA, 75 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 81,
+      "sourceRows": [
+        81
+      ]
+    },
+    {
+      "articleKey": "dardrakona",
+      "article": "dardrakona",
+      "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 34,
+      "sourceRows": [
+        34,
+        35,
+        36
+      ]
+    },
+    {
+      "articleKey": "dardrakona_1_1",
+      "article": "dardrakona_1_1",
+      "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 65,
+      "sourceRows": [
+        65
+      ]
+    },
+    {
+      "articleKey": "dardrakona_75ml",
+      "article": "dardrakona_75ml",
+      "name": "Крем от варикоза Дар дракона, CPA, 75 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 79,
+      "sourceRows": [
+        79,
+        80
+      ]
+    },
+    {
+      "articleKey": "dolgar",
+      "article": "dolgar",
+      "name": "Мазь от грибка ногтей Долгар, CPA, 15 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 20,
+      "sourceRows": [
+        20
+      ]
+    },
+    {
+      "articleKey": "ekdisteron_ultra_man_60caps",
+      "article": "ekdisteron_ultra_man_60caps",
+      "name": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 177,
+      "sourceRows": [
+        177
+      ]
+    },
+    {
+      "articleKey": "ekzifol",
+      "article": "ekzifol",
+      "name": "Мазь от грибка ногтей Экзифол, CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 120,
+      "sourceRows": [
+        120
+      ]
+    },
+    {
+      "articleKey": "enteroshol",
+      "article": "enteroshol",
+      "name": "Капсулы от изжоги, для желудка и печени, чистка печени и желудка, Энтеросхол, 20 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 107,
+      "sourceRows": [
+        107
+      ]
     },
     {
       "articleKey": "enzim_pudra_80gr",
       "article": "enzim_pudra_80gr",
       "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "ownerWb": "Васильева Мария",
-      "productOwner": "Лапыгин Максим"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 143,
+      "sourceRows": [
+        143
+      ]
+    },
+    {
+      "articleKey": "enzim_pudra_80gr_v2",
+      "article": "enzim_pudra_80gr_v2",
+      "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 200,
+      "sourceRows": [
+        200
+      ]
+    },
+    {
+      "articleKey": "erobrut",
+      "article": "erobrut",
+      "name": "Пищевая добавка Эробрут, CPA, 20 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 157,
+      "sourceRows": [
+        157
+      ]
+    },
+    {
+      "articleKey": "fruitalica",
+      "article": "fruitalica",
+      "name": "Таблетки для похудения, жиросжигатель, детокс Алтея, Фр",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 23,
+      "sourceRows": [
+        23
+      ]
+    },
+    {
+      "articleKey": "frutaksa_bad_200gr",
+      "article": "frutaksa_BAD_200gr",
+      "name": "Жиросжигатель, детокс, Алтея, Алтея, Фрутакса, 200 грамм",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 108,
+      "sourceRows": [
+        108
+      ]
+    },
+    {
+      "articleKey": "frutalika_bad_60caps",
+      "article": "frutalika_BAD_60caps",
+      "name": "Пиколинат хрома для похудения, детокс, жиросжигатель, Алтея, Фруталика, 60 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 109,
+      "sourceRows": [
+        109
+      ]
+    },
+    {
+      "articleKey": "gel_antiakne_20ml",
+      "article": "gel_antiakne_20ml",
+      "name": "Точечный крем от прыщей. Корректор точечный против прыщей, крем от акне. Салициловая кислота, азелаиновая кислота Алтея 20 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 171,
+      "sourceRows": [
+        171
+      ]
+    },
+    {
+      "articleKey": "gel_antiakne_20ml_v2",
+      "article": "gel_antiakne_20ml_v2",
+      "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 192,
+      "sourceRows": [
+        192
+      ]
+    },
+    {
+      "articleKey": "gel_brows_5ml",
+      "article": "gel_brows_5ml",
+      "name": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 169,
+      "sourceRows": [
+        169
+      ]
+    },
+    {
+      "articleKey": "gel_dlya_britya_300ml",
+      "article": "gel_dlya_britya_300ml",
+      "name": "Гель для бритья мужской без пены охлаждающий с ментолом Алтея 300 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 189,
+      "sourceRows": [
+        189
+      ]
+    },
+    {
+      "articleKey": "gel_dlya_brovei_6ml",
+      "article": "gel_dlya_brovei_6ml",
+      "name": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 131,
+      "sourceRows": [
+        131,
+        132
+      ]
+    },
+    {
+      "articleKey": "gel_for_men_3_in_1_1000ml",
+      "article": "gel_for_men_3_in_1_1000ml",
+      "name": "Гель для душа мужской парфюмированный Алтея 1000 мл",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 162,
+      "sourceRows": [
+        162
+      ]
+    },
+    {
+      "articleKey": "gel_kudryavii_metod_300ml",
+      "article": "gel_kudryavii_metod_300ml",
+      "name": "gel_kudryavii_metod_300ml",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 222,
+      "sourceRows": [
+        222
+      ]
+    },
+    {
+      "articleKey": "gel_parfum_tabacco_vanille_450ml",
+      "article": "gel_parfum_tabacco_vanille_450ml",
+      "name": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 150,
+      "sourceRows": [
+        150
+      ]
+    },
+    {
+      "articleKey": "gel-penka_dlya_lica_150ml",
+      "article": "gel-penka_dlya_lica_150ml",
+      "name": "gel-penka_dlya_lica_150ml",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 228,
+      "sourceRows": [
+        228
+      ]
+    },
+    {
+      "articleKey": "gemorekt",
+      "article": "gemorekt",
+      "name": "Крем от гемороя Геморект, CPA, 15 мл",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 121,
+      "sourceRows": [
+        121
+      ]
     },
     {
       "articleKey": "gidrofilnoe_maslo_150ml",
       "article": "gidrofilnoe_maslo_150ml",
       "name": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
-      "ownerWb": "",
-      "productOwner": "Васильева Мария"
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 99,
+      "sourceRows": [
+        99
+      ]
     },
     {
-      "articleKey": "krem-filler_15ml",
-      "article": "krem-filler_15ml",
-      "name": "Питательный крем для лица антивозрастной, Крем филлер вокруг глаз, с коллагеном с ниацинамидом, Алтея, 15 мл",
-      "ownerWb": "",
-      "productOwner": "Васильева Мария"
+      "articleKey": "glikiron_bad_60caps",
+      "article": "glikiron_BAD_60caps",
+      "name": "Гликирон БАД для профилактики диабета контроль аппетита",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 94,
+      "sourceRows": [
+        94
+      ]
+    },
+    {
+      "articleKey": "i_am_alpha_bad_60caps",
+      "article": "i_am_alpha_BAD_60caps",
+      "name": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 146,
+      "sourceRows": [
+        146
+      ]
+    },
+    {
+      "articleKey": "indolakt_bad_60caps",
+      "article": "indolakt_BAD_60caps",
+      "name": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 145,
+      "sourceRows": [
+        145
+      ]
+    },
+    {
+      "articleKey": "insulight_bad_60caps",
+      "article": "insulight_BAD_60caps",
+      "name": "Витамины для диабетиков, для профилактики от сахарного диабета, Алтея, Инсулайт, 60 капсул",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 114,
+      "sourceRows": [
+        114
+      ]
+    },
+    {
+      "articleKey": "insulight_v2",
+      "article": "insulight_v2",
+      "name": "insulight_v2",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 208,
+      "sourceRows": [
+        208
+      ]
+    },
+    {
+      "articleKey": "intimvita_200ml",
+      "article": "intimvita_200ml",
+      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 115,
+      "sourceRows": [
+        115
+      ]
+    },
+    {
+      "articleKey": "intimvita_300ml",
+      "article": "intimvita_300ml",
+      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 188,
+      "sourceRows": [
+        188
+      ]
+    },
+    {
+      "articleKey": "kavmaz",
+      "article": "kavmaz",
+      "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 100,
+      "sourceRows": [
+        100,
+        101,
+        102
+      ]
+    },
+    {
+      "articleKey": "kavmaz_40ml_1_1",
+      "article": "kavmaz_40ml_1_1",
+      "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл, набор из 2 шт",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 151,
+      "sourceRows": [
+        151
+      ]
+    },
+    {
+      "articleKey": "kavmaz_60ml",
+      "article": "kavmaz_60ml",
+      "name": "Мазь для суставов Кавказская мазь , CPA, 60 мл",
+      "previousOwnerWb": "Максим Лапыгин",
+      "ownerWb": "Максим Лапыгин",
+      "changed": false,
+      "sourceRow": 110,
+      "sourceRows": [
+        110,
+        111
+      ]
+    },
+    {
+      "articleKey": "khvoinitsa",
+      "article": "khvoinitsa",
+      "name": "Пищевая добавка Хвойница , CPA, 7 саше",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 42,
+      "sourceRows": [
+        42
+      ]
+    },
+    {
+      "articleKey": "khvoinitsa_1_1",
+      "article": "khvoinitsa_1_1",
+      "name": "Пищевая добавка Хвойница , CPA, 7 саше",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 63,
+      "sourceRows": [
+        63
+      ]
+    },
+    {
+      "articleKey": "kinzhal",
+      "article": "kinzhal",
+      "name": "Возбудитель для мужчин, средство для потенции и эрекции, витамины для мужчины,Кинжал, 20 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 104,
+      "sourceRows": [
+        104,
+        105
+      ]
+    },
+    {
+      "articleKey": "kinzhal_1_1",
+      "article": "kinzhal_1_1",
+      "name": "Виаагра Возбудитель для мужчин, средство для потенции и эрекции, витамины для мужчины, Кинжал, 20 капсул х 2",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 159,
+      "sourceRows": [
+        159
+      ]
+    },
+    {
+      "articleKey": "krem_buster_250ml",
+      "article": "krem_buster_250ml",
+      "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 180,
+      "sourceRows": [
+        180
+      ]
+    },
+    {
+      "articleKey": "krem_dlya_lica_pdrn_50_ml",
+      "article": "krem_dlya_lica_pdrn_50 ml",
+      "name": "krem_dlya_lica_pdrn_50 ml",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 221,
+      "sourceRows": [
+        221
+      ]
+    },
+    {
+      "articleKey": "krem_dlya_ruk_75ml",
+      "article": "krem_dlya_ruk_75ml",
+      "name": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 87,
+      "sourceRows": [
+        87,
+        88,
+        89
+      ]
+    },
+    {
+      "articleKey": "krem_dlya_vek_30ml",
+      "article": "krem_dlya_vek_30ml",
+      "name": "Крем для век и кожи вокруг глаз Жидкие патчи для глаз Алтея 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 186,
+      "sourceRows": [
+        186,
+        187
+      ]
+    },
+    {
+      "articleKey": "krem_ot_rastyazhek",
+      "article": "krem_ot_rastyazhek",
+      "name": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 134,
+      "sourceRows": [
+        134,
+        135
+      ]
+    },
+    {
+      "articleKey": "krem_spf50_50ml",
+      "article": "krem_spf50_50ml",
+      "name": "СПФ для лица База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 204,
+      "sourceRows": [
+        204
+      ]
+    },
+    {
+      "articleKey": "kremshelk_100ml",
+      "article": "kremshelk_100ml",
+      "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 90,
+      "sourceRows": [
+        90,
+        91,
+        92
+      ]
+    },
+    {
+      "articleKey": "krovavii_piling_30ml",
+      "article": "krovavii_piling_30ml",
+      "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 153,
+      "sourceRows": [
+        153,
+        154,
+        155,
+        156
+      ]
+    },
+    {
+      "articleKey": "lifting_maska_pdrn_75ml",
+      "article": "lifting_maska_pdrn_75ml",
+      "name": "lifting_maska_pdrn_75ml",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 224,
+      "sourceRows": [
+        224
+      ]
+    },
+    {
+      "articleKey": "limfaks_bad_30caps",
+      "article": "limfaks_BAD_30caps",
+      "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 142,
+      "sourceRows": [
+        142
+      ]
+    },
+    {
+      "articleKey": "maska_dlya_lica_100ml",
+      "article": "maska_dlya_lica_100ml",
+      "name": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 170,
+      "sourceRows": [
+        170
+      ]
+    },
+    {
+      "articleKey": "maska-batter_250ml",
+      "article": "maska-batter_250ml",
+      "name": "Маска для волос с кератином восстанавливающая увлажняющая, Алтея, 250 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 133,
+      "sourceRows": [
+        133
+      ]
+    },
+    {
+      "articleKey": "maska-batter_500ml",
+      "article": "maska-batter_500ml",
+      "name": "Маска для волос с кератином увлажняющая 500мл Алтея",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 207,
+      "sourceRows": [
+        207
+      ]
+    },
+    {
+      "articleKey": "maska-batter_dlya_rosta_500ml",
+      "article": "maska-batter_dlya_rosta_500ml",
+      "name": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 168,
+      "sourceRows": [
+        168
+      ]
+    },
+    {
+      "articleKey": "maslo_dlya_borodi_50ml",
+      "article": "maslo_dlya_borodi_50ml",
+      "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 123,
+      "sourceRows": [
+        123
+      ]
     },
     {
       "articleKey": "maslo_dlya_volos_parf_110ml",
       "article": "maslo_dlya_volos_parf_110ml",
       "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
-      "ownerWb": "Васильева Мария",
-      "productOwner": "Лапыгин Максим"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 116,
+      "sourceRows": [
+        116,
+        181
+      ]
     },
     {
-      "articleKey": "monarda_30ml",
-      "article": "monarda_30ml",
-      "name": "Масло монарды и экстракт зеленого чая для ногтей, универсальное, Алтея, 30 мл",
-      "ownerWb": "",
-      "productOwner": "Лапыгин Максим"
+      "articleKey": "matte_wax_50ml",
+      "article": "matte_wax_50ml",
+      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 178,
+      "sourceRows": [
+        178
+      ]
+    },
+    {
+      "articleKey": "menoflavon_bad_60caps",
+      "article": "menoflavon_BAD_60caps",
+      "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 127,
+      "sourceRows": [
+        127
+      ]
+    },
+    {
+      "articleKey": "micardin",
+      "article": "micardin",
+      "name": "Пищевая добавка Микардин, CPA, 10 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 21,
+      "sourceRows": [
+        21,
+        22
+      ]
+    },
+    {
+      "articleKey": "micardin_1_1",
+      "article": "micardin_1_1",
+      "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 56,
+      "sourceRows": [
+        56
+      ]
+    },
+    {
+      "articleKey": "micardin_1_1_1",
+      "article": "micardin_1_1_1",
+      "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 57,
+      "sourceRows": [
+        57
+      ]
+    },
+    {
+      "articleKey": "micolan",
+      "article": "micolan",
+      "name": "Мазь от грибка ногтей на ногах, противогрибковое средство с коллоидным серебром, Алтея, Миколан, 15 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 25,
+      "sourceRows": [
+        25
+      ]
+    },
+    {
+      "articleKey": "mikardin_plus_bad_60_caps",
+      "article": "mikardin plus_BAD_60 caps",
+      "name": "Средство для сердца и сосудов от давления, чистка сосудов, Микардин Плюс, Алтея, 60 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 71,
+      "sourceRows": [
+        71
+      ]
+    },
+    {
+      "articleKey": "mycoplax",
+      "article": "mycoplax",
+      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 136,
+      "sourceRows": [
+        136
+      ]
+    },
+    {
+      "articleKey": "mycoplax_1_1",
+      "article": "mycoplax_1_1",
+      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл, набор из 2 шт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 193,
+      "sourceRows": [
+        193
+      ]
     },
     {
       "articleKey": "nabor_penka_dlya_resnic",
       "article": "nabor_penka_dlya_resnic",
       "name": "Пенка для нарощенных ресниц и для бровей, для умывания и очищения ресниц Алтея 150 мл",
-      "ownerWb": "Кирилл",
-      "productOwner": "Васильева Мария"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 163,
+      "sourceRows": [
+        163
+      ]
+    },
+    {
+      "articleKey": "nabor_remuver_40ml",
+      "article": "nabor_remuver_40ml",
+      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 78,
+      "sourceRows": [
+        78
+      ]
+    },
+    {
+      "articleKey": "nabor_remuver_40ml_1_1",
+      "article": "nabor_remuver_40ml_1_1",
+      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 174,
+      "sourceRows": [
+        174
+      ]
+    },
+    {
+      "articleKey": "nabor_remuver_kremovii",
+      "article": "nabor_remuver_kremovii",
+      "name": "Ремувер для снятия ресниц, Алтея, 18г",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 130,
+      "sourceRows": [
+        130
+      ]
+    },
+    {
+      "articleKey": "osteofast",
+      "article": "osteofast",
+      "name": "Мазь для суставов Остеофаст, CPA, 30 мл, набор из 3 шт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 137,
+      "sourceRows": [
+        137
+      ]
+    },
+    {
+      "articleKey": "otivin",
+      "article": "otivin",
+      "name": "Пищевая добавка Отивин , CPA, 10 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 45,
+      "sourceRows": [
+        45
+      ]
+    },
+    {
+      "articleKey": "pantogor_100ml",
+      "article": "pantogor_100ml",
+      "name": "Мазь для суставов Пантогор , CPA, 100 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 76,
+      "sourceRows": [
+        76,
+        77
+      ]
     },
     {
       "articleKey": "penka_160ml",
       "article": "penka_160ml",
       "name": "Мицеллярная пенка для умывания лица, для снятия макияжа, средство для снятия макияжа, Алтея, 160",
-      "ownerWb": "Кирилл",
-      "productOwner": "Васильева Мария"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 128,
+      "sourceRows": [
+        128
+      ]
+    },
+    {
+      "articleKey": "penka_kudryavii_metod_150ml",
+      "article": "penka_kudryavii_metod_150ml",
+      "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 175,
+      "sourceRows": [
+        175
+      ]
     },
     {
       "articleKey": "piling_100ml",
       "article": "piling_100ml",
       "name": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
-      "ownerWb": "",
-      "productOwner": "Васильева Мария"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 98,
+      "sourceRows": [
+        98
+      ]
+    },
+    {
+      "articleKey": "pink_pepper_50ml",
+      "article": "pink_pepper_50ml",
+      "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 190,
+      "sourceRows": [
+        190
+      ]
     },
     {
       "articleKey": "pirantoks_bad_60caps",
       "article": "pirantoks_BAD_60caps",
       "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, черный орех детокс, Алтея, Пирантокс, 60 капсул",
-      "ownerWb": "",
-      "productOwner": "Лапыгин Максим"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 59,
+      "sourceRows": [
+        59
+      ]
     },
     {
-      "articleKey": "remuver_40ml",
-      "article": "remuver_40ml",
-      "name": "remuver_40ml",
-      "ownerWb": "",
-      "productOwner": "Васильева Мария"
+      "articleKey": "psoral",
+      "article": "psoral",
+      "name": "Мазь от псориаза Псорал, CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 46,
+      "sourceRows": [
+        46
+      ]
+    },
+    {
+      "articleKey": "psoral_50ml",
+      "article": "psoral_50ml",
+      "name": "Мазь от псориаза Псорал, CPA, 50 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 68,
+      "sourceRows": [
+        68,
+        69,
+        70
+      ]
+    },
+    {
+      "articleKey": "relaksinol_bad_60caps",
+      "article": "relaksinol_BAD_60caps",
+      "name": "Магний В6 с лавандой, Алтея, Релаксинол, 60 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 129,
+      "sourceRows": [
+        129
+      ]
+    },
+    {
+      "articleKey": "retiderm_50ml",
+      "article": "retiderm_50ml",
+      "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 112,
+      "sourceRows": [
+        112,
+        113
+      ]
+    },
+    {
+      "articleKey": "retinait_krem_01_50ml",
+      "article": "retinait_krem_01_50ml",
+      "name": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 202,
+      "sourceRows": [
+        202
+      ]
+    },
+    {
+      "articleKey": "retinait_krem_025_50ml",
+      "article": "retinait_krem_025_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 198,
+      "sourceRows": [
+        198
+      ]
+    },
+    {
+      "articleKey": "retinait_krem_05_50ml",
+      "article": "retinait_krem_05_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 201,
+      "sourceRows": [
+        201
+      ]
+    },
+    {
+      "articleKey": "retinait_krem_1_5_50ml",
+      "article": "retinait_krem_1_5_50ml",
+      "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 205,
+      "sourceRows": [
+        205
+      ]
+    },
+    {
+      "articleKey": "retinait_krem_1_50ml",
+      "article": "retinait_krem_1_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 197,
+      "sourceRows": [
+        197
+      ]
+    },
+    {
+      "articleKey": "retinait_syvorotka_025_30ml",
+      "article": "retinait_syvorotka_025_30ml",
+      "name": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 212,
+      "sourceRows": [
+        212
+      ]
+    },
+    {
+      "articleKey": "retinait_syvorotka_05_30ml",
+      "article": "retinait_syvorotka_05_30ml",
+      "name": "Сыворотка для лица с ретинолом омолаживающая",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 211,
+      "sourceRows": [
+        211
+      ]
+    },
+    {
+      "articleKey": "retinait_syvorotka_1_30ml",
+      "article": "retinait_syvorotka_1_30ml",
+      "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 191,
+      "sourceRows": [
+        191
+      ]
+    },
+    {
+      "articleKey": "retinol_boost_krem_dlya_vek_30ml",
+      "article": "retinol_boost_krem_dlya_vek_30ml",
+      "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 209,
+      "sourceRows": [
+        209
+      ]
     },
     {
       "articleKey": "retinol_full_journey",
       "article": "Retinol_Full_Journey",
       "name": "Набор уходовой косметики для лица антивозрастной",
-      "ownerWb": "",
-      "productOwner": "Васильева Мария"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 213,
+      "sourceRows": [
+        213
+      ]
+    },
+    {
+      "articleKey": "retinol_start_kit",
+      "article": "Retinol_Start_Kit",
+      "name": "Набор уходовой косметики для лица с ретинолом",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 206,
+      "sourceRows": [
+        206
+      ]
     },
     {
       "articleKey": "revmastop_bad_60caps",
       "article": "revmastop_BAD_60caps",
       "name": "Глюкозамин хондроитин МСМ для суставов и связок Ревмастоп Алтея 60 капсул",
-      "ownerWb": "",
-      "productOwner": "Лапыгин Максим"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 148,
+      "sourceRows": [
+        148
+      ]
+    },
+    {
+      "articleKey": "sanaсin_bad_60caps",
+      "article": "sanaсin_BAD_60caps",
+      "name": "Капсулы пробиотик, энзимы, д манноза, метабиотик, Санацин, Алтея, 60 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 67,
+      "sourceRows": [
+        67
+      ]
+    },
+    {
+      "articleKey": "sanatsin_1_1",
+      "article": "sanatsin_1_1",
+      "name": "Пищевая добавка Санацин, CPA, 20 штук",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 62,
+      "sourceRows": [
+        62
+      ]
+    },
+    {
+      "articleKey": "shampun_badd_500ml",
+      "article": "shampun_BADD_500ml",
+      "name": "shampun_BADD_500ml",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 226,
+      "sourceRows": [
+        226
+      ]
+    },
+    {
+      "articleKey": "shampun_dlya_rosta_250ml",
+      "article": "shampun_dlya_rosta_250ml",
+      "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 96,
+      "sourceRows": [
+        96,
+        97
+      ]
+    },
+    {
+      "articleKey": "shampun_kudryavii_metod_500ml",
+      "article": "shampun_kudryavii_metod_500ml",
+      "name": "shampun_kudryavii_metod_500ml",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 219,
+      "sourceRows": [
+        219
+      ]
+    },
+    {
+      "articleKey": "shampun_protiv_perhoti_250ml",
+      "article": "shampun_protiv_perhoti_250ml",
+      "name": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 93,
+      "sourceRows": [
+        93
+      ]
+    },
+    {
+      "articleKey": "silk_hair_300ml",
+      "article": "silk_hair_300ml",
+      "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 176,
+      "sourceRows": [
+        176
+      ]
+    },
+    {
+      "articleKey": "sinergel_30ml_1_1",
+      "article": "sinergel_30ml_1_1",
+      "name": "Мазь для суставов Синергель , CPA, 30 мл, набор из 2 шт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 160,
+      "sourceRows": [
+        160
+      ]
+    },
+    {
+      "articleKey": "skrab_babl_gam_200ml",
+      "article": "skrab_babl_gam_200ml",
+      "name": "Скраб пилинг для кожи головы, Алтея, 200 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 184,
+      "sourceRows": [
+        184
+      ]
+    },
+    {
+      "articleKey": "solevoy_sprei_200ml",
+      "article": "solevoy_sprei_200ml",
+      "name": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 164,
+      "sourceRows": [
+        164,
+        165,
+        166
+      ]
+    },
+    {
+      "articleKey": "spicul_gel_mask_75ml",
+      "article": "spicul_gel_mask_75ml",
+      "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 216,
+      "sourceRows": [
+        216
+      ]
+    },
+    {
+      "articleKey": "spiculboost_30ml",
+      "article": "spiculboost_30ml",
+      "name": "Сыворотка для лица с микроиглами и коллагеном",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 215,
+      "sourceRows": [
+        215
+      ]
+    },
+    {
+      "articleKey": "spray-syvorotka_pdrn_100ml",
+      "article": "spray-syvorotka_pdrn_100ml",
+      "name": "spray-syvorotka_pdrn_100ml",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 225,
+      "sourceRows": [
+        225
+      ]
+    },
+    {
+      "articleKey": "sprei_buster_100ml",
+      "article": "sprei_buster_100ml",
+      "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 179,
+      "sourceRows": [
+        179
+      ]
+    },
+    {
+      "articleKey": "stik_ot_mozoley",
+      "article": "stik_ot_mozoley",
+      "name": "Карандаш от мозолей, стик от натирания, мозольный пластырь, Алтея, 20 г",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 138,
+      "sourceRows": [
+        138
+      ]
     },
     {
       "articleKey": "strong_hair",
       "article": "Strong_Hair",
       "name": "Набор для волос шампунь + маска для роста волос",
-      "ownerWb": "",
-      "productOwner": "Питайкин Артём"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 214,
+      "sourceRows": [
+        214
+      ]
     },
     {
-      "articleKey": "syvorotka_dlya_lica_30ml_v2",
-      "article": "syvorotka_dlya_lica_30ml_v2",
+      "articleKey": "sustalit",
+      "article": "sustalit",
+      "name": "Мазь для суставов Сусталит , CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 43,
+      "sourceRows": [
+        43
+      ]
+    },
+    {
+      "articleKey": "sustalit_30ml_1_1",
+      "article": "sustalit_30ml_1_1",
+      "name": "Мазь для суставов Сусталит , CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 161,
+      "sourceRows": [
+        161
+      ]
+    },
+    {
+      "articleKey": "sustalit_75ml",
+      "article": "sustalit_75ml",
+      "name": "Мазь для суставов Сусталит , CPA, 75 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 82,
+      "sourceRows": [
+        82,
+        83,
+        84
+      ]
+    },
+    {
+      "articleKey": "synergel_60ml",
+      "article": "synergel_60ml",
+      "name": "Мазь для суставов Синергель, CPA, 60 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 74,
+      "sourceRows": [
+        74,
+        75
+      ]
+    },
+    {
+      "articleKey": "syvorotka_dlya_lica_30ml",
+      "article": "syvorotka_dlya_lica_30ml",
       "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
-      "ownerWb": "",
-      "productOwner": "Лапыгин Максим"
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 124,
+      "sourceRows": [
+        124,
+        125,
+        126
+      ]
+    },
+    {
+      "articleKey": "syvorotka_dlya_lica_intens_uvl_30ml",
+      "article": "syvorotka_dlya_lica_intens_uvl_30ml",
+      "name": "syvorotka_dlya_lica_intens_uvl_30ml",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 223,
+      "sourceRows": [
+        223
+      ]
+    },
+    {
+      "articleKey": "syvorotka_dlya_rosta_6ml",
+      "article": "syvorotka_dlya_rosta_6ml",
+      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 140,
+      "sourceRows": [
+        140
+      ]
+    },
+    {
+      "articleKey": "syvorotka_dlya_rosta_6ml_v2",
+      "article": "syvorotka_dlya_rosta_6ml_v2",
+      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 182,
+      "sourceRows": [
+        182,
+        183
+      ]
+    },
+    {
+      "articleKey": "syvorotka_guk_30ml",
+      "article": "syvorotka_guk_30ml",
+      "name": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 144,
+      "sourceRows": [
+        144
+      ]
+    },
+    {
+      "articleKey": "syvorotka_niacin_05_30ml",
+      "article": "syvorotka_niacin_05_30ml",
+      "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 210,
+      "sourceRows": [
+        210
+      ]
+    },
+    {
+      "articleKey": "syvorotka_vit_c_30ml",
+      "article": "syvorotka_vit_C_30ml",
+      "name": "syvorotka_vit_C_30ml",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 220,
+      "sourceRows": [
+        220
+      ]
     },
     {
       "articleKey": "t34poten10caps",
       "article": "t34poten10caps",
       "name": "Пищевая добавка Т 34, CPA, 20 капсул",
-      "ownerWb": "",
-      "productOwner": "Питайкин Артём"
-    }
-  ],
-  "ownerConflicts": [
-    {
-      "articleKey": "activeprost",
-      "article": "activeprost",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 109
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 48,
+      "sourceRows": [
+        48
+      ]
     },
     {
-      "articleKey": "alteya_beauty_brows_box",
-      "article": "alteya_beauty_brows_box",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 97
+      "articleKey": "telomeras_60caps",
+      "article": "telomeras_60caps",
+      "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 185,
+      "sourceRows": [
+        185
+      ]
     },
     {
-      "articleKey": "artoks",
-      "article": "artoks",
-      "canonicalOwner": "Васильева Мария",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 32
-    },
-    {
-      "articleKey": "ekdisteron_ultra_man_60caps",
-      "article": "ekdisteron_ultra_man_60caps",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 92
-    },
-    {
-      "articleKey": "enzim_pudra_80gr_v2",
-      "article": "enzim_pudra_80gr_v2",
-      "canonicalOwner": "Васильева Мария",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 27
-    },
-    {
-      "articleKey": "erobrut",
-      "article": "erobrut",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 113
-    },
-    {
-      "articleKey": "gel_antiakne_20ml",
-      "article": "gel_antiakne_20ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 44
-    },
-    {
-      "articleKey": "gel_antiakne_20ml_v2",
-      "article": "gel_antiakne_20ml_v2",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 1
-    },
-    {
-      "articleKey": "gel_brows_5ml",
-      "article": "gel_brows_5ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 51
-    },
-    {
-      "articleKey": "gel_dlya_britya_300ml",
-      "article": "gel_dlya_britya_300ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 111
-    },
-    {
-      "articleKey": "gel_dlya_brovei_6ml",
-      "article": "gel_dlya_brovei_6ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 45
-    },
-    {
-      "articleKey": "gel_for_men_3_in_1_1000ml",
-      "article": "gel_for_men_3_in_1_1000ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 95
-    },
-    {
-      "articleKey": "gel_parfum_tabacco_vanille_450ml",
-      "article": "gel_parfum_tabacco_vanille_450ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 103
-    },
-    {
-      "articleKey": "insulight_bad_60caps",
-      "article": "insulight_BAD_60caps",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 35
-    },
-    {
-      "articleKey": "intimvita_200ml",
-      "article": "intimvita_200ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 91
-    },
-    {
-      "articleKey": "intimvita_300ml",
-      "article": "intimvita_300ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 112
-    },
-    {
-      "articleKey": "maslo_dlya_borodi_50ml",
-      "article": "maslo_dlya_borodi_50ml",
-      "canonicalOwner": "Васильева Мария",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 31
-    },
-    {
-      "articleKey": "maslo_dlya_volos_parf_110ml_",
-      "article": "maslo_dlya_volos_parf_110ml_",
-      "canonicalOwner": "Васильева Мария",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 71
-    },
-    {
-      "articleKey": "matte_wax_50ml",
-      "article": "matte_wax_50ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 107
-    },
-    {
-      "articleKey": "nabor_remuver_40ml",
-      "article": "nabor_remuver_40ml",
-      "canonicalOwner": "Васильева Мария",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 28
-    },
-    {
-      "articleKey": "nabor_remuver_40ml_1_1",
-      "article": "nabor_remuver_40ml_1_1",
-      "canonicalOwner": "Васильева Мария",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 94
-    },
-    {
-      "articleKey": "nabor_remuver_kremovii",
-      "article": "nabor_remuver_kremovii",
-      "canonicalOwner": "Васильева Мария",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 38
-    },
-    {
-      "articleKey": "relaksinol_bad_60caps",
-      "article": "relaksinol_BAD_60caps",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 83
-    },
-    {
-      "articleKey": "sanatsin_1_1",
-      "article": "sanatsin_1_1",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 68
-    },
-    {
-      "articleKey": "skrab_babl_gam_200ml",
-      "article": "skrab_babl_gam_200ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 101
-    },
-    {
-      "articleKey": "solevoy_sprei_200ml",
-      "article": "solevoy_sprei_200ml",
-      "canonicalOwner": "Васильева Мария",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 23
-    },
-    {
-      "articleKey": "sprei_buster_100ml",
-      "article": "sprei_buster_100ml",
-      "canonicalOwner": "Васильева Мария",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 10
-    },
-    {
-      "articleKey": "syvorotka_dlya_rosta_6ml",
-      "article": "syvorotka_dlya_rosta_6ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 105
-    },
-    {
-      "articleKey": "syvorotka_dlya_rosta_6ml_v2",
-      "article": "syvorotka_dlya_rosta_6ml_v2",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 37
+      "articleKey": "termo_maslo_100ml",
+      "article": "termo_maslo_100ml",
+      "name": "termo_maslo_100ml",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 218,
+      "sourceRows": [
+        218
+      ]
     },
     {
       "articleKey": "termo_sprei_200ml",
       "article": "termo_sprei_200ml",
-      "canonicalOwner": "Васильева Мария",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 39
+      "name": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 141,
+      "sourceRows": [
+        141
+      ]
+    },
+    {
+      "articleKey": "termo_sprei_200ml_v2",
+      "article": "termo_sprei_200ml_v2",
+      "name": "termo_sprei_200ml_v2",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 227,
+      "sourceRows": [
+        227
+      ]
     },
     {
       "articleKey": "tonik_dlya_lica_200ml",
       "article": "tonik_dlya_lica_200ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 54
+      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 172,
+      "sourceRows": [
+        172
+      ]
     },
     {
       "articleKey": "urinofix",
       "article": "urinofix",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 49
+      "name": "Пищевая добавка Уринофикс, CPA, 20 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 158,
+      "sourceRows": [
+        158
+      ]
+    },
+    {
+      "articleKey": "urofol",
+      "article": "urofol",
+      "name": "Таблетки от недержания мочи от цистита, Алтея, Урофол, 20 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 103,
+      "sourceRows": [
+        103
+      ]
     },
     {
       "articleKey": "urolgan",
       "article": "urolgan",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 125
+      "name": "Пищевая добавка Уролган , CPA, 10 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 106,
+      "sourceRows": [
+        106
+      ]
     },
     {
       "articleKey": "uromax",
       "article": "uromax",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 76
+      "name": "Пищевая добавка Уромакс , CPA, 20 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 117,
+      "sourceRows": [
+        117,
+        118
+      ]
     },
     {
       "articleKey": "uromax_1_1",
       "article": "uromax_1_1",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 99
+      "name": "Пищевая добавка Уромакс , CPA, 20 капсул, набор из 2 шт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 195,
+      "sourceRows": [
+        195
+      ]
+    },
+    {
+      "articleKey": "varifit",
+      "article": "varifit",
+      "name": "Крем от варикоза Варифит, CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 119,
+      "sourceRows": [
+        119
+      ]
+    },
+    {
+      "articleKey": "varifit_1_1",
+      "article": "varifit_1_1",
+      "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 196,
+      "sourceRows": [
+        196
+      ]
+    },
+    {
+      "articleKey": "vetonus",
+      "article": "vetonus",
+      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 47,
+      "sourceRows": [
+        47
+      ]
+    },
+    {
+      "articleKey": "vetonus_1_1",
+      "article": "vetonus_1_1",
+      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 64,
+      "sourceRows": [
+        64
+      ]
+    },
+    {
+      "articleKey": "vetonus_100ml",
+      "article": "vetonus_100ml",
+      "name": "Крем от варикоза Ветонус, CPA, 100 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 85,
+      "sourceRows": [
+        85,
+        86
+      ]
     },
     {
       "articleKey": "vosk_stik_15ml",
       "article": "vosk_stik_15ml",
-      "canonicalOwner": "Кирилл",
-      "distributionOwner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 77
+      "name": "Воск стик для укладки и фиксации волос Алтея 15 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 199,
+      "sourceRows": [
+        199
+      ]
+    },
+    {
+      "articleKey": "wbbiotrin",
+      "article": "wbbiotrin",
+      "name": "Мазь для суставов обезболивающая, панты морала,коллаген, хондротин, глюкозамин, Биотрин, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 14,
+      "sourceRows": [
+        14,
+        15
+      ]
+    },
+    {
+      "articleKey": "wbbiotrin_1_1",
+      "article": "wbbiotrin_1_1",
+      "name": "Мазь для суставов обезболивающая, панты морала,коллаген, хондротин, глюкозамин, Биотрин, 2 шт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 54,
+      "sourceRows": [
+        54
+      ]
+    },
+    {
+      "articleKey": "wbbiotrin_1_1_1",
+      "article": "wbbiotrin_1_1_1",
+      "name": "Мазь для суставов Биотрин, CPA, 30 мл, набор из 3 шт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 55,
+      "sourceRows": [
+        55
+      ]
+    },
+    {
+      "articleKey": "wbgetsize",
+      "article": "wbgetsize",
+      "name": "Игрушка для взрослых Getsize, CPA",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 16,
+      "sourceRows": [
+        16,
+        17
+      ]
+    },
+    {
+      "articleKey": "wbgetsize1gel2",
+      "article": "wbgetsize1gel2",
+      "name": "Эрекционное кольцо для мужчин, насадка на член, кольцо для эрекции, товары для взрослых",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 18,
+      "sourceRows": [
+        18,
+        19
+      ]
+    },
+    {
+      "articleKey": "wbgetsizegel",
+      "article": "wbgetsizegel",
+      "name": "Лубрикант Getsize CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 2,
+      "sourceRows": [
+        2,
+        3
+      ]
+    },
+    {
+      "articleKey": "micardinforte",
+      "article": "micardinforte",
+      "name": "Пищевая добавка Микардин Форте, CPA, 10 капсул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 26,
+      "sourceRows": [
+        26
+      ]
+    },
+    {
+      "articleKey": "wbmicelix_1_1",
+      "article": "wbmicelix_1_1",
+      "name": "Комплекс Детокс для очищения печени и кишечника, для похудения, детокc для печени, Алтея, Мицеликс, 10 шт х 2",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 194,
+      "sourceRows": [
+        194
+      ]
+    },
+    {
+      "articleKey": "wbneomax",
+      "article": "wbneomax",
+      "name": "Таблетки для мужчин для секса, возбудитель, средство для потенции и эрекции, витамины для мужчины, Neomax, Неомакс, 13 штук",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 37,
+      "sourceRows": [
+        37
+      ]
+    },
+    {
+      "articleKey": "wbneomaxblue",
+      "article": "wbneomaxblue",
+      "name": "Таблетки для мужчин для секса, возбудитель, средство для потенции и эрекции,витамины для мужчины, Neomax blue, Неомаксблу, 10 штук",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 7,
+      "sourceRows": [
+        7
+      ]
+    },
+    {
+      "articleKey": "wboptitrin",
+      "article": "wboptitrin",
+      "name": "Витамины для глаз, лютеин комплекс для зрения, Оптитрин, 7 ампул",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 4,
+      "sourceRows": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "articleKey": "wbpantogor",
+      "article": "wbpantogor",
+      "name": "wbpantogor",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 8,
+      "sourceRows": [
+        8,
+        9
+      ]
+    },
+    {
+      "articleKey": "wbpantogor_1_1",
+      "article": "wbpantogor_1_1",
+      "name": "Мазь для суставов Пантогор , CPA, 30 мл, набор из 2 шт",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 58,
+      "sourceRows": [
+        58
+      ]
+    },
+    {
+      "articleKey": "wbsinergel",
+      "article": "wbsinergel",
+      "name": "Мазь для суставов Синергель, CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 12,
+      "sourceRows": [
+        12,
+        13
+      ]
+    },
+    {
+      "articleKey": "wbvaranga",
+      "article": "wbvaranga",
+      "name": "Мазь от грибка ногтей Варанга, Алтея, 10 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 31,
+      "sourceRows": [
+        31,
+        32
+      ]
+    },
+    {
+      "articleKey": "wbvaritox",
+      "article": "wbvaritox",
+      "name": "Крем от варикоза Varitox, CPA, 30 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 10,
+      "sourceRows": [
+        10,
+        11
+      ]
+    },
+    {
+      "articleKey": "wowglam",
+      "article": "wowglam",
+      "name": "Сыворотка для роста волос, никотиновая кислота, биотин, бетаин, кератин, масло жожоба, Алтея, WOW GLAM, 10 штук по 2 мл",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 122,
+      "sourceRows": [
+        122
+      ]
+    },
+    {
+      "articleKey": "yagodniy_spas",
+      "article": "yagodniy_spas",
+      "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, детокс, Алтея, Ягодный спас,10 шипучих таблеток",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 139,
+      "sourceRows": [
+        139
+      ]
+    },
+    {
+      "articleKey": "yagodniy_spas_1_1",
+      "article": "yagodniy_spas_1_1",
+      "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, детокс, Алтея, Ягодный спас, 20 шипучих таблеток",
+      "previousOwnerWb": "Мария Васильева",
+      "ownerWb": "Мария Васильева",
+      "changed": false,
+      "sourceRow": 167,
+      "sourceRows": [
+        167
+      ]
     }
   ],
+  "missingInPortal": [],
+  "missingInDistribution": [],
   "duplicates": [
     {
-      "sourceRow": 127,
-      "article": "т-34_bad_60caps",
-      "sourceArticle": "Т-34_BAD_60caps",
-      "owner": "Васильева Мария",
-      "previousOwner": "Васильева Мария"
+      "sourceRow": 3,
+      "sourceArticle": "wbgetsizegel",
+      "articleKey": "wbgetsizegel",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 2,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 5,
+      "sourceArticle": "wboptitrin",
+      "articleKey": "wboptitrin",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 4,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 6,
+      "sourceArticle": "wboptitrin",
+      "articleKey": "wboptitrin",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 4,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 9,
+      "sourceArticle": "wbpantogor",
+      "articleKey": "wbpantogor",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 8,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 11,
+      "sourceArticle": "wbvaritox",
+      "articleKey": "wbvaritox",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 10,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 13,
+      "sourceArticle": "wbsinergel",
+      "articleKey": "wbsinergel",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 12,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 15,
+      "sourceArticle": "wbbiotrin",
+      "articleKey": "wbbiotrin",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 14,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 17,
+      "sourceArticle": "wbgetsize",
+      "articleKey": "wbgetsize",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 16,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 19,
+      "sourceArticle": "wbgetsize1gel2",
+      "articleKey": "wbgetsize1gel2",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 18,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 22,
+      "sourceArticle": "micardin",
+      "articleKey": "micardin",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 21,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 28,
+      "sourceArticle": "artoks",
+      "articleKey": "artoks",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 27,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 29,
+      "sourceArticle": "artoks",
+      "articleKey": "artoks",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 27,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 30,
+      "sourceArticle": "artoks",
+      "articleKey": "artoks",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 27,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 32,
+      "sourceArticle": "wbvaranga",
+      "articleKey": "wbvaranga",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 31,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 35,
+      "sourceArticle": "dardrakona",
+      "articleKey": "dardrakona",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 34,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 36,
+      "sourceArticle": "dardrakona",
+      "articleKey": "dardrakona",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 34,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 40,
+      "sourceArticle": "daoshen",
+      "articleKey": "daoshen",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 39,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 51,
+      "sourceArticle": "chudofrukt_BAD_60caps",
+      "articleKey": "chudofrukt_bad_60caps",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 50,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 69,
+      "sourceArticle": "psoral_50ml",
+      "articleKey": "psoral_50ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 68,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 70,
+      "sourceArticle": "psoral_50ml",
+      "articleKey": "psoral_50ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 68,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 73,
+      "sourceArticle": "artoks_75ml",
+      "articleKey": "artoks_75ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 72,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 75,
+      "sourceArticle": "synergel_60ml",
+      "articleKey": "synergel_60ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 74,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 77,
+      "sourceArticle": "pantogor_100ml",
+      "articleKey": "pantogor_100ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 76,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 80,
+      "sourceArticle": "dardrakona_75ml",
+      "articleKey": "dardrakona_75ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 79,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 83,
+      "sourceArticle": "sustalit_75ml",
+      "articleKey": "sustalit_75ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 82,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 84,
+      "sourceArticle": "sustalit_75ml",
+      "articleKey": "sustalit_75ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 82,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 86,
+      "sourceArticle": "vetonus_100ml",
+      "articleKey": "vetonus_100ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 85,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 88,
+      "sourceArticle": "krem_dlya_ruk_75ml",
+      "articleKey": "krem_dlya_ruk_75ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 87,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 89,
+      "sourceArticle": "krem_dlya_ruk_75ml",
+      "articleKey": "krem_dlya_ruk_75ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 87,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 91,
+      "sourceArticle": "kremshelk_100ml",
+      "articleKey": "kremshelk_100ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 90,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 92,
+      "sourceArticle": "kremshelk_100ml",
+      "articleKey": "kremshelk_100ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 90,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 97,
+      "sourceArticle": "shampun_dlya_rosta_250ml",
+      "articleKey": "shampun_dlya_rosta_250ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 96,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 101,
+      "sourceArticle": "kavmaz",
+      "articleKey": "kavmaz",
+      "ownerWb": "Максим Лапыгин",
+      "previousSourceRow": 100,
+      "previousOwnerWb": "Максим Лапыгин"
+    },
+    {
+      "sourceRow": 102,
+      "sourceArticle": "kavmaz",
+      "articleKey": "kavmaz",
+      "ownerWb": "Максим Лапыгин",
+      "previousSourceRow": 100,
+      "previousOwnerWb": "Максим Лапыгин"
+    },
+    {
+      "sourceRow": 105,
+      "sourceArticle": "kinzhal",
+      "articleKey": "kinzhal",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 104,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 111,
+      "sourceArticle": "kavmaz_60ml",
+      "articleKey": "kavmaz_60ml",
+      "ownerWb": "Максим Лапыгин",
+      "previousSourceRow": 110,
+      "previousOwnerWb": "Максим Лапыгин"
+    },
+    {
+      "sourceRow": 113,
+      "sourceArticle": "retiderm_50ml",
+      "articleKey": "retiderm_50ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 112,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 118,
+      "sourceArticle": "uromax",
+      "articleKey": "uromax",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 117,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 125,
+      "sourceArticle": "syvorotka_dlya_lica_30ml",
+      "articleKey": "syvorotka_dlya_lica_30ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 124,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 126,
+      "sourceArticle": "syvorotka_dlya_lica_30ml",
+      "articleKey": "syvorotka_dlya_lica_30ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 124,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 132,
+      "sourceArticle": "gel_dlya_brovei_6ml",
+      "articleKey": "gel_dlya_brovei_6ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 131,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 135,
+      "sourceArticle": "krem_ot_rastyazhek",
+      "articleKey": "krem_ot_rastyazhek",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 134,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 154,
+      "sourceArticle": "krovavii_piling_30ml",
+      "articleKey": "krovavii_piling_30ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 153,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 155,
+      "sourceArticle": "krovavii_piling_30ml",
+      "articleKey": "krovavii_piling_30ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 153,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 156,
+      "sourceArticle": "krovavii_piling_30ml",
+      "articleKey": "krovavii_piling_30ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 153,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 165,
+      "sourceArticle": "solevoy_sprei_200ml",
+      "articleKey": "solevoy_sprei_200ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 164,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 166,
+      "sourceArticle": "solevoy_sprei_200ml",
+      "articleKey": "solevoy_sprei_200ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 164,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 181,
+      "sourceArticle": "maslo_dlya_volos_parf_110ml_",
+      "articleKey": "maslo_dlya_volos_parf_110ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 116,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 183,
+      "sourceArticle": "syvorotka_dlya_rosta_6ml_v2",
+      "articleKey": "syvorotka_dlya_rosta_6ml_v2",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 182,
+      "previousOwnerWb": "Мария Васильева"
+    },
+    {
+      "sourceRow": 187,
+      "sourceArticle": "krem_dlya_vek_30ml",
+      "articleKey": "krem_dlya_vek_30ml",
+      "ownerWb": "Мария Васильева",
+      "previousSourceRow": 186,
+      "previousOwnerWb": "Мария Васильева"
     }
   ]
 }

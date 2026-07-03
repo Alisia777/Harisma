@@ -1,5 +1,46 @@
+function renderTaskKanbanBootShell(root, source = 'control-route-guard') {
+  if (!root) return root;
+  root.classList.add('task-route-locked');
+  const currentTaskShell = root.querySelector('[data-task-calendar-design-v1][data-task-kanban-v1]');
+  if (currentTaskShell) return root;
+  if (!document.getElementById('altea-task-route-boot-style')) {
+    const style = document.createElement('style');
+    style.id = 'altea-task-route-boot-style';
+    style.textContent = `
+      .task-route-boot{box-sizing:border-box;min-height:calc(100vh - 145px);display:grid;align-content:start;gap:14px;padding:26px 28px;color:#f7f1e7;background:linear-gradient(145deg,rgba(11,9,7,.98),rgba(24,16,14,.96));border:1px solid rgba(219,199,163,.2);border-radius:14px}
+      .task-route-boot *{box-sizing:border-box}
+      .task-route-boot h2{margin:0;font-size:clamp(28px,3vw,44px);line-height:1.04;letter-spacing:0}
+      .task-route-boot p{margin:0;color:#b8ad9d;max-width:760px}
+      .task-route-boot-row{display:flex;align-items:center;gap:10px;color:#dbc7a3;font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.08em}
+      .task-route-boot-dot{width:10px;height:10px;border-radius:999px;background:#dbc7a3;box-shadow:0 0 0 0 rgba(219,199,163,.45);animation:taskRouteBootPulse 1.15s ease-in-out infinite}
+      .task-route-boot-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:8px}
+      .task-route-boot-card{min-height:74px;border:1px solid rgba(219,199,163,.16);border-radius:10px;background:rgba(255,255,255,.035);overflow:hidden;position:relative}
+      .task-route-boot-card::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent,rgba(219,199,163,.14),transparent);transform:translateX(-100%);animation:taskRouteBootSweep 1.4s ease-in-out infinite}
+      @keyframes taskRouteBootPulse{50%{box-shadow:0 0 0 8px rgba(219,199,163,.08)}}
+      @keyframes taskRouteBootSweep{to{transform:translateX(100%)}}
+      @media(max-width:900px){.task-route-boot{padding:20px}.task-route-boot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    `;
+    document.head.appendChild(style);
+  }
+  root.innerHTML = `
+    <section class="task-route-boot" data-task-route-boot data-task-calendar-design-v1 data-task-loading="boot" data-source="${escapeHtml(source)}">
+      <div class="task-route-boot-row"><span class="task-route-boot-dot"></span><span>\u0413\u043e\u0442\u043e\u0432\u0438\u043c \u0437\u0430\u0434\u0430\u0447\u0438</span></div>
+      <h2>\u0417\u0430\u0434\u0430\u0447\u0438 \u043a\u043e\u043c\u0430\u043d\u0434\u044b</h2>
+      <p>\u041f\u043e\u0434\u043d\u0438\u043c\u0430\u0435\u043c \u043d\u043e\u0432\u044b\u0439 \u0440\u0430\u0431\u043e\u0447\u0438\u0439 \u0441\u043b\u043e\u0439. \u0421\u0442\u0430\u0440\u044b\u0439 task-center \u043d\u0430 \u044d\u0442\u043e\u043c \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0435 \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d.</p>
+      <div class="task-route-boot-grid" aria-hidden="true"><span class="task-route-boot-card"></span><span class="task-route-boot-card"></span><span class="task-route-boot-card"></span><span class="task-route-boot-card"></span></div>
+    </section>
+  `;
+  return root;
+}
+
+window.__ALTEA_RENDER_TASK_BOOT_SHELL__ = renderTaskKanbanBootShell;
+
 function renderControlCenter() {
   const root = document.getElementById('view-control');
+  if (window.__ALTEA_TASK_KANBAN_PRIMARY__ !== false) {
+    if (typeof window.__ALTEA_TASK_KANBAN_RENDER__ === 'function') return window.__ALTEA_TASK_KANBAN_RENDER__();
+    return renderTaskKanbanBootShell(root, 'app-core-05');
+  }
   state.controlFilters.platform = normalizeControlWorkstreamFilter(state.controlFilters.platform);
   state.controlFilters.priority = state.controlFilters.priority || 'all';
 
@@ -7,8 +48,16 @@ function renderControlCenter() {
   const baseTasks = filteredControlTasks({ ignorePlatform: true });
   const selectedWorkstream = state.controlFilters.platform;
   const selectedSummary = buildControlWorkstreamSummary(baseTasks, selectedWorkstream);
-  const owners = [...new Set(getAllTasks().map((task) => task.owner || 'Без ответственного'))].sort((a, b) => a.localeCompare(b, 'ru'));
   const ownerSuggestions = ownerOptions();
+  const taskOwnerPool = new Set(getAllTasks()
+    .map((task) => (typeof canonicalOwnerName === 'function'
+      ? canonicalOwnerName(task.owner || '')
+      : String(task.owner || '').trim()))
+    .filter(Boolean));
+  const owners = ownerSuggestions.filter((owner) => taskOwnerPool.has(owner));
+  if (state.controlFilters.owner !== 'all' && !owners.includes(state.controlFilters.owner)) {
+    state.controlFilters.owner = 'all';
+  }
   const unassignedSkus = [...state.skus]
     .filter((sku) => !sku?.flags?.assigned)
     .sort((a, b) => (b.focusScore || 0) - (a.focusScore || 0) || monthRevenue(b) - monthRevenue(a))

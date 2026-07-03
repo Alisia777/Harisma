@@ -25,22 +25,24 @@
   portalDataQuality: { generatedAt: '', status: '', summary: {}, issues: [] },
   portalDataQuarantine: { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] },
   oosControl: { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
+  predictiveRisk: { schema: 'qharisma-predictive-risk-v1', generatedAt: '', summary: {}, risks: [], autoTaskSignals: [] },
+  autoTaskSignals: { schema: 'qharisma-auto-task-signals-v1', generatedAt: '', summary: {}, signals: [] },
+  predictiveRiskOutcomeAudit: { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 },
   launches: [],
   meetings: [],
   documents: { groups: [] },
   repricer: { generatedAt: '', summary: {}, rows: [] },
-  canonicalRepricer: { schema: 'canonical-repricer-v1', generatedAt: '', summary: {}, rows: [] },
-  portalDashboardMetrics: { schema: 'portal-dashboard-metrics-v1', generatedAt: '', metrics: [] },
-  portalRuntimeWiring: { schema: 'portal-runtime-wiring-reconciliation-v1', status: '', artifacts: [] },
-  portalFeatureReadiness: { schema: 'portal-feature-readiness-v1', status: '', features: {} },
   repricerLive: { generatedAt: '', rows: [] },
   storage: {
     comments: [],
     tasks: [],
     decisions: [],
     ownerOverrides: [],
+    resourceLinks: [],
     productLifecycleOverrides: [],
     taskAttachments: [],
+    autoTaskSnapshot: { generatedAt: '', active: [] },
+    autoTaskHistory: [],
     repricerSettings: {},
     repricerSettingsUpdatedAt: '',
     repricerOverrides: [],
@@ -97,7 +99,7 @@
     search: '',
     owner: 'all',
     signal: 'all',
-    sort: 'orderDeltaAbs',
+    sort: 'gameScore',
     category: 'all',
     snapshot: 'latest',
     lflCurrentSnapshot: 'latest',
@@ -158,7 +160,7 @@
   activeTaskId: null,
 
   boot: {
-    dataReady: false,
+  dataReady: false,
     listenersAttached: false,
     dataWarnings: [],
     lazyReady: {
@@ -169,6 +171,7 @@
       iuDrr: false,
       skuPlanFact: false,
       oosControl: false,
+      predictiveRisk: false,
       meetings: false,
       documents: false,
       repricer: false
@@ -212,12 +215,12 @@ const VIEW_TITLES = {
   'data-health': 'Календарь',
   'oos-control': 'OOS контроль',
   'sku-contour': 'SKU workspace',
-  launches: 'Новинки',
+  launches: 'Продукт / новинки',
   'iu-drr': 'Показатели площадок',
   'sku-plan-fact': 'План-факт SKU',
   'wb-rating': 'Рейтинг карточек',
   'product-leaderboard': 'Продуктовый лидерборд',
-  'launch-control': 'Новинки',
+  'launch-control': 'Запуск новинок',
   meetings: 'Ритм работы',
   executive: 'Руководителю'
 };
@@ -232,120 +235,19 @@ const VIEW_DATA_REQUIREMENTS = {
   'wb-rating': 'iuDrr',
   'product-leaderboard': 'productLeaderboard',
   'launch-control': 'launches',
-  executive: 'skuPlanFact',
+  executive: '',
   meetings: 'meetings',
   documents: 'documents',
   repricer: 'repricer'
 };
-
-async function loadProductLeaderboardLocalData(path, fallback, label) {
-  try {
-    return await loadJson(path);
-  } catch (error) {
-    console.error(error);
-    registerDataWarning(`${label}: ${error.message || 'Не удалось загрузить данные'}`);
-    return cloneFallback(fallback);
-  }
-}
-
-async function loadProductLeaderboardSupplementalData(options = {}) {
-  const cacheKey = 'productLeaderboardSupplementals';
-  if (state.boot?.lazyLoads?.[cacheKey]) return state.boot.lazyLoads[cacheKey];
-
-  const pending = Promise.all([
-    loadProductLeaderboardLocalData(
-      'data/wb_substitution_traffic.json',
-      { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
-      'WB подменные артикулы'
-    ),
-    loadProductLeaderboardLocalData(
-      'data/wb_substitution_traffic_history.json',
-      [],
-      'История WB подменных артикулов'
-    ),
-    loadProductLeaderboardLocalData(
-      'data/iu_drr_summary.json',
-      { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
-      'Показатели площадок'
-    ),
-    loadProductLeaderboardLocalData(
-      'data/ads_summary.json',
-      { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
-      'Реклама МП'
-    )
-  ])
-    .then(([wbSubstitutionTraffic, wbSubstitutionTrafficHistory, iuDrrSummary, adsSummary]) => {
-      state.wbSubstitutionTraffic = wbSubstitutionTraffic && typeof wbSubstitutionTraffic === 'object'
-        ? wbSubstitutionTraffic
-        : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
-      state.wbSubstitutionTrafficHistory = Array.isArray(wbSubstitutionTrafficHistory) ? wbSubstitutionTrafficHistory : [];
-      state.iuDrrSummary = iuDrrSummary && typeof iuDrrSummary === 'object'
-        ? iuDrrSummary
-        : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
-      state.adsSummary = adsSummary && typeof adsSummary === 'object'
-        ? adsSummary
-        : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
-
-      if (options.rerender !== false && state.activeView === 'product-leaderboard' && typeof rerenderCurrentView === 'function') {
-        window.setTimeout(() => {
-          if (state.activeView === 'product-leaderboard') rerenderCurrentView();
-        }, 0);
-      }
-    })
-    .finally(() => {
-      if (state.boot?.lazyLoads) delete state.boot.lazyLoads[cacheKey];
-    });
-
-  if (state.boot?.lazyLoads) state.boot.lazyLoads[cacheKey] = pending;
-  return pending;
-}
-
-window.loadProductLeaderboardSupplementalData = loadProductLeaderboardSupplementalData;
-
-function waitForProductLeaderboardFastSnapshot(options = {}, timeoutMs = 4500) {
-  if (typeof window.__alteaRefreshProductLeaderboardSnapshotFast !== 'function') {
-    return Promise.resolve(false);
-  }
-
-  return new Promise((resolve) => {
-    let settled = false;
-    const timer = window.setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      resolve(false);
-    }, timeoutMs);
-
-    window.__alteaRefreshProductLeaderboardSnapshotFast(options)
-      .then((value) => {
-        if (settled) return;
-        settled = true;
-        window.clearTimeout(timer);
-        resolve(value);
-      })
-      .catch((error) => {
-        if (!settled) {
-          settled = true;
-          window.clearTimeout(timer);
-          console.warn('[product-leaderboard:fast-snapshot]', error);
-          resolve(false);
-        }
-      });
-  });
-}
-
-const DISABLED_VIEWS = new Set(['meetings', 'ads-funnel', 'launch-control']);
+const DISABLED_VIEWS = new Set(['meetings', 'ads-funnel']);
 const VIEW_REDIRECTS = {
   meetings: 'dashboard',
-  'ads-funnel': 'iu-drr',
-  'launch-control': 'launches'
+  'ads-funnel': 'iu-drr'
 };
 
 function normalizePortalView(view = 'dashboard') {
-  const raw = String(view || 'dashboard')
-    .trim()
-    .replace(/^#/, '')
-    .replace(/^\/+/, '')
-    .replace(/[?#].*$/, '') || 'dashboard';
+  const raw = String(view || 'dashboard').trim() || 'dashboard';
   return DISABLED_VIEWS.has(raw) ? (VIEW_REDIRECTS[raw] || 'dashboard') : raw;
 }
 
@@ -367,6 +269,7 @@ const TASK_TYPE_META = {
   returns: 'Отзывы / возвраты',
   assignment: 'Закрепление',
   launch: 'Новинка',
+  data_quality: 'Качество данных',
   general: 'Общее'
 };
 
@@ -380,6 +283,8 @@ const PRIORITY_META = {
 const TASK_LOG_META = {
   created: { label: 'Создана', tone: 'info' },
   updated: { label: 'Изменена', tone: 'warn' },
+  seen: { label: 'Повтор', tone: 'info' },
+  resolved: { label: 'Ушёл', tone: 'ok' },
   comment: { label: 'Комментарий', tone: 'ok' },
   status: { label: 'Статус', tone: 'info' },
   report: { label: 'Отчёт', tone: 'ok' }
@@ -422,18 +327,6 @@ const CONTROL_WORKSTREAM_META = {
     description: 'Отдельный контур Л\'Этуаль.',
     kind: 'ok'
   },
-  megamarket: {
-    label: 'Мегамаркет',
-    chip: 'Мегамаркет',
-    description: 'Отдельный контур Мегамаркета.',
-    kind: 'ok'
-  },
-  samokat: {
-    label: 'Самокат',
-    chip: 'Самокат',
-    description: 'Отдельный контур Самоката.',
-    kind: 'ok'
-  },
   magnit: {
     label: 'Магнит Маркет',
     chip: 'Магнит Маркет',
@@ -441,9 +334,9 @@ const CONTROL_WORKSTREAM_META = {
     kind: 'ok'
   },
   product: {
-    label: 'Новинки',
-    chip: 'Новинки',
-    description: 'Календарь, проект товара, запуск и задачи по этапам.',
+    label: 'Продукт / новинки',
+    chip: 'Продукт',
+    description: 'Календарь новинок, продуктовая проработка и запуск карточек.',
     kind: 'info'
   },
   executive: {
@@ -460,14 +353,14 @@ const CONTROL_WORKSTREAM_META = {
   }
 };
 
-const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'product'];
+const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product'];
 const CONTROL_WORKSTREAM_FILTER_ORDER = ['all', ...CONTROL_WORKSTREAM_ORDER];
 
 const DEFAULT_APP_CONFIG = {
   brand: 'Алтея',
   teamMode: 'local',
   teamMember: { name: '', role: 'Команда' },
-  supabase: { url: '', anonKey: '', auth: 'anonymous' }
+  supabase: { url: '', anonKey: '', auth: 'email_password' }
 };
 
 
@@ -478,7 +371,7 @@ const RUNTIME_SUPABASE_FALLBACK = {
   supabase: {
     url: 'https://iyckwryrucqrxwlowxow.supabase.co',
     anonKey: 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw',
-    auth: 'anonymous'
+    auth: 'email_password'
   }
 };
 
@@ -502,7 +395,6 @@ const PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS = 5000;
 const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/dashboard.json': 'dashboard',
   'data/skus.json': 'skus',
-  'data/sku_registry_meta.json': 'sku_registry_meta',
   'data/platform_trends.json': 'platform_trends',
   'data/logistics.json': 'logistics',
   'data/ads_summary.json': 'ads_summary',
@@ -515,11 +407,6 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/smart_price_workbench.json': 'smart_price_workbench',
   'data/smart_price_overlay.json': 'smart_price_overlay',
   'data/repricer.json': 'repricer',
-  'data/canonical_repricer.json': 'canonical_repricer',
-  'data/portal_dashboard_metrics.json': 'portal_dashboard_metrics',
-  'data/wb_sales_funnel_report.json': 'wb_sales_funnel_report',
-  'data/portal_runtime_wiring_reconciliation.json': 'portal_runtime_wiring_reconciliation',
-  'data/portal_feature_readiness.json': 'portal_feature_readiness',
   'data/price_workbench_support.json': 'price_workbench_support',
   'data/price_workbench_support.dashboard-compact.json': 'price_workbench_support',
   'data/product_leaderboard.json': 'product_leaderboard',
@@ -529,6 +416,9 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/order_procurement_ozon.json': 'order_procurement_ozon',
   'data/order_procurement_ym.json': 'order_procurement_ym',
   'data/oos_control.json': 'oos_control',
+  'data/predictive_risk_snapshot.json': 'predictive_risk_snapshot',
+  'data/auto_task_signals.json': 'auto_task_signals',
+  'data/predictive_risk_outcome_audit.json': 'predictive_risk_outcome_audit',
   'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay',
   'data/portal_data_quality.json': 'portal_data_quality',
   'data/portal_data_quarantine.json': 'portal_data_quarantine',
@@ -536,7 +426,6 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/sku_alias_ignore.json': 'sku_alias_ignore',
   'data/sku_alias_audit.json': 'sku_alias_audit',
   'data/sku_matrix.json': 'sku_matrix',
-  'data/wb_owner_distribution_audit.json': 'wb_owner_distribution_audit',
   'data/portal_sync_health.json': 'portal_sync_health'
 };
 const portalSnapshotState = {
@@ -586,11 +475,16 @@ function currentConfig() {
   };
   const missingRemote = merged.teamMode !== 'supabase' || !merged.supabase?.url || !merged.supabase?.anonKey;
   const explicitLocalMode = hasExplicitTeamMode && String(raw.teamMode || '').trim().toLowerCase() === 'local';
+  const authRemote = window.__ALTEA_AUTH_REMOTE_CONFIG__;
+  const fallback = authRemote?.supabase?.url && authRemote?.supabase?.anonKey
+    ? authRemote
+    : RUNTIME_SUPABASE_FALLBACK;
   if (missingRemote && !explicitLocalMode) {
     return {
       ...merged,
-      ...RUNTIME_SUPABASE_FALLBACK,
-      teamMember: { ...RUNTIME_SUPABASE_FALLBACK.teamMember, ...(merged.teamMember || {}) }
+      ...fallback,
+      teamMember: { ...(fallback.teamMember || {}), ...(merged.teamMember || {}) },
+      supabase: { ...(fallback.supabase || {}), ...(raw.supabase || {}) }
     };
   }
   return merged;
@@ -673,14 +567,6 @@ function payloadFreshnessScore(snapshotKey, payload) {
     score = bumpFreshness(score, payload.window?.to);
     (payload.daily || []).forEach((item) => {
       score = bumpFreshness(score, item?.date);
-    });
-    return score;
-  }
-
-  if (snapshotKey === 'wb_sales_funnel_report') {
-    score = bumpFreshness(score, payload.period?.to);
-    (payload.items || []).forEach((item) => {
-      score = bumpFreshness(score, item?.date || item?.period?.to || item?.updatedAt);
     });
     return score;
   }
@@ -794,14 +680,6 @@ function payloadDataFreshnessScore(snapshotKey, payload) {
     return score;
   }
 
-  if (snapshotKey === 'wb_sales_funnel_report') {
-    score = bumpFreshness(score, payload.period?.to);
-    (payload.items || []).forEach((item) => {
-      score = bumpFreshness(score, item?.date || item?.period?.to);
-    });
-    return score;
-  }
-
   if (snapshotKey === 'platform_plan' || snapshotKey === 'iu_plan') {
     Object.keys(payload.months || {}).forEach((monthKey) => {
       score = bumpFreshness(score, `${monthKey}-01`);
@@ -856,14 +734,6 @@ function shouldPreferLocalAliasCoverage(snapshotKey, snapshotPayload, localPaylo
   return localScore > 0 && localScore > snapshotScore;
 }
 
-function protectedSnapshotKey() {
-  return ['iu', 'drr', 'summary'].join('_');
-}
-
-function preferPublishedSnapshotOnTie(snapshotKey) {
-  return snapshotKey !== protectedSnapshotKey();
-}
-
 function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
   const snapshotReady = snapshotPayloadLooksUsable(snapshotKey, snapshotPayload) ? snapshotPayload : null;
   const localReady = localPayload !== null && localPayload !== undefined ? localPayload : null;
@@ -888,16 +758,9 @@ function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
         ? { payload: localReady, source: 'local' }
         : { payload: snapshotReady, source: 'snapshot' };
     }
-    const localFreshnessScore = payloadFreshnessScore(snapshotKey, localReady);
-    const snapshotFreshnessScore = payloadFreshnessScore(snapshotKey, snapshotReady);
-    if (localFreshnessScore !== snapshotFreshnessScore) {
-      return localFreshnessScore > snapshotFreshnessScore
-        ? { payload: localReady, source: 'local' }
-        : { payload: snapshotReady, source: 'snapshot' };
-    }
-    return preferPublishedSnapshotOnTie(snapshotKey)
-      ? { payload: snapshotReady, source: 'snapshot' }
-      : { payload: localReady, source: 'local' };
+    return payloadFreshnessScore(snapshotKey, localReady) >= payloadFreshnessScore(snapshotKey, snapshotReady)
+      ? { payload: localReady, source: 'local' }
+      : { payload: snapshotReady, source: 'snapshot' };
   }
   if (localReady) return { payload: localReady, source: 'local' };
   if (snapshotReady) return { payload: snapshotReady, source: 'snapshot' };
@@ -1411,7 +1274,6 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   if (snapshotKey === 'ads_summary') return Array.isArray(payload?.platforms) && payload.platforms.length > 0;
   if (snapshotKey === 'iu_drr_summary') return Array.isArray(payload?.daily) && payload.daily.length > 0;
   if (snapshotKey === 'wb_feedbacks_summary') return Array.isArray(payload?.cards) && payload.cards.length > 0;
-  if (snapshotKey === 'wb_sales_funnel_report') return Array.isArray(payload?.items);
   if (snapshotKey === 'wb_substitution_traffic') return Array.isArray(payload?.articles) && payload.articles.length > 0;
   if (snapshotKey === 'wb_substitution_traffic_history') return Array.isArray(payload) && payload.length > 0;
   if (snapshotKey === 'platform_plan') return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;
@@ -1455,12 +1317,6 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   if (snapshotKey === 'sku_alias_audit') {
     return typeof payload === 'object' && payload !== null && Array.isArray(payload.events);
   }
-  if (snapshotKey === 'sku_registry_meta') {
-    return typeof payload === 'object' && payload !== null && Boolean(payload.generatedAt);
-  }
-  if (snapshotKey === 'wb_owner_distribution_audit') {
-    return typeof payload === 'object' && payload !== null && typeof payload.summary === 'object';
-  }
   if (snapshotKey === 'logistics') {
     return Array.isArray(payload?.allRows) && payload.allRows.length > 0
       || Array.isArray(payload?.ozonClusters) && payload.ozonClusters.length > 0
@@ -1495,7 +1351,7 @@ function getPortalSnapshotRequestConfig() {
     url: url.toString(),
     headers: {
       apikey: cfg.supabase.anonKey,
-      Authorization: `Bearer ${cfg.supabase.anonKey}`,
+      Authorization: `Bearer ${state.team?.accessToken || window.__ALTEA_AUTH_SESSION__?.access_token || cfg.supabase.anonKey}`,
       Accept: 'application/json'
     }
   };
@@ -1508,43 +1364,6 @@ function parseChunkedSnapshotKey(snapshotKey = '') {
     baseKey: match[1],
     index: Number(match[2])
   };
-}
-
-function parsePortalChunkedJsonText(text = '') {
-  const source = String(text || '').trim();
-  if (!source) return null;
-  try {
-    return JSON.parse(source);
-  } catch (firstError) {
-    const start = source.search(/[\[{]/);
-    if (start < 0) throw firstError;
-    const stack = [];
-    let inString = false;
-    let escaped = false;
-    for (let index = start; index < source.length; index += 1) {
-      const char = source[index];
-      if (inString) {
-        if (escaped) escaped = false;
-        else if (char === '\\') escaped = true;
-        else if (char === '"') inString = false;
-        continue;
-      }
-      if (char === '"') {
-        inString = true;
-        continue;
-      }
-      if (char === '{' || char === '[') {
-        stack.push(char);
-        continue;
-      }
-      if (char === '}' || char === ']') {
-        const opener = stack.pop();
-        if ((char === '}' && opener !== '{') || (char === ']' && opener !== '[')) throw firstError;
-        if (!stack.length) return JSON.parse(source.slice(start, index + 1));
-      }
-    }
-    throw firstError;
-  }
 }
 
 function portalSnapshotRowStamp(row) {
@@ -1619,7 +1438,7 @@ function decodeChunkedPortalSnapshots(data) {
       .join('');
     if (!text) continue;
     try {
-      rows[baseKey] = parsePortalChunkedJsonText(text);
+      rows[baseKey] = JSON.parse(text);
     } catch (error) {
       console.warn(`[portal-snapshots] failed to decode chunked snapshot ${baseKey}`, error);
     }
@@ -1662,12 +1481,13 @@ function portalSnapshotRequestBaseUrl() {
   if (!cfg.supabase?.url || !cfg.supabase?.anonKey || typeof fetch !== 'function') return null;
   const brand = currentBrand();
   const baseUrl = String(cfg.supabase.url || '').replace(/\/+$/, '');
+  const authToken = state.team?.accessToken || window.alteaPortalAuthGate?.getSession?.()?.access_token || window.__ALTEA_AUTH_SESSION__?.access_token || cfg.supabase.anonKey;
   return {
     brand,
     url: `${baseUrl}/rest/v1/${PORTAL_SNAPSHOT_TABLE}`,
     headers: {
       apikey: cfg.supabase.anonKey,
-      Authorization: `Bearer ${cfg.supabase.anonKey}`,
+      Authorization: `Bearer ${authToken}`,
       Accept: 'application/json'
     }
   };
@@ -1750,14 +1570,15 @@ function defaultStorage() {
     tasks: [],
     decisions: [],
     ownerOverrides: [],
+    resourceLinks: [],
     productLifecycleOverrides: [],
     taskAttachments: [],
+    autoTaskSnapshot: { generatedAt: '', active: [] },
+    autoTaskHistory: [],
     promoEvents: [],
     promoEventDeletedIds: [],
     launchOverrides: [],
     launchDeletedIds: [],
-    autoTaskTombstones: [],
-    launchAutoTaskTombstones: [],
     repricerSettings: defaultRepricerSettings(),
     repricerSettingsUpdatedAt: '',
     repricerOverrides: [],
@@ -2443,16 +2264,6 @@ function normalizeRepricerOverride(item = {}) {
     promoTo: repricerDateKey(item.promoTo ?? item.promoEnd ?? item.promoDateTo),
     disableAlignment: Boolean(item.disableAlignment || item.noAlignment),
     note: String(item.note || '').trim(),
-    author: String(item.author || item.createdBy || item.created_by || item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда',
-    role: String(item.role || item.authorRole || item.author_role || '').trim(),
-    reason: String(item.reason || item.note || '').trim(),
-    createdAt: item.createdAt || item.created_at || item.updatedAt || new Date().toISOString(),
-    approvalStatus: String(item.approvalStatus || item.approval_status || item.status || 'draft').trim().toLowerCase() || 'draft',
-    approvedBy: String(item.approvedBy || item.approved_by || '').trim(),
-    approvedAt: String(item.approvedAt || item.approved_at || '').trim(),
-    expiresAt: String(item.expiresAt || item.expires_at || '').trim(),
-    supersedes_id: item.supersedes_id || item.supersedesId || null,
-    sourceStore: String(item.sourceStore || item.source_store || item.source || 'local_storage_draft_only').trim() || 'local_storage_draft_only',
     updatedAt: item.updatedAt || new Date().toISOString(),
     updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
   };
@@ -2485,16 +2296,6 @@ function normalizeRepricerCorridor(item = {}) {
     stretchCap: repricerNumberOrBlank(item.stretchCap ?? item.capPrice),
     promoFloor: repricerNumberOrBlank(item.promoFloor),
     elasticity: repricerSignedNumberOrBlank(item.elasticity),
-    author: String(item.author || item.createdBy || item.created_by || item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда',
-    role: String(item.role || item.authorRole || item.author_role || '').trim(),
-    reason: String(item.reason || item.note || '').trim(),
-    createdAt: item.createdAt || item.created_at || item.updatedAt || new Date().toISOString(),
-    approvalStatus: String(item.approvalStatus || item.approval_status || item.status || 'draft').trim().toLowerCase() || 'draft',
-    approvedBy: String(item.approvedBy || item.approved_by || '').trim(),
-    approvedAt: String(item.approvedAt || item.approved_at || '').trim(),
-    expiresAt: String(item.expiresAt || item.expires_at || '').trim(),
-    supersedes_id: item.supersedes_id || item.supersedesId || null,
-    sourceStore: String(item.sourceStore || item.source_store || item.source || 'local_storage_draft_only').trim() || 'local_storage_draft_only',
     updatedAt: item.updatedAt || new Date().toISOString(),
     updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
   };
@@ -2538,25 +2339,21 @@ const EMPTY_OWNER_NAMES = new Set([
   'none'
 ]);
 
-const INACTIVE_OWNER_NAMES = new Set([
-  'олеся',
-  'олеся савинова'
-]);
-
 const OWNER_CANONICAL_NAMES = new Map([
   ['алексей', 'Алексей'],
   ['александр', 'Питайкин Артём'],
-  ['анна', 'Пирогова Анна'],
+  ['анна', 'Анна Пирогова'],
   ['артем', 'Питайкин Артём'],
   ['артём', 'Питайкин Артём'],
   ['дария', 'Молодякова Дария'],
   ['дарья', 'Молодякова Дария'],
   ['даша', 'Молодякова Дария'],
-  ['екатерина', 'Доможирова Екатерина'],
+  ['екатерина', 'Екатерина Доможирова'],
   ['кирилл', 'Кирилл'],
   ['ксения', 'Ксения'],
-  ['максим', 'Лапыгин Максим'],
-  ['мария', 'Васильева Мария'],
+  ['максим', 'Максим Лапыгин'],
+  ['мария', 'Мария Васильева'],
+  ['олеся', 'Олеся'],
   ['светлана', 'Светлана']
 ]);
 
@@ -2570,17 +2367,18 @@ const OWNER_NAME_ALIASES = new Map([
   ['молодякова дарья', 'Молодякова Дария'],
   ['дария молодякова', 'Молодякова Дария'],
   ['дарья молодякова', 'Молодякова Дария'],
-  ['анна пирогова', 'Пирогова Анна'],
-  ['пирогова анна', 'Пирогова Анна'],
-  ['екатерина доброжирова', 'Доможирова Екатерина'],
-  ['екатерина доможирова', 'Доможирова Екатерина'],
-  ['доможирова екатерина', 'Доможирова Екатерина'],
-  ['доброжирова екатерина', 'Доможирова Екатерина'],
-  ['мария васильева', 'Васильева Мария'],
-  ['мария васильевна', 'Васильева Мария'],
-  ['васильева мария', 'Васильева Мария'],
-  ['лапыгин максим', 'Лапыгин Максим'],
-  ['максим лапыгин', 'Лапыгин Максим']
+  ['анна пирогова', 'Анна Пирогова'],
+  ['пирогова анна', 'Анна Пирогова'],
+  ['екатерина доброжирова', 'Екатерина Доможирова'],
+  ['екатерина доможирова', 'Екатерина Доможирова'],
+  ['доможирова екатерина', 'Екатерина Доможирова'],
+  ['доброжирова екатерина', 'Екатерина Доможирова'],
+  ['мария васильева', 'Мария Васильева'],
+  ['мария васильевна', 'Мария Васильева'],
+  ['васильева мария', 'Мария Васильева'],
+  ['лапыгин максим', 'Максим Лапыгин'],
+  ['максим лапыгин', 'Максим Лапыгин'],
+  ['олеся савинова', 'Олеся']
 ]);
 
 function normalizeOwnerToken(value = '') {
@@ -2599,13 +2397,11 @@ function canonicalOwnerName(value = '') {
 
   const lowered = normalized.toLowerCase();
   if (EMPTY_OWNER_NAMES.has(lowered)) return '';
-  if (INACTIVE_OWNER_NAMES.has(lowered)) return '';
   if (OWNER_NAME_ALIASES.has(lowered)) return OWNER_NAME_ALIASES.get(lowered);
   if (OWNER_CANONICAL_NAMES.has(lowered)) return OWNER_CANONICAL_NAMES.get(lowered);
 
   const [firstToken = ''] = normalized.split(' ');
   const firstTokenLowered = firstToken.toLowerCase();
-  if (INACTIVE_OWNER_NAMES.has(firstTokenLowered)) return '';
   if (OWNER_CANONICAL_NAMES.has(firstTokenLowered)) return OWNER_CANONICAL_NAMES.get(firstTokenLowered);
 
   return normalized;
@@ -2614,10 +2410,12 @@ function canonicalOwnerName(value = '') {
 function normalizeOwnerPlatformKey(platform = '') {
   const normalized = String(platform || '').trim().toLowerCase();
   if (normalized === 'ya' || normalized === 'yandex' || normalized === 'yandex_market' || normalized === 'market') return 'ym';
+  if (normalized === 'goldapple' || normalized === 'goldenapple' || normalized === 'zya') return 'ga';
+  if (normalized === 'magnit' || normalized === 'magnitmarket') return 'mm';
   return normalized;
 }
 
-const OWNER_OVERRIDE_PLATFORM_KEYS = new Set(['wb', 'ozon', 'ym', 'letu', 'ga', 'megamarket', 'samokat', 'mm']);
+const OWNER_OVERRIDE_PLATFORM_KEYS = new Set(['wb', 'ozon', 'ym', 'letu', 'ga', 'mm']);
 const OWNER_OVERRIDE_NOTE_RE = /\[\[ownerByPlatform:([A-Za-z0-9%._~-]+)\]\]/g;
 
 function normalizeOwnerOverridePlatformKey(platform = '') {
@@ -2628,8 +2426,6 @@ function normalizeOwnerOverridePlatformKey(platform = '') {
   if (raw === 'ym' || raw === 'ya' || raw === 'yandex' || raw === 'yandex_market' || raw === 'market' || raw === 'ям' || raw === 'яндекс') return 'ym';
   if (raw === 'letu' || raw === 'letual' || raw === 'лэтуаль' || raw === 'летуаль') return 'letu';
   if (raw === 'ga' || raw === 'goldenapple' || raw === 'зя' || raw === 'зя') return 'ga';
-  if (raw === 'megamarket' || raw === 'mega_market' || raw === 'мегамаркет') return 'megamarket';
-  if (raw === 'samokat' || raw === 'самокат') return 'samokat';
   if (raw === 'mm' || raw === 'magnit' || raw === 'магнит') return 'mm';
   return normalizeOwnerPlatformKey(raw);
 }
@@ -2954,33 +2750,49 @@ async function loadJsonOrFallback(path, fallback, label = path) {
 
 const LAZY_DATA_LOADERS = {
   launches: async () => {
-    const launches = await loadJsonOrFallback('data/launches.json', [], 'Новинки');
+    const launches = await loadJsonOrFallback('data/launches.json', [], 'Продукт / новинки');
     state.launches = Array.isArray(launches) ? launches : [];
   },
   controlCenter: async () => {
-    const [launches, productLeaderboard, productLeaderboardHistory, oosControl, smartPriceOverlay, returnBaselineSkus, adsSummary] = await Promise.all([
-      loadJsonOrFallback('data/launches.json', [], 'Новинки'),
-      loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
-      loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
-      loadJsonOrFallback('data/oos_control.json', { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } }, 'OOS контроль'),
-      loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
-      loadJsonOrFallback('data/last_good/skus.json', [], 'База возвратов SKU'),
-      loadJsonOrFallback('data/ads_summary.json', { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] }, 'Контроль РК')
+    const [launches, productLeaderboard, oosControl, predictiveRisk, autoTaskSignals, predictiveRiskOutcomeAudit, smartPriceOverlay, returnBaselineSkus, orderProcurementWb, orderProcurementOzon] = await Promise.all([
+      loadJsonOrFallback('data/launches.json', [], 'Продукт / новинки'),
+      Promise.resolve(state.productLeaderboard || { generatedAt: '', items: [], summary: {} }),
+      Promise.resolve(state.oosControl || { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } }),
+      Promise.resolve(state.predictiveRisk || { schema: 'qharisma-predictive-risk-v1', generatedAt: '', summary: {}, risks: [], autoTaskSignals: [] }),
+      Promise.resolve(state.autoTaskSignals || { schema: 'qharisma-auto-task-signals-v1', generatedAt: '', summary: {}, signals: [] }),
+      Promise.resolve(state.predictiveRiskOutcomeAudit || { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 }),
+      Promise.resolve(state.smartPriceOverlay || { generatedAt: '', platforms: {} }),
+      Promise.resolve(state.autoSignalBaselines?.skus || []),
+      Promise.resolve(state.orderProcurementWb || { generatedAt: '', rows: [] }),
+      Promise.resolve(state.orderProcurementOzon || { generatedAt: '', rows: [] })
     ]);
     state.launches = Array.isArray(launches) ? launches : [];
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
       ? normalizeProductLeaderboardPayload(productLeaderboard)
       : (productLeaderboard || { generatedAt: '', items: [], summary: {} });
-    state.productLeaderboardHistory = Array.isArray(productLeaderboardHistory) ? productLeaderboardHistory : [];
+    state.productLeaderboardHistory = Array.isArray(state.productLeaderboardHistory) ? state.productLeaderboardHistory : [];
     state.oosControl = oosControl && typeof oosControl === 'object'
       ? oosControl
       : { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
+    state.predictiveRisk = predictiveRisk && typeof predictiveRisk === 'object'
+      ? predictiveRisk
+      : { schema: 'qharisma-predictive-risk-v1', generatedAt: '', summary: {}, risks: [], autoTaskSignals: [] };
+    state.autoTaskSignals = autoTaskSignals && typeof autoTaskSignals === 'object'
+      ? autoTaskSignals
+      : { schema: 'qharisma-auto-task-signals-v1', generatedAt: '', summary: {}, signals: [] };
+    state.predictiveRiskOutcomeAudit = predictiveRiskOutcomeAudit && typeof predictiveRiskOutcomeAudit === 'object'
+      ? predictiveRiskOutcomeAudit
+      : { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 };
     state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
       ? smartPriceOverlay
       : { generatedAt: '', platforms: {} };
-    state.adsSummary = adsSummary && typeof adsSummary === 'object'
-      ? adsSummary
+    state.adsSummary = state.adsSummary && typeof state.adsSummary === 'object'
+      ? state.adsSummary
       : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
+    state.orderProcurementWb = orderProcurementWb || { generatedAt: '', rows: [] };
+    state.order_procurement_wb = state.orderProcurementWb;
+    state.orderProcurementOzon = orderProcurementOzon || { generatedAt: '', rows: [] };
+    state.order_procurement_ozon = state.orderProcurementOzon;
     const returnBaselineRows = Array.isArray(returnBaselineSkus)
       ? returnBaselineSkus
       : Array.isArray(returnBaselineSkus?.skus)
@@ -2998,6 +2810,7 @@ const LAZY_DATA_LOADERS = {
     state.boot.lazyReady.launches = true;
     state.boot.lazyReady.productLeaderboard = true;
     state.boot.lazyReady.oosControl = true;
+    state.boot.lazyReady.predictiveRisk = true;
   },
   adsFunnel: async () => {
     const [payload, smartPriceOverlay, summary] = await Promise.all([
@@ -3060,14 +2873,22 @@ const LAZY_DATA_LOADERS = {
       : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
   },
   oosControl: async () => {
-    const payload = await loadJsonOrFallback(
-      'data/oos_control.json',
-      { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
-      'OOS контроль'
-    );
+    const [payload, orderProcurementWb, orderProcurementOzon] = await Promise.all([
+      loadJsonOrFallback(
+        'data/oos_control.json',
+        { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
+        'OOS контроль'
+      ),
+      loadJsonOrFallback('data/order_procurement_wb.json', { generatedAt: '', rows: [] }, 'OOS кластеры WB'),
+      loadJsonOrFallback('data/order_procurement_ozon.json', { generatedAt: '', rows: [] }, 'OOS кластеры Ozon')
+    ]);
     state.oosControl = payload && typeof payload === 'object'
       ? payload
       : { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
+    state.orderProcurementWb = orderProcurementWb || { generatedAt: '', rows: [] };
+    state.order_procurement_wb = state.orderProcurementWb;
+    state.orderProcurementOzon = orderProcurementOzon || { generatedAt: '', rows: [] };
+    state.order_procurement_ozon = state.orderProcurementOzon;
   },
   skuPlanFact: async () => {
     const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, skuAliases, skuAliasIgnore, skuAliasAudit, wbOwnerDistributionAudit, wbSubstitutionTraffic] = await Promise.all([
@@ -3151,37 +2972,67 @@ const LAZY_DATA_LOADERS = {
       : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
   },
   productLeaderboard: async () => {
-    const [payload, history] = await Promise.all([
+    const loadLocalProductData = async (path, fallback, label) => {
+      try {
+        return await loadJson(path);
+      } catch (error) {
+        console.error(error);
+        registerDataWarning(`${label}: ${error.message || 'Не удалось загрузить данные'}`);
+        return cloneFallback(fallback);
+      }
+    };
+    const [payload, history, wbSubstitutionTraffic, wbSubstitutionTrafficHistory, iuDrrSummary, adsSummary] = await Promise.all([
       Array.isArray(state.productLeaderboard?.items) && state.productLeaderboard.items.length
         ? Promise.resolve(state.productLeaderboard)
-        : loadProductLeaderboardLocalData('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
-      loadProductLeaderboardLocalData('data/product_leaderboard_history.json', [], 'История продуктового лидерборда')
+        : loadLocalProductData('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
+      loadLocalProductData('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
+      loadLocalProductData(
+        'data/wb_substitution_traffic.json',
+        { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
+        'WB подменные артикулы'
+      ),
+      loadLocalProductData(
+        'data/wb_substitution_traffic_history.json',
+        [],
+        'История WB подменных артикулов'
+      ),
+      loadLocalProductData(
+        'data/iu_drr_summary.json',
+        { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
+        'Показатели площадок'
+      ),
+      loadLocalProductData(
+        'data/ads_summary.json',
+        { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
+        'Реклама МП'
+      )
     ]);
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
       ? normalizeProductLeaderboardPayload(payload)
       : (payload || { generatedAt: '', items: [], summary: {} });
     state.productLeaderboardHistory = Array.isArray(history) ? history : [];
-    if (state.productLeaderboardHistory.length < 2) {
-      await waitForProductLeaderboardFastSnapshot({ reason: 'view-loader', rerender: false, force: true });
-    }
-    loadProductLeaderboardSupplementalData({ rerender: true })
-      .catch((error) => console.warn('[product-leaderboard:supplementals]', error));
+    state.wbSubstitutionTraffic = wbSubstitutionTraffic && typeof wbSubstitutionTraffic === 'object'
+      ? wbSubstitutionTraffic
+      : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
+    state.wbSubstitutionTrafficHistory = Array.isArray(wbSubstitutionTrafficHistory) ? wbSubstitutionTrafficHistory : [];
+    state.iuDrrSummary = iuDrrSummary && typeof iuDrrSummary === 'object'
+      ? iuDrrSummary
+      : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
+    state.adsSummary = adsSummary && typeof adsSummary === 'object'
+      ? adsSummary
+      : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
   },
   meetings: async () => {
     const meetings = await loadJsonOrFallback('data/meetings.json', [], 'Ритм работы');
     state.meetings = Array.isArray(meetings) ? meetings : [];
   },
   documents: async () => {
-    const documents = await loadJsonOrFallback('data/documents.json', { groups: [] }, 'Хранилище');
+    const documents = await loadJsonOrFallback('data/documents.json', { groups: [] }, 'Документы');
     state.documents = documents || { groups: [] };
   },
   repricer: async () => {
-    const [repricer, canonicalRepricer, portalDashboardMetrics, portalRuntimeWiring, portalFeatureReadiness, smartPriceWorkbench, smartPriceWorkbenchLive, smartPriceOverlay, repricerLive, prices, priceWorkbenchSupport, orderProcurementWb, orderProcurementOzon, warehouseStockOverlay] = await Promise.all([
+    const [repricer, smartPriceWorkbench, smartPriceWorkbenchLive, smartPriceOverlay, repricerLive, prices, priceWorkbenchSupport, orderProcurementWb, orderProcurementOzon, warehouseStockOverlay] = await Promise.all([
       loadJsonOrFallback('data/repricer.json', { generatedAt: '', summary: {}, rows: [] }, 'Репрайсер'),
-      loadJsonOrFallback('data/canonical_repricer.json', { schema: 'canonical-repricer-v1', generatedAt: '', summary: {}, rows: [] }, 'Канонический репрайсер'),
-      loadJsonOrFallback('data/portal_dashboard_metrics.json', { schema: 'portal-dashboard-metrics-v1', generatedAt: '', metrics: [] }, 'Метрики портала'),
-      loadJsonOrFallback('data/portal_runtime_wiring_reconciliation.json', { schema: 'portal-runtime-wiring-reconciliation-v1', status: '', artifacts: [] }, 'Runtime wiring'),
-      loadJsonOrFallback('data/portal_feature_readiness.json', { schema: 'portal-feature-readiness-v1', status: '', features: {} }, 'Готовность функций'),
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       optionalLoadJson('tmp-smart_price_workbench-live.json'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Overlay цен'),
@@ -3193,10 +3044,6 @@ const LAZY_DATA_LOADERS = {
       loadJsonOrFallback('data/warehouse_stock_overlay.json', { generatedAt: '', rows: [] }, 'Склад/отгрузки')
     ]);
     state.repricer = repricer || { generatedAt: '', summary: {}, rows: [] };
-    state.canonicalRepricer = canonicalRepricer || { schema: 'canonical-repricer-v1', generatedAt: '', summary: {}, rows: [] };
-    state.portalDashboardMetrics = portalDashboardMetrics || { schema: 'portal-dashboard-metrics-v1', generatedAt: '', metrics: [] };
-    state.portalRuntimeWiring = portalRuntimeWiring || { schema: 'portal-runtime-wiring-reconciliation-v1', status: '', artifacts: [] };
-    state.portalFeatureReadiness = portalFeatureReadiness || { schema: 'portal-feature-readiness-v1', status: '', features: {} };
     state.repricerLive = repricerLive || { generatedAt: '', rows: [] };
     state.prices = prices || { generatedAt: '', platforms: {} };
     state.priceWorkbenchSupport = priceWorkbenchSupport || { generatedAt: '', platforms: {} };

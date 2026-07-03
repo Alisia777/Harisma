@@ -13,8 +13,6 @@ const PLATFORM_LABELS = {
   ya: 'Я.Маркет',
   goldapple: 'ЗЯ',
   letu: 'Лэтуаль',
-  megamarket: 'Мегамаркет',
-  samokat: 'Самокат',
   magnit: 'Магнит Маркет'
 };
 
@@ -43,8 +41,6 @@ function resolveOptions(args) {
     baseDataDir: path.resolve(args['base-data-dir'] || path.join(root, 'data')),
     outputDir: path.resolve(args['output-dir'] || args['input-dir'] || path.join(root, '.altea-google-sheet-sync-output')),
     mirrorLocalFallback: Boolean(args['mirror-local-fallback']),
-    runDate: dateKey(args['run-date'] || args.runDate || ''),
-    generatedAt: String(args['generated-at'] || args.generatedAt || '').trim(),
     issueLimit: Math.max(20, Math.min(1000, Number(args['issue-limit'] || DEFAULT_ISSUE_LIMIT)))
   };
 }
@@ -90,12 +86,6 @@ function dateKey(value) {
   return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : '';
 }
 
-function generatedAtFor(options = {}) {
-  if (options.generatedAt) return options.generatedAt;
-  if (options.runDate) return `${options.runDate}T00:00:00+03:00`;
-  return new Date().toISOString();
-}
-
 function monthKeyFromDate(value) {
   const raw = dateKey(value);
   return raw ? raw.slice(0, 7) : '';
@@ -127,8 +117,6 @@ function platformKey(value) {
   if (['ya', 'ym', 'yandex', 'yandexmarket', 'ямаркет'].includes(raw)) return 'ya';
   if (['ga', 'goldapple', 'зя', 'золотоеяблоко'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
-  if (['megamarket', 'мегамаркет'].includes(raw)) return 'megamarket';
-  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   if (['mm', 'magnit', 'magnitmarket', 'магнитмаркет'].includes(raw)) return 'magnit';
   return raw;
 }
@@ -275,12 +263,42 @@ function ownerText(sku = {}) {
   const directOwner = String(sku.owner?.name || '').trim();
   if (directOwner) return directOwner;
   const byPlatform = sku.owner?.byPlatform && typeof sku.owner.byPlatform === 'object' ? sku.owner.byPlatform : {};
-  const platformOrder = ['wb', 'ozon', 'ym', 'ya', 'ga', 'goldapple', 'letu', 'megamarket', 'samokat', 'mm', 'magnit'];
+  const platformOrder = ['wb', 'ozon', 'ym', 'ya', 'ga', 'goldapple', 'letu', 'mm', 'magnit'];
   for (const platform of platformOrder) {
     const platformOwner = String(byPlatform[platform] || '').trim();
     if (platformOwner) return platformOwner;
   }
   return Object.values(byPlatform).map((value) => String(value || '').trim()).find(Boolean) || '';
+}
+
+function isDisabledSkuStatus(value = '') {
+  const raw = String(value || '').trim().toLowerCase();
+  return raw.includes('inactive')
+    || raw.includes('disabled')
+    || raw.includes('\u0432\u044b\u0432\u043e\u0434')
+    || raw.includes('not_required_for_disabled_sku');
+}
+
+function hasAssignedPlan(planFact = {}) {
+  return [
+    planFact.planFeb26Units,
+    planFact.planMar26Units,
+    planFact.planApr26Units,
+    planFact.planMay26Units,
+    planFact.planJun26Units,
+    planFact.planJul26Units,
+    planFact.planUnits,
+    planFact.planMonthUnits
+  ].some((value) => numberOrZero(value) > 0);
+}
+
+function planInfo(sku = {}) {
+  const planFact = sku.planFact && typeof sku.planFact === 'object' ? sku.planFact : {};
+  const status = sku.status || sku.registryStatus || '';
+  const assigned = Boolean(planFact.planAssigned || sku.planAssigned || hasAssignedPlan(planFact));
+  const active = !isDisabledSkuStatus(status);
+  const needsAssignment = active && Boolean(planFact.planNeedsAssignment || sku.planNeedsAssignment || !assigned);
+  return { active, assigned, needsAssignment };
 }
 
 function extraPlatformRows(platformPayload = {}) {
@@ -459,7 +477,7 @@ function buildOrderQuality(orderProcurement = {}) {
     if (stock <= 0 && (need7 > 0 || need14 > 0 || need28 > 0 || numberOrZero(row?.sales7) > 0)) {
       summary.noStockNeedRows += 1;
       issues.push({
-        severity: 'warning',
+        severity: 'critical',
         type: 'order_no_stock_need',
         dataset: 'order_procurement',
         platform: platformKey(row?.platform),
@@ -469,7 +487,7 @@ function buildOrderQuality(orderProcurement = {}) {
         need7,
         need14,
         need28,
-        message: 'Operational OOS/order signal: need or sales exists while in-stock is zero; order and OOS contracts validate the 30-day formula separately.'
+        message: 'По складу нет остатка, но есть продажи/потребность'
       });
     } else if (Number.isFinite(turnover) && turnover > 0 && turnover <= 10) {
       summary.lowTurnoverRows += 1;
@@ -565,12 +583,40 @@ function buildOwnerQuality(skus = []) {
   return { issues, summary: { totalSku: skus.length, missingOwner } };
 }
 
+function buildPlanQuality(skus = []) {
+  const issues = [];
+  const summary = {
+    totalSku: skus.length,
+    activeSku: 0,
+    assignedPlan: 0,
+    missingPlan: 0
+  };
+  skus.forEach((sku) => {
+    const plan = planInfo(sku);
+    if (plan.active) summary.activeSku += 1;
+    if (plan.assigned) summary.assignedPlan += 1;
+    if (!plan.needsAssignment) return;
+    summary.missingPlan += 1;
+    issues.push({
+      severity: 'warning',
+      type: 'sku_missing_plan',
+      dataset: 'skus',
+      articleKey: sku?.articleKey || sku?.article || '',
+      name: sku?.name || sku?.article || '',
+      owner: ownerText(sku),
+      message: 'SKU active in matrix but has no assigned unit plan'
+    });
+  });
+  return { issues, summary };
+}
+
 function buildWarehouseQuality(warehouse = {}) {
   const unmatched = Array.isArray(warehouse?.unmatchedSourceKeys) ? warehouse.unmatchedSourceKeys : [];
-  const externalRows = unmatched.filter(isExternalWarehouseKey).length;
+  const actionableUnmatched = unmatched.filter((key) => !isExternalWarehouseKey(key));
+  const externalRows = unmatched.length - actionableUnmatched.length;
   return {
-    issues: unmatched.slice(0, 100).map((key) => ({
-      severity: isExternalWarehouseKey(key) ? 'info' : 'warning',
+    issues: actionableUnmatched.slice(0, 100).map((key) => ({
+      severity: 'warning',
       type: 'warehouse_unmatched_source_key',
       dataset: 'warehouse_stock_overlay',
       articleKey: String(key || ''),
@@ -579,9 +625,10 @@ function buildWarehouseQuality(warehouse = {}) {
     summary: {
       sourceRows: numberOrZero(warehouse?.sheetRowCount),
       matchedRows: numberOrZero(warehouse?.matchedRowCount || warehouse?.matchedSkuCount),
-      unmatchedRows: unmatched.length,
+      sourceUnmatchedRows: unmatched.length,
+      unmatchedRows: actionableUnmatched.length,
       externalUnmatchedRows: externalRows,
-      warningUnmatchedRows: Math.max(0, unmatched.length - externalRows)
+      warningUnmatchedRows: actionableUnmatched.length
     }
   };
 }
@@ -776,6 +823,7 @@ function buildReport(options) {
   const orderQuality = buildOrderQuality(files.orderProcurement);
   const freshnessQuality = buildFreshnessQuality(files);
   const ownerQuality = buildOwnerQuality(Array.isArray(files.skus) ? files.skus : []);
+  const planQuality = buildPlanQuality(Array.isArray(files.skus) ? files.skus : []);
   const warehouseQuality = buildWarehouseQuality(files.warehouse);
   const wbOwnerDistributionQuality = buildWbOwnerDistributionQuality(files.wbOwnerDistributionAudit);
 
@@ -784,6 +832,7 @@ function buildReport(options) {
     ...orderQuality.issues,
     ...freshnessQuality.issues,
     ...ownerQuality.issues,
+    ...planQuality.issues,
     ...warehouseQuality.issues,
     ...wbOwnerDistributionQuality.issues
   ].sort((a, b) => {
@@ -817,6 +866,8 @@ function buildReport(options) {
     priceContourSkuCount: priceContourKnown.size,
     orderNoStockNeedRows: orderQuality.summary.noStockNeedRows,
     skuMissingOwner: ownerQuality.summary.missingOwner,
+    skuMissingPlan: planQuality.summary.missingPlan,
+    skuAssignedPlan: planQuality.summary.assignedPlan,
     warehouseUnmatchedRows: warehouseQuality.summary.unmatchedRows,
     wbOwnerMatchedSku: wbOwnerDistributionQuality.summary.matchedSkuCount,
     wbOwnerUpdatedSku: wbOwnerDistributionQuality.summary.updatedOwnerCount,
@@ -825,65 +876,18 @@ function buildReport(options) {
   };
 
   return {
-    generatedAt: generatedAtFor(options),
+    generatedAt: new Date().toISOString(),
     status: summary.criticalCount ? 'critical' : (summary.warningCount ? 'warning' : 'ok'),
     summary,
     freshness: freshnessQuality.freshness,
     platformSummary: apiQuality.platformSummary,
     orderSummary: orderQuality.summary,
     ownerSummary: ownerQuality.summary,
+    planSummary: planQuality.summary,
     warehouseSummary: warehouseQuality.summary,
     wbOwnerDistributionSummary: wbOwnerDistributionQuality.summary,
     _sourceSkus: Array.isArray(files.skus) ? files.skus : [],
-    _allIssues: allIssues,
     issues: allIssues.slice(0, options.issueLimit)
-  };
-}
-
-function quarantineRowsFromIssues(issues = []) {
-  const reviewTypes = new Set([
-    'api_sku_unmapped',
-    'api_sum_above_aggregate',
-    'warehouse_unmatched_source_key',
-    'wb_owner_distribution_missing_in_portal'
-  ]);
-  return issues
-    .filter((issue) => {
-      const type = String(issue.type || '').trim();
-      if (reviewTypes.has(type)) return true;
-      return ['critical', 'warning', 'warn', 'danger'].includes(String(issue.severity || '').trim().toLowerCase())
-        && /^api_|^warehouse_|^wb_owner_distribution/.test(type);
-    })
-    .map((issue) => ({
-      severity: issue.severity || '',
-      type: issue.type || '',
-      dataset: issue.dataset || '',
-      platform: issue.platform || '',
-      articleKey: issue.articleKey || issue.api_sku || issue.apiSku || '',
-      name: issue.name || issue.api_name || '',
-      revenue: Math.round(numberOrZero(issue.revenue)),
-      units: Math.round(numberOrZero(issue.units)),
-      overage: Math.round(numberOrZero(issue.overage)),
-      message: issue.message || '',
-      action: issue.action || ''
-    }))
-    .sort((left, right) => numberOrZero(right.revenue) - numberOrZero(left.revenue) || String(left.articleKey).localeCompare(String(right.articleKey)));
-}
-
-function buildQuarantine(report) {
-  const rows = quarantineRowsFromIssues(report._allIssues || report.issues || []);
-  return {
-    schema: 'portal-data-quarantine-v1',
-    generatedAt: report.generatedAt,
-    reason: 'Rows that need review before the data contour can be trusted.',
-    summary: {
-      rows: rows.length,
-      revenue: rows.reduce((sum, row) => sum + numberOrZero(row.revenue), 0),
-      overage: rows.reduce((sum, row) => sum + numberOrZero(row.overage), 0),
-      apiSumAboveAggregateCount: rows.filter((row) => row.type === 'api_sum_above_aggregate').length,
-      apiUnmappedHighRevenueCount: rows.filter((row) => row.type === 'api_sku_unmapped' && numberOrZero(row.revenue) >= API_SKU_UNMAPPED_WARNING_REVENUE).length
-    },
-    rows
   };
 }
 
@@ -892,13 +896,10 @@ function writeReport(options, report) {
   const jsonPath = path.join(options.outputDir, 'portal_data_quality.json');
   const csvPath = path.join(options.outputDir, 'portal_data_quality_issues.csv');
   const aliasReviewPath = path.join(options.outputDir, 'api_sku_alias_review.csv');
-  const quarantinePath = path.join(options.outputDir, 'portal_data_quarantine.json');
-  const { _sourceSkus, _allIssues, ...publicReport } = report;
+  const { _sourceSkus, ...publicReport } = report;
   fs.writeFileSync(jsonPath, JSON.stringify(publicReport, null, 2), 'utf8');
-  writeCsv(csvPath, _allIssues || report.issues || []);
-  const aliasReviewRows = writeAliasReviewCsv(aliasReviewPath, _allIssues || report.issues || [], _sourceSkus || []);
-  const quarantine = buildQuarantine(report);
-  fs.writeFileSync(quarantinePath, `${JSON.stringify(quarantine, null, 2)}\n`, 'utf8');
+  writeCsv(csvPath, report.issues || []);
+  const aliasReviewRows = writeAliasReviewCsv(aliasReviewPath, report.issues || [], _sourceSkus || []);
 
   const mirrored = [];
   if (options.mirrorLocalFallback) {
@@ -906,15 +907,13 @@ function writeReport(options, report) {
     const mirrorJson = path.join(options.baseDataDir, 'portal_data_quality.json');
     const mirrorCsv = path.join(options.baseDataDir, 'portal_data_quality_issues.csv');
     const mirrorAliasReview = path.join(options.baseDataDir, 'api_sku_alias_review.csv');
-    const mirrorQuarantine = path.join(options.baseDataDir, 'portal_data_quarantine.json');
     fs.copyFileSync(jsonPath, mirrorJson);
     fs.copyFileSync(csvPath, mirrorCsv);
     fs.copyFileSync(aliasReviewPath, mirrorAliasReview);
-    fs.copyFileSync(quarantinePath, mirrorQuarantine);
-    mirrored.push(mirrorJson, mirrorCsv, mirrorAliasReview, mirrorQuarantine);
+    mirrored.push(mirrorJson, mirrorCsv, mirrorAliasReview);
   }
 
-  return { jsonPath, csvPath, aliasReviewPath, quarantinePath, aliasReviewRows, quarantineRows: quarantine.rows.length, mirrored };
+  return { jsonPath, csvPath, aliasReviewPath, aliasReviewRows, mirrored };
 }
 
 function main() {

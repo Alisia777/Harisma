@@ -57,8 +57,6 @@ function skuMatrixPlatform(value = '') {
   if (['ya', 'ym', 'yandex', 'yandexmarket', 'ямаркет'].includes(raw)) return 'ya';
   if (['ga', 'goldapple', 'зя', 'золотоеяблоко'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
-  if (['megamarket', 'sbermegamarket', 'мегамаркет'].includes(raw)) return 'megamarket';
-  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   if (['mm', 'magnit', 'magnitmarket', 'магнитмаркет'].includes(raw)) return 'magnit';
   return raw;
 }
@@ -153,37 +151,124 @@ function shiftDateKey(dateKey, days) {
   return date.toISOString().slice(0, 10);
 }
 
+const AUTO_TASK_HISTORY_LIMIT = 600;
+
+function autoTaskHistorySignalKey(task = {}) {
+  const article = String(task?.articleKey || task?.entityLabel || '').trim().toLowerCase();
+  const code = String(task?.autoCode || task?.type || task?.title || 'auto').trim().toLowerCase();
+  const platform = normalizeTaskPlatform(task?.platform || 'all');
+  return `${article || 'common'}|${code || 'auto'}|${platform || 'all'}`;
+}
+
+function autoTaskHistoryHash(value = '') {
+  return typeof hashString === 'function' ? hashString(value) : String(value || '').length.toString(36);
+}
+
+function autoTaskHistorySignature(task = {}) {
+  return autoTaskHistoryHash([
+    task?.title,
+    task?.priority,
+    task?.type,
+    task?.platform,
+    task?.owner,
+    task?.due,
+    task?.reason,
+    task?.nextAction
+  ].map((item) => String(item || '').trim()).join('|'));
+}
+
+function normalizeAutoTaskSnapshotEntry(entry = {}) {
+  const signalKey = String(entry.signalKey || '').trim();
+  if (!signalKey) return null;
+  return {
+    signalKey,
+    taskId: String(entry.taskId || '').trim(),
+    articleKey: String(entry.articleKey || '').trim(),
+    platform: normalizeTaskPlatform(entry.platform || 'all'),
+    autoCode: String(entry.autoCode || '').trim(),
+    type: String(entry.type || '').trim(),
+    title: String(entry.title || '').trim(),
+    priority: String(entry.priority || '').trim(),
+    owner: String(entry.owner || '').trim(),
+    due: String(entry.due || '').trim(),
+    nextAction: String(entry.nextAction || '').trim(),
+    reason: String(entry.reason || '').trim(),
+    signature: String(entry.signature || '').trim(),
+    firstSeenAt: String(entry.firstSeenAt || entry.createdAt || '').trim(),
+    lastSeenAt: String(entry.lastSeenAt || entry.updatedAt || '').trim(),
+    lastSeenDate: String(entry.lastSeenDate || '').trim(),
+    lastChangedAt: String(entry.lastChangedAt || '').trim(),
+    seenCount: Math.max(1, Math.round(autoSignalFinite(entry.seenCount, 1)))
+  };
+}
+
+function normalizeAutoTaskSnapshot(snapshot = {}) {
+  const active = Array.isArray(snapshot?.active)
+    ? snapshot.active.map(normalizeAutoTaskSnapshotEntry).filter(Boolean).slice(0, 250)
+    : [];
+  return {
+    generatedAt: String(snapshot?.generatedAt || '').trim(),
+    active
+  };
+}
+
+function normalizeAutoTaskHistoryEvent(event = {}) {
+  const signalKey = String(event.signalKey || '').trim();
+  if (!signalKey) return null;
+  const kind = ['created', 'updated', 'seen', 'resolved'].includes(String(event.kind || '').trim())
+    ? String(event.kind || '').trim()
+    : 'updated';
+  return {
+    id: String(event.id || stableId('auto-history', `${signalKey}|${event.createdAt || ''}|${kind}`)),
+    signalKey,
+    taskId: String(event.taskId || '').trim(),
+    articleKey: String(event.articleKey || '').trim(),
+    platform: normalizeTaskPlatform(event.platform || 'all'),
+    autoCode: String(event.autoCode || '').trim(),
+    type: String(event.type || '').trim(),
+    kind,
+    title: String(event.title || '').trim(),
+    priority: String(event.priority || '').trim(),
+    owner: String(event.owner || '').trim(),
+    due: String(event.due || '').trim(),
+    nextAction: String(event.nextAction || '').trim(),
+    reason: String(event.reason || '').trim(),
+    text: String(event.text || '').trim(),
+    firstSeenAt: String(event.firstSeenAt || '').trim(),
+    lastSeenAt: String(event.lastSeenAt || '').trim(),
+    lastSeenDate: String(event.lastSeenDate || '').trim(),
+    lastChangedAt: String(event.lastChangedAt || '').trim(),
+    seenCount: Math.max(1, Math.round(autoSignalFinite(event.seenCount, 1))),
+    createdAt: String(event.createdAt || '').trim()
+  };
+}
+
+function normalizeAutoTaskHistory(history = []) {
+  return (Array.isArray(history) ? history : [])
+    .map(normalizeAutoTaskHistoryEvent)
+    .filter(Boolean)
+    .sort((left, right) => String(right.createdAt || '').localeCompare(String(left.createdAt || '')))
+    .slice(0, AUTO_TASK_HISTORY_LIMIT);
+}
+
 function normalizePortalStorageSnapshot(source = {}) {
   const parsed = source && typeof source === 'object' ? source : {};
   const defaults = defaultStorage();
-  const normalizeStringList = (list) => [...new Set(
-    (Array.isArray(list) ? list : [])
-      .flatMap((item) => {
-        if (typeof item === 'string') return [item];
-        if (item && typeof item === 'object') return [item.key, item.id, item.code, ...(Array.isArray(item.keys) ? item.keys : [])];
-        return [];
-      })
-      .map((item) => String(item || '').trim())
-      .filter(Boolean)
-  )];
-  const normalizedAutoTaskTombstones = normalizeStringList([
-    ...(Array.isArray(parsed.autoTaskTombstones) ? parsed.autoTaskTombstones : []),
-    ...(Array.isArray(parsed.launchAutoTaskTombstones) ? parsed.launchAutoTaskTombstones : [])
-  ]);
   return {
     ...defaults,
     comments: Array.isArray(parsed.comments) ? parsed.comments.map(normalizeComment) : [],
     tasks: Array.isArray(parsed.tasks) ? normalizeStorageTasks(parsed.tasks, 'manual') : [],
     decisions: Array.isArray(parsed.decisions) ? parsed.decisions.map(normalizeDecision) : [],
     ownerOverrides: Array.isArray(parsed.ownerOverrides) ? parsed.ownerOverrides.map(normalizeOwnerOverride) : [],
+    resourceLinks: Array.isArray(parsed.resourceLinks) ? parsed.resourceLinks.filter((item) => item && typeof item === 'object') : [],
     productLifecycleOverrides: Array.isArray(parsed.productLifecycleOverrides) ? parsed.productLifecycleOverrides.map(normalizeProductLifecycleOverride).filter((item) => item.articleKey) : [],
     taskAttachments: Array.isArray(parsed.taskAttachments) ? parsed.taskAttachments.map(normalizeTaskAttachment).filter((item) => item.taskId && item.objectPath) : [],
+    autoTaskSnapshot: normalizeAutoTaskSnapshot(parsed.autoTaskSnapshot || defaults.autoTaskSnapshot),
+    autoTaskHistory: normalizeAutoTaskHistory(parsed.autoTaskHistory || []),
     promoEvents: Array.isArray(parsed.promoEvents) ? parsed.promoEvents.filter((item) => item && typeof item === 'object') : [],
     promoEventDeletedIds: Array.isArray(parsed.promoEventDeletedIds) ? parsed.promoEventDeletedIds.filter((item) => item && typeof item === 'object') : [],
     launchOverrides: Array.isArray(parsed.launchOverrides) ? parsed.launchOverrides.filter((item) => item && typeof item === 'object') : [],
     launchDeletedIds: Array.isArray(parsed.launchDeletedIds) ? parsed.launchDeletedIds.map((item) => String(item || '').trim()).filter(Boolean) : [],
-    autoTaskTombstones: normalizedAutoTaskTombstones.slice(0, 2000),
-    launchAutoTaskTombstones: normalizeStringList(parsed.launchAutoTaskTombstones).slice(0, 1200),
     repricerSettings: normalizeRepricerSettings(parsed.repricerSettings || {}),
     repricerSettingsUpdatedAt: String(parsed.repricerSettingsUpdatedAt || '').trim(),
     repricerOverrides: Array.isArray(parsed.repricerOverrides) ? parsed.repricerOverrides.map(normalizeRepricerOverride).filter((item) => item.articleKey) : [],
@@ -245,14 +330,15 @@ function portalStorageHistoryPayload(source = {}) {
     tasks: snapshot.tasks,
     decisions: snapshot.decisions,
     ownerOverrides: snapshot.ownerOverrides,
+    resourceLinks: snapshot.resourceLinks,
     productLifecycleOverrides: snapshot.productLifecycleOverrides,
     taskAttachments: snapshot.taskAttachments,
+    autoTaskSnapshot: snapshot.autoTaskSnapshot,
+    autoTaskHistory: snapshot.autoTaskHistory,
     promoEvents: snapshot.promoEvents,
     promoEventDeletedIds: snapshot.promoEventDeletedIds,
     launchOverrides: snapshot.launchOverrides,
-    launchDeletedIds: snapshot.launchDeletedIds,
-    autoTaskTombstones: snapshot.autoTaskTombstones,
-    launchAutoTaskTombstones: snapshot.launchAutoTaskTombstones
+    launchDeletedIds: snapshot.launchDeletedIds
   };
 }
 
@@ -267,7 +353,9 @@ function portalStorageHistoryCounts(payload = {}) {
     tasks: Array.isArray(payload.tasks) ? payload.tasks.length : 0,
     decisions: Array.isArray(payload.decisions) ? payload.decisions.length : 0,
     ownerOverrides: Array.isArray(payload.ownerOverrides) ? payload.ownerOverrides.length : 0,
+    resourceLinks: Array.isArray(payload.resourceLinks) ? payload.resourceLinks.length : 0,
     taskAttachments: Array.isArray(payload.taskAttachments) ? payload.taskAttachments.length : 0,
+    autoTaskHistory: Array.isArray(payload.autoTaskHistory) ? payload.autoTaskHistory.length : 0,
     promoEvents: Array.isArray(payload.promoEvents) ? payload.promoEvents.length : 0
   };
 }
@@ -559,15 +647,68 @@ function ownerName(sku) {
   return localOwner || skuMatrixOwnerName(sku, '');
 }
 
+const TASK_MARKETPLACE_PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+const TASK_PLATFORM_OWNER_KEYS = new Set(TASK_MARKETPLACE_PLATFORM_KEYS);
+
+function taskOwnerPlatformKey(platform = '') {
+  const key = normalizeTaskPlatform(platform);
+  if (key === 'ya') return 'ym';
+  if (key === 'goldapple') return 'ga';
+  if (key === 'magnit') return 'mm';
+  return key;
+}
+
+function taskPlatformOwnerName(sku, platform = '') {
+  const platformKey = normalizeTaskPlatform(platform);
+  if (!sku || !TASK_PLATFORM_OWNER_KEYS.has(platformKey)) return '';
+
+  try {
+    if (typeof platformOwnerName === 'function') {
+      const platformOwner = canonicalOwnerName(platformOwnerName(sku, platformKey) || '');
+      if (platformOwner) return platformOwner;
+    }
+  } catch {}
+
+  const ownerKey = taskOwnerPlatformKey(platformKey);
+  const sources = [sku?.owner?.byPlatform, sku?.ownersByPlatform];
+  for (const source of sources) {
+    if (!source || typeof source !== 'object') continue;
+    const candidate = ownerKey === 'ym'
+      ? (source.ym || source.ya || '')
+      : source[ownerKey];
+    const normalized = canonicalOwnerName(candidate || '');
+    if (normalized) return normalized;
+  }
+  return '';
+}
+
+function isAutoTaskLike(task = {}, sourceHint = '') {
+  const source = String(task?.source || sourceHint || '').trim().toLowerCase();
+  const id = String(task?.id || '').trim().toLowerCase();
+  return source === 'auto' || Boolean(task?.autoCode) || id.startsWith('auto-');
+}
+
+function resolveTaskOwner(task = {}, sku = null, platform = '', sourceHint = '') {
+  const taskPlatform = normalizeTaskPlatform(platform || task?.platform || '', taskMarketplaceContext(task, sku));
+  const explicitOwner = canonicalOwnerName(task?.owner || '');
+  const skuOwner = ownerName(sku);
+  const platformOwner = taskPlatformOwnerName(sku, taskPlatform);
+
+  if (task?.platformOwnerOnly && TASK_PLATFORM_OWNER_KEYS.has(taskPlatform)) {
+    return platformOwner || explicitOwner || '';
+  }
+  if (platformOwner && (!explicitOwner || explicitOwner === skuOwner || isAutoTaskLike(task, sourceHint))) {
+    return platformOwner;
+  }
+  return explicitOwner || platformOwner || skuOwner || '';
+}
+
 function ownerOptions() {
   const pool = new Set();
   const addOwner = (value) => {
     const normalized = canonicalOwnerName(value || '');
     if (normalized) pool.add(normalized);
   };
-  if (typeof OWNER_CANONICAL_NAMES !== 'undefined') {
-    for (const name of OWNER_CANONICAL_NAMES.values()) addOwner(name);
-  }
   for (const sku of state.skus) {
     addOwner(ownerName(sku));
     if (sku?.ownersByPlatform && typeof sku.ownersByPlatform === 'object') {
@@ -578,11 +719,6 @@ function ownerOptions() {
     }
   }
   for (const item of state.storage.ownerOverrides || []) addOwner(item.ownerName);
-  for (const task of state.storage.tasks || []) {
-    addOwner(task.owner);
-    addOwner(task.coOwner);
-  }
-  addOwner(state.team.member?.name);
   return [...pool].sort((a, b) => a.localeCompare(b, 'ru'));
 }
 
@@ -635,13 +771,56 @@ function parseTaskLogComment(comment) {
   };
 }
 
+function getTaskForHistory(taskId = '') {
+  const id = String(taskId || '').trim();
+  if (!id) return null;
+  const stored = (state.storage.tasks || []).find((task) => String(task?.id || '') === id);
+  if (stored) return stored;
+  if (state.__buildingAutoTasks) return null;
+  try {
+    return typeof getAllTasks === 'function'
+      ? getAllTasks().find((task) => String(task?.id || '') === id) || null
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function getAutoTaskHistoryItems(taskOrId = '') {
+  const task = typeof taskOrId === 'object' && taskOrId
+    ? taskOrId
+    : getTaskForHistory(taskOrId);
+  const taskId = String(typeof taskOrId === 'object' ? taskOrId?.id : taskOrId || '').trim();
+  const signalKey = task ? autoTaskHistorySignalKey(task) : '';
+  return (state.storage.autoTaskHistory || [])
+    .filter((event) => {
+      if (!event) return false;
+      if (taskId && String(event.taskId || '') === taskId) return true;
+      return signalKey && String(event.signalKey || '') === signalKey;
+    })
+    .map((event) => ({
+      id: event.id,
+      author: 'Портал',
+      team: 'Авто-сигнал',
+      kind: event.kind === 'seen' || event.kind === 'resolved' ? event.kind : (event.kind || 'updated'),
+      text: event.text || event.title || event.autoCode || 'Авто-сигнал обновлён.',
+      createdAt: event.createdAt,
+      articleKey: event.articleKey || task?.articleKey || ''
+    }));
+}
+
+window.getAutoTaskHistoryItems = getAutoTaskHistoryItems;
+
 function getTaskHistory(taskId) {
-  return (state.storage.comments || [])
+  return [
+    ...(state.storage.comments || [])
     .map((comment) => {
       const parsed = parseTaskLogComment(comment);
       return parsed && parsed.taskId === taskId ? { ...comment, kind: parsed.kind, text: parsed.text } : null;
     })
-    .filter(Boolean)
+    .filter(Boolean),
+    ...getAutoTaskHistoryItems(taskId)
+  ]
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 }
 
@@ -709,14 +888,13 @@ function mergeImportedStorage(imported) {
     tasks: Array.isArray(imported.tasks) ? imported.tasks : [],
     decisions: Array.isArray(imported.decisions) ? imported.decisions : [],
     ownerOverrides: Array.isArray(imported.ownerOverrides) ? imported.ownerOverrides : [],
+    resourceLinks: Array.isArray(imported.resourceLinks) ? imported.resourceLinks : [],
     productLifecycleOverrides: Array.isArray(imported.productLifecycleOverrides) ? imported.productLifecycleOverrides : [],
     taskAttachments: Array.isArray(imported.taskAttachments) ? imported.taskAttachments : [],
     promoEvents: Array.isArray(imported.promoEvents) ? imported.promoEvents : [],
     promoEventDeletedIds: Array.isArray(imported.promoEventDeletedIds) ? imported.promoEventDeletedIds : [],
     launchOverrides: Array.isArray(imported.launchOverrides) ? imported.launchOverrides : [],
     launchDeletedIds: Array.isArray(imported.launchDeletedIds) ? imported.launchDeletedIds : [],
-    autoTaskTombstones: Array.isArray(imported.autoTaskTombstones) ? imported.autoTaskTombstones : [],
-    launchAutoTaskTombstones: Array.isArray(imported.launchAutoTaskTombstones) ? imported.launchAutoTaskTombstones : [],
     repricerSettings: imported.repricerSettings || {},
     repricerSettingsUpdatedAt: String(imported.repricerSettingsUpdatedAt || '').trim(),
     repricerOverrides: Array.isArray(imported.repricerOverrides) ? imported.repricerOverrides : [],
@@ -738,6 +916,13 @@ function mergeImportedStorage(imported) {
     const override = normalizeOwnerOverride(raw);
     state.storage.ownerOverrides = (state.storage.ownerOverrides || []).filter((item) => item.articleKey !== override.articleKey);
     state.storage.ownerOverrides.unshift(override);
+  }
+  for (const raw of seed.resourceLinks) {
+    if (!raw || typeof raw !== 'object') continue;
+    const resourceId = String(raw.id || stableId('resource', `${raw.href || ''}|${raw.title || ''}|${raw.createdAt || ''}`)).trim();
+    if (!resourceId) continue;
+    state.storage.resourceLinks = (state.storage.resourceLinks || []).filter((item) => String(item?.id || '').trim() !== resourceId);
+    state.storage.resourceLinks.unshift({ ...raw, id: resourceId });
   }
   for (const raw of seed.productLifecycleOverrides) {
     const override = normalizeProductLifecycleOverride(raw);
@@ -763,12 +948,6 @@ function mergeImportedStorage(imported) {
     if (!launchId) continue;
     if (!Array.isArray(state.storage.launchDeletedIds)) state.storage.launchDeletedIds = [];
     if (!state.storage.launchDeletedIds.includes(launchId)) state.storage.launchDeletedIds.unshift(launchId);
-  }
-  for (const rawKey of [...(seed.autoTaskTombstones || []), ...(seed.launchAutoTaskTombstones || [])]) {
-    const key = String(rawKey || '').trim();
-    if (!key) continue;
-    const list = typeof autoTaskTombstoneList === 'function' ? autoTaskTombstoneList() : launchAutoTaskTombstoneList();
-    if (!list.includes(key)) list.unshift(key);
   }
   state.storage.repricerSettings = normalizeRepricerSettings(seed.repricerSettings || state.storage.repricerSettings || {});
   if (seed.repricerSettingsUpdatedAt) {
@@ -888,8 +1067,6 @@ function detectMarketplaceNetworkKey(text = '') {
   const compact = raw.replace(/[\s._'`"\u2019-]+/g, '');
   if (!raw) return '';
   if (isGoldAppleMarketplaceText(raw, compact)) return 'goldapple';
-  if (/мегамаркет|megamarket|sbermegamarket|mega[\s_-]*market/.test(raw) || ['megamarket', 'sbermegamarket', 'мегамаркет'].includes(compact)) return 'megamarket';
-  if (/самокат|samokat/.test(raw) || ['samokat', 'самокат'].includes(compact)) return 'samokat';
   if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c?|\u043b\u044d\u0442\u0443\u0430\u043b\u044c?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile', '\u043b\u0435\u0442\u0443\u0430\u043b\u044c', '\u043b\u0435\u0442\u0443\u0430\u043b', '\u043b\u044d\u0442\u0443\u0430\u043b\u044c', '\u043b\u044d\u0442\u0443\u0430\u043b'].includes(compact)) return 'letu';
   if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'magnet', 'magnetmarket', 'mm', '\u043c\u0430\u0433\u043d\u0438\u0442', '\u043c\u0430\u0433\u043d\u0438\u0442\u043c\u0430\u0440\u043a\u0435\u0442'].includes(compact)) return 'magnit';
   if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|yandex|(^|[^a-z0-9])(ya|ym)([^a-z0-9]|$)|(^|[^\u0430-\u044f\u04510-9])\u044f\u043c([^\u0430-\u044f\u04510-9]|$)/.test(raw)) return 'ya';
@@ -919,8 +1096,6 @@ function detectMarketplaceKeyList(text = '') {
   if (/яндекс|я[.\s-]?маркет|yandex|(^|[^a-zа-я0-9])(ya|ym|ям)(?=$|[^a-zа-я0-9])/i.test(raw)) push('ya');
   if (isGoldAppleMarketplaceText(raw, compact)) push('goldapple');
   if (/л[\s'`\u2019.-]*[еэ]туал|летуаль?|лэтуаль?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw)) push('letu');
-  if (/мегамаркет|megamarket|sbermegamarket|mega[\s_-]*market/.test(raw) || ['megamarket', 'sbermegamarket'].includes(compact)) push('megamarket');
-  if (/самокат|samokat/.test(raw) || compact === 'samokat') push('samokat');
   if (/магнит|magnit|magnet|(^|\W)mm($|\W)/.test(raw)) push('magnit');
   if (/продукт|новин|launch|ксюш/.test(raw)) push('product');
   return keys;
@@ -1000,14 +1175,10 @@ function normalizeTaskPlatform(value, contextText = '') {
   if (['wb+ozon', 'wb + ozon', 'wb_ozon', 'wb-ozon'].includes(raw)) return 'wb+ozon';
   if (['goldapple', 'goldenapple', 'zya', 'ga'].includes(compactRaw)) return 'goldapple';
   if (['letu', 'letual', 'letoile'].includes(compactRaw)) return 'letu';
-  if (['megamarket', 'sbermegamarket', 'мегамаркет'].includes(compactRaw)) return 'megamarket';
-  if (['samokat', 'самокат'].includes(compactRaw)) return 'samokat';
   if (['magnit', 'magnitmarket', 'mm'].includes(compactRaw)) return 'magnit';
   if (['ya', 'ym', 'yandex', 'yandex_market', 'yandexmarket', 'ya_market', 'ям', 'я.маркет', 'яндекс'].includes(raw)) return 'ya';
   if (['goldapple', 'ga', 'zya', 'зя'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
-  if (['megamarket', 'sbermegamarket', 'мегамаркет'].includes(raw)) return 'megamarket';
-  if (['samokat', 'самокат'].includes(raw)) return 'samokat';
   if (['magnit', 'mm'].includes(raw)) return 'magnit';
   if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return detectMarketplaceNetworkKey(text) || 'cross';
   if (['product', 'launch', 'launches', 'новинки', 'продукт', 'ксюша'].includes(raw)) return 'product';
@@ -1040,13 +1211,13 @@ function controlWorkstreamKey(task, sku = null) {
 
   const text = taskMarketplaceContext(task, sku);
   const specificMarketplace = detectMarketplaceNetworkKey(text);
-  if (specificMarketplace === 'goldapple' || specificMarketplace === 'letu' || specificMarketplace === 'megamarket' || specificMarketplace === 'samokat' || specificMarketplace === 'magnit' || specificMarketplace === 'ya') return specificMarketplace;
+  if (specificMarketplace === 'goldapple' || specificMarketplace === 'letu' || specificMarketplace === 'magnit' || specificMarketplace === 'ya') return specificMarketplace;
 
   const platform = normalizeTaskPlatform(task?.platform, text);
 
   if (platform === 'wb') return 'wb';
   if (platform === 'ozon') return 'ozon';
-  if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'megamarket' || platform === 'samokat' || platform === 'magnit') return platform;
+  if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
   if (platform === 'product') return 'product';
   if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
 
@@ -1097,6 +1268,7 @@ function normalizeTask(task, sourceHint = 'manual') {
     || parsedReason.coOwner
     || ''
   );
+  const platform = detectTaskPlatform(task, sku);
   return {
     id: task?.id || stableId(sourceHint === 'auto' ? 'auto' : 'task', `${task?.articleKey || ''}|${title}|${task?.due || ''}|${createdAt}|${sourceHint}`),
     source: task?.source || sourceHint,
@@ -1104,13 +1276,13 @@ function normalizeTask(task, sourceHint = 'manual') {
     title,
     nextAction: task?.nextAction || '',
     reason: parsedReason.reason,
-    owner: canonicalOwnerName(task?.owner || ownerName(sku) || ''),
+    owner: resolveTaskOwner(task, sku, platform, sourceHint),
     coOwner,
     due: task?.due || plusDays(type === 'assignment' ? 1 : 3),
     status: mapTaskStatus(task?.status),
     type,
     priority,
-    platform: detectTaskPlatform(task, sku),
+    platform,
     createdAt,
     updatedAt,
     entityLabel: task?.entityLabel || sku?.name || title,
@@ -1123,226 +1295,16 @@ function isNonPersistentTaskSource(source) {
   return normalized === 'auto' || normalized === 'seed';
 }
 
-function isPersistentAutoTask(task = {}) {
-  return String(task?.autoCode || '').trim().toLowerCase() === 'oos_control';
-}
-
 function normalizeStorageTasks(tasks, sourceHint = 'manual') {
   return (tasks || [])
     .map((task) => normalizeTask(task, task?.source || sourceHint))
-    .filter((task) => !isNonPersistentTaskSource(task?.source) || isPersistentAutoTask(task));
+    .filter((task) => !isNonPersistentTaskSource(task?.source))
+    .filter((task) => !isAutoTaskLike(task, task?.source));
 }
 
 function isTaskActive(task) {
   return ACTIVE_TASK_STATUSES.has(task?.status);
 }
-
-const LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT = 1200;
-
-function launchAutoTaskKeyToken(value = '') {
-  return String(value ?? '').trim().toLowerCase().replaceAll('ё', 'е').replace(/\s+/g, ' ');
-}
-
-function launchAutoTaskTombstoneList() {
-  state.storage = state.storage && typeof state.storage === 'object' ? state.storage : {};
-  const list = Array.isArray(state.storage.launchAutoTaskTombstones) ? state.storage.launchAutoTaskTombstones : [];
-  state.storage.launchAutoTaskTombstones = [...new Set(
-    list.map((item) => String(item || '').trim()).filter(Boolean)
-  )].slice(0, LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT);
-  return state.storage.launchAutoTaskTombstones;
-}
-
-function launchAutoSuppressionKeysForTask(task = {}) {
-  const keys = new Set();
-  const id = String(task?.id || '').trim();
-  const autoCode = String(task?.autoCode || task?.launchAutoKey || '').trim();
-  const article = launchAutoTaskKeyToken(task?.articleKey || '');
-  const label = launchAutoTaskKeyToken(task?.entityLabel || task?.launchName || task?.title || '');
-  if (id) keys.add(`id:${id}`);
-  if (autoCode) keys.add(`code:${autoCode}`);
-  if (
-    task?.type === 'launch'
-    || autoCode === 'launch_pipeline'
-    || autoCode.startsWith('launch_ops:')
-    || /^auto-launch-/i.test(id)
-  ) {
-    if (article || label) keys.add(`launch:${article}|${label}`);
-  }
-  return [...keys].filter(Boolean);
-}
-
-function launchAutoSuppressionKeysForItem(item = {}, autoId = '') {
-  const keys = new Set();
-  const id = String(autoId || '').trim();
-  const article = launchAutoTaskKeyToken(item?.articleKey || item?.article || item?.sku || '');
-  const label = launchAutoTaskKeyToken(item?.name || item?.entityLabel || item?.title || item?.articleKey || '');
-  if (id) keys.add(`id:${id}`);
-  if (article || label) keys.add(`launch:${article}|${label}`);
-  return [...keys].filter(Boolean);
-}
-
-function launchAutoTaskTombstoneSet() {
-  const keys = new Set(launchAutoTaskTombstoneList());
-  for (const task of state.storage.tasks || []) {
-    if (!task || isTaskActive(task)) continue;
-    launchAutoSuppressionKeysForTask(task).forEach((key) => keys.add(key));
-  }
-  for (const comment of state.storage.comments || []) {
-    const parsed = parseTaskLogComment(comment);
-    if (!parsed?.taskId) continue;
-    const text = String(parsed.text || '').toLowerCase();
-    if (parsed.kind === 'report' || text.includes('задача закрыта') || text.includes('сделано') || text.includes('готово')) {
-      keys.add(`id:${String(parsed.taskId || '').trim()}`);
-    }
-  }
-  return keys;
-}
-
-function isLaunchAutoTaskSuppressed(itemOrTask = {}, autoId = '') {
-  const tombstones = launchAutoTaskTombstoneSet();
-  const keys = autoId
-    ? launchAutoSuppressionKeysForItem(itemOrTask, autoId)
-    : launchAutoSuppressionKeysForTask(itemOrTask);
-  return keys.some((key) => tombstones.has(key));
-}
-
-function recordLaunchAutoTaskTombstone(task = {}) {
-  if (!task || typeof task !== 'object') return false;
-  const autoCode = String(task.autoCode || task.launchAutoKey || '').trim();
-  const id = String(task.id || '').trim();
-  const launchLike = task.type === 'launch' || autoCode === 'launch_pipeline' || autoCode.startsWith('launch_ops:') || /^auto-launch-/i.test(id);
-  if (!launchLike) return false;
-  const list = launchAutoTaskTombstoneList();
-  let changed = false;
-  launchAutoSuppressionKeysForTask(task).forEach((key) => {
-    if (!key || list.includes(key)) return;
-    list.unshift(key);
-    changed = true;
-  });
-  if (list.length > LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT) list.length = LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT;
-  return changed;
-}
-
-window.launchAutoTaskTombstoneSet = launchAutoTaskTombstoneSet;
-window.isLaunchAutoTaskSuppressed = isLaunchAutoTaskSuppressed;
-window.recordLaunchAutoTaskTombstone = recordLaunchAutoTaskTombstone;
-
-const AUTO_TASK_TOMBSTONE_LIMIT = 2000;
-
-function autoTaskKeyToken(value = '') {
-  return String(value ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
-function autoTaskTombstoneList() {
-  state.storage = state.storage && typeof state.storage === 'object' ? state.storage : {};
-  const combined = [
-    ...(Array.isArray(state.storage.autoTaskTombstones) ? state.storage.autoTaskTombstones : []),
-    ...(Array.isArray(state.storage.launchAutoTaskTombstones) ? state.storage.launchAutoTaskTombstones : [])
-  ];
-  state.storage.autoTaskTombstones = [...new Set(
-    combined.map((item) => String(item || '').trim()).filter(Boolean)
-  )].slice(0, AUTO_TASK_TOMBSTONE_LIMIT);
-  return state.storage.autoTaskTombstones;
-}
-
-function autoTaskPlatformToken(task = {}) {
-  const raw = task?.platform || task?.marketplace || task?.sourcePlatform || 'all';
-  try {
-    if (typeof normalizeTaskPlatform === 'function') return normalizeTaskPlatform(raw || 'all') || 'all';
-  } catch {}
-  return autoTaskKeyToken(raw || 'all') || 'all';
-}
-
-function autoTaskLooksGenerated(task = {}) {
-  if (!task || typeof task !== 'object') return false;
-  const source = autoTaskKeyToken(task.source || task.generatedBy || task.origin || '');
-  const id = String(task.id || '').trim();
-  return Boolean(
-    task.autoCode
-    || task.launchAutoKey
-    || task.launchAutoId
-    || source === 'auto'
-    || source === 'seed'
-    || source.includes('auto')
-    || /^auto[-_]/i.test(id)
-  );
-}
-
-function autoTaskSuppressionKeysForTask(task = {}) {
-  const keys = new Set();
-  const id = String(task?.id || '').trim();
-  const autoCode = String(task?.autoCode || task?.launchAutoKey || '').trim();
-  const article = autoTaskKeyToken(task?.articleKey || task?.article || task?.sku || '');
-  const label = autoTaskKeyToken(task?.entityLabel || task?.launchName || task?.title || '');
-  const type = autoTaskKeyToken(task?.type || '');
-  const platform = autoTaskPlatformToken(task);
-  const meaningCode = autoTaskKeyToken(autoCode || type || label);
-
-  if (id) keys.add(`id:${id}`);
-  if (autoCode && (autoCode.includes(':') || autoCode === 'launch_pipeline')) keys.add(`code:${autoCode}`);
-  if ((article || label) && meaningCode) keys.add(`meaning:${article || label}|${meaningCode}|${platform || 'all'}`);
-  if (article && type && !meaningCode) keys.add(`meaning:${article}|${type}|${platform || 'all'}`);
-  if (task?.type === 'launch' || autoCode === 'launch_pipeline' || autoCode.startsWith('launch_ops:') || /^auto-launch-/i.test(id)) {
-    if (article || label) keys.add(`launch:${article}|${label}`);
-  }
-  return [...keys].filter(Boolean);
-}
-
-function autoTaskTombstoneSet() {
-  const keys = new Set(autoTaskTombstoneList());
-  for (const task of state.storage.tasks || []) {
-    if (!task || isTaskActive(task) || !autoTaskLooksGenerated(task)) continue;
-    autoTaskSuppressionKeysForTask(task).forEach((key) => keys.add(key));
-  }
-  for (const comment of state.storage.comments || []) {
-    const parsed = parseTaskLogComment(comment);
-    if (!parsed?.taskId) continue;
-    const text = String(parsed.text || '').toLowerCase();
-    if (parsed.kind === 'report' || text.includes('Р·Р°РґР°С‡Р° Р·Р°РєСЂС‹С‚Р°') || text.includes('СЃРґРµР»Р°РЅРѕ') || text.includes('РіРѕС‚РѕРІРѕ')) {
-      keys.add(`id:${String(parsed.taskId || '').trim()}`);
-    }
-  }
-  return keys;
-}
-
-function isAutoTaskSuppressed(task = {}) {
-  const tombstones = autoTaskTombstoneSet();
-  return autoTaskSuppressionKeysForTask(task).some((key) => tombstones.has(key));
-}
-
-function recordAutoTaskTombstone(task = {}) {
-  if (!autoTaskLooksGenerated(task)) return false;
-  const generalList = autoTaskTombstoneList();
-  let changed = false;
-  const keys = autoTaskSuppressionKeysForTask(task);
-  keys.forEach((key) => {
-    if (!key || generalList.includes(key)) return;
-    generalList.unshift(key);
-    changed = true;
-  });
-  if (generalList.length > AUTO_TASK_TOMBSTONE_LIMIT) generalList.length = AUTO_TASK_TOMBSTONE_LIMIT;
-
-  const launchLike = keys.some((key) => key.startsWith('launch:') || key.startsWith('code:launch_ops:') || key === 'code:launch_pipeline');
-  if (launchLike) {
-    const launchList = launchAutoTaskTombstoneList();
-    keys.forEach((key) => {
-      if (!key || launchList.includes(key)) return;
-      launchList.unshift(key);
-    });
-    if (launchList.length > LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT) launchList.length = LAUNCH_AUTO_TASK_TOMBSTONE_LIMIT;
-  }
-  return changed;
-}
-
-window.autoTaskTombstoneSet = autoTaskTombstoneSet;
-window.isAutoTaskSuppressed = isAutoTaskSuppressed;
-window.recordAutoTaskTombstone = recordAutoTaskTombstone;
-window.launchAutoTaskTombstoneSet = autoTaskTombstoneSet;
-window.isLaunchAutoTaskSuppressed = (itemOrTask = {}, autoId = '') => {
-  const task = autoId ? { ...itemOrTask, id: autoId, autoCode: itemOrTask?.autoCode || 'launch_pipeline', type: itemOrTask?.type || 'launch' } : itemOrTask;
-  return isAutoTaskSuppressed(task) || isLaunchAutoTaskSuppressed(itemOrTask, autoId);
-};
-window.recordLaunchAutoTaskTombstone = (task = {}) => recordAutoTaskTombstone(task) || recordLaunchAutoTaskTombstone(task);
 
 function isTaskOverdue(task) {
   return Boolean(task?.due) && isTaskActive(task) && task.due < todayIso();
@@ -1502,6 +1464,7 @@ function storedTaskKeys() {
   return new Set(
     state.storage.tasks
       .filter(isTaskActive)
+      .filter((task) => !isAutoTaskLike(task, task?.source))
       .filter((task) => !isDeprecatedAutoSignalTask(task))
       .map((task) => `${task.articleKey}|${task.type}`)
   );
@@ -1510,7 +1473,6 @@ function storedTaskKeys() {
 function canRegisterAutoTask(keys, articleKey, type) {
   const key = `${articleKey}|${type}`;
   if (!articleKey || keys.has(key)) return false;
-  if (isAutoTaskSuppressed({ articleKey, type, autoCode: type, source: 'auto' })) return false;
   keys.add(key);
   return true;
 }
@@ -1651,7 +1613,11 @@ function buildLeaderboardAutoTask({
 
 const AUTO_SIGNAL_RULES = {
   stockDays: 10,
+  stockWatchDays: 30,
+  minStockWatchRiskDay: 150000,
   priceDropPct: 0.15,
+  priceRisePct: 0.10,
+  priceImpactDropPct: 0.20,
   revenueDropPct: 0.20,
   aovDropPct: 0.20,
   returnsGrowthPct: 0.20,
@@ -1659,6 +1625,8 @@ const AUTO_SIGNAL_RULES = {
   profitabilityDropPct: 0.25,
   minRecentOrders: 10,
   minPriceRecentOrders: 80,
+  minPriceRiseBaseOrders: 40,
+  minPriceRiseSmallBaseOrders: 8,
   minBaseOrders: 50,
   minBaseRevenueDay: 30000,
   minRevenueLossDay: 30000,
@@ -1668,13 +1636,28 @@ const AUTO_SIGNAL_RULES = {
   minKzClicks: 700,
   minKzRevenue: 50000,
   minKzSpend: 30000,
-  totalLimit: 28,
+  minAdsSpend: 50000,
+  minAdsClicks: 300,
+  minAdsOrders: 20,
+  maxAdsDrr: 0.45,
+  maxAdsCpo: 450,
+  minAdsCtr: 0.008,
+  minAdsCr: 0.06,
+  adsMetricDropPct: 0.25,
+  adsTwoDayDropPct: 0.25,
+  adsTwoDayPointDropPct: 0.20,
+  minAdsDailyViews: 1000,
+  minAdsDailyClicks: 30,
+  minAdsDailyOrders: 5,
+  minAdsTwoDayBaseDays: 7,
+  totalLimit: 32,
   launchLimit: 5,
   familyLimits: {
-    stock: 10,
-    price: 4,
-    sales: 6,
-    kz: 6,
+    stock: 8,
+    price: 6,
+    sales: 5,
+    ads: 8,
+    kz: 4,
     aov: 2,
     returns: 3
   }
@@ -1708,6 +1691,56 @@ function autoSignalPlatformLabel(platform = '') {
   const key = normalizeTaskPlatform(platform || 'all');
   const meta = controlWorkstreamMeta(key === 'all' ? 'cross' : key);
   return meta?.chip || platform || 'MP';
+}
+
+function autoSignalTaskOwner(sku, platform = '', fallback = '') {
+  return taskPlatformOwnerName(sku, platform)
+    || canonicalOwnerName(fallback || '')
+    || ownerName(sku)
+    || '';
+}
+
+function launchTaskExplicitPlatforms(item = {}) {
+  const text = [
+    item?.marketplaces,
+    item?.marketplace,
+    item?.marketplaceKey,
+    item?.platform,
+    item?.platforms,
+    item?.network,
+    item?.retailer,
+    item?.channel,
+    item?.market,
+    item?.workstream
+  ].map((value) => marketplaceContextValue(value)).filter(Boolean).join(' ');
+  const detected = detectMarketplaceKeyList(text)
+    .filter((key) => TASK_PLATFORM_OWNER_KEYS.has(key));
+  if (detected.length) return detected;
+  const normalized = normalizeTaskPlatform(item?.platform || item?.marketplace || item?.marketplaces || '', text);
+  if (TASK_PLATFORM_OWNER_KEYS.has(normalized)) return [normalized];
+  if (/all|marketplaces?|маркетплейс|маркетплеи|площадк|все мп|всех мп|\bмп\b/i.test(text)) {
+    return TASK_MARKETPLACE_PLATFORM_KEYS.slice();
+  }
+  return [];
+}
+
+function launchTaskSkuPlatforms(sku = null) {
+  if (!sku || typeof sku !== 'object') return [];
+  const platforms = [];
+  const push = (key) => {
+    if (key && TASK_PLATFORM_OWNER_KEYS.has(key) && !platforms.includes(key)) platforms.push(key);
+  };
+  if (sku?.flags?.hasWB || sku?.flags?.toWorkWB) push('wb');
+  if (sku?.flags?.hasOzon || sku?.flags?.toWorkOzon) push('ozon');
+  return platforms;
+}
+
+function launchTaskPlatforms(item = {}, sku = null) {
+  const explicit = launchTaskExplicitPlatforms(item);
+  if (explicit.length) return explicit;
+  const skuPlatforms = launchTaskSkuPlatforms(sku);
+  if (skuPlatforms.length) return skuPlatforms;
+  return TASK_MARKETPLACE_PLATFORM_KEYS.slice();
 }
 
 function autoSignalMetric(item, key) {
@@ -1802,7 +1835,6 @@ function canRegisterAutoSignalTask(keys, articleKey, taskType, signalKey) {
   if (keys.has(`${article}|${taskType}`)) return false;
   const scopedKey = `${article}|${signalKey || taskType}`;
   if (keys.has(scopedKey)) return false;
-  if (isAutoTaskSuppressed({ articleKey: article, type: taskType, autoCode: signalKey || taskType, source: 'auto' })) return false;
   keys.add(scopedKey);
   return true;
 }
@@ -1828,15 +1860,236 @@ function autoSignalPriceOverlayRows() {
   return result;
 }
 
+function autoSignalAdsArticleKey(row = {}) {
+  return String(row?.articleKey || row?.offer_id || row?.offerId || row?.article || row?.sku || '').trim();
+}
+
+function autoSignalAdsIsAggregateArticle(articleKey = '') {
+  const key = String(articleKey || '').trim().toLowerCase();
+  if (!key) return true;
+  return key === 'all'
+    || key === 'total'
+    || key.includes('finance')
+    || key.includes('summary')
+    || key.includes('ads-total')
+    || key.endsWith('-total')
+    || key.endsWith('_total');
+}
+
+function autoSignalAdsDateKey(row = {}) {
+  const raw = String(row?.dateKey || row?.date || row?.day || row?.label || '').trim();
+  return /^\d{4}-\d{2}-\d{2}/.test(raw) ? raw.slice(0, 10) : '';
+}
+
+function autoSignalAdsTotals(rows = []) {
+  return (Array.isArray(rows) ? rows : []).reduce((acc, row) => {
+    acc.views += autoSignalFinite(row.views, 0);
+    acc.clicks += autoSignalFinite(row.clicks, 0);
+    acc.spend += autoSignalFinite(row.spend, 0);
+    acc.orders += autoSignalFinite(row.orders, 0);
+    acc.revenue += autoSignalFinite(row.revenue, 0);
+    return acc;
+  }, { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 });
+}
+
+function autoSignalAdsRate(top, bottom, fallback = 0) {
+  const numerator = autoSignalFinite(top, 0);
+  const denominator = autoSignalFinite(bottom, 0);
+  if (denominator <= 0) return fallback;
+  return numerator / denominator;
+}
+
+function autoSignalAdsMetrics(totals = {}) {
+  const spend = autoSignalFinite(totals.spend, 0);
+  const revenue = autoSignalFinite(totals.revenue, 0);
+  const orders = autoSignalFinite(totals.orders, 0);
+  return {
+    ctr: autoSignalAdsRate(totals.clicks, totals.views, 0),
+    cr: autoSignalAdsRate(totals.orders, totals.clicks, 0),
+    cpc: autoSignalAdsRate(totals.spend, totals.clicks, 0),
+    cpo: orders > 0 ? spend / orders : (spend > 0 ? Number.POSITIVE_INFINITY : 0),
+    drr: revenue > 0 ? spend / revenue : (spend > 0 ? Number.POSITIVE_INFINITY : 0)
+  };
+}
+
+function autoSignalAdsMetricDrop(baseValue, currentValue) {
+  const base = autoSignalFinite(baseValue, 0);
+  const current = autoSignalFinite(currentValue, 0);
+  if (base <= 0) return 0;
+  return Math.max(0, (base - current) / base);
+}
+
+function autoSignalAdsMetricGrowth(baseValue, currentValue) {
+  const base = autoSignalFinite(baseValue, 0);
+  const current = autoSignalFinite(currentValue, 0);
+  if (base <= 0) return 0;
+  return Math.max(0, (current - base) / base);
+}
+
+function autoSignalAdsRatioLabel(value, emptyLabel = 'нет данных') {
+  return Number.isFinite(value) ? autoSignalPct(value, 1) : emptyLabel;
+}
+
+function autoSignalAdsMoneyRatioLabel(value, emptyLabel = 'нет заказов') {
+  return Number.isFinite(value) ? autoSignalMoney(value) : emptyLabel;
+}
+
+function autoSignalAdsMetricSum(points = [], key = '') {
+  return (Array.isArray(points) ? points : []).reduce((sum, point) => sum + autoSignalFinite(point?.[key], 0), 0);
+}
+
+function autoSignalAdsTwoDayWindow(bucket = {}) {
+  const points = Array.isArray(bucket.points) ? bucket.points : [];
+  if (points.length < AUTO_SIGNAL_RULES.minAdsTwoDayBaseDays + 2) return null;
+  const latest = points.slice(-2);
+  const base = points.slice(
+    Math.max(0, points.length - AUTO_SIGNAL_RULES.minAdsTwoDayBaseDays - 2),
+    points.length - 2
+  );
+  if (latest.length < 2 || base.length < AUTO_SIGNAL_RULES.minAdsTwoDayBaseDays) return null;
+  const metric = (key) => {
+    const baseAvg = autoSignalAdsMetricSum(base, key) / Math.max(1, base.length);
+    const latestAvg = autoSignalAdsMetricSum(latest, key) / Math.max(1, latest.length);
+    const drop = baseAvg > 0 ? Math.max(0, (baseAvg - latestAvg) / baseAvg) : 0;
+    const bothDaysDown = baseAvg > 0 && latest.every((point) =>
+      autoSignalFinite(point?.[key], 0) <= baseAvg * (1 - AUTO_SIGNAL_RULES.adsTwoDayPointDropPct)
+    );
+    return {
+      baseAvg,
+      latestAvg,
+      drop,
+      bothDaysDown,
+      latestValues: latest.map((point) => autoSignalFinite(point?.[key], 0))
+    };
+  };
+  const baseTotals = autoSignalAdsTotals(base);
+  const latestTotals = autoSignalAdsTotals(latest);
+  const baseMetrics = autoSignalAdsMetrics(baseTotals);
+  const latestMetrics = autoSignalAdsMetrics(latestTotals);
+  return {
+    latest,
+    base,
+    baseTotals,
+    latestTotals,
+    baseMetrics,
+    latestMetrics,
+    dateLabel: latest.map((point) => String(point.dateKey || '').slice(5) || point.dateKey || '').filter(Boolean).join(', '),
+    views: metric('views'),
+    clicks: metric('clicks'),
+    orders: metric('orders'),
+    spend: metric('spend'),
+    ctrDrop: autoSignalAdsMetricDrop(baseMetrics.ctr, latestMetrics.ctr),
+    crDrop: autoSignalAdsMetricDrop(baseMetrics.cr, latestMetrics.cr),
+    drrGrowth: Number.isFinite(baseMetrics.drr) && Number.isFinite(latestMetrics.drr)
+      ? autoSignalAdsMetricGrowth(baseMetrics.drr, latestMetrics.drr)
+      : 0
+  };
+}
+
+function autoSignalAdsTwoDayMetricLabel(stat = {}, formatter = autoSignalNum, digits = 0, suffix = '/день') {
+  const values = Array.isArray(stat.latestValues)
+    ? stat.latestValues.map((value) => formatter(value, digits)).join(' / ')
+    : formatter(stat.latestAvg, digits);
+  return `база ${formatter(stat.baseAvg, digits)}${suffix}, последние 2 дня ${values}`;
+}
+
+function autoSignalAdsBuckets() {
+  const rows = Array.isArray(state.adsSummary?.itemSeries) ? state.adsSummary.itemSeries : [];
+  const buckets = new Map();
+  const skuCache = new Map();
+  rows.forEach((row, index) => {
+    const platform = normalizeTaskPlatform(row?.platformKey || row?.platform || row?.market || row?.channel || '');
+    if (!['wb', 'ozon', 'ya'].includes(platform)) return;
+    const articleKey = autoSignalAdsArticleKey(row);
+    if (autoSignalAdsIsAggregateArticle(articleKey)) return;
+    const articleLookup = articleKey.toLowerCase();
+    if (!skuCache.has(articleLookup)) skuCache.set(articleLookup, getSku(articleKey));
+    const sku = skuCache.get(articleLookup);
+    if (!autoSignalSkuAllowed(sku)) return;
+
+    const bucketKey = `${articleLookup}|${platform}`;
+    const bucket = buckets.get(bucketKey) || {
+      articleKey,
+      platform,
+      sku,
+      name: row?.name || sku?.name || articleKey,
+      owner: autoSignalTaskOwner(sku, platform, row?.owner),
+      daily: new Map(),
+      campaigns: new Set()
+    };
+    const dateKey = autoSignalAdsDateKey(row) || `row-${index}`;
+    const point = bucket.daily.get(dateKey) || {
+      dateKey,
+      views: 0,
+      clicks: 0,
+      spend: 0,
+      orders: 0,
+      revenue: 0
+    };
+    point.views += autoSignalFinite(row?.views ?? row?.adsImpressions ?? row?.shows, 0);
+    point.clicks += autoSignalFinite(row?.clicks ?? row?.adsClicks, 0);
+    point.spend += autoSignalFinite(row?.spend ?? row?.adsSpend, 0);
+    point.orders += autoSignalFinite(row?.orders ?? row?.ordersUnits, 0);
+    point.revenue += autoSignalFinite(row?.revenue ?? row?.deliveredRevenue ?? row?.ordersRevenue, 0);
+    bucket.daily.set(dateKey, point);
+    const campaign = String(row?.campaignName || row?.campaignId || row?.channel || '').trim();
+    if (campaign) bucket.campaigns.add(campaign);
+    buckets.set(bucketKey, bucket);
+  });
+
+  return [...buckets.values()].map((bucket) => {
+    const points = [...bucket.daily.values()]
+      .filter((point) => point.spend || point.clicks || point.views || point.orders || point.revenue)
+      .sort((left, right) => String(left.dateKey || '').localeCompare(String(right.dateKey || '')));
+    const baseEnd = Math.max(0, points.length - 7);
+    const baseStart = Math.max(0, points.length - 28);
+    const recent = points.slice(Math.max(0, points.length - 7));
+    const base = points.slice(baseStart, baseEnd);
+    const totals = autoSignalAdsTotals(points);
+    const recentTotals = autoSignalAdsTotals(recent);
+    const baseTotals = autoSignalAdsTotals(base);
+    return {
+      ...bucket,
+      points,
+      days: points.length,
+      campaigns: [...bucket.campaigns].slice(0, 4),
+      totals,
+      recentTotals,
+      baseTotals,
+      metrics: autoSignalAdsMetrics(totals),
+      recentMetrics: autoSignalAdsMetrics(recentTotals),
+      baseMetrics: autoSignalAdsMetrics(baseTotals)
+    };
+  });
+}
+
 function autoSignalIssueKey(platform, articleKey) {
   return `${normalizeTaskPlatform(platform || 'all')}|${String(articleKey || '').trim().toLowerCase()}`;
+}
+
+function autoSignalStockSignalLevel(row = {}) {
+  const days = autoSignalFinite(row.turnoverDays, NaN);
+  const riskDay = autoSignalFinite(row.revenueAtRiskDay, 0);
+  const isOos = String(row.status || '').toLowerCase() === 'oos';
+  const isCriticalRisk = isOos || (Number.isFinite(days) && days <= AUTO_SIGNAL_RULES.stockDays);
+  const isWatch = !isCriticalRisk
+    && Number.isFinite(days)
+    && days <= AUTO_SIGNAL_RULES.stockWatchDays
+    && riskDay >= AUTO_SIGNAL_RULES.minStockWatchRiskDay;
+  if (isOos) return 'oos';
+  if (isCriticalRisk) return 'risk';
+  if (isWatch) return 'watch';
+  return '';
 }
 
 function autoSignalActiveStockKeys() {
   const rows = Array.isArray(state.oosControl?.rows) ? state.oosControl.rows : [];
   return new Set(rows
     .filter((row) => row?.articleKey || row?.article)
-    .filter((row) => row.status === 'oos' || autoSignalFinite(row.turnoverDays, Number.POSITIVE_INFINITY) <= AUTO_SIGNAL_RULES.stockDays)
+    .filter((row) => {
+      const level = autoSignalStockSignalLevel(row);
+      return level === 'oos' || level === 'risk';
+    })
     .map((row) => autoSignalIssueKey(row.platform, row.articleKey || row.article)));
 }
 
@@ -1848,11 +2101,17 @@ function buildStockAutoSignalCandidates() {
     const platform = normalizeTaskPlatform(row.platform || 'all');
     const platformLabel = row.platformLabel || autoSignalPlatformLabel(platform);
     const days = autoSignalFinite(row.turnoverDays, NaN);
+    const signalLevel = autoSignalStockSignalLevel(row);
+    if (!signalLevel) return null;
+    const isOos = signalLevel === 'oos';
+    const isNearOos = signalLevel === 'oos' || signalLevel === 'risk';
+    const isWatch = signalLevel === 'watch';
+    const riskDay = autoSignalFinite(row.revenueAtRiskDay, 0);
+    const priority = isOos ? 'critical' : isNearOos ? 'high' : 'medium';
     const clusters = Math.max(1, Math.round(autoSignalFinite(row.clusterCount || 1, 1)));
     const places = Array.isArray(row.placesAtRisk)
       ? row.placesAtRisk.map((item) => item.place).filter(Boolean).slice(0, 4).join(', ')
       : row.place;
-    const isOos = row.status === 'oos';
     const clusterLabel = `${clusters} ${clusters === 1 ? 'кластер' : 'кластеров'}`;
     return {
       family: 'stock',
@@ -1860,8 +2119,10 @@ function buildStockAutoSignalCandidates() {
       articleKey: row.articleKey || row.article,
       taskType: 'supply',
       platform,
-      priority: isOos ? 'critical' : 'high',
-      score: 1000 + autoSignalFinite(row.revenueAtRiskDay) / 100000,
+      priority,
+      score: isNearOos
+        ? 1000 + riskDay / 100000
+        : 660 + riskDay / 50000 + Math.max(0, AUTO_SIGNAL_RULES.stockWatchDays - days) * 2,
       task: {
         id: stableId('auto-stock-v2', row.issueKey || `${platform}|${row.articleKey}`),
         source: 'auto',
@@ -1869,20 +2130,24 @@ function buildStockAutoSignalCandidates() {
         articleKey: row.articleKey || row.article,
         title: isOos
           ? `${platformLabel}: OOS по SKU`
-          : `${platformLabel}: ${clusterLabel} <${AUTO_SIGNAL_RULES.stockDays} дней`,
-        nextAction: row.recommendation || `Проверить поставку и закрыть кластеры с покрытием меньше ${AUTO_SIGNAL_RULES.stockDays} дней.`,
+          : isNearOos
+            ? `${platformLabel}: ${clusterLabel} <${AUTO_SIGNAL_RULES.stockDays} дней`
+            : `${platformLabel}: запас ${autoSignalNum(days, 1)} д., не довести до OOS`,
+        nextAction: isWatch
+          ? (row.recommendation || `Проверить дату поставки/перемещения и закрыть риск до OOS: покрытие меньше ${AUTO_SIGNAL_RULES.stockWatchDays} дней при высокой выручке под риском.`)
+          : (row.recommendation || `Проверить поставку и закрыть кластеры с покрытием меньше ${AUTO_SIGNAL_RULES.stockDays} дней.`),
         reason: [
-          `${platformLabel}: ${row.statusLabel || 'риск OOS'}`,
+          `${platformLabel}: ${isWatch ? 'watch до OOS' : (row.statusLabel || 'риск OOS')}`,
           Number.isFinite(days) ? `покрытие ${autoSignalNum(days, 1)} д.` : '',
           clusterLabel,
           places ? `кластеры: ${places}` : '',
-          `риск выручки ${autoSignalMoney(row.revenueAtRiskDay || 0)}/день`
+          `риск выручки ${autoSignalMoney(riskDay)}/день`
         ].filter(Boolean).join(' · '),
-        owner: row.owner || ownerName(sku) || '',
-        due: autoSignalTaskDue(isOos ? 'critical' : 'high'),
+        owner: autoSignalTaskOwner(sku, platform, row.owner),
+        due: autoSignalTaskDue(priority),
         status: 'new',
         type: 'supply',
-        priority: isOos ? 'critical' : 'high',
+        priority,
         platform,
         entityLabel: row.name || sku?.name || row.articleKey || row.article
       }
@@ -1906,7 +2171,9 @@ function buildPriceAndSalesAutoSignalCandidates() {
     const currentPrice = autoSignalFinite(latest.price || row.currentPrice || row.currentFillPrice);
     const recentOrders7 = autoSignalSum(daily.slice(-7), 'ordersUnits');
     const priceDrop = previousPrice > 0 && currentPrice > 0 ? (previousPrice - currentPrice) / previousPrice : 0;
-    if (priceDrop >= AUTO_SIGNAL_RULES.priceDropPct && recentOrders7 >= AUTO_SIGNAL_RULES.minPriceRecentOrders) {
+    const priceRise = previousPrice > 0 && currentPrice > 0 ? (currentPrice - previousPrice) / previousPrice : 0;
+    const hasPriceDropSignal = priceDrop >= AUTO_SIGNAL_RULES.priceDropPct && recentOrders7 >= AUTO_SIGNAL_RULES.minPriceRecentOrders;
+    if (hasPriceDropSignal) {
       const priority = priceDrop >= 0.25 ? 'critical' : 'high';
       const priceDropLabel = autoSignalPct(priceDrop);
       candidates.push({
@@ -1925,7 +2192,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
           title: `${platformLabel}: цена -${priceDropLabel} к среднему уровню`,
           nextAction: 'Проверить цену как аварийный сигнал: это промо, ошибка цены или сбой правил. В задаче зафиксировать решение: оставить промо до даты, вернуть цену или согласовать исключение.',
           reason: `${platformLabel}: текущая цена ${autoSignalMoney(currentPrice)}, средняя за 7 предыдущих дней ${autoSignalMoney(previousPrice)}, отклонение ${priceDropLabel}. Проверка прошла фильтр объёма: ${autoSignalNum(recentOrders7, 0)} заказов за 7 дней.`,
-          owner: ownerName(sku),
+          owner: autoSignalTaskOwner(sku, platform, row.owner),
           due: autoSignalTaskDue(priority),
           status: 'new',
           type: 'price_margin',
@@ -1946,9 +2213,52 @@ function buildPriceAndSalesAutoSignalCandidates() {
     const baseOrders = autoSignalSum(base, 'ordersUnits');
     const revenueDrop = baseRevenueDay > 0 ? (baseRevenueDay - recentRevenueDay) / baseRevenueDay : 0;
     const revenueLossDay = baseRevenueDay - recentRevenueDay;
+    const orderDrop = baseOrders > 0 ? (baseOrders - recentOrders) / baseOrders : 0;
+    const priceImpact = Math.max(0, revenueDrop, orderDrop);
+    const priceRiseVolumeOk = baseOrders >= AUTO_SIGNAL_RULES.minPriceRiseBaseOrders
+      || (priceRise >= 0.30 && baseOrders >= AUTO_SIGNAL_RULES.minPriceRiseSmallBaseOrders);
+    const hasPriceRiseSignal = priceRise >= AUTO_SIGNAL_RULES.priceRisePct
+      && base.length >= 5
+      && priceRiseVolumeOk
+      && (
+        priceImpact >= AUTO_SIGNAL_RULES.priceImpactDropPct
+        || recentOrders >= AUTO_SIGNAL_RULES.minRecentOrders
+      );
+    if (hasPriceRiseSignal) {
+      const priority = priceRise >= 0.30 || priceImpact >= 0.35 ? 'critical' : 'high';
+      const priceRiseLabel = autoSignalPct(priceRise);
+      const impactLabel = priceImpact > 0 ? autoSignalPct(priceImpact) : 'без падения';
+      candidates.push({
+        family: 'price',
+        dedupeKey: `${articleKey}|price-rise|${platform}`,
+        articleKey,
+        taskType: 'price_margin',
+        platform,
+        priority,
+        score: 780 + priceRise * 130 + priceImpact * 100 + baseOrders / 10 + Math.max(0, revenueLossDay) / 5000,
+        task: {
+          id: stableId('auto-price-rise-v2', `${platform}|${articleKey}`),
+          source: 'auto',
+          autoCode: 'price_rise_v2',
+          articleKey,
+          title: `${platformLabel}: цена +${priceRiseLabel}, проверить влияние на спрос`,
+          nextAction: 'Проверить повышение цены: это плановое повышение, завершение промо или сбой правил. Сверить заказы/выручку после изменения и зафиксировать решение: удержать цену, откатить или компенсировать трафиком/скидкой.',
+          reason: `${platformLabel}: текущая цена ${autoSignalMoney(currentPrice)}, средняя за 7 предыдущих дней ${autoSignalMoney(previousPrice)}, рост ${priceRiseLabel}; эффект по заказам/выручке ${impactLabel}. База: ${autoSignalNum(baseOrders, 0)} заказов, последние 3 дня: ${autoSignalNum(recentOrders, 0)} заказов.`,
+          owner: autoSignalTaskOwner(sku, platform, row.owner),
+          due: autoSignalTaskDue(priority),
+          status: 'new',
+          type: 'price_margin',
+          priority,
+          platform,
+          entityLabel: sku?.name || articleKey
+        }
+      });
+    }
     const stockAlreadyExplainsSales = activeStockKeys.has(autoSignalIssueKey(platform, articleKey));
     if (
       !stockAlreadyExplainsSales
+      && !hasPriceDropSignal
+      && !hasPriceRiseSignal
       && base.length >= 5
       && baseRevenueDay >= AUTO_SIGNAL_RULES.minBaseRevenueDay
       && baseOrders >= AUTO_SIGNAL_RULES.minBaseOrders
@@ -1974,7 +2284,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
           title: `${platformLabel}: оборот -${revenueDropLabel}, потеря ${autoSignalMoney(revenueLossDay)}/день`,
           nextAction: 'Разобрать корневую причину за 15 минут: остаток, цена, реклама, карточка. В задаче оставить один выбранный рычаг и срок повторной проверки.',
           reason: `${platformLabel}: 3-дневный оборот ${autoSignalMoney(recentRevenueDay)}/день против базы ${autoSignalMoney(baseRevenueDay)}/день; падение ${revenueDropLabel}, минус ${autoSignalMoney(revenueLossDay)}/день. OOS по этой площадке не найден, поэтому это отдельный сигнал, не дубль остатков.`,
-          owner: ownerName(sku),
+          owner: autoSignalTaskOwner(sku, platform, row.owner),
           due: autoSignalTaskDue(priority),
           status: 'new',
           type: 'traffic',
@@ -1989,7 +2299,9 @@ function buildPriceAndSalesAutoSignalCandidates() {
     const baseAov = autoSignalSum(base, 'revenue') / Math.max(1, baseOrders);
     const aovDrop = baseAov > 0 ? (baseAov - recentAov) / baseAov : 0;
     if (
-      base.length >= 5
+      !hasPriceDropSignal
+      && !hasPriceRiseSignal
+      && base.length >= 5
       && baseOrders >= AUTO_SIGNAL_RULES.minBaseOrders
       && recentOrders >= AUTO_SIGNAL_RULES.minRecentOrders
       && aovDrop >= AUTO_SIGNAL_RULES.aovDropPct
@@ -2011,7 +2323,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
           title: `${platformLabel}: средний чек заметно упал`,
           nextAction: 'Проверить цену, скидку, наборы и структуру заказов. Если это промо, зафиксировать ожидаемый эффект; если нет — вернуть экономику.',
           reason: `${platformLabel}: средний чек ${autoSignalMoney(recentAov)} против ${autoSignalMoney(baseAov)}, падение ${autoSignalPct(aovDrop)}.`,
-          owner: ownerName(sku),
+          owner: autoSignalTaskOwner(sku, platform, row.owner),
           due: autoSignalTaskDue(priority),
           status: 'new',
           type: 'price_margin',
@@ -2076,7 +2388,7 @@ function buildReturnsAutoSignalCandidates() {
           topReason ? `топ-причина: ${topReason}` : '',
           state.autoSignalBaselines?.source ? `сравнение с ${state.autoSignalBaselines.source}` : ''
         ].filter(Boolean).join(' · '),
-        owner: ownerName(sku),
+        owner: autoSignalTaskOwner(sku, platform),
         due: autoSignalTaskDue(priority),
         status: 'new',
         type: 'returns',
@@ -2110,6 +2422,281 @@ function autoSignalPreviousLeaderboardItem(articleKey, currentWeek) {
   const snapshots = autoSignalLeaderboardSnapshots();
   const previous = snapshots.find((payload) => String(payload.weekLabel || payload.sourceSheetName || '') !== String(currentWeek || ''));
   return (previous?.items || []).find((item) => String(item.articleKey || '').trim().toLowerCase() === key) || null;
+}
+
+function buildAdsTwoDayFunnelAutoSignalCandidates() {
+  return autoSignalAdsBuckets().flatMap((bucket) => {
+    const totals = bucket.totals || {};
+    if (
+      autoSignalFinite(totals.spend, 0) < AUTO_SIGNAL_RULES.minAdsSpend
+      || autoSignalFinite(totals.clicks, 0) < AUTO_SIGNAL_RULES.minAdsClicks
+    ) {
+      return [];
+    }
+
+    const window = autoSignalAdsTwoDayWindow(bucket);
+    if (!window) return [];
+    const platformLabel = autoSignalPlatformLabel(bucket.platform);
+    const latestSpend = autoSignalFinite(window.latestTotals.spend, 0);
+    const latestMetrics = window.latestMetrics || {};
+    const baseMetrics = window.baseMetrics || {};
+    const campaignLabel = bucket.campaigns.length ? `кампании: ${bucket.campaigns.join(', ')}` : '';
+    const metricContext = [
+      `CTR ${autoSignalPct(latestMetrics.ctr, 1)} против базы ${autoSignalPct(baseMetrics.ctr, 1)}`,
+      `CR ${autoSignalPct(latestMetrics.cr, 1)} против базы ${autoSignalPct(baseMetrics.cr, 1)}`,
+      `ДРР ${autoSignalAdsRatioLabel(latestMetrics.drr, 'нет выручки')} против базы ${autoSignalAdsRatioLabel(baseMetrics.drr, 'нет выручки')}`
+    ].join(' · ');
+    const commonReason = [
+      window.dateLabel ? `период: ${window.dateLabel}` : '',
+      `расход за 2 дня ${autoSignalMoney(latestSpend)}`,
+      metricContext,
+      campaignLabel
+    ].filter(Boolean).join(' · ');
+
+    const candidates = [];
+    const pushCandidate = ({
+      code,
+      title,
+      statusLabel,
+      stat,
+      formatter = autoSignalNum,
+      digits = 0,
+      metricSuffix = '/день',
+      priority,
+      score,
+      nextAction,
+      extraReason = ''
+    }) => {
+      candidates.push({
+        family: 'ads',
+        dedupeKey: `${bucket.articleKey}|${code}|${bucket.platform}`,
+        articleKey: bucket.articleKey,
+        taskType: 'traffic',
+        platform: bucket.platform,
+        priority,
+        score: score + 240,
+        task: {
+          id: stableId(`auto-${code}`, `${bucket.platform}|${bucket.articleKey}`),
+          source: 'auto',
+          autoCode: code,
+          articleKey: bucket.articleKey,
+          title: `${platformLabel}: ${title}`,
+          nextAction,
+          reason: [
+            `Бизнес-статус: ${statusLabel}.`,
+            `${autoSignalAdsTwoDayMetricLabel(stat, formatter, digits, metricSuffix)}; падение ${autoSignalPct(stat.drop)}.`,
+            extraReason,
+            commonReason
+          ].filter(Boolean).join(' · '),
+          owner: autoSignalTaskOwner(bucket.sku, bucket.platform, bucket.owner),
+          due: autoSignalTaskDue(priority),
+          status: 'new',
+          type: 'traffic',
+          priority,
+          platform: bucket.platform,
+          entityLabel: bucket.name || bucket.sku?.name || bucket.articleKey
+        }
+      });
+    };
+
+    const viewsDrop = window.views.drop >= AUTO_SIGNAL_RULES.adsTwoDayDropPct
+      && window.views.bothDaysDown
+      && window.views.baseAvg >= AUTO_SIGNAL_RULES.minAdsDailyViews;
+    const clicksDrop = window.clicks.drop >= AUTO_SIGNAL_RULES.adsTwoDayDropPct
+      && window.clicks.bothDaysDown
+      && window.clicks.baseAvg >= AUTO_SIGNAL_RULES.minAdsDailyClicks;
+    const ordersDrop = window.orders.drop >= AUTO_SIGNAL_RULES.adsTwoDayDropPct
+      && window.orders.bothDaysDown
+      && window.orders.baseAvg >= AUTO_SIGNAL_RULES.minAdsDailyOrders;
+    const crDrop = window.crDrop >= AUTO_SIGNAL_RULES.adsMetricDropPct
+      && window.clicks.baseAvg >= AUTO_SIGNAL_RULES.minAdsDailyClicks
+      && window.orders.baseAvg >= AUTO_SIGNAL_RULES.minAdsDailyOrders;
+
+    if (viewsDrop) {
+      const priority = window.views.drop >= 0.40 || latestSpend >= AUTO_SIGNAL_RULES.minAdsSpend / 2 ? 'high' : 'medium';
+      pushCandidate({
+        code: 'ads_views_drop_2d_v2',
+        title: `показы просели 2 дня подряд (-${autoSignalPct(window.views.drop)})`,
+        statusLabel: 'верх воронки / показы просели 2 дня подряд',
+        stat: window.views,
+        priority,
+        score: 815 + autoSignalFinite(totals.spend, 0) / 1400 + window.views.drop * 150,
+        nextAction: 'Проверить верх рекламной воронки: статус РК, дневной бюджет, ставки, охват, остатки и поисковые фразы. В задаче зафиксировать причину просадки показов и решение: вернуть показы, перераспределить бюджет или оставить ограничение осознанно.'
+      });
+    }
+
+    if (clicksDrop) {
+      const priority = window.clicks.drop >= 0.35 || latestSpend >= AUTO_SIGNAL_RULES.minAdsSpend / 2 ? 'high' : 'medium';
+      pushCandidate({
+        code: 'ads_clicks_drop_2d_v2',
+        title: `клики просели 2 дня подряд (-${autoSignalPct(window.clicks.drop)})`,
+        statusLabel: 'середина воронки / клики просели 2 дня подряд',
+        stat: window.clicks,
+        priority,
+        score: 845 + autoSignalFinite(totals.spend, 0) / 1300 + window.clicks.drop * 170 + window.ctrDrop * 80,
+        nextAction: 'Проверить клики и CTR: креатив, ставку, позицию, релевантность запросов и карточку в выдаче. В задаче оставить одно действие: поднять/снизить ставку, заменить креатив, почистить запросы или остановить РК.',
+        extraReason: window.ctrDrop >= AUTO_SIGNAL_RULES.adsMetricDropPct
+          ? `CTR за 2 дня просел на ${autoSignalPct(window.ctrDrop)} к базе.`
+          : ''
+      });
+    }
+
+    if (ordersDrop) {
+      const priority = window.orders.drop >= 0.35 || latestSpend >= AUTO_SIGNAL_RULES.minAdsSpend / 2 ? 'critical' : 'high';
+      pushCandidate({
+        code: 'ads_orders_drop_2d_v2',
+        title: `заказы просели 2 дня подряд (-${autoSignalPct(window.orders.drop)})`,
+        statusLabel: 'низ воронки / заказы просели 2 дня подряд',
+        stat: window.orders,
+        priority,
+        score: 900 + autoSignalFinite(totals.spend, 0) / 1200 + window.orders.drop * 220 + window.crDrop * 100,
+        nextAction: 'Проверить низ рекламной воронки: карточка, цена, остатки, доставка, отзывы и качество трафика. В задаче зафиксировать, это проблема конверсии, цены/остатков или надо урезать неокупаемый трафик.',
+        extraReason: [
+          clicksDrop ? `клики тоже просели на ${autoSignalPct(window.clicks.drop)}` : '',
+          window.crDrop >= AUTO_SIGNAL_RULES.adsMetricDropPct ? `CR за 2 дня просел на ${autoSignalPct(window.crDrop)} к базе` : ''
+        ].filter(Boolean).join('; ')
+      });
+    }
+
+    if (!ordersDrop && crDrop) {
+      const priority = window.crDrop >= 0.35 || latestSpend >= AUTO_SIGNAL_RULES.minAdsSpend / 2 ? 'critical' : 'high';
+      pushCandidate({
+        code: 'ads_cr_drop_2d_v2',
+        title: `конверсия в заказ просела 2 дня (-${autoSignalPct(window.crDrop)})`,
+        statusLabel: 'низ воронки / CR просел 2 дня',
+        stat: {
+          baseAvg: baseMetrics.cr,
+          latestAvg: latestMetrics.cr,
+          latestValues: [latestMetrics.cr],
+          drop: window.crDrop
+        },
+        formatter: autoSignalPct,
+        digits: 1,
+        metricSuffix: '',
+        priority,
+        score: 875 + autoSignalFinite(totals.spend, 0) / 1250 + window.crDrop * 210,
+        nextAction: 'Проверить конверсию из клика в заказ: цена, карточка, наличие, доставка, отзывы, промо и качество запросов. В задаче зафиксировать причину просадки CR и действие по карточке/цене/РК.',
+        extraReason: `клики за 2 дня ${autoSignalNum(window.clicks.latestAvg, 0)}/день против базы ${autoSignalNum(window.clicks.baseAvg, 0)}/день`
+      });
+    }
+
+    return candidates;
+  });
+}
+
+function buildAdsFunnelAutoSignalCandidates() {
+  return autoSignalAdsBuckets().map((bucket) => {
+    const totals = bucket.totals || {};
+    const metrics = bucket.metrics || {};
+    const recentTotals = bucket.recentTotals || {};
+    const baseTotals = bucket.baseTotals || {};
+    const recentMetrics = bucket.recentMetrics || {};
+    const baseMetrics = bucket.baseMetrics || {};
+    if (
+      autoSignalFinite(totals.spend, 0) < AUTO_SIGNAL_RULES.minAdsSpend
+      || autoSignalFinite(totals.clicks, 0) < AUTO_SIGNAL_RULES.minAdsClicks
+    ) {
+      return null;
+    }
+
+    const platformLabel = autoSignalPlatformLabel(bucket.platform);
+    const drrBad = !Number.isFinite(metrics.drr)
+      || metrics.drr >= AUTO_SIGNAL_RULES.maxAdsDrr;
+    const cpoBad = autoSignalFinite(totals.orders, 0) >= AUTO_SIGNAL_RULES.minAdsOrders
+      && metrics.cpo >= AUTO_SIGNAL_RULES.maxAdsCpo;
+    const ctrLow = autoSignalFinite(totals.views, 0) > 0
+      && metrics.ctr > 0
+      && metrics.ctr < AUTO_SIGNAL_RULES.minAdsCtr;
+    const crLow = metrics.cr > 0
+      && metrics.cr < AUTO_SIGNAL_RULES.minAdsCr;
+    const baseReady = autoSignalFinite(baseTotals.clicks, 0) >= AUTO_SIGNAL_RULES.minAdsClicks
+      || autoSignalFinite(baseTotals.spend, 0) >= AUTO_SIGNAL_RULES.minAdsSpend;
+    const recentReady = autoSignalFinite(recentTotals.clicks, 0) >= AUTO_SIGNAL_RULES.minAdsClicks / 3
+      || autoSignalFinite(recentTotals.spend, 0) >= AUTO_SIGNAL_RULES.minAdsSpend / 3;
+    const ctrDrop = baseReady && recentReady
+      ? autoSignalAdsMetricDrop(baseMetrics.ctr, recentMetrics.ctr)
+      : 0;
+    const crDrop = baseReady && recentReady
+      ? autoSignalAdsMetricDrop(baseMetrics.cr, recentMetrics.cr)
+      : 0;
+    const drrGrowth = baseReady && recentReady && Number.isFinite(baseMetrics.drr) && Number.isFinite(recentMetrics.drr)
+      ? autoSignalAdsMetricGrowth(baseMetrics.drr, recentMetrics.drr)
+      : 0;
+
+    const reasons = [];
+    const titleParts = [];
+    if (drrBad) {
+      titleParts.push(Number.isFinite(metrics.drr) ? `ДРР ${autoSignalPct(metrics.drr, 0)}` : 'нет выручки');
+      reasons.push(`ДРР выше нормы: ${autoSignalAdsRatioLabel(metrics.drr, 'нет выручки')} при норме до ${autoSignalPct(AUTO_SIGNAL_RULES.maxAdsDrr, 0)}`);
+    }
+    if (cpoBad) {
+      titleParts.push(`CPO ${autoSignalAdsMoneyRatioLabel(metrics.cpo)}`);
+      reasons.push(`CPO выше нормы: ${autoSignalAdsMoneyRatioLabel(metrics.cpo)} при норме до ${autoSignalMoney(AUTO_SIGNAL_RULES.maxAdsCpo)}`);
+    }
+    if (ctrLow) {
+      titleParts.push(`CTR ${autoSignalPct(metrics.ctr, 1)}`);
+      reasons.push(`CTR ниже порога: ${autoSignalPct(metrics.ctr, 1)} при пороге ${autoSignalPct(AUTO_SIGNAL_RULES.minAdsCtr, 1)}`);
+    }
+    if (crLow) {
+      titleParts.push(`CR ${autoSignalPct(metrics.cr, 1)}`);
+      reasons.push(`CR ниже порога: ${autoSignalPct(metrics.cr, 1)} при пороге ${autoSignalPct(AUTO_SIGNAL_RULES.minAdsCr, 1)}`);
+    }
+    if (ctrDrop >= AUTO_SIGNAL_RULES.adsMetricDropPct) {
+      reasons.push(`последние 7 дней CTR просел на ${autoSignalPct(ctrDrop)} к базе`);
+    }
+    if (crDrop >= AUTO_SIGNAL_RULES.adsMetricDropPct) {
+      reasons.push(`последние 7 дней CR просел на ${autoSignalPct(crDrop)} к базе`);
+    }
+    if (drrGrowth >= AUTO_SIGNAL_RULES.adsMetricDropPct) {
+      reasons.push(`последние 7 дней ДРР вырос на ${autoSignalPct(drrGrowth)} к базе`);
+    }
+    if (!reasons.length) return null;
+
+    const priority = !Number.isFinite(metrics.drr)
+      || metrics.drr >= 1
+      || metrics.cpo >= AUTO_SIGNAL_RULES.maxAdsCpo * 1.5
+      || drrGrowth >= 0.5
+      ? 'critical'
+      : (drrBad || cpoBad || crLow ? 'high' : 'medium');
+    const titleMetric = titleParts.slice(0, 2).join(', ') || 'отклонение метрик';
+    const campaignLabel = bucket.campaigns.length ? `кампании: ${bucket.campaigns.join(', ')}` : '';
+    return {
+      family: 'ads',
+      dedupeKey: `${bucket.articleKey}|ads-funnel|${bucket.platform}`,
+      articleKey: bucket.articleKey,
+      taskType: 'traffic',
+      platform: bucket.platform,
+      priority,
+      score: 730
+        + autoSignalFinite(totals.spend, 0) / 1000
+        + (drrBad ? 120 : 0)
+        + (cpoBad ? 90 : 0)
+        + (crLow ? 70 : 0)
+        + (ctrLow ? 40 : 0)
+        + Math.max(ctrDrop, crDrop, drrGrowth) * 100,
+      task: {
+        id: stableId('auto-ads-funnel-v2', `${bucket.platform}|${bucket.articleKey}`),
+        source: 'auto',
+        autoCode: 'ads_funnel_v2',
+        articleKey: bucket.articleKey,
+        title: `${platformLabel}: рекламная воронка — ${titleMetric}`,
+        nextAction: 'Разобрать рекламную воронку: CTR = креатив/ставка/запросы, CR = карточка/цена/остатки, ДРР/CPO = ставка, бюджет или отключение РК. В задаче оставить одно решение и дату повторной проверки.',
+        reason: [
+          `${platformLabel}: расход ${autoSignalMoney(totals.spend)}, выручка ${autoSignalMoney(totals.revenue)}, заказы ${autoSignalNum(totals.orders, 0)}`,
+          `CTR ${autoSignalPct(metrics.ctr, 1)}, CR ${autoSignalPct(metrics.cr, 1)}, ДРР ${autoSignalAdsRatioLabel(metrics.drr, 'нет выручки')}, CPO ${autoSignalAdsMoneyRatioLabel(metrics.cpo)}`,
+          reasons.slice(0, 4).join(' · '),
+          campaignLabel
+        ].filter(Boolean).join(' · '),
+        owner: autoSignalTaskOwner(bucket.sku, bucket.platform, bucket.owner),
+        due: autoSignalTaskDue(priority),
+        status: 'new',
+        type: 'traffic',
+        priority,
+        platform: bucket.platform,
+        entityLabel: bucket.name || bucket.sku?.name || bucket.articleKey
+      }
+    };
+  }).filter(Boolean);
 }
 
 function buildKzAutoSignalCandidates(leaderboardPayload = {}) {
@@ -2192,7 +2779,7 @@ function buildKzAutoSignalCandidates(leaderboardPayload = {}) {
         title,
         nextAction: 'Разобрать только WB/КЗ: найти РК или креатив, который тратит деньги без окупаемости. В задаче оставить одно действие: выключить/урезать, заменить креатив, поправить карточку или подтвердить промо-исключение.',
         reason: `${weekLabel || 'КЗ'}: ${reasons.slice(0, 3).join(' · ')}. Ozon не назначаем: КЗ ведем как WB-контур.`,
-        owner: ownerName(sku),
+        owner: autoSignalTaskOwner(sku, 'wb'),
         due: autoSignalTaskDue(priority),
         status: 'new',
         type: 'traffic',
@@ -2207,6 +2794,7 @@ function buildKzAutoSignalCandidates(leaderboardPayload = {}) {
 function selectAutoSignalCandidates(candidates = []) {
   const selected = [];
   const used = new Set();
+  const usedIntent = new Set();
   const familyCounts = {};
   const sorted = candidates.slice().sort((left, right) =>
     autoSignalFinite(right.score) - autoSignalFinite(left.score)
@@ -2216,10 +2804,16 @@ function selectAutoSignalCandidates(candidates = []) {
     const family = candidate.family || 'general';
     const limit = AUTO_SIGNAL_RULES.familyLimits[family] || 6;
     const dedupeKey = candidate.dedupeKey || candidate.articleKey || candidate.task?.id;
+    const articleKey = String(candidate.articleKey || candidate.task?.articleKey || '').trim().toLowerCase();
+    const taskType = String(candidate.taskType || candidate.task?.type || 'general').trim().toLowerCase();
+    const platform = normalizeTaskPlatform(candidate.platform || candidate.task?.platform || 'all');
+    const intentKey = candidate.intentKey || (articleKey ? `${articleKey}|${taskType}|${platform || 'all'}` : '');
     if (!dedupeKey || used.has(dedupeKey)) continue;
+    if (intentKey && usedIntent.has(intentKey)) continue;
     if ((familyCounts[family] || 0) >= limit) continue;
     selected.push(candidate);
     used.add(dedupeKey);
+    if (intentKey) usedIntent.add(intentKey);
     familyCounts[family] = (familyCounts[family] || 0) + 1;
     if (selected.length >= AUTO_SIGNAL_RULES.totalLimit) break;
   }
@@ -2231,15 +2825,288 @@ function buildQualityAutoSignalTasks(keys, leaderboardPayload = {}) {
     ...buildStockAutoSignalCandidates(),
     ...buildPriceAndSalesAutoSignalCandidates(),
     ...buildReturnsAutoSignalCandidates(),
+    ...buildAdsTwoDayFunnelAutoSignalCandidates(),
+    ...buildAdsFunnelAutoSignalCandidates(),
     ...buildKzAutoSignalCandidates(leaderboardPayload)
   ]).map((candidate) => {
     const task = candidate.task || {};
     const taskType = task.type || candidate.taskType || 'general';
     const signalKey = `${taskType}:${candidate.family || task.autoCode || 'auto'}:${candidate.platform || task.platform || 'all'}`;
     if (!canRegisterAutoSignalTask(keys, task.articleKey || candidate.articleKey, taskType, signalKey)) return null;
-    const normalized = normalizeTask(task, 'auto');
-    return isAutoTaskSuppressed(normalized) ? null : normalized;
+    return normalizeTask(task, 'auto');
   }).filter(Boolean);
+}
+
+function predictiveAutoSignalRows() {
+  const rows = [];
+  if (Array.isArray(state.autoTaskSignals?.signals)) rows.push(...state.autoTaskSignals.signals);
+  if (Array.isArray(state.predictiveRisk?.autoTaskSignals)) rows.push(...state.predictiveRisk.autoTaskSignals);
+  if (Array.isArray(state.predictiveRisk?.autoTaskSignals?.signals)) rows.push(...state.predictiveRisk.autoTaskSignals.signals);
+  return rows.filter((row) => row && typeof row === 'object');
+}
+
+function predictiveSignalRiskScore(signal = {}) {
+  return autoSignalFinite(signal.riskScore ?? signal.score ?? signal.probabilityScore, 0);
+}
+
+function predictiveSignalPriority(signal = {}) {
+  const raw = String(signal.priority || '').trim().toLowerCase();
+  if (['critical', 'high', 'medium', 'low'].includes(raw)) return raw;
+  const score = predictiveSignalRiskScore(signal);
+  if (score >= 85) return 'critical';
+  if (score >= 70) return 'high';
+  if (score >= 55) return 'medium';
+  return 'low';
+}
+
+function predictiveSignalType(signal = {}) {
+  const raw = String(signal.type || '').trim().toLowerCase();
+  if (raw) return raw;
+  const ruleId = String(signal.ruleId || signal.rule_id || '').trim().toLowerCase();
+  if (/stock|oos|supply/.test(ruleId)) return 'supply';
+  if (/price|margin/.test(ruleId)) return 'price_margin';
+  if (/ads|traffic|demand|funnel/.test(ruleId)) return 'traffic';
+  if (/launch/.test(ruleId)) return 'launch';
+  return 'general';
+}
+
+function predictiveSignalArticleKey(signal = {}) {
+  return String(signal.articleKey || signal.article || signal.sku || '').trim();
+}
+
+function predictiveSignalAutoCode(signal = {}) {
+  const code = String(signal.autoCode || '').trim();
+  if (code) return code;
+  const ruleId = String(signal.ruleId || 'predictive').trim().toLowerCase() || 'predictive';
+  const articleKey = predictiveSignalArticleKey(signal).toLowerCase();
+  const platform = normalizeTaskPlatform(signal.platform || signal.marketplace || 'cross');
+  return `predictive:${ruleId}:${platform}:${articleKey || stableId('signal', signal.title || signal.id || ruleId)}`;
+}
+
+function predictiveSignalSortKey(signal = {}) {
+  const priorityRank = { critical: 4, high: 3, medium: 2, low: 1 };
+  return (priorityRank[predictiveSignalPriority(signal)] || 0) * 1000 + predictiveSignalRiskScore(signal);
+}
+
+function predictiveSignalClosedAt(task = {}) {
+  return String(task.closedAt || task.closed_at || task.updatedAt || task.updated_at || task.completedAt || task.completed_at || '').slice(0, 10);
+}
+
+function predictiveSignalMatchesTask(signal = {}, task = {}) {
+  const signalCode = predictiveSignalAutoCode(signal);
+  const taskCode = String(task.autoCode || '').trim();
+  if (signalCode && taskCode && signalCode === taskCode) return true;
+  const articleKey = predictiveSignalArticleKey(signal);
+  const taskArticle = String(task.articleKey || '').trim();
+  const signalType = predictiveSignalType(signal);
+  const taskType = String(task.type || '').trim().toLowerCase();
+  return Boolean(articleKey && taskArticle && articleKey === taskArticle && signalType === taskType);
+}
+
+function predictiveSignalRecentlyClosed(signal = {}, quietDays = 7) {
+  if (predictiveSignalPriority(signal) === 'critical') return false;
+  const today = todayIso();
+  return (state.storage?.tasks || []).some((task) => {
+    if (!['done', 'cancelled'].includes(mapTaskStatus(task?.status))) return false;
+    if (!predictiveSignalMatchesTask(signal, task)) return false;
+    const closedAt = predictiveSignalClosedAt(task);
+    if (!closedAt) return true;
+    return diffFromTodayInDays(closedAt) >= -quietDays && closedAt <= today;
+  });
+}
+
+function buildPredictiveAutoSignalTasks(keys) {
+  const rows = predictiveAutoSignalRows()
+    .filter((signal) => signal.createTask !== false && signal.suppressed !== true)
+    .sort((left, right) =>
+      predictiveSignalSortKey(right) - predictiveSignalSortKey(left)
+      || String(predictiveSignalAutoCode(left)).localeCompare(String(predictiveSignalAutoCode(right)), 'ru')
+    );
+  const tasks = [];
+  const usedCodes = new Set();
+  const maxTasks = 80;
+
+  for (const signal of rows) {
+    const autoCode = predictiveSignalAutoCode(signal);
+    if (!autoCode || usedCodes.has(autoCode)) continue;
+    if (predictiveSignalRecentlyClosed(signal)) continue;
+    const articleKey = predictiveSignalArticleKey(signal);
+    const taskType = predictiveSignalType(signal);
+    const platform = normalizeTaskPlatform(signal.platform || signal.marketplace || 'cross');
+    const signalKey = `predictive:${autoCode}`;
+    if (articleKey && !canRegisterAutoSignalTask(keys, articleKey, taskType, signalKey)) continue;
+    if (!articleKey) {
+      const globalKey = `predictive|${autoCode}`;
+      if (keys.has(globalKey)) continue;
+      keys.add(globalKey);
+    }
+
+    const priority = predictiveSignalPriority(signal);
+    tasks.push(normalizeTask({
+      id: signal.id || stableId('auto-predictive', autoCode),
+      source: 'auto',
+      autoCode,
+      articleKey,
+      title: signal.title || `Прогнозный риск: ${signal.entityLabel || articleKey || autoCode}`,
+      nextAction: signal.nextAction || signal.recommendedAction || 'Проверить прогнозный риск, подтвердить причину и зафиксировать решение.',
+      reason: signal.reason || signal.description || signal.summary || 'Прогнозный слой нашел отклонение по показателям и рекомендует ручную проверку.',
+      owner: signal.owner || '',
+      due: signal.due || autoSignalTaskDue(priority),
+      status: signal.status || 'new',
+      type: taskType,
+      priority,
+      platform,
+      entityLabel: signal.entityLabel || signal.name || articleKey || signal.title || autoCode
+    }, 'auto'));
+    usedCodes.add(autoCode);
+    if (tasks.length >= maxTasks) break;
+  }
+
+  return tasks;
+}
+
+function autoTaskHistorySnapshotFromTask(task = {}, previous = null, nowIso = new Date().toISOString()) {
+  const signalKey = autoTaskHistorySignalKey(task);
+  return {
+    signalKey,
+    taskId: String(task.id || stableId('auto-task', signalKey)),
+    articleKey: String(task.articleKey || '').trim(),
+    platform: normalizeTaskPlatform(task.platform || 'all'),
+    autoCode: String(task.autoCode || '').trim(),
+    type: String(task.type || '').trim(),
+    title: String(task.title || '').trim(),
+    priority: String(task.priority || '').trim(),
+    owner: String(task.owner || '').trim(),
+    due: String(task.due || '').trim(),
+    nextAction: String(task.nextAction || '').trim(),
+    reason: String(task.reason || '').trim(),
+    signature: autoTaskHistorySignature(task),
+    firstSeenAt: previous?.firstSeenAt || nowIso,
+    lastSeenAt: nowIso,
+    lastSeenDate: todayIso(),
+    lastChangedAt: previous?.lastChangedAt || '',
+    seenCount: Math.max(1, Math.round(autoSignalFinite(previous?.seenCount, 0) + 1))
+  };
+}
+
+function autoTaskHistoryEvent(kind, entry = {}, text = '', nowIso = new Date().toISOString()) {
+  const event = normalizeAutoTaskHistoryEvent({
+    id: stableId('auto-history', `${entry.signalKey}|${kind}|${nowIso}|${entry.signature || ''}`),
+    signalKey: entry.signalKey,
+    taskId: entry.taskId,
+    articleKey: entry.articleKey,
+    platform: entry.platform,
+    autoCode: entry.autoCode,
+    type: entry.type,
+    kind,
+    title: entry.title,
+    priority: entry.priority,
+    owner: entry.owner,
+    due: entry.due,
+    nextAction: entry.nextAction,
+    reason: entry.reason,
+    text,
+    firstSeenAt: entry.firstSeenAt,
+    lastSeenAt: entry.lastSeenAt,
+    lastSeenDate: entry.lastSeenDate,
+    lastChangedAt: entry.lastChangedAt,
+    seenCount: entry.seenCount,
+    createdAt: nowIso
+  });
+  return event;
+}
+
+function autoTaskHistoryUpdateText(previous = {}, next = {}) {
+  const changes = [];
+  if (previous.priority && next.priority && previous.priority !== next.priority) {
+    changes.push(`приоритет ${previous.priority} → ${next.priority}`);
+  }
+  if (previous.title && next.title && previous.title !== next.title) {
+    changes.push('обновился заголовок');
+  }
+  if (previous.due && next.due && previous.due !== next.due) {
+    changes.push(`срок ${previous.due} → ${next.due}`);
+  }
+  if (!changes.length) changes.push('обновились детали сигнала');
+  return `Авто-сигнал обновился: ${next.title || previous.title || next.autoCode || 'сигнал'}. ${changes.join('; ')}.`;
+}
+
+function saveAutoTaskHistoryStorage() {
+  try {
+    if (typeof saveLocalStorage === 'function') {
+      saveLocalStorage({ skipBackup: true, reason: 'auto-task-history' });
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.storage));
+    }
+  } catch (error) {
+    console.warn('[auto-task-history] save failed', error);
+  }
+}
+
+function syncAutoTaskHistory(autoTasks = []) {
+  if (state.__syncingAutoTaskHistory) return;
+  if (!state.storage || typeof state.storage !== 'object') return;
+  if (state.boot && state.boot.dataReady === false) return;
+  if (state.boot?.lazyReady && state.boot.lazyReady.controlCenter !== true) return;
+  state.__syncingAutoTaskHistory = true;
+  try {
+    state.storage.autoTaskSnapshot = normalizeAutoTaskSnapshot(state.storage.autoTaskSnapshot || {});
+    state.storage.autoTaskHistory = normalizeAutoTaskHistory(state.storage.autoTaskHistory || []);
+
+    const nowIso = new Date().toISOString();
+    const today = todayIso();
+    const previousActive = new Map(
+      (state.storage.autoTaskSnapshot.active || []).map((entry) => [entry.signalKey, entry])
+    );
+    const nextActive = [];
+    const events = [];
+    const seenKeys = new Set();
+
+    (autoTasks || [])
+      .filter((task) => task && (task.source === 'auto' || task.autoCode))
+      .forEach((task) => {
+        const signalKey = autoTaskHistorySignalKey(task);
+        if (!signalKey || seenKeys.has(signalKey)) return;
+        seenKeys.add(signalKey);
+        const previous = previousActive.get(signalKey) || null;
+        const next = autoTaskHistorySnapshotFromTask(task, previous, nowIso);
+
+        if (!previous) {
+          events.push(autoTaskHistoryEvent('created', next, `Авто-сигнал появился: ${next.title || next.autoCode || 'сигнал'}.`, nowIso));
+        } else if (previous.signature !== next.signature) {
+          next.lastChangedAt = nowIso;
+          events.push(autoTaskHistoryEvent('updated', next, autoTaskHistoryUpdateText(previous, next), nowIso));
+        } else if (previous.lastSeenDate && previous.lastSeenDate !== today) {
+          events.push(autoTaskHistoryEvent('seen', next, `Авто-сигнал подтверждён повторным расчётом: ${next.title || next.autoCode || 'сигнал'}.`, nowIso));
+        } else {
+          next.firstSeenAt = previous.firstSeenAt;
+          next.lastSeenAt = previous.lastSeenAt;
+          next.lastSeenDate = previous.lastSeenDate;
+          next.lastChangedAt = previous.lastChangedAt;
+          next.seenCount = previous.seenCount;
+        }
+        nextActive.push(next);
+      });
+
+    previousActive.forEach((previous, signalKey) => {
+      if (seenKeys.has(signalKey)) return;
+      events.push(autoTaskHistoryEvent('resolved', previous, `Авто-сигнал ушёл из текущей очереди: ${previous.title || previous.autoCode || 'сигнал'}.`, nowIso));
+    });
+
+    if (!events.length) return;
+    const mergedHistory = normalizeAutoTaskHistory([
+      ...events.filter(Boolean),
+      ...(state.storage.autoTaskHistory || [])
+    ]);
+    state.storage.autoTaskSnapshot = {
+      generatedAt: nowIso,
+      active: nextActive
+    };
+    state.storage.autoTaskHistory = mergedHistory;
+    saveAutoTaskHistoryStorage();
+  } finally {
+    state.__syncingAutoTaskHistory = false;
+  }
 }
 
 function buildAutoTasks() {
@@ -2258,6 +3125,7 @@ function buildAutoTasks() {
       .map((item) => [String(item.articleKey).trim().toLowerCase(), item])
   );
   tasks.push(...buildQualityAutoSignalTasks(keys, leaderboardFresh ? leaderboardPayload : { items: [] }));
+  tasks.push(...buildPredictiveAutoSignalTasks(keys));
   const legacyKzAutoTasksEnabled = false;
   const legacySkuFlagAutoTasksEnabled = false;
 
@@ -2268,7 +3136,7 @@ function buildAutoTasks() {
     const lifecycleKey = String(sku?.productLifecycle?.key || (typeof productLifecycleForSku === 'function' ? productLifecycleForSku(sku)?.key : '') || '').toLowerCase();
     const exitSku = ['exit', 'archived'].includes(lifecycleKey) || /вывод|вывед/.test(String(sku?.status || '').toLowerCase());
     if (exitSku) continue;
-    const needsOwnerSignal = !sku?.flags?.assigned && (
+    const needsOwnerSignal = legacySkuFlagAutoTasksEnabled && !sku?.flags?.assigned && (
       sku?.flags?.toWorkWB
       || sku?.flags?.toWorkOzon
       || sku?.flags?.toWork
@@ -2276,7 +3144,7 @@ function buildAutoTasks() {
       || sku?.flags?.lowStock
       || sku?.flags?.highReturn
       || numberOrZero(sku?.focusScore) >= 60
-      || monthRevenue(sku) > 0
+      || (typeof monthRevenue === 'function' ? monthRevenue(sku) : numberOrZero(sku?.planFact?.factTotalRevenue || sku?.orders?.value)) > 0
       || String(sku?.status || '').toLowerCase().includes('нов')
       || String(sku?.segment || '').toUpperCase() === 'GROWTH'
     );
@@ -2433,14 +3301,23 @@ function buildAutoTasks() {
     }
   }
 
-  const activeLaunchTaskKeys = new Set(
-    (state.storage.tasks || [])
-      .filter((task) => task?.type === 'launch' && isTaskActive(task))
-      .map((task) => `${String(task.articleKey || '').trim()}|${String(task.entityLabel || task.title || '').trim().toLowerCase()}`)
-  );
-  const suppressedLaunchTaskKeys = launchAutoTaskTombstoneSet();
+  const activeLaunchTaskKeys = new Set();
+  (state.storage.tasks || [])
+    .filter((task) => task?.type === 'launch' && isTaskActive(task))
+    .forEach((task) => {
+      const articleKey = String(task.articleKey || '').trim();
+      const entityKey = String(task.entityLabel || task.title || '').trim().toLowerCase();
+      const platform = normalizeTaskPlatform(task.platform || '');
+      if (!entityKey && !articleKey) return;
+      if (TASK_PLATFORM_OWNER_KEYS.has(platform)) {
+        activeLaunchTaskKeys.add(`${platform}|${articleKey}|${entityKey}`);
+      } else {
+        activeLaunchTaskKeys.add(`all|${articleKey}|${entityKey}`);
+      }
+    });
   const launchItems = typeof getLaunchItems === 'function' ? getLaunchItems({ skipTaskLookup: true }) : [];
   const launchCandidates = [];
+  const seenLaunchItemKeys = new Set();
   launchItems.forEach((item) => {
     const launchDate = typeof launchDueDateKey === 'function'
       ? launchDueDateKey(item)
@@ -2452,17 +3329,13 @@ function buildAutoTasks() {
     if (/запущ|live|продаж|готово/.test(statusRaw)) return;
     const linkedSku = item?.articleKey ? getSku(item.articleKey) : null;
     if (linkedSku && !autoSignalSkuAllowed(linkedSku)) return;
-    const dedupeKey = `${String(item?.articleKey || '').trim()}|${String(item?.name || '').trim().toLowerCase()}`;
-    const autoId = `auto-launch-${item.id || item.articleKey || hashString(item.name || launchDate)}`;
-    if (launchAutoSuppressionKeysForItem(item, autoId).some((key) => suppressedLaunchTaskKeys.has(key))) return;
-    if (activeLaunchTaskKeys.has(dedupeKey)) return;
-    activeLaunchTaskKeys.add(dedupeKey);
-    const blockers = [
-      item.owner ? '' : 'нет owner',
+    const itemDedupeKey = `${String(item?.articleKey || '').trim()}|${String(item?.name || '').trim().toLowerCase()}`;
+    if (seenLaunchItemKeys.has(itemDedupeKey)) return;
+    seenLaunchItemKeys.add(itemDedupeKey);
+    const baseBlockers = [
       item.articleKey ? '' : 'нет SKU',
       item.presentationUrl ? '' : 'нет презентации'
     ].filter(Boolean);
-    const priority = daysUntilLaunch <= 14 || blockers.length >= 2 ? 'high' : 'medium';
     const due = launchGateDate && diffFromTodayInDays(launchGateDate) > 0
       ? launchGateDate
       : daysUntilLaunch <= 14
@@ -2470,39 +3343,71 @@ function buildAutoTasks() {
         : daysUntilLaunch <= 30
           ? plusDays(2)
           : plusDays(5);
+    const platforms = launchTaskPlatforms(item, linkedSku);
     launchCandidates.push({
       score: (daysUntilLaunch <= 14 ? 300 : 0)
-        + blockers.length * 80
+        + (baseBlockers.length + (item.owner ? 0 : 1)) * 80
         + Math.max(0, 45 - daysUntilLaunch),
-      task: normalizeTask({
-      id: autoId,
-      source: 'auto',
-      autoCode: 'launch_pipeline',
       articleKey: item.articleKey || '',
-      entityLabel: item.name || item.articleKey || 'Новинка',
-      title: blockers.length ? 'Новинка: закрыть запусковой блокер' : 'Новинка: финальная проверка запуска',
-      nextAction: 'Закрыть самый близкий блокер запуска: owner, SKU, презентация, карточка или Gantt. В задаче оставить конкретный недостающий артефакт и дату, когда он будет готов.',
-      reason: [
-        item.launchMonth || 'Срок запуска',
-        item.status || 'Нужно уточнить статус',
-        item.production || '',
-        blockers.length ? `блокеры: ${blockers.join(', ')}` : 'критичных блокеров не найдено'
-      ].filter(Boolean).join(' · '),
-      owner: item.owner || '',
+      item,
+      linkedSku,
+      launchDate,
       due,
-      status: 'new',
-      type: 'launch',
-      priority,
-      platform: 'product'
-    }, 'auto')
+      baseBlockers,
+      platforms
     });
   });
   launchCandidates
     .sort((left, right) => autoSignalFinite(right.score) - autoSignalFinite(left.score)
-      || String(left.task?.entityLabel || '').localeCompare(String(right.task?.entityLabel || ''), 'ru'))
+      || String(left.item?.name || left.articleKey || '').localeCompare(String(right.item?.name || right.articleKey || ''), 'ru'))
     .slice(0, AUTO_SIGNAL_RULES.launchLimit)
-    .forEach((candidate) => tasks.push(candidate.task));
+    .forEach((candidate) => {
+      const item = candidate.item || {};
+      const baseId = item.id || item.articleKey || hashString(item.name || candidate.launchDate);
+      const entityLabel = item.name || item.articleKey || 'Новинка';
+      (candidate.platforms || []).forEach((platform) => {
+        const platformKey = normalizeTaskPlatform(platform || 'product');
+        const platformLabel = autoSignalPlatformLabel(platformKey);
+        const entityKey = String(entityLabel || '').trim().toLowerCase();
+        const activeKey = `${platformKey}|${String(candidate.articleKey || '').trim()}|${entityKey}`;
+        if (activeLaunchTaskKeys.has(activeKey) || activeLaunchTaskKeys.has(`all|${String(candidate.articleKey || '').trim()}|${entityKey}`)) return;
+        activeLaunchTaskKeys.add(activeKey);
+        const platformOwner = taskPlatformOwnerName(candidate.linkedSku, platformKey);
+        const ownerMissing = candidate.linkedSku
+          ? !platformOwner
+          : !canonicalOwnerName(item.owner || '');
+        const blockers = [
+          ownerMissing ? `нет owner ${platformLabel}` : '',
+          ...(candidate.baseBlockers || [])
+        ].filter(Boolean);
+        const priority = diffFromTodayInDays(candidate.launchDate) <= 14 || blockers.length >= 2 ? 'high' : 'medium';
+        tasks.push(normalizeTask({
+          id: `auto-launch-${platformKey}-${baseId}`,
+          source: 'auto',
+          autoCode: 'launch_pipeline',
+          articleKey: candidate.articleKey || '',
+          entityLabel,
+          title: blockers.length ? 'Новинка: закрыть запусковой блокер' : 'Новинка: финальная проверка запуска',
+          nextAction: 'Закрыть самый близкий блокер запуска по этой площадке: owner, SKU, презентация, карточка или Gantt. В задаче оставить конкретный недостающий артефакт и дату, когда он будет готов.',
+          reason: [
+            `площадка: ${platformLabel}`,
+            item.launchMonth || 'Срок запуска',
+            item.status || 'Нужно уточнить статус',
+            item.production || '',
+            blockers.length ? `блокеры: ${blockers.join(', ')}` : 'критичных блокеров не найдено'
+          ].filter(Boolean).join(' · '),
+          owner: platformOwner || (!candidate.linkedSku ? item.owner : ''),
+          platformOwnerOnly: Boolean(candidate.linkedSku),
+          due: candidate.due,
+          status: 'new',
+          type: 'launch',
+          priority,
+          platform: platformKey
+        }, 'auto'));
+      });
+    });
 
+  syncAutoTaskHistory(tasks);
   return tasks;
   } finally {
     state.__buildingAutoTasks = false;
@@ -2510,9 +3415,9 @@ function buildAutoTasks() {
 }
 
 function getAllTasks() {
-  const storedTasks = state.storage.tasks.filter((task) => !isDeprecatedAutoSignalTask(task));
-  const autoTasks = buildAutoTasks().filter((task) => !isAutoTaskSuppressed(task));
-  return sortTasks([...storedTasks, ...autoTasks]);
+  const storedTasks = normalizeStorageTasks(state.storage.tasks || [], 'manual')
+    .filter((task) => !isDeprecatedAutoSignalTask(task));
+  return sortTasks([...storedTasks, ...buildAutoTasks()]);
 }
 
 function getSkuControlTasks(articleKey) {

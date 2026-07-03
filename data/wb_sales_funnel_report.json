@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T10:02:46.304Z",
+  "generatedAt": "2026-07-02T07:52:30.620Z",
   "source": "wb-platform-trends-api",
   "sourceFile": "platform_trends.json",
   "sourceMode": "wb-finance-api-direct-sku",
@@ -17,24 +17,24 @@
   },
   "totals": {
     "items": 115,
-    "ordersRevenue": 67788600.4,
+    "ordersRevenue": 67784077.44,
     "previousOrdersRevenue": 66768569.01,
-    "ordersRevenueDelta": 1020031.38,
+    "ordersRevenueDelta": 1015508.33,
     "ordersUnits": 46423,
     "buyoutRevenue": 0,
     "buyoutsUnits": 0,
     "cancellationsUnits": 0,
-    "estimatedMargin": 33195492.6,
+    "estimatedMargin": 33193264.93,
     "wbStock": 173987,
     "ownStock": 0
   },
   "diagnostics": {
-    "sourceArticles": 125,
+    "sourceArticles": 135,
     "outputItems": 115,
-    "platformTrendsGeneratedAt": "2026-07-02T09:55:46.004Z",
+    "platformTrendsGeneratedAt": "2026-07-02T07:23:33.530Z",
     "platformTrendsLatestMarketplaceDate": "2026-07-01",
     "wbExtraMarketplaceTo": "2026-07-01",
-    "wbFeedbacksGeneratedAt": "2026-07-02T08:28:45.177Z",
+    "wbFeedbacksGeneratedAt": "2026-07-02T07:47:23.858Z",
     "note": "Built from platform_trends.extraMarketplace.platforms.wb.articles so the WB rating workbench uses the same fresh API window as the rest of the portal."
   },
   "items": [
@@ -47,7 +47,7 @@
       "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
       "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.751,
+      "reviewRating": 4.747,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -56,15 +56,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 9282570.21,
+      "ordersRevenue": 9281815.13,
       "previousOrdersRevenue": 7768450.51,
-      "ordersRevenueDelta": 1514119.71,
+      "ordersRevenueDelta": 1513364.63,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2606,
+      "avgPrice": 2605.79,
       "avgOrdersPerDay": 508.9,
-      "estimatedMargin": 5063642.05,
+      "estimatedMargin": 5063230.15,
       "wbStock": 2210,
       "ownStock": 0,
       "daily": [
@@ -112,10 +112,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2005220.7085,
+          "ordersRevenue": 2004465.625,
           "ordersUnits": 677,
-          "estimatedMargin": 1093847.8966,
-          "avgPrice": 2961.9213
+          "estimatedMargin": 1093435.9985,
+          "avgPrice": 2960.8059
         }
       ]
     },
@@ -137,15 +137,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 6603292.55,
+      "ordersRevenue": 6602863.2,
       "previousOrdersRevenue": 6739719.53,
-      "ordersRevenueDelta": -136426.97,
+      "ordersRevenueDelta": -136856.32,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1526.77,
+      "avgPrice": 1526.67,
       "avgOrdersPerDay": 617.9,
-      "estimatedMargin": 3868208.78,
+      "estimatedMargin": 3867957.26,
       "wbStock": 36461,
       "ownStock": 0,
       "daily": [
@@ -193,10 +193,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1140194.5958,
+          "ordersRevenue": 1139765.2455,
           "ordersUnits": 648,
-          "estimatedMargin": 667925.9942,
-          "avgPrice": 1759.5596
+          "estimatedMargin": 667674.4808,
+          "avgPrice": 1758.897
         }
       ]
     },
@@ -209,7 +209,7 @@
       "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
       "owner": "Васильева Мария",
       "cardRating": 4.9,
-      "reviewRating": 4.728,
+      "reviewRating": 4.738,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -218,15 +218,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 6227587.42,
+      "ordersRevenue": 6227190.46,
       "previousOrdersRevenue": 6487218.99,
-      "ordersRevenueDelta": -259631.57,
+      "ordersRevenueDelta": -260028.54,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2126.18,
+      "avgPrice": 2126.05,
       "avgOrdersPerDay": 418.4,
-      "estimatedMargin": 3119398.54,
+      "estimatedMargin": 3119199.7,
       "wbStock": 3164,
       "ownStock": 0,
       "daily": [
@@ -274,10 +274,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1054198.0369,
+          "ordersRevenue": 1053801.0694,
           "ordersUnits": 417,
-          "estimatedMargin": 528047.7966,
-          "avgPrice": 2528.0528
+          "estimatedMargin": 527848.9556,
+          "avgPrice": 2527.1009
         }
       ]
     },
@@ -290,7 +290,7 @@
       "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
       "owner": "Васильева Мария",
       "cardRating": 4.8,
-      "reviewRating": 4.683,
+      "reviewRating": 4.684,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -299,15 +299,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 6078968.74,
+      "ordersRevenue": 6078547.06,
       "previousOrdersRevenue": 5836239.32,
-      "ordersRevenueDelta": 242729.42,
+      "ordersRevenueDelta": 242307.73,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1559.51,
+      "avgPrice": 1559.4,
       "avgOrdersPerDay": 556.9,
-      "estimatedMargin": 3133100.49,
+      "estimatedMargin": 3132883.15,
       "wbStock": 6984,
       "ownStock": 0,
       "daily": [
@@ -355,10 +355,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1119832.9037,
+          "ordersRevenue": 1119411.2207,
           "ordersUnits": 580,
-          "estimatedMargin": 577161.8785,
-          "avgPrice": 1930.7464
+          "estimatedMargin": 576944.5431,
+          "avgPrice": 1930.0193
         }
       ]
     },
@@ -369,9 +369,9 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода",
       "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-      "owner": "Кирилл",
+      "owner": "Васильева Мария",
       "cardRating": 4.8,
-      "reviewRating": 4.539,
+      "reviewRating": 4.542,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -380,15 +380,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 5846003.87,
+      "ordersRevenue": 5845641.42,
       "previousOrdersRevenue": 7072783.98,
-      "ordersRevenueDelta": -1226780.11,
+      "ordersRevenueDelta": -1227142.56,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1546.15,
+      "avgPrice": 1546.06,
       "avgOrdersPerDay": 540.1,
-      "estimatedMargin": 3050444.82,
+      "estimatedMargin": 3050255.69,
       "wbStock": 3439,
       "ownStock": 0,
       "daily": [
@@ -436,10 +436,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 962521.6967,
+          "ordersRevenue": 962159.2507,
           "ordersUnits": 534,
-          "estimatedMargin": 502243.8214,
-          "avgPrice": 1802.4751
+          "estimatedMargin": 502054.6971,
+          "avgPrice": 1801.7963
         }
       ]
     },
@@ -452,7 +452,7 @@
       "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
       "owner": "Васильева Мария",
       "cardRating": 4.8,
-      "reviewRating": 4.752,
+      "reviewRating": 4.748,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -461,15 +461,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 5297846.41,
+      "ordersRevenue": 5297541.5,
       "previousOrdersRevenue": 5038151.63,
-      "ordersRevenueDelta": 259694.77,
+      "ordersRevenueDelta": 259389.86,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1474.49,
+      "avgPrice": 1474.41,
       "avgOrdersPerDay": 513.3,
-      "estimatedMargin": 2736867.45,
+      "estimatedMargin": 2736709.94,
       "wbStock": 3932,
       "ownStock": 0,
       "daily": [
@@ -517,10 +517,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 809723.7688,
+          "ordersRevenue": 809418.8601,
           "ordersUnits": 443,
-          "estimatedMargin": 418303.2989,
-          "avgPrice": 1827.8189
+          "estimatedMargin": 418145.7831,
+          "avgPrice": 1827.1306
         }
       ]
     },
@@ -533,7 +533,7 @@
       "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
       "owner": "Васильева Мария",
       "cardRating": 4.9,
-      "reviewRating": 4.836,
+      "reviewRating": 4.839,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -542,15 +542,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 3883597.45,
+      "ordersRevenue": 3883324.03,
       "previousOrdersRevenue": 4143772,
-      "ordersRevenueDelta": -260174.55,
+      "ordersRevenueDelta": -260447.98,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1176.49,
+      "avgPrice": 1176.41,
       "avgOrdersPerDay": 471.6,
-      "estimatedMargin": 1943740.52,
+      "estimatedMargin": 1943603.67,
       "wbStock": 8723,
       "ownStock": 0,
       "daily": [
@@ -598,10 +598,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 726119.6768,
+          "ordersRevenue": 725846.25,
           "ordersUnits": 536,
-          "estimatedMargin": 363422.8982,
-          "avgPrice": 1354.7009
+          "estimatedMargin": 363286.0481,
+          "avgPrice": 1354.1908
         }
       ]
     },
@@ -614,7 +614,7 @@
       "name": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
       "owner": "Васильева Мария",
       "cardRating": 4.9,
-      "reviewRating": 4.837,
+      "reviewRating": 4.841,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -623,15 +623,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 2428443.11,
+      "ordersRevenue": 2428277.76,
       "previousOrdersRevenue": 1574039.82,
-      "ordersRevenueDelta": 854403.29,
+      "ordersRevenueDelta": 854237.94,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1091.93,
+      "avgPrice": 1091.85,
       "avgOrdersPerDay": 317.7,
-      "estimatedMargin": 1032331.17,
+      "estimatedMargin": 1032260.88,
       "wbStock": 3966,
       "ownStock": 0,
       "daily": [
@@ -679,10 +679,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 439094.4286,
+          "ordersRevenue": 438929.0837,
           "ordersUnits": 341,
-          "estimatedMargin": 186659.0415,
-          "avgPrice": 1287.6669
+          "estimatedMargin": 186588.7534,
+          "avgPrice": 1287.1821
         }
       ]
     },
@@ -695,7 +695,7 @@
       "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
       "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.793,
+      "reviewRating": 4.798,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -704,15 +704,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 2425782.43,
+      "ordersRevenue": 2425622.88,
       "previousOrdersRevenue": 2455233.26,
-      "ordersRevenueDelta": -29450.82,
+      "ordersRevenueDelta": -29610.38,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1803.56,
+      "avgPrice": 1803.44,
       "avgOrdersPerDay": 192.1,
-      "estimatedMargin": 1383181.14,
+      "estimatedMargin": 1383090.16,
       "wbStock": 2452,
       "ownStock": 0,
       "daily": [
@@ -760,10 +760,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 423719.4476,
+          "ordersRevenue": 423559.8923,
           "ordersUnits": 198,
-          "estimatedMargin": 241604.829,
-          "avgPrice": 2139.9972
+          "estimatedMargin": 241513.8506,
+          "avgPrice": 2139.1914
         }
       ]
     },
@@ -776,7 +776,7 @@
       "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
       "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.585,
+      "reviewRating": 4.563,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -785,15 +785,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 2337937.71,
+      "ordersRevenue": 2337791.72,
       "previousOrdersRevenue": 2657828.92,
-      "ordersRevenueDelta": -319891.21,
+      "ordersRevenueDelta": -320037.2,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1935.38,
+      "avgPrice": 1935.26,
       "avgOrdersPerDay": 172.6,
-      "estimatedMargin": 1215026.23,
+      "estimatedMargin": 1214950.36,
       "wbStock": 5671,
       "ownStock": 0,
       "daily": [
@@ -841,10 +841,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 387698.8323,
+          "ordersRevenue": 387552.8408,
           "ordersUnits": 167,
-          "estimatedMargin": 201487.0831,
-          "avgPrice": 2321.5499
+          "estimatedMargin": 201411.2113,
+          "avgPrice": 2320.6757
         }
       ]
     },
@@ -857,7 +857,7 @@
       "name": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
       "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.632,
+      "reviewRating": 4.636,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -866,15 +866,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 1778258.82,
+      "ordersRevenue": 1778144.52,
       "previousOrdersRevenue": 1813013.97,
-      "ordersRevenueDelta": -34755.15,
+      "ordersRevenueDelta": -34869.45,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1635.93,
+      "avgPrice": 1635.83,
       "avgOrdersPerDay": 155.3,
-      "estimatedMargin": 1154267.8,
+      "estimatedMargin": 1154193.61,
       "wbStock": 288,
       "ownStock": 0,
       "daily": [
@@ -922,10 +922,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 303531.2003,
+          "ordersRevenue": 303416.9029,
           "ordersUnits": 155,
-          "estimatedMargin": 197022.1021,
-          "avgPrice": 1958.2658
+          "estimatedMargin": 196947.9117,
+          "avgPrice": 1957.5284
         }
       ]
     },
@@ -938,7 +938,7 @@
       "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
       "owner": "Васильева Мария",
       "cardRating": 4.9,
-      "reviewRating": 4.877,
+      "reviewRating": 4.882,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -947,15 +947,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 1571216.46,
+      "ordersRevenue": 1571114.74,
       "previousOrdersRevenue": 1569010.93,
-      "ordersRevenueDelta": 2205.54,
+      "ordersRevenueDelta": 2103.81,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2176.2,
+      "avgPrice": 2176.06,
       "avgOrdersPerDay": 103.1,
-      "estimatedMargin": 941472.91,
+      "estimatedMargin": 941411.95,
       "wbStock": 8955,
       "ownStock": 0,
       "daily": [
@@ -1003,10 +1003,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 270148.5958,
+          "ordersRevenue": 270046.869,
           "ordersUnits": 104,
-          "estimatedMargin": 161873.0387,
-          "avgPrice": 2597.5827
+          "estimatedMargin": 161812.084,
+          "avgPrice": 2596.6045
         }
       ]
     },
@@ -1019,7 +1019,7 @@
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
       "owner": "Васильева Мария",
       "cardRating": 4.9,
-      "reviewRating": 4.884,
+      "reviewRating": 4.882,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -1028,15 +1028,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 1444879.68,
+      "ordersRevenue": 1444793.52,
       "previousOrdersRevenue": 1534930.23,
-      "ordersRevenueDelta": -90050.55,
+      "ordersRevenueDelta": -90136.71,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2040.79,
+      "avgPrice": 2040.67,
       "avgOrdersPerDay": 101.1,
-      "estimatedMargin": 745124.45,
+      "estimatedMargin": 745080.02,
       "wbStock": 4268,
       "ownStock": 0,
       "daily": [
@@ -1084,10 +1084,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 228801.1266,
+          "ordersRevenue": 228714.9695,
           "ordersUnits": 94,
-          "estimatedMargin": 117992.7411,
-          "avgPrice": 2434.0545
+          "estimatedMargin": 117948.3099,
+          "avgPrice": 2433.138
         }
       ]
     },
@@ -1098,9 +1098,9 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода",
       "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "owner": "Васильева Мария",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.9,
-      "reviewRating": 4.857,
+      "reviewRating": 4.861,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -1109,15 +1109,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 1156043.99,
+      "ordersRevenue": 1155973.14,
       "previousOrdersRevenue": 937960.59,
-      "ordersRevenueDelta": 218083.4,
+      "ordersRevenueDelta": 218012.56,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1002.64,
+      "avgPrice": 1002.58,
       "avgOrdersPerDay": 164.7,
-      "estimatedMargin": 605767.05,
+      "estimatedMargin": 605729.93,
       "wbStock": 1,
       "ownStock": 0,
       "daily": [
@@ -1165,10 +1165,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 188144.5918,
+          "ordersRevenue": 188073.7443,
           "ordersUnits": 157,
-          "estimatedMargin": 98587.7661,
-          "avgPrice": 1198.3732
+          "estimatedMargin": 98550.642,
+          "avgPrice": 1197.9219
         }
       ]
     },
@@ -1190,15 +1190,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 978368.85,
+      "ordersRevenue": 978297.7,
       "previousOrdersRevenue": 997727.28,
-      "ordersRevenueDelta": -19358.43,
+      "ordersRevenueDelta": -19429.58,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1447.29,
+      "avgPrice": 1447.19,
       "avgOrdersPerDay": 96.6,
-      "estimatedMargin": 321002.82,
+      "estimatedMargin": 320979.47,
       "wbStock": 2978,
       "ownStock": 0,
       "daily": [
@@ -1246,10 +1246,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 188957.2451,
+          "ordersRevenue": 188886.0916,
           "ordersUnits": 110,
-          "estimatedMargin": 61996.8721,
-          "avgPrice": 1717.7931
+          "estimatedMargin": 61973.5266,
+          "avgPrice": 1717.1463
         }
       ]
     },
@@ -1260,9 +1260,9 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода за волосами",
       "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-      "owner": "Васильева Мария",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.798,
+      "reviewRating": 4.808,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -1271,15 +1271,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 967048.25,
+      "ordersRevenue": 966974.03,
       "previousOrdersRevenue": 809897.05,
-      "ordersRevenueDelta": 157151.2,
+      "ordersRevenueDelta": 157076.97,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1158.14,
+      "avgPrice": 1158.05,
       "avgOrdersPerDay": 119.3,
-      "estimatedMargin": 201146.04,
+      "estimatedMargin": 201130.6,
       "wbStock": 1328,
       "ownStock": 0,
       "daily": [
@@ -1327,10 +1327,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 197117.0121,
+          "ordersRevenue": 197042.7859,
           "ordersUnits": 150,
-          "estimatedMargin": 41000.3385,
-          "avgPrice": 1314.1134
+          "estimatedMargin": 40984.8995,
+          "avgPrice": 1313.6186
         }
       ]
     },
@@ -1343,7 +1343,7 @@
       "name": "Крем для век и кожи вокруг глаз Жидкие патчи для глаз Алтея 30 мл",
       "owner": "Васильева Мария",
       "cardRating": 4.8,
-      "reviewRating": 4.82,
+      "reviewRating": 4.818,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -1352,15 +1352,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 916175.39,
+      "ordersRevenue": 916121.78,
       "previousOrdersRevenue": 450915.56,
-      "ordersRevenueDelta": 465259.84,
+      "ordersRevenueDelta": 465206.22,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1267.19,
+      "avgPrice": 1267.11,
       "avgOrdersPerDay": 103.3,
-      "estimatedMargin": 439397.72,
+      "estimatedMargin": 439372,
       "wbStock": 3071,
       "ownStock": 0,
       "daily": [
@@ -1408,10 +1408,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 142382.2601,
+          "ordersRevenue": 142328.6448,
           "ordersUnits": 94,
-          "estimatedMargin": 68286.532,
-          "avgPrice": 1514.7049
+          "estimatedMargin": 68260.8181,
+          "avgPrice": 1514.1345
         }
       ]
     },
@@ -1424,7 +1424,7 @@
       "name": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт",
       "owner": "Васильева Мария",
       "cardRating": 4.9,
-      "reviewRating": 4.861,
+      "reviewRating": 4.862,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -1433,15 +1433,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 627855.62,
+      "ordersRevenue": 627812.93,
       "previousOrdersRevenue": 556377.17,
-      "ordersRevenueDelta": 71478.46,
+      "ordersRevenueDelta": 71435.76,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1593.54,
+      "avgPrice": 1593.43,
       "avgOrdersPerDay": 56.3,
-      "estimatedMargin": 324601.36,
+      "estimatedMargin": 324579.28,
       "wbStock": 7032,
       "ownStock": 0,
       "daily": [
@@ -1489,10 +1489,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 113383.3754,
+          "ordersRevenue": 113340.6799,
           "ordersUnits": 61,
-          "estimatedMargin": 58619.2051,
-          "avgPrice": 1858.7439
+          "estimatedMargin": 58597.1315,
+          "avgPrice": 1858.0439
         }
       ]
     },
@@ -1503,9 +1503,9 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода",
       "name": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
-      "owner": "Лапыгин Максим",
+      "owner": "Мария Васильева",
       "cardRating": 4.8,
-      "reviewRating": 4.891,
+      "reviewRating": 4.889,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -1514,15 +1514,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 521245.11,
+      "ordersRevenue": 521212.53,
       "previousOrdersRevenue": 581922.16,
-      "ordersRevenueDelta": -60677.05,
+      "ordersRevenueDelta": -60709.63,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1153.2,
+      "avgPrice": 1153.13,
       "avgOrdersPerDay": 64.6,
-      "estimatedMargin": 268441.23,
+      "estimatedMargin": 268424.46,
       "wbStock": 3912,
       "ownStock": 0,
       "daily": [
@@ -1570,10 +1570,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 86506.8972,
+          "ordersRevenue": 86474.3223,
           "ordersUnits": 63,
-          "estimatedMargin": 44551.052,
-          "avgPrice": 1373.1254
+          "estimatedMargin": 44534.2759,
+          "avgPrice": 1372.6083
         }
       ]
     },
@@ -1586,7 +1586,7 @@
       "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
       "owner": "Васильева Мария",
       "cardRating": 4.8,
-      "reviewRating": 4.737,
+      "reviewRating": 4.75,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -1595,15 +1595,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 446084.38,
+      "ordersRevenue": 446055.11,
       "previousOrdersRevenue": 409838.85,
-      "ordersRevenueDelta": 36245.53,
+      "ordersRevenueDelta": 36216.27,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1249.54,
+      "avgPrice": 1249.45,
       "avgOrdersPerDay": 51,
-      "estimatedMargin": 265732.46,
+      "estimatedMargin": 265715.03,
       "wbStock": 527,
       "ownStock": 0,
       "daily": [
@@ -1651,10 +1651,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 77709.3536,
+          "ordersRevenue": 77680.0915,
           "ordersUnits": 51,
-          "estimatedMargin": 46291.462,
-          "avgPrice": 1523.7128
+          "estimatedMargin": 46274.0305,
+          "avgPrice": 1523.139
         }
       ]
     },
@@ -1667,7 +1667,7 @@
       "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
       "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.757,
+      "reviewRating": 4.743,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -1676,15 +1676,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 419394.82,
+      "ordersRevenue": 419367.83,
       "previousOrdersRevenue": 468343.78,
-      "ordersRevenueDelta": -48948.97,
+      "ordersRevenueDelta": -48975.95,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2410.32,
+      "avgPrice": 2410.16,
       "avgOrdersPerDay": 24.9,
-      "estimatedMargin": 124602.2,
+      "estimatedMargin": 124594.18,
       "wbStock": 2483,
       "ownStock": 0,
       "daily": [
@@ -1732,10 +1732,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 71656.6485,
+          "ordersRevenue": 71629.6655,
           "ordersUnits": 25,
-          "estimatedMargin": 21289.1902,
-          "avgPrice": 2866.2659
+          "estimatedMargin": 21281.1736,
+          "avgPrice": 2865.1866
         }
       ]
     },
@@ -1748,7 +1748,7 @@
       "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
       "owner": "Васильева Мария",
       "cardRating": 0,
-      "reviewRating": 4.588,
+      "reviewRating": 4.576,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -1757,13 +1757,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 373033.88,
+      "ordersRevenue": 373013.91,
       "previousOrdersRevenue": 246151.68,
-      "ordersRevenueDelta": 126882.21,
+      "ordersRevenueDelta": 126862.23,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1672.8,
+      "avgPrice": 1672.71,
       "avgOrdersPerDay": 31.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -1813,10 +1813,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 53040.7382,
+          "ordersRevenue": 53020.7653,
           "ordersUnits": 26,
           "estimatedMargin": 0,
-          "avgPrice": 2040.0284
+          "avgPrice": 2039.2602
         }
       ]
     },
@@ -1829,7 +1829,7 @@
       "name": "Сыворотка для лица с микроиглами и коллагеном",
       "owner": "Лапыгин Максим",
       "cardRating": 0,
-      "reviewRating": 4.804,
+      "reviewRating": 4.797,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -1838,13 +1838,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 356867.75,
+      "ordersRevenue": 356855.12,
       "previousOrdersRevenue": 1043852.32,
-      "ordersRevenueDelta": -686984.57,
+      "ordersRevenueDelta": -686997.2,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1433.2,
+      "avgPrice": 1433.15,
       "avgOrdersPerDay": 35.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -1894,10 +1894,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 33540.2932,
+          "ordersRevenue": 33527.6633,
           "ordersUnits": 19,
           "estimatedMargin": 0,
-          "avgPrice": 1765.2786
+          "avgPrice": 1764.6139
         }
       ]
     },
@@ -1908,9 +1908,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь для суставов Сусталит , CPA, 75 мл",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.803,
+      "reviewRating": 4.799,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -1919,13 +1919,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 346003.48,
+      "ordersRevenue": 345981.31,
       "previousOrdersRevenue": 357270.47,
-      "ordersRevenueDelta": -11266.99,
+      "ordersRevenueDelta": -11289.16,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 588.44,
+      "avgPrice": 588.4,
       "avgOrdersPerDay": 84,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -1975,10 +1975,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 58865.7308,
+          "ordersRevenue": 58843.5644,
           "ordersUnits": 88,
           "estimatedMargin": 0,
-          "avgPrice": 668.9288
+          "avgPrice": 668.6769
         }
       ]
     },
@@ -1989,9 +1989,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Уринофикс, CPA, 20 капсул",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": null,
-      "reviewRating": 4.776,
+      "reviewRating": 4.782,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2000,13 +2000,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 328068.03,
+      "ordersRevenue": 328046.2,
       "previousOrdersRevenue": 244160.98,
-      "ordersRevenueDelta": 83907.04,
+      "ordersRevenueDelta": 83885.22,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 408.55,
+      "avgPrice": 408.53,
       "avgOrdersPerDay": 114.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -2056,10 +2056,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 57960.1464,
+          "ordersRevenue": 57938.321,
           "ordersUnits": 128,
           "estimatedMargin": 0,
-          "avgPrice": 452.8136
+          "avgPrice": 452.6431
         }
       ]
     },
@@ -2072,7 +2072,7 @@
       "name": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт",
       "owner": "Васильева Мария",
       "cardRating": 4.9,
-      "reviewRating": 4.892,
+      "reviewRating": 4.888,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2081,15 +2081,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 306555.54,
+      "ordersRevenue": 306534.4,
       "previousOrdersRevenue": 400982.1,
-      "ordersRevenueDelta": -94426.56,
+      "ordersRevenueDelta": -94447.7,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1580.18,
+      "avgPrice": 1580.07,
       "avgOrdersPerDay": 27.7,
-      "estimatedMargin": 181327.6,
+      "estimatedMargin": 181315.1,
       "wbStock": 5504,
       "ownStock": 0,
       "daily": [
@@ -2137,10 +2137,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 56138.2409,
+          "ordersRevenue": 56117.1016,
           "ordersUnits": 30,
-          "estimatedMargin": 33205.7694,
-          "avgPrice": 1871.2747
+          "estimatedMargin": 33193.2655,
+          "avgPrice": 1870.5701
         }
       ]
     },
@@ -2153,7 +2153,7 @@
       "name": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
       "owner": "Лапыгин Максим",
       "cardRating": 4.9,
-      "reviewRating": 4.893,
+      "reviewRating": 4.901,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2162,15 +2162,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 285213.92,
+      "ordersRevenue": 285191.68,
       "previousOrdersRevenue": 178261.26,
-      "ordersRevenueDelta": 106952.65,
+      "ordersRevenueDelta": 106930.41,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1044.74,
+      "avgPrice": 1044.66,
       "avgOrdersPerDay": 39,
-      "estimatedMargin": 148339.76,
+      "estimatedMargin": 148328.19,
       "wbStock": 1115,
       "ownStock": 0,
       "daily": [
@@ -2218,10 +2218,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 59058.6728,
+          "ordersRevenue": 59036.4338,
           "ordersUnits": 48,
-          "estimatedMargin": 30716.4157,
-          "avgPrice": 1230.389
+          "estimatedMargin": 30704.8492,
+          "avgPrice": 1229.9257
         }
       ]
     },
@@ -2234,7 +2234,7 @@
       "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
       "owner": "Васильева Мария",
       "cardRating": 4.8,
-      "reviewRating": 4.57,
+      "reviewRating": 4.556,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2243,15 +2243,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 228195.57,
+      "ordersRevenue": 228179.89,
       "previousOrdersRevenue": 173039.06,
-      "ordersRevenueDelta": 55156.5,
+      "ordersRevenueDelta": 55140.83,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1391.44,
+      "avgPrice": 1391.34,
       "avgOrdersPerDay": 23.4,
-      "estimatedMargin": 99059.7,
+      "estimatedMargin": 99052.89,
       "wbStock": 865,
       "ownStock": 0,
       "daily": [
@@ -2299,10 +2299,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 41633.7958,
+          "ordersRevenue": 41618.1183,
           "ordersUnits": 25,
-          "estimatedMargin": 18073.2308,
-          "avgPrice": 1665.3518
+          "estimatedMargin": 18066.4251,
+          "avgPrice": 1664.7247
         }
       ]
     },
@@ -2313,9 +2313,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь для суставов Кавказская мазь , CPA, 60 мл",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.818,
+      "reviewRating": 4.82,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2324,13 +2324,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 214880.58,
+      "ordersRevenue": 214867.15,
       "previousOrdersRevenue": 222307.29,
-      "ordersRevenueDelta": -7426.71,
+      "ordersRevenueDelta": -7440.14,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 394.28,
+      "avgPrice": 394.25,
       "avgOrdersPerDay": 77.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -2380,10 +2380,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 35655.5906,
+          "ordersRevenue": 35642.1642,
           "ordersUnits": 70,
           "estimatedMargin": 0,
-          "avgPrice": 509.3656
+          "avgPrice": 509.1738
         }
       ]
     },
@@ -2394,9 +2394,9 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода за волосами",
       "name": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
-      "owner": "Васильева Мария",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.636,
+      "reviewRating": 4.618,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2405,15 +2405,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 194274.89,
+      "ordersRevenue": 194263.87,
       "previousOrdersRevenue": 196016.47,
-      "ordersRevenueDelta": -1741.59,
+      "ordersRevenueDelta": -1752.61,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 966.54,
+      "avgPrice": 966.49,
       "avgOrdersPerDay": 28.7,
-      "estimatedMargin": 53211.89,
+      "estimatedMargin": 53208.87,
       "wbStock": 807,
       "ownStock": 0,
       "daily": [
@@ -2461,10 +2461,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 29262.0261,
+          "ordersRevenue": 29251.0072,
           "ordersUnits": 25,
-          "estimatedMargin": 8014.869,
-          "avgPrice": 1170.481
+          "estimatedMargin": 8011.8509,
+          "avgPrice": 1170.0403
         }
       ]
     },
@@ -2475,9 +2475,9 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода",
       "name": "Ремувер для удаления кутикулы, Алтея, 40 мл",
-      "owner": "Васильева Мария",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.7,
-      "reviewRating": 4.511,
+      "reviewRating": 4.519,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2486,15 +2486,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 186694.74,
+      "ordersRevenue": 186680.66,
       "previousOrdersRevenue": 118744.32,
-      "ordersRevenueDelta": 67950.43,
+      "ordersRevenueDelta": 67936.34,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 368.23,
+      "avgPrice": 368.21,
       "avgOrdersPerDay": 72.4,
-      "estimatedMargin": -6702.34,
+      "estimatedMargin": -6701.84,
       "wbStock": 7816,
       "ownStock": 0,
       "daily": [
@@ -2542,10 +2542,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 37410.749,
+          "ordersRevenue": 37396.6617,
           "ordersUnits": 86,
-          "estimatedMargin": -1343.0458,
-          "avgPrice": 435.0087
+          "estimatedMargin": -1342.5401,
+          "avgPrice": 434.8449
         }
       ]
     },
@@ -2556,9 +2556,9 @@
       "brand": "Алтея",
       "subject": "Декоративная косметика",
       "name": "Ремувер для снятия ресниц, Алтея, 18г",
-      "owner": "Васильева Мария",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.09,
+      "reviewRating": 4.116,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2567,15 +2567,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 186333.98,
+      "ordersRevenue": 186322.94,
       "previousOrdersRevenue": 159360.66,
-      "ordersRevenueDelta": 26973.32,
+      "ordersRevenueDelta": 26962.28,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 486.51,
+      "avgPrice": 486.48,
       "avgOrdersPerDay": 54.7,
-      "estimatedMargin": 49825.71,
+      "estimatedMargin": 49822.75,
       "wbStock": 3040,
       "ownStock": 0,
       "daily": [
@@ -2623,10 +2623,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 29318.4605,
+          "ordersRevenue": 29307.4204,
           "ordersUnits": 49,
-          "estimatedMargin": 7839.7563,
-          "avgPrice": 598.3359
+          "estimatedMargin": 7836.8042,
+          "avgPrice": 598.1106
         }
       ]
     },
@@ -2639,7 +2639,7 @@
       "name": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт",
       "owner": "Васильева Мария",
       "cardRating": 4.9,
-      "reviewRating": 4.838,
+      "reviewRating": 4.835,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2648,15 +2648,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 179643.15,
+      "ordersRevenue": 179632.53,
       "previousOrdersRevenue": 152847.22,
-      "ordersRevenueDelta": 26795.93,
+      "ordersRevenueDelta": 26785.31,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1320.91,
+      "avgPrice": 1320.83,
       "avgOrdersPerDay": 19.4,
-      "estimatedMargin": 39826.89,
+      "estimatedMargin": 39824.53,
       "wbStock": 3131,
       "ownStock": 0,
       "daily": [
@@ -2704,10 +2704,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 28221.6164,
+          "ordersRevenue": 28210.9893,
           "ordersUnits": 18,
-          "estimatedMargin": 6256.7323,
-          "avgPrice": 1567.8676
+          "estimatedMargin": 6254.3763,
+          "avgPrice": 1567.2772
         }
       ]
     },
@@ -2720,7 +2720,7 @@
       "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
       "owner": "Васильева Мария",
       "cardRating": 4.7,
-      "reviewRating": 4.583,
+      "reviewRating": 4.595,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2729,15 +2729,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 150844.65,
+      "ordersRevenue": 150828.67,
       "previousOrdersRevenue": 159819.87,
-      "ordersRevenueDelta": -8975.22,
+      "ordersRevenueDelta": -8991.2,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1206.76,
+      "avgPrice": 1206.63,
       "avgOrdersPerDay": 17.9,
-      "estimatedMargin": 47214.37,
+      "estimatedMargin": 47209.37,
       "wbStock": 1201,
       "ownStock": 0,
       "daily": [
@@ -2785,10 +2785,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 42429.7294,
+          "ordersRevenue": 42413.7521,
           "ordersUnits": 30,
-          "estimatedMargin": 13280.5054,
-          "avgPrice": 1414.3243
+          "estimatedMargin": 13275.5045,
+          "avgPrice": 1413.7917
         }
       ]
     },
@@ -2801,7 +2801,7 @@
       "name": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
       "owner": "Васильева Мария",
       "cardRating": 4.8,
-      "reviewRating": 4.905,
+      "reviewRating": 4.902,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2810,15 +2810,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 143722.33,
+      "ordersRevenue": 143713.12,
       "previousOrdersRevenue": 188144.5,
-      "ordersRevenueDelta": -44422.16,
+      "ordersRevenueDelta": -44431.38,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 598.84,
+      "avgPrice": 598.8,
       "avgOrdersPerDay": 34.3,
-      "estimatedMargin": 76402.79,
+      "estimatedMargin": 76397.89,
       "wbStock": 1922,
       "ownStock": 0,
       "daily": [
@@ -2866,10 +2866,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 24470.3049,
+          "ordersRevenue": 24461.0903,
           "ordersUnits": 36,
-          "estimatedMargin": 13008.414,
-          "avgPrice": 679.7307
+          "estimatedMargin": 13003.5156,
+          "avgPrice": 679.4747
         }
       ]
     },
@@ -2882,7 +2882,7 @@
       "name": "Маска для волос с кератином восстанавливающая увлажняющая, Алтея, 250 мл",
       "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.827,
+      "reviewRating": 4.838,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2891,15 +2891,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 140214.84,
+      "ordersRevenue": 140205.7,
       "previousOrdersRevenue": 100720.85,
-      "ordersRevenueDelta": 39493.99,
+      "ordersRevenueDelta": 39484.85,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 726.5,
+      "avgPrice": 726.45,
       "avgOrdersPerDay": 27.6,
-      "estimatedMargin": 74440.06,
+      "estimatedMargin": 74435.21,
       "wbStock": 1975,
       "ownStock": 0,
       "daily": [
@@ -2947,10 +2947,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 24267.1671,
+          "ordersRevenue": 24258.0291,
           "ordersUnits": 28,
-          "estimatedMargin": 12883.4391,
-          "avgPrice": 866.6845
+          "estimatedMargin": 12878.5877,
+          "avgPrice": 866.3582
         }
       ]
     },
@@ -2961,9 +2961,9 @@
       "brand": "Алтея",
       "subject": "Средства для гигиены тела",
       "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.9,
-      "reviewRating": 4.926,
+      "reviewRating": 4.929,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -2972,15 +2972,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 126900.7,
+      "ordersRevenue": 126894.51,
       "previousOrdersRevenue": 89305.43,
-      "ordersRevenueDelta": 37595.27,
+      "ordersRevenueDelta": 37589.08,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 619.03,
+      "avgPrice": 619,
       "avgOrdersPerDay": 29.3,
-      "estimatedMargin": -12931.18,
+      "estimatedMargin": -12930.55,
       "wbStock": 1372,
       "ownStock": 0,
       "daily": [
@@ -3028,10 +3028,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 16442.6425,
+          "ordersRevenue": 16436.4508,
           "ordersUnits": 22,
-          "estimatedMargin": -1675.5052,
-          "avgPrice": 747.3928
+          "estimatedMargin": -1674.8743,
+          "avgPrice": 747.1114
         }
       ]
     },
@@ -3044,7 +3044,7 @@
       "name": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
       "owner": "Васильева Мария",
       "cardRating": 4.9,
-      "reviewRating": 4.534,
+      "reviewRating": 4.607,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -3053,15 +3053,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 120006.2,
+      "ordersRevenue": 119998.83,
       "previousOrdersRevenue": 83648.69,
-      "ordersRevenueDelta": 36357.5,
+      "ordersRevenueDelta": 36350.14,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 789.51,
+      "avgPrice": 789.47,
       "avgOrdersPerDay": 21.7,
-      "estimatedMargin": 59319.06,
+      "estimatedMargin": 59315.42,
       "wbStock": 1560,
       "ownStock": 0,
       "daily": [
@@ -3109,10 +3109,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 19559.0005,
+          "ordersRevenue": 19551.6354,
           "ordersUnits": 22,
-          "estimatedMargin": 9668.014,
-          "avgPrice": 889.0455
+          "estimatedMargin": 9664.3734,
+          "avgPrice": 888.7107
         }
       ]
     },
@@ -3125,7 +3125,7 @@
       "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
       "owner": "Лапыгин Максим",
       "cardRating": 4.9,
-      "reviewRating": 4.593,
+      "reviewRating": 4.579,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -3134,15 +3134,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 114633.75,
+      "ordersRevenue": 114628.01,
       "previousOrdersRevenue": 141084.1,
-      "ordersRevenueDelta": -26450.35,
+      "ordersRevenueDelta": -26456.1,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 902.63,
+      "avgPrice": 902.58,
       "avgOrdersPerDay": 18.1,
-      "estimatedMargin": 55608.83,
+      "estimatedMargin": 55606.05,
       "wbStock": 1059,
       "ownStock": 0,
       "daily": [
@@ -3190,10 +3190,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 15247.9669,
+          "ordersRevenue": 15242.2251,
           "ordersUnits": 14,
-          "estimatedMargin": 7396.7887,
-          "avgPrice": 1089.1405
+          "estimatedMargin": 7394.0033,
+          "avgPrice": 1088.7304
         }
       ]
     },
@@ -3215,13 +3215,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 112369.97,
+      "ordersRevenue": 112363.43,
       "previousOrdersRevenue": 52882.69,
-      "ordersRevenueDelta": 59487.29,
+      "ordersRevenueDelta": 59480.74,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1440.64,
+      "avgPrice": 1440.56,
       "avgOrdersPerDay": 11.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -3271,10 +3271,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 17377.9507,
+          "ordersRevenue": 17371.4069,
           "ordersUnits": 10,
           "estimatedMargin": 0,
-          "avgPrice": 1737.7951
+          "avgPrice": 1737.1407
         }
       ]
     },
@@ -3296,13 +3296,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 111925.9,
+      "ordersRevenue": 111917.89,
       "previousOrdersRevenue": 43619.86,
-      "ordersRevenueDelta": 68306.03,
+      "ordersRevenueDelta": 68298.02,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1834.85,
+      "avgPrice": 1834.72,
       "avgOrdersPerDay": 8.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -3352,10 +3352,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 21269.4121,
+          "ordersRevenue": 21261.403,
           "ordersUnits": 10,
           "estimatedMargin": 0,
-          "avgPrice": 2126.9412
+          "avgPrice": 2126.1403
         }
       ]
     },
@@ -3368,7 +3368,7 @@
       "name": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
       "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.633,
+      "reviewRating": 4.663,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -3377,15 +3377,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 105580.88,
+      "ordersRevenue": 105573.25,
       "previousOrdersRevenue": 121084.39,
-      "ordersRevenueDelta": -15503.51,
+      "ordersRevenueDelta": -15511.14,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 844.65,
+      "avgPrice": 844.59,
       "avgOrdersPerDay": 17.9,
-      "estimatedMargin": 37460.1,
+      "estimatedMargin": 37457.39,
       "wbStock": 395,
       "ownStock": 0,
       "daily": [
@@ -3433,10 +3433,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 20267.4007,
+          "ordersRevenue": 20259.7688,
           "ordersUnits": 20,
-          "estimatedMargin": 7190.8737,
-          "avgPrice": 1013.37
+          "estimatedMargin": 7188.1659,
+          "avgPrice": 1012.9884
         }
       ]
     },
@@ -3447,9 +3447,9 @@
       "brand": "Алтея",
       "subject": "Средства для бритья и груминг",
       "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
-      "owner": "Васильева Мария",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.617,
+      "reviewRating": 4.64,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -3458,15 +3458,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 91534.41,
+      "ordersRevenue": 91529.29,
       "previousOrdersRevenue": 82763.86,
-      "ordersRevenueDelta": 8770.55,
+      "ordersRevenueDelta": 8765.43,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 709.57,
+      "avgPrice": 709.53,
       "avgOrdersPerDay": 18.4,
-      "estimatedMargin": 14975.03,
+      "estimatedMargin": 14974.19,
       "wbStock": 2706,
       "ownStock": 0,
       "daily": [
@@ -3514,10 +3514,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 13585.1837,
+          "ordersRevenue": 13580.0681,
           "ordersUnits": 16,
-          "estimatedMargin": 2222.536,
-          "avgPrice": 849.074
+          "estimatedMargin": 2221.6991,
+          "avgPrice": 848.7543
         }
       ]
     },
@@ -3528,9 +3528,9 @@
       "brand": "Алтея",
       "subject": "Средства для бритья и груминг",
       "name": "Гель для бритья мужской без пены охлаждающий с ментолом Алтея 300 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.7,
-      "reviewRating": 4.385,
+      "reviewRating": 4.355,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -3539,15 +3539,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 90092.01,
+      "ordersRevenue": 90087.05,
       "previousOrdersRevenue": 82977.02,
-      "ordersRevenueDelta": 7114.99,
+      "ordersRevenueDelta": 7110.02,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 672.33,
+      "avgPrice": 672.29,
       "avgOrdersPerDay": 19.1,
-      "estimatedMargin": 9009.2,
+      "estimatedMargin": 9008.7,
       "wbStock": 1453,
       "ownStock": 0,
       "daily": [
@@ -3595,10 +3595,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 13193.7702,
+          "ordersRevenue": 13188.802,
           "ordersUnits": 17,
-          "estimatedMargin": 1319.377,
-          "avgPrice": 776.1041
+          "estimatedMargin": 1318.8802,
+          "avgPrice": 775.8119
         }
       ]
     },
@@ -3609,9 +3609,9 @@
       "brand": "Алтея",
       "subject": "Парафармацевтика",
       "name": "Магний В6 с лавандой, Алтея, Релаксинол, 60 капсул",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.7,
-      "reviewRating": 4.902,
+      "reviewRating": 4.9,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -3620,15 +3620,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 88103.12,
+      "ordersRevenue": 88097.92,
       "previousOrdersRevenue": 97019,
-      "ordersRevenueDelta": -8915.88,
+      "ordersRevenueDelta": -8921.08,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 808.29,
+      "avgPrice": 808.24,
       "avgOrdersPerDay": 15.6,
-      "estimatedMargin": 28607.08,
+      "estimatedMargin": 28605.39,
       "wbStock": 416,
       "ownStock": 0,
       "daily": [
@@ -3676,10 +3676,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 13812.3989,
+          "ordersRevenue": 13807.1977,
           "ordersUnits": 15,
-          "estimatedMargin": 4484.886,
-          "avgPrice": 920.8266
+          "estimatedMargin": 4483.1972,
+          "avgPrice": 920.4798
         }
       ]
     },
@@ -3690,9 +3690,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь для суставов Синергель, CPA, 30 мл",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.039,
+      "reviewRating": 4.071,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -3701,13 +3701,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 87427.22,
+      "ordersRevenue": 87422.98,
       "previousOrdersRevenue": 57387.64,
-      "ordersRevenueDelta": 30039.57,
+      "ordersRevenueDelta": 30035.34,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 496.75,
+      "avgPrice": 496.72,
       "avgOrdersPerDay": 25.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -3757,10 +3757,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 11244.7628,
+          "ordersRevenue": 11240.5285,
           "ordersUnits": 22,
           "estimatedMargin": 0,
-          "avgPrice": 511.1256
+          "avgPrice": 510.9331
         }
       ]
     },
@@ -3771,9 +3771,9 @@
       "brand": "Алтея",
       "subject": "Парафармацевтика",
       "name": "Витамины для диабетиков, для профилактики от сахарного диабета, Алтея, Инсулайт, 60 капсул",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.681,
+      "reviewRating": 4.704,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -3782,15 +3782,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 87301.42,
+      "ordersRevenue": 87297.05,
       "previousOrdersRevenue": 95480.09,
-      "ordersRevenueDelta": -8178.66,
+      "ordersRevenueDelta": -8183.04,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 980.91,
+      "avgPrice": 980.87,
       "avgOrdersPerDay": 12.7,
-      "estimatedMargin": 45178.49,
+      "estimatedMargin": 45176.22,
       "wbStock": 1235,
       "ownStock": 0,
       "daily": [
@@ -3838,10 +3838,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 11612.7278,
+          "ordersRevenue": 11608.3549,
           "ordersUnits": 11,
-          "estimatedMargin": 6009.5866,
-          "avgPrice": 1055.7025
+          "estimatedMargin": 6007.3236,
+          "avgPrice": 1055.305
         }
       ]
     },
@@ -3852,9 +3852,9 @@
       "brand": "Алтея",
       "subject": "Средства для гигиены тела",
       "name": "Гель для душа мужской парфюмированный Алтея 1000 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.9,
-      "reviewRating": 4.811,
+      "reviewRating": 4.833,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -3863,15 +3863,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 85052.24,
+      "ordersRevenue": 85048.85,
       "previousOrdersRevenue": 130748.12,
-      "ordersRevenueDelta": -45695.88,
+      "ordersRevenueDelta": -45699.27,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 525.01,
+      "avgPrice": 524.99,
       "avgOrdersPerDay": 23.1,
-      "estimatedMargin": 20956.87,
+      "estimatedMargin": 20956.04,
       "wbStock": 1190,
       "ownStock": 0,
       "daily": [
@@ -3919,10 +3919,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 8991.5535,
+          "ordersRevenue": 8988.1677,
           "ordersUnits": 14,
-          "estimatedMargin": 2215.5187,
-          "avgPrice": 642.2538
+          "estimatedMargin": 2214.6845,
+          "avgPrice": 642.012
         }
       ]
     },
@@ -3935,7 +3935,7 @@
       "name": "Сыворотка для лица с ретинолом омолаживающая",
       "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.764,
+      "reviewRating": 4.766,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -3944,15 +3944,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 84515.61,
+      "ordersRevenue": 84512.01,
       "previousOrdersRevenue": 246761.61,
-      "ordersRevenueDelta": -162246,
+      "ordersRevenueDelta": -162249.6,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1657.17,
+      "avgPrice": 1657.1,
       "avgOrdersPerDay": 7.3,
-      "estimatedMargin": 42562.06,
+      "estimatedMargin": 42560.25,
       "wbStock": 3458,
       "ownStock": 0,
       "daily": [
@@ -4000,10 +4000,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 9571.038,
+          "ordersRevenue": 9567.4339,
           "ordersUnits": 3,
-          "estimatedMargin": 4819.9747,
-          "avgPrice": 3190.346
+          "estimatedMargin": 4818.1597,
+          "avgPrice": 3189.1446
         }
       ]
     },
@@ -4014,9 +4014,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь для суставов Синергель, CPA, 60 мл",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.146,
+      "reviewRating": 4.19,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -4025,13 +4025,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 80954.54,
+      "ordersRevenue": 80950.62,
       "previousOrdersRevenue": 68902.51,
-      "ordersRevenueDelta": 12052.03,
+      "ordersRevenueDelta": 12048.11,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 674.62,
+      "avgPrice": 674.59,
       "avgOrdersPerDay": 17.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -4081,10 +4081,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 10403.6144,
+          "ordersRevenue": 10399.6969,
           "ordersUnits": 13,
           "estimatedMargin": 0,
-          "avgPrice": 800.278
+          "avgPrice": 799.9767
         }
       ]
     },
@@ -4095,9 +4095,9 @@
       "brand": "Алтея",
       "subject": "Средства для гигиены тела",
       "name": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.9,
-      "reviewRating": 4.768,
+      "reviewRating": 4.756,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -4106,15 +4106,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 72414.3,
+      "ordersRevenue": 72409.94,
       "previousOrdersRevenue": 82304.11,
-      "ordersRevenueDelta": -9889.81,
+      "ordersRevenueDelta": -9894.17,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 574.72,
+      "avgPrice": 574.68,
       "avgOrdersPerDay": 18,
-      "estimatedMargin": 9775.93,
+      "estimatedMargin": 9775.34,
       "wbStock": 722,
       "ownStock": 0,
       "daily": [
@@ -4162,10 +4162,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 11584.5691,
+          "ordersRevenue": 11580.2068,
           "ordersUnits": 17,
-          "estimatedMargin": 1563.9168,
-          "avgPrice": 681.4452
+          "estimatedMargin": 1563.3279,
+          "avgPrice": 681.1886
         }
       ]
     },
@@ -4176,7 +4176,7 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода за волосами",
       "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
       "reviewRating": 4.615,
       "views": 0,
@@ -4187,15 +4187,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 71872.19,
+      "ordersRevenue": 71866.46,
       "previousOrdersRevenue": 41042.85,
-      "ordersRevenueDelta": 30829.34,
+      "ordersRevenueDelta": 30823.61,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1072.72,
+      "avgPrice": 1072.63,
       "avgOrdersPerDay": 9.6,
-      "estimatedMargin": 22546.3,
+      "estimatedMargin": 22544.51,
       "wbStock": 394,
       "ownStock": 0,
       "daily": [
@@ -4243,10 +4243,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 15207.901,
+          "ordersRevenue": 15202.1744,
           "ordersUnits": 12,
-          "estimatedMargin": 4770.7185,
-          "avgPrice": 1267.3251
+          "estimatedMargin": 4768.922,
+          "avgPrice": 1266.8479
         }
       ]
     },
@@ -4257,7 +4257,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
       "reviewRating": 4.55,
       "views": 0,
@@ -4268,13 +4268,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 69802.43,
+      "ordersRevenue": 69796.03,
       "previousOrdersRevenue": 76896.62,
-      "ordersRevenueDelta": -7094.19,
+      "ordersRevenueDelta": -7100.59,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 456.23,
+      "avgPrice": 456.18,
       "avgOrdersPerDay": 21.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -4324,10 +4324,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 16996.6012,
+          "ordersRevenue": 16990.201,
           "ordersUnits": 36,
           "estimatedMargin": 0,
-          "avgPrice": 472.1278
+          "avgPrice": 471.95
         }
       ]
     },
@@ -4338,9 +4338,9 @@
       "brand": "Алтея",
       "subject": "Декоративная косметика",
       "name": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.7,
-      "reviewRating": 4.683,
+      "reviewRating": 4.675,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -4349,15 +4349,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 61360.04,
+      "ordersRevenue": 61356.54,
       "previousOrdersRevenue": 51359.21,
-      "ordersRevenueDelta": 10000.83,
+      "ordersRevenueDelta": 9997.33,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 562.94,
+      "avgPrice": 562.9,
       "avgOrdersPerDay": 15.6,
-      "estimatedMargin": 14210.99,
+      "estimatedMargin": 14210.18,
       "wbStock": 1461,
       "ownStock": 0,
       "daily": [
@@ -4405,10 +4405,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 9291.6158,
+          "ordersRevenue": 9288.1169,
           "ordersUnits": 14,
-          "estimatedMargin": 2151.9383,
-          "avgPrice": 663.6868
+          "estimatedMargin": 2151.1279,
+          "avgPrice": 663.4369
         }
       ]
     },
@@ -4419,9 +4419,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь от грибка ногтей Экзифол, CPA, 30 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.602,
+      "reviewRating": 4.59,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -4430,13 +4430,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 54199.35,
+      "ordersRevenue": 54195.27,
       "previousOrdersRevenue": 41786.43,
-      "ordersRevenueDelta": 12412.92,
+      "ordersRevenueDelta": 12408.84,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 488.28,
+      "avgPrice": 488.25,
       "avgOrdersPerDay": 15.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -4486,10 +4486,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 10838.6776,
+          "ordersRevenue": 10834.5962,
           "ordersUnits": 21,
           "estimatedMargin": 0,
-          "avgPrice": 516.1275
+          "avgPrice": 515.9332
         }
       ]
     },
@@ -4500,7 +4500,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Эробрут, CPA, 20 капсул",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": null,
       "reviewRating": 4.063,
       "views": 0,
@@ -4511,13 +4511,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 52125.49,
+      "ordersRevenue": 52123.4,
       "previousOrdersRevenue": 47155.4,
-      "ordersRevenueDelta": 4970.09,
+      "ordersRevenueDelta": 4968,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 445.52,
+      "avgPrice": 445.5,
       "avgOrdersPerDay": 16.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -4567,10 +4567,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5561.3831,
+          "ordersRevenue": 5559.2889,
           "ordersUnits": 11,
           "estimatedMargin": 0,
-          "avgPrice": 505.5803
+          "avgPrice": 505.3899
         }
       ]
     },
@@ -4581,9 +4581,9 @@
       "brand": "Алтея",
       "subject": "Средства по уходу за бровями и ресницами",
       "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.638,
+      "reviewRating": 4.646,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -4592,15 +4592,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 50406.32,
+      "ordersRevenue": 50401.81,
       "previousOrdersRevenue": 63109.29,
-      "ordersRevenueDelta": -12702.98,
+      "ordersRevenueDelta": -12707.49,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 916.48,
+      "avgPrice": 916.4,
       "avgOrdersPerDay": 7.9,
-      "estimatedMargin": 24169.83,
+      "estimatedMargin": 24167.67,
       "wbStock": 1155,
       "ownStock": 0,
       "daily": [
@@ -4648,10 +4648,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 11976.4506,
+          "ordersRevenue": 11971.9408,
           "ordersUnits": 11,
-          "estimatedMargin": 5742.7081,
-          "avgPrice": 1088.7682
+          "estimatedMargin": 5740.5456,
+          "avgPrice": 1088.3583
         }
       ]
     },
@@ -4662,9 +4662,9 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода за волосами",
       "name": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
-      "owner": "Васильева Мария",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
-      "reviewRating": 4.554,
+      "reviewRating": 4.541,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -4673,15 +4673,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 50237.69,
+      "ordersRevenue": 50235.44,
       "previousOrdersRevenue": 59956.94,
-      "ordersRevenueDelta": -9719.25,
+      "ordersRevenueDelta": -9721.51,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 728.08,
+      "avgPrice": 728.05,
       "avgOrdersPerDay": 9.9,
-      "estimatedMargin": -1381.54,
+      "estimatedMargin": -1381.47,
       "wbStock": 1675,
       "ownStock": 0,
       "daily": [
@@ -4729,10 +4729,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5984.934,
+          "ordersRevenue": 5982.6804,
           "ordersUnits": 7,
-          "estimatedMargin": -164.5857,
-          "avgPrice": 854.9906
+          "estimatedMargin": -164.5237,
+          "avgPrice": 854.6686
         }
       ]
     },
@@ -4743,9 +4743,9 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода за волосами",
       "name": "Воск стик для укладки и фиксации волос Алтея 15 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.9,
-      "reviewRating": 4.548,
+      "reviewRating": 4.533,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -4754,15 +4754,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 46945.98,
+      "ordersRevenue": 46942.69,
       "previousOrdersRevenue": 35203.51,
-      "ordersRevenueDelta": 11742.47,
+      "ordersRevenueDelta": 11739.18,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 617.71,
+      "avgPrice": 617.67,
       "avgOrdersPerDay": 10.9,
-      "estimatedMargin": 16492.12,
+      "estimatedMargin": 16490.97,
       "wbStock": 164,
       "ownStock": 0,
       "daily": [
@@ -4810,10 +4810,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 8740.173,
+          "ordersRevenue": 8736.8818,
           "ordersUnits": 12,
-          "estimatedMargin": 3070.4228,
-          "avgPrice": 728.3478
+          "estimatedMargin": 3069.2666,
+          "avgPrice": 728.0735
         }
       ]
     },
@@ -4824,7 +4824,7 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода",
       "name": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2",
-      "owner": "Васильева Мария",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.7,
       "reviewRating": 4.563,
       "views": 0,
@@ -4835,15 +4835,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 46573.66,
+      "ordersRevenue": 46572.28,
       "previousOrdersRevenue": 58849.47,
-      "ordersRevenueDelta": -12275.82,
+      "ordersRevenueDelta": -12277.2,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 589.54,
+      "avgPrice": 589.52,
       "avgOrdersPerDay": 11.3,
-      "estimatedMargin": 17050.62,
+      "estimatedMargin": 17050.11,
       "wbStock": 586,
       "ownStock": 0,
       "daily": [
@@ -4891,10 +4891,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 3656.6543,
+          "ordersRevenue": 3655.2774,
           "ordersUnits": 5,
-          "estimatedMargin": 1338.7012,
-          "avgPrice": 731.3309
+          "estimatedMargin": 1338.1971,
+          "avgPrice": 731.0555
         }
       ]
     },
@@ -4905,7 +4905,7 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода за волосами",
       "name": "Скраб пилинг для кожи головы, Алтея, 200 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
       "reviewRating": 5,
       "views": 0,
@@ -4916,15 +4916,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 45918.9,
+      "ordersRevenue": 45916.27,
       "previousOrdersRevenue": 50836.68,
-      "ordersRevenueDelta": -4917.78,
+      "ordersRevenueDelta": -4920.4,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 728.87,
+      "avgPrice": 728.83,
       "avgOrdersPerDay": 9,
-      "estimatedMargin": -3981.17,
+      "estimatedMargin": -3980.94,
       "wbStock": 1514,
       "ownStock": 0,
       "daily": [
@@ -4972,10 +4972,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6977.5105,
+          "ordersRevenue": 6974.8831,
           "ordersUnits": 8,
-          "estimatedMargin": -604.9502,
-          "avgPrice": 872.1888
+          "estimatedMargin": -604.7224,
+          "avgPrice": 871.8604
         }
       ]
     },
@@ -4986,9 +4986,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "cardicin_BAD_60caps",
-      "owner": "Молодякова Дария",
+      "owner": "Лапыгин Максим",
       "cardRating": null,
-      "reviewRating": 4.889,
+      "reviewRating": 4.88,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -4997,13 +4997,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 44997.54,
+      "ordersRevenue": 44992.36,
       "previousOrdersRevenue": 35593.51,
-      "ordersRevenueDelta": 9404.03,
+      "ordersRevenueDelta": 9398.84,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 749.96,
+      "avgPrice": 749.87,
       "avgOrdersPerDay": 8.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5053,10 +5053,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 13769.8317,
+          "ordersRevenue": 13764.6466,
           "ordersUnits": 16,
           "estimatedMargin": 0,
-          "avgPrice": 860.6145
+          "avgPrice": 860.2904
         }
       ]
     },
@@ -5067,7 +5067,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Уромакс , CPA, 20 капсул",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": null,
       "reviewRating": 4.736,
       "views": 0,
@@ -5078,13 +5078,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 41437.45,
+      "ordersRevenue": 41435.2,
       "previousOrdersRevenue": 43279.93,
-      "ordersRevenueDelta": -1842.47,
+      "ordersRevenueDelta": -1844.73,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 390.92,
+      "avgPrice": 390.9,
       "avgOrdersPerDay": 15.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5134,10 +5134,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5999.3425,
+          "ordersRevenue": 5997.0834,
           "ordersUnits": 14,
           "estimatedMargin": 0,
-          "avgPrice": 428.5245
+          "avgPrice": 428.3631
         }
       ]
     },
@@ -5150,7 +5150,7 @@
       "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
       "owner": "Васильева Мария",
       "cardRating": 4.8,
-      "reviewRating": 4.731,
+      "reviewRating": 4.72,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -5159,15 +5159,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 40725.21,
+      "ordersRevenue": 40723.21,
       "previousOrdersRevenue": 56537.45,
-      "ordersRevenueDelta": -15812.24,
+      "ordersRevenueDelta": -15814.24,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1100.68,
+      "avgPrice": 1100.63,
       "avgOrdersPerDay": 5.3,
-      "estimatedMargin": 21466.26,
+      "estimatedMargin": 21465.2,
       "wbStock": 960,
       "ownStock": 0,
       "daily": [
@@ -5215,10 +5215,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5312.7233,
+          "ordersRevenue": 5310.7228,
           "ordersUnits": 4,
-          "estimatedMargin": 2800.3365,
-          "avgPrice": 1328.1808
+          "estimatedMargin": 2799.282,
+          "avgPrice": 1327.6807
         }
       ]
     },
@@ -5229,9 +5229,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.87,
+      "reviewRating": 4.841,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -5240,13 +5240,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 40395.76,
+      "ordersRevenue": 40392.83,
       "previousOrdersRevenue": 38644.2,
-      "ordersRevenueDelta": 1751.56,
+      "ordersRevenueDelta": 1748.64,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 448.84,
+      "avgPrice": 448.81,
       "avgOrdersPerDay": 12.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5296,10 +5296,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 7764.1261,
+          "ordersRevenue": 7761.2024,
           "ordersUnits": 16,
           "estimatedMargin": 0,
-          "avgPrice": 485.2579
+          "avgPrice": 485.0752
         }
       ]
     },
@@ -5310,9 +5310,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь для суставов Сусталит , CPA, 30 мл",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.635,
+      "reviewRating": 4.607,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -5321,13 +5321,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 35559.06,
+      "ordersRevenue": 35556.9,
       "previousOrdersRevenue": 40791.71,
-      "ordersRevenueDelta": -5232.66,
+      "ordersRevenueDelta": -5234.81,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 530.73,
+      "avgPrice": 530.7,
       "avgOrdersPerDay": 9.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5377,10 +5377,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5727.834,
+          "ordersRevenue": 5725.6771,
           "ordersUnits": 10,
           "estimatedMargin": 0,
-          "avgPrice": 572.7834
+          "avgPrice": 572.5677
         }
       ]
     },
@@ -5391,7 +5391,7 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода за волосами",
       "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "cardRating": 4.4,
       "reviewRating": 4.333,
       "views": 0,
@@ -5402,15 +5402,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 35250.73,
+      "ordersRevenue": 35248.41,
       "previousOrdersRevenue": 21822.61,
-      "ordersRevenueDelta": 13428.12,
+      "ordersRevenueDelta": 13425.8,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 881.27,
+      "avgPrice": 881.21,
       "avgOrdersPerDay": 5.7,
-      "estimatedMargin": -1304.28,
+      "estimatedMargin": -1304.19,
       "wbStock": 0,
       "ownStock": 0,
       "daily": [
@@ -5458,10 +5458,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6161.2734,
+          "ordersRevenue": 6158.9533,
           "ordersUnits": 6,
-          "estimatedMargin": -227.9671,
-          "avgPrice": 1026.8789
+          "estimatedMargin": -227.8813,
+          "avgPrice": 1026.4922
         }
       ]
     },
@@ -5472,7 +5472,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
       "reviewRating": 4.786,
       "views": 0,
@@ -5483,13 +5483,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 35004.34,
+      "ordersRevenue": 35003.68,
       "previousOrdersRevenue": 23197.1,
-      "ordersRevenueDelta": 11807.24,
+      "ordersRevenueDelta": 11806.58,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 397.78,
+      "avgPrice": 397.77,
       "avgOrdersPerDay": 12.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5539,10 +5539,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1752.423,
+          "ordersRevenue": 1751.7631,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 438.1057
+          "avgPrice": 437.9408
         }
       ]
     },
@@ -5555,7 +5555,7 @@
       "name": "Мазь для суставов Артокс, CPA, 75 мл",
       "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.793,
+      "reviewRating": 4.714,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -5564,13 +5564,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 34918.65,
+      "ordersRevenue": 34916.27,
       "previousOrdersRevenue": 19689.99,
-      "ordersRevenueDelta": 15228.66,
+      "ordersRevenueDelta": 15226.28,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1343.02,
+      "avgPrice": 1342.93,
       "avgOrdersPerDay": 3.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5613,10 +5613,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6319.2548,
+          "ordersRevenue": 6316.8752,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 1579.8137
+          "avgPrice": 1579.2188
         }
       ]
     },
@@ -5638,15 +5638,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 34636.74,
+      "ordersRevenue": 34634.12,
       "previousOrdersRevenue": 35103.52,
-      "ordersRevenueDelta": -466.78,
+      "ordersRevenueDelta": -469.4,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 989.62,
+      "avgPrice": 989.55,
       "avgOrdersPerDay": 5,
-      "estimatedMargin": 20245.17,
+      "estimatedMargin": 20243.64,
       "wbStock": 1443,
       "ownStock": 0,
       "daily": [
@@ -5694,10 +5694,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6962.6485,
+          "ordersRevenue": 6960.0267,
           "ordersUnits": 6,
-          "estimatedMargin": 4069.6681,
-          "avgPrice": 1160.4414
+          "estimatedMargin": 4068.1356,
+          "avgPrice": 1160.0045
         }
       ]
     },
@@ -5708,9 +5708,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.828,
+      "reviewRating": 4.833,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -5719,13 +5719,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 33107.72,
+      "ordersRevenue": 33105.71,
       "previousOrdersRevenue": 29346.04,
-      "ordersRevenueDelta": 3761.68,
+      "ordersRevenueDelta": 3759.67,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1504.9,
+      "avgPrice": 1504.8,
       "avgOrdersPerDay": 3.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5775,10 +5775,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5350.8875,
+          "ordersRevenue": 5348.8726,
           "ordersUnits": 5,
           "estimatedMargin": 0,
-          "avgPrice": 1070.1775
+          "avgPrice": 1069.7745
         }
       ]
     },
@@ -5789,9 +5789,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Микардин Форте, CPA, 10 капсул",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.846,
+      "reviewRating": 4.836,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -5800,13 +5800,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 33019.72,
+      "ordersRevenue": 33015.97,
       "previousOrdersRevenue": 29879.37,
-      "ordersRevenueDelta": 3140.35,
+      "ordersRevenueDelta": 3136.61,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 471.71,
+      "avgPrice": 471.66,
       "avgOrdersPerDay": 10,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -5856,10 +5856,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 9951.4366,
+          "ordersRevenue": 9947.6893,
           "ordersUnits": 18,
           "estimatedMargin": 0,
-          "avgPrice": 552.8576
+          "avgPrice": 552.6494
         }
       ]
     },
@@ -5881,15 +5881,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 32249.56,
+      "ordersRevenue": 32247.48,
       "previousOrdersRevenue": 36512.02,
-      "ordersRevenueDelta": -4262.46,
+      "ordersRevenueDelta": -4264.55,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 948.52,
+      "avgPrice": 948.46,
       "avgOrdersPerDay": 4.9,
-      "estimatedMargin": 16805.25,
+      "estimatedMargin": 16804.16,
       "wbStock": 540,
       "ownStock": 0,
       "daily": [
@@ -5937,10 +5937,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5546.4626,
+          "ordersRevenue": 5544.374,
           "ordersUnits": 5,
-          "estimatedMargin": 2890.2617,
-          "avgPrice": 1109.2925
+          "estimatedMargin": 2889.1733,
+          "avgPrice": 1108.8748
         }
       ]
     },
@@ -5953,7 +5953,7 @@
       "name": "Крем от варикоза Варифит, CPA, 30 мл",
       "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.475,
+      "reviewRating": 4.468,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -5962,13 +5962,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 31807.81,
+      "ordersRevenue": 31805.45,
       "previousOrdersRevenue": 32659.9,
-      "ordersRevenueDelta": -852.09,
+      "ordersRevenueDelta": -854.45,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 392.69,
+      "avgPrice": 392.66,
       "avgOrdersPerDay": 11.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6018,10 +6018,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6255.521,
+          "ordersRevenue": 6253.1654,
           "ordersUnits": 14,
           "estimatedMargin": 0,
-          "avgPrice": 446.8229
+          "avgPrice": 446.6547
         }
       ]
     },
@@ -6032,9 +6032,9 @@
       "brand": "Алтея",
       "subject": "Средства по уходу за бровями и ресницами",
       "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.7,
-      "reviewRating": 4.379,
+      "reviewRating": 4.308,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -6043,15 +6043,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 31412.93,
+      "ordersRevenue": 31411.83,
       "previousOrdersRevenue": 37599.46,
-      "ordersRevenueDelta": -6186.53,
+      "ordersRevenueDelta": -6187.63,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 615.94,
+      "avgPrice": 615.92,
       "avgOrdersPerDay": 7.3,
-      "estimatedMargin": 18517.92,
+      "estimatedMargin": 18517.27,
       "wbStock": 336,
       "ownStock": 0,
       "daily": [
@@ -6099,10 +6099,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2915.1951,
+          "ordersRevenue": 2914.0974,
           "ordersUnits": 4,
-          "estimatedMargin": 1718.5076,
-          "avgPrice": 728.7988
+          "estimatedMargin": 1717.8605,
+          "avgPrice": 728.5243
         }
       ]
     },
@@ -6113,7 +6113,7 @@
       "brand": "Алтея",
       "subject": "Спортивное питание",
       "name": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.7,
       "reviewRating": 5,
       "views": 0,
@@ -6124,15 +6124,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 31199.1,
+      "ordersRevenue": 31197.19,
       "previousOrdersRevenue": 32623.81,
-      "ordersRevenueDelta": -1424.72,
+      "ordersRevenueDelta": -1426.62,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 945.43,
+      "avgPrice": 945.37,
       "avgOrdersPerDay": 4.7,
-      "estimatedMargin": -1182.45,
+      "estimatedMargin": -1182.37,
       "wbStock": 1338,
       "ownStock": 0,
       "daily": [
@@ -6180,10 +6180,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5065.4971,
+          "ordersRevenue": 5063.5896,
           "ordersUnits": 5,
-          "estimatedMargin": -191.9823,
-          "avgPrice": 1013.0994
+          "estimatedMargin": -191.91,
+          "avgPrice": 1012.7179
         }
       ]
     },
@@ -6194,9 +6194,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.882,
+      "reviewRating": 4.879,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -6205,13 +6205,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 31106.56,
+      "ordersRevenue": 31105.52,
       "previousOrdersRevenue": 32667.79,
-      "ordersRevenueDelta": -1561.23,
+      "ordersRevenueDelta": -1562.28,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 777.66,
+      "avgPrice": 777.64,
       "avgOrdersPerDay": 5.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6261,10 +6261,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2774.2406,
+          "ordersRevenue": 2773.196,
           "ordersUnits": 3,
           "estimatedMargin": 0,
-          "avgPrice": 924.7469
+          "avgPrice": 924.3987
         }
       ]
     },
@@ -6275,7 +6275,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Санацин, CPA, 20 штук",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": null,
       "reviewRating": 4.421,
       "views": 0,
@@ -6286,13 +6286,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 29749.31,
+      "ordersRevenue": 29746.95,
       "previousOrdersRevenue": 33851.13,
-      "ordersRevenueDelta": -4101.83,
+      "ordersRevenueDelta": -4104.18,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 2704.48,
+      "avgPrice": 2704.27,
       "avgOrdersPerDay": 1.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6328,10 +6328,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 6254.892,
+          "ordersRevenue": 6252.5367,
           "ordersUnits": 2,
           "estimatedMargin": 0,
-          "avgPrice": 3127.446
+          "avgPrice": 3126.2683
         }
       ]
     },
@@ -6342,7 +6342,7 @@
       "brand": "Алтея",
       "subject": "Декоративная косметика",
       "name": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
       "reviewRating": 4.143,
       "views": 0,
@@ -6353,15 +6353,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 27241.28,
+      "ordersRevenue": 27239.33,
       "previousOrdersRevenue": 14788.81,
-      "ordersRevenueDelta": 12452.47,
+      "ordersRevenueDelta": 12450.52,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 716.88,
+      "avgPrice": 716.82,
       "avgOrdersPerDay": 5.4,
-      "estimatedMargin": 8390.31,
+      "estimatedMargin": 8389.71,
       "wbStock": 775,
       "ownStock": 0,
       "daily": [
@@ -6409,10 +6409,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5178.2782,
+          "ordersRevenue": 5176.3283,
           "ordersUnits": 6,
-          "estimatedMargin": 1594.9097,
-          "avgPrice": 863.0464
+          "estimatedMargin": 1594.3091,
+          "avgPrice": 862.7214
         }
       ]
     },
@@ -6425,7 +6425,7 @@
       "name": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер",
       "owner": "Лапыгин Максим",
       "cardRating": 4.7,
-      "reviewRating": 4.778,
+      "reviewRating": 4.75,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -6434,15 +6434,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 25355.39,
+      "ordersRevenue": 25353.25,
       "previousOrdersRevenue": 18589.51,
-      "ordersRevenueDelta": 6765.88,
+      "ordersRevenueDelta": 6763.74,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 975.21,
+      "avgPrice": 975.13,
       "avgOrdersPerDay": 3.7,
-      "estimatedMargin": -6635.51,
+      "estimatedMargin": -6634.95,
       "wbStock": 1233,
       "ownStock": 0,
       "daily": [
@@ -6490,10 +6490,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5675.627,
+          "ordersRevenue": 5673.4898,
           "ordersUnits": 5,
-          "estimatedMargin": -1485.3116,
-          "avgPrice": 1135.1254
+          "estimatedMargin": -1484.7523,
+          "avgPrice": 1134.698
         }
       ]
     },
@@ -6504,9 +6504,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь для суставов Синергель , CPA, 30 мл, набор из 2 шт",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.433,
+      "reviewRating": 4.452,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -6571,9 +6571,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь от псориаза Псорал, CPA, 30 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.494,
+      "reviewRating": 4.507,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -6582,13 +6582,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 20063.04,
+      "ordersRevenue": 20061.75,
       "previousOrdersRevenue": 21994.02,
-      "ordersRevenueDelta": -1930.98,
+      "ordersRevenueDelta": -1932.27,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 378.55,
+      "avgPrice": 378.52,
       "avgOrdersPerDay": 7.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6638,10 +6638,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 3443.2332,
+          "ordersRevenue": 3441.9366,
           "ordersUnits": 8,
           "estimatedMargin": 0,
-          "avgPrice": 430.4042
+          "avgPrice": 430.2421
         }
       ]
     },
@@ -6652,7 +6652,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Уромакс , CPA, 20 капсул, набор из 2 шт",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": null,
       "reviewRating": 4.182,
       "views": 0,
@@ -6663,13 +6663,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 19334.52,
+      "ordersRevenue": 19333.57,
       "previousOrdersRevenue": 15363.69,
-      "ordersRevenueDelta": 3970.83,
+      "ordersRevenueDelta": 3969.88,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 966.73,
+      "avgPrice": 966.68,
       "avgOrdersPerDay": 2.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6719,10 +6719,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2533.0411,
+          "ordersRevenue": 2532.0873,
           "ordersUnits": 3,
           "estimatedMargin": 0,
-          "avgPrice": 844.347
+          "avgPrice": 844.0291
         }
       ]
     },
@@ -6733,7 +6733,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь от грибка ногтей Даошэн, CPA, 75 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
       "reviewRating": 4.708,
       "views": 0,
@@ -6744,13 +6744,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 19319.39,
+      "ordersRevenue": 19317.99,
       "previousOrdersRevenue": 18724.21,
-      "ordersRevenueDelta": 595.18,
+      "ordersRevenueDelta": 593.77,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 643.98,
+      "avgPrice": 643.93,
       "avgOrdersPerDay": 4.3,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6800,10 +6800,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 3730.4082,
+          "ordersRevenue": 3729.0035,
           "ordersUnits": 5,
           "estimatedMargin": 0,
-          "avgPrice": 746.0816
+          "avgPrice": 745.8007
         }
       ]
     },
@@ -6825,13 +6825,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 18787.16,
+      "ordersRevenue": 18785.69,
       "previousOrdersRevenue": 20090.26,
-      "ordersRevenueDelta": -1303.1,
+      "ordersRevenueDelta": -1304.57,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 751.49,
+      "avgPrice": 751.43,
       "avgOrdersPerDay": 3.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -6881,10 +6881,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 3908.5761,
+          "ordersRevenue": 3907.1043,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 977.144
+          "avgPrice": 976.7761
         }
       ]
     },
@@ -6895,7 +6895,7 @@
       "brand": "Алтея",
       "subject": "Декоративная косметика",
       "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
       "reviewRating": 4.556,
       "views": 0,
@@ -6906,15 +6906,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 18256.63,
+      "ordersRevenue": 18254.71,
       "previousOrdersRevenue": 18580.91,
-      "ordersRevenueDelta": -324.28,
+      "ordersRevenueDelta": -326.21,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 869.36,
+      "avgPrice": 869.27,
       "avgOrdersPerDay": 3,
-      "estimatedMargin": 8440.04,
+      "estimatedMargin": 8439.15,
       "wbStock": 375,
       "ownStock": 0,
       "daily": [
@@ -6962,10 +6962,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 5119.7666,
+          "ordersRevenue": 5117.8387,
           "ordersUnits": 5,
-          "estimatedMargin": 2366.8681,
-          "avgPrice": 1023.9533
+          "estimatedMargin": 2365.9768,
+          "avgPrice": 1023.5677
         }
       ]
     },
@@ -6978,7 +6978,7 @@
       "name": "Пиколинат хрома для похудения, детокс, жиросжигатель, Алтея, Фруталика, 60 капсул",
       "owner": "Васильева Мария",
       "cardRating": 4.7,
-      "reviewRating": 4.5,
+      "reviewRating": 4.526,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -6987,15 +6987,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 14874.3,
+      "ordersRevenue": 14873.69,
       "previousOrdersRevenue": 20034.81,
-      "ordersRevenueDelta": -5160.51,
+      "ordersRevenueDelta": -5161.11,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 676.1,
+      "avgPrice": 676.08,
       "avgOrdersPerDay": 3.1,
-      "estimatedMargin": 6239.77,
+      "estimatedMargin": 6239.51,
       "wbStock": 306,
       "ownStock": 0,
       "daily": [
@@ -7043,10 +7043,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1603.745,
+          "ordersRevenue": 1603.141,
           "ordersUnits": 2,
-          "estimatedMargin": 672.771,
-          "avgPrice": 801.8725
+          "estimatedMargin": 672.5176,
+          "avgPrice": 801.5705
         }
       ]
     },
@@ -7057,7 +7057,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
       "reviewRating": 4.844,
       "views": 0,
@@ -7068,13 +7068,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 14828,
+      "ordersRevenue": 14827.27,
       "previousOrdersRevenue": 14090.3,
-      "ordersRevenueDelta": 737.7,
+      "ordersRevenueDelta": 736.97,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 449.33,
+      "avgPrice": 449.31,
       "avgOrdersPerDay": 4.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7124,10 +7124,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1936.6614,
+          "ordersRevenue": 1935.9322,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 484.1654
+          "avgPrice": 483.983
         }
       ]
     },
@@ -7138,7 +7138,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь для суставов Остеофаст, CPA, 30 мл, набор из 3 шт",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "cardRating": null,
       "reviewRating": 4.174,
       "views": 0,
@@ -7149,13 +7149,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 13181.79,
+      "ordersRevenue": 13180.82,
       "previousOrdersRevenue": 11930.27,
-      "ordersRevenueDelta": 1251.52,
+      "ordersRevenueDelta": 1250.55,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 549.24,
+      "avgPrice": 549.2,
       "avgOrdersPerDay": 3.4,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7205,10 +7205,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2566.8023,
+          "ordersRevenue": 2565.8358,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 641.7006
+          "avgPrice": 641.4589
         }
       ]
     },
@@ -7221,7 +7221,7 @@
       "name": "kinzhal",
       "owner": "",
       "cardRating": null,
-      "reviewRating": 4.078,
+      "reviewRating": 4.122,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -7230,13 +7230,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 11374.86,
+      "ordersRevenue": 11374.17,
       "previousOrdersRevenue": 16347.93,
-      "ordersRevenueDelta": -4973.07,
+      "ordersRevenueDelta": -4973.76,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 568.74,
+      "avgPrice": 568.71,
       "avgOrdersPerDay": 2.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7279,10 +7279,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1816.7858,
+          "ordersRevenue": 1816.1016,
           "ordersUnits": 3,
           "estimatedMargin": 0,
-          "avgPrice": 605.5953
+          "avgPrice": 605.3672
         }
       ]
     },
@@ -7304,13 +7304,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 10421.65,
+      "ordersRevenue": 10420.74,
       "previousOrdersRevenue": 11585.86,
-      "ordersRevenueDelta": -1164.21,
+      "ordersRevenueDelta": -1165.13,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 521.08,
+      "avgPrice": 521.04,
       "avgOrdersPerDay": 2.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7360,10 +7360,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2434.3466,
+          "ordersRevenue": 2433.43,
           "ordersUnits": 4,
           "estimatedMargin": 0,
-          "avgPrice": 608.5867
+          "avgPrice": 608.3575
         }
       ]
     },
@@ -7374,7 +7374,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Уролган , CPA, 10 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": null,
       "reviewRating": 4.75,
       "views": 0,
@@ -7385,13 +7385,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 9042.71,
+      "ordersRevenue": 9041.89,
       "previousOrdersRevenue": 4370.42,
-      "ordersRevenueDelta": 4672.3,
+      "ordersRevenueDelta": 4671.47,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 376.78,
+      "avgPrice": 376.75,
       "avgOrdersPerDay": 3.4,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7441,10 +7441,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 2194.1857,
+          "ordersRevenue": 2193.3595,
           "ordersUnits": 5,
           "estimatedMargin": 0,
-          "avgPrice": 438.8371
+          "avgPrice": 438.6719
         }
       ]
     },
@@ -7455,9 +7455,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь от грибка ногтей Даошэн, CPA, 15 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.385,
+      "reviewRating": 4.424,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -7466,13 +7466,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 9019.69,
+      "ordersRevenue": 9019.32,
       "previousOrdersRevenue": 1378.51,
-      "ordersRevenueDelta": 7641.18,
+      "ordersRevenueDelta": 7640.82,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 409.99,
+      "avgPrice": 409.97,
       "avgOrdersPerDay": 3.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7522,10 +7522,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 972.6825,
+          "ordersRevenue": 972.3162,
           "ordersUnits": 2,
           "estimatedMargin": 0,
-          "avgPrice": 486.3413
+          "avgPrice": 486.1581
         }
       ]
     },
@@ -7536,9 +7536,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Активпрост , CPA, 10 капсул",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": null,
-      "reviewRating": 4.2,
+      "reviewRating": 4.192,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -7547,13 +7547,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 8953.05,
+      "ordersRevenue": 8952.74,
       "previousOrdersRevenue": 14058.82,
-      "ordersRevenueDelta": -5105.77,
+      "ordersRevenueDelta": -5106.08,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 344.35,
+      "avgPrice": 344.34,
       "avgOrdersPerDay": 3.7,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7603,10 +7603,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 833.7906,
+          "ordersRevenue": 833.4766,
           "ordersUnits": 2,
           "estimatedMargin": 0,
-          "avgPrice": 416.8953
+          "avgPrice": 416.7383
         }
       ]
     },
@@ -7628,13 +7628,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 8793.14,
+      "ordersRevenue": 8792.76,
       "previousOrdersRevenue": 14198.68,
-      "ordersRevenueDelta": -5405.54,
+      "ordersRevenueDelta": -5405.92,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 799.38,
+      "avgPrice": 799.34,
       "avgOrdersPerDay": 1.6,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7670,10 +7670,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1004.937,
+          "ordersRevenue": 1004.5586,
           "ordersUnits": 1,
           "estimatedMargin": 0,
-          "avgPrice": 1004.937
+          "avgPrice": 1004.5586
         }
       ]
     },
@@ -7684,7 +7684,7 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода",
       "name": "Набор уходовой косметики для лица антивозрастной",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "cardRating": 0,
       "reviewRating": 0,
       "views": 0,
@@ -7725,7 +7725,7 @@
       "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
       "owner": "Васильева Мария",
       "cardRating": 4.8,
-      "reviewRating": 4.677,
+      "reviewRating": 4.667,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -7857,7 +7857,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Крем от гемороя Геморект, CPA, 15 мл",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "cardRating": null,
       "reviewRating": 4.554,
       "views": 0,
@@ -7868,13 +7868,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 5373.15,
+      "ordersRevenue": 5372.84,
       "previousOrdersRevenue": 9282.69,
-      "ordersRevenueDelta": -3909.54,
+      "ordersRevenueDelta": -3909.85,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 383.8,
+      "avgPrice": 383.77,
       "avgOrdersPerDay": 2,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7917,10 +7917,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 804.5348,
+          "ordersRevenue": 804.2318,
           "ordersUnits": 2,
           "estimatedMargin": 0,
-          "avgPrice": 402.2674
+          "avgPrice": 402.1159
         }
       ]
     },
@@ -7942,13 +7942,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 5105.91,
+      "ordersRevenue": 5105.55,
       "previousOrdersRevenue": 3957.97,
-      "ordersRevenueDelta": 1147.94,
+      "ordersRevenueDelta": 1147.58,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 850.99,
+      "avgPrice": 850.93,
       "avgOrdersPerDay": 0.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -7970,10 +7970,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 956.665,
+          "ordersRevenue": 956.3047,
           "ordersUnits": 1,
           "estimatedMargin": 0,
-          "avgPrice": 956.665
+          "avgPrice": 956.3047
         }
       ]
     },
@@ -7984,9 +7984,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь от псориаза Псорал, CPA, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.45,
+      "reviewRating": 4.389,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -8051,9 +8051,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Хвойница , CPA, 7 саше",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.75,
+      "reviewRating": 4.7,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -8104,9 +8104,9 @@
       "brand": "Алтея",
       "subject": "Средства для гигиены тела",
       "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.9,
-      "reviewRating": 4.818,
+      "reviewRating": 4.8,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -8115,15 +8115,15 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 3092.92,
+      "ordersRevenue": 3092.71,
       "previousOrdersRevenue": 13459.5,
-      "ordersRevenueDelta": -10366.58,
+      "ordersRevenueDelta": -10366.79,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 441.85,
+      "avgPrice": 441.82,
       "avgOrdersPerDay": 1,
-      "estimatedMargin": -495.49,
+      "estimatedMargin": -495.45,
       "wbStock": 437,
       "ownStock": 0,
       "daily": [
@@ -8164,10 +8164,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 542.6953,
+          "ordersRevenue": 542.4909,
           "ordersUnits": 1,
-          "estimatedMargin": -86.9398,
-          "avgPrice": 542.6953
+          "estimatedMargin": -86.907,
+          "avgPrice": 542.4909
         }
       ]
     },
@@ -8178,9 +8178,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Хвойница , CPA, 7 саше",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.429,
+      "reviewRating": 4.5,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -8189,13 +8189,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 2803.21,
+      "ordersRevenue": 2802.81,
       "previousOrdersRevenue": 12141.13,
-      "ordersRevenueDelta": -9337.92,
+      "ordersRevenueDelta": -9338.32,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 934.4,
+      "avgPrice": 934.27,
       "avgOrdersPerDay": 0.4,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -8217,10 +8217,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1076.6138,
+          "ordersRevenue": 1076.2084,
           "ordersUnits": 1,
           "estimatedMargin": 0,
-          "avgPrice": 1076.6138
+          "avgPrice": 1076.2084
         }
       ]
     },
@@ -8242,13 +8242,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 2341.88,
+      "ordersRevenue": 2341.72,
       "previousOrdersRevenue": 3187.72,
-      "ordersRevenueDelta": -845.84,
+      "ordersRevenueDelta": -846,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 390.31,
+      "avgPrice": 390.29,
       "avgOrdersPerDay": 0.9,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -8270,10 +8270,10 @@
         },
         {
           "date": "2026-07-01",
-          "ordersRevenue": 425.672,
+          "ordersRevenue": 425.5117,
           "ordersUnits": 1,
           "estimatedMargin": 0,
-          "avgPrice": 425.672
+          "avgPrice": 425.5117
         }
       ]
     },
@@ -8284,9 +8284,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь для суставов Артокс, CPA, 50 мл",
-      "owner": "Васильева Мария",
+      "owner": "Лапыгин Максим",
       "cardRating": null,
-      "reviewRating": 4.639,
+      "reviewRating": 4.622,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -8339,7 +8339,7 @@
       "name": "Возбудитель для мужчин, БАД Т-34 возбуждающие для потенции, эрекции, 60 капсул",
       "owner": "Васильева Мария",
       "cardRating": 4.5,
-      "reviewRating": 4.636,
+      "reviewRating": 4.6,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -8376,7 +8376,7 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь для суставов Биотрин, CPA, 30 мл, набор из 3 шт",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "cardRating": null,
       "reviewRating": 4.625,
       "views": 0,
@@ -8387,13 +8387,13 @@
       "cancellationsUnits": 0,
       "buyoutPct": null,
       "previousBuyoutPct": null,
-      "ordersRevenue": 1429.15,
+      "ordersRevenue": 1428.61,
       "previousOrdersRevenue": 0,
-      "ordersRevenueDelta": 1429.15,
+      "ordersRevenueDelta": 1428.61,
       "buyoutRevenue": 0,
       "previousBuyoutRevenue": 0,
       "cancelRevenue": 0,
-      "avgPrice": 1429.15,
+      "avgPrice": 1428.61,
       "avgOrdersPerDay": 0.1,
       "estimatedMargin": 0,
       "wbStock": 0,
@@ -8401,10 +8401,10 @@
       "daily": [
         {
           "date": "2026-07-01",
-          "ordersRevenue": 1429.1463,
+          "ordersRevenue": 1428.6081,
           "ordersUnits": 1,
           "estimatedMargin": 0,
-          "avgPrice": 1429.1463
+          "avgPrice": 1428.6081
         }
       ]
     },
@@ -8415,7 +8415,7 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода",
       "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "owner": "Кирилл",
+      "owner": "Лапыгин Максим",
       "cardRating": 4.8,
       "reviewRating": 5,
       "views": 0,
@@ -8454,9 +8454,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Пищевая добавка Санацин, CPA, 20 штук",
-      "owner": "Питайкин Артём",
+      "owner": "Лапыгин Максим",
       "cardRating": null,
-      "reviewRating": 4.73,
+      "reviewRating": 4.714,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -8493,9 +8493,9 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода",
       "name": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
-      "owner": "Васильева Мария",
+      "owner": "Мария",
       "cardRating": 4.7,
-      "reviewRating": 4,
+      "reviewRating": 3,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -8532,9 +8532,9 @@
       "brand": "CPA",
       "subject": "Парафармацевтика",
       "name": "Мазь от грибка ногтей Аллицил, CPA, 15 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.364,
+      "reviewRating": 4.344,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -8563,9 +8563,9 @@
       "brand": "Алтея",
       "subject": "Косметика для ухода",
       "name": "Точечный крем от прыщей. Корректор точечный против прыщей, крем от акне. Салициловая кислота, азелаиновая кислота Алтея 20 мл",
-      "owner": "Кирилл",
+      "owner": "Васильева Мария",
       "cardRating": 4.8,
-      "reviewRating": 4.353,
+      "reviewRating": 4.5,
       "views": 0,
       "clicks": 0,
       "carts": 0,
@@ -8627,7 +8627,7 @@
       "name": "Крем от варикоза Ветонус, CPA, 30 мл",
       "owner": "Васильева Мария",
       "cardRating": null,
-      "reviewRating": 4.333,
+      "reviewRating": 4.25,
       "views": 0,
       "clicks": 0,
       "carts": 0,

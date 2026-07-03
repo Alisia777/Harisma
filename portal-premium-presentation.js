@@ -652,8 +652,11 @@
       adSpend: Math.round(finite(totals.adSpend)),
       employeeCount: Math.round(finite(totals.employeeCount)),
       underPlanCount: Math.round(finite(totals.underPlanCount)),
+      riskBandCount: Math.round(finite(totals.riskBandCount)),
+      criticalCount: Math.round(finite(totals.criticalCount)),
       okCount: Math.round(finite(totals.okCount)),
       completionToDate: executiveSignatureRatio(totals.completionToDate),
+      completionMonth: executiveSignatureRatio(totals.completionMonth),
       marginPct: executiveSignatureRatio(totals.marginPct),
       drr: executiveSignatureRatio(totals.drr)
     };
@@ -1292,17 +1295,29 @@
     var totals = model.totals || {};
     var employeeCount = finite(totals.employeeCount || (model.allOwnerRows || []).length);
     var okCount = finite(totals.okCount);
-    var riskCount = finite(totals.underPlanCount);
-    var criticalCount = (model.ownerRows || model.allOwnerRows || []).filter(function (row) {
-      return row.planToDateRevenue > 0 && numberOrNull(row.completionToDate) !== null && row.completionToDate < .8;
-    }).length;
+    var statusRows = model.allOwnerRows || model.ownerRows || [];
+    var riskCount = numberOrNull(totals.riskBandCount) !== null
+      ? finite(totals.riskBandCount)
+      : statusRows.filter(function (row) {
+        var completion = numberOrNull(row.completionToDate);
+        return finite(row.planToDateRevenue) > 0 && completion !== null && completion >= .8 && completion < 1;
+      }).length;
+    var criticalCount = numberOrNull(totals.criticalCount) !== null
+      ? finite(totals.criticalCount)
+      : statusRows.filter(function (row) {
+        var completion = numberOrNull(row.completionToDate);
+        return finite(row.planToDateRevenue) > 0 && completion !== null && completion < .8;
+      }).length;
     var periodCaption = executivePeriodCaption(model);
-    var paceHint = model.isFullMonth ? 'месяц закрыт целиком' : 'месяц еще идет, факт по ' + (executiveDateLabel(model.periodEnd) || 'срезу');
+    var monthCompletion = numberOrNull(totals.completionMonth);
+    var paceHint = monthCompletion === null
+      ? 'месячный план не задан'
+      : 'месячный план ' + money(totals.planRevenue) + ' · факт ' + money(totals.factRevenue);
     return '<div class="grid executive-native-kpis section-gap">' + [
       metric('План команды', totals.completionToDate == null ? 'нет данных' : pct(totals.completionToDate), periodCaption + ' · план ' + money(totals.planToDateRevenue) + ' · факт ' + money(totals.factRevenue), totals.completionToDate == null ? 0 : clampPct(totals.completionToDate), 'executive-native-kpi'),
-      metric('Темп месяца', totals.completionToDate == null ? 'нет данных' : pct(totals.completionToDate), paceHint, totals.completionToDate == null ? 0 : clampPct(totals.completionToDate), 'executive-native-kpi'),
+      metric('Темп месяца', monthCompletion === null ? 'нет данных' : pct(monthCompletion), paceHint, monthCompletion === null ? 0 : clampPct(monthCompletion), 'executive-native-kpi'),
       metric('В плане', employeeCount ? int(okCount) + ' / ' + int(employeeCount) : 'нет данных', 'сотрудники с выполнением 100%+', employeeCount ? okCount / employeeCount * 100 : 0, 'executive-native-kpi'),
-      metric('В зоне риска', riskCount ? int(riskCount) : '0', 'ниже плана к дате', employeeCount ? riskCount / Math.max(1, employeeCount) * 100 : 0, 'executive-native-kpi'),
+      metric('В зоне риска', riskCount ? int(riskCount) : '0', '80-99,9% выполнения', employeeCount ? riskCount / Math.max(1, employeeCount) * 100 : 0, 'executive-native-kpi'),
       metric('Критично', criticalCount ? int(criticalCount) : '0', 'ниже 80% выполнения', employeeCount ? criticalCount / Math.max(1, employeeCount) * 100 : 0, 'executive-native-kpi')
     ].join('') + '</div>';
   }

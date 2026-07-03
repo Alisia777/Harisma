@@ -490,6 +490,7 @@ function executiveFunnelFinalizePlanBucket(row) {
     })
     : [];
   row.completionToDate = row.planToDateRevenue > 0 ? row.factRevenue / row.planToDateRevenue : null;
+  row.completionMonth = row.planRevenue > 0 ? row.factRevenue / row.planRevenue : null;
   row.gapToDate = row.factRevenue - row.planToDateRevenue;
   row.marginPct = row.marginWeight > 0 ? row.marginRub / row.marginWeight : null;
   row.planMarginPct = row.planMarginWeight > 0 ? row.planMarginValue / row.planMarginWeight : null;
@@ -499,6 +500,27 @@ function executiveFunnelFinalizePlanBucket(row) {
   row.planDrr = row.planToDateRevenue > 0 && row.planAdSpend !== null ? row.planAdSpend / row.planToDateRevenue : null;
   row.level = executiveFunnelCompletionLevel(row.completionToDate);
   return row;
+}
+
+function executiveFunnelPlanStatusCounts(rows = []) {
+  const counts = {
+    okCount: 0,
+    underPlanCount: 0,
+    riskBandCount: 0,
+    criticalCount: 0
+  };
+  (rows || []).forEach((row) => {
+    const planToDate = executiveFunnelNumber(row?.planToDateRevenue);
+    const completion = row?.completionToDate === null || row?.completionToDate === undefined || !Number.isFinite(Number(row.completionToDate))
+      ? null
+      : Number(row.completionToDate);
+    if (completion !== null && completion >= 1) counts.okCount += 1;
+    if (planToDate <= 0 || completion === null || completion >= 1) return;
+    counts.underPlanCount += 1;
+    if (completion < 0.8) counts.criticalCount += 1;
+    else counts.riskBandCount += 1;
+  });
+  return counts;
 }
 
 function executiveFunnelPlanBucketHasSignal(row = {}) {
@@ -926,9 +948,12 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     executiveFunnelApplyPayrollPlatformMetric(totals, payrollTotalMetric || planModel.payrollKpi);
   }
 
+  const statusCounts = executiveFunnelPlanStatusCounts(ownerRows);
   totals.employeeCount = ownerRows.length;
-  totals.underPlanCount = ownerRows.filter((row) => row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue).length;
-  totals.okCount = ownerRows.filter((row) => row.completionToDate !== null && row.completionToDate >= 1).length;
+  totals.underPlanCount = statusCounts.underPlanCount;
+  totals.riskBandCount = statusCounts.riskBandCount;
+  totals.criticalCount = statusCounts.criticalCount;
+  totals.okCount = statusCounts.okCount;
   const ownerOptions = [...new Set((activeOwners.length ? activeOwners : ownerRows.map((row) => String(row.owner || '').trim())).filter(Boolean))]
     .sort((left, right) => left.localeCompare(right, 'ru'));
 

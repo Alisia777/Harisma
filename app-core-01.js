@@ -235,7 +235,7 @@ const VIEW_DATA_REQUIREMENTS = {
   'wb-rating': 'iuDrr',
   'product-leaderboard': 'productLeaderboard',
   'launch-control': 'launches',
-  executive: '',
+  executive: 'skuPlanFact',
   meetings: 'meetings',
   documents: 'documents',
   repricer: 'repricer'

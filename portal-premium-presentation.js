@@ -527,6 +527,26 @@
     executiveModelCache = { key: '', model: null, time: 0 };
   }
 
+  function executivePlanFactReady() {
+    var s = state();
+    return Boolean(s.boot && s.boot.dataReady && s.boot.lazyReady && s.boot.lazyReady.skuPlanFact);
+  }
+
+  function requestExecutivePlanFactData() {
+    var s = state();
+    var loader = window.ensureViewData || (typeof ensureViewData === 'function' ? ensureViewData : null);
+    if (!s.boot || !s.boot.dataReady || typeof loader !== 'function') return;
+    var pending = s.boot.lazyLoads && s.boot.lazyLoads.skuPlanFact;
+    Promise.resolve(pending || loader('executive'))
+      .then(function () {
+        resetExecutiveModelCache();
+        scheduleRender(0);
+      })
+      .catch(function (error) {
+        console.warn('[premium-executive] sku plan-fact load failed', error);
+      });
+  }
+
   function executiveModelCacheKey() {
     var s = state();
     var filters = window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ || {};
@@ -1372,11 +1392,21 @@
   function renderExecutive(root) {
     var route = ROUTES.executive;
     window.__ALTEA_PREMIUM_EXECUTIVE_OWNER__ = true;
-    var model = buildExecutiveModel();
+    var planFactReady = executivePlanFactReady();
+    if (!planFactReady) requestExecutivePlanFactData();
+    var model = planFactReady ? buildExecutiveModel() : {
+      ready: false,
+      reason: 'Загружаем план-факт SKU для управленческого экрана.',
+      filters: window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ || {},
+      ownerRows: [],
+      allOwnerRows: [],
+      platformRows: [],
+      totals: {}
+    };
     var factPending = executiveFactPending(model);
     var factUnavailable = executiveHasPlanWithoutFact(model);
-    var pendingData = executiveNeedsDataRetry(model, factPending);
-    var canRenderBody = model.ready && (!pendingData || executiveCanRenderDegraded(model));
+    var pendingData = !planFactReady || executiveNeedsDataRetry(model, factPending);
+    var canRenderBody = planFactReady && model.ready && (!pendingData || executiveCanRenderDegraded(model));
     var platform = model.selectedPlatform || (model.filters && model.filters.platform) || 'all';
     var stage = ensureStage(route.id);
     var signature = JSON.stringify({

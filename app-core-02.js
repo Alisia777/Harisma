@@ -11,6 +11,11 @@ async function ensureViewData(view) {
     .then(() => loader())
     .then(() => {
       state.boot.lazyReady[key] = true;
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+        const detail = { view, key, lazy: true };
+        window.dispatchEvent(new CustomEvent('altea:view-data-ready', { detail }));
+        window.dispatchEvent(new CustomEvent('altea:data-ready', { detail }));
+      }
     })
     .finally(() => {
       delete state.boot.lazyLoads[key];

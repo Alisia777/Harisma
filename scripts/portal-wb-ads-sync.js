@@ -1303,7 +1303,7 @@ async function buildPayload(options) {
       skus
     );
   }
-  const campaignIds = campaignIdsFromCount(countPayload);
+  let campaignIds = campaignIdsFromCount(countPayload);
   diagnostics.campaigns = {
     sourceGroups: Array.isArray(countPayload?.adverts) ? countPayload.adverts.length : 0,
     activeIds: campaignIds.length
@@ -1329,6 +1329,28 @@ async function buildPayload(options) {
   diagnostics.campaignDetails = options.skipCampaignDetails
     ? { skipped: true, reason: 'Skipped by default to avoid WB campaign-details rate limits.' }
     : { skipped: false };
+
+  const updRows = await fetchUpdRows(options, diagnostics);
+  const updCampaignIds = new Set(
+    normalizeUpdRows(updRows)
+      .map((row) => normalizeCampaignId(row.campaignId))
+      .filter(Boolean)
+  );
+  if (updCampaignIds.size) {
+    const activeCampaignIds = new Set(campaignIds.map((id) => String(id)));
+    const scopedCampaignIds = [...updCampaignIds].filter((id) => activeCampaignIds.has(String(id)));
+    diagnostics.campaigns.updIds = updCampaignIds.size;
+    diagnostics.campaigns.fullstatsIds = scopedCampaignIds.length || campaignIds.length;
+    if (scopedCampaignIds.length) {
+      campaignIds = scopedCampaignIds;
+    } else {
+      diagnostics.warnings.push('WB UPD returned campaign ids, but none matched active campaign count; fullstats kept the full active campaign list.');
+    }
+  } else if (!options.skipUpd) {
+    diagnostics.campaigns.updIds = 0;
+    diagnostics.campaigns.fullstatsIds = campaignIds.length;
+  }
+
   const fullstatRows = await fetchFullStats(options, campaignIds, campaignDetails, diagnostics);
   if (!fullstatRows.length && diagnostics.fullstatsFailedRequests > 0) {
     return buildAdsSummaryFallback(
@@ -1340,7 +1362,6 @@ async function buildPayload(options) {
       skus
     );
   }
-  const updRows = await fetchUpdRows(options, diagnostics);
   const reconciledRows = reconcileWithUpd(fullstatRows, updRows, diagnostics);
   const itemSeries = aggregateRows(attachSkuMeta([...reconciledRows, ...externalRows], nmMap, skus, diagnostics));
   diagnostics.itemRows = itemSeries.length;

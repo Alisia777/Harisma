@@ -1,7 +1,7 @@
 {
   "schema": "portal-indicator-audit-v1",
   "generatedAt": "2026-07-03T09:27:54.183Z",
-  "snapshot_id": "dashboard:df90d3b5950c73f7",
+  "snapshot_id": "dashboard:c26af17b25323e68",
   "status": "ok",
   "publish_allowed": true,
   "policy_version": "2026-06-20.1",
@@ -36,7 +36,9 @@
         "data_status": "incomplete",
         "business_status": "neutral",
         "label": "Нет данных",
-        "reason_codes": [],
+        "reason_codes": [
+          "missing_drr_target"
+        ],
         "policy_id": "drr_default",
         "policy_version": "2026-06-20.1",
         "color": "gray"
@@ -45,7 +47,9 @@
         "data_status": "incomplete",
         "business_status": "neutral",
         "label": "Нет данных",
-        "reason_codes": [],
+        "reason_codes": [
+          "missing_drr_target"
+        ],
         "policy_id": "drr_default",
         "policy_version": "2026-06-20.1",
         "color": "gray"

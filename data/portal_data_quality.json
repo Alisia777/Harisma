@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T09:42:48.546Z",
+  "generatedAt": "2026-07-03T11:13:23.712Z",
   "status": "warning",
   "summary": {
     "issueCount": 1,
@@ -73,7 +73,7 @@
     {
       "dataset": "ads_summary",
       "asOfDate": "2026-07-02",
-      "generatedAt": "2026-07-03T08:59:12.378Z",
+      "generatedAt": "2026-07-03T11:08:57.738Z",
       "rows": 8,
       "referenceDate": "2026-07-03",
       "lagDays": 1,
@@ -82,7 +82,7 @@
     {
       "dataset": "iu_drr_summary",
       "asOfDate": "2026-07-02",
-      "generatedAt": "2026-07-03T09:10:06.535Z",
+      "generatedAt": "2026-07-03T11:12:09.041Z",
       "rows": 31,
       "referenceDate": "2026-07-03",
       "lagDays": 1,

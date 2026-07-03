@@ -1,12 +1,14 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-07-03T10:09:39.881Z",
-  "status": "ok",
+  "generatedAt": "2026-07-03T11:13:43.904Z",
+  "status": "warning",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
-    "warnings": [],
-    "checkedAt": "2026-07-03T10:09:39.881Z"
+    "warnings": [
+      "SKU matrix is older than portal_data_quality; SKU contour may show stale unresolved issues."
+    ],
+    "checkedAt": "2026-07-03T11:13:43.904Z"
   },
   "freshness": {
     "maxDate": "2026-07-02",
@@ -15,7 +17,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-07-03T10:09:39.870Z",
+      "checkedAt": "2026-07-03T11:13:43.898Z",
       "settlementHour": 10,
       "expectedDate": "2026-07-02",
       "maxDate": "2026-07-02",
@@ -62,11 +64,11 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-07-03T10:09:39.876Z",
+      "checkedAt": "2026-07-03T11:13:43.904Z",
       "expectedDate": "2026-07-02",
-      "adsSummaryWindowTo": "2026-06-30",
+      "adsSummaryWindowTo": "2026-07-02",
       "iuDrrWindowTo": "2026-07-02",
-      "iuDrrAdsWindowTo": "2026-07-01",
+      "iuDrrAdsWindowTo": "2026-07-02",
       "iuDrrDailyLatest": "2026-07-02",
       "blockingReasons": [],
       "warnings": [],
@@ -74,15 +76,22 @@
         {
           "name": "iu-drr-ads-window-after-ads-summary",
           "status": "ok",
-          "message": "IU/DRR WB ads window covers ads_summary through 2026-07-01.",
-          "adsWindowTo": "2026-06-30",
-          "iuAdsWindowTo": "2026-07-01"
+          "message": "IU/DRR WB ads window covers ads_summary through 2026-07-02.",
+          "adsWindowTo": "2026-07-02",
+          "iuAdsWindowTo": "2026-07-02"
         },
         {
           "name": "iu-drr-daily-expected-date",
           "status": "ok",
           "message": "IU/DRR daily rows cover expected date 2026-07-02.",
           "iuDailyLatest": "2026-07-02",
+          "expectedDate": "2026-07-02"
+        },
+        {
+          "name": "iu-drr-ads-window-expected-date",
+          "status": "ok",
+          "message": "IU/DRR WB ads window covers expected date 2026-07-02.",
+          "iuAdsWindowTo": "2026-07-02",
           "expectedDate": "2026-07-02"
         }
       ]
@@ -125,7 +134,7 @@
     "ads_summary": {
       "exists": true,
       "rows": 8,
-      "generatedAt": "2026-07-03T08:59:12.378Z",
+      "generatedAt": "2026-07-03T11:08:57.738Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
@@ -173,16 +182,16 @@
     },
     "product_leaderboard": {
       "exists": true,
-      "rows": 50,
-      "generatedAt": "2026-06-30T07:17:36.665Z",
-      "asOfDate": "2026-06-30",
-      "revenue": 17390825
+      "rows": 53,
+      "generatedAt": "2026-07-03T10:43:00.877Z",
+      "asOfDate": "2026-07-03",
+      "revenue": 16536991
     },
     "product_leaderboard_history": {
       "exists": true,
-      "rows": 8,
+      "rows": 9,
       "generatedAt": "",
-      "asOfDate": "2026-06-30",
+      "asOfDate": "2026-07-03",
       "revenue": 0
     },
     "wb_substitution_traffic": {
@@ -237,7 +246,7 @@
     "iu_drr_summary": {
       "exists": true,
       "rows": 31,
-      "generatedAt": "2026-07-03T09:10:06.535Z",
+      "generatedAt": "2026-07-03T11:12:09.041Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
@@ -251,14 +260,14 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-03T09:42:48.546Z",
+      "generatedAt": "2026-07-03T11:13:23.712Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-07-03T09:42:49.111Z",
+      "generatedAt": "2026-07-03T10:09:39.869Z",
       "asOfDate": "2026-07-03",
       "revenue": 0
     },
@@ -293,7 +302,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-03T09:42:49.117Z",
+      "generatedAt": "2026-07-03T10:09:39.881Z",
       "asOfDate": "2026-07-03",
       "revenue": 0
     }
@@ -303,7 +312,7 @@
     "issues": []
   },
   "skuContour": {
-    "status": "ok",
+    "status": "warning",
     "aliasCount": 341,
     "ignoreCount": 0,
     "matrixAliasCount": 341,
@@ -353,8 +362,8 @@
       },
       {
         "name": "matrix-after-quality",
-        "status": "ok",
-        "message": "SKU matrix is aligned with portal_data_quality."
+        "status": "warning",
+        "message": "SKU matrix is older than portal_data_quality; SKU contour may show stale unresolved issues."
       }
     ]
   },
@@ -545,8 +554,8 @@
     },
     {
       "name": "sku-contour:matrix-after-quality",
-      "status": "ok",
-      "message": "SKU matrix is aligned with portal_data_quality."
+      "status": "warning",
+      "message": "SKU matrix is older than portal_data_quality; SKU contour may show stale unresolved issues."
     },
     {
       "name": "freshness-completeness:wb",
@@ -581,15 +590,22 @@
     {
       "name": "iu-drr-ads-window-after-ads-summary",
       "status": "ok",
-      "message": "IU/DRR WB ads window covers ads_summary through 2026-07-01.",
-      "adsWindowTo": "2026-06-30",
-      "iuAdsWindowTo": "2026-07-01"
+      "message": "IU/DRR WB ads window covers ads_summary through 2026-07-02.",
+      "adsWindowTo": "2026-07-02",
+      "iuAdsWindowTo": "2026-07-02"
     },
     {
       "name": "iu-drr-daily-expected-date",
       "status": "ok",
       "message": "IU/DRR daily rows cover expected date 2026-07-02.",
       "iuDailyLatest": "2026-07-02",
+      "expectedDate": "2026-07-02"
+    },
+    {
+      "name": "iu-drr-ads-window-expected-date",
+      "status": "ok",
+      "message": "IU/DRR WB ads window covers expected date 2026-07-02.",
+      "iuAdsWindowTo": "2026-07-02",
       "expectedDate": "2026-07-02"
     },
     {

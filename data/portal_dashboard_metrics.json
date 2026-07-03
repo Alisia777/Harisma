@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-metrics-v1",
   "generatedAt": "2026-07-03T09:27:54.183Z",
-  "snapshot_id": "dashboard:df90d3b5950c73f7",
+  "snapshot_id": "dashboard:c26af17b25323e68",
   "metric_registry_version": "2026-06-20.1",
   "indicator_policy_version": "2026-06-20.1",
   "cutoffDate": "2026-07-02",
@@ -9,7 +9,7 @@
   "source_checksums": {
     "platform_trends.json": {
       "exists": true,
-      "sha256": "0aaaeed374ad0a5d1eec3c5a85fd23b2647eb6cd7b40579e2a2bf7b93aa55ab1"
+      "sha256": "45905f0c6e754ed32313cea594ec902f7f55418cf3de3625943956b273116178"
     },
     "company_plan.json": {
       "exists": true,
@@ -17,7 +17,7 @@
     },
     "ads_summary.json": {
       "exists": true,
-      "sha256": "986af2bbed16877a0bb79223afab285cb54089bff8aa7ec93d97d8dde6ec2271"
+      "sha256": "5da8040332637ba2f9ef6994611d79ee9809357b2bd3be87b7bf09ecf35e17f7"
     },
     "portal_metric_registry.json": {
       "exists": true,
@@ -447,8 +447,8 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-02",
-      "raw_value": null,
-      "displayed_value": "Нет данных",
+      "raw_value": 0.294083,
+      "displayed_value": 29.41,
       "transforms": [
         "ad_spend / attributed_revenue"
       ],
@@ -461,8 +461,8 @@
       "confidence": "medium",
       "drilldown": [
         {
-          "spend": null,
-          "attributedRevenue": null
+          "spend": 1398060.45,
+          "attributedRevenue": 4753961
         }
       ]
     },

@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-v2",
   "generatedAt": "2026-07-03T09:27:54.183Z",
-  "snapshot_id": "dashboard:df90d3b5950c73f7",
+  "snapshot_id": "dashboard:c26af17b25323e68",
   "asOfDate": "2026-07-02",
   "latestMarketplaceDate": "2026-07-02",
   "monthKey": "2026-07",
@@ -287,8 +287,8 @@
     {
       "id": "ads-drr-wb",
       "label": "DRR WB",
-      "value": 0,
-      "valuePct": 0,
+      "value": 0.294083,
+      "valuePct": 0.294083,
       "format": "pct",
       "period": "2026-07-02",
       "hint": "Ad spend divided by attributed revenue.",

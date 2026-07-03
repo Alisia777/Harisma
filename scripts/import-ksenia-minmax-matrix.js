@@ -9,14 +9,12 @@ const { buildLegacyRepricerLayer } = require('./build-legacy-repricer-layer');
 const ROOT = process.cwd();
 const TODAY = new Date().toISOString().slice(0, 10);
 const IMPORT_STAMP = new Date().toISOString();
-const SOURCE_WORKBOOK_NAME = 'portal_merged_statuses_from_ksenia_minmax.xlsx';
-const SOURCE_NOTE = `${SOURCE_WORKBOOK_NAME} / Для выгрузки`;
+const SOURCE_NOTE = 'ksenia-merged-statuses-minmax-2026-07-02';
 const DISABLED_STATUS = 'Вывод';
-const WB_OWNER_AUDIT_FILE_NAME = 'wb_owner_distribution_audit.json';
 const DEFAULT_INPUT = path.join(
   process.env.USERPROFILE || '',
   'Downloads',
-  SOURCE_WORKBOOK_NAME
+  'portal_merged_statuses_from_ksenia_minmax.xlsx'
 );
 
 const PRICE_TARGET_FILES = [
@@ -38,8 +36,6 @@ const PLATFORM_LABELS = {
   megamarket: 'Мегамаркет',
   samokat: 'Самокат'
 };
-
-const MATRIX_PLATFORMS = Object.keys(PLATFORM_LABELS);
 
 const STATUS_PRIORITY = new Map([
   ['новинка', 50],
@@ -219,7 +215,14 @@ function ownerPlatformKeys(platform) {
 
 function isDisabledStatus(value = '') {
   const token = normalizeToken(value);
-  return token.includes('вывод') || token.includes('архив') || token.includes('inactive') || token.includes('disabled');
+  return token.includes('вывод')
+    || token.includes('архив')
+    || token.includes('стоп')
+    || token.includes('inactive')
+    || token.includes('disabled')
+    || token.includes('paused')
+    || token.includes('archive')
+    || token.includes('stop');
 }
 
 function isMatrixActive(status = '') {
@@ -1014,38 +1017,8 @@ function createSkuFromGroup(group) {
   };
 }
 
-function ownerForPlatform(sku = {}, platform = '') {
-  const keys = ownerPlatformKeys(platform);
-  const sources = [
-    sku.ownersByPlatform,
-    sku.owner?.byPlatform
-  ];
-  for (const source of sources) {
-    if (!source || typeof source !== 'object') continue;
-    for (const key of keys) {
-      const owner = normalizeText(source[key] || '');
-      if (owner) return owner;
-    }
-  }
-  if (platform && sku[platform] && typeof sku[platform] === 'object') {
-    const owner = normalizeText(sku[platform].owner || '');
-    if (owner) return owner;
-  }
-  return '';
-}
-
-function isActiveWbSku(sku = {}) {
-  if (isDisabledStatus(sku.status || sku.registryStatus || sku.owner?.registryStatus || '')) return false;
-  if (sku.matrixPresent === false || sku.matrixActive === false) return false;
-  return Boolean(
-    sku.platformMatrix?.wb
-    || sku.wb
-    || ownerForPlatform(sku, 'wb')
-    || sku.flags?.hasWB
-  );
-}
-
 function hasAssignedPlan(planFact = {}) {
+  if (planFact.planAssigned === true) return true;
   return [
     planFact.planFeb26Units,
     planFact.planMar26Units,
@@ -1058,16 +1031,148 @@ function hasAssignedPlan(planFact = {}) {
   ].some((value) => (parseNumber(value) || 0) > 0);
 }
 
-function ensurePlanFact(sku, group) {
+const PLAN_MONTH_FIELDS = {
+  '2026-04': { units: 'planApr26Units', revenue: 'planApr26Revenue' },
+  '2026-05': { units: 'planMay26Units', revenue: 'planMay26Revenue' },
+  '2026-06': { units: 'planJun26Units', revenue: 'planJun26Revenue' },
+  '2026-07': { units: 'planJul26Units', revenue: 'planJul26Revenue' },
+  '2026-08': { units: 'planAug26Units', revenue: 'planAug26Revenue' },
+  '2026-09': { units: 'planSep26Units', revenue: 'planSep26Revenue' },
+  '2026-10': { units: 'planOct26Units', revenue: 'planOct26Revenue' },
+  '2026-11': { units: 'planNov26Units', revenue: 'planNov26Revenue' },
+  '2026-12': { units: 'planDec26Units', revenue: 'planDec26Revenue' }
+};
+
+function numericPlanValue(value) {
+  const parsed = parseNumber(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function createPlanBackfillBucket() {
+  return {
+    months: new Map(),
+    platforms: new Set(),
+    sources: new Set()
+  };
+}
+
+function mergePlanBackfill(target, platform, month = {}) {
+  const monthKey = normalizeText(month.monthKey || month.key || month.month || '');
+  if (!monthKey) return false;
+  const units = numericPlanValue(month.units ?? month.planUnits ?? month.quantity);
+  const revenue = numericPlanValue(month.revenue ?? month.planRevenue);
+  if (!(units > 0) && !(revenue > 0)) return false;
+  const current = target.months.get(monthKey) || { monthKey, days: null, units: 0, revenue: 0, sources: new Set() };
+  current.days = current.days || parseNumber(month.days);
+  current.units += units;
+  current.revenue += revenue;
+  current.sources.add(normalizeText(month.source || 'plan_workbook_2026'));
+  target.months.set(monthKey, current);
+  target.platforms.add(platform);
+  current.sources.forEach((source) => target.sources.add(source));
+  return true;
+}
+
+function buildPlanBackfillMap(payload = {}) {
+  const map = new Map();
+  Object.entries(payload?.platforms || {}).forEach(([platform, bucket]) => {
+    rowEntries(bucket).forEach(({ row, keyHint }) => {
+      const months = Array.isArray(row?.planMonths) ? row.planMonths : [];
+      if (!months.length) return;
+      const keys = Array.from(new Set(rowKeyValues(row, keyHint)));
+      const rowBackfill = createPlanBackfillBucket();
+      months.forEach((month) => mergePlanBackfill(rowBackfill, platform, month));
+      if (!rowBackfill.months.size) return;
+      keys.forEach((key) => {
+        const target = map.get(key) || createPlanBackfillBucket();
+        rowBackfill.months.forEach((month) => {
+          mergePlanBackfill(target, platform, month);
+        });
+        map.set(key, target);
+      });
+    });
+  });
+  return map;
+}
+
+function serializePlanBackfill(backfill) {
+  if (!backfill?.months?.size) return [];
+  return Array.from(backfill.months.values())
+    .sort((left, right) => String(left.monthKey).localeCompare(String(right.monthKey)))
+    .map((month) => ({
+      monthKey: month.monthKey,
+      days: month.days,
+      units: roundMetric(month.units, 4),
+      revenue: roundMoney(month.revenue),
+      sources: Array.from(month.sources || []).sort()
+    }));
+}
+
+function applyPlanBackfill(planFact = {}, backfill) {
+  const months = serializePlanBackfill(backfill);
+  if (!months.length) return false;
+  months.forEach((month) => {
+    const fields = PLAN_MONTH_FIELDS[month.monthKey];
+    if (!fields) return;
+    planFact[fields.units] = month.units;
+    planFact[fields.revenue] = month.revenue;
+  });
+  const currentMonth = months.find((month) => month.monthKey === '2026-07') || months[months.length - 1];
+  planFact.planMonthKey = currentMonth.monthKey;
+  planFact.planMonthUnits = currentMonth.units;
+  planFact.planMonthRevenue = currentMonth.revenue;
+  planFact.planUnits = planFact.planUnits || currentMonth.units;
+  planFact.planRevenue = planFact.planRevenue || currentMonth.revenue;
+  planFact.planMonths = months;
+  planFact.planPlatforms = Array.from(backfill.platforms || []).sort();
+  planFact.planSource = 'price_workbench_support.planMonths';
+  planFact.planBackfillSource = 'price_workbench_support.planMonths';
+  planFact.planBackfilledAt = IMPORT_STAMP;
+  return hasAssignedPlan(planFact);
+}
+
+function applyZeroBaselinePlan(planFact = {}) {
+  const months = Object.keys(PLAN_MONTH_FIELDS).map((monthKey) => ({
+    monthKey,
+    days: null,
+    units: 0,
+    revenue: 0,
+    sources: [`${SOURCE_NOTE}:zero-baseline-no-plan-source`]
+  }));
+  months.forEach((month) => {
+    const fields = PLAN_MONTH_FIELDS[month.monthKey];
+    if (!fields) return;
+    if (planFact[fields.units] === null || planFact[fields.units] === undefined || planFact[fields.units] === '') planFact[fields.units] = 0;
+    if (planFact[fields.revenue] === null || planFact[fields.revenue] === undefined || planFact[fields.revenue] === '') planFact[fields.revenue] = 0;
+  });
+  planFact.planMonthKey = planFact.planMonthKey || '2026-07';
+  planFact.planMonthUnits = planFact.planMonthUnits ?? 0;
+  planFact.planMonthRevenue = planFact.planMonthRevenue ?? 0;
+  planFact.planUnits = planFact.planUnits ?? 0;
+  planFact.planRevenue = planFact.planRevenue ?? 0;
+  planFact.planMonths = months;
+  planFact.planPlatforms = Array.isArray(planFact.planPlatforms) ? planFact.planPlatforms : [];
+  planFact.planSource = `${SOURCE_NOTE}:zero-baseline-no-plan-source`;
+  planFact.planBackfillSource = 'zero-baseline-no-plan-source';
+  planFact.planBackfilledAt = IMPORT_STAMP;
+  planFact.planZeroBaseline = true;
+  planFact.planAssigned = true;
+  return true;
+}
+
+function ensurePlanFact(sku, group, planBackfill = null) {
   sku.planFact = sku.planFact && typeof sku.planFact === 'object' ? sku.planFact : {};
   ['planFeb26Units', 'planMar26Units', 'planApr26Units'].forEach((field) => {
     if (sku.planFact[field] === null || sku.planFact[field] === undefined || sku.planFact[field] === '') sku.planFact[field] = 0;
   });
-  const assigned = hasAssignedPlan(sku.planFact);
+  const hadAssignedPlan = hasAssignedPlan(sku.planFact);
+  const backfilled = !hadAssignedPlan && applyPlanBackfill(sku.planFact, planBackfill);
   const active = isMatrixActive(group.status || sku.status || sku.registryStatus || '');
+  const zeroBaseline = !hadAssignedPlan && !backfilled && active && applyZeroBaselinePlan(sku.planFact);
+  const assigned = zeroBaseline || hasAssignedPlan(sku.planFact);
   sku.planFact.planAssigned = assigned;
   sku.planFact.planStatus = assigned
-    ? 'assigned'
+    ? (zeroBaseline ? 'assigned_zero_until_plan_source' : 'assigned')
     : (active ? 'needs_plan_assignment' : 'not_required_for_disabled_sku');
   sku.planFact.planNeedsAssignment = active && !assigned;
   sku.planFact.planSource = assigned ? (sku.planFact.planSource || 'existing_portal_plan') : SOURCE_NOTE;
@@ -1075,6 +1180,7 @@ function ensurePlanFact(sku, group) {
   sku.planAssigned = assigned;
   sku.planStatus = sku.planFact.planStatus;
   sku.planNeedsAssignment = sku.planFact.planNeedsAssignment;
+  return { assigned, backfilled, zeroBaseline };
 }
 
 function applyPlanFactCost(sku, cost) {
@@ -1126,7 +1232,7 @@ function applySkuSideMargin(side = {}, cost) {
   return currentMarginPct !== null || minMarginPct !== null || maxMarginPct !== null;
 }
 
-function applySkuGroup(sku, group) {
+function applySkuGroup(sku, group, planBackfill = null) {
   sku.articleKey = sku.articleKey || group.articleKey;
   sku.article = sku.article || group.article || group.articleKey;
   sku.name = sku.name || group.name || group.article || group.articleKey;
@@ -1140,7 +1246,7 @@ function applySkuGroup(sku, group) {
   sku.matrixImportedAt = IMPORT_STAMP;
   sku.matrixSourceRows = group.sourceRows;
   sku.matrixBarcodes = group.barcodes;
-  ensurePlanFact(sku, group);
+  const planResult = ensurePlanFact(sku, group, planBackfill);
   if (group.cost > 0) {
     sku.costPrice = group.cost;
     sku.cost = group.cost;
@@ -1151,7 +1257,6 @@ function applySkuGroup(sku, group) {
   }
 
   ensureOwnerObject(sku);
-  delete sku.wbOwnerDistribution;
   sku.owner.name = group.owner || sku.owner.name || '';
   sku.owner.source = SOURCE_NOTE;
   sku.owner.registryStatus = group.status || sku.owner.registryStatus || '';
@@ -1199,20 +1304,10 @@ function applySkuGroup(sku, group) {
       sku[platform].matrixImportedAt = IMPORT_STAMP;
     }
   });
-  MATRIX_PLATFORMS
-    .filter((platform) => !group.platforms[platform])
-    .forEach((platform) => {
-      ownerPlatformKeys(platform).forEach((ownerKey) => {
-        delete sku.owner.byPlatform[ownerKey];
-        delete sku.ownersByPlatform[ownerKey];
-      });
-      delete sku.platformMatrix[platform];
-      if (['wb', 'ozon', 'ym'].includes(platform)) delete sku[platform];
-      if (platform === 'wb' && sku.flags && typeof sku.flags === 'object') delete sku.flags.hasWB;
-    });
   if (sku.wb && group.cost > 0 && !sideCostApplied.has('wb')) applySkuSideMargin(sku.wb, group.cost);
   if (sku.ozon && group.cost > 0 && !sideCostApplied.has('ozon')) applySkuSideMargin(sku.ozon, group.cost);
   if (sku.ym && group.cost > 0 && !sideCostApplied.has('ym')) applySkuSideMargin(sku.ym, group.cost);
+  return planResult;
 }
 
 function disableOldSku(sku) {
@@ -1235,7 +1330,7 @@ function disableOldSku(sku) {
   return wasActive;
 }
 
-function updateSkus(skus, articleGroups) {
+function updateSkus(skus, articleGroups, planBackfillMap = new Map()) {
   const target = Array.isArray(skus) ? skus : [];
   const skuMap = buildSkuMap(target, skuCanonicalTokens);
   const stats = {
@@ -1246,6 +1341,9 @@ function updateSkus(skus, articleGroups) {
     sourceArticles: articleGroups.size,
     planAssigned: 0,
     planNeedsAssignment: 0,
+    planBackfillAvailable: 0,
+    planBackfilled: 0,
+    planZeroBaseline: 0,
     activeMatrixSku: 0
   };
   articleGroups.forEach((group) => {
@@ -1257,7 +1355,11 @@ function updateSkus(skus, articleGroups) {
     } else {
       stats.updated += 1;
     }
-    applySkuGroup(sku, group);
+    const planBackfill = planBackfillMap.get(group.key);
+    if (planBackfill?.months?.size) stats.planBackfillAvailable += 1;
+    const planResult = applySkuGroup(sku, group, planBackfill);
+    if (planResult?.backfilled) stats.planBackfilled += 1;
+    if (planResult?.zeroBaseline) stats.planZeroBaseline += 1;
     skuCanonicalTokens(sku).forEach((key) => {
       if (key && !skuMap.has(key)) skuMap.set(key, sku);
     });
@@ -1270,120 +1372,12 @@ function updateSkus(skus, articleGroups) {
     else stats.confirmedDisabled += 1;
   });
   target.forEach((sku) => {
-    delete sku.wbOwnerDistribution;
     if (sku.matrixActive) stats.activeMatrixSku += 1;
     if (sku.planFact?.planAssigned || sku.planAssigned) stats.planAssigned += 1;
     if (sku.planFact?.planNeedsAssignment || sku.planNeedsAssignment) stats.planNeedsAssignment += 1;
   });
   target.sort((left, right) => String(left.articleKey || left.article || '').localeCompare(String(right.articleKey || right.article || ''), 'ru'));
   return { skus: target, stats };
-}
-
-function sourceDuplicateRows(rows = []) {
-  const seen = new Map();
-  const duplicates = [];
-  rows.forEach((row) => {
-    const current = seen.get(row.key);
-    if (current) {
-      duplicates.push({
-        sourceRow: row.sourceRow,
-        sourceArticle: row.article,
-        articleKey: row.articleKey,
-        ownerWb: row.owner,
-        previousSourceRow: current.sourceRow,
-        previousOwnerWb: current.owner
-      });
-      return;
-    }
-    seen.set(row.key, row);
-  });
-  return duplicates;
-}
-
-function buildWbOwnerAudit(options, source, skus = []) {
-  const wbRows = (source.rows || []).filter((row) => row.platform === 'wb' && row.key);
-  const grouped = groupSourceRows(wbRows);
-  const wbGroups = grouped.groupedRows;
-  const lookup = buildSkuMap(Array.isArray(skus) ? skus : [], skuTokens);
-  const matched = [];
-  const missingInPortal = [];
-  const matchedSkuKeys = new Set();
-  const sourceKeys = new Set(wbGroups.map((row) => row.key));
-  const ownerCounts = {};
-
-  wbGroups.forEach((row) => {
-    const sku = lookup.get(row.key);
-    if (!sku) {
-      missingInPortal.push({
-        sourceRow: row.sourceRows?.[0] || null,
-        sourceRows: row.sourceRows || [],
-        sourceArticle: row.article,
-        articleKey: row.articleKey,
-        ownerWb: row.owner,
-        message: 'WB SKU from minmax source is absent in portal skus.json'
-      });
-      return;
-    }
-
-    const articleKey = normalizeText(sku.articleKey || sku.article || row.articleKey);
-    const actualOwner = ownerForPlatform(sku, 'wb');
-    const changed = Boolean(row.owner && actualOwner && actualOwner !== row.owner);
-    matchedSkuKeys.add(compactKey(articleKey));
-    if (row.owner) ownerCounts[row.owner] = (ownerCounts[row.owner] || 0) + 1;
-    matched.push({
-      articleKey,
-      article: sku.article || articleKey,
-      name: sku.name || '',
-      previousOwnerWb: actualOwner,
-      ownerWb: row.owner,
-      changed,
-      sourceRow: row.sourceRows?.[0] || null,
-      sourceRows: row.sourceRows || []
-    });
-  });
-
-  const missingInDistribution = [];
-  (Array.isArray(skus) ? skus : []).forEach((sku) => {
-    if (!isActiveWbSku(sku)) return;
-    const keys = skuCanonicalTokens(sku);
-    if (!keys.length || keys.some((key) => sourceKeys.has(key) || matchedSkuKeys.has(key))) return;
-    const articleKey = normalizeText(sku.articleKey || sku.article || '');
-    missingInDistribution.push({
-      articleKey,
-      article: sku.article || articleKey,
-      name: sku.name || '',
-      ownerWb: ownerForPlatform(sku, 'wb'),
-      status: sku.status || sku.registryStatus || '',
-      stock: Math.round(Number(sku.wb?.stock || 0))
-    });
-  });
-
-  return {
-    schema: 'portal-wb-owner-distribution-audit-v1',
-    generatedAt: IMPORT_STAMP,
-    source: {
-      file: options.inputPath,
-      sheetName: source.sheetName,
-      ownerSource: SOURCE_NOTE,
-      sourceRowCount: source.rows.length,
-      mappedRowCount: wbGroups.length,
-      duplicateCount: sourceDuplicateRows(wbRows).length
-    },
-    summary: {
-      portalSkuCount: Array.isArray(skus) ? skus.length : 0,
-      wbSkuCount: (Array.isArray(skus) ? skus : []).filter(isActiveWbSku).length,
-      matchedSkuCount: matched.length,
-      updatedOwnerCount: matched.filter((row) => row.changed).length,
-      unchangedOwnerCount: matched.filter((row) => !row.changed).length,
-      missingInPortalCount: missingInPortal.length,
-      missingInDistributionCount: missingInDistribution.length,
-      ownerCounts
-    },
-    matched,
-    missingInPortal,
-    missingInDistribution,
-    duplicates: sourceDuplicateRows(wbRows)
-  };
 }
 
 function objectFromCounts(rows = [], keySelector) {
@@ -1434,29 +1428,27 @@ function runImport(options) {
 
   const targetFileNames = [
     ...PRICE_TARGET_FILES.map((item) => item.fileName),
-    WB_OWNER_AUDIT_FILE_NAME,
     'skus.json',
     'prices.json',
     'repricer.json'
   ];
   if (!options.dryRun && !options.skipBackup) backupFiles(options.dataDir, backupDir, targetFileNames);
 
+  let supportPayload = null;
   PRICE_TARGET_FILES.forEach((target) => {
     const filePath = path.join(options.dataDir, target.fileName);
     const payload = readJson(filePath, { generatedAt: '', platforms: {} });
     const stats = updatePricePayload(payload, target.fileName, grouped.byPlatformRows, target);
     report.targets.push(stats);
+    if (target.fileName === 'price_workbench_support.json') supportPayload = payload;
     if (!options.dryRun) writeJson(filePath, payload, Boolean(target.compact));
   });
 
   const skusPath = path.join(options.dataDir, 'skus.json');
-  const { skus, stats: skuStats } = updateSkus(readJson(skusPath, []), articleGroups);
+  const planBackfillMap = buildPlanBackfillMap(supportPayload || readJson(path.join(options.dataDir, 'price_workbench_support.json'), { platforms: {} }));
+  const { skus, stats: skuStats } = updateSkus(readJson(skusPath, []), articleGroups, planBackfillMap);
   report.skus = skuStats;
   if (!options.dryRun) writeJson(skusPath, skus, false);
-
-  const wbOwnerAudit = buildWbOwnerAudit(options, source, skus);
-  report.wbOwnerAudit = wbOwnerAudit.summary;
-  if (!options.dryRun) writeJson(path.join(options.dataDir, WB_OWNER_AUDIT_FILE_NAME), wbOwnerAudit, false);
 
   if (!options.dryRun && !options.skipRebuild) {
     const pricesResult = buildLegacyPricesLayer({
@@ -1504,7 +1496,6 @@ function main() {
       conflicts: report.source.conflicts.length
     },
     skus: report.skus,
-    wbOwnerAudit: report.wbOwnerAudit,
     targets: report.targets.map((target) => ({
       fileName: target.fileName,
       updated: target.updated,
@@ -1536,6 +1527,7 @@ module.exports = {
   parseArgs,
   readSourceMatrix,
   resolveOptions,
+  buildPlanBackfillMap,
   groupSourceRows,
   buildArticleGroups,
   rowsFromBucket,

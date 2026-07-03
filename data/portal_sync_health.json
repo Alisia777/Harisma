@@ -1,12 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-07-02T12:20:08.058Z",
+  "generatedAt": "2026-07-02T21:33:37.528Z",
   "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
     "warnings": [],
-    "checkedAt": "2026-07-02T12:20:08.058Z"
+    "checkedAt": "2026-07-02T21:33:37.528Z"
   },
   "freshness": {
     "maxDate": "2026-07-01",
@@ -15,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-07-02T12:20:08.053Z",
+      "checkedAt": "2026-07-02T21:33:37.522Z",
       "settlementHour": 10,
       "expectedDate": "2026-07-01",
       "maxDate": "2026-07-01",
@@ -62,7 +62,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-07-02T12:20:08.058Z",
+      "checkedAt": "2026-07-02T21:33:37.527Z",
       "expectedDate": "2026-07-01",
       "adsSummaryWindowTo": "2026-06-30",
       "iuDrrWindowTo": "2026-07-01",
@@ -110,7 +110,7 @@
     },
     "skus": {
       "exists": true,
-      "rows": 143,
+      "rows": 209,
       "generatedAt": "",
       "asOfDate": "",
       "revenue": 0
@@ -139,21 +139,21 @@
     "prices": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-02T09:21:16.884Z",
+      "generatedAt": "2026-07-02T21:31:10.263Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
     "repricer": {
       "exists": true,
-      "rows": 200,
-      "generatedAt": "2026-07-02T09:21:16.884Z",
+      "rows": 213,
+      "generatedAt": "2026-07-02T21:31:10.263Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
     "smart_price_overlay": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-02T09:21:16.884Z",
+      "generatedAt": "2026-07-02T21:31:10.263Z",
       "asOfDate": "2026-07-01",
       "revenue": 0
     },
@@ -230,7 +230,7 @@
     "oos_control": {
       "exists": true,
       "rows": 12,
-      "generatedAt": "2026-07-02T12:07:58.885Z",
+      "generatedAt": "2026-07-02T21:31:36.929Z",
       "asOfDate": "2026-07-01",
       "revenue": 0
     },
@@ -251,14 +251,14 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-02T12:19:13.995Z",
+      "generatedAt": "2026-07-02T21:31:44.597Z",
       "asOfDate": "2026-07-01",
       "revenue": 0
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-07-02T12:19:44.480Z",
+      "generatedAt": "2026-07-02T21:31:44.690Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
@@ -285,15 +285,15 @@
     },
     "sku_matrix": {
       "exists": true,
-      "rows": 143,
-      "generatedAt": "2026-07-02T12:19:44.075Z",
+      "rows": 209,
+      "generatedAt": "2026-07-02T21:31:36.787Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-02T12:19:44.487Z",
+      "generatedAt": "2026-07-02T21:31:44.698Z",
       "asOfDate": "2026-07-02",
       "revenue": 0
     }
@@ -306,8 +306,8 @@
     "status": "ok",
     "aliasCount": 341,
     "ignoreCount": 0,
-    "matrixAliasCount": 566,
-    "matrixExternalAliasCount": 341,
+    "matrixAliasCount": 341,
+    "matrixExternalAliasCount": 0,
     "matrixIgnoreCount": 0,
     "checks": [
       {
@@ -328,15 +328,15 @@
       {
         "name": "matrix-alias-count",
         "status": "ok",
-        "message": "SKU matrix alias count is lower than sku_aliases (566/341).",
-        "matrixAliasCount": 566,
+        "message": "SKU matrix alias count is lower than sku_aliases (341/341).",
+        "matrixAliasCount": 341,
         "aliasCount": 341
       },
       {
         "name": "matrix-external-alias-count",
         "status": "ok",
-        "message": "SKU matrix external alias count does not match sku_aliases (341/341).",
-        "matrixExternalAliasCount": 341,
+        "message": "SKU matrix external alias count does not match sku_aliases (0/341).",
+        "matrixExternalAliasCount": 0,
         "aliasCount": 341
       },
       {
@@ -359,7 +359,7 @@
     ]
   },
   "quality": {
-    "issueCount": 73,
+    "issueCount": 50,
     "criticalCount": 0,
     "warningCount": 1,
     "monthKey": "2026-07",
@@ -370,16 +370,18 @@
     "apiUnmappedActionRows": 0,
     "apiUnmappedActionUniqueSku": 0,
     "apiUnmappedActionRevenue": 0,
-    "apiKnownOutsideRegistryRows": 23,
-    "apiKnownOutsideRegistryUniqueSku": 20,
-    "apiKnownOutsideRegistryRevenue": 198447,
+    "apiKnownOutsideRegistryRows": 0,
+    "apiKnownOutsideRegistryUniqueSku": 0,
+    "apiKnownOutsideRegistryRevenue": 0,
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
     "skuAliasCount": 341,
-    "priceContourSkuCount": 306,
+    "priceContourSkuCount": 318,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
+    "skuMissingPlan": 0,
+    "skuAssignedPlan": 95,
     "warehouseUnmatchedRows": 25,
     "wbOwnerMatchedSku": 125,
     "wbOwnerUpdatedSku": 36,
@@ -404,9 +406,9 @@
     "comparisons": [
       {
         "snapshot": "skus",
-        "rows": 143,
+        "rows": 209,
         "previousRows": 143,
-        "rowRatio": 1,
+        "rowRatio": 1.4615384615384615,
         "revenue": 0,
         "previousRevenue": 0,
         "revenueRatio": 1,
@@ -444,9 +446,9 @@
       },
       {
         "snapshot": "sku_matrix",
-        "rows": 143,
+        "rows": 209,
         "previousRows": 143,
-        "rowRatio": 1,
+        "rowRatio": 1.4615384615384615,
         "revenue": 0,
         "previousRevenue": 0,
         "revenueRatio": 1,
@@ -473,7 +475,7 @@
     {
       "name": "required:skus",
       "status": "ok",
-      "rows": 143
+      "rows": 209
     },
     {
       "name": "required:platform_trends",
@@ -493,7 +495,7 @@
     {
       "name": "required:sku_matrix",
       "status": "ok",
-      "rows": 143
+      "rows": 209
     },
     {
       "name": "required:portal_data_quality",
@@ -518,15 +520,15 @@
     {
       "name": "sku-contour:matrix-alias-count",
       "status": "ok",
-      "message": "SKU matrix alias count is lower than sku_aliases (566/341).",
-      "matrixAliasCount": 566,
+      "message": "SKU matrix alias count is lower than sku_aliases (341/341).",
+      "matrixAliasCount": 341,
       "aliasCount": 341
     },
     {
       "name": "sku-contour:matrix-external-alias-count",
       "status": "ok",
-      "message": "SKU matrix external alias count does not match sku_aliases (341/341).",
-      "matrixExternalAliasCount": 341,
+      "message": "SKU matrix external alias count does not match sku_aliases (0/341).",
+      "matrixExternalAliasCount": 0,
       "aliasCount": 341
     },
     {

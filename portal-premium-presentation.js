@@ -99,6 +99,7 @@
   var renderLock = false;
   var routeDataRetryTimers = {};
   var executiveModelCache = { key: '', model: null, time: 0 };
+  var EXECUTIVE_MODEL_CACHE_TTL_MS = 8000;
 
   function state() {
     return window.__alteaAppState || window.state || {};
@@ -582,6 +583,8 @@
       dashboardAsOf: s.dashboard && (s.dashboard.dataFreshness && s.dashboard.dataFreshness.asOfDate || s.dashboard.asOfDate || s.dashboard.latestMarketplaceDate),
       platformTrends: s.platformTrends && (s.platformTrends.generatedAt || s.platformTrends.asOfDate),
       extraMarketplace: s.platformTrends && s.platformTrends.extraMarketplace && s.platformTrends.extraMarketplace.generatedAt,
+      smartPriceOverlay: s.smartPriceOverlay && (s.smartPriceOverlay.generatedAt || s.smartPriceOverlay.asOfDate),
+      priceWorkbenchSupport: s.priceWorkbenchSupport && (s.priceWorkbenchSupport.generatedAt || s.priceWorkbenchSupport.asOfDate),
       ads: s.adsSummary && (s.adsSummary.generatedAt || s.adsSummary.asOfDate),
       skus: Array.isArray(s.skus) ? s.skus.length : 0
     });
@@ -590,7 +593,7 @@
   function buildExecutiveModel() {
     var cacheKey = executiveModelCacheKey();
     var now = Date.now();
-    if (executiveModelCache.model && executiveModelCache.key === cacheKey && now - executiveModelCache.time < 2000) {
+    if (executiveModelCache.model && executiveModelCache.key === cacheKey && now - executiveModelCache.time < EXECUTIVE_MODEL_CACHE_TTL_MS) {
       return executiveModelCache.model;
     }
     var funnel = {};

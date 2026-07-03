@@ -1035,6 +1035,53 @@ function skuPlanFactFactFromRows(rows = [], monthKey = '', maxFactDate = '', min
   return result;
 }
 
+function skuPlanFactLatestFactFromRows(rows = [], maxFactDate = '') {
+  const dailyMonths = new Map();
+  const actualMonths = new Map();
+  const add = (map, monthKey, revenue, units, source = '', date = '') => {
+    if (!monthKey || !(revenue > 0 || units > 0)) return;
+    const row = map.get(monthKey) || { monthKey, date: '', revenue: 0, units: 0, source: '' };
+    row.revenue += revenue;
+    row.units += units;
+    if (date && date > row.date) row.date = date;
+    if (!row.source && source) row.source = source;
+    map.set(monthKey, row);
+  };
+  (rows || []).forEach((row) => {
+    [...(row.daily || []), ...(row.monthly || [])].forEach((item) => {
+      const date = String(item?.date || '').slice(0, 10);
+      if (!date || maxFactDate && date > maxFactDate) return;
+      add(
+        dailyMonths,
+        date.slice(0, 7),
+        numberOrZero(item.revenue),
+        numberOrZero(item.ordersUnits ?? item.deliveredUnits),
+        row.sourceMode || item.source || '',
+        date
+      );
+    });
+    (row.actualMonths || []).forEach((item) => {
+      const monthKey = String(item?.monthKey || item?.month || '').slice(0, 7);
+      if (!monthKey) return;
+      const monthEnd = skuPlanFactMonthEnd(monthKey);
+      if (maxFactDate && monthEnd > maxFactDate && monthKey !== String(maxFactDate).slice(0, 7)) return;
+      add(
+        actualMonths,
+        monthKey,
+        numberOrZero(item.revenue),
+        numberOrZero(item.units),
+        item.source || row.sourceMode || '',
+        monthEnd
+      );
+    });
+  });
+  const sourceMap = dailyMonths.size ? dailyMonths : actualMonths;
+  const latest = [...sourceMap.values()]
+    .filter((item) => item.revenue > 0 || item.units > 0)
+    .sort((left, right) => String(right.monthKey).localeCompare(String(left.monthKey)) || String(right.date).localeCompare(String(left.date)))[0];
+  return latest || { monthKey: '', date: '', revenue: 0, units: 0, source: '' };
+}
+
 function skuPlanFactPlatformTrend(platform = '') {
   const supportKey = skuPlanFactPlatformSupportKey(platform);
   return (state.platformTrends?.platforms || []).find((item) => {
@@ -2552,6 +2599,9 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
     ? skuPlanFactPlanFromRows(planRows, monthKey)
     : { units: 0, revenue: 0, avgCheck: null, days: skuPlanFactMonthDays(monthKey), source: '' };
   const fact = skuPlanFactFactFromRows(factRows, monthKey, maxFactDate, minFactDate);
+  const latestFact = fact.revenue > 0 || fact.units > 0
+    ? { monthKey, date: maxFactDate || '', revenue: fact.revenue, units: fact.units, source: fact.source || '', currentPeriod: true }
+    : skuPlanFactLatestFactFromRows(factRows, maxFactDate);
   const ad = skuPlanFactAdForSku(adIndex, platform, sku);
   const wbSubstitution = platform === 'wb' ? skuPlanFactWbSubstitutionForSku(sku) : null;
   const planToDateRevenue = plan.revenue > 0 ? plan.revenue * elapsedDays / Math.max(1, plan.days) : 0;
@@ -2597,6 +2647,12 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
     factRevenue: fact.revenue,
     factAvgCheck: fact.avgCheck,
     factDaily: fact.daily || [],
+    latestFactUnits: latestFact.units || 0,
+    latestFactRevenue: latestFact.revenue || 0,
+    latestFactMonthKey: latestFact.monthKey || '',
+    latestFactDate: latestFact.date || '',
+    latestFactSource: latestFact.source || '',
+    latestFactCurrentPeriod: Boolean(latestFact.currentPeriod),
     completionToDate: planToDateRevenue > 0 ? fact.revenue / planToDateRevenue : null,
     completionMonth: plan.revenue > 0 ? fact.revenue / plan.revenue : null,
     gapToDate: fact.revenue - planToDateRevenue,

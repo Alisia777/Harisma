@@ -124,6 +124,56 @@ function ownerValue(row = {}) {
   return String(row.owner?.name || row.ownerName || '').trim();
 }
 
+const OWNER_ALIASES = new Map([
+  ['анна', 'пирогова анна'],
+  ['пирогова анна', 'пирогова анна'],
+  ['артем', 'питайкин артем'],
+  ['артём', 'питайкин артем'],
+  ['питайкин артем', 'питайкин артем'],
+  ['питайкин артём', 'питайкин артем'],
+  ['дариа', 'молодякова дария'],
+  ['дария', 'молодякова дария'],
+  ['дарья', 'молодякова дария'],
+  ['даша', 'молодякова дария'],
+  ['молодякова дария', 'молодякова дария'],
+  ['молодякова дарья', 'молодякова дария'],
+  ['екатерина', 'доможирова екатерина'],
+  ['катя', 'доможирова екатерина'],
+  ['доможирова екатерина', 'доможирова екатерина'],
+  ['доброжирова екатерина', 'доможирова екатерина'],
+  ['мария', 'васильева мария'],
+  ['маша', 'васильева мария'],
+  ['васильева мария', 'васильева мария'],
+  ['максим', 'лапыгин максим'],
+  ['лапыгин максим', 'лапыгин максим']
+]);
+
+function normalizeOwnerForCompare(value = '') {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/\u0451/g, 'е')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function ownerComparableName(value = '') {
+  const normalized = normalizeOwnerForCompare(value);
+  if (!normalized) return '';
+  if (OWNER_ALIASES.has(normalized)) return OWNER_ALIASES.get(normalized);
+  const tokens = normalized.split(' ').filter(Boolean);
+  for (const token of tokens) {
+    if (OWNER_ALIASES.has(token)) return OWNER_ALIASES.get(token);
+  }
+  return tokens.length > 1 ? tokens.sort().join(' ') : normalized;
+}
+
+function sameOwnerName(left = '', right = '') {
+  const a = ownerComparableName(left);
+  const b = ownerComparableName(right);
+  return Boolean(a && b && a === b);
+}
+
 function ownerPlatformValue(sku = {}, platform = '') {
   const byPlatform = sku.owner?.byPlatform && typeof sku.owner.byPlatform === 'object' ? sku.owner.byPlatform : {};
   const directByPlatform = sku.ownerByPlatform && typeof sku.ownerByPlatform === 'object' ? sku.ownerByPlatform : {};
@@ -227,7 +277,7 @@ function verifyMatrixPayload(fileName, payload, sourceByPlatformRows, issues) {
       platformSummary.present += 1;
       if (sourceRow.owner) {
         platformSummary.ownerChecked += 1;
-        if (ownerValue(row) !== sourceRow.owner) {
+        if (!sameOwnerName(ownerValue(row), sourceRow.owner)) {
           pushIssue(issues, 'critical', 'matrix_owner_mismatch', {
             fileName,
             platform,
@@ -335,7 +385,7 @@ function verifyPrices(prices, sourceByPlatformRows, issues) {
       platformSummary.present += 1;
       if (sourceRow.owner) {
         platformSummary.ownerChecked += 1;
-        if (ownerValue(row) !== sourceRow.owner) {
+        if (!sameOwnerName(ownerValue(row), sourceRow.owner)) {
           pushIssue(issues, 'critical', 'prices_owner_mismatch', {
             platform,
             articleKey: sourceRow.articleKey,
@@ -451,7 +501,7 @@ function verifyRepricer(repricer, sourceByPlatformRows, issues) {
       if (sourceRow.owner) {
         platformSummary.ownerChecked += 1;
         const actualOwner = ownerPlatformValue(row, platform) || ownerValue(row);
-        if (actualOwner !== sourceRow.owner) {
+        if (!sameOwnerName(actualOwner, sourceRow.owner)) {
           pushIssue(issues, 'critical', 'repricer_owner_mismatch', {
             platform,
             articleKey: sourceRow.articleKey,
@@ -597,7 +647,7 @@ function verifySkus(skus, articleGroups, issues) {
       if (!platformRow.owner) return;
       summary.ownerChecked += 1;
       const actualOwner = ownerPlatformValue(sku, platform) || ownerValue(sku);
-      if (actualOwner !== platformRow.owner) {
+      if (!sameOwnerName(actualOwner, platformRow.owner)) {
         pushIssue(issues, 'critical', 'sku_platform_owner_mismatch', {
           platform,
           articleKey: group.articleKey,

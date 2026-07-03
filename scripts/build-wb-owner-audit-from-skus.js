@@ -85,10 +85,17 @@ function normalizeOwner(value = '') {
     .trim();
 }
 
+function ownerFingerprint(value = '') {
+  const normalized = normalizeOwner(value);
+  if (!normalized) return '';
+  const parts = normalized.split(' ').filter(Boolean);
+  return parts.length > 1 ? parts.sort().join(' ') : normalized;
+}
+
 function sameOwner(left = '', right = '') {
   const a = normalizeOwner(left);
   const b = normalizeOwner(right);
-  return Boolean(a && b && a === b);
+  return Boolean(a && b && (a === b || ownerFingerprint(a) === ownerFingerprint(b)));
 }
 
 function numberOrZero(value) {
@@ -114,14 +121,78 @@ function distributionOwner(sku = {}) {
   return text(sku.wbOwnerDistribution?.owner || sku.wbOwnerDistribution?.ownerWb || '');
 }
 
+function isDisabledStatus(value = '') {
+  return /\u0432\u044b\u0432\u043e\u0434|disabled|archive|archived|inactive|stop/i.test(text(value));
+}
+
+function isCurrentMatrixSku(sku = {}) {
+  if (sku.matrixActive === false) return false;
+  return !isDisabledStatus(sku.status || sku.registryStatus || sku.sheetStatus || sku.owner?.registryStatus);
+}
+
 function hasWbSku(sku = {}) {
+  if (!isCurrentMatrixSku(sku)) return false;
+  const wbMatrix = sku.platformMatrix?.wb || null;
+  const wbMatrixActive = wbMatrix && wbMatrix.matrixActive !== false && !isDisabledStatus(wbMatrix.status);
   return Boolean(
-    sku.flags?.hasWB
-    || sku.hasWB
-    || sku.wb
+    wbMatrixActive
     || canonicalWbOwner(sku)
     || distributionOwner(sku)
   );
+}
+
+function normalizeArticle(value = '') {
+  return text(value)
+    .toLowerCase()
+    .replace(/\u00a0/g, ' ')
+    .replace(/\u0451/g, '\u0435')
+    .replace(/[^\p{L}\p{N}_-]+/gu, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function compactArticle(value = '') {
+  return normalizeArticle(value).replace(/[_-]+/g, '');
+}
+
+function skuArticleLookupKeys(sku = {}) {
+  return [
+    sku.articleKey,
+    sku.article,
+    sku.sku,
+    sku.vendorCode,
+    sku.supplierArticle,
+    sku.wb?.articleKey,
+    sku.wb?.article,
+    ...(Array.isArray(sku.aliases) ? sku.aliases.map((alias) => alias?.value || alias) : []),
+    ...(Array.isArray(sku.platformAliases?.wb) ? sku.platformAliases.wb : [])
+  ]
+    .map((value) => normalizeArticle(value))
+    .filter(Boolean);
+}
+
+function buildPortalSkuKeySet(skus = []) {
+  const keys = new Set();
+  skus.forEach((sku) => {
+    skuArticleLookupKeys(sku).forEach((key) => {
+      keys.add(key);
+      keys.add(compactArticle(key));
+    });
+  });
+  return keys;
+}
+
+function missingPortalRowIsStillMissing(row = {}, portalSkuKeys = new Set()) {
+  const candidates = [
+    row.articleKey,
+    row.sourceArticle,
+    row.article,
+    row.sku,
+    row.name
+  ]
+    .map((value) => normalizeArticle(value))
+    .filter(Boolean);
+  return !candidates.some((key) => portalSkuKeys.has(key) || portalSkuKeys.has(compactArticle(key)));
 }
 
 function increment(map, key) {
@@ -132,17 +203,19 @@ function increment(map, key) {
 
 function auditRowFromSku(sku = {}, generatedAt = '') {
   const articleKey = text(sku.articleKey || sku.article || sku.sku);
-  const ownerWb = distributionOwner(sku);
+  const distributionOwnerWb = distributionOwner(sku);
   const canonicalOwner = canonicalWbOwner(sku);
+  const ownerWb = distributionOwnerWb || canonicalOwner;
   return {
     articleKey,
     article: text(sku.article || articleKey),
     name: text(sku.name || sku.title || articleKey),
     previousOwnerWb: canonicalOwner,
     ownerWb,
+    distributionOwnerWb,
     canonicalOwnerWb: canonicalOwner,
     productOwner: productOwner(sku),
-    changed: Boolean(ownerWb && canonicalOwner && !sameOwner(ownerWb, canonicalOwner)),
+    changed: Boolean(distributionOwnerWb && canonicalOwner && !sameOwner(distributionOwnerWb, canonicalOwner)),
     sourceRow: sku.wbOwnerDistribution?.sourceRow || null,
     revenue: numberOrZero(sku.planFact?.factTotalRevenue || sku.planFact?.factRevenueToDate),
     units: numberOrZero(sku.planFact?.factTotalUnits || sku.planFact?.factUnitsToDate),
@@ -180,12 +253,12 @@ function buildAudit(options = resolveOptions({})) {
       });
     }
     increment(platformOwnerCounts, canonicalOwner);
-    if (ownerWb && canonicalOwner && !sameOwner(ownerWb, canonicalOwner)) {
+    if (row.distributionOwnerWb && canonicalOwner && !sameOwner(row.distributionOwnerWb, canonicalOwner)) {
       ownerConflicts.push({
         articleKey: row.articleKey,
         article: row.article,
         canonicalOwner,
-        distributionOwner: ownerWb,
+        distributionOwner: row.distributionOwnerWb,
         sourceFile: row.sourceFile,
         sourceRow: row.sourceRow
       });
@@ -195,6 +268,8 @@ function buildAudit(options = resolveOptions({})) {
   const previousMissingInPortal = Array.isArray(previousAudit?.missingInPortal)
     ? previousAudit.missingInPortal
     : [];
+  const portalSkuKeys = buildPortalSkuKeySet(skus);
+  const missingInPortal = previousMissingInPortal.filter((row) => missingPortalRowIsStillMissing(row, portalSkuKeys));
   const duplicates = Array.isArray(previousAudit?.duplicates) ? previousAudit.duplicates : [];
 
   return {
@@ -215,14 +290,14 @@ function buildAudit(options = resolveOptions({})) {
       matchedSkuCount: matched.length,
       updatedOwnerCount: ownerConflicts.length,
       unchangedOwnerCount: Math.max(0, matched.length - ownerConflicts.length),
-      missingInPortalCount: previousMissingInPortal.length,
+      missingInPortalCount: missingInPortal.length,
       missingInDistributionCount: missingInDistribution.length,
       ownerConflictCount: ownerConflicts.length,
       ownerCounts,
       platformOwnerCounts: { wb: platformOwnerCounts }
     },
     matched: matched.sort((left, right) => left.articleKey.localeCompare(right.articleKey)),
-    missingInPortal: previousMissingInPortal,
+    missingInPortal,
     missingInDistribution: missingInDistribution.sort((left, right) => left.articleKey.localeCompare(right.articleKey)),
     ownerConflicts: ownerConflicts.sort((left, right) => left.articleKey.localeCompare(right.articleKey)),
     duplicates

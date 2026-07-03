@@ -15,8 +15,8 @@
     "logisticsRows": 2230,
     "yandexOrderProcurement": "2026-07-02T12:17:49.763Z",
     "yandexRows": 898,
-    "skusFileMtime": "2026-07-02T21:31:12.324Z",
-    "skusFileSize": 1846977,
+    "skusFileMtime": "2026-07-03T09:26:53.390Z",
+    "skusFileSize": 1893965,
     "skuRows": 209
   },
   "window": {
@@ -154,7 +154,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -385,7 +385,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -418,7 +418,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -1705,7 +1705,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -1870,7 +1870,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -2002,7 +2002,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -2134,7 +2134,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -2794,7 +2794,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -2893,7 +2893,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -3124,7 +3124,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -3496,7 +3496,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 704,
       "inTransit": 0,
       "inRequest": 0,
@@ -3586,7 +3586,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -4213,7 +4213,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -5665,7 +5665,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -5764,7 +5764,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -5970,7 +5970,7 @@
       "place": "Электросталь",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Васильева Мария",
       "inStock": 427,
       "inTransit": 0,
@@ -5995,7 +5995,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -6061,7 +6061,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -6094,7 +6094,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -6490,7 +6490,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -7051,7 +7051,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -7414,7 +7414,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -7447,7 +7447,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -7645,7 +7645,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -8074,7 +8074,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -8182,7 +8182,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 327,
       "inTransit": 0,
       "inRequest": 0,
@@ -8503,7 +8503,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -8701,7 +8701,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -8875,7 +8875,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 301,
       "inTransit": 0,
       "inRequest": 0,
@@ -8907,7 +8907,7 @@
       "place": "Рязань (Тюшевское)",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Васильева Мария",
       "inStock": 300,
       "inTransit": 0,
@@ -8932,7 +8932,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -9064,7 +9064,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -9262,7 +9262,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -9823,7 +9823,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -9856,7 +9856,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -10285,7 +10285,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -10318,7 +10318,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -10393,7 +10393,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 274,
       "inTransit": 0,
       "inRequest": 0,
@@ -10426,7 +10426,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 274,
       "inTransit": 0,
       "inRequest": 0,
@@ -10516,7 +10516,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -10549,7 +10549,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -10879,7 +10879,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -11341,7 +11341,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -11845,7 +11845,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 246,
       "inTransit": 0,
       "inRequest": 0,
@@ -11935,7 +11935,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -11968,7 +11968,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -12001,7 +12001,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 719
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -12034,7 +12034,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -12199,7 +12199,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -12265,7 +12265,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -12463,7 +12463,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -12793,7 +12793,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -12892,7 +12892,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 544
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -12958,7 +12958,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -13717,7 +13717,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 544
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -13750,7 +13750,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -14971,7 +14971,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -15268,7 +15268,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -15961,7 +15961,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -16036,7 +16036,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 181,
       "inTransit": 0,
       "inRequest": 0,
@@ -16357,7 +16357,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -16489,7 +16489,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -17017,7 +17017,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -17281,7 +17281,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -17455,7 +17455,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 162,
       "inTransit": 0,
       "inRequest": 0,
@@ -17488,7 +17488,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 162,
       "inTransit": 0,
       "inRequest": 0,
@@ -17545,7 +17545,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -17752,7 +17752,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 160,
       "inTransit": 0,
       "inRequest": 0,
@@ -17950,7 +17950,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 158,
       "inTransit": 0,
       "inRequest": 0,
@@ -18007,7 +18007,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 184
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -18040,7 +18040,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -18106,7 +18106,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 544
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -18238,7 +18238,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -18304,7 +18304,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 375
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -18403,7 +18403,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -18898,7 +18898,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -19294,7 +19294,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -19327,7 +19327,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -19558,7 +19558,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -19633,7 +19633,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 141,
       "inTransit": 0,
       "inRequest": 0,
@@ -19789,7 +19789,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -19822,7 +19822,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -20251,7 +20251,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -20416,7 +20416,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -20548,7 +20548,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -20721,7 +20721,7 @@
       "place": "Краснодар",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Васильева Мария",
       "inStock": 133,
       "inTransit": 0,
@@ -20746,7 +20746,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -21241,7 +21241,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -21282,7 +21282,7 @@
       "place": "Котовск",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Васильева Мария",
       "inStock": 130,
       "inTransit": 0,
@@ -21307,7 +21307,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -21406,7 +21406,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -21703,7 +21703,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -21745,7 +21745,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 125,
       "inTransit": 0,
       "inRequest": 0,
@@ -21802,7 +21802,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -22462,7 +22462,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -23221,7 +23221,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -23254,7 +23254,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -23353,7 +23353,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -23659,7 +23659,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 113,
       "inTransit": 0,
       "inRequest": 0,
@@ -23692,7 +23692,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 113,
       "inTransit": 0,
       "inRequest": 0,
@@ -23848,7 +23848,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -23947,7 +23947,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -24013,7 +24013,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -24112,7 +24112,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -24145,7 +24145,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -24211,7 +24211,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -24244,7 +24244,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -24343,7 +24343,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -24715,7 +24715,7 @@
       "article": "micardin_1_1_1",
       "articleKey": "micardin_1_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 106,
       "inTransit": 0,
       "inRequest": 0,
@@ -25102,7 +25102,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -25333,7 +25333,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -26002,7 +26002,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 97,
       "inTransit": 0,
       "inRequest": 0,
@@ -26059,7 +26059,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -26257,7 +26257,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -26521,7 +26521,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -26554,7 +26554,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -26587,7 +26587,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -26686,7 +26686,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -26851,7 +26851,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -27049,7 +27049,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -27214,7 +27214,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -27256,7 +27256,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 90,
       "inTransit": 0,
       "inRequest": 0,
@@ -27487,7 +27487,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 89,
       "inTransit": 0,
       "inRequest": 0,
@@ -27907,7 +27907,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -28303,7 +28303,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 544
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -28369,7 +28369,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -28509,7 +28509,7 @@
       "place": "Волгоград",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Васильева Мария",
       "inStock": 83,
       "inTransit": 0,
@@ -28534,7 +28534,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -28600,7 +28600,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -28633,7 +28633,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -28666,7 +28666,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -28741,7 +28741,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 82,
       "inTransit": 0,
       "inRequest": 0,
@@ -28963,7 +28963,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -29392,7 +29392,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -29590,7 +29590,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -30085,7 +30085,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -30448,7 +30448,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -30481,7 +30481,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -30646,7 +30646,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -30910,7 +30910,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -31108,7 +31108,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -31150,7 +31150,7 @@
       "article": "telomeras_60caps",
       "articleKey": "telomeras_60caps",
       "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 70,
       "inTransit": 0,
       "inRequest": 0,
@@ -31273,7 +31273,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -31669,7 +31669,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -31702,7 +31702,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -31735,7 +31735,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -31900,7 +31900,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -31933,7 +31933,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -32230,7 +32230,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -32263,7 +32263,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -32329,7 +32329,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -32395,7 +32395,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -32494,7 +32494,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 544
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -32659,7 +32659,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -32857,7 +32857,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -32890,7 +32890,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -33319,7 +33319,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -33550,7 +33550,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -33583,7 +33583,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -33682,7 +33682,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -33715,7 +33715,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -33946,7 +33946,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 719
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -33979,7 +33979,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -34243,7 +34243,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -34276,7 +34276,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -34507,7 +34507,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -34606,7 +34606,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -34680,7 +34680,7 @@
       "place": "Санкт-Петербург и СЗО",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Питайкин Артём",
       "inStock": 57,
       "inTransit": 0,
@@ -34705,7 +34705,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -35200,7 +35200,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -35233,7 +35233,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 184
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -35299,7 +35299,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -35464,7 +35464,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -35497,7 +35497,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -35530,7 +35530,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -35794,7 +35794,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -35926,7 +35926,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -36058,7 +36058,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -36421,7 +36421,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -37114,7 +37114,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -37246,7 +37246,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -37543,7 +37543,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -37873,7 +37873,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -37906,7 +37906,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -38170,7 +38170,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -38203,7 +38203,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -38236,7 +38236,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -38344,7 +38344,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 45,
       "inTransit": 0,
       "inRequest": 0,
@@ -38377,7 +38377,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 45,
       "inTransit": 0,
       "inRequest": 0,
@@ -38434,7 +38434,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -38467,7 +38467,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -38500,7 +38500,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -38706,7 +38706,7 @@
       "place": "Уфа",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Питайкин Артём",
       "inStock": 44,
       "inTransit": 0,
@@ -38731,7 +38731,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -38863,7 +38863,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -38962,7 +38962,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -39160,7 +39160,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -39193,7 +39193,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -39226,7 +39226,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -39325,7 +39325,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -39391,7 +39391,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -39622,7 +39622,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -39655,7 +39655,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -39886,7 +39886,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -39919,7 +39919,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -39952,7 +39952,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -39985,7 +39985,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -40060,7 +40060,7 @@
       "article": "menoflavon_bad_60caps",
       "articleKey": "menoflavon_bad_60caps",
       "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "inStock": 40,
       "inTransit": 0,
       "inRequest": 0,
@@ -40084,7 +40084,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 544
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -40282,7 +40282,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -40315,7 +40315,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -40348,7 +40348,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -40447,7 +40447,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -40513,7 +40513,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -41008,7 +41008,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -41371,7 +41371,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -41404,7 +41404,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -41635,7 +41635,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -41833,7 +41833,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -41866,7 +41866,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -41899,7 +41899,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -42262,7 +42262,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -42691,7 +42691,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -42922,7 +42922,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -43186,7 +43186,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -43327,7 +43327,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 33,
       "inTransit": 0,
       "inRequest": 0,
@@ -43417,7 +43417,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -43690,7 +43690,7 @@
       "article": "micardin_1_1",
       "articleKey": "micardin_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 32,
       "inTransit": 0,
       "inRequest": 0,
@@ -43879,7 +43879,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -43945,7 +43945,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -44044,7 +44044,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -44341,7 +44341,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -44374,7 +44374,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -44407,7 +44407,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -44572,7 +44572,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -44605,7 +44605,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -45001,7 +45001,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -45133,7 +45133,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -45166,7 +45166,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 719
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -45232,7 +45232,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -45265,7 +45265,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -45331,7 +45331,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -45364,7 +45364,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -45397,7 +45397,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -45892,7 +45892,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -45925,7 +45925,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -46024,7 +46024,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -46057,7 +46057,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -46321,7 +46321,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -46354,7 +46354,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -46585,7 +46585,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -46651,7 +46651,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -46816,7 +46816,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -46849,7 +46849,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -46882,7 +46882,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -46981,7 +46981,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -47014,7 +47014,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -47047,7 +47047,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -47146,7 +47146,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -47608,7 +47608,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -47674,7 +47674,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -47707,7 +47707,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -47773,7 +47773,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -47806,7 +47806,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -48004,7 +48004,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -48037,7 +48037,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -48136,7 +48136,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -48202,7 +48202,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -48235,7 +48235,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -48441,7 +48441,7 @@
       "place": "Казань",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Питайкин Артём",
       "inStock": 24,
       "inTransit": 0,
@@ -48466,7 +48466,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -48532,7 +48532,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 375
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -48697,7 +48697,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -48730,7 +48730,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -48796,7 +48796,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -48829,7 +48829,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -48970,7 +48970,7 @@
       "article": "micardin_1_1_1",
       "articleKey": "micardin_1_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 23,
       "inTransit": 0,
       "inRequest": 0,
@@ -49003,7 +49003,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 23,
       "inTransit": 0,
       "inRequest": 0,
@@ -49036,7 +49036,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 23,
       "inTransit": 0,
       "inRequest": 0,
@@ -49225,7 +49225,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -49291,7 +49291,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 719
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -49324,7 +49324,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -49390,7 +49390,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -49456,7 +49456,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -50083,7 +50083,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -50125,7 +50125,7 @@
       "article": "wbgetsize",
       "articleKey": "wbgetsize",
       "name": "Игрушка для взрослых Getsize, CPA",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 22,
       "inTransit": 0,
       "inRequest": 0,
@@ -50158,7 +50158,7 @@
       "article": "wbgetsize",
       "articleKey": "wbgetsize",
       "name": "Игрушка для взрослых Getsize, CPA",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 22,
       "inTransit": 0,
       "inRequest": 0,
@@ -50215,7 +50215,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -50281,7 +50281,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -50347,7 +50347,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -50578,7 +50578,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -50776,7 +50776,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -50809,7 +50809,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -50842,7 +50842,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -50875,7 +50875,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -51007,7 +51007,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -51040,7 +51040,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -51568,7 +51568,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -51667,7 +51667,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -51832,7 +51832,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -51865,7 +51865,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -52393,7 +52393,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -52525,7 +52525,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -52624,7 +52624,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -52657,7 +52657,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -52690,7 +52690,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -52723,7 +52723,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -52789,7 +52789,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -53053,7 +53053,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -53086,7 +53086,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -53284,7 +53284,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -53416,7 +53416,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -53449,7 +53449,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -53482,7 +53482,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -53515,7 +53515,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -53581,7 +53581,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -53614,7 +53614,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -54142,7 +54142,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -54175,7 +54175,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -54340,7 +54340,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -54373,7 +54373,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -54745,7 +54745,7 @@
       "article": "micardin_1_1",
       "articleKey": "micardin_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 16,
       "inTransit": 0,
       "inRequest": 0,
@@ -55000,7 +55000,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -55099,7 +55099,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -55132,7 +55132,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -55339,7 +55339,7 @@
       "article": "micardin_1_1_1",
       "articleKey": "micardin_1_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 15,
       "inTransit": 0,
       "inRequest": 0,
@@ -55372,7 +55372,7 @@
       "article": "micardin_1_1_1",
       "articleKey": "micardin_1_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 15,
       "inTransit": 0,
       "inRequest": 0,
@@ -55627,7 +55627,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -55735,7 +55735,7 @@
       "article": "varifit_1_1",
       "articleKey": "varifit_1_1",
       "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 15,
       "inTransit": 0,
       "inRequest": 0,
@@ -55768,7 +55768,7 @@
       "article": "varifit_1_1",
       "articleKey": "varifit_1_1",
       "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 15,
       "inTransit": 0,
       "inRequest": 0,
@@ -55825,7 +55825,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -55891,7 +55891,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -56287,7 +56287,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -56320,7 +56320,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -56551,7 +56551,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -56650,7 +56650,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -56716,7 +56716,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -56749,7 +56749,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -56782,7 +56782,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -57319,7 +57319,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 13,
       "inTransit": 0,
       "inRequest": 0,
@@ -57376,7 +57376,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -57508,7 +57508,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -57706,7 +57706,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -58012,7 +58012,7 @@
       "article": "micardin_1_1",
       "articleKey": "micardin_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 12,
       "inTransit": 0,
       "inRequest": 0,
@@ -58045,7 +58045,7 @@
       "article": "micardin_1_1",
       "articleKey": "micardin_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 12,
       "inTransit": 0,
       "inRequest": 0,
@@ -58630,7 +58630,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -58663,7 +58663,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -58696,7 +58696,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -58795,7 +58795,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -59224,7 +59224,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -59257,7 +59257,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -59398,7 +59398,7 @@
       "article": "berberin_laif_bad_60caps",
       "articleKey": "berberin_laif_bad_60caps",
       "name": "Берберин + хром + коэнзим + B6 для похудения, контроль аппетита и веса, Алтея, Берберин Лайф, 60 капсул",
-      "owner": "Кирилл",
+      "owner": "Питайкин Артём",
       "inStock": 10,
       "inTransit": 0,
       "inRequest": 0,
@@ -59422,7 +59422,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -59554,7 +59554,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -59587,7 +59587,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -59620,7 +59620,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -59686,7 +59686,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -60379,7 +60379,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -60445,7 +60445,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -60478,7 +60478,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -61039,7 +61039,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -61072,7 +61072,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -61081,7 +61081,7 @@
       "article": "dardrakona_1_1",
       "articleKey": "dardrakona_1_1",
       "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 8,
       "inTransit": 0,
       "inRequest": 0,
@@ -61114,7 +61114,7 @@
       "article": "dardrakona_1_1",
       "articleKey": "dardrakona_1_1",
       "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 8,
       "inTransit": 0,
       "inRequest": 0,
@@ -61765,7 +61765,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -61798,7 +61798,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -61897,7 +61897,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -61996,7 +61996,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -62425,7 +62425,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1174
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -62557,7 +62557,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -62590,7 +62590,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -62698,7 +62698,7 @@
       "article": "dardrakona_1_1",
       "articleKey": "dardrakona_1_1",
       "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 6,
       "inTransit": 0,
       "inRequest": 0,
@@ -62731,7 +62731,7 @@
       "article": "dardrakona_1_1",
       "articleKey": "dardrakona_1_1",
       "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 6,
       "inTransit": 0,
       "inRequest": 0,
@@ -63159,7 +63159,7 @@
       "place": "Тюмень",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Питайкин Артём",
       "inStock": 6,
       "inTransit": 0,
@@ -63184,7 +63184,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -63283,7 +63283,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -63316,7 +63316,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -63349,7 +63349,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -63514,7 +63514,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -63580,7 +63580,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -63613,7 +63613,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -63712,7 +63712,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -63745,7 +63745,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -63844,7 +63844,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -63910,7 +63910,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -64182,7 +64182,7 @@
       "place": "Москва, МО и Дальние регионы",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Питайкин Артём",
       "inStock": 5,
       "inTransit": 0,
@@ -64207,7 +64207,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -64339,7 +64339,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 544
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -64570,7 +64570,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -64669,7 +64669,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -64702,7 +64702,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -64867,7 +64867,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -64900,7 +64900,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -64933,7 +64933,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -65098,7 +65098,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -65197,7 +65197,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -65263,7 +65263,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -65329,7 +65329,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -65725,7 +65725,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -65758,7 +65758,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -65791,7 +65791,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -65989,7 +65989,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66055,7 +66055,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66121,7 +66121,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -66187,7 +66187,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66253,7 +66253,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66286,7 +66286,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66319,7 +66319,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66352,7 +66352,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66385,7 +66385,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66418,7 +66418,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66451,7 +66451,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66484,7 +66484,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -66517,7 +66517,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66583,7 +66583,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66616,7 +66616,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -66921,7 +66921,7 @@
       "place": "Урал",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Питайкин Артём",
       "inStock": 3,
       "inTransit": 0,
@@ -66946,7 +66946,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -67177,7 +67177,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -67210,7 +67210,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -67342,7 +67342,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -67408,7 +67408,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -67450,7 +67450,7 @@
       "article": "varifit_1_1",
       "articleKey": "varifit_1_1",
       "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 3,
       "inTransit": 0,
       "inRequest": 0,
@@ -67606,7 +67606,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -67639,7 +67639,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -67672,7 +67672,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -67705,7 +67705,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -67738,7 +67738,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -67804,7 +67804,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -67837,7 +67837,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -68109,7 +68109,7 @@
       "place": "Екатеринбург",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Питайкин Артём",
       "inStock": 2,
       "inTransit": 0,
@@ -68134,7 +68134,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -68464,7 +68464,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -68497,7 +68497,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -68596,7 +68596,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -68770,7 +68770,7 @@
       "article": "varifit_1_1",
       "articleKey": "varifit_1_1",
       "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 2,
       "inTransit": 0,
       "inRequest": 0,
@@ -68803,7 +68803,7 @@
       "article": "varifit_1_1",
       "articleKey": "varifit_1_1",
       "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 2,
       "inTransit": 0,
       "inRequest": 0,
@@ -68836,7 +68836,7 @@
       "article": "varifit_1_1",
       "articleKey": "varifit_1_1",
       "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 2,
       "inTransit": 0,
       "inRequest": 0,
@@ -68869,7 +68869,7 @@
       "article": "artoks",
       "articleKey": "artoks",
       "name": "Мазь для суставов Артокс, CPA, 50 мл",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -68926,7 +68926,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -68959,7 +68959,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1012
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -68992,7 +68992,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 1013
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -69232,7 +69232,7 @@
       "article": "dardrakona_1_1",
       "articleKey": "dardrakona_1_1",
       "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -69454,7 +69454,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 402
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -69619,7 +69619,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -69652,7 +69652,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 548
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -69685,7 +69685,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -69718,7 +69718,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -69751,7 +69751,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -69784,7 +69784,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 2504
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -69883,7 +69883,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 376
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -69982,7 +69982,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 735
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -70015,7 +70015,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 798
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -70980,7 +70980,7 @@
       "place": "Пермь",
       "article": "maslo_dlya_volos_parf_110ml_",
       "articleKey": "maslo_dlya_volos_parf_110ml",
-      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
       "owner": "Питайкин Артём",
       "inStock": 1,
       "inTransit": 0,
@@ -71005,7 +71005,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 451
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -71113,7 +71113,7 @@
       "article": "menoflavon_bad_60caps",
       "articleKey": "menoflavon_bad_60caps",
       "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -71137,7 +71137,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 544
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -71146,7 +71146,7 @@
       "article": "menoflavon_bad_60caps",
       "articleKey": "menoflavon_bad_60caps",
       "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -71170,7 +71170,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 544
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -71179,7 +71179,7 @@
       "article": "menoflavon_bad_60caps",
       "articleKey": "menoflavon_bad_60caps",
       "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
-      "owner": "Питайкин Артём",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -71203,7 +71203,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 544
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -71311,7 +71311,7 @@
       "article": "micardin_1_1",
       "articleKey": "micardin_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -71344,7 +71344,7 @@
       "article": "micardin_1_1",
       "articleKey": "micardin_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -71377,7 +71377,7 @@
       "article": "micardin_1_1",
       "articleKey": "micardin_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -71410,7 +71410,7 @@
       "article": "micardin_1_1",
       "articleKey": "micardin_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -71443,7 +71443,7 @@
       "article": "micardin_1_1",
       "articleKey": "micardin_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -71509,7 +71509,7 @@
       "article": "micardin_1_1_1",
       "articleKey": "micardin_1_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -71542,7 +71542,7 @@
       "article": "micardin_1_1_1",
       "articleKey": "micardin_1_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -71575,7 +71575,7 @@
       "article": "micardin_1_1_1",
       "articleKey": "micardin_1_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -71608,7 +71608,7 @@
       "article": "micardin_1_1_1",
       "articleKey": "micardin_1_1_1",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -72103,7 +72103,7 @@
       "article": "retinait_krem_1_5_50ml",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -72160,7 +72160,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -72193,7 +72193,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -72226,7 +72226,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -72259,7 +72259,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -72292,7 +72292,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -72325,7 +72325,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -72358,7 +72358,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -72391,7 +72391,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -72490,7 +72490,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -72523,7 +72523,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Новинка",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -72532,7 +72532,7 @@
       "article": "retinol_start_kit",
       "articleKey": "retinol_start_kit",
       "name": "Набор уходовой косметики для лица с ретинолом",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -72556,7 +72556,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 2
+      "planMonth": null
     },
     {
       "platform": "WB",
@@ -72589,7 +72589,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 2
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -73018,7 +73018,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 0
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -73027,7 +73027,7 @@
       "article": "telomeras_60caps",
       "articleKey": "telomeras_60caps",
       "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -73060,7 +73060,7 @@
       "article": "telomeras_60caps",
       "articleKey": "telomeras_60caps",
       "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -73117,7 +73117,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 719
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -73150,7 +73150,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 719
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -73183,7 +73183,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Вывод",
       "needSuppressedByLifecycle": true,
-      "planMonth": 719
+      "planMonth": null
     },
     {
       "platform": "Ozon",
@@ -73423,7 +73423,7 @@
       "article": "varifit_1_1",
       "articleKey": "varifit_1_1",
       "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -73456,7 +73456,7 @@
       "article": "varifit_1_1",
       "articleKey": "varifit_1_1",
       "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
-      "owner": "Молодякова Дария",
+      "owner": "Васильева Мария",
       "inStock": 1,
       "inTransit": 0,
       "inRequest": 0,
@@ -73513,7 +73513,7 @@
       "needFormula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "lifecycleStatus": "Актуальный",
       "needSuppressedByLifecycle": false,
-      "planMonth": 807
+      "planMonth": null
     },
     {
       "platform": "WB",

@@ -304,6 +304,7 @@ function executiveFunnelOwnerPlanBucket(owner = '') {
     adSpend: 0,
     planAdSpend: 0,
     hasPlanAdSpend: false,
+    hasSkuFactSignal: false,
     externalExcludedSpend: 0,
     externalExcludedOrders: 0
   };
@@ -327,7 +328,8 @@ function executiveFunnelOwnerPlatformBucket(platform = '') {
     planMarginWeight: 0,
     adSpend: 0,
     planAdSpend: 0,
-    hasPlanAdSpend: false
+    hasPlanAdSpend: false,
+    hasSkuFactSignal: false
   };
 }
 
@@ -375,7 +377,8 @@ function executiveFunnelAddPlanMetricItem(target, metric = {}, platform = '', ro
       planMarginRub: 0,
       adSpend: 0,
       planAdSpend: 0,
-      hasPlanAdSpend: false
+      hasPlanAdSpend: false,
+      hasSkuFactSignal: false
     };
     target.items.set(key, item);
   }
@@ -388,6 +391,11 @@ function executiveFunnelAddPlanMetricItem(target, metric = {}, platform = '', ro
   if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
     item.planAdSpend += executiveFunnelNumber(metric.planAdSpend);
     item.hasPlanAdSpend = true;
+  }
+  if (executiveFunnelNumber(values.factRevenue ?? metric.factRevenue) > 0
+    || executiveFunnelNumber(metric.factUnits) > 0
+    || Array.isArray(metric.factDaily) && metric.factDaily.length > 0) {
+    item.hasSkuFactSignal = true;
   }
   item.marginRub += executiveFunnelNumber(values.marginRub ?? executiveFunnelMetricMarginRub(metric));
   if (values.marginPct !== null && values.marginPct !== undefined && executiveFunnelNumber(values.factRevenue ?? metric.factRevenue) > 0) {
@@ -415,6 +423,11 @@ function executiveFunnelAddPlanMetric(target, metric = {}, platform = '', row = 
   if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
     target.planAdSpend += executiveFunnelNumber(metric.planAdSpend);
     target.hasPlanAdSpend = true;
+  }
+  if (factRevenue > 0
+    || executiveFunnelNumber(metric.factUnits) > 0
+    || Array.isArray(metric.factDaily) && metric.factDaily.length > 0) {
+    target.hasSkuFactSignal = true;
   }
   target.marginRub += marginRub;
   if (marginPct !== null && factRevenue > 0) target.marginWeight += factRevenue;
@@ -500,6 +513,114 @@ function executiveFunnelFinalizePlanBucket(row) {
   row.planDrr = row.planToDateRevenue > 0 && row.planAdSpend !== null ? row.planAdSpend / row.planToDateRevenue : null;
   row.level = executiveFunnelCompletionLevel(row.completionToDate);
   return row;
+}
+
+function executiveFunnelCloneItemMap(items) {
+  if (!(items instanceof Map)) return new Map();
+  return new Map([...items.entries()].map(([key, item]) => [key, { ...item }]));
+}
+
+function executiveFunnelClonePlanBucket(bucket = {}) {
+  const clone = bucket.platform !== undefined
+    ? executiveFunnelOwnerPlatformBucket(bucket.platform)
+    : executiveFunnelOwnerPlanBucket(bucket.owner || '');
+  [
+    'planRevenue',
+    'planToDateRevenue',
+    'factRevenue',
+    'planUnits',
+    'factUnits',
+    'marginRub',
+    'marginWeight',
+    'planMarginRub',
+    'planMarginValue',
+    'planMarginWeight',
+    'adSpend',
+    'planAdSpend',
+    'externalExcludedSpend',
+    'externalExcludedOrders'
+  ].forEach((key) => {
+    if (bucket[key] !== undefined) clone[key] = executiveFunnelNumber(bucket[key]);
+  });
+  clone.owner = bucket.owner || clone.owner;
+  clone.platform = bucket.platform || clone.platform;
+  clone.label = bucket.label || clone.label;
+  clone.hasPlanAdSpend = Boolean(bucket.hasPlanAdSpend);
+  clone.hasSkuFactSignal = Boolean(bucket.hasSkuFactSignal);
+  clone.skuKeys = new Set(bucket.skuKeys || []);
+  clone.items = executiveFunnelCloneItemMap(bucket.items);
+  return executiveFunnelFinalizePlanBucket(clone);
+}
+
+function executiveFunnelSnapshotOwnerSkuMetrics(ownerMap = new Map()) {
+  const snapshot = new Map();
+  ownerMap.forEach((ownerBucket, owner) => {
+    const platforms = new Map();
+    if (ownerBucket.platforms instanceof Map) {
+      ownerBucket.platforms.forEach((metric, platform) => {
+        platforms.set(platform, executiveFunnelClonePlanBucket(metric));
+      });
+    }
+    snapshot.set(owner, {
+      owner,
+      aggregate: executiveFunnelClonePlanBucket(ownerBucket),
+      platforms
+    });
+  });
+  return snapshot;
+}
+
+function executiveFunnelOwnerSkuMetricForDisplay(snapshot = new Map(), owner = '', selectedPlatform = 'all') {
+  const ownerSnapshot = snapshot.get(owner);
+  if (!ownerSnapshot) return null;
+  if (EXECUTIVE_FUNNEL_PLATFORMS.includes(selectedPlatform)) {
+    return ownerSnapshot.platforms.get(selectedPlatform) || null;
+  }
+  return ownerSnapshot.aggregate || null;
+}
+
+function executiveFunnelApplyOwnerSkuMetric(row = {}, metric = null) {
+  if (!row || !metric || !executiveFunnelPlanBucketHasSignal(metric)) return row;
+  row.payrollControlledMetric = {
+    factRevenue: row.factRevenue,
+    planToDateRevenue: row.planToDateRevenue,
+    completionToDate: row.completionToDate,
+    gapToDate: row.gapToDate
+  };
+  [
+    'planRevenue',
+    'planToDateRevenue',
+    'factRevenue',
+    'planUnits',
+    'factUnits',
+    'marginRub',
+    'marginWeight',
+    'planMarginRub',
+    'planMarginValue',
+    'planMarginWeight',
+    'adSpend',
+    'planAdSpend',
+    'externalExcludedSpend',
+    'externalExcludedOrders'
+  ].forEach((key) => {
+    if (metric[key] !== undefined) row[key] = executiveFunnelNumber(metric[key]);
+  });
+  row.hasPlanAdSpend = Boolean(metric.hasPlanAdSpend);
+  row.hasSkuFactSignal = Boolean(metric.hasSkuFactSignal);
+  row.skuKeys = new Set(metric.skuKeys || []);
+  row.items = executiveFunnelCloneItemMap(metric.items);
+  row.ownerMetricSource = 'sku_owner_sum';
+  const finalized = executiveFunnelFinalizePlanBucket(row);
+  if (!finalized.hasSkuFactSignal
+    && executiveFunnelNumber(finalized.planToDateRevenue) > 0
+    && executiveFunnelNumber(finalized.payrollControlledMetric?.factRevenue) > 0) {
+    finalized.ownerSkuFactMissing = true;
+    finalized.completionToDate = null;
+    finalized.completionMonth = null;
+    finalized.gapToDate = null;
+    finalized.level = executiveFunnelCompletionLevel(null);
+  }
+  return finalized;
 }
 
 function executiveFunnelPlanStatusCounts(rows = []) {
@@ -798,6 +919,7 @@ function executiveFunnelRebuildOwnerFromPlatforms(bucket = {}) {
       bucket.planAdSpend += executiveFunnelNumber(metric.planAdSpend);
       bucket.hasPlanAdSpend = true;
     }
+    if (metric.hasSkuFactSignal) bucket.hasSkuFactSignal = true;
     (metric.skuKeys || new Set()).forEach((key) => bucket.skuKeys.add(key));
     if (bucket.items instanceof Map && metric.items instanceof Map) {
       metric.items.forEach((item, key) => bucket.items.set(key, { ...item }));
@@ -897,6 +1019,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     bucket.externalExcludedOrders += executiveFunnelNumber(item.orders);
   });
 
+  const ownerSkuMetricSnapshot = executiveFunnelSnapshotOwnerSkuMetrics(ownerMap);
   const payrollOwnerControls = executiveFunnelApplyPayrollOwnerControls(ownerMap, planModel, selectedPlatform);
 
   const ownerRows = [...ownerMap.values()]
@@ -906,7 +1029,8 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
         .filter(executiveFunnelPlanBucketHasSignal)
         .sort((left, right) => right.factRevenue - left.factRevenue);
       row.primaryPlatform = row.platformRows[0]?.platform || executiveFunnelOwnerPrimaryPlatform(row.owner, selectedPlatform);
-      return executiveFunnelFinalizePlanBucket(row);
+      const ownerSkuMetric = executiveFunnelOwnerSkuMetricForDisplay(ownerSkuMetricSnapshot, row.owner, selectedPlatform);
+      return executiveFunnelApplyOwnerSkuMetric(executiveFunnelFinalizePlanBucket(row), ownerSkuMetric);
     })
     .filter((row) => activeOwners.includes(row.owner) || executiveFunnelPlanBucketHasSignal(row));
 

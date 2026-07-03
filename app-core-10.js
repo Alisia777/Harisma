@@ -289,6 +289,7 @@ function executiveFunnelOwnerPlanBucket(owner = '') {
   return {
     owner,
     skuKeys: new Set(),
+    items: new Map(),
     platforms: new Map(),
     planRevenue: 0,
     planToDateRevenue: 0,
@@ -313,6 +314,7 @@ function executiveFunnelOwnerPlatformBucket(platform = '') {
     platform,
     label: executiveFunnelPlatformLabel(platform),
     skuKeys: new Set(),
+    items: new Map(),
     planRevenue: 0,
     planToDateRevenue: 0,
     factRevenue: 0,
@@ -351,6 +353,49 @@ function executiveFunnelPlanMetricActive(metric = {}) {
   ));
 }
 
+function executiveFunnelAddPlanMetricItem(target, metric = {}, platform = '', row = {}, values = {}) {
+  const articleKey = String(row.articleKey || row.article || row.sku?.articleKey || row.sku?.article || '').trim();
+  if (!articleKey || !(target.items instanceof Map)) return;
+  const key = `${platform}:${articleKey}`;
+  let item = target.items.get(key);
+  if (!item) {
+    item = {
+      key,
+      sku: articleKey,
+      articleKey,
+      title: String(row.name || row.title || row.sku?.name || row.sku?.title || '').trim(),
+      platform,
+      planRevenue: 0,
+      planToDateRevenue: 0,
+      factRevenue: 0,
+      planUnits: 0,
+      factUnits: 0,
+      marginRub: 0,
+      marginWeight: 0,
+      planMarginRub: 0,
+      adSpend: 0,
+      planAdSpend: 0,
+      hasPlanAdSpend: false
+    };
+    target.items.set(key, item);
+  }
+  item.planRevenue += executiveFunnelNumber(values.planRevenue ?? metric.planRevenue);
+  item.planToDateRevenue += executiveFunnelNumber(values.planToDateRevenue ?? metric.planToDateRevenue);
+  item.factRevenue += executiveFunnelNumber(values.factRevenue ?? metric.factRevenue);
+  item.planUnits += executiveFunnelNumber(metric.planUnits);
+  item.factUnits += executiveFunnelNumber(metric.factUnits);
+  item.adSpend += executiveFunnelNumber(metric.adSpend);
+  if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
+    item.planAdSpend += executiveFunnelNumber(metric.planAdSpend);
+    item.hasPlanAdSpend = true;
+  }
+  item.marginRub += executiveFunnelNumber(values.marginRub ?? executiveFunnelMetricMarginRub(metric));
+  if (values.marginPct !== null && values.marginPct !== undefined && executiveFunnelNumber(values.factRevenue ?? metric.factRevenue) > 0) {
+    item.marginWeight += executiveFunnelNumber(values.factRevenue ?? metric.factRevenue);
+  }
+  item.planMarginRub += executiveFunnelNumber(values.planMarginRub ?? executiveFunnelMetricPlanMarginRub(metric));
+}
+
 function executiveFunnelAddPlanMetric(target, metric = {}, platform = '', row = {}) {
   const factRevenue = executiveFunnelNumber(metric.factRevenue);
   const planToDateRevenue = executiveFunnelNumber(metric.planToDateRevenue);
@@ -382,10 +427,68 @@ function executiveFunnelAddPlanMetric(target, metric = {}, platform = '', row = 
   }
   if (planMarginRub !== null) target.planMarginRub += planMarginRub;
   if (articleKey && target.skuKeys) target.skuKeys.add(`${platform}:${articleKey}`);
+  executiveFunnelAddPlanMetricItem(target, metric, platform, row, {
+    factRevenue,
+    planToDateRevenue,
+    planRevenue,
+    marginPct,
+    marginRub,
+    planMarginRub
+  });
+}
+
+function executiveFunnelScalePlanBucketItems(bucket = {}, ratios = {}) {
+  if (!(bucket.items instanceof Map)) return;
+  const revenueRatio = Number.isFinite(Number(ratios.revenue)) ? Number(ratios.revenue) : 1;
+  const planToDateRatio = Number.isFinite(Number(ratios.planToDate)) ? Number(ratios.planToDate) : 1;
+  const planRatio = Number.isFinite(Number(ratios.plan)) ? Number(ratios.plan) : planToDateRatio;
+  const adRatio = Number.isFinite(Number(ratios.ad)) ? Number(ratios.ad) : 1;
+  const planAdRatio = Number.isFinite(Number(ratios.planAd)) ? Number(ratios.planAd) : 1;
+  const marginRatio = Number.isFinite(Number(ratios.margin)) ? Number(ratios.margin) : revenueRatio;
+  const planMarginRatio = Number.isFinite(Number(ratios.planMargin)) ? Number(ratios.planMargin) : planToDateRatio;
+  bucket.items.forEach((item) => {
+    item.factRevenue = executiveFunnelNumber(item.factRevenue) * revenueRatio;
+    item.factUnits = executiveFunnelNumber(item.factUnits) * revenueRatio;
+    item.planToDateRevenue = executiveFunnelNumber(item.planToDateRevenue) * planToDateRatio;
+    item.planRevenue = executiveFunnelNumber(item.planRevenue) * planRatio;
+    item.planUnits = executiveFunnelNumber(item.planUnits) * planRatio;
+    item.adSpend = executiveFunnelNumber(item.adSpend) * adRatio;
+    if (item.hasPlanAdSpend || item.planAdSpend !== null && item.planAdSpend !== undefined) {
+      item.planAdSpend = executiveFunnelNumber(item.planAdSpend) * planAdRatio;
+      item.hasPlanAdSpend = true;
+    }
+    item.marginRub = executiveFunnelNumber(item.marginRub) * marginRatio;
+    item.marginWeight = executiveFunnelNumber(item.marginWeight) * revenueRatio;
+    item.planMarginRub = executiveFunnelNumber(item.planMarginRub) * planMarginRatio;
+  });
+}
+
+function executiveFunnelFinalizePlanItem(item = {}) {
+  const planToDateRevenue = executiveFunnelNumber(item.planToDateRevenue);
+  const factRevenue = executiveFunnelNumber(item.factRevenue);
+  return {
+    ...item,
+    planAdSpend: item.hasPlanAdSpend ? executiveFunnelNumber(item.planAdSpend) : null,
+    completionToDate: planToDateRevenue > 0 ? factRevenue / planToDateRevenue : null,
+    gapToDate: factRevenue - planToDateRevenue,
+    marginPct: executiveFunnelNumber(item.marginWeight) > 0 ? executiveFunnelNumber(item.marginRub) / executiveFunnelNumber(item.marginWeight) : null,
+    drr: factRevenue > 0 ? executiveFunnelNumber(item.adSpend) / factRevenue : null
+  };
 }
 
 function executiveFunnelFinalizePlanBucket(row) {
   row.articleCount = row.skuKeys?.size || 0;
+  row.itemRows = row.items instanceof Map
+    ? [...row.items.values()].map(executiveFunnelFinalizePlanItem).sort((left, right) => {
+      const statusWeight = (item) => {
+        if (executiveFunnelNumber(item.planToDateRevenue) <= 0 && executiveFunnelNumber(item.factRevenue) > 0) return 1;
+        return item.completionToDate !== null && item.completionToDate < 1 ? 0 : 2;
+      };
+      return statusWeight(left) - statusWeight(right)
+        || executiveFunnelNumber(left.gapToDate) - executiveFunnelNumber(right.gapToDate)
+        || executiveFunnelNumber(right.factRevenue) - executiveFunnelNumber(left.factRevenue);
+    })
+    : [];
   row.completionToDate = row.planToDateRevenue > 0 ? row.factRevenue / row.planToDateRevenue : null;
   row.gapToDate = row.factRevenue - row.planToDateRevenue;
   row.marginPct = row.marginWeight > 0 ? row.marginRub / row.marginWeight : null;
@@ -606,6 +709,7 @@ function executiveFunnelScalePlanBucket(bucket = {}, ratios = {}) {
   bucket.planMarginValue = executiveFunnelNumber(bucket.planMarginValue) * planMarginRatio;
   bucket.planMarginWeight = executiveFunnelNumber(bucket.planMarginWeight) * planToDateRatio;
   bucket.planMarginRub = executiveFunnelNumber(bucket.planMarginRub) * planMarginRatio;
+  executiveFunnelScalePlanBucketItems(bucket, ratios);
   bucket.payrollControlScaled = true;
   return executiveFunnelFinalizePlanBucket(bucket);
 }
@@ -637,6 +741,9 @@ function executiveFunnelRebuildOwnerFromPlatforms(bucket = {}) {
       bucket.hasPlanAdSpend = true;
     }
     (metric.skuKeys || new Set()).forEach((key) => bucket.skuKeys.add(key));
+    if (bucket.items instanceof Map && metric.items instanceof Map) {
+      metric.items.forEach((item, key) => bucket.items.set(key, { ...item }));
+    }
   });
   return executiveFunnelFinalizePlanBucket(bucket);
 }

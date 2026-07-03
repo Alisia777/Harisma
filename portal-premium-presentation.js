@@ -637,6 +637,18 @@
     return null;
   }
 
+  function executiveOwnerDetailOwnerRow(model, ownerName) {
+    var target = executiveOwnerDetailCanonical(ownerName);
+    if (!target) return null;
+    var rows = []
+      .concat(model && Array.isArray(model.allOwnerRows) ? model.allOwnerRows : [])
+      .concat(model && Array.isArray(model.scopedOwnerRows) ? model.scopedOwnerRows : [])
+      .concat(model && Array.isArray(model.ownerRows) ? model.ownerRows : []);
+    return rows.find(function (row) {
+      return executiveOwnerDetailCanonical(row && row.owner) === target;
+    }) || null;
+  }
+
   function executiveOwnerDetailPlatforms(model) {
     var selected = internalPlatform(model && (model.selectedPlatform || model.filters && model.filters.platform) || 'all');
     if (selected && selected !== 'all') return [selected];
@@ -646,6 +658,100 @@
     return Array.from(new Set(fromModel.concat(['wb', 'ozon', 'ya']).filter(function (key) {
       return key && key !== 'all';
     })));
+  }
+
+  function executiveOwnerDetailPlatformSet(model) {
+    return new Set(executiveOwnerDetailPlatforms(model).map(internalPlatform).filter(function (key) {
+      return key && key !== 'all';
+    }));
+  }
+
+  function executiveOwnerDetailRowArticleKey(row) {
+    return String(row && (row.articleKey || row.article || row.sku && (row.sku.articleKey || row.sku.article) || row.skuKey || row.targetSku || row.nmId || row.id) || '').trim();
+  }
+
+  function executiveOwnerDetailKey(platform, articleKey) {
+    var key = String(articleKey || '').trim();
+    return key ? internalPlatform(platform) + ':' + key : '';
+  }
+
+  function executiveOwnerDetailSkuKeySet(ownerRow) {
+    var keys = new Set();
+    function addKey(value) {
+      var key = String(value || '').trim();
+      if (key) keys.add(key);
+    }
+    if (ownerRow && ownerRow.skuKeys && typeof ownerRow.skuKeys.forEach === 'function') ownerRow.skuKeys.forEach(addKey);
+    (ownerRow && ownerRow.platformRows || []).forEach(function (platformRow) {
+      if (platformRow && platformRow.skuKeys && typeof platformRow.skuKeys.forEach === 'function') platformRow.skuKeys.forEach(addKey);
+    });
+    return keys;
+  }
+
+  function executiveOwnerDetailItemSource(ownerRow) {
+    if (!ownerRow) return [];
+    if (Array.isArray(ownerRow.itemRows)) return ownerRow.itemRows;
+    if (ownerRow.items instanceof Map) return Array.from(ownerRow.items.values());
+    if (Array.isArray(ownerRow.items)) return ownerRow.items;
+    return [];
+  }
+
+  function executiveOwnerDetailStatus(planToDate, fact, completion) {
+    if (planToDate <= 0 && fact > 0) return 'noplan';
+    return completion !== null && completion < 1 ? 'under' : 'ok';
+  }
+
+  function executiveOwnerDetailNormalizeItem(item) {
+    var platform = internalPlatform(item && item.platform || '');
+    var sku = executiveOwnerDetailRowArticleKey(item) || String(item && (item.sku || item.articleKey || item.article) || '').trim();
+    var planToDate = finite(item && item.planToDateRevenue);
+    var fact = finite(item && item.factRevenue);
+    var completion = numberOrNull(item && item.completionToDate);
+    if (completion === null && planToDate > 0) completion = fact / planToDate;
+    return {
+      sku: sku || 'SKU',
+      title: String(item && (item.title || item.name || item.productName || item.product || '') || '').trim(),
+      platform: platform,
+      planToDateRevenue: planToDate,
+      factRevenue: fact,
+      completionToDate: completion,
+      gapToDate: numberOrNull(item && item.gapToDate) !== null ? finite(item.gapToDate) : fact - planToDate,
+      marginPct: numberOrNull(item && item.marginPct),
+      adSpend: finite(item && item.adSpend),
+      drr: numberOrNull(item && item.drr) !== null ? numberOrNull(item.drr) : (fact > 0 ? finite(item && item.adSpend) / fact : null),
+      status: executiveOwnerDetailStatus(planToDate, fact, completion)
+    };
+  }
+
+  function executiveOwnerDetailRowsFromOwnerItems(model, ownerRow) {
+    var platformSet = executiveOwnerDetailPlatformSet(model);
+    var seen = new Set();
+    return executiveOwnerDetailItemSource(ownerRow)
+      .map(executiveOwnerDetailNormalizeItem)
+      .filter(function (row) {
+        var platform = internalPlatform(row.platform || '');
+        if (!platform || platform === 'all' || !platformSet.has(platform)) return false;
+        var key = executiveOwnerDetailKey(platform, row.sku);
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+  }
+
+  function executiveOwnerDetailScopedOwner(owner, platform) {
+    try {
+      if (typeof activeOwnerName === 'function') return activeOwnerName(owner, platform);
+    } catch (error) {}
+    return String(owner || '').trim();
+  }
+
+  function executiveOwnerDetailSortRows(rows) {
+    return (rows || []).sort(function (left, right) {
+      var statusWeight = { under: 0, noplan: 1, ok: 2 };
+      return (statusWeight[left.status] || 9) - (statusWeight[right.status] || 9)
+        || finite(left.gapToDate) - finite(right.gapToDate)
+        || finite(right.factRevenue) - finite(left.factRevenue);
+    });
   }
 
   function executiveOwnerDetailMetric(row, platform) {
@@ -684,28 +790,43 @@
   }
 
   function executiveOwnerDetailRows(model, ownerName) {
+    var ownerRow = executiveOwnerDetailOwnerRow(model, ownerName);
+    var directRows = executiveOwnerDetailRowsFromOwnerItems(model, ownerRow);
+    if (directRows.length) return executiveOwnerDetailSortRows(directRows);
+
     var planModel = executiveOwnerDetailPlanModel(model);
     var sourceRows = Array.isArray(planModel && planModel.allRows)
       ? planModel.allRows
       : (Array.isArray(planModel && planModel.rows) ? planModel.rows : []);
     var target = executiveOwnerDetailCanonical(ownerName);
     if (!target) return [];
+    var allowedKeys = executiveOwnerDetailSkuKeySet(ownerRow);
     var rows = [];
+    var seen = new Set();
     executiveOwnerDetailPlatforms(model).forEach(function (platform) {
       sourceRows.forEach(function (row) {
         try {
           if (typeof skuPlanFactKpiEligible === 'function' && !skuPlanFactKpiEligible(row)) return;
         } catch (error) {}
+        var articleKey = executiveOwnerDetailRowArticleKey(row);
+        var pairKey = executiveOwnerDetailKey(platform, articleKey);
+        if (!pairKey || seen.has(pairKey)) return;
+        if (allowedKeys.size) {
+          if (!allowedKeys.has(pairKey)) return;
+        } else {
+          var scopedOwner = executiveOwnerDetailScopedOwner(executiveOwnerDetailOwner(row, platform), platform);
+          if (executiveOwnerDetailCanonical(scopedOwner) !== target) return;
+        }
         var metric = executiveOwnerDetailMetric(row, platform);
         if (!executiveOwnerDetailHasSignal(metric)) return;
-        if (executiveOwnerDetailCanonical(executiveOwnerDetailOwner(row, platform)) !== target) return;
         var planToDate = finite(metric.planToDateRevenue);
         var fact = finite(metric.factRevenue);
         var completion = planToDate > 0 ? fact / planToDate : null;
         var gap = fact - planToDate;
-        var status = planToDate <= 0 && fact > 0 ? 'noplan' : (completion !== null && completion < 1 ? 'under' : 'ok');
+        var status = executiveOwnerDetailStatus(planToDate, fact, completion);
+        seen.add(pairKey);
         rows.push({
-          sku: executiveOwnerDetailSku(row),
+          sku: articleKey || executiveOwnerDetailSku(row),
           title: executiveOwnerDetailTitle(row),
           platform: platform,
           planToDateRevenue: planToDate,
@@ -719,19 +840,12 @@
         });
       });
     });
-    return rows.sort(function (left, right) {
-      var statusWeight = { under: 0, noplan: 1, ok: 2 };
-      return (statusWeight[left.status] || 9) - (statusWeight[right.status] || 9)
-        || finite(left.gapToDate) - finite(right.gapToDate)
-        || finite(right.factRevenue) - finite(left.factRevenue);
-    });
+    return executiveOwnerDetailSortRows(rows);
   }
 
   function executiveOwnerDetailSummary(model, ownerName, rows) {
     var target = executiveOwnerDetailCanonical(ownerName);
-    var ownerRow = (model.allOwnerRows || model.scopedOwnerRows || model.ownerRows || []).find(function (row) {
-      return executiveOwnerDetailCanonical(row.owner) === target;
-    }) || {};
+    var ownerRow = executiveOwnerDetailOwnerRow(model, ownerName) || {};
     var under = rows.filter(function (row) { return row.status === 'under'; }).length;
     var noPlan = rows.filter(function (row) { return row.status === 'noplan'; }).length;
     var ok = rows.filter(function (row) { return row.status === 'ok'; }).length;

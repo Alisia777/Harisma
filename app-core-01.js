@@ -2348,6 +2348,17 @@ const ACTIVE_OWNER_NAMES = new Set([
   'Питайкин Артём'
 ]);
 
+const ACTIVE_OWNER_NAMES_BY_PLATFORM = {
+  wb: ['Мария Васильева', 'Максим Лапыгин'],
+  ozon: ['Молодякова Дария', 'Питайкин Артём'],
+  ym: ['Анна Пирогова'],
+  ga: ['Екатерина Доможирова'],
+  letu: ['Екатерина Доможирова'],
+  mm: ['Екатерина Доможирова'],
+  megamarket: ['Екатерина Доможирова'],
+  samokat: ['Екатерина Доможирова']
+};
+
 const OWNER_CANONICAL_NAMES = new Map([
   ['александр', 'Питайкин Артём'],
   ['анна', 'Анна Пирогова'],
@@ -2394,7 +2405,13 @@ function normalizeOwnerToken(value = '') {
   return normalized === '[object Object]' ? '' : normalized;
 }
 
-function activeOwnerList() {
+function activeOwnerList(platform = 'all') {
+  const normalizedPlatform = typeof normalizeOwnerPlatformKey === 'function'
+    ? normalizeOwnerPlatformKey(platform)
+    : String(platform || '').trim().toLowerCase();
+  if (normalizedPlatform && normalizedPlatform !== 'all' && ACTIVE_OWNER_NAMES_BY_PLATFORM[normalizedPlatform]) {
+    return ACTIVE_OWNER_NAMES_BY_PLATFORM[normalizedPlatform].filter((owner) => ACTIVE_OWNER_NAMES.has(owner));
+  }
   return [...ACTIVE_OWNER_NAMES];
 }
 
@@ -2418,12 +2435,15 @@ function canonicalOwnerName(value = '') {
   return ACTIVE_OWNER_NAMES.has(canonical) ? canonical : '';
 }
 
-function activeOwnerName(value = '') {
-  return canonicalOwnerName(value);
+function activeOwnerName(value = '', platform = 'all') {
+  const canonical = canonicalOwnerName(value);
+  if (!canonical) return '';
+  const scopedOwners = activeOwnerList(platform);
+  return scopedOwners.includes(canonical) ? canonical : '';
 }
 
-function isActiveOwnerName(value = '') {
-  return Boolean(activeOwnerName(value));
+function isActiveOwnerName(value = '', platform = 'all') {
+  return Boolean(activeOwnerName(value, platform));
 }
 
 function normalizeOwnerPlatformKey(platform = '') {

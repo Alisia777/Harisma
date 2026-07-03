@@ -67,13 +67,13 @@ function executiveFunnelCanonicalOwner(owner = '') {
     : String(owner || '').trim();
 }
 
-function executiveFunnelActiveOwner(owner = '') {
-  if (typeof activeOwnerName === 'function') return activeOwnerName(owner);
+function executiveFunnelActiveOwner(owner = '', platform = 'all') {
+  if (typeof activeOwnerName === 'function') return activeOwnerName(owner, platform);
   return executiveFunnelCanonicalOwner(owner);
 }
 
-function executiveFunnelActiveOwnerList() {
-  return typeof activeOwnerList === 'function' ? activeOwnerList() : [];
+function executiveFunnelActiveOwnerList(platform = 'all') {
+  return typeof activeOwnerList === 'function' ? activeOwnerList(platform) : [];
 }
 
 function executiveFunnelExplicitOwnerForSku(sku = {}, platform = '') {
@@ -92,27 +92,29 @@ function executiveFunnelExplicitOwnerForSku(sku = {}, platform = '') {
 
 function executiveFunnelAllowedOwnersForPlatform(platform = '') {
   const key = String(platform || '').toLowerCase();
+  const sourceOwners = executiveFunnelActiveOwnerList(key);
+  if (sourceOwners.length && key && key !== 'all') return new Set(sourceOwners);
   const owners = new Set();
   if (key === 'wb') {
     const ownerCounts = state.wbOwnerDistributionAudit?.summary?.ownerCounts || {};
     Object.keys(ownerCounts).forEach((owner) => {
-      const normalized = executiveFunnelActiveOwner(owner);
+      const normalized = executiveFunnelActiveOwner(owner, key);
       if (normalized) owners.add(normalized);
     });
   }
   (state.skus || []).forEach((sku) => {
-    const owner = executiveFunnelActiveOwner(executiveFunnelExplicitOwnerForSku(sku, key));
+    const owner = executiveFunnelActiveOwner(executiveFunnelExplicitOwnerForSku(sku, key), key);
     if (owner) owners.add(owner);
   });
   if (owners.size) return owners;
-  const activeOwners = executiveFunnelActiveOwnerList();
+  const activeOwners = executiveFunnelActiveOwnerList(key);
   return activeOwners.length ? new Set(activeOwners) : null;
 }
 
 function executiveFunnelOwnerAllowedForPlatform(owner = '', platform = '') {
   const allowedOwners = executiveFunnelAllowedOwnersForPlatform(platform);
   if (!allowedOwners) return true;
-  return allowedOwners.has(executiveFunnelCanonicalOwner(owner));
+  return allowedOwners.has(executiveFunnelActiveOwner(owner, platform));
 }
 
 function executiveFunnelDateRange(start = '', end = '') {
@@ -675,7 +677,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
   const platformTotals = new Map(EXECUTIVE_FUNNEL_PLATFORMS.map((platform) => [platform, executiveFunnelOwnerPlatformBucket(platform)]));
   const sourceRows = Array.isArray(planModel.allRows) ? planModel.allRows : [];
   const excluded = { rows: 0, revenue: 0, planToDateRevenue: 0 };
-  const activeOwners = executiveFunnelActiveOwnerList();
+  const activeOwners = executiveFunnelActiveOwnerList(selectedPlatform);
   activeOwners.forEach((owner) => executiveFunnelEnsureOwnerPlan(ownerMap, owner));
 
   sourceRows.forEach((row) => {
@@ -684,7 +686,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
       const metric = row.platforms?.[platform] || row[platform] || null;
       if (!executiveFunnelPlanMetricActive(metric)) return;
       if (platformTotals.has(platform)) executiveFunnelAddPlanMetric(platformTotals.get(platform), metric, platform, row);
-      const owner = executiveFunnelActiveOwner(executiveFunnelOwner(row, platform));
+      const owner = executiveFunnelActiveOwner(executiveFunnelOwner(row, platform), platform);
       if (executiveFunnelOwnerIsNoise(owner, row) || !executiveFunnelOwnerAllowedForPlatform(owner, platform)) {
         excluded.rows += 1;
         excluded.revenue += executiveFunnelNumber(metric.factRevenue);
@@ -709,7 +711,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     const sku = executiveFunnelSkuForArticle(item.articleKey || item.article || item.sku || item.nmId);
     const owner = executiveFunnelActiveOwner(sku
       ? executiveFunnelOwner({ sku, owner: item.owner || '' }, platform)
-      : (typeof canonicalOwnerName === 'function' ? canonicalOwnerName(item.owner || '') : String(item.owner || '').trim()));
+      : (typeof canonicalOwnerName === 'function' ? canonicalOwnerName(item.owner || '') : String(item.owner || '').trim()), platform);
     if (executiveFunnelOwnerIsNoise(owner, { syntheticUnmapped: !sku }) || !executiveFunnelOwnerAllowedForPlatform(owner, platform)) return;
     const bucket = executiveFunnelEnsureOwnerPlan(ownerMap, owner);
     bucket.externalExcludedSpend += executiveFunnelNumber(item.spend);
@@ -829,7 +831,7 @@ function executiveFunnelAddAdItem(ownerMap, item = {}, periodStart = '', periodE
   const sku = executiveFunnelSkuForArticle(item.articleKey || item.article || item.sku || item.nmId);
   const owner = executiveFunnelActiveOwner(sku
     ? executiveFunnelOwner({ sku, owner: item.owner || '' }, platform)
-    : (typeof canonicalOwnerName === 'function' ? canonicalOwnerName(item.owner || '') : String(item.owner || '').trim()));
+    : (typeof canonicalOwnerName === 'function' ? canonicalOwnerName(item.owner || '') : String(item.owner || '').trim()), platform);
   if (executiveFunnelOwnerIsNoise(owner, { syntheticUnmapped: !sku })) return;
   const bucket = executiveFunnelEnsureOwner(ownerMap, owner);
   const target = executiveFunnelIsExternalAd(item) ? bucket.external : bucket.internal;
@@ -872,7 +874,7 @@ function executiveFunnelAddExternalApi(ownerMap, periodStart = '', periodEnd = '
     if (!executiveFunnelLooksLikeSubstitutionArticle(article)) return;
     const sku = executiveFunnelSkuForArticle(article.articleKey || article.article)
       || executiveFunnelSkuForArticle((article.sourceArticleKeys || [])[0]);
-    const owner = executiveFunnelActiveOwner(sku ? executiveFunnelOwner({ sku }, 'wb') : '');
+    const owner = executiveFunnelActiveOwner(sku ? executiveFunnelOwner({ sku }, 'wb') : '', 'wb');
     if (executiveFunnelOwnerIsNoise(owner, { syntheticUnmapped: !sku })) return;
     const bucket = executiveFunnelEnsureOwner(ownerMap, owner);
     const row = {
@@ -1021,7 +1023,7 @@ function executiveFunnelBuildModel() {
     EXECUTIVE_FUNNEL_PLATFORMS.forEach((platform) => {
       const metric = row.platforms?.[platform] || row[platform] || null;
       if (!executiveFunnelMetricActive(metric)) return;
-      const owner = executiveFunnelActiveOwner(executiveFunnelOwner(row, platform));
+      const owner = executiveFunnelActiveOwner(executiveFunnelOwner(row, platform), platform);
       if (executiveFunnelOwnerIsNoise(owner, row)) return;
       const bucket = executiveFunnelEnsureOwner(ownerMap, owner);
       const revenue = executiveFunnelNumber(metric.factRevenue);

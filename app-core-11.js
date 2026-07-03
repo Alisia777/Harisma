@@ -81,7 +81,7 @@ function skuPlanFactWbOwnerAuditMap() {
   const matched = Array.isArray(source?.matched) ? source.matched : [];
   matched.forEach((item) => {
     const owner = typeof activeOwnerName === 'function'
-      ? activeOwnerName(item.ownerWb || item.owner || '')
+      ? activeOwnerName(item.ownerWb || item.owner || '', 'wb')
       : skuPlanFactCanonicalOwner(item.ownerWb || item.owner || '');
     if (!owner) return;
     [item.articleKey, item.article, item.sourceArticle]

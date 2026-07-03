@@ -3,6 +3,14 @@ const EXECUTIVE_SUPPORT_KEYS = ['cross', 'product'];
 const EXECUTIVE_WORKSTREAM_KEYS = [...EXECUTIVE_MARKETPLACE_KEYS, ...EXECUTIVE_SUPPORT_KEYS];
 const EXECUTIVE_FUNNEL_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
 const EXECUTIVE_FUNNEL_SUPPORT_KEYS = { wb: 'wb', ozon: 'ozon', ya: 'ym', goldapple: 'ga', letu: 'letu', magnit: 'mm' };
+const EXECUTIVE_OWNER_PRIMARY_PLATFORMS = {
+  'Мария Васильева': 'wb',
+  'Максим Лапыгин': 'wb',
+  'Молодякова Дария': 'ozon',
+  'Питайкин Артём': 'ozon',
+  'Анна Пирогова': 'ya',
+  'Екатерина Доможирова': 'goldapple'
+};
 const EXECUTIVE_FUNNEL_DEFAULT_FILTERS = {
   platform: 'all',
   status: 'all',
@@ -74,6 +82,12 @@ function executiveFunnelActiveOwner(owner = '', platform = 'all') {
 
 function executiveFunnelActiveOwnerList(platform = 'all') {
   return typeof activeOwnerList === 'function' ? activeOwnerList(platform) : [];
+}
+
+function executiveFunnelOwnerPrimaryPlatform(owner = '', selectedPlatform = 'all') {
+  if (EXECUTIVE_FUNNEL_PLATFORMS.includes(selectedPlatform)) return selectedPlatform;
+  const canonical = executiveFunnelCanonicalOwner(owner);
+  return EXECUTIVE_OWNER_PRIMARY_PLATFORMS[canonical] || 'all';
 }
 
 function executiveFunnelExplicitOwnerForSku(sku = {}, platform = '') {
@@ -726,7 +740,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
         .map(executiveFunnelFinalizePlanBucket)
         .filter(executiveFunnelPlanBucketHasSignal)
         .sort((left, right) => right.factRevenue - left.factRevenue);
-      row.primaryPlatform = row.platformRows[0]?.platform || selectedPlatform || 'all';
+      row.primaryPlatform = row.platformRows[0]?.platform || executiveFunnelOwnerPrimaryPlatform(row.owner, selectedPlatform);
       return executiveFunnelFinalizePlanBucket(row);
     })
     .filter((row) => activeOwners.includes(row.owner) || executiveFunnelPlanBucketHasSignal(row));

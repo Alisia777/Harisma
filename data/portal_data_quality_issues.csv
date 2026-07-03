@@ -1,2 +1,2 @@
 ﻿severity;type;dataset;platform;place;articleKey;name;revenue;units;message
-"warning";"dataset_stale_or_empty";"order_procurement";"";"";"";"";"";"";"Данные отстают на 3 дн."
+"warning";"dataset_stale_or_empty";"order_procurement";"";"";"";"";"";"";"Данные отстают на 2 дн."

@@ -529,7 +529,10 @@
 
   function executivePlanFactReady() {
     var s = state();
-    return Boolean(s.boot && s.boot.dataReady && s.boot.lazyReady && s.boot.lazyReady.skuPlanFact);
+    if (!s.boot || !s.boot.dataReady) return false;
+    if (s.boot.lazyReady && s.boot.lazyReady.skuPlanFact) return true;
+    return typeof window.skuPlanFactBuildModel === 'function'
+      && typeof window.executiveFunnelBuildOwnerPlanFact === 'function';
   }
 
   function requestExecutivePlanFactData() {

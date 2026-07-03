@@ -1,34 +1,44 @@
 {
   "schema": "portal-repricing-reconciliation-v1",
-  "generatedAt": "2026-07-02T09:21:16.884Z",
-  "snapshot_id": "repricer:3b0ff46f62e23669",
-  "status": "warning",
-  "publish_allowed": true,
+  "generatedAt": "2026-07-03T08:54:35.641Z",
+  "snapshot_id": "repricer:400cbbf35aaa4f12",
+  "status": "blocked",
+  "publish_allowed": false,
   "feature_publish_allowed": false,
   "feature_status": "blocked",
-  "business_fingerprint": "b3b8924c0c283ca1f419af43046b7e4c5e279d889bd9af92dd113d76963b110f",
+  "business_fingerprint": "4ed578f2e47fefc9646c2d87731593e6ad67224e5b618b63e71c46254a4f0bb7",
   "summary": {
-    "rows": 479,
-    "eligible_rows": 479,
+    "rows": 829,
+    "eligible_rows": 829,
     "publishable_rows": 0,
-    "blocked_rows": 479,
+    "blocked_rows": 829,
     "publishable_coverage": 0,
     "required_publishable_coverage": 0.01,
     "feature_status": "blocked",
     "publishable_recommendations": 0,
-    "blocked_recommendations": 479,
+    "blocked_recommendations": 829,
     "duplicate_platform_keys": 0,
-    "normalized_article_collisions": 0,
+    "normalized_article_collisions": 1,
     "deduped_exact_duplicates": 1
   },
-  "blockingReasons": [],
+  "blockingReasons": [
+    "normalized article collisions: 1"
+  ],
   "warnings": [
-    "repricer feature blocked: 0/479 publishable recommendations",
-    "479 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
+    "repricer feature blocked: 0/829 publishable recommendations",
+    "829 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
     "1 exact duplicate source rows were deterministically deduped"
   ],
   "duplicatePlatformKeys": [],
-  "normalizedArticleCollisions": [],
+  "normalizedArticleCollisions": [
+    {
+      "normalized_article_key": "mikardinplusbad60caps",
+      "articles": [
+        "mikardin plus_bad_60 caps",
+        "mikardin_plus_bad_60_caps"
+      ]
+    }
+  ],
   "dedupedExactDuplicates": [
     {
       "key": "ozon|maslodlyavolosparf110ml",
@@ -43,20 +53,22 @@
     },
     {
       "id": "repricer:no-normalized-article-collisions",
-      "status": "ok",
-      "blockingReasons": []
+      "status": "blocked",
+      "blockingReasons": [
+        "normalized article collisions"
+      ]
     },
     {
       "id": "repricer:feature-readiness",
       "status": "warning",
       "blockingReasons": [],
       "warnings": [
-        "repricer feature blocked: 0/479 publishable recommendations"
+        "repricer feature blocked: 0/829 publishable recommendations"
       ],
       "details": {
-        "eligible_rows": 479,
+        "eligible_rows": 829,
         "publishable_rows": 0,
-        "blocked_rows": 479,
+        "blocked_rows": 829,
         "publishable_coverage": 0,
         "required_publishable_coverage": 0.01,
         "feature_status": "blocked"

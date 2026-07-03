@@ -1,14 +1,14 @@
 {
   "schema": "portal-dashboard-v2",
-  "generatedAt": "2026-07-02T09:55:46.004Z",
-  "snapshot_id": "dashboard:bce11f2d0625f74a",
-  "asOfDate": "2026-07-01",
-  "latestMarketplaceDate": "2026-07-01",
+  "generatedAt": "2026-07-03T09:27:54.183Z",
+  "snapshot_id": "dashboard:df90d3b5950c73f7",
+  "asOfDate": "2026-07-02",
+  "latestMarketplaceDate": "2026-07-02",
   "monthKey": "2026-07",
   "dataFreshness": {
-    "asOfDate": "2026-07-01",
-    "dataDate": "2026-07-01",
-    "expectedFactDate": "2026-07-01",
+    "asOfDate": "2026-07-02",
+    "dataDate": "2026-07-02",
+    "expectedFactDate": "2026-07-02",
     "googleSheetsMonth": "2026-07",
     "marketplaceFactSource": "platform_trends.json",
     "companyPlanSource": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
@@ -113,40 +113,40 @@
   },
   "summary": {
     "metrics": 14,
-    "factRevenue": 14677753.34,
+    "factRevenue": 29286188.11,
     "planRevenue": 322540144,
-    "planToDate": 10404520.77,
-    "completionToDate": 1.410709,
+    "planToDate": 20809041.55,
+    "completionToDate": 1.407378,
     "unallocatedRevenue": 0,
-    "cutoffDate": "2026-07-01",
+    "cutoffDate": "2026-07-02",
     "monthKey": "2026-07",
-    "factUnits": 13731,
-    "warehouseStock": 455625,
+    "factUnits": 26481,
+    "warehouseStock": 567642,
     "marketplaceStock": 220574
   },
   "cards": [
     {
       "id": "dashboard-cutoff",
       "label": "Data cutoff",
-      "value": "2026-07-01",
+      "value": "2026-07-02",
       "format": "text",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Common marketplace fact date.",
       "metricId": "dashboard-cutoff"
     },
     {
       "id": "sku-registry-total",
       "label": "SKU registry",
-      "value": 143,
-      "period": "2026-07-01",
+      "value": 209,
+      "period": "2026-07-02",
       "hint": "Rows from canonical skus.json.",
       "metricId": "sku-registry-total"
     },
     {
       "id": "owner-assigned",
       "label": "SKU with owner",
-      "value": 143,
-      "period": "2026-07-01",
+      "value": 209,
+      "period": "2026-07-02",
       "hint": "Owner comes from canonical SKU owner fields.",
       "metricId": "owner-assigned"
     },
@@ -154,42 +154,42 @@
       "id": "marketplace-stock-total",
       "label": "Marketplace stock",
       "value": 220574,
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Marketplace stock visible in SKU registry.",
       "metricId": "marketplace-stock-total"
     },
     {
       "id": "warehouse-stock-total",
       "label": "Warehouse stock",
-      "value": 455625,
-      "period": "2026-07-01",
+      "value": 567642,
+      "period": "2026-07-02",
       "hint": "Warehouse stock overlay remains visible.",
       "metricId": "warehouse-stock-total"
     },
     {
       "id": "sales-revenue-wb",
       "label": "Revenue WB",
-      "value": 12011404,
+      "value": 23940506,
       "format": "money",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:wb"
     },
     {
       "id": "sales-revenue-ozon",
       "label": "Revenue OZON",
-      "value": 2643868.02,
+      "value": 5124826.109999999,
       "format": "money",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:ozon"
     },
     {
       "id": "sales-revenue-ya",
       "label": "Revenue YA",
-      "value": 17387,
+      "value": 220856,
       "format": "money",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:ya"
     },
@@ -198,7 +198,7 @@
       "label": "Revenue GOLDAPPLE",
       "value": 0,
       "format": "money",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:goldapple"
     },
@@ -207,16 +207,16 @@
       "label": "Revenue LETU",
       "value": 0,
       "format": "money",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:letu"
     },
     {
       "id": "sales-revenue-megamarket",
       "label": "Revenue MEGAMARKET",
-      "value": 1725,
+      "value": 0,
       "format": "money",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:megamarket"
     },
@@ -225,16 +225,16 @@
       "label": "Revenue SAMOKAT",
       "value": 0,
       "format": "money",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:samokat"
     },
     {
       "id": "sales-revenue-magnit",
       "label": "Revenue MAGNIT",
-      "value": 3369.32,
+      "value": 0,
       "format": "money",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:magnit"
     },
@@ -243,7 +243,7 @@
       "label": "Revenue unallocated",
       "value": 0,
       "format": "money",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Control total remainder stays visible.",
       "metricId": "sales.raw_revenue.unallocated"
     },
@@ -259,26 +259,26 @@
     {
       "id": "company-fact-revenue",
       "label": "Company fact",
-      "value": 14677753.34,
+      "value": 29286188.11,
       "format": "money",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Fact is read only from platform_trends.json.",
       "metricId": "sales.raw_revenue"
     },
     {
       "id": "company-plan-completion",
       "label": "Plan completion to date",
-      "value": 1.410709215594571,
-      "valuePct": 1.410709215594571,
+      "value": 1.4073780400649911,
+      "valuePct": 1.4073780400649911,
       "format": "pct",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Fact divided by linear company plan to date.",
       "metricId": "plan.completion_revenue"
     },
     {
       "id": "company-forecast-revenue",
       "label": "Company forecast",
-      "value": 455010353.54,
+      "value": 453935915.71,
       "format": "money",
       "period": "2026-07",
       "hint": "Baseline forecast: month-to-date average times month days.",
@@ -287,20 +287,20 @@
     {
       "id": "ads-drr-wb",
       "label": "DRR WB",
-      "value": 0.298592,
-      "valuePct": 0.298592,
+      "value": 0,
+      "valuePct": 0,
       "format": "pct",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Ad spend divided by attributed revenue.",
       "metricId": "ads.drr:wb"
     },
     {
       "id": "ads-drr-ozon",
       "label": "DRR OZON",
-      "value": 0,
-      "valuePct": 0,
+      "value": 0.220697,
+      "valuePct": 0.220697,
       "format": "pct",
-      "period": "2026-07-01",
+      "period": "2026-07-02",
       "hint": "Ad spend divided by attributed revenue.",
       "metricId": "ads.drr:ozon"
     }
@@ -308,44 +308,44 @@
   "brandSummary": [
     {
       "brand": "Altea",
-      "asOfDate": "2026-07-01",
-      "latestMarketplaceDate": "2026-07-01",
-      "sku_count": 143,
-      "assigned_sku": 143,
+      "asOfDate": "2026-07-02",
+      "latestMarketplaceDate": "2026-07-02",
+      "sku_count": 209,
+      "assigned_sku": 209,
       "total_stock": 220574,
-      "warehouse_stock": 455625,
+      "warehouse_stock": 567642,
       "plan_units": 0,
-      "fact_units_to_date": 13731,
-      "fact_revenue_to_date": 14677753.34,
-      "plan_completion_to_date_pct": 1.410709,
+      "fact_units_to_date": 26481,
+      "fact_revenue_to_date": 29286188.11,
+      "plan_completion_to_date_pct": 1.407378,
       "company_plan_month_key": "2026-07",
       "company_plan_month_label": "июль 2026",
       "company_plan_revenue": 322540144,
-      "company_fact_revenue_to_date": 14677753.34,
-      "company_plan_to_date_revenue": 10404520.77,
-      "company_plan_completion_month_pct": 0.045507,
-      "company_plan_completion_to_date_pct": 1.410709,
-      "company_forecast_revenue": 455010353.54,
-      "company_forecast_pct": 1.410709,
+      "company_fact_revenue_to_date": 29286188.11,
+      "company_plan_to_date_revenue": 20809041.55,
+      "company_plan_completion_month_pct": 0.090799,
+      "company_plan_completion_to_date_pct": 1.407378,
+      "company_forecast_revenue": 453935915.71,
+      "company_forecast_pct": 1.407378,
       "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
       "platformFacts": {
         "wb": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-01",
-          "revenue": 12011404,
-          "units": 9401
+          "dateTo": "2026-07-02",
+          "revenue": 23940506,
+          "units": 18543
         },
         "ozon": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-01",
-          "revenue": 2643868.02,
-          "units": 4298
+          "dateTo": "2026-07-02",
+          "revenue": 5124826.11,
+          "units": 7647
         },
         "ya": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-01",
-          "revenue": 17387,
-          "units": 24
+          "dateTo": "2026-07-02",
+          "revenue": 220856,
+          "units": 291
         },
         "goldapple": {
           "dateFrom": "",
@@ -360,10 +360,10 @@
           "units": 0
         },
         "megamarket": {
-          "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-01",
-          "revenue": 1725,
-          "units": 2
+          "dateFrom": "",
+          "dateTo": "",
+          "revenue": 0,
+          "units": 0
         },
         "samokat": {
           "dateFrom": "",
@@ -372,10 +372,10 @@
           "units": 0
         },
         "magnit": {
-          "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-01",
-          "revenue": 3369.32,
-          "units": 6
+          "dateFrom": "",
+          "dateTo": "",
+          "revenue": 0,
+          "units": 0
         }
       }
     }
@@ -390,7 +390,7 @@
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 9203,
       "owner_name": "Васильева Мария",
-      "owner_wb": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 7494622
@@ -403,7 +403,7 @@
       "focus_score": 10,
       "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
       "total_mp_stock": 8741,
-      "owner_name": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
       "owner_ozon": "Питайкин Артём",
       "owner_ya": "Пирогова Анна",
@@ -417,7 +417,7 @@
       "focus_score": 9,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
       "total_mp_stock": 1008,
-      "owner_name": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Кирилл",
       "owner_ozon": "Питайкин Артём",
       "owner_ya": "Пирогова Анна",
@@ -431,7 +431,7 @@
       "focus_score": 9,
       "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Есть внешний трафик КЗ",
       "total_mp_stock": 1899,
-      "owner_name": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Кирилл",
       "owner_ozon": "Питайкин Артём",
       "owner_ya": "Пирогова Анна",
@@ -445,8 +445,8 @@
       "focus_score": 8,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
       "total_mp_stock": 763,
-      "owner_name": "Лапыгин Максим",
-      "owner_wb": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 1543576
@@ -473,7 +473,7 @@
       "focus_score": 8,
       "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
       "total_mp_stock": 1537,
-      "owner_name": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Кирилл",
       "owner_ozon": "Питайкин Артём",
       "owner_ya": "Пирогова Анна",
@@ -488,7 +488,7 @@
       "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
       "total_mp_stock": 3935,
       "owner_name": "Васильева Мария",
-      "owner_wb": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 17405005
@@ -502,7 +502,7 @@
       "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
       "total_mp_stock": 6986,
       "owner_name": "Васильева Мария",
-      "owner_wb": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Питайкин Артём",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 15948078
@@ -515,8 +515,8 @@
       "focus_score": 5,
       "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
       "total_mp_stock": 2452,
-      "owner_name": "Лапыгин Максим",
-      "owner_wb": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Питайкин Артём",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 11518558
@@ -543,7 +543,7 @@
       "focus_score": 5,
       "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 1,
-      "owner_name": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
@@ -558,7 +558,7 @@
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик VK",
       "total_mp_stock": 40719,
       "owner_name": "Васильева Мария",
-      "owner_wb": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 145130986
@@ -572,7 +572,7 @@
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
       "total_mp_stock": 10709,
       "owner_name": "Васильева Мария",
-      "owner_wb": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 44771070
@@ -585,8 +585,8 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 5680,
-      "owner_name": "Лапыгин Максим",
-      "owner_wb": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 19008012
@@ -600,7 +600,7 @@
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
       "total_mp_stock": 9161,
       "owner_name": "Васильева Мария",
-      "owner_wb": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 16897529
@@ -614,7 +614,7 @@
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
       "total_mp_stock": 7023,
       "owner_name": "Васильева Мария",
-      "owner_wb": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 15757994
@@ -627,8 +627,8 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
       "total_mp_stock": 2931,
-      "owner_name": "Лапыгин Максим",
-      "owner_wb": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 14108652
@@ -641,8 +641,8 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
       "total_mp_stock": 288,
-      "owner_name": "Лапыгин Максим",
-      "owner_wb": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 11524515
@@ -656,7 +656,7 @@
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик VK",
       "total_mp_stock": 7316,
       "owner_name": "Васильева Мария",
-      "owner_wb": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 9429469
@@ -670,7 +670,7 @@
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 4254,
       "owner_name": "Васильева Мария",
-      "owner_wb": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Молодякова Дария",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 7326792
@@ -683,8 +683,8 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 1734,
-      "owner_name": "Лапыгин Максим",
-      "owner_wb": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Питайкин Артём",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 5197341
@@ -697,7 +697,7 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 1922,
-      "owner_name": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
       "owner_wb": "Васильева Мария",
       "owner_ozon": "Питайкин Артём",
       "owner_ya": "Пирогова Анна",
@@ -711,8 +711,8 @@
       "focus_score": 4,
       "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 1479,
-      "owner_name": "Лапыгин Максим",
-      "owner_wb": "Лапыгин Максим",
+      "owner_name": "Васильева Мария",
+      "owner_wb": "Олеся",
       "owner_ozon": "Питайкин Артём",
       "owner_ya": "Пирогова Анна",
       "fact_revenue_to_date": 4614546
@@ -842,12 +842,12 @@
       "note": "Marketplace salary revenue contour.",
       "monthKey": "2026-07",
       "planRevenueMonth": 322540144,
-      "planRevenueToDate": 10404520.77,
-      "factRevenueToDate": 14677753.34,
-      "completionMonthPct": 0.045507,
-      "completionToDatePct": 1.410709,
-      "forecastRevenue": 455010353.54,
-      "forecastPct": 1.410709
+      "planRevenueToDate": 20809041.55,
+      "factRevenueToDate": 29286188.11,
+      "completionMonthPct": 0.090799,
+      "completionToDatePct": 1.407378,
+      "forecastRevenue": 453935915.71,
+      "forecastPct": 1.407378
     },
     "months": {
       "2026-05": {

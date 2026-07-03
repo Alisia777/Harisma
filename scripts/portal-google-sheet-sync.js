@@ -371,6 +371,13 @@ function isoDate(value) {
   }
   const raw = String(value).trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  if (/^\d{4,5}(?:\.\d+)?$/.test(raw)) {
+    const serial = Number(raw);
+    if (Number.isFinite(serial) && serial >= 30000 && serial <= 80000) {
+      const excelEpoch = Date.UTC(1899, 11, 30);
+      return new Date(excelEpoch + Math.trunc(serial) * 86400000).toISOString().slice(0, 10);
+    }
+  }
   const usShortMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
   if (usShortMatch) {
     const [, monthRaw, dayRaw, yearRaw] = usShortMatch;

@@ -26,7 +26,9 @@ function serve() {
     const url = new URL(req.url || '/', 'http://127.0.0.1');
     const pathname = decodeURIComponent(url.pathname || '/');
     if ((pathname === '/' || pathname === '/index.html') && url.searchParams.has('build-check')) {
-      const remote = INDEX.replace(/__ALTEA_PORTAL_BUILD__\s*=\s*['"][^'"]+['"]/, "__ALTEA_PORTAL_BUILD__ = 'selftest-remote-build'");
+      const remote = INDEX.includes('__ALTEA_PORTAL_BUILD__')
+        ? INDEX.replace(/__ALTEA_PORTAL_BUILD__\s*=\s*['"][^'"]+['"]/, "__ALTEA_PORTAL_BUILD__ = 'selftest-remote-build'")
+        : INDEX.replace('<script>', "<script>\n    window.__ALTEA_PORTAL_BUILD__ = 'selftest-remote-build';");
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end(remote);
       return;
@@ -60,6 +62,7 @@ async function run() {
   try {
     await page.addInitScript(() => {
       localStorage.clear();
+      window.__ALTEA_PORTAL_BUILD__ = 'selftest-current-build';
       localStorage.setItem('altea-portal-active-view-v1', JSON.stringify({
         activeView: 'control',
         updatedAt: new Date().toISOString()

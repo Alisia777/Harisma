@@ -740,6 +740,26 @@ function auditOutOfScopeBrands(layers = {}, issues) {
   return { matches };
 }
 
+function auditUserVisibleQualityOutOfScope(dataQuality = {}, issues) {
+  const pattern = /qeep|zarli|harly|harley/i;
+  const qualityIssues = Array.isArray(dataQuality.issues) ? dataQuality.issues : [];
+  const matches = qualityIssues
+    .filter((issue) => pattern.test(JSON.stringify(issue || {})))
+    .slice(0, 20)
+    .map((issue) => ({
+      type: issue.type || '',
+      dataset: issue.dataset || '',
+      articleKey: issue.articleKey || issue.name || ''
+    }));
+  if (matches.length) {
+    pushIssue(issues, 'critical', 'out_of_scope_brand_in_user_quality_journal', {
+      count: matches.length,
+      examples: matches
+    });
+  }
+  return { matches };
+}
+
 function main() {
   const args = parseArgs(process.argv);
   const dataDir = path.resolve(args.dataDir || 'data');
@@ -810,6 +830,7 @@ function main() {
     priceSupport,
     repricer
   }, issues);
+  const userQualityOutOfScopeAudit = auditUserVisibleQualityOutOfScope(quality, issues);
   const iuDrrAudit = auditIuDrr(iuDrr, issues);
   const oosAudit = auditOosControl(oos, issues, Array.isArray(skus) ? skus : []);
   const orderAudit = auditOrderProcurement(order, issues, Array.isArray(skus) ? skus : []);
@@ -836,6 +857,7 @@ function main() {
       priceAudit,
       ownerPropagation: ownerPropagationAudit,
       outOfScopeBrands: outOfScopeAudit,
+      userQualityOutOfScopeBrands: userQualityOutOfScopeAudit,
       repricerAudit,
       portalDataQuality: {
         status: quality.status || '',

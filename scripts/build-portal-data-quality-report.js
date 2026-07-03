@@ -6,7 +6,7 @@ const path = require('path');
 const DEFAULT_ISSUE_LIMIT = 250;
 const API_SKU_UNMAPPED_WARNING_REVENUE = 10000;
 const API_SKU_UNMAPPED_CRITICAL_REVENUE = 100000;
-const EXTERNAL_WAREHOUSE_KEY_PREFIXES = ['qeep', 'harly', 'harley'];
+const EXTERNAL_WAREHOUSE_KEY_PREFIXES = ['qeep', 'zarli', 'harly', 'harley'];
 const PLATFORM_LABELS = {
   wb: 'WB',
   ozon: 'Ozon',

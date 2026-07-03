@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-02T21:33:37.693Z",
+  "generatedAt": "2026-07-03T07:58:11.130Z",
   "status": "warning",
   "summary": {
-    "issueCount": 50,
+    "issueCount": 25,
     "criticalCount": 0,
     "warningCount": 1,
     "monthKey": "2026-07",
@@ -25,7 +25,7 @@
     "skuMissingOwner": 0,
     "skuMissingPlan": 0,
     "skuAssignedPlan": 95,
-    "warehouseUnmatchedRows": 25,
+    "warehouseUnmatchedRows": 0,
     "wbOwnerMatchedSku": 125,
     "wbOwnerUpdatedSku": 36,
     "wbOwnerMissingInPortal": 6,
@@ -231,7 +231,8 @@
   "warehouseSummary": {
     "sourceRows": 306,
     "matchedRows": 136,
-    "unmatchedRows": 25,
+    "sourceUnmatchedRows": 25,
+    "unmatchedRows": 0,
     "externalUnmatchedRows": 25,
     "warningUnmatchedRows": 0
   },
@@ -265,181 +266,6 @@
       "units": 95,
       "message": "SKU is present in WB owner distribution but absent in portal skus.json",
       "action": "Add SKU or alias to portal registry, or remove it from WB owner distribution."
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_betain_60caps",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_arginine_90caps",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_berberine_60caps",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_ZMA_120caps",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "harly_shampoo_blohi_500ml",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_iron40mg_60caps",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_magnB6_120caps",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_nabor_remuver_40ml",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_nabor_remuver_40ml_1_1",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_isotoniccitrus_300g",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_isotonicmintlime_300g",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_isotonicraspblime_300g",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_hairspray_200ml",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_climafem_60caps",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_ecdysterone_60caps",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "harly_likvidator_500ml",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "harly_likvidator_v2",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_D3_30ml",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "harly_pawprotector_30ml",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_sodium_ascorbate_90caps",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeepzinc",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_creatine_300g",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_nac_90caps",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "qeep_ginkgo_biloba_90caps",
-      "message": "Строка складского файла не сопоставилась с SKU"
-    },
-    {
-      "severity": "info",
-      "type": "warehouse_unmatched_source_key",
-      "dataset": "warehouse_stock_overlay",
-      "articleKey": "harly_ear_drops",
-      "message": "Строка складского файла не сопоставилась с SKU"
     },
     {
       "severity": "info",

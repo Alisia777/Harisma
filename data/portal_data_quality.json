@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-06T08:02:16.907Z",
+  "generatedAt": "2026-07-06T08:56:29.004Z",
   "status": "ok",
   "summary": {
     "issueCount": 0,
@@ -44,7 +44,7 @@
     {
       "dataset": "platform_trends",
       "asOfDate": "2026-07-05",
-      "generatedAt": "2026-07-06T07:59:09.774Z",
+      "generatedAt": "2026-07-06T08:03:31.530Z",
       "rows": 5,
       "referenceDate": "2026-07-06",
       "lagDays": 1,
@@ -73,7 +73,7 @@
     {
       "dataset": "ads_summary",
       "asOfDate": "2026-07-05",
-      "generatedAt": "2026-07-06T07:59:09.846Z",
+      "generatedAt": "2026-07-06T08:03:31.600Z",
       "rows": 5,
       "referenceDate": "2026-07-06",
       "lagDays": 1,
@@ -82,7 +82,7 @@
     {
       "dataset": "iu_drr_summary",
       "asOfDate": "2026-07-05",
-      "generatedAt": "2026-07-06T08:00:08.520Z",
+      "generatedAt": "2026-07-06T08:04:53.019Z",
       "rows": 31,
       "referenceDate": "2026-07-06",
       "lagDays": 1,

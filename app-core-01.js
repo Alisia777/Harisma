@@ -428,6 +428,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/sku_matrix.json': 'sku_matrix',
   'data/portal_sync_health.json': 'portal_sync_health'
 };
+const LOCAL_FIRST_SNAPSHOT_KEYS = new Set(Object.values(PORTAL_SNAPSHOT_PATH_MAP));
 const portalSnapshotState = {
   client: null,
   promise: null,
@@ -733,8 +734,6 @@ function shouldPreferLocalAliasCoverage(snapshotKey, snapshotPayload, localPaylo
   const snapshotScore = payloadAliasCoverageScore(snapshotKey, snapshotPayload);
   return localScore > 0 && localScore > snapshotScore;
 }
-
-const LOCAL_FIRST_SNAPSHOT_KEYS = new Set(['platform_trends']);
 
 function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
   const snapshotReady = snapshotPayloadLooksUsable(snapshotKey, snapshotPayload) ? snapshotPayload : null;

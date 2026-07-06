@@ -1,20 +1,20 @@
 {
   "schema": "portal-metric-reconciliation-v1",
-  "generatedAt": "2026-07-06T06:43:45.906Z",
+  "generatedAt": "2026-07-06T08:56:30.645Z",
   "manifestVersion": "2026-06-20",
   "scope": {
     "included": "all portal views and layers"
   },
   "cutoffDate": "2026-07-06",
   "status": "warning",
-  "business_fingerprint": "8b5c53ab409314236e27a324bd6ee6d841a2c6c7be7bb85fac9e2af5d016c7d6",
+  "business_fingerprint": "07ffc1c872425011a35fc398f1d15ebc954081f23565d8fadf52f98bb44fe830",
   "summary": {
     "sourceCount": 24,
     "contractCount": 12,
     "metricPassportCount": 35,
     "blockingChecks": 0,
     "warningChecks": 3,
-    "fingerprint": "8b5c53ab409314236e27a324bd6ee6d841a2c6c7be7bb85fac9e2af5d016c7d6"
+    "fingerprint": "07ffc1c872425011a35fc398f1d15ebc954081f23565d8fadf52f98bb44fe830"
   },
   "metricPassports": [
     {
@@ -84,14 +84,14 @@
       "key": "fact.marketplace.revenue",
       "source": "platform_trends.json",
       "period": "2026-07-05",
-      "value": 17495185,
+      "value": 17490585,
       "formula": "sum active marketplaces on guarded cutoff dates"
     },
     {
       "key": "fact.marketplace.revenue.wb",
       "source": "platform_trends.json",
       "period": "2026-07-05",
-      "value": 14859110,
+      "value": 14886694,
       "formula": "platforms.wb.series[cutoff].revenue"
     },
     {
@@ -111,15 +111,15 @@
     {
       "key": "fact.marketplace.revenue.goldapple",
       "source": "platform_trends.json",
-      "period": "2026-06-30",
-      "value": 19833,
+      "period": "",
+      "value": 0,
       "formula": "platforms.goldapple.series[cutoff].revenue"
     },
     {
       "key": "fact.marketplace.revenue.letu",
       "source": "platform_trends.json",
-      "period": "2026-06-30",
-      "value": 11496,
+      "period": "",
+      "value": 0,
       "formula": "platforms.letu.series[cutoff].revenue"
     },
     {
@@ -139,8 +139,8 @@
     {
       "key": "fact.marketplace.revenue.magnit",
       "source": "platform_trends.json",
-      "period": "2026-06-30",
-      "value": 855,
+      "period": "",
+      "value": 0,
       "formula": "platforms.magnit.series[cutoff].revenue"
     },
     {
@@ -177,7 +177,7 @@
       "value": 0,
       "formula": "API fact that has no canonical registry mapping",
       "diagnostics": {
-        "totalFact": 4144,
+        "totalFact": 775,
         "ratio": 0,
         "knownOutsideRegistryRevenue": 0
       }
@@ -222,7 +222,7 @@
       "key": "sku_matrix.aliases",
       "source": "sku_matrix.json",
       "period": "2026-07-06",
-      "value": 341,
+      "value": 342,
       "formula": "deduped aliases from sku_aliases.json plus skus[].aliases/platformAliases",
       "diagnostics": {
         "embeddedAliasCount": 1128,
@@ -252,34 +252,34 @@
     {
       "key": "phase3.portal_dashboard_reconciliation",
       "source": "portal_dashboard_reconciliation.json",
-      "period": "dashboard:b75eff967d23987e",
+      "period": "dashboard:e07bc5e1fcf8f310",
       "value": "ok",
       "formula": "required phase 3 publish-gate reconciliation report",
       "diagnostics": {
         "publish_allowed": true,
-        "business_fingerprint": "68c9cb23089495dbdf8ed6caa11d0f773acee23659e2e532640770b2d01e074c"
+        "business_fingerprint": "561e4c462856a7f743462e165dab3737d98b97714b6b81549d262b9c9016d67f"
       }
     },
     {
       "key": "phase3.portal_plan_reconciliation",
       "source": "portal_plan_reconciliation.json",
-      "period": "dashboard:b75eff967d23987e",
+      "period": "dashboard:e07bc5e1fcf8f310",
       "value": "ok",
       "formula": "required phase 3 publish-gate reconciliation report",
       "diagnostics": {
         "publish_allowed": true,
-        "business_fingerprint": "dashboard:b75eff967d23987e"
+        "business_fingerprint": "dashboard:e07bc5e1fcf8f310"
       }
     },
     {
       "key": "phase3.portal_indicator_audit",
       "source": "portal_indicator_audit.json",
-      "period": "dashboard:b75eff967d23987e",
+      "period": "dashboard:e07bc5e1fcf8f310",
       "value": "ok",
       "formula": "required phase 3 publish-gate reconciliation report",
       "diagnostics": {
         "publish_allowed": true,
-        "business_fingerprint": "dashboard:b75eff967d23987e"
+        "business_fingerprint": "dashboard:e07bc5e1fcf8f310"
       }
     },
     {
@@ -797,10 +797,7 @@
       "scope": "fact",
       "source": "platform_trends",
       "warnings": [
-        "platform_trends: goldapple date 2026-06-30 is 6 days older than expected 2026-07-06",
-        "platform_trends: letu date 2026-06-30 is 6 days older than expected 2026-07-06",
-        "platform_trends: magnit date 2026-06-30 is 6 days older than expected 2026-07-06",
-        "platform_trends: no active plan/data for samokat"
+        "platform_trends: no active plan/data for goldapple, letu, samokat, magnit"
       ],
       "blockingReasons": [],
       "expectedDate": "2026-07-06",
@@ -808,38 +805,26 @@
         "wb",
         "ozon",
         "ya",
-        "goldapple",
-        "letu",
-        "megamarket",
-        "magnit"
+        "megamarket"
       ],
       "inactiveEmptyPlatforms": [
-        "samokat"
+        "goldapple",
+        "letu",
+        "samokat",
+        "magnit"
       ],
       "componentDates": {
         "wb": "2026-07-05",
         "ozon": "2026-07-05",
         "ya": "2026-07-05",
-        "goldapple": "2026-06-30",
-        "letu": "2026-06-30",
+        "goldapple": "",
+        "letu": "",
         "megamarket": "2026-07-05",
         "samokat": "",
-        "magnit": "2026-06-30"
+        "magnit": ""
       },
       "componentRevenue": {
-        "wb": 14859110,
-        "ozon": 2480833,
-        "ya": 122903,
-        "goldapple": 19833,
-        "letu": 11496,
-        "megamarket": 155,
-        "samokat": 0,
-        "magnit": 855
-      },
-      "componentRevenueSum": 17495185,
-      "allRevenue": 17463001,
-      "allDateComponentRevenue": {
-        "wb": 14859110,
+        "wb": 14886694,
         "ozon": 2480833,
         "ya": 122903,
         "goldapple": 0,
@@ -848,7 +833,19 @@
         "samokat": 0,
         "magnit": 0
       },
-      "allDateComponentRevenueSum": 17463001,
+      "componentRevenueSum": 17490585,
+      "allRevenue": 17490585,
+      "allDateComponentRevenue": {
+        "wb": 14886694,
+        "ozon": 2480833,
+        "ya": 122903,
+        "goldapple": 0,
+        "letu": 0,
+        "megamarket": 155,
+        "samokat": 0,
+        "magnit": 0
+      },
+      "allDateComponentRevenueSum": 17490585,
       "status": "warning"
     },
     {
@@ -961,7 +958,7 @@
       "blockingReasons": [],
       "rows": 209,
       "embeddedAliasCount": 1128,
-      "aliasCount": 341,
+      "aliasCount": 342,
       "aliasConflictCount": 0,
       "skuTokenConflictCount": 0,
       "ownerConflictCount": 0,
@@ -1038,7 +1035,7 @@
           "path": "data\\portal_dashboard_reconciliation.json",
           "status": "ok",
           "publish_allowed": true,
-          "business_fingerprint": "68c9cb23089495dbdf8ed6caa11d0f773acee23659e2e532640770b2d01e074c",
+          "business_fingerprint": "561e4c462856a7f743462e165dab3737d98b97714b6b81549d262b9c9016d67f",
           "summary": {}
         },
         {
@@ -1046,7 +1043,7 @@
           "path": "data\\portal_plan_reconciliation.json",
           "status": "ok",
           "publish_allowed": true,
-          "business_fingerprint": "dashboard:b75eff967d23987e",
+          "business_fingerprint": "dashboard:e07bc5e1fcf8f310",
           "summary": {}
         },
         {
@@ -1054,7 +1051,7 @@
           "path": "data\\portal_indicator_audit.json",
           "status": "ok",
           "publish_allowed": true,
-          "business_fingerprint": "dashboard:b75eff967d23987e",
+          "business_fingerprint": "dashboard:e07bc5e1fcf8f310",
           "summary": {}
         },
         {
@@ -1115,7 +1112,7 @@
           "summary": {}
         }
       ],
-      "businessFingerprint": "546a47ec6acb7c458decab71ab3b9d475a9beba06ea4b6849e45a17a579f5d3f",
+      "businessFingerprint": "92cc9512158c14b92febd82f56cfa03ed0b0bfe19360653d5262a517c960173b",
       "status": "warning"
     }
   ]

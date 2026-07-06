@@ -42,6 +42,10 @@
     "data/wb_owner_distribution_audit.json": "wb_owner_distribution_audit",
     "data/portal_sync_health.json": "portal_sync_health"
   };
+  var LOCAL_FIRST_KEYS = Object.keys(PATH_MAP).reduce(function (acc, path) {
+    acc[PATH_MAP[path]] = true;
+    return acc;
+  }, {});
   var SKU_ALIASES_FALLBACK = {
     schema: "sku-api-aliases-v1",
     aliases: []
@@ -687,7 +691,7 @@
 
   async function loadSnapshotAwareJson(path, fallback, force) {
     var snapshotKey = snapshotKeyFromPath(path);
-    if (snapshotKey === "platform_trends") {
+    if (LOCAL_FIRST_KEYS[snapshotKey]) {
       try {
         var localFirstPayload = await fetchLocalJson(path);
         if (payloadLooksUsable(snapshotKey, localFirstPayload)) return localFirstPayload;

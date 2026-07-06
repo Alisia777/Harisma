@@ -640,7 +640,7 @@
       if (!target || !payloadLooksUsable(row.snapshot_key, row.payload)) continue;
       const currentPayload = state[target];
       const currentUsable = payloadLooksUsable(row.snapshot_key, currentPayload);
-      const incomingFreshness = payloadFreshnessScore(row.snapshot_key, row.payload, row?.updated_at);
+      const incomingFreshness = payloadFreshnessScore(row.snapshot_key, row.payload);
       const currentFreshness = payloadFreshnessScore(row.snapshot_key, currentPayload);
       const incomingDataFreshness = payloadDataFreshnessScore(row.snapshot_key, row.payload);
       const currentDataFreshness = payloadDataFreshnessScore(row.snapshot_key, currentPayload);

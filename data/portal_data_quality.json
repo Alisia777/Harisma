@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-07-03T12:53:31.340Z",
-  "status": "warning",
+  "generatedAt": "2026-07-06T08:02:16.907Z",
+  "status": "ok",
   "summary": {
-    "issueCount": 1,
+    "issueCount": 0,
     "criticalCount": 0,
-    "warningCount": 1,
+    "warningCount": 0,
     "monthKey": "2026-07",
-    "maxDate": "2026-07-02",
+    "maxDate": "2026-07-05",
     "apiUnmappedPlatformRows": 0,
     "apiUnmappedUniqueSku": 0,
     "apiUnmappedRevenue": 0,
@@ -19,8 +19,8 @@
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
-    "skuAliasCount": 341,
-    "priceContourSkuCount": 321,
+    "skuAliasCount": 342,
+    "priceContourSkuCount": 304,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
     "skuMissingPlan": 0,
@@ -34,137 +34,69 @@
   "freshness": [
     {
       "dataset": "dashboard",
-      "asOfDate": "2026-07-02",
-      "generatedAt": "2026-07-03T09:27:54.183Z",
+      "asOfDate": "2026-07-05",
+      "generatedAt": "2026-07-06T07:59:09.774Z",
       "rows": 20,
-      "referenceDate": "2026-07-03",
+      "referenceDate": "2026-07-06",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "platform_trends",
-      "asOfDate": "2026-07-02",
-      "generatedAt": "2026-07-03T09:27:54.183Z",
-      "rows": 9,
-      "referenceDate": "2026-07-03",
+      "asOfDate": "2026-07-05",
+      "generatedAt": "2026-07-06T07:59:09.774Z",
+      "rows": 5,
+      "referenceDate": "2026-07-06",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "order_procurement",
-      "asOfDate": "2026-07-01",
-      "generatedAt": "2026-07-03T09:33:17.689Z",
-      "rows": 3100,
-      "referenceDate": "2026-07-03",
-      "lagDays": 2,
-      "status": "warning"
+      "asOfDate": "2026-07-05",
+      "generatedAt": "2026-07-05T00:00:00+03:00",
+      "rows": 3103,
+      "referenceDate": "2026-07-06",
+      "lagDays": 1,
+      "status": "ok"
     },
     {
       "dataset": "warehouse_stock_overlay",
-      "asOfDate": "2026-07-03",
-      "generatedAt": "2026-07-03T09:07:52.637Z",
+      "asOfDate": "2026-07-06",
+      "generatedAt": "2026-07-06T07:28:20.361Z",
       "rows": 181,
       "matchedRows": 181,
       "unmatchedRows": 25,
-      "referenceDate": "2026-07-03",
+      "referenceDate": "2026-07-06",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "ads_summary",
-      "asOfDate": "2026-07-02",
-      "generatedAt": "2026-07-03T11:08:57.738Z",
-      "rows": 8,
-      "referenceDate": "2026-07-03",
+      "asOfDate": "2026-07-05",
+      "generatedAt": "2026-07-06T07:59:09.846Z",
+      "rows": 5,
+      "referenceDate": "2026-07-06",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "iu_drr_summary",
-      "asOfDate": "2026-07-02",
-      "generatedAt": "2026-07-03T11:12:09.041Z",
+      "asOfDate": "2026-07-05",
+      "generatedAt": "2026-07-06T08:00:08.520Z",
       "rows": 31,
-      "referenceDate": "2026-07-03",
+      "referenceDate": "2026-07-06",
       "lagDays": 1,
       "status": "ok"
     }
   ],
   "platformSummary": {
-    "letu": {
-      "label": "Лэтуаль",
-      "rows": 56,
-      "directRevenue": 0,
-      "directUnits": 0,
-      "aggregateRevenue": 0,
-      "aggregateDate": "",
-      "unmappedCount": 0,
-      "unmappedRevenue": 0,
-      "unmappedUnits": 0,
-      "ignoredCount": 0,
-      "ignoredRevenue": 0,
-      "ignoredUnits": 0,
-      "knownOutsideRegistryCount": 0,
-      "knownOutsideRegistryRevenue": 0,
-      "knownOutsideRegistryUnits": 0
-    },
     "megamarket": {
       "label": "megamarket",
-      "rows": 8,
-      "directRevenue": 0,
-      "directUnits": 0,
-      "aggregateRevenue": 0,
-      "aggregateDate": "",
-      "unmappedCount": 0,
-      "unmappedRevenue": 0,
-      "unmappedUnits": 0,
-      "ignoredCount": 0,
-      "ignoredRevenue": 0,
-      "ignoredUnits": 0,
-      "knownOutsideRegistryCount": 0,
-      "knownOutsideRegistryRevenue": 0,
-      "knownOutsideRegistryUnits": 0
-    },
-    "samokat": {
-      "label": "samokat",
-      "rows": 0,
-      "directRevenue": 0,
-      "directUnits": 0,
-      "aggregateRevenue": 0,
-      "aggregateDate": "",
-      "unmappedCount": 0,
-      "unmappedRevenue": 0,
-      "unmappedUnits": 0,
-      "ignoredCount": 0,
-      "ignoredRevenue": 0,
-      "ignoredUnits": 0,
-      "knownOutsideRegistryCount": 0,
-      "knownOutsideRegistryRevenue": 0,
-      "knownOutsideRegistryUnits": 0
-    },
-    "goldapple": {
-      "label": "ЗЯ",
-      "rows": 38,
-      "directRevenue": 0,
-      "directUnits": 0,
-      "aggregateRevenue": 0,
-      "aggregateDate": "",
-      "unmappedCount": 0,
-      "unmappedRevenue": 0,
-      "unmappedUnits": 0,
-      "ignoredCount": 0,
-      "ignoredRevenue": 0,
-      "ignoredUnits": 0,
-      "knownOutsideRegistryCount": 0,
-      "knownOutsideRegistryRevenue": 0,
-      "knownOutsideRegistryUnits": 0
-    },
-    "magnit": {
-      "label": "Магнит Маркет",
-      "rows": 42,
-      "directRevenue": 3369,
-      "directUnits": 6,
-      "aggregateRevenue": 0,
-      "aggregateDate": "",
+      "rows": 9,
+      "directRevenue": 775,
+      "directUnits": 1,
+      "aggregateRevenue": 775,
+      "aggregateDate": "2026-07-05",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -177,12 +109,12 @@
     }
   },
   "orderSummary": {
-    "rows": 3100,
+    "rows": 3103,
     "noStockNeedRows": 0,
-    "lowTurnoverRows": 43,
-    "totalNeed7": 1,
-    "totalNeed14": 16417,
-    "totalNeed28": 83171
+    "lowTurnoverRows": 42,
+    "totalNeed7": 0,
+    "totalNeed14": 16322,
+    "totalNeed28": 82639
   },
   "ownerSummary": {
     "totalSku": 209,
@@ -195,7 +127,7 @@
     "missingPlan": 0
   },
   "warehouseSummary": {
-    "sourceRows": 305,
+    "sourceRows": 298,
     "matchedRows": 181,
     "sourceUnmatchedRows": 25,
     "unmatchedRows": 0,
@@ -209,15 +141,5 @@
     "missingInPortalCount": 0,
     "missingInDistributionCount": 0
   },
-  "issues": [
-    {
-      "severity": "warning",
-      "type": "dataset_stale_or_empty",
-      "dataset": "order_procurement",
-      "asOfDate": "2026-07-01",
-      "referenceDate": "2026-07-03",
-      "lagDays": 2,
-      "message": "Данные отстают на 2 дн."
-    }
-  ]
+  "issues": []
 }

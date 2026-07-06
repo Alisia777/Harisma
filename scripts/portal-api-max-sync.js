@@ -228,6 +228,17 @@ function refreshDayOffsets(series) {
   }));
 }
 
+function seriesBounds(series) {
+  const dates = (Array.isArray(series) ? series : [])
+    .map(pointDate)
+    .filter(Boolean)
+    .sort();
+  return {
+    from: dates[0] || '',
+    to: dates[dates.length - 1] || ''
+  };
+}
+
 function replaceSeriesWindow(existingSeries, freshSeries, from, to) {
   const byDate = new Map();
   for (const point of Array.isArray(existingSeries) ? existingSeries : []) {
@@ -370,19 +381,27 @@ function mergePlatformWindow(outputFile, chunkFile, platformKey, from, to) {
     .map((platform) => [normalizeText(platform?.key || platform?.platformKey).toLowerCase(), platform])
     .filter(([key]) => key));
   const existingPlatform = targetPlatforms.get(platformKey) || {};
+  const mergedSeries = replaceSeriesWindow(existingPlatform.series, freshPlatform.series, from, to);
+  const mergedBounds = seriesBounds(mergedSeries);
   targetPlatforms.set(platformKey, {
     ...existingPlatform,
     ...freshPlatform,
     key: platformKey,
-    series: replaceSeriesWindow(existingPlatform.series, freshPlatform.series, from, to)
+    series: mergedSeries,
+    from: mergedBounds.from,
+    to: mergedBounds.to
   });
 
   const existingAll = targetPlatforms.get('all') || {};
+  const allSeries = buildAllSeries(targetPlatforms);
+  const allBounds = seriesBounds(allSeries);
   targetPlatforms.set('all', {
     ...existingAll,
     key: 'all',
     label: existingAll.label || '\u0412\u0441\u0435 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0438',
-    series: buildAllSeries(targetPlatforms)
+    series: allSeries,
+    from: allBounds.from,
+    to: allBounds.to
   });
 
   const orderedKeys = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit', 'all'];

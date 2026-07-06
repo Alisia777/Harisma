@@ -196,6 +196,7 @@
   const TASK_SPARSE_BOOT_HOLD_MS = 1200;
   let sparseBootWakeTimer = 0;
   let sparseDataRefreshTimer = 0;
+  let hydratingWakeTimer = 0;
 
   const TASK_UI = window.__ALTEA_TASK_DESIGN_UI__ || loadUi();
   window.__ALTEA_TASK_DESIGN_UI__ = TASK_UI;
@@ -524,6 +525,18 @@
     if (sparseBootList) scheduleSparseDataRefresh();
     rememberStableTaskList(tasks);
     return taskListCache.tasks;
+  }
+
+  function taskSourcesHaveRows() {
+    const local = appState()?.storage?.tasks;
+    if (Array.isArray(local) && local.length) return true;
+    if (typeof window.getAllTasks === 'function') {
+      try {
+        const remote = window.getAllTasks();
+        if (Array.isArray(remote) && remote.length) return true;
+      } catch (_) {}
+    }
+    return false;
   }
 
   function ensureFilters() {
@@ -1676,9 +1689,16 @@
   function isTaskDataHydrating() {
     const bootAge = Date.now() - TASK_BOOT_STARTED_AT;
     if (bootAge > 9000) return false;
+    if (taskSourcesHaveRows()) return false;
     const app = appState();
-    if (window.__ALTEA_PRIMARY_INIT_PENDING__ === true) return true;
-    if (app?.boot && app.boot.dataReady === false) return true;
+    const waiting = window.__ALTEA_PRIMARY_INIT_PENDING__ === true || (app?.boot && app.boot.dataReady === false);
+    if (waiting && !hydratingWakeTimer) {
+      hydratingWakeTimer = window.setTimeout(() => {
+        hydratingWakeTimer = 0;
+        queueEnhance(true);
+      }, Math.max(40, 9000 - bootAge + 30));
+    }
+    if (waiting) return true;
     return false;
   }
 
@@ -2562,6 +2582,7 @@
     bindTaskCreateEvents();
     window.__ALTEA_TASK_KANBAN_INVALIDATE__ = invalidateTaskListCache;
     window.__ALTEA_TASK_KANBAN_RENDER__ = function renderTaskKanbanNow() {
+      invalidateTaskListCache();
       enhanceControl(true);
       return root();
     };

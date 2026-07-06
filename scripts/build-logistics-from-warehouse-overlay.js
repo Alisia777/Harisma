@@ -81,6 +81,23 @@ function latestDateFromRows(rows = []) {
     .pop() || '';
 }
 
+function maxDateKey(values = []) {
+  return values
+    .map(dateKey)
+    .filter(Boolean)
+    .sort()
+    .pop() || '';
+}
+
+function shiftDate(date, offsetDays) {
+  const key = dateKey(date);
+  if (!key) return '';
+  const parsed = new Date(`${key}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return '';
+  parsed.setUTCDate(parsed.getUTCDate() + offsetDays);
+  return parsed.toISOString().slice(0, 10);
+}
+
 function buildLogistics(options = resolveOptions({})) {
   const logisticsPath = path.join(options.inputDir, 'logistics.json');
   const overlay = readJson(path.join(options.inputDir, 'warehouse_stock_overlay.json'), {});
@@ -99,13 +116,33 @@ function buildLogistics(options = resolveOptions({})) {
     || overlayRows.reduce((sum, row) => sum + numberOrZero(row.shippedOzon), 0);
   const shippedWB = numberOrZero(summary.shippedWB)
     || overlayRows.reduce((sum, row) => sum + numberOrZero(row.shippedWB), 0);
-  const latestLogisticsDate = dateKey(logistics.latest_logistics_date || logistics.latestLogisticsDate || logistics.window?.to)
-    || dateKey(overlay.asOfDate)
-    || latestDateFromRows(overlayRows);
+  const existingWindow = logistics.window && typeof logistics.window === 'object' ? logistics.window : {};
+  const windowDays = Number.isFinite(Number(existingWindow.days)) && Number(existingWindow.days) > 0
+    ? Number(existingWindow.days)
+    : 28;
+  const latestLogisticsDate = maxDateKey([
+    logistics.latest_logistics_date,
+    logistics.latestLogisticsDate,
+    existingWindow.to,
+    overlay.asOfDate,
+    latestDateFromRows(overlayRows),
+    options.runDate,
+    generatedAt
+  ]);
+  const windowTo = latestLogisticsDate || dateKey(existingWindow.to);
+  const windowFrom = windowTo
+    ? shiftDate(windowTo, -(windowDays - 1))
+    : dateKey(existingWindow.from);
 
   return {
     ...logistics,
     generatedAt,
+    window: {
+      ...existingWindow,
+      from: windowFrom || dateKey(existingWindow.from),
+      to: windowTo || dateKey(existingWindow.to),
+      days: windowDays
+    },
     latest_logistics_date: latestLogisticsDate,
     latestLogisticsDate: latestLogisticsDate,
     centralWarehouse: {

@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { buildPlanBackfillMap, compactKey } = require('./import-ksenia-minmax-matrix');
+const { canonicalOwnerName } = require('./owner-normalization');
 
 function parseArgs(argv) {
   const args = {};
@@ -57,59 +58,6 @@ function statusIsOld(status = '') {
 
 function pushIssue(issues, severity, type, detail = {}) {
   issues.push({ severity, type, ...detail });
-}
-
-const OWNER_CANONICAL_NAMES = new Map([
-  ['алексей', 'Алексей'],
-  ['александр', 'Питайкин Артём'],
-  ['анна', 'Пирогова Анна'],
-  ['артем', 'Питайкин Артём'],
-  ['артём', 'Питайкин Артём'],
-  ['дария', 'Молодякова Дария'],
-  ['дарья', 'Молодякова Дария'],
-  ['даша', 'Молодякова Дария'],
-  ['екатерина', 'Доможирова Екатерина'],
-  ['кирилл', 'Кирилл'],
-  ['ксения', 'Ксения'],
-  ['максим', 'Лапыгин Максим'],
-  ['мария', 'Васильева Мария'],
-  ['олеся', 'Олеся'],
-  ['светлана', 'Светлана']
-]);
-
-const OWNER_NAME_ALIASES = new Map([
-  ['александр озон', 'Питайкин Артём'],
-  ['питайкин артем', 'Питайкин Артём'],
-  ['питайкин артём', 'Питайкин Артём'],
-  ['артем питайкин', 'Питайкин Артём'],
-  ['артём питайкин', 'Питайкин Артём'],
-  ['молодякова дария', 'Молодякова Дария'],
-  ['молодякова дарья', 'Молодякова Дария'],
-  ['дария молодякова', 'Молодякова Дария'],
-  ['дарья молодякова', 'Молодякова Дария'],
-  ['анна пирогова', 'Пирогова Анна'],
-  ['пирогова анна', 'Пирогова Анна'],
-  ['екатерина доброжирова', 'Доможирова Екатерина'],
-  ['екатерина доможирова', 'Доможирова Екатерина'],
-  ['доможирова екатерина', 'Доможирова Екатерина'],
-  ['доброжирова екатерина', 'Доможирова Екатерина'],
-  ['мария васильева', 'Васильева Мария'],
-  ['мария васильевна', 'Васильева Мария'],
-  ['васильева мария', 'Васильева Мария'],
-  ['лапыгин максим', 'Лапыгин Максим'],
-  ['максим лапыгин', 'Лапыгин Максим'],
-  ['олеся савинова', 'Олеся']
-]);
-
-function canonicalOwnerName(value = '') {
-  const normalized = String(value || '').replace(/\s+/g, ' ').trim();
-  if (!normalized) return '';
-  const lowered = normalized.toLowerCase().replaceAll('ё', 'е');
-  if (OWNER_NAME_ALIASES.has(lowered)) return OWNER_NAME_ALIASES.get(lowered);
-  if (OWNER_CANONICAL_NAMES.has(lowered)) return OWNER_CANONICAL_NAMES.get(lowered);
-  const [firstToken = ''] = lowered.split(' ');
-  if (OWNER_CANONICAL_NAMES.has(firstToken)) return OWNER_CANONICAL_NAMES.get(firstToken);
-  return normalized;
 }
 
 function platformRows(pricesPayload = {}) {
@@ -249,6 +197,29 @@ function skuKeys(sku = {}) {
   ].map(compactKey).filter(Boolean);
 }
 
+function exactSkuKey(value = '') {
+  return String(value || '').trim().toLowerCase();
+}
+
+function skuLookupKeys(sku = {}) {
+  const values = [
+    sku.articleKey,
+    sku.article,
+    sku.sku,
+    sku.vendorCode,
+    sku.supplierArticle
+  ];
+  const exactKeys = values
+    .map(exactSkuKey)
+    .filter(Boolean)
+    .map((key) => `exact:${key}`);
+  const compactKeys = values
+    .map(compactKey)
+    .filter(Boolean)
+    .map((key) => `compact:${key}`);
+  return [...exactKeys, ...compactKeys];
+}
+
 function normalizePlatformKey(value = '') {
   const raw = String(value || '').trim().toLowerCase();
   if (['wb', 'wildberries'].includes(raw)) return 'wb';
@@ -265,11 +236,30 @@ function normalizePlatformKey(value = '') {
 function buildSkuLookup(skus = []) {
   const lookup = new Map();
   (Array.isArray(skus) ? skus : []).forEach((sku) => {
-    skuKeys(sku).forEach((key) => {
+    skuLookupKeys(sku).forEach((key) => {
       if (!lookup.has(key)) lookup.set(key, sku);
     });
   });
   return lookup;
+}
+
+function lookupSkuForRow(skuLookup = new Map(), row = {}) {
+  const values = [
+    row.article,
+    row.articleKey,
+    row.sku,
+    row.vendorCode,
+    row.supplierArticle
+  ];
+  for (const value of values) {
+    const key = exactSkuKey(value);
+    if (key && skuLookup.has(`exact:${key}`)) return skuLookup.get(`exact:${key}`);
+  }
+  for (const value of values) {
+    const key = compactKey(value);
+    if (key && skuLookup.has(`compact:${key}`)) return skuLookup.get(`compact:${key}`);
+  }
+  return null;
 }
 
 function expectedOwnerForPlatform(sku = {}, platform = '') {
@@ -318,8 +308,7 @@ function explicitOwnerForPlatform(sku = {}, platform = '') {
 }
 
 function ownerMismatch(row = {}, skuLookup = new Map()) {
-  const rowKey = compactKey(row.articleKey || row.article || row.sku || '');
-  const sku = skuLookup.get(rowKey);
+  const sku = lookupSkuForRow(skuLookup, row);
   if (!sku) return null;
   const expected = expectedOwnerForPlatform(sku, row.platformKey || row.platform || '');
   const actual = String(row.owner || '').trim();
@@ -410,8 +399,7 @@ function auditOwnerDataset(label, rows, skuLookup, issues, options = {}) {
   const unmatchedExamples = [];
   rows.forEach(({ platform, row }) => {
     if (!rowIsOwnerAuditable(row)) return;
-    const rowKey = compactKey(row.articleKey || row.article || row.sku || '');
-    const sku = skuLookup.get(rowKey);
+    const sku = lookupSkuForRow(skuLookup, row);
     if (!sku) {
       unmatchedRows += 1;
       if (unmatchedExamples.length < 10) unmatchedExamples.push({ articleKey: row.articleKey || row.article || '', platform });

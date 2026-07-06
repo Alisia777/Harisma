@@ -687,6 +687,14 @@
 
   async function loadSnapshotAwareJson(path, fallback, force) {
     var snapshotKey = snapshotKeyFromPath(path);
+    if (snapshotKey === "platform_trends") {
+      try {
+        var localFirstPayload = await fetchLocalJson(path);
+        if (payloadLooksUsable(snapshotKey, localFirstPayload)) return localFirstPayload;
+      } catch (error) {
+        console.warn("[portal-snapshot-refresh-hotfix] local-first", path, error);
+      }
+    }
     var snapshotPayload = null;
     if (snapshotKey) {
       var rows = await fetchSnapshotRows(force, snapshotKey);

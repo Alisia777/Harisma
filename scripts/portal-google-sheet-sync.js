@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
 const XLSX = require('xlsx');
+const { canonicalOwnerName, isObsoleteOwnerName } = require('./owner-normalization');
 
 const DEFAULT_SOURCE_URL = 'https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667';
 const DEFAULT_SOURCE_GID = '2003059667';
@@ -252,44 +253,6 @@ function normalizeText(value) {
   return String(value || '').trim();
 }
 
-const OWNER_CANONICAL_NAMES = new Map([
-  ['алексей', 'Алексей'],
-  ['александр', 'Питайкин Артём'],
-  ['анна', 'Пирогова Анна'],
-  ['артем', 'Питайкин Артём'],
-  ['артём', 'Питайкин Артём'],
-  ['дария', 'Молодякова Дария'],
-  ['дарья', 'Молодякова Дария'],
-  ['даша', 'Молодякова Дария'],
-  ['екатерина', 'Доможирова Екатерина'],
-  ['кирилл', 'Кирилл'],
-  ['максим', 'Лапыгин Максим'],
-  ['ксения', 'Ксения'],
-  ['мария', 'Васильева Мария'],
-  ['олеся', 'Олеся'],
-  ['светлана', 'Светлана']
-]);
-
-const OWNER_NAME_ALIASES = new Map([
-  ['александр озон', 'Питайкин Артём'],
-  ['питайкин артем', 'Питайкин Артём'],
-  ['питайкин артём', 'Питайкин Артём'],
-  ['молодякова дария', 'Молодякова Дария'],
-  ['молодякова дарья', 'Молодякова Дария'],
-  ['анна пирогова', 'Пирогова Анна'],
-  ['пирогова анна', 'Пирогова Анна'],
-  ['екатерина доброжирова', 'Доможирова Екатерина'],
-  ['екатерина доможирова', 'Доможирова Екатерина'],
-  ['доможирова екатерина', 'Доможирова Екатерина'],
-  ['доброжирова екатерина', 'Доможирова Екатерина'],
-  ['васильева мария', 'Васильева Мария'],
-  ['лапыгин максим', 'Лапыгин Максим'],
-  ['максим лапыгин', 'Лапыгин Максим'],
-  ['мария васильева', 'Васильева Мария'],
-  ['мария васильевна', 'Васильева Мария'],
-  ['олеся савинова', 'Олеся']
-]);
-
 const ACTIVE_OWNER_NAMES_BY_PLATFORM = {
   wb: ['Мария Васильева', 'Максим Лапыгин'],
   ozon: ['Молодякова Дария', 'Питайкин Артём'],
@@ -343,18 +306,6 @@ function normalizeOwnerToken(value = '') {
     .trim();
 }
 
-function canonicalOwnerName(value = '') {
-  const normalized = normalizeOwnerToken(value);
-  if (!normalized) return '';
-  const lowered = normalized.toLowerCase();
-  if (OWNER_NAME_ALIASES.has(lowered)) return OWNER_NAME_ALIASES.get(lowered);
-  if (OWNER_CANONICAL_NAMES.has(lowered)) return OWNER_CANONICAL_NAMES.get(lowered);
-  const [firstToken = ''] = normalized.split(' ');
-  const firstTokenLowered = firstToken.toLowerCase();
-  if (OWNER_CANONICAL_NAMES.has(firstTokenLowered)) return OWNER_CANONICAL_NAMES.get(firstTokenLowered);
-  return normalized;
-}
-
 function activeCanonicalOwnerName(value = '') {
   const candidates = [value, canonicalOwnerName(value)];
   for (const candidate of candidates) {
@@ -381,7 +332,7 @@ function isActualSkuStatus(value = '') {
 }
 
 function shouldReplaceGenericOwnerName(currentOwnerName = '', sheetStatus = '') {
-  return isActualSkuStatus(sheetStatus) && canonicalOwnerName(currentOwnerName) === 'Олеся';
+  return isActualSkuStatus(sheetStatus) && isObsoleteOwnerName(currentOwnerName);
 }
 
 function primaryOwnerName(ownersByPlatform = {}) {

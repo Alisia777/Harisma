@@ -159,8 +159,8 @@ async function run() {
       state.storage.tasks.push({
         id: 'selftest-filter-bind',
         title: 'Selftest filter bind task',
-        nextAction: 'Проверить, что поиск реально фильтрует карточки',
-        owner: 'РОП Маша',
+        nextAction: 'Check that search filters task cards',
+        owner: 'Мария Васильева',
         status: 'new',
         priority: 'critical',
         type: 'general',

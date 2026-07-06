@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-v2",
-  "generatedAt": "2026-07-06T06:01:29.549Z",
-  "snapshot_id": "dashboard:b75eff967d23987e",
+  "generatedAt": "2026-07-06T07:59:09.774Z",
+  "snapshot_id": "dashboard:e07bc5e1fcf8f310",
   "asOfDate": "2026-07-05",
   "latestMarketplaceDate": "2026-07-05",
   "monthKey": "2026-07",
@@ -113,14 +113,14 @@
   },
   "summary": {
     "metrics": 14,
-    "factRevenue": 76299282.25,
+    "factRevenue": 76335294.25,
     "planRevenue": 322540144,
     "planToDate": 52022603.87,
-    "completionToDate": 1.466656,
+    "completionToDate": 1.467349,
     "unallocatedRevenue": 0,
     "cutoffDate": "2026-07-05",
     "monthKey": "2026-07",
-    "factUnits": 65597,
+    "factUnits": 65635,
     "warehouseStock": 567642,
     "marketplaceStock": 220574
   },
@@ -169,7 +169,7 @@
     {
       "id": "sales-revenue-wb",
       "label": "Revenue WB",
-      "value": 63700859,
+      "value": 63736871,
       "format": "money",
       "period": "2026-07-05",
       "hint": "Fact from platform_trends.json.",
@@ -259,7 +259,7 @@
     {
       "id": "company-fact-revenue",
       "label": "Company fact",
-      "value": 76299282.25,
+      "value": 76335294.25,
       "format": "money",
       "period": "2026-07-05",
       "hint": "Fact is read only from platform_trends.json.",
@@ -268,8 +268,8 @@
     {
       "id": "company-plan-completion",
       "label": "Plan completion to date",
-      "value": 1.4666563488295585,
-      "valuePct": 1.4666563488295585,
+      "value": 1.4673485863824753,
+      "valuePct": 1.4673485863824753,
       "format": "pct",
       "period": "2026-07-05",
       "hint": "Fact divided by linear company plan to date.",
@@ -278,7 +278,7 @@
     {
       "id": "company-forecast-revenue",
       "label": "Company forecast",
-      "value": 473055549.95,
+      "value": 473278824.35,
       "format": "money",
       "period": "2026-07",
       "hint": "Baseline forecast: month-to-date average times month days.",
@@ -287,8 +287,8 @@
     {
       "id": "ads-drr-wb",
       "label": "DRR WB",
-      "value": 0.265991,
-      "valuePct": 0.265991,
+      "value": 0.262152,
+      "valuePct": 0.262152,
       "format": "pct",
       "period": "2026-07-05",
       "hint": "Ad spend divided by attributed revenue.",
@@ -297,8 +297,8 @@
     {
       "id": "ads-drr-ozon",
       "label": "DRR OZON",
-      "value": 0,
-      "valuePct": 0,
+      "value": 0.228377,
+      "valuePct": 0.228377,
       "format": "pct",
       "period": "2026-07-05",
       "hint": "Ad spend divided by attributed revenue.",
@@ -315,25 +315,25 @@
       "total_stock": 220574,
       "warehouse_stock": 567642,
       "plan_units": 0,
-      "fact_units_to_date": 65597,
-      "fact_revenue_to_date": 76299282.25,
-      "plan_completion_to_date_pct": 1.466656,
+      "fact_units_to_date": 65635,
+      "fact_revenue_to_date": 76335294.25,
+      "plan_completion_to_date_pct": 1.467349,
       "company_plan_month_key": "2026-07",
-      "company_plan_month_label": "РёСЋР»СЊ 2026",
+      "company_plan_month_label": "июль 2026",
       "company_plan_revenue": 322540144,
-      "company_fact_revenue_to_date": 76299282.25,
+      "company_fact_revenue_to_date": 76335294.25,
       "company_plan_to_date_revenue": 52022603.87,
-      "company_plan_completion_month_pct": 0.236557,
-      "company_plan_completion_to_date_pct": 1.466656,
-      "company_forecast_revenue": 473055549.95,
-      "company_forecast_pct": 1.466656,
+      "company_plan_completion_month_pct": 0.236669,
+      "company_plan_completion_to_date_pct": 1.467349,
+      "company_forecast_revenue": 473278824.35,
+      "company_forecast_pct": 1.467349,
       "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
       "platformFacts": {
         "wb": {
           "dateFrom": "2026-07-01",
           "dateTo": "2026-07-05",
-          "revenue": 63700859,
-          "units": 48815
+          "revenue": 63736871,
+          "units": 48853
         },
         "ozon": {
           "dateFrom": "2026-07-01",
@@ -384,16 +384,1072 @@
     {
       "article": "kremshelk_100ml",
       "articleKey": "kremshelk_100ml",
-      "brand": "РђР»С‚РµСЏ",
-      "product_name_final": "РљСЂРµРј СЃ РјРѕС‡РµРІРёРЅРѕР№ 10% СѓРІР»Р°Р¶РЅСЏСЋС‰РёР№ РґР»СЏ СЂСѓРє Рё С‚РµР»Р°, РѕС‚ С‚СЂРµС‰РёРЅ РЅР° РїСЏС‚РєР°С… Рё СЃСѓС…РѕСЃС‚Рё, 100 РјР», РђР»С‚РµСЏ",
+      "brand": "Алтея",
+      "product_name_final": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
       "focus_score": 10,
-      "focus_reasons": "Р’ СЂР°Р±РѕС‚Рµ Ozon: РЅРёР¶Рµ РїР»Р°РЅР° Рё РѕС‚СЂРёС†Р°С‚РµР»СЊРЅР°СЏ РјР°СЂР¶Р°; РќРёР·РєРѕРµ РІС‹РїРѕР»РЅРµРЅРёРµ РїР»Р°РЅР°; РћС‚СЂРёС†Р°С‚РµР»СЊРЅР°СЏ РјР°СЂР¶Р° Ozon; РњРЅРѕРіРѕ РІРѕР·РІСЂР°С‚РѕРІ; Р•СЃС‚СЊ РІРЅРµС€РЅРёР№ С‚СЂР°С„РёРє РљР—",
+      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
       "total_mp_stock": 9203,
-      "owner_name": "РњР°СЂРёСЏ Р’Р°СЃРёР»СЊРµРІР°",
-      "owner_wb": "РњР°СЂРёСЏ Р’Р°СЃРёР»СЊРµРІР°",
-      "owner_ozon": "РџРёС‚Р°Р№РєРёРЅ РђСЂС‚С‘Рј",
-      "owner_ya": "РђРЅРЅР° РџРёСЂРѕРіРѕРІР°",
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
       "fact_revenue_to_date": 7494622
+    },
+    {
+      "article": "nabor_remuver_40ml",
+      "articleKey": "nabor_remuver_40ml",
+      "brand": "Алтея",
+      "product_name_final": "Ремувер для удаления кутикулы, Алтея, 40 мл",
+      "focus_score": 10,
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
+      "total_mp_stock": 8741,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 1577260
+    },
+    {
+      "article": "matte_wax_50ml",
+      "articleKey": "matte_wax_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
+      "focus_score": 9,
+      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
+      "total_mp_stock": 1008,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 2070641
+    },
+    {
+      "article": "skrab_babl_gam_200ml",
+      "articleKey": "skrab_babl_gam_200ml",
+      "brand": "Алтея",
+      "product_name_final": "Скраб пилинг для кожи головы, Алтея, 200 мл",
+      "focus_score": 9,
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Есть внешний трафик КЗ",
+      "total_mp_stock": 1899,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 801764
+    },
+    {
+      "article": "syvorotka_guk_30ml",
+      "articleKey": "syvorotka_guk_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
+      "focus_score": 8,
+      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
+      "total_mp_stock": 763,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 1543576
+    },
+    {
+      "article": "intimvita_300ml",
+      "articleKey": "intimvita_300ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
+      "focus_score": 8,
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
+      "total_mp_stock": 1718,
+      "owner_name": "Максим Лапыгин",
+      "owner_wb": "Максим Лапыгин",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 754724
+    },
+    {
+      "article": "ekdisteron_ultra_man_60caps",
+      "articleKey": "ekdisteron_ultra_man_60caps",
+      "brand": "Алтея",
+      "product_name_final": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
+      "focus_score": 8,
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
+      "total_mp_stock": 1537,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 510808
+    },
+    {
+      "article": "krovavii_piling_30ml",
+      "articleKey": "krovavii_piling_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 3935,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 17405005
+    },
+    {
+      "article": "curly_method_300ml",
+      "articleKey": "curly_method_300ml",
+      "brand": "Алтея",
+      "product_name_final": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 6986,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 15948078
+    },
+    {
+      "article": "penka_kudryavii_metod_150ml",
+      "articleKey": "penka_kudryavii_metod_150ml",
+      "brand": "Алтея",
+      "product_name_final": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 2452,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 11518558
+    },
+    {
+      "article": "gel_antiakne_20ml_v2",
+      "articleKey": "gel_antiakne_20ml_v2",
+      "brand": "Алтея",
+      "product_name_final": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 3440,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 5347504
+    },
+    {
+      "article": "enzim_pudra_80gr_v2",
+      "articleKey": "enzim_pudra_80gr_v2",
+      "brand": "Алтея",
+      "product_name_final": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Есть внешний трафик КЗ",
+      "total_mp_stock": 1,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 4306241
+    },
+    {
+      "article": "retiderm_50ml",
+      "articleKey": "retiderm_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик VK",
+      "total_mp_stock": 40719,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 145130986
+    },
+    {
+      "article": "retinait_krem_1_50ml",
+      "articleKey": "retinait_krem_1_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
+      "total_mp_stock": 10709,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 44771070
+    },
+    {
+      "article": "syvorotka_dlya_lica_30ml",
+      "articleKey": "syvorotka_dlya_lica_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "total_mp_stock": 5680,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Мария Васильева",
+      "fact_revenue_to_date": 19008012
+    },
+    {
+      "article": "retinait_krem_05_50ml",
+      "articleKey": "retinait_krem_05_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
+      "total_mp_stock": 9161,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 16897529
+    },
+    {
+      "article": "retinait_krem_025_50ml",
+      "articleKey": "retinait_krem_025_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
+      "total_mp_stock": 7023,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 15757994
+    },
+    {
+      "article": "retinait_syvorotka_1_30ml",
+      "articleKey": "retinait_syvorotka_1_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 2931,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 14108652
+    },
+    {
+      "article": "maska_dlya_lica_100ml",
+      "articleKey": "maska_dlya_lica_100ml",
+      "brand": "Алтея",
+      "product_name_final": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "total_mp_stock": 288,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 11524515
+    },
+    {
+      "article": "retinait_krem_1_5_50ml",
+      "articleKey": "retinait_krem_1_5_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик VK",
+      "total_mp_stock": 7316,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Мария Васильева",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 9429469
+    },
+    {
+      "article": "krem_ot_rastyazhek",
+      "articleKey": "krem_ot_rastyazhek",
+      "brand": "Алтея",
+      "product_name_final": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "total_mp_stock": 4254,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 7326792
+    },
+    {
+      "article": "maska-batter_dlya_rosta_500ml",
+      "articleKey": "maska-batter_dlya_rosta_500ml",
+      "brand": "Алтея",
+      "product_name_final": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "total_mp_stock": 1734,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Молодякова Дария",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 5197341
+    },
+    {
+      "article": "sprei_buster_100ml",
+      "articleKey": "sprei_buster_100ml",
+      "brand": "Алтея",
+      "product_name_final": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "total_mp_stock": 1922,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 4717237
+    },
+    {
+      "article": "shampun_dlya_rosta_250ml",
+      "articleKey": "shampun_dlya_rosta_250ml",
+      "brand": "Алтея",
+      "product_name_final": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "total_mp_stock": 1479,
+      "owner_name": "Мария Васильева",
+      "owner_wb": "Мария Васильева",
+      "owner_ozon": "Питайкин Артём",
+      "owner_ya": "Анна Пирогова",
+      "fact_revenue_to_date": 4614546
     }
-  ]
+  ],
+  "companyPlan": {
+    "generatedAt": "2026-05-29T19:18:00+03:00",
+    "sourceWorkbook": "codex_portal_altea_plan_fact_v2_review.xlsx",
+    "sourceSheet": "02_Platforms + salary_contour_review",
+    "sourcePath": "codex_portal_altea_plan_fact_v2_review.xlsx",
+    "planType": "marketplace_salary_revenue",
+    "activeMonthKey": "2026-07",
+    "activeMonth": {
+      "label": "июль 2026",
+      "days": 31,
+      "revenue": 322540144,
+      "dailyRevenue": 10404520.77,
+      "channels": {
+        "wb": {
+          "label": "WB",
+          "revenue": 241590454,
+          "dailyRevenue": 7793240.45,
+          "salaryIncluded": true,
+          "planSource": "02_Platforms.portal_target_plan"
+        },
+        "ozon": {
+          "label": "Ozon",
+          "revenue": 67949690,
+          "dailyRevenue": 2191925.48,
+          "salaryIncluded": true,
+          "planSource": "02_Platforms.portal_target_plan"
+        },
+        "ya": {
+          "label": "Яндекс Маркет",
+          "revenue": 13000000,
+          "dailyRevenue": 419354.84,
+          "salaryIncluded": true,
+          "planSource": "manual salary target; corrective target removed"
+        },
+        "b2b": {
+          "label": "B2B / опт",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "separate contour"
+        },
+        "d2c": {
+          "label": "Сайт / D2C",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "separate contour"
+        },
+        "goldapple": {
+          "label": "Золотое Яблоко online",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "letu": {
+          "label": "Летуаль online",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "magnit": {
+          "label": "Магнит Маркет",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "all": {
+          "label": "Маркетплейсы salary contour",
+          "revenue": 322540144,
+          "dailyRevenue": 10404520.77,
+          "salaryIncluded": true
+        }
+      },
+      "salaryContour": {
+        "generatedAt": "2026-05-29T19:10:00+03:00",
+        "revenue": 322540144,
+        "dailyRevenue": 10404520.77,
+        "includedChannels": [
+          "wb",
+          "ozon",
+          "ya"
+        ],
+        "excludedChannels": {
+          "b2b": {
+            "label": "B2B / опт",
+            "reason": "separate contour"
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "reason": "separate contour"
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "reason": "manual decision below threshold"
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "reason": "manual decision below threshold"
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "reason": "manual decision below threshold"
+          }
+        },
+        "adjustmentCapPct": 0.2,
+        "oosRules": {
+          "hardBlockTurnoverDaysLt": 3,
+          "freezeGrowthTurnoverDaysFrom": 3,
+          "freezeGrowthTurnoverDaysTo": 14,
+          "warningTurnoverDaysTo": 30
+        },
+        "v46Usage": "benchmark_only"
+      },
+      "note": "Marketplace salary revenue contour.",
+      "monthKey": "2026-07",
+      "planRevenueMonth": 322540144,
+      "planRevenueToDate": 52022603.87,
+      "factRevenueToDate": 76335294.25,
+      "completionMonthPct": 0.236669,
+      "completionToDatePct": 1.467349,
+      "forecastRevenue": 473278824.35,
+      "forecastPct": 1.467349
+    },
+    "months": {
+      "2026-05": {
+        "label": "май 2026",
+        "days": 31,
+        "revenue": 253796998,
+        "dailyRevenue": 8186999.94,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 190405570,
+            "dailyRevenue": 6142115.16,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 53553438,
+            "dailyRevenue": 1727530.26,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 9837990,
+            "dailyRevenue": 317354.52,
+            "salaryIncluded": true,
+            "planSource": "May forecast from 01-24 fact; corrective target removed"
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold",
+            "separateContourValue": 381676
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold",
+            "separateContourValue": 19519
+          },
+          "all": {
+            "label": "Маркетплейсы salary contour",
+            "revenue": 253796998,
+            "dailyRevenue": 8186999.94,
+            "salaryIncluded": true
+          }
+        },
+        "salaryContour": {
+          "generatedAt": "2026-05-29T19:10:00+03:00",
+          "revenue": 253796998,
+          "dailyRevenue": 8186999.94,
+          "includedChannels": [
+            "wb",
+            "ozon",
+            "ya"
+          ],
+          "excludedChannels": {
+            "b2b": {
+              "label": "B2B / опт",
+              "reason": "separate contour"
+            },
+            "d2c": {
+              "label": "Сайт / D2C",
+              "reason": "separate contour"
+            },
+            "goldapple": {
+              "label": "Золотое Яблоко online",
+              "reason": "manual decision below threshold"
+            },
+            "letu": {
+              "label": "Летуаль online",
+              "reason": "manual decision below threshold"
+            },
+            "magnit": {
+              "label": "Магнит Маркет",
+              "reason": "manual decision below threshold"
+            }
+          },
+          "adjustmentCapPct": 0.2,
+          "oosRules": {
+            "hardBlockTurnoverDaysLt": 3,
+            "freezeGrowthTurnoverDaysFrom": 3,
+            "freezeGrowthTurnoverDaysTo": 14,
+            "warningTurnoverDaysTo": 30
+          },
+          "v46Usage": "benchmark_only"
+        },
+        "note": "May recalculated under marketplace salary revenue contour; B2B/Site and small channels excluded from automatic salary KPI."
+      },
+      "2026-06": {
+        "label": "июнь 2026",
+        "days": 30,
+        "revenue": 285818670,
+        "dailyRevenue": 9527289,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 214476498,
+            "dailyRevenue": 7149216.6,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 60323623,
+            "dailyRevenue": 2010787.43,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 11018549,
+            "dailyRevenue": 367284.97,
+            "salaryIncluded": true,
+            "planSource": "may_forecast * 1.12; corrective target removed"
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "all": {
+            "label": "Маркетплейсы salary contour",
+            "revenue": 285818670,
+            "dailyRevenue": 9527289,
+            "salaryIncluded": true
+          }
+        },
+        "salaryContour": {
+          "generatedAt": "2026-05-29T19:10:00+03:00",
+          "revenue": 285818670,
+          "dailyRevenue": 9527289,
+          "includedChannels": [
+            "wb",
+            "ozon",
+            "ya"
+          ],
+          "excludedChannels": {
+            "b2b": {
+              "label": "B2B / опт",
+              "reason": "separate contour"
+            },
+            "d2c": {
+              "label": "Сайт / D2C",
+              "reason": "separate contour"
+            },
+            "goldapple": {
+              "label": "Золотое Яблоко online",
+              "reason": "manual decision below threshold"
+            },
+            "letu": {
+              "label": "Летуаль online",
+              "reason": "manual decision below threshold"
+            },
+            "magnit": {
+              "label": "Магнит Маркет",
+              "reason": "manual decision below threshold"
+            }
+          },
+          "adjustmentCapPct": 0.2,
+          "oosRules": {
+            "hardBlockTurnoverDaysLt": 3,
+            "freezeGrowthTurnoverDaysFrom": 3,
+            "freezeGrowthTurnoverDaysTo": 14,
+            "warningTurnoverDaysTo": 30
+          },
+          "v46Usage": "benchmark_only"
+        },
+        "note": "Marketplace salary revenue contour."
+      },
+      "2026-07": {
+        "label": "июль 2026",
+        "days": 31,
+        "revenue": 322540144,
+        "dailyRevenue": 10404520.77,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 241590454,
+            "dailyRevenue": 7793240.45,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 67949690,
+            "dailyRevenue": 2191925.48,
+            "salaryIncluded": true,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 13000000,
+            "dailyRevenue": 419354.84,
+            "salaryIncluded": true,
+            "planSource": "manual salary target; corrective target removed"
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "separate contour"
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 0,
+            "dailyRevenue": 0,
+            "salaryIncluded": false,
+            "planStatus": "separate_or_manual_contour",
+            "reason": "manual decision below threshold"
+          },
+          "all": {
+            "label": "Маркетплейсы salary contour",
+            "revenue": 322540144,
+            "dailyRevenue": 10404520.77,
+            "salaryIncluded": true
+          }
+        },
+        "salaryContour": {
+          "generatedAt": "2026-05-29T19:10:00+03:00",
+          "revenue": 322540144,
+          "dailyRevenue": 10404520.77,
+          "includedChannels": [
+            "wb",
+            "ozon",
+            "ya"
+          ],
+          "excludedChannels": {
+            "b2b": {
+              "label": "B2B / опт",
+              "reason": "separate contour"
+            },
+            "d2c": {
+              "label": "Сайт / D2C",
+              "reason": "separate contour"
+            },
+            "goldapple": {
+              "label": "Золотое Яблоко online",
+              "reason": "manual decision below threshold"
+            },
+            "letu": {
+              "label": "Летуаль online",
+              "reason": "manual decision below threshold"
+            },
+            "magnit": {
+              "label": "Магнит Маркет",
+              "reason": "manual decision below threshold"
+            }
+          },
+          "adjustmentCapPct": 0.2,
+          "oosRules": {
+            "hardBlockTurnoverDaysLt": 3,
+            "freezeGrowthTurnoverDaysFrom": 3,
+            "freezeGrowthTurnoverDaysTo": 14,
+            "warningTurnoverDaysTo": 30
+          },
+          "v46Usage": "benchmark_only"
+        },
+        "note": "Marketplace salary revenue contour."
+      },
+      "2026-08": {
+        "label": "август 2026",
+        "days": 31,
+        "revenue": 330493435.777206,
+        "dailyRevenue": 10661078.57,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 201066371,
+            "dailyRevenue": 6486011.97,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 112322218.777206,
+            "dailyRevenue": 3623297.38,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 6441334,
+            "dailyRevenue": 207784.97
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 4611252,
+            "dailyRevenue": 148750.06
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 3000631,
+            "dailyRevenue": 96794.55
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 201629,
+            "dailyRevenue": 6504.16
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 2100000,
+            "dailyRevenue": 67741.94
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 750000,
+            "dailyRevenue": 24193.55
+          }
+        }
+      },
+      "2026-09": {
+        "label": "сентябрь 2026",
+        "days": 30,
+        "revenue": 367451257.701405,
+        "dailyRevenue": 12248375.26,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 216150839,
+            "dailyRevenue": 7205027.97,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 131926900.701405,
+            "dailyRevenue": 4397563.36,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 7612015,
+            "dailyRevenue": 253733.83
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 5302940,
+            "dailyRevenue": 176764.67
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 3105228,
+            "dailyRevenue": 103507.6
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 203335,
+            "dailyRevenue": 6777.83
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 2300000,
+            "dailyRevenue": 76666.67
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 850000,
+            "dailyRevenue": 28333.33
+          }
+        }
+      },
+      "2026-10": {
+        "label": "октябрь 2026",
+        "days": 31,
+        "revenue": 387055656.371205,
+        "dailyRevenue": 12485666.33,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 235531555,
+            "dailyRevenue": 7597792.1,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 129719435.371205,
+            "dailyRevenue": 4184497.92,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 8782698,
+            "dailyRevenue": 283312.84
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 6098382,
+            "dailyRevenue": 196722
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 3218044,
+            "dailyRevenue": 103807.87
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 205542,
+            "dailyRevenue": 6630.39
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 2500000,
+            "dailyRevenue": 80645.16
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 1000000,
+            "dailyRevenue": 32258.06
+          }
+        }
+      },
+      "2026-11": {
+        "label": "ноябрь 2026",
+        "days": 30,
+        "revenue": 410817634.188604,
+        "dailyRevenue": 13693921.14,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 259373620,
+            "dailyRevenue": 8645787.33,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 126917638.188604,
+            "dailyRevenue": 4230587.94,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 9953377,
+            "dailyRevenue": 331779.23
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 7013139,
+            "dailyRevenue": 233771.3
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 3350815,
+            "dailyRevenue": 111693.83
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 209045,
+            "dailyRevenue": 6968.17
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 2800000,
+            "dailyRevenue": 93333.33
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 1200000,
+            "dailyRevenue": 40000
+          }
+        }
+      },
+      "2026-12": {
+        "label": "декабрь 2026",
+        "days": 31,
+        "revenue": 459872220.351102,
+        "dailyRevenue": 14834587.75,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 289011920,
+            "dailyRevenue": 9322965.16,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 143447038.351102,
+            "dailyRevenue": 4627323.82,
+            "planSource": "02_Platforms.portal_target_plan"
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 11124048,
+            "dailyRevenue": 358840.26
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 8065112,
+            "dailyRevenue": 260164.9
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 3509365,
+            "dailyRevenue": 113205.32
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 214737,
+            "dailyRevenue": 6927
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 3000000,
+            "dailyRevenue": 96774.19
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 1500000,
+            "dailyRevenue": 48387.1
+          }
+        }
+      }
+    }
+  }
 }

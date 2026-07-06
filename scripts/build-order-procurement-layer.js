@@ -3,49 +3,12 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const { canonicalOwnerName } = require('./owner-normalization');
 
 const CANONICAL_ORDER_DAYS = 30;
 const LEGACY_COMPAT_DAYS = 28;
 const NEED_HORIZONS = [7, 14, LEGACY_COMPAT_DAYS, CANONICAL_ORDER_DAYS];
 const BLOCKED_LIFECYCLE_RE = /вывод|на вывод|вывед|снят|снимаем|spa|архив|archive|paused|pause|freeze|hold|под вопрос|question/i;
-
-const OWNER_CANONICAL_NAMES = new Map([
-  ['алексей', 'Алексей'],
-  ['александр', 'Питайкин Артём'],
-  ['анна', 'Пирогова Анна'],
-  ['артем', 'Питайкин Артём'],
-  ['артём', 'Питайкин Артём'],
-  ['дария', 'Молодякова Дария'],
-  ['дарья', 'Молодякова Дария'],
-  ['даша', 'Молодякова Дария'],
-  ['екатерина', 'Доможирова Екатерина'],
-  ['кирилл', 'Кирилл'],
-  ['ксения', 'Ксения'],
-  ['максим', 'Лапыгин Максим'],
-  ['мария', 'Васильева Мария'],
-  ['олеся', 'Олеся'],
-  ['светлана', 'Светлана']
-]);
-
-const OWNER_NAME_ALIASES = new Map([
-  ['александр озон', 'Питайкин Артём'],
-  ['питайкин артем', 'Питайкин Артём'],
-  ['питайкин артём', 'Питайкин Артём'],
-  ['молодякова дария', 'Молодякова Дария'],
-  ['молодякова дарья', 'Молодякова Дария'],
-  ['анна пирогова', 'Пирогова Анна'],
-  ['пирогова анна', 'Пирогова Анна'],
-  ['екатерина доброжирова', 'Доможирова Екатерина'],
-  ['екатерина доможирова', 'Доможирова Екатерина'],
-  ['доможирова екатерина', 'Доможирова Екатерина'],
-  ['доброжирова екатерина', 'Доможирова Екатерина'],
-  ['мария васильева', 'Васильева Мария'],
-  ['мария васильевна', 'Васильева Мария'],
-  ['васильева мария', 'Васильева Мария'],
-  ['лапыгин максим', 'Лапыгин Максим'],
-  ['максим лапыгин', 'Лапыгин Максим'],
-  ['олеся савинова', 'Олеся']
-]);
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -102,24 +65,6 @@ function numberOrNull(value) {
   if (value === null || value === undefined || value === '') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function normalizeOwnerToken(value = '') {
-  return String(value ?? '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function canonicalOwnerName(value = '') {
-  const normalized = normalizeOwnerToken(value);
-  if (!normalized) return '';
-  const lowered = normalized.toLowerCase();
-  if (OWNER_NAME_ALIASES.has(lowered)) return OWNER_NAME_ALIASES.get(lowered);
-  if (OWNER_CANONICAL_NAMES.has(lowered)) return OWNER_CANONICAL_NAMES.get(lowered);
-  const [firstToken = ''] = normalized.split(' ');
-  const firstTokenLowered = firstToken.toLowerCase();
-  if (OWNER_CANONICAL_NAMES.has(firstTokenLowered)) return OWNER_CANONICAL_NAMES.get(firstTokenLowered);
-  return normalized;
 }
 
 function normalizePlatform(value) {

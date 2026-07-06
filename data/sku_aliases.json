@@ -1,5 +1,12 @@
 {
   "schema": "sku-api-aliases-v1",
+  "columns": [
+    "target_sku",
+    "platform",
+    "api_sku",
+    "status",
+    "note"
+  ],
   "aliases": [
     {
       "target_sku": "nabor_remuver_kremovii",
@@ -2728,23 +2735,14 @@
       "status": "active",
       "note": "Я.Маркет FBS alias",
       "updatedAt": "2026-06-07T08:22:08.602Z"
+    },
+    {
+      "target_sku": "penka_kudryavii_metod_150ml",
+      "platform": "goldapple",
+      "api_sku": "penka_kudryavii_meto",
+      "status": "active",
+      "note": "Quick action from SKU workspace 2026-06-29"
     }
   ],
-  "columns": [
-    "target_sku",
-    "platform",
-    "api_sku",
-    "status",
-    "note"
-  ],
-  "description": "Optional local mapping for API SKU values that must be attached to portal articleKey values. Prefer the Google Sheet tab dim_sku_aliases for team-managed mappings.",
-  "restoredFromLastGood": true,
-  "authoritativeEmpty": false,
-  "status": "warning",
-  "quarantine": {
-    "reason": "alias_source_empty_regression",
-    "currentAliasCount": 0,
-    "restoredAliasCount": 341
-  },
-  "runId": "portal-9eb2a64e2b39942050e6"
+  "updatedAt": "2026-06-29T07:27:21.069Z"
 }

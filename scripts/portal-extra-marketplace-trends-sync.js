@@ -845,9 +845,9 @@ function buildArticleRows(rows, skus, skuAliases, asOfDate, extraPlatformOrder =
           ordersUnits: dailyOrdersUnits[offset] || 0,
           ordersRevenue: dailyOrdersRevenue[offset] || 0,
           deliveredUnits: dailyDeliveredUnits[offset] || 0,
-          deliveredRevenue: dailyDeliveredRevenue[offset] || 0,
+          deliveredRevenue: capFulfillmentRevenue(dailyDeliveredRevenue[offset] || 0, dailyOrdersRevenue[offset] || 0),
           buyoutUnits: dailyBuyoutUnits[offset] || 0,
-          buyoutRevenue: dailyBuyoutRevenue[offset] || 0,
+          buyoutRevenue: capFulfillmentRevenue(dailyBuyoutRevenue[offset] || 0, dailyOrdersRevenue[offset] || 0),
           revenue: dailyRevenue[offset] || 0,
           adsSpend: dailyAdsSpend[offset] || 0,
           adsRevenue: dailyAdsRevenue[offset] || 0,
@@ -1255,6 +1255,21 @@ function replaceOzonWindowItemSeriesWithDailyTotal(baseSeries = [], ozonSeries =
   };
 }
 
+function capFulfillmentRevenue(value, ordersRevenue) {
+  const revenue = numberOrZero(value);
+  const orders = numberOrZero(ordersRevenue);
+  return orders > 0 && revenue > orders ? orders : revenue;
+}
+
+function normalizeFulfillmentPoint(point = {}) {
+  const ordersRevenue = numberOrZero(point.ordersRevenue) || numberOrZero(point.revenue);
+  return {
+    ...point,
+    deliveredRevenue: capFulfillmentRevenue(point.deliveredRevenue, ordersRevenue),
+    buyoutRevenue: capFulfillmentRevenue(point.buyoutRevenue, ordersRevenue)
+  };
+}
+
 function buildPlatformSeriesFromMonthly(monthlyTotals, asOfDate) {
   const entries = [...monthlyTotals.values()].sort((left, right) => left.monthKey.localeCompare(right.monthKey));
   const series = [];
@@ -1268,9 +1283,15 @@ function buildPlatformSeriesFromMonthly(monthlyTotals, asOfDate) {
     const ordersUnits = numberOrZero(month.ordersUnits) || units;
     const ordersRevenue = numberOrZero(month.ordersRevenue) || revenue;
     const deliveredUnits = numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits) || ordersUnits;
-    const deliveredRevenue = numberOrZero(month.deliveredRevenue) || numberOrZero(month.buyoutRevenue) || ordersRevenue;
+    const deliveredRevenue = capFulfillmentRevenue(
+      numberOrZero(month.deliveredRevenue) || numberOrZero(month.buyoutRevenue) || ordersRevenue,
+      ordersRevenue
+    );
     const buyoutUnits = numberOrZero(month.buyoutUnits) || numberOrZero(month.deliveredUnits) || ordersUnits;
-    const buyoutRevenue = numberOrZero(month.buyoutRevenue) || numberOrZero(month.deliveredRevenue) || ordersRevenue;
+    const buyoutRevenue = capFulfillmentRevenue(
+      numberOrZero(month.buyoutRevenue) || numberOrZero(month.deliveredRevenue) || ordersRevenue,
+      ordersRevenue
+    );
     const dailyUnits = distributeMonthlyValue(units || ordersUnits, days);
     const dailyRevenue = distributeMonthlyValue(revenue || ordersRevenue, days);
     const dailyOrdersUnits = distributeMonthlyValue(ordersUnits, days);
@@ -1357,10 +1378,11 @@ function trimSeriesToDate(series, cutoffDate) {
 function mergeSeriesFillMissing(existingSeries, fallbackSeries, cutoffDate) {
   const result = new Map();
   for (const point of trimSeriesToDate(existingSeries, cutoffDate)) {
-    if (point.date) result.set(point.date, point);
+    if (point.date) result.set(point.date, normalizeFulfillmentPoint(point));
   }
   for (const point of trimSeriesToDate(fallbackSeries, cutoffDate)) {
     if (!point.date) continue;
+    const normalizedPoint = normalizeFulfillmentPoint(point);
     const hasFallbackFacts = numberOrZero(point.units) > 0
       || numberOrZero(point.revenue) > 0
       || numberOrZero(point.estimatedMargin) > 0;
@@ -1371,7 +1393,7 @@ function mergeSeriesFillMissing(existingSeries, fallbackSeries, cutoffDate) {
       || numberOrZero(existing.revenue) > 0
       || numberOrZero(existing.estimatedMargin) > 0
     );
-    if (!hasExistingFacts) result.set(point.date, existing ? { ...existing, ...point } : point);
+    if (!hasExistingFacts) result.set(point.date, normalizeFulfillmentPoint(existing ? { ...existing, ...normalizedPoint } : normalizedPoint));
   }
   const list = [...result.values()].sort((left, right) => left.date.localeCompare(right.date));
   const latestIndex = list.length - 1;
@@ -1587,9 +1609,15 @@ function buildAllSeries(platformSeriesMap) {
       const pointOrdersUnits = numberOrZero(point.ordersUnits) || pointUnits;
       const pointOrdersRevenue = numberOrZero(point.ordersRevenue) || pointRevenue;
       const pointDeliveredUnits = numberOrZero(point.deliveredUnits) || numberOrZero(point.buyoutUnits) || pointOrdersUnits;
-      const pointDeliveredRevenue = numberOrZero(point.deliveredRevenue) || numberOrZero(point.buyoutRevenue) || pointOrdersRevenue;
+      const pointDeliveredRevenue = capFulfillmentRevenue(
+        numberOrZero(point.deliveredRevenue) || numberOrZero(point.buyoutRevenue) || pointOrdersRevenue,
+        pointOrdersRevenue
+      );
       const pointBuyoutUnits = numberOrZero(point.buyoutUnits) || numberOrZero(point.deliveredUnits) || pointOrdersUnits;
-      const pointBuyoutRevenue = numberOrZero(point.buyoutRevenue) || numberOrZero(point.deliveredRevenue) || pointOrdersRevenue;
+      const pointBuyoutRevenue = capFulfillmentRevenue(
+        numberOrZero(point.buyoutRevenue) || numberOrZero(point.deliveredRevenue) || pointOrdersRevenue,
+        pointOrdersRevenue
+      );
       current.units += pointUnits;
       current.revenue += pointRevenue;
       current.ordersUnits += pointOrdersUnits;

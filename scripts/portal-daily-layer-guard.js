@@ -18,6 +18,9 @@ const PHASE3_REQUIRED_REPORTS = [
   'portal_runtime_wiring_reconciliation.json',
   'portal_feature_readiness.json'
 ];
+const DATA_QUALITY_NON_BLOCKING_CRITICAL_TYPES = new Set([
+  'order_no_stock_need'
+]);
 const DEFAULT_MANIFEST = path.join(__dirname, 'portal-truth-manifest.json');
 const BUSINESS_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 const CORE_CUTOFF_PLATFORMS = ['wb', 'ozon', 'ya'];
@@ -788,7 +791,11 @@ function inspectDataQuality(loaded, policy, checks, passports) {
   if (!payload) return addCheck(checks, { ...check, blockingReasons: ['portal_data_quality: payload is unavailable'] });
   const summary = payload.summary || {};
   const status = normalizedText(payload.status || summary.status || '');
-  const critical = numberOrZero(summary.criticalCount ?? summary.criticalIssues ?? summary.blockingIssues ?? payload.criticalIssues);
+  const issues = Array.isArray(payload.issues) ? payload.issues : [];
+  const criticalIssues = issues.filter((issue) => normalizedText(issue?.severity || issue?.status) === 'critical');
+  const nonBlockingCriticalIssues = criticalIssues.filter((issue) => DATA_QUALITY_NON_BLOCKING_CRITICAL_TYPES.has(normalizedText(issue?.type || issue?.code || issue?.kind)));
+  const blockingCriticalIssues = criticalIssues.filter((issue) => !DATA_QUALITY_NON_BLOCKING_CRITICAL_TYPES.has(normalizedText(issue?.type || issue?.code || issue?.kind)));
+  const critical = criticalIssues.length || numberOrZero(summary.criticalCount ?? summary.criticalIssues ?? summary.blockingIssues ?? payload.criticalIssues);
   const platformRows = Object.values(payload.platformSummary || {});
   const inferredTotalFact = platformRows.reduce((sum, item) => sum + numberOrZero(item?.directRevenue), 0);
   const totalFact = numberOrZero(summary.totalApiRevenue ?? summary.apiRevenue ?? summary.directRevenue) || inferredTotalFact;
@@ -797,11 +804,16 @@ function inspectDataQuality(loaded, policy, checks, passports) {
   const unmappedRatio = totalFact > 0 ? unmapped / totalFact : 0;
   check.reportStatus = status;
   check.criticalIssues = critical;
+  check.blockingCriticalIssues = blockingCriticalIssues.length;
+  check.nonBlockingCriticalIssues = nonBlockingCriticalIssues.length;
   check.unmappedRevenue = roundMoney(unmapped);
   check.knownOutsideRegistryRevenue = roundMoney(knownOutsideRegistry);
   check.unmappedRevenueRatio = Number(unmappedRatio.toFixed(6));
-  if (status === 'critical' || status === 'blocked' || critical > 0) {
-    check.blockingReasons.push(`portal_data_quality: blocking status ${status || 'unknown'}, critical issues ${critical}`);
+  if (status === 'blocked' || blockingCriticalIssues.length > 0 || (!issues.length && (status === 'critical' || critical > 0))) {
+    check.blockingReasons.push(`portal_data_quality: blocking status ${status || 'unknown'}, critical issues ${blockingCriticalIssues.length || critical}`);
+  } else if (status === 'critical' || critical > 0) {
+    const orderNoStock = nonBlockingCriticalIssues.filter((issue) => normalizedText(issue?.type || issue?.code || issue?.kind) === 'order_no_stock_need').length;
+    check.warnings.push(`portal_data_quality: ${critical} business issues recorded (${orderNoStock} order_no_stock_need); publish not blocked`);
   } else if (status === 'warning' || numberOrZero(summary.issueCount) > 0) {
     check.warnings.push(`portal_data_quality: status ${status || 'warning'}, ${numberOrZero(summary.issueCount)} recorded issues`);
   }

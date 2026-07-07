@@ -1,20 +1,20 @@
 {
   "schema": "portal-metric-reconciliation-v1",
-  "generatedAt": "2026-07-06T08:56:30.645Z",
+  "generatedAt": "2026-07-07T07:30:35.379Z",
   "manifestVersion": "2026-06-20",
   "scope": {
     "included": "all portal views and layers"
   },
   "cutoffDate": "2026-07-06",
-  "status": "warning",
-  "business_fingerprint": "07ffc1c872425011a35fc398f1d15ebc954081f23565d8fadf52f98bb44fe830",
+  "status": "blocked",
+  "business_fingerprint": "638070123478c3eaef751b78f3387d4ad3c641ab2c37ee7cec0d188ad9cc1dd2",
   "summary": {
     "sourceCount": 24,
-    "contractCount": 12,
+    "contractCount": 13,
     "metricPassportCount": 35,
-    "blockingChecks": 0,
+    "blockingChecks": 9,
     "warningChecks": 3,
-    "fingerprint": "07ffc1c872425011a35fc398f1d15ebc954081f23565d8fadf52f98bb44fe830"
+    "fingerprint": "638070123478c3eaef751b78f3387d4ad3c641ab2c37ee7cec0d188ad9cc1dd2"
   },
   "metricPassports": [
     {
@@ -83,50 +83,50 @@
     {
       "key": "fact.marketplace.revenue",
       "source": "platform_trends.json",
-      "period": "2026-07-05",
-      "value": 17490585,
+      "period": "2026-07-06",
+      "value": 16915260,
       "formula": "sum active marketplaces on guarded cutoff dates"
     },
     {
       "key": "fact.marketplace.revenue.wb",
       "source": "platform_trends.json",
-      "period": "2026-07-05",
-      "value": 14886694,
+      "period": "2026-07-06",
+      "value": 14288335,
       "formula": "platforms.wb.series[cutoff].revenue"
     },
     {
       "key": "fact.marketplace.revenue.ozon",
       "source": "platform_trends.json",
-      "period": "2026-07-05",
-      "value": 2480833,
+      "period": "2026-07-06",
+      "value": 2412510,
       "formula": "platforms.ozon.series[cutoff].revenue"
     },
     {
       "key": "fact.marketplace.revenue.ya",
       "source": "platform_trends.json",
-      "period": "2026-07-05",
-      "value": 122903,
+      "period": "2026-07-06",
+      "value": 174307,
       "formula": "platforms.ya.series[cutoff].revenue"
     },
     {
       "key": "fact.marketplace.revenue.goldapple",
       "source": "platform_trends.json",
-      "period": "",
-      "value": 0,
+      "period": "2026-06-30",
+      "value": 28483,
       "formula": "platforms.goldapple.series[cutoff].revenue"
     },
     {
       "key": "fact.marketplace.revenue.letu",
       "source": "platform_trends.json",
-      "period": "",
-      "value": 0,
+      "period": "2026-06-30",
+      "value": 11496,
       "formula": "platforms.letu.series[cutoff].revenue"
     },
     {
       "key": "fact.marketplace.revenue.megamarket",
       "source": "platform_trends.json",
-      "period": "2026-07-05",
-      "value": 155,
+      "period": "2026-07-06",
+      "value": 129,
       "formula": "platforms.megamarket.series[cutoff].revenue"
     },
     {
@@ -139,14 +139,14 @@
     {
       "key": "fact.marketplace.revenue.magnit",
       "source": "platform_trends.json",
-      "period": "",
+      "period": "2026-06-22",
       "value": 0,
       "formula": "platforms.magnit.series[cutoff].revenue"
     },
     {
       "key": "dashboard.cards",
       "source": "dashboard.json",
-      "period": "2026-07-05",
+      "period": "2026-07-06",
       "value": 20,
       "formula": "count(unique presentation cards); exact duplicates are forbidden",
       "diagnostics": {
@@ -161,10 +161,10 @@
       "key": "owner.coverage",
       "source": "skus.json",
       "period": "",
-      "value": 0.9856459330143541,
+      "value": 1,
       "formula": "active SKU with canonical owner / active SKU",
       "diagnostics": {
-        "activeRows": 209,
+        "activeRows": 206,
         "assignedRows": 206,
         "ownerCount": 6,
         "conflictingSkuCount": 0
@@ -173,11 +173,11 @@
     {
       "key": "quality.unmappedRevenue",
       "source": "portal_data_quality.json",
-      "period": "2026-07-05",
+      "period": "2026-07-06",
       "value": 0,
       "formula": "API fact that has no canonical registry mapping",
       "diagnostics": {
-        "totalFact": 775,
+        "totalFact": 1449,
         "ratio": 0,
         "knownOutsideRegistryRevenue": 0
       }
@@ -185,8 +185,8 @@
     {
       "key": "order.targetNeed30",
       "source": "order_procurement.json",
-      "period": "2026-07-05",
-      "value": 96101,
+      "period": "2026-07-07",
+      "value": 99227,
       "formula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "diagnostics": {
         "rows": 3103,
@@ -203,11 +203,11 @@
     {
       "key": "oos.watchDays",
       "source": "oos_control.json",
-      "period": "2026-07-06",
+      "period": "2026-07-07",
       "value": 30,
       "formula": "OOS watch horizon must match order target horizon: 30 days",
       "diagnostics": {
-        "rows": 28,
+        "rows": 51,
         "badRows": 0
       }
     },
@@ -221,11 +221,11 @@
     {
       "key": "sku_matrix.aliases",
       "source": "sku_matrix.json",
-      "period": "2026-07-06",
+      "period": "2026-07-07",
       "value": 342,
       "formula": "deduped aliases from sku_aliases.json plus skus[].aliases/platformAliases",
       "diagnostics": {
-        "embeddedAliasCount": 1128,
+        "embeddedAliasCount": 0,
         "aliasConflictCount": 0,
         "skuTokenConflictCount": 0,
         "ownerConflictCount": 0
@@ -241,45 +241,45 @@
     {
       "key": "phase3.portal_repricing_reconciliation",
       "source": "portal_repricing_reconciliation.json",
-      "period": "repricer:c2775553cd5a2587",
+      "period": "repricer:a1cbe22d0fa56275",
       "value": "warning",
       "formula": "required phase 3 publish-gate reconciliation report",
       "diagnostics": {
         "publish_allowed": true,
-        "business_fingerprint": "9fc6a9398a6827efc24300ae33dd02b3aff5a3ceb0f235b931d3c30df14cdc5e"
+        "business_fingerprint": "46b949229548f1d857b904e646b4afb53cfdc785733994aeee39639a298419f7"
       }
     },
     {
       "key": "phase3.portal_dashboard_reconciliation",
       "source": "portal_dashboard_reconciliation.json",
-      "period": "dashboard:e07bc5e1fcf8f310",
+      "period": "dashboard:36365708b770e531",
       "value": "ok",
       "formula": "required phase 3 publish-gate reconciliation report",
       "diagnostics": {
         "publish_allowed": true,
-        "business_fingerprint": "561e4c462856a7f743462e165dab3737d98b97714b6b81549d262b9c9016d67f"
+        "business_fingerprint": "ac2c7c56585a7786d012ce1be3942bd822339e78916ff40ff14d07212f47f6a8"
       }
     },
     {
       "key": "phase3.portal_plan_reconciliation",
       "source": "portal_plan_reconciliation.json",
-      "period": "dashboard:e07bc5e1fcf8f310",
+      "period": "dashboard:36365708b770e531",
       "value": "ok",
       "formula": "required phase 3 publish-gate reconciliation report",
       "diagnostics": {
         "publish_allowed": true,
-        "business_fingerprint": "dashboard:e07bc5e1fcf8f310"
+        "business_fingerprint": "dashboard:36365708b770e531"
       }
     },
     {
       "key": "phase3.portal_indicator_audit",
       "source": "portal_indicator_audit.json",
-      "period": "dashboard:e07bc5e1fcf8f310",
+      "period": "dashboard:36365708b770e531",
       "value": "ok",
       "formula": "required phase 3 publish-gate reconciliation report",
       "diagnostics": {
         "publish_allowed": true,
-        "business_fingerprint": "dashboard:e07bc5e1fcf8f310"
+        "business_fingerprint": "dashboard:36365708b770e531"
       }
     },
     {
@@ -340,12 +340,12 @@
   ],
   "views": {
     "dashboard": {
-      "status": "warning",
+      "status": "blocked",
       "critical": true,
       "sources": [
         {
           "source": "dashboard_projection",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "platform_fact",
@@ -357,7 +357,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "ads_fact",
@@ -368,19 +368,21 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": []
+      "blockingContracts": [
+        "contract:data-quality"
+      ]
     },
     "executive": {
-      "status": "warning",
+      "status": "blocked",
       "critical": true,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "owner_audit",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "sku_matrix",
@@ -399,15 +401,17 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": []
+      "blockingContracts": [
+        "contract:data-quality"
+      ]
     },
     "control": {
-      "status": "ok",
+      "status": "blocked",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "sku_matrix",
@@ -421,7 +425,7 @@
       "blockingContracts": []
     },
     "data-health": {
-      "status": "ok",
+      "status": "blocked",
       "critical": true,
       "sources": [
         {
@@ -438,13 +442,15 @@
         },
         {
           "source": "owner_audit",
-          "status": "ok"
+          "status": "blocked"
         }
       ],
-      "blockingContracts": []
+      "blockingContracts": [
+        "contract:data-quality"
+      ]
     },
     "sku-plan-fact": {
-      "status": "warning",
+      "status": "blocked",
       "critical": true,
       "sources": [
         {
@@ -457,7 +463,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "sku_matrix",
@@ -477,7 +483,7 @@
         },
         {
           "source": "price_master",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "smart_price_overlay",
@@ -488,19 +494,21 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": []
+      "blockingContracts": [
+        "contract:data-quality"
+      ]
     },
     "repricer": {
-      "status": "warning",
+      "status": "blocked",
       "critical": true,
       "sources": [
         {
           "source": "repricer",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "price_master",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "smart_price_overlay",
@@ -508,7 +516,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "warehouse_fact",
@@ -519,15 +527,17 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": []
+      "blockingContracts": [
+        "contract:data-quality"
+      ]
     },
     "prices": {
-      "status": "warning",
+      "status": "blocked",
       "critical": true,
       "sources": [
         {
           "source": "price_master",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "smart_price_overlay",
@@ -535,7 +545,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "warehouse_fact",
@@ -546,10 +556,12 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": []
+      "blockingContracts": [
+        "contract:data-quality"
+      ]
     },
     "order": {
-      "status": "warning",
+      "status": "blocked",
       "critical": true,
       "sources": [
         {
@@ -566,7 +578,7 @@
         },
         {
           "source": "order_procurement_ym",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "warehouse_fact",
@@ -578,13 +590,15 @@
         },
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         }
       ],
-      "blockingContracts": []
+      "blockingContracts": [
+        "contract:data-quality"
+      ]
     },
     "oos-control": {
-      "status": "warning",
+      "status": "blocked",
       "critical": true,
       "sources": [
         {
@@ -601,13 +615,15 @@
         },
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         }
       ],
-      "blockingContracts": []
+      "blockingContracts": [
+        "contract:data-quality"
+      ]
     },
     "ads-funnel": {
-      "status": "warning",
+      "status": "blocked",
       "critical": true,
       "sources": [
         {
@@ -616,7 +632,7 @@
         },
         {
           "source": "wb_sales_funnel",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "platform_fact",
@@ -624,18 +640,20 @@
         },
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         }
       ],
-      "blockingContracts": []
+      "blockingContracts": [
+        "contract:data-quality"
+      ]
     },
     "sku-contour": {
-      "status": "ok",
+      "status": "blocked",
       "critical": true,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "sku_matrix",
@@ -647,7 +665,7 @@
         },
         {
           "source": "owner_audit",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "platform_fact",
@@ -658,15 +676,17 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": []
+      "blockingContracts": [
+        "contract:data-quality"
+      ]
     },
     "skus": {
-      "status": "ok",
+      "status": "blocked",
       "critical": true,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "sku_matrix",
@@ -678,18 +698,20 @@
         },
         {
           "source": "owner_audit",
-          "status": "ok"
+          "status": "blocked"
         }
       ],
-      "blockingContracts": []
+      "blockingContracts": [
+        "contract:data-quality"
+      ]
     },
     "launches": {
-      "status": "ok",
+      "status": "blocked",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "warehouse_fact",
@@ -697,7 +719,7 @@
         },
         {
           "source": "price_master",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "data_quality",
@@ -707,12 +729,12 @@
       "blockingContracts": []
     },
     "launch-control": {
-      "status": "ok",
+      "status": "blocked",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         },
         {
           "source": "sku_matrix",
@@ -726,7 +748,7 @@
       "blockingContracts": []
     },
     "wb-rating": {
-      "status": "ok",
+      "status": "blocked",
       "critical": false,
       "sources": [
         {
@@ -735,13 +757,13 @@
         },
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         }
       ],
       "blockingContracts": []
     },
     "product-leaderboard": {
-      "status": "warning",
+      "status": "blocked",
       "critical": false,
       "sources": [
         {
@@ -762,12 +784,14 @@
         },
         {
           "source": "sku_registry",
-          "status": "ok"
+          "status": "blocked"
         }
       ],
       "blockingContracts": []
     },
-    "__globalBlockingContracts": []
+    "__globalBlockingContracts": [
+      "contract:data-quality"
+    ]
   },
   "checks": [
     {
@@ -797,7 +821,10 @@
       "scope": "fact",
       "source": "platform_trends",
       "warnings": [
-        "platform_trends: no active plan/data for goldapple, letu, samokat, magnit"
+        "platform_trends: goldapple date 2026-06-30 is 6 days older than expected 2026-07-06",
+        "platform_trends: letu date 2026-06-30 is 6 days older than expected 2026-07-06",
+        "platform_trends: magnit date 2026-06-22 is 14 days older than expected 2026-07-06",
+        "platform_trends: no active plan/data for samokat"
       ],
       "blockingReasons": [],
       "expectedDate": "2026-07-06",
@@ -805,47 +832,47 @@
         "wb",
         "ozon",
         "ya",
-        "megamarket"
-      ],
-      "inactiveEmptyPlatforms": [
         "goldapple",
         "letu",
-        "samokat",
+        "megamarket",
         "magnit"
       ],
+      "inactiveEmptyPlatforms": [
+        "samokat"
+      ],
       "componentDates": {
-        "wb": "2026-07-05",
-        "ozon": "2026-07-05",
-        "ya": "2026-07-05",
-        "goldapple": "",
-        "letu": "",
-        "megamarket": "2026-07-05",
+        "wb": "2026-07-06",
+        "ozon": "2026-07-06",
+        "ya": "2026-07-06",
+        "goldapple": "2026-06-30",
+        "letu": "2026-06-30",
+        "megamarket": "2026-07-06",
         "samokat": "",
-        "magnit": ""
+        "magnit": "2026-06-22"
       },
       "componentRevenue": {
-        "wb": 14886694,
-        "ozon": 2480833,
-        "ya": 122903,
-        "goldapple": 0,
-        "letu": 0,
-        "megamarket": 155,
+        "wb": 14288335,
+        "ozon": 2412510,
+        "ya": 174307,
+        "goldapple": 28483,
+        "letu": 11496,
+        "megamarket": 129,
         "samokat": 0,
         "magnit": 0
       },
-      "componentRevenueSum": 17490585,
-      "allRevenue": 17490585,
+      "componentRevenueSum": 16915260,
+      "allRevenue": 16875281,
       "allDateComponentRevenue": {
-        "wb": 14886694,
-        "ozon": 2480833,
-        "ya": 122903,
+        "wb": 14288335,
+        "ozon": 2412510,
+        "ya": 174307,
         "goldapple": 0,
         "letu": 0,
-        "megamarket": 155,
+        "megamarket": 129,
         "samokat": 0,
         "magnit": 0
       },
-      "allDateComponentRevenueSum": 17490585,
+      "allDateComponentRevenueSum": 16875281,
       "status": "warning"
     },
     {
@@ -872,10 +899,10 @@
       "source": "skus",
       "warnings": [],
       "blockingReasons": [],
-      "rows": 209,
-      "activeRows": 209,
+      "rows": 206,
+      "activeRows": 206,
       "assignedRows": 206,
-      "coverage": 0.9856,
+      "coverage": 1,
       "ownerCount": 6,
       "conflictingSkuCount": 0,
       "conflictingSkuSample": [],
@@ -887,13 +914,15 @@
       "scope": "quality",
       "source": "portal_data_quality",
       "warnings": [],
-      "blockingReasons": [],
-      "reportStatus": "ok",
-      "criticalIssues": 0,
+      "blockingReasons": [
+        "portal_data_quality: blocking status critical, critical issues 91"
+      ],
+      "reportStatus": "critical",
+      "criticalIssues": 91,
       "unmappedRevenue": 0,
       "knownOutsideRegistryRevenue": 0,
       "unmappedRevenueRatio": 0,
-      "status": "ok"
+      "status": "blocked"
     },
     {
       "id": "contract:order-procurement-phase2",
@@ -928,7 +957,7 @@
       "source": "oos_control",
       "warnings": [],
       "blockingReasons": [],
-      "rows": 28,
+      "rows": 51,
       "watchDays": 30,
       "badRows": [],
       "status": "ok"
@@ -956,8 +985,8 @@
       "source": "sku_matrix",
       "warnings": [],
       "blockingReasons": [],
-      "rows": 209,
-      "embeddedAliasCount": 1128,
+      "rows": 206,
+      "embeddedAliasCount": 0,
       "aliasCount": 342,
       "aliasConflictCount": 0,
       "skuTokenConflictCount": 0,
@@ -987,12 +1016,22 @@
       "blockingReasons": [],
       "expectedDate": "2026-07-06",
       "sourceDates": {
-        "platform_fact": "2026-07-05",
-        "dashboard_projection": "2026-07-05",
-        "ads_fact": "2026-07-05",
-        "warehouse_fact": "2026-07-06",
-        "data_quality": "2026-07-05"
+        "platform_fact": "2026-07-06",
+        "dashboard_projection": "2026-07-06",
+        "ads_fact": "2026-07-06",
+        "warehouse_fact": "2026-07-07",
+        "data_quality": "2026-07-06"
       },
+      "status": "ok"
+    },
+    {
+      "id": "contract:sync-issues",
+      "scope": "pipeline",
+      "source": "portal_sync_issues.json",
+      "warnings": [],
+      "blockingReasons": [],
+      "issueCount": 0,
+      "issues": [],
       "status": "ok"
     },
     {
@@ -1001,8 +1040,8 @@
       "source": "phase3-reconciliation",
       "warnings": [
         "phase3:portal_repricing_reconciliation.json: normalized article collisions deduped for review: 1",
-        "phase3:portal_repricing_reconciliation.json: repricer feature blocked: 0/829 publishable recommendations",
-        "phase3:portal_repricing_reconciliation.json: 829 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
+        "phase3:portal_repricing_reconciliation.json: repricer feature blocked: 0/825 publishable recommendations",
+        "phase3:portal_repricing_reconciliation.json: 825 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
         "phase3:portal_repricing_reconciliation.json: 2 exact duplicate source rows were deterministically deduped",
         "phase3:portal_runtime_wiring_reconciliation.json: canonical repricer retained as diagnostic snapshot; feature activation is blocked",
         "phase3:portal_feature_readiness.json: portal_feature_readiness.json: warning"
@@ -1014,17 +1053,17 @@
           "path": "data\\portal_repricing_reconciliation.json",
           "status": "warning",
           "publish_allowed": true,
-          "business_fingerprint": "9fc6a9398a6827efc24300ae33dd02b3aff5a3ceb0f235b931d3c30df14cdc5e",
+          "business_fingerprint": "46b949229548f1d857b904e646b4afb53cfdc785733994aeee39639a298419f7",
           "summary": {
-            "rows": 829,
-            "eligible_rows": 829,
+            "rows": 825,
+            "eligible_rows": 825,
             "publishable_rows": 0,
-            "blocked_rows": 829,
+            "blocked_rows": 825,
             "publishable_coverage": 0,
             "required_publishable_coverage": 0.01,
             "feature_status": "blocked",
             "publishable_recommendations": 0,
-            "blocked_recommendations": 829,
+            "blocked_recommendations": 825,
             "duplicate_platform_keys": 0,
             "normalized_article_collisions": 1,
             "deduped_exact_duplicates": 2
@@ -1035,7 +1074,7 @@
           "path": "data\\portal_dashboard_reconciliation.json",
           "status": "ok",
           "publish_allowed": true,
-          "business_fingerprint": "561e4c462856a7f743462e165dab3737d98b97714b6b81549d262b9c9016d67f",
+          "business_fingerprint": "ac2c7c56585a7786d012ce1be3942bd822339e78916ff40ff14d07212f47f6a8",
           "summary": {}
         },
         {
@@ -1043,7 +1082,7 @@
           "path": "data\\portal_plan_reconciliation.json",
           "status": "ok",
           "publish_allowed": true,
-          "business_fingerprint": "dashboard:e07bc5e1fcf8f310",
+          "business_fingerprint": "dashboard:36365708b770e531",
           "summary": {}
         },
         {
@@ -1051,7 +1090,7 @@
           "path": "data\\portal_indicator_audit.json",
           "status": "ok",
           "publish_allowed": true,
-          "business_fingerprint": "dashboard:e07bc5e1fcf8f310",
+          "business_fingerprint": "dashboard:36365708b770e531",
           "summary": {}
         },
         {
@@ -1112,7 +1151,7 @@
           "summary": {}
         }
       ],
-      "businessFingerprint": "92cc9512158c14b92febd82f56cfa03ed0b0bfe19360653d5262a517c960173b",
+      "businessFingerprint": "691a498e6e0f0036fdd5499c1adcb90831a3b435cdcc386de101bf3e33904afc",
       "status": "warning"
     }
   ]

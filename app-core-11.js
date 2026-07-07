@@ -8050,8 +8050,9 @@ function oosControlPlatformMeta(platform = 'all') {
 }
 
 function oosControlSignalTone(signal = {}) {
-  if (signal.alreadyOos || numberOrZero(signal.daysToOos) < 5) return 'critical';
-  if (numberOrZero(signal.daysToOos) < 10 || numberOrZero(signal.oosGapDays) > 0) return 'high';
+  const daysToOos = oosControlFiniteOrNull(signal.daysToOos);
+  if (signal.alreadyOos || (daysToOos !== null && daysToOos < 5)) return 'critical';
+  if ((daysToOos !== null && daysToOos < 10) || numberOrZero(signal.oosGapDays) > 0) return 'high';
   return 'watch';
 }
 
@@ -8066,6 +8067,8 @@ function oosControlSignalFromPlace(row = {}, place = {}, index = 0, payload = {}
   const platformMeta = oosControlPlatformMeta(platform);
   const articleKey = String(row.articleKey || row.article || '').trim() || 'sku';
   const clusterName = String(place.place || row.place || 'Кластер').trim();
+  const signalRule = String(row.signalRule || '').toLowerCase();
+  const isZeroStockWatch = signalRule === 'oos_zero_stock_active_or_new';
   const stockUnits = numberOrZero(place.inStock ?? row.inStock);
   const avgDailyUnits = numberOrZero(place.avgDaily ?? row.avgDaily);
   const explicitDays = oosControlFiniteOrNull(place.turnoverDays ?? row.turnoverDays);
@@ -8074,7 +8077,7 @@ function oosControlSignalFromPlace(row = {}, place = {}, index = 0, payload = {}
     : avgDailyUnits > 0
       ? stockUnits / avgDailyUnits
       : stockUnits <= 0
-        ? 0
+        ? (isZeroStockWatch ? null : 0)
         : null;
   const avgDailyTurnover = numberOrZero(place.revenueAtRiskDay ?? row.revenueAtRiskDay)
     || numberOrZero(place.lostRevenueDay ?? row.lostRevenueDay)
@@ -8085,7 +8088,7 @@ function oosControlSignalFromPlace(row = {}, place = {}, index = 0, payload = {}
   const effectiveInboundDate = inbound.date || oosControlAddDays(asOfDate, OOS_CONTROL_RISK_HORIZON_DAYS);
   const oosGapDays = forecastDate ? Math.max(0, oosControlDiffDays(effectiveInboundDate, forecastDate)) : 0;
   const projectedLostTurnover = Math.max(0, oosGapDays * avgDailyTurnover);
-  const alreadyOos = String(row.status || '').toLowerCase() === 'oos' || stockUnits <= 0;
+  const alreadyOos = !isZeroStockWatch && (String(row.status || '').toLowerCase() === 'oos' || stockUnits <= 0);
   const rowStatus = String(row.status || '').toLowerCase();
   const targetNeed30 = numberOrZero(place.targetNeed30 ?? row.targetNeed30);
   const isRisk = alreadyOos

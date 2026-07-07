@@ -110,17 +110,110 @@ function buildFeedbackMaps(wbFeedbacks) {
   return { byArticle, byNmId };
 }
 
-function findWbArticles(platformTrends) {
+function buildWbArticlesFromAdsSummary(adsSummary) {
+  const buckets = new Map();
+  for (const row of Array.isArray(adsSummary?.itemSeries) ? adsSummary.itemSeries : []) {
+    const platformKey = normalizeKey(row?.platformKey || row?.platform || row?.key || '');
+    if (platformKey !== 'wb' && platformKey !== 'wildberries') continue;
+    const date = rowDate(row);
+    if (!date) continue;
+    const nmId = String(Math.trunc(numberOrZero(row?.nmId || row?.wbNmId || row?.wb?.nmId)));
+    const articleKey = normalizeKey(row?.articleKey || row?.article || row?.sku || (nmId && nmId !== '0' ? `wb-nm-${nmId}` : ''));
+    const key = articleKey || nmId;
+    if (!key) continue;
+    const bucket = buckets.get(key) || {
+      articleKey,
+      article: row?.article || articleKey,
+      nmId: nmId && nmId !== '0' ? nmId : '',
+      name: row?.name || '',
+      owner: row?.owner || '',
+      dailyMap: new Map()
+    };
+    if (!bucket.name && row?.name) bucket.name = row.name;
+    if (!bucket.owner && row?.owner) bucket.owner = row.owner;
+    if (!bucket.article && row?.article) bucket.article = row.article;
+    if (!bucket.nmId && nmId && nmId !== '0') bucket.nmId = nmId;
+    const current = bucket.dailyMap.get(date) || {
+      date,
+      label: date,
+      ordersRevenue: 0,
+      revenue: 0,
+      ordersUnits: 0,
+      units: 0,
+      estimatedMargin: 0,
+      price: 0,
+      priceNumerator: 0,
+      priceUnits: 0
+    };
+    const revenue = numberOrZero(row?.ordersRevenue ?? row?.revenue);
+    const units = numberOrZero(row?.orders ?? row?.ordersUnits ?? row?.units);
+    current.ordersRevenue += revenue;
+    current.revenue += revenue;
+    current.ordersUnits += units;
+    current.units += units;
+    current.estimatedMargin += numberOrZero(row?.estimatedMargin);
+    if (units > 0) {
+      current.priceNumerator += numberOrZero(row?.price || (revenue / units)) * units;
+      current.priceUnits += units;
+      current.price = current.priceNumerator / current.priceUnits;
+    }
+    bucket.dailyMap.set(date, current);
+    buckets.set(key, bucket);
+  }
+  return [...buckets.values()].map((bucket) => ({
+    articleKey: bucket.articleKey,
+    article: bucket.article,
+    nmId: bucket.nmId,
+    name: bucket.name,
+    owner: bucket.owner,
+    daily: [...bucket.dailyMap.values()]
+      .sort((left, right) => rowDate(left).localeCompare(rowDate(right)))
+      .map((row) => ({
+        date: row.date,
+        label: row.label,
+        ordersRevenue: Math.round(row.ordersRevenue * 100) / 100,
+        revenue: Math.round(row.revenue * 100) / 100,
+        ordersUnits: Math.round(row.ordersUnits * 10000) / 10000,
+        units: Math.round(row.units * 10000) / 10000,
+        estimatedMargin: Math.round(row.estimatedMargin * 100) / 100,
+        price: Math.round(row.price * 100) / 100
+      }))
+  }));
+}
+
+function findWbArticles(platformTrends, adsSummary = {}) {
   const direct = platformTrends?.extraMarketplace?.platforms?.wb?.articles;
-  if (Array.isArray(direct) && direct.length) return direct;
+  if (Array.isArray(direct) && direct.length) {
+    return {
+      articles: direct,
+      sourceMode: platformTrends?.extraMarketplace?.platforms?.wb?.sourceMode || 'wb-api-direct-sku',
+      note: 'Built from platform_trends.extraMarketplace.platforms.wb.articles so the WB rating workbench uses the same fresh API window as the rest of the portal.'
+    };
+  }
   const platforms = platformTrends?.extraMarketplace?.platforms || {};
   for (const value of Object.values(platforms)) {
     const key = normalizeKey(value?.key || value?.supportKey || value?.label);
     if ((key === 'wb' || key === 'wildberries') && Array.isArray(value?.articles)) {
-      return value.articles;
+      return {
+        articles: value.articles,
+        sourceMode: value?.sourceMode || 'wb-api-direct-sku',
+        note: 'Built from WB articles found in platform_trends.extraMarketplace.'
+      };
     }
   }
-  return [];
+  const fallback = buildWbArticlesFromAdsSummary(adsSummary);
+  if (fallback.length) {
+    return {
+      articles: fallback,
+      sourceMode: 'wb-ads-summary-item-series',
+      note: 'Built from ads_summary.itemSeries because platform_trends no longer carries WB article detail after marketplace-extra refresh.'
+    };
+  }
+  return {
+    articles: [],
+    sourceMode: '',
+    note: ''
+  };
 }
 
 function rowDate(row) {
@@ -167,11 +260,13 @@ function latestDateFromArticles(articles, fallback = '') {
 
 function buildPayload(options) {
   const platformTrends = readJson(options.platformTrendsPath, {});
+  const adsSummary = readJson(options.adsSummaryPath, {});
   const skus = readJson(options.skusPath, []);
   const wbFeedbacks = readJson(options.wbFeedbacksPath, {});
-  const articles = findWbArticles(platformTrends);
+  const articleSource = findWbArticles(platformTrends, adsSummary);
+  const articles = articleSource.articles;
   if (!articles.length) {
-    throw new Error(`No WB articles found in ${options.platformTrendsPath} at extraMarketplace.platforms.wb.articles`);
+    throw new Error(`No WB articles found in ${options.platformTrendsPath} or ${options.adsSummaryPath}`);
   }
 
   const to = options.to || latestDateFromArticles(articles, platformTrends?.extraMarketplace?.platforms?.wb?.to || platformTrends.latestMarketplaceDate || '');
@@ -267,7 +362,7 @@ function buildPayload(options) {
     generatedAt: new Date().toISOString(),
     source: 'wb-platform-trends-api',
     sourceFile: path.basename(options.platformTrendsPath),
-    sourceMode: platformTrends?.extraMarketplace?.platforms?.wb?.sourceMode || 'wb-api-direct-sku',
+    sourceMode: articleSource.sourceMode || 'wb-api-direct-sku',
     period: {
       from,
       to,
@@ -290,8 +385,10 @@ function buildPayload(options) {
       platformTrendsGeneratedAt: platformTrends.generatedAt || '',
       platformTrendsLatestMarketplaceDate: platformTrends.latestMarketplaceDate || '',
       wbExtraMarketplaceTo: platformTrends?.extraMarketplace?.platforms?.wb?.to || '',
+      adsSummaryGeneratedAt: adsSummary.generatedAt || '',
+      adsSummaryAsOfDate: adsSummary.asOfDate || '',
       wbFeedbacksGeneratedAt: wbFeedbacks.generatedAt || '',
-      note: 'Built from platform_trends.extraMarketplace.platforms.wb.articles so the WB rating workbench uses the same fresh API window as the rest of the portal.'
+      note: articleSource.note
     },
     items
   };
@@ -301,11 +398,13 @@ function main() {
   const outputDir = argValue('--output-dir', '.altea-google-sheet-sync-output');
   const baseDataDir = argValue('--base-data-dir', 'data');
   const platformTrendsPath = argValue('--platform-trends', path.join(outputDir, 'platform_trends.json'));
+  const adsSummaryPath = argValue('--ads-summary', path.join(path.dirname(platformTrendsPath), 'ads_summary.json'));
   const skusPath = argValue('--skus', path.join(outputDir, 'skus.json'));
   const wbFeedbacksPath = argValue('--wb-feedbacks', path.join(outputDir, 'wb_feedbacks_summary.json'));
   const outputFile = argValue('--output-file', path.join(outputDir, 'wb_sales_funnel_report.json'));
   const payload = buildPayload({
     platformTrendsPath,
+    adsSummaryPath,
     skusPath,
     wbFeedbacksPath,
     from: argValue('--from', ''),

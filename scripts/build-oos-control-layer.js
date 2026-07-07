@@ -264,9 +264,9 @@ function priceForRow(row, priceLookup) {
 }
 
 function inferDepartment(row, status) {
-  if (status === 'oos') return 'Маркетплейс / логистика';
-  if (numberOrZero(row?.inTransit) > 0) return 'Логистика';
   if (numberOrZero(row?.inRequest) > 0) return 'Закуп';
+  if (numberOrZero(row?.inTransit) > 0) return 'Логистика';
+  if (status === 'oos') return 'Маркетплейс / логистика';
   if (numberOrZero(row?.targetNeed14) > 0 || numberOrZero(row?.targetNeed30 ?? row?.targetNeed28) > 0) return 'Закуп';
   return 'Команда MP';
 }
@@ -274,14 +274,14 @@ function inferDepartment(row, status) {
 function recommendationFor(row, status) {
   const platform = platformLabel(row?.platform);
   const place = String(row?.place || '').trim() || 'склад';
-  if (status === 'oos') {
-    return `Проверить остаток ${platform} / ${place}, восстановить наличие или зафиксировать причину простоя.`;
+  if (numberOrZero(row?.inRequest) > 0) {
+    return `Проконтролировать заявку на поставку и срок отгрузки для ${platform} / ${place}.`;
   }
   if (numberOrZero(row?.inTransit) > 0) {
     return `Ускорить поставку на ${platform} / ${place} и проверить дату приемки.`;
   }
-  if (numberOrZero(row?.inRequest) > 0) {
-    return `Проконтролировать заказ поставщику и срок отгрузки для ${platform} / ${place}.`;
+  if (status === 'oos') {
+    return `Проверить остаток ${platform} / ${place}, восстановить наличие или зафиксировать причину простоя.`;
   }
   return `Сформировать контрмеру по остатку ${platform} / ${place}: заказ, перемещение или лимит продаж.`;
 }
@@ -290,12 +290,22 @@ function classifyRow(row, rules, lifecycle) {
   if (!isSignalLifecycle(lifecycle)) return null;
 
   const inStock = numberOrZero(row?.inStock);
+  const inTransit = numberOrZero(row?.inTransit);
+  const inRequest = numberOrZero(row?.inRequest);
   const avgDaily = numberOrZero(row?.avgDaily);
   const turnoverDays = finiteOrNull(row?.turnoverDays);
   const targetNeed30 = numberOrZero(row?.targetNeed30 ?? row?.targetNeed28);
 
   if (inStock <= 0 && avgDaily > 0) {
     return { status: 'oos', severity: 'critical', statusLabel: 'OOS', rank: 4, signalRule: 'oos_now_active_or_new' };
+  }
+  if (inStock <= 0) {
+    const statusLabel = inRequest > 0
+      ? '0 остаток / есть заявка'
+      : inTransit > 0
+        ? '0 остаток / в пути'
+        : '0 остаток / нет продаж';
+    return { status: 'watch', severity: 'low', statusLabel, rank: 0, signalRule: 'oos_zero_stock_active_or_new' };
   }
   if (turnoverDays !== null && turnoverDays > 0 && turnoverDays < rules.soonDays) {
     return { status: 'risk', severity: 'high', statusLabel: `OOS скоро <${rules.soonDays} д`, rank: 2, signalRule: 'oos_soon_turnover_active_or_new' };
@@ -385,9 +395,10 @@ function signalIssueKey(platform, signalRule, articleKey) {
   return `${normalizePlatform(platform)}|${signalRule}|${normalizeKey(articleKey)}`;
 }
 
-function compactPlaceLabel(places, rules, status = '') {
+function compactPlaceLabel(places, rules, status = '', signalRule = '') {
   const rows = Array.isArray(places) ? places : [];
   if (rows.length <= 1) return rows[0]?.place || 'Без склада';
+  if (signalRule === 'oos_zero_stock_active_or_new') return `${rows.length} кластеров с 0 остатком`;
   const threshold = status === 'watch' ? rules.watchDays : rules.soonDays;
   return `${rows.length} кластеров <${threshold} д`;
 }
@@ -407,8 +418,17 @@ function recommendationForAggregate(row, rules) {
   const places = Array.isArray(row?.placesAtRisk) ? row.placesAtRisk : [];
   const placeText = topPlaceNames(places) || row?.place || 'кластер';
   const minDays = finiteOrNull(row?.turnoverDays);
+  if (numberOrZero(row?.inRequest) > 0) {
+    return `Проконтролировать заявки на поставку ${platform}: ${places.length || 1} кластер(ов) (${placeText}). Проверить срок отгрузки и доведение до наличия.`;
+  }
+  if (numberOrZero(row?.inTransit) > 0) {
+    return `Ускорить поставку ${platform}: ${places.length || 1} кластер(ов) (${placeText}). Проверить дату приемки и разблокировать наличие.`;
+  }
   if (row.status === 'oos') {
     return `Проверить ${platform}: есть OOS по ${places.length || 1} кластеру(ам). Восстановить наличие или зафиксировать причину простоя.`;
+  }
+  if (row.signalRule === 'oos_zero_stock_active_or_new') {
+    return `Проверить ${platform}: 0 остаток без продаж по ${places.length || 1} кластеру(ам) (${placeText}). Подтвердить, что SKU не нужен в локализации, или поставить задачу на наличие.`;
   }
   const threshold = row.status === 'watch' ? rules.watchDays : rules.soonDays;
   const prefix = row.status === 'watch' ? 'Поставить в контроль' : 'Проверить';
@@ -448,7 +468,7 @@ function aggregateSignalRows(rawRows, rules) {
       ...base,
       issueKey,
       taskId: `task-oos-${hashShort(issueKey)}`,
-      place: compactPlaceLabel(placesAtRisk, rules, base.status),
+      place: compactPlaceLabel(placesAtRisk, rules, base.status, base.signalRule),
       clusterCount: placesAtRisk.length,
       placesAtRisk,
       inStock: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.inStock), 0)),
@@ -680,6 +700,10 @@ function buildSummary(rows, historyResult, freshnessStatus, previousPayload, tod
     riskCount: rows.filter((row) => row.status === 'risk').length,
     oosSoonCount: rows.filter((row) => row.signalRule === 'oos_soon_turnover_active_or_new').length,
     watchCount: rows.filter((row) => row.status === 'watch').length,
+    zeroStockCount: rows.filter((row) => row.signalRule === 'oos_zero_stock_active_or_new').length,
+    zeroStockPlaceCount: rows
+      .filter((row) => row.signalRule === 'oos_zero_stock_active_or_new')
+      .reduce((sum, row) => sum + Math.max(1, Math.round(numberOrZero(row.clusterCount || 1))), 0),
     placeCount: rows.reduce((sum, row) => sum + Math.max(1, Math.round(numberOrZero(row.clusterCount || 1))), 0),
     lostRevenueDay: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.lostRevenueDay), 0)),
     revenueAtRiskDay: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.revenueAtRiskDay), 0))

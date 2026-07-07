@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-07-05T00:00:00+03:00",
+  "generatedAt": "2026-07-07T00:00:00+03:00",
   "sourceFreshness": {
-    "logistics": "2026-07-05T00:00:00+03:00",
-    "logisticsFileMtime": "2026-07-06T06:32:19.461Z",
-    "logisticsFileSize": 1122165,
+    "logistics": "2026-07-07T00:00:00+03:00",
+    "logisticsFileMtime": "2026-07-07T07:21:14.456Z",
+    "logisticsFileSize": 1122147,
     "logisticsRows": 2202,
-    "yandexOrderProcurement": "2026-07-06T06:09:05.805Z",
+    "yandexOrderProcurement": "2026-07-07T07:15:39.957Z",
     "yandexRows": 901,
-    "skusFileMtime": "2026-07-06T06:17:20.856Z",
-    "skusFileSize": 1844708,
+    "skusFileMtime": "2026-07-06T07:44:12.240Z",
+    "skusFileSize": 1904295,
     "skuRows": 209
   },
   "window": {
-    "from": "2026-06-08",
-    "to": "2026-07-05"
+    "from": "2026-06-10",
+    "to": "2026-07-07"
   },
   "platform": "Ozon",
   "rows": [

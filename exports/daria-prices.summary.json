@@ -1,9 +1,11 @@
 {
-  "generatedAt": "2026-07-07T13:26:07.542Z",
+  "generatedAt": "2026-07-07T16:10:40.055Z",
   "inputPath": "/home/runner/work/Harisma/Harisma/data/skus.json",
   "outputPath": "/home/runner/work/Harisma/Harisma/daria-prices.csv",
   "tsvOutputPath": "/home/runner/work/Harisma/Harisma/daria-prices-google.tsv",
   "semicolonOutputPath": "/home/runner/work/Harisma/Harisma/daria-prices-google.csv",
+  "ruOutputPath": "/home/runner/work/Harisma/Harisma/daria-prices-google-ru.csv",
+  "ruTsvOutputPath": "/home/runner/work/Harisma/Harisma/daria-prices-google-ru.tsv",
   "rowCount": 89,
   "multiplier": 1.02,
   "rowsWithOzonPrice": 89,

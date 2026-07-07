@@ -47,8 +47,9 @@ function renderAdjustedMoney(value, multiplier) {
   return value === null ? '' : roundMoney(value * multiplier);
 }
 
-function csvCell(value) {
+function tableCell(value, delimiter) {
   const text = String(value ?? '');
+  if (delimiter === '\t') return text.replace(/[\t\r\n]+/g, ' ');
   if (/[",\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
   return text;
 }
@@ -87,7 +88,7 @@ function buildRows(skus, multiplier) {
     .sort((left, right) => left.sku.localeCompare(right.sku, 'ru'));
 }
 
-function renderCsv(rows) {
+function renderTable(rows, delimiter = ',') {
   const lines = [
     [
       'SKU',
@@ -112,7 +113,7 @@ function renderCsv(rows) {
       row.dariaOzonPrice
     ]);
   }
-  return `${lines.map((line) => line.map(csvCell).join(',')).join('\n')}\n`;
+  return `${lines.map((line) => line.map((value) => tableCell(value, delimiter)).join(delimiter)).join('\n')}\n`;
 }
 
 function main() {
@@ -120,6 +121,7 @@ function main() {
   const args = parseArgs(process.argv);
   const inputPath = path.resolve(args.input || path.join(root, 'data', 'skus.json'));
   const outputPath = path.resolve(args.output || path.join(root, 'daria-prices.csv'));
+  const tsvOutputPath = args['tsv-output'] ? path.resolve(args['tsv-output']) : null;
   const summaryPath = path.resolve(args.summary || path.join(root, 'exports', 'daria-prices.summary.json'));
   const multiplier = numberOrNull(args.multiplier) ?? 1.02;
 
@@ -129,13 +131,18 @@ function main() {
   if (!rows.length) throw new Error('No price rows generated');
 
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  fs.writeFileSync(outputPath, renderCsv(rows), 'utf8');
+  fs.writeFileSync(outputPath, renderTable(rows), 'utf8');
+  if (tsvOutputPath) {
+    fs.mkdirSync(path.dirname(tsvOutputPath), { recursive: true });
+    fs.writeFileSync(tsvOutputPath, renderTable(rows, '\t'), 'utf8');
+  }
 
   const wbPrices = rows.map((row) => row.wbPrice).filter((value) => typeof value === 'number');
   const summary = {
     generatedAt: new Date().toISOString(),
     inputPath,
     outputPath,
+    tsvOutputPath,
     rowCount: rows.length,
     multiplier,
     rowsWithOzonPrice: rows.filter((row) => row.ozonPrice !== '').length,

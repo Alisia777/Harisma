@@ -27,6 +27,7 @@ jobs:
         run: >-
           node scripts/build-daria-price-table.js
           --output daria-prices.csv
+          --tsv-output daria-prices-google.tsv
           --summary exports/daria-prices.summary.json
           --multiplier 1.02
 
@@ -38,11 +39,15 @@ jobs:
         run: |
           node - <<'NODE'
           const fs = require('fs');
-          const files = ['daria-prices.csv', 'daria-prices-clean.csv'];
+          const files = [
+            { path: 'daria-prices.csv', delimiter: ',' },
+            { path: 'daria-prices-clean.csv', delimiter: ',' },
+            { path: 'daria-prices-google.tsv', delimiter: '\t' }
+          ];
           for (const file of files) {
-            const csv = fs.readFileSync(file, 'utf8').trim().split(/\r?\n/);
-            const header = csv[0].split(',');
-            const rows = csv.slice(1).map((line) => line.split(','));
+            const lines = fs.readFileSync(file.path, 'utf8').trim().split(/\r?\n/);
+            const header = lines[0].split(file.delimiter);
+            const rows = lines.slice(1).map((line) => line.split(file.delimiter));
             const badRows = rows
               .map((cols, index) => ({ line: index + 2, cols: cols.length }))
               .filter((row) => row.cols !== 8);
@@ -56,10 +61,10 @@ jobs:
               });
             });
             if (header.length !== 8 || header[0] !== 'SKU' || !rows.length || badRows.length || negativeCells.length) {
-              console.error(JSON.stringify({ file, header, rows: rows.length, badRows, negativeCells }, null, 2));
+              console.error(JSON.stringify({ file: file.path, header, rows: rows.length, badRows, negativeCells }, null, 2));
               process.exit(1);
             }
-            console.log(JSON.stringify({ file, rows: rows.length, negativeCells: 0 }, null, 2));
+            console.log(JSON.stringify({ file: file.path, rows: rows.length, negativeCells: 0 }, null, 2));
           }
           NODE
 
@@ -68,7 +73,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add daria-prices.csv daria-prices-clean.csv exports/daria-prices.summary.json
+          git add daria-prices.csv daria-prices-clean.csv daria-prices-google.tsv exports/daria-prices.summary.json
           if git diff --cached --quiet; then
             echo "Daria prices CSV is unchanged."
             exit 0

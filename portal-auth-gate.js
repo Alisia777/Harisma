@@ -16,7 +16,6 @@
   var GUEST_EMAIL = 'guest@qeep.life';
   var GUEST_PASSWORD = 'NihsS%Hn_uE#kXBfcX!e';
   var GUEST_NAME = '\u0413\u043e\u0441\u0442\u0435\u0432\u043e\u0439 \u0432\u0445\u043e\u0434';
-  var EMERGENCY_PASSWORD = 'DEx4KoCjLBix!dDvUf!nx3';
   var DEFAULT_STATUS = '\u041f\u043e\u0440\u0442\u0430\u043b \u0437\u0430\u043a\u0440\u044b\u0442: \u0432\u043e\u0439\u0434\u0438\u0442\u0435 \u043f\u043e email \u0438 \u043f\u0430\u0440\u043e\u043b\u044e.';
   var GENERIC_LOGIN_ERROR = '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0432\u043e\u0439\u0442\u0438. \u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 email \u0438 \u043f\u0430\u0440\u043e\u043b\u044c \u0438\u043b\u0438 \u043e\u0431\u0440\u0430\u0442\u0438\u0442\u0435\u0441\u044c \u043a \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440\u0443.';
   var ACCESS_DENIED_ERROR = '\u0414\u043b\u044f \u044d\u0442\u043e\u0439 \u0443\u0447\u0435\u0442\u043d\u043e\u0439 \u0437\u0430\u043f\u0438\u0441\u0438 \u043d\u0435 \u043d\u0430\u0441\u0442\u0440\u043e\u0435\u043d \u0434\u043e\u0441\u0442\u0443\u043f \u043a \u043f\u043e\u0440\u0442\u0430\u043b\u0443.';
@@ -965,34 +964,6 @@
       && credentials.password === GUEST_PASSWORD;
   }
 
-  function isEmergencyCredentials(credentials) {
-    return !!credentials
-      && credentials.password === EMERGENCY_PASSWORD
-      && !!getUserConfig(normalizeEmail(credentials.email));
-  }
-
-  function buildEmergencySession(credentials) {
-    var email = normalizeEmail(credentials && credentials.email);
-    var userConfig = getUserConfig(email) || {};
-    return {
-      access_token: 'emergency-local-session',
-      token_type: 'bearer',
-      user: {
-        id: 'emergency-' + email,
-        email: email,
-        user_metadata: {
-          name: userConfig.name || email,
-          emergency_login: true
-        },
-        app_metadata: {}
-      }
-    };
-  }
-
-  function signInEmergency(credentials) {
-    return Promise.resolve({ data: { session: buildEmergencySession(credentials) } });
-  }
-
   function buildGuestSession(session) {
     var base = session || {};
     var user = assign({}, base.user || {}, {
@@ -1440,7 +1411,6 @@
     var failedAsAuth = false;
     var accessDeniedLogged = false;
     var guestLogin = false;
-    var emergencyLogin = false;
 
     event.preventDefault();
     if (updateThrottleUi()) return;
@@ -1481,19 +1451,16 @@
       return;
     }
     guestLogin = isGuestCredentials(credentials);
-    emergencyLogin = !guestLogin && isEmergencyCredentials(credentials);
 
     if (submit) submit.disabled = true;
     loginFlowActive = true;
     setStatus('\u041f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c \u0434\u043e\u0441\u0442\u0443\u043f...', '');
 
-    (guestLogin
-      ? signInGuest(null)
-      : emergencyLogin
-        ? signInEmergency(credentials)
-      : getClient().then(function (authClient) {
+    getClient()
+      .then(function (authClient) {
+        if (guestLogin) return signInGuest(authClient);
         return authClient.auth.signInWithPassword({ email: credentials.email, password: credentials.password });
-      }))
+      })
       .then(function (result) {
         var session;
         var access;
@@ -1520,10 +1487,6 @@
             targetName: 'auth-gate',
             metadata: accessAuditMetadata(access, { reason: 'no_allowed_views' })
           });
-          if (guestLogin || emergencyLogin) {
-            clearSessionState();
-            throw new Error('access-denied');
-          }
           return getClient()
             .then(function (authClient) { return authClient.auth.signOut(); })
             .catch(function () {})
@@ -1532,7 +1495,7 @@
               throw new Error('access-denied');
             });
         }
-        if (guestLogin || emergencyLogin) {
+        if (guestLogin) {
           return minimumResponseDelay(startedAt).then(function () {
             setStatus('\u0412\u0445\u043e\u0434 \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d.', 'ok');
             emitSecurityAudit('login_success', {
@@ -1542,7 +1505,7 @@
               actorRole: accessRoleText(access),
               targetType: 'portal',
               targetName: 'auth-gate',
-              metadata: accessAuditMetadata(access, { method: guestLogin ? 'guest_password' : 'emergency_password' })
+              metadata: accessAuditMetadata(access, { method: 'guest_password' })
             });
             loginFlowActive = false;
             resolveAuth(session);

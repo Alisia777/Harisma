@@ -81,9 +81,9 @@ function renderCsv(rows) {
       '\u042f\u041c min',
       '\u042f\u041c max',
       '\u0426\u0435\u043d\u0430 Ozon',
-      '\u0414\u0430\u0448\u0430 \u043e\u0442 \u0412\u0411',
-      '\u0414\u0430\u0448\u0430 \u043e\u0442 \u042f\u041c max',
-      '\u0414\u0430\u0448\u0430 \u043e\u0442 Ozon'
+      '\u0426\u0435\u043d\u0430 WB + 2%',
+      '\u0426\u0435\u043d\u0430 \u042f\u041c max + 2%',
+      '\u0426\u0435\u043d\u0430 Ozon + 2%'
     ]
   ];
   for (const row of rows) {

@@ -30,22 +30,37 @@ jobs:
           --summary exports/daria-prices.summary.json
           --multiplier 1.02
 
+      - name: Publish cache-safe CSV copy
+        run: cp daria-prices.csv daria-prices-clean.csv
+
       - name: Validate CSV
         shell: bash
         run: |
           node - <<'NODE'
           const fs = require('fs');
-          const csv = fs.readFileSync('daria-prices.csv', 'utf8').trim().split(/\r?\n/);
-          const header = csv[0].split(',');
-          const rows = csv.slice(1).map((line) => line.split(','));
-          const badRows = rows
-            .map((cols, index) => ({ line: index + 2, cols: cols.length }))
-            .filter((row) => row.cols !== 8);
-          if (header.length !== 8 || header[0] !== 'SKU' || !rows.length || badRows.length) {
-            console.error(JSON.stringify({ header, rows: rows.length, badRows }, null, 2));
-            process.exit(1);
+          const files = ['daria-prices.csv', 'daria-prices-clean.csv'];
+          for (const file of files) {
+            const csv = fs.readFileSync(file, 'utf8').trim().split(/\r?\n/);
+            const header = csv[0].split(',');
+            const rows = csv.slice(1).map((line) => line.split(','));
+            const badRows = rows
+              .map((cols, index) => ({ line: index + 2, cols: cols.length }))
+              .filter((row) => row.cols !== 8);
+            const negativeCells = [];
+            rows.forEach((cols, rowIndex) => {
+              cols.slice(1).forEach((cell, offset) => {
+                const value = Number(cell);
+                if (Number.isFinite(value) && value < 0) {
+                  negativeCells.push({ line: rowIndex + 2, column: header[offset + 1], value });
+                }
+              });
+            });
+            if (header.length !== 8 || header[0] !== 'SKU' || !rows.length || badRows.length || negativeCells.length) {
+              console.error(JSON.stringify({ file, header, rows: rows.length, badRows, negativeCells }, null, 2));
+              process.exit(1);
+            }
+            console.log(JSON.stringify({ file, rows: rows.length, negativeCells: 0 }, null, 2));
           }
-          console.log(JSON.stringify({ rows: rows.length }, null, 2));
           NODE
 
       - name: Commit CSV changes
@@ -53,7 +68,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add daria-prices.csv exports/daria-prices.summary.json
+          git add daria-prices.csv daria-prices-clean.csv exports/daria-prices.summary.json
           if git diff --cached --quiet; then
             echo "Daria prices CSV is unchanged."
             exit 0

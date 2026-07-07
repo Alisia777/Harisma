@@ -30,8 +30,21 @@ function numberOrNull(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function priceOrNull(value) {
+  const parsed = numberOrNull(value);
+  return parsed === null || parsed < 0 ? null : parsed;
+}
+
 function roundMoney(value) {
   return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+}
+
+function renderMoney(value) {
+  return value === null ? '' : roundMoney(value);
+}
+
+function renderAdjustedMoney(value, multiplier) {
+  return value === null ? '' : roundMoney(value * multiplier);
 }
 
 function csvCell(value) {
@@ -53,20 +66,21 @@ function buildRows(skus, multiplier) {
   return skus
     .map((row) => {
       const sku = normalizeText(row.article || row.articleKey || row.sku);
-      const wbPrice = numberOrNull(row.wb?.currentPrice ?? row.wb?.price ?? row.wb?.recPrice);
-      if (!sku || wbPrice === null) return null;
-      const ozonPrice = numberOrNull(row.ozon?.currentPrice ?? row.ozon?.price ?? row.ozon?.recPrice);
-      const ymMinPrice = numberOrNull(row.ym?.minPrice ?? row.ym?.workingZoneFrom);
-      const ymMaxPrice = numberOrNull(row.ym?.maxPrice ?? row.ym?.workingZoneTo);
+      const wbRawPrice = numberOrNull(row.wb?.currentPrice ?? row.wb?.price ?? row.wb?.recPrice);
+      if (!sku || wbRawPrice === null) return null;
+      const wbPrice = priceOrNull(wbRawPrice);
+      const ozonPrice = priceOrNull(row.ozon?.currentPrice ?? row.ozon?.price ?? row.ozon?.recPrice);
+      const ymMinPrice = priceOrNull(row.ym?.minPrice ?? row.ym?.workingZoneFrom);
+      const ymMaxPrice = priceOrNull(row.ym?.maxPrice ?? row.ym?.workingZoneTo);
       return {
         sku,
-        wbPrice: roundMoney(wbPrice),
-        ymMinPrice: ymMinPrice === null ? '' : roundMoney(ymMinPrice),
-        ymMaxPrice: ymMaxPrice === null ? '' : roundMoney(ymMaxPrice),
-        ozonPrice: ozonPrice === null ? '' : roundMoney(ozonPrice),
-        dariaWbPrice: roundMoney(wbPrice * multiplier),
-        dariaYmPrice: ymMaxPrice === null ? '' : roundMoney(ymMaxPrice * multiplier),
-        dariaOzonPrice: ozonPrice === null ? '' : roundMoney(ozonPrice * multiplier)
+        wbPrice: renderMoney(wbPrice),
+        ymMinPrice: renderMoney(ymMinPrice),
+        ymMaxPrice: renderMoney(ymMaxPrice),
+        ozonPrice: renderMoney(ozonPrice),
+        dariaWbPrice: renderAdjustedMoney(wbPrice, multiplier),
+        dariaYmPrice: renderAdjustedMoney(ymMaxPrice, multiplier),
+        dariaOzonPrice: renderAdjustedMoney(ozonPrice, multiplier)
       };
     })
     .filter(Boolean)
@@ -117,6 +131,7 @@ function main() {
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, renderCsv(rows), 'utf8');
 
+  const wbPrices = rows.map((row) => row.wbPrice).filter((value) => typeof value === 'number');
   const summary = {
     generatedAt: new Date().toISOString(),
     inputPath,
@@ -125,8 +140,8 @@ function main() {
     multiplier,
     rowsWithOzonPrice: rows.filter((row) => row.ozonPrice !== '').length,
     rowsWithYandexMarketRange: rows.filter((row) => row.ymMinPrice !== '' || row.ymMaxPrice !== '').length,
-    minWbPrice: Math.min(...rows.map((row) => row.wbPrice)),
-    maxWbPrice: Math.max(...rows.map((row) => row.wbPrice))
+    minWbPrice: wbPrices.length ? Math.min(...wbPrices) : null,
+    maxWbPrice: wbPrices.length ? Math.max(...wbPrices) : null
   };
   fs.mkdirSync(path.dirname(summaryPath), { recursive: true });
   fs.writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');

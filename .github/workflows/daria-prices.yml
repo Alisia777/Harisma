@@ -33,7 +33,9 @@ jobs:
           --multiplier 1.02
 
       - name: Publish cache-safe CSV copy
-        run: cp daria-prices.csv daria-prices-clean.csv
+        run: |
+          cp daria-prices.csv daria-prices-clean.csv
+          cp daria-prices.csv daria-prices-google-import.csv
 
       - name: Validate CSV
         shell: bash
@@ -43,6 +45,7 @@ jobs:
           const files = [
             { path: 'daria-prices.csv', delimiter: ',' },
             { path: 'daria-prices-clean.csv', delimiter: ',' },
+            { path: 'daria-prices-google-import.csv', delimiter: ',' },
             { path: 'daria-prices-google.tsv', delimiter: '\t' },
             { path: 'daria-prices-google.csv', delimiter: ';' }
           ];
@@ -75,7 +78,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add daria-prices.csv daria-prices-clean.csv daria-prices-google.tsv daria-prices-google.csv exports/daria-prices.summary.json
+          git add daria-prices.csv daria-prices-clean.csv daria-prices-google-import.csv daria-prices-google.tsv daria-prices-google.csv exports/daria-prices.summary.json
           if git diff --cached --quiet; then
             echo "Daria prices CSV is unchanged."
             exit 0

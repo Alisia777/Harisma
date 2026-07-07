@@ -29,6 +29,7 @@ jobs:
           --output daria-prices.csv
           --tsv-output daria-prices-google.tsv
           --semicolon-output daria-prices-google.csv
+          --ru-output daria-prices-google-ru.csv
           --summary exports/daria-prices.summary.json
           --multiplier 1.02
 
@@ -47,8 +48,13 @@ jobs:
             { path: 'daria-prices-clean.csv', delimiter: ',' },
             { path: 'daria-prices-google-import.csv', delimiter: ',' },
             { path: 'daria-prices-google.tsv', delimiter: '\t' },
-            { path: 'daria-prices-google.csv', delimiter: ';' }
+            { path: 'daria-prices-google.csv', delimiter: ';' },
+            { path: 'daria-prices-google-ru.csv', delimiter: ';', decimalComma: true }
           ];
+          const parseNumeric = (cell, decimalComma) => {
+            const value = decimalComma ? String(cell).replace(',', '.') : cell;
+            return Number(value);
+          };
           for (const file of files) {
             const lines = fs.readFileSync(file.path, 'utf8').trim().split(/\r?\n/);
             const header = lines[0].split(file.delimiter);
@@ -59,7 +65,7 @@ jobs:
             const negativeCells = [];
             rows.forEach((cols, rowIndex) => {
               cols.slice(1).forEach((cell, offset) => {
-                const value = Number(cell);
+                const value = parseNumeric(cell, file.decimalComma);
                 if (Number.isFinite(value) && value < 0) {
                   negativeCells.push({ line: rowIndex + 2, column: header[offset + 1], value });
                 }
@@ -78,7 +84,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add daria-prices.csv daria-prices-clean.csv daria-prices-google-import.csv daria-prices-google.tsv daria-prices-google.csv exports/daria-prices.summary.json
+          git add daria-prices.csv daria-prices-clean.csv daria-prices-google-import.csv daria-prices-google.tsv daria-prices-google.csv daria-prices-google-ru.csv exports/daria-prices.summary.json
           if git diff --cached --quiet; then
             echo "Daria prices CSV is unchanged."
             exit 0

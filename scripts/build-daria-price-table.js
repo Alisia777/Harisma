@@ -47,8 +47,11 @@ function renderAdjustedMoney(value, multiplier) {
   return value === null ? '' : roundMoney(value * multiplier);
 }
 
-function tableCell(value, delimiter) {
-  const text = String(value ?? '');
+function tableCell(value, delimiter, options = {}) {
+  const rawText = String(value ?? '');
+  const text = options.decimalComma && /^-?\d+(?:\.\d+)?$/.test(rawText)
+    ? rawText.replace('.', ',')
+    : rawText;
   if (delimiter === '\t') return text.replace(/[\t\r\n]+/g, ' ');
   if (text.includes(delimiter) || /["\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
   return text;
@@ -88,7 +91,7 @@ function buildRows(skus, multiplier) {
     .sort((left, right) => left.sku.localeCompare(right.sku, 'ru'));
 }
 
-function renderTable(rows, delimiter = ',') {
+function renderTable(rows, delimiter = ',', options = {}) {
   const lines = [
     [
       'SKU',
@@ -113,7 +116,7 @@ function renderTable(rows, delimiter = ',') {
       row.dariaOzonPrice
     ]);
   }
-  return `${lines.map((line) => line.map((value) => tableCell(value, delimiter)).join(delimiter)).join('\n')}\n`;
+  return `${lines.map((line) => line.map((value) => tableCell(value, delimiter, options)).join(delimiter)).join('\n')}\n`;
 }
 
 function main() {
@@ -123,6 +126,7 @@ function main() {
   const outputPath = path.resolve(args.output || path.join(root, 'daria-prices.csv'));
   const tsvOutputPath = args['tsv-output'] ? path.resolve(args['tsv-output']) : null;
   const semicolonOutputPath = args['semicolon-output'] ? path.resolve(args['semicolon-output']) : null;
+  const ruOutputPath = args['ru-output'] ? path.resolve(args['ru-output']) : null;
   const summaryPath = path.resolve(args.summary || path.join(root, 'exports', 'daria-prices.summary.json'));
   const multiplier = numberOrNull(args.multiplier) ?? 1.02;
 
@@ -141,6 +145,10 @@ function main() {
     fs.mkdirSync(path.dirname(semicolonOutputPath), { recursive: true });
     fs.writeFileSync(semicolonOutputPath, renderTable(rows, ';'), 'utf8');
   }
+  if (ruOutputPath) {
+    fs.mkdirSync(path.dirname(ruOutputPath), { recursive: true });
+    fs.writeFileSync(ruOutputPath, renderTable(rows, ';', { decimalComma: true }), 'utf8');
+  }
 
   const wbPrices = rows.map((row) => row.wbPrice).filter((value) => typeof value === 'number');
   const summary = {
@@ -149,6 +157,7 @@ function main() {
     outputPath,
     tsvOutputPath,
     semicolonOutputPath,
+    ruOutputPath,
     rowCount: rows.length,
     multiplier,
     rowsWithOzonPrice: rows.filter((row) => row.ozonPrice !== '').length,

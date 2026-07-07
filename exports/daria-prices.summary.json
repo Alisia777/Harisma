@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-07-07T10:44:59.341Z",
+  "inputPath": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-update-portal-through-20260705\\data\\skus.json",
+  "outputPath": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-update-portal-through-20260705\\daria-prices.csv",
+  "rowCount": 89,
+  "multiplier": 1.02,
+  "rowsWithOzonPrice": 89,
+  "rowsWithYandexMarketRange": 68,
+  "minWbPrice": 0,
+  "maxWbPrice": 7200
+}

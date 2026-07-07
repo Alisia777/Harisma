@@ -127,6 +127,7 @@ function main() {
   const tsvOutputPath = args['tsv-output'] ? path.resolve(args['tsv-output']) : null;
   const semicolonOutputPath = args['semicolon-output'] ? path.resolve(args['semicolon-output']) : null;
   const ruOutputPath = args['ru-output'] ? path.resolve(args['ru-output']) : null;
+  const ruTsvOutputPath = args['ru-tsv-output'] ? path.resolve(args['ru-tsv-output']) : null;
   const summaryPath = path.resolve(args.summary || path.join(root, 'exports', 'daria-prices.summary.json'));
   const multiplier = numberOrNull(args.multiplier) ?? 1.02;
 
@@ -149,6 +150,10 @@ function main() {
     fs.mkdirSync(path.dirname(ruOutputPath), { recursive: true });
     fs.writeFileSync(ruOutputPath, renderTable(rows, ';', { decimalComma: true }), 'utf8');
   }
+  if (ruTsvOutputPath) {
+    fs.mkdirSync(path.dirname(ruTsvOutputPath), { recursive: true });
+    fs.writeFileSync(ruTsvOutputPath, renderTable(rows, '\t', { decimalComma: true }), 'utf8');
+  }
 
   const wbPrices = rows.map((row) => row.wbPrice).filter((value) => typeof value === 'number');
   const summary = {
@@ -158,6 +163,7 @@ function main() {
     tsvOutputPath,
     semicolonOutputPath,
     ruOutputPath,
+    ruTsvOutputPath,
     rowCount: rows.length,
     multiplier,
     rowsWithOzonPrice: rows.filter((row) => row.ozonPrice !== '').length,

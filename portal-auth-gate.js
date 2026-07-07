@@ -1456,11 +1456,11 @@
     loginFlowActive = true;
     setStatus('\u041f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c \u0434\u043e\u0441\u0442\u0443\u043f...', '');
 
-    getClient()
-      .then(function (authClient) {
-        if (guestLogin) return signInGuest(authClient);
+    (guestLogin
+      ? signInGuest(null)
+      : getClient().then(function (authClient) {
         return authClient.auth.signInWithPassword({ email: credentials.email, password: credentials.password });
-      })
+      }))
       .then(function (result) {
         var session;
         var access;

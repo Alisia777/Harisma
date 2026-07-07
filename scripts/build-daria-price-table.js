@@ -50,7 +50,7 @@ function renderAdjustedMoney(value, multiplier) {
 function tableCell(value, delimiter) {
   const text = String(value ?? '');
   if (delimiter === '\t') return text.replace(/[\t\r\n]+/g, ' ');
-  if (/[",\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+  if (text.includes(delimiter) || /["\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
   return text;
 }
 
@@ -122,6 +122,7 @@ function main() {
   const inputPath = path.resolve(args.input || path.join(root, 'data', 'skus.json'));
   const outputPath = path.resolve(args.output || path.join(root, 'daria-prices.csv'));
   const tsvOutputPath = args['tsv-output'] ? path.resolve(args['tsv-output']) : null;
+  const semicolonOutputPath = args['semicolon-output'] ? path.resolve(args['semicolon-output']) : null;
   const summaryPath = path.resolve(args.summary || path.join(root, 'exports', 'daria-prices.summary.json'));
   const multiplier = numberOrNull(args.multiplier) ?? 1.02;
 
@@ -136,6 +137,10 @@ function main() {
     fs.mkdirSync(path.dirname(tsvOutputPath), { recursive: true });
     fs.writeFileSync(tsvOutputPath, renderTable(rows, '\t'), 'utf8');
   }
+  if (semicolonOutputPath) {
+    fs.mkdirSync(path.dirname(semicolonOutputPath), { recursive: true });
+    fs.writeFileSync(semicolonOutputPath, renderTable(rows, ';'), 'utf8');
+  }
 
   const wbPrices = rows.map((row) => row.wbPrice).filter((value) => typeof value === 'number');
   const summary = {
@@ -143,6 +148,7 @@ function main() {
     inputPath,
     outputPath,
     tsvOutputPath,
+    semicolonOutputPath,
     rowCount: rows.length,
     multiplier,
     rowsWithOzonPrice: rows.filter((row) => row.ozonPrice !== '').length,

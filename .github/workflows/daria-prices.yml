@@ -28,6 +28,7 @@ jobs:
           node scripts/build-daria-price-table.js
           --output daria-prices.csv
           --tsv-output daria-prices-google.tsv
+          --semicolon-output daria-prices-google.csv
           --summary exports/daria-prices.summary.json
           --multiplier 1.02
 
@@ -42,7 +43,8 @@ jobs:
           const files = [
             { path: 'daria-prices.csv', delimiter: ',' },
             { path: 'daria-prices-clean.csv', delimiter: ',' },
-            { path: 'daria-prices-google.tsv', delimiter: '\t' }
+            { path: 'daria-prices-google.tsv', delimiter: '\t' },
+            { path: 'daria-prices-google.csv', delimiter: ';' }
           ];
           for (const file of files) {
             const lines = fs.readFileSync(file.path, 'utf8').trim().split(/\r?\n/);
@@ -73,7 +75,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add daria-prices.csv daria-prices-clean.csv daria-prices-google.tsv exports/daria-prices.summary.json
+          git add daria-prices.csv daria-prices-clean.csv daria-prices-google.tsv daria-prices-google.csv exports/daria-prices.summary.json
           if git diff --cached --quiet; then
             echo "Daria prices CSV is unchanged."
             exit 0

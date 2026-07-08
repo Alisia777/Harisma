@@ -735,6 +735,14 @@ function shouldPreferLocalAliasCoverage(snapshotKey, snapshotPayload, localPaylo
   return localScore > 0 && localScore > snapshotScore;
 }
 
+function protectedSnapshotKey() {
+  return ['iu', 'drr', 'summary'].join('_');
+}
+
+function preferPublishedSnapshotOnTie(snapshotKey) {
+  return snapshotKey !== protectedSnapshotKey();
+}
+
 function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
   const snapshotReady = snapshotPayloadLooksUsable(snapshotKey, snapshotPayload) ? snapshotPayload : null;
   const localReady = localPayload !== null && localPayload !== undefined ? localPayload : null;
@@ -759,9 +767,16 @@ function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
         ? { payload: localReady, source: 'local' }
         : { payload: snapshotReady, source: 'snapshot' };
     }
-    return payloadFreshnessScore(snapshotKey, localReady) >= payloadFreshnessScore(snapshotKey, snapshotReady)
-      ? { payload: localReady, source: 'local' }
-      : { payload: snapshotReady, source: 'snapshot' };
+    const localFreshnessScore = payloadFreshnessScore(snapshotKey, localReady);
+    const snapshotFreshnessScore = payloadFreshnessScore(snapshotKey, snapshotReady);
+    if (localFreshnessScore !== snapshotFreshnessScore) {
+      return localFreshnessScore > snapshotFreshnessScore
+        ? { payload: localReady, source: 'local' }
+        : { payload: snapshotReady, source: 'snapshot' };
+    }
+    return preferPublishedSnapshotOnTie(snapshotKey)
+      ? { payload: snapshotReady, source: 'snapshot' }
+      : { payload: localReady, source: 'local' };
   }
   if (localReady) return { payload: localReady, source: 'local' };
   if (snapshotReady) return { payload: snapshotReady, source: 'snapshot' };

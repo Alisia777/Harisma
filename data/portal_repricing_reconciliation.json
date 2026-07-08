@@ -1,22 +1,22 @@
 {
   "schema": "portal-repricing-reconciliation-v1",
-  "generatedAt": "2026-07-07T07:55:58.444Z",
-  "snapshot_id": "repricer:28478730475925b7",
+  "generatedAt": "2026-07-08T06:41:26.294Z",
+  "snapshot_id": "repricer:90830bc16cf7cd4c",
   "status": "warning",
   "publish_allowed": true,
   "feature_publish_allowed": false,
   "feature_status": "blocked",
-  "business_fingerprint": "cd9b4fbe79ea8254ce61248df26d959e0b8f2cadb11a0681c6233f18885deebd",
+  "business_fingerprint": "dd969f99a6433bf546cad23552b949aa9eece97c50f22d9660973cd0d3f5d3c1",
   "summary": {
-    "rows": 825,
-    "eligible_rows": 825,
+    "rows": 826,
+    "eligible_rows": 826,
     "publishable_rows": 0,
-    "blocked_rows": 825,
+    "blocked_rows": 826,
     "publishable_coverage": 0,
     "required_publishable_coverage": 0.01,
     "feature_status": "blocked",
     "publishable_recommendations": 0,
-    "blocked_recommendations": 825,
+    "blocked_recommendations": 826,
     "duplicate_platform_keys": 0,
     "normalized_article_collisions": 1,
     "deduped_exact_duplicates": 2
@@ -24,8 +24,8 @@
   "blockingReasons": [],
   "warnings": [
     "normalized article collisions deduped for review: 1",
-    "repricer feature blocked: 0/825 publishable recommendations",
-    "825 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
+    "repricer feature blocked: 0/826 publishable recommendations",
+    "826 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
     "2 exact duplicate source rows were deterministically deduped"
   ],
   "duplicatePlatformKeys": [],
@@ -67,12 +67,12 @@
       "status": "warning",
       "blockingReasons": [],
       "warnings": [
-        "repricer feature blocked: 0/825 publishable recommendations"
+        "repricer feature blocked: 0/826 publishable recommendations"
       ],
       "details": {
-        "eligible_rows": 825,
+        "eligible_rows": 826,
         "publishable_rows": 0,
-        "blocked_rows": 825,
+        "blocked_rows": 826,
         "publishable_coverage": 0,
         "required_publishable_coverage": 0.01,
         "feature_status": "blocked"

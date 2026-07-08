@@ -1,11 +1,11 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-07-07T07:39:28.940Z",
+  "generatedAt": "2026-07-08T06:43:34.491Z",
   "source": {
     "skus": 209,
     "aliases": 342,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-07-07T07:39:28.692Z"
+    "dataQualityGeneratedAt": "2026-07-08T06:43:34.240Z"
   },
   "summary": {
     "skuCount": 209,
@@ -18,11 +18,10 @@
     "missingOwnerCount": 0,
     "planNeedsAssignmentCount": 0,
     "planAssignedCount": 96,
-    "issueCount": 91,
+    "issueCount": 1,
     "infoIssueCount": 0,
     "problemStateCounts": {
-      "ok": 146,
-      "has_critical_issue": 63
+      "ok": 209
     }
   },
   "problemStates": {
@@ -526,24 +525,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "alteya_young_skin_box",
@@ -653,32 +643,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "arterol_1_1",
@@ -855,24 +828,15 @@
       "type": "Суставы",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "b_kompleks_bad_60tabl",
@@ -1330,24 +1294,15 @@
       "type": "Пищевая добавка",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "biotrin_60ml",
@@ -1562,24 +1517,15 @@
       "type": "Здоровье сердца",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "chudofrukt",
@@ -1842,24 +1788,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "copywbgetsize1gel2",
@@ -1971,32 +1908,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "daoshen",
@@ -2062,32 +1982,15 @@
       "type": "Грибок",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "dardrakona",
@@ -2190,32 +2093,15 @@
       "type": "Варикоз",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "dolgar",
@@ -2244,32 +2130,15 @@
       "type": "Грибок",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "ekdisteron_ultra_man_60caps",
@@ -2309,24 +2178,15 @@
       "type": "Средства для повышения тестостерона",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "ekzifol",
@@ -2355,24 +2215,15 @@
       "type": "Грибок",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "enteroshol",
@@ -2401,24 +2252,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "enzim_pudra_80gr",
@@ -2690,24 +2532,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "erobrut",
@@ -2736,24 +2569,15 @@
       "type": "Возбудитель",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "fruitalica",
@@ -3479,32 +3303,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "gel_brows_5ml",
@@ -3776,24 +3583,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "gel_dlya_brovei_6ml",
@@ -4414,32 +4212,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "gel-penka_dlya_lica_150ml",
@@ -4614,24 +4395,15 @@
       "type": "Геморрой",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "gidrofilnoe_maslo_150ml",
@@ -4856,32 +4628,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "glikiron_bad_60caps",
@@ -5400,32 +5155,15 @@
       "type": "Пищевая добавка",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "insulight_v2",
@@ -5644,24 +5382,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "kardicin_1_1",
@@ -5690,24 +5419,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "kardicin_1_1_1",
@@ -5736,24 +5456,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "kavmaz",
@@ -5819,32 +5530,15 @@
       "type": "Суставы",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "kavmaz_60ml",
@@ -5984,24 +5678,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "kinzhal_1_1",
@@ -6114,32 +5799,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "krem_dlya_lica_pdrn_50_ml",
@@ -6557,32 +6225,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "krem_spf50_50ml",
@@ -6791,32 +6442,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "krovavii_piling_30ml",
@@ -6913,32 +6547,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "lifting_maska_pdrn_75ml",
@@ -7123,32 +6740,15 @@
       "type": "БАД для поддержания иммунитета",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "maska_dlya_lica_100ml",
@@ -7567,32 +7167,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "maslo_dlya_volos_parf_110ml",
@@ -8521,32 +8104,15 @@
       "type": "Грибок",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "mycoplax_1_1",
@@ -8652,24 +8218,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "nabor_remuver_40ml",
@@ -8745,32 +8302,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "nabor_remuver_40ml_1_1",
@@ -9065,32 +8605,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "okospas",
@@ -9119,24 +8642,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "okucin",
@@ -9386,24 +8900,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "penka_160ml",
@@ -9668,32 +9173,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "piling_100ml",
@@ -10062,32 +9550,15 @@
       "type": "Пищевая добавка",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "remuver_40ml",
@@ -10221,32 +9692,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "retinait_krem_01_50ml",
@@ -10490,24 +9944,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "retinait_krem_1_5_50ml",
@@ -10583,24 +10028,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "retinait_krem_1_50ml",
@@ -10676,32 +10112,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "retinait_syvorotka_025_30ml",
@@ -11155,32 +10574,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
@@ -11361,24 +10763,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "retinol_full_journey",
@@ -12291,24 +11684,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "shampun_protiv_perhoti_250ml",
@@ -12468,32 +11852,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "sinergel_30ml_1_1",
@@ -12697,32 +12064,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "spicul_gel_mask_75ml",
@@ -12903,24 +12253,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "spiculboost_30ml",
@@ -13806,32 +13147,15 @@
       "type": "Суставы",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "synergel_60ml",
@@ -13860,24 +13184,15 @@
       "type": "Суставы",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "syvorotka_dlya_lica_30ml",
@@ -14044,24 +13359,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "syvorotka_dlya_lica_intens_uvl_30ml",
@@ -14752,24 +14058,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "syvorotka_vit_c_30ml",
@@ -15334,24 +14631,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "termo_sprei_200ml_v2",
@@ -15683,24 +14971,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "uhovit",
@@ -15729,24 +15008,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "urinofix",
@@ -15849,24 +15119,15 @@
       "type": "Простатит",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "uromax",
@@ -15895,24 +15156,15 @@
       "type": "Простатит",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "uromax_1_1",
@@ -16089,32 +15341,15 @@
       "type": "Варикоз",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 2,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "vetonus_100ml",
@@ -17152,24 +16387,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "yagodniy_spas",
@@ -17198,24 +16424,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "yagodniy_spas_1_1",
@@ -17244,24 +16461,15 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     }
   ],
   "apiUnmapped": [],

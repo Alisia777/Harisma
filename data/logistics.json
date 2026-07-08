@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-07T00:00:00+03:00",
+  "generatedAt": "2026-07-08T00:00:00+03:00",
   "updatedAt": "2026-04-28T16:21:18.080Z",
   "window": {
-    "from": "2026-06-10",
-    "to": "2026-07-07",
+    "from": "2026-06-11",
+    "to": "2026-07-08",
     "days": 28
   },
   "targetOptions": [
@@ -97,7 +97,7 @@
     "source": "warehouse_stock_overlay",
     "sourceWorkbook": "Склад Балашиха",
     "sourceSheet": "Склад Балашиха",
-    "generatedAt": "2026-07-07T07:19:52.084Z"
+    "generatedAt": "2026-07-08T06:33:20.928Z"
   },
   "backlogByCluster": [
     {
@@ -66784,10 +66784,10 @@
       "turnoverDays": null
     }
   ],
-  "latest_logistics_date": "2026-07-07",
-  "latestLogisticsDate": "2026-07-07",
+  "latest_logistics_date": "2026-07-08",
+  "latestLogisticsDate": "2026-07-08",
   "warehouseOverlay": {
-    "generatedAt": "2026-07-07T07:19:52.084Z",
+    "generatedAt": "2026-07-08T06:33:20.928Z",
     "asOfDate": "",
     "rows": 183,
     "matchedRowCount": 183

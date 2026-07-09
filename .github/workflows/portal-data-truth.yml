@@ -130,7 +130,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: portal-data-truth-${{ github.run_id }}
-          path: .portal-truth-output/*.json
+          path: .portal-truth-output/**
           include-hidden-files: true
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30

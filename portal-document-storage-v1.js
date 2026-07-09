@@ -434,6 +434,29 @@
     return { href, bucket: RESOURCE_BUCKET, objectPath, storageMode: 'supabase' };
   }
 
+  async function deleteResourceFileRemote(item = {}) {
+    const cfg = remoteConfig();
+    const bucket = String(item.bucket || RESOURCE_BUCKET || '').trim();
+    const objectPath = String(item.objectPath || '').trim();
+    if (!cfg?.baseUrl || !cfg?.anonKey || !cfg?.accessToken || !bucket || !objectPath) return false;
+    const deleteUrl = `${cfg.baseUrl}/storage/v1/object/${encodeURIComponent(bucket)}`;
+    const response = await fetch(deleteUrl, {
+      method: 'DELETE',
+      headers: {
+        apikey: cfg.anonKey,
+        Authorization: `Bearer ${cfg.accessToken}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ prefixes: [objectPath] })
+    });
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      throw new Error(body || `Storage delete ${response.status}`);
+    }
+    return true;
+  }
+
   async function openLocalResourceFile(id) {
     const record = await getLocalResourceFile(id);
     if (!record?.blob) {
@@ -734,6 +757,13 @@
     const current = userDocumentLinks().find((item) => item.id === resourceId) || { id: resourceId };
     state.storage.resourceLinks = (state.storage.resourceLinks || []).filter((item) => String(item?.id || '').trim() !== resourceId);
     if (current.localFileId) await deleteLocalResourceFile(current.localFileId);
+    if (current.objectPath || current.storageMode === 'supabase') {
+      try {
+        await deleteResourceFileRemote(current);
+      } catch (error) {
+        console.warn('[document-storage] remote file delete failed', error);
+      }
+    }
     persistStorage('resource-link-delete');
     auditResourceLink('delete', current, { resourceId });
     await persistResourceLinkEvent(current, true);

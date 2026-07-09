@@ -4,8 +4,9 @@
   if (window.__ALTEA_LAUNCH_AUTOTASKS_V1__) return;
   window.__ALTEA_LAUNCH_AUTOTASKS_V1__ = true;
 
-  const VERSION = '20260701-launch-closed-dedupe-v2';
+  const VERSION = '20260709-launch-board-perf-v1';
   const MAX_BULK_TASKS = 30;
+  const AUGMENT_MIN_INTERVAL_MS = 220;
   const REMOVED_STATUSES = new Set(['deleted', 'removed']);
   const CLOSED_STATUSES = new Set(['done', 'closed', 'complete', 'completed', 'cancelled', 'canceled', 'archive', 'archived']);
   const TASK_STATUSES = [
@@ -376,6 +377,9 @@
   let wrapTimer = 0;
   let renderQueued = false;
   let knownTasksCache = null;
+  let historyBackfillQueued = false;
+  let historyBackfilled = false;
+  let lastAugmentAt = 0;
   let lastHandledAction = { key: '', at: 0 };
 
   function appState() {
@@ -1534,10 +1538,26 @@
     document.head.appendChild(style);
   }
 
+  function queueHistoryBackfill() {
+    if (historyBackfilled || historyBackfillQueued) return;
+    historyBackfillQueued = true;
+    const run = () => {
+      historyBackfillQueued = false;
+      historyBackfilled = true;
+      try {
+        backfillLaunchTaskHistory();
+      } catch (error) {
+        console.warn('[launch-autotasks] backfill', error);
+      }
+    };
+    if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(run, { timeout: 1800 });
+    else window.setTimeout(run, 240);
+  }
+
   function augmentLaunchView() {
     const root = document.getElementById('view-launches');
     if (!root || !root.querySelector('.launch-v1-shell')) return;
-    backfillLaunchTaskHistory();
+    queueHistoryBackfill();
     const oldPanel = root.querySelector('[data-launch-ops-panel]');
     if (oldPanel) oldPanel.remove();
     const kpis = root.querySelector('.launch-v1-kpis');
@@ -1830,12 +1850,23 @@
     document.addEventListener('click', handleOpsClick, true);
   }
 
-  function queueAugment() {
+  function queueAugment(options = {}) {
+    if (options.invalidateTasks) {
+      knownTasksCache = null;
+      historyBackfilled = false;
+    }
     if (renderQueued) return;
+    const root = document.getElementById('view-launches');
+    if (!root && appState().activeView && appState().activeView !== 'launches') return;
     renderQueued = true;
     const run = () => {
       renderQueued = false;
-      knownTasksCache = null;
+      const now = Date.now();
+      if (now - lastAugmentAt < AUGMENT_MIN_INTERVAL_MS) {
+        window.setTimeout(() => queueAugment(), AUGMENT_MIN_INTERVAL_MS - (now - lastAugmentAt));
+        return;
+      }
+      lastAugmentAt = now;
       try {
         augmentLaunchView();
       } catch (error) {
@@ -1889,9 +1920,10 @@
     refresh: queueAugment
   };
 
-  ['altea:app-ready', 'altea:data-ready', 'altea:viewchange', 'altea:portal-storage-updated', 'altea:launches-rendered', 'hashchange'].forEach((eventName) => {
+  ['altea:app-ready', 'altea:data-ready', 'altea:viewchange', 'altea:launches-rendered', 'hashchange'].forEach((eventName) => {
     window.addEventListener(eventName, () => queueAugment());
   });
+  window.addEventListener('altea:portal-storage-updated', () => queueAugment({ invalidateTasks: true }));
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot, { once: true });

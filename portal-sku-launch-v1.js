@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260702launch-identity-persist-v1';
+  const VERSION = '20260709launch-board-perf-v1';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -59,6 +59,7 @@
   let originalRenderLaunchControl = null;
   let installAttempts = 0;
   let skuV1RenderCache = null;
+  let launchV1RenderMemo = null;
   const SKU_REGISTRY_RENDER_LIMIT = 360;
   const SKU_ATTENTION_SCAN_LIMIT = 180;
 
@@ -113,6 +114,18 @@
   function todayKey() {
     if (typeof todayIso === 'function') return todayIso();
     return new Date().toISOString().slice(0, 10);
+  }
+
+  function launchMemo() {
+    if (!launchV1RenderMemo) {
+      launchV1RenderMemo = {
+        stageEntries: new WeakMap(),
+        readiness: new WeakMap(),
+        currentStage: new WeakMap(),
+        text: new WeakMap()
+      };
+    }
+    return launchV1RenderMemo;
   }
 
   function normalizeMarket(value) {
@@ -2191,18 +2204,33 @@
 
   function launchDue(item) {
     if (typeof launchDueDateKey === 'function') return launchDueDateKey(item);
-    return String(item?.launchDate || item?.date || '').slice(0, 10);
+    return launchNormalizeDateKey(item?.launchDate || item?.dueDate || item?.date || '') || '';
+  }
+
+  function launchNormalizeDateKey(value = '', fallbackYear = '') {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+    const numeric = raw.match(/\b(\d{1,2})[./](\d{1,2})(?:[./](\d{2,4}))?\b/);
+    if (numeric) {
+      const year = numeric[3]
+        ? (numeric[3].length === 2 ? `20${numeric[3]}` : numeric[3])
+        : (fallbackYear || String(new Date().getFullYear()));
+      return `${year}-${String(Number(numeric[2])).padStart(2, '0')}-${String(Number(numeric[1])).padStart(2, '0')}`;
+    }
+    return '';
   }
 
   function launchExactDue(item) {
-    const exact = String(item?.launchDate || item?.date || '').trim();
-    return /^\d{4}-\d{2}-\d{2}$/.test(exact) ? exact : '';
+    return launchNormalizeDateKey(item?.launchDate || item?.dueDate || item?.date || item?.launchDateKey || '');
   }
 
   function launchDateField(item, fields = []) {
+    const fallbackYear = String(launchItemMonthKey(item) || '').slice(0, 4);
     for (const field of fields) {
-      const value = String(item?.[field] || '').trim();
-      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+      const value = launchNormalizeDateKey(item?.[field], fallbackYear);
+      if (value) return value;
     }
     return '';
   }
@@ -2245,17 +2273,29 @@
     if (!match) return '';
     const monthMap = {
       январь: '01',
+      января: '01',
       февраль: '02',
+      февраля: '02',
       март: '03',
+      марта: '03',
       апрель: '04',
+      апреля: '04',
       май: '05',
+      мая: '05',
       июнь: '06',
+      июня: '06',
       июль: '07',
+      июля: '07',
       август: '08',
+      августа: '08',
       сентябрь: '09',
+      сентября: '09',
       октябрь: '10',
+      октября: '10',
       ноябрь: '11',
-      декабрь: '12'
+      ноября: '11',
+      декабрь: '12',
+      декабря: '12'
     };
     const month = monthMap[match[1]];
     return month ? `${match[2]}-${month}-01` : '';
@@ -2304,8 +2344,9 @@
   }
 
   function stageEntries(item) {
-    if (typeof launchStageEntries === 'function') return launchStageEntries(item);
-    return [
+    const memo = item && typeof item === 'object' ? launchMemo().stageEntries : null;
+    if (memo?.has(item)) return memo.get(item);
+    const entries = typeof launchStageEntries === 'function' ? launchStageEntries(item) : [
       ['Переговоры', 'negotiationStatus', 'negotiationDue', 'negotiationOwner', 'negotiationComment'],
       ['Образец', 'sampleStatus', 'sampleDue', 'sampleOwner', 'sampleComment'],
       ['Производство', 'productionStatus', 'productionDue', 'productionOwner', 'productionComment'],
@@ -2321,6 +2362,8 @@
       done: /готов|done|ok/i.test(String(item?.[status] || '')),
       column: { key: /блок|stop|риск/i.test(String(item?.[status] || '')) ? 'blocked' : 'work' }
     }));
+    memo?.set(item, entries);
+    return entries;
   }
 
   const LAUNCH_V1_STAGE_STATUSES = [
@@ -2328,6 +2371,17 @@
     { key: 'work', label: 'в работе', value: 'в работе' },
     { key: 'done', label: 'готово', value: 'готово' },
     { key: 'blocked', label: 'блокер', value: 'блокер' }
+  ];
+  const LAUNCH_BOARD_STATUS_ORDER = [
+    { key: 'blocked', label: 'Блокеры' },
+    { key: 'negotiation', label: 'Переговоры' },
+    { key: 'sample', label: 'Пробный образец' },
+    { key: 'production', label: 'Производство' },
+    { key: 'packaging', label: 'Упаковка' },
+    { key: 'content', label: 'Карточка / контент' },
+    { key: 'readiness', label: 'Готовность к запуску' },
+    { key: 'done', label: 'Готово' },
+    { key: 'other', label: 'Другое' }
   ];
 
   function launchV1StatusTone(value = '') {
@@ -2594,15 +2648,28 @@
   }
 
   function readiness(item) {
-    if (typeof launchReadinessState === 'function') return launchReadinessState(item);
+    const memo = item && typeof item === 'object' ? launchMemo().readiness : null;
+    if (memo?.has(item)) return memo.get(item);
+    if (typeof launchReadinessState === 'function') {
+      const value = launchReadinessState(item);
+      memo?.set(item, value);
+      return value;
+    }
     const entries = stageEntries(item);
     const missing = entries.filter((entry) => !entry.done);
-    return { ready: missing.length === 0, missing, checks: entries, pct: entries.length ? (entries.length - missing.length) / entries.length : 0 };
+    const value = { ready: missing.length === 0, missing, checks: entries, pct: entries.length ? (entries.length - missing.length) / entries.length : 0 };
+    memo?.set(item, value);
+    return value;
   }
 
   function currentStage(item) {
-    if (typeof launchCurrentStageEntry === 'function') return launchCurrentStageEntry(item);
-    return stageEntries(item).find((entry) => !entry.done) || stageEntries(item).at(-1);
+    const memo = item && typeof item === 'object' ? launchMemo().currentStage : null;
+    if (memo?.has(item)) return memo.get(item);
+    const value = typeof launchCurrentStageEntry === 'function'
+      ? launchCurrentStageEntry(item)
+      : stageEntries(item).find((entry) => !entry.done) || stageEntries(item).at(-1);
+    memo?.set(item, value);
+    return value;
   }
 
   function launchFilters() {
@@ -2618,20 +2685,26 @@
       advancedOpen: false
     };
     if (!stateRef.launchV1Filters.month) stateRef.launchV1Filters.month = 'all';
+    if (!['month', 'list', 'board'].includes(stateRef.launchV1Filters.viewMode)) stateRef.launchV1Filters.viewMode = 'month';
     return stateRef.launchV1Filters;
   }
 
   function launchItemsV1() {
     const items = typeof getLaunchItems === 'function' ? getLaunchItems({ skipTaskLookup: true }) : (appState().launches || []);
-    const taskCounts = typeof launchTaskCountMap === 'function' ? launchTaskCountMap() : new Map();
+    const includeTaskCounts = window.__ALTEA_LAUNCH_V1_INCLUDE_TASK_COUNTS__ === true
+      && typeof launchTaskCountMap === 'function'
+      && typeof launchWithTaskCount === 'function';
+    const taskCounts = includeTaskCounts ? launchTaskCountMap() : null;
     return items.map((item) => {
-      const normalized = typeof launchWithTaskCount === 'function' ? launchWithTaskCount(item, taskCounts) : item;
+      const normalized = includeTaskCounts ? launchWithTaskCount(item, taskCounts) : item;
       return { ...normalized, id: launchId(normalized) };
     });
   }
 
   function launchText(item) {
-    return [
+    const memo = item && typeof item === 'object' ? launchMemo().text : null;
+    if (memo?.has(item)) return memo.get(item);
+    const value = [
       item.name,
       item.title,
       item.articleKey,
@@ -2658,6 +2731,8 @@
       item.productComment,
       item.notes
     ].filter(Boolean).join(' ').toLowerCase();
+    memo?.set(item, value);
+    return value;
   }
 
   function launchFilteredItems(items) {
@@ -2752,8 +2827,9 @@
           ${['month', 'owner', 'category', 'status', 'readiness'].filter((key) => filters[key] && filters[key] !== 'all').map((key) => `<button type="button" disabled>${escapeValue(key)}: ${escapeValue(filters[key])}</button>`).join('')}
           <button type="button" data-launch-v1-reset>Сброс</button>
           <span class="launch-v1-view-mode">
-            <button type="button" class="${filters.viewMode !== 'list' ? 'active' : ''}" data-launch-v1-view-mode="month">Месяц</button>
+            <button type="button" class="${filters.viewMode === 'month' ? 'active' : ''}" data-launch-v1-view-mode="month">Месяц</button>
             <button type="button" class="${filters.viewMode === 'list' ? 'active' : ''}" data-launch-v1-view-mode="list">Список</button>
+            <button type="button" class="${filters.viewMode === 'board' ? 'active' : ''}" data-launch-v1-view-mode="board">Доска</button>
           </span>
         </div>
       </section>
@@ -2812,7 +2888,7 @@
     const ready = readiness(item);
     const blockers = (item.blockers || []).length + stageEntries(item).filter((stage) => stage.column?.key === 'blocked').length;
     return `
-      <button type="button" class="launch-v1-card ${id === selectedId ? 'active' : ''}" data-launch-v1-select="${escapeValue(id)}">
+      <button type="button" class="launch-v1-card ${id === selectedId ? 'active' : ''}" data-launch-v1-select="${escapeValue(id)}" data-launch-v1-card="${escapeValue(id)}">
         <strong>${escapeValue(item.name || item.title || item.articleKey || 'Новинка')}</strong>
         <span>${escapeValue(item.reportGroup || item.category || 'категория —')} · ${escapeValue(entry?.config?.title || item.status || 'этап —')}</span>
         <em>${blockers ? `${formatInt(blockers)} блокера` : `${formatPct(ready.pct || 0)} готовность`}</em>
@@ -2869,6 +2945,71 @@
       <section class="launch-v1-calendar-card launch-v1-list-card">
         <div class="launch-v1-list">
           ${filtered.map((item) => renderLaunchCard(item, selectedId)).join('') || '<div class="sl-v1-empty">Новинок по фильтру не найдено.</div>'}
+        </div>
+      </section>
+    `;
+  }
+
+  function launchBoardStatus(item) {
+    const entries = stageEntries(item);
+    const hasBlocker = (item.blockers || []).length || entries.some((entry) => entry.column?.key === 'blocked');
+    if (hasBlocker) return 'blocked';
+    if (readiness(item).ready) return 'done';
+    const current = currentStage(item) || {};
+    const field = current.config?.status || '';
+    if (field === 'negotiationStatus') return 'negotiation';
+    if (field === 'sampleStatus') return 'sample';
+    if (field === 'productionStatus') return 'production';
+    if (field === 'packagingStatus') return 'packaging';
+    if (field === 'contentStatus') return 'content';
+    if (field === 'launchReadinessStatus') return 'readiness';
+    return 'other';
+  }
+
+  function renderLaunchBoardRow(item, selectedId) {
+    const id = launchId(item);
+    const ready = readiness(item);
+    const current = currentStage(item);
+    const owner = launchOwner(item) || 'без owner';
+    const tone = current?.column?.key === 'blocked' || (item.blockers || []).length ? 'danger' : ready.ready ? 'ok' : 'warn';
+    return `
+      <button type="button" class="launch-v1-board-row ${escapeValue(tone)} ${id === selectedId ? 'active' : ''}" data-launch-v1-select="${escapeValue(id)}" data-launch-v1-card="${escapeValue(id)}">
+        <i></i>
+        <span>
+          <strong>${escapeValue(item.name || item.title || item.articleKey || 'Новинка')}</strong>
+          <em>${escapeValue(item.reportGroup || item.category || 'категория —')} · ${escapeValue(owner)} · ${escapeValue(current?.config?.title || item.status || 'этап —')}</em>
+        </span>
+        <b>${escapeValue(launchDueText(item))}</b>
+        <small>${formatPct(ready.pct || 0)}</small>
+      </button>
+    `;
+  }
+
+  function renderLaunchBoard(filtered, selectedId) {
+    const groups = new Map(LAUNCH_BOARD_STATUS_ORDER.map((group) => [group.key, []]));
+    filtered.forEach((item) => {
+      const key = launchBoardStatus(item);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    });
+    return `
+      <section class="launch-v1-calendar-card launch-v1-board-card">
+        <div class="launch-v1-board-tree">
+          ${LAUNCH_BOARD_STATUS_ORDER.map((group, index) => {
+            const items = (groups.get(group.key) || []).sort((left, right) => String(launchDue(left) || '9999-12-31').localeCompare(String(launchDue(right) || '9999-12-31')) || String(left.name || '').localeCompare(String(right.name || ''), 'ru'));
+            return `
+              <section class="launch-v1-board-group ${items.length ? '' : 'empty'}">
+                <header>
+                  <i>${index + 1}</i>
+                  <strong>${escapeValue(group.label)}</strong>
+                  <em>${formatInt(items.length)}</em>
+                </header>
+                <div>
+                  ${items.map((item) => renderLaunchBoardRow(item, selectedId)).join('') || '<p>Нет карточек в этом статусе.</p>'}
+                </div>
+              </section>
+            `;
+          }).join('')}
         </div>
       </section>
     `;
@@ -3005,6 +3146,7 @@
   function renderLaunchesV1(rootId = 'view-launches') {
     const root = document.getElementById(rootId);
     if (!root) return;
+    launchV1RenderMemo = null;
     const allItems = launchItemsV1();
     const activeMarket = readGlobalMarket();
     const scopedItems = allItems.filter((item) => launchMatchesMarket(item, activeMarket));
@@ -3035,7 +3177,7 @@
         ${renderLaunchKpis(scopedItems, filtered)}
         ${fullKanban ? renderFullLaunchKanban(selected) : `
           <section class="launch-v1-workspace">
-            ${filters.viewMode === 'list' ? renderLaunchList(filtered, selectedId) : renderLaunchCalendar(filtered, selectedId)}
+            ${filters.viewMode === 'list' ? renderLaunchList(filtered, selectedId) : filters.viewMode === 'board' ? renderLaunchBoard(filtered, selectedId) : renderLaunchCalendar(filtered, selectedId)}
             ${renderSelectedLaunch(selected)}
           </section>
         `}
@@ -3208,12 +3350,15 @@
       .launch-v1-stage-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.launch-v1-stage-actions button{height:26px;border:1px solid rgba(224,190,126,.20);border-radius:999px;background:rgba(255,255,255,.035);color:rgba(247,241,232,.72);padding:0 8px;font:inherit;font-size:10px;font-weight:850;cursor:pointer}.launch-v1-stage-actions button.active{border-color:rgba(245,218,165,.75);background:linear-gradient(180deg,#f5dfad,#b98b47);color:#120d07}
       .launch-v1-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.launch-v1-detail-actions button{border-color:rgba(224,190,126,.22);background:rgba(255,255,255,.035)}
       .launch-v1-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+      .launch-v1-view-mode{display:inline-flex;gap:4px;padding:3px!important;border-radius:999px!important}.launch-v1-view-mode button{min-width:82px;padding:0 12px}
+      .launch-v1-board-card{overflow:auto}.launch-v1-board-tree{display:grid;gap:10px;min-width:660px}.launch-v1-board-group{display:grid;grid-template-columns:230px minmax(0,1fr);gap:10px;align-items:start;border:1px solid rgba(224,190,126,.12);border-radius:9px;background:rgba(0,0,0,.12);padding:10px}.launch-v1-board-group.empty{opacity:.58}.launch-v1-board-group header{position:sticky;top:0;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:9px;align-items:center;color:#fff4d8}.launch-v1-board-group header i{display:grid;place-items:center;width:30px;height:30px;border:1px solid rgba(224,190,126,.28);border-radius:50%;font-style:normal;color:#f0d49a;background:rgba(240,212,154,.06)}.launch-v1-board-group header strong{font-size:13px}.launch-v1-board-group header em{font-style:normal;color:#f0d49a;font-weight:900}.launch-v1-board-group>div{display:grid;gap:7px}.launch-v1-board-group p{margin:0;color:var(--sl-muted);font-size:12px}
+      .launch-v1-board-row{width:100%;display:grid;grid-template-columns:8px minmax(0,1fr) minmax(92px,auto) 54px;gap:10px;align-items:center;min-height:58px;border:1px solid rgba(224,190,126,.16);border-radius:8px;background:rgba(6,5,4,.34);color:var(--sl-text);padding:9px 10px;text-align:left;cursor:pointer}.launch-v1-board-row.active{border-color:var(--sl-aqua);box-shadow:0 0 0 1px rgba(88,214,202,.22)}.launch-v1-board-row>i{width:8px;height:34px;border-radius:999px;background:#f0c469}.launch-v1-board-row.ok>i{background:#61d89a}.launch-v1-board-row.danger>i{background:#ff7469}.launch-v1-board-row span{display:grid;gap:3px;min-width:0}.launch-v1-board-row strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.launch-v1-board-row em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sl-muted);font-style:normal;font-size:11px}.launch-v1-board-row b{color:#f0d49a;font-size:11px;text-align:right;white-space:nowrap}.launch-v1-board-row small{color:var(--sl-muted);font-size:11px;text-align:right;font-weight:900}
       .launch-v1-full-kanban{display:grid;gap:14px}.launch-v1-full-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.launch-v1-full-head h3{margin:4px 0 0;font-size:32px}.launch-v1-full-head>div:last-child{display:flex;gap:8px}.launch-v1-full-head button{border-color:rgba(224,190,126,.22);background:rgba(255,255,255,.035);padding:0 14px}
       .launch-v1-kanban-columns{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));gap:10px;overflow:auto}.launch-v1-kanban-col{min-height:520px;border:1px solid var(--sl-line);border-radius:10px;background:rgba(255,255,255,.018);padding:10px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px}.launch-v1-kanban-col header{display:grid;gap:8px}.launch-v1-kanban-col article{border:1px solid rgba(224,190,126,.14);border-radius:9px;padding:12px;background:rgba(0,0,0,.16);display:grid;align-content:start;gap:8px}.launch-v1-kanban-col em,.launch-v1-kanban-col p{color:var(--sl-muted);font-style:normal}.launch-v1-kanban-col b{color:#f0d49a}
       .launch-v1-editor-backdrop{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.62);backdrop-filter:blur(16px)}.launch-v1-editor{width:min(1080px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;border:1px solid rgba(224,190,126,.28);border-radius:16px;background:linear-gradient(145deg,rgba(25,22,18,.98),rgba(8,7,6,.98));box-shadow:0 24px 80px rgba(0,0,0,.58);color:#f7f1e8}.launch-v1-editor form{display:grid;gap:16px;padding:18px}.launch-v1-editor header,.launch-v1-editor footer{display:flex;align-items:center;justify-content:space-between;gap:12px}.launch-v1-editor header span{display:block;color:#d8c08a;font-size:11px;font-weight:850;letter-spacing:.22em;text-transform:uppercase}.launch-v1-editor h3{margin:4px 0 0;font-size:28px}.launch-v1-editor header button{width:38px;height:38px;border:1px solid rgba(224,190,126,.26);border-radius:50%;background:rgba(255,255,255,.04);color:#f7f1e8;font-size:24px;cursor:pointer}.launch-v1-editor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.launch-v1-editor label{display:grid;gap:6px}.launch-v1-editor label.wide{grid-column:1/-1}.launch-v1-editor label span,.launch-v1-editor-stages strong{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:rgba(235,216,174,.64);font-weight:850}.launch-v1-editor input,.launch-v1-editor select,.launch-v1-editor textarea{min-width:0;width:100%;border:1px solid rgba(224,190,126,.22);border-radius:9px;background:rgba(5,4,3,.82);color:#f7f1e8;padding:10px 12px;font:inherit;outline:none}.launch-v1-editor textarea{resize:vertical}.launch-v1-editor-stages{display:grid;gap:10px}.launch-v1-editor-stages fieldset{display:grid;grid-template-columns:1fr 170px 1fr;gap:10px;border:1px solid rgba(224,190,126,.14);border-radius:12px;margin:0;padding:12px;background:rgba(0,0,0,.16)}.launch-v1-editor-stages legend{padding:0 8px;color:#f0d49a;font-weight:900}.launch-v1-editor footer button{height:40px;border:1px solid rgba(224,190,126,.26);border-radius:9px;background:rgba(255,255,255,.04);color:#f7f1e8;padding:0 16px;font:inherit;font-weight:850;cursor:pointer}.launch-v1-editor footer button[type="submit"]{background:linear-gradient(180deg,#f5dfad,#b98b47);color:#120d07}.launch-v1-editor footer button.danger{border-color:rgba(255,116,105,.45);color:#ff8a80}
       .launch-v1-toast{position:fixed;right:22px;bottom:22px;z-index:10000;border:1px solid rgba(103,213,154,.36);border-radius:999px;background:rgba(10,22,16,.94);color:#dfffe9;padding:10px 14px;font-weight:850;box-shadow:0 14px 44px rgba(0,0,0,.35)}
       @media (max-width:1200px){.sl-v1-hero,.launch-v1-workspace,.sl-v1-focus-grid{grid-template-columns:1fr}.sl-v1-kpis,.launch-v1-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sl-v1-filter-grid,.launch-v1-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.launch-v1-detail{position:relative;top:auto}.launch-v1-kanban-columns{grid-template-columns:repeat(3,minmax(220px,1fr))}.sl-v1-review-row{grid-template-columns:1fr}}
-      @media (max-width:720px){.sl-v1-hero h2{font-size:34px}.sl-v1-filter-grid,.launch-v1-filter-grid,.sl-v1-kpis,.launch-v1-kpis,.launch-v1-gate{grid-template-columns:1fr}.sl-v1-segment{grid-template-columns:1fr}.launch-v1-month-grid,.launch-v1-weekdays{min-width:760px}.launch-v1-calendar-card{overflow:auto}.launch-v1-detail-actions,.launch-v1-full-head{display:grid}.launch-v1-kanban-columns{grid-template-columns:repeat(6,220px)}}
+      @media (max-width:720px){.sl-v1-hero h2{font-size:34px}.sl-v1-filter-grid,.launch-v1-filter-grid,.sl-v1-kpis,.launch-v1-kpis,.launch-v1-gate{grid-template-columns:1fr}.sl-v1-segment{grid-template-columns:1fr}.launch-v1-month-grid,.launch-v1-weekdays{min-width:760px}.launch-v1-calendar-card{overflow:auto}.launch-v1-detail-actions,.launch-v1-full-head{display:grid}.launch-v1-kanban-columns{grid-template-columns:repeat(6,220px)}.launch-v1-board-tree{min-width:620px}.launch-v1-board-group{grid-template-columns:1fr}.launch-v1-board-group header{position:relative}.launch-v1-view-mode{width:100%;justify-content:space-between}.launch-v1-view-mode button{min-width:0;flex:1}}
       @media (prefers-reduced-motion:reduce){.sku-launch-v1-shell *{transition:none!important;animation:none!important}}
     `;
     (document.head || document.documentElement).appendChild(style);

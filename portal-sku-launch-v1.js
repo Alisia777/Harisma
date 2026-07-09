@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260709launch-board-dnd-v1';
+  const VERSION = '20260709launch-perf-v1';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -3238,6 +3238,76 @@
     `;
   }
 
+  function bindLaunchesV1Detail(root, rerender) {
+    root.querySelectorAll('[data-launch-v1-edit]').forEach((button) => {
+      if (button.__launchV1EditBound) return;
+      button.__launchV1EditBound = true;
+      button.addEventListener('click', () => {
+        openLaunchV1Editor(button.dataset.launchV1Edit || '');
+      });
+    });
+    root.querySelectorAll('[data-launch-v1-stage-status]').forEach((button) => {
+      if (button.__launchV1StageBound) return;
+      button.__launchV1StageBound = true;
+      button.addEventListener('click', () => {
+        launchV1SetStageStatus(button.dataset.launchV1Id || appState().launchV1SelectedId || '', button.dataset.launchV1Stage || '', button.dataset.launchV1StageStatus || '');
+      });
+    });
+    root.querySelectorAll('[data-launch-v1-status-select]').forEach((select) => {
+      if (select.__launchV1StatusBound) return;
+      select.__launchV1StatusBound = true;
+      select.addEventListener('change', () => {
+        const item = launchV1FindItem(select.dataset.launchV1StatusSelect || '');
+        if (!item) return;
+        const draft = { ...item, id: launchId(item), status: select.value || '' };
+        launchV1SaveDraft(draft);
+        appState().launchV1SelectedId = draft.id;
+        launchV1Toast('Статус новинки сохранен');
+        rerender();
+      });
+    });
+    root.querySelectorAll('[data-launch-v1-kanban]').forEach((button) => {
+      if (button.__launchV1KanbanBound) return;
+      button.__launchV1KanbanBound = true;
+      button.addEventListener('click', () => {
+        appState().launchV1SelectedId = button.dataset.launchV1Kanban || appState().launchV1SelectedId;
+        appState().launchV1FullKanban = true;
+        rerender();
+      });
+    });
+    const back = root.querySelector('[data-launch-v1-back]');
+    if (back && !back.__launchV1BackBound) {
+      back.__launchV1BackBound = true;
+      back.addEventListener('click', () => {
+        appState().launchV1FullKanban = false;
+        rerender();
+      });
+    }
+  }
+
+  function refreshLaunchV1Selected(root, itemId = '', rerender = () => {}) {
+    const id = String(itemId || '').trim();
+    if (!id) return;
+    const selected = launchV1FindItem(id);
+    if (!selected) return;
+    const stateRef = appState();
+    stateRef.launchV1SelectedId = id;
+    stateRef.launchV1FullKanban = false;
+    root.querySelectorAll('[data-launch-v1-select]').forEach((node) => {
+      node.classList.toggle('active', String(node.dataset.launchV1Select || '') === id);
+    });
+    const detail = root.querySelector('.launch-v1-detail');
+    if (detail) {
+      detail.outerHTML = renderSelectedLaunch(selected);
+      bindLaunchesV1Detail(root, rerender);
+    }
+    try {
+      window.dispatchEvent(new CustomEvent('altea:launches-selected', {
+        detail: { rootId: root.id || 'view-launches', selectedId: id, source: VERSION }
+      }));
+    } catch {}
+  }
+
   function renderLaunchesV1(rootId = 'view-launches') {
     const root = document.getElementById(rootId);
     if (!root) return;
@@ -3331,9 +3401,7 @@
     });
     root.querySelectorAll('[data-launch-v1-select]').forEach((button) => {
       button.addEventListener('click', () => {
-        appState().launchV1SelectedId = button.dataset.launchV1Select || '';
-        appState().launchV1FullKanban = false;
-        rerender();
+        refreshLaunchV1Selected(root, button.dataset.launchV1Select || '', rerender);
       });
     });
     root.querySelectorAll('[data-launch-v1-drag]').forEach((button) => {
@@ -3350,27 +3418,7 @@
         root.querySelectorAll('.launch-v1-day.drop-target,.launch-v1-board-group.drop-target').forEach((node) => node.classList.remove('drop-target'));
       });
     });
-    root.querySelectorAll('[data-launch-v1-edit]').forEach((button) => {
-      button.addEventListener('click', () => {
-        openLaunchV1Editor(button.dataset.launchV1Edit || '');
-      });
-    });
-    root.querySelectorAll('[data-launch-v1-stage-status]').forEach((button) => {
-      button.addEventListener('click', () => {
-        launchV1SetStageStatus(button.dataset.launchV1Id || appState().launchV1SelectedId || '', button.dataset.launchV1Stage || '', button.dataset.launchV1StageStatus || '');
-      });
-    });
-    root.querySelectorAll('[data-launch-v1-status-select]').forEach((select) => {
-      select.addEventListener('change', () => {
-        const item = launchV1FindItem(select.dataset.launchV1StatusSelect || '');
-        if (!item) return;
-        const draft = { ...item, id: launchId(item), status: select.value || '' };
-        launchV1SaveDraft(draft);
-        appState().launchV1SelectedId = draft.id;
-        launchV1Toast('Статус новинки сохранен');
-        rerender();
-      });
-    });
+    bindLaunchesV1Detail(root, rerender);
     root.querySelectorAll('[data-launch-v1-day]').forEach((day) => {
       day.addEventListener('click', (event) => {
         if (event.target.closest('[data-launch-v1-select]')) return;
@@ -3415,17 +3463,6 @@
         group.classList.remove('drop-target');
         launchV1MoveToBoardStatus(id, group.dataset.launchV1BoardStatus || '');
       });
-    });
-    root.querySelectorAll('[data-launch-v1-kanban]').forEach((button) => {
-      button.addEventListener('click', () => {
-        appState().launchV1SelectedId = button.dataset.launchV1Kanban || appState().launchV1SelectedId;
-        appState().launchV1FullKanban = true;
-        rerender();
-      });
-    });
-    root.querySelector('[data-launch-v1-back]')?.addEventListener('click', () => {
-      appState().launchV1FullKanban = false;
-      rerender();
     });
   }
 

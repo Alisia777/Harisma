@@ -4,9 +4,10 @@
   if (window.__ALTEA_LAUNCH_AUTOTASKS_V1__) return;
   window.__ALTEA_LAUNCH_AUTOTASKS_V1__ = true;
 
-  const VERSION = '20260709-launch-board-perf-v1';
+  const VERSION = '20260709-launch-perf-v1';
   const MAX_BULK_TASKS = 30;
   const AUGMENT_MIN_INTERVAL_MS = 220;
+  const SNAPSHOT_CACHE_MS = 6000;
   const REMOVED_STATUSES = new Set(['deleted', 'removed']);
   const CLOSED_STATUSES = new Set(['done', 'closed', 'complete', 'completed', 'cancelled', 'canceled', 'archive', 'archived']);
   const TASK_STATUSES = [
@@ -377,6 +378,9 @@
   let wrapTimer = 0;
   let renderQueued = false;
   let knownTasksCache = null;
+  let opsSnapshotCache = null;
+  let opsPanelQueued = false;
+  let selectedDetailQueued = false;
   let historyBackfillQueued = false;
   let historyBackfilled = false;
   let lastAugmentAt = 0;
@@ -1289,14 +1293,29 @@
   }
 
   function snapshot() {
+    const stateRef = appState();
+    const storage = stateRef.storage || {};
     const items = launchItems();
+    const cacheKey = [
+      items.length,
+      Array.isArray(storage.tasks) ? storage.tasks.length : 0,
+      Array.isArray(storage.launchOverrides) ? storage.launchOverrides.length : 0,
+      Array.isArray(storage.launchDeletedIds) ? storage.launchDeletedIds.length : 0,
+      Array.isArray(storage.launchAutoTaskTombstones) ? storage.launchAutoTaskTombstones.length : 0
+    ].join(':');
+    const now = Date.now();
+    if (opsSnapshotCache && opsSnapshotCache.key === cacheKey && now - opsSnapshotCache.at < SNAPSHOT_CACHE_MS) {
+      return opsSnapshotCache.data;
+    }
     const missing = missingTasksForAll();
     const exactDateMissing = items.filter((item) => firstStockDateInfo(item).source !== 'exact').length;
     const noOwner = items.filter((item) => !ownerForRole(item, 'product')).length;
     const noMarketplace = items.filter((item) => !String(item.marketplaces || item.marketplace || '').trim()).length;
     const dueSoon = missing.filter((entry) => entry.payload.due && dayDiff(entry.payload.due) <= 7).length;
     const overdue = missing.filter((entry) => entry.payload.due && dayDiff(entry.payload.due) < 0).length;
-    return { items, missing, exactDateMissing, noOwner, noMarketplace, dueSoon, overdue };
+    const data = { items, missing, exactDateMissing, noOwner, noMarketplace, dueSoon, overdue };
+    opsSnapshotCache = { key: cacheKey, at: now, data };
+    return data;
   }
 
   function selectedLaunch() {
@@ -1383,6 +1402,31 @@
               </div>
             ` : '<p>Выберите новинку в календаре.</p>'}
           </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderOpsPanelShell() {
+    return `
+      <section class="launch-ops-panel loading" data-launch-ops-panel>
+        <div class="launch-ops-head">
+          <div>
+            <span>Процесс и автозадачи</span>
+            <strong>Готовим задачи запуска</strong>
+          </div>
+          <div class="launch-ops-actions">
+            <button type="button" data-launch-ops-action="open" data-launch-ops-open-tasks>Открыть задачи</button>
+          </div>
+        </div>
+        <div class="launch-ops-kpis">
+          ${['Новинки', 'Нужно задач', 'Срочно', 'Просрочено', 'Без точной даты'].map((label) => `
+            <span>
+              <em>${html(label)}</em>
+              <strong>...</strong>
+              <small>считаем без блокировки</small>
+            </span>
+          `).join('')}
         </div>
       </section>
     `;
@@ -1554,6 +1598,27 @@
     else window.setTimeout(run, 240);
   }
 
+  function queueOpsPanelRender() {
+    if (opsPanelQueued) return;
+    opsPanelQueued = true;
+    const run = () => {
+      opsPanelQueued = false;
+      const root = document.getElementById('view-launches');
+      if (!root || !root.querySelector('.launch-v1-shell')) return;
+      const panel = root.querySelector('[data-launch-ops-panel]');
+      if (!panel) return;
+      try {
+        panel.outerHTML = renderOpsPanel();
+        hardwireOpsButtons(root);
+        bindOpsEvents(root);
+      } catch (error) {
+        console.warn('[launch-autotasks] ops panel', error);
+      }
+    };
+    if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(run, { timeout: 1600 });
+    else window.setTimeout(run, 160);
+  }
+
   function augmentLaunchView() {
     const root = document.getElementById('view-launches');
     if (!root || !root.querySelector('.launch-v1-shell')) return;
@@ -1561,7 +1626,10 @@
     const oldPanel = root.querySelector('[data-launch-ops-panel]');
     if (oldPanel) oldPanel.remove();
     const kpis = root.querySelector('.launch-v1-kpis');
-    if (kpis) kpis.insertAdjacentHTML('afterend', renderOpsPanel());
+    if (kpis) {
+      kpis.insertAdjacentHTML('afterend', renderOpsPanelShell());
+      queueOpsPanelRender();
+    }
 
     root.querySelectorAll('[data-launch-ops-detail]').forEach((node) => node.remove());
     const selected = selectedLaunch();
@@ -1571,6 +1639,32 @@
     injectTaskChipsIntoCalendar(root);
     hardwireOpsButtons(root);
     bindOpsEvents(root);
+  }
+
+  function refreshSelectedOpsDetail() {
+    const root = document.getElementById('view-launches');
+    if (!root || !root.querySelector('.launch-v1-shell')) return;
+    root.querySelectorAll('[data-launch-ops-detail]').forEach((node) => node.remove());
+    const selected = selectedLaunch();
+    const detail = root.querySelector('.launch-v1-detail');
+    if (detail && selected) detail.insertAdjacentHTML('beforeend', renderSelectedOpsBlock(selected));
+    hardwireOpsButtons(root);
+    bindOpsEvents(root);
+  }
+
+  function queueSelectedOpsDetail() {
+    if (selectedDetailQueued) return;
+    selectedDetailQueued = true;
+    const run = () => {
+      selectedDetailQueued = false;
+      try {
+        refreshSelectedOpsDetail();
+      } catch (error) {
+        console.warn('[launch-autotasks] selected detail', error);
+      }
+    };
+    if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(run);
+    else window.setTimeout(run, 0);
   }
 
   function openTasksView() {
@@ -1853,6 +1947,7 @@
   function queueAugment(options = {}) {
     if (options.invalidateTasks) {
       knownTasksCache = null;
+      opsSnapshotCache = null;
       historyBackfilled = false;
     }
     if (renderQueued) return;
@@ -1923,6 +2018,7 @@
   ['altea:app-ready', 'altea:data-ready', 'altea:viewchange', 'altea:launches-rendered', 'hashchange'].forEach((eventName) => {
     window.addEventListener(eventName, () => queueAugment());
   });
+  window.addEventListener('altea:launches-selected', () => queueSelectedOpsDetail());
   window.addEventListener('altea:portal-storage-updated', () => queueAugment({ invalidateTasks: true }));
 
   if (document.readyState === 'loading') {

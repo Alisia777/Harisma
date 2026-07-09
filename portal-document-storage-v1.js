@@ -147,6 +147,9 @@
     state.docFilters.search = String(state.docFilters.search || '');
     state.docFilters.group = String(state.docFilters.group || 'all');
     state.docFilters.type = String(state.docFilters.type || 'all');
+    state.documentStorageStatus = state.documentStorageStatus && typeof state.documentStorageStatus === 'object'
+      ? state.documentStorageStatus
+      : { message: '', tone: '' };
     return state;
   }
 
@@ -261,6 +264,20 @@
         Ничего не найдено. Измени фильтр или добавь новый файл или ссылку в хранилище.
       </div>
     `;
+  }
+
+  function setStorageStatus(message = '', tone = 'info') {
+    const state = ensureStorageShape();
+    state.documentStorageStatus = {
+      message: String(message || '').trim(),
+      tone: String(tone || 'info').trim()
+    };
+  }
+
+  function renderStorageStatus() {
+    const status = ensureStorageShape().documentStorageStatus || {};
+    if (!status.message) return '';
+    return `<div class="banner document-storage-status is-${html(status.tone || 'info')}"><div>i</div><div>${html(status.message)}</div></div>`;
   }
 
   function readCommentPayload(text = '', marker = RESOURCE_LINK_MARKER) {
@@ -720,21 +737,31 @@
     const title = String(data.get('title') || '').trim();
     const href = safeHref(data.get('href') || '');
     if (!title && !files.length) {
+      setStorageStatus('Заполни название или выбери файл для хранилища.', 'warn');
       setError('Заполни название или выбери файл для хранилища.');
+      renderDocumentStorage();
       return;
     }
     if (!href && !files.length) {
+      setStorageStatus('Добавь ссылку или выбери файл.', 'warn');
       setError('Добавь ссылку или выбери файл.');
+      renderDocumentStorage();
       return;
     }
     const emptyFiles = files.filter((file) => Number(file.size || 0) <= 0);
     if (emptyFiles.length) {
-      setError(`Не добавлены пустые файлы: ${emptyFiles.map((file) => file.webkitRelativePath || file.name || 'file').slice(0, 4).join(', ')}`);
+      const message = `Не добавлены пустые файлы: ${emptyFiles.map((file) => file.webkitRelativePath || file.name || 'file').slice(0, 4).join(', ')}`;
+      setStorageStatus(message, 'warn');
+      setError(message);
+      renderDocumentStorage();
       return;
     }
     const oversizedFiles = files.filter((file) => Number(file.size || 0) > REMOTE_FILE_MAX_BYTES);
     if (oversizedFiles.length) {
-      setError(`Не добавлены файлы больше ${formatBytes(REMOTE_FILE_MAX_BYTES)}: ${oversizedFiles.map((file) => file.webkitRelativePath || file.name || 'file').slice(0, 4).join(', ')}`);
+      const message = `Не добавлены файлы больше ${formatBytes(REMOTE_FILE_MAX_BYTES)}: ${oversizedFiles.map((file) => file.webkitRelativePath || file.name || 'file').slice(0, 4).join(', ')}`;
+      setStorageStatus(message, 'warn');
+      setError(message);
+      renderDocumentStorage();
       return;
     }
     const rawType = String(data.get('type') || '').trim();
@@ -744,6 +771,8 @@
     const pendingFiles = files.length ? files : [null];
     const additions = [];
     const failed = [];
+    setStorageStatus(files.length ? `Загружаем файлов: ${files.length}...` : 'Сохраняем ссылку...', 'info');
+    renderDocumentStorage();
 
     for (const file of pendingFiles) {
       const resourceId = `resource-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -786,7 +815,10 @@
 
     if (!additions.length) {
       const tail = failed.length ? ` Supabase отклонил: ${failed.slice(0, 3).join(' | ')}` : '';
-      setError(`Файлы не добавлены. Расширь MIME types у bucket portal-task-files или добавь ссылку на папку/файл.${tail}`);
+      const message = `Файлы не добавлены. Расширь MIME types у bucket portal-task-files или добавь ссылку на папку/файл.${tail}`;
+      setStorageStatus(message, 'danger');
+      setError(message);
+      renderDocumentStorage();
       return;
     }
     state.storage.resourceLinks = [
@@ -799,9 +831,11 @@
     for (const item of additions) syncResults.push(await persistResourceLinkEvent(item, false));
     form.reset();
     const allSynced = syncResults.every(Boolean);
-    setError(allSynced && !failed.length
+    const resultMessage = allSynced && !failed.length
       ? `Добавлено в хранилище: ${additions.length}.`
-      : `Добавлено: ${additions.length}. ${failed.length ? `Не загрузились: ${failed.slice(0, 3).join(' | ')}. ` : ''}${allSynced ? '' : 'Часть записей сохранена только локально: общий Supabase-синк не подтвердился.'}`);
+      : `Добавлено: ${additions.length}. ${failed.length ? `Не загрузились: ${failed.slice(0, 3).join(' | ')}. ` : ''}${allSynced ? '' : 'Часть записей сохранена только локально: общий Supabase-синк не подтвердился.'}`;
+    setStorageStatus(resultMessage, allSynced && !failed.length ? 'ok' : 'warn');
+    setError(resultMessage);
     renderDocumentStorage();
   }
 
@@ -942,6 +976,7 @@
             <textarea name="description" placeholder="Что это за ссылка и когда ей пользоваться"></textarea>
             <button class="btn" type="submit">Сохранить</button>
           </form>
+          ${renderStorageStatus()}
         </div>
 
         <div class="doc-groups document-storage-groups">

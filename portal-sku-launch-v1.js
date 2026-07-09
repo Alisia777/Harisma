@@ -2199,6 +2199,18 @@
     return /^\d{4}-\d{2}-\d{2}$/.test(exact) ? exact : '';
   }
 
+  function launchDateField(item, fields = []) {
+    for (const field of fields) {
+      const value = String(item?.[field] || '').trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    }
+    return '';
+  }
+
+  function launchFirstStockDate(item) {
+    return launchDateField(item, ['firstStockDate', 'firstWarehouseDate', 'warehouseDate', 'supplyDate', 'stockDate']);
+  }
+
   function launchDueText(item) {
     if (typeof launchDueDateLabel === 'function') return launchDueDateLabel(item);
     return launchDue(item) || 'Без даты';
@@ -2207,6 +2219,16 @@
   function launchMonthKey(dateKey = '') {
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return `${dateKey.slice(0, 7)}-01`;
     return `${todayKey().slice(0, 7)}-01`;
+  }
+
+  function launchDateKey(date) {
+    const value = date instanceof Date ? date : new Date(date);
+    if (Number.isNaN(value.getTime())) return todayKey();
+    return [
+      value.getFullYear(),
+      String(value.getMonth() + 1).padStart(2, '0'),
+      String(value.getDate()).padStart(2, '0')
+    ].join('-');
   }
 
   function launchMonthLabel(monthKey = '') {
@@ -2247,6 +2269,20 @@
     return launchMonthKeyFromLabel(item?.launchMonth || item?.month || '');
   }
 
+  function launchCalendarDay(item, monthKey = '') {
+    const month = /^\d{4}-\d{2}-\d{2}$/.test(monthKey) ? monthKey : '';
+    const candidates = [
+      launchExactDue(item),
+      launchFirstStockDate(item)
+    ].filter(Boolean);
+    for (const candidate of candidates) {
+      if (!month || launchMonthKey(candidate) === month) return candidate;
+    }
+    const itemMonth = launchItemMonthKey(item);
+    if (itemMonth && (!month || itemMonth === month)) return itemMonth;
+    return '';
+  }
+
   function launchMonthDays(monthKey = '') {
     if (typeof launchCalendarMonthDays === 'function') return launchCalendarMonthDays(monthKey);
     const first = new Date(`${monthKey || launchMonthKey()}T00:00:00`);
@@ -2256,7 +2292,7 @@
     return Array.from({ length: 42 }, (_, index) => {
       const day = new Date(start);
       day.setDate(start.getDate() + index);
-      return day.toISOString().slice(0, 10);
+      return launchDateKey(day);
     });
   }
 
@@ -2264,7 +2300,7 @@
     if (typeof launchCalendarAddMonths === 'function') return launchCalendarAddMonths(monthKey, delta);
     const date = new Date(`${monthKey || launchMonthKey()}T00:00:00`);
     date.setMonth(date.getMonth() + delta);
-    return `${date.toISOString().slice(0, 7)}-01`;
+    return `${launchDateKey(date).slice(0, 7)}-01`;
   }
 
   function stageEntries(item) {
@@ -2792,12 +2828,12 @@
       : launchMonthKey(todayKey());
     const dayItems = new Map();
     filtered.forEach((item) => {
-      const due = launchExactDue(item);
-      if (!due || launchMonthKey(due) !== month) return;
+      const due = launchCalendarDay(item, month);
+      if (!due) return;
       if (!dayItems.has(due)) dayItems.set(due, []);
       dayItems.get(due).push(item);
     });
-    const noDate = filtered.filter((item) => !launchExactDue(item));
+    const noDate = filtered.filter((item) => !launchCalendarDay(item));
     return `
       <section class="launch-v1-calendar-card">
         <div class="launch-v1-calendar-head">
@@ -2979,11 +3015,11 @@
       filters.month = 'all';
     }
     const filtered = launchFilteredItems(scopedItems);
-    const selectedId = appState().launchV1SelectedId && filtered.some((item) => launchId(item) === appState().launchV1SelectedId)
+    const selectedId = appState().launchV1SelectedId && scopedItems.some((item) => launchId(item) === appState().launchV1SelectedId)
       ? appState().launchV1SelectedId
-      : launchId(filtered[0] || {});
+      : launchId(filtered[0] || scopedItems[0] || {});
     appState().launchV1SelectedId = selectedId || '';
-    const selected = selectedId ? (filtered.find((item) => launchId(item) === selectedId) || null) : null;
+    const selected = selectedId ? (scopedItems.find((item) => launchId(item) === selectedId) || null) : null;
     const fullKanban = appState().launchV1FullKanban === true;
     root.innerHTML = `
       <div class="sku-launch-v1-shell launch-v1-shell" data-sku-launch-version="${VERSION}">

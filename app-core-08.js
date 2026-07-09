@@ -2257,12 +2257,21 @@ function repricerCacheListSignature(items = [], fields = []) {
 function repricerRowsCacheSignature() {
   const workbench = state.smartPriceWorkbench || {};
   const platforms = workbench.platforms || {};
+  const support = state.priceWorkbenchSupport || state.price_workbench_support || {};
+  const supportPlatforms = support.platforms || {};
   const storage = state.storage || {};
   return [
     workbench.generatedAt || '',
     workbench.liveEnrichmentAt || '',
     Array.isArray(platforms?.wb?.rows) ? platforms.wb.rows.length : 0,
     Array.isArray(platforms?.ozon?.rows) ? platforms.ozon.rows.length : 0,
+    support.generatedAt || '',
+    Array.isArray(supportPlatforms?.wb?.rows)
+      ? supportPlatforms.wb.rows.length
+      : Object.keys(supportPlatforms?.wb?.rows || {}).length,
+    Array.isArray(supportPlatforms?.ozon?.rows)
+      ? supportPlatforms.ozon.rows.length
+      : Object.keys(supportPlatforms?.ozon?.rows || {}).length,
     state.canonicalRepricer?.snapshot_id || '',
     state.canonicalRepricer?.generatedAt || '',
     state.canonicalRepricer?.summary?.feature_status || state.canonicalRepricer?.feature_status || '',
@@ -2292,6 +2301,20 @@ function invalidateRepricerRowsCache() {
   REPRICER_ROWS_CACHE.builtAt = 0;
 }
 
+function repricerRowsCacheHasMissingContour(rows = []) {
+  if (!Array.isArray(rows)) return false;
+  return rows.some((row) => ['wb', 'ozon'].some((platform) => {
+    const side = row?.[platform];
+    if (!side || side.outOfSpec) return false;
+    const deferredPricing = typeof repricerDeferredPricingSide === 'function'
+      ? repricerDeferredPricingSide(side)
+      : false;
+    const missingMin = numberOrZero(side.effectiveFloor) <= 0 && !deferredPricing;
+    const missingCost = numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent && !deferredPricing;
+    return missingMin || missingCost;
+  }));
+}
+
 function repricerOutOfScopeBrandLabel(value) {
   const compact = String(value || '').trim().toLowerCase().replace(/[\s._-]+/g, '');
   if (!compact) return '';
@@ -2316,7 +2339,9 @@ function repricerOutOfScopeBrandForRows(...rows) {
 function buildRepricerRows(forceFresh = false) {
   const signature = repricerRowsCacheSignature();
   if (!forceFresh && REPRICER_ROWS_CACHE.signature === signature && Array.isArray(REPRICER_ROWS_CACHE.rows)) {
-    return REPRICER_ROWS_CACHE.rows;
+    if (!repricerRowsCacheHasMissingContour(REPRICER_ROWS_CACHE.rows)) {
+      return REPRICER_ROWS_CACHE.rows;
+    }
   }
   const rows = buildRepricerRowsFresh();
   REPRICER_ROWS_CACHE.signature = signature;

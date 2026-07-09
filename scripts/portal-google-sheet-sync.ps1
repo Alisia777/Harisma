@@ -1145,6 +1145,24 @@ if (Test-Path -LiteralPath $adsSummaryForOzonFinance) {
   Write-Warning "[sync] Ozon ads finance refresh skipped because ads_summary.json is missing in $resolvedOutputDir."
 }
 
+Write-Output "[sync] WB fixed-rate cabinet report refresh started"
+Invoke-NodeStep -StepName "WB fixed-rate cabinet report refresh" -Arguments @(
+  "scripts/build-wb-fixed-rate-report.js",
+  "--output",
+  (Join-Path $resolvedOutputDir "wb_fixed_rate_reports.json"),
+  "--optional"
+) -Attempts 1 -RetryDelaySeconds 10 -TimeoutSeconds 300
+
+Write-Output "[sync] WB IU/DRR fixed-rate logic rules rebuild started"
+Invoke-NodeStep -StepName "WB IU/DRR fixed-rate logic rules rebuild" -Arguments @(
+  "scripts/build-wb-iu-logic-rules.js",
+  "--report",
+  (Join-Path $resolvedOutputDir "wb_fixed_rate_reports.json"),
+  "--output",
+  (Join-Path $resolvedOutputDir "wb_iu_logic_rules.json")
+) -Attempts 1 -RetryDelaySeconds 10 -TimeoutSeconds 300
+Write-Output "[sync] WB IU/DRR fixed-rate logic rules rebuild completed"
+
 $iuDrrArguments = @(
   "scripts/build-iu-drr-summary.js",
   "--input-dir",

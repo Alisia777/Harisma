@@ -1,0 +1,38 @@
+{
+  "version": "20260709-wb-fixed-rate-missing-day-reconciliation-v1",
+  "notes": [
+    "WB cabinet fixed-rate export available in Downloads starts at 2026-07-02, while the IU/DRR WB audit requires 2026-07-01..2026-07-08.",
+    "The 2026-07-01 row is the missing cabinet-comparable daily row from the WB UI audit screenshot provided on 2026-07-09. It is used only when the workbook does not already contain that date."
+  ],
+  "daily": [
+    {
+      "date": "2026-07-01",
+      "period": "01.07",
+      "targetRevenue": 9598915,
+      "revenue": 8211295,
+      "planSpend": 656904,
+      "planPct": 0.08,
+      "spendFact": 259175,
+      "factPct": 0.0316,
+      "source": "wb_fixed_rate_reconciliation.json :: WB UI audit 2026-07-09 missing daily row"
+    }
+  ],
+  "controlWindows": [
+    {
+      "from": "2026-07-01",
+      "to": "2026-07-07",
+      "targetRevenue": 67192279,
+      "revenue": 64065098,
+      "planSpend": 5125209,
+      "spendFact": 4347099
+    },
+    {
+      "from": "2026-07-01",
+      "to": "2026-07-08",
+      "targetRevenue": 76791173,
+      "revenue": 74191023,
+      "planSpend": 5935283,
+      "spendFact": 6117304
+    }
+  ]
+}

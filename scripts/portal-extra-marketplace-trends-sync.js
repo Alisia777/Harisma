@@ -1195,8 +1195,13 @@ function pruneInactiveExtraRows(rows, extraPlatformOrder = EXTRA_PLATFORM_ORDER)
   const activeExtraPlatforms = new Set(extraPlatformOrder.map((key) => canonicalPlatformKey(key)));
   return (Array.isArray(rows) ? rows : []).filter((row) => {
     const platformKey = canonicalPlatformKey(row?.platformKey || row?.platform || row?.key);
-    return !EXTRA_PLATFORM_ORDER.includes(platformKey) || activeExtraPlatforms.has(platformKey);
+    return shouldKeepExtraMarketplaceBucket(platformKey, activeExtraPlatforms);
   });
+}
+
+function shouldKeepExtraMarketplaceBucket(platformKey, activeExtraPlatforms) {
+  const key = canonicalPlatformKey(platformKey);
+  return !EXTRA_PLATFORM_ORDER.includes(key) || activeExtraPlatforms.has(key);
 }
 
 function replaceOzonWindowItemSeriesWithDailyTotal(baseSeries = [], ozonSeries = [], from = '', to = '') {
@@ -1721,7 +1726,7 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
     workbook: DEFAULT_WORKBOOK,
     asOfDate: cutoffDate,
     platforms: Object.fromEntries(Object.entries(existingExtraPlatforms)
-      .filter(([key]) => activeExtraPlatforms.has(canonicalPlatformKey(key)))
+      .filter(([key]) => shouldKeepExtraMarketplaceBucket(key, activeExtraPlatforms))
       .map(([key, bucket]) => [
         canonicalPlatformKey(key),
         trimExtraPlatformToDate(bucket, cutoffDate)
@@ -2062,7 +2067,7 @@ function updateSmartPriceOverlay(baseOverlay, extraMarketplace, asOfDate, priceS
   const platforms = extraMarketplace?.platforms || {};
   for (const [key, bucket] of Object.entries(platforms)) {
     const platformKey = canonicalPlatformKey(key);
-    if (!activeExtraPlatforms.has(platformKey)) continue;
+    if (!shouldKeepExtraMarketplaceBucket(platformKey, activeExtraPlatforms)) continue;
     const articles = Array.isArray(bucket?.articles) ? bucket.articles : [];
     next.platforms[platformKey] = {
       key: platformKey,
@@ -2085,7 +2090,7 @@ function updateSmartPriceOverlay(baseOverlay, extraMarketplace, asOfDate, priceS
     asOfDate: next.asOfDate,
     source: 'platform_trends.extraMarketplace',
     platforms: Object.fromEntries(Object.entries(platforms)
-      .filter(([key]) => activeExtraPlatforms.has(canonicalPlatformKey(key)))
+      .filter(([key]) => shouldKeepExtraMarketplaceBucket(key, activeExtraPlatforms))
       .map(([key, bucket]) => [canonicalPlatformKey(key), {
       key: canonicalPlatformKey(key),
       label: bucket?.label || platformLabel(key),

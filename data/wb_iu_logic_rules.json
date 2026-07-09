@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-01T18:50:02.445Z",
+  "generatedAt": "2026-07-09T07:46:29.669Z",
   "version": "20260701-wb-iu-fixed-rate-logic-v1",
   "source": {
     "reportFile": "wb_fixed_rate_reports.json",
-    "reportSha256": "ebf9e6ccd186927f9527fdf1c98a2821a4e0560438c0452da86c2feb20efa6b4",
-    "sourceWorkbook": "1-7-2026 Фиксированная ставка с 24-06-2026 по 30-06-2026.xlsx",
-    "sourceArchive": "Фиксированная ставка с 24.06.2026 по 30.06.2026.zip",
+    "reportSha256": "c0ab7472deba5aaf66386ee99f413e03d2312aaf3e2e3c983bacab08f2fab4f5",
+    "sourceWorkbook": "9-7-2026 Фиксированная ставка с 02-07-2026 по 08-07-2026.xlsx",
+    "sourceArchive": "",
     "sourceSheet": "Детальная информация",
-    "generatedAt": "2026-07-01T00:00:00+03:00"
+    "generatedAt": "2026-07-09T07:46:29.616Z"
   },
   "required": {
     "wbPlanRateOverrideJune1147": true,
@@ -33,16 +33,16 @@
     ],
     "fixedRateRule": "For dates covered by the WB fixed-rate cabinet report, target revenue, factual revenue and factual ad spend must come from that report.",
     "fixedRatePeriod": {
-      "from": "2026-06-24",
-      "to": "2026-06-30",
-      "days": 7
+      "from": "2026-07-01",
+      "to": "2026-07-08",
+      "days": 8
     },
     "fixedRateTotals": {
-      "targetRevenue": 41836326,
-      "revenue": 54830085,
-      "cabinetPlanSpend": 4386407,
-      "spendFact": 7154431,
-      "portalPlanSpendAtOverride": 6289010.7495
+      "targetRevenue": 76791173,
+      "revenue": 74191023,
+      "cabinetPlanSpend": 5935283,
+      "spendFact": 6117304,
+      "portalPlanSpendAtOverride": 8509710.3381
     },
     "nonApplicability": "WB rate overrides are WB-only and must not be used for Ozon plan rate, Ozon GMV or Ozon DRR."
   }

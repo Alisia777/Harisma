@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-08T06:33:22.023Z",
+  "generatedAt": "2026-07-09T00:00:00+03:00",
   "schema": "portal-order-procurement-ym-v2",
   "formulaPassport": {
     "targetHorizonDays": 30,
@@ -9,13 +9,13 @@
     "targetNeedD": "max(0, rawNeedD), or 0 when lifecycle is exit/paused/question/archived"
   },
   "sourceFreshness": {
-    "logistics": "2026-07-08T00:00:00+03:00",
-    "logisticsFileMtime": "2026-07-08T06:35:45.525Z",
+    "logistics": "2026-07-09T00:00:00+03:00",
+    "logisticsFileMtime": "2026-07-09T07:13:13.883Z",
     "logisticsFileSize": 1122147,
     "logisticsRows": 2202,
-    "yandexOrderProcurement": "2026-07-08T06:33:22.023Z",
+    "yandexOrderProcurement": "2026-07-09T00:00:00+03:00",
     "yandexRows": 901,
-    "skusFileMtime": "2026-07-08T06:07:40.945Z",
+    "skusFileMtime": "2026-07-09T06:15:25.597Z",
     "skusFileSize": 1904295,
     "skuRows": 209
   },

@@ -1,14 +1,14 @@
 {
   "schema": "portal-dashboard-v2",
-  "generatedAt": "2026-07-08T06:41:22.043Z",
-  "snapshot_id": "dashboard:55b756ab4e14ddac",
-  "asOfDate": "2026-07-07",
-  "latestMarketplaceDate": "2026-07-07",
+  "generatedAt": "2026-07-09T07:14:35.053Z",
+  "snapshot_id": "dashboard:b93ea1030217eca5",
+  "asOfDate": "2026-07-08",
+  "latestMarketplaceDate": "2026-07-08",
   "monthKey": "2026-07",
   "dataFreshness": {
-    "asOfDate": "2026-07-07",
-    "dataDate": "2026-07-07",
-    "expectedFactDate": "2026-07-07",
+    "asOfDate": "2026-07-08",
+    "dataDate": "2026-07-08",
+    "expectedFactDate": "2026-07-08",
     "googleSheetsMonth": "2026-07",
     "marketplaceFactSource": "platform_trends.json",
     "companyPlanSource": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
@@ -113,24 +113,24 @@
   },
   "summary": {
     "metrics": 14,
-    "factRevenue": 107337479.77,
+    "factRevenue": 120547367.26,
     "planRevenue": 322540144,
-    "planToDate": 72831645.42,
-    "completionToDate": 1.473775,
+    "planToDate": 83236166.19,
+    "completionToDate": 1.448257,
     "unallocatedRevenue": 0,
-    "cutoffDate": "2026-07-07",
+    "cutoffDate": "2026-07-08",
     "monthKey": "2026-07",
-    "factUnits": 90406,
-    "warehouseStock": 621348,
+    "factUnits": 102019.2679,
+    "warehouseStock": 636542,
     "marketplaceStock": 220574
   },
   "cards": [
     {
       "id": "dashboard-cutoff",
       "label": "Data cutoff",
-      "value": "2026-07-07",
+      "value": "2026-07-08",
       "format": "text",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Common marketplace fact date.",
       "metricId": "dashboard-cutoff"
     },
@@ -138,7 +138,7 @@
       "id": "sku-registry-total",
       "label": "SKU registry",
       "value": 209,
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Rows from canonical skus.json.",
       "metricId": "sku-registry-total"
     },
@@ -146,7 +146,7 @@
       "id": "owner-assigned",
       "label": "SKU with owner",
       "value": 206,
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Owner comes from canonical SKU owner fields.",
       "metricId": "owner-assigned"
     },
@@ -154,42 +154,42 @@
       "id": "marketplace-stock-total",
       "label": "Marketplace stock",
       "value": 220574,
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Marketplace stock visible in SKU registry.",
       "metricId": "marketplace-stock-total"
     },
     {
       "id": "warehouse-stock-total",
       "label": "Warehouse stock",
-      "value": 621348,
-      "period": "2026-07-07",
+      "value": 636542,
+      "period": "2026-07-08",
       "hint": "Warehouse stock overlay remains visible.",
       "metricId": "warehouse-stock-total"
     },
     {
       "id": "sales-revenue-wb",
       "label": "Revenue WB",
-      "value": 89506506,
+      "value": 100265126,
       "format": "money",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:wb"
     },
     {
       "id": "sales-revenue-ozon",
       "label": "Revenue OZON",
-      "value": 16928910.259999998,
+      "value": 19231153.349999998,
       "format": "money",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:ozon"
     },
     {
       "id": "sales-revenue-ya",
       "label": "Revenue YA",
-      "value": 897360,
+      "value": 1035670,
       "format": "money",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:ya"
     },
@@ -198,7 +198,7 @@
       "label": "Revenue GOLDAPPLE",
       "value": 0,
       "format": "money",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:goldapple"
     },
@@ -207,16 +207,16 @@
       "label": "Revenue LETU",
       "value": 0,
       "format": "money",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:letu"
     },
     {
       "id": "sales-revenue-megamarket",
       "label": "Revenue MEGAMARKET",
-      "value": 852.8571428571428,
+      "value": 920.9821428571428,
       "format": "money",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:megamarket"
     },
@@ -225,16 +225,16 @@
       "label": "Revenue SAMOKAT",
       "value": 0,
       "format": "money",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:samokat"
     },
     {
       "id": "sales-revenue-magnit",
       "label": "Revenue MAGNIT",
-      "value": 3850.651428571429,
+      "value": 14496.93,
       "format": "money",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:magnit"
     },
@@ -243,7 +243,7 @@
       "label": "Revenue unallocated",
       "value": 0,
       "format": "money",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Control total remainder stays visible.",
       "metricId": "sales.raw_revenue.unallocated"
     },
@@ -259,26 +259,26 @@
     {
       "id": "company-fact-revenue",
       "label": "Company fact",
-      "value": 107337479.77,
+      "value": 120547367.26,
       "format": "money",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Fact is read only from platform_trends.json.",
       "metricId": "sales.raw_revenue"
     },
     {
       "id": "company-plan-completion",
       "label": "Plan completion to date",
-      "value": 1.473775295779262,
-      "valuePct": 1.473775295779262,
+      "value": 1.4482570831012591,
+      "valuePct": 1.4482570831012591,
       "format": "pct",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Fact divided by linear company plan to date.",
       "metricId": "plan.completion_revenue"
     },
     {
       "id": "company-forecast-revenue",
       "label": "Company forecast",
-      "value": 475351696.12,
+      "value": 467121048.13,
       "format": "money",
       "period": "2026-07",
       "hint": "Baseline forecast: month-to-date average times month days.",
@@ -287,20 +287,20 @@
     {
       "id": "ads-drr-wb",
       "label": "DRR WB",
-      "value": 0.249362,
-      "valuePct": 0.249362,
+      "value": 0.250908,
+      "valuePct": 0.250908,
       "format": "pct",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Ad spend divided by attributed revenue.",
       "metricId": "ads.drr:wb"
     },
     {
       "id": "ads-drr-ozon",
       "label": "DRR OZON",
-      "value": 0.286345,
-      "valuePct": 0.286345,
+      "value": 0.241644,
+      "valuePct": 0.241644,
       "format": "pct",
-      "period": "2026-07-07",
+      "period": "2026-07-08",
       "hint": "Ad spend divided by attributed revenue.",
       "metricId": "ads.drr:ozon"
     }
@@ -308,44 +308,44 @@
   "brandSummary": [
     {
       "brand": "Altea",
-      "asOfDate": "2026-07-07",
-      "latestMarketplaceDate": "2026-07-07",
+      "asOfDate": "2026-07-08",
+      "latestMarketplaceDate": "2026-07-08",
       "sku_count": 209,
       "assigned_sku": 206,
       "total_stock": 220574,
-      "warehouse_stock": 621348,
+      "warehouse_stock": 636542,
       "plan_units": 0,
-      "fact_units_to_date": 90406,
-      "fact_revenue_to_date": 107337479.77,
-      "plan_completion_to_date_pct": 1.473775,
+      "fact_units_to_date": 102019.2679,
+      "fact_revenue_to_date": 120547367.26,
+      "plan_completion_to_date_pct": 1.448257,
       "company_plan_month_key": "2026-07",
       "company_plan_month_label": "июль 2026",
       "company_plan_revenue": 322540144,
-      "company_fact_revenue_to_date": 107337479.77,
-      "company_plan_to_date_revenue": 72831645.42,
-      "company_plan_completion_month_pct": 0.332788,
-      "company_plan_completion_to_date_pct": 1.473775,
-      "company_forecast_revenue": 475351696.12,
-      "company_forecast_pct": 1.473775,
+      "company_fact_revenue_to_date": 120547367.26,
+      "company_plan_to_date_revenue": 83236166.19,
+      "company_plan_completion_month_pct": 0.373744,
+      "company_plan_completion_to_date_pct": 1.448257,
+      "company_forecast_revenue": 467121048.14,
+      "company_forecast_pct": 1.448257,
       "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
       "platformFacts": {
         "wb": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-07",
-          "revenue": 89506506,
-          "units": 67588
+          "dateTo": "2026-07-08",
+          "revenue": 100265126,
+          "units": 75465
         },
         "ozon": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-07",
-          "revenue": 16928910.26,
-          "units": 21587
+          "dateTo": "2026-07-08",
+          "revenue": 19231153.35,
+          "units": 25083
         },
         "ya": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-07",
-          "revenue": 897360,
-          "units": 1223
+          "dateTo": "2026-07-08",
+          "revenue": 1035670,
+          "units": 1434
         },
         "goldapple": {
           "dateFrom": "",
@@ -361,9 +361,9 @@
         },
         "megamarket": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-07",
-          "revenue": 852.86,
-          "units": 1.1429
+          "dateTo": "2026-07-08",
+          "revenue": 920.98,
+          "units": 1.2679
         },
         "samokat": {
           "dateFrom": "",
@@ -373,9 +373,9 @@
         },
         "magnit": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-07",
-          "revenue": 3850.65,
-          "units": 6.8571
+          "dateTo": "2026-07-08",
+          "revenue": 14496.93,
+          "units": 36
         }
       }
     }
@@ -842,12 +842,12 @@
       "note": "Marketplace salary revenue contour.",
       "monthKey": "2026-07",
       "planRevenueMonth": 322540144,
-      "planRevenueToDate": 72831645.42,
-      "factRevenueToDate": 107337479.77,
-      "completionMonthPct": 0.332788,
-      "completionToDatePct": 1.473775,
-      "forecastRevenue": 475351696.12,
-      "forecastPct": 1.473775
+      "planRevenueToDate": 83236166.19,
+      "factRevenueToDate": 120547367.26,
+      "completionMonthPct": 0.373744,
+      "completionToDatePct": 1.448257,
+      "forecastRevenue": 467121048.14,
+      "forecastPct": 1.448257
     },
     "months": {
       "2026-05": {

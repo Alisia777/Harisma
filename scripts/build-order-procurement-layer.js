@@ -302,7 +302,7 @@ function main() {
   };
 
   const ymPayload = {
-    generatedAt: yandexPayload?.generatedAt || combinedPayload.generatedAt,
+    generatedAt: combinedPayload.generatedAt,
     schema: 'portal-order-procurement-ym-v2',
     formulaPassport: combinedPayload.formulaPassport,
     sourceFreshness: combinedPayload.sourceFreshness,

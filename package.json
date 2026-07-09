@@ -6,7 +6,8 @@
     "portal:wb-ads-sync": "node scripts/portal-wb-ads-sync.js sync",
     "portal:ozon-ads-finance-sync": "node scripts/portal-ozon-ads-finance-sync.js sync",
     "portal:wb-feedback-sync": "node scripts/portal-wb-feedback-sync.js sync",
-    "portal:iu-drr-rebuild": "node scripts/build-iu-drr-summary.js --output-dir data",
+    "portal:iu-drr-rebuild": "node scripts/build-wb-fixed-rate-report.js --output data/wb_fixed_rate_reports.json --optional && node scripts/build-wb-iu-logic-rules.js --report data/wb_fixed_rate_reports.json --output data/wb_iu_logic_rules.json && node scripts/build-iu-drr-summary.js --output-dir data",
+    "portal:wb-fixed-rate-report": "node scripts/build-wb-fixed-rate-report.js --output data/wb_fixed_rate_reports.json",
     "portal:ozon-finance-sync": "node scripts/portal-ozon-finance-trends-sync.js",
     "portal:api-max-sync": "node scripts/portal-api-max-sync.js sync",
     "portal:yandex-market-sync": "node scripts/portal-yandex-market-trends-sync.js sync",
@@ -53,6 +54,7 @@
     "portal:visible-dropdown-audit": "node scripts/portal-visible-dropdown-audit.js",
     "portal:marketplace-hitbox-test": "node scripts/portal-marketplace-hitbox.selftest.js",
     "portal:iu-drr-date-window-test": "node scripts/portal-iu-drr-date-window.selftest.js",
+    "portal:wb-fixed-rate-test": "node scripts/build-wb-fixed-rate-report.selftest.js",
     "portal:iu-drr-logic-guard": "node scripts/portal-iu-drr-logic-guard.js --input-dir data",
     "portal:ozon-iu-logic-rules": "node scripts/build-ozon-iu-logic-rules.js --output data/ozon_iu_logic_rules.json",
     "portal:wb-iu-logic-rules": "node scripts/build-wb-iu-logic-rules.js --report data/wb_fixed_rate_reports.json --output data/wb_iu_logic_rules.json"

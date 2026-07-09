@@ -2340,8 +2340,10 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 #view-sku-plan-fact .pf-v1-kpi.warn{border-color:rgba(246,194,93,.33)}
 #view-sku-plan-fact .pf-v1-kpi.danger,#view-sku-plan-fact .pf-v1-kpi.danger-text{border-color:rgba(255,120,105,.34);background:linear-gradient(145deg,rgba(120,34,28,.22),rgba(255,255,255,.012))}
 #view-sku-plan-fact .pf-v1-platform-board{display:grid;grid-template-columns:repeat(6,minmax(160px,1fr));gap:10px}
-#view-sku-plan-fact .pf-v1-platform-card{min-height:116px;cursor:default;pointer-events:none}
-#view-sku-plan-fact .pf-v1-platform-card:hover{transform:none}
+#view-sku-plan-fact .pf-v1-platform-card{min-height:116px;cursor:pointer;pointer-events:auto;text-align:left;font:inherit;width:100%;appearance:none;-webkit-appearance:none}
+#view-sku-plan-fact .pf-v1-platform-card:hover{transform:translateY(-1px);border-color:hsl(var(--pf-hue) 82% 62% / .72);background:linear-gradient(180deg,hsl(var(--pf-hue) 78% 45% / calc(var(--pf-fill) + .035)),rgba(255,255,255,.035))}
+#view-sku-plan-fact .pf-v1-platform-card.active{outline:2px solid hsl(var(--pf-hue) 86% 70% / .78);outline-offset:2px}
+#view-sku-plan-fact .pf-v1-platform-card:focus-visible{outline:2px solid rgba(246,214,143,.82);outline-offset:2px}
 #view-sku-plan-fact .pf-v1-table-card{margin-top:0;border:1px solid rgba(222,190,128,.2);border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012));padding:16px;overflow:hidden}
 #view-sku-plan-fact .pf-v1-table-wrap{max-height:none;overflow:auto;border:1px solid rgba(222,190,128,.14);border-radius:8px;background:rgba(5,4,3,.68);scrollbar-gutter:stable}
 #view-sku-plan-fact .pf-v1-table{min-width:2580px;width:max-content;border-collapse:separate;border-spacing:0;table-layout:fixed}

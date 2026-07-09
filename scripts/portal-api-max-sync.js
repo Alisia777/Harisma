@@ -780,6 +780,27 @@ function buildSteps(options, env) {
 
   if (!options.skipIuDrr) {
     steps.push({
+      id: 'wb-fixed-rate-report',
+      name: 'WB fixed-rate cabinet report refresh',
+      args: [
+        'scripts/build-wb-fixed-rate-report.js',
+        '--output',
+        path.join(options.baseDataDir, 'wb_fixed_rate_reports.json'),
+        '--optional'
+      ]
+    });
+    steps.push({
+      id: 'wb-iu-logic-rules',
+      name: 'WB IU/DRR fixed-rate logic rules rebuild',
+      args: [
+        'scripts/build-wb-iu-logic-rules.js',
+        '--report',
+        path.join(options.baseDataDir, 'wb_fixed_rate_reports.json'),
+        '--output',
+        path.join(options.baseDataDir, 'wb_iu_logic_rules.json')
+      ]
+    });
+    steps.push({
       id: 'iu-drr',
       name: 'IU/DRR summary rebuild',
       args: [

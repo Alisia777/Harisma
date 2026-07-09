@@ -335,6 +335,19 @@ function Invoke-DailyGuard {
 }
 
 function Invoke-IuDrrBuild {
+  Invoke-NodeStep -StepName "WB fixed-rate cabinet report retry refresh" -Arguments @(
+    "scripts/build-wb-fixed-rate-report.js",
+    "--output",
+    (Join-Path $resolvedOutputDir "wb_fixed_rate_reports.json"),
+    "--optional"
+  ) -Attempts 1 -RetryDelaySeconds 10 -TimeoutSeconds 300
+  Invoke-NodeStep -StepName "WB IU/DRR fixed-rate logic rules retry rebuild" -Arguments @(
+    "scripts/build-wb-iu-logic-rules.js",
+    "--report",
+    (Join-Path $resolvedOutputDir "wb_fixed_rate_reports.json"),
+    "--output",
+    (Join-Path $resolvedOutputDir "wb_iu_logic_rules.json")
+  ) -Attempts 1 -RetryDelaySeconds 10 -TimeoutSeconds 300
   Invoke-NodeStep -StepName "IU/DRR retry build" -Arguments @(
     "scripts/build-iu-drr-summary.js",
     "--input-dir",

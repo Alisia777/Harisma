@@ -120,7 +120,7 @@ function buildLogistics(options = resolveOptions({})) {
   const windowDays = Number.isFinite(Number(existingWindow.days)) && Number(existingWindow.days) > 0
     ? Number(existingWindow.days)
     : 28;
-  const latestLogisticsDate = maxDateKey([
+  let latestLogisticsDate = maxDateKey([
     logistics.latest_logistics_date,
     logistics.latestLogisticsDate,
     existingWindow.to,
@@ -129,6 +129,9 @@ function buildLogistics(options = resolveOptions({})) {
     options.runDate,
     generatedAt
   ]);
+  if (options.runDate && latestLogisticsDate > options.runDate) {
+    latestLogisticsDate = options.runDate;
+  }
   const windowTo = latestLogisticsDate || dateKey(existingWindow.to);
   const windowFrom = windowTo
     ? shiftDate(windowTo, -(windowDays - 1))

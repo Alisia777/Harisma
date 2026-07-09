@@ -1,2 +1,3 @@
 ﻿severity;type;dataset;platform;place;articleKey;name;revenue;units;message
-"warning";"dataset_stale_or_empty";"dashboard";"";"";"";"";"";"";"Данные отстают на 2 дн."
+"info";"api_sku_known_outside_registry";"platform_trends.extraMarketplace";"ozon";"";"micardinforte";"Пищевая добавка Микардин Форте, CPA, 10 капсул";"10893";"19";"API SKU is covered by the team price/repricer contour; master SKU card is optional"
+"info";"api_sku_known_outside_registry";"platform_trends.extraMarketplace";"ozon";"";"4795799242";"4795799242";"597";"1";"API SKU is covered by the team price/repricer contour; master SKU card is optional"

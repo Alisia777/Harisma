@@ -11270,6 +11270,32 @@ function skuPlanFactV1SyncGlobalPlatform() {
   return platform;
 }
 
+function skuPlanFactV1MarketplaceKey(platform = 'all') {
+  const normalized = skuPlanFactV1NormalizePlatform(platform);
+  return normalized === 'ya' ? 'ym' : normalized;
+}
+
+function skuPlanFactV1WriteGlobalPlatform(platform = 'all') {
+  const normalized = skuPlanFactV1NormalizePlatform(platform);
+  const marketplace = skuPlanFactV1MarketplaceKey(normalized);
+  const premiumSupported = ['all', 'wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit'].includes(marketplace);
+  if (premiumSupported && window.AlteaPremiumPresentation?.applyMarketplace) {
+    window.AlteaPremiumPresentation.applyMarketplace(marketplace, { persist: true, rerender: false, silent: true });
+  } else {
+    try { window.localStorage?.setItem('altea.portal.marketplace', marketplace); } catch {}
+    [document.documentElement, document.body].forEach((element) => {
+      if (!element) return;
+      element.dataset.marketplace = marketplace;
+      element.dataset.platform = normalized;
+    });
+    state.filters = state.filters || {};
+    state.filters.market = normalized;
+    state.filters.platform = normalized;
+    if (state.skuPlanFactFilters) state.skuPlanFactFilters.platform = normalized;
+  }
+  return normalized;
+}
+
 function skuPlanFactV1AdvancedFilters() {
   state.skuPlanFactAdvancedFiltersV1 = state.skuPlanFactAdvancedFiltersV1 || {};
   return state.skuPlanFactAdvancedFiltersV1;
@@ -11453,13 +11479,15 @@ function skuPlanFactV1ActiveChipsHtml(model = {}) {
 }
 
 function skuPlanFactV1PlatformBoardHtml(model = {}) {
+  const activePlatform = model.filters?.platform || 'all';
   return `
     <div class="pf-v1-platform-board" aria-label="Статус площадок">
       ${(model.platforms || SKU_PLAN_FACT_PLATFORMS).map((platform) => {
         const summary = skuPlanFactPlatformSummary(model, platform, { scope: 'allRows', respectFilters: true });
         const level = skuPlanFactCompletionLevel(summary.completionToDate);
+        const active = activePlatform === platform;
         return `
-          <article class="sku-plan-platform-card pf-v1-platform-card level-${level}" style="${skuPlanFactCardStyle(platform, summary.completionToDate)}">
+          <button class="sku-plan-platform-card pf-v1-platform-card level-${level} ${active ? 'active is-active' : ''}" type="button" data-sku-plan-fact-platform-card="${escapeHtml(platform)}" aria-pressed="${active ? 'true' : 'false'}" style="${skuPlanFactCardStyle(platform, summary.completionToDate)}">
             <span class="sku-plan-platform-card__top">
               <strong>${escapeHtml(summary.label)}</strong>
               <em>${fmt.int(summary.rows)} SKU</em>
@@ -11471,7 +11499,7 @@ function skuPlanFactV1PlatformBoardHtml(model = {}) {
               <b class="${skuPlanFactDeltaClass(summary.gapToDate)}">${fmt.money(summary.gapToDate)}</b>
               <span><em>${fmt.int(summary.underPlan)} ниже плана</em></span>
             </span>
-          </article>
+          </button>
         `;
       }).join('')}
     </div>
@@ -11705,6 +11733,16 @@ function renderSkuPlanFactV1(rootId = 'view-sku-plan-fact', options = {}) {
   root.querySelector('#skuPlanFactSort')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'sort', event.target.value); });
   root.querySelectorAll('[data-sku-plan-fact-sort]').forEach((button) => {
     button.addEventListener('click', () => skuPlanFactToggleSort(rootId, button.dataset.skuPlanFactSort));
+  });
+  root.querySelectorAll('[data-sku-plan-fact-platform-card]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const platform = skuPlanFactV1NormalizePlatform(button.dataset.skuPlanFactPlatformCard || 'all');
+      const next = skuPlanFactFilters().platform === platform ? 'all' : platform;
+      skuPlanFactV1WriteGlobalPlatform(next);
+      skuPlanFactSetFilter(rootId, 'platform', next, { force: true });
+    });
   });
   root.querySelector('[data-sku-plan-fact-reset]')?.addEventListener('click', () => skuPlanFactV1Reset(rootId));
   root.querySelector('[data-sku-plan-fact-scroll-table]')?.addEventListener('click', () => {

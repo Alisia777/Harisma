@@ -62,6 +62,7 @@ jobs:
           node scripts/portal-runtime-promote.selftest.js
           node scripts/portal-atomic-snapshot-finalize.selftest.js
           node scripts/portal-api-max-sync.selftest.js
+          node scripts/build-wb-fixed-rate-report.selftest.js
           node scripts/portal-daily-close-preflight.selftest.js
           node scripts/portal-daily-close-preflight-summary.selftest.js
           node scripts/portal-daily-close-workflow.selftest.js

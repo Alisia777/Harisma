@@ -1,12 +1,12 @@
 {
   "schema": "portal-repricing-reconciliation-v1",
-  "generatedAt": "2026-07-08T06:41:26.294Z",
-  "snapshot_id": "repricer:90830bc16cf7cd4c",
+  "generatedAt": "2026-07-09T06:43:52.435Z",
+  "snapshot_id": "repricer:63823377bc717ddf",
   "status": "warning",
   "publish_allowed": true,
   "feature_publish_allowed": false,
   "feature_status": "blocked",
-  "business_fingerprint": "dd969f99a6433bf546cad23552b949aa9eece97c50f22d9660973cd0d3f5d3c1",
+  "business_fingerprint": "2805edfdc198bf7aebeb7aaea7f2698bf3c86fcd2b7c4d23a7d16392e6e82e38",
   "summary": {
     "rows": 826,
     "eligible_rows": 826,

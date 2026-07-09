@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260709launch-board-perf-v1';
+  const VERSION = '20260709launch-calendar-compact-v1';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -2897,6 +2897,27 @@
     `;
   }
 
+  function renderLaunchCalendarItem(item, selectedId) {
+    const id = launchId(item);
+    const entry = currentStage(item);
+    const ready = readiness(item);
+    const blockers = (item.blockers || []).length + stageEntries(item).filter((stage) => stage.column?.key === 'blocked').length;
+    const title = item.name || item.title || item.articleKey || 'Новинка';
+    const stage = entry?.config?.title || item.status || 'этап —';
+    const tone = blockers ? 'danger' : ready.ready ? 'ok' : 'warn';
+    const meta = `${item.reportGroup || item.category || 'категория —'} · ${stage}`;
+    return `
+      <button type="button" class="launch-v1-calendar-item ${escapeValue(tone)} ${id === selectedId ? 'active' : ''}" data-launch-v1-select="${escapeValue(id)}" data-launch-v1-card="${escapeValue(id)}" title="${escapeValue(`${title} · ${meta}`)}">
+        <i></i>
+        <span>
+          <strong>${escapeValue(title)}</strong>
+          <em>${escapeValue(stage)}</em>
+        </span>
+        <b>${blockers ? `${formatInt(blockers)} бл.` : formatPct(ready.pct || 0)}</b>
+      </button>
+    `;
+  }
+
   function renderLaunchCalendar(filtered, selectedId) {
     const filters = launchFilters();
     const month = filters.month && filters.month !== 'all' && filters.month !== 'missing'
@@ -2925,7 +2946,7 @@
             return `
               <div class="launch-v1-day ${inMonth ? '' : 'muted'} ${day === todayKey() ? 'today' : ''}" data-launch-v1-day="${escapeValue(day)}">
                 <span>${Number(day.slice(8, 10))}</span>
-                <div>${items.slice(0, 3).map((item) => renderLaunchCard(item, selectedId)).join('')}${items.length > 3 ? `<small>+${items.length - 3}</small>` : ''}</div>
+                <div class="launch-v1-day-stack">${items.slice(0, 4).map((item) => renderLaunchCalendarItem(item, selectedId)).join('')}${items.length > 4 ? `<small>+${items.length - 4}</small>` : ''}</div>
               </div>
             `;
           }).join('')}
@@ -3320,7 +3341,7 @@
       .sl-v1-focus-grid{display:grid;grid-template-columns:minmax(260px,.9fr) minmax(420px,1.6fr) minmax(300px,.9fr);gap:12px;align-items:start}
       .sl-v1-panel{padding:16px;min-width:0}
       .sl-v1-bucket-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
-      .sl-v1-bucket,.sl-v1-queue-row,.launch-v1-card{border:1px solid var(--sl-line);border-radius:9px;background:rgba(6,5,4,.36);color:var(--sl-text);text-align:left;cursor:pointer}
+      .sl-v1-bucket,.sl-v1-queue-row,.launch-v1-card,.launch-v1-calendar-item{border:1px solid var(--sl-line);border-radius:9px;background:rgba(6,5,4,.36);color:var(--sl-text);text-align:left;cursor:pointer}
       .sl-v1-bucket{min-height:86px;padding:12px;display:grid;gap:4px}.sl-v1-bucket strong{font-size:26px}.sl-v1-bucket span{font-weight:900}.sl-v1-bucket em{font-style:normal;color:var(--sl-muted);font-size:11px}
       .sl-v1-bucket.ok,.sl-v1-queue-row.ok,.sl-v1-quality-row.ok,.launch-v1-stage.ok,.launch-v1-kanban-col.ok{border-color:rgba(103,213,154,.34)}.sl-v1-bucket.warn,.sl-v1-queue-row.warn,.sl-v1-quality-row.warn,.launch-v1-stage.warn,.launch-v1-kanban-col.warn{border-color:rgba(240,196,105,.38)}.sl-v1-bucket.danger,.sl-v1-queue-row.danger,.sl-v1-quality-row.danger,.launch-v1-stage.danger,.launch-v1-kanban-col.danger{border-color:rgba(255,116,105,.42)}.sl-v1-bucket.info,.sl-v1-queue-row.info{border-color:rgba(96,166,255,.38)}
       .sl-v1-queue-list,.sl-v1-quality-list,.launch-v1-stage-list{display:grid;gap:8px;margin-top:12px}
@@ -3338,8 +3359,10 @@
       .launch-v1-calendar-card,.launch-v1-detail,.launch-v1-full-kanban{padding:16px}
       .launch-v1-calendar-head{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:8px}.launch-v1-calendar-head h3{text-align:center;margin:0;font-size:18px}.launch-v1-calendar-head button{height:36px;border:1px solid var(--sl-line);border-radius:50%;background:rgba(255,255,255,.03);color:var(--sl-text);cursor:pointer}
       .launch-v1-weekdays,.launch-v1-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}.launch-v1-weekdays{margin-top:12px;color:var(--sl-muted);font-size:11px;text-transform:uppercase;letter-spacing:.12em}.launch-v1-weekdays span{text-align:center;padding:8px}
-      .launch-v1-month-grid{border-top:1px solid rgba(224,190,126,.12);border-left:1px solid rgba(224,190,126,.12)}.launch-v1-day{min-height:138px;border-right:1px solid rgba(224,190,126,.12);border-bottom:1px solid rgba(224,190,126,.12);padding:9px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:8px;background:rgba(0,0,0,.13)}.launch-v1-day.muted{opacity:.48}.launch-v1-day.today>span{display:inline-grid;place-items:center;width:28px;height:28px;border:1px solid #f0d49a;border-radius:50%;color:#f0d49a}
+      .launch-v1-month-grid{border-top:1px solid rgba(224,190,126,.12);border-left:1px solid rgba(224,190,126,.12)}.launch-v1-day{min-height:148px;border-right:1px solid rgba(224,190,126,.12);border-bottom:1px solid rgba(224,190,126,.12);padding:8px;display:grid;grid-template-rows:28px minmax(0,1fr);gap:6px;background:rgba(0,0,0,.13);min-width:0;overflow:hidden}.launch-v1-day.muted{opacity:.48}.launch-v1-day.today>span{display:inline-grid;place-items:center;width:28px;height:28px;border:1px solid #f0d49a;border-radius:50%;color:#f0d49a}
       .launch-v1-card{width:100%;display:grid;gap:4px;padding:9px;margin-bottom:6px}.launch-v1-card.active{border-color:var(--sl-aqua);box-shadow:0 0 0 1px rgba(88,214,202,.22)}.launch-v1-card strong{font-size:12px}.launch-v1-card span,.launch-v1-card em{color:var(--sl-muted);font-style:normal;font-size:10px}.launch-v1-card em{color:#ffcc7e}
+      .launch-v1-day-stack{display:grid;gap:5px;align-content:start;min-width:0;min-height:0;overflow:hidden}.launch-v1-day-stack>small{display:inline-flex;align-items:center;min-height:18px;color:#f0d49a;font-size:11px;font-weight:900}
+      .launch-v1-calendar-item{width:100%;min-width:0;height:34px;display:grid;grid-template-columns:6px minmax(0,1fr) auto;gap:6px;align-items:center;padding:5px 7px;margin:0;border-radius:8px;background:linear-gradient(180deg,rgba(14,13,11,.88),rgba(6,5,4,.72));box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}.launch-v1-calendar-item.active{border-color:var(--sl-aqua);box-shadow:0 0 0 1px rgba(88,214,202,.22),inset 0 1px 0 rgba(255,255,255,.035)}.launch-v1-calendar-item>i{width:6px;height:22px;border-radius:999px;background:#f0c469}.launch-v1-calendar-item.ok>i{background:#61d89a}.launch-v1-calendar-item.danger>i{background:#ff7469}.launch-v1-calendar-item span{display:grid;gap:1px;min-width:0}.launch-v1-calendar-item strong,.launch-v1-calendar-item em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.launch-v1-calendar-item strong{font-size:11px;line-height:1.1;color:#fff4d8}.launch-v1-calendar-item em{font-style:normal;color:rgba(247,241,232,.52);font-size:9px;line-height:1.1}.launch-v1-calendar-item b{color:#ffd98d;font-size:9px;font-weight:950;white-space:nowrap}
       .sl-v1-stage-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}.sl-v1-stage-strip i{height:5px;border-radius:999px;background:rgba(255,255,255,.12)}.sl-v1-stage-strip i.ok{background:#61d89a}.sl-v1-stage-strip i.warn{background:#f0c469}.sl-v1-stage-strip i.danger{background:#ff7469}
       .launch-v1-no-date{margin-top:12px;border:1px dashed rgba(224,190,126,.2);border-radius:9px;padding:12px}.launch-v1-no-date>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:8px}
       .launch-v1-detail{position:sticky;top:96px;display:grid;gap:14px}.launch-v1-detail-head h3{margin:6px 0 4px;font-size:24px;line-height:1.05}.launch-v1-detail-head p{margin:0;color:var(--sl-muted)}

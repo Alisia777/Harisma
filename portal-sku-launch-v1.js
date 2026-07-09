@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260709launch-perf-v1';
+  const VERSION = '20260709launch-perf-v2';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -1520,6 +1520,7 @@
   function renderSkuWorkspaceV1(rootId = 'view-sku-contour') {
     const root = document.getElementById(rootId);
     if (!root) return;
+    injectStyles();
     resetSkuV1RenderCache();
     const activeMarket = setRegistryMarketFromHeader();
     const stateRef = appState();
@@ -3311,6 +3312,7 @@
   function renderLaunchesV1(rootId = 'view-launches') {
     const root = document.getElementById(rootId);
     if (!root) return;
+    injectStyles();
     launchV1RenderMemo = null;
     const allItems = launchItemsV1();
     const activeMarket = readGlobalMarket();
@@ -3557,7 +3559,6 @@
       if (installAttempts < 80) window.setTimeout(install, 50);
       return;
     }
-    injectStyles();
     originalRenderSkuContour = originalRenderSkuContour || window.renderSkuContour;
     originalRenderLaunches = originalRenderLaunches || window.renderLaunches;
     originalRenderLaunchControl = originalRenderLaunchControl || window.renderLaunchControl;

@@ -4,7 +4,7 @@
   if (window.__ALTEA_LAUNCH_AUTOTASKS_V1__) return;
   window.__ALTEA_LAUNCH_AUTOTASKS_V1__ = true;
 
-  const VERSION = '20260709-launch-perf-v1';
+  const VERSION = '20260709-launch-perf-v2';
   const MAX_BULK_TASKS = 30;
   const AUGMENT_MIN_INTERVAL_MS = 220;
   const SNAPSHOT_CACHE_MS = 6000;
@@ -1048,6 +1048,7 @@
   }
 
   function openLaunchOpsModal(content) {
+    injectStyles();
     closeLaunchOpsModal();
     const modal = document.createElement('div');
     modal.className = 'launch-ops-modal-back';
@@ -1622,6 +1623,7 @@
   function augmentLaunchView() {
     const root = document.getElementById('view-launches');
     if (!root || !root.querySelector('.launch-v1-shell')) return;
+    injectStyles();
     queueHistoryBackfill();
     const oldPanel = root.querySelector('[data-launch-ops-panel]');
     if (oldPanel) oldPanel.remove();
@@ -1644,6 +1646,7 @@
   function refreshSelectedOpsDetail() {
     const root = document.getElementById('view-launches');
     if (!root || !root.querySelector('.launch-v1-shell')) return;
+    injectStyles();
     root.querySelectorAll('[data-launch-ops-detail]').forEach((node) => node.remove());
     const selected = selectedLaunch();
     const detail = root.querySelector('.launch-v1-detail');
@@ -1944,6 +1947,13 @@
     document.addEventListener('click', handleOpsClick, true);
   }
 
+  function launchRouteIsActive(root) {
+    if (!root) return false;
+    const hash = String(window.location.hash || '').replace('#', '');
+    const view = String(appState().activeView || '');
+    return root.classList.contains('active') || view === 'launches' || hash === 'launches' || hash === 'launch-control' || Boolean(root.querySelector('.launch-v1-shell'));
+  }
+
   function queueAugment(options = {}) {
     if (options.invalidateTasks) {
       knownTasksCache = null;
@@ -1952,7 +1962,7 @@
     }
     if (renderQueued) return;
     const root = document.getElementById('view-launches');
-    if (!root && appState().activeView && appState().activeView !== 'launches') return;
+    if (!launchRouteIsActive(root)) return;
     renderQueued = true;
     const run = () => {
       renderQueued = false;
@@ -1988,7 +1998,6 @@
   }
 
   function boot() {
-    injectStyles();
     bindGlobalOpsEvents();
     if (!wrapRenderLaunches()) {
       wrapTimer += 1;

@@ -23,6 +23,9 @@
       'portal-control-center-v2-hotfix.js?v=20260619task-noise3',
       'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3'
     ],
+    taskKanbanV1: [
+      'portal-task-kanban-v1.js?v=20260709ownerfilter1'
+    ],
     executive: [
       'portal-executive-lite-guard.js?v=20260623executivefallback1',
       'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3',
@@ -39,9 +42,25 @@
       'portal-plan-alignment-hotfix.js?v=20260521prod1',
       'portal-sku-plan-fact-stability-hotfix.js?v=20260529planfactplanmetrics1'
     ],
+    planFactV4: [
+      'portal-planfact-general-to-detail-v4.js?v=20260624planfactfilterlayer2'
+    ],
     skus: [
       'portal-sku-registry-live-note-hotfix.js?v=20260521prod1',
       'portal-premium-polish-hotfix.js?v=20260521prod1'
+    ],
+    skuLaunchV1: [
+      'portal-sku-launch-v1.js?v=20260709launchperf2'
+    ],
+    launchV1: [
+      'portal-sku-launch-v1.js?v=20260709launchperf2',
+      'portal-launch-autotasks-v1.js?v=20260709launchperf2'
+    ],
+    iuDrrV3: [
+      'portal-iu-drr-position-funnel-v3.js?v=20260702iudrrlatestmonth1'
+    ],
+    leaderboardMotion: [
+      'portal-leaderboard-motion-v2.js?v=20260627leaderboarddrawer1'
     ],
     polish: [
       'portal-premium-polish-hotfix.js?v=20260521prod1'
@@ -50,17 +69,17 @@
 
   const VIEW_BUNDLES = {
     dashboard: ['dashboard'],
-    control: ['control', 'polish'],
+    control: ['control', 'polish', 'taskKanbanV1'],
     executive: ['executive'],
-    launches: [],
-    'launch-control': [],
+    launches: ['launchV1'],
+    'launch-control': ['launchV1'],
     'ads-funnel': [],
-    'iu-drr': ['polish'],
+    'iu-drr': ['iuDrrV3', 'polish'],
     'wb-rating': ['polish'],
-    'product-leaderboard': [],
+    'product-leaderboard': ['leaderboardMotion'],
     repricer: ['repricer'],
-    'sku-plan-fact': ['planFact'],
-    'sku-contour': ['planFact'],
+    'sku-plan-fact': ['planFact', 'planFactV4'],
+    'sku-contour': ['planFact', 'skuLaunchV1'],
     'oos-control': [],
     skus: ['skus']
   };
@@ -345,27 +364,7 @@
   }
 
   function warmPriorityViews() {
-    if (window.__ALTEA_LIVE_LAZY_WARM_PRIORITY_VIEWS__) return;
     window.__ALTEA_LIVE_LAZY_WARM_PRIORITY_VIEWS__ = true;
-    let attempts = 0;
-    const waitForCore = () => {
-      attempts += 1;
-      if (!portalRenderApiReady()) {
-        if (attempts < 24) window.setTimeout(waitForCore, 250);
-        return;
-      }
-      const warm = () => {
-        const current = activeView();
-        if (current !== 'control') loadViewHotfixes('control', { rerender: false });
-        if (current !== 'executive') loadViewHotfixes('executive', { rerender: false });
-      };
-      if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(warm, { timeout: 1800 });
-      } else {
-        window.setTimeout(warm, 900);
-      }
-    };
-    window.setTimeout(waitForCore, 350);
   }
 
   window.__alteaLoadLiveHotfixes = loadViewHotfixes;

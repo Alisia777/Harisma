@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260701-storage-audit-v1';
+  const VERSION = '20260709-storage-sync-v1';
   const STORAGE_VIEW = 'documents';
   const RESOURCE_ARTICLE_KEY = '__portal_resource_links__';
   const RESOURCE_LINK_MARKER = '[[resource-link:v1]]';
@@ -278,6 +278,34 @@
 
   function resourceKey(item = {}) {
     return String(item.id || item.href || item.localFileId || '').trim();
+  }
+
+  function resourceEventCommentId(item = {}, deleted = false) {
+    const seed = [
+      item.id,
+      item.href,
+      item.localFileId,
+      item.objectPath,
+      item.title,
+      item.fileName
+    ].map((value) => String(value || '').trim()).filter(Boolean).join('|') || `${Date.now()}|${Math.random()}`;
+    const prefix = deleted ? 'resource-link-delete' : 'resource-link';
+    if (typeof window.stableId === 'function') return window.stableId(prefix, seed);
+    let hash = 0;
+    for (let index = 0; index < seed.length; index += 1) {
+      hash = ((hash << 5) - hash) + seed.charCodeAt(index);
+      hash |= 0;
+    }
+    return `${prefix}-${Math.abs(hash).toString(36)}`;
+  }
+
+  function upsertLocalResourceComment(comment) {
+    const state = ensureStorageShape();
+    state.storage.comments = Array.isArray(state.storage.comments) ? state.storage.comments : [];
+    const index = state.storage.comments.findIndex((item) => String(item?.id || '') === String(comment.id || ''));
+    if (index >= 0) state.storage.comments.splice(index, 1, comment);
+    else state.storage.comments.unshift(comment);
+    persistStorage('resource-link-event');
   }
 
   function openFileDb() {
@@ -599,7 +627,6 @@
   }
 
   async function persistResourceLinkEvent(item, deleted = false) {
-    if (typeof window.createComment !== 'function') return;
     const marker = deleted ? RESOURCE_DELETE_MARKER : RESOURCE_LINK_MARKER;
     const actor = appState().team?.member?.name || item.owner || 'Команда';
     const payload = deleted
@@ -613,15 +640,25 @@
           deletedAt: new Date().toISOString()
         }
       : item;
+    const createdAt = deleted ? (payload.deletedAt || new Date().toISOString()) : (item.createdAt || new Date().toISOString());
+    const comment = {
+      id: resourceEventCommentId(payload, deleted),
+      articleKey: RESOURCE_ARTICLE_KEY,
+      author: deleted ? actor : (item.owner || actor),
+      team: 'Хранилище',
+      type: deleted ? 'resource_link_delete' : 'resource_link',
+      createdAt,
+      text: `${marker} ${JSON.stringify(payload)}`
+    };
     try {
-      await window.createComment({
-        articleKey: RESOURCE_ARTICLE_KEY,
-        author: deleted ? actor : (item.owner || actor),
-        team: 'Хранилище',
-        type: deleted ? 'resource_link_delete' : 'resource_link',
-        text: `${marker} ${JSON.stringify(payload)}`
-      });
+      if (typeof window.createComment === 'function') {
+        await window.createComment(comment);
+      } else {
+        upsertLocalResourceComment(comment);
+        if (typeof window.persistComment === 'function') await window.persistComment(comment);
+      }
     } catch (error) {
+      upsertLocalResourceComment(comment);
       console.warn('[document-storage] remote event', error);
     }
   }

@@ -127,6 +127,116 @@
     return [...merged.values()].sort((a, b) => syncedItemStampHotfix(b) - syncedItemStampHotfix(a));
   }
 
+  const RESOURCE_ARTICLE_KEY = '__portal_resource_links__';
+  const RESOURCE_LINK_MARKER = '[[resource-link:v1]]';
+  const RESOURCE_DELETE_MARKER = '[[resource-link-delete:v1]]';
+
+  function resourceSyncHashHotfix(value = '') {
+    const str = String(value || '');
+    let hash = 0;
+    for (let index = 0; index < str.length; index += 1) {
+      hash = ((hash << 5) - hash) + str.charCodeAt(index);
+      hash |= 0;
+    }
+    return Math.abs(hash).toString(36);
+  }
+
+  function resourceSyncIdHotfix(prefix, raw) {
+    if (typeof stableId === 'function') return stableId(prefix, raw);
+    return `${prefix}-${resourceSyncHashHotfix(raw)}`;
+  }
+
+  function readResourcePayloadHotfix(text = '', marker = RESOURCE_LINK_MARKER) {
+    const raw = String(text || '');
+    const index = raw.indexOf(marker);
+    if (index < 0) return null;
+    const json = raw.slice(index + marker.length).trim();
+    if (!json) return null;
+    try {
+      return JSON.parse(json);
+    } catch (error) {
+      console.warn('[team-runtime-hotfix] resource payload parse', error);
+      return null;
+    }
+  }
+
+  function resourceStampHotfix(item = {}) {
+    const stamp = Date.parse(String(item.updatedAt || item.createdAt || item.deletedAt || ''));
+    return Number.isFinite(stamp) ? stamp : 0;
+  }
+
+  function resourceKeyHotfix(item = {}) {
+    return String(item.id || item.href || item.localFileId || item.objectPath || item.title || '').trim();
+  }
+
+  function normalizeResourceLinkHotfix(raw = {}, fallback = {}) {
+    if (!raw || typeof raw !== 'object') return null;
+    const createdAt = String(raw.createdAt || fallback.createdAt || new Date().toISOString()).trim();
+    const base = `${raw.href || raw.url || raw.link || fallback.href || ''}|${raw.title || raw.name || raw.fileName || fallback.title || ''}|${createdAt}`;
+    const item = {
+      id: String(raw.id || fallback.id || resourceSyncIdHotfix('resource', base)).trim(),
+      title: String(raw.title || raw.name || raw.fileName || fallback.title || '').trim(),
+      href: String(raw.href || raw.url || raw.link || fallback.href || '').trim(),
+      description: String(raw.description || fallback.description || '').trim(),
+      group: String(raw.group || fallback.group || 'Общее хранилище').trim() || 'Общее хранилище',
+      type: String(raw.type || fallback.type || 'Ссылка').trim() || 'Ссылка',
+      owner: String(raw.owner || fallback.owner || '').trim(),
+      fileName: String(raw.fileName || raw.name || fallback.fileName || '').trim(),
+      fileSize: Number(raw.fileSize || raw.size || fallback.fileSize || 0) || 0,
+      mimeType: String(raw.mimeType || fallback.mimeType || '').trim(),
+      storageMode: String(raw.storageMode || fallback.storageMode || '').trim(),
+      localFileId: String(raw.localFileId || fallback.localFileId || '').trim(),
+      bucket: String(raw.bucket || fallback.bucket || '').trim(),
+      objectPath: String(raw.objectPath || fallback.objectPath || '').trim(),
+      sizeMb: String(raw.sizeMb || fallback.sizeMb || '').trim(),
+      createdAt,
+      source: 'user'
+    };
+    return resourceKeyHotfix(item) ? item : null;
+  }
+
+  function resourceLinksFromCommentsHotfix(comments = []) {
+    return (Array.isArray(comments) ? comments : [])
+      .filter((comment) => comment?.articleKey === RESOURCE_ARTICLE_KEY && comment?.type === 'resource_link')
+      .map((comment) => {
+        const payload = readResourcePayloadHotfix(comment.text, RESOURCE_LINK_MARKER);
+        return payload ? normalizeResourceLinkHotfix(payload, {
+          createdAt: comment.createdAt,
+          owner: comment.author
+        }) : null;
+      })
+      .filter(Boolean);
+  }
+
+  function deletedResourceKeysFromCommentsHotfix(comments = []) {
+    const deleted = new Set();
+    (Array.isArray(comments) ? comments : [])
+      .filter((comment) => comment?.articleKey === RESOURCE_ARTICLE_KEY && comment?.type === 'resource_link_delete')
+      .forEach((comment) => {
+        const payload = readResourcePayloadHotfix(comment.text, RESOURCE_DELETE_MARKER);
+        if (!payload) return;
+        [payload.id, payload.href, payload.localFileId, payload.objectPath]
+          .map((value) => String(value || '').trim())
+          .filter(Boolean)
+          .forEach((value) => deleted.add(value));
+      });
+    return deleted;
+  }
+
+  function mergeResourceLinksWithCommentsHotfix(localLinks = [], comments = []) {
+    const deleted = deletedResourceKeysFromCommentsHotfix(comments);
+    const merged = new Map();
+    [...resourceLinksFromCommentsHotfix(comments), ...(Array.isArray(localLinks) ? localLinks : []).map((item) => normalizeResourceLinkHotfix(item))]
+      .filter(Boolean)
+      .forEach((item) => {
+        const key = resourceKeyHotfix(item);
+        if (!key || deleted.has(key) || deleted.has(item.id) || deleted.has(item.href) || deleted.has(item.localFileId) || deleted.has(item.objectPath)) return;
+        const current = merged.get(key);
+        if (!current || resourceStampHotfix(item) >= resourceStampHotfix(current)) merged.set(key, item);
+      });
+    return [...merged.values()].sort((left, right) => resourceStampHotfix(right) - resourceStampHotfix(left)).slice(0, 500);
+  }
+
   function mergeRemoteTasksWithLocalHotfix(remoteTasks = []) {
     const app = appState();
     const normalize = typeof normalizeStorageTasks === 'function'
@@ -254,10 +364,12 @@
 
       if (!remoteEmpty) {
         const previousStorage = app.storage && typeof app.storage === 'object' ? app.storage : {};
+        const mergedComments = mergeRemoteListWithLocalHotfix(previousStorage.comments || [], commentRows.map(fromRemoteComment), normalizeComment);
         const remoteStorage = {
           ...previousStorage,
           tasks: mergeRemoteTasksWithLocalHotfix(taskRows.map(fromRemoteTask)),
-          comments: mergeRemoteListWithLocalHotfix(previousStorage.comments || [], commentRows.map(fromRemoteComment), normalizeComment),
+          comments: mergedComments,
+          resourceLinks: mergeResourceLinksWithCommentsHotfix(previousStorage.resourceLinks || [], mergedComments),
           decisions: mergeRemoteListWithLocalHotfix(previousStorage.decisions || [], decisionRows.map(fromRemoteDecision), normalizeDecision),
           ownerOverrides: mergeRemoteListWithLocalHotfix(
             previousStorage.ownerOverrides || [],

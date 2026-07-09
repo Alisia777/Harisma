@@ -104,6 +104,7 @@
       's.v.voropaev@ya.qeep.life': { role: 'owner', name: '\u0412\u043e\u0440\u043e\u043f\u0430\u0435\u0432 \u0421\u0435\u0440\u0433\u0435\u0439 \u041a\u0410\u041c \u0424\u0421' },
       'a.a.korepanova@ya.qeep.life': { role: 'owner' },
       'e.a.smirnova@ya.qeep.life': { role: 'owner' },
+      'a.e.slyshkin@qeep.life': { role: 'owner' },
       'e.s.sinyagina@qeep.life': { role: 'employee' }
     }
   };

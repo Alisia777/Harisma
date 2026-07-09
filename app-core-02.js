@@ -597,15 +597,36 @@ function applyOwnerOverridesToSkus() {
   }
 }
 
+const SKU_LOOKUP_TOKEN_CACHE = new Map();
+const SKU_LOOKUP_TOKEN_CACHE_LIMIT = 60000;
+const SKU_LOOKUP_VALUES_CACHE = new WeakMap();
+let skuLookupIndexCache = {
+  source: null,
+  length: -1,
+  exact: null,
+  token: null
+};
+
 function skuLookupToken(value = '') {
-  return String(value ?? '')
+  const raw = String(value ?? '');
+  if (SKU_LOOKUP_TOKEN_CACHE.has(raw)) return SKU_LOOKUP_TOKEN_CACHE.get(raw);
+  const token = raw
     .trim()
     .toLowerCase()
     .replaceAll('ё', 'е')
     .replace(/[^a-zа-я0-9]+/gi, '');
+  if (SKU_LOOKUP_TOKEN_CACHE.size > SKU_LOOKUP_TOKEN_CACHE_LIMIT) SKU_LOOKUP_TOKEN_CACHE.clear();
+  SKU_LOOKUP_TOKEN_CACHE.set(raw, token);
+  return token;
 }
 
 function skuLookupValues(sku = {}) {
+  if (sku && typeof sku === 'object') {
+    const cached = SKU_LOOKUP_VALUES_CACHE.get(sku);
+    if (cached && cached.aliases === sku.aliases && cached.platformAliases === sku.platformAliases) {
+      return cached.values.slice();
+    }
+  }
   const aliasValues = [];
   if (Array.isArray(sku.aliases)) {
     sku.aliases.forEach((alias) => {
@@ -617,7 +638,7 @@ function skuLookupValues(sku = {}) {
     if (Array.isArray(values)) aliasValues.push(...values);
     else aliasValues.push(values);
   });
-  return [
+  const values = [
     sku.articleKey,
     sku.article,
     sku.sku,
@@ -628,24 +649,72 @@ function skuLookupValues(sku = {}) {
     sku.barcode,
     ...aliasValues
   ].filter((value) => String(value ?? '').trim());
+  if (sku && typeof sku === 'object') {
+    SKU_LOOKUP_VALUES_CACHE.set(sku, {
+      aliases: sku.aliases,
+      platformAliases: sku.platformAliases,
+      values
+    });
+    return values.slice();
+  }
+  return values;
 }
 
 function skuPrimaryKey(sku, fallback = '') {
   return String(sku?.articleKey || sku?.article || fallback || '').trim();
 }
 
+function resetSkuLookupIndex() {
+  skuLookupIndexCache = {
+    source: null,
+    length: -1,
+    exact: null,
+    token: null
+  };
+}
+
+function skuLookupIndex() {
+  const skus = Array.isArray(state.skus) ? state.skus : [];
+  if (
+    skuLookupIndexCache.source === skus
+    && skuLookupIndexCache.length === skus.length
+    && skuLookupIndexCache.exact
+    && skuLookupIndexCache.token
+  ) {
+    return skuLookupIndexCache;
+  }
+
+  const exact = new Map();
+  const token = new Map();
+  skus.forEach((sku) => {
+    skuLookupValues(sku).forEach((value) => {
+      const exactKey = String(value ?? '').trim();
+      if (exactKey && !exact.has(exactKey)) exact.set(exactKey, sku);
+      const lookupKey = skuLookupToken(value);
+      if (lookupKey && !token.has(lookupKey)) token.set(lookupKey, sku);
+    });
+  });
+  skuLookupIndexCache = {
+    source: skus,
+    length: skus.length,
+    exact,
+    token
+  };
+  return skuLookupIndexCache;
+}
+
 function getSku(articleKey) {
   const rawKey = String(articleKey ?? '').trim();
   if (!rawKey) return null;
-
-  const exact = state.skus.find((sku) => skuLookupValues(sku).some((value) => String(value ?? '').trim() === rawKey));
+  const index = skuLookupIndex();
+  const exact = index.exact.get(rawKey);
   if (exact) return exact;
-
   const lookupKey = skuLookupToken(rawKey);
   if (!lookupKey) return null;
-
-  return state.skus.find((sku) => skuLookupValues(sku).some((value) => skuLookupToken(value) === lookupKey)) || null;
+  return index.token.get(lookupKey) || null;
 }
+
+window.invalidateSkuLookupIndex = resetSkuLookupIndex;
 
 function ownerName(sku) {
   const localOwner = canonicalOwnerName(sku?.owner?.name || '');

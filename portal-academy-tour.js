@@ -4,7 +4,7 @@
   if (window.__ALTEA_ACADEMY_TOUR__) return;
   window.__ALTEA_ACADEMY_TOUR__ = true;
 
-  var VERSION = '20260709-native-tour3';
+  var VERSION = '20260709-native-tour4';
   var STORAGE_KEY = 'altea.academy.progress.v1';
   var HEAVY_DATA_NOTE = 'Данные обновляются ежедневно в 11:00 по Москве. До этого времени часть показателей может быть неполной.';
   var ACADEMY_PORTAL_TARGETS = {
@@ -242,7 +242,8 @@
     bootAttempts: 0,
     helpScheduled: false,
     spotlightFrame: 0,
-    active: false
+    active: false,
+    offerSnoozed: false
   };
 
   function cssEscape(value) {
@@ -295,12 +296,11 @@
 
   function isAcademyComplete() {
     var progress = readProgress();
-    return Boolean(progress && progress.completedAt && (progress.quizPassedAt || progress.skippedAt));
+    return Boolean(progress && progress.completedAt && progress.quizPassedAt);
   }
 
-  function isAcademyOfferAnswered() {
-    var progress = readProgress();
-    return Boolean(progress && progress.offerAnsweredAt);
+  function isAcademyOfferSnoozed() {
+    return Boolean(runtime.offerSnoozed);
   }
 
   function assign(target, source) {
@@ -717,17 +717,31 @@
 
   function answerOffer(choice) {
     var now = new Date().toISOString();
+    if (choice !== 'start') {
+      runtime.offerSnoozed = true;
+      writeProgress({
+        mode: 'offer-snoozed',
+        offerAnsweredAt: '',
+        offerSnoozedAt: now,
+        offerChoice: 'later'
+      });
+      removeOffer();
+      return;
+    }
+
+    runtime.offerSnoozed = false;
     writeProgress({
-      mode: choice === 'start' ? 'offer-started' : 'offer-dismissed',
+      mode: 'offer-started',
       offerAnsweredAt: now,
-      offerChoice: choice || 'later'
+      offerSnoozedAt: '',
+      offerChoice: 'start'
     });
     removeOffer();
-    if (choice === 'start') startTour({ force: true, view: activePortalView() });
+    startTour({ force: true, view: activePortalView() });
   }
 
   function showAcademyOffer() {
-    if (!document.body || runtime.offer || runtime.active || isAcademyComplete() || isAcademyOfferAnswered()) return false;
+    if (!document.body || runtime.offer || runtime.active || isAcademyComplete() || isAcademyOfferSnoozed()) return false;
     createStyle();
     var offer = document.createElement('section');
     offer.className = 'academy-entry-offer';
@@ -1226,7 +1240,7 @@
 
       if (!runtime.active && !isAcademyComplete() && isPortalReady()) {
         if (shouldStartTour) startTour({ force: true });
-        else if (!isAcademyOfferAnswered()) showAcademyOffer();
+        else if (!isAcademyOfferSnoozed()) showAcademyOffer();
         return;
       }
       if (!runtime.active && !isAcademyComplete() && runtime.bootAttempts < 160) scheduleBoot();
@@ -1238,6 +1252,7 @@
     openHelp: openDrawer,
     reset: function () {
       resetProgress();
+      runtime.offerSnoozed = false;
       removeOffer();
       removeOverlay();
       scheduleBoot();

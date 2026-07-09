@@ -11,6 +11,7 @@ const ROOT = path.resolve(__dirname, '..');
 const MODULE = 'portal-task-kanban-v1.js';
 const MOTION_MODULE = 'altea-motion-runtime.js';
 const MOTION_CSS = 'altea-motion-runtime.css';
+const DARIA_OWNER = '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f';
 
 const MIME = {
   '.css': 'text/css; charset=utf-8',
@@ -184,6 +185,19 @@ async function run() {
     assert.strictEqual(recovered.hash, '#control');
     assert.strictEqual(recovered.searchParams, '?portal-refresh=fixture');
     assert.strictEqual(recovered.motionVisible, false);
+
+    const ownerFilterOptions = await page.evaluate(() => {
+      const select = document.querySelector('[data-task-filter="owner"]');
+      return [...(select?.options || [])].map((option) => ({
+        value: option.value,
+        text: option.textContent.trim()
+      }));
+    });
+    assert.ok(ownerFilterOptions.some((option) => option.text === DARIA_OWNER && option.value === DARIA_OWNER), JSON.stringify(ownerFilterOptions));
+    await page.selectOption('[data-task-filter="owner"]', DARIA_OWNER);
+    await page.waitForFunction((owner) => window.state.controlFilters.owner === owner, DARIA_OWNER, { timeout: 30000 });
+    await page.selectOption('[data-task-filter="owner"]', 'all');
+    await page.waitForFunction(() => window.state.controlFilters.owner === 'all', null, { timeout: 30000 });
 
     const moreControl = await page.evaluate(() => {
       const button = document.querySelector('[data-task-show-more-lane="new"]');

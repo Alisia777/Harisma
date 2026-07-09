@@ -4,7 +4,7 @@
   if (window.__ALTEA_ACADEMY_TOUR__) return;
   window.__ALTEA_ACADEMY_TOUR__ = true;
 
-  var VERSION = '20260709-native-tour2';
+  var VERSION = '20260709-native-tour3';
   var STORAGE_KEY = 'altea.academy.progress.v1';
   var HEAVY_DATA_NOTE = 'Данные обновляются ежедневно в 11:00 по Москве. До этого времени часть показателей может быть неполной.';
   var ACADEMY_PORTAL_TARGETS = {
@@ -232,6 +232,7 @@
     card: null,
     drawerBackdrop: null,
     drawer: null,
+    offer: null,
     steps: [],
     stepIndex: 0,
     mode: 'idle',
@@ -295,6 +296,11 @@
   function isAcademyComplete() {
     var progress = readProgress();
     return Boolean(progress && progress.completedAt && (progress.quizPassedAt || progress.skippedAt));
+  }
+
+  function isAcademyOfferAnswered() {
+    var progress = readProgress();
+    return Boolean(progress && progress.offerAnsweredAt);
   }
 
   function assign(target, source) {
@@ -365,6 +371,18 @@
     var shell = document.getElementById('altea-premium-app');
     if (!shell) return '';
     return String(shell.getAttribute('data-premium-active-route') || '').trim();
+  }
+
+  function activePortalView() {
+    if (window.__alteaAppState && window.__alteaAppState.activeView) return normalizeView(window.__alteaAppState.activeView);
+    var activeNav = document.querySelector('.nav-btn.active[data-view], [data-premium-nav].is-active, [data-premium-nav].active');
+    var navView = activeNav ? (activeNav.dataset.view || activeNav.getAttribute('data-premium-nav')) : '';
+    if (navView) return normalizeView(navView);
+    var premium = premiumActiveRoute();
+    if (premium) return normalizeView(premium);
+    if (window.state && window.state.activeView) return normalizeView(window.state.activeView);
+    var hash = String(window.location.hash || '').replace(/^#/, '').replace(/^view-/, '');
+    return normalizeView(hash || 'dashboard');
   }
 
   function viewSurfaces(view) {
@@ -606,6 +624,12 @@
       '.academy-help-btn{display:inline-flex;align-items:center;gap:8px;margin-left:auto;min-height:32px;padding:7px 10px;font-size:13px;line-height:1.1}',
       '.academy-help-btn span{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:rgba(229,199,132,.18);color:#f3d794}',
       '.section-title .academy-help-btn,.control-simple-title .academy-help-btn{margin-left:12px}',
+      '.academy-global-help{margin-left:8px;white-space:nowrap;flex:0 0 auto}',
+      '.academy-global-help.is-floating{position:fixed;right:18px;bottom:86px;z-index:2147482300;margin-left:0;box-shadow:0 16px 44px rgba(0,0,0,.32)}',
+      '.academy-entry-offer{position:fixed;right:18px;bottom:18px;z-index:2147482450;width:min(390px,calc(100vw - 28px));border:1px solid rgba(229,199,132,.34);border-radius:10px;background:linear-gradient(155deg,rgba(23,17,14,.98),rgba(10,10,13,.98));box-shadow:0 24px 90px rgba(0,0,0,.42);padding:16px;color:#f8efe0;pointer-events:auto}',
+      '.academy-entry-offer h2{margin:0;color:#fff6df;font-size:18px;line-height:1.18;letter-spacing:0}',
+      '.academy-entry-offer p{margin:8px 0 0;color:#d8cdbd;font-size:13px;line-height:1.4}',
+      '.academy-entry-offer-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:14px}',
       '.academy-entry-overlay--quiz .academy-spotlight-hole{display:none}',
       '.academy-entry-overlay--quiz .academy-coach-card{width:min(680px,calc(100vw - 28px))}',
       '.academy-quiz-list{display:grid;gap:12px;margin-top:14px}',
@@ -686,6 +710,49 @@
     document.removeEventListener('keydown', onTourKeydown, true);
   }
 
+  function removeOffer() {
+    if (runtime.offer && runtime.offer.parentNode) runtime.offer.parentNode.removeChild(runtime.offer);
+    runtime.offer = null;
+  }
+
+  function answerOffer(choice) {
+    var now = new Date().toISOString();
+    writeProgress({
+      mode: choice === 'start' ? 'offer-started' : 'offer-dismissed',
+      offerAnsweredAt: now,
+      offerChoice: choice || 'later'
+    });
+    removeOffer();
+    if (choice === 'start') startTour({ force: true, view: activePortalView() });
+  }
+
+  function showAcademyOffer() {
+    if (!document.body || runtime.offer || runtime.active || isAcademyComplete() || isAcademyOfferAnswered()) return false;
+    createStyle();
+    var offer = document.createElement('section');
+    offer.className = 'academy-entry-offer';
+    offer.setAttribute('role', 'dialog');
+    offer.setAttribute('aria-modal', 'false');
+    offer.setAttribute('aria-labelledby', 'academyOfferTitle');
+    offer.innerHTML = [
+      '<h2 id="academyOfferTitle">Пройти короткое обучение по порталу?</h2>',
+      '<p>Покажем основные вкладки, где смотреть данные и как не потеряться в задачах. Можно продолжить работу и открыть обучение позже через кнопку ?.</p>',
+      '<div class="academy-entry-offer-actions">',
+      '<button class="academy-btn academy-btn-ghost" type="button" data-academy-offer="later">Не сейчас</button>',
+      '<button class="academy-btn academy-btn-primary" type="button" data-academy-offer="start">Пройти обучение</button>',
+      '</div>'
+    ].join('');
+    offer.addEventListener('click', function (event) {
+      var action = event.target && event.target.closest ? event.target.closest('[data-academy-offer]') : null;
+      if (!action) return;
+      event.preventDefault();
+      answerOffer(action.getAttribute('data-academy-offer') === 'start' ? 'start' : 'later');
+    });
+    document.body.appendChild(offer);
+    runtime.offer = offer;
+    return true;
+  }
+
   function dismissAcademy(reason) {
     var now = new Date().toISOString();
     writeProgress({
@@ -743,6 +810,7 @@
 
   function startTour(options) {
     options = options || {};
+    removeOffer();
     if (!options.force && !isPortalReady()) {
       scheduleBoot();
       return false;
@@ -988,9 +1056,34 @@
     return Boolean(root.querySelector('.section-title,h1,h2,h3,table,.data-table,.card,[class*="card"],form,[data-task-calendar-design-v1],.altea-premium-route,.portal-lux-shell'));
   }
 
+  function ensureGlobalHelpButton() {
+    if (!document.body) return;
+    var host = portalTopbarElement() || document.querySelector('.topbar,.altea-premium-shell-topbar') || document.body;
+    var button = document.querySelector('[data-academy-global-help]');
+    if (!button) {
+      button = document.createElement('button');
+      button.className = 'academy-help-btn academy-global-help';
+      button.type = 'button';
+      button.setAttribute('data-academy-global-help', '1');
+      button.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        openDrawer(activePortalView());
+      });
+    }
+    if (button.parentNode !== host) host.appendChild(button);
+    button.classList.toggle('is-floating', host === document.body);
+    var view = activePortalView();
+    var guide = guideForView(view);
+    button.setAttribute('data-academy-help-view', view);
+    button.setAttribute('title', 'Как пользоваться: ' + guide.title);
+    button.innerHTML = '<span aria-hidden="true">?</span><b>Как пользоваться</b>';
+  }
+
   function ensureHelpButtons() {
     if (!document.body) return;
     createStyle();
+    ensureGlobalHelpButton();
     orderedVisibleViews().forEach(function (view) {
       var root = firstReadyViewSurface(view);
       if (!root || root.querySelector('[data-academy-help-button]')) return;
@@ -1030,7 +1123,7 @@
   function openDrawer(view) {
     closeDrawer();
     createStyle();
-    view = normalizeView(view || getAppState().activeView || 'dashboard');
+    view = normalizeView(view || activePortalView());
     var guide = guideForView(view);
     var backdrop = document.createElement('div');
     backdrop.className = 'academy-drawer-backdrop';
@@ -1094,12 +1187,21 @@
     if (runtime.observer || !document.body) return;
     runtime.observer = new MutationObserver(scheduleHelpButtons);
     runtime.observer.observe(document.body, { childList: true, subtree: true });
+    document.addEventListener('click', function (event) {
+      var target = event.target && event.target.closest ? event.target.closest('.nav-btn[data-view], [data-premium-nav]') : null;
+      if (!target) return;
+      scheduleHelpButtons();
+      window.setTimeout(scheduleHelpButtons, 260);
+      window.setTimeout(scheduleHelpButtons, 760);
+    }, true);
     ['resize', 'scroll'].forEach(function (eventName) {
       window.addEventListener(eventName, updateSpotlightSoon, true);
     });
     ['altea:viewchange', 'altea:data-ready', 'altea:view-data-ready', 'altea:app-ready', 'altea:accesschange', 'hashchange', 'load'].forEach(function (eventName) {
       window.addEventListener(eventName, function () {
         scheduleHelpButtons();
+        window.setTimeout(scheduleHelpButtons, 320);
+        window.setTimeout(scheduleHelpButtons, 900);
         updateSpotlightSoon();
         scheduleBoot();
       });
@@ -1124,9 +1226,10 @@
 
       if (!runtime.active && !isAcademyComplete() && isPortalReady()) {
         if (shouldStartTour) startTour({ force: true });
+        else if (!isAcademyOfferAnswered()) showAcademyOffer();
         return;
       }
-      if (shouldStartTour && !runtime.active && !isAcademyComplete() && runtime.bootAttempts < 160) scheduleBoot();
+      if (!runtime.active && !isAcademyComplete() && runtime.bootAttempts < 160) scheduleBoot();
     }, runtime.bootAttempts < 20 ? 300 : 1000);
   }
 
@@ -1135,9 +1238,11 @@
     openHelp: openDrawer,
     reset: function () {
       resetProgress();
+      removeOffer();
       removeOverlay();
       scheduleBoot();
     },
+    ask: showAcademyOffer,
     complete: completeAcademy,
     progress: readProgress,
     targets: ACADEMY_PORTAL_TARGETS

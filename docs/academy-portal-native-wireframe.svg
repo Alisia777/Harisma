@@ -1,0 +1,228 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1120" viewBox="0 0 1680 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Portal-native Academy Tour wireframe</title>
+  <desc id="desc">Схема интерактивного обучения Qharisma Academy поверх реального DOM портала: sidebar nav buttons, view sections, spotlight, coach card, help drawer and mini-test.</desc>
+  <defs>
+    <radialGradient id="bg" cx="30%" cy="0%" r="95%">
+      <stop offset="0%" stop-color="#172554"/>
+      <stop offset="48%" stop-color="#08101f"/>
+      <stop offset="100%" stop-color="#05070d"/>
+    </radialGradient>
+    <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.095"/>
+      <stop offset="0.58" stop-color="#ffffff" stop-opacity="0.032"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.20"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" x2="1">
+      <stop offset="0" stop-color="#8b5cf6"/>
+      <stop offset="0.47" stop-color="#d4a44a"/>
+      <stop offset="1" stop-color="#6ee7a0"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000" flood-opacity="0.38"/>
+    </filter>
+    <style>
+      .shell{fill:rgba(8,16,31,.88);stroke:rgba(255,255,255,.12);stroke-width:1.2;filter:url(#shadow)}
+      .panel{fill:url(#panel);stroke:rgba(255,255,255,.12);stroke-width:1.2;filter:url(#shadow)}
+      .soft{fill:rgba(255,255,255,.04);stroke:rgba(255,255,255,.10);stroke-width:1}
+      .soft2{fill:rgba(0,0,0,.26);stroke:rgba(255,255,255,.08);stroke-width:1}
+      .goldStroke{stroke:#d4a44a;stroke-opacity:.78;stroke-width:2}
+      .blueStroke{stroke:#3b82f6;stroke-opacity:.68;stroke-width:2}
+      .greenStroke{stroke:#5fb084;stroke-opacity:.7;stroke-width:2}
+      .redStroke{stroke:#e5695f;stroke-opacity:.72;stroke-width:2}
+      .title{font:900 42px Inter,Arial,sans-serif;fill:#fff7e6;letter-spacing:-.02em}
+      .sub{font:500 18px Inter,Arial,sans-serif;fill:#b8c2dd}
+      .h2{font:850 24px Inter,Arial,sans-serif;fill:#fff7e6}
+      .h3{font:800 18px Inter,Arial,sans-serif;fill:#eef3ff}
+      .text{font:500 14px Inter,Arial,sans-serif;fill:#cbd5f0}
+      .muted{font:500 12px Inter,Arial,sans-serif;fill:#98a3c7}
+      .tiny{font:900 11px Inter,Arial,sans-serif;fill:#98a3c7;letter-spacing:.08em;text-transform:uppercase}
+      .code{font:700 13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#dbeafe}
+      .goldText{fill:#f5ddb0}
+      .btnText{font:850 13px Inter,Arial,sans-serif;fill:#fff7e6}
+      .num{font:900 17px Inter,Arial,sans-serif;fill:white}
+      .dash{stroke:#d4a44a;stroke-width:2;stroke-dasharray:8 8;fill:none;opacity:.8}
+      .arrow{marker-end:url(#arrow)}
+      .pulse{animation:pulse 1.4s ease-in-out infinite;transform-origin:center}.rise{animation:rise .5s ease both}
+      @keyframes pulse{50%{opacity:.45;transform:scale(1.12)}}@keyframes rise{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#d4a44a"/>
+    </marker>
+  </defs>
+
+  <rect width="1680" height="1120" fill="url(#bg)"/>
+  <path d="M0 210 C260 80 420 320 680 160 S1110 40 1680 160" stroke="rgba(212,164,74,.08)" stroke-width="2" fill="none"/>
+  <path d="M0 980 C260 820 520 1090 850 940 S1260 830 1680 980" stroke="rgba(59,130,246,.09)" stroke-width="2" fill="none"/>
+
+  <text x="64" y="72" class="tiny goldText">Qharisma Academy · portal-native wireframe</text>
+  <text x="64" y="122" class="title">Интерактивное обучение поверх реального портала</text>
+  <text x="64" y="154" class="sub">Codex должен подсвечивать настоящие .nav-btn[data-view], #view-* и topbar, а не рисовать отдельную учебную страницу.</text>
+
+  <!-- Real portal shell -->
+  <g transform="translate(56 206)">
+    <rect class="shell" width="1045" height="800" rx="28"/>
+    <rect x="20" y="20" width="250" height="760" rx="22" fill="rgba(6,12,25,.82)" stroke="rgba(255,255,255,.10)"/>
+    <rect x="290" y="20" width="735" height="760" rx="22" fill="rgba(255,255,255,.025)" stroke="rgba(255,255,255,.08)"/>
+
+    <text x="44" y="62" class="h3 goldText">Qharisma</text>
+    <text x="44" y="86" class="muted">.sidebar · real DOM</text>
+
+    <!-- sidebar nav -->
+    <g transform="translate(42 120)">
+      <rect width="204" height="38" rx="13" class="soft blueStroke"/>
+      <text x="18" y="24" class="text">Дашборд</text>
+      <text x="118" y="24" class="code">dashboard</text>
+    </g>
+    <g transform="translate(42 168)">
+      <rect width="204" height="38" rx="13" class="soft"/>
+      <text x="18" y="24" class="text">Календарь</text>
+      <text x="118" y="24" class="code">data-health</text>
+    </g>
+    <g transform="translate(42 216)">
+      <rect width="204" height="38" rx="13" class="soft"/>
+      <text x="18" y="24" class="text">Задачи</text>
+      <text x="118" y="24" class="code">control</text>
+    </g>
+    <g transform="translate(42 264)">
+      <rect width="204" height="38" rx="13" class="soft"/>
+      <text x="18" y="24" class="text">Хранилище</text>
+      <text x="118" y="24" class="code">documents</text>
+    </g>
+    <g transform="translate(42 312)">
+      <rect width="204" height="38" rx="13" class="soft"/>
+      <text x="18" y="24" class="text">Руководителю</text>
+      <text x="118" y="24" class="code">executive</text>
+    </g>
+    <g transform="translate(42 360)">
+      <rect width="204" height="38" rx="13" class="soft"/>
+      <text x="18" y="24" class="text">Репрайсер</text>
+      <text x="118" y="24" class="code">repricer</text>
+    </g>
+    <g transform="translate(42 408)">
+      <rect width="204" height="38" rx="13" class="soft"/>
+      <text x="18" y="24" class="text">Цены</text>
+      <text x="118" y="24" class="code">prices</text>
+    </g>
+    <g transform="translate(42 456)">
+      <rect width="204" height="38" rx="13" class="soft"/>
+      <text x="18" y="24" class="text">Новинки</text>
+      <text x="118" y="24" class="code">launches</text>
+    </g>
+    <g transform="translate(42 504)">
+      <rect width="204" height="38" rx="13" class="soft"/>
+      <text x="18" y="24" class="text">Воронка</text>
+      <text x="118" y="24" class="code">leaderboard</text>
+    </g>
+    <g transform="translate(42 552)">
+      <rect width="204" height="38" rx="13" fill="rgba(212,164,74,.18)" stroke="#d4a44a" stroke-width="2"/>
+      <text x="18" y="24" class="text goldText">Академия</text>
+      <text x="118" y="24" class="code">academy</text>
+    </g>
+
+    <!-- topbar -->
+    <g transform="translate(324 50)">
+      <text class="h2" x="0" y="0">Дом бренда Алтея</text>
+      <text class="muted" x="0" y="28">.topbar · #syncStatusBadge · #pullRemoteBtn · #pushRemoteBtn</text>
+      <rect x="435" y="-24" width="130" height="36" rx="18" fill="rgba(217,151,21,.14)" stroke="rgba(217,151,21,.38)"/>
+      <circle class="pulse" cx="455" cy="-6" r="6" fill="#d4a44a"/>
+      <text x="470" y="-1" class="muted">sync status</text>
+      <rect x="575" y="-24" width="82" height="36" rx="18" class="soft"/>
+      <text x="596" y="-1" class="muted">pull</text>
+      <rect x="667" y="-24" width="82" height="36" rx="18" class="soft"/>
+      <text x="688" y="-1" class="muted">push</text>
+    </g>
+
+    <!-- real view -->
+    <g transform="translate(324 120)">
+      <rect width="665" height="600" rx="22" class="soft2"/>
+      <text x="26" y="42" class="h2">#view-repricer</text>
+      <text x="26" y="70" class="muted">Скрипт открывает вкладку, ждёт DOM и подсвечивает реальную рабочую область.</text>
+      <rect x="26" y="105" width="610" height="86" rx="18" class="soft greenStroke"/>
+      <text x="48" y="140" class="h3">Репрайсер · рекомендации цены</text>
+      <text x="48" y="166" class="muted">Текущая цена · min price · риск · файл загрузки</text>
+      <rect x="26" y="218" width="186" height="138" rx="18" class="soft"/>
+      <text x="48" y="252" class="tiny">текущая цена</text>
+      <text x="48" y="296" class="h2 goldText">1 290 ₽</text>
+      <rect x="238" y="218" width="186" height="138" rx="18" class="soft"/>
+      <text x="260" y="252" class="tiny">min price</text>
+      <text x="260" y="296" class="h2">1 170 ₽</text>
+      <rect x="450" y="218" width="186" height="138" rx="18" class="soft redStroke"/>
+      <text x="472" y="252" class="tiny">risk</text>
+      <text x="472" y="296" class="h2" fill="#ffd0cc">warn</text>
+      <rect x="26" y="386" width="610" height="158" rx="18" class="soft"/>
+      <text x="48" y="424" class="h3">Таблица рекомендаций</text>
+      <line x1="48" y1="450" x2="612" y2="450" stroke="rgba(255,255,255,.12)"/>
+      <text x="48" y="482" class="muted">SKU · рекомендация · правило · история изменений</text>
+    </g>
+
+    <!-- spotlight ring on real nav -->
+    <rect x="36" y="348" width="216" height="62" rx="18" fill="none" stroke="#6ee7a0" stroke-width="4" stroke-dasharray="10 8"/>
+    <text x="272" y="382" class="code goldText">target = .nav-btn[data-view="repricer"]</text>
+
+    <!-- spotlight ring on view -->
+    <rect x="312" y="210" width="690" height="635" rx="28" fill="none" stroke="#d4a44a" stroke-width="4" stroke-dasharray="12 9"/>
+    <text x="540" y="872" class="code goldText">target = #view-repricer</text>
+  </g>
+
+  <!-- Overlay coach card -->
+  <g transform="translate(790 288)" class="rise">
+    <rect width="456" height="278" rx="26" fill="rgba(8,12,22,.96)" stroke="rgba(212,164,74,.56)" filter="url(#shadow)"/>
+    <text x="28" y="42" class="tiny goldText">Academy Tour · шаг 8 из 18</text>
+    <text x="28" y="82" class="h2">Репрайсер: работаем с ценой</text>
+    <text x="28" y="118" class="text">Подсветка построена по getBoundingClientRect()</text>
+    <text x="28" y="144" class="text">от настоящей кнопки и настоящей секции.</text>
+    <rect x="28" y="166" width="400" height="54" rx="16" fill="rgba(95,176,132,.10)" stroke="rgba(95,176,132,.34)"/>
+    <text x="48" y="190" class="muted">Смотрим: текущая цена · min price · риск</text>
+    <text x="48" y="210" class="muted">Нельзя: грузить цену ниже минимума без согласования</text>
+    <rect x="28" y="238" width="98" height="34" rx="17" class="soft"/>
+    <text x="55" y="260" class="btnText">Назад</text>
+    <rect x="292" y="238" width="136" height="34" rx="17" fill="rgba(212,164,74,.24)" stroke="rgba(212,164,74,.58)"/>
+    <text x="337" y="260" class="btnText">Далее</text>
+  </g>
+  <path class="dash arrow" d="M780 430 C690 435 635 418 520 386"/>
+
+  <!-- Right spec panels -->
+  <g transform="translate(1268 206)">
+    <rect width="356" height="800" rx="28" class="panel"/>
+    <text x="28" y="46" class="h2">Что должен понять Codex</text>
+    <text x="28" y="80" class="muted">Не отдельный курс. Обучение живёт на портале.</text>
+
+    <g transform="translate(28 118)">
+      <rect width="300" height="86" rx="18" class="soft blueStroke"/>
+      <text x="18" y="30" class="h3">1. После входа</text>
+      <text x="18" y="56" class="muted">Слушаем altea:accesschange и ждём shell.</text>
+    </g>
+    <g transform="translate(28 222)">
+      <rect width="300" height="86" rx="18" class="soft greenStroke"/>
+      <text x="18" y="30" class="h3">2. Реальные targets</text>
+      <text x="18" y="56" class="muted">.nav-btn[data-view] и #view-*.</text>
+    </g>
+    <g transform="translate(28 326)">
+      <rect width="300" height="86" rx="18" class="soft goldStroke"/>
+      <text x="18" y="30" class="h3">3. Spotlight</text>
+      <text x="18" y="56" class="muted">Позиция из getBoundingClientRect().</text>
+    </g>
+    <g transform="translate(28 430)">
+      <rect width="300" height="86" rx="18" class="soft redStroke"/>
+      <text x="18" y="30" class="h3">4. Drawer в каждой вкладке</text>
+      <text x="18" y="56" class="muted">? Как пользоваться разделом.</text>
+    </g>
+    <g transform="translate(28 534)">
+      <rect width="300" height="86" rx="18" class="soft greenStroke"/>
+      <text x="18" y="30" class="h3">5. Мини-тест</text>
+      <text x="18" y="56" class="muted">80% pass, progress в localStorage.</text>
+    </g>
+    <g transform="translate(28 660)">
+      <rect width="300" height="84" rx="18" fill="rgba(212,164,74,.14)" stroke="rgba(212,164,74,.56)"/>
+      <text x="18" y="31" class="h3 goldText">11:00 по Москве</text>
+      <text x="18" y="58" class="muted">Обязательная фраза во всех data-heavy шагах.</text>
+    </g>
+  </g>
+
+  <!-- bottom flow -->
+  <g transform="translate(60 1044)">
+    <rect width="1560" height="52" rx="26" fill="rgba(212,164,74,.12)" stroke="rgba(212,164,74,.36)"/>
+    <text x="28" y="34" class="h3 goldText">Правильный поток:</text>
+    <text x="212" y="34" class="text">Авторизация → загрузка реального портала → Academy overlay блокирует работу → подсветка вкладок → drawer/help в каждой вкладке → тест → progress → рабочий доступ</text>
+  </g>
+</svg>

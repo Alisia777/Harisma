@@ -39,6 +39,166 @@ let skuPlanFactTruthWarmupPromise = null;
 let skuPlanFactWbSubstitutionIndexCache = { payload: null, index: null };
 let skuPlanFactLazyRenderPromise = null;
 let skuPlanFactWbOwnerAuditMapCache = { source: null, map: null };
+let skuPlanFactModelCache = { key: '', model: null, generatedAt: 0 };
+let skuPlanFactObjectIds = new WeakMap();
+let skuPlanFactObjectIdSeq = 1;
+
+function skuPlanFactObjectId(value) {
+  if (!value || (typeof value !== 'object' && typeof value !== 'function')) return String(value ?? '');
+  if (!skuPlanFactObjectIds.has(value)) {
+    skuPlanFactObjectIds.set(value, skuPlanFactObjectIdSeq);
+    skuPlanFactObjectIdSeq += 1;
+  }
+  return skuPlanFactObjectIds.get(value);
+}
+
+function skuPlanFactPayloadSignature(value, depth = 0) {
+  if (!value) return '0';
+  if (Array.isArray(value)) {
+    const first = value[0] || {};
+    const last = value[value.length - 1] || {};
+    return [
+      'a',
+      skuPlanFactObjectId(value),
+      value.length,
+      first.articleKey || first.article || first.sku || first.id || first.date || '',
+      last.articleKey || last.article || last.sku || last.id || last.date || ''
+    ].join(':');
+  }
+  if (typeof value !== 'object') return String(value);
+  const rows = Array.isArray(value.rows) ? value.rows.length : '';
+  const items = Array.isArray(value.items) ? value.items.length : '';
+  const platforms = value.platforms && typeof value.platforms === 'object' ? Object.keys(value.platforms).sort().join(',') : '';
+  const extraPlatforms = value.extraMarketplace?.platforms && typeof value.extraMarketplace.platforms === 'object'
+    ? Object.keys(value.extraMarketplace.platforms).sort().join(',')
+    : '';
+  const nested = depth > 0 ? '' : ['smart', 'overlay', 'support', 'prices', 'extra']
+    .map((key) => value[key] ? `${key}:${skuPlanFactPayloadSignature(value[key], depth + 1)}` : '')
+    .filter(Boolean)
+    .join('|');
+  return [
+    'o',
+    skuPlanFactObjectId(value),
+    value.generatedAt || '',
+    value.updatedAt || value.updated_at || '',
+    value.asOfDate || '',
+    value.schema || '',
+    rows,
+    items,
+    platforms,
+    extraPlatforms,
+    nested
+  ].join(':');
+}
+
+function skuPlanFactStorageSignature() {
+  const storage = state.storage || {};
+  const keys = [
+    'ownerOverrides',
+    'productLifecycleOverrides',
+    'repricerOverrides',
+    'repricerSkuProfiles',
+    'repricerCorridors',
+    'repricerOverrideDeletes',
+    'repricerSkuProfileDeletes',
+    'repricerCorridorDeletes'
+  ];
+  return keys.map((key) => `${key}:${skuPlanFactPayloadSignature(storage[key])}`).join('|');
+}
+
+function skuPlanFactModelCacheKey(filters = {}, options = {}) {
+  const normalizedFilters = Object.keys(filters || {})
+    .sort()
+    .reduce((acc, key) => {
+      if (typeof filters[key] !== 'function') acc[key] = filters[key];
+      return acc;
+    }, {});
+  return JSON.stringify({
+    filters: normalizedFilters,
+    sourceOnly: SKU_WORKSPACE_SOURCE_ONLY,
+    skus: skuPlanFactPayloadSignature(state.skus),
+    aliases: skuPlanFactPayloadSignature(state.skuAliases),
+    ignore: skuPlanFactPayloadSignature(state.skuAliasIgnore),
+    matrix: skuPlanFactPayloadSignature(state.skuMatrix),
+    smart: skuPlanFactPayloadSignature(state.smartPriceWorkbench),
+    overlay: skuPlanFactPayloadSignature(state.smartPriceOverlay),
+    support: skuPlanFactPayloadSignature(state.priceWorkbenchSupport),
+    prices: skuPlanFactPayloadSignature(state.prices),
+    trends: skuPlanFactPayloadSignature(state.platformTrends),
+    plan: skuPlanFactPayloadSignature(state.platformPlan),
+    ads: skuPlanFactPayloadSignature(state.adsSummary),
+    iuDrr: skuPlanFactPayloadSignature(state.iuDrrSummary),
+    wbSubstitution: skuPlanFactPayloadSignature(state.wbSubstitutionTraffic),
+    storage: skuPlanFactStorageSignature(),
+    teamSync: state.team?.lastSyncAt || '',
+    scope: options.cacheScope || ''
+  });
+}
+
+function skuPlanFactInvalidateModelCache() {
+  skuPlanFactModelCache = { key: '', model: null, generatedAt: 0 };
+}
+
+function skuPlanFactCurrentView() {
+  const fromState = String(state?.activeView || '').trim();
+  const fromHash = String((typeof location !== 'undefined' && location.hash) || '').replace(/^#\/?/, '').trim();
+  return fromState || fromHash || '';
+}
+
+function skuPlanFactHeavyModelAllowed(options = {}) {
+  if (options.force === true || options.deferUnlessActive !== true) return true;
+  return ['sku-plan-fact', 'sku-contour', 'data-health', 'iu-drr', 'executive'].includes(skuPlanFactCurrentView());
+}
+
+function skuPlanFactEmptyModel(filters = {}) {
+  return {
+    filters,
+    months: [],
+    monthKey: '',
+    monthLabel: '',
+    maxFactDate: '',
+    selectedDate: '',
+    periodStart: '',
+    periodEnd: '',
+    periodDays: 0,
+    maxAvailableDate: '',
+    dateMin: '',
+    dateMax: '',
+    elapsedDays: 0,
+    rows: [],
+    allRows: [],
+    platformBaseRows: [],
+    owners: [],
+    platforms: SKU_PLAN_FACT_PLATFORMS,
+    platformLabels: SKU_PLAN_FACT_PLATFORM_LABELS,
+    reconciliation: [],
+    unmappedCount: 0,
+    unmappedRevenue: 0,
+    quality: { issueCount: 0, dangerCount: 0, warningCount: 0, issues: [], topIssues: [], reconciliation: [] },
+    iuDrrControl: { applied: false, platforms: {}, source: 'deferred' },
+    planAdTotalsByPlatform: {},
+    planDrrByPlatform: {},
+    totals: {
+      planRevenue: 0,
+      planToDateRevenue: 0,
+      factRevenue: 0,
+      planUnits: 0,
+      factUnits: 0,
+      adSpend: 0,
+      completionToDate: null,
+      completionMonth: null,
+      gapToDate: 0,
+      drr: null
+    },
+    planDrrWb: null,
+    planDrrOzon: null,
+    deferred: true
+  };
+}
+
+function skuPlanFactCachedModelOrEmpty(filters = {}) {
+  return skuPlanFactModelCache.model || skuPlanFactEmptyModel(filters);
+}
 
 function skuPlanFactPlatformLabel(platform = '') {
   return SKU_PLAN_FACT_PLATFORM_LABELS[platform] || String(platform || '').toUpperCase();
@@ -2928,6 +3088,13 @@ function skuPlanFactRowMatchesFilters(row = {}, filters = {}, options = {}) {
 function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
   const persistFilters = options.persistFilters !== false;
   const filters = skuPlanFactFilters(filterOverrides, { persist: persistFilters });
+  if (!skuPlanFactHeavyModelAllowed(options)) {
+    return skuPlanFactCachedModelOrEmpty(filters);
+  }
+  const cacheKey = skuPlanFactModelCacheKey(filters, options);
+  if (options.noCache !== true && skuPlanFactModelCache.key === cacheKey && skuPlanFactModelCache.model) {
+    return skuPlanFactModelCache.model;
+  }
   const indexes = skuPlanFactBuildIndexes();
   const months = skuPlanFactAvailableMonths(indexes);
   const monthKey = skuPlanFactSelectedMonth(months, filters);
@@ -3096,7 +3263,11 @@ function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
     planDrrWb: planDrrByPlatform.wb,
     planDrrOzon: planDrrByPlatform.ozon
   };
-  return skuPlanFactApplyPayrollKpiToModel(model);
+  const finalModel = skuPlanFactApplyPayrollKpiToModel(model);
+  if (options.noCache !== true) {
+    skuPlanFactModelCache = { key: cacheKey, model: finalModel, generatedAt: Date.now() };
+  }
+  return finalModel;
 }
 
 function skuPlanFactTone(value) {
@@ -4245,7 +4416,9 @@ function portalHealthIssueRows(limit = 240) {
     });
   };
 
-  const model = typeof skuPlanFactBuildModel === 'function' ? skuPlanFactBuildModel() : {};
+  const model = typeof skuPlanFactBuildModel === 'function'
+    ? skuPlanFactBuildModel(null, { persistFilters: false, deferUnlessActive: true })
+    : {};
   if (typeof skuContourIssueRows === 'function') {
     skuContourIssueRows(model)
       .filter((row) => !(typeof skuContourIssueIsResolved === 'function' && skuContourIssueIsResolved(row)))
@@ -11813,6 +11986,8 @@ window.skuContourRollbackableEvents = skuContourRollbackableEvents;
 window.skuPlanFactCreateNewSkuTasks = skuPlanFactCreateNewSkuTasks;
 window.skuPlanFactBuildNewSkuTask = skuPlanFactBuildNewSkuTask;
 window.skuPlanFactBuildModel = skuPlanFactBuildModel;
+window.skuPlanFactInvalidateModelCache = skuPlanFactInvalidateModelCache;
+window.skuPlanFactCachedModelOrEmpty = skuPlanFactCachedModelOrEmpty;
 window.skuPlanFactKpiEligible = skuPlanFactKpiEligible;
 window.skuPlanFactDisplayMetric = skuPlanFactDisplayMetric;
 window.skuPlanFactContextForArticle = skuPlanFactContextForArticle;
@@ -11826,3 +12001,7 @@ window.skuPlanFactPrepareAliasImport = skuPlanFactPrepareAliasImport;
 window.SKU_PLAN_FACT_PLATFORMS = SKU_PLAN_FACT_PLATFORMS;
 window.SKU_PLAN_FACT_PLATFORM_LABELS = SKU_PLAN_FACT_PLATFORM_LABELS;
 window.SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS = SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS;
+
+['altea:data-ready', 'altea:view-data-ready', 'altea:portal-storage-updated', 'altea:marketplacechange', 'altea:datarefresh'].forEach((eventName) => {
+  window.addEventListener(eventName, skuPlanFactInvalidateModelCache);
+});

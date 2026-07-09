@@ -6,7 +6,7 @@
   window.__ALTEA_TASK_KANBAN_PRIMARY__ = true;
 
   const AUTO_TOMBSTONE_VERSION = '20260701-task-auto-tombstone-v1';
-  const VERSION = '20260702-task-user-status-persist-v1';
+  const VERSION = '20260709-task-owner-platform-fallback-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
@@ -680,6 +680,20 @@
     return '';
   }
 
+  function defaultTaskPlatformOwnerName(platform = '') {
+    const platformKey = normalizePlatform(platform);
+    if (!TASK_OWNER_PLATFORM_KEYS.has(platformKey)) return '';
+    try {
+      if (typeof window.activeOwnerList === 'function') {
+        const owner = window.activeOwnerList(platformKey)
+          .map((value) => normalizeEmployeeOwnerName(value || ''))
+          .find(Boolean);
+        if (owner) return owner;
+      }
+    } catch (_) {}
+    return '';
+  }
+
   function skuDefaultOwner(sku) {
     if (!sku) return '';
     try {
@@ -711,14 +725,31 @@
     const coOwner = normalizeEmployeeOwnerName(task?.coOwner || task?.co_owner || '');
     const skuOwner = skuDefaultOwner(sku);
     const platformOwner = skuPlatformOwner(sku, taskPlatform);
+    const defaultPlatformOwner = !sku && task?.type === 'launch'
+      ? defaultTaskPlatformOwnerName(taskPlatform)
+      : '';
     if (platformOwner && (!explicitOwner || explicitOwner === skuOwner || isAutoTaskLike(task))) {
       return platformOwner;
     }
-    return explicitOwner || platformOwner || coOwner || skuOwner || '';
+    return explicitOwner || platformOwner || defaultPlatformOwner || coOwner || skuOwner || '';
   }
 
   function taskOwner(task) {
     return resolveTaskOwner(task, taskPrimarySku(task), normalizePlatform('', task));
+  }
+
+  function taskOwnerCandidates(task) {
+    const sku = taskPrimarySku(task);
+    const platform = normalizePlatform('', task);
+    const values = [
+      taskOwner(task),
+      normalizeEmployeeOwnerName(task?.owner || ''),
+      normalizeEmployeeOwnerName(task?.coOwner || task?.co_owner || ''),
+      skuPlatformOwner(sku, platform),
+      !sku && task?.type === 'launch' ? defaultTaskPlatformOwnerName(platform) : '',
+      skuDefaultOwner(sku)
+    ];
+    return [...new Set(values.filter(Boolean))];
   }
 
   function taskType(task) {
@@ -854,8 +885,7 @@
   function ownerOptions(tasks) {
     const owners = new Set(OWNER_FILTER_PINNED);
     tasks.forEach((task) => {
-      const owner = taskOwner(task);
-      if (owner) owners.add(owner);
+      taskOwnerCandidates(task).forEach((owner) => owners.add(owner));
     });
     return [...owners].sort((a, b) => {
       const ai = OWNER_FILTER_PINNED.indexOf(a);
@@ -1385,8 +1415,8 @@
       if (taskPlatform !== platformFilter && taskPlatform !== 'cross') return false;
     }
 
-    const owner = normalizeText(normalizeOwnerName(filters.owner || 'all') || 'all');
-    if (owner && owner !== 'all' && normalizeText(taskOwner(task) || 'Без owner') !== owner) return false;
+    const owner = ownerKey(normalizeEmployeeOwnerName(filters.owner || 'all') || normalizeOwnerName(filters.owner || 'all') || 'all');
+    if (owner && owner !== 'all' && !taskOwnerCandidates(task).some((candidate) => ownerKey(candidate) === owner)) return false;
 
     const priority = normalizeText(filters.priority || 'all');
     if (priority && priority !== 'all' && normalizeText(task?.priority || 'medium') !== priority) return false;

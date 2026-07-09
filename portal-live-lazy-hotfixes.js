@@ -24,7 +24,7 @@
       'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3'
     ],
     taskKanbanV1: [
-      'portal-task-kanban-v1.js?v=20260709ownerfilter1'
+      'portal-task-kanban-v1.js?v=20260709ownerfilter2'
     ],
     executive: [
       'portal-executive-lite-guard.js?v=20260623executivefallback1',
@@ -50,11 +50,11 @@
       'portal-premium-polish-hotfix.js?v=20260521prod1'
     ],
     skuLaunchV1: [
-      'portal-sku-launch-v1.js?v=20260709launchperf2'
+      'portal-sku-launch-v1.js?v=20260709launchperf3'
     ],
     launchV1: [
-      'portal-sku-launch-v1.js?v=20260709launchperf2',
-      'portal-launch-autotasks-v1.js?v=20260709launchperf2'
+      'portal-sku-launch-v1.js?v=20260709launchperf3',
+      'portal-launch-autotasks-v1.js?v=20260709launchperf3'
     ],
     iuDrrV3: [
       'portal-iu-drr-position-funnel-v3.js?v=20260702iudrrlatestmonth1'

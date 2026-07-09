@@ -2,7 +2,7 @@
   if (window.__ALTEA_DATA_GUARD_20260603A__) return;
   window.__ALTEA_DATA_GUARD_20260603A__ = true;
 
-  var VERSION = "20260603-data-guard1";
+  var VERSION = "20260709-deferred-audit1";
   var SKU_PLAN_SCOPE = "sku-plan-fact";
   var MIN_TRUSTED_PLAN_FACT_ROWS = 170;
   var MAX_ISSUES = 80;
@@ -50,6 +50,16 @@
 
   function appState() {
     return window.state || window.__alteaAppState || {};
+  }
+
+  function activeViewName() {
+    var stateView = String(appState().activeView || "").trim();
+    var hashView = String(window.location && window.location.hash || "").replace(/^#\/?/, "").trim();
+    return stateView || hashView || "";
+  }
+
+  function planFactAuditAllowed() {
+    return ["sku-plan-fact", "data-health", "sku-contour", "iu-drr", "executive"].indexOf(activeViewName()) >= 0;
   }
 
   function numberOrZero(value) {
@@ -569,6 +579,7 @@
     var original = window.skuPlanFactBuildModel;
     var wrapped = function guardedSkuPlanFactBuildModel() {
       var model = original.apply(this, arguments);
+      if (model && model.deferred) return model;
       validatePlanFactModel(model, { scope: SKU_PLAN_SCOPE, source: "skuPlanFactBuildModel" });
       return model;
     };
@@ -631,6 +642,7 @@
   }
 
   async function hydrateTrustedPlanFactMetrics(reason) {
+    if (!planFactAuditAllowed() && reason !== "manual") return null;
     if (guard.planFactHydrationPromise) return guard.planFactHydrationPromise;
     guard.planFactHydrationPromise = (async function () {
       if (typeof window.skuPlanFactBuildModel !== "function") return null;
@@ -668,6 +680,7 @@
   }
 
   function runMetricAudit() {
+    if (!planFactAuditAllowed()) return guard.audit;
     var startedAt = nowIso();
     var model = null;
     var validation = null;
@@ -734,6 +747,7 @@
   }
 
   function maybeRunDailyAudit() {
+    if (!planFactAuditAllowed()) return;
     try {
       var last = window.localStorage && window.localStorage.getItem(AUTO_AUDIT_KEY);
       if (last === todayKey()) return;
@@ -787,12 +801,25 @@
         window.clearInterval(timer);
         if (typeof window.skuPlanFactBuildModel === "function") {
           window.setTimeout(function () {
-            hydrateTrustedPlanFactMetrics("startup").then(maybeRunDailyAudit);
+            if (planFactAuditAllowed()) hydrateTrustedPlanFactMetrics("startup").then(maybeRunDailyAudit);
           }, 1200);
         }
       }
     }, 250);
     installWrappers();
+  }
+
+  function installDeferredAuditHooks() {
+    if (guard.deferredAuditHooksInstalled) return;
+    guard.deferredAuditHooksInstalled = true;
+    ["altea:viewchange", "hashchange"].forEach(function (eventName) {
+      window.addEventListener(eventName, function () {
+        if (!planFactAuditAllowed() || typeof window.skuPlanFactBuildModel !== "function") return;
+        window.setTimeout(function () {
+          hydrateTrustedPlanFactMetrics("route").then(maybeRunDailyAudit);
+        }, 350);
+      });
+    });
   }
 
   window.__alteaDataGuard = {
@@ -816,4 +843,5 @@
   } else {
     installWithRetry();
   }
+  installDeferredAuditHooks();
 })();

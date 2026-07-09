@@ -4,7 +4,7 @@
   if (window.__ALTEA_LAUNCH_AUTOTASKS_V1__) return;
   window.__ALTEA_LAUNCH_AUTOTASKS_V1__ = true;
 
-  const VERSION = '20260709-launch-perf-v2';
+  const VERSION = '20260709-launch-owner-fallback-v1';
   const MAX_BULK_TASKS = 30;
   const AUGMENT_MIN_INTERVAL_MS = 220;
   const SNAPSHOT_CACHE_MS = 6000;
@@ -595,7 +595,20 @@
   }
 
   function ownerForRole(item, role) {
-    return firstText(item, ROLE_FIELDS[role] || ['owner']);
+    return firstText(item, ROLE_FIELDS[role] || ['owner']) || defaultLaunchOwnerForPlatform(launchMarketplaceKey(item));
+  }
+
+  function defaultLaunchOwnerForPlatform(platform = '') {
+    const key = normalizeLaunchMarketplace(platform);
+    if (!key || key === 'all' || key === 'cross' || key === 'product') return '';
+    try {
+      if (typeof window.activeOwnerList === 'function') {
+        return window.activeOwnerList(key)
+          .map((value) => (typeof window.canonicalOwnerName === 'function' ? window.canonicalOwnerName(value || '') : String(value || '').trim()))
+          .find(Boolean) || '';
+      }
+    } catch {}
+    return '';
   }
 
   function launchName(item) {

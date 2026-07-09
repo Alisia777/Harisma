@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260709launch-perf-v2';
+  const VERSION = '20260709launch-perf-v3';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -1536,9 +1536,10 @@
     const isPlanFactMode = activeMode === 'planfact';
     const taskMap = isApiMode ? new Map() : buildSkuTaskMap();
     const sourceSkus = (stateRef.skus || []).filter((sku) => skuBelongsToMarket(sku, activeMarket));
-    const model = planModelForWorkspace(activeMarket);
-    const planMap = isApiMode ? new Map() : buildPlanRowMap(model);
-    const rawIssueRows = typeof skuContourIssueRows === 'function' ? skuContourIssueRows(model) : [];
+    const needsPlanModel = isApiMode || isPlanFactMode;
+    const model = needsPlanModel ? planModelForWorkspace(activeMarket) : {};
+    const planMap = isPlanFactMode ? buildPlanRowMap(model) : new Map();
+    const rawIssueRows = isApiMode && typeof skuContourIssueRows === 'function' ? skuContourIssueRows(model) : [];
     const issueRows = rawIssueRows
       .filter((row) => issuePlatformMatches(row, activeMarket))
       .map(applyIssueDecision);

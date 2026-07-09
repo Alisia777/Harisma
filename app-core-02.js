@@ -756,6 +756,20 @@ function taskPlatformOwnerName(sku, platform = '') {
   return '';
 }
 
+function defaultTaskPlatformOwnerName(platform = '') {
+  const platformKey = normalizeTaskPlatform(platform);
+  if (!TASK_PLATFORM_OWNER_KEYS.has(platformKey)) return '';
+  try {
+    if (typeof activeOwnerList === 'function') {
+      const owner = activeOwnerList(platformKey)
+        .map((value) => canonicalOwnerName(value || ''))
+        .find(Boolean);
+      if (owner) return owner;
+    }
+  } catch {}
+  return '';
+}
+
 function isAutoTaskLike(task = {}, sourceHint = '') {
   const source = String(task?.source || sourceHint || '').trim().toLowerCase();
   const id = String(task?.id || '').trim().toLowerCase();
@@ -772,14 +786,17 @@ function resolveTaskOwner(task = {}, sku = null, platform = '', sourceHint = '')
   const explicitOwner = canonicalOwnerName(task?.owner || '');
   const skuOwner = ownerName(sku);
   const platformOwner = taskPlatformOwnerName(sku, taskPlatform);
+  const defaultPlatformOwner = !sku && task?.type === 'launch'
+    ? defaultTaskPlatformOwnerName(taskPlatform)
+    : '';
 
   if (task?.platformOwnerOnly && TASK_PLATFORM_OWNER_KEYS.has(taskPlatform)) {
-    return platformOwner || explicitOwner || '';
+    return platformOwner || defaultPlatformOwner || explicitOwner || '';
   }
   if (platformOwner && (!explicitOwner || explicitOwner === skuOwner || isAutoTaskLike(task, sourceHint))) {
     return platformOwner;
   }
-  return explicitOwner || platformOwner || skuOwner || '';
+  return explicitOwner || platformOwner || defaultPlatformOwner || skuOwner || '';
 }
 
 function ownerOptions() {
@@ -3484,10 +3501,8 @@ function buildAutoTasks() {
         const activeKey = `${platformKey}|${String(candidate.articleKey || '').trim()}|${entityKey}`;
         if (activeLaunchTaskKeys.has(activeKey) || activeLaunchTaskKeys.has(`all|${String(candidate.articleKey || '').trim()}|${entityKey}`)) return;
         activeLaunchTaskKeys.add(activeKey);
-        const platformOwner = taskPlatformOwnerName(candidate.linkedSku, platformKey);
-        const ownerMissing = candidate.linkedSku
-          ? !platformOwner
-          : !canonicalOwnerName(item.owner || '');
+        const platformOwner = taskPlatformOwnerName(candidate.linkedSku, platformKey) || defaultTaskPlatformOwnerName(platformKey);
+        const ownerMissing = !platformOwner && !canonicalOwnerName(item.owner || '');
         const blockers = [
           ownerMissing ? `нет owner ${platformLabel}` : '',
           ...(candidate.baseBlockers || [])

@@ -132,6 +132,7 @@
       localFileId: String(raw.localFileId || '').trim(),
       bucket: String(raw.bucket || '').trim(),
       objectPath: String(raw.objectPath || '').trim(),
+      relativePath: String(raw.relativePath || raw.path || '').trim(),
       sizeMb: String(raw.sizeMb || '').trim(),
       createdAt: String(raw.createdAt || '').trim(),
       source
@@ -406,13 +407,36 @@
     return ascii || 'file';
   }
 
+  function resourceFilePath(file) {
+    return String(file?.webkitRelativePath || file?.relativePath || file?.name || 'file')
+      .replace(/\\+/g, '/')
+      .split('/')
+      .filter(Boolean)
+      .map(cleanPathPart)
+      .join('/') || 'file';
+  }
+
+  function selectedResourceFiles(form) {
+    const inputs = [
+      form.querySelector('input[name="file"]'),
+      form.querySelector('input[name="folder"]')
+    ].filter(Boolean);
+    const seen = new Set();
+    return inputs.flatMap((input) => Array.from(input.files || []))
+      .filter((file) => {
+        const key = [file.webkitRelativePath || file.name || '', file.size || 0, file.lastModified || 0].join('|');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+  }
+
   async function uploadResourceFileRemote(resourceId, file) {
     const cfg = remoteConfig();
     if (!cfg?.baseUrl || !cfg?.anonKey || !cfg?.accessToken) return null;
     if (Number(file.size || 0) > REMOTE_FILE_MAX_BYTES) return null;
     const brand = typeof currentBrand === 'function' ? currentBrand() : 'altea';
-    const ext = fileExt(file.name || '');
-    const objectPath = `resource-storage/${cleanPathPart(brand)}/${Date.now()}-${cleanPathPart(resourceId)}.${ext}`;
+    const objectPath = `resource-storage/${cleanPathPart(brand)}/${Date.now()}-${cleanPathPart(resourceId)}/${resourceFilePath(file)}`;
     const uploadUrl = `${cfg.baseUrl}/storage/v1/object/${encodeURIComponent(RESOURCE_BUCKET)}/${encodePath(objectPath)}`;
     const response = await fetch(uploadUrl, {
       method: 'POST',
@@ -692,68 +716,85 @@
   async function addResourceLink(form) {
     const state = ensureStorageShape();
     const data = new FormData(form);
-    const file = form.querySelector('input[name="file"]')?.files?.[0] || null;
+    const files = selectedResourceFiles(form);
     const title = String(data.get('title') || '').trim();
     const href = safeHref(data.get('href') || '');
-    if (!title && !file) {
+    if (!title && !files.length) {
       setError('Заполни название или выбери файл для хранилища.');
       return;
     }
-    if (!href && !file) {
+    if (!href && !files.length) {
       setError('Добавь ссылку или выбери файл.');
       return;
     }
-    if (file && Number(file.size || 0) <= 0) {
-      setError('Файл пустой, выбери другой.');
+    const emptyFiles = files.filter((file) => Number(file.size || 0) <= 0);
+    if (emptyFiles.length) {
+      setError(`Не добавлены пустые файлы: ${emptyFiles.map((file) => file.webkitRelativePath || file.name || 'file').slice(0, 4).join(', ')}`);
       return;
     }
-    const resourceId = `resource-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    let filePayload = {};
-    if (file) {
+    const rawType = String(data.get('type') || '').trim();
+    const owner = String(data.get('owner') || state.team?.member?.name || '').trim();
+    const description = String(data.get('description') || '').trim();
+    const group = String(data.get('group') || DEFAULT_GROUP).trim() || DEFAULT_GROUP;
+    const pendingFiles = files.length ? files : [null];
+    const additions = [];
+    const failed = [];
+
+    for (const file of pendingFiles) {
+      const resourceId = `resource-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const relativePath = file ? String(file.webkitRelativePath || file.name || '').replace(/\\+/g, '/') : '';
+      let filePayload = {};
+      if (file) {
       const remotePayload = await uploadResourceFileRemote(resourceId, file).catch((error) => {
         console.warn('[document-storage] remote file upload failed', error);
-        setError(`Файл не загружен в общее хранилище Supabase: ${error.message || error}. Проверь bucket portal-task-files / MIME types или добавь ссылку на файл.`);
+        failed.push(`${relativePath || file.name}: ${error.message || error}`);
         return null;
       });
       if (!remotePayload) {
         if (!href) {
-          if (!document.getElementById('appError')?.textContent) {
-            setError('Файл не добавлен: общее хранилище Supabase сейчас недоступно. Загрузи файл в Drive/SharePoint и вставь ссылку либо настрой bucket portal-task-files.');
-          }
-          return;
+          continue;
         }
         filePayload = { storageMode: 'missing-file' };
       } else {
         filePayload = remotePayload;
       }
       if (filePayload.storageMode === 'missing-file' && !href) {
-        return;
+        continue;
       }
+      }
+      additions.push(normalizeResourceLink({
+        id: resourceId,
+        title: title && pendingFiles.length === 1 ? title : (title ? `${title} · ${relativePath || file?.name || ''}` : (relativePath || file?.name || '')),
+        href: filePayload.href || href,
+        description: [description, relativePath && relativePath !== file?.name ? `Путь: ${relativePath}` : ''].filter(Boolean).join('\n'),
+        group,
+        type: file && (!rawType || rawType === 'Ссылка') ? inferType({ href: file.name }) : (rawType || 'Ссылка'),
+        owner,
+        fileName: file?.name || '',
+        fileSize: Number(file?.size || 0),
+        mimeType: file?.type || '',
+        relativePath,
+        ...filePayload,
+        createdAt: new Date().toISOString()
+      }, 'user'));
     }
-    const rawType = String(data.get('type') || '').trim();
-    const next = normalizeResourceLink({
-      id: resourceId,
-      title: title || file?.name || '',
-      href: filePayload.href || href,
-      description: String(data.get('description') || '').trim(),
-      group: String(data.get('group') || DEFAULT_GROUP).trim() || DEFAULT_GROUP,
-      type: file && (!rawType || rawType === 'Ссылка') ? inferType({ href: file.name }) : (rawType || 'Ссылка'),
-      owner: String(data.get('owner') || state.team?.member?.name || '').trim(),
-      fileName: file?.name || '',
-      fileSize: Number(file?.size || 0),
-      mimeType: file?.type || '',
-      ...filePayload,
-      createdAt: new Date().toISOString()
-    }, 'user');
+
+    if (!additions.length) {
+      const tail = failed.length ? ` Supabase отклонил: ${failed.slice(0, 3).join(' | ')}` : '';
+      setError(`Файлы не добавлены. Расширь MIME types у bucket portal-task-files или добавь ссылку на папку/файл.${tail}`);
+      return;
+    }
     state.storage.resourceLinks = [
-      next,
-      ...(state.storage.resourceLinks || []).filter((item) => safeHref(item.href || item.url || item.link || '') !== next.href)
+      ...additions,
+      ...(state.storage.resourceLinks || []).filter((item) => !additions.some((next) => safeHref(item.href || item.url || item.link || '') === next.href && next.href))
     ].slice(0, 500);
     persistStorage('resource-link-add');
-    auditResourceLink('add', next);
-    const synced = await persistResourceLinkEvent(next, false);
+    additions.forEach((item) => auditResourceLink('add', item));
+    const syncResults = [];
+    for (const item of additions) syncResults.push(await persistResourceLinkEvent(item, false));
     form.reset();
-    setError(synced ? '' : 'Запись сохранена только локально в этом браузере: общий Supabase-синк не подтвердился. После перезагрузки/на другом устройстве она может не появиться.');
+    const allSynced = syncResults.every(Boolean);
+    setError(allSynced && !failed.length ? '' : `Добавлено: ${additions.length}. ${failed.length ? `Не загрузились: ${failed.slice(0, 3).join(' | ')}. ` : ''}${allSynced ? '' : 'Часть записей сохранена только локально: общий Supabase-синк не подтвердился.'}`);
     renderDocumentStorage();
   }
 
@@ -800,12 +841,23 @@
       void addResourceLink(form);
     });
     const fileInput = form?.querySelector('input[name="file"]');
+    const folderInput = form?.querySelector('input[name="folder"]');
     const fileLabel = form?.querySelector('[data-document-storage-file-name]');
     if (fileInput && fileLabel) {
-      fileInput.addEventListener('change', () => {
-        const file = fileInput.files?.[0] || null;
-        fileLabel.textContent = file ? `${file.name} · ${formatBytes(file.size) || '0 B'}` : 'Файл не выбран';
-      });
+      const updateFileLabel = () => {
+        const files = selectedResourceFiles(form);
+        if (!files.length) {
+          fileLabel.textContent = 'Файл не выбран';
+          return;
+        }
+        const total = files.reduce((sum, file) => sum + Number(file.size || 0), 0);
+        const first = files[0]?.webkitRelativePath || files[0]?.name || '';
+        fileLabel.textContent = files.length === 1
+          ? `${first} · ${formatBytes(total) || '0 B'}`
+          : `${files.length} файлов · ${formatBytes(total) || '0 B'}`;
+      };
+      fileInput.addEventListener('change', updateFileLabel);
+      folderInput?.addEventListener('change', updateFileLabel);
     }
 
     root.querySelectorAll('[data-delete-resource-link]').forEach((button) => {
@@ -868,9 +920,14 @@
             <input name="title" placeholder="Название">
             <input name="href" placeholder="Ссылка на файл, папку или документ">
             <label class="document-storage-file-picker">
-              <input class="document-storage-file-control" name="file" type="file">
-              <span>Выбрать файл</span>
+              <input class="document-storage-file-control" name="file" type="file" multiple>
+              <span>Выбрать файлы</span>
               <em data-document-storage-file-name>Файл не выбран</em>
+            </label>
+            <label class="document-storage-file-picker">
+              <input class="document-storage-file-control" name="folder" type="file" webkitdirectory directory multiple>
+              <span>Выбрать папку</span>
+              <em>Загрузит все файлы внутри</em>
             </label>
             <select name="group">${GROUPS.map((item) => `<option value="${html(item)}">${html(item)}</option>`).join('')}</select>
             <select name="type">${TYPES.map((item) => `<option value="${html(item)}">${html(item)}</option>`).join('')}</select>

@@ -9,7 +9,7 @@
   const RESOURCE_BUCKET = 'portal-task-files';
   const LOCAL_FILE_DB = 'altea-document-storage-files-v1';
   const LOCAL_FILE_STORE = 'files';
-  const REMOTE_FILE_MAX_BYTES = 50 * 1024 * 1024;
+  const REMOTE_FILE_MAX_BYTES = 30 * 1024 * 1024;
   const DEFAULT_GROUP = 'Общее хранилище';
   const GROUPS = [
     'Общее хранилище',
@@ -732,6 +732,11 @@
       setError(`Не добавлены пустые файлы: ${emptyFiles.map((file) => file.webkitRelativePath || file.name || 'file').slice(0, 4).join(', ')}`);
       return;
     }
+    const oversizedFiles = files.filter((file) => Number(file.size || 0) > REMOTE_FILE_MAX_BYTES);
+    if (oversizedFiles.length) {
+      setError(`Не добавлены файлы больше ${formatBytes(REMOTE_FILE_MAX_BYTES)}: ${oversizedFiles.map((file) => file.webkitRelativePath || file.name || 'file').slice(0, 4).join(', ')}`);
+      return;
+    }
     const rawType = String(data.get('type') || '').trim();
     const owner = String(data.get('owner') || state.team?.member?.name || '').trim();
     const description = String(data.get('description') || '').trim();
@@ -794,7 +799,9 @@
     for (const item of additions) syncResults.push(await persistResourceLinkEvent(item, false));
     form.reset();
     const allSynced = syncResults.every(Boolean);
-    setError(allSynced && !failed.length ? '' : `Добавлено: ${additions.length}. ${failed.length ? `Не загрузились: ${failed.slice(0, 3).join(' | ')}. ` : ''}${allSynced ? '' : 'Часть записей сохранена только локально: общий Supabase-синк не подтвердился.'}`);
+    setError(allSynced && !failed.length
+      ? `Добавлено в хранилище: ${additions.length}.`
+      : `Добавлено: ${additions.length}. ${failed.length ? `Не загрузились: ${failed.slice(0, 3).join(' | ')}. ` : ''}${allSynced ? '' : 'Часть записей сохранена только локально: общий Supabase-синк не подтвердился.'}`);
     renderDocumentStorage();
   }
 
@@ -932,7 +939,7 @@
             <select name="group">${GROUPS.map((item) => `<option value="${html(item)}">${html(item)}</option>`).join('')}</select>
             <select name="type">${TYPES.map((item) => `<option value="${html(item)}">${html(item)}</option>`).join('')}</select>
             <input name="owner" placeholder="Owner или команда">
-            <textarea name="description" required placeholder="Что это за ссылка и когда ей пользоваться"></textarea>
+            <textarea name="description" placeholder="Что это за ссылка и когда ей пользоваться"></textarea>
             <button class="btn" type="submit">Сохранить</button>
           </form>
         </div>

@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260709launch-calendar-dnd-v1';
+  const VERSION = '20260709launch-board-dnd-v1';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -2383,6 +2383,14 @@
     { key: 'done', label: 'Готово' },
     { key: 'other', label: 'Другое' }
   ];
+  const LAUNCH_BOARD_STAGE_FLOW = [
+    { key: 'negotiation', field: 'negotiationStatus', label: 'Переговоры' },
+    { key: 'sample', field: 'sampleStatus', label: 'Пробный образец' },
+    { key: 'production', field: 'productionStatus', label: 'Производство' },
+    { key: 'packaging', field: 'packagingStatus', label: 'Упаковка' },
+    { key: 'content', field: 'contentStatus', label: 'Карточка / контент' },
+    { key: 'readiness', field: 'launchReadinessStatus', label: 'Готовность к запуску' }
+  ];
 
   function launchV1StatusTone(value = '') {
     const text = String(value || '').toLowerCase();
@@ -2538,6 +2546,45 @@
     appState().launchV1SelectedId = draft.id;
     appState().launchV1FullKanban = false;
     launchV1Toast('Дата новинки обновлена');
+    renderLaunchesV1('view-launches');
+  }
+
+  function launchV1MoveToBoardStatus(itemId = '', statusKey = '') {
+    const key = String(statusKey || '').trim();
+    if (!itemId || !key) return;
+    const item = launchV1FindItem(itemId);
+    if (!item) return;
+    const draft = { ...item, id: launchId(item), blockers: [] };
+    const stageIndex = LAUNCH_BOARD_STAGE_FLOW.findIndex((stage) => stage.key === key);
+    if (key === 'blocked') {
+      const current = currentStage(item);
+      const field = current?.config?.status || LAUNCH_BOARD_STAGE_FLOW[0].field;
+      draft[field] = 'блокер';
+      draft.status = 'блокер';
+    } else if (key === 'done') {
+      LAUNCH_BOARD_STAGE_FLOW.forEach((stage) => {
+        draft[stage.field] = 'готово';
+      });
+      draft.status = 'готово';
+    } else if (stageIndex >= 0) {
+      LAUNCH_BOARD_STAGE_FLOW.forEach((stage, index) => {
+        const currentValue = String(draft[stage.field] || '').trim();
+        if (index < stageIndex) {
+          draft[stage.field] = 'готово';
+        } else if (index === stageIndex) {
+          draft[stage.field] = /готов|блок|stop|риск/i.test(currentValue) || !currentValue ? 'в работе' : currentValue;
+        } else if (/блок|stop|риск/i.test(currentValue)) {
+          draft[stage.field] = '';
+        }
+      });
+      draft.status = LAUNCH_BOARD_STAGE_FLOW[stageIndex].label;
+    } else {
+      draft.status = 'в работе';
+    }
+    launchV1SaveDraft(draft);
+    appState().launchV1SelectedId = draft.id;
+    appState().launchV1FullKanban = false;
+    launchV1Toast('Статус новинки обновлен');
     renderLaunchesV1('view-launches');
   }
 
@@ -3021,7 +3068,7 @@
     const owner = launchOwner(item) || 'без owner';
     const tone = current?.column?.key === 'blocked' || (item.blockers || []).length ? 'danger' : ready.ready ? 'ok' : 'warn';
     return `
-      <button type="button" class="launch-v1-board-row ${escapeValue(tone)} ${id === selectedId ? 'active' : ''}" data-launch-v1-select="${escapeValue(id)}" data-launch-v1-card="${escapeValue(id)}">
+      <button type="button" class="launch-v1-board-row ${escapeValue(tone)} ${id === selectedId ? 'active' : ''}" draggable="true" data-launch-v1-drag="${escapeValue(id)}" data-launch-v1-select="${escapeValue(id)}" data-launch-v1-card="${escapeValue(id)}">
         <i></i>
         <span>
           <strong>${escapeValue(item.name || item.title || item.articleKey || 'Новинка')}</strong>
@@ -3046,7 +3093,7 @@
           ${LAUNCH_BOARD_STATUS_ORDER.map((group, index) => {
             const items = (groups.get(group.key) || []).sort((left, right) => String(launchDue(left) || '9999-12-31').localeCompare(String(launchDue(right) || '9999-12-31')) || String(left.name || '').localeCompare(String(right.name || ''), 'ru'));
             return `
-              <section class="launch-v1-board-group ${items.length ? '' : 'empty'}">
+              <section class="launch-v1-board-group ${items.length ? '' : 'empty'}" data-launch-v1-board-status="${escapeValue(group.key)}" aria-label="${escapeValue(`Перенести в статус ${group.label}`)}">
                 <header>
                   <i>${index + 1}</i>
                   <strong>${escapeValue(group.label)}</strong>
@@ -3300,7 +3347,7 @@
       });
       button.addEventListener('dragend', () => {
         button.classList.remove('dragging');
-        root.querySelectorAll('.launch-v1-day.drop-target').forEach((node) => node.classList.remove('drop-target'));
+        root.querySelectorAll('.launch-v1-day.drop-target,.launch-v1-board-group.drop-target').forEach((node) => node.classList.remove('drop-target'));
       });
     });
     root.querySelectorAll('[data-launch-v1-edit]').forEach((button) => {
@@ -3349,6 +3396,24 @@
         event.preventDefault();
         day.classList.remove('drop-target');
         launchV1MoveToDate(id, day.dataset.launchV1Day || '');
+      });
+    });
+    root.querySelectorAll('[data-launch-v1-board-status]').forEach((group) => {
+      group.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+        group.classList.add('drop-target');
+      });
+      group.addEventListener('dragleave', (event) => {
+        if (event.relatedTarget && group.contains(event.relatedTarget)) return;
+        group.classList.remove('drop-target');
+      });
+      group.addEventListener('drop', (event) => {
+        const id = event.dataTransfer?.getData('application/x-altea-launch-id') || event.dataTransfer?.getData('text/plain') || '';
+        if (!id) return;
+        event.preventDefault();
+        group.classList.remove('drop-target');
+        launchV1MoveToBoardStatus(id, group.dataset.launchV1BoardStatus || '');
       });
     });
     root.querySelectorAll('[data-launch-v1-kanban]').forEach((button) => {
@@ -3436,8 +3501,8 @@
       .launch-v1-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.launch-v1-detail-actions button{border-color:rgba(224,190,126,.22);background:rgba(255,255,255,.035)}
       .launch-v1-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
       .launch-v1-view-mode{display:inline-flex;gap:4px;padding:3px!important;border-radius:999px!important}.launch-v1-view-mode button{min-width:82px;padding:0 12px}
-      .launch-v1-board-card{overflow:auto}.launch-v1-board-tree{display:grid;gap:10px;min-width:660px}.launch-v1-board-group{display:grid;grid-template-columns:230px minmax(0,1fr);gap:10px;align-items:start;border:1px solid rgba(224,190,126,.12);border-radius:9px;background:rgba(0,0,0,.12);padding:10px}.launch-v1-board-group.empty{opacity:.58}.launch-v1-board-group header{position:sticky;top:0;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:9px;align-items:center;color:#fff4d8}.launch-v1-board-group header i{display:grid;place-items:center;width:30px;height:30px;border:1px solid rgba(224,190,126,.28);border-radius:50%;font-style:normal;color:#f0d49a;background:rgba(240,212,154,.06)}.launch-v1-board-group header strong{font-size:13px}.launch-v1-board-group header em{font-style:normal;color:#f0d49a;font-weight:900}.launch-v1-board-group>div{display:grid;gap:7px}.launch-v1-board-group p{margin:0;color:var(--sl-muted);font-size:12px}
-      .launch-v1-board-row{width:100%;display:grid;grid-template-columns:8px minmax(0,1fr) minmax(92px,auto) 54px;gap:10px;align-items:center;min-height:58px;border:1px solid rgba(224,190,126,.16);border-radius:8px;background:rgba(6,5,4,.34);color:var(--sl-text);padding:9px 10px;text-align:left;cursor:pointer}.launch-v1-board-row.active{border-color:var(--sl-aqua);box-shadow:0 0 0 1px rgba(88,214,202,.22)}.launch-v1-board-row>i{width:8px;height:34px;border-radius:999px;background:#f0c469}.launch-v1-board-row.ok>i{background:#61d89a}.launch-v1-board-row.danger>i{background:#ff7469}.launch-v1-board-row span{display:grid;gap:3px;min-width:0}.launch-v1-board-row strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.launch-v1-board-row em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sl-muted);font-style:normal;font-size:11px}.launch-v1-board-row b{color:#f0d49a;font-size:11px;text-align:right;white-space:nowrap}.launch-v1-board-row small{color:var(--sl-muted);font-size:11px;text-align:right;font-weight:900}
+      .launch-v1-board-card{overflow:auto}.launch-v1-board-tree{display:grid;gap:10px;min-width:660px}.launch-v1-board-group{display:grid;grid-template-columns:230px minmax(0,1fr);gap:10px;align-items:start;border:1px solid rgba(224,190,126,.12);border-radius:9px;background:rgba(0,0,0,.12);padding:10px}.launch-v1-board-group.empty{opacity:.58}.launch-v1-board-group.drop-target{border-color:rgba(88,214,202,.56);background:rgba(88,214,202,.08);box-shadow:inset 0 0 0 1px rgba(88,214,202,.28)}.launch-v1-board-group header{position:sticky;top:0;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:9px;align-items:center;color:#fff4d8}.launch-v1-board-group header i{display:grid;place-items:center;width:30px;height:30px;border:1px solid rgba(224,190,126,.28);border-radius:50%;font-style:normal;color:#f0d49a;background:rgba(240,212,154,.06)}.launch-v1-board-group header strong{font-size:13px}.launch-v1-board-group header em{font-style:normal;color:#f0d49a;font-weight:900}.launch-v1-board-group>div{display:grid;gap:7px}.launch-v1-board-group p{margin:0;color:var(--sl-muted);font-size:12px}
+      .launch-v1-board-row{width:100%;display:grid;grid-template-columns:8px minmax(0,1fr) minmax(92px,auto) 54px;gap:10px;align-items:center;min-height:58px;border:1px solid rgba(224,190,126,.16);border-radius:8px;background:rgba(6,5,4,.34);color:var(--sl-text);padding:9px 10px;text-align:left;cursor:grab}.launch-v1-board-row:active{cursor:grabbing}.launch-v1-board-row.dragging{opacity:.48}.launch-v1-board-row.active{border-color:var(--sl-aqua);box-shadow:0 0 0 1px rgba(88,214,202,.22)}.launch-v1-board-row>i{width:8px;height:34px;border-radius:999px;background:#f0c469}.launch-v1-board-row.ok>i{background:#61d89a}.launch-v1-board-row.danger>i{background:#ff7469}.launch-v1-board-row span{display:grid;gap:3px;min-width:0}.launch-v1-board-row strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.launch-v1-board-row em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sl-muted);font-style:normal;font-size:11px}.launch-v1-board-row b{color:#f0d49a;font-size:11px;text-align:right;white-space:nowrap}.launch-v1-board-row small{color:var(--sl-muted);font-size:11px;text-align:right;font-weight:900}
       .launch-v1-full-kanban{display:grid;gap:14px}.launch-v1-full-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.launch-v1-full-head h3{margin:4px 0 0;font-size:32px}.launch-v1-full-head>div:last-child{display:flex;gap:8px}.launch-v1-full-head button{border-color:rgba(224,190,126,.22);background:rgba(255,255,255,.035);padding:0 14px}
       .launch-v1-kanban-columns{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));gap:10px;overflow:auto}.launch-v1-kanban-col{min-height:520px;border:1px solid var(--sl-line);border-radius:10px;background:rgba(255,255,255,.018);padding:10px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px}.launch-v1-kanban-col header{display:grid;gap:8px}.launch-v1-kanban-col article{border:1px solid rgba(224,190,126,.14);border-radius:9px;padding:12px;background:rgba(0,0,0,.16);display:grid;align-content:start;gap:8px}.launch-v1-kanban-col em,.launch-v1-kanban-col p{color:var(--sl-muted);font-style:normal}.launch-v1-kanban-col b{color:#f0d49a}
       .launch-v1-editor-backdrop{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.62);backdrop-filter:blur(16px)}.launch-v1-editor{width:min(1080px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;border:1px solid rgba(224,190,126,.28);border-radius:16px;background:linear-gradient(145deg,rgba(25,22,18,.98),rgba(8,7,6,.98));box-shadow:0 24px 80px rgba(0,0,0,.58);color:#f7f1e8}.launch-v1-editor form{display:grid;gap:16px;padding:18px}.launch-v1-editor header,.launch-v1-editor footer{display:flex;align-items:center;justify-content:space-between;gap:12px}.launch-v1-editor header span{display:block;color:#d8c08a;font-size:11px;font-weight:850;letter-spacing:.22em;text-transform:uppercase}.launch-v1-editor h3{margin:4px 0 0;font-size:28px}.launch-v1-editor header button{width:38px;height:38px;border:1px solid rgba(224,190,126,.26);border-radius:50%;background:rgba(255,255,255,.04);color:#f7f1e8;font-size:24px;cursor:pointer}.launch-v1-editor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.launch-v1-editor label{display:grid;gap:6px}.launch-v1-editor label.wide{grid-column:1/-1}.launch-v1-editor label span,.launch-v1-editor-stages strong{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:rgba(235,216,174,.64);font-weight:850}.launch-v1-editor input,.launch-v1-editor select,.launch-v1-editor textarea{min-width:0;width:100%;border:1px solid rgba(224,190,126,.22);border-radius:9px;background:rgba(5,4,3,.82);color:#f7f1e8;padding:10px 12px;font:inherit;outline:none}.launch-v1-editor textarea{resize:vertical}.launch-v1-editor-stages{display:grid;gap:10px}.launch-v1-editor-stages fieldset{display:grid;grid-template-columns:1fr 170px 1fr;gap:10px;border:1px solid rgba(224,190,126,.14);border-radius:12px;margin:0;padding:12px;background:rgba(0,0,0,.16)}.launch-v1-editor-stages legend{padding:0 8px;color:#f0d49a;font-weight:900}.launch-v1-editor footer button{height:40px;border:1px solid rgba(224,190,126,.26);border-radius:9px;background:rgba(255,255,255,.04);color:#f7f1e8;padding:0 16px;font:inherit;font-weight:850;cursor:pointer}.launch-v1-editor footer button[type="submit"]{background:linear-gradient(180deg,#f5dfad,#b98b47);color:#120d07}.launch-v1-editor footer button.danger{border-color:rgba(255,116,105,.45);color:#ff8a80}

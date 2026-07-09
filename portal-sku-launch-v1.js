@@ -1520,6 +1520,11 @@
   function renderSkuWorkspaceV1(rootId = 'view-sku-contour') {
     const root = document.getElementById(rootId);
     if (!root) return;
+    if (rootId === 'view-sku-contour') {
+      window.__ALTEA_SKU_WORKSPACE_V1_PENDING__ = false;
+      root.style.removeProperty('display');
+      delete root.dataset.skuWorkspaceWaitingV1;
+    }
     injectStyles();
     resetSkuV1RenderCache();
     const activeMarket = setRegistryMarketFromHeader();

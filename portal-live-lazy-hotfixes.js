@@ -50,10 +50,10 @@
       'portal-premium-polish-hotfix.js?v=20260521prod1'
     ],
     skuLaunchV1: [
-      'portal-sku-launch-v1.js?v=20260709launchperf3'
+      'portal-sku-launch-v1.js?v=20260709launchperf4'
     ],
     launchV1: [
-      'portal-sku-launch-v1.js?v=20260709launchperf3',
+      'portal-sku-launch-v1.js?v=20260709launchperf4',
       'portal-launch-autotasks-v1.js?v=20260709launchperf3'
     ],
     iuDrrV3: [
@@ -101,7 +101,9 @@
 
   const scriptPromises = new Map();
   const viewAssetPromises = new Map();
+  const viewAssetsReady = new Set();
   let renderBudgetRerenderScheduled = false;
+  let lazyRerenderTimer = 0;
 
   function existingScript(src) {
     const base = String(src || '').split('?')[0];
@@ -156,12 +158,19 @@
   function rerenderAfterBudgetLoad() {
     if (renderBudgetRerenderScheduled) return;
     renderBudgetRerenderScheduled = true;
-    const rerender = () => {
+    scheduleLazyRerender(activeView(), 140);
+  }
+
+  function scheduleLazyRerender(view, delay = 140) {
+    const expectedView = String(view || activeView() || '').trim();
+    if (!expectedView || typeof rerenderCurrentView !== 'function') return;
+    if (lazyRerenderTimer) window.clearTimeout(lazyRerenderTimer);
+    lazyRerenderTimer = window.setTimeout(() => {
+      lazyRerenderTimer = 0;
+      if (activeView() !== expectedView) return;
       syncSidebarLabels();
-      if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
-    };
-    window.setTimeout(rerender, 80);
-    window.setTimeout(rerender, 1200);
+      rerenderCurrentView();
+    }, Math.max(0, Number(delay) || 0));
   }
 
   function loadRenderBudget(view) {
@@ -190,7 +199,10 @@
     const key = String(view || '');
     if (viewAssetPromises.has(key)) return viewAssetPromises.get(key);
     if (key === 'dashboard') {
-      const dashboardChain = loadRenderBudget(view);
+      const dashboardChain = loadRenderBudget(view).then((value) => {
+        viewAssetsReady.add(key);
+        return value;
+      });
       viewAssetPromises.set(key, dashboardChain);
       return dashboardChain;
     }
@@ -198,6 +210,10 @@
     let chain = loadRenderBudget(view);
     bundleKeys.forEach((bundleKey) => {
       chain = chain.then(() => loadBundle(bundleKey));
+    });
+    chain = chain.then((value) => {
+      viewAssetsReady.add(key);
+      return value;
     });
     viewAssetPromises.set(key, chain);
     return chain;
@@ -307,6 +323,8 @@
   }
 
   function loadViewHotfixes(view, options = {}) {
+    const key = String(view || '');
+    const assetsAlreadyReady = viewAssetsReady.has(key);
     syncSidebarLabels();
     if (view === 'iu-drr') installIuDrrOzonFallback();
     return loadViewAssets(view).then(() => {
@@ -315,8 +333,8 @@
         primeDashboardHotfix();
         return;
       }
-      if (options.rerender !== false && typeof rerenderCurrentView === 'function') {
-        rerenderCurrentView();
+      if (!assetsAlreadyReady && options.rerender !== false) {
+        scheduleLazyRerender(view, 120);
       }
     }).catch((error) => console.warn('[portal-live-lazy-hotfixes]', view, error));
   }
@@ -334,6 +352,12 @@
   function scheduleForView(view) {
     syncSidebarLabels();
     if (!view) return;
+    if (view === 'sku-contour' && !window.__ALTEA_SKU_LAUNCH_V1__) {
+      window.__ALTEA_SKU_WORKSPACE_V1_PENDING__ = true;
+      window.__ALTEA_SKU_WORKSPACE_V1_PENDING_SINCE__ = typeof performance !== 'undefined' && performance.now
+        ? performance.now()
+        : Date.now();
+    }
     if (view === 'dashboard') {
       const run = () => {
         if (activeView() !== 'dashboard') return;

@@ -8,6 +8,7 @@ const DEFAULT_URL = 'http://127.0.0.1:4187/index.html';
 const GUEST_EMAIL = 'guest@qeep.life';
 const GUEST_PASSWORD = 'NihsS%Hn_uE#kXBfcX!e';
 const STORAGE_KEY = 'brand-portal-local-v1';
+const ACADEMY_STORAGE_KEY = 'altea.academy.progress.v1';
 
 const TARGET_VIEWS = [
   { view: 'executive', label: 'Executive' },
@@ -82,7 +83,15 @@ async function waitForApp(page) {
   await page.waitForTimeout(1000);
 }
 
+async function closeAcademyDrawerIfOpen(page) {
+  await page.evaluate(() => {
+    document.querySelector('.academy-drawer-backdrop')?.remove();
+    document.querySelector('.academy-drawer')?.remove();
+  }).catch(() => {});
+}
+
 async function clickView(page, view) {
+  await closeAcademyDrawerIfOpen(page);
   const selector = `[data-premium-nav="${view}"], .nav-btn[data-view="${view}"]`;
   const count = await page.locator(selector).count();
   if (!count) throw new Error(`Navigation button not found: ${view}`);
@@ -223,6 +232,11 @@ async function clickIfPresent(page, selectors, label) {
       const locator = all.nth(index);
       const visible = await locator.isVisible().catch(() => false);
       if (!visible) continue;
+      const isAcademyControl = await locator.evaluate((node) => Boolean(
+        node.closest('.academy-entry-overlay,.academy-drawer')
+          || node.matches('[data-academy-help-button],.academy-help-btn,.academy-btn,[data-academy-drawer-close]')
+      )).catch(() => false);
+      if (isAcademyControl) continue;
       const started = Date.now();
       try {
         await locator.click({ timeout: 8000 });
@@ -248,6 +262,98 @@ async function clickIfPresent(page, selectors, label) {
   return { label, ok: false, missing: true, selectors };
 }
 
+async function completeAcademyIfPresent(page, outputDir) {
+  const result = {
+    shown: false,
+    overlayHasRealTargets: false,
+    quizCompleted: false,
+    helpButtonReady: false,
+    drawerReady: false,
+    screenshot: ''
+  };
+
+  const shown = await page.waitForSelector('.academy-entry-overlay', { state: 'visible', timeout: 16000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!shown) return result;
+
+  result.shown = true;
+  await page.waitForFunction(() => {
+    const spotlight = document.querySelector('.academy-spotlight-hole');
+    const rect = spotlight?.getBoundingClientRect();
+    return Boolean(rect && rect.width > 20 && rect.height > 20);
+  }, undefined, { timeout: 7000 }).catch(() => {});
+  result.overlayHasRealTargets = await page.evaluate(() => {
+    const overlay = document.querySelector('.academy-entry-overlay');
+    const spotlight = document.querySelector('.academy-spotlight-hole');
+    const nav = document.querySelector('.nav-btn[data-view], [data-premium-nav]');
+    const rect = spotlight?.getBoundingClientRect();
+    return Boolean(
+      overlay
+      && spotlight
+      && nav
+      && window.alteaAcademyTour?.targets?.navButton
+      && rect
+      && rect.width > 20
+      && rect.height > 20
+    );
+  }).catch(() => false);
+
+  result.screenshot = path.join(outputDir, 'academy-tour.png');
+  await page.screenshot({ path: result.screenshot, fullPage: false });
+  await page.locator('[data-academy-action="skip-tour"]').first().click({ timeout: 10000 });
+  await page.waitForSelector('.academy-entry-overlay--quiz', { state: 'visible', timeout: 10000 });
+
+  const correctAnswers = {
+    'repricer-min-price': 'min-price',
+    'prices-mismatch': 'check-source',
+    'launch-workflow': 'checklist',
+    'heavy-data': 'partial'
+  };
+
+  for (const [question, answer] of Object.entries(correctAnswers)) {
+    const label = page.locator(`[data-academy-question="${question}"] label:has(input[value="${answer}"])`);
+    const labelCount = await label.count();
+    if (labelCount !== 1) throw new Error(`Academy answer label not found: ${question}/${answer}`);
+    await label.click({ timeout: 5000 });
+    const checked = await page.evaluate(({ questionId, answerId }) => {
+      const input = document.querySelector(`[data-academy-question="${questionId}"] input[value="${answerId}"]`);
+      return Boolean(input?.checked);
+    }, { questionId: question, answerId: answer });
+    if (!checked) throw new Error(`Academy answer click did not check radio: ${question}/${answer}`);
+  }
+  await page.locator('[data-academy-action="check-quiz"]').click({ timeout: 10000 });
+  await page.waitForFunction(() => !document.querySelector('.academy-entry-overlay'), undefined, { timeout: 10000 });
+
+  result.quizCompleted = await page.evaluate((key) => {
+    const raw = localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return Boolean(parsed?.completedAt && parsed?.quizPassedAt);
+  }, ACADEMY_STORAGE_KEY).catch(() => false);
+
+  await clickView(page, 'repricer');
+  await waitForViewReady(page, 'repricer');
+  result.helpButtonReady = await page.waitForFunction(() => Boolean(
+    document.querySelector('[data-academy-help-button="repricer"]')
+  ), undefined, { timeout: 12000 }).then(() => true).catch(() => false);
+
+  if (result.helpButtonReady) {
+    await page.locator('[data-academy-help-button="repricer"]').first().click({ timeout: 5000 });
+    result.drawerReady = await page.waitForFunction(() => {
+      const drawer = document.querySelector('.academy-drawer');
+      return Boolean(drawer && /Репрайсер/.test(drawer.textContent || '') && /Что смотреть/.test(drawer.textContent || ''));
+    }, undefined, { timeout: 7000 }).then(() => true).catch(() => false);
+    await page.locator('[data-academy-drawer-close]').first().click({ timeout: 3000 }).catch(() => {});
+    await page.waitForFunction(() => !document.querySelector('.academy-drawer-backdrop,.academy-drawer'), undefined, { timeout: 4000 })
+      .catch(() => page.evaluate(() => {
+        document.querySelector('.academy-drawer-backdrop')?.remove();
+        document.querySelector('.academy-drawer')?.remove();
+      }));
+  }
+
+  return result;
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   const url = args.url || process.env.PORTAL_TABS_URL || DEFAULT_URL;
@@ -258,6 +364,9 @@ async function main() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 950 } });
   page.setDefaultTimeout(30000);
   page.setDefaultNavigationTimeout(20000);
+  await page.addInitScript((key) => {
+    try { localStorage.removeItem(key); } catch (_) {}
+  }, ACADEMY_STORAGE_KEY);
 
   const pageErrors = [];
   const consoleIssues = [];
@@ -290,9 +399,16 @@ async function main() {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
     const authenticated = await authenticateIfNeeded(page);
     await waitForApp(page);
+    const academy = await completeAcademyIfPresent(page, outputDir);
 
     const summaries = [];
     const failures = [];
+    if (!academy.shown) failures.push('Academy tour did not appear after first portal entry');
+    if (academy.shown && !academy.overlayHasRealTargets) failures.push('Academy tour did not expose a real DOM spotlight target');
+    if (academy.shown && !academy.quizCompleted) failures.push('Academy quiz did not save completion progress');
+    if (academy.shown && !academy.helpButtonReady) failures.push('Academy help button was not inserted into repricer view');
+    if (academy.shown && !academy.drawerReady) failures.push('Academy drawer did not open repricer content');
+
     for (const target of TARGET_VIEWS) {
       await clickView(page, target.view);
       await waitForViewReady(page, target.view);
@@ -346,6 +462,7 @@ async function main() {
       url,
       authenticated,
       outputDir,
+      academy,
       summaries,
       clickChecks,
       pageErrors,

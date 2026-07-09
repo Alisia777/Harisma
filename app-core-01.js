@@ -2761,7 +2761,14 @@ function registerPriceFreshnessWarning(payloads = {}) {
 async function loadJsonOrFallback(path, fallback, label = path) {
   const snapshotKey = snapshotKeyFromPath(path);
   if (snapshotKey) {
-    const skipStagedFallback = new Set(['sku_aliases', 'sku_alias_ignore', 'sku_alias_audit', 'sku_matrix']);
+    const skipStagedFallback = new Set([
+      'sku_aliases',
+      'sku_alias_ignore',
+      'sku_alias_audit',
+      'sku_matrix',
+      'wb_substitution_traffic',
+      'wb_substitution_traffic_history'
+    ]);
     const stagedPath = String(path || '').startsWith('data/') && !skipStagedFallback.has(snapshotKey)
       ? `.altea-google-sheet-sync-output/${String(path).slice(5)}`
       : '';

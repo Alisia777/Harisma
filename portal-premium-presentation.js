@@ -2485,6 +2485,7 @@
     try {
       if (window.location.hash.replace(/^#/, '') !== next) window.location.hash = next;
     } catch (error) {}
+    scheduleRender(0);
     scheduleRouteRepair();
   }
 
@@ -2574,7 +2575,6 @@
       if (premiumNav) {
         event.preventDefault();
         navigate(premiumNav.getAttribute('data-premium-nav') || 'dashboard');
-        scheduleRouteRepair();
         return;
       }
       var proxy = event.target && event.target.closest && event.target.closest('[data-premium-proxy]');
@@ -2587,7 +2587,6 @@
       if (nav) {
         event.preventDefault();
         navigate(nav.getAttribute('data-premium-navigate') || 'dashboard');
-        scheduleRouteRepair();
         return;
       }
       var funnelPlatform = event.target && event.target.closest && event.target.closest('[data-executive-funnel-platform]');

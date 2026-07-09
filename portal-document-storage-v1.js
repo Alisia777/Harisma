@@ -20,6 +20,8 @@
     'Другое'
   ];
   const TYPES = ['Ссылка', 'Папка', 'Файл', 'Таблица', 'Документ', 'Презентация', 'Видео'];
+  let storageShellReady = false;
+  let documentStorageRenderTimer = 0;
 
   function appState() {
     return window.__alteaAppState || window.state || {};
@@ -180,12 +182,13 @@
     return [...userDocumentLinks(), ...staticDocumentLinks()];
   }
 
-  function filteredDocumentLinks() {
+  function filteredDocumentLinks(items) {
     const state = ensureStorageShape();
     const search = String(state.docFilters.search || '').trim().toLowerCase();
     const group = state.docFilters.group || 'all';
     const type = state.docFilters.type || 'all';
-    return allDocumentLinks().filter((item) => {
+    const source = Array.isArray(items) ? items : allDocumentLinks();
+    return source.filter((item) => {
       const haystack = [item.title, item.description, item.href, item.group, item.type, item.owner].join(' ').toLowerCase();
       if (group !== 'all' && item.group !== group) return false;
       if (type !== 'all' && item.type !== type) return false;
@@ -552,6 +555,12 @@
     }
   }
 
+  function hasReadyStorageShell() {
+    const button = document.querySelector('.sidebar .nav .nav-btn[data-view="documents"], .nav .nav-btn[data-view="documents"]');
+    const section = document.getElementById('view-documents');
+    return Boolean(button && section && !button.hidden && button.getAttribute('aria-hidden') !== 'true' && !button.classList.contains('portal-access-hidden'));
+  }
+
   function revealStorageButton(button) {
     if (!button) return;
     button.type = 'button';
@@ -575,6 +584,7 @@
   }
 
   function ensureDocumentStorageShell() {
+    if (storageShellReady && hasReadyStorageShell()) return;
     ensureAccessAllowsStorage();
 
     const nav = document.querySelector('.sidebar .nav') || document.querySelector('.nav');
@@ -614,6 +624,7 @@
       const controlSection = document.getElementById('view-control');
       main.insertBefore(section, controlSection?.nextSibling || main.querySelector('.view') || null);
     }
+    storageShellReady = hasReadyStorageShell();
   }
 
   function startStorageShellGuard() {
@@ -858,6 +869,14 @@
     renderDocumentStorage();
   }
 
+  function scheduleDocumentStorageRender(delay = 120) {
+    if (documentStorageRenderTimer) window.clearTimeout(documentStorageRenderTimer);
+    documentStorageRenderTimer = window.setTimeout(() => {
+      documentStorageRenderTimer = 0;
+      renderDocumentStorage();
+    }, Math.max(0, Number(delay) || 0));
+  }
+
   function bindDocumentStorage(root) {
     const state = ensureStorageShape();
     const search = root.querySelector('#docSearchInput');
@@ -867,7 +886,7 @@
 
     if (search) search.addEventListener('input', (event) => {
       state.docFilters.search = event.target.value;
-      renderDocumentStorage();
+      scheduleDocumentStorageRender();
     });
     if (group) group.addEventListener('change', (event) => {
       state.docFilters.group = event.target.value;
@@ -901,20 +920,25 @@
       folderInput?.addEventListener('change', updateFileLabel);
     }
 
-    root.querySelectorAll('[data-delete-resource-link]').forEach((button) => {
-      button.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        void deleteResourceLink(button.dataset.deleteResourceLink);
+    if (root.dataset.documentStorageDelegated !== '1') {
+      root.dataset.documentStorageDelegated = '1';
+      root.addEventListener('click', (event) => {
+        const target = event.target && event.target.closest ? event.target : null;
+        const deleteButton = target ? target.closest('[data-delete-resource-link]') : null;
+        if (deleteButton && root.contains(deleteButton)) {
+          event.preventDefault();
+          event.stopPropagation();
+          void deleteResourceLink(deleteButton.dataset.deleteResourceLink);
+          return;
+        }
+        const openButton = target ? target.closest('[data-open-resource-file]') : null;
+        if (openButton && root.contains(openButton)) {
+          event.preventDefault();
+          event.stopPropagation();
+          void openLocalResourceFile(openButton.dataset.openResourceFile);
+        }
       });
-    });
-    root.querySelectorAll('[data-open-resource-file]').forEach((button) => {
-      button.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        void openLocalResourceFile(button.dataset.openResourceFile);
-      });
-    });
+    }
   }
 
   function renderDocumentStorage() {
@@ -923,9 +947,9 @@
     const root = document.getElementById('view-documents');
     if (!root) return;
 
-    const allItems = allDocumentLinks();
     const userItems = userDocumentLinks();
-    const filtered = filteredDocumentLinks();
+    const allItems = [...userItems, ...staticDocumentLinks()];
+    const filtered = filteredDocumentLinks(allItems);
     const groups = groupDocumentLinks(filtered);
     const groupOptions = [...new Set([...GROUPS, ...allItems.map((item) => item.group).filter(Boolean)])];
     const typeOptions = [...new Set([...TYPES, ...allItems.map((item) => item.type).filter(Boolean)])];

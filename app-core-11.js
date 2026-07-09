@@ -5607,6 +5607,23 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
 function renderSkuContour(rootId = 'view-sku-contour') {
   const root = document.getElementById(rootId);
   if (!root) return;
+  if (
+    rootId === 'view-sku-contour'
+    && window.__ALTEA_SKU_WORKSPACE_V1_PENDING__
+    && !window.__ALTEA_SKU_LAUNCH_V1__
+  ) {
+    const now = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+    const since = Number(window.__ALTEA_SKU_WORKSPACE_V1_PENDING_SINCE__ || now);
+    window.__ALTEA_SKU_WORKSPACE_V1_PENDING_SINCE__ = since;
+    if (now - since < 5000) {
+      root.dataset.skuWorkspaceWaitingV1 = '1';
+      root.style.setProperty('display', 'none');
+      return;
+    }
+    window.__ALTEA_SKU_WORKSPACE_V1_PENDING__ = false;
+    root.style.removeProperty('display');
+    delete root.dataset.skuWorkspaceWaitingV1;
+  }
   if (SKU_WORKSPACE_SOURCE_ONLY && rootId === 'view-sku-contour' && typeof renderSkuRegistry === 'function') {
     state.skuWorkspaceMode = 'registry';
     renderSkuRegistry(rootId);

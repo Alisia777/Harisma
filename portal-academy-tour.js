@@ -388,7 +388,8 @@
   function viewSurfaces(view) {
     view = normalizeView(view);
     var surfaces = [];
-    var premiumStage = firstVisible('[data-premium-stage="' + cssEscape(view) + '"].is-active');
+    var premiumStage = firstVisible('[data-premium-stage="' + cssEscape(view) + '"]:not([hidden])')
+      || firstVisible('[data-premium-stage="' + cssEscape(view) + '"].is-active');
     var premiumContent = firstVisible('.altea-premium-app:not([hidden]) [data-premium-content]');
     var legacy = document.getElementById('view-' + view);
     if (premiumStage) surfaces.push(premiumStage);
@@ -405,6 +406,11 @@
       || surfaces.find(isElementVisible)
       || surfaces[0]
       || null;
+  }
+
+  function activeVisibleViews() {
+    var active = activePortalView();
+    return active ? [active] : orderedVisibleViews().slice(0, 1);
   }
 
   function getAppState() {
@@ -815,8 +821,7 @@
     var type = action.getAttribute('data-academy-action');
     if (type === 'next') nextStep();
     else if (type === 'back') previousStep();
-    else if (type === 'skip-tour') dismissAcademy('skip-tour');
-    else if (type === 'quiz') renderQuiz();
+    else if (type === 'skip-tour' || type === 'quiz') renderQuiz();
     else if (type === 'check-quiz') checkQuiz();
     else if (type === 'retry-quiz') renderQuiz(true);
     else if (type === 'restart-tour') startTour({ force: true });
@@ -1065,9 +1070,9 @@
 
   function contentLooksReady(root) {
     if (!root) return false;
-    var text = String(root.innerText || root.textContent || '').trim();
-    if (text.length >= 40) return true;
-    return Boolean(root.querySelector('.section-title,h1,h2,h3,table,.data-table,.card,[class*="card"],form,[data-task-calendar-design-v1],.altea-premium-route,.portal-lux-shell'));
+    if (root.querySelector('.section-title,h1,h2,h3,table,.data-table,.card,[class*="card"],form,[data-task-calendar-design-v1],.altea-premium-route,.portal-lux-shell')) return true;
+    var text = String(root.textContent || '').trim();
+    return text.length >= 40;
   }
 
   function ensureGlobalHelpButton() {
@@ -1094,11 +1099,13 @@
     button.innerHTML = '<span aria-hidden="true">?</span><b>Как пользоваться</b>';
   }
 
-  function ensureHelpButtons() {
+  function ensureHelpButtons(options) {
     if (!document.body) return;
+    options = options || {};
     createStyle();
     ensureGlobalHelpButton();
-    orderedVisibleViews().forEach(function (view) {
+    var views = options.all ? orderedVisibleViews() : activeVisibleViews();
+    views.forEach(function (view) {
       var root = firstReadyViewSurface(view);
       if (!root || root.querySelector('[data-academy-help-button]')) return;
       if (!contentLooksReady(root)) return;
@@ -1120,14 +1127,21 @@
     });
   }
 
-  function scheduleHelpButtons() {
+  function scheduleIdle(callback, timeout) {
+    if (typeof window.requestIdleCallback === 'function') {
+      return window.requestIdleCallback(callback, { timeout: timeout || 500 });
+    }
+    return window.setTimeout(callback, timeout || 180);
+  }
+
+  function scheduleHelpButtons(options) {
     if (runtime.helpScheduled) return;
     runtime.helpScheduled = true;
-    window.setTimeout(function () {
+    runtime.helpHandle = scheduleIdle(function () {
       runtime.helpScheduled = false;
-      ensureHelpButtons();
+      ensureHelpButtons(options || {});
       if (runtime.active) updateSpotlightSoon();
-    }, 80);
+    }, options && options.all ? 400 : 220);
   }
 
   function drawerList(items) {
@@ -1199,25 +1213,28 @@
 
   function installObservers() {
     if (runtime.observer || !document.body) return;
-    runtime.observer = new MutationObserver(scheduleHelpButtons);
-    runtime.observer.observe(document.body, { childList: true, subtree: true });
+    var observerTarget = document.querySelector('.main') || document.querySelector('[data-premium-content]') || document.getElementById('altea-premium-app') || document.body;
+    runtime.observer = new MutationObserver(function () {
+      scheduleHelpButtons({ all: false });
+    });
+    runtime.observer.observe(observerTarget, { childList: true, subtree: true });
     document.addEventListener('click', function (event) {
       var target = event.target && event.target.closest ? event.target.closest('.nav-btn[data-view], [data-premium-nav]') : null;
       if (!target) return;
-      scheduleHelpButtons();
-      window.setTimeout(scheduleHelpButtons, 260);
-      window.setTimeout(scheduleHelpButtons, 760);
+      scheduleHelpButtons({ all: false });
+      window.setTimeout(function () { scheduleHelpButtons({ all: false }); }, 760);
     }, true);
     ['resize', 'scroll'].forEach(function (eventName) {
-      window.addEventListener(eventName, updateSpotlightSoon, true);
+      window.addEventListener(eventName, function () {
+        if (runtime.active) updateSpotlightSoon();
+      }, true);
     });
     ['altea:viewchange', 'altea:data-ready', 'altea:view-data-ready', 'altea:app-ready', 'altea:accesschange', 'hashchange', 'load'].forEach(function (eventName) {
       window.addEventListener(eventName, function () {
-        scheduleHelpButtons();
-        window.setTimeout(scheduleHelpButtons, 320);
-        window.setTimeout(scheduleHelpButtons, 900);
-        updateSpotlightSoon();
-        scheduleBoot();
+        scheduleHelpButtons({ all: eventName === 'altea:app-ready' || eventName === 'load' });
+        window.setTimeout(function () { scheduleHelpButtons({ all: false }); }, 900);
+        if (runtime.active) updateSpotlightSoon();
+        if (!isAcademyComplete()) scheduleBoot();
       });
     });
   }
@@ -1227,7 +1244,7 @@
     runtime.bootTimer = window.setTimeout(function () {
       runtime.bootAttempts += 1;
       installObservers();
-      scheduleHelpButtons();
+      scheduleHelpButtons({ all: runtime.bootAttempts <= 2 });
 
       var params = new URLSearchParams(window.location.search || '');
       var academyMode = params.get('academy');

@@ -475,9 +475,13 @@
   }
 
   const AUTO_PULL_INTERVAL_MS = 120000;
+  const AUTO_PULL_MIN_GAP_MS = 30000;
+  const AUTO_PULL_VIEW_DELAY_MS = 1600;
   const AUTO_SNAPSHOT_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
   let autoPullTimer = 0;
   let autoPullInFlight = false;
+  let autoPullScheduledTimer = 0;
+  let autoPullLastAt = 0;
   let autoSnapshotRefreshLastAt = 0;
   let autoSnapshotRefreshInFlight = false;
 
@@ -530,9 +534,11 @@
     if (!app?.team || !canUseRemote() || !hasRemoteStoreHotfix()) return;
     if (app.team.mode === 'pending') return;
     if (autoPullInFlight) return;
+    const now = Date.now();
+    if (autoPullLastAt && now - autoPullLastAt < AUTO_PULL_MIN_GAP_MS) return;
     autoPullInFlight = true;
+    autoPullLastAt = now;
     try {
-      const activeView = String(app.activeView || '').trim();
       const taskModalOpen = document.getElementById('taskModal')?.classList.contains('open');
       const allowRerender = false;
       await pullRemoteStateHotfix(allowRerender, { silent: reason === 'interval' || taskModalOpen });
@@ -544,21 +550,30 @@
     }
   }
 
+  function scheduleAutoPullRemoteStateHotfix(reason = 'auto', delay = 800) {
+    if (document.hidden) return;
+    if (autoPullScheduledTimer) window.clearTimeout(autoPullScheduledTimer);
+    autoPullScheduledTimer = window.setTimeout(() => {
+      autoPullScheduledTimer = 0;
+      autoPullRemoteStateHotfix(reason);
+    }, Math.max(0, Number(delay) || 0));
+  }
+
   function bindAutoPullHotfix() {
     if (autoPullTimer) return;
     autoPullTimer = window.setInterval(() => {
       if (document.hidden) return;
-      autoPullRemoteStateHotfix('interval');
+      scheduleAutoPullRemoteStateHotfix('interval', 0);
     }, AUTO_PULL_INTERVAL_MS);
 
     window.addEventListener('focus', () => {
-      autoPullRemoteStateHotfix('focus');
+      scheduleAutoPullRemoteStateHotfix('focus', 900);
     });
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) autoPullRemoteStateHotfix('visible');
+      if (!document.hidden) scheduleAutoPullRemoteStateHotfix('visible', 900);
     });
     window.addEventListener('altea:viewchange', () => {
-      autoPullRemoteStateHotfix('viewchange');
+      scheduleAutoPullRemoteStateHotfix('viewchange', AUTO_PULL_VIEW_DELAY_MS);
     });
   }
 

@@ -1642,18 +1642,9 @@ function filteredControlTasks(options = {}) {
   const ignorePlatform = Boolean(options.ignorePlatform);
 
   return getAllTasks().filter((task) => {
-    const sku = getSku(task.articleKey);
-    const workstream = controlWorkstreamMeta(controlWorkstreamKey(task, sku));
-    const taskOwner = typeof canonicalOwnerName === 'function'
-      ? canonicalOwnerName(task.owner || '')
-      : String(task.owner || '').trim();
-    const hay = [task.title, task.nextAction, task.reason, task.owner, taskOwner, task.articleKey, sku?.article, sku?.name, sku?.category, workstream.label, workstream.chip].filter(Boolean).join(' ').toLowerCase();
-    if (search && !hay.includes(search)) return false;
-    if (f.owner !== 'all' && taskOwner !== f.owner) return false;
     if (f.status === 'active' && !isTaskActive(task)) return false;
     if (f.status !== 'active' && f.status !== 'all' && task.status !== f.status) return false;
     if (f.type !== 'all' && task.type !== f.type) return false;
-    if (!ignorePlatform && selectedWorkstream !== 'all' && controlWorkstreamKey(task, sku) !== selectedWorkstream) return false;
     if (f.source === 'manual' && task.source === 'auto') return false;
     if (f.source === 'auto' && task.source !== 'auto') return false;
     if (selectedPriority !== 'all' && task.priority !== selectedPriority) return false;
@@ -1661,6 +1652,24 @@ function filteredControlTasks(options = {}) {
     if (f.horizon === 'today' && task.due !== todayIso()) return false;
     if (f.horizon === 'week' && (!task.due || task.due > plusDays(7))) return false;
     if (f.horizon === 'no_owner' && task.owner) return false;
+
+    const needsOwner = f.owner !== 'all' || Boolean(search);
+    const taskOwner = needsOwner
+      ? (typeof canonicalOwnerName === 'function'
+        ? canonicalOwnerName(task.owner || '')
+        : String(task.owner || '').trim())
+      : '';
+    if (f.owner !== 'all' && taskOwner !== f.owner) return false;
+
+    const needsSku = search || (!ignorePlatform && selectedWorkstream !== 'all');
+    const sku = needsSku ? getSku(task.articleKey) : null;
+    const workstreamKey = needsSku ? controlWorkstreamKey(task, sku) : '';
+    if (!ignorePlatform && selectedWorkstream !== 'all' && workstreamKey !== selectedWorkstream) return false;
+    if (search) {
+      const workstream = controlWorkstreamMeta(workstreamKey);
+      const hay = [task.title, task.nextAction, task.reason, task.owner, taskOwner, task.articleKey, sku?.article, sku?.name, sku?.category, workstream.label, workstream.chip].filter(Boolean).join(' ').toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
     return true;
   });
 }

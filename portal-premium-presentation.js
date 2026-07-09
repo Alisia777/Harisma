@@ -2301,10 +2301,46 @@
     return stage.children.length > 0 && String(stage.textContent || stage.innerHTML || '').replace(/\s+/g, '').length > 12;
   }
 
+  function resolvePortalAction(name) {
+    if (name === 'pullRemoteState') {
+      try {
+        if (typeof pullRemoteState === 'function') return pullRemoteState;
+      } catch (_) {}
+    }
+    if (name === 'pushStateToRemote') {
+      try {
+        if (typeof pushStateToRemote === 'function') return pushStateToRemote;
+      } catch (_) {}
+    }
+    return typeof window[name] === 'function' ? window[name] : null;
+  }
+
+  function runPortalAction(name, args) {
+    var action = resolvePortalAction(name);
+    if (!action) return false;
+    try {
+      Promise.resolve(action.apply(window, args || [])).catch(function (error) {
+        console.error('[portal-premium] topbar action failed', name, error);
+      });
+      return true;
+    } catch (error) {
+      console.error('[portal-premium] topbar action failed', name, error);
+      return true;
+    }
+  }
+
   function proxyClick(targetId) {
     if (targetId === 'syncStatusBadge') return;
+    if (targetId === 'pullRemoteBtn' && runPortalAction('pullRemoteState', [true])) return;
+    if (targetId === 'pushRemoteBtn' && runPortalAction('pushStateToRemote')) return;
     if (targetId === 'portalAuthSignOutBtn') {
-      var signOut = document.querySelector('[data-portal-auth-signout], .portal-auth-user button, #portalAuthSignOutBtn');
+      if (window.alteaPortalAuthGate && typeof window.alteaPortalAuthGate.signOut === 'function') {
+        Promise.resolve(window.alteaPortalAuthGate.signOut()).catch(function (error) {
+          console.error('[portal-premium] sign out failed', error);
+        });
+        return;
+      }
+      var signOut = document.querySelector('[data-portal-auth-signout], #portalAuthLogoutBtn, #portalAuthSignOutBtn, .portal-auth-user button');
       if (signOut) signOut.click();
       return;
     }
@@ -2477,6 +2513,15 @@
   }
 
   function bindEvents() {
+    document.addEventListener('click', function (event) {
+      var proxy = event.target && event.target.closest && event.target.closest('[data-premium-proxy]');
+      if (!proxy) return;
+      var targetId = proxy.getAttribute('data-premium-proxy') || '';
+      if (!targetId || targetId === 'syncStatusBadge') return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      proxyClick(targetId);
+    }, true);
     document.addEventListener('click', function (event) {
       var funnelControl = event.target && event.target.closest && event.target.closest('#altea-premium-stage-executive [data-executive-funnel-platform], #altea-premium-stage-executive [data-executive-funnel-status]');
       if (funnelControl && String(window.location.hash || '').replace(/^#/, '') === 'executive') {

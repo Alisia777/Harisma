@@ -673,6 +673,7 @@
       createdAt,
       text: `${marker} ${JSON.stringify(payload)}`
     };
+    const hasRemoteSync = Boolean(remoteConfig()?.accessToken);
     try {
       if (typeof window.createComment === 'function') {
         await window.createComment(comment);
@@ -680,9 +681,11 @@
         upsertLocalResourceComment(comment);
         if (typeof window.persistComment === 'function') await window.persistComment(comment);
       }
+      return hasRemoteSync;
     } catch (error) {
       upsertLocalResourceComment(comment);
       console.warn('[document-storage] remote event', error);
+      return false;
     }
   }
 
@@ -707,20 +710,23 @@
     const resourceId = `resource-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     let filePayload = {};
     if (file) {
-      try {
-        const remotePayload = await uploadResourceFileRemote(resourceId, file).catch((error) => {
-          console.warn('[document-storage] remote file upload skipped', error);
-          return null;
-        });
-        if (remotePayload) {
-          filePayload = remotePayload;
-        } else {
-          await putLocalResourceFile(resourceId, file);
-          filePayload = { storageMode: 'local-file', localFileId: resourceId };
+      const remotePayload = await uploadResourceFileRemote(resourceId, file).catch((error) => {
+        console.warn('[document-storage] remote file upload failed', error);
+        setError(`Файл не загружен в общее хранилище Supabase: ${error.message || error}. Проверь bucket portal-task-files / MIME types или добавь ссылку на файл.`);
+        return null;
+      });
+      if (!remotePayload) {
+        if (!href) {
+          if (!document.getElementById('appError')?.textContent) {
+            setError('Файл не добавлен: общее хранилище Supabase сейчас недоступно. Загрузи файл в Drive/SharePoint и вставь ссылку либо настрой bucket portal-task-files.');
+          }
+          return;
         }
-      } catch (error) {
-        console.warn('[document-storage] local file save failed', error);
-        setError(`Не удалось сохранить файл: ${error.message || error}`);
+        filePayload = { storageMode: 'missing-file' };
+      } else {
+        filePayload = remotePayload;
+      }
+      if (filePayload.storageMode === 'missing-file' && !href) {
         return;
       }
     }
@@ -745,9 +751,9 @@
     ].slice(0, 500);
     persistStorage('resource-link-add');
     auditResourceLink('add', next);
-    await persistResourceLinkEvent(next, false);
+    const synced = await persistResourceLinkEvent(next, false);
     form.reset();
-    setError('');
+    setError(synced ? '' : 'Запись сохранена только локально в этом браузере: общий Supabase-синк не подтвердился. После перезагрузки/на другом устройстве она может не появиться.');
     renderDocumentStorage();
   }
 

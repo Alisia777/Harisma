@@ -354,6 +354,17 @@ function loadLocalStorage() {
 window.normalizePortalStorageSnapshot = normalizePortalStorageSnapshot;
 window.completePortalStorage = completePortalStorage;
 
+function hydratePortalStorageBeforeRemote() {
+  if (window.__ALTEA_PORTAL_STORAGE_EARLY_HYDRATED__) return state.storage;
+  const persisted = loadLocalStorage();
+  state.storage = completePortalStorage(persisted, state.storage || {});
+  window.__ALTEA_PORTAL_STORAGE_EARLY_HYDRATED__ = true;
+  return state.storage;
+}
+
+window.alteaHydratePortalStorageBeforeRemote = hydratePortalStorageBeforeRemote;
+hydratePortalStorageBeforeRemote();
+
 const STORAGE_HISTORY_KEY = `${STORAGE_KEY}-history-v1`;
 const STORAGE_HISTORY_LIMIT = 16;
 

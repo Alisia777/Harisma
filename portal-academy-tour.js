@@ -4,7 +4,7 @@
   if (window.__ALTEA_ACADEMY_TOUR__) return;
   window.__ALTEA_ACADEMY_TOUR__ = true;
 
-  var VERSION = '20260709-native-tour4';
+  var VERSION = '20260710-native-tour5';
   var STORAGE_KEY = 'altea.academy.progress.v1';
   var HEAVY_DATA_NOTE = 'Данные обновляются ежедневно в 11:00 по Москве. До этого времени часть показателей может быть неполной.';
   var ACADEMY_PORTAL_TARGETS = {
@@ -1079,11 +1079,6 @@
       button.className = 'academy-help-btn academy-global-help';
       button.type = 'button';
       button.setAttribute('data-academy-global-help', '1');
-      button.addEventListener('click', function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        openDrawer(activePortalView());
-      });
     }
     if (button.parentNode !== host) host.appendChild(button);
     button.classList.toggle('is-floating', host === document.body);
@@ -1091,7 +1086,8 @@
     var guide = guideForView(view);
     button.setAttribute('data-academy-help-view', view);
     button.setAttribute('title', 'Как пользоваться: ' + guide.title);
-    button.innerHTML = '<span aria-hidden="true">?</span><b>Как пользоваться</b>';
+    var helpMarkup = '<span aria-hidden="true">?</span><b>Как пользоваться</b>';
+    if (button.innerHTML !== helpMarkup) button.innerHTML = helpMarkup;
   }
 
   function ensureHelpButtons() {
@@ -1108,11 +1104,6 @@
       button.type = 'button';
       button.setAttribute('data-academy-help-button', view);
       button.innerHTML = '<span aria-hidden="true">?</span><b>Как пользоваться разделом</b>';
-      button.addEventListener('click', function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        openDrawer(view);
-      });
 
       var title = root.querySelector('.section-title, .control-simple-title, .portal-section-title, .route-head, header');
       if (title) title.appendChild(button);
@@ -1201,6 +1192,18 @@
     if (runtime.observer || !document.body) return;
     runtime.observer = new MutationObserver(scheduleHelpButtons);
     runtime.observer.observe(document.body, { childList: true, subtree: true });
+    document.addEventListener('click', function (event) {
+      var helpButton = event.target && event.target.closest
+        ? event.target.closest('[data-academy-global-help], [data-academy-help-button]')
+        : null;
+      if (!helpButton) return;
+      event.preventDefault();
+      event.stopPropagation();
+      var view = helpButton.hasAttribute('data-academy-global-help')
+        ? activePortalView()
+        : (helpButton.getAttribute('data-academy-help-button') || activePortalView());
+      openDrawer(view);
+    });
     document.addEventListener('click', function (event) {
       var target = event.target && event.target.closest ? event.target.closest('.nav-btn[data-view], [data-premium-nav]') : null;
       if (!target) return;

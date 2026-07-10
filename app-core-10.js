@@ -3302,7 +3302,6 @@ async function init() {
       decisions: Array.isArray(local.decisions) ? local.decisions : [],
       ownerOverrides: Array.isArray(local.ownerOverrides) ? local.ownerOverrides : [],
       resourceLinks: Array.isArray(local.resourceLinks) ? local.resourceLinks : [],
-      resourceFolders: Array.isArray(local.resourceFolders) ? local.resourceFolders : [],
       repricerSettings: normalizeRepricerSettings(local.repricerSettings || {}),
       repricerSettingsUpdatedAt: String(local.repricerSettingsUpdatedAt || '').trim(),
       repricerOverrides: Array.isArray(local.repricerOverrides) ? local.repricerOverrides.map(normalizeRepricerOverride).filter((item) => item.articleKey) : [],

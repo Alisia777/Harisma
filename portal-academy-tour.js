@@ -4,7 +4,7 @@
   if (window.__ALTEA_ACADEMY_TOUR__) return;
   window.__ALTEA_ACADEMY_TOUR__ = true;
 
-  var VERSION = '20260710-native-tour5';
+  var VERSION = '20260710-native-tour6';
   var STORAGE_KEY = 'altea.academy.progress.v1';
   var HEAVY_DATA_NOTE = 'Данные обновляются ежедневно в 11:00 по Москве. До этого времени часть показателей может быть неполной.';
   var ACADEMY_PORTAL_TARGETS = {
@@ -243,7 +243,12 @@
     helpScheduled: false,
     spotlightFrame: 0,
     active: false,
-    offerSnoozed: false
+    offerSnoozed: false,
+    stepToken: 0,
+    stepTimer: 0,
+    stepReady: true,
+    stepReadyChecks: 0,
+    stepStatus: 'ready'
   };
 
   function cssEscape(value) {
@@ -547,10 +552,27 @@
   function switchToView(view) {
     view = normalizeView(view);
     if (!view) return;
+    if (viewRouteIsActive(view)) return true;
+    var premiumButton = firstVisibleOnly(ACADEMY_PORTAL_TARGETS.premiumNavButton(view));
+    if (premiumButton && typeof premiumButton.click === 'function') {
+      try {
+        premiumButton.click();
+        return true;
+      } catch (_) {}
+    }
     try {
       if (typeof window.setView === 'function') {
-        window.setView(view, { persist: true, syncHash: true });
-        return;
+        var result = window.setView(view, { persist: true, syncHash: true });
+        if (window.AlteaPremiumPresentation && typeof window.AlteaPremiumPresentation.scheduleRender === 'function') {
+          window.AlteaPremiumPresentation.scheduleRender(0);
+          window.AlteaPremiumPresentation.scheduleRender(120);
+        }
+        if (result && typeof result.catch === 'function') {
+          result.catch(function (error) {
+            if (window.console && console.warn) console.warn('[academy-tour] async setView failed', error);
+          });
+        }
+        return result || true;
       }
     } catch (error) {
       if (window.console && console.warn) console.warn('[academy-tour] setView failed', error);
@@ -576,19 +598,106 @@
     try {
       window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view: view, source: 'academy-tour' } }));
     } catch (_) {}
+    return true;
+  }
+
+  function currentHashView() {
+    return normalizeView(String(window.location.hash || '').replace(/^#/, '').replace(/^view-/, ''));
+  }
+
+  function viewRouteIsActive(view) {
+    view = normalizeView(view);
+    if (!view) return true;
+    var app = getAppState();
+    if (app && app.activeView && normalizeView(app.activeView) !== view) return false;
+    var premium = premiumActiveRoute();
+    if (premium && premium !== view) return false;
+    var hash = currentHashView();
+    if (hash && hash !== view) return false;
+    var activeNav = document.querySelector('.nav-btn.active[data-view], [data-premium-nav].is-active, [data-premium-nav].active');
+    if (activeNav) {
+      var activeNavView = normalizeView(activeNav.dataset.view || activeNav.getAttribute('data-premium-nav'));
+      if (activeNavView && activeNavView !== view) return false;
+    }
+    var legacy = document.getElementById('view-' + view);
+    var activeStage = firstVisibleOnly('[data-premium-stage="' + cssEscape(view) + '"].is-active');
+    if (legacy && !legacy.classList.contains('active') && !isElementVisible(legacy) && !activeStage) return false;
+    return activePortalView() === view;
+  }
+
+  function visibleLoadingMarker(root) {
+    if (!root) return null;
+    if (root.getAttribute('aria-busy') === 'true') return root;
+    if (root.getAttribute('data-plan-fact-loading') === 'true') return root;
+    var markers = Array.prototype.slice.call(root.querySelectorAll([
+      '[aria-busy="true"]',
+      '[data-plan-fact-loading="true"]',
+      '[data-task-loading]',
+      '[data-loading="true"]',
+      '[data-loading="boot"]',
+      '[data-loading="team"]',
+      '.loading-card',
+      '.is-loading',
+      '.executive-loading-grid'
+    ].join(',')));
+    return markers.find(isElementVisible) || null;
+  }
+
+  function visibleLoadingCopy(root) {
+    if (!root) return null;
+    var candidates = Array.prototype.slice.call(root.querySelectorAll('.pw-empty,.empty,[data-loading-message]'));
+    return candidates.find(function (node) {
+      if (!isElementVisible(node)) return false;
+      return /загружа|подгружа|собирает рабочие цифры|готовим|ожидаем|prepar|loading/i.test(String(node.textContent || ''));
+    }) || null;
+  }
+
+  function readySurfaceForView(view) {
+    return viewSurfaces(view).find(function (root) {
+      return isElementVisible(root)
+        && !visibleLoadingMarker(root)
+        && !visibleLoadingCopy(root)
+        && contentLooksReady(root);
+    }) || null;
+  }
+
+  function lazyRequirementReady(view) {
+    var requirement = '';
+    try {
+      if (typeof VIEW_DATA_REQUIREMENTS === 'object' && VIEW_DATA_REQUIREMENTS) {
+        requirement = VIEW_DATA_REQUIREMENTS[view] || '';
+      }
+    } catch (_) {}
+    if (!requirement) return true;
+    var app = getAppState();
+    return Boolean(app && app.boot && app.boot.lazyReady && app.boot.lazyReady[requirement] === true);
+  }
+
+  function stepViewIsReady(view) {
+    return viewRouteIsActive(view) && lazyRequirementReady(view) && Boolean(readySurfaceForView(view));
+  }
+
+  function sectionTargetForView(view) {
+    var surface = readySurfaceForView(view);
+    if (!surface) return null;
+    var candidates = Array.prototype.slice.call(surface.querySelectorAll('.section-title,.route-head,.portal-section-title,.control-simple-title,h1,h2'));
+    return candidates.find(isElementVisible) || surface;
   }
 
   function targetForStep(step) {
     var target = step && step.target;
     var element = null;
+    if (step && step.view && /^section-/.test(step.id || '')) {
+      element = sectionTargetForView(step.view);
+      if (element) return element;
+    }
     if (typeof target === 'function') element = target();
     else if (typeof target === 'string') element = firstVisible(target);
     else if (target instanceof Element) element = target;
     if (element && isElementVisible(element)) return element;
     if (step && step.view) {
-      if (/^section-/.test(step.id || '')) element = firstReadyViewSurface(step.view);
       if (!element) element = firstVisible(navSelector(step.view))
-        || firstReadyViewSurface(step.view)
+        || readySurfaceForView(step.view)
         || document.querySelector(ACADEMY_PORTAL_TARGETS.viewSection(step.view));
       if (element) return element;
     }
@@ -600,13 +709,14 @@
     var style = document.createElement('style');
     style.id = 'altea-academy-tour-style';
     style.textContent = [
-      'body.altea-academy-tour-active{overflow:hidden}',
-      '.academy-entry-overlay{position:fixed;inset:0;z-index:2147483000;pointer-events:none;color:#f8efe0;font-family:inherit}',
+      'html.altea-academy-tour-active,body.altea-academy-tour-active{overflow:hidden!important;overscroll-behavior:none!important}',
+      'html.altea-academy-tour-active .altea-premium-shell-content,html.altea-academy-tour-active .altea-premium-shell-nav,html.altea-academy-tour-active .main,html.altea-academy-tour-active .sidebar{overflow:hidden!important;overscroll-behavior:none!important;scroll-behavior:auto!important}',
+      '.academy-entry-overlay{position:fixed;inset:0;z-index:2147483000;pointer-events:auto;overscroll-behavior:none;color:#f8efe0;font-family:inherit}',
       '.academy-entry-overlay *{box-sizing:border-box}',
       '.academy-spotlight-layer{position:fixed;inset:0;pointer-events:none}',
       '.academy-spotlight-hole{position:fixed;border:1px solid rgba(229,199,132,.9);border-radius:8px;box-shadow:0 0 0 9999px rgba(5,5,8,.74),0 18px 64px rgba(229,199,132,.22);transition:left .2s ease,top .2s ease,width .2s ease,height .2s ease,opacity .16s ease;opacity:1}',
       '.academy-spotlight-hole.is-hidden{opacity:0}',
-      '.academy-coach-card{position:fixed;width:min(430px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;border:1px solid rgba(229,199,132,.34);border-radius:8px;background:linear-gradient(155deg,rgba(23,17,14,.98),rgba(10,10,13,.98));box-shadow:0 24px 90px rgba(0,0,0,.46);padding:18px;transition:left .2s ease,top .2s ease;color:#f8efe0;pointer-events:auto}',
+      '.academy-coach-card{position:fixed;width:min(430px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;overscroll-behavior:contain;touch-action:pan-y;border:1px solid rgba(229,199,132,.34);border-radius:8px;background:linear-gradient(155deg,rgba(23,17,14,.98),rgba(10,10,13,.98));box-shadow:0 24px 90px rgba(0,0,0,.46);padding:18px;color:#f8efe0;pointer-events:auto}',
       '.academy-coach-kicker{margin:0 0 8px;color:#e5c784;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}',
       '.academy-coach-card h2,.academy-drawer h2{margin:0;color:#fff6df;font-size:22px;line-height:1.15;letter-spacing:0}',
       '.academy-coach-card p,.academy-drawer p{margin:10px 0 0;color:#d8cdbd;line-height:1.45}',
@@ -656,6 +766,11 @@
     if (!runtime.card || !runtime.steps.length) return;
     var step = runtime.steps[runtime.stepIndex] || runtime.steps[0];
     var progress = Math.round(((runtime.stepIndex + 1) / runtime.steps.length) * 100);
+    var stepReady = runtime.stepReady !== false;
+    var primaryAction = runtime.stepIndex >= runtime.steps.length - 1 ? 'quiz' : 'next';
+    var primaryLabel = runtime.stepIndex >= runtime.steps.length - 1 ? 'Пройти мини-тест' : 'Далее';
+    if (!stepReady && step.view) primaryLabel = 'Загружаем раздел…';
+    var primaryState = stepReady ? '' : ' disabled aria-busy="true"';
     var bullets = Array.isArray(step.bullets) && step.bullets.length
       ? '<ul>' + step.bullets.map(function (item) { return '<li>' + escapeHtml(item) + '</li>'; }).join('') + '</ul>'
       : '';
@@ -664,12 +779,13 @@
       '<h2 id="academyCoachTitle">' + escapeHtml(step.title || 'Обучение') + '</h2>',
       '<p>' + escapeHtml(step.body || '') + '</p>',
       bullets,
+      !stepReady && step.view ? '<div class="academy-note" data-academy-transition>Ждём, пока вкладка откроется и закончит загрузку данных.</div>' : '',
       step.note ? '<div class="academy-note">' + escapeHtml(step.note) + '</div>' : '',
       '<div class="academy-progress" aria-hidden="true"><span style="width:' + progress + '%"></span></div>',
       '<div class="academy-tour-actions">',
       '<button class="academy-btn academy-btn-ghost" type="button" data-academy-action="back"' + (runtime.stepIndex <= 0 ? ' disabled' : '') + '>Назад</button>',
       '<button class="academy-btn academy-btn-ghost" type="button" data-academy-action="skip-tour">Пропустить урок</button>',
-      '<button class="academy-btn academy-btn-primary" type="button" data-academy-action="' + (runtime.stepIndex >= runtime.steps.length - 1 ? 'quiz' : 'next') + '">' + (runtime.stepIndex >= runtime.steps.length - 1 ? 'Пройти мини-тест' : 'Далее') + '</button>',
+      '<button class="academy-btn academy-btn-primary" type="button" data-academy-action="' + primaryAction + '"' + primaryState + '>' + primaryLabel + '</button>',
       '</div>'
     ].join('');
   }
@@ -691,23 +807,34 @@
     ].join('');
     document.body.appendChild(overlay);
     document.body.classList.add('altea-academy-tour-active');
+    document.documentElement.classList.add('altea-academy-tour-active');
     runtime.overlay = overlay;
     runtime.spotlight = overlay.querySelector('.academy-spotlight-hole');
     runtime.card = overlay.querySelector('.academy-coach-card');
     runtime.active = true;
     overlay.addEventListener('click', onOverlayClick);
     document.addEventListener('keydown', onTourKeydown, true);
+    document.addEventListener('wheel', onTourScroll, { capture: true, passive: false });
+    document.addEventListener('touchmove', onTourScroll, { capture: true, passive: false });
   }
 
   function removeOverlay() {
+    clearStepTimer();
+    runtime.stepToken += 1;
     if (runtime.overlay && runtime.overlay.parentNode) runtime.overlay.parentNode.removeChild(runtime.overlay);
     runtime.overlay = null;
     runtime.spotlight = null;
     runtime.card = null;
     runtime.active = false;
     runtime.mode = 'idle';
+    runtime.stepReady = true;
+    runtime.stepReadyChecks = 0;
+    runtime.stepStatus = 'ready';
     document.body?.classList.remove('altea-academy-tour-active');
+    document.documentElement?.classList.remove('altea-academy-tour-active');
     document.removeEventListener('keydown', onTourKeydown, true);
+    document.removeEventListener('wheel', onTourScroll, true);
+    document.removeEventListener('touchmove', onTourScroll, true);
   }
 
   function removeOffer() {
@@ -782,6 +909,14 @@
     } catch (_) {}
   }
 
+  function onTourScroll(event) {
+    if (!runtime.active) return;
+    var card = event.target && event.target.closest ? event.target.closest('.academy-coach-card') : null;
+    if (card) return;
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   function onTourKeydown(event) {
     if (!runtime.active) return;
     if (event.key === 'Escape') {
@@ -797,6 +932,18 @@
     if (event.key === 'ArrowLeft') {
       event.preventDefault();
       previousStep();
+      return;
+    }
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].indexOf(event.key) >= 0) {
+      var coachCard = event.target && event.target.closest ? event.target.closest('.academy-coach-card') : null;
+      if (coachCard && coachCard.scrollHeight > coachCard.clientHeight + 1) return;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    if ((event.key === ' ' || event.key === 'Spacebar') && !(event.target && event.target.closest && event.target.closest('button,input,textarea,select,a[href]'))) {
+      event.preventDefault();
+      event.stopPropagation();
     }
   }
 
@@ -863,24 +1010,34 @@
 
   function enterStep(index) {
     if (!runtime.steps.length) return;
+    clearStepTimer();
+    runtime.stepToken += 1;
+    var token = runtime.stepToken;
     runtime.mode = 'tour';
     runtime.stepIndex = Math.max(0, Math.min(index, runtime.steps.length - 1));
     var step = runtime.steps[runtime.stepIndex];
-    if (step.view) switchToView(step.view);
+    runtime.stepReadyChecks = 0;
+    runtime.stepReady = !step.view;
+    runtime.stepStatus = step.view ? 'loading' : 'ready';
+    if (step.view && !viewRouteIsActive(step.view)) {
+      switchToView(step.view);
+    }
+    if (step.view && /^nav-/.test(step.id || '')) resetTourViewScroll();
     writeProgress({ currentStep: step.id, currentIndex: runtime.stepIndex, mode: 'tour' });
     renderTourCard();
-    window.setTimeout(function () {
-      var target = targetForStep(step);
-      if (target && typeof target.scrollIntoView === 'function') {
-        try { target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' }); } catch (_) {}
-      }
+    if (step.view) {
+      runtime.stepTimer = window.setTimeout(function () { checkStepEntry(step, token, 0); }, 0);
       updateSpotlightSoon();
-      focusPrimaryAction();
-    }, step.view ? 220 : 40);
+      return;
+    }
+    runtime.stepTimer = window.setTimeout(function () {
+      if (token !== runtime.stepToken) return;
+      finishStepEntry(step, token);
+    }, 40);
   }
 
   function nextStep() {
-    if (runtime.mode === 'quiz') return;
+    if (runtime.mode === 'quiz' || runtime.stepReady === false) return;
     if (runtime.stepIndex >= runtime.steps.length - 1) {
       renderQuiz();
       return;
@@ -895,6 +1052,52 @@
       return;
     }
     enterStep(runtime.stepIndex - 1);
+  }
+
+  function clearStepTimer() {
+    if (runtime.stepTimer) window.clearTimeout(runtime.stepTimer);
+    runtime.stepTimer = 0;
+  }
+
+  function resetTourViewScroll() {
+    Array.prototype.forEach.call(document.querySelectorAll('.altea-premium-shell-content,.main'), function (container) {
+      try {
+        container.scrollTop = 0;
+        container.scrollLeft = 0;
+      } catch (_) {}
+    });
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch (_) {
+      try { window.scrollTo(0, 0); } catch (_) {}
+    }
+  }
+
+  function finishStepEntry(step, token) {
+    if (token !== runtime.stepToken || !runtime.active || runtime.mode !== 'tour') return;
+    clearStepTimer();
+    runtime.stepReady = true;
+    runtime.stepStatus = 'ready';
+    renderTourCard();
+    var target = targetForStep(step);
+    if (target && /^nav-/.test(step.id || '') && typeof target.scrollIntoView === 'function') {
+      try { target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' }); } catch (_) {}
+    }
+    updateSpotlight();
+    focusPrimaryAction();
+  }
+
+  function checkStepEntry(step, token, attempt) {
+    if (token !== runtime.stepToken || !runtime.active || runtime.mode !== 'tour') return;
+    var routeReady = viewRouteIsActive(step.view);
+    var ready = routeReady && stepViewIsReady(step.view);
+    runtime.stepReadyChecks = ready ? runtime.stepReadyChecks + 1 : 0;
+    if (runtime.stepReadyChecks >= 2) {
+      finishStepEntry(step, token);
+      return;
+    }
+    if (!routeReady && attempt > 0 && attempt % 6 === 0) switchToView(step.view);
+    runtime.stepTimer = window.setTimeout(function () {
+      checkStepEntry(step, token, attempt + 1);
+    }, ready ? 80 : 100);
   }
 
   function focusPrimaryAction() {
@@ -915,12 +1118,17 @@
 
   function updateSpotlight() {
     if (!runtime.active || runtime.mode !== 'tour' || !runtime.spotlight || !runtime.card) return;
+    var viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+    var viewportHeight = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+    if (runtime.stepReady === false) {
+      runtime.spotlight.classList.add('is-hidden');
+      positionCard(null, viewportWidth, viewportHeight);
+      return;
+    }
     var step = runtime.steps[runtime.stepIndex] || {};
     var target = targetForStep(step);
     var rect = target ? target.getBoundingClientRect() : null;
     var pad = 8;
-    var viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-    var viewportHeight = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
 
     if (!rect || rect.width <= 0 || rect.height <= 0) {
       runtime.spotlight.classList.add('is-hidden');
@@ -1065,6 +1273,7 @@
 
   function contentLooksReady(root) {
     if (!root) return false;
+    if (visibleLoadingMarker(root) || visibleLoadingCopy(root)) return false;
     var text = String(root.innerText || root.textContent || '').trim();
     if (text.length >= 40) return true;
     return Boolean(root.querySelector('.section-title,h1,h2,h3,table,.data-table,.card,[class*="card"],form,[data-task-calendar-design-v1],.altea-premium-route,.portal-lux-shell'));

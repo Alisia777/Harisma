@@ -35,7 +35,6 @@
     { id: 'oos-control', index: '10', group: 'Деньги и товар', title: 'OOS контроль', caption: 'Пустые полки · меры', icon: 'alert' },
     { id: 'sku-contour', index: '11', group: 'Продукт', title: 'SKU workspace', caption: 'Реестр · API · план-факт', icon: 'blocks' },
     { id: 'launches', index: '12', group: 'Продукт', title: 'Новинки', caption: 'Товар · экономика', icon: 'rocket' },
-    { id: 'launch-control', index: '13', group: 'Продукт', title: 'Запуск новинок', caption: 'Фазы · просрочки', icon: 'flag' },
     { id: 'iu-drr', index: '14', group: 'Аналитика', title: 'ИУ / ДРР', caption: 'WB · Ozon · расходы', icon: 'pie' },
     { id: 'wb-rating', index: '15', group: 'Аналитика', title: 'Рейтинг карточек', caption: 'Отзывы · динамика', icon: 'star' },
     { id: 'product-leaderboard', index: '16', group: 'Аналитика', title: 'Лидерборд', caption: 'КЗ · воронка · ROMI', icon: 'trophy' }

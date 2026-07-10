@@ -32,7 +32,6 @@
     'sku-contour',
     'skus',
     'launches',
-    'launch-control',
     'iu-drr',
     'wb-rating',
     'product-leaderboard',

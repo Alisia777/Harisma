@@ -241,9 +241,10 @@ const VIEW_DATA_REQUIREMENTS = {
   documents: 'documents',
   repricer: 'repricer'
 };
-const DISABLED_VIEWS = new Set(['meetings', 'ads-funnel']);
+const DISABLED_VIEWS = new Set(['meetings', 'ads-funnel', 'launch-control']);
 const VIEW_REDIRECTS = {
   meetings: 'dashboard',
+  'launch-control': 'launches',
   'ads-funnel': 'iu-drr'
 };
 

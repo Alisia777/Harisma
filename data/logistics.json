@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-09T00:00:00+03:00",
+  "generatedAt": "2026-07-10T00:00:00+03:00",
   "updatedAt": "2026-04-28T16:21:18.080Z",
   "window": {
-    "from": "2026-06-11",
-    "to": "2026-07-08",
+    "from": "2026-06-13",
+    "to": "2026-07-10",
     "days": 28
   },
   "targetOptions": [
@@ -92,12 +92,12 @@
     "accepted": 0,
     "shippedOzon": 0,
     "shippedWB": 0,
-    "stock": 636542,
-    "skuCount": 183,
+    "stock": 615143,
+    "skuCount": 184,
     "source": "warehouse_stock_overlay",
     "sourceWorkbook": "Склад Балашиха",
     "sourceSheet": "Склад Балашиха",
-    "generatedAt": "2026-07-09T07:13:13.776Z"
+    "generatedAt": "2026-07-10T07:16:02.578Z"
   },
   "backlogByCluster": [
     {
@@ -66784,12 +66784,12 @@
       "turnoverDays": null
     }
   ],
-  "latest_logistics_date": "2026-07-08",
-  "latestLogisticsDate": "2026-07-08",
+  "latest_logistics_date": "2026-07-10",
+  "latestLogisticsDate": "2026-07-10",
   "warehouseOverlay": {
-    "generatedAt": "2026-07-09T07:13:13.776Z",
+    "generatedAt": "2026-07-10T07:16:02.578Z",
     "asOfDate": "",
-    "rows": 183,
-    "matchedRowCount": 183
+    "rows": 184,
+    "matchedRowCount": 185
   }
 }

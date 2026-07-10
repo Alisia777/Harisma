@@ -12,6 +12,7 @@ const STORAGE_MODULE = 'portal-document-storage-v1.js';
 const FOLDER_NAME = 'Реклама и маркетинг';
 const LEGACY_RESOURCE_ID = 'legacy-root-resource';
 const LEGACY_RESOURCE_TITLE = 'Старый файл без папки';
+const STATIC_RESOURCE_TITLE = 'Навигация по вкладкам';
 
 function read(relativePath) {
   return fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
@@ -32,6 +33,10 @@ function assertStaticContracts() {
     'data-open-document-folder',
     'data-document-storage-back',
     'data-move-resource-link',
+    'data-document-resource-card',
+    'data-document-resource-id',
+    'data-drop-document-folder',
+    'data-drop-document-root',
     'data-delete-document-folder'
   ]) {
     assert.ok(storageModule.includes(selector), `${STORAGE_MODULE} must expose [${selector}]`);
@@ -59,7 +64,17 @@ function assertStaticContracts() {
 function fixtureState() {
   return {
     activeView: 'documents',
-    documents: { groups: [] },
+    documents: {
+      groups: [{
+        title: 'Инструкции портала',
+        items: [{
+          title: STATIC_RESOURCE_TITLE,
+          href: 'docs/navigation.md',
+          description: 'Базовый документ портала',
+          type: 'Документ'
+        }]
+      }]
+    },
     docFilters: { search: '', group: 'all', type: 'all' },
     storage: {
       comments: [],
@@ -158,6 +173,22 @@ async function visibleText(page) {
   return page.locator('#view-documents').innerText();
 }
 
+async function dragResourceTo(page, resourceId, targetSelector) {
+  const source = page.locator(
+    `[data-document-resource-card][data-document-resource-id="${resourceId}"]`
+  ).first();
+  const target = page.locator(targetSelector).first();
+
+  await source.waitFor({ state: 'visible' });
+  await target.waitFor({ state: 'visible' });
+  assert.strictEqual(
+    await source.getAttribute('draggable'),
+    'true',
+    'Resource cards must opt into native HTML drag-and-drop'
+  );
+  await source.dragTo(target);
+}
+
 async function runDomContract() {
   const server = await serve();
   const port = server.address().port;
@@ -179,6 +210,7 @@ async function runDomContract() {
 
     await page.waitForSelector('[data-document-storage-create-folder]');
     assert.ok((await visibleText(page)).includes(LEGACY_RESOURCE_TITLE), 'Legacy resource without folderId must remain visible in root');
+    assert.ok((await visibleText(page)).includes(STATIC_RESOURCE_TITLE), 'Static/base resource must be visible in root');
     assert.strictEqual(await page.evaluate(() => window.state.storage.resourceLinks[0].folderId || ''), '', 'Legacy resource must normalize to root without rewriting data');
 
     await page.click('[data-document-storage-create-folder]');
@@ -198,24 +230,26 @@ async function runDomContract() {
     await folderOpen.click();
     await page.waitForSelector('[data-document-storage-back]');
     assert.ok(!(await visibleText(page)).includes(LEGACY_RESOURCE_TITLE), 'Root-only legacy resource must not leak into an opened empty folder');
+    assert.ok(!(await visibleText(page)).includes(STATIC_RESOURCE_TITLE), 'Root-only static resource must not leak into an opened empty folder');
     await page.click('[data-document-storage-back]');
     await page.waitForSelector(`[data-open-document-folder="${folderId}"]`);
     assert.ok((await visibleText(page)).includes(LEGACY_RESOURCE_TITLE), 'Back must return to the root folder');
 
     const moveControl = page.locator(`[data-move-resource-link="${LEGACY_RESOURCE_ID}"]`).first();
-    assert.strictEqual(await moveControl.evaluate((element) => element.tagName), 'SELECT', 'Move control must be a select for deterministic keyboard access');
-    await moveControl.selectOption(folderId);
+    assert.strictEqual(await moveControl.evaluate((element) => element.tagName), 'SELECT', 'Move control must remain available for deterministic keyboard access');
+
+    await dragResourceTo(page, LEGACY_RESOURCE_ID, `[data-drop-document-folder="${folderId}"]`);
     await page.waitForFunction(({ resourceId, targetFolderId }) => (
       window.state.storage.resourceLinks || []
     ).find((item) => item.id === resourceId)?.folderId === targetFolderId, {
       resourceId: LEGACY_RESOURCE_ID,
       targetFolderId: folderId
     });
-    assert.ok(!(await visibleText(page)).includes(LEGACY_RESOURCE_TITLE), 'Moved resource must leave root immediately');
+    assert.ok(!(await visibleText(page)).includes(LEGACY_RESOURCE_TITLE), 'Resource dragged into a folder must leave root immediately');
 
     await page.click(`[data-open-document-folder="${folderId}"]`);
     await page.waitForSelector('[data-document-storage-back]');
-    assert.ok((await visibleText(page)).includes(LEGACY_RESOURCE_TITLE), 'Moved resource must be visible inside its folder');
+    assert.ok((await visibleText(page)).includes(LEGACY_RESOURCE_TITLE), 'Dragged resource must be visible inside its folder');
     await page.click('[data-document-storage-back]');
 
     const folderCountBeforeDelete = await page.evaluate(() => window.state.storage.resourceFolders.length);
@@ -234,6 +268,63 @@ async function runDomContract() {
     assert.ok(
       /не пуст|содержит|перемест|файл/i.test([...deletionResult.errors, deletionResult.text].join(' ')),
       'Non-empty deletion refusal must explain how to resolve it'
+    );
+
+    await page.click(`[data-open-document-folder="${folderId}"]`);
+    await page.waitForSelector('[data-drop-document-root]');
+    await dragResourceTo(page, LEGACY_RESOURCE_ID, '[data-drop-document-root]');
+    await page.waitForFunction((resourceId) => (
+      window.state.storage.resourceLinks || []
+    ).find((item) => item.id === resourceId)?.folderId === '', LEGACY_RESOURCE_ID);
+    assert.ok(!(await visibleText(page)).includes(LEGACY_RESOURCE_TITLE), 'Resource dragged to root must leave the opened folder immediately');
+
+    await page.click('[data-document-storage-back]');
+    await page.waitForSelector(`[data-document-resource-card][data-document-resource-id="${LEGACY_RESOURCE_ID}"]`);
+    assert.ok((await visibleText(page)).includes(LEGACY_RESOURCE_TITLE), 'Resource dragged back to root must be visible in root');
+    assert.strictEqual(
+      await page.evaluate((resourceId) => (
+        window.state.storage.resourceLinks || []
+      ).find((item) => item.id === resourceId)?.folderId, LEGACY_RESOURCE_ID),
+      '',
+      'Dragging back to root must persist an empty folderId'
+    );
+
+    await page.selectOption('#docGroupFilter', 'all');
+    const staticCard = page.locator('[data-document-resource-card]').filter({ hasText: STATIC_RESOURCE_TITLE }).first();
+    const staticResourceId = await staticCard.getAttribute('data-document-resource-id');
+    assert.ok(staticResourceId?.startsWith('static-resource-'), 'Static cards must receive stable placement ids');
+    assert.strictEqual(await staticCard.locator('[data-delete-resource-link]').count(), 0, 'Static cards must not become deletable');
+
+    await dragResourceTo(page, staticResourceId, `[data-drop-document-folder="${folderId}"]`);
+    await page.waitForFunction(({ resourceId, targetFolderId }) => (
+      window.state.storage.resourceLinks || []
+    ).find((item) => item.id === resourceId)?.folderId === targetFolderId, {
+      resourceId: staticResourceId,
+      targetFolderId: folderId
+    });
+    assert.strictEqual(
+      await page.locator(`[data-document-resource-card][data-document-resource-id="${staticResourceId}"]`).count(),
+      0,
+      'Static card dragged into a folder must leave root'
+    );
+
+    await page.click(`[data-open-document-folder="${folderId}"]`);
+    const movedStaticCard = page.locator(`[data-document-resource-card][data-document-resource-id="${staticResourceId}"]`);
+    await movedStaticCard.waitFor({ state: 'visible' });
+    assert.strictEqual(await movedStaticCard.count(), 1, 'Static placement override must not duplicate the base card');
+    assert.ok((await movedStaticCard.innerText()).includes('база'), 'Moved static card must retain its base source label');
+    assert.strictEqual(await movedStaticCard.locator('[data-delete-resource-link]').count(), 0, 'Moved static card must remain non-deletable');
+
+    await dragResourceTo(page, staticResourceId, '[data-drop-document-root]');
+    await page.waitForFunction((resourceId) => (
+      window.state.storage.resourceLinks || []
+    ).find((item) => item.id === resourceId)?.folderId === '', staticResourceId);
+    await page.click('[data-document-storage-back]');
+    await page.selectOption('#docGroupFilter', 'all');
+    assert.strictEqual(
+      await page.locator(`[data-document-resource-card][data-document-resource-id="${staticResourceId}"]`).count(),
+      1,
+      'Static card dragged back to root must still render exactly once'
     );
 
     assert.deepStrictEqual(runtimeErrors, []);

@@ -14,7 +14,6 @@
     'sku-contour',
     'skus',
     'launches',
-    'launch-control',
     'iu-drr',
     'wb-rating',
     'product-leaderboard',
@@ -34,7 +33,6 @@
     'oos-control',
     'sku-contour',
     'launches',
-    'launch-control',
     'iu-drr',
     'wb-rating',
     'product-leaderboard',
@@ -43,7 +41,7 @@
   ];
 
   window.ALTEA_PORTAL_ACCESS_RULES = window.ALTEA_PORTAL_ACCESS_RULES || {
-    version: '2026-07-08',
+    version: '2026-07-10',
     allViews: ALL_VIEWS,
 
     // Unknown authenticated users see only the dashboard until they are assigned below
@@ -60,7 +58,7 @@
         views: ['dashboard', 'documents', 'sku-plan-fact', 'repricer', 'prices', 'order', 'oos-control', 'iu-drr', 'wb-rating']
       },
       product: {
-        views: ['dashboard', 'data-health', 'documents', 'sku-contour', 'launches', 'launch-control', 'product-leaderboard', 'wb-rating']
+        views: ['dashboard', 'data-health', 'documents', 'sku-contour', 'launches', 'product-leaderboard', 'wb-rating']
       },
       operations: {
         views: ['dashboard', 'control', 'documents', 'order', 'oos-control', 'sku-plan-fact']

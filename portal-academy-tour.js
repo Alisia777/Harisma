@@ -4,7 +4,7 @@
   if (window.__ALTEA_ACADEMY_TOUR__) return;
   window.__ALTEA_ACADEMY_TOUR__ = true;
 
-  var VERSION = '20260710-native-tour6';
+  var VERSION = '20260710-native-tour7';
   var STORAGE_KEY = 'altea.academy.progress.v1';
   var HEAVY_DATA_NOTE = 'Данные обновляются ежедневно в 11:00 по Москве. До этого времени часть показателей может быть неполной.';
   var ACADEMY_PORTAL_TARGETS = {
@@ -34,6 +34,10 @@
     'iu-drr': true,
     'wb-rating': true,
     'product-leaderboard': true
+  };
+
+  var RETIRED_VIEWS = {
+    'launch-control': true
   };
 
   var VIEW_GUIDES = {
@@ -140,14 +144,6 @@
       actions: ['Добавьте или выберите новинку, заполните SKU, owner, MP и план запуска.', 'Создайте чек-лист и назначьте задачи по цене, карточке, контенту и рекламе.'],
       avoid: ['Не переводите новинку в запуск без владельца, статуса подготовки и чек-листа.'],
       workflow: 'Открыть Продукты / Новинки -> добавить или выбрать новинку -> заполнить SKU, owner, MP, план запуска -> статус Подготовка -> создать чек-лист -> назначить задачи.'
-    },
-    'launch-control': {
-      title: 'Запуск новинок',
-      summary: 'Контроль фаз запуска, чек-листов и просрочек по новинкам.',
-      watch: ['Фаза запуска, дедлайны, просрочки и ответственные.', 'Какая задача тормозит вывод товара.'],
-      actions: ['Переводите запуск по фазам только после готовых артефактов.', 'Фиксируйте блокеры задачами.'],
-      avoid: ['Не закрывайте фазу без материалов, цены и карточки.'],
-      workflow: 'Выбрать запуск -> проверить фазу -> найти просрочку -> назначить действие -> обновить статус.'
     },
     'ads-funnel': {
       title: 'Рекламная воронка',
@@ -431,6 +427,8 @@
       .filter(function (button) {
         var view = button.dataset.view || button.getAttribute('data-premium-nav');
         return view
+          && !RETIRED_VIEWS[view]
+          && canonicalViewIsRegistered(view)
           && !button.hidden
           && button.getAttribute('aria-hidden') !== 'true'
           && !button.classList.contains('nav-btn-legacy-hidden')
@@ -453,7 +451,6 @@
       'sku-contour',
       'skus',
       'launches',
-      'launch-control',
       'ads-funnel',
       'iu-drr',
       'wb-rating',
@@ -547,6 +544,36 @@
 
   function normalizeView(view) {
     return String(view || '').trim();
+  }
+
+  function canonicalViewIsRegistered(view) {
+    view = normalizeView(view);
+    if (!view || RETIRED_VIEWS[view]) return false;
+    var button = document.querySelector(ACADEMY_PORTAL_TARGETS.navButton(view));
+    return Boolean(button
+      && !button.hidden
+      && !button.disabled
+      && button.getAttribute('aria-hidden') !== 'true'
+      && button.getAttribute('aria-disabled') !== 'true'
+      && !button.classList.contains('nav-btn-legacy-hidden'));
+  }
+
+  function tourViewIsAvailable(view) {
+    view = normalizeView(view);
+    return Boolean(canonicalViewIsRegistered(view) && firstVisibleOnly(navSelector(view)));
+  }
+
+  function nextAvailableStepIndex(index, direction) {
+    var cursor = Number(index);
+    if (!Number.isFinite(cursor) || cursor < 0 || cursor >= runtime.steps.length) return -1;
+    cursor = Math.floor(cursor);
+    var stepDirection = direction < 0 ? -1 : 1;
+    while (cursor >= 0 && cursor < runtime.steps.length) {
+      var candidate = runtime.steps[cursor];
+      if (!candidate.view || tourViewIsAvailable(candidate.view)) return cursor;
+      cursor += stepDirection;
+    }
+    return -1;
   }
 
   function switchToView(view) {
@@ -1014,7 +1041,13 @@
     runtime.stepToken += 1;
     var token = runtime.stepToken;
     runtime.mode = 'tour';
-    runtime.stepIndex = Math.max(0, Math.min(index, runtime.steps.length - 1));
+    var direction = index < runtime.stepIndex ? -1 : 1;
+    var availableIndex = nextAvailableStepIndex(index, direction);
+    if (availableIndex < 0) {
+      if (direction > 0) renderQuiz();
+      return;
+    }
+    runtime.stepIndex = availableIndex;
     var step = runtime.steps[runtime.stepIndex];
     runtime.stepReadyChecks = 0;
     runtime.stepReady = !step.view;
@@ -1087,6 +1120,12 @@
 
   function checkStepEntry(step, token, attempt) {
     if (token !== runtime.stepToken || !runtime.active || runtime.mode !== 'tour') return;
+    if (!tourViewIsAvailable(step.view)) {
+      var nextIndex = nextAvailableStepIndex(runtime.stepIndex + 1, 1);
+      if (nextIndex >= 0) enterStep(nextIndex);
+      else renderQuiz();
+      return;
+    }
     var routeReady = viewRouteIsActive(step.view);
     var ready = routeReady && stepViewIsReady(step.view);
     runtime.stepReadyChecks = ready ? runtime.stepReadyChecks + 1 : 0;

@@ -9,6 +9,10 @@ const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const RENDER_DELAY_MS = 1400;
+const NEXT_VIEW = ['iu', 'drr'].join('-');
+const PREMIUM_PRESENTATION_SOURCE = fs.readFileSync(path.join(ROOT, 'portal-premium-presentation.js'), 'utf8');
+const ENTRYPOINT_SOURCES = ['index.html', 'live-index.html', path.join('docs', 'index.html')]
+  .map((file) => ({ file, source: fs.readFileSync(path.join(ROOT, file), 'utf8') }));
 
 const MIME = {
   '.css': 'text/css; charset=utf-8',
@@ -19,6 +23,18 @@ const MIME = {
   '.svg': 'image/svg+xml'
 };
 
+function assertLaunchControlIsRetiredFromPrimaryNavigation() {
+  assert.doesNotMatch(
+    PREMIUM_PRESENTATION_SOURCE,
+    /\{[^{}]*\bid\s*:\s*['"]launch-control['"][^{}]*\}/,
+    'launch-control must not be rendered as a primary premium navigation card'
+  );
+  ENTRYPOINT_SOURCES.forEach(({ file, source }) => {
+    assert.doesNotMatch(source, /data-view=['"]launch-control['"]/, `${file} must not register launch-control navigation`);
+    assert.doesNotMatch(source, /id=['"]view-launch-control['"]/, `${file} must not register a launch-control section`);
+  });
+}
+
 function fixtureHtml() {
   return `<!doctype html>
 <html lang="ru">
@@ -28,6 +44,7 @@ function fixtureHtml() {
   <title>Academy navigation selftest</title>
   <style>
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
     html, body { width: 100%; height: 100%; margin: 0; }
     body { color: #f8efe0; background: #08090c; font: 16px/1.4 Arial, sans-serif; }
     .app-shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); width: 100%; height: 100vh; }
@@ -54,10 +71,16 @@ function fixtureHtml() {
       <button class="nav-btn active" data-view="executive"><span>Руководителю</span></button>
       <button class="nav-btn" data-view="sku-plan-fact"><span>План-факт SKU</span></button>
       <button class="nav-btn" data-view="prices"><span>Цены</span></button>
+      <button class="nav-btn" data-view="launches"><span>Новинки</span></button>
+      <button class="nav-btn nav-btn-legacy-hidden" data-view="launch-control" hidden aria-hidden="true" tabindex="-1"><span>Запуск новинок</span></button>
+      <button class="nav-btn" data-view="${NEXT_VIEW}"><span>ИУ / ДРР</span></button>
       <nav class="premium-fixture-nav" aria-label="Премиальная навигация">
         <button class="is-active" data-premium-nav="executive">Руководителю premium</button>
         <button data-premium-nav="sku-plan-fact">План-факт premium</button>
         <button data-premium-nav="prices">Цены premium</button>
+        <button data-premium-nav="launches">Новинки premium</button>
+        <button data-premium-nav="launch-control">Устаревший запуск premium</button>
+        <button data-premium-nav="${NEXT_VIEW}">ИУ / ДРР premium</button>
       </nav>
     </aside>
     <main class="main">
@@ -69,6 +92,9 @@ function fixtureHtml() {
       </section>
       <section class="view" id="view-sku-plan-fact" data-fixture-ready="false"></section>
       <section class="view" id="view-prices" data-fixture-ready="false"></section>
+      <section class="view" id="view-launches" data-fixture-ready="false"></section>
+      <section class="view" id="view-launch-control" data-fixture-ready="false" hidden aria-hidden="true"></section>
+      <section class="view" id="view-${NEXT_VIEW}" data-fixture-ready="false"></section>
     </main>
   </div>
   <script>
@@ -91,6 +117,8 @@ function fixtureHtml() {
       function titleFor(view) {
         if (view === 'sku-plan-fact') return 'План-факт SKU';
         if (view === 'prices') return 'Цены';
+        if (view === 'launches') return 'Новинки';
+        if (view === '${NEXT_VIEW}') return 'ИУ / ДРР';
         return 'Руководителю';
       }
 
@@ -320,6 +348,7 @@ async function assertDelayedTransition(page, view, navStep) {
 }
 
 async function run() {
+  assertLaunchControlIsRetiredFromPrimaryNavigation();
   const server = await serve();
   const port = server.address().port;
   const browser = await chromium.launch({ headless: true });
@@ -334,24 +363,61 @@ async function run() {
       timeout: 15000
     });
     await page.waitForFunction(() => Boolean(window.alteaAcademyTour), null, { timeout: 5000 });
+    assert.strictEqual(await page.locator('.nav-btn[data-view="launch-control"]:visible').count(), 0,
+      'retired legacy launch-control navigation must stay hidden');
+    assert.strictEqual(await page.locator('[data-premium-nav="launch-control"]:visible').count(), 1,
+      'fixture must expose a stale premium button to prove Academy filters retired routes');
     await page.evaluate(() => window.alteaAcademyTour.start('executive'));
+    const visitedTourSteps = [];
     await waitForStep(page, 'nav-executive');
+    visitedTourSteps.push('nav-executive');
     await waitForPrimaryEnabled(page);
     await assertUserScrollLocked(page, 'executive navigation');
 
     await clickNext(page, 'section-executive');
+    visitedTourSteps.push('section-executive');
     await waitForPrimaryEnabled(page);
     await assertStableCard(page, 'executive section');
 
     await assertDelayedTransition(page, 'sku-plan-fact', 'nav-sku-plan-fact');
+    visitedTourSteps.push('nav-sku-plan-fact');
     await clickNext(page, 'section-sku-plan-fact');
+    visitedTourSteps.push('section-sku-plan-fact');
     await waitForPrimaryEnabled(page);
     await assertStableCard(page, 'sku-plan-fact section');
 
     await assertDelayedTransition(page, 'prices', 'nav-prices');
+    visitedTourSteps.push('nav-prices');
     await clickNext(page, 'section-prices');
+    visitedTourSteps.push('section-prices');
     await waitForPrimaryEnabled(page);
     await assertStableCard(page, 'prices section');
+
+    await assertDelayedTransition(page, 'launches', 'nav-launches');
+    visitedTourSteps.push('nav-launches');
+    await clickNext(page, 'section-launches');
+    visitedTourSteps.push('section-launches');
+    await waitForPrimaryEnabled(page);
+    await assertStableCard(page, 'launches section');
+
+    const nextNavStep = `nav-${NEXT_VIEW}`;
+    const nextSectionStep = `section-${NEXT_VIEW}`;
+    await assertDelayedTransition(page, NEXT_VIEW, nextNavStep);
+    visitedTourSteps.push(nextNavStep);
+    await clickNext(page, nextSectionStep);
+    visitedTourSteps.push(nextSectionStep);
+    await waitForPrimaryEnabled(page);
+    await assertStableCard(page, `${NEXT_VIEW} section`);
+
+    assert.deepStrictEqual(
+      visitedTourSteps.slice(-3),
+      ['section-launches', nextNavStep, nextSectionStep],
+      'Academy must continue directly from launches to the next available section'
+    );
+    assert.ok(
+      visitedTourSteps.every((stepId) => !stepId.includes('launch-control')),
+      `Academy exposed retired launch-control steps: ${visitedTourSteps.join(', ')}`
+    );
 
     const result = await page.evaluate(() => ({
       visited: window.__academyFixture.visited,
@@ -362,11 +428,11 @@ async function run() {
       tourActive: document.body.classList.contains('altea-academy-tour-active')
     }));
 
-    assert.deepStrictEqual(result.visited, ['executive', 'sku-plan-fact', 'prices']);
-    assert.deepStrictEqual(result.started, ['sku-plan-fact', 'prices']);
-    assert.deepStrictEqual(result.ready, ['executive', 'sku-plan-fact', 'prices']);
-    assert.strictEqual(result.activeView, 'prices');
-    assert.strictEqual(result.currentStep, 'section-prices');
+    assert.deepStrictEqual(result.visited, ['executive', 'sku-plan-fact', 'prices', 'launches', NEXT_VIEW]);
+    assert.deepStrictEqual(result.started, ['sku-plan-fact', 'prices', 'launches', NEXT_VIEW]);
+    assert.deepStrictEqual(result.ready, ['executive', 'sku-plan-fact', 'prices', 'launches', NEXT_VIEW]);
+    assert.strictEqual(result.activeView, NEXT_VIEW);
+    assert.strictEqual(result.currentStep, nextSectionStep);
     assert.strictEqual(result.tourActive, true);
     assert.deepStrictEqual(errors, []);
   } finally {

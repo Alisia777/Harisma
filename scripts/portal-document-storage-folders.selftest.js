@@ -24,6 +24,7 @@ function assertStaticContracts() {
   const appCore02 = read('app-core-02.js');
   const appCore03 = read('app-core-03.js');
   const teamHotfix = read('portal-team-runtime-hotfix.js');
+  const liveIndex = read('live-index.html');
 
   for (const selector of [
     'data-document-storage-create-folder',
@@ -47,6 +48,16 @@ function assertStaticContracts() {
   assert.match(appCore02, /resourceFolders\s*:\s*Array\.isArray\(parsed\.resourceFolders\)/, 'Storage normalization must preserve resourceFolders');
   assert.match(appCore02, /resourceFolders\s*:\s*snapshot\.resourceFolders/, 'Storage backup/history must preserve resourceFolders');
   assert.match(appCore02, /resourceFolders\s*:\s*Array\.isArray\(imported\.resourceFolders\)/, 'Storage import must preserve resourceFolders');
+  assert.ok(appCore02.includes('hydratePortalStorageBeforeRemote'), 'Local storage must hydrate before remote team initialization');
+  assert.ok(appCore02.includes('__ALTEA_PORTAL_STORAGE_EARLY_HYDRATED__'), 'Early storage hydration must be idempotent');
+  assert.ok(teamHotfix.includes('hydratePortalStorageBeforeRemoteHotfix'), 'Remote pulls must defensively hydrate local storage first');
+  assert.ok(storageModule.includes('persistExactResourceComment'), 'Resource events must persist their exact deterministic comment');
+  assert.ok(!storageModule.includes('window.createComment'), 'Resource events must not use the production createComment override');
+  assert.ok(
+    liveIndex.indexOf('portal-team-runtime-hotfix.js?v=20260710storagefolderpersist1')
+      < liveIndex.indexOf('app-core-10.js?v=20260710delegated-nav1'),
+    'Live entrypoint must install the team persistence guard before primary init'
+  );
 
   for (const [name, source] of [
     ['app-core-03.js', appCore03],
@@ -123,7 +134,7 @@ function serve() {
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server)));
 }
 
-async function installFixture(page) {
+async function installFixture(page, state = fixtureState()) {
   await page.evaluate((payload) => {
     window.state = payload.state;
     window.__alteaAppState = window.state;
@@ -151,22 +162,31 @@ async function installFixture(page) {
     };
     window.__storageErrors = [];
     window.__storageSaveReasons = [];
+    window.__createCommentCalls = 0;
+    window.__persistedComments = [];
+    window.__persistCommentShouldFail = false;
     window.saveLocalStorage = (options = {}) => {
       window.__storageSaveReasons.push(String(options.reason || ''));
       localStorage.setItem('brand-portal-local-v1', JSON.stringify(window.state.storage));
     };
-    window.createComment = async (comment) => {
-      window.state.storage.comments = Array.isArray(window.state.storage.comments) ? window.state.storage.comments : [];
-      const index = window.state.storage.comments.findIndex((item) => item.id === comment.id);
-      if (index >= 0) window.state.storage.comments.splice(index, 1, comment);
-      else window.state.storage.comments.unshift(comment);
-      return comment;
+    window.hasRemoteStore = () => true;
+    window.createComment = async () => {
+      window.__createCommentCalls += 1;
+      throw new Error('Production createComment override must be bypassed for storage events');
     };
-    window.persistComment = async () => {};
+    window.persistComment = async (comment) => {
+      if (window.__persistCommentShouldFail) throw new Error('Simulated remote persistence failure');
+      const index = window.__persistedComments.findIndex((item) => item.id === comment.id);
+      const copy = JSON.parse(JSON.stringify(comment));
+      if (index >= 0) window.__persistedComments.splice(index, 1, copy);
+      else window.__persistedComments.unshift(copy);
+      return copy;
+    };
     window.setView = (view) => {
       window.state.activeView = view;
+      window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view } }));
     };
-  }, { state: fixtureState() });
+  }, { state });
 }
 
 async function visibleText(page) {
@@ -187,6 +207,101 @@ async function dragResourceTo(page, resourceId, targetSelector) {
     'Resource cards must opt into native HTML drag-and-drop'
   );
   await source.dragTo(target);
+}
+
+async function reloadWithStorage(page, port, storage) {
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  const state = fixtureState();
+  state.storage = storage;
+  await installFixture(page, state);
+  await page.addScriptTag({ url: `http://127.0.0.1:${port}/${STORAGE_MODULE}` });
+  await page.evaluate(() => window.__ALTEA_DOCUMENT_STORAGE_V1__.render());
+}
+
+async function assertFolderSurvives(page, folderId, staticResourceId, sourceLabel) {
+  const folderSelector = `[data-open-document-folder="${folderId}"]`;
+  await page.waitForSelector(folderSelector);
+  assert.strictEqual(
+    await page.locator(folderSelector).count(),
+    1,
+    `${sourceLabel}: persisted folder must render exactly once after returning`
+  );
+
+  await page.click(folderSelector);
+  await page.waitForSelector('[data-document-storage-back]');
+  assert.ok(
+    (await visibleText(page)).includes(LEGACY_RESOURCE_TITLE),
+    `${sourceLabel}: user resource placement must survive returning to the folder`
+  );
+  assert.strictEqual(
+    await page.locator(`[data-document-resource-card][data-document-resource-id="${staticResourceId}"]`).count(),
+    1,
+    `${sourceLabel}: static resource placement must survive without duplicating the base card`
+  );
+  await page.click('[data-document-storage-back]');
+  await page.waitForSelector(folderSelector);
+}
+
+async function runEarlyHydrationContract() {
+  const server = await serve();
+  const port = server.address().port;
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+  const folderId = 'boot-race-folder';
+  try {
+    await page.goto(`http://127.0.0.1:${port}/fixture`, { waitUntil: 'domcontentloaded' });
+    await page.evaluate((targetFolderId) => {
+      localStorage.setItem('brand-portal-local-v1', JSON.stringify({
+        comments: [],
+        tasks: [],
+        decisions: [],
+        ownerOverrides: [],
+        resourceLinks: [],
+        resourceFolders: [{
+          id: targetFolderId,
+          title: 'Папка до старта синхронизации',
+          group: 'Общее хранилище',
+          createdAt: '2026-07-10T12:00:00.000Z',
+          updatedAt: '2026-07-10T12:00:00.000Z'
+        }]
+      }));
+    }, folderId);
+    await page.addScriptTag({ url: `http://127.0.0.1:${port}/app-core-01.js` });
+    await page.addScriptTag({ url: `http://127.0.0.1:${port}/app-core-02.js` });
+    const result = await page.evaluate((targetFolderId) => {
+      const hydratedBeforeRemote = (window.__alteaAppState?.storage?.resourceFolders || [])
+        .some((folder) => folder.id === targetFolderId);
+      const remotePartial = {
+        comments: [{
+          id: 'remote-comment',
+          articleKey: 'remote',
+          author: 'Команда',
+          team: 'Команда',
+          type: 'signal',
+          text: 'remote',
+          createdAt: '2026-07-10T12:01:00.000Z'
+        }]
+      };
+      window.__alteaAppState.storage = window.completePortalStorage(
+        remotePartial,
+        window.__alteaAppState.storage
+      );
+      localStorage.setItem('brand-portal-local-v1', JSON.stringify(window.__alteaAppState.storage));
+      const persistedAfterRemote = JSON.parse(localStorage.getItem('brand-portal-local-v1') || '{}');
+      return {
+        earlyFlag: window.__ALTEA_PORTAL_STORAGE_EARLY_HYDRATED__ === true,
+        hydratedBeforeRemote,
+        survivedRemoteSave: (persistedAfterRemote.resourceFolders || [])
+          .some((folder) => folder.id === targetFolderId)
+      };
+    }, folderId);
+    assert.strictEqual(result.earlyFlag, true, 'Early local storage hydration flag must be set');
+    assert.strictEqual(result.hydratedBeforeRemote, true, 'Folder must hydrate before a fast remote pull starts');
+    assert.strictEqual(result.survivedRemoteSave, true, 'Fast remote save must not erase the hydrated folder');
+  } finally {
+    await browser.close();
+    await new Promise((resolve) => server.close(resolve));
+  }
 }
 
 async function runDomContract() {
@@ -327,6 +442,122 @@ async function runDomContract() {
       'Static card dragged back to root must still render exactly once'
     );
 
+    // Persistence regression: put both a user card and a canonical/base card in
+    // the folder, then prove the folder tree can be reconstructed after a route
+    // round-trip, a full localStorage reload, and a comments-only team reload.
+    await dragResourceTo(page, LEGACY_RESOURCE_ID, `[data-drop-document-folder="${folderId}"]`);
+    await page.waitForFunction(({ resourceId, targetFolderId }) => (
+      (window.state.storage.comments || []).some((comment) => (
+        comment.type === 'resource_link'
+        && String(comment.text || '').includes(resourceId)
+        && String(comment.text || '').includes(targetFolderId)
+      ))
+    ), { resourceId: LEGACY_RESOURCE_ID, targetFolderId: folderId });
+
+    await dragResourceTo(page, staticResourceId, `[data-drop-document-folder="${folderId}"]`);
+    await page.waitForFunction(({ resourceId, targetFolderId }) => (
+      (window.state.storage.comments || []).some((comment) => (
+        comment.type === 'resource_link'
+        && String(comment.text || '').includes(resourceId)
+        && String(comment.text || '').includes(targetFolderId)
+      ))
+    ), { resourceId: staticResourceId, targetFolderId: folderId });
+
+    const durableSnapshot = await page.evaluate(({ targetFolderId, resourceIds }) => {
+      const raw = localStorage.getItem('brand-portal-local-v1');
+      const localStorageState = raw ? JSON.parse(raw) : null;
+      return {
+        localStorageState,
+        remoteComments: JSON.parse(JSON.stringify(window.__persistedComments || [])),
+        createCommentCalls: window.__createCommentCalls,
+        folderSavedLocally: Boolean(localStorageState?.resourceFolders?.some((folder) => folder.id === targetFolderId)),
+        resourcesSavedLocally: resourceIds.every((resourceId) => (
+          localStorageState?.resourceLinks?.some((item) => item.id === resourceId && item.folderId === targetFolderId)
+        )),
+        folderEventSaved: Boolean((window.state.storage.comments || []).some((comment) => (
+          comment.type === 'resource_folder' && String(comment.text || '').includes(targetFolderId)
+        ))),
+        resourceEventsSaved: resourceIds.every((resourceId) => (
+          (window.state.storage.comments || []).some((comment) => (
+            comment.type === 'resource_link'
+            && String(comment.text || '').includes(resourceId)
+            && String(comment.text || '').includes(targetFolderId)
+          ))
+        ))
+      };
+    }, { targetFolderId: folderId, resourceIds: [LEGACY_RESOURCE_ID, staticResourceId] });
+    assert.ok(durableSnapshot.localStorageState, 'Folder persistence must write a localStorage snapshot');
+    assert.strictEqual(durableSnapshot.folderSavedLocally, true, 'Created folder must be durable in localStorage');
+    assert.strictEqual(durableSnapshot.resourcesSavedLocally, true, 'Both card placements must be durable in localStorage');
+    assert.strictEqual(durableSnapshot.folderEventSaved, true, 'Created folder must have a synchronized comment event');
+    assert.strictEqual(durableSnapshot.resourceEventsSaved, true, 'Both card placements must have synchronized comment events');
+    assert.strictEqual(durableSnapshot.createCommentCalls, 0, 'Storage sync must bypass the createComment override');
+    assert.strictEqual(
+      durableSnapshot.remoteComments.filter((comment) => comment.type === 'resource_folder').length,
+      1,
+      'Folder sync must keep one deterministic remote event'
+    );
+    assert.strictEqual(
+      durableSnapshot.remoteComments.filter((comment) => comment.type === 'resource_link').length,
+      2,
+      'Repeated moves must update deterministic resource events instead of appending duplicates'
+    );
+
+    await page.click(`[data-open-document-folder="${folderId}"]`);
+    await page.waitForSelector('[data-document-storage-back]');
+    await page.evaluate(() => {
+      window.setView('control');
+      document.getElementById('view-documents')?.classList.remove('active');
+      document.getElementById('view-control')?.classList.add('active');
+      // A route renderer may replace the previous view contents while away.
+      const root = document.getElementById('view-documents');
+      if (root) root.innerHTML = '';
+      window.setView('documents');
+      document.getElementById('view-control')?.classList.remove('active');
+      root?.classList.add('active');
+      // Use the same public renderer invoked by the production route table.
+      window.renderDocuments();
+    });
+    await assertFolderSurvives(page, folderId, staticResourceId, 'SPA route round-trip');
+
+    await reloadWithStorage(page, port, durableSnapshot.localStorageState);
+    await assertFolderSurvives(page, folderId, staticResourceId, 'localStorage reload');
+
+    await page.evaluate(() => localStorage.clear());
+    await reloadWithStorage(page, port, {
+      comments: durableSnapshot.remoteComments,
+      resourceFolders: [],
+      resourceLinks: []
+    });
+    await assertFolderSurvives(page, folderId, staticResourceId, 'comments-only team reload');
+
+    await page.evaluate(() => {
+      window.__persistCommentShouldFail = true;
+    });
+    const failedFolderName = 'Локальная папка при ошибке синхронизации';
+    await page.click('[data-document-storage-create-folder]');
+    await page.waitForSelector('[data-document-storage-folder-form]');
+    await page.fill('[data-document-storage-folder-name]', failedFolderName);
+    await page.click('[data-document-storage-create-folder-submit]');
+    await page.waitForFunction((title) => (
+      window.state.documentStorageStatus?.tone === 'warn'
+      && (window.state.storage.resourceFolders || []).some((folder) => folder.title === title)
+    ), failedFolderName);
+    const failedSyncResult = await page.evaluate((title) => ({
+      message: window.state.documentStorageStatus?.message || '',
+      tone: window.state.documentStorageStatus?.tone || '',
+      localFolderExists: (window.state.storage.resourceFolders || []).some((folder) => folder.title === title),
+      remoteFolderExists: (window.__persistedComments || []).some((comment) => (
+        comment.type === 'resource_folder' && String(comment.text || '').includes(title)
+      )),
+      createCommentCalls: window.__createCommentCalls
+    }), failedFolderName);
+    assert.strictEqual(failedSyncResult.localFolderExists, true, 'Remote failure must not discard the local folder');
+    assert.strictEqual(failedSyncResult.remoteFolderExists, false, 'Failed remote persistence must not report a remote event');
+    assert.strictEqual(failedSyncResult.tone, 'warn', 'Failed remote persistence must show a warning status');
+    assert.match(failedSyncResult.message, /локально|не подтвержд/i, 'Failure status must explain that sync is not confirmed');
+    assert.strictEqual(failedSyncResult.createCommentCalls, 0, 'Failure path must still bypass createComment');
+
     assert.deepStrictEqual(runtimeErrors, []);
   } finally {
     await browser.close();
@@ -336,6 +567,7 @@ async function runDomContract() {
 
 async function main() {
   assertStaticContracts();
+  await runEarlyHydrationContract();
   await runDomContract();
   console.log('portal-document-storage-folders.selftest: ok');
 }

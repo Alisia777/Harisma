@@ -260,6 +260,28 @@
     };
   }
 
+  function hydratePortalStorageBeforeRemoteHotfix() {
+    try {
+      if (typeof window.alteaHydratePortalStorageBeforeRemote === 'function') {
+        return window.alteaHydratePortalStorageBeforeRemote();
+      }
+      if (window.__ALTEA_PORTAL_STORAGE_EARLY_HYDRATED__) return appState()?.storage || null;
+      const app = appState();
+      if (!app || typeof loadLocalStorage !== 'function') return app?.storage || null;
+      const persisted = loadLocalStorage();
+      app.storage = typeof completePortalStorage === 'function'
+        ? completePortalStorage(persisted, app.storage || {})
+        : { ...(app.storage || {}), ...(persisted || {}) };
+      window.__ALTEA_PORTAL_STORAGE_EARLY_HYDRATED__ = true;
+      return app.storage;
+    } catch (error) {
+      console.warn('[portal-team-runtime-hotfix:early-storage]', error);
+      return appState()?.storage || null;
+    }
+  }
+
+  hydratePortalStorageBeforeRemoteHotfix();
+
   function resourceFoldersFromCommentsHotfix(comments = []) {
     return (Array.isArray(comments) ? comments : [])
       .filter((comment) => comment?.articleKey === RESOURCE_ARTICLE_KEY && comment?.type === 'resource_folder')
@@ -381,6 +403,7 @@
   }
 
   async function pullRemoteStateHotfix(rerender = true, options = {}) {
+    hydratePortalStorageBeforeRemoteHotfix();
     if (!hasRemoteStoreHotfix()) return null;
     const app = appState();
     if (!app?.team) return null;
@@ -478,6 +501,7 @@
   }
 
   async function initTeamStoreHotfix() {
+    hydratePortalStorageBeforeRemoteHotfix();
     const app = appState();
     if (!app?.team) return;
     const cfg = config();

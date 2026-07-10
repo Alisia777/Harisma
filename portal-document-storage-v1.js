@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260710-storage-drag-drop-v1';
+  const VERSION = '20260710-storage-folder-persistence-v1';
   const STORAGE_VIEW = 'documents';
   const RESOURCE_ARTICLE_KEY = '__portal_resource_links__';
   const RESOURCE_LINK_MARKER = '[[resource-link:v1]]';
@@ -198,6 +198,7 @@
     state.docFilters.group = String(state.docFilters.group || 'all');
     state.docFilters.type = String(state.docFilters.type || 'all');
     state.docFilters.folderId = String(state.docFilters.folderId || '');
+    state.docFilters.folderReturnGroup = String(state.docFilters.folderReturnGroup || '');
     state.docFilters.folderFormOpen = Boolean(state.docFilters.folderFormOpen);
     state.documentStorageStatus = state.documentStorageStatus && typeof state.documentStorageStatus === 'object'
       ? state.documentStorageStatus
@@ -477,6 +478,26 @@
     if (index >= 0) state.storage.comments.splice(index, 1, comment);
     else state.storage.comments.unshift(comment);
     persistStorage('resource-link-event');
+  }
+
+  function resourceRemoteStoreReady() {
+    try {
+      if (typeof window.hasRemoteStore === 'function') return Boolean(window.hasRemoteStore());
+    } catch (_) {}
+    const state = appState();
+    return Boolean(state.team?.ready && remoteConfig()?.accessToken);
+  }
+
+  async function persistExactResourceComment(comment, warningLabel) {
+    upsertLocalResourceComment(comment);
+    if (!resourceRemoteStoreReady() || typeof window.persistComment !== 'function') return false;
+    try {
+      await window.persistComment(comment);
+      return true;
+    } catch (error) {
+      console.warn(`[document-storage] ${warningLabel}`, error);
+      return false;
+    }
   }
 
   function openFileDb() {
@@ -897,20 +918,7 @@
       createdAt,
       text: `${marker} ${JSON.stringify(payload)}`
     };
-    const hasRemoteSync = Boolean(remoteConfig()?.accessToken);
-    try {
-      if (typeof window.createComment === 'function') {
-        await window.createComment(comment);
-      } else {
-        upsertLocalResourceComment(comment);
-        if (typeof window.persistComment === 'function') await window.persistComment(comment);
-      }
-      return hasRemoteSync;
-    } catch (error) {
-      upsertLocalResourceComment(comment);
-      console.warn('[document-storage] remote event', error);
-      return false;
-    }
+    return persistExactResourceComment(comment, 'remote event');
   }
 
   async function persistResourceFolderEvent(folder, deleted = false) {
@@ -938,20 +946,7 @@
       createdAt,
       text: `${marker} ${JSON.stringify(payload)}`
     };
-    const hasRemoteSync = Boolean(remoteConfig()?.accessToken);
-    try {
-      if (typeof window.createComment === 'function') {
-        await window.createComment(comment);
-      } else {
-        upsertLocalResourceComment(comment);
-        if (typeof window.persistComment === 'function') await window.persistComment(comment);
-      }
-      return hasRemoteSync;
-    } catch (error) {
-      upsertLocalResourceComment(comment);
-      console.warn('[document-storage] remote folder event', error);
-      return false;
-    }
+    return persistExactResourceComment(comment, 'remote folder event');
   }
 
   function upsertLocalResourceLink(item) {
@@ -1231,6 +1226,8 @@
     });
     root.querySelector('[data-document-storage-back]')?.addEventListener('click', () => {
       state.docFilters.folderId = '';
+      state.docFilters.group = state.docFilters.folderReturnGroup || 'all';
+      state.docFilters.folderReturnGroup = '';
       renderDocumentStorage();
     });
     const fileInput = form?.querySelector('input[name="file"]');
@@ -1264,6 +1261,7 @@
       button.addEventListener('click', () => {
         const folder = userResourceFolders().find((item) => item.id === button.dataset.openDocumentFolder);
         if (!folder) return;
+        state.docFilters.folderReturnGroup = state.docFilters.group || 'all';
         state.docFilters.folderId = folder.id;
         state.docFilters.group = folder.group;
         renderDocumentStorage();
@@ -1523,6 +1521,24 @@
     ensureShell: ensureDocumentStorageShell,
     render: renderDocumentStorage
   };
+
+  let previousStorageView = String(appState().activeView || '');
+  window.addEventListener('altea:viewchange', (event) => {
+    const nextView = String(event?.detail?.view || appState().activeView || '');
+    const returnedFromAnotherView = nextView === STORAGE_VIEW
+      && previousStorageView
+      && previousStorageView !== STORAGE_VIEW;
+    previousStorageView = nextView;
+    if (!returnedFromAnotherView) return;
+    const state = ensureStorageShape();
+    if (!state.docFilters.folderId) return;
+    state.docFilters.folderId = '';
+    state.docFilters.group = state.docFilters.folderReturnGroup || 'all';
+    state.docFilters.folderReturnGroup = '';
+    window.setTimeout(() => {
+      if (String(appState().activeView || '') === STORAGE_VIEW) renderDocumentStorage();
+    }, 0);
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', startStorageShellGuard, { once: true });

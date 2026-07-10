@@ -74,37 +74,94 @@ async function authenticateIfNeeded(page) {
   return true;
 }
 
+async function enableLocalAuditViews(page) {
+  await page.evaluate(async () => {
+    const auditViews = ['executive', 'sku-contour', 'prices', 'sku-plan-fact', 'oos-control', 'repricer'];
+    const allViews = Array.from(document.querySelectorAll('.nav-btn[data-view]'))
+      .map((button) => button.dataset.view)
+      .filter(Boolean);
+    const access = window.alteaPortalAccess?.get?.() || window.__ALTEA_PORTAL_ACCESS__;
+    if (access) access.allowedViews = [...new Set([...(access.allowedViews || []), ...allViews, ...auditViews])];
+    if (window.__ALTEA_PORTAL_ACCESS__) window.__ALTEA_PORTAL_ACCESS__ = access;
+    if (window.alteaPortalAccess) {
+      window.alteaPortalAccess.isViewAllowed = () => true;
+      window.alteaPortalAccess.firstView = () => 'dashboard';
+      window.alteaPortalAccess.apply?.();
+    }
+    if (typeof window.ensureViewData === 'function') await window.ensureViewData('sku-contour');
+  });
+}
+
+async function waitForPageCondition(page, condition, argument, timeoutMs, label) {
+  const deadline = Date.now() + timeoutMs;
+  do {
+    const ready = await page.evaluate(condition, argument).catch(() => false);
+    if (ready) return;
+    await page.waitForTimeout(100);
+  } while (Date.now() < deadline);
+  throw new Error(`Timed out waiting for ${label}`);
+}
+
+async function waitForMotionHidden(page) {
+  await waitForPageCondition(page, () => {
+    const stage = document.querySelector('.altea-motion-stage');
+    return !stage || stage.hidden || !stage.classList.contains('is-visible');
+  }, undefined, 30000, 'motion overlay');
+}
+
 async function clickView(page, view) {
-  const selector = `.nav-btn[data-view="${view}"], [data-premium-nav="${view}"]`;
-  const locator = page.locator(selector).first();
+  await waitForMotionHidden(page);
+  const sidebar = page.locator(`.nav-btn[data-view="${view}"]`).first();
+  const premium = page.locator(`[data-premium-nav="${view}"]`).first();
+  const locator = await sidebar.count().then(Boolean).catch(() => false) ? sidebar : premium;
   if (!await locator.count().then(Boolean).catch(() => false)) {
     throw new Error(`Navigation target not found: ${view}`);
   }
   await locator.evaluate((button) => button.click()).catch(async () => {
     await locator.click({ force: true });
   });
-  await page.waitForTimeout(1800);
+  const activated = await waitForPageCondition(page, (targetView) => {
+    const target = document.querySelector(`#view-${targetView}`);
+    const hashView = String(window.location.hash || '').replace(/^#/, '');
+    return Boolean(target?.classList.contains('active')
+      || (window.__alteaAppState?.activeView === targetView && hashView === targetView));
+  }, view, 30000, `view ${view}`).then(() => true).catch(() => false);
+  if (!activated) {
+    const diagnostic = await page.evaluate((targetView) => {
+      const target = document.querySelector(`#view-${targetView}`);
+      const stage = target?.closest?.('[data-premium-stage]');
+      return {
+        targetView,
+        activeView: window.__alteaAppState?.activeView || '',
+        hash: window.location.hash,
+        targetClass: target?.className || '',
+        premiumStage: stage?.dataset?.premiumStage || '',
+        premiumStageHidden: Boolean(stage?.hidden),
+        allowedViews: window.__ALTEA_PORTAL_ACCESS__?.allowedViews || [],
+        buttonHidden: Boolean(document.querySelector(`.nav-btn[data-view="${targetView}"]`)?.hidden)
+      };
+    }, view);
+    throw new Error(`Navigation did not activate: ${JSON.stringify(diagnostic)}`);
+  }
+  await waitForMotionHidden(page);
 }
 
 async function selectOptions(page, selector) {
-  await page.waitForSelector(selector, { state: 'attached', timeout: 30000 });
-  return page.locator(selector).first().evaluate((select) => (
-    Array.from(select.querySelectorAll('option')).map((option) => (
-      (option.textContent || '').replace(/\s+/g, ' ').trim()
-    ))
-  ));
-}
-
-async function waitForOwnerOptions(page, selector, expectedOwners = []) {
-  await page.waitForSelector(selector, { state: 'attached', timeout: 30000 });
-  await page.waitForFunction(({ targetSelector, owners }) => {
+  return page.evaluate((targetSelector) => {
     const select = document.querySelector(targetSelector);
-    if (!select) return false;
-    const options = Array.from(select.querySelectorAll('option')).map((option) => (
+    if (!select) return [];
+    return Array.from(select.querySelectorAll('option')).map((option) => (
       (option.textContent || '').replace(/\s+/g, ' ').trim()
     ));
-    return owners.every((owner) => options.includes(owner));
-  }, { targetSelector: selector, owners: expectedOwners }, { timeout: 45000 });
+  }, selector);
+}
+
+async function waitForOwnerOptions(page, selector) {
+  await waitForPageCondition(page, (targetSelector) => {
+    const select = document.querySelector(targetSelector);
+    if (!select) return false;
+    return select.querySelectorAll('option').length > 1;
+  }, selector, 45000, `owner options ${selector}`);
 }
 
 function missingOptions(expected, actual) {
@@ -131,10 +188,11 @@ async function main() {
       && Array.isArray(window.__alteaAppState?.skus)
       && window.__alteaAppState.skus.length > 0
     ), undefined, { timeout: 90000 });
+    await enableLocalAuditViews(page);
 
     async function expectOwners(view, selector) {
       await clickView(page, view);
-      await waitForOwnerOptions(page, selector, expectedOwners);
+      await waitForOwnerOptions(page, selector);
       const options = await selectOptions(page, selector);
       const missing = missingOptions(expectedOwners, options);
       checks.push({ view, selector, options, missing });
@@ -142,7 +200,7 @@ async function main() {
     }
 
     await expectOwners('executive', '#altea-premium-stage-executive [data-executive-funnel-owner]');
-    await expectOwners('sku-contour', '#view-sku-contour #skuV1Owner');
+    await expectOwners('sku-contour', '#view-sku-contour #skuOwnerFilter');
     await expectOwners('prices', '#view-prices #pwOwnerFilter');
     await expectOwners('sku-plan-fact', '#view-sku-plan-fact #skuPlanFactOwner');
 

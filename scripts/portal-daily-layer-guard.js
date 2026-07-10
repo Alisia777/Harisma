@@ -575,7 +575,9 @@ function inspectPlatformFact(loaded, policy, expectedDate, checks, passports) {
       check.blockingReasons.push(`platform_trends: ${key} orders revenue is lower than units while revenue has rubles`);
     }
     if (point.buyoutRevenue !== null && point.orderRevenue !== null && point.orderRevenue > 0 && point.buyoutRevenue > point.orderRevenue * 1.05) {
-      check.blockingReasons.push(`platform_trends: ${key} buyout revenue ${roundMoney(point.buyoutRevenue)} exceeds orders revenue ${roundMoney(point.orderRevenue)}`);
+      const reason = `platform_trends: ${key} buyout revenue ${roundMoney(point.buyoutRevenue)} exceeds orders revenue ${roundMoney(point.orderRevenue)}`;
+      if (key === 'ya') check.warnings.push(`${reason}; Yandex reports deliveries and new orders by operational day, so timing may differ`);
+      else check.blockingReasons.push(reason);
     }
   }
   if (inactiveEmptyPlatforms.length) {

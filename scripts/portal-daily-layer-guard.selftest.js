@@ -204,6 +204,23 @@ try {
   assert.ok(unitBroken.report.publish.blockingReasons.some((reason) => reason.includes('looks like units')));
 
   buildFixture(dir);
+  const yandexDeliveryTiming = JSON.parse(fs.readFileSync(path.join(dir, 'platform_trends.json'), 'utf8'));
+  yandexDeliveryTiming.platforms.ya.series[0] = {
+    date,
+    revenue: 150,
+    ordersRevenue: 100,
+    buyoutRevenue: 150,
+    units: 2,
+    ordersUnits: 1,
+    buyoutUnits: 2
+  };
+  yandexDeliveryTiming.platforms.all.series[0].revenue = 650;
+  write(dir, 'platform_trends.json', yandexDeliveryTiming);
+  const yandexDeliveryTimingResult = run(options(dir));
+  assert.strictEqual(yandexDeliveryTimingResult.report.publish.allowed, true);
+  assert.ok(yandexDeliveryTimingResult.report.publish.warningReasons.some((reason) => reason.includes('Yandex reports deliveries and new orders')));
+
+  buildFixture(dir);
   const staleExtra = JSON.parse(fs.readFileSync(path.join(dir, 'platform_trends.json'), 'utf8'));
   staleExtra.platforms.goldapple = { series: [{ date: '2026-06-10', revenue: 50, units: 1 }] };
   write(dir, 'platform_trends.json', staleExtra);

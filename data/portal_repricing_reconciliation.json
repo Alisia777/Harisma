@@ -1,43 +1,34 @@
 {
   "schema": "portal-repricing-reconciliation-v1",
-  "generatedAt": "2026-07-09T06:43:52.435Z",
-  "snapshot_id": "repricer:63823377bc717ddf",
+  "generatedAt": "2026-07-10T07:34:50.574Z",
+  "snapshot_id": "repricer:d9ec0507a7a1fa4a",
   "status": "warning",
   "publish_allowed": true,
   "feature_publish_allowed": false,
   "feature_status": "blocked",
-  "business_fingerprint": "2805edfdc198bf7aebeb7aaea7f2698bf3c86fcd2b7c4d23a7d16392e6e82e38",
+  "business_fingerprint": "e6b72eba37cde66e2d6e0ef82f26618af603368d8b12d29ec08296e7a4afe983",
   "summary": {
-    "rows": 826,
-    "eligible_rows": 826,
+    "rows": 873,
+    "eligible_rows": 873,
     "publishable_rows": 0,
-    "blocked_rows": 826,
+    "blocked_rows": 873,
     "publishable_coverage": 0,
     "required_publishable_coverage": 0.01,
     "feature_status": "blocked",
     "publishable_recommendations": 0,
-    "blocked_recommendations": 826,
+    "blocked_recommendations": 873,
     "duplicate_platform_keys": 0,
-    "normalized_article_collisions": 1,
+    "normalized_article_collisions": 0,
     "deduped_exact_duplicates": 2
   },
   "blockingReasons": [],
   "warnings": [
-    "normalized article collisions deduped for review: 1",
-    "repricer feature blocked: 0/826 publishable recommendations",
-    "826 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
+    "repricer feature blocked: 0/873 publishable recommendations",
+    "873 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
     "2 exact duplicate source rows were deterministically deduped"
   ],
   "duplicatePlatformKeys": [],
-  "normalizedArticleCollisions": [
-    {
-      "normalized_article_key": "mikardinplusbad60caps",
-      "articles": [
-        "mikardin plus_bad_60 caps",
-        "mikardin_plus_bad_60_caps"
-      ]
-    }
-  ],
+  "normalizedArticleCollisions": [],
   "dedupedExactDuplicates": [
     {
       "key": "wb|maslodlyavolosparf110ml",
@@ -56,23 +47,21 @@
     },
     {
       "id": "repricer:no-normalized-article-collisions",
-      "status": "warning",
+      "status": "ok",
       "blockingReasons": [],
-      "warnings": [
-        "normalized article collisions deduped for review: 1"
-      ]
+      "warnings": []
     },
     {
       "id": "repricer:feature-readiness",
       "status": "warning",
       "blockingReasons": [],
       "warnings": [
-        "repricer feature blocked: 0/826 publishable recommendations"
+        "repricer feature blocked: 0/873 publishable recommendations"
       ],
       "details": {
-        "eligible_rows": 826,
+        "eligible_rows": 873,
         "publishable_rows": 0,
-        "blocked_rows": 826,
+        "blocked_rows": 873,
         "publishable_coverage": 0,
         "required_publishable_coverage": 0.01,
         "feature_status": "blocked"

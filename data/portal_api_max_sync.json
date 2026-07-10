@@ -1,11 +1,11 @@
 {
   "schema": "portal-api-max-sync-v1",
-  "generatedAt": "2026-07-06T06:04:14.718Z",
-  "startedAt": "2026-07-06T05:53:42.308Z",
+  "generatedAt": "2026-07-10T07:12:09.927Z",
+  "startedAt": "2026-07-10T06:41:59.512Z",
   "mode": "daily",
   "window": {
-    "from": "2026-07-03",
-    "to": "2026-07-05"
+    "from": "2026-06-10",
+    "to": "2026-07-09"
   },
   "platforms": [
     "wb",
@@ -25,15 +25,15 @@
       "id": "wb",
       "name": "WB API marketplace facts",
       "status": "ok",
-      "startedAt": "2026-07-06T05:53:42.442Z",
-      "finishedAt": "2026-07-06T05:54:11.311Z",
+      "startedAt": "2026-07-10T06:41:59.806Z",
+      "finishedAt": "2026-07-10T06:51:30.022Z",
       "exitCode": 0,
       "skippedReason": "",
       "chunkDays": 31,
       "chunks": [
         {
-          "from": "2026-07-03",
-          "to": "2026-07-05",
+          "from": "2026-06-10",
+          "to": "2026-07-09",
           "status": "ok",
           "exitCode": 0,
           "merge": {
@@ -46,15 +46,15 @@
       "id": "ozon",
       "name": "Ozon API marketplace facts",
       "status": "ok",
-      "startedAt": "2026-07-06T05:54:11.311Z",
-      "finishedAt": "2026-07-06T05:54:15.209Z",
+      "startedAt": "2026-07-10T06:51:30.022Z",
+      "finishedAt": "2026-07-10T06:53:34.023Z",
       "exitCode": 0,
       "skippedReason": "",
       "chunkDays": 31,
       "chunks": [
         {
-          "from": "2026-07-03",
-          "to": "2026-07-05",
+          "from": "2026-06-10",
+          "to": "2026-07-09",
           "status": "ok",
           "exitCode": 0,
           "merge": {
@@ -67,15 +67,15 @@
       "id": "yandex-market",
       "name": "Yandex Market API marketplace facts",
       "status": "ok",
-      "startedAt": "2026-07-06T05:54:15.209Z",
-      "finishedAt": "2026-07-06T06:01:19.174Z",
+      "startedAt": "2026-07-10T06:53:34.023Z",
+      "finishedAt": "2026-07-10T07:07:08.180Z",
       "exitCode": 0,
       "skippedReason": "",
       "chunkDays": 31,
       "chunks": [
         {
-          "from": "2026-07-03",
-          "to": "2026-07-05",
+          "from": "2026-06-10",
+          "to": "2026-07-09",
           "status": "ok",
           "exitCode": 0,
           "merge": {
@@ -88,8 +88,8 @@
       "id": "extra-marketplace-workbook",
       "name": "Extra marketplace API workbook build",
       "status": "ok",
-      "startedAt": "2026-07-06T06:01:19.175Z",
-      "finishedAt": "2026-07-06T06:01:28.783Z",
+      "startedAt": "2026-07-10T07:07:08.180Z",
+      "finishedAt": "2026-07-10T07:07:16.899Z",
       "exitCode": 0,
       "skippedReason": ""
     },
@@ -97,8 +97,8 @@
       "id": "extra-marketplace-merge",
       "name": "Extra marketplace API merge",
       "status": "ok",
-      "startedAt": "2026-07-06T06:01:28.783Z",
-      "finishedAt": "2026-07-06T06:01:30.226Z",
+      "startedAt": "2026-07-10T07:07:16.899Z",
+      "finishedAt": "2026-07-10T07:07:18.340Z",
       "exitCode": 0,
       "skippedReason": ""
     },
@@ -106,8 +106,8 @@
       "id": "magnit",
       "name": "Magnit Market daily source normalization",
       "status": "skipped",
-      "startedAt": "2026-07-06T06:01:30.226Z",
-      "finishedAt": "2026-07-06T06:01:30.226Z",
+      "startedAt": "2026-07-10T07:07:18.340Z",
+      "finishedAt": "2026-07-10T07:07:18.340Z",
       "exitCode": 0,
       "skippedReason": "Magnit API is not configured and ALTEA_MAGNIT_SALES_XLSX / ALTEA_MAGNIT_SALES_CSV were not found"
     },
@@ -115,8 +115,8 @@
       "id": "wb-ads",
       "name": "WB ads expense facts with channel overrides",
       "status": "ok",
-      "startedAt": "2026-07-06T06:01:30.226Z",
-      "finishedAt": "2026-07-06T06:02:50.664Z",
+      "startedAt": "2026-07-10T07:07:18.340Z",
+      "finishedAt": "2026-07-10T07:10:19.410Z",
       "exitCode": 0,
       "skippedReason": ""
     },
@@ -124,8 +124,26 @@
       "id": "yandex-ads-summary",
       "name": "Yandex Market ads summary bridge",
       "status": "ok",
-      "startedAt": "2026-07-06T06:02:50.664Z",
-      "finishedAt": "2026-07-06T06:02:50.977Z",
+      "startedAt": "2026-07-10T07:10:19.410Z",
+      "finishedAt": "2026-07-10T07:10:19.756Z",
+      "exitCode": 0,
+      "skippedReason": ""
+    },
+    {
+      "id": "wb-fixed-rate-report",
+      "name": "WB fixed-rate cabinet report refresh",
+      "status": "ok",
+      "startedAt": "2026-07-10T07:10:19.756Z",
+      "finishedAt": "2026-07-10T07:10:21.032Z",
+      "exitCode": 0,
+      "skippedReason": ""
+    },
+    {
+      "id": "wb-iu-logic-rules",
+      "name": "WB IU/DRR fixed-rate logic rules rebuild",
+      "status": "ok",
+      "startedAt": "2026-07-10T07:10:21.032Z",
+      "finishedAt": "2026-07-10T07:10:21.069Z",
       "exitCode": 0,
       "skippedReason": ""
     },
@@ -133,8 +151,8 @@
       "id": "iu-drr",
       "name": "IU/DRR summary rebuild",
       "status": "ok",
-      "startedAt": "2026-07-06T06:02:50.977Z",
-      "finishedAt": "2026-07-06T06:04:10.296Z",
+      "startedAt": "2026-07-10T07:10:21.070Z",
+      "finishedAt": "2026-07-10T07:12:06.582Z",
       "exitCode": 0,
       "skippedReason": ""
     },
@@ -142,8 +160,8 @@
       "id": "sync-health",
       "name": "Portal sync health after API max sync",
       "status": "ok",
-      "startedAt": "2026-07-06T06:04:10.296Z",
-      "finishedAt": "2026-07-06T06:04:10.766Z",
+      "startedAt": "2026-07-10T07:12:06.582Z",
+      "finishedAt": "2026-07-10T07:12:06.965Z",
       "exitCode": 0,
       "skippedReason": ""
     },
@@ -151,8 +169,8 @@
       "id": "data-guard",
       "name": "Portal data guard audit after API max sync",
       "status": "failed",
-      "startedAt": "2026-07-06T06:04:10.766Z",
-      "finishedAt": "2026-07-06T06:04:14.655Z",
+      "startedAt": "2026-07-10T07:12:06.965Z",
+      "finishedAt": "2026-07-10T07:12:09.865Z",
       "exitCode": 1,
       "skippedReason": ""
     }
@@ -162,7 +180,7 @@
       "points": 91,
       "from": "2026-04-01",
       "to": "2026-06-30",
-      "revenue": 3200127
+      "revenue": 2606053
     },
     "letu": {
       "points": 181,
@@ -171,10 +189,10 @@
       "revenue": 6922390
     },
     "megamarket": {
-      "points": 5,
-      "from": "2026-07-01",
-      "to": "2026-07-05",
-      "revenue": 775
+      "points": 70,
+      "from": "2026-05-01",
+      "to": "2026-07-09",
+      "revenue": 8190.6488
     },
     "samokat": {
       "points": 0,
@@ -183,34 +201,34 @@
       "revenue": 0
     },
     "magnit": {
-      "points": 181,
+      "points": 189,
       "from": "2026-01-01",
-      "to": "2026-06-30",
-      "revenue": 389404.13
+      "to": "2026-07-08",
+      "revenue": 433025.8573
     },
     "wb": {
-      "points": 5,
-      "from": "2026-07-01",
-      "to": "2026-07-05",
-      "revenue": 63700859
+      "points": 30,
+      "from": "2026-06-10",
+      "to": "2026-07-09",
+      "revenue": 314955574
     },
     "ozon": {
-      "points": 5,
-      "from": "2026-07-01",
-      "to": "2026-07-05",
-      "revenue": 12035692.25
+      "points": 30,
+      "from": "2026-06-10",
+      "to": "2026-07-09",
+      "revenue": 68854803.18
     },
     "ya": {
-      "points": 186,
+      "points": 190,
       "from": "2026-01-01",
-      "to": "2026-07-05",
-      "revenue": 25305107.9015
+      "to": "2026-07-09",
+      "revenue": 23061009.9015
     },
     "all": {
-      "points": 186,
+      "points": 190,
       "from": "2026-01-01",
-      "to": "2026-07-05",
-      "revenue": 111554355.2807
+      "to": "2026-07-09",
+      "revenue": 416841046.5877
     }
   }
 }

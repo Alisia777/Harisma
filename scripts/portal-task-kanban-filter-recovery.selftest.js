@@ -157,7 +157,7 @@ async function run() {
       motionVisible: Boolean(document.querySelector('.altea-motion-stage.is-visible'))
     }));
 
-    assert.strictEqual(recovered.version, '20260702-task-user-status-persist-v1');
+    assert.strictEqual(recovered.version, '20260709-task-owner-platform-fallback-v1');
     assert.deepStrictEqual(
       {
         search: recovered.search,

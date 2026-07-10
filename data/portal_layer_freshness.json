@@ -1,12 +1,18 @@
 {
-  "generatedAt": "2026-07-09T07:28:28.171Z",
-  "expectedDate": "2026-07-08",
+  "generatedAt": "2026-07-10T07:32:07.340Z",
+  "expectedDate": "2026-07-09",
   "publish": {
     "allowed": false,
     "blockingReasons": [
       "dashboard: Missing source file dashboard.json",
+      "skus: Missing source file skus.json",
+      "platform_trends: Missing source file platform_trends.json",
       "logistics: Missing source file logistics.json",
-      "iu_plan: Layer iu_plan freshness 2026-06-29 is older than expected 2026-07-08",
+      "warehouse_stock_overlay: Missing source file warehouse_stock_overlay.json",
+      "ads_summary: Missing source file ads_summary.json",
+      "iu_drr_summary: Missing source file iu_drr_summary.json",
+      "wb_sales_funnel_report: Missing source file wb_sales_funnel_report.json",
+      "iu_plan: Layer iu_plan freshness 2026-06-29 is older than expected 2026-07-09",
       "product_leaderboard: Missing source file product_leaderboard.json",
       "product_leaderboard_history: Missing source file product_leaderboard_history.json",
       "portal_daily_guard: Missing source file portal_daily_guard.json",
@@ -18,7 +24,7 @@
   "summary": {
     "layerCount": 37,
     "requiredCount": 30,
-    "okCount": 28,
+    "okCount": 22,
     "warningCount": 0
   },
   "warnings": [],
@@ -44,18 +50,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 1266466,
-      "sourceMtime": "2026-07-09T07:14:37.593Z",
-      "rowCount": 0,
-      "generatedAt": "",
-      "freshness": {
-        "date": "2026-07-09",
-        "source": "fileMtime",
-        "value": "2026-07-09T07:14:37.593Z"
-      }
+      "blockingReasons": [
+        "Missing source file skus.json"
+      ],
+      "missing": true
     },
     {
       "name": "platform_trends",
@@ -64,18 +64,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 14225484,
-      "sourceMtime": "2026-07-09T07:14:35.143Z",
-      "rowCount": 0,
-      "generatedAt": "2026-07-09T07:14:35.053Z",
-      "freshness": {
-        "date": "2026-07-08",
-        "source": "latestMarketplaceDate",
-        "value": "2026-07-08"
-      }
+      "blockingReasons": [
+        "Missing source file platform_trends.json"
+      ],
+      "missing": true
     },
     {
       "name": "platform_plan",
@@ -88,13 +82,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 15923,
-      "sourceMtime": "2026-07-09T06:15:25.393Z",
+      "sourceMtime": "2026-07-10T06:37:05.892Z",
       "rowCount": 0,
       "generatedAt": "2026-04-17T22:31:24",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "fileMtime",
-        "value": "2026-07-09T06:15:25.393Z"
+        "value": "2026-07-10T06:37:05.892Z"
       }
     },
     {
@@ -132,18 +126,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 43693,
-      "sourceMtime": "2026-07-09T07:12:52.463Z",
-      "rowCount": 183,
-      "generatedAt": "2026-07-09T07:12:52.460Z",
-      "freshness": {
-        "date": "2026-07-09",
-        "source": "generatedAt",
-        "value": "2026-07-09T07:12:52.460Z"
-      }
+      "blockingReasons": [
+        "Missing source file warehouse_stock_overlay.json"
+      ],
+      "missing": true
     },
     {
       "name": "ads_summary",
@@ -152,18 +140,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 28764686,
-      "sourceMtime": "2026-07-09T07:20:38.032Z",
-      "rowCount": 0,
-      "generatedAt": "2026-07-09T07:20:37.852Z",
-      "freshness": {
-        "date": "2026-07-08",
-        "source": "asOfDate",
-        "value": "2026-07-08"
-      }
+      "blockingReasons": [
+        "Missing source file ads_summary.json"
+      ],
+      "missing": true
     },
     {
       "name": "iu_drr_summary",
@@ -172,18 +154,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 947732,
-      "sourceMtime": "2026-07-09T07:28:26.632Z",
-      "rowCount": 69,
-      "generatedAt": "2026-07-09T07:28:26.623Z",
-      "freshness": {
-        "date": "2026-07-08",
-        "source": "asOfDate",
-        "value": "2026-07-08"
-      }
+      "blockingReasons": [
+        "Missing source file iu_drr_summary.json"
+      ],
+      "missing": true
     },
     {
       "name": "wb_feedbacks_summary",
@@ -195,14 +171,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 9770187,
-      "sourceMtime": "2026-07-09T07:24:41.245Z",
-      "rowCount": 160,
-      "generatedAt": "2026-07-09T07:24:41.155Z",
+      "sourceBytes": 9884793,
+      "sourceMtime": "2026-07-10T07:32:06.123Z",
+      "rowCount": 159,
+      "generatedAt": "2026-07-10T07:32:06.075Z",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "window.to",
-        "value": "2026-07-09"
+        "value": "2026-07-10"
       }
     },
     {
@@ -212,18 +188,12 @@
       "required": true,
       "publish": true,
       "freshnessPolicy": "daily",
-      "ok": true,
+      "ok": false,
       "warnings": [],
-      "blockingReasons": [],
-      "sourceBytes": 236680,
-      "sourceMtime": "2026-07-09T07:28:26.972Z",
-      "rowCount": 109,
-      "generatedAt": "2026-07-09T07:28:26.970Z",
-      "freshness": {
-        "date": "2026-07-08",
-        "source": "period.to",
-        "value": "2026-07-08"
-      }
+      "blockingReasons": [
+        "Missing source file wb_sales_funnel_report.json"
+      ],
+      "missing": true
     },
     {
       "name": "ozon_feedbacks_summary",
@@ -234,10 +204,16 @@
       "freshnessPolicy": "daily",
       "ok": true,
       "warnings": [],
-      "blockingReasons": [
-        "Missing source file ozon_feedbacks_summary.json"
-      ],
-      "missing": true
+      "blockingReasons": [],
+      "sourceBytes": 4277380,
+      "sourceMtime": "2026-07-10T07:31:19.178Z",
+      "rowCount": 163,
+      "generatedAt": "2026-07-10T07:31:19.164Z",
+      "freshness": {
+        "date": "2026-07-09",
+        "source": "window.to",
+        "value": "2026-07-09"
+      }
     },
     {
       "name": "iu_plan",
@@ -249,10 +225,10 @@
       "ok": false,
       "warnings": [],
       "blockingReasons": [
-        "Layer iu_plan freshness 2026-06-29 is older than expected 2026-07-08"
+        "Layer iu_plan freshness 2026-06-29 is older than expected 2026-07-09"
       ],
       "sourceBytes": 8489,
-      "sourceMtime": "2026-07-09T06:15:25.010Z",
+      "sourceMtime": "2026-07-10T06:37:05.554Z",
       "rowCount": 0,
       "generatedAt": "2026-06-29T06:36:28.331Z",
       "freshness": {
@@ -299,14 +275,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 3761836,
-      "sourceMtime": "2026-07-09T07:14:37.963Z",
-      "rowCount": 3103,
-      "generatedAt": "2026-07-09T00:00:00+03:00",
+      "sourceBytes": 3744660,
+      "sourceMtime": "2026-07-10T07:31:49.705Z",
+      "rowCount": 3083,
+      "generatedAt": "2026-07-10T00:00:00+03:00",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "generatedAt",
-        "value": "2026-07-09T00:00:00+03:00"
+        "value": "2026-07-10T00:00:00+03:00"
       }
     },
     {
@@ -320,13 +296,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 679825,
-      "sourceMtime": "2026-07-09T07:14:37.966Z",
+      "sourceMtime": "2026-07-10T07:31:49.708Z",
       "rowCount": 626,
-      "generatedAt": "2026-07-09T00:00:00+03:00",
+      "generatedAt": "2026-07-10T00:00:00+03:00",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "generatedAt",
-        "value": "2026-07-09T00:00:00+03:00"
+        "value": "2026-07-10T00:00:00+03:00"
       }
     },
     {
@@ -340,13 +316,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 1690340,
-      "sourceMtime": "2026-07-09T07:14:37.973Z",
+      "sourceMtime": "2026-07-10T07:31:49.715Z",
       "rowCount": 1576,
-      "generatedAt": "2026-07-09T00:00:00+03:00",
+      "generatedAt": "2026-07-10T00:00:00+03:00",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "generatedAt",
-        "value": "2026-07-09T00:00:00+03:00"
+        "value": "2026-07-10T00:00:00+03:00"
       }
     },
     {
@@ -373,14 +349,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 421764,
-      "sourceMtime": "2026-07-09T07:14:43.485Z",
-      "rowCount": 75,
-      "generatedAt": "2026-07-09T07:14:43.483Z",
+      "sourceBytes": 456615,
+      "sourceMtime": "2026-07-10T07:31:49.978Z",
+      "rowCount": 92,
+      "generatedAt": "2026-07-10T07:31:49.974Z",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "generatedAt",
-        "value": "2026-07-09T07:14:43.483Z"
+        "value": "2026-07-10T07:31:49.974Z"
       }
     },
     {
@@ -393,14 +369,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 7438,
-      "sourceMtime": "2026-07-09T07:28:27.299Z",
+      "sourceBytes": 111554,
+      "sourceMtime": "2026-07-10T07:32:06.628Z",
       "rowCount": 0,
-      "generatedAt": "2026-07-09T07:28:27.297Z",
+      "generatedAt": "2026-07-10T07:32:06.625Z",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "generatedAt",
-        "value": "2026-07-09T07:28:27.297Z"
+        "value": "2026-07-10T07:32:06.625Z"
       }
     },
     {
@@ -414,13 +390,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 324,
-      "sourceMtime": "2026-07-09T07:28:27.808Z",
+      "sourceMtime": "2026-07-10T07:32:07.118Z",
       "rowCount": 0,
-      "generatedAt": "2026-07-09T07:28:27.799Z",
+      "generatedAt": "2026-07-10T07:32:07.110Z",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "generatedAt",
-        "value": "2026-07-09T07:28:27.799Z"
+        "value": "2026-07-10T07:32:07.110Z"
       }
     },
     {
@@ -433,14 +409,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 18405,
-      "sourceMtime": "2026-07-09T07:28:27.808Z",
+      "sourceBytes": 17455,
+      "sourceMtime": "2026-07-10T07:32:07.118Z",
       "rowCount": 0,
-      "generatedAt": "2026-07-09T07:28:27.807Z",
+      "generatedAt": "2026-07-10T07:32:07.117Z",
       "freshness": {
-        "date": "2026-07-08",
+        "date": "2026-07-09",
         "source": "freshness.maxDate",
-        "value": "2026-07-08"
+        "value": "2026-07-09"
       }
     },
     {
@@ -496,13 +472,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 81068,
-      "sourceMtime": "2026-07-09T07:03:36.554Z",
+      "sourceMtime": "2026-07-10T07:03:09.313Z",
       "rowCount": 0,
       "generatedAt": "",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "fileMtime",
-        "value": "2026-07-09T07:03:36.554Z"
+        "value": "2026-07-10T07:03:09.313Z"
       },
       "ageDays": 0.02,
       "maxAgeDays": 2
@@ -518,13 +494,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 172,
-      "sourceMtime": "2026-07-09T07:03:36.555Z",
+      "sourceMtime": "2026-07-10T07:03:09.314Z",
       "rowCount": 0,
       "generatedAt": "",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "fileMtime",
-        "value": "2026-07-09T07:03:36.555Z"
+        "value": "2026-07-10T07:03:09.314Z"
       }
     },
     {
@@ -538,13 +514,13 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 104142,
-      "sourceMtime": "2026-07-09T07:03:36.557Z",
+      "sourceMtime": "2026-07-10T07:03:09.316Z",
       "rowCount": 0,
       "generatedAt": "2026-06-29T07:25:27.285Z",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "fileMtime",
-        "value": "2026-07-09T07:03:36.557Z"
+        "value": "2026-07-10T07:03:09.316Z"
       }
     },
     {
@@ -557,14 +533,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 538541,
-      "sourceMtime": "2026-07-09T07:28:27.405Z",
-      "rowCount": 206,
-      "generatedAt": "2026-07-09T07:28:27.402Z",
+      "sourceBytes": 600351,
+      "sourceMtime": "2026-07-10T07:32:06.729Z",
+      "rowCount": 209,
+      "generatedAt": "2026-07-10T07:32:06.724Z",
       "freshness": {
-        "date": "2026-07-09",
+        "date": "2026-07-10",
         "source": "generatedAt",
-        "value": "2026-07-09T07:28:27.402Z"
+        "value": "2026-07-10T07:32:06.724Z"
       }
     },
     {
@@ -591,8 +567,8 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 3549500,
-      "sourceMtime": "2026-07-09T07:13:14.836Z",
+      "sourceBytes": 3658935,
+      "sourceMtime": "2026-07-10T06:37:05.971Z",
       "rowCount": 0,
       "generatedAt": "2026-07-09T06:43:52.435Z",
       "freshness": {
@@ -611,8 +587,8 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 1009487,
-      "sourceMtime": "2026-07-09T07:13:15.439Z",
+      "sourceBytes": 1036142,
+      "sourceMtime": "2026-07-10T06:37:05.984Z",
       "rowCount": 213,
       "generatedAt": "2026-07-09T06:43:52.435Z",
       "freshness": {
@@ -631,14 +607,14 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 7570245,
-      "sourceMtime": "2026-07-09T07:14:35.278Z",
+      "sourceBytes": 11536823,
+      "sourceMtime": "2026-07-10T07:24:42.986Z",
       "rowCount": 0,
-      "generatedAt": "2026-07-09T07:14:35.079Z",
+      "generatedAt": "2026-07-10T07:24:42.544Z",
       "freshness": {
-        "date": "2026-07-08",
+        "date": "2026-07-09",
         "source": "asOfDate",
-        "value": "2026-07-08"
+        "value": "2026-07-09"
       }
     },
     {
@@ -652,7 +628,7 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 8069948,
-      "sourceMtime": "2026-07-09T06:15:25.657Z",
+      "sourceMtime": "2026-07-10T06:37:06.036Z",
       "rowCount": 0,
       "generatedAt": "2026-07-06T06:17:17.001Z",
       "freshness": {
@@ -660,7 +636,7 @@
         "source": "generatedAt",
         "value": "2026-07-06T06:17:17.001Z"
       },
-      "ageDays": 0.05,
+      "ageDays": 0.04,
       "maxAgeDays": 3
     },
     {
@@ -674,7 +650,7 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 2835449,
-      "sourceMtime": "2026-07-09T06:15:25.520Z",
+      "sourceMtime": "2026-07-10T06:37:05.956Z",
       "rowCount": 0,
       "generatedAt": "2026-07-06T06:17:17.001Z",
       "freshness": {
@@ -682,7 +658,7 @@
         "source": "generatedAt",
         "value": "2026-07-06T06:17:17.001Z"
       },
-      "ageDays": 0.05,
+      "ageDays": 0.04,
       "maxAgeDays": 3
     },
     {

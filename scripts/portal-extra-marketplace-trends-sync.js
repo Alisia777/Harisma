@@ -1783,17 +1783,9 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
   for (const platform of existingPlatforms) {
     const key = canonicalPlatformKey(platform?.key);
     if (EXTRA_PLATFORM_ORDER.includes(key) || key === 'all') continue;
-    const platformNext = key === 'ya'
-      ? {
-          ...platform,
-          series: mergeSeriesFillMissing(
-            platform.series,
-            buildPlatformSeriesFromMonthly(platformTotals.get(key) || new Map(), asOfDate),
-            cutoffDate
-          )
-        }
-      : platform;
-    resultPlatforms.push(platformNext);
+    // Core marketplaces are refreshed by their own APIs earlier in the daily
+    // close. The retail workbook may lag by a day and must not overwrite them.
+    resultPlatforms.push(platform);
   }
 
   const allSeriesMap = new Map();
@@ -2058,6 +2050,9 @@ function updateSmartPriceOverlay(baseOverlay, extraMarketplace, asOfDate, priceS
   const activeExtraPlatforms = new Set(extraPlatformOrder.map((key) => canonicalPlatformKey(key)));
   const next = enrichSmartPriceOverlayWithPrices(baseOverlay, priceSnapshot);
   next.platforms = next.platforms && typeof next.platforms === 'object' ? next.platforms : {};
+  // The price contour stores Yandex Market under `ym`. Marketplace facts use
+  // `ya`, so never let a facts refresh create a second repricer platform.
+  if (next.platforms.ym && next.platforms.ya) delete next.platforms.ya;
   for (const key of Object.keys(next.platforms)) {
     const platformKey = canonicalPlatformKey(key);
     if (EXTRA_PLATFORM_ORDER.includes(platformKey) && !activeExtraPlatforms.has(platformKey)) {
@@ -2067,6 +2062,7 @@ function updateSmartPriceOverlay(baseOverlay, extraMarketplace, asOfDate, priceS
   const platforms = extraMarketplace?.platforms || {};
   for (const [key, bucket] of Object.entries(platforms)) {
     const platformKey = canonicalPlatformKey(key);
+    if (!EXTRA_PLATFORM_ORDER.includes(platformKey)) continue;
     if (!shouldKeepExtraMarketplaceBucket(platformKey, activeExtraPlatforms)) continue;
     const articles = Array.isArray(bucket?.articles) ? bucket.articles : [];
     next.platforms[platformKey] = {

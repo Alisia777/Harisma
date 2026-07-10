@@ -2736,6 +2736,9 @@ async function prepareView(view) {
   const lazyKey = VIEW_DATA_REQUIREMENTS[view];
   const lazyReady = !lazyKey || state.boot.lazyReady?.[lazyKey];
   const lazyPending = lazyKey && state.boot.lazyLoads?.[lazyKey];
+  if (view === 'sku-contour' && lazyPending && Array.isArray(state.skus) && state.skus.length) {
+    scheduleViewRender(view);
+  }
   if (view !== 'control' && lazyKey && !lazyReady && !lazyPending && !viewHasReusableShell(view)) {
     renderViewLoading(`view-${view}`, VIEW_TITLES[view] || 'Экран');
   }
@@ -3055,7 +3058,6 @@ function attachGlobalListeners() {
     applyPortalAccessToNavigation();
     if (!isPortalViewAllowed(state.activeView || 'dashboard')) setView(firstAllowedPortalView());
   });
-  document.querySelectorAll('.nav-btn').forEach((btn) => btn.addEventListener('click', () => setView(btn.dataset.view)));
   window.addEventListener('hashchange', () => {
     const hashView = readViewFromHash();
     if (!hashView || hashView === state.activeView) return;
@@ -3063,6 +3065,12 @@ function attachGlobalListeners() {
   });
 
   document.body.addEventListener('click', (event) => {
+    const navButton = event.target.closest('.nav-btn[data-view]');
+    if (navButton) {
+      event.preventDefault();
+      setView(navButton.dataset.view);
+      return;
+    }
     const openBtn = event.target.closest('[data-open-sku]');
     if (openBtn) {
       event.preventDefault();

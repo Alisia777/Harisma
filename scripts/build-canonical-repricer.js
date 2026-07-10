@@ -414,6 +414,54 @@ function duplicateBusinessSignature(row = {}) {
   });
 }
 
+function duplicateSourcePreference(row = {}) {
+  const freshness = priceDate(row) || '';
+  const completeness = [
+    firstNumber(row.currentFillPrice, row.currentPrice),
+    firstNumber(row.currentClientPrice),
+    firstNumber(row.manualMinPrice, row.minPrice, row.hardMinPrice, row.workingZoneFrom),
+    firstNumber(row.manualMaxPrice, row.workingZoneTo, row.maxPrice),
+    firstNumber(row.costRub, row.cost, row.costPrice)
+  ].filter((value) => value !== null).length;
+  return { freshness, completeness, signature: duplicateSignature(row) };
+}
+
+function preferDuplicateSourceRow(left = {}, right = {}) {
+  const leftPreference = duplicateSourcePreference(left);
+  const rightPreference = duplicateSourcePreference(right);
+  if (leftPreference.freshness !== rightPreference.freshness) {
+    return leftPreference.freshness > rightPreference.freshness ? left : right;
+  }
+  if (leftPreference.completeness !== rightPreference.completeness) {
+    return leftPreference.completeness > rightPreference.completeness ? left : right;
+  }
+  return leftPreference.signature <= rightPreference.signature ? left : right;
+}
+
+function dedupeExactArticleRows(rows = []) {
+  const selected = [];
+  const selectedIndex = new Map();
+  const duplicates = [];
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const articleKey = String(row?.articleKey || row?.article || '').trim();
+    const normalizedArticle = normalizeKey(articleKey);
+    if (!normalizedArticle) {
+      selected.push(row);
+      continue;
+    }
+    const key = `${normalizedArticle}|${articleKey}`;
+    if (!selectedIndex.has(key)) {
+      selectedIndex.set(key, selected.length);
+      selected.push(row);
+      continue;
+    }
+    const index = selectedIndex.get(key);
+    selected[index] = preferDuplicateSourceRow(selected[index], row);
+    duplicates.push({ normalizedArticle, articleKey });
+  }
+  return { rows: selected, duplicates };
+}
+
 function buildCanonicalSide({
   sourceRow,
   supportRow,
@@ -589,7 +637,11 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
 
   PLATFORM_KEYS.forEach((platform) => {
     const seen = new Map();
-    platformRows(merged, platform).forEach((sourceRow) => {
+    const dedupedSource = dedupeExactArticleRows(platformRows(merged, platform));
+    dedupedSource.duplicates.forEach(({ normalizedArticle, articleKey }) => {
+      dedupedExactDuplicates.push({ key: `${platform}|${normalizedArticle}`, articleKey });
+    });
+    dedupedSource.rows.forEach((sourceRow) => {
       const articleKey = String(sourceRow?.articleKey || sourceRow?.article || '').trim();
       const normalizedArticle = normalizeKey(articleKey);
       if (!normalizedArticle) return;

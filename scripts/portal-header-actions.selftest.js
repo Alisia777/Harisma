@@ -42,12 +42,7 @@ async function unlockPortal(page) {
     window.__ALTEA_PORTAL_ACCESS__ = {
       email: 'header-actions.selftest@qeep.life',
       roles: ['employee'],
-      allowedViews: [
-        'dashboard', 'data-health', 'control', 'executive', 'sku-plan-fact',
-        'repricer', 'prices', 'order', 'oos-control', 'sku-contour',
-        'launches', 'launch-control', 'iu-drr', 'wb-rating',
-        'product-leaderboard', 'meetings', 'documents'
-      ]
+      allowedViews: ['dashboard']
     };
     document.body.classList.remove('portal-auth-locked');
     document.getElementById('portalAuthScreen')?.remove();

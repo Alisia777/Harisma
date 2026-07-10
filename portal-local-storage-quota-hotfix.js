@@ -97,6 +97,8 @@
       tasks: compactArray(parsed.tasks, 3000, 3),
       decisions: compactArray(parsed.decisions, 1000, 3),
       ownerOverrides: compactArray(parsed.ownerOverrides, 3000, 3),
+      resourceLinks: compactArray(parsed.resourceLinks, 500, 3),
+      resourceFolders: compactArray(parsed.resourceFolders, 300, 3),
       productLifecycleOverrides: compactArray(parsed.productLifecycleOverrides, 3000, 3),
       taskAttachments: (Array.isArray(parsed.taskAttachments) ? parsed.taskAttachments : []).slice(0, 2000).map(cleanAttachment).filter(function (item) {
         return item.taskId && item.objectPath;

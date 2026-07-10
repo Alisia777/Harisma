@@ -1,6 +1,8 @@
 const TEAM_RESOURCE_ARTICLE_KEY = '__portal_resource_links__';
 const TEAM_RESOURCE_LINK_MARKER = '[[resource-link:v1]]';
 const TEAM_RESOURCE_DELETE_MARKER = '[[resource-link-delete:v1]]';
+const TEAM_RESOURCE_FOLDER_MARKER = '[[resource-folder:v1]]';
+const TEAM_RESOURCE_FOLDER_DELETE_MARKER = '[[resource-folder-delete:v1]]';
 
 function resourceSyncHash(value = '') {
   const str = String(value || '');
@@ -50,6 +52,7 @@ function normalizeResourceLinkForSync(raw = {}, fallback = {}) {
     href: String(raw.href || raw.url || raw.link || fallback.href || '').trim(),
     description: String(raw.description || fallback.description || '').trim(),
     group: String(raw.group || fallback.group || 'Общее хранилище').trim() || 'Общее хранилище',
+    folderId: String(raw.folderId || fallback.folderId || '').trim(),
     type: String(raw.type || fallback.type || 'Ссылка').trim() || 'Ссылка',
     owner: String(raw.owner || fallback.owner || '').trim(),
     fileName: String(raw.fileName || raw.name || fallback.fileName || '').trim(),
@@ -61,6 +64,7 @@ function normalizeResourceLinkForSync(raw = {}, fallback = {}) {
     objectPath: String(raw.objectPath || fallback.objectPath || '').trim(),
     sizeMb: String(raw.sizeMb || fallback.sizeMb || '').trim(),
     createdAt,
+    updatedAt: String(raw.updatedAt || fallback.updatedAt || createdAt).trim(),
     source: 'user'
   };
   return resourceSyncKey(item) ? item : null;
@@ -108,6 +112,63 @@ function mergeResourceLinksWithCommentEvents(localLinks = [], comments = []) {
   return [...merged.values()].sort((left, right) => resourceSyncStamp(right) - resourceSyncStamp(left)).slice(0, 500);
 }
 
+function normalizeResourceFolderForSync(raw = {}, fallback = {}) {
+  if (!raw || typeof raw !== 'object') return null;
+  const title = String(raw.title || raw.name || fallback.title || '').trim();
+  if (!title) return null;
+  const createdAt = String(raw.createdAt || fallback.createdAt || new Date().toISOString()).trim();
+  const group = String(raw.group || fallback.group || 'Общее хранилище').trim() || 'Общее хранилище';
+  const id = String(raw.id || fallback.id || resourceSyncId('resource-folder', `${title}|${group}|${createdAt}`)).trim();
+  if (!id) return null;
+  return {
+    id,
+    title,
+    description: String(raw.description || raw.note || fallback.description || '').trim(),
+    group,
+    owner: String(raw.owner || raw.createdBy || fallback.owner || '').trim(),
+    createdAt,
+    updatedAt: String(raw.updatedAt || fallback.updatedAt || createdAt).trim()
+  };
+}
+
+function resourceFoldersFromCommentsForSync(comments = []) {
+  return (Array.isArray(comments) ? comments : [])
+    .filter((comment) => comment?.articleKey === TEAM_RESOURCE_ARTICLE_KEY && comment?.type === 'resource_folder')
+    .map((comment) => {
+      const payload = readResourceSyncPayload(comment.text, TEAM_RESOURCE_FOLDER_MARKER);
+      return payload ? normalizeResourceFolderForSync(payload, {
+        createdAt: comment.createdAt,
+        owner: comment.author
+      }) : null;
+    })
+    .filter(Boolean);
+}
+
+function deletedResourceFolderIdsFromCommentsForSync(comments = []) {
+  const deleted = new Set();
+  (Array.isArray(comments) ? comments : [])
+    .filter((comment) => comment?.articleKey === TEAM_RESOURCE_ARTICLE_KEY && comment?.type === 'resource_folder_delete')
+    .forEach((comment) => {
+      const payload = readResourceSyncPayload(comment.text, TEAM_RESOURCE_FOLDER_DELETE_MARKER);
+      const id = String(payload?.id || '').trim();
+      if (id) deleted.add(id);
+    });
+  return deleted;
+}
+
+function mergeResourceFoldersWithCommentEvents(localFolders = [], comments = []) {
+  const deleted = deletedResourceFolderIdsFromCommentsForSync(comments);
+  const merged = new Map();
+  [...resourceFoldersFromCommentsForSync(comments), ...(Array.isArray(localFolders) ? localFolders : []).map((item) => normalizeResourceFolderForSync(item))]
+    .filter(Boolean)
+    .forEach((folder) => {
+      if (!folder.id || deleted.has(folder.id)) return;
+      const current = merged.get(folder.id);
+      if (!current || resourceSyncStamp(folder) >= resourceSyncStamp(current)) merged.set(folder.id, folder);
+    });
+  return [...merged.values()].sort((left, right) => resourceSyncStamp(right) - resourceSyncStamp(left)).slice(0, 300);
+}
+
 function resourceLinkCommentForSync(item = {}) {
   const link = normalizeResourceLinkForSync(item);
   if (!link) return null;
@@ -118,27 +179,63 @@ function resourceLinkCommentForSync(item = {}) {
     author: link.owner || state.team?.member?.name || 'Команда',
     team: 'Хранилище',
     type: 'resource_link',
-    createdAt: link.createdAt || new Date().toISOString(),
+    createdAt: link.updatedAt || link.createdAt || new Date().toISOString(),
     text: `${TEAM_RESOURCE_LINK_MARKER} ${JSON.stringify(link)}`
+  });
+}
+
+function resourceFolderCommentForSync(item = {}) {
+  const folder = normalizeResourceFolderForSync(item);
+  if (!folder) return null;
+  return normalizeComment({
+    id: resourceSyncId('resource-folder', folder.id),
+    articleKey: TEAM_RESOURCE_ARTICLE_KEY,
+    author: folder.owner || state.team?.member?.name || 'Команда',
+    team: 'Хранилище',
+    type: 'resource_folder',
+    createdAt: folder.updatedAt || folder.createdAt || new Date().toISOString(),
+    text: `${TEAM_RESOURCE_FOLDER_MARKER} ${JSON.stringify(folder)}`
   });
 }
 
 function ensureResourceLinksHaveCommentEvents() {
   if (!state?.storage || !Array.isArray(state.storage.resourceLinks) || !state.storage.resourceLinks.length) return;
   state.storage.comments = Array.isArray(state.storage.comments) ? state.storage.comments : [];
-  const existingKeys = new Set(resourceLinksFromCommentsForSync(state.storage.comments).map(resourceSyncKey).filter(Boolean));
+  const existingByKey = new Map(resourceLinksFromCommentsForSync(state.storage.comments).map((item) => [resourceSyncKey(item), item]).filter(([key]) => key));
   const additions = [];
   state.storage.resourceLinks.forEach((item) => {
     const normalized = normalizeResourceLinkForSync(item);
     const key = resourceSyncKey(normalized || {});
-    if (!normalized || !key || existingKeys.has(key)) return;
+    if (!normalized || !key) return;
+    const existing = existingByKey.get(key);
+    if (existing && resourceSyncStamp(existing) >= resourceSyncStamp(normalized)) return;
     const comment = resourceLinkCommentForSync(normalized);
     if (!comment) return;
     additions.push(comment);
-    existingKeys.add(key);
+    existingByKey.set(key, normalized);
   });
   if (additions.length) state.storage.comments = mergeRemoteListWithLocal(state.storage.comments, additions, normalizeComment);
   state.storage.resourceLinks = mergeResourceLinksWithCommentEvents(state.storage.resourceLinks, state.storage.comments);
+}
+
+function ensureResourceFoldersHaveCommentEvents() {
+  if (!state?.storage || !Array.isArray(state.storage.resourceFolders) || !state.storage.resourceFolders.length) return;
+  state.storage.comments = Array.isArray(state.storage.comments) ? state.storage.comments : [];
+  const deletedIds = deletedResourceFolderIdsFromCommentsForSync(state.storage.comments);
+  const existingById = new Map(resourceFoldersFromCommentsForSync(state.storage.comments).map((folder) => [folder.id, folder]));
+  const additions = [];
+  state.storage.resourceFolders.forEach((item) => {
+    const folder = normalizeResourceFolderForSync(item);
+    if (!folder || deletedIds.has(folder.id)) return;
+    const existing = existingById.get(folder.id);
+    if (existing && resourceSyncStamp(existing) >= resourceSyncStamp(folder)) return;
+    const comment = resourceFolderCommentForSync(folder);
+    if (!comment) return;
+    additions.push(comment);
+    existingById.set(folder.id, folder);
+  });
+  if (additions.length) state.storage.comments = mergeRemoteListWithLocal(state.storage.comments, additions, normalizeComment);
+  state.storage.resourceFolders = mergeResourceFoldersWithCommentEvents(state.storage.resourceFolders, state.storage.comments);
 }
 
 async function initTeamStore() {
@@ -1218,6 +1315,7 @@ async function pullRemoteState(rerender = true) {
       if (commentsLoaded) {
         state.storage.comments = mergeRemoteListWithLocal(state.storage.comments || [], commentRows.map(fromRemoteComment), normalizeComment);
         state.storage.resourceLinks = mergeResourceLinksWithCommentEvents(state.storage.resourceLinks || [], state.storage.comments);
+        state.storage.resourceFolders = mergeResourceFoldersWithCommentEvents(state.storage.resourceFolders || [], state.storage.comments);
       }
       if (decisionsLoaded) state.storage.decisions = mergeRemoteListWithLocal(state.storage.decisions || [], decisionRows.map(fromRemoteDecision), normalizeDecision);
       if (ownersLoaded) state.storage.ownerOverrides = mergeRemoteListWithLocal(
@@ -1272,6 +1370,7 @@ async function pushStateToRemote() {
     const staleAutoTaskRows = remoteTaskRows.filter((row) => row?.source === 'auto');
     if (staleAutoTaskRows.length) await purgeRemoteAutoTasks(staleAutoTaskRows);
     ensureResourceLinksHaveCommentEvents();
+    ensureResourceFoldersHaveCommentEvents();
     await Promise.all([
       upsertRemote(TEAM_TABLES.tasks, (state.storage.tasks || []).map(remoteTaskRow), 'id'),
       upsertRemote(TEAM_TABLES.comments, (state.storage.comments || []).map(remoteCommentRow), 'id'),
@@ -1319,6 +1418,7 @@ async function createComment(comment) {
   state.storage.comments = mergeRemoteListWithLocal(state.storage.comments || [], [normalized], normalizeComment);
   if (normalized.articleKey === TEAM_RESOURCE_ARTICLE_KEY) {
     state.storage.resourceLinks = mergeResourceLinksWithCommentEvents(state.storage.resourceLinks || [], state.storage.comments);
+    state.storage.resourceFolders = mergeResourceFoldersWithCommentEvents(state.storage.resourceFolders || [], state.storage.comments);
   }
   saveLocalStorage({ reason: 'comment-create' });
   await persistComment(normalized);

@@ -130,6 +130,8 @@
   const RESOURCE_ARTICLE_KEY = '__portal_resource_links__';
   const RESOURCE_LINK_MARKER = '[[resource-link:v1]]';
   const RESOURCE_DELETE_MARKER = '[[resource-link-delete:v1]]';
+  const RESOURCE_FOLDER_MARKER = '[[resource-folder:v1]]';
+  const RESOURCE_FOLDER_DELETE_MARKER = '[[resource-folder-delete:v1]]';
 
   function resourceSyncHashHotfix(value = '') {
     const str = String(value || '');
@@ -179,6 +181,7 @@
       href: String(raw.href || raw.url || raw.link || fallback.href || '').trim(),
       description: String(raw.description || fallback.description || '').trim(),
       group: String(raw.group || fallback.group || 'Общее хранилище').trim() || 'Общее хранилище',
+      folderId: String(raw.folderId || fallback.folderId || '').trim(),
       type: String(raw.type || fallback.type || 'Ссылка').trim() || 'Ссылка',
       owner: String(raw.owner || fallback.owner || '').trim(),
       fileName: String(raw.fileName || raw.name || fallback.fileName || '').trim(),
@@ -190,6 +193,7 @@
       objectPath: String(raw.objectPath || fallback.objectPath || '').trim(),
       sizeMb: String(raw.sizeMb || fallback.sizeMb || '').trim(),
       createdAt,
+      updatedAt: String(raw.updatedAt || fallback.updatedAt || createdAt).trim(),
       source: 'user'
     };
     return resourceKeyHotfix(item) ? item : null;
@@ -235,6 +239,63 @@
         if (!current || resourceStampHotfix(item) >= resourceStampHotfix(current)) merged.set(key, item);
       });
     return [...merged.values()].sort((left, right) => resourceStampHotfix(right) - resourceStampHotfix(left)).slice(0, 500);
+  }
+
+  function normalizeResourceFolderHotfix(raw = {}, fallback = {}) {
+    if (!raw || typeof raw !== 'object') return null;
+    const title = String(raw.title || raw.name || fallback.title || '').trim();
+    if (!title) return null;
+    const createdAt = String(raw.createdAt || fallback.createdAt || new Date().toISOString()).trim();
+    const group = String(raw.group || fallback.group || 'Общее хранилище').trim() || 'Общее хранилище';
+    const id = String(raw.id || fallback.id || resourceSyncIdHotfix('resource-folder', `${title}|${group}|${createdAt}`)).trim();
+    if (!id) return null;
+    return {
+      id,
+      title,
+      description: String(raw.description || raw.note || fallback.description || '').trim(),
+      group,
+      owner: String(raw.owner || raw.createdBy || fallback.owner || '').trim(),
+      createdAt,
+      updatedAt: String(raw.updatedAt || fallback.updatedAt || createdAt).trim()
+    };
+  }
+
+  function resourceFoldersFromCommentsHotfix(comments = []) {
+    return (Array.isArray(comments) ? comments : [])
+      .filter((comment) => comment?.articleKey === RESOURCE_ARTICLE_KEY && comment?.type === 'resource_folder')
+      .map((comment) => {
+        const payload = readResourcePayloadHotfix(comment.text, RESOURCE_FOLDER_MARKER);
+        return payload ? normalizeResourceFolderHotfix(payload, {
+          createdAt: comment.createdAt,
+          owner: comment.author
+        }) : null;
+      })
+      .filter(Boolean);
+  }
+
+  function deletedResourceFolderIdsFromCommentsHotfix(comments = []) {
+    const deleted = new Set();
+    (Array.isArray(comments) ? comments : [])
+      .filter((comment) => comment?.articleKey === RESOURCE_ARTICLE_KEY && comment?.type === 'resource_folder_delete')
+      .forEach((comment) => {
+        const payload = readResourcePayloadHotfix(comment.text, RESOURCE_FOLDER_DELETE_MARKER);
+        const id = String(payload?.id || '').trim();
+        if (id) deleted.add(id);
+      });
+    return deleted;
+  }
+
+  function mergeResourceFoldersWithCommentsHotfix(localFolders = [], comments = []) {
+    const deleted = deletedResourceFolderIdsFromCommentsHotfix(comments);
+    const merged = new Map();
+    [...resourceFoldersFromCommentsHotfix(comments), ...(Array.isArray(localFolders) ? localFolders : []).map((item) => normalizeResourceFolderHotfix(item))]
+      .filter(Boolean)
+      .forEach((folder) => {
+        if (!folder.id || deleted.has(folder.id)) return;
+        const current = merged.get(folder.id);
+        if (!current || resourceStampHotfix(folder) >= resourceStampHotfix(current)) merged.set(folder.id, folder);
+      });
+    return [...merged.values()].sort((left, right) => resourceStampHotfix(right) - resourceStampHotfix(left)).slice(0, 300);
   }
 
   function mergeRemoteTasksWithLocalHotfix(remoteTasks = []) {
@@ -370,6 +431,7 @@
           tasks: mergeRemoteTasksWithLocalHotfix(taskRows.map(fromRemoteTask)),
           comments: mergedComments,
           resourceLinks: mergeResourceLinksWithCommentsHotfix(previousStorage.resourceLinks || [], mergedComments),
+          resourceFolders: mergeResourceFoldersWithCommentsHotfix(previousStorage.resourceFolders || [], mergedComments),
           decisions: mergeRemoteListWithLocalHotfix(previousStorage.decisions || [], decisionRows.map(fromRemoteDecision), normalizeDecision),
           ownerOverrides: mergeRemoteListWithLocalHotfix(
             previousStorage.ownerOverrides || [],

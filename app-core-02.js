@@ -256,6 +256,34 @@ function normalizeAutoTaskHistory(history = []) {
     .slice(0, AUTO_TASK_HISTORY_LIMIT);
 }
 
+function normalizeStoredResourceLink(item = {}) {
+  if (!item || typeof item !== 'object') return null;
+  return {
+    ...item,
+    folderId: String(item.folderId || '').trim(),
+    updatedAt: String(item.updatedAt || item.createdAt || '').trim()
+  };
+}
+
+function normalizeStoredResourceFolder(item = {}) {
+  if (!item || typeof item !== 'object') return null;
+  const title = String(item.title || item.name || '').trim();
+  if (!title) return null;
+  const group = String(item.group || '\u041e\u0431\u0449\u0435\u0435 \u0445\u0440\u0430\u043d\u0438\u043b\u0438\u0449\u0435').trim() || '\u041e\u0431\u0449\u0435\u0435 \u0445\u0440\u0430\u043d\u0438\u043b\u0438\u0449\u0435';
+  const createdAt = String(item.createdAt || '').trim();
+  const id = String(item.id || stableId('resource-folder', `${title}|${group}|${createdAt}`)).trim();
+  if (!id) return null;
+  return {
+    id,
+    title,
+    description: String(item.description || item.note || '').trim(),
+    group,
+    owner: String(item.owner || item.createdBy || '').trim(),
+    createdAt,
+    updatedAt: String(item.updatedAt || createdAt).trim()
+  };
+}
+
 function normalizePortalStorageSnapshot(source = {}) {
   const parsed = source && typeof source === 'object' ? source : {};
   const defaults = defaultStorage();
@@ -265,7 +293,8 @@ function normalizePortalStorageSnapshot(source = {}) {
     tasks: Array.isArray(parsed.tasks) ? normalizeStorageTasks(parsed.tasks, 'manual') : [],
     decisions: Array.isArray(parsed.decisions) ? parsed.decisions.map(normalizeDecision) : [],
     ownerOverrides: Array.isArray(parsed.ownerOverrides) ? parsed.ownerOverrides.map(normalizeOwnerOverride) : [],
-    resourceLinks: Array.isArray(parsed.resourceLinks) ? parsed.resourceLinks.filter((item) => item && typeof item === 'object') : [],
+    resourceLinks: Array.isArray(parsed.resourceLinks) ? parsed.resourceLinks.map(normalizeStoredResourceLink).filter(Boolean) : [],
+    resourceFolders: Array.isArray(parsed.resourceFolders) ? parsed.resourceFolders.map(normalizeStoredResourceFolder).filter(Boolean) : [],
     productLifecycleOverrides: Array.isArray(parsed.productLifecycleOverrides) ? parsed.productLifecycleOverrides.map(normalizeProductLifecycleOverride).filter((item) => item.articleKey) : [],
     taskAttachments: Array.isArray(parsed.taskAttachments) ? parsed.taskAttachments.map(normalizeTaskAttachment).filter((item) => item.taskId && item.objectPath) : [],
     autoTaskSnapshot: normalizeAutoTaskSnapshot(parsed.autoTaskSnapshot || defaults.autoTaskSnapshot),
@@ -336,6 +365,7 @@ function portalStorageHistoryPayload(source = {}) {
     decisions: snapshot.decisions,
     ownerOverrides: snapshot.ownerOverrides,
     resourceLinks: snapshot.resourceLinks,
+    resourceFolders: snapshot.resourceFolders,
     productLifecycleOverrides: snapshot.productLifecycleOverrides,
     taskAttachments: snapshot.taskAttachments,
     autoTaskSnapshot: snapshot.autoTaskSnapshot,
@@ -359,6 +389,7 @@ function portalStorageHistoryCounts(payload = {}) {
     decisions: Array.isArray(payload.decisions) ? payload.decisions.length : 0,
     ownerOverrides: Array.isArray(payload.ownerOverrides) ? payload.ownerOverrides.length : 0,
     resourceLinks: Array.isArray(payload.resourceLinks) ? payload.resourceLinks.length : 0,
+    resourceFolders: Array.isArray(payload.resourceFolders) ? payload.resourceFolders.length : 0,
     taskAttachments: Array.isArray(payload.taskAttachments) ? payload.taskAttachments.length : 0,
     autoTaskHistory: Array.isArray(payload.autoTaskHistory) ? payload.autoTaskHistory.length : 0,
     promoEvents: Array.isArray(payload.promoEvents) ? payload.promoEvents.length : 0
@@ -987,6 +1018,7 @@ function mergeImportedStorage(imported) {
     decisions: Array.isArray(imported.decisions) ? imported.decisions : [],
     ownerOverrides: Array.isArray(imported.ownerOverrides) ? imported.ownerOverrides : [],
     resourceLinks: Array.isArray(imported.resourceLinks) ? imported.resourceLinks : [],
+    resourceFolders: Array.isArray(imported.resourceFolders) ? imported.resourceFolders : [],
     productLifecycleOverrides: Array.isArray(imported.productLifecycleOverrides) ? imported.productLifecycleOverrides : [],
     taskAttachments: Array.isArray(imported.taskAttachments) ? imported.taskAttachments : [],
     promoEvents: Array.isArray(imported.promoEvents) ? imported.promoEvents : [],
@@ -1021,6 +1053,12 @@ function mergeImportedStorage(imported) {
     if (!resourceId) continue;
     state.storage.resourceLinks = (state.storage.resourceLinks || []).filter((item) => String(item?.id || '').trim() !== resourceId);
     state.storage.resourceLinks.unshift({ ...raw, id: resourceId });
+  }
+  for (const raw of seed.resourceFolders) {
+    const folder = normalizeStoredResourceFolder(raw);
+    if (!folder) continue;
+    state.storage.resourceFolders = (state.storage.resourceFolders || []).filter((item) => String(item?.id || '').trim() !== folder.id);
+    state.storage.resourceFolders.unshift(folder);
   }
   for (const raw of seed.productLifecycleOverrides) {
     const override = normalizeProductLifecycleOverride(raw);

@@ -1698,6 +1698,11 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .document-storage-header-actions>.btn{min-height:40px;white-space:nowrap}
 .document-storage-breadcrumbs{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 14px;padding:11px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.025)}
 .document-storage-breadcrumbs strong{font-size:14px}
+.document-storage-root-dropzone{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;align-items:center;margin:-4px 0 14px;padding:10px 13px;border:1px dashed var(--line);border-radius:14px;background:rgba(255,255,255,.018);color:var(--muted);transition:border-color .16s ease,background .16s ease,transform .16s ease}
+.document-storage-root-dropzone>span:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}
+.document-storage-root-dropzone strong{color:var(--text);font-size:13px}
+.document-storage-root-dropzone small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.document-storage-root-dropzone-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:11px;background:rgba(201,163,91,.13);color:#efd79e;font-size:19px}
 .document-storage-folder-form-card{margin-bottom:14px;border-color:rgba(201,163,91,.34)}
 .document-storage-folder-form{display:grid;grid-template-columns:1.15fr minmax(180px,.75fr) minmax(180px,.75fr) 1.3fr;gap:10px;align-items:center}
 .document-storage-folder-form-actions{grid-column:1 / -1;display:flex;align-items:center;gap:12px}
@@ -1705,12 +1710,17 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .document-storage-folder-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .document-storage-folder-card{display:flex;flex-direction:column;gap:10px;min-width:0;padding:14px;border:1px solid rgba(201,163,91,.28);border-radius:18px;background:linear-gradient(145deg,rgba(201,163,91,.09),rgba(255,255,255,.018))}
 .document-storage-folder-card:hover{border-color:rgba(201,163,91,.5);box-shadow:var(--shadow)}
+.document-storage-folder-card,.document-storage-root-dropzone{transition:border-color .16s ease,background .16s ease,box-shadow .16s ease,transform .16s ease}
+.is-document-dragging .document-storage-folder-card,.is-document-dragging .document-storage-root-dropzone{border-style:dashed;border-color:rgba(224,183,96,.58)}
+.document-storage-folder-card.is-drop-target,.document-storage-root-dropzone.is-drop-target{border-color:#e0b760;background:rgba(224,183,96,.18);box-shadow:0 0 0 3px rgba(224,183,96,.12),var(--shadow);transform:translateY(-2px)}
 .document-storage-folder-open{display:grid;grid-template-columns:42px minmax(0,1fr);gap:11px;align-items:center;width:100%;padding:0;border:0;background:transparent;color:var(--text);text-align:left;cursor:pointer}
 .document-storage-folder-icon{display:flex;align-items:center;justify-content:center;width:42px;height:38px;border:1px solid rgba(201,163,91,.42);border-radius:12px;background:rgba(201,163,91,.16);color:#efd79e;font-size:20px;line-height:1}
 .document-storage-folder-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
 .document-storage-folder-copy strong,.document-storage-folder-copy small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .document-storage-folder-copy small{color:var(--muted)}
 .document-storage-folder-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.document-storage-folder-drop-hint{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11px;line-height:1.3}
+.document-storage-folder-card.is-drop-target .document-storage-folder-drop-hint{color:#f5dd9b;font-weight:800}
 .document-storage-folder-delete{align-self:flex-start;font-size:12px}
 .document-storage-form-card{margin-bottom:14px}
 .document-storage-form{display:grid;grid-template-columns:1.2fr 1.6fr minmax(160px,.7fr) minmax(150px,.6fr);gap:10px;align-items:start}
@@ -1722,6 +1732,11 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .document-storage-file-picker em{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-style:normal;font-size:12px}
 .document-storage-file-picker:hover{border-color:var(--line-strong)}
 .document-storage-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto}
+.document-storage-card[draggable="true"]{cursor:grab;transition:opacity .16s ease,transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.document-storage-card[draggable="true"]:active{cursor:grabbing}
+.document-storage-card.is-dragging{opacity:.4;transform:scale(.985);border-style:dashed;box-shadow:none}
+.document-storage-card-source{display:inline-flex;align-items:center;gap:7px;min-width:0}
+.document-storage-drag-handle{color:rgba(224,183,96,.72);font-size:16px;font-weight:900;letter-spacing:-5px;line-height:1;cursor:grab;user-select:none}
 .document-storage-move{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px;margin-top:2px}
 .document-storage-move span{color:var(--muted);font-size:12px}
 .document-storage-move select{min-width:0;height:36px;padding-top:5px;padding-bottom:5px;font-size:12px}
@@ -1743,6 +1758,10 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
   .document-storage-folder-form-actions{grid-column:1}
   .document-storage-form{grid-template-columns:1fr}
   .document-storage-actions{align-items:flex-start;flex-direction:column}
+}
+@media (pointer:coarse){
+  .document-storage-drag-handle,.document-storage-folder-drop-hint{display:none}
+  .document-storage-card[draggable="true"]{cursor:default}
 }
 .repricer-stack{display:flex;flex-direction:column;gap:12px;margin-top:14px}
 .repricer-card{padding:16px}

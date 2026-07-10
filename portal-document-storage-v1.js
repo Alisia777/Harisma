@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260710-storage-folders-v1';
+  const VERSION = '20260710-storage-drag-drop-v1';
   const STORAGE_VIEW = 'documents';
   const RESOURCE_ARTICLE_KEY = '__portal_resource_links__';
   const RESOURCE_LINK_MARKER = '[[resource-link:v1]]';
@@ -79,6 +79,19 @@
     if (typeof window.stableId === 'function') return window.stableId('resource-folder', base);
     if (window.crypto?.randomUUID) return `resource-folder-${window.crypto.randomUUID()}`;
     return `resource-folder-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function stableStaticResourceId(raw = {}, group = DEFAULT_GROUP) {
+    if (raw.id) return String(raw.id);
+    const href = safeHref(raw.href || raw.url || raw.link || '');
+    const seed = `${group}|${href || raw.title || raw.name || ''}`;
+    if (typeof window.stableId === 'function') return window.stableId('static-resource', seed);
+    let hash = 0;
+    for (let index = 0; index < seed.length; index += 1) {
+      hash = ((hash << 5) - hash) + seed.charCodeAt(index);
+      hash |= 0;
+    }
+    return `static-resource-${Math.abs(hash).toString(36)}`;
   }
 
   function safeHref(value = '') {
@@ -196,7 +209,10 @@
     const state = appState();
     return (state.documents?.groups || []).flatMap((group) => {
       const title = String(group?.title || DEFAULT_GROUP).trim() || DEFAULT_GROUP;
-      return (group?.items || []).map((item) => normalizeResourceLink(item, 'static', title));
+      return (group?.items || []).map((item) => normalizeResourceLink({
+        ...item,
+        id: stableStaticResourceId(item, title)
+      }, 'static', title));
     });
   }
 
@@ -244,7 +260,23 @@
   }
 
   function allDocumentLinks() {
-    return [...userDocumentLinks(), ...staticDocumentLinks()];
+    const userItems = userDocumentLinks();
+    const userById = new Map(userItems.map((item) => [item.id, item]));
+    const staticItems = staticDocumentLinks().map((baseItem) => {
+      const placement = userById.get(baseItem.id);
+      if (!placement) return baseItem;
+      userById.delete(baseItem.id);
+      const folderId = String(placement.folderId || '').trim();
+      return {
+        ...baseItem,
+        folderId,
+        group: folderId ? (placement.group || baseItem.group) : baseItem.group,
+        createdAt: placement.createdAt || baseItem.createdAt,
+        updatedAt: placement.updatedAt || placement.createdAt || baseItem.updatedAt,
+        source: 'static'
+      };
+    });
+    return [...userById.values(), ...staticItems];
   }
 
   function filteredDocumentLinks(items) {
@@ -311,7 +343,7 @@
     if (hasHref) {
       const download = looksLikeDownload(item, href);
       const downloadAttr = download && !/^https?:\/\//i.test(href) ? ` download="${html(item.fileName || item.title || 'file')}"` : '';
-      actions.push(`<a class="doc-action" href="${html(href)}" target="_blank" rel="noopener"${downloadAttr}>${download ? 'Скачать файл' : 'Открыть'}</a>`);
+      actions.push(`<a class="doc-action" href="${html(href)}" target="_blank" rel="noopener" draggable="false"${downloadAttr}>${download ? 'Скачать файл' : 'Открыть'}</a>`);
     }
     const action = actions.length
       ? actions.join('')
@@ -319,14 +351,12 @@
     const deleteAction = item.source === 'user'
       ? `<button class="link-btn document-storage-delete" type="button" data-delete-resource-link="${html(item.id)}">Удалить</button>`
       : '';
-    const moveAction = item.source === 'user'
-      ? `<label class="document-storage-move"><span>Переместить</span><select aria-label="Папка для ${html(item.title)}" data-move-resource-link="${html(item.id)}">${folderSelectOptions(folders, validFolderId(item.folderId, folders))}</select></label>`
-      : '';
+    const moveAction = `<label class="document-storage-move"><span>Переместить</span><select aria-label="Папка для ${html(item.title)}" data-move-resource-link="${html(item.id)}">${folderSelectOptions(folders, validFolderId(item.folderId, folders))}</select></label>`;
     return `
-      <div class="doc-card document-storage-card ${item.source === 'user' ? 'is-user-added' : ''} ${hasHref || hasLocalFile ? '' : 'is-disabled'}">
+      <div class="doc-card document-storage-card ${item.source === 'user' ? 'is-user-added' : ''} ${hasHref || hasLocalFile ? '' : 'is-disabled'}" draggable="true" data-document-resource-card data-document-resource-id="${html(item.id)}">
         <div class="doc-top">
           <span class="doc-type">${html(item.group)}</span>
-          <span class="muted small">${html(item.source === 'user' ? sourceLabel : 'база')}</span>
+          <span class="document-storage-card-source"><span class="muted small">${html(item.source === 'user' ? sourceLabel : 'база')}</span><span class="document-storage-drag-handle" title="Перетащите карточку в папку" aria-hidden="true">⋮⋮</span></span>
         </div>
         <strong>${html(item.title)}</strong>
         ${item.fileName ? `<div class="muted small">${html(item.fileName)}</div>` : ''}
@@ -349,7 +379,7 @@
   function renderFolderCard(folder, items) {
     const stats = folderStats(folder, items);
     return `
-      <article class="document-storage-folder-card" data-storage-folder-card="${html(folder.id)}">
+      <article class="document-storage-folder-card" data-storage-folder-card="${html(folder.id)}" data-drop-document-folder="${html(folder.id)}" aria-label="Папка ${html(folder.title)}. Сюда можно перетащить карточку файла">
         <button class="document-storage-folder-open" type="button" data-open-document-folder="${html(folder.id)}">
           <span class="document-storage-folder-icon" aria-hidden="true">▰</span>
           <span class="document-storage-folder-copy">
@@ -363,6 +393,7 @@
           ${stats.bytes ? chip(formatBytes(stats.bytes)) : ''}
           ${folder.owner ? chip(folder.owner) : ''}
         </div>
+        <div class="document-storage-folder-drop-hint"><span aria-hidden="true">↳</span> Перетащите карточку сюда</div>
         <button class="link-btn document-storage-folder-delete" type="button" data-delete-document-folder="${html(folder.id)}">Удалить папку</button>
       </article>
     `;
@@ -975,17 +1006,22 @@
     const folders = userResourceFolders();
     const folderId = validFolderId(rawFolderId, folders);
     const resourceId = String(id || '').trim();
-    const current = userDocumentLinks().find((item) => item.id === resourceId);
+    const current = allDocumentLinks().find((item) => item.id === resourceId);
     if (!current) return;
     const currentFolderId = validFolderId(current.folderId, folders);
     if (currentFolderId === folderId) return;
     const target = folders.find((folder) => folder.id === folderId);
+    const canonicalStatic = staticDocumentLinks().find((item) => item.id === resourceId);
+    const now = new Date().toISOString();
+    const rootGroup = canonicalStatic?.group || current.group || DEFAULT_GROUP;
+    const nextGroup = target?.group || rootGroup;
     const updated = normalizeResourceLink({
       ...current,
       folderId,
-      group: target?.group || current.group,
-      updatedAt: new Date().toISOString()
-    }, 'user', target?.group || current.group || DEFAULT_GROUP);
+      group: nextGroup,
+      createdAt: current.createdAt || now,
+      updatedAt: now
+    }, 'user', nextGroup);
     upsertLocalResourceLink(updated);
     persistStorage('resource-link-move');
     auditResourceLink('move', updated, { fromFolderId: currentFolderId, toFolderId: folderId });
@@ -1004,7 +1040,7 @@
     const folderId = String(id || '').trim();
     const folder = userResourceFolders().find((item) => item.id === folderId);
     if (!folder) return;
-    const count = userDocumentLinks().filter((item) => item.folderId === folderId).length;
+    const count = allDocumentLinks().filter((item) => item.folderId === folderId).length;
     if (count) {
       setStorageStatus(`Папка «${folder.title}» не удалена: внутри ${formatFileCount(count)}. Сначала переместите их.`, 'warn');
       renderDocumentStorage();
@@ -1246,6 +1282,67 @@
       });
     });
 
+    const clearDocumentDragState = () => {
+      state.documentStorageDragId = '';
+      root.classList.remove('is-document-dragging');
+      root.querySelectorAll('.is-dragging, .is-drop-target').forEach((element) => {
+        element.classList.remove('is-dragging', 'is-drop-target');
+      });
+    };
+    root.querySelectorAll('[data-document-resource-card]').forEach((card) => {
+      card.addEventListener('dragstart', (event) => {
+        const interactive = event.target?.closest?.('a, button, select, input, textarea, label');
+        if (interactive && interactive !== card) {
+          event.preventDefault();
+          return;
+        }
+        const resourceId = String(card.dataset.documentResourceId || '').trim();
+        if (!resourceId || !event.dataTransfer) {
+          event.preventDefault();
+          return;
+        }
+        state.documentStorageDragId = resourceId;
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', resourceId);
+        event.dataTransfer.setData('application/x-altea-document-resource', resourceId);
+        card.classList.add('is-dragging');
+        root.classList.add('is-document-dragging');
+      });
+      card.addEventListener('dragend', clearDocumentDragState);
+    });
+    root.querySelectorAll('[data-drop-document-folder]').forEach((target) => {
+      const dragResourceId = (event) => String(
+        state.documentStorageDragId
+        || event.dataTransfer?.getData('application/x-altea-document-resource')
+        || event.dataTransfer?.getData('text/plain')
+        || ''
+      ).trim();
+      target.addEventListener('dragenter', (event) => {
+        if (!dragResourceId(event)) return;
+        event.preventDefault();
+        target.classList.add('is-drop-target');
+      });
+      target.addEventListener('dragover', (event) => {
+        if (!dragResourceId(event)) return;
+        event.preventDefault();
+        if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+        target.classList.add('is-drop-target');
+      });
+      target.addEventListener('dragleave', (event) => {
+        if (event.relatedTarget && target.contains(event.relatedTarget)) return;
+        target.classList.remove('is-drop-target');
+      });
+      target.addEventListener('drop', (event) => {
+        const resourceId = dragResourceId(event);
+        if (!resourceId) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const folderId = String(target.dataset.dropDocumentFolder || '').trim();
+        clearDocumentDragState();
+        void moveResourceToFolder(resourceId, folderId);
+      });
+    });
+
     root.querySelectorAll('[data-delete-resource-link]').forEach((button) => {
       button.addEventListener('click', (event) => {
         event.preventDefault();
@@ -1324,6 +1421,10 @@
             <strong aria-current="page">${html(activeFolder.title)}</strong>
             ${chip(activeFolder.group)}
           </nav>
+          <div class="document-storage-root-dropzone" data-drop-document-root data-drop-document-folder="" aria-label="Переместить карточку из папки в корень хранилища">
+            <span class="document-storage-root-dropzone-icon" aria-hidden="true">↰</span>
+            <span><strong>Без папки</strong><small>Перетащите карточку сюда, чтобы вернуть её в корень</small></span>
+          </div>
         ` : ''}
 
         ${state.docFilters.folderFormOpen ? `
@@ -1389,7 +1490,7 @@
             <div class="section-subhead">
               <div>
                 <h3>Папки</h3>
-                <p class="small muted">Откройте папку, чтобы увидеть собранные в ней файлы и ссылки.</p>
+                <p class="small muted">Перетащите карточку на папку или откройте папку, чтобы увидеть содержимое.</p>
               </div>
               ${chip(`${formatCount(visibleFolders.length)} шт.`)}
             </div>

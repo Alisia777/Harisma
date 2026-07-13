@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-10T07:10:21.063Z",
+  "generatedAt": "2026-07-13T06:47:35.976Z",
   "version": "20260701-wb-iu-fixed-rate-logic-v1",
   "source": {
     "reportFile": "wb_fixed_rate_reports.json",
-    "reportSha256": "81b589904e15647e1bd50d681486825ab30b493f26575eba1e54f6e4c3bf3b30",
+    "reportSha256": "d628dc0edf2a56fe32b20857d9a6c518956db88c0d4b19ad5a25542b75182b78",
     "sourceWorkbook": "9-7-2026 Фиксированная ставка с 02-07-2026 по 08-07-2026.xlsx",
     "sourceArchive": "",
     "sourceSheet": "Детальная информация",

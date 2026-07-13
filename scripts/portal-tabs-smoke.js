@@ -48,7 +48,8 @@ function isLocalUrl(url) {
 
 function isOptionalLocalMiss(url) {
   const value = String(url || '');
-  return /favicon\.ico/i.test(value)
+  return /\/\.altea-google-sheet-sync-output\//i.test(value)
+    || /favicon\.ico/i.test(value)
     || /\/data\/portal_dashboard_metrics\.json/i.test(value)
     || /\/data\/smart_price_overlay\.json/i.test(value)
     || /\/assets\/altea-portal-all-themes\/.*\/motion\//i.test(value)
@@ -82,7 +83,23 @@ async function waitForApp(page) {
   await page.waitForTimeout(1000);
 }
 
+async function dismissAcademyLayers(page) {
+  const selectors = [
+    '[data-academy-drawer-close]',
+    '[data-academy-offer="later"]',
+    '[data-academy-action="skip-tour"]'
+  ];
+  for (const selector of selectors) {
+    const control = page.locator(selector).first();
+    if (await control.isVisible().catch(() => false)) {
+      await control.click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(150);
+    }
+  }
+}
+
 async function clickView(page, view) {
+  await dismissAcademyLayers(page);
   const selector = `[data-premium-nav="${view}"], .nav-btn[data-view="${view}"]`;
   const count = await page.locator(selector).count();
   if (!count) throw new Error(`Navigation button not found: ${view}`);

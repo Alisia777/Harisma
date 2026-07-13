@@ -1,20 +1,20 @@
 {
   "schema": "portal-metric-reconciliation-v1",
-  "generatedAt": "2026-07-10T11:03:57.090Z",
+  "generatedAt": "2026-07-13T08:29:33.560Z",
   "manifestVersion": "2026-06-20",
   "scope": {
     "included": "all portal views and layers"
   },
-  "cutoffDate": "2026-07-09",
+  "cutoffDate": "2026-07-12",
   "status": "warning",
-  "business_fingerprint": "8eddd3043b656175f828808dc0aa21d13b24b76e82938abb94b03d370d2009bf",
+  "business_fingerprint": "794ec49c4d0560c2e6df562cc79716212f29bc87c418f1ffee4337615a361100",
   "summary": {
     "sourceCount": 24,
     "contractCount": 12,
     "metricPassportCount": 35,
     "blockingChecks": 0,
     "warningChecks": 4,
-    "fingerprint": "8eddd3043b656175f828808dc0aa21d13b24b76e82938abb94b03d370d2009bf"
+    "fingerprint": "794ec49c4d0560c2e6df562cc79716212f29bc87c418f1ffee4337615a361100"
   },
   "metricPassports": [
     {
@@ -83,29 +83,29 @@
     {
       "key": "fact.marketplace.revenue",
       "source": "platform_trends.json",
-      "period": "2026-07-09",
-      "value": 15625491,
+      "period": "2026-07-12",
+      "value": 20962619,
       "formula": "sum active marketplaces on guarded cutoff dates"
     },
     {
       "key": "fact.marketplace.revenue.wb",
       "source": "platform_trends.json",
-      "period": "2026-07-09",
-      "value": 12748904,
+      "period": "2026-07-12",
+      "value": 17769393,
       "formula": "platforms.wb.series[cutoff].revenue"
     },
     {
       "key": "fact.marketplace.revenue.ozon",
       "source": "platform_trends.json",
-      "period": "2026-07-09",
-      "value": 2693688,
+      "period": "2026-07-12",
+      "value": 3023461,
       "formula": "platforms.ozon.series[cutoff].revenue"
     },
     {
       "key": "fact.marketplace.revenue.ya",
       "source": "platform_trends.json",
-      "period": "2026-07-09",
-      "value": 151423,
+      "period": "2026-07-12",
+      "value": 137981,
       "formula": "platforms.ya.series[cutoff].revenue"
     },
     {
@@ -125,8 +125,8 @@
     {
       "key": "fact.marketplace.revenue.megamarket",
       "source": "platform_trends.json",
-      "period": "2026-07-09",
-      "value": 147,
+      "period": "2026-07-12",
+      "value": 175,
       "formula": "platforms.megamarket.series[cutoff].revenue"
     },
     {
@@ -139,14 +139,14 @@
     {
       "key": "fact.marketplace.revenue.magnit",
       "source": "platform_trends.json",
-      "period": "2026-07-08",
-      "value": 0,
+      "period": "2026-07-12",
+      "value": 281,
       "formula": "platforms.magnit.series[cutoff].revenue"
     },
     {
       "key": "dashboard.cards",
       "source": "dashboard.json",
-      "period": "2026-07-09",
+      "period": "2026-07-12",
       "value": 20,
       "formula": "count(unique presentation cards); exact duplicates are forbidden",
       "diagnostics": {
@@ -173,11 +173,11 @@
     {
       "key": "quality.unmappedRevenue",
       "source": "portal_data_quality.json",
-      "period": "2026-07-09",
+      "period": "2026-07-12",
       "value": 0,
       "formula": "API fact that has no canonical registry mapping",
       "diagnostics": {
-        "totalFact": 135052802,
+        "totalFact": 33224993,
         "ratio": 0,
         "knownOutsideRegistryRevenue": 597
       }
@@ -185,8 +185,8 @@
     {
       "key": "order.targetNeed30",
       "source": "order_procurement.json",
-      "period": "2026-07-10",
-      "value": 97553,
+      "period": "2026-07-13",
+      "value": 97754,
       "formula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "diagnostics": {
         "rows": 3083,
@@ -203,11 +203,11 @@
     {
       "key": "oos.watchDays",
       "source": "oos_control.json",
-      "period": "2026-07-10",
+      "period": "2026-07-13",
       "value": 30,
       "formula": "OOS watch horizon must match order target horizon: 30 days",
       "diagnostics": {
-        "rows": 92,
+        "rows": 89,
         "badRows": 0
       }
     },
@@ -221,7 +221,7 @@
     {
       "key": "sku_matrix.aliases",
       "source": "sku_matrix.json",
-      "period": "2026-07-10",
+      "period": "2026-07-13",
       "value": 342,
       "formula": "deduped aliases from sku_aliases.json plus skus[].aliases/platformAliases",
       "diagnostics": {
@@ -241,45 +241,45 @@
     {
       "key": "phase3.portal_repricing_reconciliation",
       "source": "portal_repricing_reconciliation.json",
-      "period": "repricer:d9ec0507a7a1fa4a",
+      "period": "repricer:6f77470c900c2c56",
       "value": "warning",
       "formula": "required phase 3 publish-gate reconciliation report",
       "diagnostics": {
         "publish_allowed": true,
-        "business_fingerprint": "e6b72eba37cde66e2d6e0ef82f26618af603368d8b12d29ec08296e7a4afe983"
+        "business_fingerprint": "f4eefadce41f7bc65b9839b4c5616ac99e557a2c922ee8f7d056a8b9acac1b7d"
       }
     },
     {
       "key": "phase3.portal_dashboard_reconciliation",
       "source": "portal_dashboard_reconciliation.json",
-      "period": "dashboard:66cbdae0bea32e2d",
-      "value": "warning",
+      "period": "dashboard:27cc251e12da3b42",
+      "value": "ok",
       "formula": "required phase 3 publish-gate reconciliation report",
       "diagnostics": {
         "publish_allowed": true,
-        "business_fingerprint": "e32ad1c5b1d691660d83ad2eac3786736128c1829a5f6b23971c0f50f5bbe689"
+        "business_fingerprint": "0219738a5d900c7099362e96bc5abbec766be73159f102bcf50bfd8ba50e344b"
       }
     },
     {
       "key": "phase3.portal_plan_reconciliation",
       "source": "portal_plan_reconciliation.json",
-      "period": "dashboard:66cbdae0bea32e2d",
+      "period": "dashboard:27cc251e12da3b42",
       "value": "ok",
       "formula": "required phase 3 publish-gate reconciliation report",
       "diagnostics": {
         "publish_allowed": true,
-        "business_fingerprint": "dashboard:66cbdae0bea32e2d"
+        "business_fingerprint": "dashboard:27cc251e12da3b42"
       }
     },
     {
       "key": "phase3.portal_indicator_audit",
       "source": "portal_indicator_audit.json",
-      "period": "dashboard:66cbdae0bea32e2d",
+      "period": "dashboard:27cc251e12da3b42",
       "value": "ok",
       "formula": "required phase 3 publish-gate reconciliation report",
       "diagnostics": {
         "publish_allowed": true,
-        "business_fingerprint": "dashboard:66cbdae0bea32e2d"
+        "business_fingerprint": "dashboard:27cc251e12da3b42"
       }
     },
     {
@@ -797,13 +797,12 @@
       "scope": "fact",
       "source": "platform_trends",
       "warnings": [
-        "platform_trends: ya buyout revenue 151423 exceeds orders revenue 128734; Yandex reports deliveries and new orders by operational day, so timing may differ",
-        "platform_trends: goldapple date 2026-06-30 is 9 days older than expected 2026-07-09",
-        "platform_trends: letu date 2026-06-30 is 9 days older than expected 2026-07-09",
+        "platform_trends: goldapple date 2026-06-30 is 12 days older than expected 2026-07-12",
+        "platform_trends: letu date 2026-06-30 is 12 days older than expected 2026-07-12",
         "platform_trends: no active plan/data for samokat"
       ],
       "blockingReasons": [],
-      "expectedDate": "2026-07-09",
+      "expectedDate": "2026-07-12",
       "activePlatforms": [
         "wb",
         "ozon",
@@ -817,38 +816,38 @@
         "samokat"
       ],
       "componentDates": {
-        "wb": "2026-07-09",
-        "ozon": "2026-07-09",
-        "ya": "2026-07-09",
+        "wb": "2026-07-12",
+        "ozon": "2026-07-12",
+        "ya": "2026-07-12",
         "goldapple": "2026-06-30",
         "letu": "2026-06-30",
-        "megamarket": "2026-07-09",
+        "megamarket": "2026-07-12",
         "samokat": "",
-        "magnit": "2026-07-08"
+        "magnit": "2026-07-12"
       },
       "componentRevenue": {
-        "wb": 12748904,
-        "ozon": 2693688,
-        "ya": 151423,
+        "wb": 17769393,
+        "ozon": 3023461,
+        "ya": 137981,
         "goldapple": 19833,
         "letu": 11496,
-        "megamarket": 147,
+        "megamarket": 175,
         "samokat": 0,
-        "magnit": 0
+        "magnit": 281
       },
-      "componentRevenueSum": 15625491,
-      "allRevenue": 15594162,
+      "componentRevenueSum": 20962619,
+      "allRevenue": 20931290,
       "allDateComponentRevenue": {
-        "wb": 12748904,
-        "ozon": 2693688,
-        "ya": 151423,
+        "wb": 17769393,
+        "ozon": 3023461,
+        "ya": 137981,
         "goldapple": 0,
         "letu": 0,
-        "megamarket": 147,
+        "megamarket": 175,
         "samokat": 0,
-        "magnit": 0
+        "magnit": 281
       },
-      "allDateComponentRevenueSum": 15594162,
+      "allDateComponentRevenueSum": 20931291,
       "status": "warning"
     },
     {
@@ -890,13 +889,13 @@
       "scope": "quality",
       "source": "portal_data_quality",
       "warnings": [
-        "portal_data_quality: 192 business issues recorded (192 order_no_stock_need); publish not blocked"
+        "portal_data_quality: 193 business issues recorded (193 order_no_stock_need); publish not blocked"
       ],
       "blockingReasons": [],
       "reportStatus": "critical",
-      "criticalIssues": 192,
+      "criticalIssues": 193,
       "blockingCriticalIssues": 0,
-      "nonBlockingCriticalIssues": 192,
+      "nonBlockingCriticalIssues": 193,
       "unmappedRevenue": 0,
       "knownOutsideRegistryRevenue": 597,
       "unmappedRevenueRatio": 0,
@@ -935,7 +934,7 @@
       "source": "oos_control",
       "warnings": [],
       "blockingReasons": [],
-      "rows": 92,
+      "rows": 89,
       "watchDays": 30,
       "badRows": [],
       "status": "ok"
@@ -992,13 +991,13 @@
       "source": "cross-layer",
       "warnings": [],
       "blockingReasons": [],
-      "expectedDate": "2026-07-09",
+      "expectedDate": "2026-07-12",
       "sourceDates": {
-        "platform_fact": "2026-07-09",
-        "dashboard_projection": "2026-07-09",
-        "ads_fact": "2026-07-09",
-        "warehouse_fact": "2026-07-10",
-        "data_quality": "2026-07-09"
+        "platform_fact": "2026-07-12",
+        "dashboard_projection": "2026-07-12",
+        "ads_fact": "2026-07-12",
+        "warehouse_fact": "2026-07-13",
+        "data_quality": "2026-07-12"
       },
       "status": "ok"
     },
@@ -1007,10 +1006,9 @@
       "scope": "phase3",
       "source": "phase3-reconciliation",
       "warnings": [
-        "phase3:portal_repricing_reconciliation.json: repricer feature blocked: 0/873 publishable recommendations",
-        "phase3:portal_repricing_reconciliation.json: 873 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
+        "phase3:portal_repricing_reconciliation.json: repricer feature blocked: 0/872 publishable recommendations",
+        "phase3:portal_repricing_reconciliation.json: 872 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
         "phase3:portal_repricing_reconciliation.json: 2 exact duplicate source rows were deterministically deduped",
-        "phase3:portal_dashboard_reconciliation.json: extra marketplace facts are behind 2026-07-09: magnit=2026-07-08",
         "phase3:portal_runtime_wiring_reconciliation.json: canonical repricer retained as diagnostic snapshot; feature activation is blocked",
         "phase3:portal_feature_readiness.json: portal_feature_readiness.json: warning"
       ],
@@ -1021,17 +1019,17 @@
           "path": "data\\portal_repricing_reconciliation.json",
           "status": "warning",
           "publish_allowed": true,
-          "business_fingerprint": "e6b72eba37cde66e2d6e0ef82f26618af603368d8b12d29ec08296e7a4afe983",
+          "business_fingerprint": "f4eefadce41f7bc65b9839b4c5616ac99e557a2c922ee8f7d056a8b9acac1b7d",
           "summary": {
-            "rows": 873,
-            "eligible_rows": 873,
+            "rows": 872,
+            "eligible_rows": 872,
             "publishable_rows": 0,
-            "blocked_rows": 873,
+            "blocked_rows": 872,
             "publishable_coverage": 0,
             "required_publishable_coverage": 0.01,
             "feature_status": "blocked",
             "publishable_recommendations": 0,
-            "blocked_recommendations": 873,
+            "blocked_recommendations": 872,
             "duplicate_platform_keys": 0,
             "normalized_article_collisions": 0,
             "deduped_exact_duplicates": 2
@@ -1040,9 +1038,9 @@
         {
           "file": "portal_dashboard_reconciliation.json",
           "path": "data\\portal_dashboard_reconciliation.json",
-          "status": "warning",
+          "status": "ok",
           "publish_allowed": true,
-          "business_fingerprint": "e32ad1c5b1d691660d83ad2eac3786736128c1829a5f6b23971c0f50f5bbe689",
+          "business_fingerprint": "0219738a5d900c7099362e96bc5abbec766be73159f102bcf50bfd8ba50e344b",
           "summary": {}
         },
         {
@@ -1050,7 +1048,7 @@
           "path": "data\\portal_plan_reconciliation.json",
           "status": "ok",
           "publish_allowed": true,
-          "business_fingerprint": "dashboard:66cbdae0bea32e2d",
+          "business_fingerprint": "dashboard:27cc251e12da3b42",
           "summary": {}
         },
         {
@@ -1058,7 +1056,7 @@
           "path": "data\\portal_indicator_audit.json",
           "status": "ok",
           "publish_allowed": true,
-          "business_fingerprint": "dashboard:66cbdae0bea32e2d",
+          "business_fingerprint": "dashboard:27cc251e12da3b42",
           "summary": {}
         },
         {
@@ -1119,7 +1117,7 @@
           "summary": {}
         }
       ],
-      "businessFingerprint": "bda471b2e4dd202a7b2cbe2ca403176f0a0a2fe479840ee35c9c5393fbb5b8fa",
+      "businessFingerprint": "46c1db5e11a0688f982ca1a1449d4993779f63801a66a2de735b0ccd289ce30c",
       "status": "warning"
     }
   ]

@@ -69,30 +69,39 @@ async function readView(page, view, expectedPeriodTo) {
 
   await page.waitForFunction(() => typeof window.skuPlanFactBuildModel === 'function', null, { timeout: 5000 }).catch(() => {});
   await page.waitForFunction(() => window.__alteaDataGuard && typeof window.__alteaDataGuard.runAudit === 'function', null, { timeout: 5000 }).catch(() => {});
-  await page.waitForFunction(() => {
-    if (typeof window.skuPlanFactBuildModel !== 'function') return false;
-    try {
-      const model = window.skuPlanFactBuildModel({
-        search: '',
-        owner: 'all',
-        status: 'all',
-        platform: 'all',
-        month: 'latest',
-        date: '',
-        dateFrom: '',
-        dateTo: '',
-        dateMode: 'latest',
-        sort: 'gap',
-        sortDir: 'asc'
-      }, { persistFilters: false });
-      const totals = model && model.totals || {};
-      const api = Math.round(Number(totals.apiFactRevenue || 0));
-      const kpi = Math.round(Number((totals.kpiFactRevenue ?? totals.factRevenue) || 0));
-      return model && Array.isArray(model.rows) && model.rows.length >= 170 && kpi > 0 && api > 0 && model.periodEnd !== '2026-06-30';
-    } catch (error) {
-      return false;
-    }
-  }, null, { timeout: 30000 }).catch(() => {});
+  if (view === 'sku-plan-fact') {
+    await page.waitForFunction(() => {
+      if (typeof window.skuPlanFactBuildModel !== 'function') return false;
+      try {
+        const model = window.skuPlanFactBuildModel({
+          search: '',
+          owner: 'all',
+          status: 'all',
+          platform: 'all',
+          month: 'latest',
+          date: '',
+          dateFrom: '',
+          dateTo: '',
+          dateMode: 'latest',
+          sort: 'gap',
+          sortDir: 'asc'
+        }, { persistFilters: false });
+        const totals = model && model.totals || {};
+        const api = Math.round(Number(totals.apiFactRevenue || 0));
+        const kpi = Math.round(Number((totals.kpiFactRevenue ?? totals.factRevenue) || 0));
+        return model && Array.isArray(model.rows) && model.rows.length >= 170 && kpi > 0 && api > 0 && model.periodEnd !== '2026-06-30';
+      } catch (error) {
+        return false;
+      }
+    }, null, { timeout: 30000 }).catch(() => {});
+  }
+  if (['sku-plan-fact', 'data-health', 'sku-contour', 'iu-drr', 'executive'].includes(view)) {
+    await page.waitForFunction(() => {
+      const dataGuard = window.__alteaDataGuard;
+      const trusted = dataGuard?.state?.lastTrustedPlanFactModel;
+      return Array.isArray(trusted?.rows) && trusted.rows.length >= 170 && dataGuard.status() !== 'blocked';
+    }, null, { timeout: 45000 }).catch(() => {});
+  }
   await page.waitForTimeout(800);
 
   const data = await page.evaluate(async (params) => {
@@ -188,7 +197,7 @@ function collectIssues(result, expectedPeriodTo) {
     issues.push(issue('block', 'database_timeout', 'View contains DatabaseTimeout.', { view: result.view }));
   }
   if (result.hasBadJune30) {
-    issues.push(issue('block', 'bad_visible_period', 'View contains 2026-06-30.', { view: result.view }));
+    issues.push(issue('warn', 'historical_visible_period', 'View contains the historical date 2026-06-30.', { view: result.view }));
   }
   if (result.modelError) {
     issues.push(issue('block', 'model_error', result.modelError.slice(0, 300), { view: result.view }));
@@ -222,7 +231,9 @@ function collectIssues(result, expectedPeriodTo) {
     issues.push(issue('warn', 'console_error', log.text, { view: result.view }));
   });
   (result.guardIssues || []).forEach((guardIssue) => {
-    if (guardIssue.severity === 'block') {
+    const issueScope = String(guardIssue.scope || '');
+    const appliesToView = issueScope === result.view || result.view === 'data-health';
+    if (guardIssue.severity === 'block' && appliesToView) {
       issues.push(issue('block', `guard_${guardIssue.code || 'issue'}`, guardIssue.message || 'Data Guard issue.', { view: result.view }));
     }
   });

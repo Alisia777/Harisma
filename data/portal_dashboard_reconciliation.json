@@ -1,12 +1,14 @@
 {
   "schema": "portal-dashboard-reconciliation-v1",
-  "generatedAt": "2026-07-13T08:25:22.853Z",
-  "snapshot_id": "dashboard:27cc251e12da3b42",
-  "status": "ok",
+  "generatedAt": "2026-07-14T08:03:17.918Z",
+  "snapshot_id": "dashboard:4baa7f0efadf18c8",
+  "status": "warning",
   "publish_allowed": true,
-  "business_fingerprint": "0219738a5d900c7099362e96bc5abbec766be73159f102bcf50bfd8ba50e344b",
+  "business_fingerprint": "d403fd54bdd18db6effee1c175bc5dfff58a4ce9b3bc0f6dd0bf31fdbf3c4da2",
   "blockingReasons": [],
-  "warnings": [],
+  "warnings": [
+    "extra marketplace facts are behind 2026-07-13: magnit=2026-07-08"
+  ],
   "checks": [
     {
       "id": "dashboard:raw-fact-not-scaled",

@@ -221,6 +221,23 @@ try {
   assert.ok(yandexDeliveryTimingResult.report.publish.warningReasons.some((reason) => reason.includes('Yandex reports deliveries and new orders')));
 
   buildFixture(dir);
+  const wbFinanceTiming = JSON.parse(fs.readFileSync(path.join(dir, 'platform_trends.json'), 'utf8'));
+  wbFinanceTiming.platforms.wb.series[0] = {
+    date,
+    revenue: 100,
+    ordersRevenue: 100,
+    buyoutRevenue: 150,
+    units: 1,
+    ordersUnits: 1,
+    buyoutUnits: 2
+  };
+  wbFinanceTiming.platforms.all.series[0].revenue = 400;
+  write(dir, 'platform_trends.json', wbFinanceTiming);
+  const wbFinanceTimingResult = run(options(dir));
+  assert.strictEqual(wbFinanceTimingResult.report.publish.allowed, true);
+  assert.ok(wbFinanceTimingResult.report.publish.warningReasons.some((reason) => reason.includes('WB finance sales and new orders')));
+
+  buildFixture(dir);
   const staleExtra = JSON.parse(fs.readFileSync(path.join(dir, 'platform_trends.json'), 'utf8'));
   staleExtra.platforms.goldapple = { series: [{ date: '2026-06-10', revenue: 50, units: 1 }] };
   write(dir, 'platform_trends.json', staleExtra);

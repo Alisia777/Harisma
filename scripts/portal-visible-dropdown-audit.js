@@ -200,7 +200,7 @@ async function main() {
     }
 
     await expectOwners('executive', '#altea-premium-stage-executive [data-executive-funnel-owner]');
-    await expectOwners('sku-contour', '#view-sku-contour #skuOwnerFilter');
+    await expectOwners('sku-contour', '#view-sku-contour #skuV1Owner, #view-sku-contour #skuOwnerFilter');
     await expectOwners('prices', '#view-prices #pwOwnerFilter');
     await expectOwners('sku-plan-fact', '#view-sku-plan-fact #skuPlanFactOwner');
 

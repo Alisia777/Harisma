@@ -577,6 +577,7 @@ function inspectPlatformFact(loaded, policy, expectedDate, checks, passports) {
     if (point.buyoutRevenue !== null && point.orderRevenue !== null && point.orderRevenue > 0 && point.buyoutRevenue > point.orderRevenue * 1.05) {
       const reason = `platform_trends: ${key} buyout revenue ${roundMoney(point.buyoutRevenue)} exceeds orders revenue ${roundMoney(point.orderRevenue)}`;
       if (key === 'ya') check.warnings.push(`${reason}; Yandex reports deliveries and new orders by operational day, so timing may differ`);
+      else if (key === 'wb') check.warnings.push(`${reason}; WB finance sales and new orders use different operational dates, so daily cohorts may differ`);
       else check.blockingReasons.push(reason);
     }
   }

@@ -1,11 +1,11 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-07-13T08:27:10.042Z",
+  "generatedAt": "2026-07-14T08:03:46.096Z",
   "source": {
     "skus": 209,
     "aliases": 342,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-07-13T07:37:55.490Z"
+    "dataQualityGeneratedAt": "2026-07-14T08:03:46.006Z"
   },
   "summary": {
     "skuCount": 209,
@@ -18,7 +18,7 @@
     "missingOwnerCount": 0,
     "planNeedsAssignmentCount": 0,
     "planAssignedCount": 96,
-    "issueCount": 193,
+    "issueCount": 189,
     "infoIssueCount": 1,
     "problemStateCounts": {
       "ok": 86,
@@ -6832,18 +6832,10 @@
       "problemState": "has_critical_issue",
       "problemLabel": "Есть критичная ошибка",
       "problemTone": "danger",
-      "issueCount": 2,
+      "issueCount": 1,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
+      "criticalIssueCount": 1,
       "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
         {
           "severity": "critical",
           "type": "order_no_stock_need",
@@ -11426,15 +11418,24 @@
         }
       ],
       "problemStates": [
-        "ok"
+        "has_critical_issue"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_critical_issue",
+      "problemLabel": "Есть критичная ошибка",
+      "problemTone": "danger",
+      "issueCount": 1,
       "infoIssueCount": 0,
-      "criticalIssueCount": 0,
-      "issues": []
+      "criticalIssueCount": 1,
+      "issues": [
+        {
+          "severity": "critical",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "По складу нет остатка, но есть продажи/потребность"
+        }
+      ]
     },
     {
       "articleKey": "retinait_syvorotka_05_30ml",
@@ -13671,48 +13672,15 @@
         }
       ],
       "problemStates": [
-        "has_critical_issue"
+        "ok"
       ],
-      "problemState": "has_critical_issue",
-      "problemLabel": "Есть критичная ошибка",
-      "problemTone": "danger",
-      "issueCount": 4,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "infoIssueCount": 0,
-      "criticalIssueCount": 4,
-      "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        }
-      ]
+      "criticalIssueCount": 0,
+      "issues": []
     },
     {
       "articleKey": "spray-syvorotka_pdrn_100ml",

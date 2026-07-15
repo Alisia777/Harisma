@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-14T07:08:01.743Z",
+  "generatedAt": "2026-07-15T07:06:48.303Z",
   "version": "20260701-wb-iu-fixed-rate-logic-v1",
   "source": {
     "reportFile": "wb_fixed_rate_reports.json",
-    "reportSha256": "d628dc0edf2a56fe32b20857d9a6c518956db88c0d4b19ad5a25542b75182b78",
-    "sourceWorkbook": "9-7-2026 Фиксированная ставка с 02-07-2026 по 08-07-2026.xlsx",
+    "reportSha256": "b3f746803d35610dfc854f2089ba65f7b8a33c712adf31bd1a5973e82ba746fb",
+    "sourceWorkbook": "9_7_2026_Фиксированная_ставка_с_02_07_2026_по_08_07_2026.xlsx",
     "sourceArchive": "",
     "sourceSheet": "Детальная информация",
-    "generatedAt": "2026-07-10T07:10:21.009Z"
+    "generatedAt": "2026-07-15T07:06:48.256Z"
   },
   "required": {
     "wbPlanRateOverrideJune1147": true,

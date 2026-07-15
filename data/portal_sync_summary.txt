@@ -1,7 +1,7 @@
 Portal sync health: ok
-Generated: 2026-07-14T08:03:48.655Z
+Generated: 2026-07-15T08:27:46.153Z
 Publish allowed: yes
-Max data date: 2026-07-13
+Max data date: 2026-07-14
 
 Blocking reasons:
 - none

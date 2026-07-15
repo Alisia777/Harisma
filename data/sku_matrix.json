@@ -1,11 +1,11 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-07-14T08:03:46.096Z",
+  "generatedAt": "2026-07-15T08:23:48.207Z",
   "source": {
     "skus": 209,
     "aliases": 342,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-07-14T08:03:46.006Z"
+    "dataQualityGeneratedAt": "2026-07-15T08:23:26.104Z"
   },
   "summary": {
     "skuCount": 209,
@@ -11423,10 +11423,18 @@
       "problemState": "has_critical_issue",
       "problemLabel": "Есть критичная ошибка",
       "problemTone": "danger",
-      "issueCount": 1,
+      "issueCount": 2,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
+      "criticalIssueCount": 2,
       "issues": [
+        {
+          "severity": "critical",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "По складу нет остатка, но есть продажи/потребность"
+        },
         {
           "severity": "critical",
           "type": "order_no_stock_need",
@@ -13273,18 +13281,10 @@
       "problemState": "has_critical_issue",
       "problemLabel": "Есть критичная ошибка",
       "problemTone": "danger",
-      "issueCount": 2,
+      "issueCount": 1,
       "infoIssueCount": 0,
-      "criticalIssueCount": 2,
+      "criticalIssueCount": 1,
       "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
         {
           "severity": "critical",
           "type": "order_no_stock_need",

@@ -3,6 +3,7 @@ param(
   [string]$Manifest,
   [string]$LogDir = "",
   [string]$TaskName = "",
+  [switch]$NoFinalPublish,
   [string]$LiveHealthUrl = "https://xn--80aocfomk2b.xn--p1ai/data/portal_sync_health.json"
 )
 

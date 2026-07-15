@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-14T08:03:17.950Z",
-  "asOfDate": "2026-07-13",
+  "generatedAt": "2026-07-15T08:16:54.146Z",
+  "asOfDate": "2026-07-14",
   "sourceFile": "smart-price-workbook.xlsx",
   "platforms": {
     "ozon": {
@@ -125702,7 +125702,7 @@
       "key": "magnit",
       "label": "Магнит Маркет",
       "source": "magnit-market-xlsx-daily",
-      "generatedAt": "2026-07-14T08:03:17.950Z",
+      "generatedAt": "2026-07-15T08:16:54.145Z",
       "asOfDate": "2026-07-08",
       "rows": [
         {
@@ -140698,8 +140698,8 @@
       "key": "goldapple",
       "label": "ЗЯ",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-07-14T07:57:20.619Z",
-      "asOfDate": "2026-07-13",
+      "generatedAt": "2026-07-15T06:00:23.464Z",
+      "asOfDate": "2026-07-14",
       "rows": [
         {
           "platformKey": "goldapple",
@@ -201406,8 +201406,8 @@
       "key": "letu",
       "label": "Лэтуаль",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-07-14T07:57:20.619Z",
-      "asOfDate": "2026-07-13",
+      "generatedAt": "2026-07-15T06:00:23.464Z",
+      "asOfDate": "2026-07-14",
       "rows": [
         {
           "platformKey": "letu",
@@ -289229,8 +289229,8 @@
       "key": "megamarket",
       "label": "Мегамаркет",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-07-14T07:57:20.619Z",
-      "asOfDate": "2026-07-13",
+      "generatedAt": "2026-07-15T06:00:23.464Z",
+      "asOfDate": "2026-07-14",
       "rows": [
         {
           "platformKey": "megamarket",
@@ -290911,9 +290911,9 @@
           "skuMatched": true,
           "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
           "owner": "Екатерина Доможирова",
-          "currentPrice": 852,
-          "currentClientPrice": 852,
-          "currentFillPrice": 852,
+          "currentPrice": 880,
+          "currentClientPrice": 880,
+          "currentFillPrice": 880,
           "minPrice": null,
           "stock": 0,
           "turnoverDays": null,
@@ -290946,6 +290946,32 @@
               "adsDrr": null,
               "estimatedMargin": null,
               "price": 852
+            },
+            {
+              "monthKey": "2026-07",
+              "date": "2026-07-01",
+              "units": 1,
+              "ordersUnits": 1,
+              "revenue": 880,
+              "deliveredUnits": 0,
+              "deliveredRevenue": 0,
+              "buyoutUnits": 0,
+              "buyoutRevenue": 0,
+              "cancellationsUnits": 0,
+              "cancelRevenue": 0,
+              "returnsUnits": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "adsSpend": 0,
+              "adsOrders": 0,
+              "adsRevenue": 0,
+              "avgOrderValue": 880,
+              "ltvProxy": 880,
+              "buyoutPct": null,
+              "adsCtr": null,
+              "adsDrr": null,
+              "estimatedMargin": null,
+              "price": 880
             }
           ],
           "daily": [
@@ -290968,7 +290994,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-01",
-              "dayOffset": 29
+              "dayOffset": 43
             },
             {
               "date": "2026-06-02",
@@ -290989,7 +291015,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-02",
-              "dayOffset": 28
+              "dayOffset": 42
             },
             {
               "date": "2026-06-03",
@@ -291010,7 +291036,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-03",
-              "dayOffset": 27
+              "dayOffset": 41
             },
             {
               "date": "2026-06-04",
@@ -291031,7 +291057,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-04",
-              "dayOffset": 26
+              "dayOffset": 40
             },
             {
               "date": "2026-06-05",
@@ -291052,7 +291078,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-05",
-              "dayOffset": 25
+              "dayOffset": 39
             },
             {
               "date": "2026-06-06",
@@ -291073,7 +291099,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-06",
-              "dayOffset": 24
+              "dayOffset": 38
             },
             {
               "date": "2026-06-07",
@@ -291094,7 +291120,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-07",
-              "dayOffset": 23
+              "dayOffset": 37
             },
             {
               "date": "2026-06-08",
@@ -291115,7 +291141,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-08",
-              "dayOffset": 22
+              "dayOffset": 36
             },
             {
               "date": "2026-06-09",
@@ -291136,7 +291162,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-09",
-              "dayOffset": 21
+              "dayOffset": 35
             },
             {
               "date": "2026-06-10",
@@ -291157,7 +291183,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-10",
-              "dayOffset": 20
+              "dayOffset": 34
             },
             {
               "date": "2026-06-11",
@@ -291178,7 +291204,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-11",
-              "dayOffset": 19
+              "dayOffset": 33
             },
             {
               "date": "2026-06-12",
@@ -291199,7 +291225,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-12",
-              "dayOffset": 18
+              "dayOffset": 32
             },
             {
               "date": "2026-06-13",
@@ -291220,7 +291246,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-13",
-              "dayOffset": 17
+              "dayOffset": 31
             },
             {
               "date": "2026-06-14",
@@ -291241,7 +291267,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-14",
-              "dayOffset": 16
+              "dayOffset": 30
             },
             {
               "date": "2026-06-15",
@@ -291262,7 +291288,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-15",
-              "dayOffset": 15
+              "dayOffset": 29
             },
             {
               "date": "2026-06-16",
@@ -291283,7 +291309,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-16",
-              "dayOffset": 14
+              "dayOffset": 28
             },
             {
               "date": "2026-06-17",
@@ -291304,7 +291330,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-17",
-              "dayOffset": 13
+              "dayOffset": 27
             },
             {
               "date": "2026-06-18",
@@ -291325,7 +291351,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-18",
-              "dayOffset": 12
+              "dayOffset": 26
             },
             {
               "date": "2026-06-19",
@@ -291346,7 +291372,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-19",
-              "dayOffset": 11
+              "dayOffset": 25
             },
             {
               "date": "2026-06-20",
@@ -291367,7 +291393,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-20",
-              "dayOffset": 10
+              "dayOffset": 24
             },
             {
               "date": "2026-06-21",
@@ -291388,7 +291414,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-21",
-              "dayOffset": 9
+              "dayOffset": 23
             },
             {
               "date": "2026-06-22",
@@ -291409,7 +291435,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-22",
-              "dayOffset": 8
+              "dayOffset": 22
             },
             {
               "date": "2026-06-23",
@@ -291430,7 +291456,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-23",
-              "dayOffset": 7
+              "dayOffset": 21
             },
             {
               "date": "2026-06-24",
@@ -291451,7 +291477,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-24",
-              "dayOffset": 6
+              "dayOffset": 20
             },
             {
               "date": "2026-06-25",
@@ -291472,7 +291498,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-25",
-              "dayOffset": 5
+              "dayOffset": 19
             },
             {
               "date": "2026-06-26",
@@ -291493,7 +291519,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-26",
-              "dayOffset": 4
+              "dayOffset": 18
             },
             {
               "date": "2026-06-27",
@@ -291514,7 +291540,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-27",
-              "dayOffset": 3
+              "dayOffset": 17
             },
             {
               "date": "2026-06-28",
@@ -291535,7 +291561,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-28",
-              "dayOffset": 2
+              "dayOffset": 16
             },
             {
               "date": "2026-06-29",
@@ -291556,7 +291582,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-29",
-              "dayOffset": 1
+              "dayOffset": 15
             },
             {
               "date": "2026-06-30",
@@ -291577,6 +291603,300 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-06-30",
+              "dayOffset": 14
+            },
+            {
+              "date": "2026-07-01",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-01",
+              "dayOffset": 13
+            },
+            {
+              "date": "2026-07-02",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-02",
+              "dayOffset": 12
+            },
+            {
+              "date": "2026-07-03",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-03",
+              "dayOffset": 11
+            },
+            {
+              "date": "2026-07-04",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-04",
+              "dayOffset": 10
+            },
+            {
+              "date": "2026-07-05",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-05",
+              "dayOffset": 9
+            },
+            {
+              "date": "2026-07-06",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-06",
+              "dayOffset": 8
+            },
+            {
+              "date": "2026-07-07",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-07",
+              "dayOffset": 7
+            },
+            {
+              "date": "2026-07-08",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-08",
+              "dayOffset": 6
+            },
+            {
+              "date": "2026-07-09",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-09",
+              "dayOffset": 5
+            },
+            {
+              "date": "2026-07-10",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-10",
+              "dayOffset": 4
+            },
+            {
+              "date": "2026-07-11",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-11",
+              "dayOffset": 3
+            },
+            {
+              "date": "2026-07-12",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-12",
+              "dayOffset": 2
+            },
+            {
+              "date": "2026-07-13",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-13",
+              "dayOffset": 1
+            },
+            {
+              "date": "2026-07-14",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 62.857142857142854,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 62.857142857142854,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 62.857142857142854,
+              "revenue": 62.857142857142854,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 880,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-14",
               "dayOffset": 0
             }
           ],
@@ -291595,9 +291915,9 @@
           "skuMatched": true,
           "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
           "owner": "Екатерина Доможирова",
-          "currentPrice": 774.9999999999999,
-          "currentClientPrice": 774.9999999999999,
-          "currentFillPrice": 774.9999999999999,
+          "currentPrice": 775,
+          "currentClientPrice": 775,
+          "currentFillPrice": 775,
           "minPrice": null,
           "stock": 0,
           "turnoverDays": null,
@@ -291652,7 +291972,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-01",
-              "dayOffset": 12
+              "dayOffset": 13
             },
             {
               "date": "2026-07-02",
@@ -291673,7 +291993,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-02",
-              "dayOffset": 11
+              "dayOffset": 12
             },
             {
               "date": "2026-07-03",
@@ -291694,7 +292014,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-03",
-              "dayOffset": 10
+              "dayOffset": 11
             },
             {
               "date": "2026-07-04",
@@ -291715,7 +292035,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-04",
-              "dayOffset": 9
+              "dayOffset": 10
             },
             {
               "date": "2026-07-05",
@@ -291736,7 +292056,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-05",
-              "dayOffset": 8
+              "dayOffset": 9
             },
             {
               "date": "2026-07-06",
@@ -291757,7 +292077,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-06",
-              "dayOffset": 7
+              "dayOffset": 8
             },
             {
               "date": "2026-07-07",
@@ -291778,7 +292098,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-07",
-              "dayOffset": 6
+              "dayOffset": 7
             },
             {
               "date": "2026-07-08",
@@ -291799,7 +292119,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-08",
-              "dayOffset": 5
+              "dayOffset": 6
             },
             {
               "date": "2026-07-09",
@@ -291820,7 +292140,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-09",
-              "dayOffset": 4
+              "dayOffset": 5
             },
             {
               "date": "2026-07-10",
@@ -291841,7 +292161,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-10",
-              "dayOffset": 3
+              "dayOffset": 4
             },
             {
               "date": "2026-07-11",
@@ -291862,7 +292182,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-11",
-              "dayOffset": 2
+              "dayOffset": 3
             },
             {
               "date": "2026-07-12",
@@ -291883,7 +292203,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-12",
-              "dayOffset": 1
+              "dayOffset": 2
             },
             {
               "date": "2026-07-13",
@@ -291904,6 +292224,27 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-13",
+              "dayOffset": 1
+            },
+            {
+              "date": "2026-07-14",
+              "units": 0.35714285714285715,
+              "ordersUnits": 0.35714285714285715,
+              "ordersRevenue": 276.7857142857143,
+              "deliveredUnits": 0.35714285714285715,
+              "deliveredRevenue": 276.7857142857143,
+              "buyoutUnits": 0.35714285714285715,
+              "buyoutRevenue": 276.7857142857143,
+              "revenue": 276.7857142857143,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 775,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-14",
               "dayOffset": 0
             }
           ],
@@ -292905,9 +293246,9 @@
           "skuMatched": true,
           "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
           "owner": "Екатерина Доможирова",
-          "currentPrice": 544.9999999999999,
-          "currentClientPrice": 544.9999999999999,
-          "currentFillPrice": 544.9999999999999,
+          "currentPrice": 545.0000000000001,
+          "currentClientPrice": 545.0000000000001,
+          "currentFillPrice": 545.0000000000001,
           "minPrice": null,
           "stock": 0,
           "turnoverDays": null,
@@ -292962,7 +293303,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-01",
-              "dayOffset": 12
+              "dayOffset": 13
             },
             {
               "date": "2026-07-02",
@@ -292983,7 +293324,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-02",
-              "dayOffset": 11
+              "dayOffset": 12
             },
             {
               "date": "2026-07-03",
@@ -293004,7 +293345,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-03",
-              "dayOffset": 10
+              "dayOffset": 11
             },
             {
               "date": "2026-07-04",
@@ -293025,7 +293366,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-04",
-              "dayOffset": 9
+              "dayOffset": 10
             },
             {
               "date": "2026-07-05",
@@ -293046,7 +293387,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-05",
-              "dayOffset": 8
+              "dayOffset": 9
             },
             {
               "date": "2026-07-06",
@@ -293067,7 +293408,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-06",
-              "dayOffset": 7
+              "dayOffset": 8
             },
             {
               "date": "2026-07-07",
@@ -293088,7 +293429,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-07",
-              "dayOffset": 6
+              "dayOffset": 7
             },
             {
               "date": "2026-07-08",
@@ -293109,7 +293450,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-08",
-              "dayOffset": 5
+              "dayOffset": 6
             },
             {
               "date": "2026-07-09",
@@ -293130,7 +293471,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-09",
-              "dayOffset": 4
+              "dayOffset": 5
             },
             {
               "date": "2026-07-10",
@@ -293151,7 +293492,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-10",
-              "dayOffset": 3
+              "dayOffset": 4
             },
             {
               "date": "2026-07-11",
@@ -293172,7 +293513,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-11",
-              "dayOffset": 2
+              "dayOffset": 3
             },
             {
               "date": "2026-07-12",
@@ -293193,7 +293534,7 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-12",
-              "dayOffset": 1
+              "dayOffset": 2
             },
             {
               "date": "2026-07-13",
@@ -293214,6 +293555,27 @@
               "estimatedMargin": 0,
               "turnoverDays": null,
               "label": "2026-07-13",
+              "dayOffset": 1
+            },
+            {
+              "date": "2026-07-14",
+              "units": 0.07142857142857142,
+              "ordersUnits": 0.07142857142857142,
+              "ordersRevenue": 38.92857142857143,
+              "deliveredUnits": 0.07142857142857142,
+              "deliveredRevenue": 38.92857142857143,
+              "buyoutUnits": 0.07142857142857142,
+              "buyoutRevenue": 38.92857142857143,
+              "revenue": 38.92857142857143,
+              "adsSpend": 0,
+              "adsRevenue": 0,
+              "adsOrders": 0,
+              "adsImpressions": 0,
+              "adsClicks": 0,
+              "price": 545.0000000000001,
+              "estimatedMargin": 0,
+              "turnoverDays": null,
+              "label": "2026-07-14",
               "dayOffset": 0
             }
           ],
@@ -293226,13 +293588,13 @@
       "key": "samokat",
       "label": "Самокат",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-07-14T07:57:20.619Z",
-      "asOfDate": "2026-07-13",
+      "generatedAt": "2026-07-15T06:00:23.464Z",
+      "asOfDate": "2026-07-14",
       "rows": []
     }
   },
   "extraMarketplace": {
-    "generatedAt": "2026-07-14T08:03:17.950Z",
+    "generatedAt": "2026-07-15T08:16:54.146Z",
     "asOfDate": "2026-07-08",
     "source": "magnit-market-xlsx-daily",
     "platforms": {

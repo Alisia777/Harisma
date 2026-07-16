@@ -412,6 +412,10 @@
       state?.productLeaderboard?.generatedAt || '',
       state?.predictiveRisk?.generatedAt || '',
       state?.autoTaskSignals?.generatedAt || '',
+      state?.oosControl?.generatedAt || state?.oosControl?.summary?.dataDate || '',
+      state?.smartPriceOverlay?.generatedAt || '',
+      state?.adsSummary?.generatedAt || state?.adsSummary?.asOfDate || '',
+      state?.autoSignalBaselines?.generatedAt || '',
       state?.team?.mode || '',
       state?.team?.updatedAt || state?.team?.loadedAt || ''
     ].map((value) => String(value || '')).join('::');

@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-07-16T08:58:19.544Z",
+  "generatedAt": "2026-07-16T17:04:21.029Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -14,12 +14,12 @@
     "status": "ok",
     "dataDate": "2026-07-15",
     "expectedFactDate": "2026-07-15",
-    "sourceGeneratedAt": "2026-07-15T00:00:00+03:00",
+    "sourceGeneratedAt": "2026-07-16T00:00:00+03:00",
     "message": "Данные свежие: факт до 2026-07-15.",
-    "orderProcurementGeneratedAt": "2026-07-15T00:00:00+03:00",
+    "orderProcurementGeneratedAt": "2026-07-16T00:00:00+03:00",
     "orderWindow": {
-      "from": "2026-06-18",
-      "to": "2026-07-15"
+      "from": "2026-06-19",
+      "to": "2026-07-16"
     },
     "smartPriceGeneratedAt": "2026-07-16T07:34:59.418Z",
     "sources": {
@@ -49,7 +49,7 @@
     "newIssues": 0,
     "reopenedIssues": 0,
     "resolvedToday": 0,
-    "owners": 4,
+    "owners": 5,
     "skuCount": 55,
     "dataStatus": "ok",
     "dataDate": "2026-07-15",
@@ -94,13 +94,13 @@
     {
       "key": "Мария Васильева",
       "label": "Мария Васильева",
-      "total": 6,
+      "total": 4,
       "oos": 0,
       "critical": 0,
       "risk": 1,
-      "watch": 5,
+      "watch": 3,
       "lostRevenueDay": 0,
-      "revenueAtRiskDay": 8094458
+      "revenueAtRiskDay": 7162504
     },
     {
       "key": "Питайкин Артём",
@@ -112,6 +112,17 @@
       "watch": 3,
       "lostRevenueDay": 0,
       "revenueAtRiskDay": 1780003
+    },
+    {
+      "key": "Максим Лапыгин",
+      "label": "Максим Лапыгин",
+      "total": 2,
+      "oos": 0,
+      "critical": 0,
+      "risk": 0,
+      "watch": 2,
+      "lostRevenueDay": 0,
+      "revenueAtRiskDay": 931954
     },
     {
       "key": "Молодякова Дария",
@@ -4231,7 +4242,7 @@
       "article": "penka_kudryavii_metod_150ml",
       "articleKey": "penka_kudryavii_metod_150ml",
       "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "owner": "Мария Васильева",
+      "owner": "Максим Лапыгин",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -5149,7 +5160,7 @@
       "article": "sprei_buster_100ml",
       "articleKey": "sprei_buster_100ml",
       "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-      "owner": "Мария Васильева",
+      "owner": "Максим Лапыгин",
       "department": "Закуп",
       "status": "watch",
       "statusLabel": "Контроль запаса <30 д",
@@ -11014,7 +11025,7 @@
         "place": "8 кластеров <30 д",
         "article": "penka_kudryavii_metod_150ml",
         "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-        "owner": "Мария Васильева",
+        "owner": "Максим Лапыгин",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",
@@ -11065,7 +11076,7 @@
         "place": "12 кластеров <30 д",
         "article": "sprei_buster_100ml",
         "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-        "owner": "Мария Васильева",
+        "owner": "Максим Лапыгин",
         "department": "Закуп",
         "status": "watch",
         "severity": "medium",

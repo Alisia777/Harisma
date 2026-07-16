@@ -217,6 +217,7 @@ if (!workflow.includes("--expected-run-date '${{ steps.cutoff.outputs.run_date }
   'node scripts/build-wb-owner-audit-from-skus.js --input-dir data --base-data-dir data --output-dir data',
   'node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data',
   'node scripts/build-portal-dashboard.js --input-dir data --output-dir data',
+  'node scripts/build-control-auto-task-sources.js --input-dir data --output-dir data',
   'node scripts/build-wb-sales-funnel-from-platform-trends.js --platform-trends data/platform_trends.json --skus data/skus.json --wb-feedbacks data/wb_feedbacks_summary.json --output-file data/wb_sales_funnel_report.json',
   'node scripts/portal-smart-price-overlay-sync.js sync --output-dir .portal-truth-output/price-sync',
   'node scripts/portal-wb-feedback-sync.js sync --input-dir data --base-data-dir data --output-dir data'

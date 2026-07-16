@@ -11,6 +11,7 @@
     'platform_trends',
     'iu_plan',
     'ads_summary',
+    'control_auto_task_sources',
     'iu_drr_summary',
     'wb_substitution_traffic',
     'wb_substitution_traffic_history',
@@ -76,6 +77,21 @@
     'warehouse_stock_overlay'
   ];
   const VIEW_SNAPSHOT_KEYS = {
+    control: [
+      'skus',
+      'sku_registry_meta',
+      'portal_sync_health',
+      'portal_data_quarantine',
+      'portal_data_quality',
+      'sku_aliases',
+      'sku_alias_ignore',
+      'sku_alias_audit',
+      'sku_matrix',
+      'wb_owner_distribution_audit',
+      'product_leaderboard',
+      'oos_control',
+      'control_auto_task_sources'
+    ],
     prices: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
     repricer: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
     order: ['logistics', 'order_procurement', 'order_procurement_wb', 'order_procurement_ozon', 'order_procurement_ym', 'warehouse_stock_overlay'],
@@ -97,6 +113,7 @@
     iu_plan: 'iuPlan',
     logistics: 'logistics',
     ads_summary: 'adsSummary',
+    control_auto_task_sources: 'controlAutoTaskSources',
     iu_drr_summary: 'iuDrrSummary',
     wb_feedbacks_summary: 'wbFeedbacks',
     wb_substitution_traffic: 'wbSubstitutionTraffic',
@@ -152,16 +169,26 @@
   }
 
   function activeViewKey() {
+    const route = String(location?.hash || '').replace(/^#\/?/, '').trim();
+    if (route) return route;
     if (typeof state === 'object' && state?.activeView) return String(state.activeView);
     const active = document.querySelector('.view.active[id^="view-"]');
     return active ? String(active.id || '').replace(/^view-/, '') : '';
   }
 
   function keysForRefresh(options = {}) {
+    const view = String(options?.view || activeViewKey() || '').trim();
     if (options?.forceFull || options?.forceAll || options?.full) return SNAPSHOT_KEYS.slice();
+    if (view === 'control') {
+      const keys = VIEW_SNAPSHOT_KEYS.control.slice();
+      for (const key of options?.keys || []) {
+        const clean = String(key || '').trim();
+        if (clean && SNAPSHOT_KEYS.includes(clean) && !keys.includes(clean)) keys.push(clean);
+      }
+      return keys;
+    }
     if (typeof location !== 'undefined' && new URLSearchParams(location.search || '').has('portal-refresh')) return SNAPSHOT_KEYS.slice();
     const keys = BOOT_SNAPSHOT_KEYS.slice();
-    const view = String(options?.view || activeViewKey() || '').trim();
     for (const key of VIEW_SNAPSHOT_KEYS[view] || []) {
       if (!keys.includes(key)) keys.push(key);
     }
@@ -651,6 +678,10 @@
         continue;
       }
       state[target] = clone(row.payload);
+      if (row.snapshot_key === 'control_auto_task_sources') {
+        if (row.payload?.smartPriceOverlay) state.smartPriceOverlay = clone(row.payload.smartPriceOverlay);
+        if (row.payload?.adsSummary) state.adsSummary = clone(row.payload.adsSummary);
+      }
       if (row.snapshot_key === 'order_procurement') {
         state.orderProcurementSnapshot = clone(row.payload);
         state.orderProcurement = clone(row.payload);

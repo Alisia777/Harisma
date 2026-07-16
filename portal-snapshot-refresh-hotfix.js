@@ -14,6 +14,7 @@
     "data/iu_plan.json": "iu_plan",
     "data/logistics.json": "logistics",
     "data/ads_summary.json": "ads_summary",
+    "data/control_auto_task_sources.json": "control_auto_task_sources",
     "data/iu_drr_summary.json": "iu_drr_summary",
     "data/wb_feedbacks_summary.json": "wb_feedbacks_summary",
     "data/wb_substitution_traffic.json": "wb_substitution_traffic",
@@ -902,6 +903,21 @@
     "warehouse_stock_overlay"
   ];
   var VIEW_REFRESH_KEYS = {
+    control: [
+      "skus",
+      "sku_registry_meta",
+      "portal_sync_health",
+      "portal_data_quarantine",
+      "portal_data_quality",
+      "sku_aliases",
+      "sku_alias_ignore",
+      "sku_alias_audit",
+      "sku_matrix",
+      "wb_owner_distribution_audit",
+      "product_leaderboard",
+      "oos_control",
+      "control_auto_task_sources"
+    ],
     prices: ["prices", "smart_price_workbench", "smart_price_overlay", "price_workbench_support"],
     repricer: ["repricer", "prices", "smart_price_workbench", "smart_price_overlay", "price_workbench_support"],
     order: ["logistics", "order_procurement", "order_procurement_wb", "order_procurement_ozon", "order_procurement_ym", "warehouse_stock_overlay"],
@@ -914,6 +930,8 @@
   };
 
   function activeRefreshView() {
+    var route = String(typeof location !== "undefined" && location.hash || "").replace(/^#\/?/, "").trim();
+    if (route) return route;
     if (typeof state === "object" && state && state.activeView) return String(state.activeView);
     var active = document.querySelector(".view.active[id^='view-']");
     return active ? String(active.id || "").replace(/^view-/, "") : "";
@@ -925,10 +943,15 @@
   }
 
   function refreshKeysForOptions(options) {
+    var view = String(options && options.view || activeRefreshView() || "").trim();
     if (options && (options.forceFull || options.forceAll || options.full)) return null;
+    if (view === "control") {
+      var controlKeys = VIEW_REFRESH_KEYS.control.slice();
+      (options && Array.isArray(options.keys) ? options.keys : []).forEach(function (key) { pushUniqueKey(controlKeys, key); });
+      return controlKeys;
+    }
     if (typeof location !== "undefined" && new URLSearchParams(location.search || "").has("portal-refresh")) return null;
     var keys = LIGHT_REFRESH_KEYS.slice();
-    var view = String(options && options.view || activeRefreshView() || "").trim();
     (VIEW_REFRESH_KEYS[view] || []).forEach(function (key) { pushUniqueKey(keys, key); });
     (options && Array.isArray(options.keys) ? options.keys : []).forEach(function (key) { pushUniqueKey(keys, key); });
     return keys;
@@ -986,7 +1009,17 @@
       maybeLoadSnapshotJson("warehouse_stock_overlay", "data/warehouse_stock_overlay.json", { generatedAt: "", rows: [] }),
       maybeLoadSnapshotJson("sku_registry_meta", "data/sku_registry_meta.json", { generatedAt: "" }),
       maybeLoadSnapshotJson("wb_owner_distribution_audit", "data/wb_owner_distribution_audit.json", { schema: "portal-wb-owner-distribution-audit-v1", summary: { ownerCounts: {} } }),
-      maybeLoadSnapshotJson("wb_sales_funnel_report", "data/wb_sales_funnel_report.json", { generatedAt: "", period: {}, items: [] })
+      maybeLoadSnapshotJson("wb_sales_funnel_report", "data/wb_sales_funnel_report.json", { generatedAt: "", period: {}, items: [] }),
+      maybeLoadSnapshotJson(
+        "control_auto_task_sources",
+        "data/control_auto_task_sources.json",
+        {
+          schema: "portal-control-auto-task-sources-v1",
+          generatedAt: "",
+          smartPriceOverlay: { generatedAt: "", platforms: {} },
+          adsSummary: { generatedAt: "", asOfDate: "", itemSeries: [] }
+        }
+      )
     ]);
     var dashboard = results[0];
     var platformTrends = results[1];
@@ -1024,6 +1057,7 @@
     var skuRegistryMeta = results[33];
     var wbOwnerDistributionAudit = results[34];
     var wbSalesFunnel = results[35];
+    var controlAutoTaskSources = results[36];
     var changed = false;
 
     if (typeof state === "object" && state) {
@@ -1134,6 +1168,12 @@
       var nextWbSalesFunnel = wbSalesFunnel && typeof wbSalesFunnel === "object"
         ? wbSalesFunnel
         : (state.wbSalesFunnel || { generatedAt: "", period: {}, items: [] });
+      var nextControlSmartPriceOverlay = controlAutoTaskSources && controlAutoTaskSources.smartPriceOverlay
+        ? controlAutoTaskSources.smartPriceOverlay
+        : null;
+      var nextControlAdsSummary = controlAutoTaskSources && controlAutoTaskSources.adsSummary
+        ? controlAutoTaskSources.adsSummary
+        : null;
 
       if (payloadChanged("dashboard", state.dashboard, nextDashboard)) {
         state.dashboard = nextDashboard;
@@ -1284,6 +1324,17 @@
       if (payloadChanged("wb_sales_funnel_report", state.wbSalesFunnel, nextWbSalesFunnel)) {
         state.wbSalesFunnel = nextWbSalesFunnel;
         changed = true;
+      }
+      if (nextControlSmartPriceOverlay && payloadChanged("control_smart_price_overlay", state.smartPriceOverlay, nextControlSmartPriceOverlay)) {
+        state.smartPriceOverlay = nextControlSmartPriceOverlay;
+        changed = true;
+      }
+      if (nextControlAdsSummary && payloadChanged("control_ads_summary", state.adsSummary, nextControlAdsSummary)) {
+        state.adsSummary = nextControlAdsSummary;
+        changed = true;
+      }
+      if (controlAutoTaskSources && typeof controlAutoTaskSources === "object") {
+        state.controlAutoTaskSources = controlAutoTaskSources;
       }
       if (changed && typeof applyOwnerOverridesToSkus === "function") applyOwnerOverridesToSkus();
     }

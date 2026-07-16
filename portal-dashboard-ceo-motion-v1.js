@@ -3338,7 +3338,8 @@
   }
 
   function dashboardRouteActive() {
-    const raw = appState().activeView || location.hash.replace(/^#\/?/, '') || 'dashboard';
+    const route = location.hash.replace(/^#\/?/, '');
+    const raw = route || appState().activeView || 'dashboard';
     const normalized = typeof normalizePortalView === 'function'
       ? normalizePortalView(raw)
       : String(raw || 'dashboard').replace(/^\/+/, '') || 'dashboard';

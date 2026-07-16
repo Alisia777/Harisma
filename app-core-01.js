@@ -400,6 +400,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/platform_trends.json': 'platform_trends',
   'data/logistics.json': 'logistics',
   'data/ads_summary.json': 'ads_summary',
+  'data/control_auto_task_sources.json': 'control_auto_task_sources',
   'data/iu_drr_summary.json': 'iu_drr_summary',
   'data/wb_feedbacks_summary.json': 'wb_feedbacks_summary',
   'data/wb_substitution_traffic.json': 'wb_substitution_traffic',
@@ -2828,17 +2829,40 @@ const LAZY_DATA_LOADERS = {
     state.launches = Array.isArray(launches) ? launches : [];
   },
   controlCenter: async () => {
-    const [launches, productLeaderboard, oosControl, predictiveRisk, autoTaskSignals, predictiveRiskOutcomeAudit, smartPriceOverlay, returnBaselineSkus, orderProcurementWb, orderProcurementOzon] = await Promise.all([
+    const [launches, productLeaderboard, oosControl, predictiveRisk, autoTaskSignals, predictiveRiskOutcomeAudit, controlAutoTaskSources, returnBaselineSkus] = await Promise.all([
       loadJsonOrFallback('data/launches.json', [], 'Продукт / новинки'),
-      Promise.resolve(state.productLeaderboard || { generatedAt: '', items: [], summary: {} }),
-      Promise.resolve(state.oosControl || { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } }),
-      Promise.resolve(state.predictiveRisk || { schema: 'qharisma-predictive-risk-v1', generatedAt: '', summary: {}, risks: [], autoTaskSignals: [] }),
-      Promise.resolve(state.autoTaskSignals || { schema: 'qharisma-auto-task-signals-v1', generatedAt: '', summary: {}, signals: [] }),
-      Promise.resolve(state.predictiveRiskOutcomeAudit || { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 }),
-      Promise.resolve(state.smartPriceOverlay || { generatedAt: '', platforms: {} }),
-      Promise.resolve(state.autoSignalBaselines?.skus || []),
-      Promise.resolve(state.orderProcurementWb || { generatedAt: '', rows: [] }),
-      Promise.resolve(state.orderProcurementOzon || { generatedAt: '', rows: [] })
+      loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
+      loadJsonOrFallback(
+        'data/oos_control.json',
+        { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
+        'OOS контроль'
+      ),
+      loadJsonOrFallback(
+        'data/predictive_risk_snapshot.json',
+        { schema: 'qharisma-predictive-risk-v1', generatedAt: '', summary: {}, risks: [], autoTaskSignals: [] },
+        'Предиктивные риски'
+      ),
+      loadJsonOrFallback(
+        'data/auto_task_signals.json',
+        { schema: 'qharisma-auto-task-signals-v1', generatedAt: '', summary: {}, signals: [] },
+        'Авто-сигналы задач'
+      ),
+      loadJsonOrFallback(
+        'data/predictive_risk_outcome_audit.json',
+        { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 },
+        'Контроль исходов рисков'
+      ),
+      loadJsonOrFallback(
+        'data/control_auto_task_sources.json',
+        {
+          schema: 'portal-control-auto-task-sources-v1',
+          generatedAt: '',
+          smartPriceOverlay: { generatedAt: '', platforms: {} },
+          adsSummary: { generatedAt: '', asOfDate: '', itemSeries: [] }
+        },
+        'Источники авто-задач'
+      ),
+      loadJsonOrFallback('data/last_good/skus.json', [], 'Базовый срез SKU')
     ]);
     state.launches = Array.isArray(launches) ? launches : [];
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
@@ -2857,16 +2881,12 @@ const LAZY_DATA_LOADERS = {
     state.predictiveRiskOutcomeAudit = predictiveRiskOutcomeAudit && typeof predictiveRiskOutcomeAudit === 'object'
       ? predictiveRiskOutcomeAudit
       : { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 };
-    state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
-      ? smartPriceOverlay
+    state.smartPriceOverlay = controlAutoTaskSources?.smartPriceOverlay && typeof controlAutoTaskSources.smartPriceOverlay === 'object'
+      ? controlAutoTaskSources.smartPriceOverlay
       : { generatedAt: '', platforms: {} };
-    state.adsSummary = state.adsSummary && typeof state.adsSummary === 'object'
-      ? state.adsSummary
-      : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
-    state.orderProcurementWb = orderProcurementWb || { generatedAt: '', rows: [] };
-    state.order_procurement_wb = state.orderProcurementWb;
-    state.orderProcurementOzon = orderProcurementOzon || { generatedAt: '', rows: [] };
-    state.order_procurement_ozon = state.orderProcurementOzon;
+    state.adsSummary = controlAutoTaskSources?.adsSummary && typeof controlAutoTaskSources.adsSummary === 'object'
+      ? controlAutoTaskSources.adsSummary
+      : { generatedAt: '', asOfDate: '', itemSeries: [] };
     const returnBaselineRows = Array.isArray(returnBaselineSkus)
       ? returnBaselineSkus
       : Array.isArray(returnBaselineSkus?.skus)

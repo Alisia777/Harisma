@@ -1,60 +1,77 @@
 {
   "schema": "portal-repricing-reconciliation-v1",
-  "generatedAt": "2026-07-15T08:16:54.146Z",
-  "snapshot_id": "repricer:bbc6ed08e9460615",
+  "generatedAt": "2026-07-16T07:34:59.418Z",
+  "snapshot_id": "repricer:07cef2637a2b4bd3",
   "status": "warning",
   "publish_allowed": true,
-  "feature_publish_allowed": false,
-  "feature_status": "blocked",
-  "business_fingerprint": "7b359421ab6a361f1f8ee38d4ed54ac670931da9d1e3dca7017831663f3bab52",
+  "blockingReasons": [],
+  "warnings": [
+    "repricer feature blocked: 0/872 publishable recommendations"
+  ],
   "summary": {
-    "rows": 872,
+    "checks": 10,
+    "blockingChecks": 0,
+    "warningChecks": 1,
+    "rowCount": 872,
     "eligible_rows": 872,
     "publishable_rows": 0,
     "blocked_rows": 872,
     "publishable_coverage": 0,
     "required_publishable_coverage": 0.01,
-    "feature_status": "blocked",
-    "publishable_recommendations": 0,
-    "blocked_recommendations": 872,
-    "duplicate_platform_keys": 0,
-    "normalized_article_collisions": 0,
-    "deduped_exact_duplicates": 2
+    "feature_status": "blocked"
   },
-  "blockingReasons": [],
-  "warnings": [
-    "repricer feature blocked: 0/872 publishable recommendations",
-    "872 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
-    "2 exact duplicate source rows were deterministically deduped"
-  ],
-  "duplicatePlatformKeys": [],
-  "normalizedArticleCollisions": [],
-  "dedupedExactDuplicates": [
-    {
-      "key": "wb|maslodlyavolosparf110ml",
-      "articleKey": "maslo_dlya_volos_parf_110ml"
-    },
-    {
-      "key": "ozon|maslodlyavolosparf110ml",
-      "articleKey": "maslo_dlya_volos_parf_110ml"
-    }
-  ],
   "checks": [
     {
-      "id": "repricer:no-duplicate-normalized-sku-platform",
-      "status": "ok",
-      "blockingReasons": []
+      "id": "repricer:no-duplicate-normalized-platform-key",
+      "blockingReasons": [],
+      "duplicateKeys": [],
+      "warnings": [],
+      "status": "ok"
     },
     {
-      "id": "repricer:no-normalized-article-collisions",
-      "status": "ok",
+      "id": "repricer:published-recommendations-have-complete-inputs",
       "blockingReasons": [],
-      "warnings": []
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    },
+    {
+      "id": "repricer:margin-recalculation",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    },
+    {
+      "id": "repricer:floor-cap-corridor",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    },
+    {
+      "id": "repricer:current-price-freshness",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    },
+    {
+      "id": "repricer:stock-unknown-not-oos",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    },
+    {
+      "id": "repricer:local-storage-not-final-truth",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
     },
     {
       "id": "repricer:feature-readiness",
-      "status": "warning",
-      "blockingReasons": [],
       "warnings": [
         "repricer feature blocked: 0/872 publishable recommendations"
       ],
@@ -65,13 +82,27 @@
         "publishable_coverage": 0,
         "required_publishable_coverage": 0.01,
         "feature_status": "blocked"
-      }
+      },
+      "blockingReasons": [],
+      "status": "warning"
     },
     {
-      "id": "repricer:local-storage-not-business-truth",
-      "status": "ok",
+      "id": "repricer:browser-guard-does-not-rewrite-truth",
       "blockingReasons": [],
-      "details": "Canonical builder reads only data/*.json and approved server-side override records; browser localStorage is never loaded."
+      "details": "Guard may flag/quarantine only; canonical truth is preserved.",
+      "warnings": [],
+      "status": "ok"
+    },
+    {
+      "id": "repricer:local-overrides-require-approval",
+      "blockingReasons": [],
+      "details": "UI drafts may be stored locally; only approved records may affect final price.",
+      "warnings": [],
+      "status": "ok"
     }
-  ]
+  ],
+  "business_fingerprint": "dc37d7cb331bd21144281bf62392332eb089d6191ce9e4f683ce14af9963fbb9",
+  "rowCount": 872,
+  "feature_status": "blocked",
+  "feature_publish_allowed": false
 }

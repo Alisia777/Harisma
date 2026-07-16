@@ -206,7 +206,7 @@
       "key": "product_leaderboard",
       "file": "product_leaderboard.json",
       "kind": "projection",
-      "required": true,
+      "required": false,
       "freshness": "max-age-10d",
       "datePaths": ["asOfDate", "generatedAt", "sourceMtime"],
       "repairStep": "leaderboard-history"
@@ -215,7 +215,7 @@
       "key": "product_leaderboard_history",
       "file": "product_leaderboard_history.json",
       "kind": "history",
-      "required": true,
+      "required": false,
       "freshness": "max-age-10d",
       "datePaths": ["generatedAt"],
       "repairStep": "leaderboard-history"

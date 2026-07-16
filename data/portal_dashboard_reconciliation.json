@@ -1,29 +1,100 @@
 {
   "schema": "portal-dashboard-reconciliation-v1",
-  "generatedAt": "2026-07-15T08:16:54.118Z",
-  "snapshot_id": "dashboard:5f3b03ef73b5d498",
+  "generatedAt": "2026-07-16T08:57:25.954Z",
+  "snapshot_id": "dashboard:6c43add68ac1fb10",
   "status": "warning",
   "publish_allowed": true,
-  "business_fingerprint": "526034d3c813ef18b2880af7e089983333c1f87e80816d23c9ba4442d7311451",
   "blockingReasons": [],
   "warnings": [
-    "extra marketplace facts are behind 2026-07-14: magnit=2026-07-08"
+    "3 platform raw fact metrics are missing before daily sync",
+    "1 extra marketplace raw fact metrics are behind the core cutoff date"
   ],
+  "summary": {
+    "checks": 6,
+    "blockingChecks": 0,
+    "warningChecks": 1
+  },
   "checks": [
     {
+      "id": "dashboard:null-is-incomplete-not-zero",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    },
+    {
+      "id": "dashboard:estimated-and-incomplete-never-green",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    },
+    {
       "id": "dashboard:raw-fact-not-scaled",
-      "status": "ok",
-      "details": "Control totals create explicit unallocated rows; raw platform fact is not scaled."
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
     },
     {
-      "id": "dashboard:no-iu-fallback",
-      "status": "ok",
-      "details": "Builder reads company_plan/platform_trends/ads only; IU files are not loaded."
+      "id": "dashboard:no-monthly-actual-proration",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
     },
     {
-      "id": "dashboard:null-not-zero",
-      "status": "ok",
-      "blockingReasons": []
+      "id": "dashboard:no-iu-source-in-non-iu-metrics",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    },
+    {
+      "id": "dashboard:no-mixed-platform-dates",
+      "blockingReasons": [],
+      "warnings": [
+        "3 platform raw fact metrics are missing before daily sync",
+        "1 extra marketplace raw fact metrics are behind the core cutoff date"
+      ],
+      "samples": [],
+      "warningSamples": [
+        {
+          "metric_id": "sales.raw_revenue",
+          "label": "Raw revenue magnit",
+          "unit": "RUB",
+          "plan_id": null,
+          "scope": {
+            "platform": "magnit"
+          },
+          "period_from": "2026-07-01",
+          "period_to": "2026-07-15",
+          "raw_value": 14496.93,
+          "displayed_value": 14496.93,
+          "transforms": [
+            "sum_daily_marketplace_sales_fact"
+          ],
+          "source_dates": {
+            "platform_trends": "2026-07-08"
+          },
+          "data_status": "incomplete",
+          "reconciliation_status": "blocked",
+          "business_status": "neutral",
+          "confidence": "low",
+          "drilldown": [
+            {
+              "platform": "magnit",
+              "revenue": 14496.93,
+              "units": 36,
+              "date_from": "2026-07-01",
+              "date_to": "2026-07-08"
+            }
+          ]
+        }
+      ],
+      "status": "warning"
     }
-  ]
+  ],
+  "business_fingerprint": "931df6e0d77b212ce4651439e45652a21519b5db03c1d408ea3c809d78dc3a4c",
+  "metricCount": 14
 }

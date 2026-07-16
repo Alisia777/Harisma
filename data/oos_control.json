@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-07-15T08:23:01.013Z",
+  "generatedAt": "2026-07-16T08:58:19.544Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -12,16 +12,16 @@
   },
   "dataFreshness": {
     "status": "ok",
-    "dataDate": "2026-07-14",
-    "expectedFactDate": "2026-07-14",
+    "dataDate": "2026-07-15",
+    "expectedFactDate": "2026-07-15",
     "sourceGeneratedAt": "2026-07-15T00:00:00+03:00",
-    "message": "Данные свежие: факт до 2026-07-14.",
+    "message": "Данные свежие: факт до 2026-07-15.",
     "orderProcurementGeneratedAt": "2026-07-15T00:00:00+03:00",
     "orderWindow": {
       "from": "2026-06-18",
       "to": "2026-07-15"
     },
-    "smartPriceGeneratedAt": "2026-07-15T08:16:54.146Z",
+    "smartPriceGeneratedAt": "2026-07-16T07:34:59.418Z",
     "sources": {
       "orderProcurement": "order_procurement.json",
       "skus": "skus.json",
@@ -31,7 +31,7 @@
     }
   },
   "summary": {
-    "date": "2026-07-15",
+    "date": "2026-07-16",
     "totalIssues": 97,
     "oosCount": 40,
     "criticalCount": 40,
@@ -44,16 +44,16 @@
     "lostRevenueDay": 27384,
     "revenueAtRiskDay": 10461911,
     "monthKey": "2026-07",
-    "lostRevenueMonth": 143914,
-    "revenueAtRiskMonth": 100940191,
+    "lostRevenueMonth": 171298,
+    "revenueAtRiskMonth": 111402102,
     "newIssues": 0,
     "reopenedIssues": 0,
     "resolvedToday": 0,
     "owners": 4,
     "skuCount": 55,
     "dataStatus": "ok",
-    "dataDate": "2026-07-14",
-    "expectedFactDate": "2026-07-14"
+    "dataDate": "2026-07-15",
+    "expectedFactDate": "2026-07-15"
   },
   "byPlatform": [
     {
@@ -229,8 +229,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -303,8 +303,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -377,8 +377,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -451,8 +451,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -525,8 +525,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -599,8 +599,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -661,8 +661,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -723,8 +723,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -785,8 +785,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -859,8 +859,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -921,8 +921,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1019,8 +1019,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1093,8 +1093,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1167,8 +1167,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1229,8 +1229,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1351,8 +1351,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1425,8 +1425,8 @@
         }
       ],
       "firstSeenDate": "2026-07-14",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 2,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 3,
       "isNew": false,
       "isReopened": false
     },
@@ -1499,8 +1499,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1561,8 +1561,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1707,8 +1707,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1781,8 +1781,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1843,8 +1843,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1917,8 +1917,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1991,8 +1991,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2053,8 +2053,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2127,8 +2127,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2201,8 +2201,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2275,8 +2275,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2349,8 +2349,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2411,8 +2411,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2473,8 +2473,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2547,8 +2547,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2621,8 +2621,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2683,8 +2683,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2757,8 +2757,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2831,8 +2831,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2905,8 +2905,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -2967,8 +2967,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -3029,8 +3029,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -3091,8 +3091,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -3333,8 +3333,8 @@
         }
       ],
       "firstSeenDate": "2026-06-01",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 45,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 46,
       "isNew": false,
       "isReopened": false
     },
@@ -3683,8 +3683,8 @@
         }
       ],
       "firstSeenDate": "2026-06-01",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 45,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 46,
       "isNew": false,
       "isReopened": false
     },
@@ -3757,8 +3757,8 @@
         }
       ],
       "firstSeenDate": "2026-07-03",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 13,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 14,
       "isNew": false,
       "isReopened": false
     },
@@ -4071,8 +4071,8 @@
         }
       ],
       "firstSeenDate": "2026-06-25",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 21,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 22,
       "isNew": false,
       "isReopened": false
     },
@@ -4217,8 +4217,8 @@
         }
       ],
       "firstSeenDate": "2026-06-25",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 21,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 22,
       "isNew": false,
       "isReopened": false
     },
@@ -4363,8 +4363,8 @@
         }
       ],
       "firstSeenDate": "2026-06-25",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 21,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 22,
       "isNew": false,
       "isReopened": false
     },
@@ -4737,8 +4737,8 @@
         }
       ],
       "firstSeenDate": "2026-06-25",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 21,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 22,
       "isNew": false,
       "isReopened": false
     },
@@ -5135,8 +5135,8 @@
         }
       ],
       "firstSeenDate": "2026-06-25",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 21,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 22,
       "isNew": false,
       "isReopened": false
     },
@@ -5329,8 +5329,8 @@
         }
       ],
       "firstSeenDate": "2026-06-25",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 21,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 22,
       "isNew": false,
       "isReopened": false
     },
@@ -5547,8 +5547,8 @@
         }
       ],
       "firstSeenDate": "2026-06-25",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 21,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 22,
       "isNew": false,
       "isReopened": false
     },
@@ -5897,8 +5897,8 @@
         }
       ],
       "firstSeenDate": "2026-07-03",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 13,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 14,
       "isNew": false,
       "isReopened": false
     },
@@ -6247,8 +6247,8 @@
         }
       ],
       "firstSeenDate": "2026-06-25",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 21,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 22,
       "isNew": false,
       "isReopened": false
     },
@@ -6585,8 +6585,8 @@
         }
       ],
       "firstSeenDate": "2026-06-25",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 21,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 22,
       "isNew": false,
       "isReopened": false
     },
@@ -6671,8 +6671,8 @@
         }
       ],
       "firstSeenDate": "2026-07-03",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 13,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 14,
       "isNew": false,
       "isReopened": false
     },
@@ -6745,8 +6745,8 @@
         }
       ],
       "firstSeenDate": "2026-07-03",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 13,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 14,
       "isNew": false,
       "isReopened": false
     },
@@ -6807,8 +6807,8 @@
         }
       ],
       "firstSeenDate": "2026-07-03",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 13,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 14,
       "isNew": false,
       "isReopened": false
     },
@@ -6905,8 +6905,8 @@
         }
       ],
       "firstSeenDate": "2026-07-03",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 13,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 14,
       "isNew": false,
       "isReopened": false
     },
@@ -6979,8 +6979,8 @@
         }
       ],
       "firstSeenDate": "2026-07-03",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 13,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 14,
       "isNew": false,
       "isReopened": false
     },
@@ -7041,8 +7041,8 @@
         }
       ],
       "firstSeenDate": "2026-07-10",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -7103,8 +7103,8 @@
         }
       ],
       "firstSeenDate": "2026-07-06",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 10,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 11,
       "isNew": false,
       "isReopened": false
     },
@@ -7189,8 +7189,8 @@
         }
       ],
       "firstSeenDate": "2026-07-13",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 3,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 4,
       "isNew": false,
       "isReopened": false
     },
@@ -7251,8 +7251,8 @@
         }
       ],
       "firstSeenDate": "2026-07-03",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 13,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 14,
       "isNew": false,
       "isReopened": false
     },
@@ -7313,8 +7313,8 @@
         }
       ],
       "firstSeenDate": "2026-07-03",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 13,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 14,
       "isNew": false,
       "isReopened": false
     },
@@ -7375,8 +7375,8 @@
         }
       ],
       "firstSeenDate": "2026-07-06",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 10,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 11,
       "isNew": false,
       "isReopened": false
     },
@@ -7437,8 +7437,8 @@
         }
       ],
       "firstSeenDate": "2026-07-03",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 13,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 14,
       "isNew": false,
       "isReopened": false
     },
@@ -7499,8 +7499,8 @@
         }
       ],
       "firstSeenDate": "2026-07-13",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 3,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 4,
       "isNew": false,
       "isReopened": false
     },
@@ -7561,8 +7561,8 @@
         }
       ],
       "firstSeenDate": "2026-07-15",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -7623,8 +7623,8 @@
         }
       ],
       "firstSeenDate": "2026-07-14",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 2,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 3,
       "isNew": false,
       "isReopened": false
     },
@@ -7709,8 +7709,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -7771,8 +7771,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -7833,8 +7833,8 @@
         }
       ],
       "firstSeenDate": "2026-07-15",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -7895,8 +7895,8 @@
         }
       ],
       "firstSeenDate": "2026-07-15",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -7993,8 +7993,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8055,8 +8055,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8117,8 +8117,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8179,8 +8179,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8241,8 +8241,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8327,8 +8327,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8389,8 +8389,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8451,8 +8451,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8513,8 +8513,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8575,8 +8575,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8637,8 +8637,8 @@
         }
       ],
       "firstSeenDate": "2026-07-15",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -8735,8 +8735,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8809,8 +8809,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8871,8 +8871,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -8933,8 +8933,8 @@
         }
       ],
       "firstSeenDate": "2026-07-15",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -8995,8 +8995,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -9129,8 +9129,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -9191,8 +9191,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -9313,8 +9313,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -9399,8 +9399,8 @@
         }
       ],
       "firstSeenDate": "2026-07-14",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 2,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 3,
       "isNew": false,
       "isReopened": false
     },
@@ -9461,8 +9461,8 @@
         }
       ],
       "firstSeenDate": "2026-07-15",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -9523,8 +9523,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     },
@@ -9585,8 +9585,8 @@
         }
       ],
       "firstSeenDate": "2026-07-15",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -9647,8 +9647,8 @@
         }
       ],
       "firstSeenDate": "2026-07-15",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -9721,8 +9721,8 @@
         }
       ],
       "firstSeenDate": "2026-07-07",
-      "lastSeenDate": "2026-07-15",
-      "daysOpen": 9,
+      "lastSeenDate": "2026-07-16",
+      "daysOpen": 10,
       "isNew": false,
       "isReopened": false
     }
@@ -10210,10 +10210,24 @@
         "placeCount": 392,
         "lostRevenueDay": 27384,
         "revenueAtRiskDay": 10461911
+      },
+      {
+        "date": "2026-07-16",
+        "totalIssues": 97,
+        "oosCount": 40,
+        "criticalCount": 40,
+        "riskCount": 3,
+        "oosSoonCount": 3,
+        "watchCount": 54,
+        "zeroStockCount": 31,
+        "zeroStockPlaceCount": 56,
+        "placeCount": 392,
+        "lostRevenueDay": 27384,
+        "revenueAtRiskDay": 10461911
       }
     ],
     "latest": {
-      "date": "2026-07-15",
+      "date": "2026-07-16",
       "totalIssues": 97,
       "oosCount": 40,
       "criticalCount": 40,
@@ -10240,8 +10254,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10257,8 +10271,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10274,8 +10288,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10291,8 +10305,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10308,8 +10322,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10325,8 +10339,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10342,8 +10356,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10359,8 +10373,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10376,8 +10390,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10393,8 +10407,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10410,8 +10424,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10427,8 +10441,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10444,8 +10458,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10461,8 +10475,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10478,8 +10492,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10495,8 +10509,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10512,8 +10526,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-14",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 2,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 3,
         "resolvedDate": ""
       },
       {
@@ -10529,8 +10543,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10546,8 +10560,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10563,8 +10577,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10580,8 +10594,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10597,8 +10611,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10614,8 +10628,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10631,8 +10645,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10648,8 +10662,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10665,8 +10679,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10682,8 +10696,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10699,8 +10713,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10716,8 +10730,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10733,8 +10747,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10750,8 +10764,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10767,8 +10781,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10784,8 +10798,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10801,8 +10815,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10818,8 +10832,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10835,8 +10849,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10852,8 +10866,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10869,8 +10883,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10886,8 +10900,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10903,8 +10917,8 @@
         "status": "oos",
         "severity": "critical",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -10920,8 +10934,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-06-01",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 45,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 46,
         "resolvedDate": ""
       },
       {
@@ -10937,8 +10951,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-06-01",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 45,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 46,
         "resolvedDate": ""
       },
       {
@@ -10954,8 +10968,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-07-03",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 13,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 14,
         "resolvedDate": ""
       },
       {
@@ -10971,8 +10985,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-06-25",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 21,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 22,
         "resolvedDate": ""
       },
       {
@@ -10988,8 +11002,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-06-25",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 21,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 22,
         "resolvedDate": ""
       },
       {
@@ -11005,8 +11019,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-06-25",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 21,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 22,
         "resolvedDate": ""
       },
       {
@@ -11022,8 +11036,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-06-25",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 21,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 22,
         "resolvedDate": ""
       },
       {
@@ -11039,8 +11053,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-06-25",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 21,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 22,
         "resolvedDate": ""
       },
       {
@@ -11056,8 +11070,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-06-25",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 21,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 22,
         "resolvedDate": ""
       },
       {
@@ -11073,8 +11087,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-06-25",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 21,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 22,
         "resolvedDate": ""
       },
       {
@@ -11090,8 +11104,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-03",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 13,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 14,
         "resolvedDate": ""
       },
       {
@@ -11107,8 +11121,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-06-25",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 21,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 22,
         "resolvedDate": ""
       },
       {
@@ -11124,8 +11138,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-06-25",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 21,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 22,
         "resolvedDate": ""
       },
       {
@@ -11141,8 +11155,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-03",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 13,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 14,
         "resolvedDate": ""
       },
       {
@@ -11158,8 +11172,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-03",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 13,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 14,
         "resolvedDate": ""
       },
       {
@@ -11175,8 +11189,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-03",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 13,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 14,
         "resolvedDate": ""
       },
       {
@@ -11192,8 +11206,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-03",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 13,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 14,
         "resolvedDate": ""
       },
       {
@@ -11209,8 +11223,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-03",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 13,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 14,
         "resolvedDate": ""
       },
       {
@@ -11226,8 +11240,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-10",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -11243,8 +11257,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-06",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 10,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 11,
         "resolvedDate": ""
       },
       {
@@ -11260,8 +11274,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-13",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 3,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 4,
         "resolvedDate": ""
       },
       {
@@ -11277,8 +11291,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-03",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 13,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 14,
         "resolvedDate": ""
       },
       {
@@ -11294,8 +11308,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-03",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 13,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 14,
         "resolvedDate": ""
       },
       {
@@ -11311,8 +11325,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-06",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 10,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 11,
         "resolvedDate": ""
       },
       {
@@ -11328,8 +11342,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-03",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 13,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 14,
         "resolvedDate": ""
       },
       {
@@ -11345,8 +11359,8 @@
         "status": "watch",
         "severity": "medium",
         "firstSeenDate": "2026-07-13",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 3,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 4,
         "resolvedDate": ""
       },
       {
@@ -11362,8 +11376,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-15",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -11379,8 +11393,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-14",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 2,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 3,
         "resolvedDate": ""
       },
       {
@@ -11396,8 +11410,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11413,8 +11427,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11430,8 +11444,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-15",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -11447,8 +11461,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-15",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -11464,8 +11478,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11481,8 +11495,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11498,8 +11512,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11515,8 +11529,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11532,8 +11546,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11549,8 +11563,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11566,8 +11580,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11583,8 +11597,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11600,8 +11614,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11617,8 +11631,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11634,8 +11648,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-15",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -11651,8 +11665,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11668,8 +11682,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11685,8 +11699,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11702,8 +11716,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-15",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -11719,8 +11733,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11736,8 +11750,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11753,8 +11767,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11770,8 +11784,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11787,8 +11801,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-14",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 2,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 3,
         "resolvedDate": ""
       },
       {
@@ -11804,8 +11818,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-15",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -11821,8 +11835,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {
@@ -11838,8 +11852,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-15",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -11855,8 +11869,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-15",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -11872,8 +11886,8 @@
         "status": "watch",
         "severity": "low",
         "firstSeenDate": "2026-07-07",
-        "lastSeenDate": "2026-07-15",
-        "daysOpen": 9,
+        "lastSeenDate": "2026-07-16",
+        "daysOpen": 10,
         "resolvedDate": ""
       },
       {

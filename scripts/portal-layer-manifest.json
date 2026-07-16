@@ -12,9 +12,9 @@
     { "name": "wb_feedbacks_summary", "file": "wb_feedbacks_summary.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["window.to", "asOfDate", "generatedAt"] },
     { "name": "wb_sales_funnel_report", "file": "wb_sales_funnel_report.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["period.to", "generatedAt"] },
     { "name": "ozon_feedbacks_summary", "file": "ozon_feedbacks_summary.json", "publish": true, "required": false, "freshnessPolicy": "daily", "freshnessPaths": ["window.to", "generatedAt"] },
-    { "name": "iu_plan", "file": "iu_plan.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt"] },
-    { "name": "product_leaderboard", "file": "product_leaderboard.json", "publish": true, "required": true, "freshnessPolicy": "maxAge", "maxAgeDays": 10, "freshnessPaths": ["generatedAt", "sourceMtime"] },
-    { "name": "product_leaderboard_history", "file": "product_leaderboard_history.json", "publish": true, "required": true, "freshnessPolicy": "maxAge", "maxAgeDays": 10, "freshnessPaths": ["generatedAt"] },
+    { "name": "iu_plan", "file": "iu_plan.json", "publish": true, "required": true, "freshnessPolicy": "none", "freshnessPaths": ["generatedAt"] },
+    { "name": "product_leaderboard", "file": "product_leaderboard.json", "publish": true, "required": false, "freshnessPolicy": "maxAge", "maxAgeDays": 10, "freshnessPaths": ["generatedAt", "sourceMtime"] },
+    { "name": "product_leaderboard_history", "file": "product_leaderboard_history.json", "publish": true, "required": false, "freshnessPolicy": "maxAge", "maxAgeDays": 10, "freshnessPaths": ["generatedAt"] },
     { "name": "order_procurement", "file": "order_procurement.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt"] },
     { "name": "order_procurement_wb", "file": "order_procurement_wb.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt"] },
     { "name": "order_procurement_ozon", "file": "order_procurement_ozon.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt"] },
@@ -36,6 +36,6 @@
     { "name": "smart_price_overlay", "file": "smart_price_overlay.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["asOfDate", "generatedAt"] },
     { "name": "smart_price_workbench", "file": "smart_price_workbench.json", "publish": true, "required": false, "freshnessPolicy": "maxAge", "maxAgeDays": 3, "freshnessPaths": ["generatedAt", "sourceMtime"] },
     { "name": "price_workbench_support", "file": "price_workbench_support.json", "publish": true, "required": false, "freshnessPolicy": "maxAge", "maxAgeDays": 3, "freshnessPaths": ["generatedAt", "sourceMtime"] },
-    { "name": "google_sheet_sync_meta", "file": "google_sheet_sync_meta.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt", "dashboard.latest_marketplace_date"] }
+    { "name": "google_sheet_sync_meta", "file": "google_sheet_sync_meta.json", "publish": true, "required": true, "freshnessPolicy": "none", "freshnessPaths": ["generatedAt", "dashboard.latest_marketplace_date"] }
   ]
 }

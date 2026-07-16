@@ -237,10 +237,12 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
   const allFact = platformFact(platforms.get('all'), monthKey, cutoffDate);
   const includedRevenue = INCLUDED_PLATFORMS.reduce((sum, platform) => sum + (numberOrNull(platformFacts[platform].revenue) || 0), 0);
   const includedUnits = INCLUDED_PLATFORMS.reduce((sum, platform) => sum + (numberOrNull(platformFacts[platform].units) || 0), 0);
+  const coreRevenue = CORE_FACT_PLATFORMS.reduce((sum, platform) => sum + (numberOrNull(platformFacts[platform].revenue) || 0), 0);
+  const coreUnits = CORE_FACT_PLATFORMS.reduce((sum, platform) => sum + (numberOrNull(platformFacts[platform].units) || 0), 0);
   const allRevenue = numberOrNull(allFact.revenue);
-  const unallocatedRevenue = allRevenue === null ? 0 : round(allRevenue - includedRevenue, 2);
+  const unallocatedRevenue = allRevenue === null ? 0 : round(allRevenue - coreRevenue, 2);
   const allUnits = numberOrNull(allFact.units);
-  const unallocatedUnits = allUnits === null ? 0 : round(allUnits - includedUnits, 4);
+  const unallocatedUnits = allUnits === null ? 0 : round(allUnits - coreUnits, 4);
   const coreComponentDates = CORE_FACT_PLATFORMS.map((platform) => platformFacts[platform].date_to).filter(Boolean);
   const mixedCorePlatformDates = new Set(coreComponentDates).size > 1;
   const corePlatformsBehind = CORE_FACT_PLATFORMS.filter((platform) => platformFacts[platform].date_to !== cutoffDate);
@@ -288,13 +290,22 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
     period_from: `${monthKey}-01`,
     period_to: cutoffDate,
     raw_value: unallocatedRevenue,
-    transforms: ['platform_all_control_minus_included_platforms'],
+    transforms: ['platform_all_core_control_minus_core_platforms'],
     source_dates: { platform_trends_all: allFact.date_to, ...sourceDates },
     data_status: allRevenue === null ? 'incomplete' : 'trusted',
     reconciliation_status: Math.abs(unallocatedRevenue || 0) > 0.01 ? 'warning' : 'ok',
     business_status: 'neutral',
     confidence: allRevenue === null ? 'low' : 'high',
-    drilldown: [{ all_revenue: allRevenue, included_revenue: round(includedRevenue, 2), unallocated_revenue: unallocatedRevenue, all_units: allUnits, included_units: round(includedUnits, 4), unallocated_units: unallocatedUnits }]
+    drilldown: [{
+      all_revenue: allRevenue,
+      core_revenue: round(coreRevenue, 2),
+      included_revenue: round(includedRevenue, 2),
+      unallocated_revenue: unallocatedRevenue,
+      all_units: allUnits,
+      core_units: round(coreUnits, 4),
+      included_units: round(includedUnits, 4),
+      unallocated_units: unallocatedUnits
+    }]
   }));
 
   const companyPlanRevenue = numberOrNull(planMonth?.revenue);

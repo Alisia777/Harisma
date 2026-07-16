@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T07:01:37.118Z",
+  "generatedAt": "2026-07-16T07:33:25.652Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
@@ -37,7 +37,7 @@
     "qeep_gummy_d3_60"
   ],
   "summary": {
-    "stockWarehouse": 555150,
+    "stockWarehouse": 555239,
     "accepted": 0,
     "shippedOzon": 0,
     "shippedWB": 0
@@ -89,7 +89,7 @@
     },
     {
       "articleKey": "allicil_gribok15ml",
-      "stockWarehouse": 453,
+      "stockWarehouse": 433,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -133,7 +133,7 @@
     },
     {
       "articleKey": "arterol",
-      "stockWarehouse": 22969,
+      "stockWarehouse": 22829,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -188,7 +188,7 @@
     },
     {
       "articleKey": "artoks_75ml",
-      "stockWarehouse": 1714,
+      "stockWarehouse": 1713,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -210,7 +210,7 @@
     },
     {
       "articleKey": "balzam_kudryavii_metod_500ml",
-      "stockWarehouse": 3254,
+      "stockWarehouse": 2954,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -221,7 +221,7 @@
     },
     {
       "articleKey": "berberin_laif_bad_60caps",
-      "stockWarehouse": 2354,
+      "stockWarehouse": 2348,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -265,7 +265,7 @@
     },
     {
       "articleKey": "chudogrib",
-      "stockWarehouse": 2008,
+      "stockWarehouse": 2007,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -276,7 +276,7 @@
     },
     {
       "articleKey": "curly_method_300ml",
-      "stockWarehouse": 926,
+      "stockWarehouse": 0,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -287,7 +287,7 @@
     },
     {
       "articleKey": "daoshen",
-      "stockWarehouse": 2686,
+      "stockWarehouse": 2680,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -397,7 +397,7 @@
     },
     {
       "articleKey": "erobrut",
-      "stockWarehouse": 1017,
+      "stockWarehouse": 989,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -463,7 +463,7 @@
     },
     {
       "articleKey": "gel_brows_5ml",
-      "stockWarehouse": 1790,
+      "stockWarehouse": 1770,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -474,7 +474,7 @@
     },
     {
       "articleKey": "gel_dlya_britya_300ml",
-      "stockWarehouse": 1950,
+      "stockWarehouse": 1958,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -485,7 +485,7 @@
     },
     {
       "articleKey": "gel_dlya_brovei_6ml",
-      "stockWarehouse": 1515,
+      "stockWarehouse": 1513,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -496,7 +496,7 @@
     },
     {
       "articleKey": "gel_for_men_3_in_1_1000ml",
-      "stockWarehouse": 22,
+      "stockWarehouse": 21,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -507,7 +507,7 @@
     },
     {
       "articleKey": "gel_kudryavii_metod_300ml",
-      "stockWarehouse": 7586,
+      "stockWarehouse": 7186,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -529,7 +529,7 @@
     },
     {
       "articleKey": "gemorekt",
-      "stockWarehouse": 494,
+      "stockWarehouse": 483,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -573,7 +573,7 @@
     },
     {
       "articleKey": "i_am_alpha_bad_60caps",
-      "stockWarehouse": 5893,
+      "stockWarehouse": 5947,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -595,7 +595,7 @@
     },
     {
       "articleKey": "insulight",
-      "stockWarehouse": 23951,
+      "stockWarehouse": 23825,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -639,7 +639,7 @@
     },
     {
       "articleKey": "intimvita_300ml",
-      "stockWarehouse": 3523,
+      "stockWarehouse": 3283,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -650,7 +650,7 @@
     },
     {
       "articleKey": "kardicin",
-      "stockWarehouse": 4023,
+      "stockWarehouse": 4022,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -815,7 +815,7 @@
     },
     {
       "articleKey": "krem_spf50_50ml",
-      "stockWarehouse": 8989,
+      "stockWarehouse": 8889,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -837,7 +837,7 @@
     },
     {
       "articleKey": "kremshelk_100ml",
-      "stockWarehouse": 164,
+      "stockWarehouse": 165,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -859,7 +859,7 @@
     },
     {
       "articleKey": "lifting_maska_pdrn_75ml",
-      "stockWarehouse": 3672,
+      "stockWarehouse": 3572,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -881,7 +881,7 @@
     },
     {
       "articleKey": "maska_dlya_lica_100ml",
-      "stockWarehouse": 32205,
+      "stockWarehouse": 31181,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -892,7 +892,7 @@
     },
     {
       "articleKey": "maska-batter_250ml",
-      "stockWarehouse": 11552,
+      "stockWarehouse": 11152,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -903,7 +903,7 @@
     },
     {
       "articleKey": "maska-batter_500ml",
-      "stockWarehouse": 832,
+      "stockWarehouse": 292,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -969,7 +969,7 @@
     },
     {
       "articleKey": "micardin",
-      "stockWarehouse": 573,
+      "stockWarehouse": 565,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -980,7 +980,7 @@
     },
     {
       "articleKey": "micardin_1_1",
-      "stockWarehouse": 320,
+      "stockWarehouse": 315,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -991,7 +991,7 @@
     },
     {
       "articleKey": "micardin_1_1_1",
-      "stockWarehouse": 327,
+      "stockWarehouse": 410,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1057,7 +1057,7 @@
     },
     {
       "articleKey": "nabor_remuver_40ml",
-      "stockWarehouse": 5568,
+      "stockWarehouse": 5566,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1079,7 +1079,7 @@
     },
     {
       "articleKey": "nabor_remuver_kremovii",
-      "stockWarehouse": 1597,
+      "stockWarehouse": 6597,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1101,7 +1101,7 @@
     },
     {
       "articleKey": "okospas",
-      "stockWarehouse": 3323,
+      "stockWarehouse": 3305,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1123,7 +1123,7 @@
     },
     {
       "articleKey": "osteofast",
-      "stockWarehouse": 737,
+      "stockWarehouse": 736,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1167,7 +1167,7 @@
     },
     {
       "articleKey": "papiderm",
-      "stockWarehouse": 345,
+      "stockWarehouse": 344,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1189,7 +1189,7 @@
     },
     {
       "articleKey": "penka_kudryavii_metod_150ml",
-      "stockWarehouse": 16634,
+      "stockWarehouse": 14564,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1255,7 +1255,7 @@
     },
     {
       "articleKey": "retiderm_50ml",
-      "stockWarehouse": 14617,
+      "stockWarehouse": 14467,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1266,7 +1266,7 @@
     },
     {
       "articleKey": "retinait_krem_01_50ml",
-      "stockWarehouse": 1805,
+      "stockWarehouse": 1775,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1310,7 +1310,7 @@
     },
     {
       "articleKey": "retinait_krem_1_50ml",
-      "stockWarehouse": 17393,
+      "stockWarehouse": 15381,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1332,7 +1332,7 @@
     },
     {
       "articleKey": "retinait_syvorotka_05_30ml",
-      "stockWarehouse": 283,
+      "stockWarehouse": 281,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1343,7 +1343,7 @@
     },
     {
       "articleKey": "retinait_syvorotka_1_30ml",
-      "stockWarehouse": -5305,
+      "stockWarehouse": 0,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1354,7 +1354,7 @@
     },
     {
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
-      "stockWarehouse": 6651,
+      "stockWarehouse": 6561,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1398,7 +1398,7 @@
     },
     {
       "articleKey": "shampun_dlya_rosta_250ml",
-      "stockWarehouse": 4108,
+      "stockWarehouse": 4038,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1464,7 +1464,7 @@
     },
     {
       "articleKey": "solevoy_sprei_200ml",
-      "stockWarehouse": 241,
+      "stockWarehouse": 221,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1475,7 +1475,7 @@
     },
     {
       "articleKey": "spicul_gel_mask_75ml",
-      "stockWarehouse": 317,
+      "stockWarehouse": 311,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1486,7 +1486,7 @@
     },
     {
       "articleKey": "spiculboost_30ml",
-      "stockWarehouse": 77,
+      "stockWarehouse": 75,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1497,7 +1497,7 @@
     },
     {
       "articleKey": "spray-syvorotka_pdrn_100ml",
-      "stockWarehouse": 10102,
+      "stockWarehouse": 9718,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1596,7 +1596,7 @@
     },
     {
       "articleKey": "syvorotka_dlya_lica_intens_uvl_30ml",
-      "stockWarehouse": 9989,
+      "stockWarehouse": 9477,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1684,7 +1684,7 @@
     },
     {
       "articleKey": "termo_maslo_100ml",
-      "stockWarehouse": 2817,
+      "stockWarehouse": 2305,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1728,7 +1728,7 @@
     },
     {
       "articleKey": "trezax",
-      "stockWarehouse": 6884,
+      "stockWarehouse": 6871,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1750,7 +1750,7 @@
     },
     {
       "articleKey": "trezvin",
-      "stockWarehouse": 926,
+      "stockWarehouse": 924,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1783,7 +1783,7 @@
     },
     {
       "articleKey": "urofol",
-      "stockWarehouse": 7771,
+      "stockWarehouse": 7770,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -1882,7 +1882,7 @@
     },
     {
       "articleKey": "vosk_stik_15ml",
-      "stockWarehouse": 2737,
+      "stockWarehouse": 2687,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -2003,7 +2003,7 @@
     },
     {
       "articleKey": "wboptitrin",
-      "stockWarehouse": 288,
+      "stockWarehouse": 286,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -2047,7 +2047,7 @@
     },
     {
       "articleKey": "wowglam",
-      "stockWarehouse": 563,
+      "stockWarehouse": 562,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,
@@ -2069,7 +2069,7 @@
     },
     {
       "articleKey": "yagodniy_spas_1_1",
-      "stockWarehouse": 2193,
+      "stockWarehouse": 2188,
       "accepted": 0,
       "shippedOzon": 0,
       "shippedWB": 0,

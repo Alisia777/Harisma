@@ -1,33 +1,44 @@
 {
   "schema": "portal-plan-reconciliation-v1",
-  "generatedAt": "2026-07-15T08:16:54.118Z",
-  "snapshot_id": "dashboard:5f3b03ef73b5d498",
+  "generatedAt": "2026-07-16T08:57:25.954Z",
+  "snapshot_id": "dashboard:6c43add68ac1fb10",
   "status": "ok",
   "publish_allowed": true,
+  "blockingReasons": [],
+  "warnings": [],
+  "summary": {
+    "checks": 3,
+    "blockingChecks": 0,
+    "warningChecks": 0
+  },
+  "checks": [
+    {
+      "id": "plan:explicit-plan-ids",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    },
+    {
+      "id": "plan:completion-unit-ratio",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    },
+    {
+      "id": "plan:no-corporate-iu-substitution",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    }
+  ],
   "plan_namespaces": [
     "corporate_revenue_monthly",
     "sku_platform_operational",
     "salary_kpi_marketplaces",
     "wb_contract_turnover",
     "iu"
-  ],
-  "active_plan": {
-    "plan_id": "corporate_revenue_monthly",
-    "month": "2026-07",
-    "unit": "RUB",
-    "included_platforms": [
-      "wb",
-      "ozon",
-      "ya",
-      "goldapple",
-      "letu",
-      "megamarket",
-      "samokat",
-      "magnit"
-    ],
-    "fact_source": "marketplace_sales_fact",
-    "plan_source": "company_plan"
-  },
-  "blockingReasons": [],
-  "warnings": []
+  ]
 }

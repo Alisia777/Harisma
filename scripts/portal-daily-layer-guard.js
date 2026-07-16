@@ -291,7 +291,11 @@ function loadSources(manifest, options) {
         const sourceDate = new Date(`${freshness.date}T00:00:00Z`);
         const ageDays = Math.floor((reference - sourceDate) / 86400000);
         check.ageDays = ageDays;
-        if (ageDays > Number(maxAgeMatch[1])) check.blockingReasons.push(`${source.key}: snapshot age ${ageDays} days exceeds ${maxAgeMatch[1]} days`);
+        if (ageDays > Number(maxAgeMatch[1])) {
+          const message = `${source.key}: snapshot age ${ageDays} days exceeds ${maxAgeMatch[1]} days`;
+          if (source.required) check.blockingReasons.push(message);
+          else check.warnings.push(message);
+        }
       }
     } catch (error) {
       check.blockingReasons.push(`${source.key}: cannot read ${source.file}: ${error.message}`);

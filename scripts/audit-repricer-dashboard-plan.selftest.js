@@ -270,11 +270,36 @@ function runZeroPublishableFeatureTest() {
   return { name: 'zero publishable repricer feature', blocked, reports };
 }
 
+function runStaleExtraPlatformFactsTest() {
+  const payloads = baselinePayloads();
+  payloads.dashboardMetrics.metrics.push({
+    metric_id: 'sales.raw_revenue',
+    unit: 'RUB',
+    plan_id: null,
+    scope: { platform: 'magnit' },
+    period_from: '2026-06-01',
+    period_to: '2026-06-18',
+    raw_value: 7,
+    displayed_value: 7,
+    transforms: ['sum_daily_marketplace_sales_fact'],
+    source_dates: { platform_trends: '2026-06-17' },
+    data_status: 'incomplete',
+    reconciliation_status: 'blocked',
+    business_status: 'neutral'
+  });
+  const reports = auditPayloads(payloads, path.join(process.cwd(), 'data'));
+  const blocked = countBlocking(reports) === 0
+    && (reports.dashboard?.summary?.warningChecks || 0) > 0
+    && reports.dashboard?.warnings?.some((warning) => warning.includes('extra marketplace'));
+  return { name: 'stale extra marketplace is warning', blocked, reports };
+}
+
 function main() {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'portal-phase3-selftest-'));
   const cases = [
     { name: 'broken #REF workbook formula', run: () => runBrokenWorkbookTest(tmpDir) },
     { name: 'relaxed pre-sync missing platform facts', run: runRelaxedMissingPlatformFactsTest },
+    { name: 'stale extra marketplace is warning', run: runStaleExtraPlatformFactsTest },
     { name: 'zero publishable repricer feature', run: runZeroPublishableFeatureTest },
     { name: 'missing cost', mutate: (p) => { p.canonicalRepricer.rows[0].economics.cost = null; p.canonicalRepricer.rows[0].economics.complete = false; } },
     { name: 'missing commission', mutate: (p) => { p.canonicalRepricer.rows[0].economics.commission_pct = null; p.canonicalRepricer.rows[0].economics.complete = false; } },

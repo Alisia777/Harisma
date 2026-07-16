@@ -169,6 +169,16 @@ try {
   assert.strictEqual(qualityCheck.knownOutsideRegistryRevenue, 50000);
   assert.ok(!clean.report.publish.warningReasons.some((reason) => reason.includes('unmapped revenue')));
 
+  buildFixture(dir);
+  write(dir, 'product_leaderboard.json', {
+    generatedAt: '2026-05-01T08:00:00+03:00',
+    asOfDate: '2026-05-01',
+    rows: [{ id: 1 }]
+  });
+  const staleOptionalLeaderboard = run(options(dir));
+  assert.strictEqual(staleOptionalLeaderboard.report.publish.allowed, true);
+  assert.ok(staleOptionalLeaderboard.report.publish.warningReasons.some((reason) => reason.includes('product_leaderboard: snapshot age')));
+
   const brokenDashboard = JSON.parse(fs.readFileSync(path.join(dir, 'dashboard.json'), 'utf8'));
   brokenDashboard.cards = Array.from({ length: 200 }, () => ({ label: 'РџР»Р°РЅ', value: 600, format: 'money' }));
   write(dir, 'dashboard.json', brokenDashboard);

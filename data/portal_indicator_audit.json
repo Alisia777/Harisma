@@ -1,87 +1,45 @@
 {
   "schema": "portal-indicator-audit-v1",
-  "generatedAt": "2026-07-15T08:16:54.118Z",
-  "snapshot_id": "dashboard:5f3b03ef73b5d498",
+  "generatedAt": "2026-07-16T08:57:25.954Z",
+  "snapshot_id": "dashboard:6c43add68ac1fb10",
   "status": "ok",
   "publish_allowed": true,
-  "policy_version": "2026-06-20.1",
-  "rows": [
+  "blockingReasons": [],
+  "warnings": [],
+  "summary": {
+    "checks": 4,
+    "blockingChecks": 0,
+    "warningChecks": 0
+  },
+  "checks": [
     {
-      "metric_id": "plan.completion_revenue",
-      "surface": "dashboard",
-      "expected": {
-        "data_status": "trusted",
-        "business_status": "green",
-        "label": "green",
-        "reason_codes": [],
-        "policy_id": "completion_default",
-        "policy_version": "2026-06-20.1",
-        "color": "by_business_status"
-      },
-      "actual": {
-        "data_status": "trusted",
-        "business_status": "green",
-        "label": "green",
-        "reason_codes": [],
-        "policy_id": "completion_default",
-        "policy_version": "2026-06-20.1",
-        "color": "by_business_status"
-      },
+      "id": "indicator:policy-engine-agreement",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
       "status": "ok"
     },
     {
-      "metric_id": "ads.drr",
-      "surface": "dashboard:wb",
-      "expected": {
-        "data_status": "incomplete",
-        "business_status": "neutral",
-        "label": "Нет данных",
-        "reason_codes": [
-          "missing_drr_target"
-        ],
-        "policy_id": "drr_default",
-        "policy_version": "2026-06-20.1",
-        "color": "gray"
-      },
-      "actual": {
-        "data_status": "incomplete",
-        "business_status": "neutral",
-        "label": "Нет данных",
-        "reason_codes": [
-          "missing_drr_target"
-        ],
-        "policy_id": "drr_default",
-        "policy_version": "2026-06-20.1",
-        "color": "gray"
-      },
+      "id": "indicator:missing-drr-neutral",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
       "status": "ok"
     },
     {
-      "metric_id": "ads.drr",
-      "surface": "dashboard:ozon",
-      "expected": {
-        "data_status": "incomplete",
-        "business_status": "neutral",
-        "label": "Нет данных",
-        "reason_codes": [
-          "missing_drr_target"
-        ],
-        "policy_id": "drr_default",
-        "policy_version": "2026-06-20.1",
-        "color": "gray"
-      },
-      "actual": {
-        "data_status": "incomplete",
-        "business_status": "neutral",
-        "label": "Нет данных",
-        "reason_codes": [
-          "missing_drr_target"
-        ],
-        "policy_id": "drr_default",
-        "policy_version": "2026-06-20.1",
-        "color": "gray"
-      },
+      "id": "indicator:missing-completion-neutral",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
+      "status": "ok"
+    },
+    {
+      "id": "indicator:estimated-never-green",
+      "blockingReasons": [],
+      "samples": [],
+      "warnings": [],
       "status": "ok"
     }
-  ]
+  ],
+  "policy_version": "2026-06-20.1"
 }

@@ -281,9 +281,18 @@ function auditDashboard(payload = {}, options = {}) {
   const iuLeaks = metrics.filter((row) => protectedScopePattern.test(stableStringify(row)));
   const mixedDateRows = metrics.filter((row) => row.metric_id === 'sales.raw_revenue' && row.reconciliation_status === 'blocked');
   const missingPlatformFacts = mixedDateRows.filter(isMissingPlatformFact);
+  const corePlatforms = new Set(['wb', 'ozon', 'ya']);
+  const datedMixedCoreFacts = mixedDateRows.filter((row) => {
+    const platform = String(row?.scope?.platform || row?.platform || '').toLowerCase();
+    return corePlatforms.has(platform) && !isMissingPlatformFact(row);
+  });
+  const datedMixedExtraFacts = mixedDateRows.filter((row) => {
+    const platform = String(row?.scope?.platform || row?.platform || '').toLowerCase();
+    return !corePlatforms.has(platform) && !isMissingPlatformFact(row);
+  });
   const mixedDates = options.relaxMissingPlatformFacts
-    ? mixedDateRows.filter((row) => !isMissingPlatformFact(row))
-    : mixedDateRows;
+    ? datedMixedCoreFacts
+    : [...datedMixedCoreFacts, ...missingPlatformFacts];
   addCheck(checks, {
     id: 'dashboard:null-is-incomplete-not-zero',
     blockingReasons: nullAsZero.length ? [`${nullAsZero.length} null metrics are rendered/trusted as zero`] : [],
@@ -312,10 +321,16 @@ function auditDashboard(payload = {}, options = {}) {
   addCheck(checks, {
     id: 'dashboard:no-mixed-platform-dates',
     blockingReasons: mixedDates.length ? [`${mixedDates.length} platform raw fact metrics have mixed source dates`] : [],
-    warnings: options.relaxMissingPlatformFacts && missingPlatformFacts.length
-      ? [`${missingPlatformFacts.length} platform raw fact metrics are missing before daily sync`]
-      : [],
-    samples: mixedDates.slice(0, 25)
+    warnings: [
+      ...(options.relaxMissingPlatformFacts && missingPlatformFacts.length
+        ? [`${missingPlatformFacts.length} platform raw fact metrics are missing before daily sync`]
+        : []),
+      ...(datedMixedExtraFacts.length
+        ? [`${datedMixedExtraFacts.length} extra marketplace raw fact metrics are behind the core cutoff date`]
+        : [])
+    ],
+    samples: mixedDates.slice(0, 25),
+    warningSamples: datedMixedExtraFacts.slice(0, 25)
   });
   return reportBase('portal-dashboard-reconciliation-v1', payload.generatedAt || '', payload.snapshot_id || '', checks, {
     business_fingerprint: crypto.createHash('sha256').update(stableStringify(metrics)).digest('hex'),

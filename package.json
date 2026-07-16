@@ -57,6 +57,7 @@
     "portal:marketplace-hitbox-test": "node scripts/portal-marketplace-hitbox.selftest.js",
     "portal:iu-drr-date-window-test": "node scripts/portal-iu-drr-date-window.selftest.js",
     "portal:wb-fixed-rate-test": "node scripts/build-wb-fixed-rate-report.selftest.js",
+    "portal:protected-scope-test": "python scripts/verify_full_pr_non_iu_scope.selftest.py",
     "portal:iu-drr-logic-guard": "node scripts/portal-iu-drr-logic-guard.js --input-dir data",
     "portal:ozon-iu-logic-rules": "node scripts/build-ozon-iu-logic-rules.js --output data/ozon_iu_logic_rules.json",
     "portal:wb-iu-logic-rules": "node scripts/build-wb-iu-logic-rules.js --report data/wb_fixed_rate_reports.json --output data/wb_iu_logic_rules.json"

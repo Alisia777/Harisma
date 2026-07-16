@@ -181,6 +181,20 @@ Protected scope check:
 python scripts/verify_full_pr_non_iu_scope.py --base-ref origin/main --head HEAD --include-working-tree
 ```
 
+For an explicitly requested full-portal refresh that rebuilds the generated
+IU/DRR summary, use commit marker `[portal-full-update]` or set
+`allow_generated_iu_data=true` in a manual `Portal data truth` run. This mode
+permits only `data/iu_drr_summary.json` and generated audit references, then
+requires the finance logic guard:
+
+```powershell
+python scripts/verify_full_pr_non_iu_scope.py --base-ref origin/main --head HEAD --include-working-tree --allow-generated-iu-data
+npm run portal:iu-drr-logic-guard
+```
+
+`data/iu_plan.json`, the IU/DRR builder, the client UI, and the last-good finance
+snapshot remain protected in this mode.
+
 ## Fail-Closed Rules
 
 Do not weaken these rules for a green run:

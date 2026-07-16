@@ -32,6 +32,11 @@ on:
         description: 'Base ref/SHA for full-range protected scope verification'
         required: false
         default: 'origin/main'
+      allow_generated_iu_data:
+        description: 'Allow a guarded refresh of generated IU/DRR data'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -70,9 +75,10 @@ jobs:
           node scripts/portal-runtime-snapshot-choice.selftest.js
           node scripts/sanitizer_url_contract.test.js
           node scripts/atomic_publish_failure_injection.test.js
+          python scripts/verify_full_pr_non_iu_scope.selftest.py
           python scripts/d1_close_gate.selftest.py
           python scripts/sync_portal_generation_to_supabase.selftest.py
-      - name: Enforce non-IU scope
+      - name: Enforce protected portal scope
         shell: bash
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -84,7 +90,24 @@ jobs:
           else
             BASE_REF="origin/main"
           fi
-          python scripts/verify_full_pr_non_iu_scope.py --base-ref "$BASE_REF" --head HEAD
+
+          ALLOW_GENERATED_IU_DATA=false
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.allow_generated_iu_data }}" == "true" ]]; then
+            ALLOW_GENERATED_IU_DATA=true
+          elif [[ "${{ github.event_name }}" == "push" && "${{ contains(github.event.head_commit.message, '[portal-full-update]') }}" == "true" ]]; then
+            ALLOW_GENERATED_IU_DATA=true
+          fi
+
+          SCOPE_ARGS=(--base-ref "$BASE_REF" --head HEAD)
+          if [[ "$ALLOW_GENERATED_IU_DATA" == "true" ]]; then
+            echo "Guarded full-portal mode: generated IU/DRR data may refresh."
+            SCOPE_ARGS+=(--allow-generated-iu-data)
+          fi
+          python scripts/verify_full_pr_non_iu_scope.py "${SCOPE_ARGS[@]}"
+
+          if [[ "$ALLOW_GENERATED_IU_DATA" == "true" ]]; then
+            npm run portal:iu-drr-logic-guard
+          fi
       - name: Build phase 3 truth artifacts
         run: |
           mkdir -p .portal-truth-output

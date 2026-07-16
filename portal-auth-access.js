@@ -103,6 +103,7 @@
       'a.a.korepanova@ya.qeep.life': { role: 'owner' },
       'e.a.smirnova@ya.qeep.life': { role: 'owner' },
       'a.e.slyshkin@qeep.life': { role: 'owner' },
+      'a.s.bulygin@qeep.life': { role: 'employee' },
       'e.s.sinyagina@qeep.life': { role: 'employee' }
     }
   };

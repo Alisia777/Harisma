@@ -1,20 +1,20 @@
 {
   "schema": "portal-metric-reconciliation-v1",
-  "generatedAt": "2026-07-16T10:03:19.133Z",
+  "generatedAt": "2026-07-16T10:38:06.741Z",
   "manifestVersion": "2026-06-20",
   "scope": {
     "included": "all portal views and layers"
   },
-  "cutoffDate": "2026-07-16",
-  "status": "blocked",
-  "business_fingerprint": "1a5c3bb7e9d3c6323fd6bd1494453de58dbd86e70a108cce538c433c2b204387",
+  "cutoffDate": "2026-07-15",
+  "status": "warning",
+  "business_fingerprint": "d219ec000a478fa06740fccc49e0f5b29438acdb3374117df4d5c833ac967049",
   "summary": {
     "sourceCount": 24,
-    "contractCount": 13,
+    "contractCount": 12,
     "metricPassportCount": 35,
-    "blockingChecks": 7,
-    "warningChecks": 4,
-    "fingerprint": "1a5c3bb7e9d3c6323fd6bd1494453de58dbd86e70a108cce538c433c2b204387"
+    "blockingChecks": 0,
+    "warningChecks": 5,
+    "fingerprint": "d219ec000a478fa06740fccc49e0f5b29438acdb3374117df4d5c833ac967049"
   },
   "metricPassports": [
     {
@@ -83,8 +83,8 @@
     {
       "key": "fact.marketplace.revenue",
       "source": "platform_trends.json",
-      "period": "2026-07-16",
-      "value": 15725581,
+      "period": "2026-07-15",
+      "value": 15737788,
       "formula": "sum active marketplaces on guarded cutoff dates"
     },
     {
@@ -104,8 +104,8 @@
     {
       "key": "fact.marketplace.revenue.ya",
       "source": "platform_trends.json",
-      "period": "2026-07-14",
-      "value": 146802,
+      "period": "2026-07-15",
+      "value": 159009,
       "formula": "platforms.ya.series[cutoff].revenue"
     },
     {
@@ -177,7 +177,7 @@
       "value": 0,
       "formula": "API fact that has no canonical registry mapping",
       "diagnostics": {
-        "totalFact": 255436778,
+        "totalFact": 253907423,
         "ratio": 0,
         "knownOutsideRegistryRevenue": 597
       }
@@ -185,7 +185,7 @@
     {
       "key": "order.targetNeed30",
       "source": "order_procurement.json",
-      "period": "2026-07-15",
+      "period": "2026-07-16",
       "value": 98016,
       "formula": "max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))",
       "diagnostics": {
@@ -340,12 +340,12 @@
   ],
   "views": {
     "dashboard": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
           "source": "dashboard_projection",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "platform_fact",
@@ -357,7 +357,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "ads_fact",
@@ -368,22 +368,19 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "executive": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -402,18 +399,15 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "control": {
-      "status": "blocked",
+      "status": "ok",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -427,7 +421,7 @@
       "blockingContracts": []
     },
     "data-health": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -444,15 +438,13 @@
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "sku-plan-fact": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -465,7 +457,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -496,13 +488,10 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "repricer": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -519,7 +508,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "warehouse_fact",
@@ -530,12 +519,10 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "prices": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -548,7 +535,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "warehouse_fact",
@@ -559,12 +546,10 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "order": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -581,7 +566,7 @@
         },
         {
           "source": "order_procurement_ym",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "warehouse_fact",
@@ -593,16 +578,13 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "oos-control": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -619,16 +601,13 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "ads-funnel": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -645,21 +624,18 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "sku-contour": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -671,7 +647,7 @@
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "platform_fact",
@@ -682,17 +658,15 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "skus": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -704,20 +678,18 @@
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "launches": {
-      "status": "blocked",
+      "status": "ok",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "warehouse_fact",
@@ -735,12 +707,12 @@
       "blockingContracts": []
     },
     "launch-control": {
-      "status": "blocked",
+      "status": "ok",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -754,7 +726,7 @@
       "blockingContracts": []
     },
     "wb-rating": {
-      "status": "blocked",
+      "status": "ok",
       "critical": false,
       "sources": [
         {
@@ -763,13 +735,13 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
       "blockingContracts": []
     },
     "product-leaderboard": {
-      "status": "blocked",
+      "status": "warning",
       "critical": false,
       "sources": [
         {
@@ -790,17 +762,12 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact"
-      ]
+      "blockingContracts": []
     },
-    "__globalBlockingContracts": [
-      "contract:platform-fact",
-      "contract:sync-issues"
-    ]
+    "__globalBlockingContracts": []
   },
   "checks": [
     {
@@ -830,17 +797,13 @@
       "scope": "fact",
       "source": "platform_trends",
       "warnings": [
-        "platform_trends: goldapple date 2026-06-30 is 16 days older than expected 2026-07-16",
-        "platform_trends: letu date 2026-06-30 is 16 days older than expected 2026-07-16",
-        "platform_trends: magnit date 2026-07-08 is 8 days older than expected 2026-07-16",
-        "platform_trends: no active plan/data for samokat",
-        "platform_trends: all series date 2026-07-15 differs from component cutoff mixed"
+        "platform_trends: goldapple date 2026-06-30 is 15 days older than expected 2026-07-15",
+        "platform_trends: letu date 2026-06-30 is 15 days older than expected 2026-07-15",
+        "platform_trends: magnit date 2026-07-08 is 7 days older than expected 2026-07-15",
+        "platform_trends: no active plan/data for samokat"
       ],
-      "blockingReasons": [
-        "platform_trends: WB/Ozon/Yandex do not share one cutoff date (2026-07-15, 2026-07-15, 2026-07-14)",
-        "platform_trends: ya date 2026-07-14 is 2 days older than expected 2026-07-16"
-      ],
-      "expectedDate": "2026-07-16",
+      "blockingReasons": [],
+      "expectedDate": "2026-07-15",
       "activePlatforms": [
         "wb",
         "ozon",
@@ -856,7 +819,7 @@
       "componentDates": {
         "wb": "2026-07-15",
         "ozon": "2026-07-15",
-        "ya": "2026-07-14",
+        "ya": "2026-07-15",
         "goldapple": "2026-06-30",
         "letu": "2026-06-30",
         "megamarket": "2026-07-15",
@@ -866,15 +829,27 @@
       "componentRevenue": {
         "wb": 13261317,
         "ozon": 2277027,
-        "ya": 146802,
+        "ya": 159009,
         "goldapple": 28483,
         "letu": 11496,
         "megamarket": 457,
         "samokat": 0,
         "magnit": 0
       },
-      "componentRevenueSum": 15725581,
-      "status": "blocked"
+      "componentRevenueSum": 15737788,
+      "allRevenue": 15697353,
+      "allDateComponentRevenue": {
+        "wb": 13261317,
+        "ozon": 2277027,
+        "ya": 159009,
+        "goldapple": 0,
+        "letu": 0,
+        "megamarket": 457,
+        "samokat": 0,
+        "magnit": 0
+      },
+      "allDateComponentRevenueSum": 15697810,
+      "status": "warning"
     },
     {
       "id": "contract:dashboard",
@@ -1017,7 +992,7 @@
       "source": "cross-layer",
       "warnings": [],
       "blockingReasons": [],
-      "expectedDate": "2026-07-16",
+      "expectedDate": "2026-07-15",
       "sourceDates": {
         "platform_fact": "2026-07-15",
         "dashboard_projection": "2026-07-15",
@@ -1026,32 +1001,6 @@
         "data_quality": "2026-07-15"
       },
       "status": "ok"
-    },
-    {
-      "id": "contract:sync-issues",
-      "scope": "pipeline",
-      "source": "portal_sync_issues.json",
-      "warnings": [],
-      "blockingReasons": [
-        "[ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.",
-        "exit code 1"
-      ],
-      "issueCount": 2,
-      "issues": [
-        {
-          "id": "yandex-market",
-          "name": "Yandex Market analytics refresh",
-          "message": "[ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.",
-          "failedAt": "2026-07-16T10:33:24.8394789+03:00"
-        },
-        {
-          "id": "product-leaderboard",
-          "name": "product leaderboard sync",
-          "message": "exit code 1",
-          "failedAt": "2026-07-16T10:35:05.3454442+03:00"
-        }
-      ],
-      "status": "blocked"
     },
     {
       "id": "contract:phase3-publish-reports",

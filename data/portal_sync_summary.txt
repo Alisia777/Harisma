@@ -1,5 +1,5 @@
-Portal sync health: warning
-Generated: 2026-07-16T10:03:17.739Z
+Portal sync health: ok
+Generated: 2026-07-16T10:38:07.159Z
 Publish allowed: yes
 Max data date: 2026-07-15
 
@@ -7,5 +7,4 @@ Blocking reasons:
 - none
 
 Warnings:
-- Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3..
-- Non-blocking sync step failed: product leaderboard sync: exit code 1.
+- none

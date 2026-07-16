@@ -1,10 +1,10 @@
 {
   "schema": "portal-daily-guard-v2",
-  "generatedAt": "2026-07-16T10:03:19.133Z",
+  "generatedAt": "2026-07-16T10:38:06.741Z",
   "manifest": {
     "file": "scripts\\portal-truth-manifest.json",
     "version": "2026-06-20",
-    "sha256": "3cad83aa806fe7406d4859a3c07a3b8e2b3cb2fe3cd89c275cf497c8bc9f6448"
+    "sha256": "36db9559b5f61adbaaf910b8f7adbbdea30bc8066144fd8651f4f4d35dfd2878"
   },
   "scope": {
     "included": [
@@ -26,29 +26,18 @@
       "product-leaderboard"
     ]
   },
-  "expectedDate": "2026-07-16",
-  "expectedRunDate": "",
-  "status": "blocked",
+  "expectedDate": "2026-07-15",
+  "expectedRunDate": "2026-07-16",
+  "status": "warning",
   "publish": {
-    "allowed": false,
-    "blockingReasons": [
-      "sku_registry: staged output is missing; only the previous base snapshot is available",
-      "dashboard_projection: staged output is missing; only the previous base snapshot is available",
-      "logistics_fact: staged output is missing; only the previous base snapshot is available",
-      "order_procurement_ym: staged output is missing; only the previous base snapshot is available",
-      "owner_audit: staged output is missing; only the previous base snapshot is available",
-      "platform_trends: WB/Ozon/Yandex do not share one cutoff date (2026-07-15, 2026-07-15, 2026-07-14)",
-      "platform_trends: ya date 2026-07-14 is 2 days older than expected 2026-07-16",
-      "[ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.",
-      "exit code 1"
-    ],
+    "allowed": true,
+    "blockingReasons": [],
     "warningReasons": [
       "product_leaderboard: snapshot age 13 days exceeds 10 days",
-      "platform_trends: goldapple date 2026-06-30 is 16 days older than expected 2026-07-16",
-      "platform_trends: letu date 2026-06-30 is 16 days older than expected 2026-07-16",
-      "platform_trends: magnit date 2026-07-08 is 8 days older than expected 2026-07-16",
+      "platform_trends: goldapple date 2026-06-30 is 15 days older than expected 2026-07-15",
+      "platform_trends: letu date 2026-06-30 is 15 days older than expected 2026-07-15",
+      "platform_trends: magnit date 2026-07-08 is 7 days older than expected 2026-07-15",
       "platform_trends: no active plan/data for samokat",
-      "platform_trends: all series date 2026-07-15 differs from component cutoff mixed",
       "portal_data_quality: 189 business issues recorded (189 order_no_stock_need); publish not blocked",
       "order_procurement: no rows with inTransit/inRequest were available for live fallback coverage",
       "phase3:portal_repricing_reconciliation.json: repricer feature blocked: 0/872 publishable recommendations",
@@ -61,20 +50,20 @@
   },
   "summary": {
     "sources": 24,
-    "contracts": 13,
+    "contracts": 12,
     "views": 16,
-    "blockingChecks": 7,
-    "warningChecks": 4,
-    "fingerprint": "1a5c3bb7e9d3c6323fd6bd1494453de58dbd86e70a108cce538c433c2b204387"
+    "blockingChecks": 0,
+    "warningChecks": 5,
+    "fingerprint": "d219ec000a478fa06740fccc49e0f5b29438acdb3374117df4d5c833ac967049"
   },
   "views": {
     "dashboard": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
           "source": "dashboard_projection",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "platform_fact",
@@ -86,7 +75,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "ads_fact",
@@ -97,22 +86,19 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "executive": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -131,18 +117,15 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "control": {
-      "status": "blocked",
+      "status": "ok",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -156,7 +139,7 @@
       "blockingContracts": []
     },
     "data-health": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -173,15 +156,13 @@
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "sku-plan-fact": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -194,7 +175,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -225,13 +206,10 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "repricer": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -248,7 +226,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "warehouse_fact",
@@ -259,12 +237,10 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "prices": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -277,7 +253,7 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "warehouse_fact",
@@ -288,12 +264,10 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "order": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -310,7 +284,7 @@
         },
         {
           "source": "order_procurement_ym",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "warehouse_fact",
@@ -322,16 +296,13 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "oos-control": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -348,16 +319,13 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "ads-funnel": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
@@ -374,21 +342,18 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact",
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "sku-contour": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -400,7 +365,7 @@
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "platform_fact",
@@ -411,17 +376,15 @@
           "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "skus": {
-      "status": "blocked",
+      "status": "warning",
       "critical": true,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -433,20 +396,18 @@
         },
         {
           "source": "owner_audit",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:sync-issues"
-      ]
+      "blockingContracts": []
     },
     "launches": {
-      "status": "blocked",
+      "status": "ok",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "warehouse_fact",
@@ -464,12 +425,12 @@
       "blockingContracts": []
     },
     "launch-control": {
-      "status": "blocked",
+      "status": "ok",
       "critical": false,
       "sources": [
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         },
         {
           "source": "sku_matrix",
@@ -483,7 +444,7 @@
       "blockingContracts": []
     },
     "wb-rating": {
-      "status": "blocked",
+      "status": "ok",
       "critical": false,
       "sources": [
         {
@@ -492,13 +453,13 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
       "blockingContracts": []
     },
     "product-leaderboard": {
-      "status": "blocked",
+      "status": "warning",
       "critical": false,
       "sources": [
         {
@@ -519,17 +480,12 @@
         },
         {
           "source": "sku_registry",
-          "status": "blocked"
+          "status": "ok"
         }
       ],
-      "blockingContracts": [
-        "contract:platform-fact"
-      ]
+      "blockingContracts": []
     },
-    "__globalBlockingContracts": [
-      "contract:platform-fact",
-      "contract:sync-issues"
-    ]
+    "__globalBlockingContracts": []
   },
   "checks": [
     {
@@ -541,7 +497,7 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "origin": "base-fallback",
+      "origin": "input",
       "bytes": 21339,
       "mtime": "2026-07-16T05:34:05.201Z",
       "sha256": "ecc97ef2d49ec465dd1b36cf5065066322835bbb8489013316ec7cdd86d47f76",
@@ -559,12 +515,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 24852418,
-      "mtime": "2026-07-16T07:34:59.509Z",
-      "sha256": "45fdaa94eea3375c9730ff6610b3269940d57dd50acd0c00feba6491794bff36",
+      "bytes": 23037236,
+      "mtime": "2026-07-16T10:16:44.811Z",
+      "sha256": "abe3a75fecbb380907eed095a6c557b95784d783812340fc66f591c4c67ecabd",
       "dataDate": "2026-07-15",
       "dataDatePath": "latestMarketplaceDate",
-      "generatedAt": "2026-07-16T07:34:59.389Z"
+      "generatedAt": "2026-07-16T08:57:25.954Z"
     },
     {
       "id": "source:sku_registry",
@@ -572,12 +528,10 @@
       "source": "sku_registry",
       "file": "skus.json",
       "kind": "dimension-master",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "sku_registry: staged output is missing; only the previous base snapshot is available"
-      ],
-      "origin": "base-fallback",
+      "blockingReasons": [],
+      "origin": "input",
       "bytes": 1904295,
       "mtime": "2026-07-16T05:34:05.822Z",
       "sha256": "cf703ee4aba03341e3d39c6505eba8c2cc047a2d56c6319eb0d1126f077ba602",
@@ -592,15 +546,13 @@
       "source": "dashboard_projection",
       "file": "dashboard.json",
       "kind": "projection",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "dashboard_projection: staged output is missing; only the previous base snapshot is available"
-      ],
-      "origin": "base-fallback",
-      "bytes": 53132,
-      "mtime": "2026-07-16T09:08:42.156Z",
-      "sha256": "024eb914bbb4a8c55fcde78995822e2e07e9242d9abf9b82f293bb767816477c",
+      "blockingReasons": [],
+      "origin": "input",
+      "bytes": 54587,
+      "mtime": "2026-07-16T10:16:44.724Z",
+      "sha256": "e6cec8abaf4f2eacc3dc207f58a13d2999ffa033a70b9dc5eea57dc45aff6b10",
       "dataDate": "2026-07-15",
       "dataDatePath": "latestMarketplaceDate",
       "generatedAt": "2026-07-16T08:57:25.954Z"
@@ -615,9 +567,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 34897483,
-      "mtime": "2026-07-16T07:41:43.903Z",
-      "sha256": "b7ff514150b32fe39d5977a079aa3e2daeb29e47a60345c0e88ab5fc1a6e7c17",
+      "bytes": 36059352,
+      "mtime": "2026-07-16T10:16:44.717Z",
+      "sha256": "abe76a6e00aaa249da310e18c3df445884519f15fbbc063b2f7f577831484d88",
       "dataDate": "2026-07-15",
       "dataDatePath": "window.to",
       "generatedAt": "2026-07-16T07:41:43.711Z"
@@ -632,9 +584,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 44180,
-      "mtime": "2026-07-16T07:33:25.654Z",
-      "sha256": "27f9ca3464088099be7d8969509ecc8c019942beb65a98fbc6de23d9fe963d97",
+      "bytes": 46261,
+      "mtime": "2026-07-16T10:16:44.863Z",
+      "sha256": "19d39fe098a8cba2c9abf0330047a99d84b870eedf0350936eb53753774e9a1e",
       "dataDate": "2026-07-16",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-07-16T07:33:25.652Z"
@@ -645,15 +597,13 @@
       "source": "logistics_fact",
       "file": "logistics.json",
       "kind": "fact-detail",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "logistics_fact: staged output is missing; only the previous base snapshot is available"
-      ],
-      "origin": "base-fallback",
-      "bytes": 1122147,
-      "mtime": "2026-07-16T08:56:07.436Z",
-      "sha256": "7ba5e78232ccc53b360403c733320ad4eeadb2467c3f6adf5021290df7dad024",
+      "blockingReasons": [],
+      "origin": "input",
+      "bytes": 1188942,
+      "mtime": "2026-07-16T10:16:44.729Z",
+      "sha256": "e4701dc7865f20e335e8667c8998ca8baa09783b00aa70cece7eae97a7e4048e",
       "dataDate": "2026-07-16",
       "dataDatePath": "latest_logistics_date",
       "generatedAt": "2026-07-16T00:00:00+03:00"
@@ -669,11 +619,11 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 6604442,
-      "mtime": "2026-07-16T05:34:05.775Z",
-      "sha256": "a055836770503e72e1aea1bea6b7017d5d832348a5fbe2d4a77f24ef25f814aa",
-      "dataDate": "2026-07-15",
+      "mtime": "2026-07-16T10:16:44.833Z",
+      "sha256": "27cd3f83a692af87341595f18c98009899d107b3910178ccb75bd5bb06e35a01",
+      "dataDate": "2026-07-16",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-07-15T08:16:54.146Z"
+      "generatedAt": "2026-07-16T07:34:59.418Z"
     },
     {
       "id": "source:smart_price_overlay",
@@ -685,9 +635,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 10116383,
-      "mtime": "2026-07-16T07:34:59.686Z",
-      "sha256": "79238635d6f7cb03a6b758dafb820340fc79ef86d3e784b13c3bce11293d7e5c",
+      "bytes": 10413874,
+      "mtime": "2026-07-16T10:16:44.862Z",
+      "sha256": "fe5710a7a50373fa91c2444e2a8206250d1d019bb63b4f4698f755d0a39d6309",
       "dataDate": "2026-07-15",
       "dataDatePath": "asOfDate",
       "generatedAt": "2026-07-16T07:34:59.418Z"
@@ -703,11 +653,11 @@
       "blockingReasons": [],
       "origin": "input",
       "bytes": 1146633,
-      "mtime": "2026-07-16T05:34:05.797Z",
-      "sha256": "e9a9565aecccafaf25bd083400660d28e3ad4d0871d7f13b45a0f45e18c917c7",
-      "dataDate": "2026-07-15",
+      "mtime": "2026-07-16T10:16:44.836Z",
+      "sha256": "1721eb011713f106331b48f2a9d14014aba08e0089ac5224cbe96b6324cf14f6",
+      "dataDate": "2026-07-16",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-07-15T08:16:54.146Z"
+      "generatedAt": "2026-07-16T07:34:59.418Z"
     },
     {
       "id": "source:order_procurement",
@@ -719,12 +669,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 3757235,
-      "mtime": "2026-07-16T07:34:59.957Z",
-      "sha256": "f5d3c0df349a0d8423329ee3ec94d77d1232c949b096ca43e458fe7c33e4cd03",
-      "dataDate": "2026-07-15",
+      "bytes": 3878389,
+      "mtime": "2026-07-16T10:16:44.740Z",
+      "sha256": "1f0e2e66e15a84029910a26eec1690ea5ccd8ffccc718c577484c996522d385d",
+      "dataDate": "2026-07-16",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-07-15T00:00:00+03:00"
+      "generatedAt": "2026-07-16T00:00:00+03:00"
     },
     {
       "id": "source:order_procurement_wb",
@@ -736,12 +686,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 679825,
-      "mtime": "2026-07-16T07:34:59.960Z",
-      "sha256": "2789bcdc4177d2774716eed9364491f1bf3bf8a2b2a4307c6bd5f397e2c313eb",
-      "dataDate": "2026-07-15",
+      "bytes": 700503,
+      "mtime": "2026-07-16T10:16:44.747Z",
+      "sha256": "288c1812c8d44829ad17a629add9585e7e345c7f6aa0e46bc8b773da4c3d7d4a",
+      "dataDate": "2026-07-16",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-07-15T00:00:00+03:00"
+      "generatedAt": "2026-07-16T00:00:00+03:00"
     },
     {
       "id": "source:order_procurement_ozon",
@@ -753,12 +703,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 1690340,
-      "mtime": "2026-07-16T07:34:59.967Z",
-      "sha256": "64a3c02764aab7921d683230ccbf21e59fa1eb79a017a05c627b4a24e6ef1092",
-      "dataDate": "2026-07-15",
+      "bytes": 1742368,
+      "mtime": "2026-07-16T10:16:44.744Z",
+      "sha256": "f89841e629e248bc3301aec4c6b93568fbe5239805eec2e3cdb321edac6c8c64",
+      "dataDate": "2026-07-16",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-07-15T00:00:00+03:00"
+      "generatedAt": "2026-07-16T00:00:00+03:00"
     },
     {
       "id": "source:order_procurement_ym",
@@ -766,15 +716,13 @@
       "source": "order_procurement_ym",
       "file": "order_procurement_ym.json",
       "kind": "calculation-detail",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "order_procurement_ym: staged output is missing; only the previous base snapshot is available"
-      ],
-      "origin": "base-fallback",
-      "bytes": 1388199,
-      "mtime": "2026-07-16T08:58:19.511Z",
-      "sha256": "912caecb459527127e9fbaa41c7f5cab02e7b1563431f40f8b9d51c9c2d67aa9",
+      "blockingReasons": [],
+      "origin": "input",
+      "bytes": 1436690,
+      "mtime": "2026-07-16T10:16:44.752Z",
+      "sha256": "11fb33fd8136bb26fae513d26e056dc1817684a0afda320a09eba4f704452c89",
       "dataDate": "2026-07-16",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-07-16T00:00:00+03:00"
@@ -789,12 +737,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 474791,
-      "mtime": "2026-07-16T07:35:04.363Z",
-      "sha256": "aa016f6cd03b7e39444397bc543015ff47ec0ea8ab87596e663060ca5718d839",
+      "bytes": 488573,
+      "mtime": "2026-07-16T10:16:44.731Z",
+      "sha256": "f299ca32769664cd06c45b70247bb87ca3abca93f003b19d03b4b20b9da94e0e",
       "dataDate": "2026-07-16",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-07-16T07:35:04.359Z"
+      "generatedAt": "2026-07-16T08:58:19.544Z"
     },
     {
       "id": "source:sku_matrix",
@@ -806,12 +754,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 599428,
-      "mtime": "2026-07-16T08:00:36.583Z",
-      "sha256": "ca4278970597e8f5ea1225a2f0dba1670e91982373eab9214c9a705ab32a8db2",
+      "bytes": 618098,
+      "mtime": "2026-07-16T10:16:44.838Z",
+      "sha256": "46f4b1eab9a47a7eac50afc5ccb94d4b23528c9d1ba4eae940b98d2038f98195",
       "dataDate": "2026-07-16",
       "dataDatePath": "generatedAt",
-      "generatedAt": "2026-07-16T08:00:36.579Z"
+      "generatedAt": "2026-07-16T09:16:07.319Z"
     },
     {
       "id": "source:sku_aliases",
@@ -836,15 +784,13 @@
       "source": "owner_audit",
       "file": "wb_owner_distribution_audit.json",
       "kind": "mapping-audit",
-      "status": "blocked",
+      "status": "ok",
       "warnings": [],
-      "blockingReasons": [
-        "owner_audit: staged output is missing; only the previous base snapshot is available"
-      ],
-      "origin": "base-fallback",
-      "bytes": 39575,
-      "mtime": "2026-07-16T08:56:09.824Z",
-      "sha256": "1b0481b2dac198d23f98b349c61e029b92a3b7710c24fb66a3aab491bf570e9f",
+      "blockingReasons": [],
+      "origin": "input",
+      "bytes": 40566,
+      "mtime": "2026-07-16T10:16:44.890Z",
+      "sha256": "8b2e3359723ee14944ae9fb41f4a81fbe140bf6e028c461909ff83a19f53d08e",
       "dataDate": "2026-07-16",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-07-16T00:00:00+03:00"
@@ -859,12 +805,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 110602,
-      "mtime": "2026-07-16T07:50:19.414Z",
-      "sha256": "234e91c7af888c1993b14b4e0e46a7f66216fda3969ea90306f7bc73fa73063d",
+      "bytes": 113069,
+      "mtime": "2026-07-16T10:16:44.813Z",
+      "sha256": "973295fe74e61bfe4fd2836f1e8287a264fcd3e590fb9002515683028ff7fb9e",
       "dataDate": "2026-07-15",
       "dataDatePath": "summary.maxDate",
-      "generatedAt": "2026-07-16T07:50:19.412Z"
+      "generatedAt": "2026-07-16T09:11:28.364Z"
     },
     {
       "id": "source:data_quarantine",
@@ -876,9 +822,9 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 324,
-      "mtime": "2026-07-16T10:03:18.066Z",
-      "sha256": "fe8589ced4e1573536d52341986363d738d6f1215229fb3d080fafd1872ed7ef",
+      "bytes": 337,
+      "mtime": "2026-07-16T10:16:44.814Z",
+      "sha256": "7f82784755277fb523804a0e9d4d4ddaa00c9d6b6a1a7b49ef42c9445ada4990",
       "dataDate": "2026-07-16",
       "dataDatePath": "generatedAt",
       "generatedAt": "2026-07-16T10:03:17.732Z"
@@ -894,7 +840,7 @@
         "product_leaderboard: snapshot age 13 days exceeds 10 days"
       ],
       "blockingReasons": [],
-      "origin": "base-fallback",
+      "origin": "input",
       "bytes": 266384,
       "mtime": "2026-07-16T05:34:05.776Z",
       "sha256": "0601b8ce0aac9a9c9dca14e0c83fd393864701d82bded324c850ec57d0d616d8",
@@ -912,7 +858,7 @@
       "status": "ok",
       "warnings": [],
       "blockingReasons": [],
-      "origin": "base-fallback",
+      "origin": "input",
       "bytes": 2208709,
       "mtime": "2026-07-16T05:34:05.789Z",
       "sha256": "81737d2d2d29d7ba0d1fa47c9d5157e208d730bf30ffb40ee5418783f8216d3f",
@@ -930,12 +876,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 10353426,
-      "mtime": "2026-07-16T07:46:11.955Z",
-      "sha256": "8fe6d91fbf56d0980e731c3f330a67b2fd2053a05607164e9f8ce0c046bce4c8",
+      "bytes": 10692385,
+      "mtime": "2026-07-16T10:16:44.889Z",
+      "sha256": "64ee534d19f6b27891fb9a26b1e036bb4032d5bca5131f1858c8f27abb8ad886",
       "dataDate": "2026-07-16",
       "dataDatePath": "window.to",
-      "generatedAt": "2026-07-16T07:46:11.857Z"
+      "generatedAt": "2026-07-16T08:03:16.679Z"
     },
     {
       "id": "source:wb_sales_funnel",
@@ -947,12 +893,12 @@
       "warnings": [],
       "blockingReasons": [],
       "origin": "input",
-      "bytes": 239707,
-      "mtime": "2026-07-16T07:50:19.029Z",
-      "sha256": "52a7de02ba9098d33a42ad6161331e9c3536b730f6431dd2792c5818ff4fbcf5",
+      "bytes": 252166,
+      "mtime": "2026-07-16T10:16:44.891Z",
+      "sha256": "6caced23fbe2fb461c82f71cb0f5a95ac60a223f573db3bb1d023e71f705d066",
       "dataDate": "2026-07-15",
       "dataDatePath": "period.to",
-      "generatedAt": "2026-07-16T07:50:19.027Z"
+      "generatedAt": "2026-07-16T08:58:21.948Z"
     },
     {
       "id": "contract:company-plan",
@@ -981,17 +927,13 @@
       "scope": "fact",
       "source": "platform_trends",
       "warnings": [
-        "platform_trends: goldapple date 2026-06-30 is 16 days older than expected 2026-07-16",
-        "platform_trends: letu date 2026-06-30 is 16 days older than expected 2026-07-16",
-        "platform_trends: magnit date 2026-07-08 is 8 days older than expected 2026-07-16",
-        "platform_trends: no active plan/data for samokat",
-        "platform_trends: all series date 2026-07-15 differs from component cutoff mixed"
+        "platform_trends: goldapple date 2026-06-30 is 15 days older than expected 2026-07-15",
+        "platform_trends: letu date 2026-06-30 is 15 days older than expected 2026-07-15",
+        "platform_trends: magnit date 2026-07-08 is 7 days older than expected 2026-07-15",
+        "platform_trends: no active plan/data for samokat"
       ],
-      "blockingReasons": [
-        "platform_trends: WB/Ozon/Yandex do not share one cutoff date (2026-07-15, 2026-07-15, 2026-07-14)",
-        "platform_trends: ya date 2026-07-14 is 2 days older than expected 2026-07-16"
-      ],
-      "expectedDate": "2026-07-16",
+      "blockingReasons": [],
+      "expectedDate": "2026-07-15",
       "activePlatforms": [
         "wb",
         "ozon",
@@ -1007,7 +949,7 @@
       "componentDates": {
         "wb": "2026-07-15",
         "ozon": "2026-07-15",
-        "ya": "2026-07-14",
+        "ya": "2026-07-15",
         "goldapple": "2026-06-30",
         "letu": "2026-06-30",
         "megamarket": "2026-07-15",
@@ -1017,15 +959,27 @@
       "componentRevenue": {
         "wb": 13261317,
         "ozon": 2277027,
-        "ya": 146802,
+        "ya": 159009,
         "goldapple": 28483,
         "letu": 11496,
         "megamarket": 457,
         "samokat": 0,
         "magnit": 0
       },
-      "componentRevenueSum": 15725581,
-      "status": "blocked"
+      "componentRevenueSum": 15737788,
+      "allRevenue": 15697353,
+      "allDateComponentRevenue": {
+        "wb": 13261317,
+        "ozon": 2277027,
+        "ya": 159009,
+        "goldapple": 0,
+        "letu": 0,
+        "megamarket": 457,
+        "samokat": 0,
+        "magnit": 0
+      },
+      "allDateComponentRevenueSum": 15697810,
+      "status": "warning"
     },
     {
       "id": "contract:dashboard",
@@ -1168,7 +1122,7 @@
       "source": "cross-layer",
       "warnings": [],
       "blockingReasons": [],
-      "expectedDate": "2026-07-16",
+      "expectedDate": "2026-07-15",
       "sourceDates": {
         "platform_fact": "2026-07-15",
         "dashboard_projection": "2026-07-15",
@@ -1177,32 +1131,6 @@
         "data_quality": "2026-07-15"
       },
       "status": "ok"
-    },
-    {
-      "id": "contract:sync-issues",
-      "scope": "pipeline",
-      "source": "portal_sync_issues.json",
-      "warnings": [],
-      "blockingReasons": [
-        "[ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.",
-        "exit code 1"
-      ],
-      "issueCount": 2,
-      "issues": [
-        {
-          "id": "yandex-market",
-          "name": "Yandex Market analytics refresh",
-          "message": "[ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.",
-          "failedAt": "2026-07-16T10:33:24.8394789+03:00"
-        },
-        {
-          "id": "product-leaderboard",
-          "name": "product leaderboard sync",
-          "message": "exit code 1",
-          "failedAt": "2026-07-16T10:35:05.3454442+03:00"
-        }
-      ],
-      "status": "blocked"
     },
     {
       "id": "contract:phase3-publish-reports",
@@ -1335,38 +1263,7 @@
     }
   ],
   "repair": {
-    "suggestedSteps": [
-      {
-        "id": "google-sheet-build",
-        "name": "google sheet build",
-        "reason": "sku_registry: staged output is missing; only the previous base snapshot is available",
-        "source": "sku_registry"
-      },
-      {
-        "id": "order-procurement",
-        "name": "order procurement",
-        "reason": "order_procurement_ym: staged output is missing; only the previous base snapshot is available",
-        "source": "order_procurement_ym"
-      },
-      {
-        "id": "wb-owner-distribution",
-        "name": "wb owner distribution",
-        "reason": "owner_audit: staged output is missing; only the previous base snapshot is available",
-        "source": "owner_audit"
-      },
-      {
-        "id": "marketplace-api",
-        "name": "marketplace api",
-        "reason": "platform_trends: WB/Ozon/Yandex do not share one cutoff date (2026-07-15, 2026-07-15, 2026-07-14)",
-        "source": "platform_trends"
-      },
-      {
-        "id": "retry-failed-sync-steps",
-        "name": "retry failed sync steps",
-        "reason": "[ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.",
-        "source": "portal_sync_issues.json"
-      }
-    ]
+    "suggestedSteps": []
   },
   "reconciliationFile": "portal_metric_reconciliation.json"
 }

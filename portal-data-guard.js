@@ -2,7 +2,7 @@
   if (window.__ALTEA_DATA_GUARD_20260603A__) return;
   window.__ALTEA_DATA_GUARD_20260603A__ = true;
 
-  var VERSION = "20260709-deferred-audit1";
+  var VERSION = "20260717-hydration-aware1";
   var SKU_PLAN_SCOPE = "sku-plan-fact";
   var MIN_TRUSTED_PLAN_FACT_ROWS = 170;
   var MAX_ISSUES = 80;
@@ -60,6 +60,16 @@
 
   function planFactAuditAllowed() {
     return ["sku-plan-fact", "data-health", "sku-contour", "iu-drr", "executive"].indexOf(activeViewName()) >= 0;
+  }
+
+  function planFactHydrationPending(model) {
+    var boot = appState().boot || {};
+    return Boolean(
+      model && model.deferred
+      || boot.dataReady !== true
+      || boot.lazyReady && boot.lazyReady.skuPlanFact !== true
+      || boot.lazyLoads && boot.lazyLoads.skuPlanFact
+    );
   }
 
   function numberOrZero(value) {
@@ -307,8 +317,13 @@
       });
     }
     var filters = model.filters || {};
-    var unfilteredScope = (!filters.search && (!filters.owner || filters.owner === "all") && (!filters.platform || filters.platform === "all"));
-    if (unfilteredScope && kpiFact > 0 && rowCount > 0 && rowCount < MIN_TRUSTED_PLAN_FACT_ROWS) {
+    var unfilteredScope = Boolean(
+      !filters.search
+      && (!filters.owner || filters.owner === "all")
+      && (!filters.platform || filters.platform === "all")
+      && (!filters.status || filters.status === "all")
+    );
+    if (unfilteredScope && kpiFact > 0 && rowCount > 0 && rowCount < MIN_TRUSTED_PLAN_FACT_ROWS && !planFactHydrationPending(model)) {
       addIssue({
         scope: scope,
         severity: "block",

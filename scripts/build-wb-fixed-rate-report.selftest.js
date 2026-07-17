@@ -69,11 +69,11 @@ function main() {
       {
         date: '2026-07-01',
         targetRevenue: 1000,
-        revenue: 900,
-        planSpend: 72,
+        revenue: 1200,
+        planSpend: 96,
         planPct: 0.08,
-        spendFact: 30,
-        factPct: 0.033333,
+        spendFact: 120,
+        factPct: 0.1,
         source: 'fixture reconciliation'
       }
     ],
@@ -82,15 +82,17 @@ function main() {
         from: '2026-07-01',
         to: '2026-07-03',
         targetRevenue: 3000,
-        revenue: 2900,
-        planSpend: 232,
-        spendFact: 170
+        revenue: 3200,
+        planSpend: 256,
+        spendFact: 260
       }
     ]
   };
   const reconciled = applyReconciliation(parsed.daily, reconciliation);
   assert.deepStrictEqual(reconciled.daily.map((row) => row.date), ['2026-07-01', '2026-07-02', '2026-07-03']);
   assert.strictEqual(reconciled.daily[0].source, 'fixture reconciliation');
+  assert.strictEqual(reconciled.daily[0].revenueCompletionPct, 1.2);
+  assert.strictEqual(reconciled.daily[0].adsCompletionPct, 1.25);
   assert.deepStrictEqual(validateControlWindows(reconciled.daily, reconciliation.controlWindows).errors, []);
 
   const reconciliationPath = path.join(tmpDir, 'wb-fixed-rate-reconciliation.json');

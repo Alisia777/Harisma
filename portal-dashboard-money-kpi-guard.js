@@ -6,15 +6,22 @@
   let loadPromise = null;
   let checks = 0;
 
+  function routeView() {
+    return String(window.location.hash || '').replace(/^#\/?/, '').split(/[?&]/)[0];
+  }
+
   function activeView() {
+    const route = routeView();
+    if (route) return route;
     const stateView = window.__alteaAppState?.activeView || window.state?.activeView || window.__ALTEA_STATE__?.activeView || '';
-    const hashView = String(window.location.hash || '').replace(/^#\/?/, '');
     const activeSection = document.querySelector('.view.active');
     const domView = activeSection ? String(activeSection.id || '').replace(/^view-/, '') : '';
-    return stateView || hashView || domView || 'dashboard';
+    return stateView || domView || 'dashboard';
   }
 
   function dashboardActive() {
+    const route = routeView();
+    if (route) return route === 'dashboard';
     return activeView() === 'dashboard' || document.getElementById('view-dashboard')?.classList.contains('active');
   }
 

@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-16T17:06:19.306Z",
+  "generatedAt": "2026-07-17T08:27:06.108Z",
   "status": "critical",
   "summary": {
-    "issueCount": 190,
-    "criticalCount": 189,
+    "issueCount": 138,
+    "criticalCount": 137,
     "warningCount": 0,
     "monthKey": "2026-07",
-    "maxDate": "2026-07-15",
-    "apiUnmappedPlatformRows": 0,
-    "apiUnmappedUniqueSku": 0,
-    "apiUnmappedRevenue": 0,
+    "maxDate": "2026-07-16",
+    "apiUnmappedPlatformRows": 1,
+    "apiUnmappedUniqueSku": 1,
+    "apiUnmappedRevenue": 597,
     "apiUnmappedActionRows": 0,
     "apiUnmappedActionUniqueSku": 0,
     "apiUnmappedActionRevenue": 0,
-    "apiKnownOutsideRegistryRows": 1,
-    "apiKnownOutsideRegistryUniqueSku": 1,
-    "apiKnownOutsideRegistryRevenue": 597,
+    "apiKnownOutsideRegistryRows": 0,
+    "apiKnownOutsideRegistryUniqueSku": 0,
+    "apiKnownOutsideRegistryRevenue": 0,
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
     "skuAliasCount": 342,
-    "priceContourSkuCount": 366,
-    "orderNoStockNeedRows": 189,
+    "priceContourSkuCount": 319,
+    "orderNoStockNeedRows": 137,
     "skuMissingOwner": 0,
     "skuMissingPlan": 0,
     "skuAssignedPlan": 96,
@@ -34,57 +34,57 @@
   "freshness": [
     {
       "dataset": "dashboard",
-      "asOfDate": "2026-07-15",
-      "generatedAt": "2026-07-16T08:57:25.954Z",
+      "asOfDate": "2026-07-16",
+      "generatedAt": "2026-07-17T06:20:53.715Z",
       "rows": 20,
-      "referenceDate": "2026-07-16",
+      "referenceDate": "2026-07-17",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "platform_trends",
-      "asOfDate": "2026-07-15",
-      "generatedAt": "2026-07-16T08:57:25.954Z",
+      "asOfDate": "2026-07-16",
+      "generatedAt": "2026-07-17T07:33:26.446Z",
       "rows": 9,
-      "referenceDate": "2026-07-16",
+      "referenceDate": "2026-07-17",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "order_procurement",
-      "asOfDate": "2026-07-16",
-      "generatedAt": "2026-07-16T00:00:00+03:00",
-      "rows": 3092,
-      "referenceDate": "2026-07-16",
+      "asOfDate": "2026-07-17",
+      "generatedAt": "2026-07-17T00:00:00+03:00",
+      "rows": 3099,
+      "referenceDate": "2026-07-17",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "warehouse_stock_overlay",
-      "asOfDate": "2026-07-16",
-      "generatedAt": "2026-07-16T07:33:25.652Z",
+      "asOfDate": "2026-07-17",
+      "generatedAt": "2026-07-17T07:31:51.471Z",
       "rows": 185,
       "matchedRows": 185,
       "unmatchedRows": 25,
-      "referenceDate": "2026-07-16",
+      "referenceDate": "2026-07-17",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "ads_summary",
-      "asOfDate": "2026-07-15",
-      "generatedAt": "2026-07-16T07:41:43.711Z",
+      "asOfDate": "2026-07-16",
+      "generatedAt": "2026-07-17T07:40:28.571Z",
       "rows": 8,
-      "referenceDate": "2026-07-16",
+      "referenceDate": "2026-07-17",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "iu_drr_summary",
-      "asOfDate": "2026-07-15",
-      "generatedAt": "2026-07-16T09:10:31.416Z",
+      "asOfDate": "2026-07-16",
+      "generatedAt": "2026-07-17T07:53:21.736Z",
       "rows": 31,
-      "referenceDate": "2026-07-16",
+      "referenceDate": "2026-07-17",
       "lagDays": 1,
       "status": "ok"
     }
@@ -110,10 +110,10 @@
     "wb": {
       "label": "WB",
       "rows": 139,
-      "directRevenue": 215093489,
-      "directUnits": 122978,
-      "aggregateRevenue": 215092446,
-      "aggregateDate": "2026-07-15",
+      "directRevenue": 227606164,
+      "directUnits": 132381,
+      "aggregateRevenue": 227605121,
+      "aggregateDate": "2026-07-16",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -126,28 +126,28 @@
     },
     "ozon": {
       "label": "Ozon",
-      "rows": 261,
-      "directRevenue": 38502503,
-      "directUnits": 50170,
-      "aggregateRevenue": 38502503,
-      "aggregateDate": "2026-07-15",
-      "unmappedCount": 0,
-      "unmappedRevenue": 0,
-      "unmappedUnits": 0,
+      "rows": 262,
+      "directRevenue": 40642033,
+      "directUnits": 52898,
+      "aggregateRevenue": 40642033,
+      "aggregateDate": "2026-07-16",
+      "unmappedCount": 1,
+      "unmappedRevenue": 597,
+      "unmappedUnits": 1,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
       "ignoredUnits": 0,
-      "knownOutsideRegistryCount": 1,
-      "knownOutsideRegistryRevenue": 597,
-      "knownOutsideRegistryUnits": 1
+      "knownOutsideRegistryCount": 0,
+      "knownOutsideRegistryRevenue": 0,
+      "knownOutsideRegistryUnits": 0
     },
     "ya": {
       "label": "Я.Маркет",
       "rows": 133,
-      "directRevenue": 293187,
-      "directUnits": 451,
-      "aggregateRevenue": 2029769,
-      "aggregateDate": "2026-07-15",
+      "directRevenue": 413449,
+      "directUnits": 632,
+      "aggregateRevenue": 2155258,
+      "aggregateDate": "2026-07-16",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -194,11 +194,11 @@
     },
     "megamarket": {
       "label": "megamarket",
-      "rows": 11,
-      "directRevenue": 3747,
-      "directUnits": 5,
-      "aggregateRevenue": 6850,
-      "aggregateDate": "2026-07-15",
+      "rows": 12,
+      "directRevenue": 4813,
+      "directUnits": 6,
+      "aggregateRevenue": 8505,
+      "aggregateDate": "2026-07-16",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -228,12 +228,12 @@
     }
   },
   "orderSummary": {
-    "rows": 3092,
-    "noStockNeedRows": 189,
-    "lowTurnoverRows": 44,
-    "totalNeed7": 449,
-    "totalNeed14": 17218,
-    "totalNeed28": 84434
+    "rows": 3099,
+    "noStockNeedRows": 137,
+    "lowTurnoverRows": 49,
+    "totalNeed7": 591,
+    "totalNeed14": 17554,
+    "totalNeed28": 85168
   },
   "ownerSummary": {
     "totalSku": 209,
@@ -246,7 +246,7 @@
     "missingPlan": 0
   },
   "warehouseSummary": {
-    "sourceRows": 311,
+    "sourceRows": 313,
     "matchedRows": 185,
     "sourceUnmatchedRows": 25,
     "unmatchedRows": 0,
@@ -254,7 +254,7 @@
     "warningUnmatchedRows": 0
   },
   "wbOwnerDistributionSummary": {
-    "sourceGeneratedAt": "2026-07-16T00:00:00+03:00",
+    "sourceGeneratedAt": "2026-07-17T00:00:00+03:00",
     "matchedSkuCount": 59,
     "updatedOwnerCount": 0,
     "missingInPortalCount": 0,
@@ -266,194 +266,12 @@
       "type": "order_no_stock_need",
       "dataset": "order_procurement",
       "platform": "ya",
-      "place": "Екатеринбург",
-      "articleKey": "matte_wax_50ml",
-      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Екатеринбург",
-      "articleKey": "tonik_dlya_lica_200ml",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Москва",
-      "articleKey": "matte_wax_50ml",
-      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Москва",
-      "articleKey": "pink_pepper_50ml",
-      "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
-      "need7": 2,
-      "need14": 3,
-      "need28": 5,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Москва",
-      "articleKey": "tonik_dlya_lica_200ml",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Ростов",
-      "articleKey": "matte_wax_50ml",
-      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Ростов",
-      "articleKey": "pink_pepper_50ml",
-      "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
-      "need7": 2,
-      "need14": 3,
-      "need28": 5,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Ростов",
-      "articleKey": "retinait_syvorotka_025_30ml",
-      "name": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
-      "need7": 2,
-      "need14": 3,
-      "need28": 6,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Ростов",
-      "articleKey": "tonik_dlya_lica_200ml",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Самара",
-      "articleKey": "matte_wax_50ml",
-      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Самара",
-      "articleKey": "tonik_dlya_lica_200ml",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Санкт-Петербург",
-      "articleKey": "tonik_dlya_lica_200ml",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
       "place": "Express: Смарт Экспресс",
       "articleKey": "allicil_gribok15ml",
       "name": "Мазь от грибка ногтей Аллицил, CPA, 15 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "alteya_beauty_brows_box",
-      "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "alteya_young_skin_box",
-      "name": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "need7": 2,
+      "need14": 3,
+      "need28": 5,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -464,9 +282,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "arterol",
       "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Артерол, 10мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need7": 3,
+      "need14": 5,
+      "need28": 9,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -478,8 +296,8 @@
       "articleKey": "arterol_1_1",
       "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Артерол, 10мл х 2",
       "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -490,9 +308,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "artoks_75ml",
       "name": "Мазь для суставов Артокс, CPA, 75 мл",
-      "need7": 2,
-      "need14": 3,
-      "need28": 6,
+      "need7": 1,
+      "need14": 2,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -503,9 +321,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "berberin_laif_BAD_60caps",
       "name": "Берберин + хром + коэнзим + B6 для похудения, контроль аппетита и веса, Алтея, Берберин Лайф, 60 капсул",
-      "need7": 6,
-      "need14": 11,
-      "need28": 21,
+      "need7": 7,
+      "need14": 14,
+      "need28": 27,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -516,8 +334,8 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "brutalax",
       "name": "Возбудитель для мужчин, таблетки для потенции у мужчин, для секса, Бруталакс, 18+",
-      "need7": 2,
-      "need14": 3,
+      "need7": 1,
+      "need14": 2,
       "need28": 5,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
@@ -544,7 +362,7 @@
       "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, детокс, Алтея, Чудо гриб, чудогриб, 20 капсул",
       "need7": 1,
       "need14": 2,
-      "need28": 5,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -555,22 +373,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "curly_method_300ml",
       "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
-      "need7": 5,
-      "need14": 10,
-      "need28": 19,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "daoshen",
-      "name": "Мазь от грибка ногтей Даошэн, CPA, 15 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need7": 6,
+      "need14": 12,
+      "need28": 23,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -596,7 +401,7 @@
       "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -608,8 +413,8 @@
       "articleKey": "dardrakona_1_1",
       "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
       "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "need14": 2,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -620,9 +425,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "dardrakona_75ml",
       "name": "Крем от варикоза Дар дракона, CPA, 75 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need7": 2,
+      "need14": 3,
+      "need28": 5,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -634,8 +439,8 @@
       "articleKey": "dolgar",
       "name": "Мазь от грибка ногтей Долгар, CPA, 15 мл",
       "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "need14": 2,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -657,24 +462,11 @@
       "dataset": "order_procurement",
       "platform": "ya",
       "place": "Express: Смарт Экспресс",
-      "articleKey": "ekzifol",
-      "name": "Мазь от грибка ногтей Экзифол, CPA, 30 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 4,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
       "articleKey": "enteroshol",
       "name": "Капсулы от изжоги, для желудка и печени, чистка печени и желудка, Энтеросхол, 20 капсул",
-      "need7": 2,
-      "need14": 4,
-      "need28": 7,
+      "need7": 5,
+      "need14": 10,
+      "need28": 19,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -685,9 +477,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "erobrut",
       "name": "Пищевая добавка Эробрут, CPA, 20 капсул",
-      "need7": 2,
-      "need14": 4,
-      "need28": 7,
+      "need7": 4,
+      "need14": 7,
+      "need28": 14,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -699,8 +491,8 @@
       "articleKey": "gel_antiakne_20ml_v2",
       "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
       "need7": 9,
-      "need14": 18,
-      "need28": 35,
+      "need14": 17,
+      "need28": 33,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -726,7 +518,7 @@
       "name": "Гель для бритья мужской без пены охлаждающий с ментолом Алтея 300 мл",
       "need7": 1,
       "need14": 2,
-      "need28": 4,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -737,9 +529,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "gel_dlya_brovei_6ml",
       "name": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need7": 2,
+      "need14": 3,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -752,20 +544,7 @@
       "name": "Гель для душа мужской парфюмированный Алтея 1000 мл",
       "need7": 1,
       "need14": 2,
-      "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "gel_parfum_tabacco_vanille_450ml",
-      "name": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -776,9 +555,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "gemorekt",
       "name": "Крем от гемороя Геморект, CPA, 15 мл",
-      "need7": 2,
-      "need14": 3,
-      "need28": 5,
+      "need7": 1,
+      "need14": 2,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -800,24 +579,11 @@
       "dataset": "order_procurement",
       "platform": "ya",
       "place": "Express: Смарт Экспресс",
-      "articleKey": "glikiron_BAD_60caps",
-      "name": "Гликирон БАД для профилактики диабета контроль аппетита",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
       "articleKey": "glukofol",
       "name": "Витамины для диабетиков от сахарного диабета, Алтея, Глюкофол, 10 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 4,
+      "need7": 7,
+      "need14": 13,
+      "need28": 26,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -841,9 +607,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "indolakt_BAD_60caps",
       "name": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
-      "need7": 1,
-      "need14": 2,
-      "need28": 4,
+      "need7": 2,
+      "need14": 4,
+      "need28": 7,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -868,34 +634,8 @@
       "articleKey": "insulight_1_1",
       "name": "Диабет витамины при сахарном диабете, Алтея, Инсулайт, 49г х 2",
       "need7": 1,
-      "need14": 1,
-      "need28": 1,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "insulight_BAD_60caps",
-      "name": "Витамины для диабетиков, для профилактики от сахарного диабета, Алтея, Инсулайт, 60 капсул",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "intimvita_300ml",
-      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -906,9 +646,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "kardicin",
       "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Кардицин, 10мг",
-      "need7": 6,
-      "need14": 12,
-      "need28": 23,
+      "need7": 3,
+      "need14": 6,
+      "need28": 11,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -920,8 +660,8 @@
       "articleKey": "kardicin_1_1",
       "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Кардицин, 2 шт",
       "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -933,21 +673,8 @@
       "articleKey": "kardicin_1_1_1",
       "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Кардицин, 3 шт",
       "need7": 1,
-      "need14": 1,
-      "need28": 2,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "kavmaz",
-      "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "need14": 2,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -969,24 +696,11 @@
       "dataset": "order_procurement",
       "platform": "ya",
       "place": "Express: Смарт Экспресс",
-      "articleKey": "kavmaz_60ml",
-      "name": "Мазь для суставов Кавказская мазь , CPA, 60 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
       "articleKey": "khvoinitsa_1_1",
       "name": "Пищевая добавка Хвойница , CPA, 7 саше",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "need7": 3,
+      "need14": 5,
+      "need28": 10,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -998,8 +712,8 @@
       "articleKey": "kinzhal",
       "name": "Возбудитель для мужчин, средство для потенции и эрекции, витамины для мужчины,Кинжал, 20 капсул",
       "need7": 1,
-      "need14": 2,
-      "need28": 4,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1010,22 +724,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "krem_buster_250ml",
       "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
-      "need7": 4,
-      "need14": 7,
-      "need28": 13,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "krem_dlya_ruk_75ml",
-      "name": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need7": 3,
+      "need14": 6,
+      "need28": 11,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1050,8 +751,8 @@
       "articleKey": "krem_ot_rastyazhek",
       "name": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
       "need7": 7,
-      "need14": 13,
-      "need28": 25,
+      "need14": 14,
+      "need28": 27,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1062,9 +763,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "kremshelk_100ml",
       "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
-      "need7": 3,
-      "need14": 6,
-      "need28": 11,
+      "need7": 1,
+      "need14": 2,
+      "need28": 5,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1088,9 +789,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "limfaks_BAD_30caps",
       "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
-      "need7": 3,
-      "need14": 6,
-      "need28": 13,
+      "need7": 5,
+      "need14": 9,
+      "need28": 18,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1116,7 +817,7 @@
       "name": "Маска для волос с кератином восстанавливающая увлажняющая, Алтея, 250 мл",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1129,7 +830,7 @@
       "name": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1141,21 +842,8 @@
       "articleKey": "maslo_dlya_borodi_50ml",
       "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
       "need7": 2,
-      "need14": 4,
-      "need28": 7,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "matte_wax_50ml",
-      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need14": 3,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1167,47 +855,8 @@
       "articleKey": "micardin",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул",
       "need7": 2,
-      "need14": 4,
-      "need28": 7,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "micelix",
-      "name": "micelix",
-      "need7": 2,
       "need14": 3,
       "need28": 5,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "mycoplax",
-      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "mycoplax_1_1",
-      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл, набор из 2 шт",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1231,9 +880,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "nabor_remuver_40ml",
       "name": "Ремувер для удаления кутикулы, Алтея, 40 мл",
-      "need7": 2,
-      "need14": 4,
-      "need28": 7,
+      "need7": 3,
+      "need14": 5,
+      "need28": 9,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1257,9 +906,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "oftalmol",
       "name": "Витамины для глаз; лютеин комплекс для глаз для зрения, комплекс витаминов (А, E, С) цинк для улучшения и восстановления зрения, увлажняющие капли / Офтальмол Oftalmol",
-      "need7": 2,
-      "need14": 3,
-      "need28": 5,
+      "need7": 1,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1270,9 +919,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "okospas",
       "name": "Витамины для глаз и восстановления зрения Окоспас, с лютеином и черникой, 10 мл",
-      "need7": 13,
-      "need14": 26,
-      "need28": 52,
+      "need7": 34,
+      "need14": 68,
+      "need28": 135,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1283,9 +932,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "optitrin",
       "name": "optitrin",
-      "need7": 4,
-      "need14": 7,
-      "need28": 13,
+      "need7": 5,
+      "need14": 10,
+      "need28": 21,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1298,7 +947,7 @@
       "name": "Мазь для суставов Остеофаст, CPA, 30 мл, набор из 3 шт",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1309,45 +958,6 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "otivin",
       "name": "Пищевая добавка Отивин , CPA, 10 мл",
-      "need7": 2,
-      "need14": 4,
-      "need28": 7,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "papiderm",
-      "name": "Средство от бородавок, удаление папиллом, Алтея, Папидерм, 11 мл",
-      "need7": 3,
-      "need14": 5,
-      "need28": 9,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "penka_kudryavii_metod_150ml",
-      "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "need7": 3,
-      "need14": 6,
-      "need28": 11,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "piling_100ml",
-      "name": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
       "need7": 1,
       "need14": 1,
       "need28": 2,
@@ -1359,8 +969,34 @@
       "dataset": "order_procurement",
       "platform": "ya",
       "place": "Express: Смарт Экспресс",
-      "articleKey": "pink_pepper_50ml",
-      "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
+      "articleKey": "papiderm",
+      "name": "Средство от бородавок, удаление папиллом, Алтея, Папидерм, 11 мл",
+      "need7": 2,
+      "need14": 3,
+      "need28": 5,
+      "message": "По складу нет остатка, но есть продажи/потребность"
+    },
+    {
+      "severity": "critical",
+      "type": "order_no_stock_need",
+      "dataset": "order_procurement",
+      "platform": "ya",
+      "place": "Express: Смарт Экспресс",
+      "articleKey": "penka_kudryavii_metod_150ml",
+      "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
+      "need7": 4,
+      "need14": 7,
+      "need28": 14,
+      "message": "По складу нет остатка, но есть продажи/потребность"
+    },
+    {
+      "severity": "critical",
+      "type": "order_no_stock_need",
+      "dataset": "order_procurement",
+      "platform": "ya",
+      "place": "Express: Смарт Экспресс",
+      "articleKey": "piling_100ml",
+      "name": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
       "need7": 2,
       "need14": 3,
       "need28": 5,
@@ -1387,9 +1023,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "remuver_40ml",
       "name": "remuver_40ml",
-      "need7": 2,
-      "need14": 4,
-      "need28": 8,
+      "need7": 1,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1400,9 +1036,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "retiderm_50ml",
       "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
-      "need7": 2,
-      "need14": 3,
-      "need28": 5,
+      "need7": 1,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1427,8 +1063,8 @@
       "articleKey": "retinait_krem_1_50ml",
       "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
       "need7": 1,
-      "need14": 2,
-      "need28": 4,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1439,9 +1075,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "retinait_syvorotka_1_30ml",
       "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
-      "need7": 17,
-      "need14": 33,
-      "need28": 66,
+      "need7": 2,
+      "need14": 3,
+      "need28": 5,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1453,21 +1089,8 @@
       "articleKey": "shampun_dlya_rosta_250ml",
       "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
       "need7": 1,
-      "need14": 2,
-      "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "silk_hair_300ml",
-      "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1480,7 +1103,7 @@
       "name": "Скраб пилинг для кожи головы, Алтея, 200 мл",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1491,9 +1114,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "solevoy_sprei_200ml",
       "name": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need7": 2,
+      "need14": 3,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1505,8 +1128,8 @@
       "articleKey": "sprei_buster_100ml",
       "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
       "need7": 2,
-      "need14": 3,
-      "need28": 6,
+      "need14": 4,
+      "need28": 7,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1519,7 +1142,7 @@
       "name": "Мазь для суставов Сусталит , CPA, 30 мл",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1530,9 +1153,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "sustalit_75ml",
       "name": "Мазь для суставов Сусталит , CPA, 75 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 4,
+      "need7": 2,
+      "need14": 4,
+      "need28": 8,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1543,9 +1166,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "synergel_60ml",
       "name": "Мазь для суставов Синергель, CPA, 60 мл",
-      "need7": 3,
-      "need14": 5,
-      "need28": 9,
+      "need7": 1,
+      "need14": 2,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1557,8 +1180,8 @@
       "articleKey": "syvorotka_dlya_rosta_6ml_v2",
       "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
       "need7": 1,
-      "need14": 2,
-      "need28": 4,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1582,35 +1205,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "telomeras_60caps",
       "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
-      "need7": 2,
-      "need14": 4,
-      "need28": 8,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "termo_sprei_200ml",
-      "name": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "tonik_dlya_lica_200ml",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need7": 3,
+      "need14": 5,
+      "need28": 10,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1621,9 +1218,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "trezax",
       "name": "Капли от алкогольной зависимости, от алкогольной зависимости, Алтея, Трезакс, 10 мл",
-      "need7": 3,
-      "need14": 5,
-      "need28": 9,
+      "need7": 1,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1636,7 +1233,7 @@
       "name": "Капсулы от алкогольной зависимости, пищевая добавка Трезвин",
       "need7": 3,
       "need14": 5,
-      "need28": 10,
+      "need28": 9,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1647,9 +1244,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "uhovit",
       "name": "Капсулы для улучшения слуха, усилитель слуха, Алтея, Уховит, 20 капсул",
-      "need7": 3,
-      "need14": 5,
-      "need28": 10,
+      "need7": 2,
+      "need14": 4,
+      "need28": 8,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1660,9 +1257,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "urinofix",
       "name": "Пищевая добавка Уринофикс, CPA, 20 капсул",
-      "need7": 3,
-      "need14": 5,
-      "need28": 10,
+      "need7": 6,
+      "need14": 12,
+      "need28": 23,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1673,32 +1270,6 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "urofol",
       "name": "Таблетки от недержания мочи от цистита, Алтея, Урофол, 20 капсул",
-      "need7": 4,
-      "need14": 8,
-      "need28": 15,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "urolgan",
-      "name": "Пищевая добавка Уролган , CPA, 10 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "uromax",
-      "name": "Пищевая добавка Уромакс , CPA, 20 капсул",
       "need7": 2,
       "need14": 3,
       "need28": 6,
@@ -1710,11 +1281,11 @@
       "dataset": "order_procurement",
       "platform": "ya",
       "place": "Express: Смарт Экспресс",
-      "articleKey": "varifit",
-      "name": "Крем от варикоза Варифит, CPA, 30 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "articleKey": "urolgan",
+      "name": "Пищевая добавка Уролган , CPA, 10 мл",
+      "need7": 2,
+      "need14": 4,
+      "need28": 7,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1723,50 +1294,11 @@
       "dataset": "order_procurement",
       "platform": "ya",
       "place": "Express: Смарт Экспресс",
-      "articleKey": "varifit_1_1",
-      "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "vetonus",
-      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "vetonus_1_1",
-      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 4,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "Express: Смарт Экспресс",
-      "articleKey": "wbmicelix",
-      "name": "Комплекс Детокс для очищения печени и кишечника, для похудения, детокc для печени, Алтея, Мицеликс, 10 шт",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "articleKey": "uromax",
+      "name": "Пищевая добавка Уромакс , CPA, 20 капсул",
+      "need7": 3,
+      "need14": 5,
+      "need28": 10,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1778,8 +1310,8 @@
       "articleKey": "wbmicelix_1_1",
       "name": "Комплекс Детокс для очищения печени и кишечника, для похудения, детокc для печени, Алтея, Мицеликс, 10 шт х 2",
       "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1790,9 +1322,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "wboptitrin",
       "name": "Витамины для глаз, лютеин комплекс для зрения, Оптитрин, 7 ампул",
-      "need7": 1,
-      "need14": 2,
-      "need28": 4,
+      "need7": 3,
+      "need14": 6,
+      "need28": 12,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1804,8 +1336,8 @@
       "articleKey": "wbsinergel",
       "name": "Мазь для суставов Синергель, CPA, 30 мл",
       "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1818,7 +1350,7 @@
       "name": "Сыворотка для роста волос, никотиновая кислота, биотин, бетаин, кератин, масло жожоба, Алтея, WOW GLAM, 10 штук по 2 мл",
       "need7": 1,
       "need14": 2,
-      "need28": 4,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1830,8 +1362,8 @@
       "articleKey": "yagodniy_spas",
       "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, детокс, Алтея, Ягодный спас,10 шипучих таблеток",
       "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1842,9 +1374,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "yagodniy_spas_1_1",
       "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, детокс, Алтея, Ягодный спас, 20 шипучих таблеток",
-      "need7": 2,
-      "need14": 4,
-      "need28": 7,
+      "need7": 3,
+      "need14": 5,
+      "need28": 10,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1855,9 +1387,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "arterol",
       "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Артерол, 10мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need7": 3,
+      "need14": 5,
+      "need28": 9,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1868,22 +1400,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "curly_method_300ml",
       "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
-      "need7": 5,
-      "need14": 10,
-      "need28": 19,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "daoshen",
-      "name": "Мазь от грибка ногтей Даошэн, CPA, 15 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need7": 6,
+      "need14": 12,
+      "need28": 23,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1909,7 +1428,7 @@
       "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1920,9 +1439,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "dardrakona_75ml",
       "name": "Крем от варикоза Дар дракона, CPA, 75 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need7": 2,
+      "need14": 3,
+      "need28": 5,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1934,8 +1453,8 @@
       "articleKey": "dolgar",
       "name": "Мазь от грибка ногтей Долгар, CPA, 15 мл",
       "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "need14": 2,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1947,8 +1466,8 @@
       "articleKey": "enzim_pudra_80gr_v2",
       "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
       "need7": 2,
-      "need14": 4,
-      "need28": 7,
+      "need14": 3,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1960,8 +1479,8 @@
       "articleKey": "gel_antiakne_20ml_v2",
       "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
       "need7": 9,
-      "need14": 18,
-      "need28": 35,
+      "need14": 17,
+      "need28": 33,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1975,19 +1494,6 @@
       "need7": 1,
       "need14": 2,
       "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "gel_parfum_tabacco_vanille_450ml",
-      "name": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2011,9 +1517,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "glukofol",
       "name": "Витамины для диабетиков от сахарного диабета, Алтея, Глюкофол, 10 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 4,
+      "need7": 7,
+      "need14": 13,
+      "need28": 26,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2038,21 +1544,8 @@
       "articleKey": "insulight_1_1",
       "name": "Диабет витамины при сахарном диабете, Алтея, Инсулайт, 49г х 2",
       "need7": 1,
-      "need14": 1,
-      "need28": 1,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "insulight_BAD_60caps",
-      "name": "Витамины для диабетиков, для профилактики от сахарного диабета, Алтея, Инсулайт, 60 капсул",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2076,9 +1569,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "khvoinitsa_1_1",
       "name": "Пищевая добавка Хвойница , CPA, 7 саше",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "need7": 3,
+      "need14": 5,
+      "need28": 10,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2089,22 +1582,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "krem_buster_250ml",
       "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
-      "need7": 4,
-      "need14": 7,
-      "need28": 13,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "krem_dlya_ruk_75ml",
-      "name": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need7": 3,
+      "need14": 6,
+      "need28": 11,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2128,9 +1608,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "krem_spf50_50ml",
       "name": "СПФ для лица База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
-      "need7": 3,
-      "need14": 6,
-      "need28": 12,
+      "need7": 4,
+      "need14": 7,
+      "need28": 13,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2141,9 +1621,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "kremshelk_100ml",
       "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
-      "need7": 3,
-      "need14": 6,
-      "need28": 11,
+      "need7": 1,
+      "need14": 2,
+      "need28": 5,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2167,9 +1647,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "limfaks_BAD_30caps",
       "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
-      "need7": 3,
-      "need14": 6,
-      "need28": 13,
+      "need7": 5,
+      "need14": 9,
+      "need28": 18,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2195,7 +1675,7 @@
       "name": "Маска для волос с кератином восстанавливающая увлажняющая, Алтея, 250 мл",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2221,7 +1701,7 @@
       "name": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2233,47 +1713,8 @@
       "articleKey": "maslo_dlya_borodi_50ml",
       "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
       "need7": 2,
-      "need14": 4,
-      "need28": 7,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "matte_wax_50ml",
-      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "mycoplax",
-      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "mycoplax_1_1",
-      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл, набор из 2 шт",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "need14": 3,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2297,9 +1738,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "oftalmol",
       "name": "Витамины для глаз; лютеин комплекс для глаз для зрения, комплекс витаминов (А, E, С) цинк для улучшения и восстановления зрения, увлажняющие капли / Офтальмол Oftalmol",
-      "need7": 2,
-      "need14": 3,
-      "need28": 5,
+      "need7": 1,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2310,9 +1751,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "otivin",
       "name": "Пищевая добавка Отивин , CPA, 10 мл",
-      "need7": 2,
-      "need14": 4,
-      "need28": 7,
+      "need7": 1,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2323,22 +1764,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "penka_kudryavii_metod_150ml",
       "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "need7": 3,
-      "need14": 6,
-      "need28": 11,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "pink_pepper_50ml",
-      "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
-      "need7": 2,
-      "need14": 3,
-      "need28": 5,
+      "need7": 4,
+      "need14": 7,
+      "need28": 14,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2362,9 +1790,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "retiderm_50ml",
       "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
-      "need7": 2,
-      "need14": 3,
-      "need28": 5,
+      "need7": 1,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2376,8 +1804,8 @@
       "articleKey": "retinait_krem_01_50ml",
       "name": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт",
       "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2401,9 +1829,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "retinait_krem_05_50ml",
       "name": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт",
-      "need7": 2,
-      "need14": 3,
-      "need28": 6,
+      "need7": 1,
+      "need14": 2,
+      "need28": 5,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2414,19 +1842,6 @@
       "place": "FBS: smart.sale",
       "articleKey": "retinait_krem_1_5_50ml",
       "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "need7": 4,
-      "need14": 7,
-      "need28": 13,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "retinait_krem_1_50ml",
-      "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
       "need7": 1,
       "need14": 2,
       "need28": 4,
@@ -2438,11 +1853,11 @@
       "dataset": "order_procurement",
       "platform": "ya",
       "place": "FBS: smart.sale",
-      "articleKey": "retinait_syvorotka_025_30ml",
-      "name": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
-      "need7": 2,
-      "need14": 3,
-      "need28": 6,
+      "articleKey": "retinait_krem_1_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
+      "need7": 1,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2453,9 +1868,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
       "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-      "need7": 4,
-      "need14": 8,
-      "need28": 15,
+      "need7": 6,
+      "need14": 11,
+      "need28": 21,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2467,8 +1882,8 @@
       "articleKey": "shampun_dlya_rosta_250ml",
       "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
       "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2479,22 +1894,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "shampun_kudryavii_metod_500ml",
       "name": "shampun_kudryavii_metod_500ml",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "silk_hair_300ml",
-      "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need7": 2,
+      "need14": 3,
+      "need28": 5,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2507,7 +1909,7 @@
       "name": "Скраб пилинг для кожи головы, Алтея, 200 мл",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2518,9 +1920,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "spicul_gel_mask_75ml",
       "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
-      "need7": 2,
-      "need14": 4,
-      "need28": 8,
+      "need7": 4,
+      "need14": 8,
+      "need28": 16,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2532,8 +1934,8 @@
       "articleKey": "sprei_buster_100ml",
       "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
       "need7": 2,
-      "need14": 3,
-      "need28": 6,
+      "need14": 4,
+      "need28": 7,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2546,7 +1948,7 @@
       "name": "Мазь для суставов Сусталит , CPA, 30 мл",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2557,9 +1959,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "sustalit_75ml",
       "name": "Мазь для суставов Сусталит , CPA, 75 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 4,
+      "need7": 2,
+      "need14": 4,
+      "need28": 8,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2570,9 +1972,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "syvorotka_dlya_lica_30ml_v2",
       "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
-      "need7": 6,
-      "need14": 11,
-      "need28": 22,
+      "need7": 3,
+      "need14": 6,
+      "need28": 11,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2584,8 +1986,8 @@
       "articleKey": "syvorotka_dlya_rosta_6ml_v2",
       "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
       "need7": 1,
-      "need14": 2,
-      "need28": 4,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2610,73 +2012,8 @@
       "articleKey": "syvorotka_niacin_05_30ml",
       "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
       "need7": 2,
-      "need14": 3,
-      "need28": 7,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "syvorotka_vit_C_30ml",
-      "name": "syvorotka_vit_C_30ml",
-      "need7": 1,
-      "need14": 2,
-      "need28": 3,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "tonik_dlya_lica_200ml",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "varifit",
-      "name": "Крем от варикоза Варифит, CPA, 30 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "vetonus",
-      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 1,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBS: smart.sale",
-      "articleKey": "vetonus_1_1",
-      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
-      "need7": 1,
-      "need14": 2,
-      "need28": 4,
+      "need14": 4,
+      "need28": 8,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2688,8 +2025,8 @@
       "articleKey": "wbmicelix_1_1",
       "name": "Комплекс Детокс для очищения печени и кишечника, для похудения, детокc для печени, Алтея, Мицеликс, 10 шт х 2",
       "need7": 1,
-      "need14": 1,
-      "need28": 1,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2701,26 +2038,13 @@
       "articleKey": "wbsinergel",
       "name": "Мазь для суставов Синергель, CPA, 30 мл",
       "need7": 1,
-      "need14": 1,
-      "need28": 2,
-      "message": "По складу нет остатка, но есть продажи/потребность"
-    },
-    {
-      "severity": "critical",
-      "type": "order_no_stock_need",
-      "dataset": "order_procurement",
-      "platform": "ya",
-      "place": "FBY без кластера: warehouse 301",
-      "articleKey": "tonik_dlya_lica_200ml",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need14": 2,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
       "severity": "info",
-      "type": "api_sku_known_outside_registry",
+      "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -2730,7 +2054,7 @@
       "units": 1,
       "firstDate": "2026-07-06",
       "lastDate": "2026-07-11",
-      "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
+      "message": "API SKU не найден в skus.json/алиасах"
     }
   ]
 }

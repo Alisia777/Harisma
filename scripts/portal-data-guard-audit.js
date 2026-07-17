@@ -50,6 +50,38 @@ function issue(severity, code, message, extra = {}) {
   };
 }
 
+
+async function installLocalAuthStub(page) {
+  await page.addInitScript(() => {
+    const host = String(window.location.hostname || '').toLowerCase();
+    if (!['localhost', '127.0.0.1', '[::1]', '::1'].includes(host)) return;
+    const session = {
+      access_token: 'guest-local-session',
+      token_type: 'bearer',
+      user: {
+        id: 'portal-local-data-guard',
+        email: 'guest@qeep.life',
+        app_metadata: { portal_role: 'owner' },
+        user_metadata: { name: 'Portal local data guard', portal_role: 'owner' }
+      }
+    };
+    const subscription = { unsubscribe() {} };
+    const auth = {
+      getSession: async () => ({ data: { session }, error: null }),
+      signInAnonymously: async () => ({ data: { session }, error: null }),
+      signInWithPassword: async () => ({ data: { session }, error: null }),
+      signOut: async () => ({ error: null }),
+      onAuthStateChange: () => ({ data: { subscription } })
+    };
+    Object.defineProperty(window, 'supabase', {
+      configurable: false,
+      enumerable: true,
+      writable: false,
+      value: { createClient: () => ({ auth }) }
+    });
+  });
+}
+
 async function readView(page, view, expectedPeriodTo) {
   const logs = [];
   page.removeAllListeners('console');
@@ -254,6 +286,7 @@ async function main() {
   try {
     if (verbose) console.error('[portal-data-guard-audit] new page');
     page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+    await installLocalAuthStub(page);
     for (const view of VIEWS) {
       if (verbose) console.error(`[portal-data-guard-audit] view ${view}`);
       const result = await readView(page, view, expectedPeriodTo);

@@ -1,108 +1,88 @@
 {
   "schema": "portal-repricing-reconciliation-v1",
-  "generatedAt": "2026-07-16T07:34:59.418Z",
-  "snapshot_id": "repricer:07cef2637a2b4bd3",
+  "generatedAt": "2026-07-17T06:32:10.422Z",
+  "snapshot_id": "repricer:2a2cd4cf1eb9d58a",
   "status": "warning",
   "publish_allowed": true,
-  "blockingReasons": [],
-  "warnings": [
-    "repricer feature blocked: 0/872 publishable recommendations"
-  ],
+  "feature_publish_allowed": false,
+  "feature_status": "blocked",
+  "business_fingerprint": "3e453375ff0e58f3fa5006624c5fdeb48c6e4c1abb7ef9e2b372ef20ffaf15b9",
   "summary": {
-    "checks": 10,
-    "blockingChecks": 0,
-    "warningChecks": 1,
-    "rowCount": 872,
-    "eligible_rows": 872,
+    "rows": 805,
+    "eligible_rows": 805,
     "publishable_rows": 0,
-    "blocked_rows": 872,
+    "blocked_rows": 805,
     "publishable_coverage": 0,
     "required_publishable_coverage": 0.01,
-    "feature_status": "blocked"
+    "feature_status": "blocked",
+    "publishable_recommendations": 0,
+    "blocked_recommendations": 805,
+    "duplicate_platform_keys": 0,
+    "normalized_article_collisions": 1,
+    "deduped_exact_duplicates": 2
   },
+  "blockingReasons": [],
+  "warnings": [
+    "normalized article collisions deduped for review: 1",
+    "repricer feature blocked: 0/805 publishable recommendations",
+    "805 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
+    "2 exact duplicate source rows were deterministically deduped"
+  ],
+  "duplicatePlatformKeys": [],
+  "normalizedArticleCollisions": [
+    {
+      "normalized_article_key": "mikardinplusbad60caps",
+      "articles": [
+        "mikardin plus_bad_60 caps",
+        "mikardin_plus_bad_60_caps"
+      ]
+    }
+  ],
+  "dedupedExactDuplicates": [
+    {
+      "key": "wb|maslodlyavolosparf110ml",
+      "articleKey": "maslo_dlya_volos_parf_110ml"
+    },
+    {
+      "key": "ozon|maslodlyavolosparf110ml",
+      "articleKey": "maslo_dlya_volos_parf_110ml"
+    }
+  ],
   "checks": [
     {
-      "id": "repricer:no-duplicate-normalized-platform-key",
-      "blockingReasons": [],
-      "duplicateKeys": [],
-      "warnings": [],
-      "status": "ok"
+      "id": "repricer:no-duplicate-normalized-sku-platform",
+      "status": "ok",
+      "blockingReasons": []
     },
     {
-      "id": "repricer:published-recommendations-have-complete-inputs",
+      "id": "repricer:no-normalized-article-collisions",
+      "status": "warning",
       "blockingReasons": [],
-      "samples": [],
-      "warnings": [],
-      "status": "ok"
-    },
-    {
-      "id": "repricer:margin-recalculation",
-      "blockingReasons": [],
-      "samples": [],
-      "warnings": [],
-      "status": "ok"
-    },
-    {
-      "id": "repricer:floor-cap-corridor",
-      "blockingReasons": [],
-      "samples": [],
-      "warnings": [],
-      "status": "ok"
-    },
-    {
-      "id": "repricer:current-price-freshness",
-      "blockingReasons": [],
-      "samples": [],
-      "warnings": [],
-      "status": "ok"
-    },
-    {
-      "id": "repricer:stock-unknown-not-oos",
-      "blockingReasons": [],
-      "samples": [],
-      "warnings": [],
-      "status": "ok"
-    },
-    {
-      "id": "repricer:local-storage-not-final-truth",
-      "blockingReasons": [],
-      "samples": [],
-      "warnings": [],
-      "status": "ok"
+      "warnings": [
+        "normalized article collisions deduped for review: 1"
+      ]
     },
     {
       "id": "repricer:feature-readiness",
+      "status": "warning",
+      "blockingReasons": [],
       "warnings": [
-        "repricer feature blocked: 0/872 publishable recommendations"
+        "repricer feature blocked: 0/805 publishable recommendations"
       ],
       "details": {
-        "eligible_rows": 872,
+        "eligible_rows": 805,
         "publishable_rows": 0,
-        "blocked_rows": 872,
+        "blocked_rows": 805,
         "publishable_coverage": 0,
         "required_publishable_coverage": 0.01,
         "feature_status": "blocked"
-      },
-      "blockingReasons": [],
-      "status": "warning"
+      }
     },
     {
-      "id": "repricer:browser-guard-does-not-rewrite-truth",
+      "id": "repricer:local-storage-not-business-truth",
+      "status": "ok",
       "blockingReasons": [],
-      "details": "Guard may flag/quarantine only; canonical truth is preserved.",
-      "warnings": [],
-      "status": "ok"
-    },
-    {
-      "id": "repricer:local-overrides-require-approval",
-      "blockingReasons": [],
-      "details": "UI drafts may be stored locally; only approved records may affect final price.",
-      "warnings": [],
-      "status": "ok"
+      "details": "Canonical builder reads only data/*.json and approved server-side override records; browser localStorage is never loaded."
     }
-  ],
-  "business_fingerprint": "dc37d7cb331bd21144281bf62392332eb089d6191ce9e4f683ce14af9963fbb9",
-  "rowCount": 872,
-  "feature_status": "blocked",
-  "feature_publish_allowed": false
+  ]
 }

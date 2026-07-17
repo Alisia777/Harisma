@@ -54,6 +54,11 @@ function normalizeRate(value) {
   return Math.abs(numeric) > 1 ? numeric / 100 : numeric;
 }
 
+function reconciliationRate(value, fallback) {
+  const hasValue = value !== undefined && value !== null && String(value).trim() !== '';
+  return roundRate(hasValue ? normalizeRate(value) : fallback);
+}
+
 function isoDateFromYearPeriod(yearValue, periodValue) {
   const year = String(yearValue ?? '').trim();
   const period = String(periodValue ?? '').trim();
@@ -127,23 +132,23 @@ function reportItemFromReconciliation(row, fallbackSource) {
   const spendFact = roundMoney(row.spendFact);
   const revenueDelta = roundMoney(row.revenueDelta ?? (revenue - targetRevenue));
   const spendDelta = roundMoney(row.spendDelta ?? (spendFact - planSpend));
-  const planPct = roundRate(normalizeRate(row.planPct || (revenue > 0 ? planSpend / revenue : 0)));
-  const factPct = roundRate(normalizeRate(row.factPct || (revenue > 0 ? spendFact / revenue : 0)));
+  const planPct = reconciliationRate(row.planPct, revenue > 0 ? planSpend / revenue : 0);
+  const factPct = reconciliationRate(row.factPct, revenue > 0 ? spendFact / revenue : 0);
   return {
     date,
     period: row.period || dateForFileName(date).slice(0, 5),
     targetRevenue,
     revenue,
     revenueDelta,
-    revenueDeltaPct: roundRate(normalizeRate(row.revenueDeltaPct || (targetRevenue > 0 ? revenueDelta / targetRevenue : 0))),
+    revenueDeltaPct: reconciliationRate(row.revenueDeltaPct, targetRevenue > 0 ? revenueDelta / targetRevenue : 0),
     planSpend,
     planPct,
     spendFact,
     factPct,
     spendDelta,
-    spendDeltaPct: roundRate(normalizeRate(row.spendDeltaPct || (planSpend > 0 ? spendDelta / planSpend : 0))),
-    revenueCompletionPct: roundRate(normalizeRate(row.revenueCompletionPct || (targetRevenue > 0 ? revenue / targetRevenue : 0))),
-    adsCompletionPct: roundRate(normalizeRate(row.adsCompletionPct || (planSpend > 0 ? spendFact / planSpend : 0))),
+    spendDeltaPct: reconciliationRate(row.spendDeltaPct, planSpend > 0 ? spendDelta / planSpend : 0),
+    revenueCompletionPct: reconciliationRate(row.revenueCompletionPct, targetRevenue > 0 ? revenue / targetRevenue : 0),
+    adsCompletionPct: reconciliationRate(row.adsCompletionPct, planSpend > 0 ? spendFact / planSpend : 0),
     source: row.source || fallbackSource || 'WB fixed-rate reconciliation'
   };
 }

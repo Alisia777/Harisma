@@ -240,9 +240,9 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
   const coreRevenue = CORE_FACT_PLATFORMS.reduce((sum, platform) => sum + (numberOrNull(platformFacts[platform].revenue) || 0), 0);
   const coreUnits = CORE_FACT_PLATFORMS.reduce((sum, platform) => sum + (numberOrNull(platformFacts[platform].units) || 0), 0);
   const allRevenue = numberOrNull(allFact.revenue);
-  const unallocatedRevenue = allRevenue === null ? 0 : round(allRevenue - coreRevenue, 2);
+  const unallocatedRevenue = allRevenue === null ? 0 : Math.max(0, round(allRevenue - includedRevenue, 2));
   const allUnits = numberOrNull(allFact.units);
-  const unallocatedUnits = allUnits === null ? 0 : round(allUnits - coreUnits, 4);
+  const unallocatedUnits = allUnits === null ? 0 : Math.max(0, round(allUnits - includedUnits, 4));
   const coreComponentDates = CORE_FACT_PLATFORMS.map((platform) => platformFacts[platform].date_to).filter(Boolean);
   const mixedCorePlatformDates = new Set(coreComponentDates).size > 1;
   const corePlatformsBehind = CORE_FACT_PLATFORMS.filter((platform) => platformFacts[platform].date_to !== cutoffDate);
@@ -290,7 +290,7 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
     period_from: `${monthKey}-01`,
     period_to: cutoffDate,
     raw_value: unallocatedRevenue,
-    transforms: ['platform_all_core_control_minus_core_platforms'],
+    transforms: ['platform_all_control_minus_included_platforms'],
     source_dates: { platform_trends_all: allFact.date_to, ...sourceDates },
     data_status: allRevenue === null ? 'incomplete' : 'trusted',
     reconciliation_status: Math.abs(unallocatedRevenue || 0) > 0.01 ? 'warning' : 'ok',
@@ -310,7 +310,7 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
 
   const companyPlanRevenue = numberOrNull(planMonth?.revenue);
   const planToDate = companyPlanRevenue !== null && planDays > 0 ? (companyPlanRevenue / planDays) * elapsedDays : null;
-  const factRevenue = round(includedRevenue + (unallocatedRevenue || 0), 2);
+  const factRevenue = round(includedRevenue, 2);
   const completionMonth = companyPlanRevenue ? factRevenue / companyPlanRevenue : null;
   const completionToDate = planToDate ? factRevenue / planToDate : null;
   const forecastRevenue = elapsedDays > 0 ? (factRevenue / elapsedDays) * planDays : null;

@@ -62,6 +62,38 @@ function isOptionalLocalMiss(url) {
     || /portal-planfact-general-to-detail-v4/i.test(value);
 }
 
+
+async function installLocalAuthStub(page) {
+  await page.addInitScript(({ email }) => {
+    const host = String(window.location.hostname || '').toLowerCase();
+    if (!['localhost', '127.0.0.1', '[::1]', '::1'].includes(host)) return;
+    const session = {
+      access_token: 'guest-local-session',
+      token_type: 'bearer',
+      user: {
+        id: 'portal-local-smoke',
+        email,
+        app_metadata: { portal_role: 'owner' },
+        user_metadata: { name: 'Portal local smoke', portal_role: 'owner' }
+      }
+    };
+    const subscription = { unsubscribe() {} };
+    const auth = {
+      getSession: async () => ({ data: { session: null }, error: null }),
+      signInAnonymously: async () => ({ data: { session }, error: null }),
+      signInWithPassword: async () => ({ data: { session }, error: null }),
+      signOut: async () => ({ error: null }),
+      onAuthStateChange: () => ({ data: { subscription } })
+    };
+    Object.defineProperty(window, 'supabase', {
+      configurable: false,
+      enumerable: true,
+      writable: false,
+      value: { createClient: () => ({ auth }) }
+    });
+  }, { email: GUEST_EMAIL });
+}
+
 async function authenticateIfNeeded(page) {
   const emailInput = page.locator('#portalAuthEmail').first();
   const needsAuth = await emailInput.count().then(Boolean).catch(() => false);
@@ -301,6 +333,7 @@ async function main() {
     }
   });
 
+  await installLocalAuthStub(page);
   const originalStorage = await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY).catch(() => null);
 
   try {

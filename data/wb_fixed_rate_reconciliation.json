@@ -1,8 +1,9 @@
 {
-  "version": "20260709-wb-fixed-rate-missing-day-reconciliation-v1",
+  "version": "20260717-wb-fixed-rate-cabinet-reconciliation-v2",
   "notes": [
     "WB cabinet fixed-rate export available in Downloads starts at 2026-07-02, while the IU/DRR WB audit requires 2026-07-01..2026-07-08.",
-    "The 2026-07-01 row is the missing cabinet-comparable daily row from the WB UI audit screenshot provided on 2026-07-09. It is used only when the workbook does not already contain that date."
+    "The 2026-07-01 row is the missing cabinet-comparable daily row from the WB UI audit screenshot provided on 2026-07-09. It is used only when the workbook does not already contain that date.",
+    "The 2026-07-10..2026-07-16 rows and their control window are transcribed from the WB fixed-rate cabinet screenshot refreshed on 2026-07-17 at 09:48."
   ],
   "daily": [
     {
@@ -15,6 +16,76 @@
       "spendFact": 259175,
       "factPct": 0.0316,
       "source": "wb_fixed_rate_reconciliation.json :: WB UI audit 2026-07-09 missing daily row"
+    },
+    {
+      "date": "2026-07-10",
+      "period": "10.07",
+      "targetRevenue": 9598894,
+      "revenue": 10738710,
+      "planSpend": 859097,
+      "planPct": 0.08,
+      "spendFact": 1748043,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-11",
+      "period": "11.07",
+      "targetRevenue": 9598894,
+      "revenue": 10078711,
+      "planSpend": 806297,
+      "planPct": 0.08,
+      "spendFact": 1489742,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-12",
+      "period": "12.07",
+      "targetRevenue": 9598894,
+      "revenue": 12304881,
+      "planSpend": 984390,
+      "planPct": 0.08,
+      "spendFact": 1596720,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-13",
+      "period": "13.07",
+      "targetRevenue": 9598894,
+      "revenue": 14956340,
+      "planSpend": 1196507,
+      "planPct": 0.08,
+      "spendFact": 1382901,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-14",
+      "period": "14.07",
+      "targetRevenue": 9598894,
+      "revenue": 13749146,
+      "planSpend": 1099932,
+      "planPct": 0.08,
+      "spendFact": 151283,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-15",
+      "period": "15.07",
+      "targetRevenue": 9598894,
+      "revenue": 13721889,
+      "planSpend": 1097751,
+      "planPct": 0.08,
+      "spendFact": 285573,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-16",
+      "period": "16.07",
+      "targetRevenue": 9598894,
+      "revenue": 13488010,
+      "planSpend": 1079041,
+      "planPct": 0.08,
+      "spendFact": 254517,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
     }
   ],
   "controlWindows": [
@@ -33,6 +104,14 @@
       "revenue": 74191023,
       "planSpend": 5935283,
       "spendFact": 6117304
+    },
+    {
+      "from": "2026-07-10",
+      "to": "2026-07-16",
+      "targetRevenue": 67192258,
+      "revenue": 89037687,
+      "planSpend": 7123015,
+      "spendFact": 6908779
     }
   ]
 }

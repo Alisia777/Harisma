@@ -1,5 +1,12 @@
 {
   "schema": "sku-api-aliases-v1",
+  "columns": [
+    "target_sku",
+    "platform",
+    "api_sku",
+    "status",
+    "note"
+  ],
   "aliases": [
     {
       "target_sku": "nabor_remuver_kremovii",
@@ -2728,17 +2735,14 @@
       "status": "active",
       "note": "Я.Маркет FBS alias",
       "updatedAt": "2026-06-07T08:22:08.602Z"
+    },
+    {
+      "target_sku": "penka_kudryavii_metod_150ml",
+      "platform": "goldapple",
+      "api_sku": "penka_kudryavii_meto",
+      "status": "active",
+      "note": "Quick action from SKU workspace 2026-06-29"
     }
   ],
-  "columns": [
-    "target_sku",
-    "platform",
-    "api_sku",
-    "status",
-    "note"
-  ],
-  "description": "Local API SKU mappings imported from team SKU files and review files.",
-  "updatedAt": "2026-06-08T09:59:38.421Z",
-  "refreshedAt": "2026-06-11T08:09:31.123Z",
-  "refreshNote": "Supabase snapshot pull returned HTTP 522 on 2026-06-11; existing local snapshot was revalidated without changing mapping rows."
+  "updatedAt": "2026-06-29T07:27:21.069Z"
 }

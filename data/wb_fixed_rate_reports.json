@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-07-15T07:06:48.256Z",
+  "generatedAt": "2026-07-17T07:00:15.616Z",
   "sourceWorkbook": "9_7_2026_Фиксированная_ставка_с_02_07_2026_по_08_07_2026.xlsx",
   "sourceWorkbookSha256": "330fc6bf216dfe4d594030423b446456394816d20cbef261298099e33d234c65",
   "sourceArchive": "",
   "sourceSheet": "Детальная информация",
   "period": {
     "from": "2026-07-01",
-    "to": "2026-07-08"
+    "to": "2026-07-16"
   },
   "notes": [
     "WB cabinet fixed-rate report. Used as cabinet-comparable factual turnover and factual marketing spend for IU/DRR reconciliation.",
@@ -15,7 +15,7 @@
   ],
   "diagnostics": {
     "warnings": [],
-    "rows": 8,
+    "rows": 15,
     "workbookRows": 7,
     "reconciliation": {
       "sourceFile": "wb_fixed_rate_reconciliation.json",
@@ -23,6 +23,34 @@
         {
           "date": "2026-07-01",
           "source": "wb_fixed_rate_reconciliation.json :: WB UI audit 2026-07-09 missing daily row"
+        },
+        {
+          "date": "2026-07-10",
+          "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+        },
+        {
+          "date": "2026-07-11",
+          "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+        },
+        {
+          "date": "2026-07-12",
+          "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+        },
+        {
+          "date": "2026-07-13",
+          "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+        },
+        {
+          "date": "2026-07-14",
+          "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+        },
+        {
+          "date": "2026-07-15",
+          "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+        },
+        {
+          "date": "2026-07-16",
+          "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
         }
       ],
       "skipped": [],
@@ -42,6 +70,14 @@
           "revenue": 74191023,
           "planSpend": 5935283,
           "spendFact": 6117304
+        },
+        {
+          "from": "2026-07-10",
+          "to": "2026-07-16",
+          "targetRevenue": 67192258,
+          "revenue": 89037687,
+          "planSpend": 7123015,
+          "spendFact": 6908779
         }
       ]
     }
@@ -182,6 +218,125 @@
       "revenueCompletionPct": 1.0549,
       "adsCompletionPct": 2.1852,
       "source": "9_7_2026_Фиксированная_ставка_с_02_07_2026_по_08_07_2026.xlsx"
+    },
+    {
+      "date": "2026-07-10",
+      "period": "10.07",
+      "targetRevenue": 9598894,
+      "revenue": 10738710,
+      "revenueDelta": 1139816,
+      "revenueDeltaPct": 0.118745,
+      "planSpend": 859097,
+      "planPct": 0.08,
+      "spendFact": 1748043,
+      "factPct": 0.16278,
+      "spendDelta": 888946,
+      "spendDeltaPct": 1.034745,
+      "revenueCompletionPct": 1.118745,
+      "adsCompletionPct": 2.034745,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-11",
+      "period": "11.07",
+      "targetRevenue": 9598894,
+      "revenue": 10078711,
+      "revenueDelta": 479817,
+      "revenueDeltaPct": 0.049987,
+      "planSpend": 806297,
+      "planPct": 0.08,
+      "spendFact": 1489742,
+      "factPct": 0.147811,
+      "spendDelta": 683445,
+      "spendDeltaPct": 0.847634,
+      "revenueCompletionPct": 1.049987,
+      "adsCompletionPct": 1.847634,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-12",
+      "period": "12.07",
+      "targetRevenue": 9598894,
+      "revenue": 12304881,
+      "revenueDelta": 2705987,
+      "revenueDeltaPct": 0.281906,
+      "planSpend": 984390,
+      "planPct": 0.08,
+      "spendFact": 1596720,
+      "factPct": 0.129763,
+      "spendDelta": 612330,
+      "spendDeltaPct": 0.62204,
+      "revenueCompletionPct": 1.281906,
+      "adsCompletionPct": 1.62204,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-13",
+      "period": "13.07",
+      "targetRevenue": 9598894,
+      "revenue": 14956340,
+      "revenueDelta": 5357446,
+      "revenueDeltaPct": 0.558132,
+      "planSpend": 1196507,
+      "planPct": 0.08,
+      "spendFact": 1382901,
+      "factPct": 0.092463,
+      "spendDelta": 186394,
+      "spendDeltaPct": 0.155782,
+      "revenueCompletionPct": 1.558132,
+      "adsCompletionPct": 1.155782,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-14",
+      "period": "14.07",
+      "targetRevenue": 9598894,
+      "revenue": 13749146,
+      "revenueDelta": 4150252,
+      "revenueDeltaPct": 0.432368,
+      "planSpend": 1099932,
+      "planPct": 0.08,
+      "spendFact": 151283,
+      "factPct": 0.011003,
+      "spendDelta": -948649,
+      "spendDeltaPct": -0.862461,
+      "revenueCompletionPct": 1.432368,
+      "adsCompletionPct": 0.137539,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-15",
+      "period": "15.07",
+      "targetRevenue": 9598894,
+      "revenue": 13721889,
+      "revenueDelta": 4122995,
+      "revenueDeltaPct": 0.429528,
+      "planSpend": 1097751,
+      "planPct": 0.08,
+      "spendFact": 285573,
+      "factPct": 0.020811,
+      "spendDelta": -812178,
+      "spendDeltaPct": -0.739856,
+      "revenueCompletionPct": 1.429528,
+      "adsCompletionPct": 0.260144,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
+    },
+    {
+      "date": "2026-07-16",
+      "period": "16.07",
+      "targetRevenue": 9598894,
+      "revenue": 13488010,
+      "revenueDelta": 3889116,
+      "revenueDeltaPct": 0.405163,
+      "planSpend": 1079041,
+      "planPct": 0.08,
+      "spendFact": 254517,
+      "factPct": 0.01887,
+      "spendDelta": -824524,
+      "spendDeltaPct": -0.764127,
+      "revenueCompletionPct": 1.405163,
+      "adsCompletionPct": 0.235873,
+      "source": "WB fixed-rate cabinet screenshot 2026-07-17 09:48 :: 10.07.2026-16.07.2026"
     }
   ]
 }

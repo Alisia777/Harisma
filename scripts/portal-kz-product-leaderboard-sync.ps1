@@ -3,8 +3,8 @@ param(
   [switch]$AllowStaleWeek,
   [string]$ProfileDir = "",
   [string]$OutputDir = "",
-  [string]$SourceUrl = "https://docs.google.com/spreadsheets/d/1XSpPhsd_oppen747ZEJvhRidR1dyzRgM2ey3QgK8Rlg/edit?gid=1769097146#gid=1769097146",
-  [string]$Gid = "1769097146"
+  [string]$SourceUrl = "https://docs.google.com/spreadsheets/d/1rEgkGDfr9yc8atSLNHRGDuhFEzOZvPOmKQZcLgszWUU/edit?gid=131681931#gid=131681931",
+  [string]$Gid = "131681931"
 )
 
 $ErrorActionPreference = "Stop"

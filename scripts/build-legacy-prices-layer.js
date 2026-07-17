@@ -11,6 +11,7 @@ const {
   normalizeKey,
   safeReadJson
 } = require('./smart-price-contour');
+const { canonicalOwnerName } = require('./owner-normalization');
 
 const ROOT = process.cwd();
 const MONTH_LABELS_RU = [
@@ -72,6 +73,7 @@ function resolveOptions(args = {}) {
     overlayPath: path.resolve(args['overlay-file'] || path.join(ROOT, 'data', 'smart_price_overlay.json')),
     livePath: path.resolve(args['live-file'] || path.join(ROOT, 'tmp-smart_price_workbench-live.json')),
     supportPath: path.resolve(args['support-file'] || path.join(ROOT, 'data', 'price_workbench_support.json')),
+    skusPath: path.resolve(args['skus-file'] || path.join(ROOT, 'data', 'skus.json')),
     outputPath: path.resolve(args['output-file'] || path.join(ROOT, 'data', 'prices.json'))
   };
 }
@@ -177,7 +179,36 @@ function supportCurrentExportPrice(row = {}) {
   );
 }
 
-function buildLegacyRow(row = {}, platform = '', supportRow = null) {
+function buildSkuLookup(skus = []) {
+  const lookup = new Map();
+  (Array.isArray(skus) ? skus : []).forEach((sku) => {
+    const aliases = [
+      sku?.articleKey,
+      sku?.article,
+      sku?.sku,
+      sku?.vendorCode,
+      ...(Array.isArray(sku?.aliases) ? sku.aliases : [])
+    ];
+    aliases.forEach((value) => {
+      const key = normalizeKey(value);
+      if (key && !lookup.has(key)) lookup.set(key, sku);
+    });
+  });
+  return lookup;
+}
+
+function skuOwnerForPlatform(sku = {}, platform = '') {
+  const byPlatform = {
+    ...((sku?.ownerByPlatform && typeof sku.ownerByPlatform === 'object') ? sku.ownerByPlatform : {}),
+    ...((sku?.owner?.byPlatform && typeof sku.owner.byPlatform === 'object') ? sku.owner.byPlatform : {}),
+    ...((sku?.ownersByPlatform && typeof sku.ownersByPlatform === 'object') ? sku.ownersByPlatform : {})
+  };
+  const keys = platform === 'ym' ? ['ym', 'ya', 'yandex'] : [platform];
+  const platformOwner = keys.map((key) => byPlatform[key]).find(Boolean) || '';
+  return canonicalOwnerName(platformOwner || sku?.owner?.name || sku?.owner || '');
+}
+
+function buildLegacyRow(row = {}, platform = '', supportRow = null, ownerOverride = '') {
   const series = normalizeSeries(row);
   const lastPrice = lastSeriesPrice(series);
   const lastClientPrice = lastSeriesClientPrice(series);
@@ -210,7 +241,7 @@ function buildLegacyRow(row = {}, platform = '', supportRow = null) {
     articleKey: row?.articleKey || row?.article || '',
     article: row?.article || row?.articleKey || '',
     name: row?.name || '',
-    owner: row?.owner || '',
+    owner: ownerOverride || canonicalOwnerName(row?.owner || ''),
     platform,
     marketplace: row?.marketplace || platform,
     status: row?.status || row?.productStatus || '',
@@ -268,7 +299,9 @@ function buildLegacyPricesLayer(options = {}) {
   const overlay = safeReadJson(options.overlayPath, { generatedAt: '', platforms: {} });
   const live = safeReadJson(options.livePath, { generatedAt: '', platforms: {} });
   const support = safeReadJson(options.supportPath, { generatedAt: '', platforms: {} });
+  const skus = safeReadJson(options.skusPath || path.join(ROOT, 'data', 'skus.json'), []);
   const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, live || {});
+  const skuLookup = buildSkuLookup(skus);
   const supportMaps = {
     wb: buildSupportMap(support, 'wb'),
     ozon: buildSupportMap(support, 'ozon'),
@@ -287,7 +320,8 @@ function buildLegacyPricesLayer(options = {}) {
     }
     sourceRows.forEach((row) => {
       const supportKey = normalizeKey(row?.articleKey || row?.article || row?.sku);
-      const legacyRow = buildLegacyRow(row, targetKey, supportMaps[targetKey]?.get(supportKey));
+      const owner = skuOwnerForPlatform(skuLookup.get(supportKey), targetKey);
+      const legacyRow = buildLegacyRow(row, targetKey, supportMaps[targetKey]?.get(supportKey), owner);
       platformBuckets[targetKey].rows.push(legacyRow);
       (legacyRow.daily || []).forEach((point) => {
         if (point?.date && point.date > latestDate) latestDate = point.date;
@@ -344,6 +378,9 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildLegacyRow,
   buildLegacyPricesLayer,
+  buildSkuLookup,
+  skuOwnerForPlatform,
   resolveOptions
 };

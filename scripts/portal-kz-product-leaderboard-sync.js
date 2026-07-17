@@ -6,8 +6,8 @@ const crypto = require('crypto');
 const { chromium } = require('playwright');
 const XLSX = require('xlsx');
 
-const DEFAULT_SOURCE_URL = 'https://docs.google.com/spreadsheets/d/1XSpPhsd_oppen747ZEJvhRidR1dyzRgM2ey3QgK8Rlg/edit?gid=1769097146#gid=1769097146';
-const DEFAULT_SOURCE_GID = '1769097146';
+const DEFAULT_SOURCE_URL = 'https://docs.google.com/spreadsheets/d/1rEgkGDfr9yc8atSLNHRGDuhFEzOZvPOmKQZcLgszWUU/edit?gid=131681931#gid=131681931';
+const DEFAULT_SOURCE_GID = '131681931';
 const DEFAULT_BRAND_FILTER = 'АЛТЕЯ';
 const DEFAULT_OUTPUT_DIR = '.altea-google-sheet-sync-output';
 const DEFAULT_PROFILE_DIR = '.altea-google-sheets-profile-qeep';
@@ -822,6 +822,7 @@ async function main() {
     outputDir: path.resolve(args['output-dir'] || cwdJoin(DEFAULT_OUTPUT_DIR)),
     profileDir: path.resolve(args['profile-dir'] || cwdJoin(DEFAULT_PROFILE_DIR)),
     inputXlsx: args['input-xlsx'] ? path.resolve(args['input-xlsx']) : '',
+    sheetName: normalizeText(args['sheet-name']),
     dryRun: Boolean(args.dryRun),
     mirrorLocalFallback: Boolean(args.mirrorLocalFallback)
   };
@@ -839,9 +840,12 @@ async function main() {
     workbook = XLSX.read(await fetchWorkbookBuffer(options), { type: 'buffer' });
   }
 
-  const sheetName = selectLatestWeekSheet(workbook);
+  const sheetName = options.sheetName || selectLatestWeekSheet(workbook);
   if (!sheetName) {
     throw new Error('No worksheet found in product leaderboard workbook');
+  }
+  if (!workbook.Sheets[sheetName]) {
+    throw new Error(`Product leaderboard worksheet not found: ${sheetName}`);
   }
   const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: null, raw: false });
   const skus = readJson(cwdJoin('data', 'skus.json'));

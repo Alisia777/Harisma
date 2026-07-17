@@ -1,8 +1,8 @@
 {
   "schema": "portal-sku-registry-meta-v1",
-  "generatedAt": "2026-07-16T00:00:00+03:00",
+  "generatedAt": "2026-07-17T00:00:00+03:00",
   "sourceFile": "skus.json",
-  "sourceSha256": "cf703ee4aba03341e3d39c6505eba8c2cc047a2d56c6319eb0d1126f077ba602",
+  "sourceSha256": "15d34bf4ccb4ddf60f02ff2d3609a7983f33a3d341dcbd21e83757b3b4e5d861",
   "summary": {
     "rows": 209,
     "activeRows": 209,

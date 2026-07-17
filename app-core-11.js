@@ -7183,7 +7183,12 @@ function skuPlanFactModelNeedsExportHydration(model = {}) {
   const kpiFact = Number(model.totals?.kpiFactRevenue ?? model.totals?.factRevenue ?? 0);
   const rowCount = Array.isArray(model.rows) ? model.rows.length : 0;
   const filters = model.filters || {};
-  const unfilteredScope = !filters.search && (!filters.owner || filters.owner === 'all') && (!filters.platform || filters.platform === 'all');
+  const unfilteredScope = Boolean(
+    !filters.search
+    && (!filters.owner || filters.owner === 'all')
+    && (!filters.platform || filters.platform === 'all')
+    && (!filters.status || filters.status === 'all')
+  );
   return Boolean(
     (monthEnd && model.periodEnd === monthEnd && kpiFact > 0 && apiFact <= 0)
     || (unfilteredScope && kpiFact > 0 && rowCount > 0 && rowCount < 170)

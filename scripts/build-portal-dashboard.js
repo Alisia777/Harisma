@@ -249,8 +249,7 @@ function buildCards({ metrics, skus, warehouse, cutoffDate, monthKey, planSlice 
   const assignedSku = skuRows.filter((sku) => ownerNames(sku).length > 0).length;
   const totalMarketplaceStock = skuRows.reduce((sum, sku) => sum + marketplaceStock(sku), 0);
   const warehouseStock = numberOrNull(warehouse?.summary?.stockWarehouse) ?? rowsOf(warehouse).reduce((sum, row) => sum + numberOrZero(row.stockWarehouse), 0);
-  const factRevenue = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(metricValue(metrics, 'sales.raw_revenue', platform)), 0)
-    + numberOrZero(metricValue(metrics, 'sales.raw_revenue.unallocated', 'unallocated'));
+  const factRevenue = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(metricValue(metrics, 'sales.raw_revenue', platform)), 0);
   const forecastRevenue = metricValue(metrics, 'plan.forecast_revenue', 'all');
 
   add({ id: 'dashboard-cutoff', label: 'Data cutoff', value: cutoffDate, format: 'text', period: cutoffDate, hint: 'Common marketplace fact date.' });
@@ -345,8 +344,7 @@ function buildPortalDashboard(options = resolveOptions({})) {
     platform,
     platformFact(trends, platform, monthKey, cutoffDate)
   ]));
-  const factRevenue = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(metricValue(metrics, 'sales.raw_revenue', platform)), 0)
-    + numberOrZero(metricValue(metrics, 'sales.raw_revenue.unallocated', 'unallocated'));
+  const factRevenue = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(metricValue(metrics, 'sales.raw_revenue', platform)), 0);
   const factUnits = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(platformFacts[platform].units), 0);
   const planSlice = buildCompanyPlanSlice(companyPlan, monthKey, cutoffDate, factRevenue);
   const skuRows = rowsOf(skus);

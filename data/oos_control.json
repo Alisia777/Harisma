@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-07-17T07:33:35.368Z",
+  "generatedAt": "2026-07-17T10:00:20.836Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -11,11 +11,11 @@
     ]
   },
   "dataFreshness": {
-    "status": "stale",
-    "dataDate": "2026-07-15",
+    "status": "ok",
+    "dataDate": "2026-07-16",
     "expectedFactDate": "2026-07-16",
     "sourceGeneratedAt": "2026-07-17T00:00:00+03:00",
-    "message": "Данные отстают: факт до 2026-07-15, ожидается минимум 2026-07-16.",
+    "message": "Данные свежие: факт до 2026-07-16.",
     "orderProcurementGeneratedAt": "2026-07-17T00:00:00+03:00",
     "orderWindow": {
       "from": "2026-06-20",
@@ -46,13 +46,13 @@
     "monthKey": "2026-07",
     "lostRevenueMonth": 189892,
     "revenueAtRiskMonth": 119834228,
-    "newIssues": 3,
-    "reopenedIssues": 9,
-    "resolvedToday": 9,
+    "newIssues": 0,
+    "reopenedIssues": 0,
+    "resolvedToday": 0,
     "owners": 5,
     "skuCount": 55,
-    "dataStatus": "stale",
-    "dataDate": "2026-07-15",
+    "dataStatus": "ok",
+    "dataDate": "2026-07-16",
     "expectedFactDate": "2026-07-16"
   },
   "byPlatform": [
@@ -3108,7 +3108,7 @@
       "firstSeenDate": "2026-07-17",
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -3244,7 +3244,7 @@
       "firstSeenDate": "2026-07-17",
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -6553,7 +6553,7 @@
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
       "isNew": false,
-      "isReopened": true
+      "isReopened": false
     },
     {
       "issueKey": "ya|oos_watch_turnover_active_or_new|syvorotka_niacin_05_30ml",
@@ -6984,7 +6984,7 @@
       "firstSeenDate": "2026-07-17",
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
-      "isNew": true,
+      "isNew": false,
       "isReopened": false
     },
     {
@@ -7541,7 +7541,7 @@
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
       "isNew": false,
-      "isReopened": true
+      "isReopened": false
     },
     {
       "issueKey": "ya|oos_zero_stock_active_or_new|krem_ot_rastyazhek",
@@ -7997,7 +7997,7 @@
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
       "isNew": false,
-      "isReopened": true
+      "isReopened": false
     },
     {
       "issueKey": "ya|oos_zero_stock_active_or_new|nabor_remuver_kremovii",
@@ -8169,7 +8169,7 @@
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
       "isNew": false,
-      "isReopened": true
+      "isReopened": false
     },
     {
       "issueKey": "ya|oos_zero_stock_active_or_new|retiderm_50ml",
@@ -8491,7 +8491,7 @@
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
       "isNew": false,
-      "isReopened": true
+      "isReopened": false
     },
     {
       "issueKey": "ya|oos_zero_stock_active_or_new|retinait_syvorotka_05_30ml",
@@ -9327,7 +9327,7 @@
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
       "isNew": false,
-      "isReopened": true
+      "isReopened": false
     },
     {
       "issueKey": "ya|oos_zero_stock_active_or_new|spiculboost_30ml",
@@ -9685,7 +9685,7 @@
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
       "isNew": false,
-      "isReopened": true
+      "isReopened": false
     },
     {
       "issueKey": "ya|oos_zero_stock_active_or_new|syvorotka_vit_c_30ml",
@@ -9747,7 +9747,7 @@
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
       "isNew": false,
-      "isReopened": true
+      "isReopened": false
     },
     {
       "issueKey": "ya|oos_zero_stock_active_or_new|termo_maslo_100ml",
@@ -9967,7 +9967,7 @@
       "lastSeenDate": "2026-07-17",
       "daysOpen": 1,
       "isNew": false,
-      "isReopened": true
+      "isReopened": false
     },
     {
       "issueKey": "ya|oos_zero_stock_active_or_new|vosk_stik_15ml",

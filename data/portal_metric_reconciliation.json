@@ -1,20 +1,20 @@
 {
   "schema": "portal-metric-reconciliation-v1",
-  "generatedAt": "2026-07-17T09:08:00.495Z",
+  "generatedAt": "2026-07-17T10:01:02.894Z",
   "manifestVersion": "2026-06-20",
   "scope": {
     "included": "all portal views and layers"
   },
   "cutoffDate": "2026-07-16",
   "status": "warning",
-  "business_fingerprint": "c4ea5a8795cf7549276b8afae6b5d58cfe67b0510eaaee1d45d8cb7e81882f46",
+  "business_fingerprint": "0e19cb5f1bf5cbeff2235eb4ddc818b322d996cd918bcbead893cd24b4be28dd",
   "summary": {
     "sourceCount": 24,
     "contractCount": 12,
     "metricPassportCount": 35,
     "blockingChecks": 0,
     "warningChecks": 4,
-    "fingerprint": "c4ea5a8795cf7549276b8afae6b5d58cfe67b0510eaaee1d45d8cb7e81882f46"
+    "fingerprint": "0e19cb5f1bf5cbeff2235eb4ddc818b322d996cd918bcbead893cd24b4be28dd"
   },
   "metricPassports": [
     {

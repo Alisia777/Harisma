@@ -1,12 +1,15 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-07-17T09:07:45.569Z",
-  "status": "ok",
+  "generatedAt": "2026-07-17T09:53:09.964Z",
+  "status": "warning",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
-    "warnings": [],
-    "checkedAt": "2026-07-17T09:07:45.569Z"
+    "warnings": [
+      "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3..",
+      "Non-blocking sync step failed: product leaderboard sync: exit code 1."
+    ],
+    "checkedAt": "2026-07-17T09:53:09.964Z"
   },
   "freshness": {
     "maxDate": "2026-07-16",
@@ -15,7 +18,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-07-17T09:07:45.563Z",
+      "checkedAt": "2026-07-17T09:53:09.957Z",
       "settlementHour": 10,
       "expectedDate": "2026-07-16",
       "maxDate": "2026-07-16",
@@ -62,7 +65,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-07-17T09:07:45.569Z",
+      "checkedAt": "2026-07-17T09:53:09.964Z",
       "expectedDate": "2026-07-16",
       "adsSummaryWindowTo": "2026-07-16",
       "iuDrrWindowTo": "2026-07-16",
@@ -102,7 +105,7 @@
         {
           "name": "iu-drr-expense-source",
           "status": "ok",
-          "checkedRows": 31
+          "checkedRows": 77
         }
       ]
     }
@@ -243,29 +246,29 @@
     },
     "iu_drr_summary": {
       "exists": true,
-      "rows": 31,
-      "generatedAt": "2026-07-17T07:53:21.736Z",
+      "rows": 77,
+      "generatedAt": "2026-07-17T07:49:15.390Z",
       "asOfDate": "2026-07-16",
       "revenue": 0
     },
     "wb_feedbacks_summary": {
       "exists": true,
       "rows": 162,
-      "generatedAt": "2026-07-17T07:52:41.000Z",
+      "generatedAt": "2026-07-17T07:44:59.520Z",
       "asOfDate": "2026-07-17",
       "revenue": 0
     },
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-17T08:27:06.108Z",
+      "generatedAt": "2026-07-17T07:49:16.234Z",
       "asOfDate": "2026-07-16",
       "revenue": 597
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-07-17T08:38:38.678Z",
+      "generatedAt": "2026-07-17T07:51:33.095Z",
       "asOfDate": "2026-07-17",
       "revenue": 0
     },
@@ -293,21 +296,34 @@
     "sku_matrix": {
       "exists": true,
       "rows": 209,
-      "generatedAt": "2026-07-17T08:27:42.979Z",
+      "generatedAt": "2026-07-17T07:49:18.181Z",
       "asOfDate": "2026-07-17",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-17T08:38:38.685Z",
+      "generatedAt": "2026-07-17T07:51:33.102Z",
       "asOfDate": "2026-07-17",
       "revenue": 0
     }
   },
   "syncIssues": {
-    "generatedAt": "",
-    "issues": []
+    "generatedAt": "2026-07-17T10:33:37.3548848+03:00",
+    "issues": [
+      {
+        "id": "yandex-market",
+        "name": "Yandex Market analytics refresh",
+        "message": "[ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.",
+        "failedAt": "2026-07-17T10:31:50.6444468+03:00"
+      },
+      {
+        "id": "product-leaderboard",
+        "name": "product leaderboard sync",
+        "message": "exit code 1",
+        "failedAt": "2026-07-17T10:33:37.3548848+03:00"
+      }
+    ]
   },
   "skuContour": {
     "status": "ok",
@@ -471,9 +487,23 @@
         "revenueRatio": 1,
         "revenueComparable": true
       }
-    ]
+    ],
+    "markedAt": "2026-07-17T09:53:10.286Z",
+    "copied": 21
   },
   "checks": [
+    {
+      "name": "sync-step:yandex-market",
+      "status": "warning",
+      "message": "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3..",
+      "failedAt": "2026-07-17T10:31:50.6444468+03:00"
+    },
+    {
+      "name": "sync-step:product-leaderboard",
+      "status": "warning",
+      "message": "Non-blocking sync step failed: product leaderboard sync: exit code 1.",
+      "failedAt": "2026-07-17T10:33:37.3548848+03:00"
+    },
     {
       "name": "required:dashboard",
       "status": "ok",
@@ -609,7 +639,7 @@
     {
       "name": "iu-drr-expense-source",
       "status": "ok",
-      "checkedRows": 31
+      "checkedRows": 77
     }
   ]
 }

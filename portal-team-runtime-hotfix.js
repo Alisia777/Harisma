@@ -621,7 +621,10 @@
       const activeView = String(app.activeView || '').trim();
       const taskModalOpen = document.getElementById('taskModal')?.classList.contains('open');
       const allowRerender = false;
-      await pullRemoteStateHotfix(allowRerender, { silent: reason === 'interval' || taskModalOpen });
+      const pullRemote = typeof window.pullRemoteState === 'function'
+        ? window.pullRemoteState
+        : pullRemoteStateHotfix;
+      await pullRemote.call(window, allowRerender, { silent: reason === 'interval' || Boolean(taskModalOpen) });
       await maybeAutoRefreshSnapshotsHotfix(reason);
     } catch (error) {
       console.warn('[portal-team-runtime-hotfix:auto-pull]', reason, error);

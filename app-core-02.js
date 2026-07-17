@@ -820,7 +820,7 @@ function isAutoTaskLike(task = {}, sourceHint = '') {
 
 function isPersistentAutoTask(task = {}) {
   const code = String(task?.autoCode || '').trim().toLowerCase();
-  return code === 'oos_control';
+  return code === 'oos_control' || code === 'rop_strategic';
 }
 
 function resolveTaskOwner(task = {}, sku = null, platform = '', sourceHint = '') {
@@ -1380,6 +1380,11 @@ function detectTaskPlatform(task, sku) {
 
   const text = taskMarketplaceContext(task, sku).toLowerCase();
   const explicitPlatform = task?.platform ? normalizeTaskPlatform(task.platform, text) : '';
+  const strategicCross = explicitPlatform === 'cross'
+    && (String(task?.source || '').trim().toLowerCase() === 'strategic'
+      || String(task?.autoCode || '').trim().toLowerCase() === 'rop_strategic');
+  if (strategicCross) return 'cross';
+
   if (explicitPlatform && explicitPlatform !== 'all' && explicitPlatform !== 'cross') return explicitPlatform;
   const marketplace = detectMarketplaceNetworkKey(text);
   if (marketplace) return marketplace;

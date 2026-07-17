@@ -3235,7 +3235,6 @@ async function init() {
       }
       window.setTimeout(run, 900);
     };
-    const local = loadLocalStorage();
     const [dashboard, skus, seed, productLeaderboard, skuAliases, skuAliasIgnore, skuAliasAudit, skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine, predictiveRisk, autoTaskSignals, predictiveRiskOutcomeAudit] = await Promise.all([
       loadBootJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
       loadBootJsonOrFallback('data/skus.json', [], 'SKU'),
@@ -3252,6 +3251,11 @@ async function init() {
       loadBootJsonOrFallback('data/auto_task_signals.json', { schema: 'qharisma-auto-task-signals-v1', generatedAt: '', summary: {}, signals: [] }, 'Прогнозные автосигналы'),
       loadBootJsonOrFallback('data/predictive_risk_outcome_audit.json', { schema: 'qharisma-predictive-risk-outcome-audit-v1', generatedAt: '', asOfDate: '', windowDays: 14, signalsCreated: 0, risksDetected: 0 }, 'Аудит прогнозов')
     ]);
+
+    // Read storage only after async boot payloads finish; team sync can persist
+    // fresher tasks while those payloads are loading. An earlier snapshot would
+    // overwrite the synced task list when boot resumes.
+    const local = loadLocalStorage();
 
     state.dashboard = dashboard || { cards: [] };
     state.skus = Array.isArray(skus) ? skus : [];

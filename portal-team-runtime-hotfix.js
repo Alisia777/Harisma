@@ -447,6 +447,9 @@
       const remoteEmpty = !taskRows.length && !commentRows.length && !decisionRows.length && !ownerRows.length && !repricerControls;
 
       if (!remoteEmpty) {
+        if (window.__ALTEA_PRIMARY_INIT_FINISHED__ !== true) {
+          earlyTeamStorageCommitted = true;
+        }
         const previousStorage = app.storage && typeof app.storage === 'object' ? app.storage : {};
         const mergedComments = mergeRemoteListWithLocalHotfix(previousStorage.comments || [], commentRows.map(fromRemoteComment), normalizeComment);
         const remoteStorage = {
@@ -566,6 +569,11 @@
   let autoPullInFlight = false;
   let autoSnapshotRefreshLastAt = 0;
   let autoSnapshotRefreshInFlight = false;
+  const POST_BOOT_RECONCILE_POLL_MS = 125;
+  const POST_BOOT_RECONCILE_MAX_ATTEMPTS = 240;
+  let postBootTeamReconcileDone = false;
+  let earlyTeamStorageCommitted = false;
+
 
   async function maybeAutoRefreshSnapshotsHotfix(reason = 'auto', options = {}) {
     const app = appState();
@@ -633,6 +641,48 @@
     }
   }
 
+  async function reconcileTeamStateAfterPrimaryBootHotfix() {
+    if (postBootTeamReconcileDone) return true;
+    const app = appState();
+    if (!app?.boot?.dataReady || window.__ALTEA_PRIMARY_INIT_FINISHED__ !== true) return false;
+    if (!earlyTeamStorageCommitted) {
+      postBootTeamReconcileDone = true;
+      return true;
+    }
+    if (!canUseRemote()) {
+      postBootTeamReconcileDone = true;
+      return true;
+    }
+    if (app.team?.mode !== 'ready' || !hasRemoteStoreHotfix()) return false;
+
+    const pullRemote = typeof window.pullRemoteState === 'function'
+      ? window.pullRemoteState
+      : pullRemoteStateHotfix;
+    const result = await pullRemote.call(window, true, { silent: true });
+    if (result == null) return false;
+
+    postBootTeamReconcileDone = true;
+    window.__ALTEA_TEAM_BOOT_RECONCILED__ = true;
+    return true;
+  }
+
+  function schedulePostBootTeamReconcileHotfix() {
+    if (window.__ALTEA_TEAM_BOOT_RECONCILE_SCHEDULED__) return;
+    window.__ALTEA_TEAM_BOOT_RECONCILE_SCHEDULED__ = true;
+
+    const run = async (attempt) => {
+      try {
+        if (await reconcileTeamStateAfterPrimaryBootHotfix()) return;
+      } catch (error) {
+        console.warn('[portal-team-runtime-hotfix:boot-reconcile]', error);
+      }
+      if (attempt >= POST_BOOT_RECONCILE_MAX_ATTEMPTS) return;
+      window.setTimeout(() => run(attempt + 1), POST_BOOT_RECONCILE_POLL_MS);
+    };
+
+    window.setTimeout(() => run(0), 0);
+  }
+
   function bindAutoPullHotfix() {
     if (autoPullTimer) return;
     autoPullTimer = window.setInterval(() => {
@@ -670,6 +720,7 @@
   assignGlobal('portalAutoRefreshSnapshots', maybeAutoRefreshSnapshotsHotfix);
   assignGlobal('initTeamStore', initTeamStoreHotfix);
   bindAutoPullHotfix();
+  schedulePostBootTeamReconcileHotfix();
 
   window.setTimeout(() => {
     const app = appState();

@@ -9,6 +9,7 @@
   var DELAYED_SCRIPT_ATTR = 'data-auth-src';
   var DELAYED_SCRIPT_TYPE = 'application/x-altea-auth-delayed';
   var DELAYED_SCRIPT_TIMEOUT_MS = 30000;
+  var LOGIN_REQUEST_TIMEOUT_MS = 15000;
   var LOGIN_MIN_RESPONSE_MS = 700;
   var LOGIN_JITTER_MS = 450;
   var MAX_EMAIL_LENGTH = 254;
@@ -1010,6 +1011,29 @@
     });
   }
 
+  function withTimeout(promise, timeoutMs, errorCode) {
+    return new Promise(function (resolve, reject) {
+      var settled = false;
+      var timer = window.setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        reject(new Error(errorCode || 'timeout'));
+      }, Math.max(1, timeoutMs));
+
+      Promise.resolve(promise).then(function (value) {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        resolve(value);
+      }, function (error) {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        reject(error);
+      });
+    });
+  }
+
   function minimumResponseDelay(startedAt) {
     var elapsed = now() - startedAt;
     var target = LOGIN_MIN_RESPONSE_MS + Math.floor(Math.random() * LOGIN_JITTER_MS);
@@ -1458,7 +1482,11 @@
     getClient()
       .then(function (authClient) {
         if (guestLogin) return signInGuest(authClient);
-        return authClient.auth.signInWithPassword({ email: credentials.email, password: credentials.password });
+        return withTimeout(
+          authClient.auth.signInWithPassword({ email: credentials.email, password: credentials.password }),
+          LOGIN_REQUEST_TIMEOUT_MS,
+          'auth-timeout'
+        );
       })
       .then(function (result) {
         var session;
@@ -1540,6 +1568,7 @@
       .catch(function (error) {
         return minimumResponseDelay(startedAt).then(function () {
           var isAccessDenied = error && error.message === 'access-denied';
+          var isAuthTimeout = error && error.message === 'auth-timeout';
           if (failedAsAuth) registerFailure();
           if (failedAsAuth) {
             emitSecurityAudit('login_failed', {
@@ -1579,7 +1608,7 @@
           }
           if (!pendingMfaChallenge) loginFlowActive = false;
           if (window.console && window.console.warn) window.console.warn('[portal-auth] login check failed');
-          setStatus(failedAsAuth ? GENERIC_LOGIN_ERROR : (isAccessDenied ? ACCESS_DENIED_ERROR : '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0440\u043e\u0432\u0435\u0440\u0438\u0442\u044c \u0434\u043e\u0441\u0442\u0443\u043f. \u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u0441\u0435\u0442\u044c \u0438 Supabase.'), 'danger');
+          setStatus(failedAsAuth ? GENERIC_LOGIN_ERROR : (isAccessDenied ? ACCESS_DENIED_ERROR : (isAuthTimeout ? '\u0421\u0435\u0440\u0432\u0435\u0440 \u0432\u0445\u043e\u0434\u0430 \u043d\u0435 \u043e\u0442\u0432\u0435\u0442\u0438\u043b \u0437\u0430 15 \u0441\u0435\u043a\u0443\u043d\u0434. \u041a\u043d\u043e\u043f\u043a\u0430 \u0441\u043d\u043e\u0432\u0430 \u0430\u043a\u0442\u0438\u0432\u043d\u0430 \u2014 \u043f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u0438\u043d\u0442\u0435\u0440\u043d\u0435\u0442 \u0438 \u043f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435.' : '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0440\u043e\u0432\u0435\u0440\u0438\u0442\u044c \u0434\u043e\u0441\u0442\u0443\u043f. \u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u0441\u0435\u0442\u044c \u0438 Supabase.')), 'danger');
           if (password) password.value = '';
           updateThrottleUi();
         });

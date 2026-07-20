@@ -202,7 +202,7 @@ jobs:
           --mode daily --recent-days 30
           --platforms wb,ozon,ya,goldapple,letu,megamarket,samokat,magnit
           --to '${{ steps.cutoff.outputs.value }}'
-          --strict --skip-protected-scope --skip-health --skip-data-guard
+          --strict --skip-protected-scope --skip-health --skip-data-guard --skip-magnit-csv
 
       - name: Refresh advertising and stock
         env:

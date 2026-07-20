@@ -48,6 +48,9 @@ if (workflow.includes('--relax-platform-facts') || workflow.includes('--relax-mi
 if (!workflow.includes('--strict --skip-protected-scope --skip-health --skip-data-guard')) {
   fail('daily close API sync must run in strict non-IU mode');
 }
+if (!workflow.includes('--skip-magnit-csv')) {
+  fail('daily close must not run the dedicated Magnit CSV normalizer when the retail workbook merge is the configured Magnit source');
+}
 if (!workflow.includes('--platforms wb,ozon,ya,goldapple,letu,megamarket,samokat,magnit')) {
   fail('daily close API sync must refresh every marketplace, including extra networks');
 }

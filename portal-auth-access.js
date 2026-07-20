@@ -1,6 +1,22 @@
 (function () {
   'use strict';
 
+  (function enforceCanonicalHttps() {
+    var location = window.location || {};
+    var protocol = String(location.protocol || '').toLowerCase();
+    var hostname = String(location.hostname || '').toLowerCase();
+    var host = String(location.host || '').replace(/^\s+|\s+$/g, '');
+    var local = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1';
+    window.__ALTEA_CANONICAL_HTTPS_REDIRECT__ = true;
+    if (protocol !== 'http:' || local || !host) return;
+    var target = 'https://' + host + String(location.pathname || '/') + String(location.search || '') + String(location.hash || '');
+    try {
+      window.location.replace(target);
+    } catch (_) {
+      try { window.location.href = target; } catch (__) {}
+    }
+  }());
+
   var ALL_VIEWS = [
     'dashboard',
     'data-health',
@@ -41,7 +57,7 @@
   ];
 
   window.ALTEA_PORTAL_ACCESS_RULES = window.ALTEA_PORTAL_ACCESS_RULES || {
-    version: '2026-07-10',
+    version: '2026-07-20-macos-https',
     allViews: ALL_VIEWS,
 
     // Unknown authenticated users see only the dashboard until they are assigned below

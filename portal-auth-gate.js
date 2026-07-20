@@ -458,7 +458,34 @@
 
   function hasStrongTransport() {
     var protocol = String(window.location.protocol || '').toLowerCase();
-    return protocol === 'https:' || protocol === 'file:' || isLocalHost();
+    if (protocol === 'https:' || protocol === 'file:' || isLocalHost()) return true;
+    return window.isSecureContext === true;
+  }
+
+  function secureCanonicalUrl() {
+    var location = window.location || {};
+    var host = String(location.host || '').replace(/^\s+|\s+$/g, '');
+    if (!host) return '';
+    return 'https://' + host + String(location.pathname || '/') + String(location.search || '') + String(location.hash || '');
+  }
+
+  function redirectToStrongTransport() {
+    var protocol = String(window.location.protocol || '').toLowerCase();
+    var target;
+    if (hasStrongTransport()) return false;
+    if (protocol !== 'http:' || isLocalHost()) return false;
+    target = secureCanonicalUrl();
+    if (!target) return false;
+    try {
+      window.location.replace(target);
+      return true;
+    } catch (_) {
+      try {
+        window.location.href = target;
+        return true;
+      } catch (__) {}
+    }
+    return false;
   }
 
   function hasBasicBrowserSupport() {
@@ -1438,7 +1465,12 @@
     event.preventDefault();
     if (updateThrottleUi()) return;
     if (!hasStrongTransport()) {
-      setStatus('\u0412\u0445\u043e\u0434 \u0440\u0430\u0437\u0440\u0435\u0448\u0435\u043d \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e HTTPS \u0438\u043b\u0438 \u043d\u0430 localhost.', 'danger');
+      if (redirectToStrongTransport()) {
+        setStatus('\u041f\u0435\u0440\u0435\u043d\u0430\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u043c \u043d\u0430 \u0437\u0430\u0449\u0438\u0449\u0435\u043d\u043d\u0443\u044e \u0432\u0435\u0440\u0441\u0438\u044e \u043f\u043e\u0440\u0442\u0430\u043b\u0430...', '');
+        lockSubmit(true);
+        return;
+      }
+      setStatus('\u0411\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u044b\u0439 \u0432\u0445\u043e\u0434 \u0434\u043e\u0441\u0442\u0443\u043f\u0435\u043d \u043f\u043e \u0430\u0434\u0440\u0435\u0441\u0443 https://\u0445\u0430\u0440\u0438\u0437\u043c\u043e\u0439.\u0440\u0444.', 'danger');
       lockSubmit(true);
       return;
     }
@@ -1665,6 +1697,7 @@
 
   function ensureAuthenticated() {
     authConfig();
+    if (redirectToStrongTransport()) return Promise.resolve(null);
     if (!isAuthRequired()) {
       document.body.classList.remove('portal-auth-locked');
       loadDelayedScripts();

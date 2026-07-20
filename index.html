@@ -6,6 +6,17 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
+  <script id="altea-canonical-https-redirect">
+    (function () {
+      var protocol = String(window.location.protocol || '').toLowerCase();
+      var hostname = String(window.location.hostname || '').toLowerCase();
+      var local = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1';
+      window.__ALTEA_CANONICAL_HTTPS_REDIRECT__ = true;
+      if (protocol === 'http:' && !local) {
+        window.location.replace('https://' + window.location.host + window.location.pathname + window.location.search + window.location.hash);
+      }
+    }());
+  </script>
   <title>&#1044;&#1086;&#1084; &#1073;&#1088;&#1077;&#1085;&#1076;&#1072; &#1040;&#1083;&#1090;&#1077;&#1103; &#183; v8.7.1 Imperial</title>
   <meta name="description" content="&#1044;&#1086;&#1084; &#1073;&#1088;&#1077;&#1085;&#1076;&#1072; &#1040;&#1083;&#1090;&#1077;&#1103;: &#1086;&#1087;&#1077;&#1088;&#1072;&#1090;&#1080;&#1074;&#1085;&#1099;&#1081; &#1082;&#1086;&#1085;&#1090;&#1091;&#1088; &#1073;&#1088;&#1077;&#1085;&#1076;&#1072;, &#1087;&#1083;&#1086;&#1097;&#1072;&#1076;&#1086;&#1082;, &#1088;&#1077;&#1082;&#1083;&#1072;&#1084;&#1099; &#1080; &#1088;&#1077;&#1096;&#1077;&#1085;&#1080;&#1081; &#1074; &#1086;&#1076;&#1085;&#1086;&#1084; &#1101;&#1082;&#1088;&#1072;&#1085;&#1077;.">
   <link rel="icon" href="assets/altea-imperial-mark.svg" type="image/svg+xml">
@@ -184,7 +195,7 @@ html[data-altea-task-primary="1"] #view-control .portal-view-guide{display:none!
 
   <script>
     window.__ALTEA_BOOT = { configLoaded: true, supabaseLoaded: false };
-    window.__ALTEA_PORTAL_BUILD__ = '20260717taskvisibility1';
+    window.__ALTEA_PORTAL_BUILD__ = '20260720macoshttps1';
     window.__ALTEA_TASK_KANBAN_PRIMARY__ = true;
     document.documentElement.dataset.alteaTaskPrimary = '1';
     (function(){
@@ -216,7 +227,7 @@ html[data-altea-task-primary="1"] #view-control .portal-view-guide{display:none!
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="window.__ALTEA_BOOT.supabaseLoaded=true; window.__alteaSetBootBadge && window.__alteaSetBootBadge('\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u0435\u043c \u043a\u043e\u043c\u0430\u043d\u0434\u043d\u0443\u044e \u0431\u0430\u0437\u0443\u2026','pending');"></script>
   <script defer src="portal-auth-access.js?v=20260716bulygin1"></script>
   <script defer src="portal-security-audit.js?v=20260619audit1"></script>
-  <script defer src="portal-auth-gate.js?v=20260720auth-timeout1"></script>
+  <script defer src="portal-auth-gate.js?v=20260720macoshttps1"></script>
   <script defer src="altea-motion-runtime.js?v=20260622bootfailopen1"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-build-refresh-hotfix.js?v=20260515dashboard1"></script>
 <script type="application/x-altea-auth-delayed" data-auth-src="portal-runtime-optimizer.js?v=20260701taskrouteguard5"></script>

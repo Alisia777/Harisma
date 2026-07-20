@@ -110,7 +110,7 @@ jobs:
           ALTEA_MAGNIT_SALES_WORKBOOK: ${{ secrets.ALTEA_MAGNIT_SALES_WORKBOOK || vars.ALTEA_MAGNIT_SALES_WORKBOOK }}
           ALTEA_MAGNIT_SALES_CSV: ${{ secrets.ALTEA_MAGNIT_SALES_CSV || vars.ALTEA_MAGNIT_SALES_CSV }}
           ALTEA_MAGNIT_SERVICES_CSV: ${{ secrets.ALTEA_MAGNIT_SERVICES_CSV || vars.ALTEA_MAGNIT_SERVICES_CSV }}
-          ALTEA_RETAIL_NETWORK_SALES_XLSX: ${{ secrets.ALTEA_RETAIL_NETWORK_SALES_XLSX || vars.ALTEA_RETAIL_NETWORK_SALES_XLSX }}
+          ALTEA_RETAIL_NETWORK_SALES_XLSX: ${{ secrets.ALTEA_RETAIL_NETWORK_SALES_XLSX || vars.ALTEA_RETAIL_NETWORK_SALES_XLSX || 'data/external_sources/retail_network_sales.xlsx' }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
           ALTEA_SUPABASE_URL: ${{ secrets.ALTEA_SUPABASE_URL || vars.ALTEA_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
@@ -196,7 +196,7 @@ jobs:
           ALTEA_MAGNIT_SALES_WORKBOOK: ${{ secrets.ALTEA_MAGNIT_SALES_WORKBOOK || vars.ALTEA_MAGNIT_SALES_WORKBOOK }}
           ALTEA_MAGNIT_SALES_CSV: ${{ secrets.ALTEA_MAGNIT_SALES_CSV || vars.ALTEA_MAGNIT_SALES_CSV }}
           ALTEA_MAGNIT_SERVICES_CSV: ${{ secrets.ALTEA_MAGNIT_SERVICES_CSV || vars.ALTEA_MAGNIT_SERVICES_CSV }}
-          ALTEA_RETAIL_NETWORK_SALES_XLSX: ${{ secrets.ALTEA_RETAIL_NETWORK_SALES_XLSX || vars.ALTEA_RETAIL_NETWORK_SALES_XLSX }}
+          ALTEA_RETAIL_NETWORK_SALES_XLSX: ${{ secrets.ALTEA_RETAIL_NETWORK_SALES_XLSX || vars.ALTEA_RETAIL_NETWORK_SALES_XLSX || 'data/external_sources/retail_network_sales.xlsx' }}
         run: >-
           node scripts/portal-api-max-sync.js sync
           --mode daily --recent-days 30

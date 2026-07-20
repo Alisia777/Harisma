@@ -143,9 +143,19 @@ function preserveExtraMarketplace(stagedOverlayPath, liveOverlayPath, previousOv
   if (!overlay || typeof overlay !== 'object') return false;
 
   overlay.extraMarketplace = extraMarketplace;
-  if (!overlay.asOfDate && extraMarketplace.asOfDate) {
-    overlay.asOfDate = extraMarketplace.asOfDate;
-  }
+  const latestAsOfDate = [overlay.asOfDate, extraMarketplace.asOfDate, previousOverlay?.asOfDate]
+    .map((value) => String(value || '').slice(0, 10))
+    .filter((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))
+    .sort()
+    .pop();
+  if (latestAsOfDate) overlay.asOfDate = latestAsOfDate;
+
+  const latestGeneratedAt = [overlay.generatedAt, extraMarketplace.generatedAt, previousOverlay?.generatedAt]
+    .map((value) => ({ value: String(value || ''), stamp: Date.parse(value) }))
+    .filter((item) => Number.isFinite(item.stamp))
+    .sort((left, right) => left.stamp - right.stamp)
+    .pop();
+  if (latestGeneratedAt) overlay.generatedAt = latestGeneratedAt.value;
 
   writeJson(stagedOverlayPath, overlay);
   if (path.resolve(stagedOverlayPath) !== path.resolve(liveOverlayPath)) {
@@ -673,6 +683,7 @@ module.exports = {
   decodeWorkbookFromEnvironment,
   extractGoogleFileId,
   fetchWorkbookFromUrl,
+  preserveExtraMarketplace,
   readGoogleServiceAccount,
   redactUrl,
   resolveOptions,

@@ -102,6 +102,7 @@ function resolveOptions(args) {
     completenessLookbackDays: Math.max(1, Math.trunc(numberOrZero(args['completeness-lookback-days'] || process.env.ALTEA_PORTAL_COMPLETENESS_LOOKBACK_DAYS || DEFAULT_COMPLETENESS_LOOKBACK_DAYS))),
     completenessMinBaselineRevenue: numberOrZero(args['completeness-min-baseline-revenue'] || process.env.ALTEA_PORTAL_COMPLETENESS_MIN_BASELINE_REVENUE || DEFAULT_COMPLETENESS_MIN_BASELINE_REVENUE),
     completenessMinBaselineUnits: numberOrZero(args['completeness-min-baseline-units'] || process.env.ALTEA_PORTAL_COMPLETENESS_MIN_BASELINE_UNITS || DEFAULT_COMPLETENESS_MIN_BASELINE_UNITS),
+    quarantineOnly: Boolean(args['quarantine-only']),
     now: args.now ? new Date(args.now) : new Date()
   };
 }
@@ -854,6 +855,20 @@ function markLastGood(options, health) {
 
 function main() {
   const options = resolveOptions(parseArgs(process.argv));
+  if (options.quarantineOnly) {
+    const quality = readSnapshot(options, 'portal_data_quality').payload;
+    if (!quality) throw new Error('portal_data_quality.json is required to rebuild quarantine');
+    const quarantine = buildQuarantine(quality);
+    const quarantinePath = path.join(options.outputDir, 'portal_data_quarantine.json');
+    writeJson(quarantinePath, quarantine);
+    console.log(JSON.stringify({
+      status: 'ok',
+      quarantineOnly: true,
+      output: quarantinePath,
+      summary: quarantine.summary
+    }, null, 2));
+    return;
+  }
   const { health, quarantine } = buildHealth(options);
   const healthPath = path.join(options.outputDir, 'portal_sync_health.json');
   const quarantinePath = path.join(options.outputDir, 'portal_data_quarantine.json');
@@ -877,4 +892,11 @@ function main() {
   }, null, 2));
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  buildQuarantine,
+  resolveOptions
+};

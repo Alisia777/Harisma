@@ -259,6 +259,7 @@ jobs:
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
           node scripts/build-wb-owner-audit-from-skus.js --input-dir data --base-data-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
+          node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --quarantine-only
           node scripts/build-sku-matrix-layer.js --input-dir data --base-data-dir data --output-dir data
           node scripts/build-canonical-repricer.js --input-dir data --output-dir data
           node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir data

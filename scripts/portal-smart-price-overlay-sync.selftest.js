@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 const assert = require('assert');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const zlib = require('zlib');
 const XLSX = require('xlsx');
 
@@ -8,6 +11,7 @@ const {
   buildWorkbookRequestHeaders,
   decodeWorkbookFromEnvironment,
   extractGoogleFileId,
+  preserveExtraMarketplace,
   redactUrl,
   workbookBufferLooksLikeSmartPrices,
   workbookSheetNamesLookLikeSmartPrices
@@ -69,5 +73,27 @@ const githubAssetHeaders = buildWorkbookRequestHeaders(
 );
 assert.strictEqual(githubAssetHeaders.Authorization, 'Bearer github-token');
 assert.strictEqual(githubAssetHeaders.Accept, 'application/octet-stream');
+
+const preserveDir = fs.mkdtempSync(path.join(os.tmpdir(), 'portal-smart-price-preserve-'));
+const stagedOverlayPath = path.join(preserveDir, 'smart_price_overlay.json');
+fs.writeFileSync(stagedOverlayPath, JSON.stringify({
+  generatedAt: '2026-06-22T06:00:03.429Z',
+  asOfDate: '2026-06-21',
+  platforms: { wb: { rows: [] }, ozon: { rows: [] } }
+}));
+assert.strictEqual(preserveExtraMarketplace(stagedOverlayPath, stagedOverlayPath, {
+  generatedAt: '2026-07-20T12:25:00.000Z',
+  asOfDate: '2026-07-19',
+  extraMarketplace: {
+    generatedAt: '2026-07-20T12:25:00.000Z',
+    asOfDate: '2026-07-19',
+    platforms: { goldapple: { articleCount: 59 } }
+  }
+}), true);
+const preservedOverlay = JSON.parse(fs.readFileSync(stagedOverlayPath, 'utf8'));
+assert.strictEqual(preservedOverlay.generatedAt, '2026-07-20T12:25:00.000Z');
+assert.strictEqual(preservedOverlay.asOfDate, '2026-07-19');
+assert.strictEqual(preservedOverlay.extraMarketplace.platforms.goldapple.articleCount, 59);
+fs.rmSync(preserveDir, { recursive: true, force: true });
 
 console.log('portal-smart-price-overlay-sync selftest ok');

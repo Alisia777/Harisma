@@ -71,6 +71,8 @@ jobs:
           node scripts/portal-daily-close-preflight.selftest.js
           node scripts/portal-daily-close-preflight-summary.selftest.js
           node scripts/portal-daily-close-workflow.selftest.js
+          node scripts/portal-smart-price-overlay-sync.selftest.js
+          node scripts/portal-sync-health-quarantine.selftest.js
           node scripts/portal-dashboard-money-kpi-realdata.selftest.js
           node scripts/portal-runtime-snapshot-choice.selftest.js
           node scripts/sanitizer_url_contract.test.js

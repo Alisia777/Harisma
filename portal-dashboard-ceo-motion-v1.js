@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '20260702-dashboard-no-buyout-proxy1';
+  const VERSION = '20260721-dashboard-snapshot-runtime3';
   const ROOT_ID = 'view-dashboard';
   const STYLE_ID = 'altea-dashboard-ceo-motion-v1-style';
   window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;

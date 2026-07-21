@@ -19,6 +19,7 @@
   var LOCAL_STORAGE_SOFT_LIMIT = 1500000;
   var MAX_IMPORT_BYTES = 8 * 1024 * 1024;
   var MAX_IMPORT_ROWS = 12000;
+  var MAX_TEST_IMAGE_BYTES = 2 * 1024 * 1024;
   var PROJECT_PAGE_SIZE = 100;
   var TEST_PAGE_SIZE = 24;
   var KNOWLEDGE_PAGE_SIZE = 60;
@@ -214,7 +215,7 @@
     raw = raw && typeof raw === 'object' ? raw : {};
     return {
       name: string(raw.name) || fallbackName,
-      imageUrl: safeUrl(raw.imageUrl || raw.image || raw.preview),
+      imageUrl: safeImageUrl(raw.imageUrl || raw.image || raw.preview),
       views: number(raw.views || raw.impressions || raw.shows),
       clicks: number(raw.clicks),
       carts: number(raw.carts || raw.addToCart || raw.add_to_cart),
@@ -301,7 +302,11 @@
   }
 
   function readUi() {
-    var fallback = { mode: 'board', search: '', status: 'active', owner: 'all', type: 'all', deadline: 'all', projectPage: 1, testPage: 1, knowledgePage: 1 };
+    var fallback = {
+      mode: 'board', search: '', status: 'active', owner: 'all', type: 'all', deadline: 'all', projectPage: 1,
+      testSearch: '', testStatus: 'all', testOwner: 'all', testPage: 1,
+      knowledgeSearch: '', knowledgeCategory: 'all', knowledgePage: 1
+    };
     try {
       var parsed = JSON.parse(localStorage.getItem(UI_KEY) || '{}');
       return Object.assign(fallback, parsed || {});
@@ -541,6 +546,13 @@
       var url = new URL(raw, window.location.href);
       return /^(https?:|mailto:)$/.test(url.protocol) ? url.href : '';
     } catch (_) { return ''; }
+  }
+
+  function safeImageUrl(value) {
+    var raw = string(value);
+    if (!raw) return '';
+    if (/^data:image\/(?:png|jpe?g|webp);base64,[a-z0-9+/=\s]+$/i.test(raw)) return raw.replace(/\s+/g, '');
+    return safeUrl(raw);
   }
 
   function legacyHashText(value) {
@@ -1296,6 +1308,32 @@
     });
   }
 
+  function filteredTests() {
+    var search = string(ui.testSearch).toLowerCase();
+    return activeTests().filter(function (test) {
+      if (ui.testStatus !== 'all' && test.status !== ui.testStatus) return false;
+      if (ui.testOwner !== 'all' && test.owner !== ui.testOwner) return false;
+      if (!search) return true;
+      var haystack = [test.title, test.sku, test.marketplace, test.owner, test.hypothesis, test.conclusion, test.decision]
+        .concat(test.tags || []).join(' ').toLowerCase();
+      return haystack.indexOf(search) !== -1;
+    }).sort(function (a, b) { return timestamp(b.updatedAt) - timestamp(a.updatedAt); });
+  }
+
+  function activePages() {
+    return data.pages.filter(function (page) { return !page.archived; });
+  }
+
+  function filteredPages() {
+    var search = string(ui.knowledgeSearch).toLowerCase();
+    return activePages().filter(function (page) {
+      if (ui.knowledgeCategory !== 'all' && page.category !== ui.knowledgeCategory) return false;
+      if (!search) return true;
+      var haystack = [page.title, page.category, page.summary, page.content, page.owner, kindLabel(page.kind)].join(' ').toLowerCase();
+      return haystack.indexOf(search) !== -1;
+    }).sort(function (a, b) { return timestamp(b.updatedAt) - timestamp(a.updatedAt); });
+  }
+
   function optionList(list, selected) {
     return list.map(function (item) {
       var value = Array.isArray(item) ? item[0] : item;
@@ -1358,11 +1396,11 @@
   function renderFilters() {
     var owners = Array.from(new Set(activeProjects().map(function (item) { return item.owner; }).filter(Boolean))).sort();
     return '<div class="design-ws-filter-row"><label class="design-ws-search"><span aria-hidden="true">⌕</span>' +
-      '<input type="search" placeholder="Найти проект, SKU или тег…" value="' + html(ui.search) + '" data-design-search aria-label="Поиск по проектам"><kbd>/</kbd></label>' +
-      '<select data-design-filter="status" aria-label="Статус">' + optionList([['active', 'Активные'], ['all', 'Все статусы'], ['inbox', 'Запросы'], ['brief', 'Бриф'], ['production', 'В работе'], ['review', 'На ревью'], ['done', 'Готово']], ui.status) + '</select>' +
-      '<select data-design-filter="owner" aria-label="Ответственный"><option value="all">Все дизайнеры</option>' + optionList(owners, ui.owner) + '</select>' +
-      '<select data-design-filter="type" aria-label="Тип проекта"><option value="all">Все типы</option>' + optionList(TYPES, ui.type) + '</select>' +
-      '<select data-design-filter="deadline" aria-label="Срок"><option value="all">Любой срок</option>' + optionList([['urgent', 'Фокус ≤ 3 дней'], ['overdue', 'Просрочено'], ['week', 'Ближайшие 7 дней'], ['no_date', 'Без дедлайна']], ui.deadline) + '</select>' +
+      '<input type="search" placeholder="Найти проект, SKU или тег…" value="' + html(ui.search) + '" data-design-search="search" data-design-search-page="projectPage" aria-label="Поиск по проектам"><kbd>/</kbd></label>' +
+      '<select data-design-filter="status" data-design-filter-page="projectPage" aria-label="Статус">' + optionList([['active', 'Активные'], ['all', 'Все статусы'], ['inbox', 'Запросы'], ['brief', 'Бриф'], ['production', 'В работе'], ['review', 'На ревью'], ['done', 'Готово']], ui.status) + '</select>' +
+      '<select data-design-filter="owner" data-design-filter-page="projectPage" aria-label="Ответственный"><option value="all">Все дизайнеры</option>' + optionList(owners, ui.owner) + '</select>' +
+      '<select data-design-filter="type" data-design-filter-page="projectPage" aria-label="Тип проекта"><option value="all">Все типы</option>' + optionList(TYPES, ui.type) + '</select>' +
+      '<select data-design-filter="deadline" data-design-filter-page="projectPage" aria-label="Срок"><option value="all">Любой срок</option>' + optionList([['urgent', 'Фокус ≤ 3 дней'], ['overdue', 'Просрочено'], ['week', 'Ближайшие 7 дней'], ['no_date', 'Без дедлайна']], ui.deadline) + '</select>' +
       (hasProjectFilters() ? '<button type="button" class="design-ws-filter-reset" data-design-reset-filters aria-label="Сбросить фильтры" title="Сбросить фильтры">Сбросить</button>' : '') +
       '</div>';
   }
@@ -1378,6 +1416,23 @@
     if (isOverdue(project)) return { tone: 'danger', label: 'Просрочено · ' + formatDate(project.dueDate) };
     if (isDueSoon(project)) return { tone: 'warning', label: 'Скоро · ' + formatDate(project.dueDate) };
     return { tone: 'neutral', label: formatDate(project.dueDate) };
+  }
+
+  function renderTestFilters() {
+    var owners = Array.from(new Set(activeTests().map(function (test) { return test.owner; }).filter(Boolean))).sort();
+    return '<div class="design-ws-section-filters"><div class="design-ws-filter-row">' +
+      '<input type="search" placeholder="Поиск по тестам, SKU и выводам" value="' + html(ui.testSearch) + '" data-design-search="testSearch" data-design-search-page="testPage" aria-label="Поиск по тестам">' +
+      '<select data-design-filter="testStatus" data-design-filter-page="testPage" aria-label="Статус теста"><option value="all">Все статусы</option>' + optionList(Object.keys(TEST_STATUS).map(function (key) { return [key, TEST_STATUS[key].label]; }), ui.testStatus) + '</select>' +
+      '<select data-design-filter="testOwner" data-design-filter-page="testPage" aria-label="Ответственный за тест"><option value="all">Все ответственные</option>' + optionList(owners, ui.testOwner) + '</select>' +
+      '</div></div>';
+  }
+
+  function renderKnowledgeFilters() {
+    var categories = Array.from(new Set(activePages().map(function (page) { return page.category; }).filter(Boolean))).sort();
+    return '<div class="design-ws-section-filters"><div class="design-ws-filter-row">' +
+      '<input type="search" placeholder="Поиск по базе знаний" value="' + html(ui.knowledgeSearch) + '" data-design-search="knowledgeSearch" data-design-search-page="knowledgePage" aria-label="Поиск по базе знаний">' +
+      '<select data-design-filter="knowledgeCategory" data-design-filter-page="knowledgePage" aria-label="Категория базы знаний"><option value="all">Все категории</option>' + optionList(categories, ui.knowledgeCategory) + '</select>' +
+      '</div></div>';
   }
 
   function renderCard(project) {
@@ -1439,6 +1494,13 @@
     var upliftClass = uplift == null ? '' : (uplift >= 0 ? ' positive' : ' negative');
     var winnerLabel = winner === 'variant' ? 'Победил B' : (winner === 'control' ? 'Победил A' : (winner === 'inconclusive' ? 'Без победителя' : 'Нет вывода'));
     var confidenceLabel = test.winner ? 'Решение задано вручную' : (metrics.significant ? '95% значимость' : (metrics.significanceReason || 'Недостаточно данных'));
+    var conclusion = string(test.conclusion);
+    var decision = string(test.decision);
+    var insight = conclusion || decision
+      ? '<div class="design-test-insights">' +
+        (conclusion ? '<div><span>Вывод</span><p>' + html(conclusion) + '</p></div>' : '') +
+        (decision ? '<div><span>Следующий шаг</span><p>' + html(decision) + '</p></div>' : '') + '</div>'
+      : (test.status === 'complete' ? '<div class="design-test-insights is-empty"><strong>Зафиксируйте вывод и следующий шаг</strong></div>' : '');
     return '<article class="design-test-card" tabindex="0" data-design-test="' + html(test.id) + '">' +
       '<div class="design-test-head"><div><span class="design-ws-chip" style="color:' + status.color + '">' + html(status.label) + '</span><h3>' + html(test.title) + '</h3><p>' + html([test.marketplace, test.sku ? 'SKU ' + test.sku : ''].filter(Boolean).join(' · ') || 'Площадка и SKU не указаны') + '</p></div>' +
       '<div class="design-test-result' + upliftClass + '"><strong>' + html(uplift == null ? '—' : ((uplift > 0 ? '+' : '') + formatPct(uplift))) + '</strong><span>uplift CR</span></div></div>' +
@@ -1452,6 +1514,7 @@
       renderTestMetric('CR из клика', metrics.controlCr, metrics.variantCr, formatPct) +
       renderTestMetric('CR из показа', metrics.controlViewCr, metrics.variantViewCr, formatPct) +
       renderTestMetric('Выручка', test.control.revenue, test.variant.revenue, formatMoney) + '</div>' +
+      insight +
       '<div class="design-test-foot"><span class="design-ws-chip">' + html(winnerLabel) + '</span><span class="design-ws-chip">' + html(confidenceLabel) + '</span><span>' + html(test.owner || 'ответственный не указан') + '</span><span>' + html(test.endDate ? 'до ' + formatDate(test.endDate) : 'период не задан') + '</span></div>' +
       '</article>';
   }
@@ -1472,14 +1535,18 @@
   }
 
   function renderTests() {
-    var tests = activeTests().sort(function (a, b) { return timestamp(b.updatedAt) - timestamp(a.updatedAt); });
+    var allTests = activeTests();
+    var tests = filteredTests();
     var paged = pageSlice(tests, 'testPage', TEST_PAGE_SIZE);
-    return '<div class="design-ws-pages-head"><div><h3>Тесты конверсии</h3><p>История гипотез: что загрузили на маркетплейс, как выглядело и какой результат получили.</p></div><div class="design-ws-head-actions"><button type="button" class="design-ws-btn" data-design-import-test>Импорт метрик MP CSV</button><button type="button" class="design-ws-btn primary" data-design-add-test>+ Новый тест</button></div></div>' +
-      (tests.length ? '<div class="design-tests-grid">' + paged.items.map(renderTestCard).join('') + '</div>' + renderPager('testPage', paged) : '<div class="design-ws-empty"><div><strong>Тестов пока нет</strong><p>Создайте гипотезу, добавьте визуалы A/B и зафиксируйте показатели маркетплейса до и после.</p><button type="button" class="design-ws-btn primary" data-design-add-test style="margin-top:14px">Создать тест</button></div></div>');
+    return '<div class="design-ws-pages-head"><div><h3>Тесты конверсии</h3><p>История гипотез: что загрузили на маркетплейс, как выглядело и какой результат получили.</p></div><button type="button" class="design-ws-btn" data-design-import-test>Импорт метрик MP CSV</button></div>' +
+      renderTestFilters() +
+      (tests.length ? '<div class="design-tests-grid">' + paged.items.map(renderTestCard).join('') + '</div>' + renderPager('testPage', paged)
+        : (allTests.length ? '<div class="design-ws-empty"><div><strong>Ничего не найдено</strong><p>Измените запрос или сбросьте фильтры тестов.</p><button type="button" class="design-ws-btn" data-design-clear-filters="tests" style="margin-top:14px">Сбросить фильтры</button></div></div>'
+          : '<div class="design-ws-empty"><div><strong>Тестов пока нет</strong><p>Создайте гипотезу, добавьте визуалы A/B и зафиксируйте показатели маркетплейса до и после.</p><button type="button" class="design-ws-btn primary" data-design-add-test style="margin-top:14px">Создать тест</button></div></div>'));
   }
 
   function renderEmptyProjects() {
-    return '<div class="design-ws-empty"><div><strong>Рабочая доска пока пустая</strong><p>Создайте первый проект или импортируйте базу задач из Notion в формате CSV.</p><button type="button" class="design-ws-btn primary" data-design-add-project style="margin-top:14px">Создать проект</button></div></div>';
+    return '<div class="design-ws-empty"><div><strong>Рабочая доска пока пустая</strong><p>Создайте первый проект или экспортируйте нужную database из Notion в CSV. Страницы и вложения автоматически не копируются.</p><button type="button" class="design-ws-btn primary" data-design-add-project style="margin-top:14px">Создать проект</button></div></div>';
   }
 
   function pageIcon(kind) {
@@ -1487,12 +1554,16 @@
   }
 
   function renderPages() {
-    var pages = data.pages.filter(function (page) { return !page.archived; });
+    var allPages = activePages();
+    var pages = filteredPages();
     var paged = pageSlice(pages, 'knowledgePage', KNOWLEDGE_PAGE_SIZE);
-    return '<div class="design-ws-pages-head"><div><h3>База знаний</h3><p>Регламенты, брифы, шаблоны и решения отдела.</p></div><button type="button" class="design-ws-btn primary" data-design-add-page>+ Новая страница</button></div>' +
+    return '<div class="design-ws-pages-head"><div><h3>База знаний</h3><p>Регламенты, брифы, шаблоны и решения отдела.</p></div></div>' +
+      renderKnowledgeFilters() +
       (pages.length ? '<div class="design-ws-pages">' + paged.items.map(function (page) {
         return '<article class="design-ws-page" tabindex="0" data-design-page="' + html(page.id) + '"><span class="design-ws-page-icon">' + pageIcon(page.kind) + '</span><h4>' + html(page.title) + '</h4><p>' + html(page.summary || page.content.slice(0, 150) || 'Добавьте описание страницы.') + '</p><div class="design-ws-page-meta"><span class="design-ws-chip">' + html(page.category) + '</span><span class="design-ws-chip">' + html(page.status === 'draft' ? 'черновик' : kindLabel(page.kind)) + '</span>' + (page.url ? '<a class="design-ws-resource-link" href="' + html(page.url) + '" target="_blank" rel="noopener" data-design-resource-link aria-label="Открыть материал" title="Открыть материал">↗</a>' : '') + '</div></article>';
-      }).join('') + '</div>' + renderPager('knowledgePage', paged) : '<div class="design-ws-empty"><div><strong>База знаний пустая</strong><p>Создайте регламент, бриф или ссылку на библиотеку.</p></div></div>');
+      }).join('') + '</div>' + renderPager('knowledgePage', paged)
+        : (allPages.length ? '<div class="design-ws-empty"><div><strong>Ничего не найдено</strong><p>Измените запрос или сбросьте фильтры базы знаний.</p><button type="button" class="design-ws-btn" data-design-clear-filters="knowledge" style="margin-top:14px">Сбросить фильтры</button></div></div>'
+          : '<div class="design-ws-empty"><div><strong>База знаний пустая</strong><p>Создайте регламент, бриф или ссылку на библиотеку.</p></div></div>'));
   }
 
   function renderArchiveRows(items, type, title) {
@@ -1642,12 +1713,12 @@
       field('Дата старта', 'startDate', test.startDate, 'date') + field('Дата завершения', 'endDate', test.endDate, 'date') +
       textareaField('Гипотеза: что меняем и почему это должно повлиять на конверсию', 'hypothesis', test.hypothesis, true) +
       '<div class="design-test-form-section"><h4>Контроль A — было</h4><p>Исходный макет и базовые показатели за сопоставимый период.</p></div>' +
-      field('Название A', 'controlName', test.control.name, 'text') + field('Скриншот / макет A', 'controlImageUrl', test.control.imageUrl, 'url') +
+      field('Название A', 'controlName', test.control.name, 'text') + imageField('Скриншот / макет A', 'controlImageUrl', test.control.imageUrl) +
       field('Показы A', 'controlViews', test.control.views, 'number') + field('Клики A', 'controlClicks', test.control.clicks, 'number') +
       field('Добавления в корзину A', 'controlCarts', test.control.carts, 'number') + field('Заказы A', 'controlOrders', test.control.orders, 'number') +
       field('Выручка A, ₽', 'controlRevenue', test.control.revenue, 'number') + '<span></span>' +
       '<div class="design-test-form-section"><h4>Вариант B — стало</h4><p>Новый макет и результат после публикации на площадке.</p></div>' +
-      field('Название B', 'variantName', test.variant.name, 'text') + field('Скриншот / макет B', 'variantImageUrl', test.variant.imageUrl, 'url') +
+      field('Название B', 'variantName', test.variant.name, 'text') + imageField('Скриншот / макет B', 'variantImageUrl', test.variant.imageUrl) +
       field('Показы B', 'variantViews', test.variant.views, 'number') + field('Клики B', 'variantClicks', test.variant.clicks, 'number') +
       field('Добавления в корзину B', 'variantCarts', test.variant.carts, 'number') + field('Заказы B', 'variantOrders', test.variant.orders, 'number') +
       field('Выручка B, ₽', 'variantRevenue', test.variant.revenue, 'number') + '<span></span>' +
@@ -1671,6 +1742,44 @@
     return '<label class="design-ws-form-label' + (full ? ' full' : '') + '"><span>' + html(label) + '</span><textarea class="design-ws-field" name="' + html(name) + '">' + html(value) + '</textarea></label>';
   }
 
+  function imageField(label, name, value) {
+    return '<label class="design-ws-form-label"><span>' + html(label) + '</span><span class="design-ws-image-field">' +
+      '<input class="design-ws-field" type="url" name="' + html(name) + '" value="' + html(value) + '" placeholder="https://… или загрузите файл">' +
+      '<span class="design-ws-btn design-ws-file-btn">Выбрать файл<input type="file" accept="image/png,image/jpeg,image/webp" data-design-image-input="' + html(name) + '"></span>' +
+      '</span><small>PNG, JPG или WebP до 2 МБ. Файл сохранится вместе с тестом.</small></label>';
+  }
+
+  function formatSyncClock(value) {
+    var parsed = timestamp(value);
+    if (!parsed) return '';
+    try { return new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' }).format(new Date(parsed)); }
+    catch (_) { return ''; }
+  }
+
+  function syncStatusLabel() {
+    var parts = [syncMessage];
+    if (remoteRevision > 0) parts.push('v' + remoteRevision);
+    var clock = formatSyncClock(data.updatedAt);
+    if (clock) parts.push(clock);
+    return parts.join(' · ');
+  }
+
+  function renderHeaderActions() {
+    if (!canEdit()) return '';
+    var notion = '<button type="button" class="design-ws-btn" data-design-import title="Экспортируйте нужную database из Notion в CSV. Структура пространства и вложения автоматически не копируются">Импорт CSV из Notion</button>';
+    if (ui.mode === 'board' || ui.mode === 'table') return notion + '<button type="button" class="design-ws-btn primary" data-design-add-project>+ Новый проект</button>';
+    if (ui.mode === 'tests') return '<button type="button" class="design-ws-btn primary" data-design-add-test>+ Новый тест</button>';
+    if (ui.mode === 'knowledge') return notion + '<button type="button" class="design-ws-btn primary" data-design-add-page>+ Новая страница</button>';
+    if (ui.mode === 'system') return '<button type="button" class="design-ws-btn primary" data-design-add-page>+ Материал системы</button>';
+    return '';
+  }
+
+  function renderUtilityActions() {
+    return '<div class="design-ws-filter-row">' +
+      (ui.mode === 'history' ? '' : '<button type="button" class="design-ws-btn" data-design-export>Экспорт JSON</button>') +
+      '<button type="button" class="design-ws-btn" data-design-sync>' + (canEdit() ? 'Синхронизировать' : 'Обновить') + '</button></div>';
+  }
+
   function renderDesigners(rootId) {
     var root = document.getElementById(rootId || ROOT_ID);
     if (!root) return null;
@@ -1687,13 +1796,13 @@
     var conflictNotice = syncConflicts.length && pendingConflict
       ? '<div class="design-ws-notice is-error"><strong>Одновременно изменены одни и те же материалы: ' + syncConflicts.length + '.</strong> Локальная копия сохранена. Выберите версию для конфликтующих карточек.<div class="design-ws-head-actions"><button type="button" class="design-ws-btn" data-design-conflict-remote>Командная версия</button><button type="button" class="design-ws-btn primary" data-design-conflict-local>Локальная версия</button></div></div>'
       : '';
+    var renderedSyncLabel = syncStatusLabel();
     root.innerHTML = '<div class="design-ws" data-design-workspace data-design-access="' + html(workspaceAccess) + '" data-design-readonly="' + (!canEdit()) + '">' +
       '<header class="design-ws-head"><div class="design-ws-head-copy"><span class="design-ws-eyebrow"><i aria-hidden="true">✦</i> Creative operations</span><h2>Дизайн-студия</h2><p>Единый рабочий ритм — от входящего запроса и брифа до готового макета, эксперимента и знания команды.</p><div class="design-ws-head-hints"><span><kbd>/</kbd> поиск проектов</span>' + (canEdit() ? '<span><kbd>N</kbd> новый проект</span>' : '') + '</div></div>' +
-      '<div class="design-ws-head-actions"><div class="design-ws-head-status"><span class="design-ws-access">' + html(workspaceAccess === 'editor' ? 'Редактор' : (workspaceAccess === 'viewer' ? 'Просмотр' : (workspaceAccess === 'local' ? 'Локально' : (checkingAccess ? 'Проверка' : 'Нет доступа')))) + '</span><span class="design-ws-sync ' + html(syncState) + '" title="' + html(syncMessage) + '">' + html(syncMessage) + '</span></div><div class="design-ws-head-buttons">' +
-      (canEdit() ? '<button type="button" class="design-ws-btn" data-design-import><span aria-hidden="true">⇧</span> Импорт</button><button type="button" class="design-ws-btn primary" data-design-add-project><span aria-hidden="true">＋</span> Новый проект</button>' : '') + '</div></div></header>' +
+      '<div class="design-ws-head-actions"><div class="design-ws-head-status"><span class="design-ws-access">' + html(workspaceAccess === 'editor' ? 'Редактор' : (workspaceAccess === 'viewer' ? 'Просмотр' : (workspaceAccess === 'local' ? 'Локально' : (checkingAccess ? 'Проверка' : 'Нет доступа')))) + '</span><span class="design-ws-sync ' + html(syncState) + '" title="' + html(renderedSyncLabel) + '">' + html(renderedSyncLabel) + '</span></div><div class="design-ws-head-buttons">' + renderHeaderActions() + '</div></div></header>' +
       (checkingAccess ? '' : renderSummary()) +
       '<div class="design-ws-toolbar"><div class="design-ws-tabs" role="tablist">' + modeTabs.map(function (tab) { return '<button type="button" role="tab" aria-selected="' + (ui.mode === tab[0] ? 'true' : 'false') + '" class="design-ws-tab' + (ui.mode === tab[0] ? ' active' : '') + '" data-design-mode="' + tab[0] + '"><i aria-hidden="true">' + modeIcons[tab[0]] + '</i><span>' + html(tab[1]) + '</span>' + (modeCounts[tab[0]] != null ? '<b>' + modeCounts[tab[0]] + '</b>' : '') + '</button>'; }).join('') + '</div>' +
-      (showFilters ? renderFilters() : '<div class="design-ws-filter-row design-ws-utility-actions"><button type="button" class="design-ws-btn" data-design-export>Экспорт JSON</button><button type="button" class="design-ws-btn" data-design-sync>' + (canEdit() ? 'Синхронизировать' : 'Обновить') + '</button></div>') + '</div>' +
+      (showFilters ? renderFilters() : renderUtilityActions()) + '</div>' +
       (!loadFinished && loadStarted ? '<div class="design-ws-notice">Подключаем общую базу отдела. Локальная версия уже доступна для работы.</div>' : '') +
       accessNotice + conflictNotice +
       '<main class="design-ws-body">' + bodyContent + '</main>' +
@@ -2275,6 +2384,15 @@
       if (event.target.closest('[data-design-backup]')) { createManualBackup(); return; }
       if (event.target.closest('[data-design-export]')) { exportJson(); return; }
       if (event.target.closest('[data-design-sync]')) { syncRemote(true); return; }
+      var clearFilters = event.target.closest('[data-design-clear-filters]');
+      if (clearFilters) {
+        if (clearFilters.getAttribute('data-design-clear-filters') === 'tests') {
+          ui.testSearch = ''; ui.testStatus = 'all'; ui.testOwner = 'all'; ui.testPage = 1;
+        } else {
+          ui.knowledgeSearch = ''; ui.knowledgeCategory = 'all'; ui.knowledgePage = 1;
+        }
+        writeUi(); renderDesigners(); return;
+      }
       if (event.target.closest('[data-design-conflict-remote]')) {
         if (window.confirm('Принять командную версию конфликтующих материалов? Локальная копия уже сохранена.')) resolveSyncConflict(false);
         return;
@@ -2326,7 +2444,11 @@
     document.addEventListener('change', function (event) {
       if (!event.target || !event.target.closest || !event.target.closest('#' + ROOT_ID)) return;
       var filter = event.target.getAttribute('data-design-filter');
-      if (filter) { ui[filter] = event.target.value; ui.projectPage = 1; writeUi(); renderDesigners(); return; }
+      if (filter) {
+        ui[filter] = event.target.value;
+        ui[event.target.getAttribute('data-design-filter-page') || 'projectPage'] = 1;
+        writeUi(); renderDesigners(); return;
+      }
       var projectId = event.target.getAttribute('data-design-status');
       if (projectId) { event.stopPropagation(); updateProjectStatus(projectId, event.target.value); return; }
       if (event.target.matches('[data-design-import-input]')) {
@@ -2351,20 +2473,40 @@
         if (backupFile.size > MAX_IMPORT_BYTES) { showToast('Файл больше 8 МБ. Для большой базы используйте командную историю'); event.target.value = ''; return; }
         backupFile.text().then(importBackupJson).catch(function (error) { showToast(error && error.message ? error.message : 'Не удалось восстановить JSON'); });
         event.target.value = '';
+        return;
+      }
+      if (event.target.matches('[data-design-image-input]')) {
+        var imageFile = event.target.files && event.target.files[0];
+        if (!imageFile) return;
+        if (!/^image\/(?:png|jpeg|webp)$/i.test(imageFile.type || '')) { showToast('Поддерживаются PNG, JPG и WebP'); event.target.value = ''; return; }
+        if (imageFile.size > MAX_TEST_IMAGE_BYTES) { showToast('Изображение больше 2 МБ. Сожмите файл или используйте ссылку'); event.target.value = ''; return; }
+        var targetName = event.target.getAttribute('data-design-image-input');
+        var form = event.target.closest('form');
+        var targetInput = form && form.elements && form.elements[targetName];
+        var reader = new FileReader();
+        reader.onload = function () {
+          if (targetInput) targetInput.value = safeImageUrl(reader.result);
+          showToast('Изображение добавлено к тесту');
+        };
+        reader.onerror = function () { showToast('Не удалось прочитать изображение'); };
+        reader.readAsDataURL(imageFile);
+        event.target.value = '';
       }
     });
 
     document.addEventListener('input', function (event) {
       if (!event.target || !event.target.matches || !event.target.matches('#' + ROOT_ID + ' [data-design-search]')) return;
       var value = event.target.value;
+      var searchKey = event.target.getAttribute('data-design-search') || 'search';
+      var pageKey = event.target.getAttribute('data-design-search-page') || 'projectPage';
       if (searchTimer) window.clearTimeout(searchTimer);
       searchTimer = window.setTimeout(function () {
         searchTimer = 0;
-        ui.search = value;
-        ui.projectPage = 1;
+        ui[searchKey] = value;
+        ui[pageKey] = 1;
         writeUi();
         renderDesigners();
-        var next = document.querySelector('#' + ROOT_ID + ' [data-design-search]');
+        var next = document.querySelector('#' + ROOT_ID + ' [data-design-search="' + searchKey + '"]');
         if (next) { next.focus(); try { next.setSelectionRange(value.length, value.length); } catch (_) {} }
       }, 180);
     });

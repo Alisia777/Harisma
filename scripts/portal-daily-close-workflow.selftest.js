@@ -224,6 +224,10 @@ if (!workflow.includes("--expected-run-date '${{ steps.cutoff.outputs.run_date }
   'node scripts/build-wb-owner-audit-from-skus.js --input-dir data --base-data-dir data --output-dir data',
   'node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data',
   'node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --quarantine-only',
+  'node scripts/build-wb-fixed-rate-report.js --output data/wb_fixed_rate_reports.json --optional',
+  'node scripts/build-wb-iu-logic-rules.js --report data/wb_fixed_rate_reports.json --output data/wb_iu_logic_rules.json',
+  'node scripts/build-iu-drr-summary.js --input-dir data --base-data-dir data --output-dir data',
+  'node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --expected-date',
   'node scripts/build-portal-dashboard.js --input-dir data --output-dir data',
   'node scripts/build-control-auto-task-sources.js --input-dir data --output-dir data',
   'node scripts/build-wb-sales-funnel-from-platform-trends.js --platform-trends data/platform_trends.json --skus data/skus.json --wb-feedbacks data/wb_feedbacks_summary.json --output-file data/wb_sales_funnel_report.json',
@@ -237,6 +241,19 @@ if (!workflow.includes("--expected-run-date '${{ steps.cutoff.outputs.run_date }
     fail(`${command} must run before daily layer guard`);
   }
 });
+
+const iuBuildCommand = 'node scripts/build-iu-drr-summary.js --input-dir data --base-data-dir data --output-dir data';
+const fullHealthCommand = 'node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --expected-date';
+const snapshotFinalizeCommand = 'node scripts/portal-atomic-snapshot-finalize.js';
+if (workflow.indexOf(iuBuildCommand) < workflow.indexOf('node scripts/portal-wb-ads-sync.js sync')) {
+  fail('daily close must rebuild IU/DRR after fresh advertising facts are loaded');
+}
+if (workflow.indexOf(fullHealthCommand) < workflow.indexOf(iuBuildCommand)) {
+  fail('daily close must calculate full sync health after rebuilding IU/DRR');
+}
+if (workflow.indexOf(fullHealthCommand) > workflow.indexOf(snapshotFinalizeCommand)) {
+  fail('daily close must calculate full sync health before snapshot finalization');
+}
 
 const yandexStockCommand = 'node scripts/portal-yandex-market-stock-sync.js sync';
 if (!workflow.includes(yandexStockCommand)) {

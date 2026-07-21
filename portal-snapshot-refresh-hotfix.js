@@ -5,7 +5,7 @@
   window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260425C__ = true;
 
   var SNAPSHOT_TABLE = "portal_data_snapshots";
-  var SNAPSHOT_REQUEST_TIMEOUT_MS = 10000;
+  var SNAPSHOT_REQUEST_TIMEOUT_MS = 45000;
   var PATH_MAP = {
     "data/dashboard.json": "dashboard",
     "data/skus.json": "skus",

@@ -3183,8 +3183,9 @@ async function init() {
         return cloneBootFallback(fallback);
       }
       try {
+        if (typeof loadJsonOrFallback === 'function') return await loadJsonOrFallback(path, fallback, label);
         if (typeof loadJson === 'function') return await loadJson(path);
-        return await loadJsonOrFallback(path, fallback, label);
+        return cloneBootFallback(fallback);
       } catch (error) {
         console.error(error);
         if (typeof registerDataWarning === 'function') {

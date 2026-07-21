@@ -75,8 +75,10 @@ jobs:
           node scripts/portal-sync-health-quarantine.selftest.js
           node scripts/portal-dashboard-money-kpi-realdata.selftest.js
           node scripts/portal-runtime-snapshot-choice.selftest.js
+          node scripts/portal-bootstrap-snapshot-choice.selftest.js
           node scripts/portal-designers-access-history.selftest.js
           node scripts/portal-snapshot-refresh-hotfix.selftest.js
+          node scripts/portal-dashboard-snapshot-source.selftest.js
           node scripts/sanitizer_url_contract.test.js
           node scripts/atomic_publish_failure_injection.test.js
           python scripts/verify_full_pr_non_iu_scope.selftest.py

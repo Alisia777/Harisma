@@ -322,6 +322,18 @@
     };
   }
 
+  function loadSourcePayload(path) {
+    const loadStatic = () => fetch(`${path}?v=${VERSION}`, { cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : null);
+    const snapshotLoader = typeof window.__alteaLoadPortalSnapshot === 'function'
+      ? window.__alteaLoadPortalSnapshot
+      : null;
+    if (!snapshotLoader) return loadStatic();
+    return Promise.resolve(snapshotLoader(path, { force: true }))
+      .then((payload) => payload || loadStatic())
+      .catch(() => loadStatic());
+  }
+
   function loadSources(options = {}) {
     const forceMissing = Boolean(options.forceMissing);
     if (loadingPromise && (!forceMissing || !sourcesLoaded)) return loadingPromise;
@@ -331,8 +343,7 @@
       return Promise.resolve(true);
     }
     loadingPromise = Promise.all(entries.map(([name, path]) => {
-      return fetch(`${path}?v=${VERSION}`, { cache: 'no-store' })
-        .then((response) => response.ok ? response.json() : null)
+      return loadSourcePayload(path)
         .then((payload) => {
           if (payload) sourceCache[name] = payload;
         })

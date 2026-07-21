@@ -395,7 +395,7 @@ const TASK_ATTACHMENT_ALLOWED_EXTENSIONS = ['xlsx', 'xls', 'csv'];
 const TASK_ATTACHMENT_MAX_BYTES = 20 * 1024 * 1024;
 
 const PORTAL_SNAPSHOT_TABLE = 'portal_data_snapshots';
-const PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS = 5000;
+const PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS = 30000;
 const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/dashboard.json': 'dashboard',
   'data/skus.json': 'skus',

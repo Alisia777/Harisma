@@ -109,11 +109,16 @@ def main() -> int:
     base = resolve_base(ns.base_ref, ns.head)
     range_spec = f'{base}...{ns.head}'
     files = set(run(['git', 'diff', '--name-only', range_spec]).splitlines())
-    patches = [run(['git', 'diff', '-U0', range_spec])]
+    # CRLF-only rewrites are not semantic portal changes and must not trip a
+    # protected-token alarm. Meaningful token edits remain visible and blocked.
+    patches = [run(['git', 'diff', '--ignore-cr-at-eol', '-U0', range_spec])]
     if ns.include_working_tree:
         files.update(run(['git', 'diff', '--name-only']).splitlines())
         files.update(run(['git', 'diff', '--cached', '--name-only']).splitlines())
-        patches.extend([run(['git', 'diff', '-U0']), run(['git', 'diff', '--cached', '-U0'])])
+        patches.extend([
+            run(['git', 'diff', '--ignore-cr-at-eol', '-U0']),
+            run(['git', 'diff', '--cached', '--ignore-cr-at-eol', '-U0']),
+        ])
 
     violations = collect_violations(
         files,

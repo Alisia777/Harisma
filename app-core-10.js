@@ -2997,7 +2997,6 @@ function rerenderCurrentView() {
     ['view-iu-drr', 'Показатели площадок', () => renderIuDrr('view-iu-drr')],
     ['view-dashboard', 'Дашборд', renderDashboardView],
     ['view-documents', 'Хранилище', renderDocuments],
-    ['view-designers', 'Дизайнеры', () => { if (typeof window.renderDesigners === 'function') window.renderDesigners('view-designers'); }],
     ['view-repricer', 'Репрайсер', renderRepricer],
     ['view-prices', 'Цены', () => { if (typeof window.renderPriceWorkbench === 'function') window.renderPriceWorkbench(); }],
     ['view-order', 'Логистика и заказ', () => { if (typeof renderOrderCalculator === 'function') renderOrderCalculator(); }],

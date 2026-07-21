@@ -35,6 +35,8 @@ async function installRemoteFixture(page, accessLevel, workspace) {
   await page.evaluate(({ accessLevel: level, workspace: payload }) => {
     const nativeFetch = window.fetch.bind(window);
     window.__designRequests = [];
+    window.__designRemoteWorkspace = payload;
+    window.__designRemoteRevision = payload ? 3 : 0;
     window.currentConfig = () => ({ brand: 'Алтея', supabase: { url: 'https://supabase.test', anonKey: 'anon-key' } });
     window.__ALTEA_AUTH_SESSION__ = {
       access_token: 'signed-user-token',
@@ -48,10 +50,22 @@ async function installRemoteFixture(page, accessLevel, workspace) {
         return new Response(JSON.stringify(level ? [{ access_level: level }] : []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       if (url.includes('/portal_design_workspace_history')) {
-        return new Response(JSON.stringify(payload ? [{ revision: 3, changed_at: '2026-07-20T12:00:00Z', change_summary: 'Тестовая версия', changed_by: null }] : []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify(window.__designRemoteWorkspace ? [{ revision: window.__designRemoteRevision, changed_at: '2026-07-20T12:00:00Z', change_summary: 'Тестовая версия', changed_by: null }] : []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (url.includes('/portal_design_workspace_audit')) {
+        return new Response(JSON.stringify(window.__designRemoteWorkspace ? [{ id: 1, revision: window.__designRemoteRevision, event_type: 'workspace.save', summary: 'Тестовая версия', created_at: '2026-07-20T12:00:00Z', actor_id: 'audit-user', actor_email: 'designer@qeep.life' }] : []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (url.includes('/rpc/save_portal_design_workspace')) {
+        const body = JSON.parse(options.body || '{}');
+        if (Number(body.p_expected_revision) !== Number(window.__designRemoteRevision)) {
+          return new Response(JSON.stringify({ message: 'revision_conflict' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+        }
+        window.__designRemoteWorkspace = body.p_payload;
+        window.__designRemoteRevision += 1;
+        return new Response(JSON.stringify([{ revision: window.__designRemoteRevision, updated_at: '2026-07-20T12:01:00Z' }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       if (url.includes('/portal_design_workspaces')) {
-        return new Response(JSON.stringify(payload ? [{ payload, revision: 3, updated_at: '2026-07-20T12:00:00Z' }] : []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify(window.__designRemoteWorkspace ? [{ payload: window.__designRemoteWorkspace, revision: window.__designRemoteRevision, updated_at: '2026-07-20T12:00:00Z' }] : []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
     };
@@ -78,7 +92,7 @@ async function testLocalEditor(browser, baseUrl) {
   await page.evaluate(() => window.AlteaDesignWorkspace.whenLocalSaved());
   await page.click('[data-design-mode="history"]');
   await page.waitForFunction(() => document.querySelectorAll('.design-ws-activity-list article').length >= 1);
-  assert.ok((await page.locator('.design-ws-history-panel').count()) >= 3, 'History view must include remote, local, and activity panels');
+  assert.ok((await page.locator('.design-ws-history-panel').count()) >= 4, 'History view must distinguish remote versions, local backups, server audit, and local activity');
   assert.strictEqual(errors.length, 0, errors.join('\n'));
   await context.close();
 }
@@ -104,6 +118,9 @@ async function testViewer(browser, baseUrl) {
     catch (error) { return /редакторам/.test(error.message); }
   });
   assert.strictEqual(importBlocked, true, 'Viewer API imports must be blocked');
+  await page.click('[data-design-close]');
+  await page.click('[data-design-mode="history"]');
+  assert.match(await page.locator('.design-ws-history-panel').allTextContents().then((items) => items.join(' ')), /Серверный аудит[\s\S]*designer@qeep\.life/, 'Viewer history must show immutable server actor data');
   assert.strictEqual((await page.evaluate(() => window.__designRequests)).some((item) => item.method === 'POST'), false, 'Viewer load must never write to Supabase');
   assert.strictEqual(errors.length, 0, errors.join('\n'));
   await context.close();
@@ -119,6 +136,8 @@ async function testRemoteEditor(browser, baseUrl) {
   });
   const errors = await loadModule(page, baseUrl);
   await page.waitForSelector('[data-design-access="editor"]');
+  await page.evaluate(() => window.AlteaDesignWorkspace.sync(true));
+  assert.strictEqual((await page.evaluate(() => window.__designRequests)).some((item) => item.method === 'POST'), false, 'A clean editor refresh must not create a redundant revision');
   await page.click('[data-design-add-project]');
   await page.fill('[data-design-project-form] [name="title"]', 'Командный проект');
   await page.click('[data-design-project-form] button[type="submit"]');
@@ -127,6 +146,40 @@ async function testRemoteEditor(browser, baseUrl) {
   const body = JSON.parse(saveRequest.body);
   assert.strictEqual(body.p_expected_revision, 3, 'Editor save must use the loaded optimistic revision');
   assert.ok(body.p_payload.projects.some((item) => item.title === 'Командный проект'), 'Editor save must include the new project');
+  assert.strictEqual(errors.length, 0, errors.join('\n'));
+  await context.close();
+}
+
+async function testConcurrentConflict(browser, baseUrl) {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
+  await installRemoteFixture(page, 'editor', {
+    schema: 'altea-design-workspace-v1', version: 1, updatedAt: '2026-07-20T12:00:00Z',
+    projects: [{ id: 'shared-project', title: 'Базовая версия', status: 'review', type: 'card', priority: 'normal', createdAt: '2026-07-20T10:00:00Z', updatedAt: '2026-07-20T12:00:00Z' }],
+    tests: [], pages: [], activity: [], settings: {}
+  });
+  const errors = await loadModule(page, baseUrl);
+  await page.waitForSelector('[data-design-access="editor"]');
+  await page.click('[data-design-project="shared-project"]');
+  await page.fill('[data-design-project-form] [name="title"]', 'Локальная версия');
+  await page.evaluate(() => {
+    window.__designRemoteWorkspace = JSON.parse(JSON.stringify(window.__designRemoteWorkspace));
+    window.__designRemoteWorkspace.projects[0].title = 'Командная версия';
+    window.__designRemoteWorkspace.projects[0].updatedAt = '2026-07-20T12:05:00Z';
+    window.__designRemoteWorkspace.updatedAt = '2026-07-20T12:05:00Z';
+    window.__designRemoteRevision = 4;
+  });
+  await page.click('[data-design-project-form] button[type="submit"]');
+  await page.waitForSelector('[data-design-conflict-local]');
+  const state = await page.evaluate(() => ({
+    diagnostics: window.AlteaDesignWorkspace.diagnostics(),
+    requests: window.__designRequests,
+    title: window.AlteaDesignWorkspace.getData().projects.find((item) => item.id === 'shared-project').title
+  }));
+  assert.strictEqual(state.diagnostics.syncConflictCount, 1, 'Same-entity concurrent edits must surface a conflict');
+  assert.strictEqual(state.title, 'Локальная версия', 'The client must preserve the local edit until the user resolves the conflict');
+  assert.strictEqual(state.requests.some((item) => item.method === 'POST'), false, 'A detected conflict must not overwrite the server');
   assert.strictEqual(errors.length, 0, errors.join('\n'));
   await context.close();
 }
@@ -187,6 +240,7 @@ async function run() {
     await testLocalEditor(browser, baseUrl);
     await testViewer(browser, baseUrl);
     await testRemoteEditor(browser, baseUrl);
+    await testConcurrentConflict(browser, baseUrl);
     await testRevokedMember(browser, baseUrl);
     console.log('portal-designers-browser.selftest: ok');
   } finally {

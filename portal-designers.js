@@ -10,6 +10,7 @@
   var REMOTE_TABLE = 'portal_design_workspaces';
   var REMOTE_MEMBERS_TABLE = 'portal_design_workspace_members';
   var REMOTE_HISTORY_TABLE = 'portal_design_workspace_history';
+  var REMOTE_AUDIT_TABLE = 'portal_design_workspace_audit';
   var REMOTE_SAVE_RPC = 'save_portal_design_workspace';
   var REMOTE_RESTORE_RPC = 'restore_portal_design_workspace_revision';
   var DB_NAME = 'altea-design-workspace';
@@ -93,9 +94,13 @@
   var workspaceAccess = 'checking';
   var workspaceAccessMessage = 'Проверяем права доступа';
   var remoteHistory = [];
+  var remoteAudit = [];
   var localBackups = [];
   var lastBackupAt = 0;
   var lastCommittedData = clone(data);
+  var lastSyncedData = normalizeData(cache.lastSyncedData || FALLBACK_DATA);
+  var syncConflicts = [];
+  var pendingConflict = null;
   var localPersistState = 'idle';
   var localPersistError = '';
   var localPersistChain = Promise.resolve();
@@ -135,9 +140,20 @@
     return hashText(string(user && (user.id || user.email)) || 'local');
   }
 
+  function legacyStorageScope() {
+    var session = window.alteaPortalAuthGate && typeof window.alteaPortalAuthGate.getSession === 'function'
+      ? window.alteaPortalAuthGate.getSession()
+      : window.__ALTEA_AUTH_SESSION__;
+    var user = session && session.user;
+    return legacyHashText(string(user && (user.id || user.email)) || 'local');
+  }
+
   function scopedStorageKey() { return STORAGE_KEY + ':' + storageScope(); }
   function scopedRecordKey() { return DB_RECORD_KEY + ':' + storageScope(); }
   function scopedBackupPrefix() { return 'backup:' + storageScope() + ':'; }
+  function legacyScopedStorageKey() { return STORAGE_KEY + ':' + legacyStorageScope(); }
+  function legacyScopedRecordKey() { return DB_RECORD_KEY + ':' + legacyStorageScope(); }
+  function legacyScopedBackupPrefix() { return 'backup:' + legacyStorageScope() + ':'; }
 
   function normalizeProject(raw) {
     raw = raw && typeof raw === 'object' ? raw : {};
@@ -160,7 +176,8 @@
       archived: raw.archived === true,
       createdAt: createdAt,
       updatedAt: string(raw.updatedAt) || createdAt,
-      source: string(raw.source)
+      source: string(raw.source),
+      sourceKey: string(raw.sourceKey)
     };
   }
 
@@ -181,7 +198,9 @@
       status: raw.status === 'draft' ? 'draft' : 'published',
       archived: raw.archived === true,
       createdAt: createdAt,
-      updatedAt: string(raw.updatedAt) || createdAt
+      updatedAt: string(raw.updatedAt) || createdAt,
+      source: string(raw.source),
+      sourceKey: string(raw.sourceKey)
     };
   }
 
@@ -229,7 +248,8 @@
       archived: raw.archived === true,
       createdAt: createdAt,
       updatedAt: string(raw.updatedAt) || createdAt,
-      source: string(raw.source)
+      source: string(raw.source),
+      sourceKey: string(raw.sourceKey)
     };
   }
 
@@ -263,13 +283,20 @@
   function readLocal() {
     try {
       var raw = localStorage.getItem(scopedStorageKey());
-      if (!raw) return { data: clone(FALLBACK_DATA), dirty: false };
+      if (!raw && legacyScopedStorageKey() !== scopedStorageKey()) {
+        raw = localStorage.getItem(legacyScopedStorageKey());
+        if (raw) {
+          localStorage.setItem(scopedStorageKey(), raw);
+          localStorage.removeItem(legacyScopedStorageKey());
+        }
+      }
+      if (!raw) return { data: clone(FALLBACK_DATA), dirty: false, lastSyncedData: null };
       var parsed = JSON.parse(raw);
-      if (parsed && parsed.data) return { data: parsed.data, dirty: parsed.dirty === true };
-      if (parsed && parsed.indexedDb) return { data: clone(FALLBACK_DATA), dirty: parsed.dirty === true, indexedDb: true };
-      return { data: parsed, dirty: false };
+      if (parsed && parsed.data) return { data: parsed.data, dirty: parsed.dirty === true, lastSyncedData: parsed.lastSyncedData || null };
+      if (parsed && parsed.indexedDb) return { data: clone(FALLBACK_DATA), dirty: parsed.dirty === true, indexedDb: true, lastSyncedData: null };
+      return { data: parsed, dirty: false, lastSyncedData: null };
     } catch (_) {
-      return { data: clone(FALLBACK_DATA), dirty: false };
+      return { data: clone(FALLBACK_DATA), dirty: false, lastSyncedData: null };
     }
   }
 
@@ -304,8 +331,14 @@
     try {
       return await new Promise(function (resolve, reject) {
         var transaction = db.transaction(DB_STORE, 'readonly');
-        var request = transaction.objectStore(DB_STORE).get(scopedRecordKey());
-        request.onsuccess = function () { resolve(request.result || null); };
+        var store = transaction.objectStore(DB_STORE);
+        var request = store.get(scopedRecordKey());
+        request.onsuccess = function () {
+          if (request.result || legacyScopedRecordKey() === scopedRecordKey()) { resolve(request.result || null); return; }
+          var legacyRequest = store.get(legacyScopedRecordKey());
+          legacyRequest.onsuccess = function () { resolve(legacyRequest.result || null); };
+          legacyRequest.onerror = function () { reject(legacyRequest.error || new Error('Не удалось прочитать прежний локальный кэш')); };
+        };
         request.onerror = function () { reject(request.error || new Error('Не удалось прочитать локальную базу')); };
       });
     } finally { db.close(); }
@@ -316,7 +349,9 @@
     try {
       await new Promise(function (resolve, reject) {
         var transaction = db.transaction(DB_STORE, 'readwrite');
-        transaction.objectStore(DB_STORE).put(value, scopedRecordKey());
+        var store = transaction.objectStore(DB_STORE);
+        store.put(value, scopedRecordKey());
+        if (legacyScopedRecordKey() !== scopedRecordKey()) store.delete(legacyScopedRecordKey());
         transaction.oncomplete = function () { resolve(); };
         transaction.onerror = function () { reject(transaction.error || new Error('Не удалось сохранить локальную базу')); };
         transaction.onabort = function () { reject(transaction.error || new Error('Локальное сохранение отменено')); };
@@ -333,7 +368,7 @@
         if (typeof store.getAll !== 'function') { resolve([]); return; }
         var request = store.getAll();
         request.onsuccess = function () {
-          resolve((request.result || []).filter(function (item) { return item && item.backup === true && item.scope === storageScope() && item.data; })
+          resolve((request.result || []).filter(function (item) { return item && item.backup === true && (item.scope === storageScope() || item.scope === legacyStorageScope()) && item.data; })
             .sort(function (a, b) { return timestamp(b.createdAt) - timestamp(a.createdAt); })
             .slice(0, LOCAL_BACKUP_LIMIT));
         };
@@ -402,6 +437,7 @@
 
   async function purgeScopedLocalData() {
     try { localStorage.removeItem(scopedStorageKey()); } catch (_) {}
+    try { localStorage.removeItem(legacyScopedStorageKey()); } catch (_) {}
     var db;
     try { db = await openWorkspaceDb(); } catch (_) { return false; }
     try {
@@ -409,12 +445,14 @@
         var transaction = db.transaction(DB_STORE, 'readwrite');
         var store = transaction.objectStore(DB_STORE);
         store.delete(scopedRecordKey());
+        store.delete(legacyScopedRecordKey());
         if (typeof store.getAllKeys === 'function') {
           var request = store.getAllKeys();
           request.onsuccess = function () {
             var prefix = scopedBackupPrefix();
+            var legacyPrefix = legacyScopedBackupPrefix();
             (request.result || []).forEach(function (key) {
-              if (String(key).indexOf(prefix) === 0) store.delete(key);
+              if (String(key).indexOf(prefix) === 0 || String(key).indexOf(legacyPrefix) === 0) store.delete(key);
             });
           };
         }
@@ -440,7 +478,7 @@
   }
 
   function writeLocal(dirty) {
-    cache = { data: data, dirty: dirty === true };
+    cache = { data: data, dirty: dirty === true, lastSyncedData: lastSyncedData };
     var snapshot = clone(cache);
     var serialized = JSON.stringify(snapshot);
     var localFallbackSaved = false;
@@ -505,7 +543,7 @@
     } catch (_) { return ''; }
   }
 
-  function hashText(value) {
+  function legacyHashText(value) {
     var text = String(value || '');
     var hash = 2166136261;
     for (var index = 0; index < text.length; index += 1) {
@@ -513,6 +551,39 @@
       hash = Math.imul(hash, 16777619);
     }
     return (hash >>> 0).toString(16);
+  }
+
+  function hashText(value) {
+    var text = String(value || '');
+    var h1 = 1779033703;
+    var h2 = 3144134277;
+    var h3 = 1013904242;
+    var h4 = 2773480762;
+    for (var index = 0; index < text.length; index += 1) {
+      var code = text.charCodeAt(index);
+      h1 = h2 ^ Math.imul(h1 ^ code, 597399067);
+      h2 = h3 ^ Math.imul(h2 ^ code, 2869860233);
+      h3 = h4 ^ Math.imul(h3 ^ code, 951274213);
+      h4 = h1 ^ Math.imul(h4 ^ code, 2716044179);
+    }
+    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+    h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+    h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+    h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+    function hex(part) { return (part >>> 0).toString(16).padStart(8, '0'); }
+    return hex(h1 ^ h2 ^ h3 ^ h4) + hex(h2 ^ h1) + hex(h3 ^ h1) + hex(h4 ^ h1);
+  }
+
+  function uniqueImportId(prefix, sourceKey, usedIds) {
+    var base = prefix + hashText(sourceKey);
+    var candidate = base;
+    var attempt = 0;
+    while (usedIds.has(candidate)) {
+      attempt += 1;
+      candidate = base + '-' + attempt;
+    }
+    usedIds.add(candidate);
+    return candidate;
   }
 
   function mergeEntities(remote, local, normalizer) {
@@ -538,6 +609,112 @@
       activity: mergeEntities(remote.activity, local.activity, normalizeActivity).sort(function (a, b) { return timestamp(b.createdAt) - timestamp(a.createdAt); }).slice(0, ACTIVITY_LIMIT),
       settings: Object.assign({}, remote.settings || {}, local.settings || {})
     });
+  }
+
+  function valueSignature(value) {
+    try { return JSON.stringify(value == null ? null : value); } catch (_) { return String(value); }
+  }
+
+  function sameValue(left, right) {
+    return valueSignature(left) === valueSignature(right);
+  }
+
+  function mergeEntityListsThreeWay(base, remote, local, normalizer, entityType, conflicts) {
+    var baseMap = new Map((base || []).map(function (item) { item = normalizer(item); return [item.id, item]; }));
+    var remoteMap = new Map((remote || []).map(function (item) { item = normalizer(item); return [item.id, item]; }));
+    var localMap = new Map((local || []).map(function (item) { item = normalizer(item); return [item.id, item]; }));
+    var ids = new Set(Array.from(baseMap.keys()).concat(Array.from(remoteMap.keys()), Array.from(localMap.keys())));
+    var localPreferred = [];
+    var remotePreferred = [];
+    ids.forEach(function (id) {
+      var baseItem = baseMap.get(id) || null;
+      var remoteItem = remoteMap.get(id) || null;
+      var localItem = localMap.get(id) || null;
+      var remoteChanged = !sameValue(remoteItem, baseItem);
+      var localChanged = !sameValue(localItem, baseItem);
+      var conflict = remoteChanged && localChanged && !sameValue(remoteItem, localItem);
+      if (conflict) {
+        conflicts.push({
+          entityType: entityType,
+          entityId: id,
+          title: string((localItem && localItem.title) || (remoteItem && remoteItem.title) || id)
+        });
+      }
+      var safeItem = localChanged ? localItem : remoteItem;
+      var localChoice = conflict ? localItem : safeItem;
+      var remoteChoice = conflict ? remoteItem : safeItem;
+      if (localChoice) localPreferred.push(localChoice);
+      if (remoteChoice) remotePreferred.push(remoteChoice);
+    });
+    return { local: localPreferred, remote: remotePreferred };
+  }
+
+  function threeWayMergeData(base, remote, local) {
+    base = normalizeData(base || {});
+    remote = normalizeData(remote || {});
+    local = normalizeData(local || {});
+    var conflicts = [];
+    var projects = mergeEntityListsThreeWay(base.projects, remote.projects, local.projects, normalizeProject, 'project', conflicts);
+    var tests = mergeEntityListsThreeWay(base.tests, remote.tests, local.tests, normalizeTest, 'test', conflicts);
+    var pages = mergeEntityListsThreeWay(base.pages, remote.pages, local.pages, normalizePage, 'page', conflicts);
+    var remoteSettingsChanged = !sameValue(remote.settings, base.settings);
+    var localSettingsChanged = !sameValue(local.settings, base.settings);
+    var settingsConflict = remoteSettingsChanged && localSettingsChanged && !sameValue(remote.settings, local.settings);
+    if (settingsConflict) conflicts.push({ entityType: 'settings', entityId: 'settings', title: 'Настройки отдела' });
+    var safeSettings = localSettingsChanged ? local.settings : remote.settings;
+    var common = {
+      updatedAt: timestamp(local.updatedAt) >= timestamp(remote.updatedAt) ? local.updatedAt : remote.updatedAt,
+      activity: mergeEntities(remote.activity, local.activity, normalizeActivity).sort(function (a, b) { return timestamp(b.createdAt) - timestamp(a.createdAt); }).slice(0, ACTIVITY_LIMIT)
+    };
+    return {
+      conflicts: conflicts,
+      serverData: remote,
+      localData: normalizeData(Object.assign({}, common, {
+        projects: projects.local,
+        tests: tests.local,
+        pages: pages.local,
+        settings: settingsConflict ? local.settings : safeSettings
+      })),
+      remoteData: normalizeData(Object.assign({}, common, {
+        projects: projects.remote,
+        tests: tests.remote,
+        pages: pages.remote,
+        settings: settingsConflict ? remote.settings : safeSettings
+      }))
+    };
+  }
+
+  function registerSyncConflict(result, revision) {
+    syncConflicts = (result && result.conflicts) || [];
+    pendingConflict = {
+      localData: clone(result.localData),
+      remoteData: clone(result.remoteData),
+      serverData: clone(result.serverData),
+      remoteRevision: number(revision)
+    };
+    queueLocalBackup('Перед разрешением конфликта синхронизации', true, data);
+    syncState = 'error';
+    syncMessage = 'Конфликт изменений: ' + syncConflicts.length;
+    renderDesigners();
+  }
+
+  function resolveSyncConflict(preferLocal) {
+    if (!ensureEditor() || !pendingConflict) return false;
+    var resolution = pendingConflict;
+    data = normalizeData(preferLocal ? resolution.localData : resolution.remoteData);
+    lastSyncedData = normalizeData(resolution.serverData);
+    remoteRevision = number(resolution.remoteRevision);
+    syncConflicts = [];
+    pendingConflict = null;
+    appendActivity(preferLocal ? 'Конфликт разрешён в пользу локальной версии' : 'Конфликт разрешён в пользу командной версии', {
+      action: preferLocal ? 'workspace.conflict.local' : 'workspace.conflict.remote'
+    });
+    data.updatedAt = nowIso();
+    lastCommittedData = clone(data);
+    writeLocal(true);
+    scheduleSync(50);
+    renderDesigners();
+    return true;
   }
 
   function currentActor() {
@@ -613,6 +790,20 @@
     return await response.json();
   }
 
+  async function fetchRemoteAudit() {
+    var cfg = remoteConfig();
+    if (!cfg || !cfg.token || typeof fetch !== 'function') return [];
+    var url = new URL(cfg.baseUrl + '/rest/v1/' + REMOTE_AUDIT_TABLE);
+    url.searchParams.set('select', 'id,revision,event_type,summary,created_at,actor_id,actor_email');
+    url.searchParams.set('brand', 'eq.' + cfg.brand);
+    url.searchParams.set('order', 'created_at.desc');
+    url.searchParams.set('limit', '100');
+    var response = await fetch(url.toString(), { headers: remoteHeaders(cfg) });
+    if (response.status === 404) return [];
+    if (!response.ok) throw new Error('Серверный аудит недоступен');
+    return await response.json();
+  }
+
   async function fetchRemote() {
     var cfg = remoteConfig();
     if (!cfg || !cfg.token || typeof fetch !== 'function') return null;
@@ -676,28 +867,45 @@
     syncMessage = 'Загружаем рабочее пространство';
     renderDesigners();
     try {
-      var results = await Promise.allSettled([loadSeed(), fetchRemote(), readIndexed(), fetchMembership(), fetchRemoteHistory(), readIndexedBackups()]);
+      var results = await Promise.allSettled([loadSeed(), fetchRemote(), readIndexed(), fetchMembership(), fetchRemoteHistory(), readIndexedBackups(), fetchRemoteAudit()]);
       var seed = results[0].status === 'fulfilled' ? results[0].value : null;
       var remote = results[1].status === 'fulfilled' ? results[1].value : null;
       var indexed = results[2].status === 'fulfilled' ? results[2].value : null;
       var membership = results[3].status === 'fulfilled' ? results[3].value : { level: 'none', message: 'Не удалось проверить права доступа' };
       remoteHistory = results[4].status === 'fulfilled' ? (results[4].value || []) : [];
       localBackups = results[5].status === 'fulfilled' ? (results[5].value || []) : [];
+      remoteAudit = results[6].status === 'fulfilled' ? (results[6].value || []) : [];
       workspaceAccess = membership.level;
       workspaceAccessMessage = membership.message;
+      var hasPersistedSyncBase = Boolean(cache.lastSyncedData);
       if (seed) data = mergeData(seed, data);
       if (indexed && indexed.data) {
-        data = mergeData(data, indexed.data);
+        if (timestamp(indexed.data.updatedAt) >= timestamp(data.updatedAt)) data = normalizeData(indexed.data);
         cache.dirty = cache.dirty || indexed.dirty === true;
+        if (indexed.lastSyncedData) {
+          lastSyncedData = normalizeData(indexed.lastSyncedData);
+          hasPersistedSyncBase = true;
+        }
       }
       if (remote && remote.payload) {
         remoteRevision = number(remote.revision);
-        data = workspaceAccess === 'viewer' ? normalizeData(remote.payload) : mergeData(remote.payload, data);
+        if (workspaceAccess === 'viewer' || !cache.dirty) {
+          data = normalizeData(remote.payload);
+          lastSyncedData = normalizeData(remote.payload);
+        } else if (!hasPersistedSyncBase) {
+          // Legacy dirty caches did not retain their common ancestor. Preserve
+          // local work and use the current server state as the safest baseline.
+          lastSyncedData = normalizeData(remote.payload);
+        }
+      } else {
+        if (!hasPersistedSyncBase) lastSyncedData = normalizeData(FALLBACK_DATA);
       }
       if (workspaceAccess === 'viewer' && (!remote || !remote.payload)) data = normalizeData(seed || FALLBACK_DATA);
       if (workspaceAccess === 'none') {
         data = normalizeData(seed || FALLBACK_DATA);
         localBackups = [];
+        remoteHistory = [];
+        remoteAudit = [];
         await purgeScopedLocalData();
       }
       if (!canEdit()) cache.dirty = false;
@@ -758,7 +966,11 @@
         var viewerRemote = await fetchRemote();
         if (viewerRemote && viewerRemote.payload) data = normalizeData(viewerRemote.payload);
         remoteRevision = viewerRemote ? number(viewerRemote.revision) : 0;
+        lastSyncedData = viewerRemote && viewerRemote.payload ? normalizeData(viewerRemote.payload) : normalizeData(FALLBACK_DATA);
         remoteHistory = await fetchRemoteHistory().catch(function () { return remoteHistory; });
+        remoteAudit = await fetchRemoteAudit().catch(function () { return remoteAudit; });
+        syncConflicts = [];
+        pendingConflict = null;
         lastCommittedData = clone(data);
         await writeLocal(false);
         syncState = 'ok';
@@ -782,9 +994,40 @@
     syncMessage = force ? 'Обновляем командную базу' : 'Сохраняем изменения';
     renderDesigners();
     try {
+      var hasLocalChanges = cache.dirty === true;
       var remote = await fetchRemote();
-      if (remote && remote.payload) data = mergeData(remote.payload, data);
       remoteRevision = remote ? number(remote.revision) : 0;
+      if (!hasLocalChanges && (!remote || !remote.payload)) {
+        remoteHistory = await fetchRemoteHistory().catch(function () { return remoteHistory; });
+        remoteAudit = await fetchRemoteAudit().catch(function () { return remoteAudit; });
+        syncConflicts = [];
+        pendingConflict = null;
+        syncState = 'ok';
+        syncMessage = 'Редактор · общая база ещё не создана';
+        renderDesigners();
+        return true;
+      }
+      var serverData = remote && remote.payload ? normalizeData(remote.payload) : normalizeData(FALLBACK_DATA);
+      if (!hasLocalChanges) {
+        data = serverData;
+        lastSyncedData = clone(serverData);
+        lastCommittedData = clone(data);
+        remoteHistory = await fetchRemoteHistory().catch(function () { return remoteHistory; });
+        remoteAudit = await fetchRemoteAudit().catch(function () { return remoteAudit; });
+        syncConflicts = [];
+        pendingConflict = null;
+        await writeLocal(false);
+        syncState = 'ok';
+        syncMessage = 'Командная база обновлена';
+        renderDesigners();
+        return true;
+      }
+      var mergeResult = threeWayMergeData(lastSyncedData, serverData, data);
+      if (mergeResult.conflicts.length) {
+        registerSyncConflict(mergeResult, remoteRevision);
+        return false;
+      }
+      data = mergeResult.localData;
       data.updatedAt = nowIso();
       var pushed;
       try {
@@ -792,13 +1035,23 @@
       } catch (error) {
         if (!error || error.code !== 'revision_conflict') throw error;
         var latest = await fetchRemote();
-        if (latest && latest.payload) data = mergeData(latest.payload, data);
+        var latestServerData = latest && latest.payload ? normalizeData(latest.payload) : normalizeData(FALLBACK_DATA);
+        var retryMerge = threeWayMergeData(serverData, latestServerData, data);
         remoteRevision = latest ? number(latest.revision) : 0;
+        if (retryMerge.conflicts.length) {
+          registerSyncConflict(retryMerge, remoteRevision);
+          return false;
+        }
+        data = retryMerge.localData;
         data.updatedAt = nowIso();
         pushed = await pushRemote(data, remoteRevision);
       }
       remoteRevision = pushed ? number(pushed.revision) : remoteRevision;
       remoteHistory = await fetchRemoteHistory().catch(function () { return remoteHistory; });
+      remoteAudit = await fetchRemoteAudit().catch(function () { return remoteAudit; });
+      syncConflicts = [];
+      pendingConflict = null;
+      lastSyncedData = clone(data);
       lastCommittedData = clone(data);
       await writeLocal(false);
       syncState = 'ok';
@@ -1193,7 +1446,8 @@
   function renderHistory() {
     var localRows = localBackups.slice(0, LOCAL_BACKUP_LIMIT);
     var activityRows = (data.activity || []).slice(0, 80);
-    return '<div class="design-ws-pages-head"><div><h3>История и резервные копии</h3><p>Командные версии создаются при каждой синхронизации, локальные — автоматически перед изменениями.</p></div>' +
+    var auditRows = remoteAudit.slice(0, 100);
+    return '<div class="design-ws-pages-head"><div><h3>История и резервные копии</h3><p>Командные версии создаются только при реальном изменении данных, локальные — автоматически перед изменениями.</p></div>' +
       '<div class="design-ws-head-actions"><button type="button" class="design-ws-btn" data-design-export>Экспорт JSON</button>' +
       (canEdit() ? '<button type="button" class="design-ws-btn" data-design-import-backup>Восстановить JSON</button><button type="button" class="design-ws-btn primary" data-design-backup>Создать копию</button>' : '') + '</div></div>' +
       '<div class="design-ws-history-grid"><section class="design-ws-history-panel"><div class="design-ws-history-title"><h3>Командные версии</h3><span>' + remoteHistory.length + '</span></div>' +
@@ -1207,10 +1461,25 @@
         return '<article><div><strong>' + html(formatDateTime(item.createdAt)) + '</strong><small>' + html(item.reason || 'Автоматическая резервная копия') + '</small></div>' +
           (canEdit() ? '<button type="button" class="design-ws-btn" data-design-restore-local="' + html(item.key) + '">Восстановить</button>' : '') + '</article>';
       }).join('') + '</div>' : '<p class="design-ws-muted">Копия будет создана автоматически перед первым изменением.</p>') + '</section></div>' +
-      '<section class="design-ws-history-panel design-ws-activity"><div class="design-ws-history-title"><h3>Журнал действий</h3><span>' + activityRows.length + '</span></div>' +
+      '<section class="design-ws-history-panel design-ws-activity"><div class="design-ws-history-title"><h3>Серверный аудит</h3><span>' + auditRows.length + '</span></div>' +
+      (auditRows.length ? '<div class="design-ws-activity-list">' + auditRows.map(function (item) {
+        var actor = string(item.actor_email) || (item.actor_id ? 'Пользователь ' + string(item.actor_id).slice(0, 8) : 'Системное действие');
+        return '<article><i></i><div><strong>' + html(auditEventLabel(item.event_type) + ' · версия ' + number(item.revision)) + '</strong><small>' + html(item.summary || 'Изменение рабочей базы') + ' · ' + html(actor) + ' · ' + html(formatDateTime(item.created_at)) + '</small></div></article>';
+      }).join('') + '</div>' : '<p class="design-ws-muted">Появится после применения миграции и первой серверной синхронизации.</p>') + '</section>' +
+      '<section class="design-ws-history-panel design-ws-activity"><div class="design-ws-history-title"><h3>Локальная активность</h3><span>' + activityRows.length + '</span></div>' +
       (activityRows.length ? '<div class="design-ws-activity-list">' + activityRows.map(function (item) {
         return '<article><i></i><div><strong>' + html(item.summary) + '</strong><small>' + html(item.actor || 'Пользователь') + ' · ' + html(formatDateTime(item.createdAt)) + '</small></div></article>';
       }).join('') + '</div>' : '<p class="design-ws-muted">Новые изменения будут фиксироваться здесь.</p>') + '</section>';
+  }
+
+  function auditEventLabel(eventType) {
+    return ({
+      'workspace.create': 'Создание базы',
+      'workspace.save': 'Сохранение',
+      'workspace.restore': 'Восстановление',
+      'workspace.conflict.local': 'Конфликт · локальная версия',
+      'workspace.conflict.remote': 'Конфликт · командная версия'
+    })[string(eventType)] || 'Изменение базы';
   }
 
   function renderArchive() {
@@ -1354,15 +1623,18 @@
     var accessNotice = workspaceAccess === 'viewer'
       ? '<div class="design-ws-notice is-readonly"><strong>Режим просмотра.</strong> Обновлять данные можно, редактирование и восстановление версий отключены.</div>'
       : ((workspaceAccess === 'none' || workspaceAccess === 'setup') ? '<div class="design-ws-notice is-error"><strong>Доступ не настроен.</strong> ' + html(workspaceAccessMessage) + '. Обратитесь к администратору раздела.</div>' : '');
+    var conflictNotice = syncConflicts.length && pendingConflict
+      ? '<div class="design-ws-notice is-error"><strong>Одновременно изменены одни и те же материалы: ' + syncConflicts.length + '.</strong> Локальная копия сохранена. Выберите версию для конфликтующих карточек.<div class="design-ws-head-actions"><button type="button" class="design-ws-btn" data-design-conflict-remote>Командная версия</button><button type="button" class="design-ws-btn primary" data-design-conflict-local>Локальная версия</button></div></div>'
+      : '';
     root.innerHTML = '<div class="design-ws" data-design-workspace data-design-access="' + html(workspaceAccess) + '" data-design-readonly="' + (!canEdit()) + '">' +
       '<header class="design-ws-head"><div><span class="design-ws-eyebrow">Creative workspace</span><h2>Дизайн-отдел</h2><p>Проекты, брифы, исходники и знания команды — в одном пространстве вместо разрозненных страниц Notion.</p></div>' +
       '<div class="design-ws-head-actions"><span class="design-ws-access">' + html(workspaceAccess === 'editor' ? 'Редактор' : (workspaceAccess === 'viewer' ? 'Просмотр' : (workspaceAccess === 'local' ? 'Локально' : (checkingAccess ? 'Проверка' : 'Нет доступа')))) + '</span><span class="design-ws-sync ' + html(syncState) + '" title="' + html(syncMessage) + '">' + html(syncMessage) + '</span>' +
       (canEdit() ? '<button type="button" class="design-ws-btn" data-design-import>Импорт из Notion</button><button type="button" class="design-ws-btn primary" data-design-add-project>+ Новый проект</button>' : '') + '</div></header>' +
       (checkingAccess ? '' : renderSummary()) +
       '<div class="design-ws-toolbar"><div class="design-ws-tabs" role="tablist">' + modeTabs.map(function (tab) { return '<button type="button" role="tab" aria-selected="' + (ui.mode === tab[0] ? 'true' : 'false') + '" class="design-ws-tab' + (ui.mode === tab[0] ? ' active' : '') + '" data-design-mode="' + tab[0] + '">' + html(tab[1]) + '</button>'; }).join('') + '</div>' +
-      (showFilters ? renderFilters() : '<div class="design-ws-filter-row"><button type="button" class="design-ws-btn" data-design-export>Экспорт JSON</button><button type="button" class="design-ws-btn" data-design-sync>Обновить</button></div>') + '</div>' +
+      (showFilters ? renderFilters() : '<div class="design-ws-filter-row"><button type="button" class="design-ws-btn" data-design-export>Экспорт JSON</button><button type="button" class="design-ws-btn" data-design-sync>' + (canEdit() ? 'Синхронизировать' : 'Обновить') + '</button></div>') + '</div>' +
       (!loadFinished && loadStarted ? '<div class="design-ws-notice">Подключаем общую базу отдела. Локальная версия уже доступна для работы.</div>' : '') +
-      accessNotice +
+      accessNotice + conflictNotice +
       '<main class="design-ws-body">' + bodyContent + '</main>' +
       '<input class="design-ws-hidden-input" type="file" accept=".csv,text/csv" data-design-import-input>' +
       '<input class="design-ws-hidden-input" type="file" accept=".csv,text/csv" data-design-test-import-input>' +
@@ -1662,6 +1934,8 @@
     var pageMode = pageSignals.some(function (key) { return headers.indexOf(key) >= 0; })
       && !projectSignals.some(function (key) { return headers.indexOf(key) >= 0; });
     var imported = [];
+    var usedPageIds = new Set(data.pages.map(function (item) { return item.id; }));
+    var usedProjectIds = new Set(data.projects.map(function (item) { return item.id; }));
     rows.slice(1).forEach(function (cells, rowIndex) {
       var record = {};
       headers.forEach(function (key, index) { if (key) record[key] = cells[index] || ''; });
@@ -1671,8 +1945,14 @@
       var sourceId = csvValue(record, ['ID', 'Page ID', 'Notion ID']);
       var stamp = nowIso();
       if (pageMode) {
+        var pageSourceKey = string(sourceId) || normalizeHeader([title, owner].join('|'));
+        var existingPage = data.pages.find(function (item) {
+          return item.sourceKey === pageSourceKey
+            || ((item.source === 'notion-csv' || String(item.id).indexOf('notion-page-') === 0)
+              && normalizeHeader([item.title, item.owner].join('|')) === normalizeHeader([title, owner].join('|')));
+        });
         imported.push(normalizePage({
-          id: 'notion-page-' + hashText(sourceId || [title, owner].join('|')),
+          id: existingPage ? existingPage.id : uniqueImportId('notion-page-', pageSourceKey, usedPageIds),
           title: title,
           category: csvValue(record, ['Категория', 'Category', 'Раздел', 'Section']) || 'Процессы',
           kind: /brief|бриф/i.test(csvValue(record, ['Тип', 'Type', 'Тип страницы', 'Page kind'])) ? 'brief' : 'page',
@@ -1681,13 +1961,21 @@
           url: csvValue(record, ['Ссылка', 'URL', 'Link']),
           owner: owner,
           status: /draft|чернов/i.test(csvValue(record, ['Статус', 'Status', 'Публикация'])) ? 'draft' : 'published',
-          createdAt: stamp,
+          source: 'notion-csv',
+          sourceKey: pageSourceKey,
+          createdAt: existingPage ? existingPage.createdAt : stamp,
           updatedAt: new Date(Date.now() + rowIndex).toISOString()
         }));
       } else {
         var due = csvValue(record, ['Дедлайн', 'Срок', 'Due', 'Due date', 'Deadline', 'Date']);
+        var projectSourceKey = string(sourceId) || normalizeHeader([title, owner, normalizeDate(due)].join('|'));
+        var existingProject = data.projects.find(function (item) {
+          return item.sourceKey === projectSourceKey
+            || ((item.source === 'notion-csv' || String(item.id).indexOf('notion-') === 0)
+              && normalizeHeader([item.title, item.owner, item.dueDate].join('|')) === normalizeHeader([title, owner, normalizeDate(due)].join('|')));
+        });
         imported.push(normalizeProject({
-          id: 'notion-' + hashText(sourceId || [title, owner, normalizeDate(due)].join('|')),
+          id: existingProject ? existingProject.id : uniqueImportId('notion-', projectSourceKey, usedProjectIds),
           title: title,
           status: statusFromText(csvValue(record, ['Статус', 'Status', 'Stage', 'Этап'])),
           owner: owner,
@@ -1699,7 +1987,8 @@
           url: csvValue(record, ['Ссылка', 'URL', 'Link', 'Figma', 'Исходники']),
           tags: csvValue(record, ['Теги', 'Tags', 'Labels']),
           source: 'notion-csv',
-          createdAt: stamp,
+          sourceKey: projectSourceKey,
+          createdAt: existingProject ? existingProject.createdAt : stamp,
           updatedAt: new Date(Date.now() + rowIndex).toISOString()
         }));
       }
@@ -1750,14 +2039,17 @@
     if (!groups.size) throw new Error('Нужна колонка «Тест» или «SKU»');
     var touched = 0;
     var updates = [];
+    var usedTestIds = new Set(data.tests.map(function (item) { return item.id; }));
     groups.forEach(function (group) {
+      var testSourceKey = normalizeHeader(group.title + '|' + group.sku);
       var existing = data.tests.find(function (item) {
-        return normalizeHeader(item.title + '|' + item.sku) === normalizeHeader(group.title + '|' + group.sku)
+        return item.sourceKey === testSourceKey
+          || normalizeHeader(item.title + '|' + item.sku) === testSourceKey
           || (group.sku && item.sku === group.sku && normalizeHeader(item.title) === normalizeHeader(group.title));
       });
       var stamp = nowIso();
       var next = normalizeTest(Object.assign({}, existing || {}, {
-        id: existing ? existing.id : 'mp-test-' + hashText(group.title + '|' + group.sku),
+        id: existing ? existing.id : uniqueImportId('mp-test-', testSourceKey, usedTestIds),
         title: group.title,
         sku: group.sku || (existing && existing.sku),
         marketplace: group.marketplace || (existing && existing.marketplace),
@@ -1766,7 +2058,8 @@
         variant: Object.assign({}, existing ? existing.variant : {}, group.variant),
         createdAt: existing ? existing.createdAt : stamp,
         updatedAt: stamp,
-        source: 'marketplace-csv'
+        source: 'marketplace-csv',
+        sourceKey: testSourceKey
       }));
       var validationError = validateTest(next);
       if (validationError) throw new Error(group.title + ' · ' + validationError);
@@ -1838,6 +2131,8 @@
       if (remote && remote.payload) data = normalizeData(remote.payload);
       remoteRevision = remote ? number(remote.revision) : remoteRevision;
       remoteHistory = await fetchRemoteHistory().catch(function () { return remoteHistory; });
+      remoteAudit = await fetchRemoteAudit().catch(function () { return remoteAudit; });
+      lastSyncedData = clone(data);
       lastCommittedData = clone(data);
       await writeLocal(false);
       syncState = 'ok';
@@ -1892,6 +2187,14 @@
       if (event.target.closest('[data-design-backup]')) { createManualBackup(); return; }
       if (event.target.closest('[data-design-export]')) { exportJson(); return; }
       if (event.target.closest('[data-design-sync]')) { syncRemote(true); return; }
+      if (event.target.closest('[data-design-conflict-remote]')) {
+        if (window.confirm('Принять командную версию конфликтующих материалов? Локальная копия уже сохранена.')) resolveSyncConflict(false);
+        return;
+      }
+      if (event.target.closest('[data-design-conflict-local]')) {
+        if (window.confirm('Сохранить локальную версию конфликтующих материалов поверх командной? Неконфликтующие изменения коллег сохранятся.')) resolveSyncConflict(true);
+        return;
+      }
       var restoreLocal = event.target.closest('[data-design-restore-local]');
       if (restoreLocal) {
         if (ensureEditor() && window.confirm('Восстановить выбранную локальную копию? Текущее состояние будет сохранено отдельно.')) restoreLocalBackup(restoreLocal.getAttribute('data-design-restore-local'));
@@ -2048,6 +2351,8 @@
         workspaceAccess: workspaceAccess,
         workspaceAccessMessage: workspaceAccessMessage,
         remoteHistoryCount: remoteHistory.length,
+        remoteAuditCount: remoteAudit.length,
+        syncConflictCount: syncConflicts.length,
         localBackupCount: localBackups.length,
         storageScope: storageScope()
       };

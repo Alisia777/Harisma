@@ -69,7 +69,7 @@
     roles: {
       owner: { views: '*' },
       director: {
-        views: ['dashboard', 'executive', 'control', 'documents', 'designers', 'sku-plan-fact', 'prices', 'order', 'product-leaderboard', 'iu-drr', 'wb-rating']
+        views: ['dashboard', 'executive', 'control', 'documents', 'sku-plan-fact', 'prices', 'order', 'product-leaderboard', 'iu-drr', 'wb-rating']
       },
       marketplace: {
         views: ['dashboard', 'documents', 'sku-plan-fact', 'repricer', 'prices', 'order', 'oos-control', 'iu-drr', 'wb-rating']
@@ -132,4 +132,10 @@
       'e.s.sinyagina@qeep.life': { role: 'employee' }
     }
   };
+
+  // Keep Designers access additive so protected finance-route declarations stay byte-for-byte unchanged.
+  var directorViews = window.ALTEA_PORTAL_ACCESS_RULES.roles && window.ALTEA_PORTAL_ACCESS_RULES.roles.director
+    ? window.ALTEA_PORTAL_ACCESS_RULES.roles.director.views
+    : null;
+  if (Array.isArray(directorViews) && directorViews.indexOf('designers') === -1) directorViews.splice(4, 0, 'designers');
 })();

@@ -22,7 +22,7 @@
     },
     designers: {
       id: 'designers',
-      index: '05',
+      index: '04A',
       title: 'Дизайнеры',
       kicker: 'Creative workspace',
       headline: 'Проекты, знания и бренд-система',
@@ -37,18 +37,18 @@
     { id: 'executive', index: '02', group: 'Главное', title: 'Руководителю', caption: 'Риски · решения · итог', icon: 'crown' },
     { id: 'control', index: '03', group: 'Главное', title: 'Задачи', caption: 'Задачи · РОП · контроль', icon: 'check' },
     { id: 'documents', index: '04', group: 'Главное', title: 'Хранилище', caption: 'Файлы · ссылки · описания', icon: 'file' },
-    { id: 'designers', index: '05', group: 'Главное', title: 'Дизайнеры', caption: 'Проекты · брифы · бренд-система', icon: 'palette' },
-    { id: 'data-health', index: '06', group: 'Главное', title: 'Календарь', caption: 'Акции · события · SKU', icon: 'calendar' },
-    { id: 'sku-plan-fact', index: '07', group: 'Деньги и товар', title: 'План-факт SKU', caption: 'План · факт · чек · ДРР', icon: 'chart' },
-    { id: 'repricer', index: '08', group: 'Деньги и товар', title: 'Репрайсер', caption: 'Цена · риски · рекомендации', icon: 'diamond' },
-    { id: 'prices', index: '09', group: 'Деньги и товар', title: 'Цены', caption: 'Маржа · оборот · СПП', icon: 'tag' },
-    { id: 'order', index: '10', group: 'Деньги и товар', title: 'Заказ товара', caption: 'Кластеры · склады · поставки', icon: 'box' },
-    { id: 'oos-control', index: '11', group: 'Деньги и товар', title: 'OOS контроль', caption: 'Пустые полки · меры', icon: 'alert' },
-    { id: 'sku-contour', index: '12', group: 'Продукт', title: 'SKU workspace', caption: 'Реестр · API · план-факт', icon: 'blocks' },
-    { id: 'launches', index: '13', group: 'Продукт', title: 'Новинки', caption: 'Товар · экономика', icon: 'rocket' },
-    { id: 'iu-drr', index: '15', group: 'Аналитика', title: 'ИУ / ДРР', caption: 'WB · Ozon · расходы', icon: 'pie' },
-    { id: 'wb-rating', index: '16', group: 'Аналитика', title: 'Рейтинг карточек', caption: 'Отзывы · динамика', icon: 'star' },
-    { id: 'product-leaderboard', index: '17', group: 'Аналитика', title: 'Лидерборд', caption: 'КЗ · воронка · ROMI', icon: 'trophy' }
+    { id: 'designers', index: '04A', group: 'Главное', title: 'Дизайнеры', caption: 'Проекты · брифы · бренд-система', icon: 'palette' },
+    { id: 'data-health', index: '05', group: 'Главное', title: 'Календарь', caption: 'Акции · события · SKU', icon: 'calendar' },
+    { id: 'sku-plan-fact', index: '06', group: 'Деньги и товар', title: 'План-факт SKU', caption: 'План · факт · чек · ДРР', icon: 'chart' },
+    { id: 'repricer', index: '07', group: 'Деньги и товар', title: 'Репрайсер', caption: 'Цена · риски · рекомендации', icon: 'diamond' },
+    { id: 'prices', index: '08', group: 'Деньги и товар', title: 'Цены', caption: 'Маржа · оборот · СПП', icon: 'tag' },
+    { id: 'order', index: '09', group: 'Деньги и товар', title: 'Заказ товара', caption: 'Кластеры · склады · поставки', icon: 'box' },
+    { id: 'oos-control', index: '10', group: 'Деньги и товар', title: 'OOS контроль', caption: 'Пустые полки · меры', icon: 'alert' },
+    { id: 'sku-contour', index: '11', group: 'Продукт', title: 'SKU workspace', caption: 'Реестр · API · план-факт', icon: 'blocks' },
+    { id: 'launches', index: '12', group: 'Продукт', title: 'Новинки', caption: 'Товар · экономика', icon: 'rocket' },
+    { id: 'iu-drr', index: '14', group: 'Аналитика', title: 'ИУ / ДРР', caption: 'WB · Ozon · расходы', icon: 'pie' },
+    { id: 'wb-rating', index: '15', group: 'Аналитика', title: 'Рейтинг карточек', caption: 'Отзывы · динамика', icon: 'star' },
+    { id: 'product-leaderboard', index: '16', group: 'Аналитика', title: 'Лидерборд', caption: 'КЗ · воронка · ROMI', icon: 'trophy' }
   ];
 
   var NAV_BY_ID = NAV_ROUTES.reduce(function (acc, route) {

@@ -637,6 +637,7 @@ body[data-portal-theme="redalert"] .design-ws,
 
 .design-ws-notice.is-readonly { border-color: rgba(78, 131, 191, .3); background: rgba(78, 131, 191, .09); }
 .design-ws-notice.is-error { border-color: rgba(198, 88, 88, .3); background: rgba(198, 88, 88, .09); }
+.design-ws-notice .design-ws-head-actions { margin-top: 9px; }
 .design-ws[data-design-readonly="true"] .design-ws-field:disabled { color: var(--design-ink); opacity: .82; cursor: default; }
 .design-ws[data-design-readonly="true"] .design-ws-column { cursor: default; }
 

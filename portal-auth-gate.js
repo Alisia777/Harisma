@@ -37,7 +37,8 @@
     'wb-rating',
     'product-leaderboard',
     'meetings',
-    'documents'
+    'documents',
+    'designers'
   ];
   var SHARED_AUTHENTICATED_VIEWS = ['documents'];
   var FALLBACK_CONFIG = {
@@ -997,10 +998,10 @@
       email: GUEST_EMAIL,
       user_metadata: assign({}, (base.user && base.user.user_metadata) || {}, {
         name: GUEST_NAME,
-        portal_role: 'owner'
+        portal_role: 'guest'
       }),
       app_metadata: assign({}, (base.user && base.user.app_metadata) || {}, {
-        portal_role: 'owner'
+        portal_role: 'guest'
       })
     });
     return assign({}, base, {
@@ -1019,7 +1020,7 @@
       options: {
         data: {
           name: GUEST_NAME,
-          portal_role: 'owner'
+          portal_role: 'guest'
         }
       }
     }).then(function (result) {

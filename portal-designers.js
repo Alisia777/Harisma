@@ -1,0 +1,2067 @@
+(function () {
+  'use strict';
+
+  if (window.__ALTEA_DESIGN_WORKSPACE_V1__) return;
+  window.__ALTEA_DESIGN_WORKSPACE_V1__ = true;
+
+  var ROOT_ID = 'view-designers';
+  var STORAGE_KEY = 'altea-design-workspace-v1';
+  var UI_KEY = 'altea-design-workspace-ui-v1';
+  var REMOTE_TABLE = 'portal_design_workspaces';
+  var REMOTE_MEMBERS_TABLE = 'portal_design_workspace_members';
+  var REMOTE_HISTORY_TABLE = 'portal_design_workspace_history';
+  var REMOTE_SAVE_RPC = 'save_portal_design_workspace';
+  var REMOTE_RESTORE_RPC = 'restore_portal_design_workspace_revision';
+  var DB_NAME = 'altea-design-workspace';
+  var DB_STORE = 'snapshots';
+  var DB_RECORD_KEY = 'current';
+  var LOCAL_STORAGE_SOFT_LIMIT = 1500000;
+  var MAX_IMPORT_BYTES = 8 * 1024 * 1024;
+  var MAX_IMPORT_ROWS = 12000;
+  var PROJECT_PAGE_SIZE = 100;
+  var TEST_PAGE_SIZE = 24;
+  var KNOWLEDGE_PAGE_SIZE = 60;
+  var ACTIVITY_LIMIT = 500;
+  var LOCAL_BACKUP_LIMIT = 10;
+  var LOCAL_BACKUP_INTERVAL_MS = 5 * 60 * 1000;
+  var SEED_PATH = 'data/design_workspace.json';
+  var SCHEMA = 'altea-design-workspace-v1';
+
+  var STATUS = {
+    inbox: { label: 'Запросы', color: '#8d8780' },
+    brief: { label: 'Бриф', color: '#c98a36' },
+    production: { label: 'В работе', color: '#7e5cff' },
+    review: { label: 'На ревью', color: '#4e83bf' },
+    done: { label: 'Готово', color: '#54a987' }
+  };
+
+  var TYPES = [
+    ['card', 'Карточка товара'],
+    ['rich', 'Rich-контент'],
+    ['social', 'Соцсети'],
+    ['presentation', 'Презентация'],
+    ['package', 'Упаковка'],
+    ['photo', 'Фото / ретушь'],
+    ['brand', 'Бренд-дизайн'],
+    ['other', 'Другое']
+  ];
+
+  var PRIORITIES = {
+    high: { label: 'Высокий', color: '#c65858' },
+    normal: { label: 'Обычный', color: '#c98a36' },
+    low: { label: 'Низкий', color: '#54a987' }
+  };
+
+  var TEST_STATUS = {
+    planned: { label: 'Запланирован', color: '#8d8780' },
+    running: { label: 'Идёт тест', color: '#7e5cff' },
+    analysis: { label: 'Анализ', color: '#c98a36' },
+    complete: { label: 'Завершён', color: '#54a987' }
+  };
+
+  var PAGE_CATEGORIES = ['Процессы', 'Брифы', 'Бренд-система', 'Шаблоны', 'Референсы', 'Архив'];
+  var PAGE_KINDS = [
+    ['page', 'Страница'],
+    ['guide', 'Регламент'],
+    ['brief', 'Бриф'],
+    ['template', 'Шаблон'],
+    ['library', 'Библиотека'],
+    ['link', 'Ссылка']
+  ];
+
+  var FALLBACK_DATA = {
+    schema: SCHEMA,
+    version: 1,
+    updatedAt: '',
+    projects: [],
+    tests: [],
+    pages: [],
+    activity: [],
+    settings: { departmentName: 'Дизайн-отдел', defaultView: 'board' }
+  };
+
+  var cache = readLocal();
+  var data = normalizeData(cache.data || FALLBACK_DATA);
+  var ui = readUi();
+  var activeDialog = null;
+  var lastFocusedElement = null;
+  var loadStarted = false;
+  var loadFinished = false;
+  var syncTimer = 0;
+  var searchTimer = 0;
+  var remoteRevision = 0;
+  var workspaceAccess = 'checking';
+  var workspaceAccessMessage = 'Проверяем права доступа';
+  var remoteHistory = [];
+  var localBackups = [];
+  var lastBackupAt = 0;
+  var lastCommittedData = clone(data);
+  var localPersistState = 'idle';
+  var localPersistError = '';
+  var localPersistChain = Promise.resolve();
+  var syncState = cache.dirty ? 'pending' : 'local';
+  var syncMessage = cache.dirty ? 'Есть несинхронизированные изменения' : 'Сохранено на устройстве';
+  var toastTimer = 0;
+
+  function html(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+    });
+  }
+
+  function clone(value) {
+    try { return JSON.parse(JSON.stringify(value)); } catch (_) { return value; }
+  }
+
+  function nowIso() { return new Date().toISOString(); }
+
+  function uid(prefix) {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') return prefix + '-' + window.crypto.randomUUID();
+    return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
+  }
+
+  function string(value) { return String(value == null ? '' : value).trim(); }
+
+  function timestamp(value) {
+    var parsed = Date.parse(string(value));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function storageScope() {
+    var session = window.alteaPortalAuthGate && typeof window.alteaPortalAuthGate.getSession === 'function'
+      ? window.alteaPortalAuthGate.getSession()
+      : window.__ALTEA_AUTH_SESSION__;
+    var user = session && session.user;
+    return hashText(string(user && (user.id || user.email)) || 'local');
+  }
+
+  function scopedStorageKey() { return STORAGE_KEY + ':' + storageScope(); }
+  function scopedRecordKey() { return DB_RECORD_KEY + ':' + storageScope(); }
+  function scopedBackupPrefix() { return 'backup:' + storageScope() + ':'; }
+
+  function normalizeProject(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    var status = STATUS[raw.status] ? raw.status : statusFromText(raw.status);
+    var priority = PRIORITIES[raw.priority] ? raw.priority : priorityFromText(raw.priority);
+    var type = TYPES.some(function (item) { return item[0] === raw.type; }) ? raw.type : typeFromText(raw.type);
+    var createdAt = string(raw.createdAt) || nowIso();
+    return {
+      id: string(raw.id) || uid('design-project'),
+      title: string(raw.title || raw.name) || 'Без названия',
+      type: type,
+      status: status,
+      owner: string(raw.owner || raw.assignee),
+      dueDate: normalizeDate(raw.dueDate || raw.deadline || raw.due),
+      priority: priority,
+      marketplace: string(raw.marketplace || raw.platform),
+      brief: string(raw.brief || raw.description || raw.notes),
+      url: safeUrl(raw.url || raw.link || raw.href),
+      tags: normalizeTags(raw.tags),
+      archived: raw.archived === true,
+      createdAt: createdAt,
+      updatedAt: string(raw.updatedAt) || createdAt,
+      source: string(raw.source)
+    };
+  }
+
+  function normalizePage(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    var createdAt = string(raw.createdAt) || nowIso();
+    var category = string(raw.category) || 'Процессы';
+    if (PAGE_CATEGORIES.indexOf(category) === -1) PAGE_CATEGORIES.push(category);
+    return {
+      id: string(raw.id) || uid('design-page'),
+      title: string(raw.title || raw.name) || 'Без названия',
+      category: category,
+      kind: PAGE_KINDS.some(function (item) { return item[0] === raw.kind; }) ? raw.kind : 'page',
+      summary: string(raw.summary || raw.description),
+      content: string(raw.content || raw.notes),
+      url: safeUrl(raw.url || raw.link || raw.href),
+      owner: string(raw.owner),
+      status: raw.status === 'draft' ? 'draft' : 'published',
+      archived: raw.archived === true,
+      createdAt: createdAt,
+      updatedAt: string(raw.updatedAt) || createdAt
+    };
+  }
+
+  function number(value) {
+    if (value === '' || value == null) return 0;
+    var parsed = Number(String(value).replace(/\s/g, '').replace(',', '.'));
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+  }
+
+  function normalizeVariant(raw, fallbackName) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    return {
+      name: string(raw.name) || fallbackName,
+      imageUrl: safeUrl(raw.imageUrl || raw.image || raw.preview),
+      views: number(raw.views || raw.impressions || raw.shows),
+      clicks: number(raw.clicks),
+      carts: number(raw.carts || raw.addToCart || raw.add_to_cart),
+      orders: number(raw.orders || raw.conversions),
+      revenue: number(raw.revenue || raw.sales || raw.gmv)
+    };
+  }
+
+  function normalizeTest(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    var createdAt = string(raw.createdAt) || nowIso();
+    var status = TEST_STATUS[raw.status] ? raw.status : testStatusFromText(raw.status);
+    var winner = ['control', 'variant', 'inconclusive'].indexOf(raw.winner) >= 0 ? raw.winner : '';
+    return {
+      id: string(raw.id) || uid('design-test'),
+      title: string(raw.title || raw.name) || 'Тест без названия',
+      sku: string(raw.sku || raw.article || raw.articleKey),
+      marketplace: string(raw.marketplace || raw.platform),
+      owner: string(raw.owner || raw.assignee),
+      status: status,
+      hypothesis: string(raw.hypothesis || raw.description),
+      startDate: normalizeDate(raw.startDate || raw.dateFrom),
+      endDate: normalizeDate(raw.endDate || raw.dateTo),
+      control: normalizeVariant(raw.control || raw.a, 'Контроль A'),
+      variant: normalizeVariant(raw.variant || raw.b, 'Вариант B'),
+      winner: winner,
+      conclusion: string(raw.conclusion || raw.result),
+      decision: string(raw.decision || raw.action),
+      sourceUrl: safeUrl(raw.sourceUrl || raw.reportUrl || raw.url),
+      tags: normalizeTags(raw.tags),
+      archived: raw.archived === true,
+      createdAt: createdAt,
+      updatedAt: string(raw.updatedAt) || createdAt,
+      source: string(raw.source)
+    };
+  }
+
+  function normalizeActivity(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    return {
+      id: string(raw.id) || uid('design-event'),
+      action: string(raw.action) || 'change',
+      summary: string(raw.summary) || 'Рабочее пространство изменено',
+      entityType: string(raw.entityType),
+      entityId: string(raw.entityId),
+      actor: string(raw.actor),
+      createdAt: string(raw.createdAt) || nowIso()
+    };
+  }
+
+  function normalizeData(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    return {
+      schema: SCHEMA,
+      version: 1,
+      updatedAt: string(raw.updatedAt),
+      projects: Array.isArray(raw.projects) ? raw.projects.map(normalizeProject) : [],
+      tests: Array.isArray(raw.tests) ? raw.tests.map(normalizeTest) : [],
+      pages: Array.isArray(raw.pages) ? raw.pages.map(normalizePage) : [],
+      activity: Array.isArray(raw.activity) ? raw.activity.map(normalizeActivity).sort(function (a, b) { return timestamp(b.createdAt) - timestamp(a.createdAt); }).slice(0, ACTIVITY_LIMIT) : [],
+      settings: Object.assign({}, FALLBACK_DATA.settings, raw.settings || {})
+    };
+  }
+
+  function readLocal() {
+    try {
+      var raw = localStorage.getItem(scopedStorageKey());
+      if (!raw) return { data: clone(FALLBACK_DATA), dirty: false };
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.data) return { data: parsed.data, dirty: parsed.dirty === true };
+      if (parsed && parsed.indexedDb) return { data: clone(FALLBACK_DATA), dirty: parsed.dirty === true, indexedDb: true };
+      return { data: parsed, dirty: false };
+    } catch (_) {
+      return { data: clone(FALLBACK_DATA), dirty: false };
+    }
+  }
+
+  function readUi() {
+    var fallback = { mode: 'board', search: '', status: 'active', owner: 'all', type: 'all', projectPage: 1, testPage: 1, knowledgePage: 1 };
+    try {
+      var parsed = JSON.parse(localStorage.getItem(UI_KEY) || '{}');
+      return Object.assign(fallback, parsed || {});
+    } catch (_) { return fallback; }
+  }
+
+  function writeUi() {
+    try { localStorage.setItem(UI_KEY, JSON.stringify(ui)); } catch (_) {}
+  }
+
+  function openWorkspaceDb() {
+    return new Promise(function (resolve, reject) {
+      if (!window.indexedDB) { reject(new Error('IndexedDB недоступна')); return; }
+      var request = window.indexedDB.open(DB_NAME, 1);
+      request.onupgradeneeded = function () {
+        var db = request.result;
+        if (!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE);
+      };
+      request.onsuccess = function () { resolve(request.result); };
+      request.onerror = function () { reject(request.error || new Error('Не удалось открыть локальную базу')); };
+      request.onblocked = function () { reject(new Error('Локальная база заблокирована другой вкладкой')); };
+    });
+  }
+
+  async function readIndexed() {
+    var db = await openWorkspaceDb();
+    try {
+      return await new Promise(function (resolve, reject) {
+        var transaction = db.transaction(DB_STORE, 'readonly');
+        var request = transaction.objectStore(DB_STORE).get(scopedRecordKey());
+        request.onsuccess = function () { resolve(request.result || null); };
+        request.onerror = function () { reject(request.error || new Error('Не удалось прочитать локальную базу')); };
+      });
+    } finally { db.close(); }
+  }
+
+  async function writeIndexed(value) {
+    var db = await openWorkspaceDb();
+    try {
+      await new Promise(function (resolve, reject) {
+        var transaction = db.transaction(DB_STORE, 'readwrite');
+        transaction.objectStore(DB_STORE).put(value, scopedRecordKey());
+        transaction.oncomplete = function () { resolve(); };
+        transaction.onerror = function () { reject(transaction.error || new Error('Не удалось сохранить локальную базу')); };
+        transaction.onabort = function () { reject(transaction.error || new Error('Локальное сохранение отменено')); };
+      });
+    } finally { db.close(); }
+  }
+
+  async function readIndexedBackups() {
+    var db = await openWorkspaceDb();
+    try {
+      return await new Promise(function (resolve, reject) {
+        var transaction = db.transaction(DB_STORE, 'readonly');
+        var store = transaction.objectStore(DB_STORE);
+        if (typeof store.getAll !== 'function') { resolve([]); return; }
+        var request = store.getAll();
+        request.onsuccess = function () {
+          resolve((request.result || []).filter(function (item) { return item && item.backup === true && item.scope === storageScope() && item.data; })
+            .sort(function (a, b) { return timestamp(b.createdAt) - timestamp(a.createdAt); })
+            .slice(0, LOCAL_BACKUP_LIMIT));
+        };
+        request.onerror = function () { reject(request.error || new Error('Не удалось прочитать резервные копии')); };
+      });
+    } finally { db.close(); }
+  }
+
+  async function writeIndexedBackup(snapshot, reason) {
+    var db = await openWorkspaceDb();
+    var key = scopedBackupPrefix() + Date.now() + ':' + Math.random().toString(36).slice(2, 7);
+    var record = {
+      key: key,
+      scope: storageScope(),
+      backup: true,
+      createdAt: nowIso(),
+      reason: string(reason) || 'Автоматическая резервная копия',
+      data: clone(snapshot)
+    };
+    try {
+      await new Promise(function (resolve, reject) {
+        var transaction = db.transaction(DB_STORE, 'readwrite');
+        var store = transaction.objectStore(DB_STORE);
+        store.put(record, key);
+        if (typeof store.getAllKeys === 'function') {
+          var keysRequest = store.getAllKeys();
+          keysRequest.onsuccess = function () {
+            var prefix = scopedBackupPrefix();
+            var keys = (keysRequest.result || []).filter(function (item) { return String(item).indexOf(prefix) === 0; }).sort().reverse();
+            keys.slice(LOCAL_BACKUP_LIMIT).forEach(function (oldKey) { store.delete(oldKey); });
+          };
+        }
+        transaction.oncomplete = function () { resolve(); };
+        transaction.onerror = function () { reject(transaction.error || new Error('Не удалось создать резервную копию')); };
+        transaction.onabort = function () { reject(transaction.error || new Error('Создание резервной копии отменено')); };
+      });
+      return record;
+    } finally { db.close(); }
+  }
+
+  function refreshLocalBackups() {
+    return readIndexedBackups().then(function (items) {
+      localBackups = items;
+      if (items[0]) lastBackupAt = Math.max(lastBackupAt, timestamp(items[0].createdAt));
+      renderDesigners();
+      return items;
+    }).catch(function () { return []; });
+  }
+
+  function queueLocalBackup(reason, force, snapshot) {
+    var stamp = Date.now();
+    if (!force && lastBackupAt && stamp - lastBackupAt < LOCAL_BACKUP_INTERVAL_MS) return Promise.resolve(false);
+    lastBackupAt = stamp;
+    var copy = clone(snapshot || lastCommittedData || data);
+    localPersistChain = localPersistChain.catch(function () {}).then(function () {
+      return writeIndexedBackup(copy, reason);
+    }).then(function () {
+      return refreshLocalBackups();
+    }).then(function () { return true; }).catch(function (error) {
+      lastBackupAt = 0;
+      if (force) showToast(error && error.message ? error.message : 'Не удалось создать резервную копию');
+      return false;
+    });
+    return localPersistChain;
+  }
+
+  async function purgeScopedLocalData() {
+    try { localStorage.removeItem(scopedStorageKey()); } catch (_) {}
+    var db;
+    try { db = await openWorkspaceDb(); } catch (_) { return false; }
+    try {
+      await new Promise(function (resolve, reject) {
+        var transaction = db.transaction(DB_STORE, 'readwrite');
+        var store = transaction.objectStore(DB_STORE);
+        store.delete(scopedRecordKey());
+        if (typeof store.getAllKeys === 'function') {
+          var request = store.getAllKeys();
+          request.onsuccess = function () {
+            var prefix = scopedBackupPrefix();
+            (request.result || []).forEach(function (key) {
+              if (String(key).indexOf(prefix) === 0) store.delete(key);
+            });
+          };
+        }
+        transaction.oncomplete = function () { resolve(); };
+        transaction.onerror = function () { reject(transaction.error || new Error('Не удалось очистить локальный кэш')); };
+      });
+      return true;
+    } catch (_) { return false; }
+    finally { db.close(); }
+  }
+
+  function updateLocalPersistMessage() {
+    if (localPersistState === 'error') {
+      syncState = 'error';
+      syncMessage = 'Не сохранено · ' + (localPersistError || 'ошибка локальной базы');
+    } else if (localPersistState === 'pending' && syncState !== 'pending') {
+      syncState = 'pending';
+      syncMessage = 'Сохраняем на устройстве';
+    } else if (localPersistState === 'ok' && (!remoteConfig() || !remoteConfig().token)) {
+      syncState = 'local';
+      syncMessage = 'Сохранено на устройстве';
+    }
+  }
+
+  function writeLocal(dirty) {
+    cache = { data: data, dirty: dirty === true };
+    var snapshot = clone(cache);
+    var serialized = JSON.stringify(snapshot);
+    var localFallbackSaved = false;
+    try {
+      if (serialized.length <= LOCAL_STORAGE_SOFT_LIMIT) localStorage.setItem(scopedStorageKey(), serialized);
+      else localStorage.setItem(scopedStorageKey(), JSON.stringify({ indexedDb: true, dirty: dirty === true, updatedAt: data.updatedAt }));
+      localFallbackSaved = true;
+    } catch (_) { localFallbackSaved = false; }
+    localPersistState = 'pending';
+    localPersistError = '';
+    localPersistChain = localPersistChain.catch(function () {}).then(function () { return writeIndexed(snapshot); }).then(function () {
+      localPersistState = 'ok';
+      localPersistError = '';
+      updateLocalPersistMessage();
+      renderDesigners();
+      return true;
+    }).catch(function (error) {
+      if (localFallbackSaved && serialized.length <= LOCAL_STORAGE_SOFT_LIMIT) {
+        localPersistState = 'ok';
+        updateLocalPersistMessage();
+        renderDesigners();
+        return true;
+      }
+      localPersistState = 'error';
+      localPersistError = error && error.message ? error.message : 'локальная база недоступна';
+      updateLocalPersistMessage();
+      renderDesigners();
+      return false;
+    });
+    return localPersistChain;
+  }
+
+  function normalizeTags(value) {
+    var list = Array.isArray(value) ? value : string(value).split(/[,;|]/);
+    var output = [];
+    list.forEach(function (item) {
+      var tag = string(item);
+      if (tag && output.indexOf(tag) === -1) output.push(tag);
+    });
+    return output.slice(0, 12);
+  }
+
+  function normalizeDate(value) {
+    var raw = string(value);
+    if (!raw) return '';
+    var direct = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
+    if (direct) return direct[1] + '-' + direct[2] + '-' + direct[3];
+    var ru = /^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/.exec(raw);
+    if (ru) return ru[3] + '-' + String(ru[2]).padStart(2, '0') + '-' + String(ru[1]).padStart(2, '0');
+    var parsed = new Date(raw);
+    if (Number.isNaN(parsed.getTime())) return '';
+    return parsed.toISOString().slice(0, 10);
+  }
+
+  function safeUrl(value) {
+    var raw = string(value);
+    if (!raw) return '';
+    if (/^(www\.|docs\.google\.|drive\.google\.|figma\.com)/i.test(raw)) raw = 'https://' + raw;
+    try {
+      var url = new URL(raw, window.location.href);
+      return /^(https?:|mailto:)$/.test(url.protocol) ? url.href : '';
+    } catch (_) { return ''; }
+  }
+
+  function hashText(value) {
+    var text = String(value || '');
+    var hash = 2166136261;
+    for (var index = 0; index < text.length; index += 1) {
+      hash ^= text.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(16);
+  }
+
+  function mergeEntities(remote, local, normalizer) {
+    var map = new Map();
+    [remote || [], local || []].forEach(function (list) {
+      list.forEach(function (raw) {
+        var item = normalizer(raw);
+        var existing = map.get(item.id);
+        if (!existing || timestamp(item.updatedAt) >= timestamp(existing.updatedAt)) map.set(item.id, item);
+      });
+    });
+    return Array.from(map.values());
+  }
+
+  function mergeData(remote, local) {
+    remote = normalizeData(remote || {});
+    local = normalizeData(local || {});
+    return normalizeData({
+      updatedAt: timestamp(local.updatedAt) >= timestamp(remote.updatedAt) ? local.updatedAt : remote.updatedAt,
+      projects: mergeEntities(remote.projects, local.projects, normalizeProject),
+      tests: mergeEntities(remote.tests, local.tests, normalizeTest),
+      pages: mergeEntities(remote.pages, local.pages, normalizePage),
+      activity: mergeEntities(remote.activity, local.activity, normalizeActivity).sort(function (a, b) { return timestamp(b.createdAt) - timestamp(a.createdAt); }).slice(0, ACTIVITY_LIMIT),
+      settings: Object.assign({}, remote.settings || {}, local.settings || {})
+    });
+  }
+
+  function currentActor() {
+    var access = window.alteaPortalAccess && typeof window.alteaPortalAccess.get === 'function'
+      ? window.alteaPortalAccess.get()
+      : window.__ALTEA_PORTAL_ACCESS__;
+    var session = window.alteaPortalAuthGate && typeof window.alteaPortalAuthGate.getSession === 'function'
+      ? window.alteaPortalAuthGate.getSession()
+      : window.__ALTEA_AUTH_SESSION__;
+    return string(access && (access.name || access.email)) || string(session && session.user && session.user.email) || 'Локальный пользователь';
+  }
+
+  function canEdit() { return workspaceAccess === 'editor' || workspaceAccess === 'local'; }
+
+  function ensureEditor() {
+    if (canEdit()) return true;
+    showToast(workspaceAccess === 'viewer' ? 'Режим просмотра: изменения недоступны' : 'Нет прав редактора рабочей базы');
+    return false;
+  }
+
+  function appConfig() {
+    try {
+      if (typeof window.currentConfig === 'function') return window.currentConfig() || {};
+    } catch (_) {}
+    return window.APP_CONFIG || {};
+  }
+
+  function remoteConfig() {
+    var cfg = appConfig();
+    var supabase = cfg.supabase || {};
+    var baseUrl = string(supabase.url).replace(/\/+$/, '');
+    var anonKey = string(supabase.anonKey);
+    var session = window.alteaPortalAuthGate && typeof window.alteaPortalAuthGate.getSession === 'function'
+      ? window.alteaPortalAuthGate.getSession()
+      : window.__ALTEA_AUTH_SESSION__;
+    var token = string(session && session.access_token) || string(window.__alteaAppState && window.__alteaAppState.team && window.__alteaAppState.team.accessToken);
+    var brand = string(cfg.brand) || 'Алтея';
+    return baseUrl && anonKey ? { baseUrl: baseUrl, anonKey: anonKey, token: token, brand: brand } : null;
+  }
+
+  function remoteHeaders(cfg) {
+    return { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.token, Accept: 'application/json' };
+  }
+
+  async function fetchMembership() {
+    var cfg = remoteConfig();
+    if (!cfg || !cfg.token || typeof fetch !== 'function') return { level: 'local', message: 'Локальный режим' };
+    var url = new URL(cfg.baseUrl + '/rest/v1/' + REMOTE_MEMBERS_TABLE);
+    url.searchParams.set('select', 'access_level');
+    url.searchParams.set('brand', 'eq.' + cfg.brand);
+    url.searchParams.set('limit', '1');
+    var response = await fetch(url.toString(), { headers: remoteHeaders(cfg) });
+    if (response.status === 404) return { level: 'setup', message: 'Командная база ожидает настройки' };
+    if (!response.ok) return { level: 'none', message: response.status === 401 ? 'Сессия доступа истекла' : 'Не удалось проверить роль' };
+    var rows = await response.json();
+    var level = rows && rows[0] && rows[0].access_level;
+    if (level === 'editor') return { level: 'editor', message: 'Редактор командной базы' };
+    if (level === 'viewer') return { level: 'viewer', message: 'Только просмотр' };
+    return { level: 'none', message: 'Нет доступа к базе дизайн-отдела' };
+  }
+
+  async function fetchRemoteHistory() {
+    var cfg = remoteConfig();
+    if (!cfg || !cfg.token || typeof fetch !== 'function') return [];
+    var url = new URL(cfg.baseUrl + '/rest/v1/' + REMOTE_HISTORY_TABLE);
+    url.searchParams.set('select', 'revision,changed_at,change_summary,changed_by');
+    url.searchParams.set('brand', 'eq.' + cfg.brand);
+    url.searchParams.set('order', 'revision.desc');
+    url.searchParams.set('limit', '50');
+    var response = await fetch(url.toString(), { headers: remoteHeaders(cfg) });
+    if (response.status === 404) return [];
+    if (!response.ok) throw new Error('История версий недоступна');
+    return await response.json();
+  }
+
+  async function fetchRemote() {
+    var cfg = remoteConfig();
+    if (!cfg || !cfg.token || typeof fetch !== 'function') return null;
+    var url = new URL(cfg.baseUrl + '/rest/v1/' + REMOTE_TABLE);
+    url.searchParams.set('select', 'payload,revision,updated_at');
+    url.searchParams.set('brand', 'eq.' + cfg.brand);
+    url.searchParams.set('limit', '1');
+    var response = await fetch(url.toString(), {
+      headers: remoteHeaders(cfg)
+    });
+    if (!response.ok) throw new Error(response.status === 404 ? 'Закрытая база дизайнеров ещё не настроена' : 'Общий контур вернул ' + response.status);
+    var rows = await response.json();
+    if (!rows || !rows[0]) return { payload: null, revision: 0 };
+    return { payload: rows[0].payload || null, revision: number(rows[0].revision), updatedAt: rows[0].updated_at || '' };
+  }
+
+  async function pushRemote(payload, expectedRevision) {
+    var cfg = remoteConfig();
+    if (!cfg || !cfg.token || typeof fetch !== 'function') return false;
+    var url = new URL(cfg.baseUrl + '/rest/v1/rpc/' + REMOTE_SAVE_RPC);
+    var response = await fetch(url.toString(), {
+      method: 'POST',
+      headers: {
+        apikey: cfg.anonKey,
+        Authorization: 'Bearer ' + cfg.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        p_brand: cfg.brand,
+        p_payload: payload,
+        p_payload_hash: hashText(JSON.stringify(payload)),
+        p_expected_revision: Math.max(0, number(expectedRevision))
+      })
+    });
+    var result = null;
+    try { result = await response.json(); } catch (_) {}
+    if (!response.ok) {
+      var detail = string(result && (result.message || result.details || result.hint));
+      var error = new Error(/revision_conflict/i.test(detail) ? 'revision_conflict' : ('Синхронизация вернула ' + response.status + (detail ? ' · ' + detail : '')));
+      error.code = /revision_conflict/i.test(detail) ? 'revision_conflict' : 'remote_write_failed';
+      throw error;
+    }
+    var row = Array.isArray(result) ? result[0] : result;
+    return { revision: number(row && row.revision) || Math.max(1, number(expectedRevision) + 1), updatedAt: row && row.updated_at };
+  }
+
+  async function loadSeed() {
+    if (typeof fetch !== 'function') return null;
+    try {
+      var response = await fetch(SEED_PATH, { cache: 'no-store' });
+      if (!response.ok) return null;
+      return await response.json();
+    } catch (_) { return null; }
+  }
+
+  async function loadWorkspace() {
+    if (loadStarted) return;
+    loadStarted = true;
+    syncState = 'pending';
+    syncMessage = 'Загружаем рабочее пространство';
+    renderDesigners();
+    try {
+      var results = await Promise.allSettled([loadSeed(), fetchRemote(), readIndexed(), fetchMembership(), fetchRemoteHistory(), readIndexedBackups()]);
+      var seed = results[0].status === 'fulfilled' ? results[0].value : null;
+      var remote = results[1].status === 'fulfilled' ? results[1].value : null;
+      var indexed = results[2].status === 'fulfilled' ? results[2].value : null;
+      var membership = results[3].status === 'fulfilled' ? results[3].value : { level: 'none', message: 'Не удалось проверить права доступа' };
+      remoteHistory = results[4].status === 'fulfilled' ? (results[4].value || []) : [];
+      localBackups = results[5].status === 'fulfilled' ? (results[5].value || []) : [];
+      workspaceAccess = membership.level;
+      workspaceAccessMessage = membership.message;
+      if (seed) data = mergeData(seed, data);
+      if (indexed && indexed.data) {
+        data = mergeData(data, indexed.data);
+        cache.dirty = cache.dirty || indexed.dirty === true;
+      }
+      if (remote && remote.payload) {
+        remoteRevision = number(remote.revision);
+        data = workspaceAccess === 'viewer' ? normalizeData(remote.payload) : mergeData(remote.payload, data);
+      }
+      if (workspaceAccess === 'viewer' && (!remote || !remote.payload)) data = normalizeData(seed || FALLBACK_DATA);
+      if (workspaceAccess === 'none') {
+        data = normalizeData(seed || FALLBACK_DATA);
+        localBackups = [];
+        await purgeScopedLocalData();
+      }
+      if (!canEdit()) cache.dirty = false;
+      lastCommittedData = clone(data);
+      if (localBackups[0]) lastBackupAt = timestamp(localBackups[0].createdAt);
+      writeLocal(cache.dirty);
+      if (workspaceAccess === 'editor') {
+        syncState = remote && remote.payload ? (cache.dirty ? 'pending' : 'ok') : 'pending';
+        syncMessage = remote && remote.payload ? (cache.dirty ? 'Нужно отправить локальные изменения' : 'Командная база подключена · редактор') : 'Редактор · создаём общую базу';
+      } else if (workspaceAccess === 'viewer') {
+        syncState = 'ok';
+        syncMessage = 'Командная база · только просмотр';
+      } else if (workspaceAccess === 'local') {
+        syncState = 'local';
+        syncMessage = 'Локальный режим';
+      } else {
+        syncState = 'error';
+        syncMessage = workspaceAccessMessage;
+      }
+    } catch (error) {
+      syncState = 'error';
+      syncMessage = error && error.message ? error.message : 'Синхронизация недоступна';
+    } finally {
+      loadFinished = true;
+      renderDesigners();
+      if (cache.dirty && workspaceAccess === 'editor') scheduleSync(400);
+    }
+  }
+
+  function scheduleSync(delay) {
+    if (syncTimer) window.clearTimeout(syncTimer);
+    if (workspaceAccess !== 'editor') {
+      syncState = workspaceAccess === 'local' ? 'local' : (workspaceAccess === 'viewer' ? 'ok' : 'error');
+      syncMessage = workspaceAccess === 'local' ? 'Сохранено на устройстве' : workspaceAccessMessage;
+      return;
+    }
+    syncState = remoteConfig() && remoteConfig().token ? 'pending' : (localPersistState === 'error' ? 'error' : 'local');
+    syncMessage = syncState === 'pending' ? 'Сохраняем изменения' : (syncState === 'error' ? 'Не удалось сохранить на устройстве' : 'Сохраняем на устройстве');
+    syncTimer = window.setTimeout(function () {
+      syncTimer = 0;
+      syncRemote();
+    }, delay == null ? 650 : delay);
+  }
+
+  async function syncRemote(force) {
+    var cfg = remoteConfig();
+    if (!cfg || !cfg.token) {
+      syncState = 'local';
+      syncMessage = 'Сохранено на устройстве';
+      renderDesigners();
+      return false;
+    }
+    if (workspaceAccess === 'viewer') {
+      syncState = 'pending';
+      syncMessage = 'Обновляем командную базу';
+      renderDesigners();
+      try {
+        var viewerRemote = await fetchRemote();
+        if (viewerRemote && viewerRemote.payload) data = normalizeData(viewerRemote.payload);
+        remoteRevision = viewerRemote ? number(viewerRemote.revision) : 0;
+        remoteHistory = await fetchRemoteHistory().catch(function () { return remoteHistory; });
+        lastCommittedData = clone(data);
+        await writeLocal(false);
+        syncState = 'ok';
+        syncMessage = 'Командная база обновлена · только просмотр';
+        renderDesigners();
+        return true;
+      } catch (viewerError) {
+        syncState = 'error';
+        syncMessage = viewerError && viewerError.message ? viewerError.message : 'Обновление недоступно';
+        renderDesigners();
+        return false;
+      }
+    }
+    if (workspaceAccess !== 'editor') {
+      syncState = 'error';
+      syncMessage = workspaceAccessMessage;
+      renderDesigners();
+      return false;
+    }
+    syncState = 'pending';
+    syncMessage = force ? 'Обновляем командную базу' : 'Сохраняем изменения';
+    renderDesigners();
+    try {
+      var remote = await fetchRemote();
+      if (remote && remote.payload) data = mergeData(remote.payload, data);
+      remoteRevision = remote ? number(remote.revision) : 0;
+      data.updatedAt = nowIso();
+      var pushed;
+      try {
+        pushed = await pushRemote(data, remoteRevision);
+      } catch (error) {
+        if (!error || error.code !== 'revision_conflict') throw error;
+        var latest = await fetchRemote();
+        if (latest && latest.payload) data = mergeData(latest.payload, data);
+        remoteRevision = latest ? number(latest.revision) : 0;
+        data.updatedAt = nowIso();
+        pushed = await pushRemote(data, remoteRevision);
+      }
+      remoteRevision = pushed ? number(pushed.revision) : remoteRevision;
+      remoteHistory = await fetchRemoteHistory().catch(function () { return remoteHistory; });
+      lastCommittedData = clone(data);
+      await writeLocal(false);
+      syncState = 'ok';
+      syncMessage = 'Все изменения синхронизированы';
+      renderDesigners();
+      return true;
+    } catch (error) {
+      writeLocal(true);
+      syncState = 'error';
+      syncMessage = 'Сохранено локально · ' + (error && error.message ? error.message : 'синк недоступен');
+      renderDesigners();
+      return false;
+    }
+  }
+
+  function appendActivity(message, meta) {
+    meta = meta || {};
+    data.activity = [normalizeActivity({
+      id: uid('design-event'),
+      action: meta.action || 'change',
+      summary: message || 'Рабочее пространство изменено',
+      entityType: meta.entityType,
+      entityId: meta.entityId,
+      actor: currentActor(),
+      createdAt: nowIso()
+    })].concat(data.activity || []).slice(0, ACTIVITY_LIMIT);
+  }
+
+  function mutate(message, meta) {
+    if (!canEdit()) {
+      data = normalizeData(lastCommittedData || FALLBACK_DATA);
+      ensureEditor();
+      renderDesigners();
+      return false;
+    }
+    queueLocalBackup('До изменения: ' + (message || 'рабочая база'), false, lastCommittedData);
+    appendActivity(message, meta);
+    data.updatedAt = nowIso();
+    writeLocal(true);
+    scheduleSync();
+    lastCommittedData = clone(data);
+    renderDesigners();
+    if (message) showToast(message);
+    return true;
+  }
+
+  function typeLabel(type) {
+    var found = TYPES.find(function (item) { return item[0] === type; });
+    return found ? found[1] : 'Другое';
+  }
+
+  function kindLabel(kind) {
+    var found = PAGE_KINDS.find(function (item) { return item[0] === kind; });
+    return found ? found[1] : 'Страница';
+  }
+
+  function statusFromText(value) {
+    var raw = string(value).toLowerCase();
+    if (/готов|done|complete|опублик|approved|согласован/.test(raw)) return 'done';
+    if (/ревью|review|провер|согласован/.test(raw)) return 'review';
+    if (/работ|progress|doing|production|дизайн/.test(raw)) return 'production';
+    if (/бриф|brief|тз|technical/.test(raw)) return 'brief';
+    return 'inbox';
+  }
+
+  function testStatusFromText(value) {
+    var raw = string(value).toLowerCase();
+    if (/заверш|complete|done|finished/.test(raw)) return 'complete';
+    if (/анализ|analysis|result|итог/.test(raw)) return 'analysis';
+    if (/идет|идёт|running|active|запущ/.test(raw)) return 'running';
+    return 'planned';
+  }
+
+  function ratio(numerator, denominator) {
+    var top = number(numerator);
+    var bottom = number(denominator);
+    return bottom > 0 ? top / bottom : null;
+  }
+
+  function formatPct(value, digits) {
+    if (value == null || !Number.isFinite(Number(value))) return '—';
+    return new Intl.NumberFormat('ru-RU', { style: 'percent', minimumFractionDigits: digits == null ? 1 : digits, maximumFractionDigits: digits == null ? 1 : digits }).format(Number(value));
+  }
+
+  function formatNumber(value) {
+    return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(number(value));
+  }
+
+  function formatMoney(value) {
+    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(number(value));
+  }
+
+  function normalCdf(value) {
+    var sign = value < 0 ? -1 : 1;
+    var x = Math.abs(value) / Math.sqrt(2);
+    var t = 1 / (1 + .3275911 * x);
+    var erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t * Math.exp(-x * x);
+    return .5 * (1 + sign * erf);
+  }
+
+  function significance(successA, totalA, successB, totalB) {
+    successA = number(successA); totalA = number(totalA); successB = number(successB); totalB = number(totalB);
+    if (totalA < 100 || totalB < 100 || successA > totalA || successB > totalB) return { significant: false, pValue: null, reason: 'Нужно минимум 100 кликов на вариант' };
+    var pooled = (successA + successB) / (totalA + totalB);
+    var variance = pooled * (1 - pooled) * (1 / totalA + 1 / totalB);
+    if (variance <= 0) return { significant: false, pValue: null, reason: 'Недостаточно вариативности данных' };
+    var z = (successB / totalB - successA / totalA) / Math.sqrt(variance);
+    var pValue = 2 * (1 - normalCdf(Math.abs(z)));
+    return { significant: pValue < .05, pValue: pValue, zScore: z, reason: pValue < .05 ? '' : 'Разница статистически не подтверждена' };
+  }
+
+  function validateVariantFunnel(variant, label) {
+    var views = number(variant && variant.views);
+    var clicks = number(variant && variant.clicks);
+    var carts = number(variant && variant.carts);
+    var orders = number(variant && variant.orders);
+    if (clicks > views) return label + ': клики не могут превышать показы';
+    if (carts > clicks) return label + ': добавления в корзину не могут превышать клики';
+    if (orders > clicks) return label + ': заказы не могут превышать клики';
+    if (carts > 0 && orders > carts) return label + ': заказы не могут превышать добавления в корзину';
+    return '';
+  }
+
+  function validateTest(test) {
+    return validateVariantFunnel(test && test.control, 'Контроль A') || validateVariantFunnel(test && test.variant, 'Вариант B');
+  }
+
+  function testMetrics(test) {
+    var control = test.control || normalizeVariant({}, 'Контроль A');
+    var variant = test.variant || normalizeVariant({}, 'Вариант B');
+    var controlCtr = ratio(control.clicks, control.views);
+    var variantCtr = ratio(variant.clicks, variant.views);
+    var controlCr = ratio(control.orders, control.clicks);
+    var variantCr = ratio(variant.orders, variant.clicks);
+    var controlViewCr = ratio(control.orders, control.views);
+    var variantViewCr = ratio(variant.orders, variant.views);
+    var crUplift = controlCr && variantCr != null ? (variantCr - controlCr) / controlCr : null;
+    var ctrUplift = controlCtr && variantCtr != null ? (variantCtr - controlCtr) / controlCtr : null;
+    var revenueUplift = control.revenue > 0 ? (variant.revenue - control.revenue) / control.revenue : null;
+    var confidence = significance(control.orders, control.clicks, variant.orders, variant.clicks);
+    return {
+      controlCtr: controlCtr,
+      variantCtr: variantCtr,
+      controlCr: controlCr,
+      variantCr: variantCr,
+      controlViewCr: controlViewCr,
+      variantViewCr: variantViewCr,
+      crUplift: crUplift,
+      ctrUplift: ctrUplift,
+      revenueUplift: revenueUplift,
+      significant: confidence.significant,
+      pValue: confidence.pValue,
+      significanceReason: confidence.reason
+    };
+  }
+
+  function inferredWinner(test) {
+    if (test.winner) return test.winner;
+    var metrics = testMetrics(test);
+    if (metrics.variantCr == null || metrics.controlCr == null) return '';
+    if (!metrics.significant) return 'inconclusive';
+    if (Math.abs(metrics.variantCr - metrics.controlCr) < .0001) return 'inconclusive';
+    return metrics.variantCr > metrics.controlCr ? 'variant' : 'control';
+  }
+
+  function priorityFromText(value) {
+    var raw = string(value).toLowerCase();
+    if (/high|urgent|высок|сроч|крит/.test(raw)) return 'high';
+    if (/low|низк/.test(raw)) return 'low';
+    return 'normal';
+  }
+
+  function typeFromText(value) {
+    var raw = string(value).toLowerCase();
+    if (/rich|рич/.test(raw)) return 'rich';
+    if (/карточ|market|wb|ozon/.test(raw)) return 'card';
+    if (/соц|social|smm|stories|пост/.test(raw)) return 'social';
+    if (/презент|presentation|deck/.test(raw)) return 'presentation';
+    if (/упаков|package|этикет/.test(raw)) return 'package';
+    if (/фото|photo|ретуш/.test(raw)) return 'photo';
+    if (/бренд|brand|logo|логотип/.test(raw)) return 'brand';
+    return 'other';
+  }
+
+  function formatDate(value) {
+    var raw = normalizeDate(value);
+    if (!raw) return 'без срока';
+    try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(raw + 'T12:00:00')); }
+    catch (_) { return raw; }
+  }
+
+  function formatDateTime(value) {
+    var parsed = timestamp(value);
+    if (!parsed) return 'дата не указана';
+    try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(parsed)); }
+    catch (_) { return string(value); }
+  }
+
+  function isOverdue(project) {
+    if (!project.dueDate || project.status === 'done') return false;
+    return project.dueDate < new Date().toISOString().slice(0, 10);
+  }
+
+  function isDueSoon(project) {
+    if (!project.dueDate || project.status === 'done') return false;
+    var due = new Date(project.dueDate + 'T23:59:59').getTime();
+    var diff = due - Date.now();
+    return diff >= 0 && diff <= 3 * 86400000;
+  }
+
+  function activeProjects() {
+    return data.projects.filter(function (item) { return !item.archived; });
+  }
+
+  function activeTests() {
+    return data.tests.filter(function (item) { return !item.archived; });
+  }
+
+  function filteredProjects() {
+    var search = string(ui.search).toLowerCase();
+    return activeProjects().filter(function (project) {
+      if (ui.status === 'active' && project.status === 'done') return false;
+      if (ui.status === 'done' && project.status !== 'done') return false;
+      if (ui.status !== 'all' && ui.status !== 'active' && ui.status !== 'done' && project.status !== ui.status) return false;
+      if (ui.owner !== 'all' && project.owner !== ui.owner) return false;
+      if (ui.type !== 'all' && project.type !== ui.type) return false;
+      if (!search) return true;
+      var haystack = [project.title, project.owner, project.marketplace, project.brief, typeLabel(project.type)].concat(project.tags || []).join(' ').toLowerCase();
+      return haystack.indexOf(search) !== -1;
+    }).sort(function (a, b) {
+      if (a.status !== b.status) return Object.keys(STATUS).indexOf(a.status) - Object.keys(STATUS).indexOf(b.status);
+      if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+      return timestamp(b.updatedAt) - timestamp(a.updatedAt);
+    });
+  }
+
+  function optionList(list, selected) {
+    return list.map(function (item) {
+      var value = Array.isArray(item) ? item[0] : item;
+      var label = Array.isArray(item) ? item[1] : item;
+      return '<option value="' + html(value) + '"' + (value === selected ? ' selected' : '') + '>' + html(label) + '</option>';
+    }).join('');
+  }
+
+  function renderSummary() {
+    var projects = activeProjects();
+    var active = projects.filter(function (item) { return item.status !== 'done'; }).length;
+    var review = projects.filter(function (item) { return item.status === 'review'; }).length;
+    var urgent = projects.filter(function (item) { return isOverdue(item) || isDueSoon(item); }).length;
+    var month = new Date().toISOString().slice(0, 7);
+    var completed = projects.filter(function (item) { return item.status === 'done' && string(item.updatedAt).slice(0, 7) === month; }).length;
+    var runningTests = activeTests().filter(function (item) { return item.status === 'running' || item.status === 'analysis'; }).length;
+    return '<div class="design-ws-summary">' + [
+      ['Активные проекты', active, 'в производственном контуре', '#7e5cff'],
+      ['На ревью', review, 'ждут решения или правок', '#4e83bf'],
+      ['Срок до 3 дней', urgent, 'включая просроченные', '#c65858'],
+      ['Тесты конверсии', runningTests, 'запущены или на анализе', '#c98a36'],
+      ['Готово за месяц', completed, 'завершённые макеты', '#54a987']
+    ].map(function (metric) {
+      return '<article class="design-ws-metric" style="--metric:' + metric[3] + '"><span>' + html(metric[0]) + '</span><strong>' + metric[1] + '</strong><small>' + html(metric[2]) + '</small></article>';
+    }).join('') + '</div>';
+  }
+
+  function renderFilters() {
+    var owners = Array.from(new Set(activeProjects().map(function (item) { return item.owner; }).filter(Boolean))).sort();
+    return '<div class="design-ws-filter-row">' +
+      '<input type="search" placeholder="Поиск по проектам" value="' + html(ui.search) + '" data-design-search aria-label="Поиск по проектам">' +
+      '<select data-design-filter="status" aria-label="Статус">' + optionList([['active', 'Активные'], ['all', 'Все статусы'], ['inbox', 'Запросы'], ['brief', 'Бриф'], ['production', 'В работе'], ['review', 'На ревью'], ['done', 'Готово']], ui.status) + '</select>' +
+      '<select data-design-filter="owner" aria-label="Ответственный"><option value="all">Все дизайнеры</option>' + optionList(owners, ui.owner) + '</select>' +
+      '<select data-design-filter="type" aria-label="Тип проекта"><option value="all">Все типы</option>' + optionList(TYPES, ui.type) + '</select>' +
+      '</div>';
+  }
+
+  function renderCard(project) {
+    var priority = PRIORITIES[project.priority] || PRIORITIES.normal;
+    var tags = (project.tags || []).slice(0, 2).map(function (tag) { return '<span class="design-ws-chip">' + html(tag) + '</span>'; }).join('');
+    return '<article class="design-ws-card' + (isOverdue(project) ? ' is-overdue' : '') + '" draggable="true" tabindex="0" data-design-project="' + html(project.id) + '">' +
+      '<div class="design-ws-card-kicker"><span>' + html(typeLabel(project.type)) + '</span><i class="design-ws-priority" style="--priority-color:' + priority.color + '" title="' + html(priority.label) + '"></i></div>' +
+      '<h3>' + html(project.title) + '</h3>' +
+      (project.brief ? '<p>' + html(project.brief.slice(0, 120)) + (project.brief.length > 120 ? '…' : '') + '</p>' : '<p>Откройте карточку, чтобы добавить бриф и ссылки.</p>') +
+      '<div class="design-ws-card-meta"><span class="owner">' + html(project.owner || 'не назначен') + '</span>' + tags + '<span class="design-ws-chip">' + html(formatDate(project.dueDate)) + '</span></div>' +
+      '</article>';
+  }
+
+  function renderBoard(projects) {
+    return '<div class="design-ws-board-wrap"><div class="design-ws-board">' + Object.keys(STATUS).map(function (key) {
+      var meta = STATUS[key];
+      var allRows = projects.filter(function (project) { return project.status === key; });
+      var rows = allRows.slice(0, 20);
+      var total = allRows.length;
+      return '<section class="design-ws-column" data-design-drop-status="' + key + '">' +
+        '<div class="design-ws-column-head"><div class="design-ws-column-title" style="--status-color:' + meta.color + '"><i></i><span>' + html(meta.label) + '</span></div><span class="design-ws-count">' + total + '</span></div>' +
+        '<div class="design-ws-column-list">' + (rows.length ? rows.map(renderCard).join('') + (total > rows.length ? '<button type="button" class="design-ws-column-more" data-design-mode="table">Ещё ' + (total - rows.length) + ' · открыть таблицу</button>' : '') : '<div class="design-ws-empty"><p>Перетащите карточку сюда</p></div>') + '</div>' +
+        '</section>';
+    }).join('') + '</div></div>';
+  }
+
+  function renderTable(projects) {
+    if (!projects.length) return renderEmptyProjects();
+    return '<div class="design-ws-table-wrap"><table class="design-ws-table"><thead><tr><th>Проект</th><th>Статус</th><th>Ответственный</th><th>Срок</th><th>Приоритет</th><th>Теги</th></tr></thead><tbody>' +
+      projects.map(function (project) {
+        var status = STATUS[project.status] || STATUS.inbox;
+        var priority = PRIORITIES[project.priority] || PRIORITIES.normal;
+        return '<tr data-design-project="' + html(project.id) + '"><td><strong>' + html(project.title) + '</strong><small>' + html(typeLabel(project.type)) + (project.marketplace ? ' · ' + html(project.marketplace) : '') + '</small></td>' +
+          '<td><select class="design-ws-field" data-design-status="' + html(project.id) + '">' + optionList(Object.keys(STATUS).map(function (key) { return [key, STATUS[key].label]; }), project.status) + '</select></td>' +
+          '<td>' + html(project.owner || '—') + '</td><td><span style="color:' + (isOverdue(project) ? 'var(--design-red)' : 'inherit') + '">' + html(formatDate(project.dueDate)) + '</span></td>' +
+          '<td><span class="design-ws-chip" style="color:' + priority.color + '">' + html(priority.label) + '</span></td><td>' + html((project.tags || []).join(', ') || '—') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  function renderVariantPreview(variant, label) {
+    return '<div class="design-test-variant"><div class="design-test-preview">' +
+      (variant.imageUrl ? '<img src="' + html(variant.imageUrl) + '" alt="' + html(label) + '" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '<span>' + html(label) + '<small>добавьте ссылку на макет или скриншот</small></span>') +
+      '</div><strong>' + html(variant.name || label) + '</strong></div>';
+  }
+
+  function renderTestMetric(label, control, variant, formatter) {
+    formatter = formatter || formatNumber;
+    return '<div class="design-test-metric-row"><span>' + html(label) + '</span><strong>' + html(formatter(control)) + '</strong><strong>' + html(formatter(variant)) + '</strong></div>';
+  }
+
+  function renderTestCard(test) {
+    var metrics = testMetrics(test);
+    var status = TEST_STATUS[test.status] || TEST_STATUS.planned;
+    var winner = inferredWinner(test);
+    var uplift = metrics.crUplift;
+    var upliftClass = uplift == null ? '' : (uplift >= 0 ? ' positive' : ' negative');
+    var winnerLabel = winner === 'variant' ? 'Победил B' : (winner === 'control' ? 'Победил A' : (winner === 'inconclusive' ? 'Без победителя' : 'Нет вывода'));
+    var confidenceLabel = test.winner ? 'Решение задано вручную' : (metrics.significant ? '95% значимость' : (metrics.significanceReason || 'Недостаточно данных'));
+    return '<article class="design-test-card" tabindex="0" data-design-test="' + html(test.id) + '">' +
+      '<div class="design-test-head"><div><span class="design-ws-chip" style="color:' + status.color + '">' + html(status.label) + '</span><h3>' + html(test.title) + '</h3><p>' + html([test.marketplace, test.sku ? 'SKU ' + test.sku : ''].filter(Boolean).join(' · ') || 'Площадка и SKU не указаны') + '</p></div>' +
+      '<div class="design-test-result' + upliftClass + '"><strong>' + html(uplift == null ? '—' : ((uplift > 0 ? '+' : '') + formatPct(uplift))) + '</strong><span>uplift CR</span></div></div>' +
+      (test.hypothesis ? '<div class="design-test-hypothesis"><span>Гипотеза</span>' + html(test.hypothesis) + '</div>' : '') +
+      '<div class="design-test-previews">' + renderVariantPreview(test.control, 'Контроль A') + renderVariantPreview(test.variant, 'Вариант B') + '</div>' +
+      '<div class="design-test-metrics"><div class="design-test-metric-row header"><span>Метрика</span><strong>A</strong><strong>B</strong></div>' +
+      renderTestMetric('Показы', test.control.views, test.variant.views) +
+      renderTestMetric('CTR', metrics.controlCtr, metrics.variantCtr, formatPct) +
+      renderTestMetric('В корзину', test.control.carts, test.variant.carts) +
+      renderTestMetric('Заказы', test.control.orders, test.variant.orders) +
+      renderTestMetric('CR из клика', metrics.controlCr, metrics.variantCr, formatPct) +
+      renderTestMetric('CR из показа', metrics.controlViewCr, metrics.variantViewCr, formatPct) +
+      renderTestMetric('Выручка', test.control.revenue, test.variant.revenue, formatMoney) + '</div>' +
+      '<div class="design-test-foot"><span class="design-ws-chip">' + html(winnerLabel) + '</span><span class="design-ws-chip">' + html(confidenceLabel) + '</span><span>' + html(test.owner || 'ответственный не указан') + '</span><span>' + html(test.endDate ? 'до ' + formatDate(test.endDate) : 'период не задан') + '</span></div>' +
+      '</article>';
+  }
+
+  function pageSlice(items, pageKey, pageSize) {
+    var totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+    var page = Math.min(totalPages, Math.max(1, number(ui[pageKey]) || 1));
+    ui[pageKey] = page;
+    return { items: items.slice((page - 1) * pageSize, page * pageSize), page: page, pageSize: pageSize, totalPages: totalPages, total: items.length };
+  }
+
+  function renderPager(pageKey, paged) {
+    if (!paged || paged.totalPages <= 1) return '';
+    return '<nav class="design-ws-pager" aria-label="Страницы"><span>' + html(((paged.page - 1) * paged.pageSize + 1) + '–' + Math.min(paged.total, paged.page * paged.pageSize) + ' из ' + paged.total) + '</span>' +
+      '<div><button type="button" class="design-ws-btn" data-design-page-nav="' + html(pageKey) + '" data-design-page-value="' + (paged.page - 1) + '"' + (paged.page <= 1 ? ' disabled' : '') + '>←</button>' +
+      '<strong>' + paged.page + ' / ' + paged.totalPages + '</strong>' +
+      '<button type="button" class="design-ws-btn" data-design-page-nav="' + html(pageKey) + '" data-design-page-value="' + (paged.page + 1) + '"' + (paged.page >= paged.totalPages ? ' disabled' : '') + '>→</button></div></nav>';
+  }
+
+  function renderTests() {
+    var tests = activeTests().sort(function (a, b) { return timestamp(b.updatedAt) - timestamp(a.updatedAt); });
+    var paged = pageSlice(tests, 'testPage', TEST_PAGE_SIZE);
+    return '<div class="design-ws-pages-head"><div><h3>Тесты конверсии</h3><p>История гипотез: что загрузили на маркетплейс, как выглядело и какой результат получили.</p></div><div class="design-ws-head-actions"><button type="button" class="design-ws-btn" data-design-import-test>Импорт метрик MP CSV</button><button type="button" class="design-ws-btn primary" data-design-add-test>+ Новый тест</button></div></div>' +
+      (tests.length ? '<div class="design-tests-grid">' + paged.items.map(renderTestCard).join('') + '</div>' + renderPager('testPage', paged) : '<div class="design-ws-empty"><div><strong>Тестов пока нет</strong><p>Создайте гипотезу, добавьте визуалы A/B и зафиксируйте показатели маркетплейса до и после.</p><button type="button" class="design-ws-btn primary" data-design-add-test style="margin-top:14px">Создать тест</button></div></div>');
+  }
+
+  function renderEmptyProjects() {
+    return '<div class="design-ws-empty"><div><strong>Рабочая доска пока пустая</strong><p>Создайте первый проект или импортируйте базу задач из Notion в формате CSV.</p><button type="button" class="design-ws-btn primary" data-design-add-project style="margin-top:14px">Создать проект</button></div></div>';
+  }
+
+  function pageIcon(kind) {
+    return ({ page: '◇', guide: '≡', brief: '✓', template: '▦', library: '◫', link: '↗' })[kind] || '◇';
+  }
+
+  function renderPages() {
+    var pages = data.pages.filter(function (page) { return !page.archived; });
+    var paged = pageSlice(pages, 'knowledgePage', KNOWLEDGE_PAGE_SIZE);
+    return '<div class="design-ws-pages-head"><div><h3>База знаний</h3><p>Регламенты, брифы, шаблоны и решения отдела.</p></div><button type="button" class="design-ws-btn primary" data-design-add-page>+ Новая страница</button></div>' +
+      (pages.length ? '<div class="design-ws-pages">' + paged.items.map(function (page) {
+        return '<article class="design-ws-page" tabindex="0" data-design-page="' + html(page.id) + '"><span class="design-ws-page-icon">' + pageIcon(page.kind) + '</span><h4>' + html(page.title) + '</h4><p>' + html(page.summary || page.content.slice(0, 150) || 'Добавьте описание страницы.') + '</p><div class="design-ws-page-meta"><span class="design-ws-chip">' + html(page.category) + '</span><span class="design-ws-chip">' + html(page.status === 'draft' ? 'черновик' : kindLabel(page.kind)) + '</span></div></article>';
+      }).join('') + '</div>' + renderPager('knowledgePage', paged) : '<div class="design-ws-empty"><div><strong>База знаний пустая</strong><p>Создайте регламент, бриф или ссылку на библиотеку.</p></div></div>');
+  }
+
+  function renderArchiveRows(items, type, title) {
+    return '<section class="design-ws-archive-section"><h3>' + html(title) + '<span>' + items.length + '</span></h3>' + (items.length ? '<div class="design-ws-archive-list">' + items.map(function (item) {
+      return '<article><div><strong>' + html(item.title) + '</strong><small>' + html(item.owner || item.category || item.sku || 'без дополнительной информации') + '</small></div><button type="button" class="design-ws-btn" data-design-restore="' + html(type) + '" data-design-restore-id="' + html(item.id) + '">Восстановить</button></article>';
+    }).join('') + '</div>' : '<p class="design-ws-muted">В этом разделе архив пуст.</p>') + '</section>';
+  }
+
+  function renderHistory() {
+    var localRows = localBackups.slice(0, LOCAL_BACKUP_LIMIT);
+    var activityRows = (data.activity || []).slice(0, 80);
+    return '<div class="design-ws-pages-head"><div><h3>История и резервные копии</h3><p>Командные версии создаются при каждой синхронизации, локальные — автоматически перед изменениями.</p></div>' +
+      '<div class="design-ws-head-actions"><button type="button" class="design-ws-btn" data-design-export>Экспорт JSON</button>' +
+      (canEdit() ? '<button type="button" class="design-ws-btn" data-design-import-backup>Восстановить JSON</button><button type="button" class="design-ws-btn primary" data-design-backup>Создать копию</button>' : '') + '</div></div>' +
+      '<div class="design-ws-history-grid"><section class="design-ws-history-panel"><div class="design-ws-history-title"><h3>Командные версии</h3><span>' + remoteHistory.length + '</span></div>' +
+      (remoteHistory.length ? '<div class="design-ws-history-list">' + remoteHistory.map(function (item) {
+        var revision = number(item.revision);
+        return '<article><div><strong>Версия ' + revision + (revision === remoteRevision ? ' · текущая' : '') + '</strong><small>' + html(item.change_summary || 'Синхронизация рабочей базы') + ' · ' + html(formatDateTime(item.changed_at)) + '</small></div>' +
+          (canEdit() && revision !== remoteRevision ? '<button type="button" class="design-ws-btn" data-design-restore-remote="' + revision + '">Восстановить</button>' : '') + '</article>';
+      }).join('') + '</div>' : '<p class="design-ws-muted">Появятся после подключения миграции Supabase и первой синхронизации.</p>') + '</section>' +
+      '<section class="design-ws-history-panel"><div class="design-ws-history-title"><h3>Локальные копии</h3><span>' + localRows.length + '</span></div>' +
+      (localRows.length ? '<div class="design-ws-history-list">' + localRows.map(function (item) {
+        return '<article><div><strong>' + html(formatDateTime(item.createdAt)) + '</strong><small>' + html(item.reason || 'Автоматическая резервная копия') + '</small></div>' +
+          (canEdit() ? '<button type="button" class="design-ws-btn" data-design-restore-local="' + html(item.key) + '">Восстановить</button>' : '') + '</article>';
+      }).join('') + '</div>' : '<p class="design-ws-muted">Копия будет создана автоматически перед первым изменением.</p>') + '</section></div>' +
+      '<section class="design-ws-history-panel design-ws-activity"><div class="design-ws-history-title"><h3>Журнал действий</h3><span>' + activityRows.length + '</span></div>' +
+      (activityRows.length ? '<div class="design-ws-activity-list">' + activityRows.map(function (item) {
+        return '<article><i></i><div><strong>' + html(item.summary) + '</strong><small>' + html(item.actor || 'Пользователь') + ' · ' + html(formatDateTime(item.createdAt)) + '</small></div></article>';
+      }).join('') + '</div>' : '<p class="design-ws-muted">Новые изменения будут фиксироваться здесь.</p>') + '</section>';
+  }
+
+  function renderArchive() {
+    return '<div class="design-ws-pages-head"><div><h3>Архив</h3><p>Архивные материалы можно восстановить без потери данных.</p></div></div><div class="design-ws-archive">' +
+      renderArchiveRows(data.projects.filter(function (item) { return item.archived; }), 'project', 'Проекты') +
+      renderArchiveRows(data.tests.filter(function (item) { return item.archived; }), 'test', 'Тесты') +
+      renderArchiveRows(data.pages.filter(function (item) { return item.archived; }), 'page', 'Страницы') + '</div>';
+  }
+
+  function renderDesignSystem() {
+    var systemPages = data.pages.filter(function (page) {
+      return !page.archived && /бренд|шаблон|референс/i.test(page.category + ' ' + page.title);
+    });
+    var links = systemPages.filter(function (page) { return page.url; });
+    return '<div class="design-ws-system-grid">' +
+      '<article class="design-ws-system-card wide"><h3>Основа бренда</h3><p>Быстрый доступ к гайдлайнам и главным дизайн-ресурсам. Добавляйте ссылки через базу знаний — они появятся здесь автоматически.</p><div class="design-ws-system-links">' +
+        (links.length ? links.slice(0, 6).map(function (page) { return '<a class="design-ws-system-link" href="' + html(page.url) + '" target="_blank" rel="noopener"><strong>' + html(page.title) + '</strong><span>открыть ↗</span></a>'; }).join('') : '<div class="design-ws-empty"><p>Добавьте ссылку на Figma, облачную папку или брендбук.</p></div>') +
+        '</div></article>' +
+      '<article class="design-ws-system-card"><h3>Палитра интерфейса</h3><p>Рабочая нейтральная база и акценты пространства дизайнеров.</p><div class="design-ws-swatches"><span class="design-ws-swatch" style="--swatch:#11100f"></span><span class="design-ws-swatch" style="--swatch:#f6f1e8"></span><span class="design-ws-swatch" style="--swatch:#7e5cff"></span><span class="design-ws-swatch" style="--swatch:#54a987"></span></div></article>' +
+      '<article class="design-ws-system-card"><h3>Шаблоны</h3><p>' + systemPages.filter(function (page) { return /шаблон/i.test(page.category + ' ' + page.title); }).length + ' материалов в библиотеке.</p><button type="button" class="design-ws-btn" data-design-mode="knowledge" style="margin-top:18px">Открыть базу знаний</button></article>' +
+      '<article class="design-ws-system-card"><h3>Правила работы</h3><p>Храните SLA, порядок согласования, версии файлов и требования к брифу рядом с проектами.</p><button type="button" class="design-ws-btn" data-design-add-page style="margin-top:18px">Добавить регламент</button></article>' +
+      '</div>';
+  }
+
+  function renderBody() {
+    var projects = filteredProjects();
+    if (ui.mode === 'tests') return renderTests();
+    if (ui.mode === 'knowledge') return renderPages();
+    if (ui.mode === 'system') return renderDesignSystem();
+    if (ui.mode === 'archive') return renderArchive();
+    if (ui.mode === 'history') return renderHistory();
+    if (!projects.length && !activeProjects().length) return renderEmptyProjects();
+    if (ui.mode === 'board') return renderBoard(projects);
+    var paged = pageSlice(projects, 'projectPage', PROJECT_PAGE_SIZE);
+    return renderTable(paged.items) + renderPager('projectPage', paged);
+  }
+
+  function renderDialog() {
+    if (!activeDialog) return '';
+    if (activeDialog.type === 'project') return renderProjectDialog(activeDialog.id);
+    if (activeDialog.type === 'page') return renderPageDialog(activeDialog.id);
+    if (activeDialog.type === 'test') return renderTestDialog(activeDialog.id);
+    return '';
+  }
+
+  function renderProjectDialog(id) {
+    var project = id ? data.projects.find(function (item) { return item.id === id; }) : null;
+    project = project || {
+      id: '', title: '', type: 'other', status: 'inbox', owner: '', dueDate: '', priority: 'normal',
+      marketplace: '', brief: '', url: '', tags: [], archived: false, createdAt: '', updatedAt: ''
+    };
+    var statusOptions = Object.keys(STATUS).map(function (key) { return [key, STATUS[key].label]; });
+    return '<div class="design-ws-modal-layer" data-design-close-layer><section class="design-ws-modal" role="dialog" aria-modal="true" aria-label="' + html(id ? 'Редактировать проект' : 'Новый проект') + '">' +
+      '<div class="design-ws-modal-head"><div><h3>' + html(id ? 'Проект' : 'Новый проект') + '</h3><p>Карточка производства: бриф, ответственный, срок и ссылка на исходники.</p></div><button type="button" class="design-ws-icon-btn" data-design-close aria-label="Закрыть">×</button></div>' +
+      '<form class="design-ws-form" data-design-project-form data-project-id="' + html(id || '') + '"><div class="design-ws-form-grid">' +
+      field('Название', 'title', project.title, 'text', true, true) +
+      selectField('Тип работы', 'type', TYPES, project.type) +
+      selectField('Статус', 'status', statusOptions, project.status) +
+      field('Ответственный', 'owner', project.owner, 'text') +
+      field('Дедлайн', 'dueDate', project.dueDate, 'date') +
+      selectField('Приоритет', 'priority', Object.keys(PRIORITIES).map(function (key) { return [key, PRIORITIES[key].label]; }), project.priority) +
+      field('Площадка / бренд', 'marketplace', project.marketplace, 'text') +
+      field('Ссылка на Figma / Drive', 'url', project.url, 'url') +
+      field('Теги через запятую', 'tags', (project.tags || []).join(', '), 'text', false, true) +
+      textareaField('Бриф и критерии готовности', 'brief', project.brief, true) +
+      '</div><div class="design-ws-modal-actions">' + (id ? '<button type="button" class="design-ws-btn danger" data-design-delete-project="' + html(id) + '">В архив</button>' : '<span></span>') + '<div class="design-ws-modal-actions-right"><button type="button" class="design-ws-btn" data-design-close>Отмена</button><button type="submit" class="design-ws-btn primary">Сохранить проект</button></div></div></form></section></div>';
+  }
+
+  function renderPageDialog(id) {
+    var page = id ? data.pages.find(function (item) { return item.id === id; }) : null;
+    page = page || {
+      id: '', title: '', category: ui.mode === 'system' ? 'Бренд-система' : 'Процессы', kind: 'page',
+      summary: '', content: '', url: '', owner: '', status: 'published', archived: false, createdAt: '', updatedAt: ''
+    };
+    return '<div class="design-ws-modal-layer" data-design-close-layer><section class="design-ws-modal" role="dialog" aria-modal="true" aria-label="' + html(id ? 'Редактировать страницу' : 'Новая страница') + '">' +
+      '<div class="design-ws-modal-head"><div><h3>' + html(id ? 'Страница отдела' : 'Новая страница') + '</h3><p>Регламент, бриф, шаблон, референс или ссылка на внешний материал.</p></div><button type="button" class="design-ws-icon-btn" data-design-close aria-label="Закрыть">×</button></div>' +
+      '<form class="design-ws-form" data-design-page-form data-page-id="' + html(id || '') + '"><div class="design-ws-form-grid">' +
+      field('Название', 'title', page.title, 'text', true, true) +
+      selectField('Категория', 'category', PAGE_CATEGORIES, page.category) +
+      selectField('Тип', 'kind', PAGE_KINDS, page.kind) +
+      selectField('Публикация', 'status', [['published', 'Опубликовано'], ['draft', 'Черновик']], page.status) +
+      field('Ответственный', 'owner', page.owner, 'text') +
+      field('Ссылка', 'url', page.url, 'url') +
+      textareaField('Краткое описание', 'summary', page.summary, true) +
+      textareaField('Содержание / заметки', 'content', page.content, true) +
+      '</div><div class="design-ws-modal-actions">' + (id ? '<button type="button" class="design-ws-btn danger" data-design-delete-page="' + html(id) + '">В архив</button>' : '<span></span>') + '<div class="design-ws-modal-actions-right"><button type="button" class="design-ws-btn" data-design-close>Отмена</button><button type="submit" class="design-ws-btn primary">Сохранить страницу</button></div></div></form></section></div>';
+  }
+
+  function renderTestDialog(id) {
+    var test = id ? data.tests.find(function (item) { return item.id === id; }) : null;
+    test = test || {
+      id: '', title: '', sku: '', marketplace: '', owner: '', status: 'planned', hypothesis: '', startDate: '', endDate: '',
+      control: normalizeVariant({}, 'Контроль A'), variant: normalizeVariant({}, 'Вариант B'), winner: '', conclusion: '', decision: '', sourceUrl: '', tags: []
+    };
+    var statusOptions = Object.keys(TEST_STATUS).map(function (key) { return [key, TEST_STATUS[key].label]; });
+    return '<div class="design-ws-modal-layer" data-design-close-layer><section class="design-ws-modal" role="dialog" aria-modal="true" aria-label="' + html(id ? 'Редактировать тест конверсии' : 'Новый тест конверсии') + '">' +
+      '<div class="design-ws-modal-head"><div><h3>' + html(id ? 'Тест конверсии' : 'Новый тест конверсии') + '</h3><p>Зафиксируйте гипотезу, визуалы A/B, показатели маркетплейса и итоговое решение.</p></div><button type="button" class="design-ws-icon-btn" data-design-close aria-label="Закрыть">×</button></div>' +
+      '<form class="design-ws-form" data-design-test-form data-test-id="' + html(id || '') + '"><div class="design-ws-form-grid">' +
+      field('Название теста', 'title', test.title, 'text', true, true) +
+      field('SKU / артикул', 'sku', test.sku, 'text') + field('Маркетплейс', 'marketplace', test.marketplace, 'text') +
+      field('Ответственный', 'owner', test.owner, 'text') + selectField('Статус', 'status', statusOptions, test.status) +
+      field('Дата старта', 'startDate', test.startDate, 'date') + field('Дата завершения', 'endDate', test.endDate, 'date') +
+      textareaField('Гипотеза: что меняем и почему это должно повлиять на конверсию', 'hypothesis', test.hypothesis, true) +
+      '<div class="design-test-form-section"><h4>Контроль A — было</h4><p>Исходный макет и базовые показатели за сопоставимый период.</p></div>' +
+      field('Название A', 'controlName', test.control.name, 'text') + field('Скриншот / макет A', 'controlImageUrl', test.control.imageUrl, 'url') +
+      field('Показы A', 'controlViews', test.control.views, 'number') + field('Клики A', 'controlClicks', test.control.clicks, 'number') +
+      field('Добавления в корзину A', 'controlCarts', test.control.carts, 'number') + field('Заказы A', 'controlOrders', test.control.orders, 'number') +
+      field('Выручка A, ₽', 'controlRevenue', test.control.revenue, 'number') + '<span></span>' +
+      '<div class="design-test-form-section"><h4>Вариант B — стало</h4><p>Новый макет и результат после публикации на площадке.</p></div>' +
+      field('Название B', 'variantName', test.variant.name, 'text') + field('Скриншот / макет B', 'variantImageUrl', test.variant.imageUrl, 'url') +
+      field('Показы B', 'variantViews', test.variant.views, 'number') + field('Клики B', 'variantClicks', test.variant.clicks, 'number') +
+      field('Добавления в корзину B', 'variantCarts', test.variant.carts, 'number') + field('Заказы B', 'variantOrders', test.variant.orders, 'number') +
+      field('Выручка B, ₽', 'variantRevenue', test.variant.revenue, 'number') + '<span></span>' +
+      '<div class="design-test-form-section"><h4>Итог</h4><p>Что получили на выходе и какое решение приняли.</p></div>' +
+      selectField('Победитель', 'winner', [['', 'Определить по CR'], ['control', 'Контроль A'], ['variant', 'Вариант B'], ['inconclusive', 'Недостаточно данных']], test.winner) +
+      field('Ссылка на отчёт MP', 'sourceUrl', test.sourceUrl, 'url') +
+      textareaField('Вывод по тесту', 'conclusion', test.conclusion, true) + textareaField('Решение / следующий шаг', 'decision', test.decision, true) +
+      field('Теги через запятую', 'tags', (test.tags || []).join(', '), 'text', false, true) +
+      '</div><div class="design-ws-modal-actions">' + (id ? '<button type="button" class="design-ws-btn danger" data-design-delete-test="' + html(id) + '">В архив</button>' : '<span></span>') + '<div class="design-ws-modal-actions-right"><button type="button" class="design-ws-btn" data-design-close>Отмена</button><button type="submit" class="design-ws-btn primary">Сохранить тест</button></div></div></form></section></div>';
+  }
+
+  function field(label, name, value, type, required, full) {
+    return '<label class="design-ws-form-label' + (full ? ' full' : '') + '"><span>' + html(label) + '</span><input class="design-ws-field" type="' + html(type || 'text') + '" name="' + html(name) + '" value="' + html(value) + '"' + (required ? ' required' : '') + '></label>';
+  }
+
+  function selectField(label, name, options, selected) {
+    return '<label class="design-ws-form-label"><span>' + html(label) + '</span><select class="design-ws-field" name="' + html(name) + '">' + optionList(options, selected) + '</select></label>';
+  }
+
+  function textareaField(label, name, value, full) {
+    return '<label class="design-ws-form-label' + (full ? ' full' : '') + '"><span>' + html(label) + '</span><textarea class="design-ws-field" name="' + html(name) + '">' + html(value) + '</textarea></label>';
+  }
+
+  function renderDesigners(rootId) {
+    var root = document.getElementById(rootId || ROOT_ID);
+    if (!root) return null;
+    var modeTabs = [['board', 'Доска'], ['table', 'Проекты'], ['tests', 'Тесты конверсии'], ['knowledge', 'База знаний'], ['system', 'Дизайн-система'], ['archive', 'Архив'], ['history', 'История']];
+    var showFilters = ui.mode === 'board' || ui.mode === 'table';
+    var checkingAccess = workspaceAccess === 'checking';
+    var bodyContent = checkingAccess ? '<div class="design-ws-empty"><div><strong>Проверяем доступ</strong><p>Данные рабочей базы появятся после проверки членства.</p></div></div>' : renderBody();
+    var accessNotice = workspaceAccess === 'viewer'
+      ? '<div class="design-ws-notice is-readonly"><strong>Режим просмотра.</strong> Обновлять данные можно, редактирование и восстановление версий отключены.</div>'
+      : ((workspaceAccess === 'none' || workspaceAccess === 'setup') ? '<div class="design-ws-notice is-error"><strong>Доступ не настроен.</strong> ' + html(workspaceAccessMessage) + '. Обратитесь к администратору раздела.</div>' : '');
+    root.innerHTML = '<div class="design-ws" data-design-workspace data-design-access="' + html(workspaceAccess) + '" data-design-readonly="' + (!canEdit()) + '">' +
+      '<header class="design-ws-head"><div><span class="design-ws-eyebrow">Creative workspace</span><h2>Дизайн-отдел</h2><p>Проекты, брифы, исходники и знания команды — в одном пространстве вместо разрозненных страниц Notion.</p></div>' +
+      '<div class="design-ws-head-actions"><span class="design-ws-access">' + html(workspaceAccess === 'editor' ? 'Редактор' : (workspaceAccess === 'viewer' ? 'Просмотр' : (workspaceAccess === 'local' ? 'Локально' : (checkingAccess ? 'Проверка' : 'Нет доступа')))) + '</span><span class="design-ws-sync ' + html(syncState) + '" title="' + html(syncMessage) + '">' + html(syncMessage) + '</span>' +
+      (canEdit() ? '<button type="button" class="design-ws-btn" data-design-import>Импорт из Notion</button><button type="button" class="design-ws-btn primary" data-design-add-project>+ Новый проект</button>' : '') + '</div></header>' +
+      (checkingAccess ? '' : renderSummary()) +
+      '<div class="design-ws-toolbar"><div class="design-ws-tabs" role="tablist">' + modeTabs.map(function (tab) { return '<button type="button" role="tab" aria-selected="' + (ui.mode === tab[0] ? 'true' : 'false') + '" class="design-ws-tab' + (ui.mode === tab[0] ? ' active' : '') + '" data-design-mode="' + tab[0] + '">' + html(tab[1]) + '</button>'; }).join('') + '</div>' +
+      (showFilters ? renderFilters() : '<div class="design-ws-filter-row"><button type="button" class="design-ws-btn" data-design-export>Экспорт JSON</button><button type="button" class="design-ws-btn" data-design-sync>Обновить</button></div>') + '</div>' +
+      (!loadFinished && loadStarted ? '<div class="design-ws-notice">Подключаем общую базу отдела. Локальная версия уже доступна для работы.</div>' : '') +
+      accessNotice +
+      '<main class="design-ws-body">' + bodyContent + '</main>' +
+      '<input class="design-ws-hidden-input" type="file" accept=".csv,text/csv" data-design-import-input>' +
+      '<input class="design-ws-hidden-input" type="file" accept=".csv,text/csv" data-design-test-import-input>' +
+      '<input class="design-ws-hidden-input" type="file" accept=".json,application/json" data-design-backup-input>' +
+      renderDialog() + '</div>';
+    if (!canEdit()) {
+      root.querySelectorAll('[data-design-add-project], [data-design-add-page], [data-design-add-test], [data-design-import], [data-design-import-test], [data-design-delete-project], [data-design-delete-page], [data-design-delete-test], [data-design-restore], [data-design-backup], [data-design-import-backup], [data-design-restore-local], [data-design-restore-remote], form button[type="submit"]').forEach(function (node) { node.hidden = true; node.disabled = true; });
+      root.querySelectorAll('form input, form select, form textarea, [data-design-status]').forEach(function (node) { node.disabled = true; });
+      root.querySelectorAll('[data-design-project][draggable]').forEach(function (node) { node.draggable = false; });
+    }
+    root.querySelectorAll('[data-design-restore]').forEach(function (button) {
+      button.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        restoreEntity(button.getAttribute('data-design-restore'), button.getAttribute('data-design-restore-id'));
+      });
+    });
+    return root;
+  }
+
+  function showToast(message) {
+    var existing = document.querySelector('.design-ws-toast');
+    if (existing) existing.remove();
+    var node = document.createElement('div');
+    node.className = 'design-ws-toast';
+    node.textContent = message;
+    document.body.appendChild(node);
+    if (toastTimer) window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () { if (node.parentNode) node.parentNode.removeChild(node); }, 3200);
+  }
+
+  function rememberDialogFocus(type, id) {
+    lastFocusedElement = { type: type, id: id || '' };
+  }
+
+  function restoreDialogFocus() {
+    var target = null;
+    if (lastFocusedElement) {
+      var attr = lastFocusedElement.type === 'project' ? 'data-design-project' : (lastFocusedElement.type === 'page' ? 'data-design-page' : 'data-design-test');
+      if (lastFocusedElement.id) {
+        target = Array.prototype.find.call(document.querySelectorAll('[' + attr + ']'), function (node) { return node.getAttribute(attr) === lastFocusedElement.id; });
+      } else {
+        target = document.querySelector(lastFocusedElement.type === 'project' ? '[data-design-add-project]' : (lastFocusedElement.type === 'page' ? '[data-design-add-page]' : '[data-design-add-test]'));
+      }
+    }
+    lastFocusedElement = null;
+    if (target && typeof target.focus === 'function') target.focus();
+  }
+
+  function openProject(id) {
+    rememberDialogFocus('project', id);
+    activeDialog = { type: 'project', id: id || '' };
+    renderDesigners();
+    focusDialog();
+  }
+
+  function openPage(id) {
+    rememberDialogFocus('page', id);
+    activeDialog = { type: 'page', id: id || '' };
+    renderDesigners();
+    focusDialog();
+  }
+
+  function openTest(id) {
+    rememberDialogFocus('test', id);
+    activeDialog = { type: 'test', id: id || '' };
+    renderDesigners();
+    focusDialog();
+  }
+
+  function closeDialog() {
+    activeDialog = null;
+    renderDesigners();
+    restoreDialogFocus();
+  }
+
+  function focusDialog() {
+    window.requestAnimationFrame(function () {
+      var fieldNode = document.querySelector('.design-ws-modal [name="title"]:not([disabled])') || document.querySelector('.design-ws-modal [data-design-close]');
+      if (fieldNode) fieldNode.focus();
+    });
+  }
+
+  function formValues(form) {
+    var values = {};
+    Array.prototype.forEach.call(form.elements || [], function (element) {
+      if (element.name) values[element.name] = element.value;
+    });
+    return values;
+  }
+
+  function saveProject(form) {
+    if (!ensureEditor()) return false;
+    var values = formValues(form);
+    var id = string(form.getAttribute('data-project-id'));
+    var existing = id ? data.projects.find(function (item) { return item.id === id; }) : null;
+    var stamp = nowIso();
+    var project = normalizeProject(Object.assign({}, existing || {}, values, {
+      id: id || uid('design-project'),
+      title: values.title,
+      tags: normalizeTags(values.tags),
+      createdAt: existing ? existing.createdAt : stamp,
+      updatedAt: stamp,
+      archived: false
+    }));
+    if (existing) data.projects = data.projects.map(function (item) { return item.id === id ? project : item; });
+    else data.projects.unshift(project);
+    activeDialog = null;
+    mutate(existing ? 'Проект обновлён' : 'Проект добавлен', { action: existing ? 'project.update' : 'project.create', entityType: 'project', entityId: project.id });
+    restoreDialogFocus();
+  }
+
+  function savePage(form) {
+    if (!ensureEditor()) return false;
+    var values = formValues(form);
+    var id = string(form.getAttribute('data-page-id'));
+    var existing = id ? data.pages.find(function (item) { return item.id === id; }) : null;
+    var stamp = nowIso();
+    var page = normalizePage(Object.assign({}, existing || {}, values, {
+      id: id || uid('design-page'),
+      title: values.title,
+      createdAt: existing ? existing.createdAt : stamp,
+      updatedAt: stamp,
+      archived: false
+    }));
+    if (existing) data.pages = data.pages.map(function (item) { return item.id === id ? page : item; });
+    else data.pages.unshift(page);
+    activeDialog = null;
+    mutate(existing ? 'Страница обновлена' : 'Страница добавлена', { action: existing ? 'page.update' : 'page.create', entityType: 'page', entityId: page.id });
+    restoreDialogFocus();
+  }
+
+  function saveTest(form) {
+    if (!ensureEditor()) return false;
+    var values = formValues(form);
+    var id = string(form.getAttribute('data-test-id'));
+    var existing = id ? data.tests.find(function (item) { return item.id === id; }) : null;
+    var stamp = nowIso();
+    var test = normalizeTest(Object.assign({}, existing || {}, values, {
+      id: id || uid('design-test'),
+      title: values.title,
+      control: {
+        name: values.controlName,
+        imageUrl: values.controlImageUrl,
+        views: values.controlViews,
+        clicks: values.controlClicks,
+        carts: values.controlCarts,
+        orders: values.controlOrders,
+        revenue: values.controlRevenue
+      },
+      variant: {
+        name: values.variantName,
+        imageUrl: values.variantImageUrl,
+        views: values.variantViews,
+        clicks: values.variantClicks,
+        carts: values.variantCarts,
+        orders: values.variantOrders,
+        revenue: values.variantRevenue
+      },
+      tags: normalizeTags(values.tags),
+      createdAt: existing ? existing.createdAt : stamp,
+      updatedAt: stamp,
+      archived: false
+    }));
+    var validationError = validateTest(test);
+    if (validationError) { showToast(validationError); return false; }
+    if (existing) data.tests = data.tests.map(function (item) { return item.id === id ? test : item; });
+    else data.tests.unshift(test);
+    activeDialog = null;
+    mutate(existing ? 'Тест обновлён' : 'Тест добавлен', { action: existing ? 'test.update' : 'test.create', entityType: 'test', entityId: test.id });
+    restoreDialogFocus();
+    return true;
+  }
+
+  function archiveProject(id) {
+    if (!ensureEditor()) return;
+    var project = data.projects.find(function (item) { return item.id === id; });
+    if (!project) return;
+    project.archived = true;
+    project.updatedAt = nowIso();
+    activeDialog = null;
+    mutate('Проект перемещён в архив', { action: 'project.archive', entityType: 'project', entityId: id });
+    restoreDialogFocus();
+  }
+
+  function archivePage(id) {
+    if (!ensureEditor()) return;
+    var page = data.pages.find(function (item) { return item.id === id; });
+    if (!page) return;
+    page.archived = true;
+    page.updatedAt = nowIso();
+    activeDialog = null;
+    mutate('Страница перемещена в архив', { action: 'page.archive', entityType: 'page', entityId: id });
+    restoreDialogFocus();
+  }
+
+  function archiveTest(id) {
+    if (!ensureEditor()) return;
+    var test = data.tests.find(function (item) { return item.id === id; });
+    if (!test) return;
+    test.archived = true;
+    test.updatedAt = nowIso();
+    activeDialog = null;
+    mutate('Тест перемещён в архив', { action: 'test.archive', entityType: 'test', entityId: id });
+    restoreDialogFocus();
+  }
+
+  function restoreEntity(type, id) {
+    if (!ensureEditor()) return;
+    var list = type === 'project' ? data.projects : (type === 'test' ? data.tests : data.pages);
+    var item = list.find(function (entry) { return entry.id === id; });
+    if (!item) return;
+    item.archived = false;
+    item.updatedAt = nowIso();
+    mutate('Материал восстановлен из архива', { action: type + '.restore', entityType: type, entityId: id });
+  }
+
+  function updateProjectStatus(id, status) {
+    if (!ensureEditor()) return;
+    var project = data.projects.find(function (item) { return item.id === id; });
+    if (!project || !STATUS[status] || project.status === status) return;
+    project.status = status;
+    project.updatedAt = nowIso();
+    mutate('Статус проекта: ' + STATUS[status].label, { action: 'project.status', entityType: 'project', entityId: id });
+  }
+
+  function importSize(value) {
+    try { return new Blob([String(value || '')]).size; } catch (_) { return String(value || '').length * 2; }
+  }
+
+  function assertImportSize(text) {
+    if (importSize(text) > MAX_IMPORT_BYTES) throw new Error('Файл больше 8 МБ. Разделите импорт на несколько частей');
+  }
+
+  function detectDelimiter(text) {
+    var line = String(text || '').replace(/^\uFEFF/, '').split(/\r?\n/).find(function (item) { return string(item); }) || '';
+    var candidates = [',', ';', '\t'];
+    var best = ',';
+    var bestCount = -1;
+    candidates.forEach(function (candidate) {
+      var quoted = false;
+      var count = 0;
+      for (var index = 0; index < line.length; index += 1) {
+        if (line[index] === '"') quoted = !quoted;
+        else if (!quoted && line[index] === candidate) count += 1;
+      }
+      if (count > bestCount) { best = candidate; bestCount = count; }
+    });
+    return best;
+  }
+
+  function parseCsv(text) {
+    var rows = [];
+    var row = [];
+    var fieldValue = '';
+    var quoted = false;
+    text = String(text || '').replace(/^\uFEFF/, '');
+    assertImportSize(text);
+    var delimiter = detectDelimiter(text);
+    for (var index = 0; index < text.length; index += 1) {
+      var char = text[index];
+      if (quoted) {
+        if (char === '"' && text[index + 1] === '"') { fieldValue += '"'; index += 1; }
+        else if (char === '"') quoted = false;
+        else fieldValue += char;
+      } else if (char === '"') quoted = true;
+      else if (char === delimiter) { row.push(fieldValue); fieldValue = ''; }
+      else if (char === '\n') {
+        row.push(fieldValue.replace(/\r$/, '')); rows.push(row); row = []; fieldValue = '';
+        if (rows.length > MAX_IMPORT_ROWS) throw new Error('В файле больше 12 000 строк. Разделите импорт на части');
+      }
+      else fieldValue += char;
+    }
+    if (fieldValue || row.length) { row.push(fieldValue.replace(/\r$/, '')); rows.push(row); }
+    return rows.filter(function (item) { return item.some(function (cell) { return string(cell); }); });
+  }
+
+  function normalizeHeader(value) {
+    return string(value).toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]+/g, '');
+  }
+
+  function csvValue(record, aliases) {
+    for (var index = 0; index < aliases.length; index += 1) {
+      var key = normalizeHeader(aliases[index]);
+      if (Object.prototype.hasOwnProperty.call(record, key) && string(record[key])) return string(record[key]);
+    }
+    return '';
+  }
+
+  function importNotionCsv(text) {
+    if (!ensureEditor()) throw new Error('Импорт доступен только редакторам');
+    var rows = parseCsv(text);
+    if (rows.length < 2) throw new Error('В CSV нет строк для импорта');
+    var headers = rows[0].map(normalizeHeader);
+    var pageSignals = ['категория', 'category', 'раздел', 'section', 'содержание', 'content', 'текст', 'body', 'типстраницы', 'pagekind'].map(normalizeHeader);
+    var projectSignals = ['дедлайн', 'deadline', 'duedate', 'срок', 'приоритет', 'priority', 'этап', 'stage', 'sku', 'артикул', 'marketplace', 'маркетплейс'].map(normalizeHeader);
+    var pageMode = pageSignals.some(function (key) { return headers.indexOf(key) >= 0; })
+      && !projectSignals.some(function (key) { return headers.indexOf(key) >= 0; });
+    var imported = [];
+    rows.slice(1).forEach(function (cells, rowIndex) {
+      var record = {};
+      headers.forEach(function (key, index) { if (key) record[key] = cells[index] || ''; });
+      var title = csvValue(record, ['Название', 'Name', 'Title', 'Задача', 'Проект', 'Task']);
+      if (!title) return;
+      var owner = csvValue(record, ['Ответственный', 'Owner', 'Assignee', 'Исполнитель', 'Дизайнер']);
+      var sourceId = csvValue(record, ['ID', 'Page ID', 'Notion ID']);
+      var stamp = nowIso();
+      if (pageMode) {
+        imported.push(normalizePage({
+          id: 'notion-page-' + hashText(sourceId || [title, owner].join('|')),
+          title: title,
+          category: csvValue(record, ['Категория', 'Category', 'Раздел', 'Section']) || 'Процессы',
+          kind: /brief|бриф/i.test(csvValue(record, ['Тип', 'Type', 'Тип страницы', 'Page kind'])) ? 'brief' : 'page',
+          summary: csvValue(record, ['Описание', 'Description', 'Summary', 'Кратко']),
+          content: csvValue(record, ['Содержание', 'Content', 'Текст', 'Body', 'Notes', 'Заметки']),
+          url: csvValue(record, ['Ссылка', 'URL', 'Link']),
+          owner: owner,
+          status: /draft|чернов/i.test(csvValue(record, ['Статус', 'Status', 'Публикация'])) ? 'draft' : 'published',
+          createdAt: stamp,
+          updatedAt: new Date(Date.now() + rowIndex).toISOString()
+        }));
+      } else {
+        var due = csvValue(record, ['Дедлайн', 'Срок', 'Due', 'Due date', 'Deadline', 'Date']);
+        imported.push(normalizeProject({
+          id: 'notion-' + hashText(sourceId || [title, owner, normalizeDate(due)].join('|')),
+          title: title,
+          status: statusFromText(csvValue(record, ['Статус', 'Status', 'Stage', 'Этап'])),
+          owner: owner,
+          dueDate: normalizeDate(due),
+          priority: priorityFromText(csvValue(record, ['Приоритет', 'Priority'])),
+          type: typeFromText(csvValue(record, ['Тип', 'Type', 'Формат', 'Category'])),
+          marketplace: csvValue(record, ['Площадка', 'Marketplace', 'Platform', 'Brand', 'Бренд']),
+          brief: csvValue(record, ['Бриф', 'Brief', 'Description', 'Описание', 'Комментарий', 'Notes']),
+          url: csvValue(record, ['Ссылка', 'URL', 'Link', 'Figma', 'Исходники']),
+          tags: csvValue(record, ['Теги', 'Tags', 'Labels']),
+          source: 'notion-csv',
+          createdAt: stamp,
+          updatedAt: new Date(Date.now() + rowIndex).toISOString()
+        }));
+      }
+    });
+    if (!imported.length) throw new Error('Не найдена колонка «Название» / Name');
+    if (pageMode) {
+      data.pages = mergeEntities(data.pages, imported, normalizePage);
+      ui.mode = 'knowledge';
+      ui.knowledgePage = 1;
+      writeUi();
+      mutate('Импортировано страниц Notion: ' + imported.length);
+    } else {
+      data.projects = mergeEntities(data.projects, imported, normalizeProject);
+      ui.projectPage = 1;
+      mutate('Импортировано проектов: ' + imported.length);
+    }
+    return imported.length;
+  }
+
+  function importMarketplaceCsv(text) {
+    if (!ensureEditor()) throw new Error('Импорт доступен только редакторам');
+    var rows = parseCsv(text);
+    if (rows.length < 2) throw new Error('В CSV нет строк с метриками');
+    var headers = rows[0].map(normalizeHeader);
+    var groups = new Map();
+    rows.slice(1).forEach(function (cells) {
+      var record = {};
+      headers.forEach(function (key, index) { if (key) record[key] = cells[index] || ''; });
+      var sku = csvValue(record, ['SKU', 'Артикул', 'Article', 'Article ID', 'NM ID', 'nmId']);
+      var title = csvValue(record, ['Тест', 'Test', 'Название теста', 'Experiment']) || (sku ? 'Тест SKU ' + sku : '');
+      if (!title) return;
+      var variantRaw = csvValue(record, ['Вариант', 'Variant', 'Группа', 'Group', 'Версия', 'Version']);
+      var variantKey = normalizeHeader(variantRaw);
+      var side = /^(b|б|test|variant|new|after)$|вариант(b|б)|тест|нов|после/i.test(variantKey) ? 'variant' : 'control';
+      var key = normalizeHeader(title + '|' + sku);
+      if (!groups.has(key)) groups.set(key, { title: title, sku: sku, marketplace: '', control: {}, variant: {} });
+      var group = groups.get(key);
+      group.marketplace = group.marketplace || csvValue(record, ['Площадка', 'Marketplace', 'Platform', 'MP']);
+      var metrics = group[side];
+      metrics.name = metrics.name || variantRaw || (side === 'variant' ? 'Вариант B' : 'Контроль A');
+      metrics.imageUrl = metrics.imageUrl || csvValue(record, ['Макет', 'Скриншот', 'Image', 'Preview', 'Creative URL']);
+      metrics.views = number(metrics.views) + number(csvValue(record, ['Показы', 'Views', 'Impressions', 'Shows']));
+      metrics.clicks = number(metrics.clicks) + number(csvValue(record, ['Клики', 'Clicks']));
+      metrics.carts = number(metrics.carts) + number(csvValue(record, ['Корзины', 'Добавления в корзину', 'Add to cart', 'Carts']));
+      metrics.orders = number(metrics.orders) + number(csvValue(record, ['Заказы', 'Orders', 'Conversions', 'Конверсии']));
+      metrics.revenue = number(metrics.revenue) + number(csvValue(record, ['Выручка', 'Revenue', 'Sales', 'GMV', 'Оборот']));
+    });
+    if (!groups.size) throw new Error('Нужна колонка «Тест» или «SKU»');
+    var touched = 0;
+    var updates = [];
+    groups.forEach(function (group) {
+      var existing = data.tests.find(function (item) {
+        return normalizeHeader(item.title + '|' + item.sku) === normalizeHeader(group.title + '|' + group.sku)
+          || (group.sku && item.sku === group.sku && normalizeHeader(item.title) === normalizeHeader(group.title));
+      });
+      var stamp = nowIso();
+      var next = normalizeTest(Object.assign({}, existing || {}, {
+        id: existing ? existing.id : 'mp-test-' + hashText(group.title + '|' + group.sku),
+        title: group.title,
+        sku: group.sku || (existing && existing.sku),
+        marketplace: group.marketplace || (existing && existing.marketplace),
+        status: existing && existing.status === 'complete' ? 'complete' : 'analysis',
+        control: Object.assign({}, existing ? existing.control : {}, group.control),
+        variant: Object.assign({}, existing ? existing.variant : {}, group.variant),
+        createdAt: existing ? existing.createdAt : stamp,
+        updatedAt: stamp,
+        source: 'marketplace-csv'
+      }));
+      var validationError = validateTest(next);
+      if (validationError) throw new Error(group.title + ' · ' + validationError);
+      updates.push({ existing: existing, next: next });
+      touched += 1;
+    });
+    updates.forEach(function (update) {
+      if (update.existing) data.tests = data.tests.map(function (item) { return item.id === update.existing.id ? update.next : item; });
+      else data.tests.unshift(update.next);
+    });
+    ui.mode = 'tests';
+    ui.testPage = 1;
+    writeUi();
+    mutate('Импортировано тестов с метриками: ' + touched);
+    return touched;
+  }
+
+  function downloadFile(name, content, type) {
+    var blob = new Blob([content], { type: type || 'application/octet-stream' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.click();
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function exportJson() {
+    downloadFile('altea-design-workspace-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(data, null, 2), 'application/json');
+    showToast('Экспорт рабочей базы готов');
+  }
+
+  function createManualBackup() {
+    if (!ensureEditor()) return;
+    queueLocalBackup('Ручная резервная копия', true, data).then(function (saved) {
+      if (saved) showToast('Резервная копия создана');
+    });
+  }
+
+  function restoreLocalBackup(key) {
+    if (!ensureEditor()) return false;
+    var backup = localBackups.find(function (item) { return item.key === key; });
+    if (!backup || !backup.data) { showToast('Резервная копия не найдена'); return false; }
+    queueLocalBackup('Перед восстановлением локальной копии', true, data);
+    data = normalizeData(backup.data);
+    lastCommittedData = clone(data);
+    mutate('Восстановлена локальная копия от ' + formatDateTime(backup.createdAt), { action: 'workspace.restore.local' });
+    return true;
+  }
+
+  async function restoreRemoteRevision(revision) {
+    if (!ensureEditor()) return false;
+    var cfg = remoteConfig();
+    if (!cfg || !cfg.token) { showToast('Командная база недоступна'); return false; }
+    syncState = 'pending';
+    syncMessage = 'Восстанавливаем версию ' + revision;
+    renderDesigners();
+    try {
+      var url = new URL(cfg.baseUrl + '/rest/v1/rpc/' + REMOTE_RESTORE_RPC);
+      var response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: Object.assign({}, remoteHeaders(cfg), { 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ p_brand: cfg.brand, p_revision: number(revision), p_expected_revision: remoteRevision })
+      });
+      var result = null;
+      try { result = await response.json(); } catch (_) {}
+      if (!response.ok) throw new Error(string(result && (result.message || result.details)) || 'Восстановление вернуло ' + response.status);
+      var remote = await fetchRemote();
+      if (remote && remote.payload) data = normalizeData(remote.payload);
+      remoteRevision = remote ? number(remote.revision) : remoteRevision;
+      remoteHistory = await fetchRemoteHistory().catch(function () { return remoteHistory; });
+      lastCommittedData = clone(data);
+      await writeLocal(false);
+      syncState = 'ok';
+      syncMessage = 'Версия восстановлена';
+      renderDesigners();
+      showToast('Командная версия ' + revision + ' восстановлена');
+      return true;
+    } catch (error) {
+      syncState = 'error';
+      syncMessage = error && error.message ? error.message : 'Не удалось восстановить версию';
+      renderDesigners();
+      return false;
+    }
+  }
+
+  function importBackupJson(text) {
+    if (!ensureEditor()) throw new Error('Восстановление доступно только редакторам');
+    assertImportSize(text);
+    var parsed;
+    try { parsed = JSON.parse(String(text || '')); } catch (_) { throw new Error('Некорректный JSON-файл'); }
+    var source = parsed && parsed.data ? parsed.data : parsed;
+    if (!source || !Array.isArray(source.projects) || !Array.isArray(source.tests) || !Array.isArray(source.pages)) {
+      throw new Error('Это не резервная копия рабочей базы дизайнеров');
+    }
+    queueLocalBackup('Перед восстановлением JSON', true, data);
+    data = normalizeData(source);
+    lastCommittedData = clone(data);
+    mutate('Рабочая база восстановлена из JSON', { action: 'workspace.restore.json' });
+    return true;
+  }
+
+  function bindEvents() {
+    if (document.documentElement.dataset.designWorkspaceEvents === '1') return;
+    document.documentElement.dataset.designWorkspaceEvents = '1';
+
+    document.addEventListener('click', function (event) {
+      var root = event.target && event.target.closest && event.target.closest('#' + ROOT_ID);
+      if (!root) return;
+      var mode = event.target.closest('[data-design-mode]');
+      if (mode) { ui.mode = mode.getAttribute('data-design-mode') || 'board'; writeUi(); renderDesigners(); return; }
+      var pageButton = event.target.closest('[data-design-page-nav]');
+      if (pageButton && !pageButton.disabled) {
+        ui[pageButton.getAttribute('data-design-page-nav')] = Math.max(1, number(pageButton.getAttribute('data-design-page-value')) || 1);
+        writeUi(); renderDesigners(); return;
+      }
+      if (event.target.closest('[data-design-add-project]')) { if (ensureEditor()) openProject(''); return; }
+      if (event.target.closest('[data-design-add-page]')) { if (ensureEditor()) openPage(''); return; }
+      if (event.target.closest('[data-design-add-test]')) { if (ensureEditor()) openTest(''); return; }
+      if (event.target.closest('[data-design-import]')) { if (ensureEditor()) root.querySelector('[data-design-import-input]').click(); return; }
+      if (event.target.closest('[data-design-import-test]')) { if (ensureEditor()) root.querySelector('[data-design-test-import-input]').click(); return; }
+      if (event.target.closest('[data-design-import-backup]')) { if (ensureEditor()) root.querySelector('[data-design-backup-input]').click(); return; }
+      if (event.target.closest('[data-design-backup]')) { createManualBackup(); return; }
+      if (event.target.closest('[data-design-export]')) { exportJson(); return; }
+      if (event.target.closest('[data-design-sync]')) { syncRemote(true); return; }
+      var restoreLocal = event.target.closest('[data-design-restore-local]');
+      if (restoreLocal) {
+        if (ensureEditor() && window.confirm('Восстановить выбранную локальную копию? Текущее состояние будет сохранено отдельно.')) restoreLocalBackup(restoreLocal.getAttribute('data-design-restore-local'));
+        return;
+      }
+      var restoreRemote = event.target.closest('[data-design-restore-remote]');
+      if (restoreRemote) {
+        var revision = number(restoreRemote.getAttribute('data-design-restore-remote'));
+        if (ensureEditor() && window.confirm('Восстановить командную версию ' + revision + '? Будет создана новая версия, данные не удалятся.')) restoreRemoteRevision(revision);
+        return;
+      }
+      var deleteProject = event.target.closest('[data-design-delete-project]');
+      if (deleteProject) { archiveProject(deleteProject.getAttribute('data-design-delete-project')); return; }
+      var deletePage = event.target.closest('[data-design-delete-page]');
+      if (deletePage) { archivePage(deletePage.getAttribute('data-design-delete-page')); return; }
+      var deleteTest = event.target.closest('[data-design-delete-test]');
+      if (deleteTest) { archiveTest(deleteTest.getAttribute('data-design-delete-test')); return; }
+      if (event.target.closest('[data-design-close]')) { closeDialog(); return; }
+      var layer = event.target.closest('[data-design-close-layer]');
+      if (layer && event.target === layer) { closeDialog(); return; }
+      if (event.target.closest('[data-design-status]')) return;
+      var project = event.target.closest('[data-design-project]');
+      if (project) { openProject(project.getAttribute('data-design-project')); return; }
+      var page = event.target.closest('[data-design-page]');
+      if (page) { openPage(page.getAttribute('data-design-page')); return; }
+      var test = event.target.closest('[data-design-test]');
+      if (test) { openTest(test.getAttribute('data-design-test')); }
+    });
+
+    document.addEventListener('submit', function (event) {
+      var projectForm = event.target.closest && event.target.closest('[data-design-project-form]');
+      if (projectForm) { event.preventDefault(); saveProject(projectForm); return; }
+      var pageForm = event.target.closest && event.target.closest('[data-design-page-form]');
+      if (pageForm) { event.preventDefault(); savePage(pageForm); return; }
+      var testForm = event.target.closest && event.target.closest('[data-design-test-form]');
+      if (testForm) { event.preventDefault(); saveTest(testForm); }
+    });
+
+    document.addEventListener('change', function (event) {
+      if (!event.target || !event.target.closest || !event.target.closest('#' + ROOT_ID)) return;
+      var filter = event.target.getAttribute('data-design-filter');
+      if (filter) { ui[filter] = event.target.value; ui.projectPage = 1; writeUi(); renderDesigners(); return; }
+      var projectId = event.target.getAttribute('data-design-status');
+      if (projectId) { event.stopPropagation(); updateProjectStatus(projectId, event.target.value); return; }
+      if (event.target.matches('[data-design-import-input]')) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) return;
+        if (file.size > MAX_IMPORT_BYTES) { showToast('Файл больше 8 МБ. Разделите импорт на части'); event.target.value = ''; return; }
+        file.text().then(importNotionCsv).catch(function (error) { showToast(error && error.message ? error.message : 'Не удалось прочитать CSV'); });
+        event.target.value = '';
+        return;
+      }
+      if (event.target.matches('[data-design-test-import-input]')) {
+        var metricsFile = event.target.files && event.target.files[0];
+        if (!metricsFile) return;
+        if (metricsFile.size > MAX_IMPORT_BYTES) { showToast('Файл больше 8 МБ. Разделите импорт на части'); event.target.value = ''; return; }
+        metricsFile.text().then(importMarketplaceCsv).catch(function (error) { showToast(error && error.message ? error.message : 'Не удалось прочитать CSV маркетплейса'); });
+        event.target.value = '';
+        return;
+      }
+      if (event.target.matches('[data-design-backup-input]')) {
+        var backupFile = event.target.files && event.target.files[0];
+        if (!backupFile) return;
+        if (backupFile.size > MAX_IMPORT_BYTES) { showToast('Файл больше 8 МБ. Для большой базы используйте командную историю'); event.target.value = ''; return; }
+        backupFile.text().then(importBackupJson).catch(function (error) { showToast(error && error.message ? error.message : 'Не удалось восстановить JSON'); });
+        event.target.value = '';
+      }
+    });
+
+    document.addEventListener('input', function (event) {
+      if (!event.target || !event.target.matches || !event.target.matches('#' + ROOT_ID + ' [data-design-search]')) return;
+      var value = event.target.value;
+      if (searchTimer) window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(function () {
+        searchTimer = 0;
+        ui.search = value;
+        ui.projectPage = 1;
+        writeUi();
+        renderDesigners();
+        var next = document.querySelector('#' + ROOT_ID + ' [data-design-search]');
+        if (next) { next.focus(); try { next.setSelectionRange(value.length, value.length); } catch (_) {} }
+      }, 180);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && activeDialog) { closeDialog(); return; }
+      if (event.key === 'Tab' && activeDialog) {
+        var modal = document.querySelector('.design-ws-modal');
+        var focusable = modal ? Array.prototype.slice.call(modal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]')) : [];
+        if (focusable.length) {
+          var first = focusable[0];
+          var last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); return; }
+          if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); return; }
+        }
+      }
+      if ((event.key === 'Enter' || event.key === ' ') && event.target && event.target.matches && event.target.matches('[data-design-project], [data-design-page], [data-design-test]')) {
+        event.preventDefault();
+        if (event.target.hasAttribute('data-design-project')) openProject(event.target.getAttribute('data-design-project'));
+        else if (event.target.hasAttribute('data-design-page')) openPage(event.target.getAttribute('data-design-page'));
+        else openTest(event.target.getAttribute('data-design-test'));
+      }
+    });
+
+    document.addEventListener('dragstart', function (event) {
+      var card = event.target && event.target.closest && event.target.closest('#' + ROOT_ID + ' [data-design-project]');
+      if (!canEdit() || !card || !event.dataTransfer) return;
+      card.classList.add('dragging');
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', card.getAttribute('data-design-project'));
+    });
+
+    document.addEventListener('dragend', function (event) {
+      var card = event.target && event.target.closest && event.target.closest('[data-design-project]');
+      if (card) card.classList.remove('dragging');
+      document.querySelectorAll('.design-ws-column.is-drop-target').forEach(function (column) { column.classList.remove('is-drop-target'); });
+    });
+
+    document.addEventListener('dragover', function (event) {
+      var column = event.target && event.target.closest && event.target.closest('#' + ROOT_ID + ' [data-design-drop-status]');
+      if (!canEdit() || !column) return;
+      event.preventDefault();
+      column.classList.add('is-drop-target');
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    });
+
+    document.addEventListener('dragleave', function (event) {
+      var column = event.target && event.target.closest && event.target.closest('[data-design-drop-status]');
+      if (column && !column.contains(event.relatedTarget)) column.classList.remove('is-drop-target');
+    });
+
+    document.addEventListener('drop', function (event) {
+      var column = event.target && event.target.closest && event.target.closest('#' + ROOT_ID + ' [data-design-drop-status]');
+      if (!canEdit() || !column || !event.dataTransfer) return;
+      event.preventDefault();
+      column.classList.remove('is-drop-target');
+      updateProjectStatus(event.dataTransfer.getData('text/plain'), column.getAttribute('data-design-drop-status'));
+    });
+  }
+
+  window.renderDesigners = renderDesigners;
+  window.AlteaDesignWorkspace = {
+    render: renderDesigners,
+    sync: syncRemote,
+    importNotionCsv: importNotionCsv,
+    importMarketplaceCsv: importMarketplaceCsv,
+    getData: function () { return clone(data); },
+    whenLocalSaved: function () { return localPersistChain; },
+    diagnostics: function () {
+      return {
+        localPersistState: localPersistState,
+        localPersistError: localPersistError,
+        remoteRevision: remoteRevision,
+        workspaceAccess: workspaceAccess,
+        workspaceAccessMessage: workspaceAccessMessage,
+        remoteHistoryCount: remoteHistory.length,
+        localBackupCount: localBackups.length,
+        storageScope: storageScope()
+      };
+    }
+  };
+
+  bindEvents();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { if (document.getElementById(ROOT_ID)) renderDesigners(); loadWorkspace(); }, { once: true });
+  } else {
+    if (document.getElementById(ROOT_ID)) renderDesigners();
+    loadWorkspace();
+  }
+  window.addEventListener('altea:viewchange', function (event) {
+    if (event && event.detail && event.detail.view === 'designers') renderDesigners();
+  });
+})();

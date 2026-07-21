@@ -19,6 +19,16 @@
       caption: 'Сначала итог, затем доказательство, после исключения по действию.',
       accent: '#E2CFAF',
       rgb: '226,207,175'
+    },
+    designers: {
+      id: 'designers',
+      index: '05',
+      title: 'Дизайнеры',
+      kicker: 'Creative workspace',
+      headline: 'Проекты, знания и бренд-система',
+      caption: 'Рабочее пространство дизайн-отдела.',
+      accent: '#7E5CFF',
+      rgb: '126,92,255'
     }
   };
 
@@ -27,17 +37,18 @@
     { id: 'executive', index: '02', group: 'Главное', title: 'Руководителю', caption: 'Риски · решения · итог', icon: 'crown' },
     { id: 'control', index: '03', group: 'Главное', title: 'Задачи', caption: 'Задачи · РОП · контроль', icon: 'check' },
     { id: 'documents', index: '04', group: 'Главное', title: 'Хранилище', caption: 'Файлы · ссылки · описания', icon: 'file' },
-    { id: 'data-health', index: '05', group: 'Главное', title: 'Календарь', caption: 'Акции · события · SKU', icon: 'calendar' },
-    { id: 'sku-plan-fact', index: '06', group: 'Деньги и товар', title: 'План-факт SKU', caption: 'План · факт · чек · ДРР', icon: 'chart' },
-    { id: 'repricer', index: '07', group: 'Деньги и товар', title: 'Репрайсер', caption: 'Цена · риски · рекомендации', icon: 'diamond' },
-    { id: 'prices', index: '08', group: 'Деньги и товар', title: 'Цены', caption: 'Маржа · оборот · СПП', icon: 'tag' },
-    { id: 'order', index: '09', group: 'Деньги и товар', title: 'Заказ товара', caption: 'Кластеры · склады · поставки', icon: 'box' },
-    { id: 'oos-control', index: '10', group: 'Деньги и товар', title: 'OOS контроль', caption: 'Пустые полки · меры', icon: 'alert' },
-    { id: 'sku-contour', index: '11', group: 'Продукт', title: 'SKU workspace', caption: 'Реестр · API · план-факт', icon: 'blocks' },
-    { id: 'launches', index: '12', group: 'Продукт', title: 'Новинки', caption: 'Товар · экономика', icon: 'rocket' },
-    { id: 'iu-drr', index: '14', group: 'Аналитика', title: 'ИУ / ДРР', caption: 'WB · Ozon · расходы', icon: 'pie' },
-    { id: 'wb-rating', index: '15', group: 'Аналитика', title: 'Рейтинг карточек', caption: 'Отзывы · динамика', icon: 'star' },
-    { id: 'product-leaderboard', index: '16', group: 'Аналитика', title: 'Лидерборд', caption: 'КЗ · воронка · ROMI', icon: 'trophy' }
+    { id: 'designers', index: '05', group: 'Главное', title: 'Дизайнеры', caption: 'Проекты · брифы · бренд-система', icon: 'palette' },
+    { id: 'data-health', index: '06', group: 'Главное', title: 'Календарь', caption: 'Акции · события · SKU', icon: 'calendar' },
+    { id: 'sku-plan-fact', index: '07', group: 'Деньги и товар', title: 'План-факт SKU', caption: 'План · факт · чек · ДРР', icon: 'chart' },
+    { id: 'repricer', index: '08', group: 'Деньги и товар', title: 'Репрайсер', caption: 'Цена · риски · рекомендации', icon: 'diamond' },
+    { id: 'prices', index: '09', group: 'Деньги и товар', title: 'Цены', caption: 'Маржа · оборот · СПП', icon: 'tag' },
+    { id: 'order', index: '10', group: 'Деньги и товар', title: 'Заказ товара', caption: 'Кластеры · склады · поставки', icon: 'box' },
+    { id: 'oos-control', index: '11', group: 'Деньги и товар', title: 'OOS контроль', caption: 'Пустые полки · меры', icon: 'alert' },
+    { id: 'sku-contour', index: '12', group: 'Продукт', title: 'SKU workspace', caption: 'Реестр · API · план-факт', icon: 'blocks' },
+    { id: 'launches', index: '13', group: 'Продукт', title: 'Новинки', caption: 'Товар · экономика', icon: 'rocket' },
+    { id: 'iu-drr', index: '15', group: 'Аналитика', title: 'ИУ / ДРР', caption: 'WB · Ozon · расходы', icon: 'pie' },
+    { id: 'wb-rating', index: '16', group: 'Аналитика', title: 'Рейтинг карточек', caption: 'Отзывы · динамика', icon: 'star' },
+    { id: 'product-leaderboard', index: '17', group: 'Аналитика', title: 'Лидерборд', caption: 'КЗ · воронка · ROMI', icon: 'trophy' }
   ];
 
   var NAV_BY_ID = NAV_ROUTES.reduce(function (acc, route) {
@@ -330,6 +341,7 @@
       crown: '<path d="M3 8l4 3 5-7 5 7 4-3v10H3z"></path><path d="M3 18h18"></path>',
       check: '<path d="M9 11l2 2 5-6"></path><rect x="4" y="4" width="16" height="16" rx="2"></rect>',
       file: '<path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v5h5"></path><path d="M9 13h6M9 17h6"></path>',
+      palette: '<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2.2-.8 1.7-2-.5-1.1.3-2 1.5-2h1.4A4.4 4.4 0 0 0 21 12.6C21 7.3 17 3 12 3z"></path><path d="M7.5 10h.01M10 6.8h.01M14 6.5h.01M17 9h.01"></path>',
       calendar: '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path>',
       chart: '<path d="M4 19V5"></path><path d="M4 19h17"></path><path d="M8 15l3-4 3 2 4-7"></path>',
       diamond: '<path d="M12 3l8 7-8 11-8-11z"></path><path d="M4 10h16M9 10l3 11 3-11"></path>',

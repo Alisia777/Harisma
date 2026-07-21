@@ -34,7 +34,8 @@
     'wb-rating',
     'product-leaderboard',
     'meetings',
-    'documents'
+    'documents',
+    'designers'
   ];
 
   var EMPLOYEE_VIEWS = [
@@ -57,7 +58,7 @@
   ];
 
   window.ALTEA_PORTAL_ACCESS_RULES = window.ALTEA_PORTAL_ACCESS_RULES || {
-    version: '2026-07-20-macos-https',
+    version: '2026-07-21-designers-roles-history-macos-https',
     allViews: ALL_VIEWS,
 
     // Unknown authenticated users see only the dashboard until they are assigned below
@@ -68,18 +69,26 @@
     roles: {
       owner: { views: '*' },
       director: {
-        views: ['dashboard', 'executive', 'control', 'documents', 'sku-plan-fact', 'prices', 'order', 'product-leaderboard', 'iu-drr', 'wb-rating']
+        views: ['dashboard', 'executive', 'control', 'documents', 'designers', 'sku-plan-fact', 'prices', 'order', 'product-leaderboard', 'iu-drr', 'wb-rating']
       },
       marketplace: {
         views: ['dashboard', 'documents', 'sku-plan-fact', 'repricer', 'prices', 'order', 'oos-control', 'iu-drr', 'wb-rating']
       },
       product: {
-        views: ['dashboard', 'data-health', 'documents', 'sku-contour', 'launches', 'product-leaderboard', 'wb-rating']
+        views: ['dashboard', 'data-health', 'documents', 'designers', 'sku-contour', 'launches', 'product-leaderboard', 'wb-rating']
+      },
+      designer: {
+        views: ['dashboard', 'control', 'documents', 'designers', 'data-health', 'sku-contour', 'launches', 'product-leaderboard', 'wb-rating']
       },
       operations: {
         views: ['dashboard', 'control', 'documents', 'order', 'oos-control', 'sku-plan-fact']
       },
       employee: {
+        views: EMPLOYEE_VIEWS
+      },
+      guest: {
+        // Existing demo surfaces stay available, while restricted workspaces
+        // such as Designers are never inherited through owner/admin access.
         views: EMPLOYEE_VIEWS
       },
       readonly: {
@@ -100,7 +109,7 @@
       'e.a.domozhirova@qeep.life': { role: 'employee' },
       's.s.artyukhin@qeep.life': { role: 'owner' },
       'a.a.ivanova@ya.qeep.life': { role: 'owner' },
-      'guest@qeep.life': { role: 'owner', name: '\u0413\u043e\u0441\u0442\u0435\u0432\u043e\u0439 \u0432\u0445\u043e\u0434' },
+      'guest@qeep.life': { role: 'guest', name: '\u0413\u043e\u0441\u0442\u0435\u0432\u043e\u0439 \u0432\u0445\u043e\u0434' },
       'k.labin@qeep.life': { role: 'employee' },
       'a.zarovskaya@qeep.life': { role: 'employee' },
       'v.klimov@qeep.life': { role: 'employee' },

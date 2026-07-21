@@ -410,7 +410,8 @@ revoke all on function public.restore_portal_design_workspace_revision(text, big
 grant execute on function public.save_portal_design_workspace(text, jsonb, text, bigint) to authenticated;
 grant execute on function public.restore_portal_design_workspace_revision(text, bigint, bigint) to authenticated;
 
--- Автоматически поддерживаем доступ для аккаунтов с ролью из защищённых app_metadata.
+-- Автоматически подключаем каждый аккаунт портала к рабочей базе.
+-- Владелец и дизайнер получают редактора, остальные аккаунты — наблюдателя.
 -- user_metadata намеренно не используется: пользователь может менять её самостоятельно.
 create or replace function public.sync_portal_design_workspace_member_from_auth()
 returns trigger
@@ -421,26 +422,20 @@ as $$
 declare
   portal_role text := lower(coalesce(new.raw_app_meta_data ->> 'portal_role', ''));
 begin
-  if portal_role in ('owner', 'designer', 'director', 'product') then
-    insert into public.portal_design_workspace_members
-      (brand, user_id, access_level, managed_by_role, updated_at)
-    values (
-      'Алтея',
-      new.id,
-      case when portal_role in ('owner', 'designer') then 'editor' else 'viewer' end,
-      true,
-      now()
-    )
-    on conflict (brand, user_id) do update
-    set access_level = excluded.access_level,
-        managed_by_role = true,
-        updated_at = now();
-  else
-    delete from public.portal_design_workspace_members member
-    where member.brand = 'Алтея'
-      and member.user_id = new.id
-      and member.managed_by_role = true;
-  end if;
+  insert into public.portal_design_workspace_members
+    (brand, user_id, access_level, managed_by_role, updated_at)
+  values (
+    'Алтея',
+    new.id,
+    case when portal_role in ('owner', 'designer') then 'editor' else 'viewer' end,
+    true,
+    now()
+  )
+  on conflict (brand, user_id) do update
+  set access_level = excluded.access_level,
+      managed_by_role = true,
+      updated_at = now()
+  where portal_design_workspace_members.managed_by_role = true;
   return new;
 end;
 $$;
@@ -463,11 +458,11 @@ select
   true,
   now()
 from auth.users account
-where lower(coalesce(account.raw_app_meta_data ->> 'portal_role', '')) in ('owner', 'designer', 'director', 'product')
 on conflict (brand, user_id) do update
 set access_level = excluded.access_level,
     managed_by_role = true,
-    updated_at = now();
+    updated_at = now()
+where portal_design_workspace_members.managed_by_role = true;
 
 -- Добавьте участников после создания их аккаунтов в Supabase Auth.
 -- Редактор:

@@ -12,6 +12,7 @@ on:
       - 'docs/PORTAL_DAILY_CLOSE_RUNBOOK.md'
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
+      - '.github/workflows/portal-designers-membership-sync.yml'
   push:
     branches: [main]
     paths:
@@ -24,6 +25,7 @@ on:
       - 'docs/PORTAL_DAILY_CLOSE_RUNBOOK.md'
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
+      - '.github/workflows/portal-designers-membership-sync.yml'
   schedule:
     - cron: '15 4 * * *'
   workflow_dispatch:
@@ -77,6 +79,8 @@ jobs:
           node scripts/portal-runtime-snapshot-choice.selftest.js
           node scripts/portal-bootstrap-snapshot-choice.selftest.js
           node scripts/portal-designers-access-history.selftest.js
+          node scripts/sync-design-workspace-memberships.selftest.js
+          node scripts/portal-designers-permissions.selftest.js
           node scripts/portal-snapshot-refresh-hotfix.selftest.js
           node scripts/portal-dashboard-snapshot-source.selftest.js
           node scripts/portal-analytics-date-freshness.selftest.js

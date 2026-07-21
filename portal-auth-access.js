@@ -54,11 +54,12 @@
     'wb-rating',
     'product-leaderboard',
     'meetings',
-    'documents'
+    'documents',
+    'designers'
   ];
 
   window.ALTEA_PORTAL_ACCESS_RULES = window.ALTEA_PORTAL_ACCESS_RULES || {
-    version: '2026-07-21-designers-roles-history-macos-https',
+    version: '2026-07-21-designers-all-authenticated',
     allViews: ALL_VIEWS,
 
     // Unknown authenticated users see only the dashboard until they are assigned below
@@ -81,18 +82,17 @@
         views: ['dashboard', 'control', 'documents', 'designers', 'data-health', 'sku-contour', 'launches', 'product-leaderboard', 'wb-rating']
       },
       operations: {
-        views: ['dashboard', 'control', 'documents', 'order', 'oos-control', 'sku-plan-fact']
+        views: ['dashboard', 'control', 'documents', 'designers', 'order', 'oos-control', 'sku-plan-fact']
       },
       employee: {
         views: EMPLOYEE_VIEWS
       },
       guest: {
-        // Existing demo surfaces stay available, while restricted workspaces
-        // such as Designers are never inherited through owner/admin access.
+        // The shared Designers workspace is available in read-only mode after login.
         views: EMPLOYEE_VIEWS
       },
       readonly: {
-        views: ['dashboard']
+        views: ['dashboard', 'documents', 'designers']
       }
     },
 
@@ -138,4 +138,8 @@
     ? window.ALTEA_PORTAL_ACCESS_RULES.roles.director.views
     : null;
   if (Array.isArray(directorViews) && directorViews.indexOf('designers') === -1) directorViews.splice(4, 0, 'designers');
+  var marketplaceViews = window.ALTEA_PORTAL_ACCESS_RULES.roles && window.ALTEA_PORTAL_ACCESS_RULES.roles.marketplace
+    ? window.ALTEA_PORTAL_ACCESS_RULES.roles.marketplace.views
+    : null;
+  if (Array.isArray(marketplaceViews) && marketplaceViews.indexOf('designers') === -1) marketplaceViews.splice(2, 0, 'designers');
 })();

@@ -59,6 +59,7 @@ assert.strictEqual(hashSandbox.result.strong(collisionA).length, 32, 'New local/
 
 assert.match(access, /guest: \{[\s\S]*views: EMPLOYEE_VIEWS/, 'Guest role must use an explicit non-owner view set');
 assert.match(access, /'guest@qeep\.life': \{ role: 'guest'/, 'Guest account must not inherit owner access');
+assert.match(authGate, /SHARED_AUTHENTICATED_VIEWS = \['documents', 'designers'\]/, 'Every configured portal account must inherit the Designers tab');
 assert.doesNotMatch(authGate, /portal_role: 'owner'/, 'Synthetic guest sessions must never claim owner role');
 assert.match(authGate, /portal_role: 'guest'/, 'Synthetic guest sessions must claim only the restricted guest role');
 
@@ -83,6 +84,8 @@ assert.match(sql, /actor_email[\s\S]*auth\.jwt\(\) ->> 'email'/, 'Audit writes m
 assert.match(sql, /portal_design_workspace_history[\s\S]*offset 100/i, 'Server history retention must be bounded');
 assert.match(sql, /portal_design_workspace_audit[\s\S]*offset 2000/i, 'Server audit retention must be bounded');
 assert.match(sql, /raw_app_meta_data ->> 'portal_role'/, 'Initial workspace membership must bootstrap from protected app metadata');
+assert.match(sql, /from auth\.users account\s+on conflict/i, 'Every existing authenticated account must receive workspace membership');
+assert.match(sql, /where portal_design_workspace_members\.managed_by_role = true/i, 'Automatic sync must preserve manual membership overrides');
 assert.match(sql, /create or replace function public\.restore_portal_design_workspace_revision/, 'Protected remote restore RPC must exist');
 assert.match(sql, /grant execute on function public\.restore_portal_design_workspace_revision[^;]+to authenticated/i, 'Authenticated members must be able to invoke the restore RPC');
 

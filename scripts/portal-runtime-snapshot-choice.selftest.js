@@ -7,6 +7,10 @@ const vm = require('vm');
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'app-core-01.js'), 'utf8');
 
+if (source.includes('LOCAL_FIRST_SNAPSHOT_KEYS')) {
+  throw new Error('Core loader must check the published snapshot before accepting usable local JSON.');
+}
+
 function extractFunction(name) {
   const start = source.indexOf(`function ${name}`);
   if (start < 0) throw new Error(`Missing function ${name}`);
@@ -52,12 +56,16 @@ vm.createContext(sandbox);
 vm.runInContext(`${helperBlock}
 result = {
   nonProtectedTie: chooseFreshestPayload('platform_trends', { usable: true, dataScore: 1, freshScore: 2 }, { usable: true, dataScore: 1, freshScore: 2 }).source,
+  snapshotNewer: chooseFreshestPayload('platform_trends', { usable: true, dataScore: 2, freshScore: 2 }, { usable: true, dataScore: 1, freshScore: 2 }).source,
   localNewer: chooseFreshestPayload('platform_trends', { usable: true, dataScore: 1, freshScore: 2 }, { usable: true, dataScore: 2, freshScore: 2 }).source,
   protectedTie: chooseFreshestPayload(['iu', 'drr', 'summary'].join('_'), { usable: true, dataScore: 1, freshScore: 2 }, { usable: true, dataScore: 1, freshScore: 2 }).source
 };`, sandbox);
 
 if (sandbox.result.nonProtectedTie !== 'snapshot') {
   throw new Error('Published non-protected snapshot must win freshness ties.');
+}
+if (sandbox.result.snapshotNewer !== 'snapshot') {
+  throw new Error('Published snapshot with newer data date must win.');
 }
 if (sandbox.result.localNewer !== 'local') {
   throw new Error('Local payload with newer data date must still win.');

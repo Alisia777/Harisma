@@ -433,7 +433,6 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/sku_matrix.json': 'sku_matrix',
   'data/portal_sync_health.json': 'portal_sync_health'
 };
-const LOCAL_FIRST_SNAPSHOT_KEYS = new Set(Object.values(PORTAL_SNAPSHOT_PATH_MAP));
 const portalSnapshotState = {
   client: null,
   promise: null,
@@ -2771,22 +2770,6 @@ async function loadJsonOrFallback(path, fallback, label = path) {
     const stagedPath = String(path || '').startsWith('data/') && !skipStagedFallback.has(snapshotKey)
       ? `.altea-google-sheet-sync-output/${String(path).slice(5)}`
       : '';
-    if (LOCAL_FIRST_SNAPSHOT_KEYS.has(snapshotKey)) {
-      const [localResult, stagedResult] = await Promise.allSettled([
-        loadJson(path),
-        stagedPath ? loadJson(stagedPath) : Promise.resolve(null)
-      ]);
-      if (stagedResult.status === 'rejected') {
-        console.warn(`[portal-staged] ${snapshotKey}`, stagedResult.reason);
-      }
-      const localPayload = localResult.status === 'fulfilled' ? localResult.value : null;
-      const stagedPayload = stagedResult.status === 'fulfilled' ? stagedResult.value : null;
-      const localOrStaged = chooseFreshestPayload(snapshotKey, localPayload, stagedPayload)?.payload
-        || localPayload
-        || stagedPayload
-        || null;
-      if (snapshotPayloadLooksUsable(snapshotKey, localOrStaged)) return localOrStaged;
-    }
     const [snapshotResult, localResult, stagedResult] = await Promise.allSettled([
       loadPortalSnapshotPayload(path),
       loadJson(path),

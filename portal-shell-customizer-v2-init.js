@@ -58,3 +58,13 @@
   document.documentElement.dataset.sidebar = sidebar(read(sidebarKey));
   document.documentElement.dataset.portalBackground = background(read(backgroundKey) || document.documentElement.dataset.portalBackground);
 })();
+
+(function () {
+  'use strict';
+  if (document.querySelector('script[data-qharisma-content-factory-v1]')) return;
+  var script = document.createElement('script');
+  script.src = 'portal-content-factory-v1.js?v=20260721contentfactory1';
+  script.async = false;
+  script.setAttribute('data-qharisma-content-factory-v1', '1');
+  document.head.appendChild(script);
+})();

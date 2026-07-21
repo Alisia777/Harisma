@@ -29,6 +29,7 @@
 <link rel="stylesheet" href="v87.css?v=20260530wbplanxp1">
 <link rel="stylesheet" href="portal-theme-switcher.css?v=20260620premiumshell4">
 <link rel="stylesheet" href="portal-premium-presentation.css?v=20260703executive-loader1">
+<link rel="stylesheet" href="portal-designers.css?v=20260721designaudit3">
 <link rel="stylesheet" href="portal-shell-customizer-v2.css?v=20260624shellbg1">
 <link rel="stylesheet" href="portal-workspaces-general-to-detail-v1.css?v=20260622workspacesgtdv1">
 <link rel="stylesheet" href="portal-auth-gate.css?v=20260618luxury1">
@@ -97,6 +98,10 @@ html[data-altea-task-primary="1"] #view-control .portal-view-guide{display:none!
         <button class="nav-btn" data-view="documents">
           <span>&#1061;&#1088;&#1072;&#1085;&#1080;&#1083;&#1080;&#1097;&#1077;</span>
           <small>&#1092;&#1072;&#1081;&#1083;&#1099; &#183; &#1089;&#1089;&#1099;&#1083;&#1082;&#1080; &#183; &#1086;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1103;</small>
+        </button>
+        <button class="nav-btn" data-view="designers">
+          <span>Дизайнеры</span>
+          <small>проекты &middot; брифы &middot; бренд-система</small>
         </button>
         <button class="nav-btn" data-view="executive">
           <span>&#1056;&#1091;&#1082;&#1086;&#1074;&#1086;&#1076;&#1080;&#1090;&#1077;&#1083;&#1102;</span>
@@ -173,6 +178,7 @@ html[data-altea-task-primary="1"] #view-control .portal-view-guide{display:none!
       <section class="view" id="view-data-health"></section>
       <section class="view" id="view-control"></section>
       <section class="view" id="view-documents"></section>
+      <section class="view" id="view-designers"></section>
       <section class="view" id="view-executive"></section>
       <section class="view" id="view-sku-plan-fact"></section>
       <section class="view" id="view-repricer"></section>
@@ -225,14 +231,14 @@ html[data-altea-task-primary="1"] #view-control .portal-view-guide{display:none!
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="window.__ALTEA_BOOT.supabaseLoaded=true; window.__alteaSetBootBadge && window.__alteaSetBootBadge('\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u0435\u043c \u043a\u043e\u043c\u0430\u043d\u0434\u043d\u0443\u044e \u0431\u0430\u0437\u0443\u2026','pending');"></script>
-  <script defer src="portal-auth-access.js?v=20260716bulygin1"></script>
+  <script defer src="portal-auth-access.js?v=20260721designaudit3"></script>
   <script defer src="portal-security-audit.js?v=20260619audit1"></script>
-  <script defer src="portal-auth-gate.js?v=20260720macoshttps1"></script>
+  <script defer src="portal-auth-gate.js?v=20260721designersmacos1"></script>
   <script defer src="altea-motion-runtime.js?v=20260622bootfailopen1"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-build-refresh-hotfix.js?v=20260515dashboard1"></script>
 <script type="application/x-altea-auth-delayed" data-auth-src="portal-runtime-optimizer.js?v=20260701taskrouteguard5"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-local-storage-quota-hotfix.js?v=20260710storagefolders1"></script>
-<script type="application/x-altea-auth-delayed" data-auth-src="app-core-01.js?v=20260716controltaskcompact1"></script>
+<script type="application/x-altea-auth-delayed" data-auth-src="app-core-01.js?v=20260720designers2"></script>
 <script type="application/x-altea-auth-delayed" data-auth-src="app-core-02.js?v=20260717taskvisibility1"></script>
 <script type="application/x-altea-auth-delayed" data-auth-src="app-core-03.js?v=20260710storagefolders1"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="app-core-04.js?v=20260703sourceonly-fbs1"></script>
@@ -254,15 +260,16 @@ html[data-altea-task-primary="1"] #view-control .portal-view-guide{display:none!
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-data-guard.js?v=20260717hydration1"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-dashboard-ceo-motion-v1.js?v=20260716routeguard1"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-dashboard-money-kpi-guard.js?v=20260717routeaware1"></script>
-<script type="application/x-altea-auth-delayed" data-auth-src="app-core-10.js?v=20260710delegated-nav1"></script>
-  <script type="application/x-altea-auth-delayed" data-auth-src="portal-premium-presentation.js?v=20260710remove-launch-control1"></script>
+<script type="application/x-altea-auth-delayed" data-auth-src="app-core-10.js?v=20260720designers2"></script>
+  <script type="application/x-altea-auth-delayed" data-auth-src="portal-designers.js?v=20260721designaudit3"></script>
+  <script type="application/x-altea-auth-delayed" data-auth-src="portal-premium-presentation.js?v=20260721designaudit3"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-executive-direct-fact-guard.js?v=20260703direct-fact-guard1"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-task-submit-guard-hotfix.js?v=20260522quicktask1"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-form-visual-refine.js?v=20260701taskrouteguard5"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-control-center-v2-hotfix.js?v=20260701taskrouteguard5"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-executive-lite-guard.js?v=20260623routefix2"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-task-workflow-resilient-hotfix.js?v=20260525closehistory1"></script>
-  <script type="application/x-altea-auth-delayed" data-auth-src="portal-sidebar-priority-hotfix.js?v=20260629storage1"></script>
+  <script type="application/x-altea-auth-delayed" data-auth-src="portal-sidebar-priority-hotfix.js?v=20260720designers2"></script>
 <script type="application/x-altea-auth-delayed" data-auth-src="portal-ux-unify.js?v=20260701taskrouteguard5"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-rop-strategic-tasks.js?v=20260701taskrouteguard5"></script>
   <script type="application/x-altea-auth-delayed" data-auth-src="portal-shell-customizer-v2.js?v=20260624shellbg1"></script>

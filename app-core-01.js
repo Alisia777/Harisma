@@ -208,6 +208,7 @@ const ACTIVE_TASK_STATUSES = new Set(['new', 'in_progress', 'waiting_team', 'wai
 const VIEW_TITLES = {
   dashboard: 'Дашборд',
   documents: 'Хранилище',
+  designers: 'Дизайнеры',
   repricer: 'Репрайсер',
   prices: 'Цены',
   order: 'Заказ товара',
@@ -239,6 +240,7 @@ const VIEW_DATA_REQUIREMENTS = {
   executive: 'skuPlanFact',
   meetings: 'meetings',
   documents: 'documents',
+  designers: '',
   repricer: 'repricer'
 };
 const DISABLED_VIEWS = new Set(['meetings', 'ads-funnel', 'launch-control']);

@@ -11,6 +11,7 @@
     "executive",
     "control",
     "documents",
+    "designers",
     "data-health",
     "sku-plan-fact",
     "repricer",
@@ -30,7 +31,7 @@
     {
       key: "daily",
       label: "01 \u0413\u043b\u0430\u0432\u043d\u043e\u0435",
-      views: ["dashboard", "executive", "control", "documents", "data-health"]
+      views: ["dashboard", "executive", "control", "documents", "designers", "data-health"]
     },
     {
       key: "commerce",
@@ -71,6 +72,11 @@
       title: "\u0425\u0440\u0430\u043d\u0438\u043b\u0438\u0449\u0435",
       subtitle: "\u0424\u0430\u0439\u043b\u044b \u00b7 \u0441\u0441\u044b\u043b\u043a\u0438 \u00b7 \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u044f",
       icon: "documents"
+    },
+    designers: {
+      title: "\u0414\u0438\u0437\u0430\u0439\u043d\u0435\u0440\u044b",
+      subtitle: "\u041f\u0440\u043e\u0435\u043a\u0442\u044b \u00b7 \u0431\u0440\u0438\u0444\u044b \u00b7 \u0431\u0440\u0435\u043d\u0434-\u0441\u0438\u0441\u0442\u0435\u043c\u0430",
+      icon: "designers"
     },
     "data-health": {
       title: "\u041a\u0430\u043b\u0435\u043d\u0434\u0430\u0440\u044c",
@@ -152,6 +158,7 @@
   var ICONS = {
     dashboard: '<path d="M4 5h7v7H4z"/><path d="M13 5h7v4h-7z"/><path d="M13 11h7v9h-7z"/><path d="M4 14h7v6H4z"/>',
     documents: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6"/><path d="M10 17h6"/>',
+    designers: '<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2.2-.8 1.7-2-.5-1.1.3-2 1.5-2h1.4A4.4 4.4 0 0 0 21 12.6C21 7.3 17 3 12 3z"/><path d="M7.5 10h.01"/><path d="M10 6.8h.01"/><path d="M14 6.5h.01"/><path d="M17 9h.01"/>',
     calendar: '<path d="M7 3v4"/><path d="M17 3v4"/><path d="M4 8h20"/><path d="M5 5h18v18H5z"/><path d="M9 13h3"/><path d="M15 13h3"/><path d="M9 17h3"/>',
     executive: '<path d="M3 7l5 5 4-8 4 8 5-5-2 14H5z"/><path d="M7 17h10"/>',
     tasks: '<path d="M5 5h14v16H5z"/><path d="M9 9l1.5 1.5L14 7"/><path d="M9 15h7"/><path d="M9 18h7"/>',

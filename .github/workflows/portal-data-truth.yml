@@ -79,11 +79,14 @@ jobs:
           node scripts/portal-designers-access-history.selftest.js
           node scripts/portal-snapshot-refresh-hotfix.selftest.js
           node scripts/portal-dashboard-snapshot-source.selftest.js
+          node scripts/portal-snapshot-pull.selftest.js
+          node scripts/portal-protected-snapshot-refresh-workflow.selftest.js
           node scripts/sanitizer_url_contract.test.js
           node scripts/atomic_publish_failure_injection.test.js
           python scripts/verify_full_pr_non_iu_scope.selftest.py
           python scripts/d1_close_gate.selftest.py
           python scripts/sync_portal_generation_to_supabase.selftest.py
+          python scripts/verify_snapshot_manifest_protected.selftest.py
       - name: Enforce protected portal scope
         shell: bash
         run: |

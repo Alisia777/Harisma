@@ -1,7 +1,7 @@
 {
   "schema": "portal-runtime-snapshot-inventory-v1",
-  "version": "2026-06-20.post-audit",
-  "protectedScopeExcluded": true,
+  "version": "2026-07-21.full-portal",
+  "protectedScopeExcluded": false,
   "paths": [
     "data/dashboard.json",
     "data/skus.json",
@@ -9,6 +9,7 @@
     "data/platform_trends.json",
     "data/logistics.json",
     "data/ads_summary.json",
+    "data/iu_drr_summary.json",
     "data/control_auto_task_sources.json",
     "data/wb_feedbacks_summary.json",
     "data/wb_sales_funnel_report.json",

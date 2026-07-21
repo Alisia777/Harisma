@@ -27,7 +27,21 @@ function parseArgs(argv) {
   return args;
 }
 
+function snapshotKeyFromPath(value) {
+  const normalized = String(value || '').replace(/\\/g, '/');
+  if (!normalized.startsWith('data/') || !normalized.endsWith('.json')) return '';
+  return normalized.slice(5, -5).replace(/\//g, '__');
+}
+
+function snapshotsFromInventory(inventoryPath) {
+  const payload = JSON.parse(fs.readFileSync(inventoryPath, 'utf8').replace(/^\uFEFF/, ''));
+  return [...new Set((Array.isArray(payload?.paths) ? payload.paths : [])
+    .map(snapshotKeyFromPath)
+    .filter(Boolean))];
+}
+
 function resolveOptions(args) {
+  const inventoryPath = args.inventory ? path.resolve(args.inventory) : '';
   return {
     outputDir: path.resolve(args['output-dir'] || path.join(process.cwd(), 'data')),
     brand: args.brand || process.env.ALTEA_PORTAL_BRAND || DEFAULT_BRAND,
@@ -35,7 +49,9 @@ function resolveOptions(args) {
     supabaseKey: args['supabase-key'] || process.env.ALTEA_SUPABASE_KEY || DEFAULT_SUPABASE_KEY,
     snapshots: args.snapshot
       ? String(args.snapshot).split(',').map((value) => value.trim()).filter(Boolean)
-      : DEFAULT_SNAPSHOTS
+      : (inventoryPath ? snapshotsFromInventory(inventoryPath) : DEFAULT_SNAPSHOTS),
+    inventoryPath,
+    strict: Boolean(args.strict)
   };
 }
 
@@ -135,10 +151,12 @@ async function pullSnapshots(options) {
 
   fs.mkdirSync(options.outputDir, { recursive: true });
   const written = [];
+  const missing = [];
   options.snapshots.forEach((snapshotKey) => {
     const payload = decodePayload(snapshotKey, rowsByKey);
     if (payload == null) {
       console.warn(`[snapshot-pull] ${snapshotKey}: not found`);
+      missing.push(snapshotKey);
       return;
     }
     const outputPath = path.join(options.outputDir, `${snapshotKey}.json`);
@@ -146,6 +164,9 @@ async function pullSnapshots(options) {
     written.push(outputPath);
     console.log(`[snapshot-pull] ${snapshotKey}: ${outputPath}`);
   });
+  if (options.strict && missing.length) {
+    throw new Error(`Supabase snapshot pull is missing required keys: ${missing.join(', ')}`);
+  }
   return written;
 }
 
@@ -155,7 +176,15 @@ async function main() {
   console.log(JSON.stringify({ ok: true, written }, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  resolveOptions,
+  snapshotKeyFromPath,
+  snapshotsFromInventory
+};

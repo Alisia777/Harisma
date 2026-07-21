@@ -18,6 +18,10 @@ const dataTruthWorkflow = fs.readFileSync(dataTruthWorkflowPath, 'utf8');
 const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
 const paths = Array.isArray(inventory.paths) ? inventory.paths : [];
 
+if (inventory.protectedScopeExcluded !== false || !paths.includes('data/iu_drr_summary.json')) {
+  fail('runtime snapshot inventory must publish the guarded IU/DRR summary after a full daily rebuild');
+}
+
 if (!workflow.includes("workflows: ['Portal data truth']") || !workflow.includes('types: [completed]')) {
   fail('daily close must auto-run after the Portal data truth workflow completes');
 }

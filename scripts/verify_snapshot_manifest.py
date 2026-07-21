@@ -39,11 +39,16 @@ def main() -> int:
     manifest = load(repo / ns.manifest)
     inventory = load(repo / ns.inventory)
     entries = {entry['path']: entry for entry in manifest.get('artifacts', [])}
-    expected = {item for item in inventory.get('paths', []) if item not in protected}
+    include_protected = inventory.get('protectedScopeExcluded') is False
+    expected = {
+        item for item in inventory.get('paths', [])
+        if include_protected or item not in protected
+    }
+    allowed_extra = set() if include_protected else protected
     errors: list[str] = []
 
     missing = sorted(expected - set(entries))
-    extra = sorted(set(entries) - expected - protected)
+    extra = sorted(set(entries) - expected - allowed_extra)
     if missing:
         errors.append(f'missing manifest paths: {missing}')
     if extra:
@@ -54,7 +59,7 @@ def main() -> int:
         errors.append('manifest runId is empty')
 
     for rel_path, entry in entries.items():
-        if rel_path in protected:
+        if rel_path in protected and not include_protected:
             continue
         file_path = repo / rel_path
         if not file_path.exists():

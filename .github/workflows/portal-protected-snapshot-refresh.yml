@@ -1,0 +1,100 @@
+name: Portal protected snapshot refresh
+
+on:
+  workflow_dispatch:
+    inputs:
+      cutoff-date:
+        description: 'Business cutoff YYYY-MM-DD; empty means Europe/Moscow D-1'
+        required: false
+
+concurrency:
+  group: portal-protected-snapshot-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TZ: Europe/Moscow
+
+jobs:
+  refresh:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve protected refresh window
+        id: cutoff
+        shell: bash
+        run: |
+          VALUE='${{ inputs['cutoff-date'] }}'
+          if [ -z "$VALUE" ]; then VALUE=$(TZ=Europe/Moscow date -d yesterday +%F); fi
+          REVISION_FROM=$(TZ=Europe/Moscow date -d "$VALUE -29 days" +%F)
+          echo "value=$VALUE" >> "$GITHUB_OUTPUT"
+          echo "revision_from=$REVISION_FROM" >> "$GITHUB_OUTPUT"
+
+      - name: Preflight protected refresh secrets
+        env:
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          for name in ALTEA_OZON_CLIENT_ID ALTEA_OZON_API_KEY SUPABASE_SERVICE_ROLE_KEY; do
+            if [ -z "${!name:-}" ]; then echo "Missing required secret: $name" >&2; exit 1; fi
+          done
+
+      - name: Hydrate current published generation
+        env:
+          ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+        run: node scripts/portal-snapshot-pull.js --output-dir data --inventory data/runtime_snapshot_inventory.json --strict
+
+      - name: Rebuild guarded IU DRR summary
+        env:
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+        run: |
+          node scripts/build-wb-fixed-rate-report.js --output data/wb_fixed_rate_reports.json --optional
+          node scripts/build-wb-iu-logic-rules.js --report data/wb_fixed_rate_reports.json --output data/wb_iu_logic_rules.json
+          node scripts/build-iu-drr-summary.js --input-dir data --base-data-dir data --output-dir data --from '${{ steps.cutoff.outputs.revision_from }}' --to '${{ steps.cutoff.outputs.value }}'
+          npm run portal:iu-drr-logic-guard
+          node -e "const x=require('./data/iu_drr_summary.json'); if(x.asOfDate !== '${{ steps.cutoff.outputs.value }}' || x.window?.to !== '${{ steps.cutoff.outputs.value }}') throw new Error('IU/DRR cutoff mismatch');"
+
+      - name: Package and verify full active generation
+        run: |
+          mkdir -p .portal-truth-output
+          node scripts/portal-atomic-snapshot-finalize.js --data-dir data --output-dir .portal-truth-output
+          python scripts/verify_snapshot_manifest.py --repo . --manifest data/active_snapshot.json --inventory data/runtime_snapshot_inventory.json
+
+      - name: Publish generation and verify readback
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+        run: >-
+          python scripts/sync_portal_generation_to_supabase.py
+          --manifest data/active_snapshot.json
+          --supabase-url "$SUPABASE_URL"
+          --supabase-key "$SUPABASE_SERVICE_ROLE_KEY"
+          --verify-readback
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: portal-protected-snapshot-refresh-${{ github.run_id }}
+          path: |
+            .portal-truth-output/**
+            data/active_snapshot.json
+            data/iu_drr_summary.json
+          include-hidden-files: true
+          if-no-files-found: warn

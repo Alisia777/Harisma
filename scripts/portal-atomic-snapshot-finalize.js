@@ -12,6 +12,7 @@ const DEFAULT_INVENTORY_PATHS = [
   'data/platform_trends.json',
   'data/logistics.json',
   'data/ads_summary.json',
+  'data/iu_drr_summary.json',
   'data/control_auto_task_sources.json',
   'data/wb_feedbacks_summary.json',
   'data/wb_sales_funnel_report.json',

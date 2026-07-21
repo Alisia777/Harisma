@@ -76,6 +76,7 @@ async function snapshot(page, platform) {
       orderRub: model.total.orderRub,
       buyoutRub: model.total.buyoutRub,
       monthToDateBuyoutRub: model.monthToDate?.total?.buyoutRub,
+      rangeEnd: model.range.end,
       orderUnits: model.total.orders,
       buyoutUnits: model.total.buys,
       orderKpi: kpis[0]?.value || '',
@@ -120,9 +121,10 @@ async function run() {
       assert.ok(item.monthToDateBuyoutRub > 0, `${platform} must have positive month-to-date buyout rubles`);
       assert.ok(item.orderKpi.includes(RUB), `${platform} orders KPI must render money, got "${item.orderKpi}"`);
       assert.ok(item.buyoutKpi.includes(RUB), `${platform} buyout KPI must render money, got "${item.buyoutKpi}"`);
-      assert.ok(item.monthToDateBuyoutLabel.includes('Выкупы с 01.06'), `${platform} MTD KPI label must explain month-to-date buyouts, got "${item.monthToDateBuyoutLabel}"`);
+      const selectedMonth = item.rangeEnd.slice(5, 7);
+      assert.ok(item.monthToDateBuyoutLabel.includes(`Выкупы с 01.${selectedMonth}`), `${platform} MTD KPI label must explain month-to-date buyouts, got "${item.monthToDateBuyoutLabel}"`);
       assert.ok(item.monthToDateBuyoutKpi.includes(RUB), `${platform} MTD buyout KPI must render money, got "${item.monthToDateBuyoutKpi}"`);
-      assert.match(item.monthToDateBuyoutNote, /с 01\.06 по \d{2}\.06/, `${platform} MTD KPI note must show the month-to-date range`);
+      assert.match(item.monthToDateBuyoutNote, new RegExp(`с 01\\.${selectedMonth} по \\d{2}\\.${selectedMonth}`), `${platform} MTD KPI note must show the month-to-date range`);
       assert.notStrictEqual(item.orderKpi, String(Math.round(item.orderUnits)), `${platform} orders KPI leaked units`);
       assert.notStrictEqual(item.buyoutKpi, String(Math.round(item.buyoutUnits)), `${platform} buyout KPI leaked units`);
       rows.push(`${platform}: ${item.orderKpi} / ${item.buyoutKpi} / ${item.monthToDateBuyoutKpi}`);

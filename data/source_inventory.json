@@ -1,50 +1,89 @@
 [
   {
     "file": "orders (3).csv",
-    "source": "Ozon orders export",
     "period": "2026-06-13..2026-06-20",
-    "use_for": ["orders", "statuses", "delivery"],
-    "do_not_use_for": ["net sales turnover", "payout"],
-    "sha256": "facb7340948823f03c2da68dd633bc600ab19ff6e4654ad7719968d14edbfb92"
+    "sha256": "facb7340948823f03c2da68dd633bc600ab19ff6e4654ad7719968d14edbfb92",
+    "source": "Ozon orders export",
+    "use_for": [
+      "orders",
+      "statuses",
+      "delivery"
+    ],
+    "do_not_use_for": [
+      "net sales turnover",
+      "payout"
+    ]
   },
   {
     "file": "products (1).csv",
-    "source": "Ozon products export",
     "period": "snapshot",
-    "use_for": ["product registry check", "available stock", "current price"],
-    "do_not_use_for": ["historical sales"],
-    "sha256": "ad5baa977032fe68afc68582f8994d020092980c0855815c713d4d7c87d99214"
+    "sha256": "ad5baa977032fe68afc68582f8994d020092980c0855815c713d4d7c87d99214",
+    "source": "Ozon products export",
+    "use_for": [
+      "product registry check",
+      "available stock",
+      "current price"
+    ],
+    "do_not_use_for": [
+      "historical sales"
+    ]
   },
   {
     "file": "stocks_with_action_report_from_18_05_26_to_18_06_26.xlsx",
-    "source": "Ozon stock turnover statement",
     "period": "2026-05-18..2026-06-18",
-    "use_for": ["stock movement", "end stock", "valid/invalid stock"],
-    "do_not_use_for": ["D-1 stock after 2026-06-18"],
-    "sha256": "9cb5cf24bced40ce0bb7fec0c48f5ff047db8773f296e06421fb353970fb154a"
+    "sha256": "9cb5cf24bced40ce0bb7fec0c48f5ff047db8773f296e06421fb353970fb154a",
+    "source": "Ozon stock turnover statement",
+    "use_for": [
+      "stock movement",
+      "end stock",
+      "valid/invalid stock"
+    ],
+    "do_not_use_for": [
+      "D-1 stock after 2026-06-18"
+    ]
   },
   {
     "file": "supplier-goods-109831-2026-06-01-2026-06-20-toqhiibqa.XLSX",
-    "source": "WB supplier goods report",
     "period": "2026-06-01..2026-06-20",
-    "use_for": ["orders", "buyouts", "payout proxy", "stock"],
-    "do_not_use_for": ["contract net turnover without returns"],
-    "sha256": "a335080e1518c97c06eb36c4110b5350d3d937d469dd7f941bd72a999a548fdf"
+    "sha256": "a335080e1518c97c06eb36c4110b5350d3d937d469dd7f941bd72a999a548fdf",
+    "source": "WB supplier goods report",
+    "use_for": [
+      "orders",
+      "buyouts",
+      "payout proxy",
+      "stock"
+    ],
+    "do_not_use_for": [
+      "contract net turnover without returns"
+    ]
   },
   {
     "file": "Доходы и расходы с 13.06.2026 по 19.06.2026.zip",
-    "source": "WB income/expense export",
     "period": "2026-06-13..2026-06-19",
-    "use_for": ["buyouts", "returns", "net turnover", "commission", "logistics", "payout"],
-    "do_not_use_for": ["order GMV"],
-    "sha256": "fb8835647bdd74a5e9c9bd71fe1a8dc0fc77d0559dd9927d4b85ca08b077e3bd"
+    "sha256": "fb8835647bdd74a5e9c9bd71fe1a8dc0fc77d0559dd9927d4b85ca08b077e3bd",
+    "source": "WB income/expense export",
+    "use_for": [
+      "buyouts",
+      "returns",
+      "net turnover",
+      "commission",
+      "logistics",
+      "payout"
+    ],
+    "do_not_use_for": [
+      "order GMV"
+    ]
   },
   {
     "file": "Статистика.xlsx",
-    "source": "WB campaign statistics",
     "period": "mixed campaign start dates, snapshot ended 2026-06-20",
-    "use_for": ["campaign diagnostics"],
-    "do_not_use_for": ["daily D-1 spend without daily breakdown"],
-    "sha256": "0d34d3df05ea528ee7609e5650224c8b1294c556be739913af8c7a211803c5bc"
+    "sha256": "0d34d3df05ea528ee7609e5650224c8b1294c556be739913af8c7a211803c5bc",
+    "source": "WB campaign statistics",
+    "use_for": [
+      "campaign diagnostics"
+    ],
+    "do_not_use_for": [
+      "daily D-1 spend without daily breakdown"
+    ]
   }
 ]

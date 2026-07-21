@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-07-17T06:32:10.422Z",
+  "generatedAt": "2026-07-21T09:37:08.088Z",
   "note": "Legacy repricer fallback rebuilt from merged smart-price contour, support rows and local live repricer hints. Used for coldstart, price bridge and compatibility until managed repricer finishes hydration.",
   "sourceFreshness": {
     "workbench": "2026-07-06T06:17:17.001Z",
-    "overlay": "2026-07-17T06:32:10.422Z",
+    "overlay": "2026-07-21T09:37:08.088Z",
     "liveWorkbench": "2026-05-12T11:58:47.377Z",
     "liveRepricer": "2026-04-16T23:59:00",
-    "liveRepricerFileMtime": "2026-07-16T05:34:06.355Z",
+    "liveRepricerFileMtime": "2026-07-21T09:17:35.813Z",
     "liveRepricerStatus": "stale-ignored",
-    "liveRepricerAgeDays": 91.4,
+    "liveRepricerAgeDays": 95.53,
     "liveRepricerMaxAgeDays": 7,
     "liveRepricerRowsUsed": 0,
     "support": "2026-07-06T06:17:17.001Z",
-    "prices": "2026-07-17T06:32:10.422Z",
-    "merged": "2026-07-17T06:32:10.422Z"
+    "prices": "2026-07-21T09:37:08.088Z",
+    "merged": "2026-07-21T09:37:08.088Z"
   },
   "summary": {
     "skuCount": 213,
@@ -436,7 +436,8 @@
       "legalEntity": "Максим Лапыгин",
       "owner": "Максим Лапыгин",
       "ownerByPlatform": {
-        "wb": "Максим Лапыгин"
+        "wb": "Максим Лапыгин",
+        "ozon": "Максим Лапыгин"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -834,7 +835,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -966,7 +968,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -1719,7 +1722,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -1981,9 +1985,10 @@
       "article": "berberin_laif_bad_60caps",
       "name": "Берберин + хром + коэнзим + B6 для похудения, контроль аппетита и веса, Алтея, Берберин Лайф, 60 капсул",
       "brand": "Алтея",
-      "legalEntity": "Артем",
-      "owner": "Артем",
+      "legalEntity": "Питайкин Артём",
+      "owner": "Питайкин Артём",
       "ownerByPlatform": {
+        "wb": "Питайкин Артём",
         "ozon": "Артем"
       },
       "status": "Вывод",
@@ -2116,7 +2121,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -2719,7 +2725,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -2851,7 +2858,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -3796,7 +3804,8 @@
       "legalEntity": "Мария",
       "owner": "Мария",
       "ownerByPlatform": {
-        "wb": "Мария"
+        "wb": "Мария",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -4460,7 +4469,8 @@
       "legalEntity": "Мария",
       "owner": "Мария",
       "ownerByPlatform": {
-        "wb": "Мария"
+        "wb": "Мария",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -5257,7 +5267,8 @@
       "legalEntity": "Кирилл",
       "owner": "Кирилл",
       "ownerByPlatform": {
-        "wb": "Кирилл"
+        "wb": "Кирилл",
+        "ozon": "Максим Лапыгин"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -6586,7 +6597,8 @@
       "legalEntity": "Максим Лапыгин",
       "owner": "Максим Лапыгин",
       "ownerByPlatform": {
-        "wb": "Максим Лапыгин"
+        "wb": "Максим Лапыгин",
+        "ozon": "Максим Лапыгин"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -7620,7 +7632,8 @@
       "legalEntity": "Кирилл",
       "owner": "Кирилл",
       "ownerByPlatform": {
-        "wb": "Кирилл"
+        "wb": "Кирилл",
+        "ozon": "Максим Лапыгин"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -7882,9 +7895,11 @@
       "article": "kardicin",
       "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Кардицин, 10мг",
       "brand": "",
-      "legalEntity": "",
-      "owner": "",
-      "ownerByPlatform": {},
+      "legalEntity": "Анна Пирогова",
+      "owner": "Анна Пирогова",
+      "ownerByPlatform": {
+        "ozon": "Анна Пирогова"
+      },
       "status": "Вывод",
       "tag": "OZ",
       "cost": 103.47,
@@ -9831,9 +9846,12 @@
       "article": "krem-filler_15ml",
       "name": "Питательный крем для лица антивозрастной, Крем филлер вокруг глаз, с коллагеном с ниацинамидом, Алтея, 15 мл",
       "brand": "",
-      "legalEntity": "",
-      "owner": "",
-      "ownerByPlatform": {},
+      "legalEntity": "[object Object]",
+      "owner": "[object Object]",
+      "ownerByPlatform": {
+        "wb": "[object Object]",
+        "ozon": "[object Object]"
+      },
       "status": "Вывод",
       "tag": "WB + OZ",
       "cost": 156.52,
@@ -11693,7 +11711,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -11825,7 +11844,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -12164,7 +12184,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -12293,9 +12314,12 @@
       "article": "monarda_30ml",
       "name": "Масло монарды и экстракт зеленого чая для ногтей, универсальное, Алтея, 30 мл",
       "brand": "",
-      "legalEntity": "",
-      "owner": "",
-      "ownerByPlatform": {},
+      "legalEntity": "[object Object]",
+      "owner": "[object Object]",
+      "ownerByPlatform": {
+        "wb": "[object Object]",
+        "ozon": "[object Object]"
+      },
       "status": "Вывод",
       "tag": "WB + OZ",
       "cost": 115.8,
@@ -14065,7 +14089,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -14330,7 +14355,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -14595,7 +14621,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -15267,9 +15294,12 @@
       "article": "remuver_40ml",
       "name": "remuver_40ml",
       "brand": "",
-      "legalEntity": "",
-      "owner": "",
-      "ownerByPlatform": {},
+      "legalEntity": "Анна Пирогова",
+      "owner": "Анна Пирогова",
+      "ownerByPlatform": {
+        "wb": "Анна Пирогова",
+        "ozon": "Анна Пирогова"
+      },
       "status": "Вывод",
       "tag": "WB + OZ",
       "cost": 52.8,
@@ -16730,7 +16760,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -17128,7 +17159,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -17257,9 +17289,10 @@
       "article": "sanatsin",
       "name": "От паразитов, от глистов комплекс, Алтея, Санацин, 20 штук",
       "brand": "CPA",
-      "legalEntity": "Артем",
-      "owner": "Артем",
+      "legalEntity": "Питайкин Артём",
+      "owner": "Питайкин Артём",
       "ownerByPlatform": {
+        "wb": "Питайкин Артём",
         "ozon": "Артем"
       },
       "status": "Вывод",
@@ -19193,7 +19226,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -19325,7 +19359,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Актуальный",
       "tag": "WB + OZ",
@@ -20060,9 +20095,10 @@
       "article": "syvorotka_dlya_lica_30ml_v2",
       "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
       "brand": "Алтея",
-      "legalEntity": "Даша",
-      "owner": "Даша",
+      "legalEntity": "Питайкин Артём",
+      "owner": "Питайкин Артём",
       "ownerByPlatform": {
+        "wb": "Питайкин Артём",
         "ozon": "Даша"
       },
       "status": "Вывод",
@@ -21126,7 +21162,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Под вопросом",
       "tag": "WB + OZ",
@@ -24227,7 +24264,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -24773,7 +24811,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -24905,7 +24944,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -25510,7 +25550,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",
@@ -25847,7 +25888,8 @@
       "legalEntity": "Мария Васильева",
       "owner": "Мария Васильева",
       "ownerByPlatform": {
-        "wb": "Мария Васильева"
+        "wb": "Мария Васильева",
+        "ozon": "Мария Васильева"
       },
       "status": "Вывод",
       "tag": "WB + OZ",

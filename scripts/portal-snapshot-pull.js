@@ -8,6 +8,7 @@ const DEFAULT_SUPABASE_URL = 'https://iyckwryrucqrxwlowxow.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw';
 const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const DEFAULT_SNAPSHOTS = ['sku_aliases', 'sku_alias_ignore', 'sku_alias_audit'];
+const REQUEST_BATCH_SIZE = 8;
 
 function parseArgs(argv) {
   const args = {};
@@ -77,8 +78,8 @@ function buildSnapshotUrl(options, keys = []) {
 
 async function requestRows(options, keys = []) {
   const rows = [];
-  for (let index = 0; index < keys.length; index += 40) {
-    const batch = keys.slice(index, index + 40);
+  for (let index = 0; index < keys.length; index += REQUEST_BATCH_SIZE) {
+    const batch = keys.slice(index, index + REQUEST_BATCH_SIZE);
     const response = await fetch(buildSnapshotUrl(options, batch), {
       cache: 'no-store',
       headers: {
@@ -120,11 +121,10 @@ function chooseLatestRows(rows = []) {
   return byKey;
 }
 
-function decodePayload(snapshotKey, rowsByKey) {
+function chunkedPayloadText(snapshotKey, rowsByKey) {
   const row = rowsByKey.get(snapshotKey);
-  if (!row) return null;
-  const payload = row.payload;
-  if (!payload || typeof payload !== 'object' || !payload.chunked) return payload ?? null;
+  const payload = row?.payload;
+  if (!payload || typeof payload !== 'object' || !payload.chunked) return null;
   const count = Number(payload.chunk_count || payload.chunkCount || 0);
   if (!count) return null;
   let text = '';
@@ -136,7 +136,15 @@ function decodePayload(snapshotKey, rowsByKey) {
     else if (typeof chunk?.data === 'string') text += chunk.data;
     else return null;
   }
-  return JSON.parse(text);
+  return text;
+}
+
+function decodePayload(snapshotKey, rowsByKey) {
+  const row = rowsByKey.get(snapshotKey);
+  if (!row) return null;
+  const rawText = chunkedPayloadText(snapshotKey, rowsByKey);
+  if (rawText !== null) return JSON.parse(rawText);
+  return row.payload ?? null;
 }
 
 async function pullSnapshots(options) {
@@ -160,7 +168,8 @@ async function pullSnapshots(options) {
       return;
     }
     const outputPath = path.join(options.outputDir, `${snapshotKey}.json`);
-    fs.writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+    const rawText = chunkedPayloadText(snapshotKey, rowsByKey);
+    fs.writeFileSync(outputPath, rawText !== null ? JSON.stringify(payload, null, 2) : `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
     written.push(outputPath);
     console.log(`[snapshot-pull] ${snapshotKey}: ${outputPath}`);
   });

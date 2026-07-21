@@ -1,543 +1,39 @@
 {
-  "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-07-17T09:53:09.964Z",
-  "status": "warning",
-  "publish": {
-    "allowed": true,
-    "blockingReasons": [],
-    "warnings": [
-      "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3..",
-      "Non-blocking sync step failed: product leaderboard sync: exit code 1."
-    ],
-    "checkedAt": "2026-07-17T09:53:09.964Z"
-  },
-  "freshness": {
-    "maxDate": "2026-07-16",
-    "maxDateAgeDays": 1,
-    "expectedDate": "2026-07-16",
-    "completenessGuard": {
-      "enabled": true,
-      "status": "ok",
-      "checkedAt": "2026-07-17T09:53:09.957Z",
-      "settlementHour": 10,
-      "expectedDate": "2026-07-16",
-      "maxDate": "2026-07-16",
-      "minRatio": 0.55,
-      "lookbackDays": 7,
-      "minBaselineRevenue": 100000,
-      "minBaselineUnits": 50,
-      "platforms": [
-        "wb",
-        "ozon"
-      ],
-      "blockingReasons": [],
-      "warnings": [],
-      "checks": [
-        {
-          "platform": "wb",
-          "label": "WB",
-          "status": "ok",
-          "expectedDate": "2026-07-16",
-          "latestDate": "2026-07-16",
-          "currentRevenue": 12500497,
-          "baselineRevenueMedian": 13855024,
-          "revenueRatio": 0.9022,
-          "currentUnits": 8593,
-          "baselineUnitsMedian": 9348,
-          "unitsRatio": 0.9192,
-          "baselineDays": 7
-        },
-        {
-          "platform": "ozon",
-          "label": "Ozon",
-          "status": "ok",
-          "expectedDate": "2026-07-16",
-          "latestDate": "2026-07-16",
-          "currentRevenue": 2139529.06,
-          "baselineRevenueMedian": 2693688,
-          "revenueRatio": 0.7943,
-          "currentUnits": 2728,
-          "baselineUnitsMedian": 3466,
-          "unitsRatio": 0.7871,
-          "baselineDays": 7
-        }
-      ]
-    },
-    "dependencyGuard": {
-      "status": "ok",
-      "checkedAt": "2026-07-17T09:53:09.964Z",
-      "expectedDate": "2026-07-16",
-      "adsSummaryWindowTo": "2026-07-16",
-      "iuDrrWindowTo": "2026-07-16",
-      "iuDrrAdsWindowTo": "2026-07-16",
-      "iuDrrDailyLatest": "2026-07-16",
-      "blockingReasons": [],
-      "warnings": [],
-      "checks": [
-        {
-          "name": "iu-drr-ads-window-after-ads-summary",
-          "status": "ok",
-          "message": "IU/DRR WB ads window covers ads_summary through 2026-07-16.",
-          "adsWindowTo": "2026-07-16",
-          "iuAdsWindowTo": "2026-07-16"
-        },
-        {
-          "name": "iu-drr-daily-expected-date",
-          "status": "ok",
-          "message": "IU/DRR daily rows cover expected date 2026-07-16.",
-          "iuDailyLatest": "2026-07-16",
-          "expectedDate": "2026-07-16"
-        },
-        {
-          "name": "iu-drr-ads-window-expected-date",
-          "status": "ok",
-          "message": "IU/DRR WB ads window covers expected date 2026-07-16.",
-          "iuAdsWindowTo": "2026-07-16",
-          "expectedDate": "2026-07-16"
-        }
-      ]
-    },
-    "iuDrrExpenseGuard": {
-      "status": "ok",
-      "blockingReasons": [],
-      "warnings": [],
-      "checks": [
-        {
-          "name": "iu-drr-expense-source",
-          "status": "ok",
-          "checkedRows": 77
-        }
-      ]
-    }
-  },
-  "sources": {
-    "dashboard": {
-      "exists": true,
-      "rows": 20,
-      "generatedAt": "2026-07-17T07:33:26.446Z",
-      "asOfDate": "2026-07-16",
-      "revenue": 0
-    },
-    "skus": {
-      "exists": true,
-      "rows": 209,
-      "generatedAt": "",
-      "asOfDate": "",
-      "revenue": 0
-    },
-    "platform_trends": {
-      "exists": true,
-      "rows": 9,
-      "generatedAt": "2026-07-17T07:33:26.446Z",
-      "asOfDate": "2026-07-16",
-      "revenue": 1836693286
-    },
-    "ads_summary": {
-      "exists": true,
-      "rows": 8,
-      "generatedAt": "2026-07-17T07:40:28.571Z",
-      "asOfDate": "2026-07-16",
-      "revenue": 0
-    },
-    "iu_plan": {
-      "exists": true,
-      "rows": 1,
-      "generatedAt": "2026-06-29T06:36:28.331Z",
-      "asOfDate": "2026-06-29",
-      "revenue": 0
-    },
-    "prices": {
-      "exists": true,
-      "rows": 1,
-      "generatedAt": "2026-07-17T06:32:10.422Z",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    },
-    "repricer": {
-      "exists": true,
-      "rows": 213,
-      "generatedAt": "2026-07-17T06:32:10.422Z",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    },
-    "smart_price_overlay": {
-      "exists": true,
-      "rows": 1,
-      "generatedAt": "2026-07-17T07:33:26.473Z",
-      "asOfDate": "2026-07-16",
-      "revenue": 0
-    },
-    "warehouse_stock_overlay": {
-      "exists": true,
-      "rows": 185,
-      "generatedAt": "2026-07-17T07:31:51.471Z",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    },
-    "loyalty_system": {
-      "exists": true,
-      "rows": 0,
-      "generatedAt": "2026-07-03T09:27:54.530Z",
-      "asOfDate": "2026-07-03",
-      "revenue": 0
-    },
-    "product_leaderboard": {
-      "exists": true,
-      "rows": 53,
-      "generatedAt": "2026-07-17T08:36:54.310Z",
-      "asOfDate": "2026-07-17",
-      "revenue": 29629630
-    },
-    "product_leaderboard_history": {
-      "exists": true,
-      "rows": 11,
-      "generatedAt": "",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    },
-    "wb_substitution_traffic": {
-      "exists": true,
-      "rows": 5191,
-      "generatedAt": "2026-06-01T15:40:56.803Z",
-      "asOfDate": "2026-06-01",
-      "revenue": 0
-    },
-    "wb_substitution_traffic_history": {
-      "exists": true,
-      "rows": 1,
-      "generatedAt": "",
-      "asOfDate": "2026-06-01",
-      "revenue": 0
-    },
-    "order_procurement": {
-      "exists": true,
-      "rows": 3099,
-      "generatedAt": "2026-07-17T00:00:00+03:00",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    },
-    "order_procurement_wb": {
-      "exists": true,
-      "rows": 626,
-      "generatedAt": "2026-07-17T00:00:00+03:00",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    },
-    "order_procurement_ozon": {
-      "exists": true,
-      "rows": 1576,
-      "generatedAt": "2026-07-17T00:00:00+03:00",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    },
-    "order_procurement_ym": {
-      "exists": true,
-      "rows": 897,
-      "generatedAt": "2026-07-17T00:00:00+03:00",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    },
-    "oos_control": {
-      "exists": true,
-      "rows": 100,
-      "generatedAt": "2026-07-17T07:33:35.368Z",
-      "asOfDate": "2026-07-15",
-      "revenue": 0
-    },
-    "iu_drr_summary": {
-      "exists": true,
-      "rows": 77,
-      "generatedAt": "2026-07-17T07:49:15.390Z",
-      "asOfDate": "2026-07-16",
-      "revenue": 0
-    },
-    "wb_feedbacks_summary": {
-      "exists": true,
-      "rows": 162,
-      "generatedAt": "2026-07-17T07:44:59.520Z",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    },
-    "portal_data_quality": {
-      "exists": true,
-      "rows": 1,
-      "generatedAt": "2026-07-17T07:49:16.234Z",
-      "asOfDate": "2026-07-16",
-      "revenue": 597
-    },
-    "portal_data_quarantine": {
-      "exists": true,
-      "rows": 0,
-      "generatedAt": "2026-07-17T07:51:33.095Z",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    },
-    "sku_aliases": {
-      "exists": true,
-      "rows": 342,
-      "generatedAt": "2026-06-29T07:27:21.069Z",
-      "asOfDate": "2026-06-29",
-      "revenue": 0
-    },
-    "sku_alias_ignore": {
-      "exists": true,
-      "rows": 0,
-      "generatedAt": "2026-06-29T07:27:21.069Z",
-      "asOfDate": "2026-06-29",
-      "revenue": 0
-    },
-    "sku_alias_audit": {
-      "exists": true,
-      "rows": 1,
-      "generatedAt": "2026-06-29T07:25:27.285Z",
-      "asOfDate": "2026-06-29",
-      "revenue": 0
-    },
-    "sku_matrix": {
-      "exists": true,
-      "rows": 209,
-      "generatedAt": "2026-07-17T07:49:18.181Z",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    },
-    "portal_sync_health": {
-      "exists": true,
-      "rows": 1,
-      "generatedAt": "2026-07-17T07:51:33.102Z",
-      "asOfDate": "2026-07-17",
-      "revenue": 0
-    }
-  },
-  "syncIssues": {
-    "generatedAt": "2026-07-17T10:33:37.3548848+03:00",
-    "issues": [
-      {
-        "id": "yandex-market",
-        "name": "Yandex Market analytics refresh",
-        "message": "[ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3.",
-        "failedAt": "2026-07-17T10:31:50.6444468+03:00"
-      },
-      {
-        "id": "product-leaderboard",
-        "name": "product leaderboard sync",
-        "message": "exit code 1",
-        "failedAt": "2026-07-17T10:33:37.3548848+03:00"
-      }
-    ]
-  },
-  "skuContour": {
-    "status": "ok",
-    "aliasCount": 342,
-    "ignoreCount": 0,
-    "matrixAliasCount": 342,
-    "matrixExternalAliasCount": 0,
-    "matrixIgnoreCount": 0,
-    "checks": [
-      {
-        "name": "aliases-present",
-        "status": "ok",
-        "message": "SKU alias snapshot is missing; resolved API SKU mappings may return to the queue."
-      },
-      {
-        "name": "ignore-present",
-        "status": "ok",
-        "message": "SKU ignore snapshot is missing; ignored API SKU values may return to the queue."
-      },
-      {
-        "name": "matrix-present",
-        "status": "ok",
-        "message": "SKU matrix snapshot is missing; alias/ignore decisions cannot be applied to portal views."
-      },
-      {
-        "name": "matrix-alias-count",
-        "status": "ok",
-        "message": "SKU matrix alias count is lower than sku_aliases (342/342).",
-        "matrixAliasCount": 342,
-        "aliasCount": 342
-      },
-      {
-        "name": "matrix-external-alias-count",
-        "status": "ok",
-        "message": "SKU matrix external alias count does not match sku_aliases (0/342).",
-        "matrixExternalAliasCount": 0,
-        "aliasCount": 342
-      },
-      {
-        "name": "matrix-ignore-count",
-        "status": "ok",
-        "message": "SKU matrix ignore count does not match sku_alias_ignore (0/0).",
-        "matrixIgnoreCount": 0,
-        "ignoreCount": 0
-      },
-      {
-        "name": "matrix-after-decisions",
-        "status": "ok",
-        "message": "SKU matrix is not older than alias/ignore decisions."
-      },
-      {
-        "name": "matrix-after-quality",
-        "status": "ok",
-        "message": "SKU matrix is aligned with portal_data_quality."
-      }
-    ]
-  },
-  "quality": {
-    "issueCount": 138,
-    "criticalCount": 137,
-    "warningCount": 0,
-    "monthKey": "2026-07",
-    "maxDate": "2026-07-16",
-    "apiUnmappedPlatformRows": 1,
-    "apiUnmappedUniqueSku": 1,
-    "apiUnmappedRevenue": 597,
-    "apiUnmappedActionRows": 0,
-    "apiUnmappedActionUniqueSku": 0,
-    "apiUnmappedActionRevenue": 0,
-    "apiKnownOutsideRegistryRows": 0,
-    "apiKnownOutsideRegistryUniqueSku": 0,
-    "apiKnownOutsideRegistryRevenue": 0,
-    "apiIgnoredPlatformRows": 0,
-    "apiSumAboveAggregateCount": 0,
-    "apiSumAboveAggregateOverage": 0,
-    "skuAliasCount": 342,
-    "priceContourSkuCount": 319,
-    "orderNoStockNeedRows": 137,
-    "skuMissingOwner": 0,
-    "skuMissingPlan": 0,
-    "skuAssignedPlan": 96,
-    "warehouseUnmatchedRows": 0,
-    "wbOwnerMatchedSku": 59,
-    "wbOwnerUpdatedSku": 0,
-    "wbOwnerMissingInPortal": 0,
-    "wbOwnerMissingInDistribution": 0
-  },
-  "apiReconciliation": {
-    "blocked": false,
-    "count": 0,
-    "overage": 0
-  },
-  "quarantine": {
-    "rows": 0,
-    "revenue": 0,
-    "overage": 0,
-    "apiSumAboveAggregateCount": 0,
-    "apiUnmappedHighRevenueCount": 0
-  },
-  "lastGood": {
-    "exists": true,
-    "generatedAt": "2026-07-17T07:51:10.953Z",
-    "comparisons": [
-      {
-        "snapshot": "skus",
-        "rows": 209,
-        "previousRows": 0,
-        "rowRatio": 1,
-        "revenue": 0,
-        "previousRevenue": 0,
-        "revenueRatio": 1,
-        "revenueComparable": true
-      },
-      {
-        "snapshot": "platform_trends",
-        "rows": 9,
-        "previousRows": 9,
-        "rowRatio": 1,
-        "revenue": 1836693286,
-        "previousRevenue": 1836693286,
-        "revenueRatio": 1,
-        "revenueComparable": true
-      },
-      {
-        "snapshot": "order_procurement",
-        "rows": 3099,
-        "previousRows": 3099,
-        "rowRatio": 1,
-        "revenue": 0,
-        "previousRevenue": 0,
-        "revenueRatio": 1,
-        "revenueComparable": true
-      },
-      {
-        "snapshot": "warehouse_stock_overlay",
-        "rows": 185,
-        "previousRows": 185,
-        "rowRatio": 1,
-        "revenue": 0,
-        "previousRevenue": 0,
-        "revenueRatio": 1,
-        "revenueComparable": true
-      },
-      {
-        "snapshot": "sku_matrix",
-        "rows": 209,
-        "previousRows": 209,
-        "rowRatio": 1,
-        "revenue": 0,
-        "previousRevenue": 0,
-        "revenueRatio": 1,
-        "revenueComparable": true
-      },
-      {
-        "snapshot": "oos_control",
-        "rows": 100,
-        "previousRows": 100,
-        "rowRatio": 1,
-        "revenue": 0,
-        "previousRevenue": 0,
-        "revenueRatio": 1,
-        "revenueComparable": true
-      }
-    ],
-    "markedAt": "2026-07-17T09:53:10.286Z",
-    "copied": 21
-  },
   "checks": [
     {
-      "name": "sync-step:yandex-market",
-      "status": "warning",
-      "message": "Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3..",
-      "failedAt": "2026-07-17T10:31:50.6444468+03:00"
-    },
-    {
-      "name": "sync-step:product-leaderboard",
-      "status": "warning",
-      "message": "Non-blocking sync step failed: product leaderboard sync: exit code 1.",
-      "failedAt": "2026-07-17T10:33:37.3548848+03:00"
-    },
-    {
       "name": "required:dashboard",
-      "status": "ok",
-      "rows": 20
+      "rows": 20,
+      "status": "ok"
     },
     {
       "name": "required:skus",
-      "status": "ok",
-      "rows": 209
+      "rows": 209,
+      "status": "ok"
     },
     {
       "name": "required:platform_trends",
-      "status": "ok",
-      "rows": 9
+      "rows": 9,
+      "status": "ok"
     },
     {
       "name": "required:order_procurement",
-      "status": "ok",
-      "rows": 3099
+      "rows": 3108,
+      "status": "ok"
     },
     {
       "name": "required:warehouse_stock_overlay",
-      "status": "ok",
-      "rows": 185
+      "rows": 185,
+      "status": "ok"
     },
     {
       "name": "required:sku_matrix",
-      "status": "ok",
-      "rows": 209
+      "rows": 209,
+      "status": "ok"
     },
     {
       "name": "required:portal_data_quality",
-      "status": "ok",
-      "rows": 1
+      "rows": 1,
+      "status": "ok"
     },
     {
       "name": "sku-contour:aliases-present",
@@ -558,22 +54,22 @@
       "name": "sku-contour:matrix-alias-count",
       "status": "ok",
       "message": "SKU matrix alias count is lower than sku_aliases (342/342).",
-      "matrixAliasCount": 342,
-      "aliasCount": 342
+      "aliasCount": 342,
+      "matrixAliasCount": 342
     },
     {
       "name": "sku-contour:matrix-external-alias-count",
       "status": "ok",
       "message": "SKU matrix external alias count does not match sku_aliases (0/342).",
-      "matrixExternalAliasCount": 0,
-      "aliasCount": 342
+      "aliasCount": 342,
+      "matrixExternalAliasCount": 0
     },
     {
       "name": "sku-contour:matrix-ignore-count",
       "status": "ok",
       "message": "SKU matrix ignore count does not match sku_alias_ignore (0/0).",
-      "matrixIgnoreCount": 0,
-      "ignoreCount": 0
+      "ignoreCount": 0,
+      "matrixIgnoreCount": 0
     },
     {
       "name": "sku-contour:matrix-after-decisions",
@@ -587,59 +83,533 @@
     },
     {
       "name": "freshness-completeness:wb",
+      "label": "WB",
       "status": "ok",
       "platform": "wb",
-      "label": "WB",
-      "expectedDate": "2026-07-16",
-      "latestDate": "2026-07-16",
-      "currentRevenue": 12500497,
-      "baselineRevenueMedian": 13855024,
-      "revenueRatio": 0.9022,
-      "currentUnits": 8593,
-      "baselineUnitsMedian": 9348,
-      "unitsRatio": 0.9192,
-      "baselineDays": 7
+      "latestDate": "2026-07-20",
+      "unitsRatio": 0.861,
+      "baselineDays": 7,
+      "currentUnits": 7827,
+      "expectedDate": "2026-07-20",
+      "revenueRatio": 0.8207,
+      "currentRevenue": 10893114,
+      "baselineUnitsMedian": 9091,
+      "baselineRevenueMedian": 13273568
     },
     {
       "name": "freshness-completeness:ozon",
+      "label": "Ozon",
       "status": "ok",
       "platform": "ozon",
-      "label": "Ozon",
-      "expectedDate": "2026-07-16",
-      "latestDate": "2026-07-16",
-      "currentRevenue": 2139529.06,
-      "baselineRevenueMedian": 2693688,
-      "revenueRatio": 0.7943,
-      "currentUnits": 2728,
-      "baselineUnitsMedian": 3466,
-      "unitsRatio": 0.7871,
-      "baselineDays": 7
+      "latestDate": "2026-07-20",
+      "unitsRatio": 1.0246,
+      "baselineDays": 7,
+      "currentUnits": 2837,
+      "expectedDate": "2026-07-20",
+      "revenueRatio": 1.139,
+      "currentRevenue": 2432154,
+      "baselineUnitsMedian": 2769,
+      "baselineRevenueMedian": 2135376.02
     },
     {
       "name": "iu-drr-ads-window-after-ads-summary",
       "status": "ok",
-      "message": "IU/DRR WB ads window covers ads_summary through 2026-07-16.",
-      "adsWindowTo": "2026-07-16",
-      "iuAdsWindowTo": "2026-07-16"
+      "message": "IU/DRR WB ads window covers ads_summary through 2026-07-20.",
+      "adsWindowTo": "2026-07-20",
+      "iuAdsWindowTo": "2026-07-20"
     },
     {
       "name": "iu-drr-daily-expected-date",
       "status": "ok",
-      "message": "IU/DRR daily rows cover expected date 2026-07-16.",
-      "iuDailyLatest": "2026-07-16",
-      "expectedDate": "2026-07-16"
+      "message": "IU/DRR daily rows cover expected date 2026-07-20.",
+      "expectedDate": "2026-07-20",
+      "iuDailyLatest": "2026-07-20"
     },
     {
       "name": "iu-drr-ads-window-expected-date",
       "status": "ok",
-      "message": "IU/DRR WB ads window covers expected date 2026-07-16.",
-      "iuAdsWindowTo": "2026-07-16",
-      "expectedDate": "2026-07-16"
+      "message": "IU/DRR WB ads window covers expected date 2026-07-20.",
+      "expectedDate": "2026-07-20",
+      "iuAdsWindowTo": "2026-07-20"
     },
     {
       "name": "iu-drr-expense-source",
       "status": "ok",
-      "checkedRows": 77
+      "checkedRows": 30
     }
-  ]
+  ],
+  "schema": "portal-sync-health-v1",
+  "status": "ok",
+  "publish": {
+    "allowed": true,
+    "warnings": [],
+    "checkedAt": "2026-07-21T09:49:26.740Z",
+    "blockingReasons": []
+  },
+  "quality": {
+    "maxDate": "2026-07-20",
+    "monthKey": "2026-07",
+    "issueCount": 203,
+    "warningCount": 2,
+    "criticalCount": 200,
+    "skuAliasCount": 342,
+    "skuMissingPlan": 0,
+    "skuAssignedPlan": 96,
+    "skuMissingOwner": 0,
+    "wbOwnerMatchedSku": 59,
+    "wbOwnerUpdatedSku": 0,
+    "apiUnmappedRevenue": 597,
+    "apiUnmappedUniqueSku": 1,
+    "orderNoStockNeedRows": 200,
+    "priceContourSkuCount": 304,
+    "apiUnmappedActionRows": 0,
+    "apiIgnoredPlatformRows": 0,
+    "warehouseUnmatchedRows": 0,
+    "wbOwnerMissingInPortal": 0,
+    "apiUnmappedPlatformRows": 1,
+    "apiUnmappedActionRevenue": 0,
+    "apiSumAboveAggregateCount": 0,
+    "apiUnmappedActionUniqueSku": 0,
+    "apiKnownOutsideRegistryRows": 0,
+    "apiSumAboveAggregateOverage": 0,
+    "wbOwnerMissingInDistribution": 0,
+    "apiKnownOutsideRegistryRevenue": 0,
+    "apiKnownOutsideRegistryUniqueSku": 0
+  },
+  "sources": {
+    "skus": {
+      "rows": 209,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "",
+      "generatedAt": ""
+    },
+    "prices": {
+      "rows": 1,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-21",
+      "generatedAt": "2026-07-21T09:37:08.088Z"
+    },
+    "iu_plan": {
+      "rows": 1,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-06-29",
+      "generatedAt": "2026-06-29T06:36:28.331Z"
+    },
+    "repricer": {
+      "rows": 213,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-21",
+      "generatedAt": "2026-07-21T09:37:08.088Z"
+    },
+    "dashboard": {
+      "rows": 20,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-20",
+      "generatedAt": "2026-07-21T09:37:07.428Z"
+    },
+    "sku_matrix": {
+      "rows": 209,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-21",
+      "generatedAt": "2026-07-21T09:47:29.622Z"
+    },
+    "ads_summary": {
+      "rows": 8,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-20",
+      "generatedAt": "2026-07-21T09:46:44.604Z"
+    },
+    "oos_control": {
+      "rows": 98,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-16",
+      "generatedAt": "2026-07-21T09:47:28.832Z"
+    },
+    "sku_aliases": {
+      "rows": 342,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-06-29",
+      "generatedAt": "2026-06-29T07:27:21.069Z"
+    },
+    "iu_drr_summary": {
+      "rows": 30,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-20",
+      "generatedAt": "2026-07-21T09:49:23.993Z"
+    },
+    "loyalty_system": {
+      "rows": 0,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-03",
+      "generatedAt": "2026-07-03T09:27:54.530Z"
+    },
+    "platform_trends": {
+      "rows": 9,
+      "exists": true,
+      "revenue": 1957143940,
+      "asOfDate": "2026-07-20",
+      "generatedAt": "2026-07-21T09:37:07.428Z"
+    },
+    "sku_alias_audit": {
+      "rows": 1,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-06-29",
+      "generatedAt": "2026-06-29T07:25:27.285Z"
+    },
+    "sku_alias_ignore": {
+      "rows": 0,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-06-29",
+      "generatedAt": "2026-06-29T07:27:21.069Z"
+    },
+    "order_procurement": {
+      "rows": 3108,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-21",
+      "generatedAt": "2026-07-21T00:00:00+03:00"
+    },
+    "portal_sync_health": {
+      "rows": 1,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-17",
+      "generatedAt": "2026-07-17T09:53:09.964Z"
+    },
+    "portal_data_quality": {
+      "rows": 1,
+      "exists": true,
+      "revenue": 597,
+      "asOfDate": "2026-07-20",
+      "generatedAt": "2026-07-21T09:47:29.515Z"
+    },
+    "product_leaderboard": {
+      "rows": 53,
+      "exists": true,
+      "revenue": 29629630,
+      "asOfDate": "2026-07-17",
+      "generatedAt": "2026-07-17T08:36:54.310Z"
+    },
+    "smart_price_overlay": {
+      "rows": 1,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-20",
+      "generatedAt": "2026-07-21T09:37:08.088Z"
+    },
+    "order_procurement_wb": {
+      "rows": 626,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-21",
+      "generatedAt": "2026-07-21T00:00:00+03:00"
+    },
+    "order_procurement_ym": {
+      "rows": 906,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-21",
+      "generatedAt": "2026-07-21T00:00:00+03:00"
+    },
+    "wb_feedbacks_summary": {
+      "rows": 161,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-20",
+      "generatedAt": "2026-07-21T09:47:07.296Z"
+    },
+    "order_procurement_ozon": {
+      "rows": 1576,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-21",
+      "generatedAt": "2026-07-21T00:00:00+03:00"
+    },
+    "portal_data_quarantine": {
+      "rows": 0,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-21",
+      "generatedAt": "2026-07-21T09:47:29.566Z"
+    },
+    "warehouse_stock_overlay": {
+      "rows": 185,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-21",
+      "generatedAt": "2026-07-21T09:47:12.955Z"
+    },
+    "wb_substitution_traffic": {
+      "rows": 5191,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-06-01",
+      "generatedAt": "2026-06-01T15:40:56.803Z"
+    },
+    "product_leaderboard_history": {
+      "rows": 11,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-07-17",
+      "generatedAt": ""
+    },
+    "wb_substitution_traffic_history": {
+      "rows": 1,
+      "exists": true,
+      "revenue": 0,
+      "asOfDate": "2026-06-01",
+      "generatedAt": ""
+    }
+  },
+  "lastGood": {
+    "exists": true,
+    "comparisons": [
+      {
+        "rows": 209,
+        "revenue": 0,
+        "rowRatio": 1,
+        "snapshot": "skus",
+        "previousRows": 0,
+        "revenueRatio": 1,
+        "previousRevenue": 0,
+        "revenueComparable": true
+      },
+      {
+        "rows": 9,
+        "revenue": 1957143940,
+        "rowRatio": 1,
+        "snapshot": "platform_trends",
+        "previousRows": 9,
+        "revenueRatio": 1.0655801678582495,
+        "previousRevenue": 1836693286,
+        "revenueComparable": true
+      },
+      {
+        "rows": 3108,
+        "revenue": 0,
+        "rowRatio": 1.0029041626331074,
+        "snapshot": "order_procurement",
+        "previousRows": 3099,
+        "revenueRatio": 1,
+        "previousRevenue": 0,
+        "revenueComparable": true
+      },
+      {
+        "rows": 185,
+        "revenue": 0,
+        "rowRatio": 1,
+        "snapshot": "warehouse_stock_overlay",
+        "previousRows": 185,
+        "revenueRatio": 1,
+        "previousRevenue": 0,
+        "revenueComparable": true
+      },
+      {
+        "rows": 209,
+        "revenue": 0,
+        "rowRatio": 1,
+        "snapshot": "sku_matrix",
+        "previousRows": 209,
+        "revenueRatio": 1,
+        "previousRevenue": 0,
+        "revenueComparable": true
+      },
+      {
+        "rows": 98,
+        "revenue": 0,
+        "rowRatio": 0.98,
+        "snapshot": "oos_control",
+        "previousRows": 100,
+        "revenueRatio": 1,
+        "previousRevenue": 0,
+        "revenueComparable": true
+      }
+    ],
+    "generatedAt": "2026-07-17T07:51:10.953Z"
+  },
+  "freshness": {
+    "maxDate": "2026-07-20",
+    "expectedDate": "2026-07-20",
+    "maxDateAgeDays": 1,
+    "dependencyGuard": {
+      "checks": [
+        {
+          "name": "iu-drr-ads-window-after-ads-summary",
+          "status": "ok",
+          "message": "IU/DRR WB ads window covers ads_summary through 2026-07-20.",
+          "adsWindowTo": "2026-07-20",
+          "iuAdsWindowTo": "2026-07-20"
+        },
+        {
+          "name": "iu-drr-daily-expected-date",
+          "status": "ok",
+          "message": "IU/DRR daily rows cover expected date 2026-07-20.",
+          "expectedDate": "2026-07-20",
+          "iuDailyLatest": "2026-07-20"
+        },
+        {
+          "name": "iu-drr-ads-window-expected-date",
+          "status": "ok",
+          "message": "IU/DRR WB ads window covers expected date 2026-07-20.",
+          "expectedDate": "2026-07-20",
+          "iuAdsWindowTo": "2026-07-20"
+        }
+      ],
+      "status": "ok",
+      "warnings": [],
+      "checkedAt": "2026-07-21T09:49:26.739Z",
+      "expectedDate": "2026-07-20",
+      "iuDrrWindowTo": "2026-07-20",
+      "blockingReasons": [],
+      "iuDrrAdsWindowTo": "2026-07-20",
+      "iuDrrDailyLatest": "2026-07-20",
+      "adsSummaryWindowTo": "2026-07-20"
+    },
+    "completenessGuard": {
+      "checks": [
+        {
+          "label": "WB",
+          "status": "ok",
+          "platform": "wb",
+          "latestDate": "2026-07-20",
+          "unitsRatio": 0.861,
+          "baselineDays": 7,
+          "currentUnits": 7827,
+          "expectedDate": "2026-07-20",
+          "revenueRatio": 0.8207,
+          "currentRevenue": 10893114,
+          "baselineUnitsMedian": 9091,
+          "baselineRevenueMedian": 13273568
+        },
+        {
+          "label": "Ozon",
+          "status": "ok",
+          "platform": "ozon",
+          "latestDate": "2026-07-20",
+          "unitsRatio": 1.0246,
+          "baselineDays": 7,
+          "currentUnits": 2837,
+          "expectedDate": "2026-07-20",
+          "revenueRatio": 1.139,
+          "currentRevenue": 2432154,
+          "baselineUnitsMedian": 2769,
+          "baselineRevenueMedian": 2135376.02
+        }
+      ],
+      "status": "ok",
+      "enabled": true,
+      "maxDate": "2026-07-20",
+      "minRatio": 0.55,
+      "warnings": [],
+      "checkedAt": "2026-07-21T09:49:26.732Z",
+      "platforms": [
+        "wb",
+        "ozon"
+      ],
+      "expectedDate": "2026-07-20",
+      "lookbackDays": 7,
+      "settlementHour": 10,
+      "blockingReasons": [],
+      "minBaselineUnits": 50,
+      "minBaselineRevenue": 100000
+    },
+    "iuDrrExpenseGuard": {
+      "checks": [
+        {
+          "name": "iu-drr-expense-source",
+          "status": "ok",
+          "checkedRows": 30
+        }
+      ],
+      "status": "ok",
+      "warnings": [],
+      "blockingReasons": []
+    }
+  },
+  "quarantine": {
+    "rows": 0,
+    "overage": 0,
+    "revenue": 0,
+    "apiSumAboveAggregateCount": 0,
+    "apiUnmappedHighRevenueCount": 0
+  },
+  "skuContour": {
+    "checks": [
+      {
+        "name": "aliases-present",
+        "status": "ok",
+        "message": "SKU alias snapshot is missing; resolved API SKU mappings may return to the queue."
+      },
+      {
+        "name": "ignore-present",
+        "status": "ok",
+        "message": "SKU ignore snapshot is missing; ignored API SKU values may return to the queue."
+      },
+      {
+        "name": "matrix-present",
+        "status": "ok",
+        "message": "SKU matrix snapshot is missing; alias/ignore decisions cannot be applied to portal views."
+      },
+      {
+        "name": "matrix-alias-count",
+        "status": "ok",
+        "message": "SKU matrix alias count is lower than sku_aliases (342/342).",
+        "aliasCount": 342,
+        "matrixAliasCount": 342
+      },
+      {
+        "name": "matrix-external-alias-count",
+        "status": "ok",
+        "message": "SKU matrix external alias count does not match sku_aliases (0/342).",
+        "aliasCount": 342,
+        "matrixExternalAliasCount": 0
+      },
+      {
+        "name": "matrix-ignore-count",
+        "status": "ok",
+        "message": "SKU matrix ignore count does not match sku_alias_ignore (0/0).",
+        "ignoreCount": 0,
+        "matrixIgnoreCount": 0
+      },
+      {
+        "name": "matrix-after-decisions",
+        "status": "ok",
+        "message": "SKU matrix is not older than alias/ignore decisions."
+      },
+      {
+        "name": "matrix-after-quality",
+        "status": "ok",
+        "message": "SKU matrix is aligned with portal_data_quality."
+      }
+    ],
+    "status": "ok",
+    "aliasCount": 342,
+    "ignoreCount": 0,
+    "matrixAliasCount": 342,
+    "matrixIgnoreCount": 0,
+    "matrixExternalAliasCount": 0
+  },
+  "syncIssues": {
+    "issues": [],
+    "generatedAt": ""
+  },
+  "generatedAt": "2026-07-21T09:49:26.740Z",
+  "apiReconciliation": {
+    "count": 0,
+    "blocked": false,
+    "overage": 0
+  }
 }

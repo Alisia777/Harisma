@@ -79,6 +79,7 @@ jobs:
           node scripts/portal-designers-access-history.selftest.js
           node scripts/portal-snapshot-refresh-hotfix.selftest.js
           node scripts/portal-dashboard-snapshot-source.selftest.js
+          node scripts/portal-analytics-date-freshness.selftest.js
           node scripts/portal-snapshot-pull.selftest.js
           node scripts/portal-protected-snapshot-refresh-workflow.selftest.js
           node scripts/sanitizer_url_contract.test.js

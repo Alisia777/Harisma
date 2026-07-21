@@ -71270,7 +71270,7 @@
     "sourceLagDays": null,
     "freshnessStatus": "",
     "freshnessNote": "",
-    "sourceFile": ".altea-google-sheet-sync-output/product_leaderboard.json",
+    "sourceFile": "data/product_leaderboard.json",
     "alertCounts": {
       "critical": 62,
       "high": 37,

@@ -1,72 +1,96 @@
 {
   "schema": "portal-daily-source-policy-v1",
+  "sources": {
+    "wb_ads": {
+      "required": true,
+      "reopen_days": 14,
+      "max_lag_days": 1,
+      "metric_family": [
+        "ad_spend",
+        "attributed_revenue"
+      ]
+    },
+    "wb_orders": {
+      "required": true,
+      "reopen_days": 14,
+      "max_lag_days": 1,
+      "metric_family": [
+        "orders"
+      ]
+    },
+    "ozon_stock": {
+      "required": true,
+      "reopen_days": 7,
+      "max_lag_days": 2,
+      "metric_family": [
+        "stock"
+      ]
+    },
+    "ozon_orders": {
+      "required": true,
+      "reopen_days": 30,
+      "max_lag_days": 1,
+      "metric_family": [
+        "orders",
+        "delivery_status"
+      ]
+    },
+    "yandex_fact": {
+      "required": false,
+      "reopen_days": 30,
+      "max_lag_days": 2,
+      "metric_family": [
+        "orders",
+        "sales"
+      ]
+    },
+    "company_plan": {
+      "required": true,
+      "reopen_days": 0,
+      "max_lag_days": 35,
+      "metric_family": [
+        "plan"
+      ]
+    },
+    "ozon_finance": {
+      "required": true,
+      "reopen_days": 30,
+      "max_lag_days": 2,
+      "metric_family": [
+        "sales",
+        "returns",
+        "payout"
+      ]
+    },
+    "wb_sales_finance": {
+      "required": true,
+      "reopen_days": 30,
+      "max_lag_days": 2,
+      "metric_family": [
+        "buyouts",
+        "returns",
+        "net_sales_turnover",
+        "payout"
+      ]
+    }
+  },
   "version": "2026-06-21.1",
   "timezone": "Europe/Moscow",
+  "publish_rules": {
+    "null_is_not_zero": true,
+    "orders_are_not_sales": true,
+    "buyouts_are_not_payout": true,
+    "all_required_sources_present": true,
+    "remote_readback_hash_required": true,
+    "no_mixed_business_cutoff_for_same_metric": true,
+    "stale_source_keeps_previous_active_snapshot": true
+  },
   "business_cutoff": "D-1",
-  "daily_close_local_time": "10:30",
   "revision_window_days": 30,
+  "daily_close_local_time": "10:30",
   "protected_scope_excluded": [
     "protected_daily_scope",
     "protected_summary_data",
     "app-core-10.js"
-  ],
-  "sources": {
-    "wb_orders": {
-      "required": true,
-      "max_lag_days": 1,
-      "metric_family": ["orders"],
-      "reopen_days": 14
-    },
-    "wb_sales_finance": {
-      "required": true,
-      "max_lag_days": 2,
-      "metric_family": ["buyouts", "returns", "net_sales_turnover", "payout"],
-      "reopen_days": 30
-    },
-    "wb_ads": {
-      "required": true,
-      "max_lag_days": 1,
-      "metric_family": ["ad_spend", "attributed_revenue"],
-      "reopen_days": 14
-    },
-    "ozon_orders": {
-      "required": true,
-      "max_lag_days": 1,
-      "metric_family": ["orders", "delivery_status"],
-      "reopen_days": 30
-    },
-    "ozon_finance": {
-      "required": true,
-      "max_lag_days": 2,
-      "metric_family": ["sales", "returns", "payout"],
-      "reopen_days": 30
-    },
-    "ozon_stock": {
-      "required": true,
-      "max_lag_days": 2,
-      "metric_family": ["stock"],
-      "reopen_days": 7
-    },
-    "yandex_fact": {
-      "required": false,
-      "max_lag_days": 2,
-      "metric_family": ["orders", "sales"],
-      "reopen_days": 30
-    },
-    "company_plan": {
-      "required": true,
-      "max_lag_days": 35,
-      "metric_family": ["plan"],
-      "reopen_days": 0
-    }
-  },
-  "publish_rules": {
-    "all_required_sources_present": true,
-    "no_mixed_business_cutoff_for_same_metric": true,
-    "orders_are_not_sales": true,
-    "buyouts_are_not_payout": true,
-    "null_is_not_zero": true,
-    "stale_source_keeps_previous_active_snapshot": true,
-    "remote_readback_hash_required": true
-  }
+  ]
 }

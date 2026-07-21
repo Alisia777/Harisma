@@ -1,45 +1,45 @@
 {
   "schema": "portal-feature-readiness-v1",
-  "generatedAt": "2026-06-20T22:42:01.960Z",
   "status": "warning",
-  "technical_publish_allowed": true,
-  "feature_activation_allowed": false,
-  "diagnostic_publish_allowed": true,
   "features": {
+    "uploads": {
+      "status": "warning",
+      "warnings": [
+        "fixture includes an expected rejected row; upload validation path is non-vacuous"
+      ],
+      "cost_status": "ok",
+      "minmax_status": "warning",
+      "publish_allowed": true,
+      "activation_allowed": true
+    },
     "repricer": {
       "status": "blocked",
-      "publish_allowed": false,
-      "activation_allowed": false,
-      "diagnostic_available": true,
-      "report_status": "warning",
-      "runtime_path": "data/canonical_repricer.json",
       "checksum": "eb9019c89367796c02206c8fb528b86bb9bdd2bb2224cc6f21c3f0d152be7f5d",
-      "eligible_rows": 339,
-      "publishable_rows": 0,
-      "blocked_rows": 339,
-      "publishable_coverage": 0,
       "warnings": [
         "repricer feature blocked: 0/339 publishable recommendations"
-      ]
+      ],
+      "blocked_rows": 339,
+      "runtime_path": "data/canonical_repricer.json",
+      "eligible_rows": 339,
+      "report_status": "warning",
+      "publish_allowed": false,
+      "publishable_rows": 0,
+      "activation_allowed": false,
+      "diagnostic_available": true,
+      "publishable_coverage": 0
     },
     "dashboard": {
       "status": "ok",
-      "publish_allowed": true,
-      "activation_allowed": true,
-      "runtime_path": "data/portal_dashboard_metrics.json",
       "checksum": "e20d12921155507bb76f8728c6a09ca012ee4d9aec54de35a7fe6d674ab4448d",
+      "warnings": [],
       "metricCount": 9,
-      "warnings": []
-    },
-    "uploads": {
-      "status": "warning",
+      "runtime_path": "data/portal_dashboard_metrics.json",
       "publish_allowed": true,
-      "activation_allowed": true,
-      "minmax_status": "warning",
-      "cost_status": "ok",
-      "warnings": [
-        "fixture includes an expected rejected row; upload validation path is non-vacuous"
-      ]
+      "activation_allowed": true
     }
-  }
+  },
+  "generatedAt": "2026-06-20T22:42:01.960Z",
+  "technical_publish_allowed": true,
+  "diagnostic_publish_allowed": true,
+  "feature_activation_allowed": false
 }

@@ -1838,26 +1838,6 @@ function addGenericMarketplaceRows(store, rows, notes, config) {
       if (article) store.add({ ...commonSku, metricKey }, month, raw);
       hasMetric = true;
     }
-    const units = numberOrZero(rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.orders_units));
-    const revenue = numberOrZero(rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.orders_revenue));
-    if (hasMetric && (units || revenue)) {
-      if (!numberOrZero(rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.delivered_units))) {
-        store.add({ ...commonTotal, metricKey: 'delivered_units' }, month, units);
-        store.add({ ...commonTotal, metricKey: 'buyout_units' }, month, units);
-        if (article) {
-          store.add({ ...commonSku, metricKey: 'delivered_units' }, month, units);
-          store.add({ ...commonSku, metricKey: 'buyout_units' }, month, units);
-        }
-      }
-      if (!numberOrZero(rowFieldValue(row, GENERIC_MARKETPLACE_FIELDS.delivered_revenue))) {
-        store.add({ ...commonTotal, metricKey: 'delivered_revenue' }, month, revenue);
-        store.add({ ...commonTotal, metricKey: 'buyout_revenue' }, month, revenue);
-        if (article) {
-          store.add({ ...commonSku, metricKey: 'delivered_revenue' }, month, revenue);
-          store.add({ ...commonSku, metricKey: 'buyout_revenue' }, month, revenue);
-        }
-      }
-    }
     if (hasMetric) {
       count += 1;
       months.add(month);
@@ -1994,6 +1974,41 @@ function megamarketDateTime(dateKey, endOfDay = false) {
   return `${dateKey}T${endOfDay ? '23:59:59' : '00:00:00'}+03:00`;
 }
 
+function megamarketSplitRange(from, to) {
+  const start = new Date(`${from}T00:00:00Z`);
+  const end = new Date(`${to}T00:00:00Z`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start >= end) return null;
+  const spanDays = Math.floor((end - start) / 86400000);
+  const leftEnd = new Date(start.getTime() + Math.floor(spanDays / 2) * 86400000);
+  const rightStart = new Date(leftEnd.getTime() + 86400000);
+  return {
+    left: [isoDate(start.toISOString()), isoDate(leftEnd.toISOString())],
+    right: [isoDate(rightStart.toISOString()), isoDate(end.toISOString())]
+  };
+}
+
+async function searchMegamarketShipmentIds(options, token, from, to, saturatedDays) {
+  const searchPayload = await megamarketPost(options, options.megamarketSalesPath || MEGAMARKET_ORDER_SEARCH_PATH, token, {
+    data: {
+      dateFrom: megamarketDateTime(from),
+      dateTo: megamarketDateTime(to, true),
+      count: 200
+    }
+  });
+  const shipmentIds = Array.isArray(searchPayload?.data?.shipments)
+    ? searchPayload.data.shipments.map(normalizeText).filter(Boolean)
+    : [];
+  if (shipmentIds.length < 200) return shipmentIds;
+  const split = megamarketSplitRange(from, to);
+  if (!split) {
+    saturatedDays.push(from);
+    return shipmentIds;
+  }
+  const left = await searchMegamarketShipmentIds(options, token, split.left[0], split.left[1], saturatedDays);
+  const right = await searchMegamarketShipmentIds(options, token, split.right[0], split.right[1], saturatedDays);
+  return [...new Set([...left, ...right])];
+}
+
 function isMegamarketCanceled(value) {
   return /CANCELED|CANCELLED|RETURN|РћРўРњР•Рќ|Р’РћР—Р’Р РђРў/i.test(normalizeText(value));
 }
@@ -2009,14 +2024,8 @@ async function addMegamarketApiSales(store, options, notes) {
     return 0;
   }
   try {
-    const searchPayload = await megamarketPost(options, options.megamarketSalesPath || MEGAMARKET_ORDER_SEARCH_PATH, token, {
-      data: {
-        dateFrom: megamarketDateTime(options.from),
-        dateTo: megamarketDateTime(options.to, true),
-        count: 200
-      }
-    });
-    const shipmentIds = Array.isArray(searchPayload?.data?.shipments) ? searchPayload.data.shipments.map(normalizeText).filter(Boolean) : [];
+    const saturatedDays = [];
+    const shipmentIds = await searchMegamarketShipmentIds(options, token, options.from, options.to, saturatedDays);
     if (!shipmentIds.length) {
       sourceNote(notes, 'Megamarket API sales', 'empty', `${options.from}..${options.to}: 0 shipments`);
       return 0;
@@ -2089,7 +2098,9 @@ async function addMegamarketApiSales(store, options, notes) {
       itemCount ? 'loaded' : 'empty',
       `${shipmentIds.length} shipments, ${itemCount} item rows, active ${activeItemCount} / ${Math.round(activeRevenue * 100) / 100} rub, delivered ${deliveredItemCount} / ${Math.round(deliveredRevenue * 100) / 100} rub, ${options.from}..${options.to}`
     );
-    if (shipmentIds.length >= 200) sourceNote(notes, 'Megamarket API sales', 'warning', 'Search returned the request count limit; pagination may be needed.');
+    if (saturatedDays.length) {
+      sourceNote(notes, 'Megamarket API sales', 'warning', `Daily search limit reached for ${saturatedDays.join(', ')}; those days may require an API cursor.`);
+    }
     return itemCount;
   } catch (error) {
     sourceNote(notes, 'Megamarket API sales', 'failed', error.message);

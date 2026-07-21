@@ -248,6 +248,27 @@ try {
   assert.ok(wbFinanceTimingResult.report.publish.warningReasons.some((reason) => reason.includes('WB finance sales and new orders')));
 
   buildFixture(dir);
+  const letuDeliveryTiming = JSON.parse(fs.readFileSync(path.join(dir, 'platform_trends.json'), 'utf8'));
+  letuDeliveryTiming.platforms.letu = {
+    series: [{
+      date,
+      revenue: 100,
+      ordersRevenue: 100,
+      deliveredRevenue: 150,
+      buyoutRevenue: 150,
+      units: 1,
+      ordersUnits: 1,
+      deliveredUnits: 2,
+      buyoutUnits: 2
+    }]
+  };
+  letuDeliveryTiming.platforms.all.series[0].revenue = 700;
+  write(dir, 'platform_trends.json', letuDeliveryTiming);
+  const letuDeliveryTimingResult = run(options(dir));
+  assert.strictEqual(letuDeliveryTimingResult.report.publish.allowed, true);
+  assert.ok(letuDeliveryTimingResult.report.publish.warningReasons.some((reason) => reason.includes('different cohorts')));
+
+  buildFixture(dir);
   const staleExtra = JSON.parse(fs.readFileSync(path.join(dir, 'platform_trends.json'), 'utf8'));
   staleExtra.platforms.goldapple = { series: [{ date: '2026-06-10', revenue: 50, units: 1 }] };
   write(dir, 'platform_trends.json', staleExtra);

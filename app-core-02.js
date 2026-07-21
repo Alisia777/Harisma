@@ -763,13 +763,15 @@ function ownerName(sku) {
   return localOwner || skuMatrixOwnerName(sku, '');
 }
 
-const TASK_MARKETPLACE_PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+const TASK_MARKETPLACE_PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 const TASK_PLATFORM_OWNER_KEYS = new Set(TASK_MARKETPLACE_PLATFORM_KEYS);
 
 function taskOwnerPlatformKey(platform = '') {
   const key = normalizeTaskPlatform(platform);
   if (key === 'ya') return 'ym';
   if (key === 'goldapple') return 'ga';
+  if (key === 'megamarket') return 'megamarket';
+  if (key === 'samokat') return 'samokat';
   if (key === 'magnit') return 'mm';
   return key;
 }
@@ -1358,13 +1360,13 @@ function controlWorkstreamKey(task, sku = null) {
 
   const text = taskMarketplaceContext(task, sku);
   const specificMarketplace = detectMarketplaceNetworkKey(text);
-  if (specificMarketplace === 'goldapple' || specificMarketplace === 'letu' || specificMarketplace === 'magnit' || specificMarketplace === 'ya') return specificMarketplace;
+  if (specificMarketplace === 'goldapple' || specificMarketplace === 'letu' || specificMarketplace === 'megamarket' || specificMarketplace === 'samokat' || specificMarketplace === 'magnit' || specificMarketplace === 'ya') return specificMarketplace;
 
   const platform = normalizeTaskPlatform(task?.platform, text);
 
   if (platform === 'wb') return 'wb';
   if (platform === 'ozon') return 'ozon';
-  if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
+  if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'megamarket' || platform === 'samokat' || platform === 'magnit') return platform;
   if (platform === 'product') return 'product';
   if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
 

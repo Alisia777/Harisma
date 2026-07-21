@@ -3,6 +3,7 @@
     { "name": "dashboard", "file": "dashboard.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["latestMarketplaceDate", "asOfDate", "generatedAt"] },
     { "name": "skus", "file": "skus.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt", "meta.generatedAt"] },
     { "name": "platform_trends", "file": "platform_trends.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["latestMarketplaceDate", "generatedAt"] },
+    { "name": "retail_network_source_status", "file": "retail_network_source_status.json", "publish": true, "required": false, "freshnessPolicy": "daily", "freshnessPaths": ["cutoffDate", "generatedAt"] },
     { "name": "platform_plan", "file": "platform_plan.json", "publish": true, "required": false, "freshnessPolicy": "none" },
     { "name": "logistics", "file": "logistics.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["latest_logistics_date", "latestLogisticsDate", "generatedAt", "meta.generatedAt"] },
     { "name": "loyalty_system", "file": "loyalty_system.json", "publish": true, "required": false, "freshnessPolicy": "none" },

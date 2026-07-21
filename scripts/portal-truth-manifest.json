@@ -39,6 +39,16 @@
       "description": "Daily marketplace fact by platform and date."
     },
     {
+      "key": "retail_network_source_status",
+      "file": "retail_network_source_status.json",
+      "kind": "source-health",
+      "required": false,
+      "freshness": "daily",
+      "datePaths": ["cutoffDate", "generatedAt"],
+      "repairStep": "retail-network-daily-sync",
+      "description": "Per-network freshness, source row counts and latest daily totals for ZYA, Letual, Megamarket and Samokat."
+    },
+    {
       "key": "sku_registry",
       "file": "skus.json",
       "kind": "dimension-master",

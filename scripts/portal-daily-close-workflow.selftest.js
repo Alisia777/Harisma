@@ -55,8 +55,20 @@ if (!workflow.includes('--strict --skip-protected-scope --skip-health --skip-dat
 if (!workflow.includes('--skip-magnit-csv')) {
   fail('daily close must not run the dedicated Magnit CSV normalizer when the retail workbook merge is the configured Magnit source');
 }
-if (!workflow.includes('--platforms wb,ozon,ya,goldapple,letu,megamarket,samokat,magnit')) {
-  fail('daily close API sync must refresh every marketplace, including extra networks');
+if (!workflow.includes('node scripts/portal-retail-network-daily-sync.js sync')) {
+  fail('daily close must refresh retail-network daily facts from the raw Google Sheet tabs');
+}
+if (!workflow.includes('--status-file data/retail_network_source_status.json')) {
+  fail('daily close must publish retail-network source freshness diagnostics');
+}
+if (workflow.indexOf('node scripts/portal-retail-network-daily-sync.js sync') < workflow.indexOf('node scripts/portal-api-max-sync.js sync')) {
+  fail('retail-network daily facts must override the monthly API-workbook fallback');
+}
+if (!workflow.includes('--platforms wb,ozon,ya,samokat,magnit')) {
+  fail('daily API max must leave Goldapple, Letu and Megamarket sales to the finalized retail-network daily source');
+}
+if (workflow.includes('--platforms wb,ozon,ya,goldapple,letu,megamarket,samokat,magnit')) {
+  fail('daily API max must not overwrite finalized Goldapple, Letu or Megamarket facts before an optional Sheet refresh');
 }
 if (!workflow.includes('--verify-readback')) {
   fail('daily close Supabase publish must verify readback hashes');

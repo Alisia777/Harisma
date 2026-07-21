@@ -7,6 +7,7 @@
     "data/skus.json",
     "data/sku_registry_meta.json",
     "data/platform_trends.json",
+    "data/retail_network_source_status.json",
     "data/logistics.json",
     "data/ads_summary.json",
     "data/iu_drr_summary.json",

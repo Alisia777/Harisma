@@ -1,0 +1,202 @@
+{
+  "schema": "retail-network-source-status-v1",
+  "generatedAt": "2026-07-21T23:30:32.269Z",
+  "cutoffDate": "2026-07-20",
+  "source": "google-sheet:1Zy0ec9-snLwh-J88KoFXyHxtYg3DXC8oWnC17iHNNS4",
+  "platforms": {
+    "goldapple": {
+      "key": "goldapple",
+      "label": "ЗЯ",
+      "status": "fresh",
+      "firstDate": "2025-09-01",
+      "latestDate": "2026-07-20",
+      "sourceRows": 5830,
+      "duplicateRowsRemoved": 198,
+      "articleCount": 80,
+      "latestTotals": {
+        "date": "2026-07-20",
+        "label": "2026-07-20",
+        "units": 139,
+        "revenue": 105525,
+        "ordersUnits": 139,
+        "ordersRevenue": 105525,
+        "deliveredUnits": 7,
+        "deliveredRevenue": 5980,
+        "buyoutUnits": 7,
+        "buyoutRevenue": 5980,
+        "transitUnits": 130,
+        "transitRevenue": 97745,
+        "cancellationsUnits": 2,
+        "cancelRevenue": 1800,
+        "returnsUnits": 0,
+        "stock": 0,
+        "cogs": 0,
+        "commission": 0,
+        "netPayout": 0,
+        "financeTurnover": 105525,
+        "financialResult": 0,
+        "estimatedMargin": 0,
+        "price": 759.1727,
+        "source": "google-sheets-retail-daily/zya",
+        "dayOffset": 0
+      },
+      "latestWarehouseTotals": {}
+    },
+    "letu": {
+      "key": "letu",
+      "label": "Лэтуаль",
+      "status": "fresh",
+      "firstDate": "2025-09-01",
+      "latestDate": "2026-07-20",
+      "sourceRows": 20450,
+      "duplicateRowsRemoved": 127,
+      "articleCount": 131,
+      "latestTotals": {
+        "date": "2026-07-20",
+        "label": "2026-07-20",
+        "units": 69,
+        "revenue": 36404,
+        "ordersUnits": 69,
+        "ordersRevenue": 36404,
+        "deliveredUnits": 80,
+        "deliveredRevenue": 42508,
+        "buyoutUnits": 80,
+        "buyoutRevenue": 42508,
+        "transitUnits": 81,
+        "transitRevenue": 0,
+        "cancellationsUnits": 0,
+        "cancelRevenue": 0,
+        "returnsUnits": 0,
+        "stock": 5118,
+        "cogs": 0,
+        "commission": 0,
+        "netPayout": 0,
+        "financeTurnover": 36404,
+        "financialResult": 0,
+        "estimatedMargin": 0,
+        "price": 527.5942,
+        "source": "google-sheets-retail-daily/letu",
+        "dayOffset": 0
+      },
+      "latestWarehouseTotals": {
+        "Дарксторы": {
+          "ordersUnits": 5,
+          "ordersRevenue": 2338,
+          "transitUnits": 0,
+          "deliveredUnits": 3,
+          "deliveredRevenue": 1355,
+          "stock": 185
+        },
+        "Центральный склад": {
+          "ordersUnits": 57,
+          "ordersRevenue": 30578,
+          "transitUnits": 80,
+          "deliveredUnits": 73,
+          "deliveredRevenue": 39550,
+          "stock": 4536
+        },
+        "н/о": {
+          "ordersUnits": 1,
+          "ordersRevenue": 160,
+          "transitUnits": 1,
+          "deliveredUnits": 0,
+          "deliveredRevenue": 0,
+          "stock": 29
+        },
+        "Бьюти-хаб СПб": {
+          "ordersUnits": 1,
+          "ordersRevenue": 632,
+          "transitUnits": 0,
+          "deliveredUnits": 3,
+          "deliveredRevenue": 1200,
+          "stock": 84
+        },
+        "Бьюти-хаб Новосибирск": {
+          "ordersUnits": 1,
+          "ordersRevenue": 620,
+          "transitUnits": 0,
+          "deliveredUnits": 1,
+          "deliveredRevenue": 403,
+          "stock": 94
+        },
+        "Бьюти-хаб Иркутск": {
+          "ordersUnits": 4,
+          "ordersRevenue": 2076,
+          "transitUnits": 0,
+          "deliveredUnits": 0,
+          "deliveredRevenue": 0,
+          "stock": 32
+        },
+        "Бьюти-хаб Краснодар": {
+          "ordersUnits": 0,
+          "ordersRevenue": 0,
+          "transitUnits": 0,
+          "deliveredUnits": 0,
+          "deliveredRevenue": 0,
+          "stock": 62
+        },
+        "Бьюти-хаб Красноярск": {
+          "ordersUnits": 0,
+          "ordersRevenue": 0,
+          "transitUnits": 0,
+          "deliveredUnits": 0,
+          "deliveredRevenue": 0,
+          "stock": 63
+        },
+        "Бьюти-хаб Хабаровск": {
+          "ordersUnits": 0,
+          "ordersRevenue": 0,
+          "transitUnits": 0,
+          "deliveredUnits": 0,
+          "deliveredRevenue": 0,
+          "stock": 33
+        }
+      }
+    },
+    "megamarket": {
+      "key": "megamarket",
+      "label": "Мегамаркет",
+      "status": "fresh",
+      "firstDate": "2026-01-03",
+      "latestDate": "2026-07-20",
+      "sourceRows": 1009,
+      "duplicateRowsRemoved": 2,
+      "articleCount": 59,
+      "latestTotals": {
+        "date": "2026-07-20",
+        "label": "2026-07-20",
+        "units": 7,
+        "revenue": 4527,
+        "ordersUnits": 7,
+        "ordersRevenue": 4527,
+        "deliveredUnits": 7,
+        "deliveredRevenue": 4527,
+        "buyoutUnits": 7,
+        "buyoutRevenue": 4527,
+        "transitUnits": 0,
+        "transitRevenue": 0,
+        "cancellationsUnits": 0,
+        "cancelRevenue": 0,
+        "returnsUnits": 0,
+        "stock": 0,
+        "cogs": 866.52,
+        "commission": 1428.61,
+        "netPayout": 3098.39,
+        "financeTurnover": 3098.39,
+        "financialResult": 2231.87,
+        "estimatedMargin": 2231.87,
+        "price": 646.7143,
+        "source": "google-sheets-retail-daily/megamarket",
+        "dayOffset": 0
+      },
+      "latestWarehouseTotals": {}
+    },
+    "samokat": {
+      "key": "samokat",
+      "label": "Самокат",
+      "status": "missing",
+      "latestDate": "",
+      "note": "Samokat requires a private API endpoint and response schema; token is configured separately."
+    }
+  }
+}

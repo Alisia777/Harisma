@@ -574,10 +574,10 @@ function platformMonthlyTotals(rawRows, asOfDate, allowedPlatformOrder = ['wb', 
       for (const month of platform.values()) {
         month.ordersUnits = numberOrZero(month.ordersUnits) || numberOrZero(month.units);
         month.ordersRevenue = numberOrZero(month.ordersRevenue) || numberOrZero(month.revenue);
-        month.deliveredUnits = numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits) || month.ordersUnits;
-        month.deliveredRevenue = numberOrZero(month.deliveredRevenue) || numberOrZero(month.buyoutRevenue) || month.ordersRevenue;
-        month.buyoutUnits = numberOrZero(month.buyoutUnits) || numberOrZero(month.deliveredUnits) || month.ordersUnits;
-        month.buyoutRevenue = numberOrZero(month.buyoutRevenue) || numberOrZero(month.deliveredRevenue) || month.ordersRevenue;
+        month.deliveredUnits = numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits);
+        month.deliveredRevenue = numberOrZero(month.deliveredRevenue) || numberOrZero(month.buyoutRevenue);
+        month.buyoutUnits = numberOrZero(month.buyoutUnits) || numberOrZero(month.deliveredUnits);
+        month.buyoutRevenue = numberOrZero(month.buyoutRevenue) || numberOrZero(month.deliveredRevenue);
         if (!(month.estimatedMargin > 0) && month.revenue > 0 && month.adsSpend > 0) {
           month.estimatedMargin = Math.max(0, month.revenue - month.adsSpend);
         }
@@ -648,10 +648,10 @@ function platformMonthlyTotals(rawRows, asOfDate, allowedPlatformOrder = ['wb', 
         : (month.ordersRevenue || month.buyoutRevenue || month.netPayout || 0);
       const ordersUnits = numberOrZero(month.ordersUnits) || numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits);
       const ordersRevenue = numberOrZero(month.ordersRevenue) || revenue;
-      const deliveredUnits = numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits) || ordersUnits;
-      const deliveredRevenue = numberOrZero(month.deliveredRevenue) || numberOrZero(month.buyoutRevenue) || revenue;
-      const buyoutUnits = numberOrZero(month.buyoutUnits) || numberOrZero(month.deliveredUnits) || ordersUnits;
-      const buyoutRevenue = numberOrZero(month.buyoutRevenue) || numberOrZero(month.deliveredRevenue) || revenue;
+      const deliveredUnits = numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits);
+      const deliveredRevenue = numberOrZero(month.deliveredRevenue) || numberOrZero(month.buyoutRevenue);
+      const buyoutUnits = numberOrZero(month.buyoutUnits) || numberOrZero(month.deliveredUnits);
+      const buyoutRevenue = numberOrZero(month.buyoutRevenue) || numberOrZero(month.deliveredRevenue);
       const estimatedMargin = month.netPayout > 0
         ? month.netPayout
         : platformKey === 'ya' && revenue > 0 && month.adsSpend > 0
@@ -825,10 +825,10 @@ function buildArticleRows(rows, skus, skuAliases, asOfDate, extraPlatformOrder =
       const dailyOrdersUnits = distributeMonthlyValue(month.ordersUnits, days);
       const dailyRevenue = distributeMonthlyValue(month.revenue, days);
       const dailyOrdersRevenue = distributeMonthlyValue(month.ordersRevenue || month.revenue, days);
-      const dailyDeliveredUnits = distributeMonthlyValue(month.deliveredUnits || month.buyoutUnits || month.ordersUnits, days);
-      const dailyDeliveredRevenue = distributeMonthlyValue(month.deliveredRevenue || month.buyoutRevenue || month.revenue, days);
-      const dailyBuyoutUnits = distributeMonthlyValue(month.buyoutUnits || month.deliveredUnits || month.ordersUnits, days);
-      const dailyBuyoutRevenue = distributeMonthlyValue(month.buyoutRevenue || month.deliveredRevenue || month.revenue, days);
+      const dailyDeliveredUnits = distributeMonthlyValue(month.deliveredUnits || month.buyoutUnits, days);
+      const dailyDeliveredRevenue = distributeMonthlyValue(month.deliveredRevenue || month.buyoutRevenue, days);
+      const dailyBuyoutUnits = distributeMonthlyValue(month.buyoutUnits || month.deliveredUnits, days);
+      const dailyBuyoutRevenue = distributeMonthlyValue(month.buyoutRevenue || month.deliveredRevenue, days);
       const dailyAdsSpend = distributeMonthlyValue(month.adsSpend, days);
       const dailyAdsRevenue = distributeMonthlyValue(month.adsRevenue, days);
       const dailyAdsOrders = distributeMonthlyValue(month.adsOrders, days);
@@ -1287,14 +1287,14 @@ function buildPlatformSeriesFromMonthly(monthlyTotals, asOfDate) {
     const revenue = numberOrZero(month.revenue);
     const ordersUnits = numberOrZero(month.ordersUnits) || units;
     const ordersRevenue = numberOrZero(month.ordersRevenue) || revenue;
-    const deliveredUnits = numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits) || ordersUnits;
+    const deliveredUnits = numberOrZero(month.deliveredUnits) || numberOrZero(month.buyoutUnits);
     const deliveredRevenue = capFulfillmentRevenue(
-      numberOrZero(month.deliveredRevenue) || numberOrZero(month.buyoutRevenue) || ordersRevenue,
+      numberOrZero(month.deliveredRevenue) || numberOrZero(month.buyoutRevenue),
       ordersRevenue
     );
-    const buyoutUnits = numberOrZero(month.buyoutUnits) || numberOrZero(month.deliveredUnits) || ordersUnits;
+    const buyoutUnits = numberOrZero(month.buyoutUnits) || numberOrZero(month.deliveredUnits);
     const buyoutRevenue = capFulfillmentRevenue(
-      numberOrZero(month.buyoutRevenue) || numberOrZero(month.deliveredRevenue) || ordersRevenue,
+      numberOrZero(month.buyoutRevenue) || numberOrZero(month.deliveredRevenue),
       ordersRevenue
     );
     const dailyUnits = distributeMonthlyValue(units || ordersUnits, days);
@@ -1613,14 +1613,14 @@ function buildAllSeries(platformSeriesMap) {
       const pointRevenue = numberOrZero(point.revenue);
       const pointOrdersUnits = numberOrZero(point.ordersUnits) || pointUnits;
       const pointOrdersRevenue = numberOrZero(point.ordersRevenue) || pointRevenue;
-      const pointDeliveredUnits = numberOrZero(point.deliveredUnits) || numberOrZero(point.buyoutUnits) || pointOrdersUnits;
+      const pointDeliveredUnits = numberOrZero(point.deliveredUnits) || numberOrZero(point.buyoutUnits);
       const pointDeliveredRevenue = capFulfillmentRevenue(
-        numberOrZero(point.deliveredRevenue) || numberOrZero(point.buyoutRevenue) || pointOrdersRevenue,
+        numberOrZero(point.deliveredRevenue) || numberOrZero(point.buyoutRevenue),
         pointOrdersRevenue
       );
-      const pointBuyoutUnits = numberOrZero(point.buyoutUnits) || numberOrZero(point.deliveredUnits) || pointOrdersUnits;
+      const pointBuyoutUnits = numberOrZero(point.buyoutUnits) || numberOrZero(point.deliveredUnits);
       const pointBuyoutRevenue = capFulfillmentRevenue(
-        numberOrZero(point.buyoutRevenue) || numberOrZero(point.deliveredRevenue) || pointOrdersRevenue,
+        numberOrZero(point.buyoutRevenue) || numberOrZero(point.deliveredRevenue),
         pointOrdersRevenue
       );
       current.units += pointUnits;

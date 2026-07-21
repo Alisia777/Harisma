@@ -39,7 +39,7 @@ try {
   });
   writeJson(dir, 'ads_summary.json', { platforms: [] });
 
-  const { payload } = buildPortalDashboardMetrics({
+  const { payload, dashboardReconciliation } = buildPortalDashboardMetrics({
     inputDir: dir,
     outputDir: dir,
     policyPath: path.join(__dirname, '..', 'data', 'portal_indicator_policy.json'),
@@ -54,6 +54,10 @@ try {
   assert.strictEqual(unallocated.raw_value, 0);
   assert.strictEqual(unallocated.drilldown[0].core_revenue, 175);
   assert.strictEqual(unallocated.drilldown[0].included_revenue, 187);
+  const missingSamokat = payload.metrics.find((row) => row.metric_id === 'sales.raw_revenue' && row.scope.platform === 'samokat');
+  assert.strictEqual(missingSamokat.raw_value, null);
+  assert.strictEqual(missingSamokat.data_status, 'incomplete');
+  assert.ok(dashboardReconciliation.warnings.some((warning) => warning.includes('extra marketplace facts are missing:')));
   console.log('build-portal-dashboard-metrics selftest ok');
 } finally {
   fs.rmSync(dir, { recursive: true, force: true });

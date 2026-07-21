@@ -80,6 +80,33 @@ samokat: ALTEA_SAMOKAT_API_TOKEN or ALTEA_SAMOKAT_API_KEY or ALTEA_RETAIL_NETWOR
 magnit: ALTEA_MAGNIT_API_TOKEN or ALTEA_MAGNIT_API_KEY or ALTEA_MAGNIT_MARKET_API_TOKEN or ALTEA_MAGNIT_MARKET_API_KEY or ALTEA_MAGNIT_SALES_XLSX or ALTEA_MAGNIT_SALES_XLS or ALTEA_MAGNIT_SALES_WORKBOOK or ALTEA_MAGNIT_SALES_CSV or ALTEA_RETAIL_NETWORK_SALES_XLSX
 ```
 
+### Finalized retail-network daily facts
+
+Goldapple, Letu and Megamarket sales facts are finalized from the private Google
+workbook configured by `ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID` (the repository
+default points to the current workbook). GitHub Actions must have one of:
+
+```text
+ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON
+GOOGLE_APPLICATION_CREDENTIALS_JSON
+```
+
+Share the source workbook with the service account `client_email` as a viewer.
+The daily importer reads the raw `База / ЗЯ`, `База / Лету` and `База / ММ`
+tabs, keeps the newest revision for each business row, and publishes actual
+calendar-day facts. It does not spread monthly totals across days.
+
+When the private workbook cannot be exported, the workflow preserves the
+committed finalized facts only if they already match the requested cutoff. The
+strict close fails as soon as that preserved snapshot is older than the cutoff,
+so stale retail facts cannot silently become a new active generation.
+
+The Samokat token alone is not sufficient for ingestion. Configure the private
+API endpoint and payload contract with `ALTEA_SAMOKAT_API_BASE_URL` and
+`ALTEA_SAMOKAT_SALES_PATH` (plus method/body/query variables when required).
+Until then the portal must render Samokat as `Нет данных`, never as a synthetic
+zero.
+
 Preflight prints all missing source groups in one failed step and writes the same
 state to `portal_daily_close_preflight.json`. It prints names only, never secret
 values.
@@ -101,7 +128,7 @@ The daily close job order is:
 
 1. Resolve cutoff date and 30-day revision window.
 2. Run `scripts/portal-daily-close-preflight.js`.
-3. Refresh WB/Ozon/Yandex and extra marketplace facts.
+3. Refresh WB/Ozon/Yandex API facts, then finalized Goldapple/Letu/Megamarket daily facts.
 4. Refresh ads, Yandex Market stock, and warehouse stock.
 5. Build canonical non-IU layers and phase 3 publish-gate reconciliation reports.
 6. Run D-1 and numeric gates.

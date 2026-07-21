@@ -125,7 +125,14 @@ function pointsInMonth(platform, monthKey, cutoffDate) {
 }
 
 function sumField(points, field) {
-  return points.reduce((sum, point) => sum + numberOrZero(point?.[field]), 0);
+  let seen = false;
+  const sum = points.reduce((total, point) => {
+    const value = numberOrNull(point?.[field]);
+    if (value === null) return total;
+    seen = true;
+    return total + value;
+  }, 0);
+  return seen ? sum : null;
 }
 
 function platformFact(trends, platform, monthKey, cutoffDate) {
@@ -258,13 +265,15 @@ function buildCards({ metrics, skus, warehouse, cutoffDate, monthKey, planSlice 
   add({ id: 'marketplace-stock-total', label: 'Marketplace stock', value: Math.round(totalMarketplaceStock), period: cutoffDate, hint: 'Marketplace stock visible in SKU registry.' });
   add({ id: 'warehouse-stock-total', label: 'Warehouse stock', value: Math.round(warehouseStock), period: cutoffDate, hint: 'Warehouse stock overlay remains visible.' });
   PLATFORMS.forEach((platform) => {
+    const metric = metricRow(metrics, 'sales.raw_revenue', platform);
+    const value = numberOrNull(metric?.raw_value);
     add({
       id: `sales-revenue-${platform}`,
       label: `Revenue ${platform.toUpperCase()}`,
-      value: metricValue(metrics, 'sales.raw_revenue', platform) || 0,
+      value,
       format: 'money',
-      period: cutoffDate,
-      hint: 'Fact from platform_trends.json.',
+      period: metric?.source_dates?.platform_trends || '',
+      hint: value === null ? 'Нет данных в platform_trends.json.' : 'Fact from platform_trends.json.',
       metricId: `sales.raw_revenue:${platform}`
     });
   });

@@ -249,6 +249,9 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
   const extraPlatformsBehind = INCLUDED_PLATFORMS
     .filter((platform) => !CORE_FACT_PLATFORMS.includes(platform))
     .filter((platform) => platformFacts[platform].date_to && platformFacts[platform].date_to !== cutoffDate);
+  const extraPlatformsMissing = INCLUDED_PLATFORMS
+    .filter((platform) => !CORE_FACT_PLATFORMS.includes(platform))
+    .filter((platform) => !platformFacts[platform].date_to);
   const sourceDates = Object.fromEntries(INCLUDED_PLATFORMS.map((platform) => [platform, platformFacts[platform].date_to || '']));
   const checksums = sourceChecksums(options.inputDir);
   const snapshotHash = crypto.createHash('sha256').update(stableStringify({ checksums, cutoffDate, monthKey })).digest('hex');
@@ -427,6 +430,9 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
   }
   if (extraPlatformsBehind.length) {
     dashboardWarnings.push(`extra marketplace facts are behind ${cutoffDate}: ${extraPlatformsBehind.map((platform) => `${platform}=${platformFacts[platform].date_to}`).join(', ')}`);
+  }
+  if (extraPlatformsMissing.length) {
+    dashboardWarnings.push(`extra marketplace facts are missing: ${extraPlatformsMissing.join(', ')}`);
   }
   if (!planMonth) planBlocking.push(`company_plan has no month ${monthKey}`);
   const planChannelSum = INCLUDED_PLATFORMS.reduce((sum, platform) => sum + (numberOrNull(planMonth?.channels?.[platform]?.revenue) || 0), 0);

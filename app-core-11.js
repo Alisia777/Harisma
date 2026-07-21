@@ -11456,7 +11456,7 @@ function skuPlanFactV1MarketplaceKey(platform = 'all') {
 function skuPlanFactV1WriteGlobalPlatform(platform = 'all') {
   const normalized = skuPlanFactV1NormalizePlatform(platform);
   const marketplace = skuPlanFactV1MarketplaceKey(normalized);
-  const premiumSupported = ['all', 'wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit'].includes(marketplace);
+  const premiumSupported = ['all', 'wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'].includes(marketplace);
   if (premiumSupported && window.AlteaPremiumPresentation?.applyMarketplace) {
     window.AlteaPremiumPresentation.applyMarketplace(marketplace, { persist: true, rerender: false, silent: true });
   } else {

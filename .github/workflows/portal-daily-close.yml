@@ -200,9 +200,22 @@ jobs:
         run: >-
           node scripts/portal-api-max-sync.js sync
           --mode daily --recent-days 30
-          --platforms wb,ozon,ya,goldapple,letu,megamarket,samokat,magnit
+          --platforms wb,ozon,ya,samokat,magnit
           --to '${{ steps.cutoff.outputs.value }}'
           --strict --skip-protected-scope --skip-health --skip-data-guard --skip-magnit-csv
+
+      - name: Refresh retail-network daily facts
+        env:
+          ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID: ${{ secrets.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || vars.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || '1Zy0ec9-snLwh-J88KoFXyHxtYg3DXC8oWnC17iHNNS4' }}
+        run: >-
+          node scripts/portal-retail-network-daily-sync.js sync
+          --input-file data/platform_trends.json
+          --output-file data/platform_trends.json
+          --status-file data/retail_network_source_status.json
+          --to '${{ steps.cutoff.outputs.value }}'
+          --strict --optional-source
 
       - name: Refresh advertising and stock
         env:

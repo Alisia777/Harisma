@@ -14,6 +14,8 @@
     "portal:yandex-market-cluster-map": "node scripts/build-yandex-market-cluster-map.js",
     "portal:yandex-market-stock-sync": "node scripts/portal-yandex-market-stock-sync.js sync",
     "portal:magnit-market-sync": "node scripts/portal-magnit-market-sync.js sync",
+    "portal:retail-network-sync": "node scripts/portal-retail-network-daily-sync.js sync",
+    "portal:retail-network-ui-test": "node scripts/portal-retail-network-ui.selftest.js",
     "portal:kz-leaderboard-sync": "node scripts/portal-kz-product-leaderboard-sync.js sync",
     "portal:warehouse-stock-sync": "node scripts/portal-warehouse-stock-sync.js sync",
     "portal:launches-rebuild": "node scripts/build-launches-layer.js",

@@ -89,6 +89,16 @@ async function testLocalEditor(browser, baseUrl) {
   await page.fill('[data-design-project-form] [name="title"]', 'Проверка резервной копии');
   await page.click('[data-design-project-form] button[type="submit"]');
   await page.waitForFunction(() => window.AlteaDesignWorkspace.getData().projects.some((item) => item.title === 'Проверка резервной копии'));
+  await page.click('[data-design-add-project-status="review"]');
+  assert.strictEqual(await page.locator('[data-design-project-form] [name="status"]').inputValue(), 'review', 'Quick add must preselect the selected board stage');
+  await page.click('[data-design-close]');
+  await page.click('[data-design-project]');
+  await page.click('[data-design-duplicate-project]');
+  await page.waitForFunction(() => window.AlteaDesignWorkspace.getData().projects.some((item) => /— копия$/.test(item.title)));
+  await page.keyboard.press('/');
+  assert.strictEqual(await page.evaluate(() => document.activeElement && document.activeElement.hasAttribute('data-design-search')), true, 'Slash shortcut must focus project search');
+  await page.click('[data-design-focus="review"]');
+  assert.strictEqual(await page.locator('[data-design-filter="status"]').inputValue(), 'review', 'Summary metric must apply its project focus');
   await page.evaluate(() => window.AlteaDesignWorkspace.whenLocalSaved());
   await page.click('[data-design-mode="history"]');
   await page.waitForFunction(() => document.querySelectorAll('.design-ws-activity-list article').length >= 1);
@@ -235,7 +245,10 @@ async function testRevokedMember(browser, baseUrl) {
 async function run() {
   const server = await serve();
   const baseUrl = `http://127.0.0.1:${server.address().port}`;
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {})
+  });
   try {
     await testLocalEditor(browser, baseUrl);
     await testViewer(browser, baseUrl);

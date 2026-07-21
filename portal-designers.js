@@ -301,7 +301,7 @@
   }
 
   function readUi() {
-    var fallback = { mode: 'board', search: '', status: 'active', owner: 'all', type: 'all', projectPage: 1, testPage: 1, knowledgePage: 1 };
+    var fallback = { mode: 'board', search: '', status: 'active', owner: 'all', type: 'all', deadline: 'all', projectPage: 1, testPage: 1, knowledgePage: 1 };
     try {
       var parsed = JSON.parse(localStorage.getItem(UI_KEY) || '{}');
       return Object.assign(fallback, parsed || {});
@@ -1278,6 +1278,14 @@
       if (ui.status !== 'all' && ui.status !== 'active' && ui.status !== 'done' && project.status !== ui.status) return false;
       if (ui.owner !== 'all' && project.owner !== ui.owner) return false;
       if (ui.type !== 'all' && project.type !== ui.type) return false;
+      if (ui.deadline === 'urgent' && !isOverdue(project) && !isDueSoon(project)) return false;
+      if (ui.deadline === 'overdue' && !isOverdue(project)) return false;
+      if (ui.deadline === 'week') {
+        var dueAt = project.dueDate ? new Date(project.dueDate + 'T23:59:59').getTime() : 0;
+        var weekDiff = dueAt - Date.now();
+        if (project.status === 'done' || weekDiff < 0 || weekDiff > 7 * 86400000) return false;
+      }
+      if (ui.deadline === 'no_date' && project.dueDate) return false;
       if (!search) return true;
       var haystack = [project.title, project.owner, project.marketplace, project.brief, typeLabel(project.type)].concat(project.tags || []).join(' ').toLowerCase();
       return haystack.indexOf(search) !== -1;
@@ -1304,35 +1312,85 @@
     var month = new Date().toISOString().slice(0, 7);
     var completed = projects.filter(function (item) { return item.status === 'done' && string(item.updatedAt).slice(0, 7) === month; }).length;
     var runningTests = activeTests().filter(function (item) { return item.status === 'running' || item.status === 'analysis'; }).length;
-    return '<div class="design-ws-summary">' + [
-      ['Активные проекты', active, 'в производственном контуре', '#7e5cff'],
-      ['На ревью', review, 'ждут решения или правок', '#4e83bf'],
-      ['Срок до 3 дней', urgent, 'включая просроченные', '#c65858'],
-      ['Тесты конверсии', runningTests, 'запущены или на анализе', '#c98a36'],
-      ['Готово за месяц', completed, 'завершённые макеты', '#54a987']
+    var total = Math.max(1, projects.length);
+    return '<div class="design-ws-summary" aria-label="Пульс дизайн-отдела">' + [
+      ['active', 'Активные проекты', active, 'в производстве сейчас', '#8b6cff', Math.min(100, active / total * 100)],
+      ['review', 'На ревью', review, 'нужно решение или правки', '#62a8ff', Math.min(100, review / total * 100)],
+      ['urgent', 'Фокус по срокам', urgent, 'просрочено или ≤ 3 дней', '#ff776d', Math.min(100, urgent / total * 100)],
+      ['tests', 'Тесты конверсии', runningTests, 'идут или на анализе', '#f0ad4e', Math.min(100, runningTests / Math.max(1, activeTests().length) * 100)],
+      ['done', 'Готово за месяц', completed, 'результат команды', '#5ed0a0', Math.min(100, completed / total * 100)]
     ].map(function (metric) {
-      return '<article class="design-ws-metric" style="--metric:' + metric[3] + '"><span>' + html(metric[0]) + '</span><strong>' + metric[1] + '</strong><small>' + html(metric[2]) + '</small></article>';
+      return '<button type="button" class="design-ws-metric" data-design-focus="' + metric[0] + '" style="--metric:' + metric[4] + ';--metric-progress:' + metric[5] + '%"><span>' + html(metric[1]) + '</span><strong>' + metric[2] + '</strong><small>' + html(metric[3]) + '</small><i aria-hidden="true"></i></button>';
     }).join('') + '</div>';
+  }
+
+  function hasProjectFilters() {
+    return Boolean(string(ui.search) || ui.status !== 'active' || ui.owner !== 'all' || ui.type !== 'all' || ui.deadline !== 'all');
+  }
+
+  function resetProjectFilters() {
+    ui.search = '';
+    ui.status = 'active';
+    ui.owner = 'all';
+    ui.type = 'all';
+    ui.deadline = 'all';
+    ui.projectPage = 1;
+    writeUi();
+    renderDesigners();
+  }
+
+  function applySummaryFocus(focus) {
+    if (focus === 'tests') {
+      ui.mode = 'tests';
+    } else {
+      ui.mode = 'board';
+      ui.search = '';
+      ui.owner = 'all';
+      ui.type = 'all';
+      ui.deadline = focus === 'urgent' ? 'urgent' : 'all';
+      ui.status = focus === 'review' ? 'review' : (focus === 'done' ? 'done' : 'active');
+    }
+    ui.projectPage = 1;
+    writeUi();
+    renderDesigners();
   }
 
   function renderFilters() {
     var owners = Array.from(new Set(activeProjects().map(function (item) { return item.owner; }).filter(Boolean))).sort();
-    return '<div class="design-ws-filter-row">' +
-      '<input type="search" placeholder="Поиск по проектам" value="' + html(ui.search) + '" data-design-search aria-label="Поиск по проектам">' +
+    return '<div class="design-ws-filter-row"><label class="design-ws-search"><span aria-hidden="true">⌕</span>' +
+      '<input type="search" placeholder="Найти проект, SKU или тег…" value="' + html(ui.search) + '" data-design-search aria-label="Поиск по проектам"><kbd>/</kbd></label>' +
       '<select data-design-filter="status" aria-label="Статус">' + optionList([['active', 'Активные'], ['all', 'Все статусы'], ['inbox', 'Запросы'], ['brief', 'Бриф'], ['production', 'В работе'], ['review', 'На ревью'], ['done', 'Готово']], ui.status) + '</select>' +
       '<select data-design-filter="owner" aria-label="Ответственный"><option value="all">Все дизайнеры</option>' + optionList(owners, ui.owner) + '</select>' +
       '<select data-design-filter="type" aria-label="Тип проекта"><option value="all">Все типы</option>' + optionList(TYPES, ui.type) + '</select>' +
+      '<select data-design-filter="deadline" aria-label="Срок"><option value="all">Любой срок</option>' + optionList([['urgent', 'Фокус ≤ 3 дней'], ['overdue', 'Просрочено'], ['week', 'Ближайшие 7 дней'], ['no_date', 'Без дедлайна']], ui.deadline) + '</select>' +
+      (hasProjectFilters() ? '<button type="button" class="design-ws-filter-reset" data-design-reset-filters aria-label="Сбросить фильтры" title="Сбросить фильтры">Сбросить</button>' : '') +
       '</div>';
+  }
+
+  function ownerInitials(owner) {
+    var parts = string(owner || 'Команда').split(/\s+/).filter(Boolean);
+    return parts.slice(0, 2).map(function (part) { return part.charAt(0).toUpperCase(); }).join('') || '—';
+  }
+
+  function dueMeta(project) {
+    if (!project.dueDate) return { tone: 'neutral', label: 'Срок не задан' };
+    if (project.status === 'done') return { tone: 'done', label: formatDate(project.dueDate) };
+    if (isOverdue(project)) return { tone: 'danger', label: 'Просрочено · ' + formatDate(project.dueDate) };
+    if (isDueSoon(project)) return { tone: 'warning', label: 'Скоро · ' + formatDate(project.dueDate) };
+    return { tone: 'neutral', label: formatDate(project.dueDate) };
   }
 
   function renderCard(project) {
     var priority = PRIORITIES[project.priority] || PRIORITIES.normal;
+    var due = dueMeta(project);
     var tags = (project.tags || []).slice(0, 2).map(function (tag) { return '<span class="design-ws-chip">' + html(tag) + '</span>'; }).join('');
     return '<article class="design-ws-card' + (isOverdue(project) ? ' is-overdue' : '') + '" draggable="true" tabindex="0" data-design-project="' + html(project.id) + '">' +
-      '<div class="design-ws-card-kicker"><span>' + html(typeLabel(project.type)) + '</span><i class="design-ws-priority" style="--priority-color:' + priority.color + '" title="' + html(priority.label) + '"></i></div>' +
+      '<div class="design-ws-card-kicker"><span>' + html(typeLabel(project.type)) + '</span><span class="design-ws-priority-label"><i class="design-ws-priority" style="--priority-color:' + priority.color + '"></i>' + html(priority.label) + '</span></div>' +
       '<h3>' + html(project.title) + '</h3>' +
       (project.brief ? '<p>' + html(project.brief.slice(0, 120)) + (project.brief.length > 120 ? '…' : '') + '</p>' : '<p>Откройте карточку, чтобы добавить бриф и ссылки.</p>') +
-      '<div class="design-ws-card-meta"><span class="owner">' + html(project.owner || 'не назначен') + '</span>' + tags + '<span class="design-ws-chip">' + html(formatDate(project.dueDate)) + '</span></div>' +
+      '<div class="design-ws-card-context">' + (project.marketplace ? '<span>' + html(project.marketplace) + '</span>' : '') + tags + '</div>' +
+      '<div class="design-ws-card-foot"><span class="design-ws-owner"><i aria-hidden="true">' + html(ownerInitials(project.owner)) + '</i><b>' + html(project.owner || 'Не назначен') + '</b></span><span class="design-ws-due ' + due.tone + '">' + html(due.label) + '</span>' +
+      (project.url ? '<a class="design-ws-resource-link" href="' + html(project.url) + '" target="_blank" rel="noopener" data-design-resource-link aria-label="Открыть исходник" title="Открыть исходник">↗</a>' : '') + '</div>' +
       '</article>';
   }
 
@@ -1343,22 +1401,22 @@
       var rows = allRows.slice(0, 20);
       var total = allRows.length;
       return '<section class="design-ws-column" data-design-drop-status="' + key + '">' +
-        '<div class="design-ws-column-head"><div class="design-ws-column-title" style="--status-color:' + meta.color + '"><i></i><span>' + html(meta.label) + '</span></div><span class="design-ws-count">' + total + '</span></div>' +
-        '<div class="design-ws-column-list">' + (rows.length ? rows.map(renderCard).join('') + (total > rows.length ? '<button type="button" class="design-ws-column-more" data-design-mode="table">Ещё ' + (total - rows.length) + ' · открыть таблицу</button>' : '') : '<div class="design-ws-empty"><p>Перетащите карточку сюда</p></div>') + '</div>' +
+        '<div class="design-ws-column-head"><div><div class="design-ws-column-title" style="--status-color:' + meta.color + '"><i></i><span>' + html(meta.label) + '</span></div><small>' + html(key === 'inbox' ? 'входящие задачи' : (key === 'brief' ? 'уточняем задачу' : (key === 'production' ? 'создаём макет' : (key === 'review' ? 'согласование' : 'результат')))) + '</small></div><div class="design-ws-column-head-actions"><span class="design-ws-count">' + total + '</span>' + (canEdit() ? '<button type="button" data-design-add-project-status="' + key + '" aria-label="Добавить проект в «' + html(meta.label) + '»" title="Добавить проект">+</button>' : '') + '</div></div>' +
+        '<div class="design-ws-column-list">' + (rows.length ? rows.map(renderCard).join('') + (total > rows.length ? '<button type="button" class="design-ws-column-more" data-design-mode="table">Ещё ' + (total - rows.length) + ' · открыть таблицу</button>' : '') : '<button type="button" class="design-ws-empty design-ws-empty-action"' + (canEdit() ? ' data-design-add-project-status="' + key + '"' : ' disabled') + '><span aria-hidden="true">＋</span><strong>' + html(key === 'done' ? 'Здесь появится результат' : 'Пока пусто') + '</strong><p>' + html(canEdit() ? 'Добавить проект в этот этап' : 'Перетащите карточку сюда') + '</p></button>') + '</div>' +
         '</section>';
     }).join('') + '</div></div>';
   }
 
   function renderTable(projects) {
     if (!projects.length) return renderEmptyProjects();
-    return '<div class="design-ws-table-wrap"><table class="design-ws-table"><thead><tr><th>Проект</th><th>Статус</th><th>Ответственный</th><th>Срок</th><th>Приоритет</th><th>Теги</th></tr></thead><tbody>' +
+    return '<div class="design-ws-table-wrap"><table class="design-ws-table"><thead><tr><th>Проект</th><th>Статус</th><th>Ответственный</th><th>Срок</th><th>Приоритет</th><th>Теги</th><th aria-label="Исходник"></th></tr></thead><tbody>' +
       projects.map(function (project) {
         var status = STATUS[project.status] || STATUS.inbox;
         var priority = PRIORITIES[project.priority] || PRIORITIES.normal;
         return '<tr data-design-project="' + html(project.id) + '"><td><strong>' + html(project.title) + '</strong><small>' + html(typeLabel(project.type)) + (project.marketplace ? ' · ' + html(project.marketplace) : '') + '</small></td>' +
           '<td><select class="design-ws-field" data-design-status="' + html(project.id) + '">' + optionList(Object.keys(STATUS).map(function (key) { return [key, STATUS[key].label]; }), project.status) + '</select></td>' +
-          '<td>' + html(project.owner || '—') + '</td><td><span style="color:' + (isOverdue(project) ? 'var(--design-red)' : 'inherit') + '">' + html(formatDate(project.dueDate)) + '</span></td>' +
-          '<td><span class="design-ws-chip" style="color:' + priority.color + '">' + html(priority.label) + '</span></td><td>' + html((project.tags || []).join(', ') || '—') + '</td></tr>';
+          '<td><span class="design-ws-owner"><i aria-hidden="true">' + html(ownerInitials(project.owner)) + '</i><b>' + html(project.owner || '—') + '</b></span></td><td><span class="design-ws-due ' + dueMeta(project).tone + '">' + html(dueMeta(project).label) + '</span></td>' +
+          '<td><span class="design-ws-chip" style="color:' + priority.color + '">' + html(priority.label) + '</span></td><td>' + html((project.tags || []).join(', ') || '—') + '</td><td>' + (project.url ? '<a class="design-ws-table-link" href="' + html(project.url) + '" target="_blank" rel="noopener" data-design-resource-link aria-label="Открыть исходник">↗</a>' : '—') + '</td></tr>';
       }).join('') + '</tbody></table></div>';
   }
 
@@ -1433,7 +1491,7 @@
     var paged = pageSlice(pages, 'knowledgePage', KNOWLEDGE_PAGE_SIZE);
     return '<div class="design-ws-pages-head"><div><h3>База знаний</h3><p>Регламенты, брифы, шаблоны и решения отдела.</p></div><button type="button" class="design-ws-btn primary" data-design-add-page>+ Новая страница</button></div>' +
       (pages.length ? '<div class="design-ws-pages">' + paged.items.map(function (page) {
-        return '<article class="design-ws-page" tabindex="0" data-design-page="' + html(page.id) + '"><span class="design-ws-page-icon">' + pageIcon(page.kind) + '</span><h4>' + html(page.title) + '</h4><p>' + html(page.summary || page.content.slice(0, 150) || 'Добавьте описание страницы.') + '</p><div class="design-ws-page-meta"><span class="design-ws-chip">' + html(page.category) + '</span><span class="design-ws-chip">' + html(page.status === 'draft' ? 'черновик' : kindLabel(page.kind)) + '</span></div></article>';
+        return '<article class="design-ws-page" tabindex="0" data-design-page="' + html(page.id) + '"><span class="design-ws-page-icon">' + pageIcon(page.kind) + '</span><h4>' + html(page.title) + '</h4><p>' + html(page.summary || page.content.slice(0, 150) || 'Добавьте описание страницы.') + '</p><div class="design-ws-page-meta"><span class="design-ws-chip">' + html(page.category) + '</span><span class="design-ws-chip">' + html(page.status === 'draft' ? 'черновик' : kindLabel(page.kind)) + '</span>' + (page.url ? '<a class="design-ws-resource-link" href="' + html(page.url) + '" target="_blank" rel="noopener" data-design-resource-link aria-label="Открыть материал" title="Открыть материал">↗</a>' : '') + '</div></article>';
       }).join('') + '</div>' + renderPager('knowledgePage', paged) : '<div class="design-ws-empty"><div><strong>База знаний пустая</strong><p>Создайте регламент, бриф или ссылку на библиотеку.</p></div></div>');
   }
 
@@ -1528,7 +1586,7 @@
   function renderProjectDialog(id) {
     var project = id ? data.projects.find(function (item) { return item.id === id; }) : null;
     project = project || {
-      id: '', title: '', type: 'other', status: 'inbox', owner: '', dueDate: '', priority: 'normal',
+      id: '', title: '', type: 'other', status: (activeDialog && activeDialog.prefillStatus) || 'inbox', owner: '', dueDate: '', priority: 'normal',
       marketplace: '', brief: '', url: '', tags: [], archived: false, createdAt: '', updatedAt: ''
     };
     var statusOptions = Object.keys(STATUS).map(function (key) { return [key, STATUS[key].label]; });
@@ -1545,7 +1603,7 @@
       field('Ссылка на Figma / Drive', 'url', project.url, 'url') +
       field('Теги через запятую', 'tags', (project.tags || []).join(', '), 'text', false, true) +
       textareaField('Бриф и критерии готовности', 'brief', project.brief, true) +
-      '</div><div class="design-ws-modal-actions">' + (id ? '<button type="button" class="design-ws-btn danger" data-design-delete-project="' + html(id) + '">В архив</button>' : '<span></span>') + '<div class="design-ws-modal-actions-right"><button type="button" class="design-ws-btn" data-design-close>Отмена</button><button type="submit" class="design-ws-btn primary">Сохранить проект</button></div></div></form></section></div>';
+      '</div><div class="design-ws-modal-actions"><div class="design-ws-modal-secondary">' + (id ? '<button type="button" class="design-ws-btn danger" data-design-delete-project="' + html(id) + '">В архив</button><button type="button" class="design-ws-btn" data-design-duplicate-project="' + html(id) + '">Дублировать</button>' : '<span></span>') + '</div><div class="design-ws-modal-actions-right"><button type="button" class="design-ws-btn" data-design-close>Отмена</button><button type="submit" class="design-ws-btn primary">Сохранить проект</button></div></div></form></section></div>';
   }
 
   function renderPageDialog(id) {
@@ -1617,6 +1675,9 @@
     var root = document.getElementById(rootId || ROOT_ID);
     if (!root) return null;
     var modeTabs = [['board', 'Доска'], ['table', 'Проекты'], ['tests', 'Тесты конверсии'], ['knowledge', 'База знаний'], ['system', 'Дизайн-система'], ['archive', 'Архив'], ['history', 'История']];
+    var modeIcons = { board: '◫', table: '≡', tests: '↗', knowledge: '◇', system: '✦', archive: '□', history: '↶' };
+    var archivedCount = data.projects.concat(data.tests, data.pages).filter(function (item) { return item.archived; }).length;
+    var modeCounts = { board: activeProjects().length, table: activeProjects().length, tests: activeTests().length, knowledge: data.pages.filter(function (item) { return !item.archived; }).length, archive: archivedCount, history: remoteHistory.length + localBackups.length };
     var showFilters = ui.mode === 'board' || ui.mode === 'table';
     var checkingAccess = workspaceAccess === 'checking';
     var bodyContent = checkingAccess ? '<div class="design-ws-empty"><div><strong>Проверяем доступ</strong><p>Данные рабочей базы появятся после проверки членства.</p></div></div>' : renderBody();
@@ -1627,12 +1688,12 @@
       ? '<div class="design-ws-notice is-error"><strong>Одновременно изменены одни и те же материалы: ' + syncConflicts.length + '.</strong> Локальная копия сохранена. Выберите версию для конфликтующих карточек.<div class="design-ws-head-actions"><button type="button" class="design-ws-btn" data-design-conflict-remote>Командная версия</button><button type="button" class="design-ws-btn primary" data-design-conflict-local>Локальная версия</button></div></div>'
       : '';
     root.innerHTML = '<div class="design-ws" data-design-workspace data-design-access="' + html(workspaceAccess) + '" data-design-readonly="' + (!canEdit()) + '">' +
-      '<header class="design-ws-head"><div><span class="design-ws-eyebrow">Creative workspace</span><h2>Дизайн-отдел</h2><p>Проекты, брифы, исходники и знания команды — в одном пространстве вместо разрозненных страниц Notion.</p></div>' +
-      '<div class="design-ws-head-actions"><span class="design-ws-access">' + html(workspaceAccess === 'editor' ? 'Редактор' : (workspaceAccess === 'viewer' ? 'Просмотр' : (workspaceAccess === 'local' ? 'Локально' : (checkingAccess ? 'Проверка' : 'Нет доступа')))) + '</span><span class="design-ws-sync ' + html(syncState) + '" title="' + html(syncMessage) + '">' + html(syncMessage) + '</span>' +
-      (canEdit() ? '<button type="button" class="design-ws-btn" data-design-import>Импорт из Notion</button><button type="button" class="design-ws-btn primary" data-design-add-project>+ Новый проект</button>' : '') + '</div></header>' +
+      '<header class="design-ws-head"><div class="design-ws-head-copy"><span class="design-ws-eyebrow"><i aria-hidden="true">✦</i> Creative operations</span><h2>Дизайн-студия</h2><p>Единый рабочий ритм — от входящего запроса и брифа до готового макета, эксперимента и знания команды.</p><div class="design-ws-head-hints"><span><kbd>/</kbd> поиск проектов</span>' + (canEdit() ? '<span><kbd>N</kbd> новый проект</span>' : '') + '</div></div>' +
+      '<div class="design-ws-head-actions"><div class="design-ws-head-status"><span class="design-ws-access">' + html(workspaceAccess === 'editor' ? 'Редактор' : (workspaceAccess === 'viewer' ? 'Просмотр' : (workspaceAccess === 'local' ? 'Локально' : (checkingAccess ? 'Проверка' : 'Нет доступа')))) + '</span><span class="design-ws-sync ' + html(syncState) + '" title="' + html(syncMessage) + '">' + html(syncMessage) + '</span></div><div class="design-ws-head-buttons">' +
+      (canEdit() ? '<button type="button" class="design-ws-btn" data-design-import><span aria-hidden="true">⇧</span> Импорт</button><button type="button" class="design-ws-btn primary" data-design-add-project><span aria-hidden="true">＋</span> Новый проект</button>' : '') + '</div></div></header>' +
       (checkingAccess ? '' : renderSummary()) +
-      '<div class="design-ws-toolbar"><div class="design-ws-tabs" role="tablist">' + modeTabs.map(function (tab) { return '<button type="button" role="tab" aria-selected="' + (ui.mode === tab[0] ? 'true' : 'false') + '" class="design-ws-tab' + (ui.mode === tab[0] ? ' active' : '') + '" data-design-mode="' + tab[0] + '">' + html(tab[1]) + '</button>'; }).join('') + '</div>' +
-      (showFilters ? renderFilters() : '<div class="design-ws-filter-row"><button type="button" class="design-ws-btn" data-design-export>Экспорт JSON</button><button type="button" class="design-ws-btn" data-design-sync>' + (canEdit() ? 'Синхронизировать' : 'Обновить') + '</button></div>') + '</div>' +
+      '<div class="design-ws-toolbar"><div class="design-ws-tabs" role="tablist">' + modeTabs.map(function (tab) { return '<button type="button" role="tab" aria-selected="' + (ui.mode === tab[0] ? 'true' : 'false') + '" class="design-ws-tab' + (ui.mode === tab[0] ? ' active' : '') + '" data-design-mode="' + tab[0] + '"><i aria-hidden="true">' + modeIcons[tab[0]] + '</i><span>' + html(tab[1]) + '</span>' + (modeCounts[tab[0]] != null ? '<b>' + modeCounts[tab[0]] + '</b>' : '') + '</button>'; }).join('') + '</div>' +
+      (showFilters ? renderFilters() : '<div class="design-ws-filter-row design-ws-utility-actions"><button type="button" class="design-ws-btn" data-design-export>Экспорт JSON</button><button type="button" class="design-ws-btn" data-design-sync>' + (canEdit() ? 'Синхронизировать' : 'Обновить') + '</button></div>') + '</div>' +
       (!loadFinished && loadStarted ? '<div class="design-ws-notice">Подключаем общую базу отдела. Локальная версия уже доступна для работы.</div>' : '') +
       accessNotice + conflictNotice +
       '<main class="design-ws-body">' + bodyContent + '</main>' +
@@ -1641,7 +1702,7 @@
       '<input class="design-ws-hidden-input" type="file" accept=".json,application/json" data-design-backup-input>' +
       renderDialog() + '</div>';
     if (!canEdit()) {
-      root.querySelectorAll('[data-design-add-project], [data-design-add-page], [data-design-add-test], [data-design-import], [data-design-import-test], [data-design-delete-project], [data-design-delete-page], [data-design-delete-test], [data-design-restore], [data-design-backup], [data-design-import-backup], [data-design-restore-local], [data-design-restore-remote], form button[type="submit"]').forEach(function (node) { node.hidden = true; node.disabled = true; });
+      root.querySelectorAll('[data-design-add-project], [data-design-add-project-status], [data-design-add-page], [data-design-add-test], [data-design-import], [data-design-import-test], [data-design-delete-project], [data-design-duplicate-project], [data-design-delete-page], [data-design-delete-test], [data-design-restore], [data-design-backup], [data-design-import-backup], [data-design-restore-local], [data-design-restore-remote], form button[type="submit"]').forEach(function (node) { node.hidden = true; node.disabled = true; });
       root.querySelectorAll('form input, form select, form textarea, [data-design-status]').forEach(function (node) { node.disabled = true; });
       root.querySelectorAll('[data-design-project][draggable]').forEach(function (node) { node.draggable = false; });
     }
@@ -1684,9 +1745,9 @@
     if (target && typeof target.focus === 'function') target.focus();
   }
 
-  function openProject(id) {
+  function openProject(id, prefillStatus) {
     rememberDialogFocus('project', id);
-    activeDialog = { type: 'project', id: id || '' };
+    activeDialog = { type: 'project', id: id || '', prefillStatus: STATUS[prefillStatus] ? prefillStatus : '' };
     renderDesigners();
     focusDialog();
   }
@@ -1817,6 +1878,27 @@
     project.updatedAt = nowIso();
     activeDialog = null;
     mutate('Проект перемещён в архив', { action: 'project.archive', entityType: 'project', entityId: id });
+    restoreDialogFocus();
+  }
+
+  function duplicateProject(id) {
+    if (!ensureEditor()) return;
+    var source = data.projects.find(function (item) { return item.id === id; });
+    if (!source) return;
+    var stamp = nowIso();
+    var copyProject = normalizeProject(Object.assign({}, clone(source), {
+      id: uid('design-project'),
+      title: source.title + ' — копия',
+      status: 'inbox',
+      dueDate: '',
+      archived: false,
+      createdAt: stamp,
+      updatedAt: stamp,
+      source: 'duplicate'
+    }));
+    data.projects.unshift(copyProject);
+    activeDialog = null;
+    mutate('Создана копия проекта', { action: 'project.duplicate', entityType: 'project', entityId: copyProject.id });
     restoreDialogFocus();
   }
 
@@ -2171,6 +2253,10 @@
     document.addEventListener('click', function (event) {
       var root = event.target && event.target.closest && event.target.closest('#' + ROOT_ID);
       if (!root) return;
+      if (event.target.closest('[data-design-resource-link]')) return;
+      var summaryFocus = event.target.closest('[data-design-focus]');
+      if (summaryFocus) { applySummaryFocus(summaryFocus.getAttribute('data-design-focus')); return; }
+      if (event.target.closest('[data-design-reset-filters]')) { resetProjectFilters(); return; }
       var mode = event.target.closest('[data-design-mode]');
       if (mode) { ui.mode = mode.getAttribute('data-design-mode') || 'board'; writeUi(); renderDesigners(); return; }
       var pageButton = event.target.closest('[data-design-page-nav]');
@@ -2179,6 +2265,8 @@
         writeUi(); renderDesigners(); return;
       }
       if (event.target.closest('[data-design-add-project]')) { if (ensureEditor()) openProject(''); return; }
+      var quickProject = event.target.closest('[data-design-add-project-status]');
+      if (quickProject) { if (ensureEditor()) openProject('', quickProject.getAttribute('data-design-add-project-status')); return; }
       if (event.target.closest('[data-design-add-page]')) { if (ensureEditor()) openPage(''); return; }
       if (event.target.closest('[data-design-add-test]')) { if (ensureEditor()) openTest(''); return; }
       if (event.target.closest('[data-design-import]')) { if (ensureEditor()) root.querySelector('[data-design-import-input]').click(); return; }
@@ -2208,6 +2296,8 @@
       }
       var deleteProject = event.target.closest('[data-design-delete-project]');
       if (deleteProject) { archiveProject(deleteProject.getAttribute('data-design-delete-project')); return; }
+      var duplicateProjectButton = event.target.closest('[data-design-duplicate-project]');
+      if (duplicateProjectButton) { duplicateProject(duplicateProjectButton.getAttribute('data-design-duplicate-project')); return; }
       var deletePage = event.target.closest('[data-design-delete-page]');
       if (deletePage) { archivePage(deletePage.getAttribute('data-design-delete-page')); return; }
       var deleteTest = event.target.closest('[data-design-delete-test]');
@@ -2296,6 +2386,28 @@
         if (event.target.hasAttribute('data-design-project')) openProject(event.target.getAttribute('data-design-project'));
         else if (event.target.hasAttribute('data-design-page')) openPage(event.target.getAttribute('data-design-page'));
         else openTest(event.target.getAttribute('data-design-test'));
+        return;
+      }
+      var root = document.getElementById(ROOT_ID);
+      var inputLike = event.target && /^(INPUT|SELECT|TEXTAREA)$/.test(event.target.tagName || '');
+      if (!activeDialog && root && !root.hidden && !inputLike && event.key === '/') {
+        var search = root.querySelector('[data-design-search]');
+        event.preventDefault();
+        if (search) { search.focus(); search.select(); }
+        else {
+          ui.mode = 'board';
+          writeUi();
+          renderDesigners();
+          window.requestAnimationFrame(function () {
+            var nextSearch = root.querySelector('[data-design-search]');
+            if (nextSearch) { nextSearch.focus(); nextSearch.select(); }
+          });
+        }
+        return;
+      }
+      if (!activeDialog && root && !root.hidden && !inputLike && !event.metaKey && !event.ctrlKey && !event.altKey && event.key.toLowerCase() === 'n' && canEdit()) {
+        event.preventDefault();
+        openProject('');
       }
     });
 

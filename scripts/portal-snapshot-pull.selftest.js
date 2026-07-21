@@ -18,5 +18,7 @@ assert.deepStrictEqual(snapshotsFromInventory(inventoryPath), ['dashboard', 'iu_
 const options = resolveOptions({ inventory: inventoryPath, strict: true, 'output-dir': root });
 assert.deepStrictEqual(options.snapshots, ['dashboard', 'iu_drr_summary']);
 assert.strictEqual(options.strict, true);
+const explicit = resolveOptions({ inventory: inventoryPath, snapshot: 'dashboard', 'output-dir': root });
+assert.deepStrictEqual(explicit.snapshots, ['dashboard']);
 
 console.log('portal-snapshot-pull selftest ok');

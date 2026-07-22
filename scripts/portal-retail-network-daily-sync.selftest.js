@@ -6,6 +6,7 @@ const {
   aggregatePlatform,
   buildPreservedSourceStatus,
   isoDate,
+  letualBusinessDate,
   numberOrZero,
   parseRetailWorkbook,
   updatePayload
@@ -22,7 +23,9 @@ appendSheet(workbook, 'База  Лету', [
   ['Юр лицо', 'Дата', 'Дата выгрузки', 'Период выгрузки', 'Название товара', 'Штрихкод', 'Артикул Алькор', 'Артикул', 'Всего. Заказано', 'Всего. Заказано, Р', 'Всего. Транзит', 'Всего. Доставлено', 'Всего. Доставлено, Р', 'Всего. Остаток в продаже', 'Центральный склад. Остаток в продаже'],
   ['1', '2026-07-20', '2026-07-21', '2026-07-20-2026-07-20', 'Крем', '4600000000000', 'MPL1', 'cream_1', 2, 1000, 1, 0, 0, 10, 8],
   ['1', '2026-07-20', 'Дата выгрузки', 'Период выгрузки', 'Название товара', 'Штрихкод', 'Артикул Алькор', 'Артикул', 'Всего. Заказано', 'Всего. Заказано, Р', 'Всего. Транзит', 'Всего. Доставлено', 'Всего. Доставлено, Р', 'Всего. Остаток в продаже', 'Центральный склад. Остаток в продаже'],
-  ['1', '2026-07-20', '2026-07-22', '2026-07-20-2026-07-20', 'Крем', '4600000000000', 'MPL1', 'cream_1', 2, 1000, 0, 2, 1000, 9, 7]
+  ['1', '2026-07-20', '2026-07-22', '2026-07-20-2026-07-20', 'Крем', '4600000000000', 'MPL1', 'cream_1', 2, 1000, 0, 2, 1000, 9, 7],
+  ['1', '2026-07-21', '2026-06-08', '2026-06-07-2026-06-07', 'Старая строка', '4600000000002', 'MPL2', 'stale_future_date', 99, 99000, 0, 0, 0, 1, 1],
+  ['1', '2026-07-21', '2026-07-21', '2026-07-01-2026-07-20', 'Многодневный отчёт', '4600000000003', 'MPL3', 'multi_day_report', 99, 99000, 0, 0, 0, 1, 1]
 ]);
 
 appendSheet(workbook, 'База  ЗЯ', [
@@ -39,8 +42,9 @@ appendSheet(workbook, 'База  ММ', [
   ['MM1', 'Товар MM', 1, 0, 800, 100, 600, 200, 'product_mm', '1', '20.07.2026']
 ]);
 
-const parsed = parseRetailWorkbook(workbook, { to: '2026-07-20' });
+const parsed = parseRetailWorkbook(workbook, { from: '2026-07-20', to: '2026-07-21' });
 assert.strictEqual(parsed.letu.length, 1, 'Letual revisions must be deduplicated');
+assert.strictEqual(parsed.letu[0].date, '2026-07-20', 'Letual business date must come from the one-day export period');
 assert.strictEqual(parsed.letu[0].deliveredUnits, 2, 'Letual must keep the newest export revision');
 assert.strictEqual(parsed.letu[0].stock, 9, 'Letual total stock must be parsed');
 assert.strictEqual(parsed.letu[0].warehouseBreakdown['Центральный склад'].stock, 7, 'Letual warehouse stock must be parsed');
@@ -85,5 +89,7 @@ assert.deepStrictEqual(preservedStale.stale, ['goldapple', 'letu', 'megamarket']
 
 assert.strictEqual(isoDate(46218), '2026-07-15');
 assert.strictEqual(numberOrZero('1 234,56'), 1234.56);
+assert.strictEqual(letualBusinessDate('2026-07-21', '2026-06-07-2026-06-07'), '2026-06-07');
+assert.strictEqual(letualBusinessDate('2026-07-21', '2026-07-01-2026-07-20'), '');
 
 console.log('portal-retail-network-daily-sync self-test passed');

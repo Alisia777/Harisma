@@ -80,6 +80,16 @@ function isoDate(value) {
   return '';
 }
 
+function letualBusinessDate(declaredDate, periodValue) {
+  const periodDates = normalizeText(periodValue)
+    .match(/\d{4}-\d{1,2}-\d{1,2}/g)
+    ?.map((value) => isoDate(value))
+    .filter(Boolean) || [];
+  if (!periodDates.length) return isoDate(declaredDate);
+  if (periodDates.every((value) => value === periodDates[0])) return periodDates[0];
+  return '';
+}
+
 function addDays(dateKey, delta) {
   const date = new Date(`${dateKey}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + delta);
@@ -152,10 +162,10 @@ function parseLetualRows(rows, options) {
       continue;
     }
     if (!headers.length) continue;
-    const date = isoDate(row[1]);
-    if (!withinWindow(date, options)) continue;
     const headerIndex = new Map(headers.map((header, index) => [normalizeKey(header), index]));
     const value = (name) => row[headerIndex.get(normalizeKey(name))];
+    const date = letualBusinessDate(row[1], value('Период выгрузки'));
+    if (!withinWindow(date, options)) continue;
     const articleKey = normalizeText(value('Артикул'));
     if (!articleKey || normalizeKey(articleKey) === 'артикул') continue;
     const warehouseBreakdown = {};
@@ -739,6 +749,7 @@ module.exports = {
   buildPreservedSourceStatus,
   dedupeLatest,
   isoDate,
+  letualBusinessDate,
   moscowDateKey,
   numberOrZero,
   parseArgs,

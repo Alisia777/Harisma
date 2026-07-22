@@ -669,6 +669,7 @@ function buildSteps(options, env) {
         path.dirname(trendsOutput),
         '--platforms',
         options.platforms.join(','),
+        '--preserve-unrequested-extra-platforms',
         '--mirror-local-fallback',
         '--ozon-daily-funnel',
         '0'

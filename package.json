@@ -10,6 +10,7 @@
     "portal:wb-fixed-rate-report": "node scripts/build-wb-fixed-rate-report.js --output data/wb_fixed_rate_reports.json",
     "portal:ozon-finance-sync": "node scripts/portal-ozon-finance-trends-sync.js",
     "portal:api-max-sync": "node scripts/portal-api-max-sync.js sync",
+    "portal:extra-marketplace-preserve-test": "node scripts/portal-extra-marketplace-preserve.selftest.js",
     "portal:yandex-market-sync": "node scripts/portal-yandex-market-trends-sync.js sync",
     "portal:yandex-market-cluster-map": "node scripts/build-yandex-market-cluster-map.js",
     "portal:yandex-market-stock-sync": "node scripts/portal-yandex-market-stock-sync.js sync",

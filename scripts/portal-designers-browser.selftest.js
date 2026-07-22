@@ -194,6 +194,75 @@ async function testRemoteEditor(browser, baseUrl) {
   await context.close();
 }
 
+async function testBoardAndModalOverflow(browser, baseUrl) {
+  const context = await browser.newContext({ viewport: { width: 1024, height: 720 } });
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
+  await installRemoteFixture(page, 'editor', {
+    schema: 'altea-design-workspace-v1', version: 1, updatedAt: '2026-07-22T12:00:00Z',
+    projects: [{
+      id: 'overflow-project',
+      title: 'Оперативная карточка retinol_boost_krem_dlya_vek_30ml_SUPERLONGWITHOUTBREAK',
+      status: 'inbox', type: 'card', priority: 'normal', owner: 'Анастасия Колмогорова Старший дизайнер',
+      marketplace: 'WILDBERRIES_LONG_MARKETPLACE_VALUE',
+      brief: 'https://towering-approach-bfb.notion.site/10e745f6263a802f886cdb53eac842fe?v=10e745f6263a8186900a000c129272b0',
+      url: 'https://example.com/source', tags: ['ОченьДлинныйТегБезПробелов_ABCDEFGHIJK'],
+      createdAt: '2026-07-22T12:00:00Z', updatedAt: '2026-07-22T12:00:00Z'
+    }],
+    tests: [], pages: [], activity: [], settings: {}
+  });
+  const errors = await loadModule(page, baseUrl);
+  await page.waitForSelector('[data-design-project="overflow-project"]');
+
+  const desktopLayout = await page.evaluate(() => {
+    const card = document.querySelector('[data-design-project="overflow-project"]');
+    const column = card.closest('.design-ws-column');
+    const wrap = document.querySelector('[data-design-board-scrollport]');
+    return {
+      cardRight: card.getBoundingClientRect().right,
+      columnRight: column.getBoundingClientRect().right,
+      wrapClientWidth: wrap.clientWidth,
+      wrapScrollWidth: wrap.scrollWidth,
+      bodyScrollWidth: document.body.scrollWidth,
+      viewportWidth: document.documentElement.clientWidth
+    };
+  });
+  assert.ok(desktopLayout.cardRight <= desktopLayout.columnRight + 1, 'Long SKU, URL, and tags must not stretch a card outside its column');
+  assert.ok(desktopLayout.wrapScrollWidth > desktopLayout.wrapClientWidth, 'Wide board must retain a horizontal scrollport');
+  assert.ok(desktopLayout.bodyScrollWidth <= desktopLayout.viewportWidth + 1, 'Board overflow must remain inside its scrollport, not the whole page');
+  assert.strictEqual(await page.locator('[data-design-board-scroll]').count(), 2, 'Top-level board navigation must expose both scroll directions');
+  await page.click('[data-design-board-scroll="1"]');
+  await page.waitForFunction(() => document.querySelector('[data-design-board-scrollport]').scrollLeft > 0);
+
+  await page.click('[data-design-project="overflow-project"]');
+  await page.waitForSelector('[data-design-project-form]');
+  const desktopModal = await page.evaluate(() => {
+    const modal = document.querySelector('.design-ws-modal');
+    const form = document.querySelector('[data-design-project-form]');
+    const rect = modal.getBoundingClientRect();
+    return { left: rect.left, right: rect.right, viewport: innerWidth, modalClientWidth: modal.clientWidth, modalScrollWidth: modal.scrollWidth, formClientWidth: form.clientWidth, formScrollWidth: form.scrollWidth };
+  });
+  assert.ok(desktopModal.left >= -1 && desktopModal.right <= desktopModal.viewport + 1, 'Desktop modal must stay inside the viewport');
+  assert.ok(desktopModal.modalScrollWidth <= desktopModal.modalClientWidth + 1, 'Desktop modal must not hide fields off the right edge');
+  assert.ok(desktopModal.formScrollWidth <= desktopModal.formClientWidth + 1, 'Long field values must not widen the project form');
+  await page.click('.design-ws-modal [data-design-close]');
+
+  await page.setViewportSize({ width: 390, height: 720 });
+  await page.click('[data-design-project="overflow-project"]');
+  await page.waitForSelector('[data-design-project-form]');
+  const mobileModal = await page.evaluate(() => {
+    const modal = document.querySelector('.design-ws-modal');
+    const grid = document.querySelector('.design-ws-form-grid');
+    const rect = modal.getBoundingClientRect();
+    return { left: rect.left, right: rect.right, viewport: innerWidth, modalClientWidth: modal.clientWidth, modalScrollWidth: modal.scrollWidth, gridColumns: getComputedStyle(grid).gridTemplateColumns };
+  });
+  assert.ok(mobileModal.left >= -1 && mobileModal.right <= mobileModal.viewport + 1, 'Mobile modal must stay inside the viewport');
+  assert.ok(mobileModal.modalScrollWidth <= mobileModal.modalClientWidth + 1, 'Mobile modal must expose every field without horizontal clipping');
+  assert.ok(!/\s/.test(mobileModal.gridColumns.trim()), 'Mobile project form must collapse to one column');
+  assert.strictEqual(errors.length, 0, errors.join('\n'));
+  await context.close();
+}
+
 async function testConcurrentConflict(browser, baseUrl) {
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -288,6 +357,7 @@ async function run() {
     await testViewer(browser, baseUrl);
     await testViewerKeepsCacheDuringRemoteFailure(browser, baseUrl);
     await testRemoteEditor(browser, baseUrl);
+    await testBoardAndModalOverflow(browser, baseUrl);
     await testConcurrentConflict(browser, baseUrl);
     await testRevokedMember(browser, baseUrl);
     console.log('portal-designers-browser.selftest: ok');

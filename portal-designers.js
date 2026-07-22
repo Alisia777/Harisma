@@ -1497,7 +1497,8 @@
   }
 
   function renderBoard(projects) {
-    return '<div class="design-ws-board-wrap"><div class="design-ws-board">' + Object.keys(STATUS).map(function (key) {
+    return '<div class="design-ws-board-navigation"><div><strong>Этапы работы</strong><span>Листайте доску кнопками или горизонтальным жестом</span></div><div class="design-ws-board-navigation-actions"><button type="button" data-design-board-scroll="-1" aria-label="Предыдущие этапы" title="Прокрутить доску влево">←</button><button type="button" data-design-board-scroll="1" aria-label="Следующие этапы" title="Прокрутить доску вправо">→</button></div></div>' +
+      '<div class="design-ws-board-wrap" data-design-board-scrollport tabindex="0" aria-label="Доска проектов: пять этапов, доступна горизонтальная прокрутка"><div class="design-ws-board">' + Object.keys(STATUS).map(function (key) {
       var meta = STATUS[key];
       var allRows = projects.filter(function (project) { return project.status === key; });
       var rows = allRows.slice(0, 20);
@@ -2413,6 +2414,18 @@
       var root = event.target && event.target.closest && event.target.closest('#' + ROOT_ID);
       if (!root) return;
       if (event.target.closest('[data-design-resource-link]')) return;
+      var boardScrollButton = event.target.closest('[data-design-board-scroll]');
+      if (boardScrollButton) {
+        var boardScrollport = root.querySelector('[data-design-board-scrollport]');
+        var boardDirection = number(boardScrollButton.getAttribute('data-design-board-scroll')) < 0 ? -1 : 1;
+        var boardDistance = boardScrollport ? Math.max(280, Math.round(boardScrollport.clientWidth * .78)) : 0;
+        if (boardScrollport && typeof boardScrollport.scrollBy === 'function') {
+          boardScrollport.scrollBy({ left: boardDirection * boardDistance, behavior: 'smooth' });
+        } else if (boardScrollport) {
+          boardScrollport.scrollLeft += boardDirection * boardDistance;
+        }
+        return;
+      }
       var summaryFocus = event.target.closest('[data-design-focus]');
       if (summaryFocus) { applySummaryFocus(summaryFocus.getAttribute('data-design-focus')); return; }
       if (event.target.closest('[data-design-reset-filters]')) { resetProjectFilters(); return; }

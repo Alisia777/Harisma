@@ -77,6 +77,7 @@
     "portal:designers-membership-sync-test": "node scripts/sync-design-workspace-memberships.selftest.js",
     "portal:designers-invite-browser-test": "node scripts/portal-auth-invite-browser.selftest.js",
     "portal:designers-onboarding-test": "node scripts/provision-portal-designers.selftest.js",
+    "portal:designers-file-storage-test": "node scripts/setup-design-attachment-storage.selftest.js",
     "portal:designers-task-import-test": "node scripts/import-design-tasks-to-workspace.selftest.js",
     "portal:designers-permissions-test": "node scripts/portal-designers-permissions.selftest.js",
     "portal:designers-ux-test": "node scripts/portal-designers-ux.selftest.js"

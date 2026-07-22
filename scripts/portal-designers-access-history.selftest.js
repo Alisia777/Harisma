@@ -12,6 +12,7 @@ const authGate = fs.readFileSync(path.join(root, 'portal-auth-gate.js'), 'utf8')
 const access = fs.readFileSync(path.join(root, 'portal-auth-access.js'), 'utf8');
 const appCore10 = fs.readFileSync(path.join(root, 'app-core-10.js'), 'utf8');
 const sql = fs.readFileSync(path.join(root, 'docs', 'supabase_design_workspace_setup.sql'), 'utf8');
+const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 new vm.Script(designers, { filename: 'portal-designers.js' });
 new vm.Script(authGate, { filename: 'portal-auth-gate.js' });
@@ -37,6 +38,13 @@ assert.match(designers, /actor_id,actor_email/, 'Server audit rows must include 
 assert.match(designers, /<h3>Серверный аудит<\/h3>/, 'Server audit must be distinct from local activity');
 assert.match(designers, /if \(!hasLocalChanges[\s\S]*fetchRemote\(\)/, 'Manual refresh must inspect remote state before writing');
 assert.doesNotMatch(appCore10, /view-designers/, 'Protected app-core-10 must not be modified to render Designers');
+assert.match(indexHtml, /data-design-bootstrap/, 'Designers route must never expose an empty initial section');
+const designersScriptIndex = indexHtml.indexOf('data-auth-src="portal-designers.js');
+const secondCoreScriptIndex = indexHtml.indexOf('data-auth-src="app-core-02.js');
+assert.ok(designersScriptIndex > -1 && designersScriptIndex < secondCoreScriptIndex, 'Designers runtime must load before heavy portal chunks');
+assert.strictEqual((indexHtml.match(/data-auth-src="portal-designers\.js/g) || []).length, 1, 'Designers runtime must be declared once');
+assert.match(designers, /remoteRequestFailed[\s\S]*transient remote error[\s\S]*workspaceAccess === 'viewer'/, 'Viewer cache must survive a transient remote failure');
+assert.match(designers, /remoteLoadError[\s\S]*Повторить загрузку/, 'Remote failures must be visible and retryable');
 
 const helperStart = designers.indexOf('  function legacyHashText');
 const helperEnd = designers.indexOf('  function mergeEntities', helperStart);

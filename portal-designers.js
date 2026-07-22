@@ -26,6 +26,8 @@
   var ACTIVITY_LIMIT = 500;
   var LOCAL_BACKUP_LIMIT = 10;
   var LOCAL_BACKUP_INTERVAL_MS = 5 * 60 * 1000;
+  var REMOTE_REQUEST_TIMEOUT_MS = 12000;
+  var LOCAL_READ_TIMEOUT_MS = 6000;
   var SEED_PATH = 'data/design_workspace.json';
   var SCHEMA = 'altea-design-workspace-v1';
 
@@ -107,6 +109,7 @@
   var localPersistChain = Promise.resolve();
   var syncState = cache.dirty ? 'pending' : 'local';
   var syncMessage = cache.dirty ? 'Есть несинхронизированные изменения' : 'Сохранено на устройстве';
+  var remoteLoadError = '';
   var toastTimer = 0;
 
   function html(value) {
@@ -771,6 +774,33 @@
     return { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.token, Accept: 'application/json' };
   }
 
+  function withTimeout(promise, timeoutMs, message) {
+    var timer = 0;
+    return Promise.race([
+      Promise.resolve(promise),
+      new Promise(function (_, reject) {
+        timer = window.setTimeout(function () { reject(new Error(message)); }, timeoutMs);
+      })
+    ]).finally(function () {
+      if (timer) window.clearTimeout(timer);
+    });
+  }
+
+  async function fetchRemoteRequest(url, options, timeoutMessage) {
+    var controller = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = controller ? window.setTimeout(function () { controller.abort(); }, REMOTE_REQUEST_TIMEOUT_MS) : 0;
+    var requestOptions = Object.assign({}, options || {});
+    if (controller) requestOptions.signal = controller.signal;
+    try {
+      return await fetch(url, requestOptions);
+    } catch (error) {
+      if (error && error.name === 'AbortError') throw new Error(timeoutMessage || 'Командная база не ответила вовремя');
+      throw error;
+    } finally {
+      if (timer) window.clearTimeout(timer);
+    }
+  }
+
   async function fetchMembership() {
     var cfg = remoteConfig();
     if (!cfg || !cfg.token || typeof fetch !== 'function') return { level: 'local', message: 'Локальный режим' };
@@ -778,7 +808,7 @@
     url.searchParams.set('select', 'access_level');
     url.searchParams.set('brand', 'eq.' + cfg.brand);
     url.searchParams.set('limit', '1');
-    var response = await fetch(url.toString(), { headers: remoteHeaders(cfg) });
+    var response = await fetchRemoteRequest(url.toString(), { headers: remoteHeaders(cfg) }, 'Проверка доступа заняла слишком много времени');
     if (response.status === 404) return { level: 'setup', message: 'Командная база ожидает настройки' };
     if (!response.ok) return { level: 'none', message: response.status === 401 ? 'Сессия доступа истекла' : 'Не удалось проверить роль' };
     var rows = await response.json();
@@ -796,7 +826,7 @@
     url.searchParams.set('brand', 'eq.' + cfg.brand);
     url.searchParams.set('order', 'revision.desc');
     url.searchParams.set('limit', '50');
-    var response = await fetch(url.toString(), { headers: remoteHeaders(cfg) });
+    var response = await fetchRemoteRequest(url.toString(), { headers: remoteHeaders(cfg) }, 'История версий не ответила вовремя');
     if (response.status === 404) return [];
     if (!response.ok) throw new Error('История версий недоступна');
     return await response.json();
@@ -810,7 +840,7 @@
     url.searchParams.set('brand', 'eq.' + cfg.brand);
     url.searchParams.set('order', 'created_at.desc');
     url.searchParams.set('limit', '100');
-    var response = await fetch(url.toString(), { headers: remoteHeaders(cfg) });
+    var response = await fetchRemoteRequest(url.toString(), { headers: remoteHeaders(cfg) }, 'Серверный аудит не ответил вовремя');
     if (response.status === 404) return [];
     if (!response.ok) throw new Error('Серверный аудит недоступен');
     return await response.json();
@@ -823,9 +853,9 @@
     url.searchParams.set('select', 'payload,revision,updated_at');
     url.searchParams.set('brand', 'eq.' + cfg.brand);
     url.searchParams.set('limit', '1');
-    var response = await fetch(url.toString(), {
+    var response = await fetchRemoteRequest(url.toString(), {
       headers: remoteHeaders(cfg)
-    });
+    }, 'Командная база не ответила вовремя');
     if (!response.ok) throw new Error(response.status === 404 ? 'Закрытая база дизайнеров ещё не настроена' : 'Общий контур вернул ' + response.status);
     var rows = await response.json();
     if (!rows || !rows[0]) return { payload: null, revision: 0 };
@@ -836,7 +866,7 @@
     var cfg = remoteConfig();
     if (!cfg || !cfg.token || typeof fetch !== 'function') return false;
     var url = new URL(cfg.baseUrl + '/rest/v1/rpc/' + REMOTE_SAVE_RPC);
-    var response = await fetch(url.toString(), {
+    var response = await fetchRemoteRequest(url.toString(), {
       method: 'POST',
       headers: {
         apikey: cfg.anonKey,
@@ -850,7 +880,7 @@
         p_payload_hash: hashText(JSON.stringify(payload)),
         p_expected_revision: Math.max(0, number(expectedRevision))
       })
-    });
+    }, 'Командная база не подтвердила сохранение вовремя');
     var result = null;
     try { result = await response.json(); } catch (_) {}
     if (!response.ok) {
@@ -866,7 +896,7 @@
   async function loadSeed() {
     if (typeof fetch !== 'function') return null;
     try {
-      var response = await fetch(SEED_PATH, { cache: 'no-store' });
+      var response = await fetchRemoteRequest(SEED_PATH, { cache: 'no-store' }, 'Начальные данные не загрузились вовремя');
       if (!response.ok) return null;
       return await response.json();
     } catch (_) { return null; }
@@ -879,9 +909,21 @@
     syncMessage = 'Загружаем рабочее пространство';
     renderDesigners();
     try {
-      var results = await Promise.allSettled([loadSeed(), fetchRemote(), readIndexed(), fetchMembership(), fetchRemoteHistory(), readIndexedBackups(), fetchRemoteAudit()]);
+      var results = await Promise.allSettled([
+        loadSeed(),
+        fetchRemote(),
+        withTimeout(readIndexed(), LOCAL_READ_TIMEOUT_MS, 'Локальная копия не ответила вовремя'),
+        fetchMembership(),
+        fetchRemoteHistory(),
+        withTimeout(readIndexedBackups(), LOCAL_READ_TIMEOUT_MS, 'Резервные копии не ответили вовремя'),
+        fetchRemoteAudit()
+      ]);
       var seed = results[0].status === 'fulfilled' ? results[0].value : null;
       var remote = results[1].status === 'fulfilled' ? results[1].value : null;
+      var remoteRequestFailed = results[1].status === 'rejected';
+      remoteLoadError = remoteRequestFailed
+        ? string(results[1].reason && results[1].reason.message) || 'Не удалось получить командные данные'
+        : '';
       var indexed = results[2].status === 'fulfilled' ? results[2].value : null;
       var membership = results[3].status === 'fulfilled' ? results[3].value : { level: 'none', message: 'Не удалось проверить права доступа' };
       remoteHistory = results[4].status === 'fulfilled' ? (results[4].value || []) : [];
@@ -912,7 +954,9 @@
       } else {
         if (!hasPersistedSyncBase) lastSyncedData = normalizeData(FALLBACK_DATA);
       }
-      if (workspaceAccess === 'viewer' && (!remote || !remote.payload)) data = normalizeData(seed || FALLBACK_DATA);
+      // A transient remote error must never replace a previously synced viewer
+      // snapshot with the intentionally sparse public seed.
+      if (workspaceAccess === 'viewer' && !remoteRequestFailed && (!remote || !remote.payload)) data = normalizeData(seed || FALLBACK_DATA);
       if (workspaceAccess === 'none') {
         data = normalizeData(seed || FALLBACK_DATA);
         localBackups = [];
@@ -925,11 +969,11 @@
       if (localBackups[0]) lastBackupAt = timestamp(localBackups[0].createdAt);
       writeLocal(cache.dirty);
       if (workspaceAccess === 'editor') {
-        syncState = remote && remote.payload ? (cache.dirty ? 'pending' : 'ok') : 'pending';
-        syncMessage = remote && remote.payload ? (cache.dirty ? 'Нужно отправить локальные изменения' : 'Командная база подключена · редактор') : 'Редактор · создаём общую базу';
+        syncState = remoteRequestFailed ? 'error' : (remote && remote.payload ? (cache.dirty ? 'pending' : 'ok') : 'pending');
+        syncMessage = remoteRequestFailed ? remoteLoadError : (remote && remote.payload ? (cache.dirty ? 'Нужно отправить локальные изменения' : 'Командная база подключена · редактор') : 'Редактор · создаём общую базу');
       } else if (workspaceAccess === 'viewer') {
-        syncState = 'ok';
-        syncMessage = 'Командная база · только просмотр';
+        syncState = remoteRequestFailed ? 'error' : 'ok';
+        syncMessage = remoteRequestFailed ? remoteLoadError : 'Командная база · только просмотр';
       } else if (workspaceAccess === 'local') {
         syncState = 'local';
         syncMessage = 'Локальный режим';
@@ -970,6 +1014,7 @@
       renderDesigners();
       return false;
     }
+    remoteLoadError = '';
     if (workspaceAccess === 'viewer') {
       syncState = 'pending';
       syncMessage = 'Обновляем командную базу';
@@ -992,6 +1037,7 @@
       } catch (viewerError) {
         syncState = 'error';
         syncMessage = viewerError && viewerError.message ? viewerError.message : 'Обновление недоступно';
+        remoteLoadError = syncMessage;
         renderDesigners();
         return false;
       }
@@ -1074,6 +1120,7 @@
       writeLocal(true);
       syncState = 'error';
       syncMessage = 'Сохранено локально · ' + (error && error.message ? error.message : 'синк недоступен');
+      remoteLoadError = error && error.message ? error.message : 'Синхронизация недоступна';
       renderDesigners();
       return false;
     }
@@ -1793,6 +1840,9 @@
     var accessNotice = workspaceAccess === 'viewer'
       ? '<div class="design-ws-notice is-readonly"><strong>Режим просмотра.</strong> Обновлять данные можно, редактирование и восстановление версий отключены.</div>'
       : ((workspaceAccess === 'none' || workspaceAccess === 'setup') ? '<div class="design-ws-notice is-error"><strong>Доступ не настроен.</strong> ' + html(workspaceAccessMessage) + '. Обратитесь к администратору раздела.</div>' : '');
+    var remoteNotice = remoteLoadError && (workspaceAccess === 'viewer' || workspaceAccess === 'editor')
+      ? '<div class="design-ws-notice is-error"><strong>Командные данные временно не загрузились.</strong> Показана последняя сохранённая копия. Проверьте интернет и нажмите «Обновить».<div class="design-ws-head-actions"><button type="button" class="design-ws-btn primary" data-design-sync>Повторить загрузку</button></div></div>'
+      : '';
     var conflictNotice = syncConflicts.length && pendingConflict
       ? '<div class="design-ws-notice is-error"><strong>Одновременно изменены одни и те же материалы: ' + syncConflicts.length + '.</strong> Локальная копия сохранена. Выберите версию для конфликтующих карточек.<div class="design-ws-head-actions"><button type="button" class="design-ws-btn" data-design-conflict-remote>Командная версия</button><button type="button" class="design-ws-btn primary" data-design-conflict-local>Локальная версия</button></div></div>'
       : '';
@@ -1804,7 +1854,7 @@
       '<div class="design-ws-toolbar"><div class="design-ws-tabs" role="tablist">' + modeTabs.map(function (tab) { return '<button type="button" role="tab" aria-selected="' + (ui.mode === tab[0] ? 'true' : 'false') + '" class="design-ws-tab' + (ui.mode === tab[0] ? ' active' : '') + '" data-design-mode="' + tab[0] + '"><i aria-hidden="true">' + modeIcons[tab[0]] + '</i><span>' + html(tab[1]) + '</span>' + (modeCounts[tab[0]] != null ? '<b>' + modeCounts[tab[0]] + '</b>' : '') + '</button>'; }).join('') + '</div>' +
       (showFilters ? renderFilters() : renderUtilityActions()) + '</div>' +
       (!loadFinished && loadStarted ? '<div class="design-ws-notice">Подключаем общую базу отдела. Локальная версия уже доступна для работы.</div>' : '') +
-      accessNotice + conflictNotice +
+      accessNotice + remoteNotice + conflictNotice +
       '<main class="design-ws-body">' + bodyContent + '</main>' +
       '<input class="design-ws-hidden-input" type="file" accept=".csv,text/csv" data-design-import-input>' +
       '<input class="design-ws-hidden-input" type="file" accept=".csv,text/csv" data-design-test-import-input>' +
@@ -2310,11 +2360,11 @@
     renderDesigners();
     try {
       var url = new URL(cfg.baseUrl + '/rest/v1/rpc/' + REMOTE_RESTORE_RPC);
-      var response = await fetch(url.toString(), {
+      var response = await fetchRemoteRequest(url.toString(), {
         method: 'POST',
         headers: Object.assign({}, remoteHeaders(cfg), { 'Content-Type': 'application/json' }),
         body: JSON.stringify({ p_brand: cfg.brand, p_revision: number(revision), p_expected_revision: remoteRevision })
-      });
+      }, 'Командная база не подтвердила восстановление вовремя');
       var result = null;
       try { result = await response.json(); } catch (_) {}
       if (!response.ok) throw new Error(string(result && (result.message || result.details)) || 'Восстановление вернуло ' + response.status);
@@ -2606,6 +2656,7 @@
         workspaceAccessMessage: workspaceAccessMessage,
         remoteHistoryCount: remoteHistory.length,
         remoteAuditCount: remoteAudit.length,
+        remoteLoadError: remoteLoadError,
         syncConflictCount: syncConflicts.length,
         localBackupCount: localBackups.length,
         storageScope: storageScope()

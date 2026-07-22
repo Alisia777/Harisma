@@ -65,6 +65,9 @@ async function installRemoteFixture(page, accessLevel, workspace) {
         return new Response(JSON.stringify([{ revision: window.__designRemoteRevision, updated_at: '2026-07-20T12:01:00Z' }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       if (url.includes('/portal_design_workspaces')) {
+        if (window.__designFailWorkspace) {
+          return new Response(JSON.stringify({ message: 'temporary outage' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
+        }
         return new Response(JSON.stringify(window.__designRemoteWorkspace ? [{ payload: window.__designRemoteWorkspace, revision: window.__designRemoteRevision, updated_at: '2026-07-20T12:00:00Z' }] : []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -133,6 +136,37 @@ async function testViewer(browser, baseUrl) {
   assert.match(await page.locator('.design-ws-history-panel').allTextContents().then((items) => items.join(' ')), /Серверный аудит[\s\S]*designer@qeep\.life/, 'Viewer history must show immutable server actor data');
   assert.strictEqual((await page.evaluate(() => window.__designRequests)).some((item) => item.method === 'POST'), false, 'Viewer load must never write to Supabase');
   assert.strictEqual(errors.length, 0, errors.join('\n'));
+  await context.close();
+}
+
+async function testViewerKeepsCacheDuringRemoteFailure(browser, baseUrl) {
+  const context = await browser.newContext();
+  const workspace = {
+    schema: 'altea-design-workspace-v1', version: 1, updatedAt: '2026-07-20T12:00:00Z',
+    projects: [{ id: 'cached-viewer-project', title: 'Проект из последней синхронизации', status: 'review', type: 'card', priority: 'normal', updatedAt: '2026-07-20T12:00:00Z' }],
+    tests: [], pages: [], activity: [], settings: {}
+  };
+
+  const onlinePage = await context.newPage();
+  await onlinePage.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
+  await installRemoteFixture(onlinePage, 'viewer', workspace);
+  const onlineErrors = await loadModule(onlinePage, baseUrl);
+  await onlinePage.waitForSelector('[data-design-project="cached-viewer-project"]');
+  await onlinePage.evaluate(() => window.AlteaDesignWorkspace.whenLocalSaved());
+  assert.strictEqual(onlineErrors.length, 0, onlineErrors.join('\n'));
+  await onlinePage.close();
+
+  const offlinePage = await context.newPage();
+  await offlinePage.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
+  await installRemoteFixture(offlinePage, 'viewer', workspace);
+  await offlinePage.evaluate(() => { window.__designFailWorkspace = true; });
+  const offlineErrors = await loadModule(offlinePage, baseUrl);
+  await offlinePage.waitForSelector('[data-design-access="viewer"]');
+  await offlinePage.waitForSelector('[data-design-project="cached-viewer-project"]');
+  await offlinePage.waitForSelector('.design-ws-notice.is-error [data-design-sync]');
+  const diagnostics = await offlinePage.evaluate(() => window.AlteaDesignWorkspace.diagnostics());
+  assert.match(diagnostics.remoteLoadError, /503/, 'Remote failure must be reported in diagnostics');
+  assert.strictEqual(offlineErrors.length, 0, offlineErrors.join('\n'));
   await context.close();
 }
 
@@ -252,6 +286,7 @@ async function run() {
   try {
     await testLocalEditor(browser, baseUrl);
     await testViewer(browser, baseUrl);
+    await testViewerKeepsCacheDuringRemoteFailure(browser, baseUrl);
     await testRemoteEditor(browser, baseUrl);
     await testConcurrentConflict(browser, baseUrl);
     await testRevokedMember(browser, baseUrl);

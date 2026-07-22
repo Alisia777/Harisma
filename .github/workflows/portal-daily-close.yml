@@ -215,7 +215,7 @@ jobs:
           --output-file data/platform_trends.json
           --status-file data/retail_network_source_status.json
           --to '${{ steps.cutoff.outputs.value }}'
-          --strict --optional-source
+          --strict --optional-source --max-lag-days 1
 
       - name: Refresh advertising and stock
         env:

@@ -96,6 +96,21 @@ function addDays(dateKey, delta) {
   return date.toISOString().slice(0, 10);
 }
 
+function lagDays(latestDate, cutoffDate) {
+  const latest = isoDate(latestDate);
+  const cutoff = isoDate(cutoffDate);
+  if (!latest || !cutoff) return null;
+  const latestTime = Date.parse(`${latest}T00:00:00Z`);
+  const cutoffTime = Date.parse(`${cutoff}T00:00:00Z`);
+  if (!Number.isFinite(latestTime) || !Number.isFinite(cutoffTime)) return null;
+  return Math.max(0, Math.round((cutoffTime - latestTime) / 86400000));
+}
+
+function exceedsAllowedLag(latestDate, cutoffDate, maxLagDays = 0) {
+  const lag = lagDays(latestDate, cutoffDate);
+  return lag === null || lag > Math.max(0, Number(maxLagDays) || 0);
+}
+
 function moscowDateKey(offsetDays = 0, now = new Date()) {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit'
@@ -119,7 +134,8 @@ function resolveOptions(args) {
     to: isoDate(args.to) || moscowDateKey(-1),
     dryRun: Boolean(args['dry-run']),
     strict: Boolean(args.strict),
-    optionalSource: Boolean(args['optional-source'])
+    optionalSource: Boolean(args['optional-source']),
+    maxLagDays: Math.max(0, Math.trunc(numberOrZero(args['max-lag-days'])))
   };
 }
 
@@ -521,6 +537,7 @@ function updatePayload(basePayload, parsedPlatforms, options = {}) {
       status: aggregate.diagnostics.latestDate === options.to ? 'fresh' : 'lagging',
       firstDate: aggregate.diagnostics.firstDate,
       latestDate: aggregate.diagnostics.latestDate,
+      lagDays: lagDays(aggregate.diagnostics.latestDate, options.to),
       sourceRows: aggregate.diagnostics.sourceRows,
       duplicateRowsRemoved: aggregate.diagnostics.duplicateRowsRemoved,
       articleCount: aggregate.diagnostics.articleCount,
@@ -655,6 +672,7 @@ function buildPreservedSourceStatus(base, options, error) {
       label: PLATFORM_META[key].label,
       status: latestDate === options.to ? 'preserved' : (latestDate ? 'stale' : 'missing'),
       latestDate,
+      lagDays: lagDays(latestDate, options.to),
       note: 'Preserved from the committed finalized daily snapshot because the private Google Sheet could not be exported.'
     };
   }
@@ -668,6 +686,7 @@ function buildPreservedSourceStatus(base, options, error) {
     note: 'Samokat requires a private API endpoint and response schema; token is configured separately.'
   };
   const stale = TARGET_PLATFORMS.filter((key) => platforms[key].latestDate !== options.to);
+  const blocking = TARGET_PLATFORMS.filter((key) => exceedsAllowedLag(platforms[key].latestDate, options.to, options.maxLagDays));
   return {
     status: {
       schema: 'retail-network-source-status-v1',
@@ -678,7 +697,8 @@ function buildPreservedSourceStatus(base, options, error) {
       reason: error.message,
       platforms
     },
-    stale
+    stale,
+    blocking
   };
 }
 
@@ -700,8 +720,8 @@ async function main(argv = process.argv) {
     const status = preserved.status;
     if (!options.dryRun) writeJson(options.statusFile, status);
     console.log(JSON.stringify(status, null, 2));
-    if (options.strict && preserved.stale.length) {
-      throw new Error(`Private retail-network source is unavailable and the preserved facts are not current for ${options.to}: ${preserved.stale.map((key) => `${key}:${status.platforms[key].latestDate || 'empty'}`).join(', ')}`);
+    if (options.strict && preserved.blocking.length) {
+      throw new Error(`Private retail-network source is unavailable and the preserved facts exceed the allowed ${options.maxLagDays}-day lag for ${options.to}: ${preserved.blocking.map((key) => `${key}:${status.platforms[key].latestDate || 'empty'}`).join(', ')}`);
     }
     return;
   }
@@ -711,7 +731,8 @@ async function main(argv = process.argv) {
     const base = readJson(options.inputFile, { platforms: [] });
     const result = updatePayload(base, parsed, options);
     const stale = Object.values(result.status.platforms).filter((platform) => TARGET_PLATFORMS.includes(platform.key) && platform.status !== 'fresh');
-    if (options.strict && stale.length) throw new Error(`Retail-network sources are not fresh for ${options.to}: ${stale.map((item) => `${item.key}:${item.latestDate || 'empty'}`).join(', ')}`);
+    const blocking = stale.filter((platform) => exceedsAllowedLag(platform.latestDate, options.to, options.maxLagDays));
+    if (options.strict && blocking.length) throw new Error(`Retail-network sources exceed the allowed ${options.maxLagDays}-day lag for ${options.to}: ${blocking.map((item) => `${item.key}:${item.latestDate || 'empty'}`).join(', ')}`);
     if (!options.dryRun) {
       writeJson(options.outputFile, result.payload);
       writeJson(options.statusFile, result.status);
@@ -748,7 +769,9 @@ module.exports = {
   aggregatePlatform,
   buildPreservedSourceStatus,
   dedupeLatest,
+  exceedsAllowedLag,
   isoDate,
+  lagDays,
   letualBusinessDate,
   moscowDateKey,
   numberOrZero,

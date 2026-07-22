@@ -82,10 +82,18 @@ assert.deepStrictEqual(preservedCurrent.stale, [], 'Current committed finalized 
 assert.strictEqual(preservedCurrent.status.platforms.goldapple.status, 'preserved');
 const preservedStale = buildPreservedSourceStatus(
   updated.payload,
-  { inputFile: 'data/platform_trends.json', to: '2026-07-21' },
+  { inputFile: 'data/platform_trends.json', to: '2026-07-21', maxLagDays: 0 },
   new Error('service account unavailable')
 );
 assert.deepStrictEqual(preservedStale.stale, ['goldapple', 'letu', 'megamarket'], 'A later cutoff must not silently publish preserved stale retail facts');
+assert.deepStrictEqual(preservedStale.blocking, ['goldapple', 'letu', 'megamarket'], 'Zero lag tolerance must keep a D-1 mismatch blocking');
+const preservedWithinTolerance = buildPreservedSourceStatus(
+  updated.payload,
+  { inputFile: 'data/platform_trends.json', to: '2026-07-21', maxLagDays: 1 },
+  new Error('service account unavailable')
+);
+assert.deepStrictEqual(preservedWithinTolerance.stale, ['goldapple', 'letu', 'megamarket'], 'Lagging status must remain visible even when publication is tolerated');
+assert.deepStrictEqual(preservedWithinTolerance.blocking, [], 'A one-day source delay may be published when the workflow opts into one-day tolerance');
 
 assert.strictEqual(isoDate(46218), '2026-07-15');
 assert.strictEqual(numberOrZero('1 234,56'), 1234.56);

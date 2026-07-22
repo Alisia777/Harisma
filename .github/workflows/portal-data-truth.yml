@@ -77,6 +77,7 @@ jobs:
           node scripts/portal-runtime-snapshot-choice.selftest.js
           node scripts/portal-bootstrap-snapshot-choice.selftest.js
           node scripts/portal-designers-access-history.selftest.js
+          node scripts/portal-designers-permissions.selftest.js
           node scripts/portal-snapshot-refresh-hotfix.selftest.js
           node scripts/portal-dashboard-snapshot-source.selftest.js
           node scripts/portal-analytics-date-freshness.selftest.js

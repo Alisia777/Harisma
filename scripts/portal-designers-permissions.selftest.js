@@ -27,7 +27,7 @@ function portalRoleMatrix() {
   const rules = window.ALTEA_PORTAL_ACCESS_RULES;
   assert.ok(rules && rules.roles, 'Portal access rules must be available');
 
-  const roles = ['owner', 'director', 'product', 'designer', 'employee', 'guest', 'readonly'];
+  const roles = ['owner', 'director', 'marketplace', 'product', 'designer', 'operations', 'employee', 'guest', 'readonly'];
   return roles.map((role) => {
     const configured = rules.roles[role] && rules.roles[role].views;
     const views = configured === '*' ? rules.allViews : (Array.isArray(configured) ? configured : []);
@@ -139,11 +139,13 @@ async function run() {
   const expectedRoles = {
     owner: true,
     director: true,
+    marketplace: true,
     product: true,
     designer: true,
-    employee: false,
-    guest: false,
-    readonly: false
+    operations: true,
+    employee: true,
+    guest: true,
+    readonly: true
   };
   roles.forEach((row) => assert.strictEqual(row.tabVisible, expectedRoles[row.role], `Unexpected Designers visibility for ${row.role}`));
 

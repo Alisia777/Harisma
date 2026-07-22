@@ -1,0 +1,35 @@
+name: Designers membership sync
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'portal-auth-access.js'
+      - 'portal-auth-gate.js'
+      - 'docs/supabase_design_workspace_setup.sql'
+      - 'scripts/sync-design-workspace-memberships.js'
+      - '.github/workflows/portal-designers-membership-sync.yml'
+  schedule:
+    - cron: '35 4 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portal-designers-membership-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Grant workspace access to portal accounts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || secrets.ALTEA_SUPABASE_URL || vars.ALTEA_SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/sync-design-workspace-memberships.js

@@ -40,7 +40,7 @@
     'documents',
     'designers'
   ];
-  var SHARED_AUTHENTICATED_VIEWS = ['documents'];
+  var SHARED_AUTHENTICATED_VIEWS = ['documents', 'designers'];
   var FALLBACK_CONFIG = {
     brand: '\u0410\u043b\u0442\u0435\u044f',
     teamMode: 'supabase',

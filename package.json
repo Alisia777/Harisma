@@ -74,6 +74,7 @@
     "portal:wb-iu-logic-rules": "node scripts/build-wb-iu-logic-rules.js --report data/wb_fixed_rate_reports.json --output data/wb_iu_logic_rules.json",
     "portal:designers-access-history-test": "node scripts/portal-designers-access-history.selftest.js",
     "portal:designers-browser-test": "node scripts/portal-designers-browser.selftest.js",
+    "portal:designers-membership-sync-test": "node scripts/sync-design-workspace-memberships.selftest.js",
     "portal:designers-permissions-test": "node scripts/portal-designers-permissions.selftest.js",
     "portal:designers-ux-test": "node scripts/portal-designers-ux.selftest.js"
   },

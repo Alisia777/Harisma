@@ -54,11 +54,12 @@
     'wb-rating',
     'product-leaderboard',
     'meetings',
-    'documents'
+    'documents',
+    'designers'
   ];
 
   window.ALTEA_PORTAL_ACCESS_RULES = window.ALTEA_PORTAL_ACCESS_RULES || {
-    version: '2026-07-21-designers-roles-history-macos-https',
+    version: '2026-07-21-designers-all-authenticated',
     allViews: ALL_VIEWS,
 
     // Unknown authenticated users see only the dashboard until they are assigned below
@@ -72,7 +73,7 @@
         views: ['dashboard', 'executive', 'control', 'documents', 'sku-plan-fact', 'prices', 'order', 'product-leaderboard', 'iu-drr', 'wb-rating']
       },
       marketplace: {
-        views: ['dashboard', 'documents', 'sku-plan-fact', 'repricer', 'prices', 'order', 'oos-control', 'iu-drr', 'wb-rating']
+        views: ['dashboard', 'documents', 'designers', 'sku-plan-fact', 'repricer', 'prices', 'order', 'oos-control', 'iu-drr', 'wb-rating']
       },
       product: {
         views: ['dashboard', 'data-health', 'documents', 'designers', 'sku-contour', 'launches', 'product-leaderboard', 'wb-rating']
@@ -81,18 +82,17 @@
         views: ['dashboard', 'control', 'documents', 'designers', 'data-health', 'sku-contour', 'launches', 'product-leaderboard', 'wb-rating']
       },
       operations: {
-        views: ['dashboard', 'control', 'documents', 'order', 'oos-control', 'sku-plan-fact']
+        views: ['dashboard', 'control', 'documents', 'designers', 'order', 'oos-control', 'sku-plan-fact']
       },
       employee: {
         views: EMPLOYEE_VIEWS
       },
       guest: {
-        // Existing demo surfaces stay available, while restricted workspaces
-        // such as Designers are never inherited through owner/admin access.
+        // The shared Designers workspace is available in read-only mode after login.
         views: EMPLOYEE_VIEWS
       },
       readonly: {
-        views: ['dashboard']
+        views: ['dashboard', 'documents', 'designers']
       }
     },
 

@@ -1,0 +1,43 @@
+name: Designers tasks and onboarding
+
+on:
+  workflow_dispatch:
+    inputs:
+      send_invites:
+        description: Send invitation or password setup emails
+        required: true
+        type: boolean
+        default: true
+      import_tasks:
+        description: Import the current designer task snapshot
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portal-designers-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || secrets.ALTEA_SUPABASE_URL || vars.ALTEA_SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+      PORTAL_AUTH_REDIRECT_URL: https://харизмой.рф/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Send password setup invitations
+        if: ${{ inputs.send_invites == true }}
+        run: node scripts/provision-portal-designers.js
+      - name: Grant editor workspace memberships
+        run: node scripts/sync-design-workspace-memberships.js
+      - name: Import designer tasks
+        if: ${{ inputs.import_tasks == true }}
+        run: node scripts/import-design-tasks-to-workspace.js

@@ -13,6 +13,7 @@ on:
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
       - '.github/workflows/portal-designers-membership-sync.yml'
+      - '.github/workflows/portal-designers-bootstrap.yml'
   push:
     branches: [main]
     paths:
@@ -26,6 +27,7 @@ on:
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
       - '.github/workflows/portal-designers-membership-sync.yml'
+      - '.github/workflows/portal-designers-bootstrap.yml'
   schedule:
     - cron: '15 4 * * *'
   workflow_dispatch:
@@ -80,6 +82,9 @@ jobs:
           node scripts/portal-bootstrap-snapshot-choice.selftest.js
           node scripts/portal-designers-access-history.selftest.js
           node scripts/sync-design-workspace-memberships.selftest.js
+          node scripts/portal-auth-invite-browser.selftest.js
+          node scripts/provision-portal-designers.selftest.js
+          node scripts/import-design-tasks-to-workspace.selftest.js
           node scripts/portal-designers-permissions.selftest.js
           node scripts/portal-snapshot-refresh-hotfix.selftest.js
           node scripts/portal-dashboard-snapshot-source.selftest.js

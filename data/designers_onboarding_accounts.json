@@ -1,0 +1,15 @@
+{
+  "schema": "altea-portal-onboarding-v1",
+  "accounts": [
+    {
+      "email": "a.i.zaharova@qeep.life",
+      "name": "А. И. Захарова",
+      "role": "designer"
+    },
+    {
+      "email": "a.kolmogorova@qeep.life",
+      "name": "Анастасия Колмогорова",
+      "role": "designer"
+    }
+  ]
+}

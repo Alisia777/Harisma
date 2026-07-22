@@ -98,6 +98,8 @@
 
     users: {
       // Employees can see the portal workspace; exact tab sets can still be narrowed per user.
+      'a.i.zaharova@qeep.life': { role: 'designer', name: '\u0410. \u0418. \u0417\u0430\u0445\u0430\u0440\u043e\u0432\u0430' },
+      'a.kolmogorova@qeep.life': { role: 'designer', name: '\u0410\u043d\u0430\u0441\u0442\u0430\u0441\u0438\u044f \u041a\u043e\u043b\u043c\u043e\u0433\u043e\u0440\u043e\u0432\u0430' },
       'm.v.pekhova@qeep.life': { role: 'employee', name: '\u041c\u0430\u0440\u0438\u044f \u041f\u0435\u0445\u043e\u0432\u0430' },
       'm.a.vasilyeva@qeep.life': { role: 'employee' },
       'm.a.lapygin@qeep.life': { role: 'employee' },

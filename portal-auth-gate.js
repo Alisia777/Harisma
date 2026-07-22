@@ -64,6 +64,11 @@
   var accessObserverStarted = false;
   var pendingMfaChallenge = null;
   var loginFlowActive = false;
+  var passwordSetupFlow = (function () {
+    var hash = String((window.location && window.location.hash) || '');
+    var match = /(?:^|[&#])type=(invite|recovery)(?:&|$)/i.exec(hash);
+    return match ? String(match[1]).toLowerCase() : '';
+  }());
 
   function assign(target) {
     var output = target || {};
@@ -815,9 +820,11 @@
     cardTop.appendChild(createLogo('portal-auth-card-logo', 'black', '\u0410\u043b\u0442\u0435\u044f'));
     append(cardTop, 'span', 'portal-auth-private-tag', 'PRIVATE ACCESS');
     append(card, 'div', 'portal-auth-welcome-kicker', '\u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c');
-    var title = append(card, 'h2', 'portal-auth-title', '\u0412\u0445\u043e\u0434 \u0432 \u043f\u043e\u0440\u0442\u0430\u043b');
+    var title = append(card, 'h2', 'portal-auth-title', passwordSetupFlow ? '\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u043f\u0430\u0440\u043e\u043b\u044c' : '\u0412\u0445\u043e\u0434 \u0432 \u043f\u043e\u0440\u0442\u0430\u043b');
     title.id = 'portalAuthTitle';
-    append(card, 'p', 'portal-auth-card-copy', '\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0439\u0442\u0435 \u043a\u043e\u0440\u043f\u043e\u0440\u0430\u0442\u0438\u0432\u043d\u044b\u0435 \u0434\u0430\u043d\u043d\u044b\u0435 \u0434\u043b\u044f \u0432\u0445\u043e\u0434\u0430 \u0432 \u0440\u0430\u0431\u043e\u0447\u0435\u0435 \u043f\u0440\u043e\u0441\u0442\u0440\u0430\u043d\u0441\u0442\u0432\u043e.');
+    append(card, 'p', 'portal-auth-card-copy', passwordSetupFlow
+      ? '\u041f\u0440\u0438\u0434\u0443\u043c\u0430\u0439\u0442\u0435 \u043d\u0430\u0434\u0451\u0436\u043d\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c \u0434\u043b\u044f \u0432\u0445\u043e\u0434\u0430 \u0432 \u043f\u043e\u0440\u0442\u0430\u043b. \u041c\u0438\u043d\u0438\u043c\u0443\u043c 12 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432.'
+      : '\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0439\u0442\u0435 \u043a\u043e\u0440\u043f\u043e\u0440\u0430\u0442\u0438\u0432\u043d\u044b\u0435 \u0434\u0430\u043d\u043d\u044b\u0435 \u0434\u043b\u044f \u0432\u0445\u043e\u0434\u0430 \u0432 \u0440\u0430\u0431\u043e\u0447\u0435\u0435 \u043f\u0440\u043e\u0441\u0442\u0440\u0430\u043d\u0441\u0442\u0432\u043e.');
 
     var form = append(card, 'form', 'portal-auth-form');
     form.id = 'portalAuthForm';
@@ -831,11 +838,24 @@
     var passwordField = buildField(form, 'portalAuthPassword', 'password', 'password', 'current-password', '\u041f\u0430\u0440\u043e\u043b\u044c', '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043f\u0430\u0440\u043e\u043b\u044c', '');
     var passwordInput = passwordField.input;
     passwordInput.maxLength = MAX_PASSWORD_LENGTH;
+    if (passwordSetupFlow) {
+      emailField.field.hidden = true;
+      emailInput.required = false;
+      passwordField.field.querySelector('label').textContent = '\u041d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c';
+      passwordInput.autocomplete = 'new-password';
+      passwordInput.placeholder = '\u041c\u0438\u043d\u0438\u043c\u0443\u043c 12 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432';
+    }
     var toggle = append(passwordField.shell, 'button', 'portal-auth-eye');
     toggle.id = 'portalAuthTogglePassword';
     toggle.type = 'button';
     toggle.setAttribute('aria-label', '\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u043f\u0430\u0440\u043e\u043b\u044c');
     toggle.innerHTML = iconMarkup('eye');
+
+    var confirmField = buildField(form, 'portalAuthPasswordConfirm', 'passwordConfirm', 'password', 'new-password', '\u041f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435 \u043f\u0430\u0440\u043e\u043b\u044c', '\u0415\u0449\u0451 \u0440\u0430\u0437 \u0442\u043e\u0442 \u0436\u0435 \u043f\u0430\u0440\u043e\u043b\u044c', '');
+    var confirmInput = confirmField.input;
+    confirmInput.maxLength = MAX_PASSWORD_LENGTH;
+    confirmField.field.hidden = !passwordSetupFlow;
+    confirmInput.required = !!passwordSetupFlow;
 
     var mfaField = buildField(form, 'portalAuthMfaCode', 'mfaCode', 'text', 'one-time-code', '\u041a\u043e\u0434 2FA', '000000', '');
     var mfaInput = mfaField.input;
@@ -857,6 +877,7 @@
     form.appendChild(honey);
 
     var options = append(form, 'div', 'portal-auth-options');
+    if (passwordSetupFlow) options.hidden = true;
     var remember = append(options, 'label', 'portal-auth-remember');
     var rememberInput = document.createElement('input');
     rememberInput.type = 'checkbox';
@@ -870,19 +891,23 @@
     var submit = append(form, 'button', 'portal-auth-submit');
     submit.id = 'portalAuthSubmit';
     submit.type = 'submit';
-    append(submit, 'span', '', '\u0412\u043e\u0439\u0442\u0438 \u0432 \u043f\u043e\u0440\u0442\u0430\u043b');
+    append(submit, 'span', '', passwordSetupFlow ? '\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u043f\u0430\u0440\u043e\u043b\u044c' : '\u0412\u043e\u0439\u0442\u0438 \u0432 \u043f\u043e\u0440\u0442\u0430\u043b');
     appendIcon(submit, 'portal-auth-submit-icon', 'arrow');
 
-    var status = append(form, 'div', 'portal-auth-status', DEFAULT_STATUS);
+    var status = append(form, 'div', 'portal-auth-status', passwordSetupFlow
+      ? '\u041f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c \u0437\u0430\u0449\u0438\u0449\u0451\u043d\u043d\u0443\u044e \u0441\u0441\u044b\u043b\u043a\u0443 \u0438\u0437 \u043f\u0438\u0441\u044c\u043c\u0430...'
+      : DEFAULT_STATUS);
     status.id = 'portalAuthStatus';
     status.setAttribute('role', 'status');
     status.setAttribute('aria-live', 'polite');
 
-    append(form, 'div', 'portal-auth-divider', '\u0438\u043b\u0438');
+    var divider = append(form, 'div', 'portal-auth-divider', '\u0438\u043b\u0438');
+    if (passwordSetupFlow) divider.hidden = true;
     var sso = append(form, 'button', 'portal-auth-sso', '\u041a\u043e\u0440\u043f\u043e\u0440\u0430\u0442\u0438\u0432\u043d\u044b\u0439 \u0432\u0445\u043e\u0434 SSO');
     sso.type = 'button';
     sso.disabled = true;
     sso.setAttribute('aria-disabled', 'true');
+    if (passwordSetupFlow) sso.hidden = true;
 
     var cardBottom = append(card, 'div', 'portal-auth-card-bottom');
     var secure = append(cardBottom, 'span', 'portal-auth-secure');
@@ -890,10 +915,10 @@
     append(secure, 'span', '', '\u0417\u0430\u0449\u0438\u0449\u0435\u043d\u043d\u043e\u0435 \u0441\u043e\u0435\u0434\u0438\u043d\u0435\u043d\u0438\u0435');
     append(cardBottom, 'span', 'portal-auth-powered', 'QHARISMA WORKSPACE');
 
-    form.addEventListener('submit', handleLogin);
+    form.addEventListener('submit', passwordSetupFlow ? handlePasswordSetup : handleLogin);
     initPasswordToggle(passwordInput);
     initLuxuryMotion(screen);
-    window.setTimeout(function () { emailInput.focus(); }, 80);
+    window.setTimeout(function () { (passwordSetupFlow ? passwordInput : emailInput).focus(); }, 80);
     return screen;
   }
 
@@ -1453,6 +1478,84 @@
     }
   }
 
+  function isStrongNewPassword(password) {
+    var groups = 0;
+    if (/[a-z\u0430-\u044f\u0451]/.test(password)) groups += 1;
+    if (/[A-Z\u0410-\u042f\u0401]/.test(password)) groups += 1;
+    if (/[0-9]/.test(password)) groups += 1;
+    if (/[^A-Za-z\u0410-\u042f\u0430-\u044f\u0401\u04510-9]/.test(password)) groups += 1;
+    return password.length >= 12 && password.length <= MAX_PASSWORD_LENGTH && groups >= 3 && !hasControlChars(password);
+  }
+
+  function handlePasswordSetup(event) {
+    var form = event.currentTarget;
+    var passwordInput = form.elements.password;
+    var confirmInput = form.elements.passwordConfirm;
+    var password = String((passwordInput && passwordInput.value) || '');
+    var confirmation = String((confirmInput && confirmInput.value) || '');
+    var completedSession = null;
+
+    event.preventDefault();
+    if (!passwordSetupFlow) return;
+    if (!isStrongNewPassword(password)) {
+      setStatus('\u041f\u0430\u0440\u043e\u043b\u044c: \u043c\u0438\u043d\u0438\u043c\u0443\u043c 12 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432 \u0438 \u043d\u0435 \u043c\u0435\u043d\u0435\u0435 \u0442\u0440\u0451\u0445 \u0442\u0438\u043f\u043e\u0432: \u0441\u0442\u0440\u043e\u0447\u043d\u044b\u0435, \u0437\u0430\u0433\u043b\u0430\u0432\u043d\u044b\u0435, \u0446\u0438\u0444\u0440\u044b, \u0437\u043d\u0430\u043a\u0438.', 'danger');
+      return;
+    }
+    if (password !== confirmation) {
+      setStatus('\u041f\u0430\u0440\u043e\u043b\u0438 \u043d\u0435 \u0441\u043e\u0432\u043f\u0430\u0434\u0430\u044e\u0442. \u041f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435 \u0432\u0432\u043e\u0434.', 'danger');
+      return;
+    }
+
+    lockSubmit(true);
+    setStatus('\u0421\u043e\u0445\u0440\u0430\u043d\u044f\u0435\u043c \u043f\u0430\u0440\u043e\u043b\u044c...', '');
+    getClient()
+      .then(function (authClient) {
+        return authClient.auth.getSession().then(function (result) {
+          var session = result && result.data && result.data.session;
+          if (!session || !session.access_token) throw new Error('invite-session-missing');
+          applySession(session);
+          return withTimeout(
+            authClient.auth.updateUser({ password: password }),
+            LOGIN_REQUEST_TIMEOUT_MS,
+            'password-timeout'
+          );
+        }).then(function (result) {
+          if (result && result.error) throw new Error(result.error.message || 'password-update-failed');
+          return authClient.auth.getSession();
+        });
+      })
+      .then(function (result) {
+        completedSession = result && result.data && result.data.session;
+        if (!completedSession || !completedSession.access_token) throw new Error('password-session-missing');
+        if (!resolveAccessForSession(completedSession).allowedViews.length) throw new Error('access-denied');
+        passwordSetupFlow = '';
+        try {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search + '#designers');
+        } catch (_) {}
+        if (passwordInput) passwordInput.value = '';
+        if (confirmInput) confirmInput.value = '';
+        setStatus('\u041f\u0430\u0440\u043e\u043b\u044c \u0441\u043e\u0437\u0434\u0430\u043d. \u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u043c \u0440\u0430\u0437\u0434\u0435\u043b \u00ab\u0414\u0438\u0437\u0430\u0439\u043d\u0435\u0440\u044b\u00bb...', 'ok');
+        emitSecurityAudit('password_setup_completed', {
+          outcome: 'ok',
+          severity: 'info',
+          actorEmail: normalizeEmail(completedSession.user && completedSession.user.email),
+          targetType: 'portal',
+          targetName: 'auth-gate',
+          metadata: { method: 'invite_or_recovery' }
+        });
+        resolveAuth(completedSession);
+      })
+      .catch(function (error) {
+        if (window.console && window.console.warn) window.console.warn('[portal-auth] password setup failed');
+        setStatus(error && error.message === 'invite-session-missing'
+          ? '\u0421\u0441\u044b\u043b\u043a\u0430 \u0443\u0441\u0442\u0430\u0440\u0435\u043b\u0430 \u0438\u043b\u0438 \u0443\u0436\u0435 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u043d\u0430. \u0417\u0430\u043f\u0440\u043e\u0441\u0438\u0442\u0435 \u0443 \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440\u0430 \u043d\u043e\u0432\u043e\u0435 \u043f\u0438\u0441\u044c\u043c\u043e.'
+          : (error && error.message === 'access-denied'
+            ? ACCESS_DENIED_ERROR
+            : '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u043f\u0430\u0440\u043e\u043b\u044c. \u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u0441\u0435\u0442\u044c \u0438 \u043f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435.'), 'danger');
+        lockSubmit(false);
+      });
+  }
+
   function handleLogin(event) {
     var form;
     var submit;
@@ -1655,7 +1758,12 @@
     if (authListenerReady || !authClient || !authClient.auth || !authClient.auth.onAuthStateChange) return;
     authListenerReady = true;
     authClient.auth.onAuthStateChange(function (event, session) {
-      if (event === 'SIGNED_IN' && session && session.access_token) {
+      if ((event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') && session && session.access_token) {
+        if (passwordSetupFlow) {
+          applySession(session);
+          setStatus('\u041f\u0440\u0438\u0434\u0443\u043c\u0430\u0439\u0442\u0435 \u0438 \u0434\u0432\u0430\u0436\u0434\u044b \u0432\u0432\u0435\u0434\u0438\u0442\u0435 \u043d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c.', '');
+          return;
+        }
         if (loginFlowActive || pendingMfaChallenge) {
           applySession(session);
           return;
@@ -1743,6 +1851,11 @@
               });
               setStatus(ACCESS_DENIED_ERROR, 'danger');
               return authClient.auth.signOut().catch(function () {});
+            }
+            if (passwordSetupFlow) {
+              applySession(session);
+              setStatus('\u041f\u0440\u0438\u0434\u0443\u043c\u0430\u0439\u0442\u0435 \u0438 \u0434\u0432\u0430\u0436\u0434\u044b \u0432\u0432\u0435\u0434\u0438\u0442\u0435 \u043d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c.', '');
+              return;
             }
             emitSecurityAudit('session_restored', {
               outcome: 'ok',

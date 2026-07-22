@@ -75,6 +75,9 @@
     "portal:designers-access-history-test": "node scripts/portal-designers-access-history.selftest.js",
     "portal:designers-browser-test": "node scripts/portal-designers-browser.selftest.js",
     "portal:designers-membership-sync-test": "node scripts/sync-design-workspace-memberships.selftest.js",
+    "portal:designers-invite-browser-test": "node scripts/portal-auth-invite-browser.selftest.js",
+    "portal:designers-onboarding-test": "node scripts/provision-portal-designers.selftest.js",
+    "portal:designers-task-import-test": "node scripts/import-design-tasks-to-workspace.selftest.js",
     "portal:designers-permissions-test": "node scripts/portal-designers-permissions.selftest.js",
     "portal:designers-ux-test": "node scripts/portal-designers-ux.selftest.js"
   },

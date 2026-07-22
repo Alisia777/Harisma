@@ -73,7 +73,7 @@
         views: ['dashboard', 'executive', 'control', 'documents', 'sku-plan-fact', 'prices', 'order', 'product-leaderboard', 'iu-drr', 'wb-rating']
       },
       marketplace: {
-        views: ['dashboard', 'documents', 'designers', 'sku-plan-fact', 'repricer', 'prices', 'order', 'oos-control', 'iu-drr', 'wb-rating']
+        views: ['dashboard', 'documents', 'sku-plan-fact', 'repricer', 'prices', 'order', 'oos-control', 'iu-drr', 'wb-rating']
       },
       product: {
         views: ['dashboard', 'data-health', 'documents', 'designers', 'sku-contour', 'launches', 'product-leaderboard', 'wb-rating']
@@ -138,4 +138,8 @@
     ? window.ALTEA_PORTAL_ACCESS_RULES.roles.director.views
     : null;
   if (Array.isArray(directorViews) && directorViews.indexOf('designers') === -1) directorViews.splice(4, 0, 'designers');
+  var marketplaceViews = window.ALTEA_PORTAL_ACCESS_RULES.roles && window.ALTEA_PORTAL_ACCESS_RULES.roles.marketplace
+    ? window.ALTEA_PORTAL_ACCESS_RULES.roles.marketplace.views
+    : null;
+  if (Array.isArray(marketplaceViews) && marketplaceViews.indexOf('designers') === -1) marketplaceViews.splice(2, 0, 'designers');
 })();

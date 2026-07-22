@@ -1,11 +1,10 @@
 Portal sync health: warning
-Generated: 2026-07-17T09:53:09.964Z
+Generated: 2026-07-22T20:20:03.192Z
 Publish allowed: yes
-Max data date: 2026-07-16
+Max data date: 2026-07-21
 
 Blocking reasons:
 - none
 
 Warnings:
-- Non-blocking sync step failed: Yandex Market analytics refresh: [ym] /v2/reports/shows-sales/generate hit rate limit (HTTP 420). Waiting 390 sec before retry 2/3..
-- Non-blocking sync step failed: product leaderboard sync: exit code 1.
+- Unmapped API SKU revenue: 287158.

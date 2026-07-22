@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-21T09:37:08.088Z",
-  "asOfDate": "2026-07-20",
+  "generatedAt": "2026-07-22T07:32:50.289Z",
+  "asOfDate": "2026-07-21",
   "sourceFile": "smart-price-workbook.xlsx",
   "platforms": {
     "ozon": {
@@ -62,9 +62,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1570,
           "workingZoneTo": 2192,
-          "marginPct": 0.732526,
-          "marginTotalPct": 0.732526,
-          "estimatedMarginPct": 0.732526,
+          "marginPct": 0.739385,
+          "marginTotalPct": 0.739385,
+          "estimatedMarginPct": 0.739385,
           "marginSource": "prices.json"
         },
         {
@@ -546,9 +546,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 340,
           "workingZoneTo": 388,
-          "marginPct": 0.76881,
-          "marginTotalPct": 0.76881,
-          "estimatedMarginPct": 0.76881,
+          "marginPct": 0.518998,
+          "marginTotalPct": 0.518998,
+          "estimatedMarginPct": 0.518998,
           "marginSource": "prices.json"
         },
         {
@@ -838,9 +838,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 298,
           "workingZoneTo": 340,
-          "marginPct": 0.829479,
-          "marginTotalPct": 0.829479,
-          "estimatedMarginPct": 0.829479,
+          "marginPct": 0.321501,
+          "marginTotalPct": 0.321501,
+          "estimatedMarginPct": 0.321501,
           "marginSource": "prices.json"
         },
         {
@@ -980,9 +980,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1052,
           "workingZoneTo": 1467,
-          "marginPct": 0.892631,
-          "marginTotalPct": 0.892631,
-          "estimatedMarginPct": 0.892631,
+          "marginPct": 0.412362,
+          "marginTotalPct": 0.412362,
+          "estimatedMarginPct": 0.412362,
           "marginSource": "prices.json"
         },
         {
@@ -1210,9 +1210,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 893,
           "workingZoneTo": 1021,
-          "marginPct": 0.866351,
-          "marginTotalPct": 0.866351,
-          "estimatedMarginPct": 0.866351,
+          "marginPct": 0.469661,
+          "marginTotalPct": 0.469661,
+          "estimatedMarginPct": 0.469661,
           "marginSource": "prices.json"
         },
         {
@@ -1868,9 +1868,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 517,
           "workingZoneTo": 590,
-          "marginPct": 0.842476,
-          "marginTotalPct": 0.842476,
-          "estimatedMarginPct": 0.842476,
+          "marginPct": 0.609524,
+          "marginTotalPct": 0.609524,
+          "estimatedMarginPct": 0.609524,
           "marginSource": "prices.json"
         },
         {
@@ -2122,9 +2122,9 @@
           "currentTurnoverDays": 1119.5116,
           "workingZoneFrom": 1392,
           "workingZoneTo": 1518,
-          "marginPct": 0.817702,
-          "marginTotalPct": 0.817702,
-          "estimatedMarginPct": 0.817702,
+          "marginPct": 0.695053,
+          "marginTotalPct": 0.695053,
+          "estimatedMarginPct": 0.695053,
           "marginSource": "prices.json"
         },
         {
@@ -2216,9 +2216,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 305,
           "workingZoneTo": 348,
-          "marginPct": 0.869173,
-          "marginTotalPct": 0.869173,
-          "estimatedMarginPct": 0.869173,
+          "marginPct": 0.703072,
+          "marginTotalPct": 0.703072,
+          "estimatedMarginPct": 0.703072,
           "marginSource": "prices.json"
         },
         {
@@ -2470,9 +2470,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 788,
           "workingZoneTo": 900,
-          "marginPct": 0.834559,
-          "marginTotalPct": 0.834559,
-          "estimatedMarginPct": 0.834559,
+          "marginPct": 0.456563,
+          "marginTotalPct": 0.456563,
+          "estimatedMarginPct": 0.456563,
           "marginSource": "prices.json"
         },
         {
@@ -2700,9 +2700,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 409,
           "workingZoneTo": 468,
-          "marginPct": 0.847799,
-          "marginTotalPct": 0.847799,
-          "estimatedMarginPct": 0.847799,
+          "marginPct": 0.773567,
+          "marginTotalPct": 0.773567,
+          "estimatedMarginPct": 0.773567,
           "marginSource": "prices.json"
         },
         {
@@ -2954,9 +2954,9 @@
           "currentTurnoverDays": 48.3875,
           "workingZoneFrom": 712,
           "workingZoneTo": 777,
-          "marginPct": 0.91297,
-          "marginTotalPct": 0.91297,
-          "estimatedMarginPct": 0.91297,
+          "marginPct": 0.894246,
+          "marginTotalPct": 0.894246,
+          "estimatedMarginPct": 0.894246,
           "marginSource": "prices.json"
         },
         {
@@ -3200,9 +3200,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 335,
           "workingZoneTo": 383,
-          "marginPct": 0.808196,
-          "marginTotalPct": 0.808196,
-          "estimatedMarginPct": 0.808196,
+          "marginPct": 0.593053,
+          "marginTotalPct": 0.593053,
+          "estimatedMarginPct": 0.593053,
           "marginSource": "prices.json"
         },
         {
@@ -3446,9 +3446,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 630,
           "workingZoneTo": 720,
-          "marginPct": 0.818365,
-          "marginTotalPct": 0.818365,
-          "estimatedMarginPct": 0.818365,
+          "marginPct": 0.385321,
+          "marginTotalPct": 0.385321,
+          "estimatedMarginPct": 0.385321,
           "marginSource": "prices.json"
         },
         {
@@ -3700,9 +3700,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 409,
           "workingZoneTo": 467,
-          "marginPct": 0.908431,
-          "marginTotalPct": 0.908431,
-          "estimatedMarginPct": 0.908431,
+          "marginPct": 0.722562,
+          "marginTotalPct": 0.722562,
+          "estimatedMarginPct": 0.722562,
           "marginSource": "prices.json"
         },
         {
@@ -3954,9 +3954,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1442,
           "workingZoneTo": 2014,
-          "marginPct": 0.817721,
-          "marginTotalPct": 0.817721,
-          "estimatedMarginPct": 0.817721,
+          "marginPct": 0.540957,
+          "marginTotalPct": 0.540957,
+          "estimatedMarginPct": 0.540957,
           "marginSource": "prices.json"
         },
         {
@@ -4040,9 +4040,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 615,
           "workingZoneTo": 859,
-          "marginPct": 0.933633,
-          "marginTotalPct": 0.933633,
-          "estimatedMarginPct": 0.933633,
+          "marginPct": 0.734179,
+          "marginTotalPct": 0.734179,
+          "estimatedMarginPct": 0.734179,
           "marginSource": "prices.json"
         },
         {
@@ -4294,9 +4294,9 @@
           "currentTurnoverDays": 714.3111,
           "workingZoneFrom": 994,
           "workingZoneTo": 1084,
-          "marginPct": 0.815821,
-          "marginTotalPct": 0.815821,
-          "estimatedMarginPct": 0.815821,
+          "marginPct": 0.803841,
+          "marginTotalPct": 0.803841,
+          "estimatedMarginPct": 0.803841,
           "marginSource": "prices.json"
         },
         {
@@ -4548,9 +4548,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 421,
           "workingZoneTo": 482,
-          "marginPct": 0.827986,
-          "marginTotalPct": 0.827986,
-          "estimatedMarginPct": 0.827986,
+          "marginPct": 0.476933,
+          "marginTotalPct": 0.476933,
+          "estimatedMarginPct": 0.476933,
           "marginSource": "prices.json"
         },
         {
@@ -4802,9 +4802,9 @@
           "currentTurnoverDays": 449.75,
           "workingZoneFrom": 657,
           "workingZoneTo": 716,
-          "marginPct": 0.900831,
-          "marginTotalPct": 0.900831,
-          "estimatedMarginPct": 0.900831,
+          "marginPct": 0.852593,
+          "marginTotalPct": 0.852593,
+          "estimatedMarginPct": 0.852593,
           "marginSource": "prices.json"
         },
         {
@@ -5048,9 +5048,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 432,
           "workingZoneTo": 494,
-          "marginPct": 0.841004,
-          "marginTotalPct": 0.841004,
-          "estimatedMarginPct": 0.841004,
+          "marginPct": 0.759454,
+          "marginTotalPct": 0.759454,
+          "estimatedMarginPct": 0.759454,
           "marginSource": "prices.json"
         },
         {
@@ -5238,9 +5238,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 330,
           "workingZoneTo": 377,
-          "marginPct": 0.895322,
-          "marginTotalPct": 0.895322,
-          "estimatedMarginPct": 0.895322,
+          "marginPct": 0.737577,
+          "marginTotalPct": 0.737577,
+          "estimatedMarginPct": 0.737577,
           "marginSource": "prices.json"
         },
         {
@@ -5420,9 +5420,9 @@
           "currentTurnoverDays": 211.5135,
           "workingZoneFrom": 1325,
           "workingZoneTo": 1849,
-          "marginPct": 0.753007,
-          "marginTotalPct": 0.753007,
-          "estimatedMarginPct": 0.753007,
+          "marginPct": 0.709499,
+          "marginTotalPct": 0.709499,
+          "estimatedMarginPct": 0.709499,
           "marginSource": "prices.json"
         },
         {
@@ -5666,9 +5666,9 @@
           "currentTurnoverDays": 675.2308,
           "workingZoneFrom": 840,
           "workingZoneTo": 916,
-          "marginPct": 0.693394,
-          "marginTotalPct": 0.693394,
-          "estimatedMarginPct": 0.693394,
+          "marginPct": 0.57468,
+          "marginTotalPct": 0.57468,
+          "estimatedMarginPct": 0.57468,
           "marginSource": "prices.json"
         },
         {
@@ -5920,9 +5920,9 @@
           "currentTurnoverDays": 20.0424,
           "workingZoneFrom": 433,
           "workingZoneTo": 472,
-          "marginPct": 0.907009,
-          "marginTotalPct": 0.907009,
-          "estimatedMarginPct": 0.907009,
+          "marginPct": 0.945745,
+          "marginTotalPct": 0.945745,
+          "estimatedMarginPct": 0.945745,
           "marginSource": "prices.json"
         },
         {
@@ -6150,9 +6150,9 @@
           "currentTurnoverDays": 432.3333,
           "workingZoneFrom": 403,
           "workingZoneTo": 440,
-          "marginPct": 0.90609,
-          "marginTotalPct": 0.90609,
-          "estimatedMarginPct": 0.90609,
+          "marginPct": 0.898966,
+          "marginTotalPct": 0.898966,
+          "estimatedMarginPct": 0.898966,
           "marginSource": "prices.json"
         },
         {
@@ -6404,9 +6404,9 @@
           "currentTurnoverDays": 269.8407,
           "workingZoneFrom": 691,
           "workingZoneTo": 754,
-          "marginPct": 0.880305,
-          "marginTotalPct": 0.880305,
-          "estimatedMarginPct": 0.880305,
+          "marginPct": 0.824224,
+          "marginTotalPct": 0.824224,
+          "estimatedMarginPct": 0.824224,
           "marginSource": "prices.json"
         },
         {
@@ -6642,9 +6642,9 @@
           "currentTurnoverDays": 107.3734,
           "workingZoneFrom": 433,
           "workingZoneTo": 473,
-          "marginPct": 0.878846,
-          "marginTotalPct": 0.878846,
-          "estimatedMarginPct": 0.878846,
+          "marginPct": 0.820205,
+          "marginTotalPct": 0.820205,
+          "estimatedMarginPct": 0.820205,
           "marginSource": "prices.json"
         },
         {
@@ -6896,9 +6896,9 @@
           "currentTurnoverDays": 946.0606,
           "workingZoneFrom": 643,
           "workingZoneTo": 702,
-          "marginPct": 0.887341,
-          "marginTotalPct": 0.887341,
-          "estimatedMarginPct": 0.887341,
+          "marginPct": 0.839808,
+          "marginTotalPct": 0.839808,
+          "estimatedMarginPct": 0.839808,
           "marginSource": "prices.json"
         },
         {
@@ -7094,9 +7094,9 @@
           "currentTurnoverDays": 943.1935,
           "workingZoneFrom": 628,
           "workingZoneTo": 685,
-          "marginPct": 0.874505,
-          "marginTotalPct": 0.874505,
-          "estimatedMarginPct": 0.874505,
+          "marginPct": 0.78694,
+          "marginTotalPct": 0.78694,
+          "estimatedMarginPct": 0.78694,
           "marginSource": "prices.json"
         },
         {
@@ -7348,9 +7348,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 344,
           "workingZoneTo": 393,
-          "marginPct": 0.866163,
-          "marginTotalPct": 0.866163,
-          "estimatedMarginPct": 0.866163,
+          "marginPct": 0.477373,
+          "marginTotalPct": 0.477373,
+          "estimatedMarginPct": 0.477373,
           "marginSource": "prices.json"
         },
         {
@@ -7586,9 +7586,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 417,
           "workingZoneTo": 477,
-          "marginPct": 0.804541,
-          "marginTotalPct": 0.804541,
-          "estimatedMarginPct": 0.804541,
+          "marginPct": 0.647249,
+          "marginTotalPct": 0.647249,
+          "estimatedMarginPct": 0.647249,
           "marginSource": "prices.json"
         },
         {
@@ -7816,9 +7816,9 @@
           "currentTurnoverDays": 733.8333,
           "workingZoneFrom": 840,
           "workingZoneTo": 916,
-          "marginPct": 0.81606,
-          "marginTotalPct": 0.81606,
-          "estimatedMarginPct": 0.81606,
+          "marginPct": 0.473552,
+          "marginTotalPct": 0.473552,
+          "estimatedMarginPct": 0.473552,
           "marginSource": "prices.json"
         },
         {
@@ -8070,9 +8070,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 270,
           "workingZoneTo": 308,
-          "marginPct": 0.923,
-          "marginTotalPct": 0.923,
-          "estimatedMarginPct": 0.923,
+          "marginPct": 0.692,
+          "marginTotalPct": 0.692,
+          "estimatedMarginPct": 0.692,
           "marginSource": "prices.json"
         },
         {
@@ -8324,9 +8324,9 @@
           "currentTurnoverDays": 485.1757,
           "workingZoneFrom": 1540,
           "workingZoneTo": 1680,
-          "marginPct": 0.756522,
-          "marginTotalPct": 0.756522,
-          "estimatedMarginPct": 0.756522,
+          "marginPct": 0.669396,
+          "marginTotalPct": 0.669396,
+          "estimatedMarginPct": 0.669396,
           "marginSource": "prices.json"
         },
         {
@@ -8578,9 +8578,9 @@
           "currentTurnoverDays": 1254.8846,
           "workingZoneFrom": 1080,
           "workingZoneTo": 1178,
-          "marginPct": 0.836239,
-          "marginTotalPct": 0.836239,
-          "estimatedMarginPct": 0.836239,
+          "marginPct": 0.725827,
+          "marginTotalPct": 0.725827,
+          "estimatedMarginPct": 0.725827,
           "marginSource": "prices.json"
         },
         {
@@ -8832,9 +8832,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 502,
           "workingZoneTo": 573,
-          "marginPct": 0.857768,
-          "marginTotalPct": 0.857768,
-          "estimatedMarginPct": 0.857768,
+          "marginPct": 0.357945,
+          "marginTotalPct": 0.357945,
+          "estimatedMarginPct": 0.357945,
           "marginSource": "prices.json"
         },
         {
@@ -9276,9 +9276,9 @@
           "currentTurnoverDays": 359.486,
           "workingZoneFrom": 906,
           "workingZoneTo": 988,
-          "marginPct": 0.860904,
-          "marginTotalPct": 0.860904,
-          "estimatedMarginPct": 0.860904,
+          "marginPct": 0.786809,
+          "marginTotalPct": 0.786809,
+          "estimatedMarginPct": 0.786809,
           "marginSource": "prices.json"
         },
         {
@@ -9458,9 +9458,9 @@
           "currentTurnoverDays": 604.5455,
           "workingZoneFrom": 577,
           "workingZoneTo": 629,
-          "marginPct": 0.90287,
-          "marginTotalPct": 0.90287,
-          "estimatedMarginPct": 0.90287,
+          "marginPct": 0.825167,
+          "marginTotalPct": 0.825167,
+          "estimatedMarginPct": 0.825167,
           "marginSource": "prices.json"
         },
         {
@@ -9600,9 +9600,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1279,
           "workingZoneTo": 1784,
-          "marginPct": 0.85559,
-          "marginTotalPct": 0.85559,
-          "estimatedMarginPct": 0.85559,
+          "marginPct": 0.823881,
+          "marginTotalPct": 0.823881,
+          "estimatedMarginPct": 0.823881,
           "marginSource": "prices.json"
         },
         {
@@ -10036,9 +10036,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 422,
           "workingZoneTo": 482,
-          "marginPct": 0.758517,
-          "marginTotalPct": 0.758517,
-          "estimatedMarginPct": 0.758517,
+          "marginPct": 0.461252,
+          "marginTotalPct": 0.461252,
+          "estimatedMarginPct": 0.461252,
           "marginSource": "prices.json"
         },
         {
@@ -10290,9 +10290,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 844,
           "workingZoneTo": 964,
-          "marginPct": 0.831351,
-          "marginTotalPct": 0.831351,
-          "estimatedMarginPct": 0.831351,
+          "marginPct": 0.526468,
+          "marginTotalPct": 0.526468,
+          "estimatedMarginPct": 0.526468,
           "marginSource": "prices.json"
         },
         {
@@ -10544,9 +10544,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 469,
           "workingZoneTo": 536,
-          "marginPct": 0.884569,
-          "marginTotalPct": 0.884569,
-          "estimatedMarginPct": 0.884569,
+          "marginPct": 0.791433,
+          "marginTotalPct": 0.791433,
+          "estimatedMarginPct": 0.791433,
           "marginSource": "prices.json"
         },
         {
@@ -10750,9 +10750,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 402,
           "workingZoneTo": 459,
-          "marginPct": 0.853184,
-          "marginTotalPct": 0.853184,
-          "estimatedMarginPct": 0.853184,
+          "marginPct": 0.690121,
+          "marginTotalPct": 0.690121,
+          "estimatedMarginPct": 0.690121,
           "marginSource": "prices.json"
         },
         {
@@ -10860,9 +10860,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 804,
           "workingZoneTo": 918,
-          "marginPct": 0.826045,
-          "marginTotalPct": 0.826045,
-          "estimatedMarginPct": 0.826045,
+          "marginPct": 0.576347,
+          "marginTotalPct": 0.576347,
+          "estimatedMarginPct": 0.576347,
           "marginSource": "prices.json"
         },
         {
@@ -11114,9 +11114,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 421,
           "workingZoneTo": 481,
-          "marginPct": 0.828243,
-          "marginTotalPct": 0.828243,
-          "estimatedMarginPct": 0.828243,
+          "marginPct": 0.531398,
+          "marginTotalPct": 0.531398,
+          "estimatedMarginPct": 0.531398,
           "marginSource": "prices.json"
         },
         {
@@ -11360,9 +11360,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 842,
           "workingZoneTo": 962,
-          "marginPct": 0.817557,
-          "marginTotalPct": 0.817557,
-          "estimatedMarginPct": 0.817557,
+          "marginPct": 0.096985,
+          "marginTotalPct": 0.096985,
+          "estimatedMarginPct": 0.096985,
           "marginSource": "prices.json"
         },
         {
@@ -11614,9 +11614,9 @@
           "currentTurnoverDays": 130.3881,
           "workingZoneFrom": 704,
           "workingZoneTo": 768,
-          "marginPct": 0.905781,
-          "marginTotalPct": 0.905781,
-          "estimatedMarginPct": 0.905781,
+          "marginPct": 0.909767,
+          "marginTotalPct": 0.909767,
+          "estimatedMarginPct": 0.909767,
           "marginSource": "prices.json"
         },
         {
@@ -11868,9 +11868,9 @@
           "currentTurnoverDays": 381.9667,
           "workingZoneFrom": 356,
           "workingZoneTo": 427,
-          "marginPct": 0.909079,
-          "marginTotalPct": 0.909079,
-          "estimatedMarginPct": 0.909079,
+          "marginPct": 0.880853,
+          "marginTotalPct": 0.880853,
+          "estimatedMarginPct": 0.880853,
           "marginSource": "prices.json"
         },
         {
@@ -12098,9 +12098,9 @@
           "currentTurnoverDays": 263.6818,
           "workingZoneFrom": 710,
           "workingZoneTo": 775,
-          "marginPct": 0.929913,
-          "marginTotalPct": 0.929913,
-          "estimatedMarginPct": 0.929913,
+          "marginPct": 0.899689,
+          "marginTotalPct": 0.899689,
+          "estimatedMarginPct": 0.899689,
           "marginSource": "prices.json"
         },
         {
@@ -12352,9 +12352,9 @@
           "currentTurnoverDays": 84.3701,
           "workingZoneFrom": 715,
           "workingZoneTo": 780,
-          "marginPct": 0.908451,
-          "marginTotalPct": 0.908451,
-          "estimatedMarginPct": 0.908451,
+          "marginPct": 0.881603,
+          "marginTotalPct": 0.881603,
+          "estimatedMarginPct": 0.881603,
           "marginSource": "prices.json"
         },
         {
@@ -12606,9 +12606,9 @@
           "currentTurnoverDays": 133.7315,
           "workingZoneFrom": 729,
           "workingZoneTo": 796,
-          "marginPct": 0.922456,
-          "marginTotalPct": 0.922456,
-          "estimatedMarginPct": 0.922456,
+          "marginPct": 0.886467,
+          "marginTotalPct": 0.886467,
+          "estimatedMarginPct": 0.886467,
           "marginSource": "prices.json"
         },
         {
@@ -12860,9 +12860,9 @@
           "currentTurnoverDays": 95.5876,
           "workingZoneFrom": 484,
           "workingZoneTo": 528,
-          "marginPct": 0.920362,
-          "marginTotalPct": 0.920362,
-          "estimatedMarginPct": 0.920362,
+          "marginPct": 0.925676,
+          "marginTotalPct": 0.925676,
+          "estimatedMarginPct": 0.925676,
           "marginSource": "prices.json"
         },
         {
@@ -13114,9 +13114,9 @@
           "currentTurnoverDays": 8.52,
           "workingZoneFrom": 605,
           "workingZoneTo": 660,
-          "marginPct": 0.907173,
-          "marginTotalPct": 0.907173,
-          "estimatedMarginPct": 0.907173,
+          "marginPct": 0.896432,
+          "marginTotalPct": 0.896432,
+          "estimatedMarginPct": 0.896432,
           "marginSource": "prices.json"
         },
         {
@@ -13368,9 +13368,9 @@
           "currentTurnoverDays": 71.0464,
           "workingZoneFrom": 748,
           "workingZoneTo": 816,
-          "marginPct": 0.860768,
-          "marginTotalPct": 0.860768,
-          "estimatedMarginPct": 0.860768,
+          "marginPct": 0.832845,
+          "marginTotalPct": 0.832845,
+          "estimatedMarginPct": 0.832845,
           "marginSource": "prices.json"
         },
         {
@@ -13828,9 +13828,9 @@
           "currentTurnoverDays": 1843,
           "workingZoneFrom": 671,
           "workingZoneTo": 732,
-          "marginPct": 0.913291,
-          "marginTotalPct": 0.913291,
-          "estimatedMarginPct": 0.913291,
+          "marginPct": 0.846541,
+          "marginTotalPct": 0.846541,
+          "estimatedMarginPct": 0.846541,
           "marginSource": "prices.json"
         },
         {
@@ -14082,9 +14082,9 @@
           "currentTurnoverDays": 842.94,
           "workingZoneFrom": 516,
           "workingZoneTo": 589,
-          "marginPct": 0.917819,
-          "marginTotalPct": 0.917819,
-          "estimatedMarginPct": 0.917819,
+          "marginPct": 0.836125,
+          "marginTotalPct": 0.836125,
+          "estimatedMarginPct": 0.836125,
           "marginSource": "prices.json"
         },
         {
@@ -14336,9 +14336,9 @@
           "currentTurnoverDays": 160.9122,
           "workingZoneFrom": 749,
           "workingZoneTo": 817,
-          "marginPct": 0.907695,
-          "marginTotalPct": 0.907695,
-          "estimatedMarginPct": 0.907695,
+          "marginPct": 0.86385,
+          "marginTotalPct": 0.86385,
+          "estimatedMarginPct": 0.86385,
           "marginSource": "prices.json"
         },
         {
@@ -14590,9 +14590,9 @@
           "currentTurnoverDays": 312.7925,
           "workingZoneFrom": 612,
           "workingZoneTo": 667,
-          "marginPct": 0.902456,
-          "marginTotalPct": 0.902456,
-          "estimatedMarginPct": 0.902456,
+          "marginPct": 0.861,
+          "marginTotalPct": 0.861,
+          "estimatedMarginPct": 0.861,
           "marginSource": "prices.json"
         },
         {
@@ -14748,9 +14748,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 823,
           "workingZoneTo": 898,
-          "marginPct": 0.85038,
-          "marginTotalPct": 0.85038,
-          "estimatedMarginPct": 0.85038,
+          "marginPct": 0.842505,
+          "marginTotalPct": 0.842505,
+          "estimatedMarginPct": 0.842505,
           "marginSource": "prices.json"
         },
         {
@@ -14962,9 +14962,9 @@
           "currentTurnoverDays": 200.9778,
           "workingZoneFrom": 637,
           "workingZoneTo": 695,
-          "marginPct": 0.90094,
-          "marginTotalPct": 0.90094,
-          "estimatedMarginPct": 0.90094,
+          "marginPct": 0.8841,
+          "marginTotalPct": 0.8841,
+          "estimatedMarginPct": 0.8841,
           "marginSource": "prices.json"
         },
         {
@@ -15216,9 +15216,9 @@
           "currentTurnoverDays": 385.6667,
           "workingZoneFrom": 1051,
           "workingZoneTo": 1466,
-          "marginPct": 0.869432,
-          "marginTotalPct": 0.869432,
-          "estimatedMarginPct": 0.869432,
+          "marginPct": 0.759887,
+          "marginTotalPct": 0.759887,
+          "estimatedMarginPct": 0.759887,
           "marginSource": "prices.json"
         },
         {
@@ -15470,9 +15470,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 736,
           "workingZoneTo": 1028,
-          "marginPct": 0.849279,
-          "marginTotalPct": 0.849279,
-          "estimatedMarginPct": 0.849279,
+          "marginPct": 0.81404,
+          "marginTotalPct": 0.81404,
+          "estimatedMarginPct": 0.81404,
           "marginSource": "prices.json"
         },
         {
@@ -15700,9 +15700,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 341,
           "workingZoneTo": 390,
-          "marginPct": 0.82669,
-          "marginTotalPct": 0.82669,
-          "estimatedMarginPct": 0.82669,
+          "marginPct": 0.6104,
+          "marginTotalPct": 0.6104,
+          "estimatedMarginPct": 0.6104,
           "marginSource": "prices.json"
         },
         {
@@ -15954,9 +15954,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 399,
           "workingZoneTo": 456,
-          "marginPct": 0.771764,
-          "marginTotalPct": 0.771764,
-          "estimatedMarginPct": 0.771764,
+          "marginPct": 0.471263,
+          "marginTotalPct": 0.471263,
+          "estimatedMarginPct": 0.471263,
           "marginSource": "prices.json"
         },
         {
@@ -16104,9 +16104,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 797,
           "workingZoneTo": 911,
-          "marginPct": 0.843558,
-          "marginTotalPct": 0.843558,
-          "estimatedMarginPct": 0.843558,
+          "marginPct": 0.72188,
+          "marginTotalPct": 0.72188,
+          "estimatedMarginPct": 0.72188,
           "marginSource": "prices.json"
         },
         {
@@ -16326,9 +16326,9 @@
           "currentTurnoverDays": 200.1622,
           "workingZoneFrom": 499,
           "workingZoneTo": 544,
-          "marginPct": 0.908434,
-          "marginTotalPct": 0.908434,
-          "estimatedMarginPct": 0.908434,
+          "marginPct": 0.932852,
+          "marginTotalPct": 0.932852,
+          "estimatedMarginPct": 0.932852,
           "marginSource": "prices.json"
         },
         {
@@ -16580,9 +16580,9 @@
           "currentTurnoverDays": 176.2209,
           "workingZoneFrom": 173,
           "workingZoneTo": 198,
-          "marginPct": 0.879268,
-          "marginTotalPct": 0.879268,
-          "estimatedMarginPct": 0.879268,
+          "marginPct": 0.929286,
+          "marginTotalPct": 0.929286,
+          "estimatedMarginPct": 0.929286,
           "marginSource": "prices.json"
         },
         {
@@ -16872,9 +16872,9 @@
           "currentTurnoverDays": 363.0958,
           "workingZoneFrom": 548,
           "workingZoneTo": 598,
-          "marginPct": 0.885483,
-          "marginTotalPct": 0.885483,
-          "estimatedMarginPct": 0.885483,
+          "marginPct": 0.900556,
+          "marginTotalPct": 0.900556,
+          "estimatedMarginPct": 0.900556,
           "marginSource": "prices.json"
         },
         {
@@ -17126,9 +17126,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 365,
           "workingZoneTo": 417,
-          "marginPct": 0.923854,
-          "marginTotalPct": 0.923854,
-          "estimatedMarginPct": 0.923854,
+          "marginPct": 0.325964,
+          "marginTotalPct": 0.325964,
+          "estimatedMarginPct": 0.325964,
           "marginSource": "prices.json"
         },
         {
@@ -17348,9 +17348,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 438,
           "workingZoneTo": 501,
-          "marginPct": 0.807262,
-          "marginTotalPct": 0.807262,
-          "estimatedMarginPct": 0.807262,
+          "marginPct": 0.60972,
+          "marginTotalPct": 0.60972,
+          "estimatedMarginPct": 0.60972,
           "marginSource": "prices.json"
         },
         {
@@ -17602,9 +17602,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 483,
           "workingZoneTo": 552,
-          "marginPct": 0.818421,
-          "marginTotalPct": 0.818421,
-          "estimatedMarginPct": 0.818421,
+          "marginPct": 0.370647,
+          "marginTotalPct": 0.370647,
+          "estimatedMarginPct": 0.370647,
           "marginSource": "prices.json"
         },
         {
@@ -17910,9 +17910,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 667,
           "workingZoneTo": 763,
-          "marginPct": 0.825695,
-          "marginTotalPct": 0.825695,
-          "estimatedMarginPct": 0.825695,
+          "marginPct": 0.610041,
+          "marginTotalPct": 0.610041,
+          "estimatedMarginPct": 0.610041,
           "marginSource": "prices.json"
         },
         {
@@ -18140,9 +18140,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 613,
           "workingZoneTo": 856,
-          "marginPct": 0.862302,
-          "marginTotalPct": 0.862302,
-          "estimatedMarginPct": 0.862302,
+          "marginPct": 0.610667,
+          "marginTotalPct": 0.610667,
+          "estimatedMarginPct": 0.610667,
           "marginSource": "prices.json"
         },
         {
@@ -18330,9 +18330,9 @@
           "currentTurnoverDays": 24.5323,
           "workingZoneFrom": 775,
           "workingZoneTo": 845,
-          "marginPct": 0.902961,
-          "marginTotalPct": 0.902961,
-          "estimatedMarginPct": 0.902961,
+          "marginPct": 0.897705,
+          "marginTotalPct": 0.897705,
+          "estimatedMarginPct": 0.897705,
           "marginSource": "prices.json"
         },
         {
@@ -18584,9 +18584,9 @@
           "currentTurnoverDays": 86.3992,
           "workingZoneFrom": 813,
           "workingZoneTo": 887,
-          "marginPct": 0.901433,
-          "marginTotalPct": 0.901433,
-          "estimatedMarginPct": 0.901433,
+          "marginPct": 0.835182,
+          "marginTotalPct": 0.835182,
+          "estimatedMarginPct": 0.835182,
           "marginSource": "prices.json"
         },
         {
@@ -18654,9 +18654,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 657,
           "workingZoneTo": 917,
-          "marginPct": 0.786834,
-          "marginTotalPct": 0.786834,
-          "estimatedMarginPct": 0.786834,
+          "marginPct": 0.608817,
+          "marginTotalPct": 0.608817,
+          "estimatedMarginPct": 0.608817,
           "marginSource": "prices.json"
         },
         {
@@ -18860,9 +18860,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 460,
           "workingZoneTo": 526,
-          "marginPct": 0.856057,
-          "marginTotalPct": 0.856057,
-          "estimatedMarginPct": 0.856057,
+          "marginPct": 0.61003,
+          "marginTotalPct": 0.61003,
+          "estimatedMarginPct": 0.61003,
           "marginSource": "prices.json"
         },
         {
@@ -19058,9 +19058,9 @@
           "currentTurnoverDays": 23.4231,
           "workingZoneFrom": 1010,
           "workingZoneTo": 1102,
-          "marginPct": 0.737196,
-          "marginTotalPct": 0.737196,
-          "estimatedMarginPct": 0.737196,
+          "marginPct": 0.690267,
+          "marginTotalPct": 0.690267,
+          "estimatedMarginPct": 0.690267,
           "marginSource": "prices.json"
         },
         {
@@ -19312,9 +19312,9 @@
           "currentTurnoverDays": 234.1429,
           "workingZoneFrom": 519,
           "workingZoneTo": 566,
-          "marginPct": 0.956058,
-          "marginTotalPct": 0.956058,
-          "estimatedMarginPct": 0.956058,
+          "marginPct": 0.932502,
+          "marginTotalPct": 0.932502,
+          "estimatedMarginPct": 0.932502,
           "marginSource": "prices.json"
         },
         {
@@ -19542,9 +19542,9 @@
           "currentTurnoverDays": 2008.8205,
           "workingZoneFrom": 618,
           "workingZoneTo": 674,
-          "marginPct": 0.960216,
-          "marginTotalPct": 0.960216,
-          "estimatedMarginPct": 0.960216,
+          "marginPct": 0.945095,
+          "marginTotalPct": 0.945095,
+          "estimatedMarginPct": 0.945095,
           "marginSource": "prices.json"
         },
         {
@@ -19756,9 +19756,9 @@
           "currentTurnoverDays": 342.3069,
           "workingZoneFrom": 481,
           "workingZoneTo": 525,
-          "marginPct": 0.961957,
-          "marginTotalPct": 0.961957,
-          "estimatedMarginPct": 0.961957,
+          "marginPct": 0.971236,
+          "marginTotalPct": 0.971236,
+          "estimatedMarginPct": 0.971236,
           "marginSource": "prices.json"
         },
         {
@@ -20010,9 +20010,9 @@
           "currentTurnoverDays": 537.2624,
           "workingZoneFrom": 599,
           "workingZoneTo": 653,
-          "marginPct": 0.951631,
-          "marginTotalPct": 0.951631,
-          "estimatedMarginPct": 0.951631,
+          "marginPct": 0.927038,
+          "marginTotalPct": 0.927038,
+          "estimatedMarginPct": 0.927038,
           "marginSource": "prices.json"
         },
         {
@@ -20264,9 +20264,9 @@
           "currentTurnoverDays": 293.3415,
           "workingZoneFrom": 748,
           "workingZoneTo": 1044,
-          "marginPct": 0.955257,
-          "marginTotalPct": 0.955257,
-          "estimatedMarginPct": 0.955257,
+          "marginPct": 0.925981,
+          "marginTotalPct": 0.925981,
+          "estimatedMarginPct": 0.925981,
           "marginSource": "prices.json"
         },
         {
@@ -20518,9 +20518,9 @@
           "currentTurnoverDays": 688.5485,
           "workingZoneFrom": 547,
           "workingZoneTo": 596,
-          "marginPct": 0.968693,
-          "marginTotalPct": 0.968693,
-          "estimatedMarginPct": 0.968693,
+          "marginPct": 0.9503,
+          "marginTotalPct": 0.9503,
+          "estimatedMarginPct": 0.9503,
           "marginSource": "prices.json"
         },
         {
@@ -20772,9 +20772,9 @@
           "currentTurnoverDays": 633.9315,
           "workingZoneFrom": 671,
           "workingZoneTo": 732,
-          "marginPct": 0.927553,
-          "marginTotalPct": 0.927553,
-          "estimatedMarginPct": 0.927553,
+          "marginPct": 0.922812,
+          "marginTotalPct": 0.922812,
+          "estimatedMarginPct": 0.922812,
           "marginSource": "prices.json"
         },
         {
@@ -21026,9 +21026,9 @@
           "currentTurnoverDays": 161.3808,
           "workingZoneFrom": 726,
           "workingZoneTo": 792,
-          "marginPct": 0.911111,
-          "marginTotalPct": 0.911111,
-          "estimatedMarginPct": 0.911111,
+          "marginPct": 0.890033,
+          "marginTotalPct": 0.890033,
+          "estimatedMarginPct": 0.890033,
           "marginSource": "prices.json"
         },
         {
@@ -21280,9 +21280,9 @@
           "currentTurnoverDays": 49.6325,
           "workingZoneFrom": 791,
           "workingZoneTo": 863,
-          "marginPct": 0.92809,
-          "marginTotalPct": 0.92809,
-          "estimatedMarginPct": 0.92809,
+          "marginPct": 0.93747,
+          "marginTotalPct": 0.93747,
+          "estimatedMarginPct": 0.93747,
           "marginSource": "prices.json"
         },
         {
@@ -21534,9 +21534,9 @@
           "currentTurnoverDays": 24.642,
           "workingZoneFrom": 660,
           "workingZoneTo": 720,
-          "marginPct": 0.934889,
-          "marginTotalPct": 0.934889,
-          "estimatedMarginPct": 0.934889,
+          "marginPct": 0.915593,
+          "marginTotalPct": 0.915593,
+          "estimatedMarginPct": 0.915593,
           "marginSource": "prices.json"
         },
         {
@@ -21713,9 +21713,9 @@
           "currentTurnoverDays": 92.4,
           "workingZoneFrom": 1142,
           "workingZoneTo": 1246,
-          "marginPct": 0.861567,
-          "marginTotalPct": 0.861567,
-          "estimatedMarginPct": 0.861567,
+          "marginPct": 0.725694,
+          "marginTotalPct": 0.725694,
+          "estimatedMarginPct": 0.725694,
           "marginSource": "prices.json"
         },
         {
@@ -21925,9 +21925,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1436,
           "workingZoneTo": 2004,
-          "marginPct": 0.870944,
-          "marginTotalPct": 0.870944,
-          "estimatedMarginPct": 0.870944,
+          "marginPct": 0.767234,
+          "marginTotalPct": 0.767234,
+          "estimatedMarginPct": 0.767234,
           "marginSource": "prices.json"
         },
         {
@@ -22179,9 +22179,9 @@
           "currentTurnoverDays": 185.866,
           "workingZoneFrom": 632,
           "workingZoneTo": 690,
-          "marginPct": 0.894454,
-          "marginTotalPct": 0.894454,
-          "estimatedMarginPct": 0.894454,
+          "marginPct": 0.871267,
+          "marginTotalPct": 0.871267,
+          "estimatedMarginPct": 0.871267,
           "marginSource": "prices.json"
         },
         {
@@ -22548,9 +22548,9 @@
           "currentTurnoverDays": 185.7025,
           "workingZoneFrom": 584,
           "workingZoneTo": 637,
-          "marginPct": 0.91504,
-          "marginTotalPct": 0.91504,
-          "estimatedMarginPct": 0.91504,
+          "marginPct": 0.916047,
+          "marginTotalPct": 0.916047,
+          "estimatedMarginPct": 0.916047,
           "marginSource": "prices.json"
         },
         {
@@ -22802,9 +22802,9 @@
           "currentTurnoverDays": 21.3333,
           "workingZoneFrom": 712,
           "workingZoneTo": 777,
-          "marginPct": 0.884168,
-          "marginTotalPct": 0.884168,
-          "estimatedMarginPct": 0.884168,
+          "marginPct": 0.865942,
+          "marginTotalPct": 0.865942,
+          "estimatedMarginPct": 0.865942,
           "marginSource": "prices.json"
         },
         {
@@ -22976,9 +22976,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1530,
           "workingZoneTo": 2135,
-          "marginPct": 0.800355,
-          "marginTotalPct": 0.800355,
-          "estimatedMarginPct": 0.800355,
+          "marginPct": 0.610142,
+          "marginTotalPct": 0.610142,
+          "estimatedMarginPct": 0.610142,
           "marginSource": "prices.json"
         },
         {
@@ -23166,9 +23166,9 @@
           "currentTurnoverDays": 542.2667,
           "workingZoneFrom": 660,
           "workingZoneTo": 720,
-          "marginPct": 0.91684,
-          "marginTotalPct": 0.91684,
-          "estimatedMarginPct": 0.91684,
+          "marginPct": 0.826087,
+          "marginTotalPct": 0.826087,
+          "estimatedMarginPct": 0.826087,
           "marginSource": "prices.json"
         },
         {
@@ -23420,9 +23420,9 @@
           "currentTurnoverDays": 148.0307,
           "workingZoneFrom": 543,
           "workingZoneTo": 592,
-          "marginPct": 0.917267,
-          "marginTotalPct": 0.917267,
-          "estimatedMarginPct": 0.917267,
+          "marginPct": 0.926889,
+          "marginTotalPct": 0.926889,
+          "estimatedMarginPct": 0.926889,
           "marginSource": "prices.json"
         },
         {
@@ -23673,9 +23673,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 715,
           "workingZoneTo": 780,
-          "marginPct": 0.935,
-          "marginTotalPct": 0.935,
-          "estimatedMarginPct": 0.935,
+          "marginPct": 0.898225,
+          "marginTotalPct": 0.898225,
+          "estimatedMarginPct": 0.898225,
           "marginSource": "prices.json"
         },
         {
@@ -24180,9 +24180,9 @@
           "currentTurnoverDays": 12.0216,
           "workingZoneFrom": 735,
           "workingZoneTo": 802,
-          "marginPct": 0.905011,
-          "marginTotalPct": 0.905011,
-          "estimatedMarginPct": 0.905011,
+          "marginPct": 0.85,
+          "marginTotalPct": 0.85,
+          "estimatedMarginPct": 0.85,
           "marginSource": "prices.json"
         },
         {
@@ -24418,9 +24418,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 441,
           "workingZoneTo": 504,
-          "marginPct": 0.817035,
-          "marginTotalPct": 0.817035,
-          "estimatedMarginPct": 0.817035,
+          "marginPct": 0.610279,
+          "marginTotalPct": 0.610279,
+          "estimatedMarginPct": 0.610279,
           "marginSource": "prices.json"
         },
         {
@@ -24672,9 +24672,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 555,
           "workingZoneTo": 634,
-          "marginPct": 0.81131,
-          "marginTotalPct": 0.81131,
-          "estimatedMarginPct": 0.81131,
+          "marginPct": 0.434321,
+          "marginTotalPct": 0.434321,
+          "estimatedMarginPct": 0.434321,
           "marginSource": "prices.json"
         },
         {
@@ -24814,9 +24814,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 550,
           "workingZoneTo": 628,
-          "marginPct": 0.834653,
-          "marginTotalPct": 0.834653,
-          "estimatedMarginPct": 0.834653,
+          "marginPct": 0.757218,
+          "marginTotalPct": 0.757218,
+          "estimatedMarginPct": 0.757218,
           "marginSource": "prices.json"
         },
         {
@@ -24924,9 +24924,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 844,
           "workingZoneTo": 920,
-          "marginPct": 0.930588,
-          "marginTotalPct": 0.930588,
-          "estimatedMarginPct": 0.930588,
+          "marginPct": 0.92747,
+          "marginTotalPct": 0.92747,
+          "estimatedMarginPct": 0.92747,
           "marginSource": "prices.json"
         },
         {
@@ -25178,9 +25178,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 729,
           "workingZoneTo": 796,
-          "marginPct": 0.916813,
-          "marginTotalPct": 0.916813,
-          "estimatedMarginPct": 0.916813,
+          "marginPct": 0.913333,
+          "marginTotalPct": 0.913333,
+          "estimatedMarginPct": 0.913333,
           "marginSource": "prices.json"
         },
         {
@@ -25470,9 +25470,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 289,
           "workingZoneTo": 315,
-          "marginPct": 0.94526,
-          "marginTotalPct": 0.94526,
-          "estimatedMarginPct": 0.94526,
+          "marginPct": 0.9691,
+          "marginTotalPct": 0.9691,
+          "estimatedMarginPct": 0.9691,
           "marginSource": "prices.json"
         },
         {
@@ -25724,9 +25724,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 491,
           "workingZoneTo": 536,
-          "marginPct": 0.910789,
-          "marginTotalPct": 0.910789,
-          "estimatedMarginPct": 0.910789,
+          "marginPct": 0.938541,
+          "marginTotalPct": 0.938541,
+          "estimatedMarginPct": 0.938541,
           "marginSource": "prices.json"
         },
         {
@@ -25978,9 +25978,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 682,
           "workingZoneTo": 744,
-          "marginPct": 0.903427,
-          "marginTotalPct": 0.903427,
-          "estimatedMarginPct": 0.903427,
+          "marginPct": 0.911932,
+          "marginTotalPct": 0.911932,
+          "estimatedMarginPct": 0.911932,
           "marginSource": "prices.json"
         },
         {
@@ -26307,9 +26307,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 404,
           "workingZoneTo": 462,
-          "marginPct": 0.826451,
-          "marginTotalPct": 0.826451,
-          "estimatedMarginPct": 0.826451,
+          "marginPct": 0.610101,
+          "marginTotalPct": 0.610101,
+          "estimatedMarginPct": 0.610101,
           "marginSource": "prices.json"
         },
         {
@@ -26553,9 +26553,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 639,
           "workingZoneTo": 697,
-          "marginPct": 0.90712,
-          "marginTotalPct": 0.90712,
-          "estimatedMarginPct": 0.90712,
+          "marginPct": 0.781356,
+          "marginTotalPct": 0.781356,
+          "estimatedMarginPct": 0.781356,
           "marginSource": "prices.json"
         },
         {
@@ -26807,9 +26807,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 592,
           "workingZoneTo": 646,
-          "marginPct": 0.9282,
-          "marginTotalPct": 0.9282,
-          "estimatedMarginPct": 0.9282,
+          "marginPct": 0.880333,
+          "marginTotalPct": 0.880333,
+          "estimatedMarginPct": 0.880333,
           "marginSource": "prices.json"
         },
         {
@@ -27061,9 +27061,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 256,
           "workingZoneTo": 292,
-          "marginPct": 0.898329,
-          "marginTotalPct": 0.898329,
-          "estimatedMarginPct": 0.898329,
+          "marginPct": 0.862387,
+          "marginTotalPct": 0.862387,
+          "estimatedMarginPct": 0.862387,
           "marginSource": "prices.json"
         },
         {
@@ -27315,9 +27315,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 360,
           "workingZoneTo": 411,
-          "marginPct": 0.852014,
-          "marginTotalPct": 0.852014,
-          "estimatedMarginPct": 0.852014,
+          "marginPct": 0.442199,
+          "marginTotalPct": 0.442199,
+          "estimatedMarginPct": 0.442199,
           "marginSource": "prices.json"
         },
         {
@@ -27569,9 +27569,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 411,
           "workingZoneTo": 469,
-          "marginPct": 0.850928,
-          "marginTotalPct": 0.850928,
-          "estimatedMarginPct": 0.850928,
+          "marginPct": 0.791069,
+          "marginTotalPct": 0.791069,
+          "estimatedMarginPct": 0.791069,
           "marginSource": "prices.json"
         },
         {
@@ -27823,9 +27823,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 399,
           "workingZoneTo": 456,
-          "marginPct": 0.938678,
-          "marginTotalPct": 0.938678,
-          "estimatedMarginPct": 0.938678,
+          "marginPct": 0.394959,
+          "marginTotalPct": 0.394959,
+          "estimatedMarginPct": 0.394959,
           "marginSource": "prices.json"
         },
         {
@@ -28077,9 +28077,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 368,
           "workingZoneTo": 420,
-          "marginPct": 0.913223,
-          "marginTotalPct": 0.913223,
-          "estimatedMarginPct": 0.913223,
+          "marginPct": 0.85407,
+          "marginTotalPct": 0.85407,
+          "estimatedMarginPct": 0.85407,
           "marginSource": "prices.json"
         },
         {
@@ -28331,9 +28331,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 458,
           "workingZoneTo": 524,
-          "marginPct": 0.797023,
-          "marginTotalPct": 0.797023,
-          "estimatedMarginPct": 0.797023,
+          "marginPct": 0.702867,
+          "marginTotalPct": 0.702867,
+          "estimatedMarginPct": 0.702867,
           "marginSource": "prices.json"
         },
         {
@@ -28839,9 +28839,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 368,
           "workingZoneTo": 420,
-          "marginPct": 0.895,
-          "marginTotalPct": 0.895,
-          "estimatedMarginPct": 0.895,
+          "marginPct": 0.540442,
+          "marginTotalPct": 0.540442,
+          "estimatedMarginPct": 0.540442,
           "marginSource": "prices.json"
         },
         {
@@ -29093,9 +29093,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 735,
           "workingZoneTo": 840,
-          "marginPct": 0.880546,
-          "marginTotalPct": 0.880546,
-          "estimatedMarginPct": 0.880546,
+          "marginPct": 0.503164,
+          "marginTotalPct": 0.503164,
+          "estimatedMarginPct": 0.503164,
           "marginSource": "prices.json"
         },
         {
@@ -29347,9 +29347,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 409,
           "workingZoneTo": 467,
-          "marginPct": 0.841881,
-          "marginTotalPct": 0.841881,
-          "estimatedMarginPct": 0.841881,
+          "marginPct": 0.256409,
+          "marginTotalPct": 0.256409,
+          "estimatedMarginPct": 0.256409,
           "marginSource": "prices.json"
         },
         {
@@ -29569,9 +29569,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1445,
           "workingZoneTo": 2015,
-          "marginPct": 0.865998,
-          "marginTotalPct": 0.865998,
-          "estimatedMarginPct": 0.865998,
+          "marginPct": 0.60985,
+          "marginTotalPct": 0.60985,
+          "estimatedMarginPct": 0.60985,
           "marginSource": "prices.json"
         },
         {
@@ -29925,9 +29925,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1268,
           "workingZoneTo": 1770,
-          "marginPct": 0.842154,
-          "marginTotalPct": 0.842154,
-          "estimatedMarginPct": 0.842154,
+          "marginPct": 0.492938,
+          "marginTotalPct": 0.492938,
+          "estimatedMarginPct": 0.492938,
           "marginSource": "prices.json"
         },
         {
@@ -30027,9 +30027,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1042,
           "workingZoneTo": 1454,
-          "marginPct": 0.8314,
-          "marginTotalPct": 0.8314,
-          "estimatedMarginPct": 0.8314,
+          "marginPct": 0.556316,
+          "marginTotalPct": 0.556316,
+          "estimatedMarginPct": 0.556316,
           "marginSource": "prices.json"
         },
         {
@@ -30281,9 +30281,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 463,
           "workingZoneTo": 505,
-          "marginPct": 0.92744,
-          "marginTotalPct": 0.92744,
-          "estimatedMarginPct": 0.92744,
+          "marginPct": 0.859717,
+          "marginTotalPct": 0.859717,
+          "estimatedMarginPct": 0.859717,
           "marginSource": "prices.json"
         },
         {
@@ -30535,9 +30535,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 719,
           "workingZoneTo": 1004,
-          "marginPct": 0.904779,
-          "marginTotalPct": 0.904779,
-          "estimatedMarginPct": 0.904779,
+          "marginPct": 0.60953,
+          "marginTotalPct": 0.60953,
+          "estimatedMarginPct": 0.60953,
           "marginSource": "prices.json"
         },
         {
@@ -30693,9 +30693,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1438,
           "workingZoneTo": 2007,
-          "marginPct": 0.805905,
-          "marginTotalPct": 0.805905,
-          "estimatedMarginPct": 0.805905,
+          "marginPct": 0.610184,
+          "marginTotalPct": 0.610184,
+          "estimatedMarginPct": 0.610184,
           "marginSource": "prices.json"
         },
         {
@@ -30843,9 +30843,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 2157,
           "workingZoneTo": 3011,
-          "marginPct": 0.787146,
-          "marginTotalPct": 0.787146,
-          "estimatedMarginPct": 0.787146,
+          "marginPct": 0.722952,
+          "marginTotalPct": 0.722952,
+          "estimatedMarginPct": 0.722952,
           "marginSource": "prices.json"
         },
         {
@@ -31025,9 +31025,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1900,
           "workingZoneTo": 2652,
-          "marginPct": 0.702899,
-          "marginTotalPct": 0.702899,
-          "estimatedMarginPct": 0.702899,
+          "marginPct": 0.253641,
+          "marginTotalPct": 0.253641,
+          "estimatedMarginPct": 0.253641,
           "marginSource": "prices.json"
         },
         {
@@ -31127,9 +31127,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 299,
           "workingZoneTo": 342,
-          "marginPct": 0.9145,
-          "marginTotalPct": 0.9145,
-          "estimatedMarginPct": 0.9145,
+          "marginPct": 0.694643,
+          "marginTotalPct": 0.694643,
+          "estimatedMarginPct": 0.694643,
           "marginSource": "prices.json"
         },
         {
@@ -31381,9 +31381,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 407,
           "workingZoneTo": 465,
-          "marginPct": 0.846798,
-          "marginTotalPct": 0.846798,
-          "estimatedMarginPct": 0.846798,
+          "marginPct": 0.776691,
+          "marginTotalPct": 0.776691,
+          "estimatedMarginPct": 0.776691,
           "marginSource": "prices.json"
         },
         {
@@ -31563,9 +31563,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 814,
           "workingZoneTo": 930,
-          "marginPct": 0.879627,
-          "marginTotalPct": 0.879627,
-          "estimatedMarginPct": 0.879627,
+          "marginPct": 0.406735,
+          "marginTotalPct": 0.406735,
+          "estimatedMarginPct": 0.406735,
           "marginSource": "prices.json"
         },
         {
@@ -31785,9 +31785,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 411,
           "workingZoneTo": 469,
-          "marginPct": 0.84875,
-          "marginTotalPct": 0.84875,
-          "estimatedMarginPct": 0.84875,
+          "marginPct": 0.610066,
+          "marginTotalPct": 0.610066,
+          "estimatedMarginPct": 0.610066,
           "marginSource": "prices.json"
         },
         {
@@ -32013,9 +32013,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 433,
           "workingZoneTo": 495,
-          "marginPct": 0.823926,
-          "marginTotalPct": 0.823926,
-          "estimatedMarginPct": 0.823926,
+          "marginPct": 0.609527,
+          "marginTotalPct": 0.609527,
+          "estimatedMarginPct": 0.609527,
           "marginSource": "prices.json"
         },
         {
@@ -32267,9 +32267,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 484,
           "workingZoneTo": 553,
-          "marginPct": 0.836308,
-          "marginTotalPct": 0.836308,
-          "estimatedMarginPct": 0.836308,
+          "marginPct": 0.421332,
+          "marginTotalPct": 0.421332,
+          "estimatedMarginPct": 0.421332,
           "marginSource": "prices.json"
         },
         {
@@ -32497,9 +32497,9 @@
           "currentTurnoverDays": 0,
           "workingZoneFrom": 1710,
           "workingZoneTo": 2386,
-          "marginPct": 0.821523,
-          "marginTotalPct": 0.821523,
-          "estimatedMarginPct": 0.821523,
+          "marginPct": 0.168972,
+          "marginTotalPct": 0.168972,
+          "estimatedMarginPct": 0.168972,
           "marginSource": "prices.json"
         }
       ]
@@ -58309,8 +58309,8 @@
     }
   },
   "extraMarketplace": {
-    "generatedAt": "2026-07-21T09:37:08.088Z",
-    "asOfDate": "2026-07-20",
+    "generatedAt": "2026-07-22T07:32:50.289Z",
+    "asOfDate": "2026-07-21",
     "source": "platform_trends.extraMarketplace",
     "platforms": {
       "magnit": {
@@ -58326,27 +58326,12 @@
       "ozon": {
         "key": "ozon",
         "label": "Ozon",
-        "articleCount": 266
+        "articleCount": 267
       },
       "ya": {
         "key": "ya",
         "label": "Я.Маркет",
         "articleCount": 142
-      },
-      "goldapple": {
-        "key": "goldapple",
-        "label": "ЗЯ",
-        "articleCount": 36
-      },
-      "letu": {
-        "key": "letu",
-        "label": "Лэтуаль",
-        "articleCount": 56
-      },
-      "megamarket": {
-        "key": "megamarket",
-        "label": "Мегамаркет",
-        "articleCount": 12
       },
       "samokat": {
         "key": "samokat",

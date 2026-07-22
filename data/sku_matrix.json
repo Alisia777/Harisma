@@ -1,28 +1,29 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-07-21T09:47:29.622Z",
+  "generatedAt": "2026-07-22T07:44:23.669Z",
   "source": {
     "skus": 209,
     "aliases": 342,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-07-21T09:47:29.515Z"
+    "dataQualityGeneratedAt": "2026-07-22T07:44:23.442Z"
   },
   "summary": {
     "skuCount": 209,
     "activeSkuCount": 60,
     "aliasCount": 342,
     "ignoredApiSkuCount": 0,
-    "apiUnmappedCount": 0,
+    "apiUnmappedCount": 12,
     "duplicateRiskCount": 0,
     "duplicateRiskOverage": 0,
     "missingOwnerCount": 0,
     "planNeedsAssignmentCount": 0,
     "planAssignedCount": 96,
-    "issueCount": 202,
-    "infoIssueCount": 1,
+    "issueCount": 214,
+    "infoIssueCount": 36,
     "problemStateCounts": {
       "ok": 85,
-      "has_critical_issue": 124
+      "has_critical_issue": 124,
+      "api_unmapped": 1
     }
   },
   "problemStates": {
@@ -18197,7 +18198,116 @@
       ]
     }
   ],
-  "apiUnmapped": [],
+  "apiUnmapped": [
+    {
+      "platform": "goldapple",
+      "api_sku": "retinol_boost_krem_d",
+      "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, 30мл",
+      "revenue": 62799,
+      "units": 76,
+      "firstDate": "2026-07-02",
+      "lastDate": "2026-07-20"
+    },
+    {
+      "platform": "letu",
+      "api_sku": "qeep_bloodypeeling_30ml",
+      "name": "Кровавый кислотный пилинг для лица от прыщей AHA BHA",
+      "revenue": 47967,
+      "units": 104,
+      "firstDate": "2026-07-01",
+      "lastDate": "2026-07-20"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "qeep_magnB6_120caps",
+      "name": "магний цитрат 635 мг с витамином в6 qeep, 120 капсул",
+      "revenue": 27636,
+      "units": 13,
+      "firstDate": "2026-07-01",
+      "lastDate": "2026-07-16"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "syvorotka_dlya_lica_",
+      "name": "Сыворотка для лица отбеливающая",
+      "revenue": 24296,
+      "units": 32,
+      "firstDate": "2026-07-04",
+      "lastDate": "2026-07-20"
+    },
+    {
+      "platform": "letu",
+      "api_sku": "qeep_retinolcream_50ml",
+      "name": "Крем для Лица с Липосомальным Ретинолом 0.5%",
+      "revenue": 19218,
+      "units": 22,
+      "firstDate": "2026-07-01",
+      "lastDate": "2026-07-20"
+    },
+    {
+      "platform": "letu",
+      "api_sku": "qeep_enzyme_80g",
+      "name": "Энзимная пудра для умывания лица и тела",
+      "revenue": 19035,
+      "units": 44,
+      "firstDate": "2026-07-01",
+      "lastDate": "2026-07-20"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "qeep_inositol1500mg_",
+      "name": "QEEP Биологически активная добавка к пище INOSITOL (Инозитол) 1500 mg",
+      "revenue": 17784,
+      "units": 12,
+      "firstDate": "2026-07-01",
+      "lastDate": "2026-07-16"
+    },
+    {
+      "platform": "letu",
+      "api_sku": "qeep_perfect_spray_200ml",
+      "name": "Спрей для объема и укладки волос с фиксацией",
+      "revenue": 16339,
+      "units": 36,
+      "firstDate": "2026-07-01",
+      "lastDate": "2026-07-20"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "qeep_chlorophyll_500",
+      "name": "QEEP Биологически активная добавка к пище Хлорофилл со вкусом: Мята, 500 мл",
+      "revenue": 14830,
+      "units": 6,
+      "firstDate": "2026-07-01",
+      "lastDate": "2026-07-16"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "qeepinositol",
+      "name": "биологически активная добавка к пище \"INOSITOL (ИНОЗИТОЛ) ЮНИЭКО\" (капсулы по 400 мг) 60 капсул",
+      "revenue": 14146,
+      "units": 15,
+      "firstDate": "2026-07-01",
+      "lastDate": "2026-07-16"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "qeep_omega_3_1620_90",
+      "name": "Биологически активная добавка к пище «ОМЕГА-3 ЖИРНЫЕ КИСЛОТЫ ВЫСОКОЙ КОНЦЕНТРАЦИИ» 90 капсул",
+      "revenue": 12883,
+      "units": 10,
+      "firstDate": "2026-07-01",
+      "lastDate": "2026-07-16"
+    },
+    {
+      "platform": "letu",
+      "api_sku": "qeep_retinolcream15_50ml",
+      "name": "Крем для Лица с Липосомальным Ретинолом 1.5%",
+      "revenue": 10225,
+      "units": 8,
+      "firstDate": "2026-07-01",
+      "lastDate": "2026-07-20"
+    }
+  ],
   "duplicateRisks": [],
   "ignoredApiSku": [],
   "indexes": {

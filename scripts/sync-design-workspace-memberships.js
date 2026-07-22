@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
 const DEFAULT_SUPABASE_URL = 'https://iyckwryrucqrxwlowxow.supabase.co';
 const DEFAULT_BRAND = 'Алтея';
 const DEFAULT_PAGE_SIZE = 1000;
@@ -24,6 +28,48 @@ function desiredAccess(user) {
   const metadata = (user && user.app_metadata) || {};
   const portalRole = trim(metadata.portal_role || metadata.portalRole || metadata.role).toLowerCase();
   return metadata.portal_admin === true || portalRole === 'owner' || portalRole === 'designer' ? 'editor' : 'viewer';
+}
+
+function loadPortalAccess(root = path.resolve(__dirname, '..')) {
+  const source = fs.readFileSync(path.join(root, 'portal-auth-access.js'), 'utf8');
+  const window = {
+    location: {
+      protocol: 'https:',
+      hostname: 'харизмой.рф',
+      host: 'харизмой.рф',
+      pathname: '/',
+      search: '',
+      hash: '',
+      replace() {}
+    }
+  };
+  vm.runInNewContext(source, { window }, { filename: 'portal-auth-access.js' });
+  const rules = window.ALTEA_PORTAL_ACCESS_RULES || {};
+  const access = {
+    emails: new Set(Object.keys(rules.users || {}).map((email) => trim(email).toLowerCase()).filter(Boolean)),
+    roles: new Set(Object.keys(rules.roles || {}).map((role) => trim(role).toLowerCase()).filter(Boolean))
+  };
+  if (!access.emails.size || !access.roles.size) throw new Error('Portal allowlist or role matrix is empty; refusing membership sync.');
+  return access;
+}
+
+function metadataValues(value) {
+  if (Array.isArray(value)) return value.map((item) => trim(item).toLowerCase()).filter(Boolean);
+  return trim(value).split(',').map((item) => trim(item).toLowerCase()).filter(Boolean);
+}
+
+function isPortalAccount(user, portalAccess) {
+  const email = trim(user && user.email).toLowerCase();
+  if (email && portalAccess.emails.has(email)) return true;
+  const metadata = (user && user.app_metadata) || {};
+  if (metadata.portal_admin === true) return true;
+  const roles = []
+    .concat(metadataValues(metadata.portal_role || metadata.portalRole))
+    .concat(metadataValues(metadata.portal_roles || metadata.portalRoles))
+    .concat(metadataValues(metadata.role));
+  if (roles.some((role) => portalAccess.roles.has(role))) return true;
+  return [metadata.portal_views, metadata.portalViews, metadata.allowed_views, metadata.allowedViews]
+    .some((value) => metadataValues(value).length > 0);
 }
 
 function authHeaders(serviceRoleKey) {
@@ -60,15 +106,23 @@ async function listAuthUsers(fetchImpl, config, pageSize = DEFAULT_PAGE_SIZE) {
   return users;
 }
 
-async function listMemberships(fetchImpl, config) {
-  const query = new URLSearchParams({
-    select: 'brand,user_id,access_level,managed_by_role',
-    brand: `eq.${config.brand}`,
-    limit: '10000'
-  });
-  const url = `${config.supabaseUrl}/rest/v1/portal_design_workspace_members?${query.toString()}`;
-  const payload = await requestJson(fetchImpl, url, { headers: authHeaders(config.serviceRoleKey) }, 'Membership listing');
-  return Array.isArray(payload) ? payload : [];
+async function listMemberships(fetchImpl, config, pageSize = DEFAULT_PAGE_SIZE) {
+  const memberships = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const query = new URLSearchParams({
+      select: 'brand,user_id,access_level,managed_by_role',
+      brand: `eq.${config.brand}`,
+      order: 'user_id.asc'
+    });
+    const url = `${config.supabaseUrl}/rest/v1/portal_design_workspace_members?${query.toString()}`;
+    const headers = authHeaders(config.serviceRoleKey);
+    headers.Range = `${offset}-${offset + pageSize - 1}`;
+    const payload = await requestJson(fetchImpl, url, { headers }, 'Membership listing');
+    const rows = Array.isArray(payload) ? payload : [];
+    memberships.push(...rows);
+    if (rows.length < pageSize) break;
+  }
+  return memberships;
 }
 
 async function upsertMembershipBatch(fetchImpl, config, rows) {
@@ -82,35 +136,57 @@ async function upsertMembershipBatch(fetchImpl, config, rows) {
   }, 'Membership upsert');
 }
 
+async function deleteMembershipBatch(fetchImpl, config, userIds) {
+  const query = new URLSearchParams({
+    brand: `eq.${config.brand}`,
+    managed_by_role: 'eq.true',
+    user_id: `in.(${userIds.join(',')})`
+  });
+  const url = `${config.supabaseUrl}/rest/v1/portal_design_workspace_members?${query.toString()}`;
+  const headers = authHeaders(config.serviceRoleKey);
+  headers.Prefer = 'return=minimal';
+  await requestJson(fetchImpl, url, { method: 'DELETE', headers }, 'Stale membership cleanup');
+}
+
 async function syncMemberships(options = {}) {
   const fetchImpl = options.fetchImpl || global.fetch;
   if (typeof fetchImpl !== 'function') throw new Error('A Fetch API implementation is required.');
   const config = options.config || configFromEnv(options.env || process.env);
   const pageSize = options.pageSize || DEFAULT_PAGE_SIZE;
+  const membershipPageSize = options.membershipPageSize || DEFAULT_PAGE_SIZE;
   const batchSize = options.batchSize || DEFAULT_BATCH_SIZE;
+  const deleteBatchSize = options.deleteBatchSize || Math.min(batchSize, 100);
   const now = options.now || new Date().toISOString();
+  const portalAccess = options.portalAccess || loadPortalAccess(options.root);
   const [users, memberships] = await Promise.all([
     listAuthUsers(fetchImpl, config, pageSize),
-    listMemberships(fetchImpl, config)
+    listMemberships(fetchImpl, config, membershipPageSize)
   ]);
   const existingByUser = new Map(memberships.map((row) => [String(row.user_id), row]));
+  const portalUsers = users.filter((user) => isPortalAccount(user, portalAccess));
+  const portalUserIds = new Set(portalUsers.map((user) => trim(user && user.id)).filter(Boolean));
   const rows = [];
+  const staleManagedIds = memberships
+    .filter((row) => row.managed_by_role === true && !portalUserIds.has(trim(row.user_id)))
+    .map((row) => trim(row.user_id))
+    .filter(Boolean);
   const summary = {
     brand: config.brand,
     users: users.length,
+    portalUsers: portalUsers.length,
     created: 0,
     updated: 0,
     unchanged: 0,
-    manualPreserved: 0,
+    manualPreserved: memberships.filter((row) => row.managed_by_role === false).length,
+    removed: 0,
     upserted: 0
   };
 
-  users.forEach((user) => {
+  portalUsers.forEach((user) => {
     const userId = trim(user && user.id);
     if (!userId) return;
     const existing = existingByUser.get(userId);
     if (existing && existing.managed_by_role === false) {
-      summary.manualPreserved += 1;
       return;
     }
     const accessLevel = desiredAccess(user);
@@ -129,6 +205,10 @@ async function syncMemberships(options = {}) {
     });
   });
 
+  for (let offset = 0; offset < staleManagedIds.length; offset += deleteBatchSize) {
+    await deleteMembershipBatch(fetchImpl, config, staleManagedIds.slice(offset, offset + deleteBatchSize));
+  }
+  summary.removed = staleManagedIds.length;
   for (let offset = 0; offset < rows.length; offset += batchSize) {
     await upsertMembershipBatch(fetchImpl, config, rows.slice(offset, offset + batchSize));
   }
@@ -143,9 +223,12 @@ async function main() {
 
 module.exports = {
   configFromEnv,
+  deleteMembershipBatch,
   desiredAccess,
+  isPortalAccount,
   listAuthUsers,
   listMemberships,
+  loadPortalAccess,
   syncMemberships
 };
 

@@ -84,7 +84,7 @@ assert.match(sql, /actor_email[\s\S]*auth\.jwt\(\) ->> 'email'/, 'Audit writes m
 assert.match(sql, /portal_design_workspace_history[\s\S]*offset 100/i, 'Server history retention must be bounded');
 assert.match(sql, /portal_design_workspace_audit[\s\S]*offset 2000/i, 'Server audit retention must be bounded');
 assert.match(sql, /raw_app_meta_data ->> 'portal_role'/, 'Initial workspace membership must bootstrap from protected app metadata');
-assert.match(sql, /from auth\.users account\s+on conflict/i, 'Every existing authenticated account must receive workspace membership');
+assert.match(sql, /from auth\.users account\s+where[\s\S]+portal_role[\s\S]+employee[\s\S]+readonly[\s\S]+on conflict/i, 'Only protected portal roles may be backfilled by SQL');
 assert.match(sql, /where portal_design_workspace_members\.managed_by_role = true/i, 'Automatic sync must preserve manual membership overrides');
 assert.match(sql, /create or replace function public\.restore_portal_design_workspace_revision/, 'Protected remote restore RPC must exist');
 assert.match(sql, /grant execute on function public\.restore_portal_design_workspace_revision[^;]+to authenticated/i, 'Authenticated members must be able to invoke the restore RPC');

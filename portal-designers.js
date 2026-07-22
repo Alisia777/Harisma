@@ -1497,7 +1497,7 @@
   }
 
   function renderBoard(projects) {
-    return '<div class="design-ws-board-navigation"><div><strong>Этапы работы</strong><span>Листайте доску кнопками или горизонтальным жестом</span></div><div class="design-ws-board-navigation-actions"><button type="button" data-design-board-scroll="-1" aria-label="Предыдущие этапы" title="Прокрутить доску влево">←</button><button type="button" data-design-board-scroll="1" aria-label="Следующие этапы" title="Прокрутить доску вправо">→</button></div></div>' +
+    return '<div class="design-ws-board-navigation"><div class="design-ws-board-navigation-copy"><strong>Этапы работы</strong><span>Перетащите ползунок, чтобы открыть правые этапы</span></div><label class="design-ws-board-slider"><span>Положение доски <output data-design-board-slider-value>0%</output></span><input type="range" min="0" max="1000" step="1" value="0" data-design-board-slider aria-label="Положение доски" aria-valuetext="Положение доски: 0%"></label></div>' +
       '<div class="design-ws-board-wrap" data-design-board-scrollport tabindex="0" aria-label="Доска проектов: пять этапов, доступна горизонтальная прокрутка"><div class="design-ws-board">' + Object.keys(STATUS).map(function (key) {
       var meta = STATUS[key];
       var allRows = projects.filter(function (project) { return project.status === key; });
@@ -1508,6 +1508,36 @@
         '<div class="design-ws-column-list">' + (rows.length ? rows.map(renderCard).join('') + (total > rows.length ? '<button type="button" class="design-ws-column-more" data-design-mode="table">Ещё ' + (total - rows.length) + ' · открыть таблицу</button>' : '') : '<button type="button" class="design-ws-empty design-ws-empty-action"' + (canEdit() ? ' data-design-add-project-status="' + key + '"' : ' disabled') + '><span aria-hidden="true">＋</span><strong>' + html(key === 'done' ? 'Здесь появится результат' : 'Пока пусто') + '</strong><p>' + html(canEdit() ? 'Добавить проект в этот этап' : 'Перетащите карточку сюда') + '</p></button>') + '</div>' +
         '</section>';
     }).join('') + '</div></div>';
+  }
+
+  function syncBoardSlider(root) {
+    if (!root) return;
+    var scrollport = root.querySelector('[data-design-board-scrollport]');
+    var slider = root.querySelector('[data-design-board-slider]');
+    if (!scrollport || !slider) return;
+    var maxScroll = Math.max(0, scrollport.scrollWidth - scrollport.clientWidth);
+    var sliderValue = maxScroll > 0 ? Math.round((scrollport.scrollLeft / maxScroll) * 1000) : 0;
+    var percent = Math.round(sliderValue / 10);
+    slider.value = String(sliderValue);
+    slider.disabled = maxScroll <= 1;
+    slider.style.setProperty('--design-slider-progress', percent + '%');
+    slider.setAttribute('aria-valuetext', 'Положение доски: ' + percent + '%');
+    var output = root.querySelector('[data-design-board-slider-value]');
+    if (output) output.textContent = percent + '%';
+  }
+
+  function scrollBoardFromSlider(slider) {
+    var root = slider && slider.closest('#' + ROOT_ID);
+    var scrollport = root && root.querySelector('[data-design-board-scrollport]');
+    if (!scrollport) return;
+    var maxScroll = Math.max(0, scrollport.scrollWidth - scrollport.clientWidth);
+    var sliderValue = Math.max(0, Math.min(1000, number(slider.value)));
+    var percent = Math.round(sliderValue / 10);
+    scrollport.scrollLeft = maxScroll * sliderValue / 1000;
+    slider.style.setProperty('--design-slider-progress', percent + '%');
+    slider.setAttribute('aria-valuetext', 'Положение доски: ' + percent + '%');
+    var output = root.querySelector('[data-design-board-slider-value]');
+    if (output) output.textContent = percent + '%';
   }
 
   function renderTable(projects) {
@@ -1873,6 +1903,7 @@
         restoreEntity(button.getAttribute('data-design-restore'), button.getAttribute('data-design-restore-id'));
       });
     });
+    syncBoardSlider(root);
     return root;
   }
 
@@ -2414,18 +2445,6 @@
       var root = event.target && event.target.closest && event.target.closest('#' + ROOT_ID);
       if (!root) return;
       if (event.target.closest('[data-design-resource-link]')) return;
-      var boardScrollButton = event.target.closest('[data-design-board-scroll]');
-      if (boardScrollButton) {
-        var boardScrollport = root.querySelector('[data-design-board-scrollport]');
-        var boardDirection = number(boardScrollButton.getAttribute('data-design-board-scroll')) < 0 ? -1 : 1;
-        var boardDistance = boardScrollport ? Math.max(280, Math.round(boardScrollport.clientWidth * .78)) : 0;
-        if (boardScrollport && typeof boardScrollport.scrollBy === 'function') {
-          boardScrollport.scrollBy({ left: boardDirection * boardDistance, behavior: 'smooth' });
-        } else if (boardScrollport) {
-          boardScrollport.scrollLeft += boardDirection * boardDistance;
-        }
-        return;
-      }
       var summaryFocus = event.target.closest('[data-design-focus]');
       if (summaryFocus) { applySummaryFocus(summaryFocus.getAttribute('data-design-focus')); return; }
       if (event.target.closest('[data-design-reset-filters]')) { resetProjectFilters(); return; }
@@ -2558,7 +2577,12 @@
     });
 
     document.addEventListener('input', function (event) {
-      if (!event.target || !event.target.matches || !event.target.matches('#' + ROOT_ID + ' [data-design-search]')) return;
+      if (!event.target || !event.target.matches) return;
+      if (event.target.matches('#' + ROOT_ID + ' [data-design-board-slider]')) {
+        scrollBoardFromSlider(event.target);
+        return;
+      }
+      if (!event.target.matches('#' + ROOT_ID + ' [data-design-search]')) return;
       var value = event.target.value;
       var searchKey = event.target.getAttribute('data-design-search') || 'search';
       var pageKey = event.target.getAttribute('data-design-search-page') || 'projectPage';
@@ -2572,6 +2596,15 @@
         var next = document.querySelector('#' + ROOT_ID + ' [data-design-search="' + searchKey + '"]');
         if (next) { next.focus(); try { next.setSelectionRange(value.length, value.length); } catch (_) {} }
       }, 180);
+    });
+
+    document.addEventListener('scroll', function (event) {
+      if (!event.target || !event.target.matches || !event.target.matches('#' + ROOT_ID + ' [data-design-board-scrollport]')) return;
+      syncBoardSlider(event.target.closest('#' + ROOT_ID));
+    }, true);
+
+    window.addEventListener('resize', function () {
+      syncBoardSlider(document.getElementById(ROOT_ID));
     });
 
     document.addEventListener('keydown', function (event) {

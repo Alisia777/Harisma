@@ -230,9 +230,18 @@ async function testBoardAndModalOverflow(browser, baseUrl) {
   assert.ok(desktopLayout.cardRight <= desktopLayout.columnRight + 1, 'Long SKU, URL, and tags must not stretch a card outside its column');
   assert.ok(desktopLayout.wrapScrollWidth > desktopLayout.wrapClientWidth, 'Wide board must retain a horizontal scrollport');
   assert.ok(desktopLayout.bodyScrollWidth <= desktopLayout.viewportWidth + 1, 'Board overflow must remain inside its scrollport, not the whole page');
-  assert.strictEqual(await page.locator('[data-design-board-scroll]').count(), 2, 'Top-level board navigation must expose both scroll directions');
-  await page.click('[data-design-board-scroll="1"]');
+  assert.strictEqual(await page.locator('[data-design-board-slider]').count(), 1, 'Top-level board navigation must expose one precise position slider');
+  await page.locator('[data-design-board-slider]').evaluate((slider) => {
+    slider.value = '600';
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+  });
   await page.waitForFunction(() => document.querySelector('[data-design-board-scrollport]').scrollLeft > 0);
+  await page.locator('[data-design-board-scrollport]').evaluate((scrollport) => {
+    scrollport.scrollLeft = scrollport.scrollWidth - scrollport.clientWidth;
+    scrollport.dispatchEvent(new Event('scroll'));
+  });
+  await page.waitForFunction(() => Number(document.querySelector('[data-design-board-slider]').value) >= 995);
+  assert.strictEqual(await page.locator('[data-design-board-slider-value]').textContent(), '100%', 'Slider label must stay synchronized with natural horizontal scrolling');
 
   await page.click('[data-design-project="overflow-project"]');
   await page.waitForSelector('[data-design-project-form]');

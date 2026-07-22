@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-22T18:47:44.002Z",
+  "generatedAt": "2026-07-22T20:19:58.655Z",
   "inputPath": "/home/runner/work/Harisma/Harisma/data/skus.json",
   "outputPath": "/home/runner/work/Harisma/Harisma/daria-prices.csv",
   "tsvOutputPath": "/home/runner/work/Harisma/Harisma/daria-prices-google.tsv",

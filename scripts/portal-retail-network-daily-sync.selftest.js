@@ -25,7 +25,9 @@ appendSheet(workbook, 'База  Лету', [
   ['1', '2026-07-20', 'Дата выгрузки', 'Период выгрузки', 'Название товара', 'Штрихкод', 'Артикул Алькор', 'Артикул', 'Всего. Заказано', 'Всего. Заказано, Р', 'Всего. Транзит', 'Всего. Доставлено', 'Всего. Доставлено, Р', 'Всего. Остаток в продаже', 'Центральный склад. Остаток в продаже'],
   ['1', '2026-07-20', '2026-07-22', '2026-07-20-2026-07-20', 'Крем', '4600000000000', 'MPL1', 'cream_1', 2, 1000, 0, 2, 1000, 9, 7],
   ['1', '2026-07-21', '2026-06-08', '2026-06-07-2026-06-07', 'Старая строка', '4600000000002', 'MPL2', 'stale_future_date', 99, 99000, 0, 0, 0, 1, 1],
-  ['1', '2026-07-21', '2026-07-21', '2026-07-01-2026-07-20', 'Многодневный отчёт', '4600000000003', 'MPL3', 'multi_day_report', 99, 99000, 0, 0, 0, 1, 1]
+  ['1', '2026-07-21', '2026-07-21', '2026-07-01-2026-07-20', 'Многодневный отчёт', '4600000000003', 'MPL3', 'multi_day_report', 99, 99000, 0, 0, 0, 1, 1],
+  ['1', '2026-07-21', 'Дата выгрузки', 'Период выгрузки', 'Название товара', 'Штрихкод', 'Артикул Алькор', 'Артикул', 'Всего. Заказано', 'Всего. Заказано, Р', 'Всего. Транзит', 'Всего. Доставлено', 'Всего. Доставлено, Р', 'Всего. Остаток в продаже', 'Центральный склад. Остаток в продаже'],
+  ['1', '2026-07-21', '2026-07-22', '', '', '', '', '', '', '', '', '', '', '', '']
 ]);
 
 appendSheet(workbook, 'База  ЗЯ', [
@@ -43,11 +45,12 @@ appendSheet(workbook, 'База  ММ', [
 ]);
 
 const parsed = parseRetailWorkbook(workbook, { from: '2026-07-20', to: '2026-07-21' });
-assert.strictEqual(parsed.letu.length, 1, 'Letual revisions must be deduplicated');
+assert.strictEqual(parsed.letu.length, 2, 'Letual revisions must be deduplicated while an explicit empty-day export stays visible');
 assert.strictEqual(parsed.letu[0].date, '2026-07-20', 'Letual business date must come from the one-day export period');
 assert.strictEqual(parsed.letu[0].deliveredUnits, 2, 'Letual must keep the newest export revision');
 assert.strictEqual(parsed.letu[0].stock, 9, 'Letual total stock must be parsed');
 assert.strictEqual(parsed.letu[0].warehouseBreakdown['Центральный склад'].stock, 7, 'Letual warehouse stock must be parsed');
+assert.strictEqual(parsed.letu[1].coverageOnly, true, 'An empty Letual export must be represented as a zero-fact coverage marker');
 assert.strictEqual(parsed.goldapple.length, 1, 'ZYA revisions must be deduplicated');
 assert.strictEqual(parsed.goldapple[0].deliveredRevenue, 600, 'ZYA must keep the last status revision');
 assert.strictEqual(parsed.megamarket.length, 1, 'Megamarket duplicate rows must not double sales');
@@ -56,6 +59,10 @@ const mmAggregate = aggregatePlatform(parsed.megamarket, {});
 assert.strictEqual(mmAggregate.series[0].ordersRevenue, 800);
 assert.strictEqual(mmAggregate.series[0].financialResult, 500);
 assert.strictEqual(mmAggregate.series[0].units, 1);
+const letuAggregate = aggregatePlatform(parsed.letu, {});
+assert.strictEqual(letuAggregate.series.at(-1).date, '2026-07-21');
+assert.strictEqual(letuAggregate.series.at(-1).ordersRevenue, 0);
+assert.strictEqual(letuAggregate.articles.length, 1, 'Coverage markers must not create synthetic articles');
 
 const base = {
   platforms: [
@@ -73,22 +80,28 @@ assert.strictEqual(zyaPoint.deliveredUnits, 2, 'Delivered units must stay distin
 assert.strictEqual(updated.status.platforms.goldapple.status, 'fresh');
 assert.strictEqual(updated.status.platforms.samokat.status, 'missing');
 
+const currentAt20 = JSON.parse(JSON.stringify(updated.payload));
+for (const platform of currentAt20.platforms) {
+  if (['goldapple', 'letu', 'megamarket'].includes(platform.key)) {
+    platform.series = platform.series.filter((point) => point.date <= '2026-07-20');
+  }
+}
 const preservedCurrent = buildPreservedSourceStatus(
-  updated.payload,
+  currentAt20,
   { inputFile: 'data/platform_trends.json', to: '2026-07-20' },
   new Error('service account unavailable')
 );
 assert.deepStrictEqual(preservedCurrent.stale, [], 'Current committed finalized facts may be preserved when Sheet auth is temporarily unavailable');
 assert.strictEqual(preservedCurrent.status.platforms.goldapple.status, 'preserved');
 const preservedStale = buildPreservedSourceStatus(
-  updated.payload,
+  currentAt20,
   { inputFile: 'data/platform_trends.json', to: '2026-07-21', maxLagDays: 0 },
   new Error('service account unavailable')
 );
 assert.deepStrictEqual(preservedStale.stale, ['goldapple', 'letu', 'megamarket'], 'A later cutoff must not silently publish preserved stale retail facts');
 assert.deepStrictEqual(preservedStale.blocking, ['goldapple', 'letu', 'megamarket'], 'Zero lag tolerance must keep a D-1 mismatch blocking');
 const preservedWithinTolerance = buildPreservedSourceStatus(
-  updated.payload,
+  currentAt20,
   { inputFile: 'data/platform_trends.json', to: '2026-07-21', maxLagDays: 1 },
   new Error('service account unavailable')
 );

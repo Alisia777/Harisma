@@ -183,7 +183,23 @@ function parseLetualRows(rows, options) {
     const date = letualBusinessDate(row[1], value('Период выгрузки'));
     if (!withinWindow(date, options)) continue;
     const articleKey = normalizeText(value('Артикул'));
-    if (!articleKey || normalizeKey(articleKey) === 'артикул') continue;
+    if (!articleKey || normalizeKey(articleKey) === 'артикул') {
+      const exportDate = isoDate(value('Дата выгрузки'));
+      const isEmptyDailyExport = Boolean(date && exportDate && !normalizeText(value('Период выгрузки')));
+      if (isEmptyDailyExport) {
+        records.push({
+          platformKey: 'letu',
+          date,
+          exportDate,
+          legalEntity: normalizeText(row[0]),
+          articleKey: '',
+          coverageOnly: true,
+          source: 'google-sheets-retail-daily/letu',
+          sourceRow: rowIndex + 1
+        });
+      }
+      continue;
+    }
     const warehouseBreakdown = {};
     for (let column = 0; column < headers.length; column += 1) {
       const header = normalizeText(headers[column]);
@@ -404,6 +420,7 @@ function aggregatePlatform(records, existingPlatform = {}) {
   const latestWarehouseTotals = new Map();
   for (const record of records) {
     addRecord(dateTotals.get(record.date) || dateTotals.set(record.date, emptyTotals()).get(record.date), record);
+    if (record.coverageOnly) continue;
     const article = articleMap.get(record.articleKey) || {
       articleKey: record.articleKey,
       article: record.articleKey,

@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-07-22T07:44:23.442Z",
+  "generatedAt": "2026-07-23T07:13:28.236Z",
   "status": "critical",
   "summary": {
-    "issueCount": 251,
+    "issueCount": 253,
     "criticalCount": 200,
     "warningCount": 14,
     "monthKey": "2026-07",
-    "maxDate": "2026-07-21",
-    "apiUnmappedPlatformRows": 49,
-    "apiUnmappedUniqueSku": 40,
-    "apiUnmappedRevenue": 428722,
+    "maxDate": "2026-07-22",
+    "apiUnmappedPlatformRows": 51,
+    "apiUnmappedUniqueSku": 42,
+    "apiUnmappedRevenue": 437895,
     "apiUnmappedActionRows": 12,
     "apiUnmappedActionUniqueSku": 12,
-    "apiUnmappedActionRevenue": 287158,
+    "apiUnmappedActionRevenue": 290563,
     "apiKnownOutsideRegistryRows": 0,
     "apiKnownOutsideRegistryUniqueSku": 0,
     "apiKnownOutsideRegistryRevenue": 0,
@@ -34,57 +34,57 @@
   "freshness": [
     {
       "dataset": "dashboard",
-      "asOfDate": "2026-07-20",
-      "generatedAt": "2026-07-21T23:30:32.269Z",
+      "asOfDate": "2026-07-21",
+      "generatedAt": "2026-07-23T16:29:30.912Z",
       "rows": 20,
-      "referenceDate": "2026-07-22",
+      "referenceDate": "2026-07-23",
       "lagDays": 2,
       "status": "warning"
     },
     {
       "dataset": "platform_trends",
-      "asOfDate": "2026-07-21",
-      "generatedAt": "2026-07-22T07:32:49.551Z",
+      "asOfDate": "2026-07-22",
+      "generatedAt": "2026-07-23T07:01:19.457Z",
       "rows": 9,
-      "referenceDate": "2026-07-22",
+      "referenceDate": "2026-07-23",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "order_procurement",
-      "asOfDate": "2026-07-22",
-      "generatedAt": "2026-07-22T00:00:00+03:00",
-      "rows": 3120,
-      "referenceDate": "2026-07-22",
+      "asOfDate": "2026-07-23",
+      "generatedAt": "2026-07-23T00:00:00+03:00",
+      "rows": 3126,
+      "referenceDate": "2026-07-23",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "warehouse_stock_overlay",
-      "asOfDate": "2026-07-22",
-      "generatedAt": "2026-07-22T07:44:06.374Z",
+      "asOfDate": "2026-07-23",
+      "generatedAt": "2026-07-23T07:13:11.900Z",
       "rows": 185,
       "matchedRows": 185,
       "unmatchedRows": 25,
-      "referenceDate": "2026-07-22",
+      "referenceDate": "2026-07-23",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "ads_summary",
-      "asOfDate": "2026-07-21",
-      "generatedAt": "2026-07-22T07:43:35.844Z",
+      "asOfDate": "2026-07-22",
+      "generatedAt": "2026-07-23T07:12:42.484Z",
       "rows": 8,
-      "referenceDate": "2026-07-22",
+      "referenceDate": "2026-07-23",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "iu_drr_summary",
-      "asOfDate": "2026-07-20",
-      "generatedAt": "2026-07-21T10:05:17.627Z",
+      "asOfDate": "2026-07-21",
+      "generatedAt": "2026-07-22T07:46:46.890Z",
       "rows": 30,
-      "referenceDate": "2026-07-22",
+      "referenceDate": "2026-07-23",
       "lagDays": 2,
       "status": "warning"
     }
@@ -110,10 +110,10 @@
     "wb": {
       "label": "WB",
       "rows": 139,
-      "directRevenue": 290689208,
-      "directUnits": 171547,
-      "aggregateRevenue": 290688167,
-      "aggregateDate": "2026-07-21",
+      "directRevenue": 305011956,
+      "directUnits": 179011,
+      "aggregateRevenue": 305010915,
+      "aggregateDate": "2026-07-22",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -126,14 +126,14 @@
     },
     "ozon": {
       "label": "Ozon",
-      "rows": 267,
-      "directRevenue": 51481766,
-      "directUnits": 66573,
-      "aggregateRevenue": 51481766,
-      "aggregateDate": "2026-07-21",
-      "unmappedCount": 1,
-      "unmappedRevenue": 597,
-      "unmappedUnits": 1,
+      "rows": 269,
+      "directRevenue": 53778871,
+      "directUnits": 69306,
+      "aggregateRevenue": 53778871,
+      "aggregateDate": "2026-07-22",
+      "unmappedCount": 3,
+      "unmappedRevenue": 3947,
+      "unmappedUnits": 36,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
       "ignoredUnits": 0,
@@ -143,11 +143,11 @@
     },
     "ya": {
       "label": "Я.Маркет",
-      "rows": 142,
-      "directRevenue": 2691634,
-      "directUnits": 3891,
-      "aggregateRevenue": 2788714,
-      "aggregateDate": "2026-07-21",
+      "rows": 147,
+      "directRevenue": 2825328,
+      "directUnits": 4096,
+      "aggregateRevenue": 2925746,
+      "aggregateDate": "2026-07-22",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -161,13 +161,13 @@
     "goldapple": {
       "label": "ЗЯ",
       "rows": 80,
-      "directRevenue": 1354926,
-      "directUnits": 1829,
-      "aggregateRevenue": 1354926,
-      "aggregateDate": "2026-07-20",
+      "directRevenue": 1419610,
+      "directUnits": 1921,
+      "aggregateRevenue": 1419610,
+      "aggregateDate": "2026-07-21",
       "unmappedCount": 26,
-      "unmappedRevenue": 266778,
-      "unmappedUnits": 291,
+      "unmappedRevenue": 272130,
+      "unmappedUnits": 297,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
       "ignoredUnits": 0,
@@ -181,7 +181,7 @@
       "directRevenue": 1124540,
       "directUnits": 2077,
       "aggregateRevenue": 1124540,
-      "aggregateDate": "2026-07-20",
+      "aggregateDate": "2026-07-21",
       "unmappedCount": 12,
       "unmappedRevenue": 148348,
       "unmappedUnits": 311,
@@ -195,13 +195,13 @@
     "megamarket": {
       "label": "megamarket",
       "rows": 59,
-      "directRevenue": 78312,
-      "directUnits": 143,
-      "aggregateRevenue": 78312,
-      "aggregateDate": "2026-07-20",
+      "directRevenue": 88957,
+      "directUnits": 161,
+      "aggregateRevenue": 88957,
+      "aggregateDate": "2026-07-21",
       "unmappedCount": 10,
-      "unmappedRevenue": 12998,
-      "unmappedUnits": 26,
+      "unmappedRevenue": 13469,
+      "unmappedUnits": 27,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
       "ignoredUnits": 0,
@@ -228,12 +228,12 @@
     }
   },
   "orderSummary": {
-    "rows": 3120,
+    "rows": 3126,
     "noStockNeedRows": 200,
-    "lowTurnoverRows": 48,
-    "totalNeed7": 446,
-    "totalNeed14": 17162,
-    "totalNeed28": 84515
+    "lowTurnoverRows": 51,
+    "totalNeed7": 402,
+    "totalNeed14": 17172,
+    "totalNeed28": 85493
   },
   "ownerSummary": {
     "totalSku": 209,
@@ -254,7 +254,7 @@
     "warningUnmatchedRows": 0
   },
   "wbOwnerDistributionSummary": {
-    "sourceGeneratedAt": "2026-07-22T00:00:00+03:00",
+    "sourceGeneratedAt": "2026-07-23T00:00:00+03:00",
     "matchedSkuCount": 59,
     "updatedOwnerCount": 0,
     "missingInPortalCount": 0,
@@ -595,8 +595,8 @@
       "articleKey": "alteya_beauty_brows_box",
       "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
       "need7": 1,
-      "need14": 2,
-      "need28": 3,
+      "need14": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -609,7 +609,7 @@
       "name": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
       "need7": 3,
       "need14": 5,
-      "need28": 9,
+      "need28": 10,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -622,7 +622,7 @@
       "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Артерол, 10мл",
       "need7": 2,
       "need14": 3,
-      "need28": 5,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -687,7 +687,7 @@
       "name": "cardicin_BAD_60caps",
       "need7": 2,
       "need14": 3,
-      "need28": 6,
+      "need28": 5,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -855,7 +855,7 @@
       "articleKey": "gel_antiakne_20ml_v2",
       "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
       "need7": 9,
-      "need14": 17,
+      "need14": 18,
       "need28": 35,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
@@ -934,7 +934,7 @@
       "name": "Крем от гемороя Геморект, CPA, 15 мл",
       "need7": 1,
       "need14": 2,
-      "need28": 4,
+      "need28": 5,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1012,7 +1012,7 @@
       "name": "Диабет витамины при сахарном диабете, Алтея, Инсулайт, 49г",
       "need7": 2,
       "need14": 3,
-      "need28": 5,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1090,7 +1090,7 @@
       "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Кардицин, 3 шт",
       "need7": 1,
       "need14": 1,
-      "need28": 2,
+      "need28": 1,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1168,7 +1168,7 @@
       "name": "Возбудитель для мужчин, средство для потенции и эрекции, витамины для мужчины,Кинжал, 20 капсул",
       "need7": 1,
       "need14": 2,
-      "need28": 5,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1180,8 +1180,8 @@
       "articleKey": "krem_buster_250ml",
       "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
       "need7": 3,
-      "need14": 6,
-      "need28": 11,
+      "need14": 5,
+      "need28": 10,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1220,7 +1220,7 @@
       "name": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
       "need7": 4,
       "need14": 7,
-      "need28": 14,
+      "need28": 13,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1259,7 +1259,7 @@
       "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
       "need7": 4,
       "need14": 7,
-      "need28": 13,
+      "need28": 14,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1311,7 +1311,7 @@
       "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
       "need7": 2,
       "need14": 4,
-      "need28": 8,
+      "need28": 7,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1335,9 +1335,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "micardin",
       "name": "Пищевая добавка Микардин, CPA, 10 капсул",
-      "need7": 2,
-      "need14": 4,
-      "need28": 8,
+      "need7": 3,
+      "need14": 5,
+      "need28": 9,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1440,8 +1440,8 @@
       "articleKey": "okospas",
       "name": "Витамины для глаз и восстановления зрения Окоспас, с лютеином и черникой, 10 мл",
       "need7": 20,
-      "need14": 39,
-      "need28": 78,
+      "need14": 40,
+      "need28": 80,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1479,8 +1479,8 @@
       "articleKey": "otivin",
       "name": "Пищевая добавка Отивин , CPA, 10 мл",
       "need7": 2,
-      "need14": 3,
-      "need28": 6,
+      "need14": 4,
+      "need28": 7,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1493,7 +1493,7 @@
       "name": "Средство от бородавок, удаление папиллом, Алтея, Папидерм, 11 мл",
       "need7": 2,
       "need14": 4,
-      "need28": 8,
+      "need28": 7,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1571,7 +1571,7 @@
       "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
       "need7": 2,
       "need14": 3,
-      "need28": 5,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1610,7 +1610,7 @@
       "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
       "need7": 16,
       "need14": 32,
-      "need28": 63,
+      "need28": 64,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1740,7 +1740,7 @@
       "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
       "need7": 2,
       "need14": 4,
-      "need28": 8,
+      "need28": 7,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1753,7 +1753,7 @@
       "name": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
       "need7": 1,
       "need14": 1,
-      "need28": 1,
+      "need28": 2,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1792,7 +1792,7 @@
       "name": "Капсулы от алкогольной зависимости, пищевая добавка Трезвин",
       "need7": 3,
       "need14": 5,
-      "need28": 10,
+      "need28": 9,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1857,7 +1857,7 @@
       "name": "Пищевая добавка Уромакс , CPA, 20 капсул",
       "need7": 2,
       "need14": 3,
-      "need28": 7,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2013,7 +2013,7 @@
       "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Артерол, 10мл",
       "need7": 2,
       "need14": 3,
-      "need28": 5,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2104,7 +2104,7 @@
       "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
       "need7": 2,
       "need14": 4,
-      "need28": 8,
+      "need28": 7,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2116,7 +2116,7 @@
       "articleKey": "gel_antiakne_20ml_v2",
       "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
       "need7": 9,
-      "need14": 17,
+      "need14": 18,
       "need28": 35,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
@@ -2169,7 +2169,7 @@
       "name": "Диабет витамины при сахарном диабете, Алтея, Инсулайт, 49г",
       "need7": 2,
       "need14": 3,
-      "need28": 5,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2233,8 +2233,8 @@
       "articleKey": "krem_buster_250ml",
       "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
       "need7": 3,
-      "need14": 6,
-      "need28": 11,
+      "need14": 5,
+      "need28": 10,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2312,7 +2312,7 @@
       "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
       "need7": 4,
       "need14": 7,
-      "need28": 13,
+      "need28": 14,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2377,7 +2377,7 @@
       "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
       "need7": 2,
       "need14": 4,
-      "need28": 8,
+      "need28": 7,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2494,7 +2494,7 @@
       "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
       "need7": 2,
       "need14": 3,
-      "need28": 5,
+      "need28": 6,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2583,9 +2583,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
       "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-      "need7": 4,
-      "need14": 8,
-      "need28": 16,
+      "need7": 5,
+      "need14": 9,
+      "need28": 17,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2611,7 +2611,7 @@
       "name": "shampun_kudryavii_metod_500ml",
       "need7": 1,
       "need14": 2,
-      "need28": 3,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -2869,10 +2869,10 @@
       "platformLabel": "ЗЯ",
       "articleKey": "retinol_boost_krem_d",
       "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, 30мл",
-      "revenue": 62799,
-      "units": 76,
+      "revenue": 65349,
+      "units": 79,
       "firstDate": "2026-07-02",
-      "lastDate": "2026-07-20",
+      "lastDate": "2026-07-21",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2910,11 +2910,11 @@
       "platform": "goldapple",
       "platformLabel": "ЗЯ",
       "articleKey": "syvorotka_dlya_lica_",
-      "name": "Сыворотка для лица отбеливающая",
-      "revenue": 24296,
-      "units": 32,
+      "name": "Алтея Сыворотка для лица сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пя",
+      "revenue": 25151,
+      "units": 33,
       "firstDate": "2026-07-04",
-      "lastDate": "2026-07-20",
+      "lastDate": "2026-07-21",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3033,8 +3033,8 @@
       "severity": "warning",
       "type": "dataset_stale_or_empty",
       "dataset": "dashboard",
-      "asOfDate": "2026-07-20",
-      "referenceDate": "2026-07-22",
+      "asOfDate": "2026-07-21",
+      "referenceDate": "2026-07-23",
       "lagDays": 2,
       "message": "Данные отстают на 2 дн."
     },
@@ -3042,8 +3042,8 @@
       "severity": "warning",
       "type": "dataset_stale_or_empty",
       "dataset": "iu_drr_summary",
-      "asOfDate": "2026-07-20",
-      "referenceDate": "2026-07-22",
+      "asOfDate": "2026-07-21",
+      "referenceDate": "2026-07-23",
       "lagDays": 2,
       "message": "Данные отстают на 2 дн."
     },
@@ -3095,12 +3095,40 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "goldapple",
       "platformLabel": "ЗЯ",
+      "articleKey": "krem_dlya_lica_pdrn_",
+      "name": "Крем для лица с ПДРН (PDRN) и спикулами, 50 мл",
+      "revenue": 7915,
+      "units": 5,
+      "firstDate": "2026-07-14",
+      "lastDate": "2026-07-21",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "info",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "goldapple",
+      "platformLabel": "ЗЯ",
       "articleKey": "retinait_krem_1_5_50",
       "name": "Крем с липомосомальным ретинолом (0,1% - 3%), торговая марка Алтея, 50 мл",
       "revenue": 7516,
       "units": 8,
       "firstDate": "2026-07-12",
       "lastDate": "2026-07-20",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "info",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "goldapple",
+      "platformLabel": "ЗЯ",
+      "articleKey": "syvorotka_dlya_rosta",
+      "name": "Средства косметические для ухода за бровями: сыворотка для бровей и ресниц, с маркировкой \"Алтея\", 6",
+      "revenue": 7139,
+      "units": 16,
+      "firstDate": "2026-07-04",
+      "lastDate": "2026-07-21",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3129,34 +3157,6 @@
       "units": 12,
       "firstDate": "2026-07-01",
       "lastDate": "2026-07-16",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "info",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "goldapple",
-      "platformLabel": "ЗЯ",
-      "articleKey": "syvorotka_dlya_rosta",
-      "name": "Сыворотка для бровей и ресниц, 6 мл",
-      "revenue": 6711,
-      "units": 15,
-      "firstDate": "2026-07-04",
-      "lastDate": "2026-07-20",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "info",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "goldapple",
-      "platformLabel": "ЗЯ",
-      "articleKey": "krem_dlya_lica_pdrn_",
-      "name": "Крем для лица с ПДРН (PDRN) и спикулами, 50 мл",
-      "revenue": 6396,
-      "units": 4,
-      "firstDate": "2026-07-14",
-      "lastDate": "2026-07-18",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3331,6 +3331,20 @@
       "severity": "info",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "maska_dlya_lica_intens_uvl_50ml",
+      "name": "maska_dlya_lica_intens_uvl_50ml",
+      "revenue": 2875,
+      "units": 16,
+      "firstDate": "2026-07-19",
+      "lastDate": "2026-07-22",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "info",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
       "platform": "goldapple",
       "platformLabel": "ЗЯ",
       "articleKey": "maska-batter_dlya_ro",
@@ -3387,6 +3401,20 @@
       "severity": "info",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
+      "platform": "megamarket",
+      "platformLabel": "megamarket",
+      "articleKey": "qeep_nabor_remuver_40ml",
+      "name": "Ремувер гель qeep для удаления кутикулы 40 мл",
+      "revenue": 1936,
+      "units": 6,
+      "firstDate": "2026-07-06",
+      "lastDate": "2026-07-21",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "info",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
       "platform": "letu",
       "platformLabel": "Лэтуаль",
       "articleKey": "qeep_dlyarostavolos_100ml",
@@ -3423,20 +3451,6 @@
       "units": 1,
       "firstDate": "2026-07-10",
       "lastDate": "2026-07-10",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "info",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "megamarket",
-      "platformLabel": "megamarket",
-      "articleKey": "qeep_nabor_remuver_40ml",
-      "name": "Ремувер гель qeep для удаления кутикулы 40 мл",
-      "revenue": 1465,
-      "units": 5,
-      "firstDate": "2026-07-06",
-      "lastDate": "2026-07-11",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3535,20 +3549,6 @@
       "units": 1,
       "firstDate": "2026-07-10",
       "lastDate": "2026-07-10",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "info",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "megamarket",
-      "platformLabel": "megamarket",
-      "articleKey": "qeep_tobaccocherry_450ml",
-      "name": "Гель для душа парфюмированный Tobacco Cherry qeep 450 мл",
-      "revenue": 320,
-      "units": 1,
-      "firstDate": "2026-07-03",
-      "lastDate": "2026-07-03",
       "message": "API SKU не найден в skus.json/алиасах"
     }
   ]

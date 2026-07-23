@@ -1,11 +1,11 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-07-22T07:44:23.669Z",
+  "generatedAt": "2026-07-23T07:13:28.469Z",
   "source": {
     "skus": 209,
     "aliases": 342,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-07-22T07:44:23.442Z"
+    "dataQualityGeneratedAt": "2026-07-23T07:13:28.236Z"
   },
   "summary": {
     "skuCount": 209,
@@ -18203,10 +18203,10 @@
       "platform": "goldapple",
       "api_sku": "retinol_boost_krem_d",
       "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, 30мл",
-      "revenue": 62799,
-      "units": 76,
+      "revenue": 65349,
+      "units": 79,
       "firstDate": "2026-07-02",
-      "lastDate": "2026-07-20"
+      "lastDate": "2026-07-21"
     },
     {
       "platform": "letu",
@@ -18229,11 +18229,11 @@
     {
       "platform": "goldapple",
       "api_sku": "syvorotka_dlya_lica_",
-      "name": "Сыворотка для лица отбеливающая",
-      "revenue": 24296,
-      "units": 32,
+      "name": "Алтея Сыворотка для лица сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пя",
+      "revenue": 25151,
+      "units": 33,
       "firstDate": "2026-07-04",
-      "lastDate": "2026-07-20"
+      "lastDate": "2026-07-21"
     },
     {
       "platform": "letu",

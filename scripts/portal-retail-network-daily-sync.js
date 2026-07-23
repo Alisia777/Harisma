@@ -515,6 +515,60 @@ function mergeSeriesWindow(existingSeries, sourceSeries) {
   return refreshOffsets([...byDate.values()]);
 }
 
+function mergeArticlesWindow(existingArticles, sourceArticles) {
+  const byKey = new Map((Array.isArray(existingArticles) ? existingArticles : [])
+    .map((article) => [normalizeText(article.articleKey || article.article), article])
+    .filter(([key]) => key));
+  for (const source of Array.isArray(sourceArticles) ? sourceArticles : []) {
+    const key = normalizeText(source.articleKey || source.article);
+    if (!key) continue;
+    const previous = byKey.get(key) || {};
+    const daily = mergeSeriesWindow(previous.daily || [], source.daily || []);
+    const touchedMonths = new Set((source.daily || [])
+      .map((point) => isoDate(point.date || point.label).slice(0, 7))
+      .filter(Boolean));
+    const monthlyByKey = new Map((Array.isArray(previous.monthly) ? previous.monthly : [])
+      .map((month) => [normalizeText(month.monthKey || String(month.date || '').slice(0, 7)), month])
+      .filter(([monthKey]) => monthKey));
+    for (const month of monthlyFromDaily(daily)) {
+      if (touchedMonths.has(month.monthKey)) monthlyByKey.set(month.monthKey, month);
+    }
+    byKey.set(key, {
+      ...previous,
+      ...source,
+      daily,
+      monthly: [...monthlyByKey.values()].sort((left, right) => (
+        normalizeText(left.monthKey || left.date).localeCompare(normalizeText(right.monthKey || right.date))
+      ))
+    });
+  }
+  return [...byKey.values()].sort((left, right) => (
+    normalizeText(left.articleKey || left.article).localeCompare(
+      normalizeText(right.articleKey || right.article),
+      'ru'
+    )
+  ));
+}
+
+function articleDiagnostics(articles) {
+  const rows = Array.isArray(articles) ? articles : [];
+  const revenueOf = (article) => (Array.isArray(article.monthly) ? article.monthly : [])
+    .reduce((sum, month) => sum + numberOrZero(month.revenue), 0);
+  const revenue = rows.reduce((sum, article) => sum + revenueOf(article), 0);
+  const matched = rows.filter((article) => article.skuMatched);
+  const matchedRevenue = matched.reduce((sum, article) => sum + revenueOf(article), 0);
+  return {
+    articleCount: rows.length,
+    matchedArticleCount: matched.length,
+    unmatchedArticleCount: rows.length - matched.length,
+    revenue: round(revenue),
+    matchedRevenue: round(matchedRevenue),
+    unmatchedRevenue: round(revenue - matchedRevenue),
+    matchRate: rows.length ? round(matched.length / rows.length, 4) : 0,
+    revenueMatchRate: revenue ? round(matchedRevenue / revenue, 4) : 0
+  };
+}
+
 function buildAllSeries(platforms) {
   const byDate = new Map();
   for (const platform of platforms) {
@@ -542,10 +596,16 @@ function updatePayload(basePayload, parsedPlatforms, options = {}) {
     }
     const aggregate = aggregatePlatform(records, existing.get(key) || {});
     const previous = existing.get(key) || {};
+    const articles = mergeArticlesWindow(previous.articles, aggregate.articles);
     existing.set(key, {
       ...previous,
       ...aggregate,
       series: mergeSeriesWindow(previous.series, aggregate.series),
+      articles,
+      diagnostics: {
+        ...aggregate.diagnostics,
+        ...articleDiagnostics(articles)
+      },
       source: aggregate.diagnostics.source
     });
     statusPlatforms[key] = {

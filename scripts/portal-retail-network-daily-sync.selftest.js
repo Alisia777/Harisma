@@ -67,7 +67,25 @@ assert.strictEqual(letuAggregate.articles.length, 1, 'Coverage markers must not 
 const base = {
   platforms: [
     { key: 'goldapple', label: 'ЗЯ', series: [{ date: '2026-07-20', units: 0.5, revenue: 100 }] },
-    { key: 'letu', label: 'Лэтуаль', series: [] },
+    {
+      key: 'letu',
+      label: 'Лэтуаль',
+      series: [{ date: '2026-07-19', units: 1, revenue: 500 }],
+      articles: [
+        {
+          articleKey: 'cream_1',
+          article: 'cream_1',
+          daily: [{ date: '2026-07-19', label: '2026-07-19', ordersUnits: 1, ordersRevenue: 500, revenue: 500 }],
+          monthly: [{ monthKey: '2026-07', date: '2026-07-01', ordersUnits: 1, ordersRevenue: 500, revenue: 500 }]
+        },
+        {
+          articleKey: 'legacy_1',
+          article: 'legacy_1',
+          daily: [{ date: '2026-07-19', label: '2026-07-19', ordersUnits: 1, ordersRevenue: 300, revenue: 300 }],
+          monthly: [{ monthKey: '2026-07', date: '2026-07-01', ordersUnits: 1, ordersRevenue: 300, revenue: 300 }]
+        }
+      ]
+    },
     { key: 'megamarket', label: 'Мегамаркет', series: [] },
     { key: 'samokat', label: 'Самокат', series: [] },
     { key: 'all', label: 'Все площадки', series: [] }
@@ -79,6 +97,10 @@ assert.strictEqual(zyaPoint.units, 3, 'Actual ZYA daily fact must replace the sy
 assert.strictEqual(zyaPoint.deliveredUnits, 2, 'Delivered units must stay distinct from orders');
 assert.strictEqual(updated.status.platforms.goldapple.status, 'fresh');
 assert.strictEqual(updated.status.platforms.samokat.status, 'missing');
+const updatedLetu = updated.payload.platforms.find((platform) => platform.key === 'letu');
+assert.deepStrictEqual(updatedLetu.articles.map((article) => article.articleKey), ['cream_1', 'legacy_1']);
+assert.deepStrictEqual(updatedLetu.articles.find((article) => article.articleKey === 'cream_1').daily.map((point) => point.date), ['2026-07-19', '2026-07-20']);
+assert.strictEqual(updatedLetu.articles.find((article) => article.articleKey === 'cream_1').monthly[0].revenue, 1500);
 
 const currentAt20 = JSON.parse(JSON.stringify(updated.payload));
 for (const platform of currentAt20.platforms) {

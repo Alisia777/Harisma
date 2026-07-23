@@ -209,13 +209,15 @@ jobs:
           ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
           ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID: ${{ secrets.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || vars.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || '1Zy0ec9-snLwh-J88KoFXyHxtYg3DXC8oWnC17iHNNS4' }}
-        run: >-
-          node scripts/portal-retail-network-daily-sync.js sync
-          --input-file data/platform_trends.json
-          --output-file data/platform_trends.json
-          --status-file data/retail_network_source_status.json
-          --to '${{ steps.cutoff.outputs.value }}'
-          --strict --optional-source --max-lag-days 1
+        run: |
+          RETAIL_FROM="$(date -u -d '${{ steps.cutoff.outputs.value }} - 1 day' +%F)"
+          node scripts/portal-retail-network-daily-sync.js sync \
+            --input-file data/platform_trends.json \
+            --output-file data/platform_trends.json \
+            --status-file data/retail_network_source_status.json \
+            --from "$RETAIL_FROM" \
+            --to '${{ steps.cutoff.outputs.value }}' \
+            --strict --optional-source --max-lag-days 1
 
       - name: Refresh advertising and stock
         env:

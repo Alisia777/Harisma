@@ -4,7 +4,7 @@
   if (window.__ALTEA_ANALYTICS_DATE_FRESHNESS_V1__) return;
   window.__ALTEA_ANALYTICS_DATE_FRESHNESS_V1__ = true;
 
-  const STORAGE_KEY = 'altea.portal.analyticsDateMax.v1';
+  const STORAGE_KEY = 'altea.portal.analyticsDateMax.v2';
   const targetId = ['i', 'u', 'D', 'r', 'r', 'V3', 'DateTo'].join('');
   const TARGETS = [
     { key: 'dashboard-primary', selector: '[data-ceo-date-to]' },

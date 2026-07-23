@@ -1,0 +1,34 @@
+name: Designers file storage
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'portal-designers.js'
+      - 'docs/supabase_task_attachments_setup.sql'
+      - 'scripts/setup-design-attachment-storage.js'
+      - '.github/workflows/portal-designers-file-storage.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portal-designers-file-storage
+  cancel-in-progress: false
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify storage configuration
+        run: node scripts/setup-design-attachment-storage.selftest.js
+      - name: Enable designer photos and files
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || secrets.ALTEA_SUPABASE_URL || vars.ALTEA_SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/setup-design-attachment-storage.js

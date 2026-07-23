@@ -20,6 +20,10 @@
   var MAX_IMPORT_BYTES = 8 * 1024 * 1024;
   var MAX_IMPORT_ROWS = 12000;
   var MAX_TEST_IMAGE_BYTES = 2 * 1024 * 1024;
+  var MAX_PROJECT_FILE_BYTES = 20 * 1024 * 1024;
+  var MAX_PROJECT_ATTACHMENTS = 12;
+  var PROJECT_FILES_BUCKET = 'portal-task-files';
+  var PROJECT_FILE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx', 'zip', 'ai', 'psd'];
   var PROJECT_PAGE_SIZE = 100;
   var TEST_PAGE_SIZE = 24;
   var KNOWLEDGE_PAGE_SIZE = 60;
@@ -159,12 +163,52 @@
   function legacyScopedRecordKey() { return DB_RECORD_KEY + ':' + legacyStorageScope(); }
   function legacyScopedBackupPrefix() { return 'backup:' + legacyStorageScope() + ':'; }
 
+  function normalizeProjectAttachment(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    return {
+      id: string(raw.id) || uid('design-file'),
+      fileName: string(raw.fileName || raw.name) || 'Файл',
+      mimeType: string(raw.mimeType || raw.type),
+      size: number(raw.size || raw.fileSize),
+      url: safeUrl(raw.url || raw.publicUrl || raw.href),
+      bucket: string(raw.bucket || raw.bucketName),
+      objectPath: string(raw.objectPath || raw.path),
+      createdAt: string(raw.createdAt) || nowIso()
+    };
+  }
+
+  function normalizeProjectAttachments(value) {
+    var rows = value;
+    if (typeof rows === 'string') {
+      try { rows = JSON.parse(rows); } catch (_) { rows = []; }
+    }
+    if (!Array.isArray(rows)) return [];
+    return rows.map(normalizeProjectAttachment).filter(function (item) { return item.url; }).slice(0, MAX_PROJECT_ATTACHMENTS);
+  }
+
+  function projectAttachmentExtension(fileName) {
+    var match = string(fileName).toLowerCase().match(/\.([a-z0-9]+)$/);
+    return match ? match[1] : '';
+  }
+
+  function isImageAttachment(attachment) {
+    var mimeType = string(attachment && attachment.mimeType).toLowerCase();
+    var extension = projectAttachmentExtension(attachment && attachment.fileName);
+    return /^image\/(?:png|jpe?g|webp)$/.test(mimeType) || ['png', 'jpg', 'jpeg', 'webp'].indexOf(extension) >= 0;
+  }
+
   function normalizeProject(raw) {
     raw = raw && typeof raw === 'object' ? raw : {};
     var status = STATUS[raw.status] ? raw.status : statusFromText(raw.status);
     var priority = PRIORITIES[raw.priority] ? raw.priority : priorityFromText(raw.priority);
     var type = TYPES.some(function (item) { return item[0] === raw.type; }) ? raw.type : typeFromText(raw.type);
     var createdAt = string(raw.createdAt) || nowIso();
+    var attachments = normalizeProjectAttachments(raw.attachments || raw.files);
+    var coverImageUrl = safeImageUrl(raw.coverImageUrl || raw.coverImage || raw.imageUrl || raw.previewImage);
+    if (!coverImageUrl) {
+      var firstImage = attachments.find(isImageAttachment);
+      coverImageUrl = safeImageUrl(firstImage && firstImage.url);
+    }
     return {
       id: string(raw.id) || uid('design-project'),
       title: string(raw.title || raw.name) || 'Без названия',
@@ -176,6 +220,8 @@
       marketplace: string(raw.marketplace || raw.platform),
       brief: string(raw.brief || raw.description || raw.notes),
       url: safeUrl(raw.url || raw.link || raw.href),
+      coverImageUrl: coverImageUrl,
+      attachments: attachments,
       tags: normalizeTags(raw.tags),
       archived: raw.archived === true,
       createdAt: createdAt,
@@ -772,6 +818,74 @@
 
   function remoteHeaders(cfg) {
     return { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.token, Accept: 'application/json' };
+  }
+
+  function cleanProjectFilePart(value, fallback) {
+    var cleaned = string(value)
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Za-z0-9._-]+/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^[_ .-]+|[_ .-]+$/g, '')
+      .slice(0, 100);
+    return cleaned || fallback || 'file';
+  }
+
+  function encodeProjectFilePath(path) {
+    return string(path).split('/').filter(Boolean).map(encodeURIComponent).join('/');
+  }
+
+  function projectFileSizeLabel(bytes) {
+    var size = number(bytes);
+    if (size < 1024) return Math.round(size) + ' Б';
+    if (size < 1024 * 1024) return Math.round(size / 1024) + ' КБ';
+    return (size / (1024 * 1024)).toFixed(size >= 10 * 1024 * 1024 ? 0 : 1).replace('.', ',') + ' МБ';
+  }
+
+  function validateProjectAttachmentFile(file) {
+    var extension = projectAttachmentExtension(file && file.name);
+    if (!file || !extension || PROJECT_FILE_EXTENSIONS.indexOf(extension) < 0) {
+      throw new Error('Этот формат не поддерживается. Добавьте изображение, PDF, Office, ZIP, AI или PSD');
+    }
+    if (number(file.size) <= 0) throw new Error('Выбран пустой файл');
+    if (number(file.size) > MAX_PROJECT_FILE_BYTES) throw new Error('Файл больше 20 МБ');
+  }
+
+  async function uploadProjectAttachment(projectId, file) {
+    validateProjectAttachmentFile(file);
+    var cfg = remoteConfig();
+    if (!cfg || !cfg.token) throw new Error('Для общего файла нужна активная командная синхронизация');
+    var extension = projectAttachmentExtension(file.name) || 'bin';
+    var stem = cleanProjectFilePart(file.name.replace(/\.[^.]+$/, ''), 'file');
+    var objectPath = 'design-projects/' + hashText(cfg.brand).slice(0, 12) + '/' + cleanProjectFilePart(projectId, 'project') + '/' + Date.now() + '-' + uid('file').slice(-10) + '-' + stem + '.' + extension;
+    var uploadUrl = cfg.baseUrl + '/storage/v1/object/' + encodeURIComponent(PROJECT_FILES_BUCKET) + '/' + encodeProjectFilePath(objectPath);
+    var response = await withTimeout(fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        apikey: cfg.anonKey,
+        Authorization: 'Bearer ' + cfg.token,
+        'Content-Type': file.type || 'application/octet-stream',
+        'x-upsert': 'false'
+      },
+      body: file
+    }), 30000, 'Файл не успел загрузиться');
+    if (!response.ok) {
+      var detail = '';
+      try { detail = await response.text(); } catch (_) {}
+      if (/bucket.*not found|NoSuchBucket|portal-task-files/i.test(detail)) throw new Error('Общее файловое хранилище ещё не настроено');
+      throw new Error('Не удалось загрузить файл' + (detail ? ': ' + detail.slice(0, 160) : ''));
+    }
+    var publicUrl = cfg.baseUrl + '/storage/v1/object/public/' + encodeURIComponent(PROJECT_FILES_BUCKET) + '/' + encodeProjectFilePath(objectPath);
+    return normalizeProjectAttachment({
+      id: uid('design-file'),
+      fileName: file.name,
+      mimeType: file.type || '',
+      size: file.size,
+      url: publicUrl,
+      bucket: PROJECT_FILES_BUCKET,
+      objectPath: objectPath,
+      createdAt: nowIso()
+    });
   }
 
   function withTimeout(promise, timeoutMs, message) {
@@ -1486,18 +1600,27 @@
     var priority = PRIORITIES[project.priority] || PRIORITIES.normal;
     var due = dueMeta(project);
     var tags = (project.tags || []).slice(0, 2).map(function (tag) { return '<span class="design-ws-chip">' + html(tag) + '</span>'; }).join('');
-    return '<article class="design-ws-card' + (isOverdue(project) ? ' is-overdue' : '') + '" draggable="true" tabindex="0" data-design-project="' + html(project.id) + '">' +
-      '<div class="design-ws-card-kicker"><span>' + html(typeLabel(project.type)) + '</span><span class="design-ws-priority-label"><i class="design-ws-priority" style="--priority-color:' + priority.color + '"></i>' + html(priority.label) + '</span></div>' +
-      '<h3>' + html(project.title) + '</h3>' +
-      (project.brief ? '<p>' + html(project.brief.slice(0, 120)) + (project.brief.length > 120 ? '…' : '') + '</p>' : '<p>Откройте карточку, чтобы добавить бриф и ссылки.</p>') +
-      '<div class="design-ws-card-context">' + (project.marketplace ? '<span>' + html(project.marketplace) + '</span>' : '') + tags + '</div>' +
+    var summary = project.brief ? html(project.brief.slice(0, 120)) + (project.brief.length > 120 ? '…' : '') : 'Откройте карточку, чтобы добавить бриф и ссылки.';
+    var kicker = '<div class="design-ws-card-kicker"><span>' + html(typeLabel(project.type)) + '</span><span class="design-ws-priority-label"><i class="design-ws-priority" style="--priority-color:' + priority.color + '"></i>' + html(priority.label) + '</span></div>';
+    var coverImageUrl = safeImageUrl(project.coverImageUrl);
+    var attachments = normalizeProjectAttachments(project.attachments);
+    var cardCopy = coverImageUrl
+      ? '<div class="design-ws-card-cover" data-design-card-cover><img src="' + html(coverImageUrl) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><div class="design-ws-card-cover-overlay">' + kicker + '<h3>' + html(project.title) + '</h3><p>' + summary + '</p></div></div>'
+      : '<div class="design-ws-card-copy">' + kicker + '<h3>' + html(project.title) + '</h3><p>' + summary + '</p></div>';
+    return '<article class="design-ws-card' + (coverImageUrl ? ' has-cover' : '') + (isOverdue(project) ? ' is-overdue' : '') + '" draggable="true" tabindex="0" data-design-project="' + html(project.id) + '">' + cardCopy +
+      '<div class="design-ws-card-context">' + (project.marketplace ? '<span>' + html(project.marketplace) + '</span>' : '') + tags + (attachments.length ? '<span class="design-ws-attachment-count" title="Вложений: ' + attachments.length + '">📎 ' + attachments.length + '</span>' : '') + '</div>' +
       '<div class="design-ws-card-foot"><span class="design-ws-owner"><i aria-hidden="true">' + html(ownerInitials(project.owner)) + '</i><b>' + html(project.owner || 'Не назначен') + '</b></span><span class="design-ws-due ' + due.tone + '">' + html(due.label) + '</span>' +
       (project.url ? '<a class="design-ws-resource-link" href="' + html(project.url) + '" target="_blank" rel="noopener" data-design-resource-link aria-label="Открыть исходник" title="Открыть исходник">↗</a>' : '') + '</div>' +
       '</article>';
   }
 
+  function renderBoardNavigation(position) {
+    var bottom = position === 'bottom';
+    return '<div class="design-ws-board-navigation' + (bottom ? ' is-bottom' : '') + '"><div class="design-ws-board-navigation-copy"><strong>' + (bottom ? 'Навигация по доске' : 'Этапы работы') + '</strong><span>Перетащите ползунок, чтобы открыть правые этапы</span></div><label class="design-ws-board-slider"><span>Положение доски <output data-design-board-slider-value>0%</output></span><input type="range" min="0" max="1000" step="1" value="0" data-design-board-slider aria-label="Положение доски, ' + (bottom ? 'нижний' : 'верхний') + ' ползунок" aria-valuetext="Положение доски: 0%"></label></div>';
+  }
+
   function renderBoard(projects) {
-    return '<div class="design-ws-board-navigation"><div class="design-ws-board-navigation-copy"><strong>Этапы работы</strong><span>Перетащите ползунок, чтобы открыть правые этапы</span></div><label class="design-ws-board-slider"><span>Положение доски <output data-design-board-slider-value>0%</output></span><input type="range" min="0" max="1000" step="1" value="0" data-design-board-slider aria-label="Положение доски" aria-valuetext="Положение доски: 0%"></label></div>' +
+    return renderBoardNavigation('top') +
       '<div class="design-ws-board-wrap" data-design-board-scrollport tabindex="0" aria-label="Доска проектов: пять этапов, доступна горизонтальная прокрутка"><div class="design-ws-board">' + Object.keys(STATUS).map(function (key) {
       var meta = STATUS[key];
       var allRows = projects.filter(function (project) { return project.status === key; });
@@ -1507,23 +1630,25 @@
         '<div class="design-ws-column-head"><div><div class="design-ws-column-title" style="--status-color:' + meta.color + '"><i></i><span>' + html(meta.label) + '</span></div><small>' + html(key === 'inbox' ? 'входящие задачи' : (key === 'brief' ? 'уточняем задачу' : (key === 'production' ? 'создаём макет' : (key === 'review' ? 'согласование' : 'результат')))) + '</small></div><div class="design-ws-column-head-actions"><span class="design-ws-count">' + total + '</span>' + (canEdit() ? '<button type="button" data-design-add-project-status="' + key + '" aria-label="Добавить проект в «' + html(meta.label) + '»" title="Добавить проект">+</button>' : '') + '</div></div>' +
         '<div class="design-ws-column-list">' + (rows.length ? rows.map(renderCard).join('') + (total > rows.length ? '<button type="button" class="design-ws-column-more" data-design-mode="table">Ещё ' + (total - rows.length) + ' · открыть таблицу</button>' : '') : '<button type="button" class="design-ws-empty design-ws-empty-action"' + (canEdit() ? ' data-design-add-project-status="' + key + '"' : ' disabled') + '><span aria-hidden="true">＋</span><strong>' + html(key === 'done' ? 'Здесь появится результат' : 'Пока пусто') + '</strong><p>' + html(canEdit() ? 'Добавить проект в этот этап' : 'Перетащите карточку сюда') + '</p></button>') + '</div>' +
         '</section>';
-    }).join('') + '</div></div>';
+    }).join('') + '</div></div>' + renderBoardNavigation('bottom');
   }
 
   function syncBoardSlider(root) {
     if (!root) return;
     var scrollport = root.querySelector('[data-design-board-scrollport]');
-    var slider = root.querySelector('[data-design-board-slider]');
-    if (!scrollport || !slider) return;
+    var sliders = root.querySelectorAll('[data-design-board-slider]');
+    if (!scrollport || !sliders.length) return;
     var maxScroll = Math.max(0, scrollport.scrollWidth - scrollport.clientWidth);
     var sliderValue = maxScroll > 0 ? Math.round((scrollport.scrollLeft / maxScroll) * 1000) : 0;
     var percent = Math.round(sliderValue / 10);
-    slider.value = String(sliderValue);
-    slider.disabled = maxScroll <= 1;
-    slider.style.setProperty('--design-slider-progress', percent + '%');
-    slider.setAttribute('aria-valuetext', 'Положение доски: ' + percent + '%');
-    var output = root.querySelector('[data-design-board-slider-value]');
-    if (output) output.textContent = percent + '%';
+    Array.prototype.forEach.call(sliders, function (slider) {
+      slider.value = String(sliderValue);
+      slider.disabled = maxScroll <= 1;
+      slider.style.setProperty('--design-slider-progress', percent + '%');
+      slider.setAttribute('aria-valuetext', 'Положение доски: ' + percent + '%');
+      var output = slider.closest('.design-ws-board-slider').querySelector('[data-design-board-slider-value]');
+      if (output) output.textContent = percent + '%';
+    });
   }
 
   function scrollBoardFromSlider(slider) {
@@ -1534,10 +1659,13 @@
     var sliderValue = Math.max(0, Math.min(1000, number(slider.value)));
     var percent = Math.round(sliderValue / 10);
     scrollport.scrollLeft = maxScroll * sliderValue / 1000;
-    slider.style.setProperty('--design-slider-progress', percent + '%');
-    slider.setAttribute('aria-valuetext', 'Положение доски: ' + percent + '%');
-    var output = root.querySelector('[data-design-board-slider-value]');
-    if (output) output.textContent = percent + '%';
+    Array.prototype.forEach.call(root.querySelectorAll('[data-design-board-slider]'), function (linkedSlider) {
+      linkedSlider.value = String(sliderValue);
+      linkedSlider.style.setProperty('--design-slider-progress', percent + '%');
+      linkedSlider.setAttribute('aria-valuetext', 'Положение доски: ' + percent + '%');
+      var output = linkedSlider.closest('.design-ws-board-slider').querySelector('[data-design-board-slider-value]');
+      if (output) output.textContent = percent + '%';
+    });
   }
 
   function renderTable(projects) {
@@ -1732,16 +1860,84 @@
     return '';
   }
 
+  function projectAttachmentKind(attachment) {
+    if (isImageAttachment(attachment)) return 'Фото';
+    var extension = projectAttachmentExtension(attachment && attachment.fileName);
+    return extension ? extension.toUpperCase() : 'Файл';
+  }
+
+  function renderProjectAttachmentList(attachments, coverImageUrl, editable) {
+    var rows = normalizeProjectAttachments(attachments);
+    if (!rows.length) return '<div class="design-project-attachments-empty"><strong>Вложений пока нет</strong><span>Добавьте фото карточки, PDF, таблицу, презентацию, архив, AI или PSD.</span></div>';
+    return rows.map(function (attachment) {
+      var image = isImageAttachment(attachment);
+      var isCover = image && safeImageUrl(coverImageUrl) === safeImageUrl(attachment.url);
+      return '<article class="design-project-attachment" data-design-project-attachment-item="' + html(attachment.id) + '">' +
+        '<a class="design-project-attachment-preview" href="' + html(attachment.url) + '" target="_blank" rel="noopener" data-design-attachment-link aria-label="Открыть ' + html(attachment.fileName) + '">' +
+        (image ? '<img src="' + html(attachment.url) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '<span>' + html(projectAttachmentKind(attachment)) + '</span>') + '</a>' +
+        '<div class="design-project-attachment-copy"><a href="' + html(attachment.url) + '" target="_blank" rel="noopener" data-design-attachment-link>' + html(attachment.fileName) + '</a><small>' + html(projectAttachmentKind(attachment)) + ' · ' + html(projectFileSizeLabel(attachment.size)) + '</small></div>' +
+        (isCover ? '<span class="design-project-cover-badge">Обложка</span>' : '') +
+        (editable ? '<div class="design-project-attachment-actions">' + (image && !isCover ? '<button type="button" data-design-set-project-cover="' + html(attachment.id) + '">На обложку</button>' : '') + '<button type="button" class="danger" data-design-remove-project-attachment="' + html(attachment.id) + '" aria-label="Убрать ' + html(attachment.fileName) + '">×</button></div>' : '') +
+        '</article>';
+    }).join('');
+  }
+
+  function renderProjectAttachmentField(project) {
+    var attachments = normalizeProjectAttachments(project.attachments);
+    var coverImageUrl = safeImageUrl(project.coverImageUrl);
+    var editable = canEdit();
+    return '<section class="design-project-attachments full" data-design-project-attachments>' +
+      '<input type="hidden" name="attachments" value="' + html(JSON.stringify(attachments)) + '">' +
+      '<input type="hidden" name="coverImageUrl" value="' + html(coverImageUrl) + '">' +
+      '<div class="design-project-attachments-head"><div><strong>Файлы и фото задачи</strong><span>Первое фото станет обложкой карточки. Текст задачи будет показан поверх.</span></div><b>' + attachments.length + ' / ' + MAX_PROJECT_ATTACHMENTS + '</b></div>' +
+      (editable ? '<label class="design-project-attachment-drop"><input type="file" multiple accept=".png,.jpg,.jpeg,.webp,.pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.zip,.ai,.psd" data-design-project-attachment-input><span><strong>＋ Добавить фото или файл</strong><small>До 20 МБ · общий доступ для отдела</small></span></label><div class="design-project-upload-status" data-design-project-upload-status aria-live="polite"></div>' : '') +
+      '<div class="design-project-attachment-list" data-design-project-attachment-list>' + renderProjectAttachmentList(attachments, coverImageUrl, editable) + '</div>' +
+      '</section>';
+  }
+
+  function readProjectAttachmentForm(form) {
+    var attachmentsInput = form && form.elements && form.elements.attachments;
+    var coverInput = form && form.elements && form.elements.coverImageUrl;
+    return {
+      attachments: normalizeProjectAttachments(attachmentsInput && attachmentsInput.value),
+      coverImageUrl: safeImageUrl(coverInput && coverInput.value)
+    };
+  }
+
+  function updateProjectAttachmentForm(form, attachments, coverImageUrl) {
+    if (!form) return;
+    var rows = normalizeProjectAttachments(attachments);
+    var cover = safeImageUrl(coverImageUrl);
+    var attachmentsInput = form.elements && form.elements.attachments;
+    var coverInput = form.elements && form.elements.coverImageUrl;
+    if (attachmentsInput) attachmentsInput.value = JSON.stringify(rows);
+    if (coverInput) coverInput.value = cover;
+    var list = form.querySelector('[data-design-project-attachment-list]');
+    if (list) list.innerHTML = renderProjectAttachmentList(rows, cover, canEdit());
+    var count = form.querySelector('.design-project-attachments-head > b');
+    if (count) count.textContent = rows.length + ' / ' + MAX_PROJECT_ATTACHMENTS;
+  }
+
+  function setProjectAttachmentUploadState(form, message, active) {
+    if (!form) return;
+    form.dataset.designAttachmentUploading = active ? '1' : '0';
+    var status = form.querySelector('[data-design-project-upload-status]');
+    if (status) status.textContent = message || '';
+    var submit = form.querySelector('button[type="submit"]');
+    if (submit) submit.disabled = Boolean(active);
+  }
+
   function renderProjectDialog(id) {
     var project = id ? data.projects.find(function (item) { return item.id === id; }) : null;
     project = project || {
       id: '', title: '', type: 'other', status: (activeDialog && activeDialog.prefillStatus) || 'inbox', owner: '', dueDate: '', priority: 'normal',
-      marketplace: '', brief: '', url: '', tags: [], archived: false, createdAt: '', updatedAt: ''
+      marketplace: '', brief: '', url: '', coverImageUrl: '', attachments: [], tags: [], archived: false, createdAt: '', updatedAt: ''
     };
+    var projectId = id || (activeDialog && activeDialog.draftId) || uid('design-project');
     var statusOptions = Object.keys(STATUS).map(function (key) { return [key, STATUS[key].label]; });
     return '<div class="design-ws-modal-layer" data-design-close-layer><section class="design-ws-modal" role="dialog" aria-modal="true" aria-label="' + html(id ? 'Редактировать проект' : 'Новый проект') + '">' +
-      '<div class="design-ws-modal-head"><div><h3>' + html(id ? 'Проект' : 'Новый проект') + '</h3><p>Карточка производства: бриф, ответственный, срок и ссылка на исходники.</p></div><button type="button" class="design-ws-icon-btn" data-design-close aria-label="Закрыть">×</button></div>' +
-      '<form class="design-ws-form" data-design-project-form data-project-id="' + html(id || '') + '"><div class="design-ws-form-grid">' +
+      '<div class="design-ws-modal-head"><div><h3>' + html(id ? 'Проект' : 'Новый проект') + '</h3><p>Карточка производства: бриф, ответственный, сроки, фото и рабочие файлы.</p></div><button type="button" class="design-ws-icon-btn" data-design-close aria-label="Закрыть">×</button></div>' +
+      '<form class="design-ws-form" data-design-project-form data-project-id="' + html(projectId) + '"><div class="design-ws-form-grid">' +
       field('Название', 'title', project.title, 'text', true, true) +
       selectField('Тип работы', 'type', TYPES, project.type) +
       selectField('Статус', 'status', statusOptions, project.status) +
@@ -1752,6 +1948,7 @@
       field('Ссылка на Figma / Drive', 'url', project.url, 'url') +
       field('Теги через запятую', 'tags', (project.tags || []).join(', '), 'text', false, true) +
       textareaField('Бриф и критерии готовности', 'brief', project.brief, true) +
+      renderProjectAttachmentField(project) +
       '</div><div class="design-ws-modal-actions"><div class="design-ws-modal-secondary">' + (id ? '<button type="button" class="design-ws-btn danger" data-design-delete-project="' + html(id) + '">В архив</button><button type="button" class="design-ws-btn" data-design-duplicate-project="' + html(id) + '">Дублировать</button>' : '<span></span>') + '</div><div class="design-ws-modal-actions-right"><button type="button" class="design-ws-btn" data-design-close>Отмена</button><button type="submit" class="design-ws-btn primary">Сохранить проект</button></div></div></form></section></div>';
   }
 
@@ -1938,7 +2135,7 @@
 
   function openProject(id, prefillStatus) {
     rememberDialogFocus('project', id);
-    activeDialog = { type: 'project', id: id || '', prefillStatus: STATUS[prefillStatus] ? prefillStatus : '' };
+    activeDialog = { type: 'project', id: id || '', draftId: id || uid('design-project'), prefillStatus: STATUS[prefillStatus] ? prefillStatus : '' };
     renderDesigners();
     focusDialog();
   }
@@ -1980,6 +2177,7 @@
 
   function saveProject(form) {
     if (!ensureEditor()) return false;
+    if (form.dataset.designAttachmentUploading === '1') { showToast('Дождитесь окончания загрузки файлов'); return false; }
     var values = formValues(form);
     var id = string(form.getAttribute('data-project-id'));
     var existing = id ? data.projects.find(function (item) { return item.id === id; }) : null;
@@ -1988,6 +2186,8 @@
       id: id || uid('design-project'),
       title: values.title,
       tags: normalizeTags(values.tags),
+      attachments: normalizeProjectAttachments(values.attachments),
+      coverImageUrl: safeImageUrl(values.coverImageUrl),
       createdAt: existing ? existing.createdAt : stamp,
       updatedAt: stamp,
       archived: false
@@ -2444,7 +2644,35 @@
     document.addEventListener('click', function (event) {
       var root = event.target && event.target.closest && event.target.closest('#' + ROOT_ID);
       if (!root) return;
-      if (event.target.closest('[data-design-resource-link]')) return;
+      if (event.target.closest('[data-design-resource-link], [data-design-attachment-link]')) return;
+      var setCoverButton = event.target.closest('[data-design-set-project-cover]');
+      if (setCoverButton) {
+        if (!ensureEditor()) return;
+        var coverForm = setCoverButton.closest('[data-design-project-form]');
+        var coverState = readProjectAttachmentForm(coverForm);
+        var coverAttachment = coverState.attachments.find(function (item) { return item.id === setCoverButton.getAttribute('data-design-set-project-cover'); });
+        if (coverAttachment && isImageAttachment(coverAttachment)) {
+          updateProjectAttachmentForm(coverForm, coverState.attachments, coverAttachment.url);
+          showToast('Фото назначено обложкой задачи');
+        }
+        return;
+      }
+      var removeAttachmentButton = event.target.closest('[data-design-remove-project-attachment]');
+      if (removeAttachmentButton) {
+        if (!ensureEditor()) return;
+        var attachmentForm = removeAttachmentButton.closest('[data-design-project-form]');
+        var attachmentState = readProjectAttachmentForm(attachmentForm);
+        var removedId = removeAttachmentButton.getAttribute('data-design-remove-project-attachment');
+        var nextAttachments = attachmentState.attachments.filter(function (item) { return item.id !== removedId; });
+        var nextCover = attachmentState.coverImageUrl;
+        if (!nextAttachments.some(function (item) { return safeImageUrl(item.url) === nextCover; })) {
+          var nextImage = nextAttachments.find(isImageAttachment);
+          nextCover = nextImage ? nextImage.url : '';
+        }
+        updateProjectAttachmentForm(attachmentForm, nextAttachments, nextCover);
+        showToast('Вложение убрано из задачи');
+        return;
+      }
       var summaryFocus = event.target.closest('[data-design-focus]');
       if (summaryFocus) { applySummaryFocus(summaryFocus.getAttribute('data-design-focus')); return; }
       if (event.target.closest('[data-design-reset-filters]')) { resetProjectFilters(); return; }
@@ -2533,6 +2761,36 @@
       }
       var projectId = event.target.getAttribute('data-design-status');
       if (projectId) { event.stopPropagation(); updateProjectStatus(projectId, event.target.value); return; }
+      if (event.target.matches('[data-design-project-attachment-input]')) {
+        var attachmentInput = event.target;
+        var projectForm = attachmentInput.closest('[data-design-project-form]');
+        var selectedFiles = Array.prototype.slice.call(attachmentInput.files || []);
+        if (!projectForm || !selectedFiles.length || !ensureEditor()) return;
+        var attachmentState = readProjectAttachmentForm(projectForm);
+        var availableSlots = Math.max(0, MAX_PROJECT_ATTACHMENTS - attachmentState.attachments.length);
+        if (!availableSlots) { showToast('В задаче уже максимальное количество вложений'); attachmentInput.value = ''; return; }
+        if (selectedFiles.length > availableSlots) selectedFiles = selectedFiles.slice(0, availableSlots);
+        attachmentInput.disabled = true;
+        setProjectAttachmentUploadState(projectForm, 'Готовим загрузку…', true);
+        Promise.resolve().then(async function () {
+          var rows = attachmentState.attachments.slice();
+          var cover = attachmentState.coverImageUrl;
+          for (var fileIndex = 0; fileIndex < selectedFiles.length; fileIndex += 1) {
+            setProjectAttachmentUploadState(projectForm, 'Загружаем ' + (fileIndex + 1) + ' из ' + selectedFiles.length + ': ' + selectedFiles[fileIndex].name, true);
+            var uploaded = await uploadProjectAttachment(projectForm.getAttribute('data-project-id'), selectedFiles[fileIndex]);
+            rows.push(uploaded);
+            if (!cover && isImageAttachment(uploaded)) cover = uploaded.url;
+            updateProjectAttachmentForm(projectForm, rows, cover);
+          }
+          showToast(selectedFiles.length > 1 ? 'Файлы загружены — сохраните задачу' : 'Файл загружен — сохраните задачу');
+        }).catch(function (error) {
+          showToast(error && error.message ? error.message : 'Не удалось прикрепить файл');
+        }).finally(function () {
+          if (attachmentInput) { attachmentInput.disabled = false; attachmentInput.value = ''; }
+          setProjectAttachmentUploadState(projectForm, '', false);
+        });
+        return;
+      }
       if (event.target.matches('[data-design-import-input]')) {
         var file = event.target.files && event.target.files[0];
         if (!file) return;

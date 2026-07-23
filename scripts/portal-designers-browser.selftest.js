@@ -116,7 +116,7 @@ async function testViewer(browser, baseUrl) {
   await page.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
   await installRemoteFixture(page, 'viewer', {
     schema: 'altea-design-workspace-v1', version: 1, updatedAt: '2026-07-20T12:00:00Z',
-    projects: [{ id: 'viewer-project', title: 'Доступный проект', status: 'review', type: 'card', priority: 'normal', updatedAt: '2026-07-20T12:00:00Z' }],
+    projects: [{ id: 'viewer-project', title: 'Доступный проект', status: 'review', type: 'card', priority: 'normal', coverImageUrl: 'https://example.com/product.jpg', attachments: [{ id: 'viewer-file', fileName: 'product.jpg', mimeType: 'image/jpeg', size: 1024, url: 'https://example.com/product.jpg' }], updatedAt: '2026-07-20T12:00:00Z' }],
     tests: [], pages: [], activity: [], settings: {}
   });
   const errors = await loadModule(page, baseUrl);
@@ -124,8 +124,11 @@ async function testViewer(browser, baseUrl) {
   await page.waitForSelector('[data-design-project="viewer-project"]');
   assert.strictEqual(await page.locator('[data-design-add-project]').count(), 0, 'Viewer must not see create controls');
   assert.strictEqual(await page.locator('[data-design-status]:not([disabled])').count(), 0, 'Viewer status controls must be disabled');
+  assert.strictEqual(await page.locator('[data-design-project] [data-design-card-cover]').count(), 1, 'Viewer must see the shared product-card cover');
   await page.click('[data-design-project="viewer-project"]');
   assert.strictEqual(await page.locator('[data-design-project-form] [name="title"]:disabled').count(), 1, 'Viewer dialog must be read-only');
+  assert.strictEqual(await page.locator('[data-design-project-attachment-item]').count(), 1, 'Viewer must see shared task attachments');
+  assert.strictEqual(await page.locator('[data-design-project-attachment-input], [data-design-set-project-cover], [data-design-remove-project-attachment]').count(), 0, 'Viewer must not see attachment mutation controls');
   const importBlocked = await page.evaluate(() => {
     try { window.AlteaDesignWorkspace.importNotionCsv('Name\nForbidden'); return false; }
     catch (error) { return /редакторам/.test(error.message); }
@@ -184,12 +187,29 @@ async function testRemoteEditor(browser, baseUrl) {
   assert.strictEqual((await page.evaluate(() => window.__designRequests)).some((item) => item.method === 'POST'), false, 'A clean editor refresh must not create a redundant revision');
   await page.click('[data-design-add-project]');
   await page.fill('[data-design-project-form] [name="title"]', 'Командный проект');
+  await page.fill('[data-design-project-form] [name="brief"]', 'Собрать карточку товара и проверить читаемость оффера');
+  const coverPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQmcAAAAASUVORK5CYII=', 'base64');
+  await page.setInputFiles('[data-design-project-attachment-input]', [
+    { name: 'product-cover.png', mimeType: 'image/png', buffer: coverPng },
+    { name: 'technical-brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 test') }
+  ]);
+  await page.waitForFunction(() => JSON.parse(document.querySelector('[data-design-project-form] [name="attachments"]').value).length === 2);
+  assert.strictEqual(await page.locator('[data-design-project-form] [name="coverImageUrl"]').inputValue().then((value) => value.includes('/storage/v1/object/public/portal-task-files/')), true, 'First uploaded image must become the product-card cover');
   await page.click('[data-design-project-form] button[type="submit"]');
   await page.waitForFunction(() => window.__designRequests.some((item) => item.method === 'POST' && item.url.includes('/rpc/save_portal_design_workspace')));
   const saveRequest = await page.evaluate(() => window.__designRequests.find((item) => item.method === 'POST' && item.url.includes('/rpc/save_portal_design_workspace')));
   const body = JSON.parse(saveRequest.body);
   assert.strictEqual(body.p_expected_revision, 3, 'Editor save must use the loaded optimistic revision');
   assert.ok(body.p_payload.projects.some((item) => item.title === 'Командный проект'), 'Editor save must include the new project');
+  const savedProject = body.p_payload.projects.find((item) => item.title === 'Командный проект');
+  assert.strictEqual(savedProject.attachments.length, 2, 'Editor save must persist every uploaded task attachment');
+  assert.ok(savedProject.coverImageUrl.includes('product-cover.png'), 'First photo must remain the card cover in the shared payload');
+  assert.strictEqual(await page.locator('[data-design-project] [data-design-card-cover] img').count(), 1, 'Board card must render the first photo as its visual background');
+  assert.match(await page.locator('[data-design-project] .design-ws-card-cover-overlay').innerText(), /Командный проект[\s\S]*Собрать карточку товара/, 'Task title and brief must render over the product image');
+  assert.match(await page.locator('[data-design-project] .design-ws-attachment-count').innerText(), /2/, 'Card must expose its attachment count');
+  await page.click('[data-design-project]');
+  assert.strictEqual(await page.locator('[data-design-project-attachment-item]').count(), 2, 'Project dialog must show uploaded photo and file');
+  assert.strictEqual(await page.locator('.design-project-cover-badge').count(), 1, 'Project dialog must identify the active cover');
   assert.strictEqual(errors.length, 0, errors.join('\n'));
   await context.close();
 }
@@ -230,8 +250,9 @@ async function testBoardAndModalOverflow(browser, baseUrl) {
   assert.ok(desktopLayout.cardRight <= desktopLayout.columnRight + 1, 'Long SKU, URL, and tags must not stretch a card outside its column');
   assert.ok(desktopLayout.wrapScrollWidth > desktopLayout.wrapClientWidth, 'Wide board must retain a horizontal scrollport');
   assert.ok(desktopLayout.bodyScrollWidth <= desktopLayout.viewportWidth + 1, 'Board overflow must remain inside its scrollport, not the whole page');
-  assert.strictEqual(await page.locator('[data-design-board-slider]').count(), 1, 'Top-level board navigation must expose one precise position slider');
-  await page.locator('[data-design-board-slider]').evaluate((slider) => {
+  const boardSliders = page.locator('[data-design-board-slider]');
+  assert.strictEqual(await boardSliders.count(), 2, 'Board navigation must expose synchronized sliders above and below the columns');
+  await boardSliders.first().evaluate((slider) => {
     slider.value = '600';
     slider.dispatchEvent(new Event('input', { bubbles: true }));
   });
@@ -240,8 +261,8 @@ async function testBoardAndModalOverflow(browser, baseUrl) {
     scrollport.scrollLeft = scrollport.scrollWidth - scrollport.clientWidth;
     scrollport.dispatchEvent(new Event('scroll'));
   });
-  await page.waitForFunction(() => Number(document.querySelector('[data-design-board-slider]').value) >= 995);
-  assert.strictEqual(await page.locator('[data-design-board-slider-value]').textContent(), '100%', 'Slider label must stay synchronized with natural horizontal scrolling');
+  await page.waitForFunction(() => Array.from(document.querySelectorAll('[data-design-board-slider]')).every((slider) => Number(slider.value) >= 995));
+  assert.deepStrictEqual(await page.locator('[data-design-board-slider-value]').allTextContents(), ['100%', '100%'], 'Both slider labels must stay synchronized with natural horizontal scrolling');
 
   await page.click('[data-design-project="overflow-project"]');
   await page.waitForSelector('[data-design-project-form]');

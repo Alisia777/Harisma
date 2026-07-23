@@ -128,6 +128,7 @@ async function testWorkspaceThemePalettes(browser, baseUrl) {
       status,
       type: 'card',
       priority: 'normal',
+      owner: index === 0 ? 'Евгения' : '',
       updatedAt: `2026-07-23T12:0${index}:00Z`
     })),
     tests: [], pages: [], activity: [], settings: {}
@@ -170,6 +171,9 @@ async function testWorkspaceThemePalettes(browser, baseUrl) {
   assert.strictEqual(palettes.dark.background, '#0d0d10', 'Dark portal themes must retain the dark designers workspace');
   assert.strictEqual(new Set([palettes.light.background, palettes.gray.background, palettes.dark.background]).size, 3, 'Light, gray, and dark palettes must remain visually distinct');
   assert.strictEqual(new Set(palettes.light.columns).size, 5, 'Every board stage must keep its own status-tinted surface');
+  const designerOptions = await page.locator('[data-design-filter="owner"] option').allTextContents();
+  assert.ok(designerOptions.includes('Ульяна'), 'Legacy tasks assigned to Евгения must appear under Ульяна in the designers filter');
+  assert.ok(!designerOptions.includes('Евгения'), 'The retired Евгения filter option must not remain visible');
   assert.strictEqual(errors.length, 0, errors.join('\n'));
   await context.close();
 }

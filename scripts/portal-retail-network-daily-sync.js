@@ -183,7 +183,23 @@ function parseLetualRows(rows, options) {
     const date = letualBusinessDate(row[1], value('Период выгрузки'));
     if (!withinWindow(date, options)) continue;
     const articleKey = normalizeText(value('Артикул'));
-    if (!articleKey || normalizeKey(articleKey) === 'артикул') continue;
+    if (!articleKey || normalizeKey(articleKey) === 'артикул') {
+      const exportDate = isoDate(value('Дата выгрузки'));
+      const isEmptyDailyExport = Boolean(date && exportDate && !normalizeText(value('Период выгрузки')));
+      if (isEmptyDailyExport) {
+        records.push({
+          platformKey: 'letu',
+          date,
+          exportDate,
+          legalEntity: normalizeText(row[0]),
+          articleKey: '',
+          coverageOnly: true,
+          source: 'google-sheets-retail-daily/letu',
+          sourceRow: rowIndex + 1
+        });
+      }
+      continue;
+    }
     const warehouseBreakdown = {};
     for (let column = 0; column < headers.length; column += 1) {
       const header = normalizeText(headers[column]);
@@ -404,6 +420,7 @@ function aggregatePlatform(records, existingPlatform = {}) {
   const latestWarehouseTotals = new Map();
   for (const record of records) {
     addRecord(dateTotals.get(record.date) || dateTotals.set(record.date, emptyTotals()).get(record.date), record);
+    if (record.coverageOnly) continue;
     const article = articleMap.get(record.articleKey) || {
       articleKey: record.articleKey,
       article: record.articleKey,
@@ -498,6 +515,60 @@ function mergeSeriesWindow(existingSeries, sourceSeries) {
   return refreshOffsets([...byDate.values()]);
 }
 
+function mergeArticlesWindow(existingArticles, sourceArticles) {
+  const byKey = new Map((Array.isArray(existingArticles) ? existingArticles : [])
+    .map((article) => [normalizeText(article.articleKey || article.article), article])
+    .filter(([key]) => key));
+  for (const source of Array.isArray(sourceArticles) ? sourceArticles : []) {
+    const key = normalizeText(source.articleKey || source.article);
+    if (!key) continue;
+    const previous = byKey.get(key) || {};
+    const daily = mergeSeriesWindow(previous.daily || [], source.daily || []);
+    const touchedMonths = new Set((source.daily || [])
+      .map((point) => isoDate(point.date || point.label).slice(0, 7))
+      .filter(Boolean));
+    const monthlyByKey = new Map((Array.isArray(previous.monthly) ? previous.monthly : [])
+      .map((month) => [normalizeText(month.monthKey || String(month.date || '').slice(0, 7)), month])
+      .filter(([monthKey]) => monthKey));
+    for (const month of monthlyFromDaily(daily)) {
+      if (touchedMonths.has(month.monthKey)) monthlyByKey.set(month.monthKey, month);
+    }
+    byKey.set(key, {
+      ...previous,
+      ...source,
+      daily,
+      monthly: [...monthlyByKey.values()].sort((left, right) => (
+        normalizeText(left.monthKey || left.date).localeCompare(normalizeText(right.monthKey || right.date))
+      ))
+    });
+  }
+  return [...byKey.values()].sort((left, right) => (
+    normalizeText(left.articleKey || left.article).localeCompare(
+      normalizeText(right.articleKey || right.article),
+      'ru'
+    )
+  ));
+}
+
+function articleDiagnostics(articles) {
+  const rows = Array.isArray(articles) ? articles : [];
+  const revenueOf = (article) => (Array.isArray(article.monthly) ? article.monthly : [])
+    .reduce((sum, month) => sum + numberOrZero(month.revenue), 0);
+  const revenue = rows.reduce((sum, article) => sum + revenueOf(article), 0);
+  const matched = rows.filter((article) => article.skuMatched);
+  const matchedRevenue = matched.reduce((sum, article) => sum + revenueOf(article), 0);
+  return {
+    articleCount: rows.length,
+    matchedArticleCount: matched.length,
+    unmatchedArticleCount: rows.length - matched.length,
+    revenue: round(revenue),
+    matchedRevenue: round(matchedRevenue),
+    unmatchedRevenue: round(revenue - matchedRevenue),
+    matchRate: rows.length ? round(matched.length / rows.length, 4) : 0,
+    revenueMatchRate: revenue ? round(matchedRevenue / revenue, 4) : 0
+  };
+}
+
 function buildAllSeries(platforms) {
   const byDate = new Map();
   for (const platform of platforms) {
@@ -525,10 +596,16 @@ function updatePayload(basePayload, parsedPlatforms, options = {}) {
     }
     const aggregate = aggregatePlatform(records, existing.get(key) || {});
     const previous = existing.get(key) || {};
+    const articles = mergeArticlesWindow(previous.articles, aggregate.articles);
     existing.set(key, {
       ...previous,
       ...aggregate,
       series: mergeSeriesWindow(previous.series, aggregate.series),
+      articles,
+      diagnostics: {
+        ...aggregate.diagnostics,
+        ...articleDiagnostics(articles)
+      },
       source: aggregate.diagnostics.source
     });
     statusPlatforms[key] = {

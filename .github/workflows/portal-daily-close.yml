@@ -209,13 +209,15 @@ jobs:
           ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
           ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID: ${{ secrets.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || vars.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || '1Zy0ec9-snLwh-J88KoFXyHxtYg3DXC8oWnC17iHNNS4' }}
-        run: >-
-          node scripts/portal-retail-network-daily-sync.js sync
-          --input-file data/platform_trends.json
-          --output-file data/platform_trends.json
-          --status-file data/retail_network_source_status.json
-          --to '${{ steps.cutoff.outputs.value }}'
-          --strict --optional-source --max-lag-days 1
+        run: |
+          RETAIL_FROM="$(date -u -d '${{ steps.cutoff.outputs.value }} - 1 day' +%F)"
+          node scripts/portal-retail-network-daily-sync.js sync \
+            --input-file data/platform_trends.json \
+            --output-file data/platform_trends.json \
+            --status-file data/retail_network_source_status.json \
+            --from "$RETAIL_FROM" \
+            --to '${{ steps.cutoff.outputs.value }}' \
+            --strict --optional-source --max-lag-days 1
 
       - name: Refresh advertising and stock
         env:
@@ -286,6 +288,8 @@ jobs:
           node scripts/build-wb-sales-funnel-from-platform-trends.js --platform-trends data/platform_trends.json --skus data/skus.json --wb-feedbacks data/wb_feedbacks_summary.json --output-file data/wb_sales_funnel_report.json --to '${{ steps.cutoff.outputs.value }}'
           node scripts/portal-upload-apply-runtime.js --input-dir data --output-dir data
           node scripts/build-control-auto-task-sources.js --input-dir data --output-dir data
+          node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --expected-date '${{ steps.cutoff.outputs.value }}'
+          node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
           node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --expected-date '${{ steps.cutoff.outputs.value }}'
 
       - name: D-1 and numeric gates

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-22T07:32:50.289Z",
-  "asOfDate": "2026-07-21",
+  "generatedAt": "2026-07-23T07:01:20.169Z",
+  "asOfDate": "2026-07-22",
   "sourceFile": "smart-price-workbook.xlsx",
   "platforms": {
     "ozon": {
@@ -58309,8 +58309,8 @@
     }
   },
   "extraMarketplace": {
-    "generatedAt": "2026-07-22T07:32:50.289Z",
-    "asOfDate": "2026-07-21",
+    "generatedAt": "2026-07-23T07:01:20.169Z",
+    "asOfDate": "2026-07-22",
     "source": "platform_trends.extraMarketplace",
     "platforms": {
       "magnit": {
@@ -58326,12 +58326,12 @@
       "ozon": {
         "key": "ozon",
         "label": "Ozon",
-        "articleCount": 267
+        "articleCount": 269
       },
       "ya": {
         "key": "ya",
         "label": "Я.Маркет",
-        "articleCount": 142
+        "articleCount": 147
       },
       "samokat": {
         "key": "samokat",

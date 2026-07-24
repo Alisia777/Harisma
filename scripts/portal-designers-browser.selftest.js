@@ -150,6 +150,8 @@ async function testWorkspaceThemePalettes(browser, baseUrl) {
         background: styles.getPropertyValue('--design-bg').trim(),
         panel: styles.getPropertyValue('--design-panel-strong').trim(),
         ink: styles.getPropertyValue('--design-ink').trim(),
+        headingColor: getComputedStyle(document.querySelector('.design-ws-head h2')).color,
+        cardTitleColor: getComputedStyle(document.querySelector('.design-ws-card:not(.has-cover) h3')).color,
         columns: Array.from(document.querySelectorAll('.design-ws-column')).map((column) => getComputedStyle(column).backgroundImage)
       };
     };
@@ -161,6 +163,9 @@ async function testWorkspaceThemePalettes(browser, baseUrl) {
   });
 
   assert.strictEqual(palettes.light.background, '#f5f1ea', 'Porcelain Day must keep the designers workspace light inside the premium shell');
+  assert.strictEqual(palettes.light.ink, '#151515', 'Light workspace typography must use the explicit near-black ink token');
+  assert.strictEqual(palettes.light.headingColor, 'rgb(21, 21, 21)', 'Light workspace headings must stay black after portal theme changes');
+  assert.strictEqual(palettes.light.cardTitleColor, 'rgb(21, 21, 21)', 'Light task-card titles must stay black on white cards');
   assert.strictEqual(palettes.gray.background, '#20252d', 'Graphite Frost must use the dedicated gray workspace palette');
   assert.strictEqual(palettes.dark.background, '#0d0d10', 'Dark portal themes must retain the dark designers workspace');
   assert.strictEqual(new Set([palettes.light.background, palettes.gray.background, palettes.dark.background]).size, 3, 'Light, gray, and dark palettes must remain visually distinct');

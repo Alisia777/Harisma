@@ -858,7 +858,7 @@ textarea.design-ws-field { min-height: 96px; resize: vertical; line-height: 1.5;
   --design-bg: #f5f1ea;
   --design-panel: rgba(255, 253, 249, .88);
   --design-panel-strong: #fffdf9;
-  --design-ink: #24201d;
+  --design-ink: #151515;
   --design-muted: #746b64;
   --design-line: rgba(77, 65, 54, .14);
   --design-line-strong: rgba(77, 65, 54, .24);
@@ -878,6 +878,7 @@ textarea.design-ws-field { min-height: 96px; resize: vertical; line-height: 1.5;
   position: relative;
   isolation: isolate;
   min-height: calc(100vh - 128px);
+  color-scheme: light;
   border-radius: 24px;
   font-family: Inter, Manrope, "SF Pro Display", "Segoe UI", Arial, sans-serif;
   background:
@@ -929,6 +930,7 @@ html[data-theme-mode="dark"]:not([data-theme="graphite-frost"]) body .design-ws 
   --design-sheen-bottom: transparent;
   --design-grid-color: rgba(118, 87, 255, .06);
   --design-workspace-shadow: 0 38px 120px rgba(0, 0, 0, .48), inset 0 1px rgba(255, 255, 255, .06);
+  color-scheme: dark;
   border-color: rgba(238, 230, 244, .12);
 }
 
@@ -958,8 +960,14 @@ html[data-theme="graphite-frost"] body .design-ws {
   --design-sheen-bottom: rgba(255, 255, 255, .012);
   --design-grid-color: rgba(207, 216, 228, .055);
   --design-workspace-shadow: 0 38px 115px rgba(7, 10, 15, .42), inset 0 1px rgba(255, 255, 255, .08);
+  color-scheme: dark;
   border-color: rgba(216, 224, 234, .17);
 }
+
+.design-ws h2,
+.design-ws h3,
+.design-ws h4,
+.design-ws strong { color: inherit; }
 
 .design-ws-head {
   position: relative;

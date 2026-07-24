@@ -61,6 +61,7 @@
     "portal:task-filter-recovery-test": "node scripts/portal-task-kanban-filter-recovery.selftest.js",
     "portal:strategic-task-persistence-test": "node scripts/portal-strategic-task-persistence.selftest.js && node scripts/portal-strategic-cross-platform.selftest.js",
     "portal:storage-boot-race-test": "node scripts/portal-storage-boot-race.selftest.js",
+    "portal:team-auth-session-test": "node scripts/portal-team-auth-session.selftest.js",
     "portal:control-auto-task-data-load-test": "node scripts/portal-control-auto-task-data-load.selftest.js",
     "portal:control-wb-oos-runtime-test": "node scripts/portal-control-wb-oos-runtime.selftest.js",
     "portal:tabs-smoke": "node scripts/portal-tabs-smoke.js",

@@ -530,21 +530,27 @@
     }
 
     try {
-      if ((cfg.supabase?.auth || 'anonymous') === 'anonymous') {
+      const portalSession = window.alteaPortalAuthGate?.getSession?.()
+        || window.__ALTEA_AUTH_SESSION__
+        || null;
+      if (portalSession?.access_token) {
+        const email = String(portalSession?.user?.email || '').trim();
+        const memberName = String(
+          window.__ALTEA_PORTAL_ACCESS__?.name
+          || portalSession?.user?.user_metadata?.name
+          || email
+          || ''
+        ).trim();
+        app.team.accessToken = portalSession.access_token;
+        app.team.userId = String(portalSession?.user?.id || '').trim();
+        if (memberName) app.team.member = { ...(app.team.member || {}), name: memberName };
+      } else if ((cfg.supabase?.auth || 'anonymous') === 'anonymous') {
         const signIn = await signInAnonymouslyHotfix();
         app.team.accessToken = signIn?.access_token || '';
         app.team.userId = signIn?.user?.id || '';
         if (!app.team.accessToken) throw new Error('Supabase не вернул access token');
       } else {
-        if (!window.supabase?.createClient) throw new Error('Supabase client не загрузился');
-        app.team.client = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey, {
-          auth: {
-            persistSession: false,
-            autoRefreshToken: false,
-            detectSessionInUrl: false,
-            storageKey: 'altea-team-store'
-          }
-        });
+        throw new Error('Supabase auth session is missing');
       }
 
       app.team.mode = 'ready';

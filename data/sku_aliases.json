@@ -2737,6 +2737,38 @@
       "updatedAt": "2026-06-07T08:22:08.602Z"
     },
     {
+      "target_sku": "arterol",
+      "platform": "ya",
+      "api_sku": "fbs_arterol",
+      "status": "active",
+      "note": "Я.Маркет FBS alias",
+      "updatedAt": "2026-07-24T18:53:42.000Z"
+    },
+    {
+      "target_sku": "okospas",
+      "platform": "ya",
+      "api_sku": "fbs_okospas",
+      "status": "active",
+      "note": "Я.Маркет FBS alias",
+      "updatedAt": "2026-07-24T18:53:42.000Z"
+    },
+    {
+      "target_sku": "trezax",
+      "platform": "ya",
+      "api_sku": "fbs_trezax",
+      "status": "active",
+      "note": "Я.Маркет FBS alias",
+      "updatedAt": "2026-07-24T18:53:42.000Z"
+    },
+    {
+      "target_sku": "yagodniy_spas",
+      "platform": "ya",
+      "api_sku": "fbs_yagodniy_spas",
+      "status": "active",
+      "note": "Я.Маркет FBS alias",
+      "updatedAt": "2026-07-24T18:53:42.000Z"
+    },
+    {
       "target_sku": "penka_kudryavii_metod_150ml",
       "platform": "goldapple",
       "api_sku": "penka_kudryavii_meto",
@@ -2744,5 +2776,5 @@
       "note": "Quick action from SKU workspace 2026-06-29"
     }
   ],
-  "updatedAt": "2026-06-29T07:27:21.069Z"
+  "updatedAt": "2026-07-24T18:53:42.000Z"
 }

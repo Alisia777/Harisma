@@ -2,13 +2,24 @@
 'use strict';
 
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 const {
   buildPayload,
   buildSkuLookup,
   campaignIdsFromPayload,
+  normalizeKey: normalizePriceKey,
   parseArgs,
   resolveOptions
 } = require('./portal-yandex-market-price-sync');
+const {
+  normalizeKey: normalizeTrendsKey,
+  skuMaps: buildTrendsSkuMaps
+} = require('./portal-yandex-market-trends-sync');
+const {
+  buildSkuLookup: buildStockSkuLookup,
+  normalizeKey: normalizeStockKey
+} = require('./portal-yandex-market-stock-sync');
 
 const skus = [
   {
@@ -40,6 +51,23 @@ const aliases = {
 const lookup = buildSkuLookup(skus, aliases);
 assert.strictEqual(lookup.get('ym-offer-1').articleKey, 'sku-one');
 assert.strictEqual(lookup.get('ym-offer-2').articleKey, 'sku-two');
+
+const repositorySkus = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'skus.json'), 'utf8'));
+const repositoryAliases = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'sku_aliases.json'), 'utf8'));
+const productionFbsMappings = {
+  fbs_arterol: 'arterol',
+  fbs_okospas: 'okospas',
+  fbs_trezax: 'trezax',
+  fbs_yagodniy_spas: 'yagodniy_spas'
+};
+const priceLookup = buildSkuLookup(repositorySkus, repositoryAliases);
+const trendsLookup = buildTrendsSkuMaps(repositorySkus, repositoryAliases, 'ym').byArticle;
+const stockLookup = buildStockSkuLookup(repositorySkus, repositoryAliases);
+for (const [offerId, articleKey] of Object.entries(productionFbsMappings)) {
+  assert.strictEqual(priceLookup.get(normalizePriceKey(offerId))?.articleKey, articleKey, `price alias mismatch for ${offerId}`);
+  assert.strictEqual(trendsLookup.get(normalizeTrendsKey(offerId))?.articleKey, articleKey, `trends alias mismatch for ${offerId}`);
+  assert.strictEqual(stockLookup.get(normalizeStockKey(offerId))?.articleKey, articleKey, `stock alias mismatch for ${offerId}`);
+}
 
 const args = parseArgs([
   'node',

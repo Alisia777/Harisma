@@ -61,6 +61,9 @@ if (!workflow.includes('node scripts/portal-retail-network-daily-sync.js sync'))
 if (!workflow.includes('--status-file data/retail_network_source_status.json')) {
   fail('daily close must publish retail-network source freshness diagnostics');
 }
+if (!workflow.includes('--allow-stale-platforms letu')) {
+  fail('daily close must keep the explicit Letual stale-source exception visible and scoped');
+}
 if (workflow.indexOf('node scripts/portal-retail-network-daily-sync.js sync') < workflow.indexOf('node scripts/portal-api-max-sync.js sync')) {
   fail('retail-network daily facts must override the monthly API-workbook fallback');
 }

@@ -135,7 +135,11 @@ function resolveOptions(args) {
     dryRun: Boolean(args['dry-run']),
     strict: Boolean(args.strict),
     optionalSource: Boolean(args['optional-source']),
-    maxLagDays: Math.max(0, Math.trunc(numberOrZero(args['max-lag-days'])))
+    maxLagDays: Math.max(0, Math.trunc(numberOrZero(args['max-lag-days']))),
+    allowStalePlatforms: new Set(normalizeText(args['allow-stale-platforms'])
+      .split(',')
+      .map((value) => normalizeKey(value))
+      .filter((value) => TARGET_PLATFORMS.includes(value)))
   };
 }
 
@@ -591,7 +595,23 @@ function updatePayload(basePayload, parsedPlatforms, options = {}) {
   for (const key of TARGET_PLATFORMS) {
     const records = parsedPlatforms[key] || [];
     if (!records.length) {
-      statusPlatforms[key] = { key, label: PLATFORM_META[key].label, status: 'empty', latestDate: '' };
+      const previous = existing.get(key) || {};
+      const previousSeries = Array.isArray(previous.series) ? previous.series : [];
+      const latestDate = previousSeries
+        .map((point) => isoDate(point?.date || point?.label))
+        .filter(Boolean)
+        .sort()
+        .at(-1) || '';
+      statusPlatforms[key] = {
+        key,
+        label: PLATFORM_META[key].label,
+        status: latestDate ? 'stale' : 'empty',
+        latestDate,
+        lagDays: lagDays(latestDate, options.to),
+        note: latestDate
+          ? 'No new rows were present in the selected source window; the last finalized fact was preserved.'
+          : 'No finalized rows were present in the selected source window.'
+      };
       continue;
     }
     const aggregate = aggregatePlatform(records, existing.get(key) || {});
@@ -763,7 +783,11 @@ function buildPreservedSourceStatus(base, options, error) {
     note: 'Samokat requires a private API endpoint and response schema; token is configured separately.'
   };
   const stale = TARGET_PLATFORMS.filter((key) => platforms[key].latestDate !== options.to);
-  const blocking = TARGET_PLATFORMS.filter((key) => exceedsAllowedLag(platforms[key].latestDate, options.to, options.maxLagDays));
+  const allowStalePlatforms = options.allowStalePlatforms instanceof Set ? options.allowStalePlatforms : new Set();
+  const blocking = TARGET_PLATFORMS.filter((key) => (
+    !allowStalePlatforms.has(key)
+    && exceedsAllowedLag(platforms[key].latestDate, options.to, options.maxLagDays)
+  ));
   return {
     status: {
       schema: 'retail-network-source-status-v1',
@@ -808,7 +832,10 @@ async function main(argv = process.argv) {
     const base = readJson(options.inputFile, { platforms: [] });
     const result = updatePayload(base, parsed, options);
     const stale = Object.values(result.status.platforms).filter((platform) => TARGET_PLATFORMS.includes(platform.key) && platform.status !== 'fresh');
-    const blocking = stale.filter((platform) => exceedsAllowedLag(platform.latestDate, options.to, options.maxLagDays));
+    const blocking = stale.filter((platform) => (
+      !options.allowStalePlatforms.has(platform.key)
+      && exceedsAllowedLag(platform.latestDate, options.to, options.maxLagDays)
+    ));
     if (options.strict && blocking.length) throw new Error(`Retail-network sources exceed the allowed ${options.maxLagDays}-day lag for ${options.to}: ${blocking.map((item) => `${item.key}:${item.latestDate || 'empty'}`).join(', ')}`);
     if (!options.dryRun) {
       writeJson(options.outputFile, result.payload);

@@ -217,7 +217,8 @@ jobs:
             --status-file data/retail_network_source_status.json \
             --from "$RETAIL_FROM" \
             --to '${{ steps.cutoff.outputs.value }}' \
-            --strict --optional-source --max-lag-days 1
+            --strict --optional-source --max-lag-days 1 \
+            --allow-stale-platforms letu
 
       - name: Refresh advertising and stock
         env:

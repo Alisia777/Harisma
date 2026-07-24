@@ -62,8 +62,8 @@ assert.match(access, /'guest@qeep\.life': \{ role: 'guest'/, 'Guest account must
 assert.match(authGate, /SHARED_AUTHENTICATED_VIEWS = \['documents', 'designers'\]/, 'Every configured portal account must inherit the Designers tab');
 assert.doesNotMatch(authGate, /portal_role: 'owner'/, 'Synthetic guest sessions must never claim owner role');
 assert.match(authGate, /portal_role: 'guest'/, 'Synthetic guest sessions must claim only the restricted guest role');
-assert.match(access, /'a\.i\.zaharova@qeep\.life': \{ role: 'designer'/, 'The requested designer account must be in the portal allowlist');
-assert.match(access, /'a\.kolmogorova@qeep\.life': \{ role: 'designer'/, 'The senior designer account must be in the portal allowlist');
+assert.match(access, /'a\.i\.zaharova@qeep\.life': \{ (?:role: 'designer'|roles: \['designer', 'employee'\])/, 'The requested designer account must be in the portal allowlist');
+assert.match(access, /'a\.kolmogorova@qeep\.life': \{ (?:role: 'designer'|roles: \['designer', 'employee'\])/, 'The senior designer account must be in the portal allowlist');
 assert.match(authGate, /function handlePasswordSetup\(event\)/, 'Invitation and recovery links must open a dedicated password setup flow');
 assert.match(authGate, /auth\.updateUser\(\{ password: password \}\)/, 'Password setup must use the signed-in Supabase recovery session');
 assert.match(authGate, /event === 'PASSWORD_RECOVERY'/, 'Recovery events must remain inside the password setup gate');

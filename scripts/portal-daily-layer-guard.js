@@ -276,7 +276,10 @@ function loadSources(manifest, options) {
       const freshness = firstDate(payload, source.datePaths || []);
       check.dataDate = freshness.date;
       check.dataDatePath = freshness.path;
-      check.generatedAt = payload?.generatedAt || payload?.meta?.generatedAt || '';
+      check.generatedAt = payload?.priceGeneration?.builtAt
+        || payload?.generatedAt
+        || payload?.meta?.generatedAt
+        || '';
       if (source.key === 'sku_registry' && !check.generatedAt && Array.isArray(payload)) {
         const metaPath = path.join(path.dirname(resolved.filePath), 'sku_registry_meta.json');
         const meta = readJsonIfExists(metaPath, {});

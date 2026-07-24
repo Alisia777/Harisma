@@ -33,7 +33,8 @@ assert.match(designers, /window\.confirm\('Восстановить команд
 assert.match(designers, /function threeWayMergeData\(base, remote, local\)/, 'Concurrent edits must use a three-way merge');
 assert.match(designers, /conflictFields[\s\S]*remoteFieldChanged[\s\S]*localFieldChanged/, 'Three-way merge must isolate conflicts to fields changed on both sides');
 assert.match(designers, /lastSyncedData: lastSyncedData/, 'The common sync ancestor must survive reloads and offline edits');
-assert.match(designers, /data-design-conflict-remote/, 'Concurrency conflicts must require an explicit user choice');
+assert.match(designers, /data-design-conflict-choice/, 'Concurrency conflicts must require an explicit per-card choice');
+assert.match(designers, /MAX_SYNC_REBASE_ATTEMPTS = 12/, 'Concurrent writers must receive bounded optimistic rebase retries');
 assert.match(designers, /OFFLINE_EDITOR_GRACE_MS/, 'Recently confirmed editors must have a bounded offline editing window');
 assert.match(designers, /membershipCheckFailed \|\| offlineEditMode[\s\S]*изменения сохранены на устройстве/, 'Offline edits must stay local until access is revalidated');
 assert.match(designers, /window\.addEventListener\('online'[\s\S]*syncRemote\(true\)/, 'Reconnect must trigger a guarded three-way synchronization');

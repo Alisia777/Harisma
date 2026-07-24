@@ -187,6 +187,9 @@ if (!dataTruthWorkflow.includes('--relax-missing-platform-facts')) {
 if (!dataTruthWorkflow.includes('--relax-platform-facts')) {
   fail('data truth workflow must downgrade pre-sync marketplace freshness drift to warnings');
 }
+if (!dataTruthWorkflow.includes('git log --format=%B "$BASE_REF..HEAD" | grep -Fq \'[portal-full-update]\'')) {
+  fail('data truth workflow must allow guarded full-portal PRs with the explicit commit marker');
+}
 
 if (paths.includes('data/portal_dashboard_metrics.json')) {
   const command = 'node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir data';

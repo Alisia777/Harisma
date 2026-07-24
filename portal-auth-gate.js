@@ -5,6 +5,10 @@
   window.__ALTEA_PORTAL_AUTH_GATE__ = true;
 
   var STORAGE_KEY = 'altea-portal-auth-v1';
+  var AUTH_DATABASE_NAME = 'altea-portal-auth';
+  var AUTH_DATABASE_STORE = 'sessions';
+  var AUTH_DATABASE_VERSION = 1;
+  var AUTH_STORAGE_TIMEOUT_MS = 2500;
   var THROTTLE_KEY = 'altea-portal-auth-throttle-v2';
   var DELAYED_SCRIPT_ATTR = 'data-auth-src';
   var DELAYED_SCRIPT_TYPE = 'application/x-altea-auth-delayed';
@@ -60,6 +64,8 @@
   var delayedScriptsPromise = null;
   var throttleTimer = null;
   var memoryStore = {};
+  var authDatabasePromise = null;
+  var authStorage = null;
   var currentAccess = null;
   var accessObserverStarted = false;
   var pendingMfaChallenge = null;
@@ -100,6 +106,163 @@
         removeItem: function (key) { delete memoryStore[key]; }
       };
     }
+  }
+
+  function localAuthValue(key) {
+    try {
+      var value = window.localStorage.getItem(key);
+      if (value !== null) return value;
+    } catch (_) {}
+    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+  }
+
+  function writeLocalAuthValue(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+      delete memoryStore[key];
+      return true;
+    } catch (_) {
+      memoryStore[key] = String(value);
+      return false;
+    }
+  }
+
+  function removeLocalAuthValue(key) {
+    try {
+      window.localStorage.removeItem(key);
+    } catch (_) {}
+    delete memoryStore[key];
+  }
+
+  function openAuthDatabase() {
+    var opening;
+    if (authDatabasePromise) return authDatabasePromise;
+    if (!window.indexedDB || !window.indexedDB.open) return Promise.reject(new Error('indexeddb-unavailable'));
+
+    opening = new Promise(function (resolve, reject) {
+      var request;
+      try {
+        request = window.indexedDB.open(AUTH_DATABASE_NAME, AUTH_DATABASE_VERSION);
+      } catch (error) {
+        reject(error);
+        return;
+      }
+      request.onupgradeneeded = function () {
+        var database = request.result;
+        if (!database.objectStoreNames.contains(AUTH_DATABASE_STORE)) {
+          database.createObjectStore(AUTH_DATABASE_STORE);
+        }
+      };
+      request.onsuccess = function () {
+        var database = request.result;
+        database.onversionchange = function () {
+          try { database.close(); } catch (_) {}
+          authDatabasePromise = null;
+        };
+        resolve(database);
+      };
+      request.onerror = function () {
+        reject(request.error || new Error('indexeddb-open-failed'));
+      };
+      request.onblocked = function () {
+        reject(new Error('indexeddb-open-blocked'));
+      };
+    });
+
+    authDatabasePromise = withTimeout(opening, AUTH_STORAGE_TIMEOUT_MS, 'indexeddb-open-timeout')
+      .catch(function (error) {
+        authDatabasePromise = null;
+        throw error;
+      });
+    return authDatabasePromise;
+  }
+
+  function runAuthDatabaseRequest(mode, operation, timeoutCode) {
+    return openAuthDatabase().then(function (database) {
+      var requestPromise = new Promise(function (resolve, reject) {
+        var transaction;
+        var request;
+        try {
+          transaction = database.transaction(AUTH_DATABASE_STORE, mode);
+          request = operation(transaction.objectStore(AUTH_DATABASE_STORE));
+        } catch (error) {
+          reject(error);
+          return;
+        }
+        request.onsuccess = function () { resolve(request.result); };
+        request.onerror = function () { reject(request.error || new Error(timeoutCode || 'indexeddb-request-failed')); };
+        transaction.onabort = function () { reject(transaction.error || new Error('indexeddb-transaction-aborted')); };
+      });
+      return withTimeout(requestPromise, AUTH_STORAGE_TIMEOUT_MS, timeoutCode || 'indexeddb-request-timeout');
+    });
+  }
+
+  function readDatabaseAuthValue(key) {
+    return runAuthDatabaseRequest('readonly', function (store) {
+      return store.get(key);
+    }, 'indexeddb-read-timeout').then(function (record) {
+      if (record && typeof record === 'object' && typeof record.value === 'string') return record.value;
+      return typeof record === 'string' ? record : null;
+    });
+  }
+
+  function writeDatabaseAuthValue(key, value) {
+    return runAuthDatabaseRequest('readwrite', function (store) {
+      return store.put({ value: String(value), updatedAt: now() }, key);
+    }, 'indexeddb-write-timeout');
+  }
+
+  function removeDatabaseAuthValue(key) {
+    return runAuthDatabaseRequest('readwrite', function (store) {
+      return store.delete(key);
+    }, 'indexeddb-remove-timeout');
+  }
+
+  function authValueExpiry(value) {
+    try {
+      var parsed = JSON.parse(value || 'null');
+      return Number(parsed && parsed.expires_at) || 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  function newestAuthValue(databaseValue, localValue) {
+    if (!databaseValue) return localValue;
+    if (!localValue || databaseValue === localValue) return databaseValue;
+    return authValueExpiry(localValue) > authValueExpiry(databaseValue) ? localValue : databaseValue;
+  }
+
+  function persistentAuthStorage() {
+    if (authStorage) return authStorage;
+    authStorage = {
+      getItem: function (key) {
+        var localValue = localAuthValue(key);
+        return readDatabaseAuthValue(key)
+          .then(function (databaseValue) {
+            var selected = newestAuthValue(databaseValue, localValue);
+            if (selected && selected !== databaseValue) {
+              writeDatabaseAuthValue(key, selected).catch(function () {});
+            }
+            if (selected && selected !== localValue) writeLocalAuthValue(key, selected);
+            return selected || null;
+          })
+          .catch(function () {
+            return localValue || null;
+          });
+      },
+      setItem: function (key, value) {
+        var localWritten = writeLocalAuthValue(key, String(value));
+        return writeDatabaseAuthValue(key, value).catch(function () {
+          if (!localWritten) memoryStore[key] = String(value);
+        });
+      },
+      removeItem: function (key) {
+        removeLocalAuthValue(key);
+        return removeDatabaseAuthValue(key).catch(function () {});
+      }
+    };
+    return authStorage;
   }
 
   function readJson(key, fallback) {
@@ -1301,7 +1464,8 @@
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
-          storageKey: STORAGE_KEY
+          storageKey: STORAGE_KEY,
+          storage: persistentAuthStorage()
         }
       });
       return client;

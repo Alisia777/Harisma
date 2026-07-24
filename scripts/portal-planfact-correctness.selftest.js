@@ -317,7 +317,7 @@ async function run() {
         `${fileName} должен обновить кэш расчетной модели, сохранив OOS-версию`
       );
       assert.ok(
-        html.includes('portal-live-lazy-hotfixes.js?v=20260724planfactcorrectness4'),
+        html.includes('portal-live-lazy-hotfixes.js?v=20260724planfact5allstatuses2'),
         `${fileName} должен обновить кэш Plan-Fact V4`
       );
     });

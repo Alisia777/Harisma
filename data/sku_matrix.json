@@ -1,11 +1,11 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-07-23T07:13:28.469Z",
+  "generatedAt": "2026-07-24T09:04:19.419Z",
   "source": {
     "skus": 209,
     "aliases": 342,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-07-23T07:13:28.236Z"
+    "dataQualityGeneratedAt": "2026-07-24T09:04:19.189Z"
   },
   "summary": {
     "skuCount": 209,
@@ -18,8 +18,8 @@
     "missingOwnerCount": 0,
     "planNeedsAssignmentCount": 0,
     "planAssignedCount": 96,
-    "issueCount": 214,
-    "infoIssueCount": 36,
+    "issueCount": 210,
+    "infoIssueCount": 40,
     "problemStateCounts": {
       "ok": 85,
       "has_critical_issue": 124,
@@ -17820,42 +17820,10 @@
       "problemState": "has_critical_issue",
       "problemLabel": "Есть критичная ошибка",
       "problemTone": "danger",
-      "issueCount": 6,
+      "issueCount": 2,
       "infoIssueCount": 0,
-      "criticalIssueCount": 6,
+      "criticalIssueCount": 2,
       "issues": [
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
-        {
-          "severity": "critical",
-          "type": "order_no_stock_need",
-          "platform": "ya",
-          "revenue": 0,
-          "units": 0,
-          "message": "По складу нет остатка, но есть продажи/потребность"
-        },
         {
           "severity": "critical",
           "type": "order_no_stock_need",
@@ -18203,10 +18171,10 @@
       "platform": "goldapple",
       "api_sku": "retinol_boost_krem_d",
       "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, 30мл",
-      "revenue": 65349,
-      "units": 79,
+      "revenue": 69599,
+      "units": 84,
       "firstDate": "2026-07-02",
-      "lastDate": "2026-07-21"
+      "lastDate": "2026-07-22"
     },
     {
       "platform": "letu",
@@ -18221,19 +18189,19 @@
       "platform": "goldapple",
       "api_sku": "qeep_magnB6_120caps",
       "name": "магний цитрат 635 мг с витамином в6 qeep, 120 капсул",
-      "revenue": 27636,
-      "units": 13,
+      "revenue": 28726,
+      "units": 14,
       "firstDate": "2026-07-01",
-      "lastDate": "2026-07-16"
+      "lastDate": "2026-07-22"
     },
     {
       "platform": "goldapple",
       "api_sku": "syvorotka_dlya_lica_",
       "name": "Алтея Сыворотка для лица сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пя",
-      "revenue": 25151,
-      "units": 33,
+      "revenue": 27716,
+      "units": 36,
       "firstDate": "2026-07-04",
-      "lastDate": "2026-07-21"
+      "lastDate": "2026-07-22"
     },
     {
       "platform": "letu",
@@ -18273,19 +18241,19 @@
     },
     {
       "platform": "goldapple",
+      "api_sku": "qeepinositol",
+      "name": "биологически активная добавка к пище \"INOSITOL (ИНОЗИТОЛ) ЮНИЭКО\" (капсулы по 400 мг) 60 капсул",
+      "revenue": 15041,
+      "units": 16,
+      "firstDate": "2026-07-01",
+      "lastDate": "2026-07-22"
+    },
+    {
+      "platform": "goldapple",
       "api_sku": "qeep_chlorophyll_500",
       "name": "QEEP Биологически активная добавка к пище Хлорофилл со вкусом: Мята, 500 мл",
       "revenue": 14830,
       "units": 6,
-      "firstDate": "2026-07-01",
-      "lastDate": "2026-07-16"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "qeepinositol",
-      "name": "биологически активная добавка к пище \"INOSITOL (ИНОЗИТОЛ) ЮНИЭКО\" (капсулы по 400 мг) 60 капсул",
-      "revenue": 14146,
-      "units": 15,
       "firstDate": "2026-07-01",
       "lastDate": "2026-07-16"
     },

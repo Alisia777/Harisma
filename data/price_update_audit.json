@@ -1,9 +1,9 @@
 {
   "schema": "portal-price-update-audit-v1",
-  "generatedAt": "2026-07-24T21:01:52.040Z",
+  "generatedAt": "2026-07-24T21:16:55.518Z",
   "status": "ok",
   "publishAllowed": true,
-  "expectedDate": "2026-07-24",
+  "expectedDate": "2026-07-23",
   "thresholds": {
     "maxSourceLagDays": 3,
     "maxPlatformGapDays": 3,
@@ -145,7 +145,7 @@
     }
   },
   "repricer": {
-    "previousRowCount": 216,
+    "previousRowCount": 218,
     "candidateRowCount": 218
   },
   "generationId": "prices-540cd1db900338665698",

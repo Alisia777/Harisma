@@ -51,6 +51,15 @@ function timezoneDate(offsetDays = 0, now = new Date(), timeZone = 'Europe/Mosco
   return utc.toISOString().slice(0, 10);
 }
 
+function buildTimestampDate(value, timeZone = 'Europe/Moscow') {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '';
+  if (!/[T ]\d{2}:\d{2}/.test(raw)) return dateKey(raw);
+  const stamp = Date.parse(raw);
+  if (!Number.isFinite(stamp)) return dateKey(raw);
+  return timezoneDate(0, new Date(stamp), timeZone);
+}
+
 function dayDistance(left, right) {
   const a = Date.parse(`${dateKey(left)}T00:00:00Z`);
   const b = Date.parse(`${dateKey(right)}T00:00:00Z`);
@@ -267,9 +276,9 @@ function inspectContract(options, manifest, inventory) {
 function sourceBuildDate(source, payload, options, sourceDir) {
   if (source.key === 'sku_registry') {
     const meta = readJsonIfExists(path.join(sourceDir || options.dataDir, 'sku_registry_meta.json'), {});
-    return dateKey(meta?.generatedAt);
+    return buildTimestampDate(meta?.generatedAt);
   }
-  return dateKey(payload?.generatedAt || payload?.meta?.generatedAt || payload?.updatedAt);
+  return buildTimestampDate(payload?.generatedAt || payload?.meta?.generatedAt || payload?.updatedAt);
 }
 
 function inspectSource(source, options) {

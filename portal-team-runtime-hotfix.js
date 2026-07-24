@@ -432,10 +432,14 @@
       const ownerRows = ownerResult.status === 'fulfilled' ? (ownerResult.value || []) : [];
       const repricerControlsLoaded = repricerControlsResult.status === 'fulfilled';
       const repricerControls = repricerControlsLoaded ? (repricerControlsResult.value || null) : null;
-      const softErrors = [commentResult, decisionResult, ownerResult, repricerControlsResult]
+      const optionalErrors = [commentResult, decisionResult, ownerResult, repricerControlsResult]
         .filter((result) => result.status !== 'fulfilled')
         .map((result) => result.reason?.message || String(result.reason || 'Неизвестная ошибка'))
         .filter(Boolean);
+      const softErrors = [];
+      if (optionalErrors.length) {
+        console.warn('[portal-team-runtime-hotfix] optional team data was not loaded', optionalErrors);
+      }
       app.team.lastPullCoverage = {
         ...(app.team.lastPullCoverage || {}),
         tasks: true,
@@ -482,16 +486,14 @@
       app.team.error = softErrors.join(' | ');
       app.team.note = remoteEmpty
         ? 'Командная база пока пустая — локальные данные сохранены'
-        : softErrors.length
-          ? `Командная база подключена частично · ${typeof fmt?.date === 'function' ? fmt.date(app.team.lastSyncAt) : app.team.lastSyncAt}`
-          : `Командная база синхронизирована · ${typeof fmt?.date === 'function' ? fmt.date(app.team.lastSyncAt) : app.team.lastSyncAt}`;
+        : `Задачи синхронизированы · ${typeof fmt?.date === 'function' ? fmt.date(app.team.lastSyncAt) : app.team.lastSyncAt}`;
       if (typeof updateSyncBadge === 'function') updateSyncBadge();
 
       if (rerender && typeof rerenderCurrentView === 'function') {
         rerenderCurrentView();
         if (app.activeSku && typeof renderSkuModal === 'function') renderSkuModal(app.activeSku);
       }
-      return { remoteEmpty, softErrors };
+      return { remoteEmpty, softErrors, optionalErrors };
     } catch (error) {
       console.error(error);
       app.team.mode = 'error';

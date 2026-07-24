@@ -11,6 +11,11 @@ on:
       cutoff-date:
         description: 'Business cutoff YYYY-MM-DD; empty means Europe/Moscow D-1'
         required: false
+      upload-runtime-data:
+        description: 'Upload the complete runtime data generation for a protected portal refresh'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: portal-daily-close
@@ -217,7 +222,8 @@ jobs:
             --status-file data/retail_network_source_status.json \
             --from "$RETAIL_FROM" \
             --to '${{ steps.cutoff.outputs.value }}' \
-            --strict --optional-source --max-lag-days 1
+            --strict --optional-source --max-lag-days 1 \
+            --allow-stale-platforms letu
 
       - name: Refresh advertising and stock
         env:
@@ -343,3 +349,11 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.upload-runtime-data
+        with:
+          name: portal-runtime-data-${{ github.run_id }}
+          path: data/**
+          if-no-files-found: error
+          retention-days: 7

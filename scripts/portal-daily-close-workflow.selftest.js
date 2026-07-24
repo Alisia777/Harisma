@@ -75,6 +75,9 @@ if (!workflow.includes('node scripts/portal-retail-network-daily-sync.js sync'))
 if (!workflow.includes('--status-file data/retail_network_source_status.json')) {
   fail('daily close must publish retail-network source freshness diagnostics');
 }
+if (!workflow.includes('--allow-stale-platforms letu')) {
+  fail('daily close must keep the explicit Letual stale-source exception visible and scoped');
+}
 if (workflow.indexOf('node scripts/portal-retail-network-daily-sync.js sync') < workflow.indexOf('node scripts/portal-api-max-sync.js sync')) {
   fail('retail-network daily facts must override the monthly API-workbook fallback');
 }
@@ -197,6 +200,9 @@ if (!dataTruthWorkflow.includes('--relax-missing-platform-facts')) {
 }
 if (!dataTruthWorkflow.includes('--relax-platform-facts')) {
   fail('data truth workflow must downgrade pre-sync marketplace freshness drift to warnings');
+}
+if (!dataTruthWorkflow.includes('git log --format=%B "$BASE_REF..HEAD" | grep -Fq \'[portal-full-update]\'')) {
+  fail('data truth workflow must allow guarded full-portal PRs with the explicit commit marker');
 }
 
 if (paths.includes('data/portal_dashboard_metrics.json')) {

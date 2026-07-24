@@ -1,14 +1,14 @@
 Portal sync health: warning
-Generated: 2026-07-24T21:12:32.577Z
+Generated: 2026-07-24T21:17:48.003Z
 Publish allowed: yes
-Max data date: 2026-07-22
+Max data date: 2026-07-23
 
 Blocking reasons:
 - none
 
 Warnings:
-- Unified daily intake: wb_substitution_traffic: snapshot age 52 exceeds 45 days.
-- Unified daily intake: wb_substitution_traffic_history: snapshot age 52 exceeds 45 days.
+- Unified daily intake: wb_substitution_traffic: snapshot age 53 exceeds 45 days.
+- Unified daily intake: wb_substitution_traffic_history: snapshot age 53 exceeds 45 days.
 - Unified daily intake: View iu-drr has warnings in: wb_substitution_traffic.
 - Unified daily intake: View product-leaderboard has warnings in: wb_substitution_traffic, wb_substitution_traffic_history.
-- Unmapped API SKU revenue: 290563.
+- Unmapped API SKU revenue: 299363.

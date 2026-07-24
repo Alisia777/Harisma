@@ -122,6 +122,8 @@ jobs:
           ALLOW_GENERATED_IU_DATA=false
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.allow_generated_iu_data }}" == "true" ]]; then
             ALLOW_GENERATED_IU_DATA=true
+          elif [[ "${{ github.event_name }}" == "pull_request" ]] && git log --format=%B "$BASE_REF..HEAD" | grep -Fq '[portal-full-update]'; then
+            ALLOW_GENERATED_IU_DATA=true
           elif [[ "${{ github.event_name }}" == "push" && "${{ contains(github.event.head_commit.message, '[portal-full-update]') }}" == "true" ]]; then
             ALLOW_GENERATED_IU_DATA=true
           fi

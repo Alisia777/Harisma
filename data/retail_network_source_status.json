@@ -1,41 +1,41 @@
 {
-  "reason": "Google service account is not configured for the private retail-network workbook",
   "schema": "retail-network-source-status-v1",
+  "generatedAt": "2026-07-24T08:56:29.768Z",
+  "cutoffDate": "2026-07-23",
   "source": "preserved-platform-trends:/home/runner/work/Harisma/Harisma/data/platform_trends.json",
   "status": "stale",
+  "reason": "Google service account is not configured for the private retail-network workbook",
   "platforms": {
-    "letu": {
-      "key": "letu",
-      "note": "Preserved from the committed finalized daily snapshot because the private Google Sheet could not be exported.",
-      "label": "Лэтуаль",
-      "status": "stale",
-      "lagDays": 1,
-      "latestDate": "2026-07-21"
-    },
-    "samokat": {
-      "key": "samokat",
-      "note": "Samokat requires a private API endpoint and response schema; token is configured separately.",
-      "label": "Самокат",
-      "status": "missing",
-      "latestDate": ""
-    },
     "goldapple": {
       "key": "goldapple",
-      "note": "Preserved from the committed finalized daily snapshot because the private Google Sheet could not be exported.",
       "label": "ЗЯ",
       "status": "stale",
+      "latestDate": "2026-07-22",
       "lagDays": 1,
-      "latestDate": "2026-07-21"
+      "note": "Preserved from the committed finalized daily snapshot because the private Google Sheet could not be exported."
+    },
+    "letu": {
+      "key": "letu",
+      "label": "Лэтуаль",
+      "status": "stale",
+      "latestDate": "2026-07-21",
+      "lagDays": 2,
+      "note": "Preserved from the committed finalized daily snapshot because the private Google Sheet could not be exported."
     },
     "megamarket": {
       "key": "megamarket",
-      "note": "Preserved from the committed finalized daily snapshot because the private Google Sheet could not be exported.",
       "label": "Мегамаркет",
       "status": "stale",
+      "latestDate": "2026-07-22",
       "lagDays": 1,
-      "latestDate": "2026-07-21"
+      "note": "Preserved from the committed finalized daily snapshot because the private Google Sheet could not be exported."
+    },
+    "samokat": {
+      "key": "samokat",
+      "label": "Самокат",
+      "status": "missing",
+      "latestDate": "",
+      "note": "Samokat requires a private API endpoint and response schema; token is configured separately."
     }
-  },
-  "cutoffDate": "2026-07-22",
-  "generatedAt": "2026-07-23T07:06:04.706Z"
+  }
 }

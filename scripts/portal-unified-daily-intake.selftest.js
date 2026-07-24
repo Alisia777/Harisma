@@ -43,11 +43,21 @@ function fixture() {
         freshness: 'none',
         datePaths: ['updatedAt'],
         repairStep: 'portal-operational-storage'
+      },
+      {
+        key: 'price_master',
+        file: 'prices.json',
+        kind: 'fact-master',
+        required: true,
+        freshness: 'daily-build',
+        datePaths: ['asOfDate', 'generatedAt'],
+        repairStep: 'price-sync'
       }
     ],
     views: {
       dashboard: { sources: ['dashboard_fact'], critical: true, updateMode: 'daily-batch' },
-      documents: { sources: ['documents'], critical: false, updateMode: 'operational' }
+      documents: { sources: ['documents'], critical: false, updateMode: 'operational' },
+      prices: { sources: ['price_master'], critical: true, updateMode: 'daily-batch' }
     }
   });
   writeJson(inventoryPath, {
@@ -55,6 +65,7 @@ function fixture() {
     paths: [
       'data/dashboard.json',
       'data/documents.json',
+      'data/prices.json',
       'data/portal_daily_intake.json'
     ]
   });
@@ -64,6 +75,11 @@ function fixture() {
     rows: [{ id: 1 }]
   });
   writeJson(path.join(dataDir, 'documents.json'), { groups: [] });
+  writeJson(path.join(dataDir, 'prices.json'), {
+    generatedAt: '2026-07-23T21:55:56.585Z',
+    asOfDate: '2026-07-23',
+    rows: [{ id: 1 }]
+  });
   return { root, dataDir, manifestPath, inventoryPath };
 }
 
@@ -120,9 +136,23 @@ try {
 
   const clean = run(options(base));
   assert.strictEqual(clean.publish.allowed, true, clean.publish.blockingReasons.join('\n'));
-  assert.strictEqual(clean.summary.registeredViews, 2);
+  assert.strictEqual(clean.summary.registeredViews, 3);
   assert.strictEqual(clean.summary.discoveredViews, 2);
   assert.strictEqual(clean.views.find((view) => view.key === 'documents').status, 'operational');
+
+  writeJson(path.join(base.dataDir, 'prices.json'), {
+    generatedAt: '2026-07-23T20:55:56.585Z',
+    asOfDate: '2026-07-23',
+    rows: [{ id: 1 }]
+  });
+  const stalePriceBuild = run(options(base));
+  assert.strictEqual(stalePriceBuild.publish.allowed, false);
+  assert.ok(stalePriceBuild.publish.blockingReasons.some((reason) => reason.includes('build date 2026-07-23')));
+  writeJson(path.join(base.dataDir, 'prices.json'), {
+    generatedAt: '2026-07-23T21:55:56.585Z',
+    asOfDate: '2026-07-23',
+    rows: [{ id: 1 }]
+  });
 
   writeJson(path.join(base.dataDir, 'dashboard.json'), {
     generatedAt: '2026-07-24T08:00:00.000Z',
@@ -148,7 +178,7 @@ try {
       documents: { sources: ['documents'], critical: false, updateMode: 'operational' }
     }
   });
-  writeJson(base.inventoryPath, { paths: ['data/documents.json', 'data/portal_daily_intake.json'] });
+  writeJson(base.inventoryPath, { paths: ['data/documents.json', 'data/prices.json', 'data/portal_daily_intake.json'] });
   const missingInventory = run({ ...options(base), contractOnly: true });
   assert.strictEqual(missingInventory.publish.allowed, false);
   assert.ok(missingInventory.publish.blockingReasons.some((reason) => reason.includes('dashboard.json')));

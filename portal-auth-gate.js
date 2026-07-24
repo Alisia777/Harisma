@@ -1530,11 +1530,14 @@
         if (!resolveAccessForSession(completedSession).allowedViews.length) throw new Error('access-denied');
         passwordSetupFlow = '';
         try {
-          window.history.replaceState(null, '', window.location.pathname + window.location.search + '#designers');
+          safeStorage().removeItem('altea:last-view');
+        } catch (_) {}
+        try {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search + '#dashboard');
         } catch (_) {}
         if (passwordInput) passwordInput.value = '';
         if (confirmInput) confirmInput.value = '';
-        setStatus('\u041f\u0430\u0440\u043e\u043b\u044c \u0441\u043e\u0437\u0434\u0430\u043d. \u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u043c \u0440\u0430\u0437\u0434\u0435\u043b \u00ab\u0414\u0438\u0437\u0430\u0439\u043d\u0435\u0440\u044b\u00bb...', 'ok');
+        setStatus('\u041f\u0430\u0440\u043e\u043b\u044c \u0441\u043e\u0437\u0434\u0430\u043d. \u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u043c \u043f\u043e\u0440\u0442\u0430\u043b...', 'ok');
         emitSecurityAudit('password_setup_completed', {
           outcome: 'ok',
           severity: 'info',

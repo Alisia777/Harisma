@@ -35,8 +35,7 @@ function fixtureState() {
         { key: 'wb', label: 'WB', series },
         { key: 'all', label: 'All', series }
       ]
-    },
-    iuDrrSummary: { daily: [] }
+    }
   };
 }
 

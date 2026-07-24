@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-23T07:01:20.169Z",
-  "asOfDate": "2026-07-22",
+  "generatedAt": "2026-07-24T08:50:36.415Z",
+  "asOfDate": "2026-07-23",
   "sourceFile": "smart-price-workbook.xlsx",
   "platforms": {
     "ozon": {
@@ -58309,8 +58309,8 @@
     }
   },
   "extraMarketplace": {
-    "generatedAt": "2026-07-23T07:01:20.169Z",
-    "asOfDate": "2026-07-22",
+    "generatedAt": "2026-07-24T08:50:36.415Z",
+    "asOfDate": "2026-07-23",
     "source": "platform_trends.extraMarketplace",
     "platforms": {
       "magnit": {
@@ -58321,7 +58321,7 @@
       "wb": {
         "key": "wb",
         "label": "WB",
-        "articleCount": 139
+        "articleCount": 143
       },
       "ozon": {
         "key": "ozon",

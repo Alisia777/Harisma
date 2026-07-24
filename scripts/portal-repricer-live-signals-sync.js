@@ -275,21 +275,41 @@ function fallbackStocks(payload, platform, asOfDate, maxAgeDays = DEFAULT_STOCK_
   };
 }
 
-async function requestJson(url, options, label) {
-  const response = await fetch(url, options);
-  const text = await response.text();
-  let payload = null;
-  try {
-    payload = text ? JSON.parse(text) : null;
-  } catch {
-    payload = null;
-  }
-  if (!response.ok) {
+function retryAfterMs(response, minimumMs) {
+  const raw = String(response?.headers?.get?.('retry-after') || '').trim();
+  if (/^\d+(?:\.\d+)?$/.test(raw)) return Math.max(minimumMs, Math.ceil(Number(raw) * 1000));
+  const retryAt = Date.parse(raw);
+  if (Number.isFinite(retryAt)) return Math.max(minimumMs, retryAt - Date.now());
+  return minimumMs;
+}
+
+async function requestJson(url, options, label, retry = {}) {
+  const maxAttempts = Math.max(1, Math.trunc(numberOrZero(retry.maxAttempts) || 1));
+  const minimumDelayMs = Math.max(0, Math.trunc(numberOrZero(retry.minimumDelayMs)));
+  const sleep = typeof retry.sleep === 'function'
+    ? retry.sleep
+    : (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const response = await fetch(url, options);
+    const text = await response.text();
+    let payload = null;
+    try {
+      payload = text ? JSON.parse(text) : null;
+    } catch {
+      payload = null;
+    }
+    if (response.ok) return payload;
+    if (response.status === 429 && attempt < maxAttempts) {
+      const delayMs = retryAfterMs(response, minimumDelayMs);
+      console.warn(`${label}: HTTP 429, retry ${attempt + 1}/${maxAttempts} in ${delayMs}ms`);
+      await sleep(delayMs);
+      continue;
+    }
     const error = new Error(`${label}: HTTP ${response.status} ${text.slice(0, 500)}`);
     error.status = response.status;
     throw error;
   }
-  return payload;
+  throw new Error(`${label}: retry loop exhausted`);
 }
 
 async function fetchWbStocks(token, indexes, asOfDate) {
@@ -312,7 +332,10 @@ async function fetchWbStocks(token, indexes, asOfDate) {
           limit: WB_STOCK_PAGE_LIMIT,
           offset
         })
-      }, 'WB stocks API');
+      }, 'WB stocks API', {
+        maxAttempts: 4,
+        minimumDelayMs: 21000
+      });
       const batch = Array.isArray(payload?.data?.items)
         ? payload.data.items
         : (Array.isArray(payload?.items) ? payload.items : []);
@@ -782,7 +805,9 @@ module.exports = {
   mergeDirectWithFallback,
   normalizeOzonStocks,
   ozonStockBuckets,
+  requestJson,
   resolveOptions,
+  retryAfterMs,
   skuIndexes,
   stockRow
 };

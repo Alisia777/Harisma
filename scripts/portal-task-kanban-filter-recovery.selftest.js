@@ -157,7 +157,7 @@ async function run() {
       motionVisible: Boolean(document.querySelector('.altea-motion-stage.is-visible'))
     }));
 
-    assert.strictEqual(recovered.version, '20260709-task-owner-platform-fallback-v1');
+    assert.strictEqual(recovered.version, '20260724-task-all-statuses-v1');
     assert.deepStrictEqual(
       {
         search: recovered.search,
@@ -172,7 +172,7 @@ async function run() {
       {
         search: '',
         owner: 'all',
-        status: 'active',
+        status: 'all',
         type: 'all',
         priority: 'all',
         horizon: 'all',
@@ -198,6 +198,11 @@ async function run() {
     await page.waitForFunction((owner) => window.state.controlFilters.owner === owner, DARIA_OWNER, { timeout: 30000 });
     await page.selectOption('[data-task-filter="owner"]', 'all');
     await page.waitForFunction(() => window.state.controlFilters.owner === 'all', null, { timeout: 30000 });
+    await page.waitForFunction(
+      () => (document.querySelector('.task-design-result-line')?.textContent || '').includes('Показано 25 из 25'),
+      null,
+      { timeout: 30000 }
+    );
 
     const moreControl = await page.evaluate(() => {
       const button = document.querySelector('[data-task-show-more-lane="new"]');
@@ -296,8 +301,8 @@ async function run() {
       externalUpdateCalled: Boolean(window.__externalUpdateTaskStatusCalled)
     }));
     assert.ok(sparseGuard.visibleTasks >= 24, sparseGuard.resultLine);
-    assert.ok(/24\s+\D+\s+25/.test(sparseGuard.resultLine), sparseGuard.resultLine);
-    assert.strictEqual(sparseGuard.statusFilter, 'active');
+    assert.ok(/25\s+\D+\s+25/.test(sparseGuard.resultLine), sparseGuard.resultLine);
+    assert.strictEqual(sparseGuard.statusFilter, 'all');
     assert.strictEqual(sparseGuard.sourceFilter, 'all');
     assert.strictEqual(sparseGuard.horizonFilter, 'all');
     assert.strictEqual(sparseGuard.externalUpdateCalled, false);

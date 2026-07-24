@@ -14,8 +14,12 @@ const start = source.indexOf('async function initTeamStoreHotfix()');
 const end = source.indexOf('const AUTO_PULL_INTERVAL_MS', start);
 
 assert(start >= 0 && end > start, 'initTeamStoreHotfix must exist');
-assert(index.includes('portal-team-runtime-hotfix.js?v=20260724authsession1'), 'Protected entrypoint must load the authenticated team runtime');
-assert(liveIndex.includes('portal-team-runtime-hotfix.js?v=20260724authsession1'), 'Live entrypoint must load the authenticated team runtime');
+assert(index.includes('portal-team-runtime-hotfix.js?v=20260724taskvisibility2'), 'Protected entrypoint must load the authenticated team runtime');
+assert(liveIndex.includes('portal-team-runtime-hotfix.js?v=20260724taskvisibility2'), 'Live entrypoint must load the authenticated team runtime');
+assert(
+  source.includes('const softErrors = [commentResult, decisionResult, ownerResult]'),
+  'Optional repricer controls must not mark the task database as partially connected'
+);
 
 const testableSource = `
   ${source.slice(start, end)}

@@ -432,10 +432,13 @@
       const ownerRows = ownerResult.status === 'fulfilled' ? (ownerResult.value || []) : [];
       const repricerControlsLoaded = repricerControlsResult.status === 'fulfilled';
       const repricerControls = repricerControlsLoaded ? (repricerControlsResult.value || null) : null;
-      const softErrors = [commentResult, decisionResult, ownerResult, repricerControlsResult]
+      const softErrors = [commentResult, decisionResult, ownerResult]
         .filter((result) => result.status !== 'fulfilled')
         .map((result) => result.reason?.message || String(result.reason || 'Неизвестная ошибка'))
         .filter(Boolean);
+      if (!repricerControlsLoaded) {
+        console.warn('[portal-team-runtime-hotfix] optional repricer controls were not loaded', repricerControlsResult.reason);
+      }
       app.team.lastPullCoverage = {
         ...(app.team.lastPullCoverage || {}),
         tasks: true,

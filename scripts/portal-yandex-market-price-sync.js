@@ -164,6 +164,25 @@ function ownerForSku(sku = {}) {
   );
 }
 
+function offerMatchRank(sku = {}, offerId = '') {
+  const offerKey = normalizeKey(offerId);
+  const articleKey = normalizeKey(sku.articleKey || sku.article || sku.sku || '');
+  if (offerKey && offerKey === articleKey) return 30;
+  const directKeys = new Set(skuLookupValues(sku).map(normalizeKey).filter(Boolean));
+  return directKeys.has(offerKey) ? 20 : 10;
+}
+
+function preferredMappedOffer(candidate, current) {
+  if (!current) return true;
+  if (candidate.matchRank !== current.matchRank) return candidate.matchRank > current.matchRank;
+  const candidateStamp = Date.parse(candidate.offer?.updatedAt || '') || 0;
+  const currentStamp = Date.parse(current.offer?.updatedAt || '') || 0;
+  if (candidateStamp !== currentStamp) return candidateStamp > currentStamp;
+  const candidateKey = `${normalizeKey(candidate.offer?.id)}|${normalizeKey(candidate.offer?.campaignId)}`;
+  const currentKey = `${normalizeKey(current.offer?.id)}|${normalizeKey(current.offer?.campaignId)}`;
+  return candidateKey.localeCompare(currentKey, 'ru') < 0;
+}
+
 async function yandexRequest(options, apiPath, query = {}) {
   const url = new URL(`${options.apiBaseUrl}${apiPath}`);
   Object.entries(query).forEach(([key, value]) => {
@@ -255,15 +274,45 @@ function buildPayload(options, offers = [], skus = [], skuAliases = {}) {
   });
 
   const unmatchedOfferIds = [];
-  const rows = [];
+  let unmatchedOfferCount = 0;
+  let mappedOfferCount = 0;
+  const mappedByArticle = new Map();
   byOffer.forEach((offer) => {
     const sku = lookup.get(normalizeKey(offer.id));
     if (!sku) {
+      unmatchedOfferCount += 1;
       if (unmatchedOfferIds.length < 50) unmatchedOfferIds.push(offer.id);
       return;
     }
-    const price = positiveNumber(offer?.price?.value);
+    mappedOfferCount += 1;
     const articleKey = normalizeText(sku.articleKey || sku.article || offer.id);
+    const articleToken = normalizeKey(articleKey);
+    const candidate = {
+      articleKey,
+      matchRank: offerMatchRank(sku, offer.id),
+      offer,
+      sku
+    };
+    if (!mappedByArticle.has(articleToken)) mappedByArticle.set(articleToken, []);
+    mappedByArticle.get(articleToken).push(candidate);
+  });
+
+  const selectedByArticle = new Map();
+  const secondaryMappedOffers = [];
+  mappedByArticle.forEach((candidates, articleToken) => {
+    const selected = candidates.reduce(
+      (current, candidate) => (preferredMappedOffer(candidate, current) ? candidate : current),
+      null
+    );
+    selectedByArticle.set(articleToken, selected);
+    candidates
+      .filter((candidate) => candidate !== selected)
+      .forEach((secondary) => secondaryMappedOffers.push({ selected, secondary }));
+  });
+
+  const rows = [];
+  selectedByArticle.forEach(({ articleKey, offer, sku }) => {
+    const price = positiveNumber(offer?.price?.value);
     const sourceUpdatedAt = normalizeText(offer.updatedAt);
     rows.push({
       id: `ym|${articleKey}`,
@@ -319,8 +368,19 @@ function buildPayload(options, offers = [], skus = [], skuAliases = {}) {
       asOfDate: options.asOfDate,
       generatedAt,
       apiPricedOfferCount: byOffer.size,
+      mappedOfferCount,
       mappedRowCount: rows.length,
-      unmatchedOfferCount: byOffer.size - rows.length,
+      duplicateMappedOfferCount: mappedOfferCount - rows.length,
+      duplicateMappedOffers: secondaryMappedOffers.slice(0, 50).map(({ selected, secondary }) => ({
+        articleKey: selected.articleKey,
+        selectedOfferId: normalizeText(selected.offer?.id),
+        selectedPrice: positiveNumber(selected.offer?.price?.value),
+        selectedMatchRank: selected.matchRank,
+        secondaryOfferId: normalizeText(secondary.offer?.id),
+        secondaryPrice: positiveNumber(secondary.offer?.price?.value),
+        secondaryMatchRank: secondary.matchRank
+      })),
+      unmatchedOfferCount,
       unmatchedOfferIds,
       campaignIds: [...new Set(offers.map((offer) => normalizeText(offer.campaignId)).filter(Boolean))]
     },

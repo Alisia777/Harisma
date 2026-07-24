@@ -112,6 +112,13 @@ const payload = buildPayload(options, [
     campaignId: '123'
   },
   {
+    id: 'sku-two',
+    marketSku: 1002,
+    price: { value: 575, currencyId: 'RUR' },
+    updatedAt: '2026-05-01T10:00:00Z',
+    campaignId: '123'
+  },
+  {
     id: 'UNMAPPED',
     price: { value: 100 },
     updatedAt: '2026-07-23T10:00:00Z',
@@ -124,8 +131,21 @@ assert.strictEqual(payload.platforms.ym.rows.length, 2);
 assert.strictEqual(payload.platforms.ym.rows[0].currentPriceDate, '2026-07-23');
 assert.strictEqual(payload.platforms.ym.rows[0].sourceUpdatedAt, '2026-07-20T10:00:00Z');
 assert.strictEqual(payload.platforms.ym.rows[0].daily[0].date, '2026-07-23');
-assert.strictEqual(payload.priceApiSnapshot.apiPricedOfferCount, 3);
+assert.strictEqual(payload.platforms.ym.rows[1].offerId, 'sku-two');
+assert.strictEqual(payload.platforms.ym.rows[1].currentPrice, 575);
+assert.strictEqual(payload.priceApiSnapshot.apiPricedOfferCount, 4);
+assert.strictEqual(payload.priceApiSnapshot.mappedOfferCount, 3);
 assert.strictEqual(payload.priceApiSnapshot.mappedRowCount, 2);
+assert.strictEqual(payload.priceApiSnapshot.duplicateMappedOfferCount, 1);
+assert.deepStrictEqual(payload.priceApiSnapshot.duplicateMappedOffers[0], {
+  articleKey: 'sku-two',
+  selectedOfferId: 'sku-two',
+  selectedPrice: 575,
+  selectedMatchRank: 30,
+  secondaryOfferId: 'YM-OFFER-2',
+  secondaryPrice: 550,
+  secondaryMatchRank: 10
+});
 assert.strictEqual(payload.priceApiSnapshot.unmatchedOfferCount, 1);
 
 assert.throws(

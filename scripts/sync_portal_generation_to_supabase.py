@@ -7,7 +7,9 @@ import json
 import os
 import re
 import socket
+import sys
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from time import sleep
 from typing import Any
@@ -23,6 +25,7 @@ DEFAULT_MAX_BATCH_BYTES = 2_000_000
 CLEANUP_REQUEST_TIMEOUT_SECONDS = 10.0
 CLEANUP_REQUEST_ATTEMPTS = 2
 CLEANUP_PAGE_SIZE = 1000
+MAX_RETRY_DELAY_SECONDS = 120.0
 REPORT_NAME = "portal_supabase_generation_publish.json"
 
 
@@ -89,6 +92,37 @@ def snapshot_key_for(path_value: str) -> str:
     return normalized.replace("/", "__")
 
 
+def retryable_http_status(status: int) -> bool:
+    return status in {408, 425, 429} or 500 <= status <= 599
+
+
+def retry_delay_seconds(headers: Any, body: str, fallback_seconds: float) -> float:
+    candidates: list[float] = []
+    retry_after = headers.get("Retry-After") if headers is not None else None
+    if retry_after:
+        try:
+            candidates.append(float(retry_after))
+        except (TypeError, ValueError):
+            try:
+                retry_at = parsedate_to_datetime(str(retry_after))
+                if retry_at.tzinfo is None:
+                    retry_at = retry_at.replace(tzinfo=timezone.utc)
+                response_date = parsedate_to_datetime(str(headers.get("Date"))) if headers.get("Date") else datetime.now(timezone.utc)
+                if response_date.tzinfo is None:
+                    response_date = response_date.replace(tzinfo=timezone.utc)
+                candidates.append((retry_at - response_date).total_seconds())
+            except (TypeError, ValueError, OverflowError):
+                pass
+    try:
+        payload = json.loads(body)
+        if isinstance(payload, dict) and payload.get("retry_after") is not None:
+            candidates.append(float(payload["retry_after"]))
+    except (json.JSONDecodeError, TypeError, ValueError):
+        pass
+    requested = max([fallback_seconds, *candidates])
+    return min(MAX_RETRY_DELAY_SECONDS, max(0.0, requested))
+
+
 def rest_request(
     method: str,
     url: str,
@@ -120,6 +154,17 @@ def rest_request(
         except error.HTTPError as exc:
             body = exc.read().decode("utf-8", errors="replace")
             last_error = RuntimeError(f"{method.upper()} {url} failed: {exc.code} {body}")
+            if not retryable_http_status(exc.code):
+                raise last_error
+            if attempt < attempts:
+                delay = retry_delay_seconds(exc.headers, body, 0.8 * attempt)
+                print(
+                    f"{method.upper()} {url} returned retryable HTTP {exc.code}; "
+                    f"retry {attempt + 1}/{attempts} in {delay:g}s",
+                    file=sys.stderr,
+                )
+                sleep(delay)
+                continue
         except error.URLError as exc:
             last_error = RuntimeError(f"{method.upper()} {url} failed: {exc.reason}")
         if attempt < attempts:

@@ -204,6 +204,17 @@ async function main() {
       body: isRead ? '[]' : '{}'
     });
   });
+  // The browser-only fixture has no desktop helper that can save marketplace
+  // templates directly into Downloads. Force that optional endpoint to fail
+  // immediately so both WB and Ozon deterministically exercise the supported
+  // Blob-download fallback instead of depending on local HTTP timing.
+  await page.route('**/api/repricer-template', async (route) => {
+    await route.fulfill({
+      status: 503,
+      headers: { 'content-type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({ ok: false, error: 'selftest_forced_blob_fallback' })
+    });
+  });
   page.setDefaultTimeout(30000);
   const pageErrors = [];
   const dialogs = [];

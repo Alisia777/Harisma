@@ -72,14 +72,30 @@ function dateKey(value) {
   return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString().slice(0, 10);
 }
 
+function timezoneDate(offsetDays = 0, now = new Date(), timeZone = 'Europe/Moscow') {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(now);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const utc = new Date(Date.UTC(Number(values.year), Number(values.month) - 1, Number(values.day)));
+  utc.setUTCDate(utc.getUTCDate() + offsetDays);
+  return utc.toISOString().slice(0, 10);
+}
+
+function buildTimestampDate(value, timeZone = 'Europe/Moscow') {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '';
+  if (!/[T ]\d{2}:\d{2}/.test(raw)) return dateKey(raw);
+  const stamp = Date.parse(raw);
+  if (!Number.isFinite(stamp)) return dateKey(raw);
+  return timezoneDate(0, new Date(stamp), timeZone);
+}
+
 function localDateKey(offsetDays = 0) {
-  const date = new Date();
-  date.setDate(date.getDate() + offsetDays);
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, '0'),
-    String(date.getDate()).padStart(2, '0')
-  ].join('-');
+  return timezoneDate(offsetDays);
 }
 
 function readJson(filePath) {
@@ -280,7 +296,7 @@ function loadSources(manifest, options) {
         check.blockingReasons.push(`${source.key}: data date ${freshness.date || 'unknown'} is older than expected ${options.expectedDate}`);
       }
       if (options.expectedRunDate && source.freshness === 'daily-build') {
-        const runDate = dateKey(check.generatedAt);
+        const runDate = buildTimestampDate(check.generatedAt);
         if (!runDate || runDate < options.expectedRunDate) {
           check.blockingReasons.push(`${source.key}: build date ${runDate || 'unknown'} is older than expected run date ${options.expectedRunDate}`);
         }

@@ -179,6 +179,16 @@ try {
   assert.ok(!clean.report.publish.warningReasons.some((reason) => reason.includes('unmapped revenue')));
 
   buildFixture(dir);
+  write(dir, 'prices.json', { generatedAt: '2026-06-19T21:55:56.585Z', asOfDate: date, rows: [{ id: 1 }] });
+  write(dir, 'repricer.json', { generatedAt: '2026-06-19T21:55:56.585Z', asOfDate: date, rows: [{ id: 1 }] });
+  const moscowMidnightBuild = run(options(dir));
+  assert.strictEqual(
+    moscowMidnightBuild.report.publish.allowed,
+    true,
+    'A build after Moscow midnight must belong to the expected Moscow run date'
+  );
+
+  buildFixture(dir);
   write(dir, 'product_leaderboard.json', {
     generatedAt: '2026-05-01T08:00:00+03:00',
     asOfDate: '2026-05-01',

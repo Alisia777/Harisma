@@ -17,12 +17,21 @@ GENERATED_IU_DATA_PATHS = {
 }
 GENERATED_IU_REPORT_PATHS = {
     'data/portal_daily_guard.json',
+    'data/portal_daily_intake.json',
     'data/portal_data_quality.json',
     'data/portal_indicator_audit.json',
     'data/portal_layer_freshness.json',
     'data/portal_metric_reconciliation.json',
     'data/portal_sync_health.json',
     'data/portal_sync_summary.txt',
+}
+GUARDED_IU_REFERENCE_PATHS = {
+    # Full-portal intake and its declarative registry must be able to name the
+    # protected IU/DRR source without granting permission to edit IU formulas,
+    # plans, runtime UI, or last-good data.
+    'scripts/portal-dashboard-navigation-recovery.selftest.js',
+    'scripts/portal-layer-manifest.json',
+    'scripts/portal-truth-manifest.json',
 }
 PROTECTED_TOKENS = (
     'iuDrr',
@@ -83,7 +92,11 @@ def collect_violations(files: set[str], patch: str, allow_generated_iu_data: boo
             continue
         violations.append(f'protected file changed: {item}')
 
-    allowed_token_paths = GENERATED_IU_DATA_PATHS | GENERATED_IU_REPORT_PATHS
+    allowed_token_paths = (
+        GENERATED_IU_DATA_PATHS
+        | GENERATED_IU_REPORT_PATHS
+        | GUARDED_IU_REFERENCE_PATHS
+    )
     for file_path, line in changed_lines(patch):
         if allow_generated_iu_data and file_path in allowed_token_paths:
             continue

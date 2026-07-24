@@ -20,6 +20,9 @@ INLINE_BODY_LIMIT = 18000
 CHUNK_SIZE = 500000
 DEFAULT_REQUEST_TIMEOUT_SECONDS = 60.0
 DEFAULT_MAX_BATCH_BYTES = 2_000_000
+CLEANUP_REQUEST_TIMEOUT_SECONDS = 10.0
+CLEANUP_REQUEST_ATTEMPTS = 2
+CLEANUP_PAGE_SIZE = 1000
 REPORT_NAME = "portal_supabase_generation_publish.json"
 
 
@@ -195,21 +198,36 @@ def stale_part_keys(expected_hashes: dict[str, str], existing_part_keys: list[st
 
 
 def fetch_existing_part_keys(base_url: str, api_key: str, table: str, brand: str, base_keys: list[str], timeout_seconds: float) -> list[str]:
+    prefixes = tuple(f"{base_key}__part__" for base_key in base_keys)
+    if not prefixes:
+        return []
     result: set[str] = set()
-    for base_key in base_keys:
-        prefix = f"{base_key}__part__"
+    offset = 0
+    cleanup_timeout = min(max(1.0, timeout_seconds), CLEANUP_REQUEST_TIMEOUT_SECONDS)
+    while True:
         params = parse.urlencode(
             {
                 "select": "snapshot_key",
                 "brand": f"eq.{brand}",
-                "snapshot_key": f"like.{prefix}*",
+                "order": "snapshot_key.asc",
+                "limit": CLEANUP_PAGE_SIZE,
+                "offset": offset,
             }
         )
-        rows = rest_request("GET", f"{base_url}/rest/v1/{table}?{params}", api_key, attempts=5, timeout_seconds=timeout_seconds) or []
+        rows = rest_request(
+            "GET",
+            f"{base_url}/rest/v1/{table}?{params}",
+            api_key,
+            attempts=CLEANUP_REQUEST_ATTEMPTS,
+            timeout_seconds=cleanup_timeout,
+        ) or []
         for row in rows:
             snapshot_key = str(row.get("snapshot_key") or "")
-            if snapshot_key.startswith(prefix):
+            if snapshot_key.startswith(prefixes):
                 result.add(snapshot_key)
+        if len(rows) < CLEANUP_PAGE_SIZE:
+            break
+        offset += CLEANUP_PAGE_SIZE
     return sorted(result)
 
 
@@ -233,6 +251,49 @@ def delete_snapshot_keys(base_url: str, api_key: str, table: str, brand: str, ke
         )
         deleted += len(chunk)
     return deleted
+
+
+def cleanup_stale_parts(
+    base_url: str,
+    api_key: str,
+    table: str,
+    brand: str,
+    expected_hashes: dict[str, str],
+    timeout_seconds: float,
+) -> dict[str, Any]:
+    cleanup = {
+        "status": "ok",
+        "stalePartRowsDeleted": 0,
+        "stalePartRows": [],
+        "deferredReason": "",
+    }
+    try:
+        existing_part_rows = fetch_existing_part_keys(
+            base_url,
+            api_key,
+            table,
+            brand,
+            expected_base_keys(expected_hashes),
+            timeout_seconds,
+        )
+        stale_parts = stale_part_keys(expected_hashes, existing_part_rows)
+        if stale_parts:
+            cleanup["stalePartRowsDeleted"] = delete_snapshot_keys(
+                base_url,
+                api_key,
+                table,
+                brand,
+                stale_parts,
+                timeout_seconds,
+            )
+            cleanup["stalePartRows"] = stale_parts[:50]
+    except Exception as exc:  # noqa: BLE001
+        # Old chunk rows are unreachable once the new root row and its
+        # chunk_count are verified. Cleanup is maintenance, not part of the
+        # atomic publish contract, so a slow lookup must not block activation.
+        cleanup["status"] = "warning"
+        cleanup["deferredReason"] = str(exc)
+    return cleanup
 
 
 def chunk_rows(row: dict[str, Any]) -> list[dict[str, Any]]:
@@ -381,8 +442,10 @@ def main() -> int:
             "rows": len(rows),
         },
         "cleanup": {
+            "status": "pending",
             "stalePartRowsDeleted": 0,
             "stalePartRows": [],
+            "deferredReason": "",
         },
         "readback": {},
     }
@@ -400,25 +463,6 @@ def main() -> int:
         try:
             timeout_seconds = max(1.0, args.request_timeout_seconds)
             max_batch_bytes = max(1, args.max_batch_bytes)
-            existing_part_rows = fetch_existing_part_keys(
-                supabase_url,
-                supabase_key,
-                args.table,
-                brand,
-                expected_base_keys(expected_hashes),
-                timeout_seconds,
-            )
-            stale_parts = stale_part_keys(expected_hashes, existing_part_rows)
-            if stale_parts:
-                report["cleanup"]["stalePartRowsDeleted"] = delete_snapshot_keys(
-                    supabase_url,
-                    supabase_key,
-                    args.table,
-                    brand,
-                    stale_parts,
-                    timeout_seconds,
-                )
-                report["cleanup"]["stalePartRows"] = stale_parts[:50]
             report["upsert"]["batches"] = upsert_rows(
                 supabase_url,
                 supabase_key,
@@ -438,6 +482,20 @@ def main() -> int:
                     report["publish_allowed"] = False
                     report["blockingReasons"].append(
                         f"Supabase readback hash mismatch: missing={len(missing)}, mismatched={len(mismatched)}"
+                    )
+            if report["publish_allowed"]:
+                report["cleanup"] = cleanup_stale_parts(
+                    supabase_url,
+                    supabase_key,
+                    args.table,
+                    brand,
+                    expected_hashes,
+                    timeout_seconds,
+                )
+                if report["cleanup"]["status"] == "warning":
+                    report["status"] = "warning"
+                    report["warnings"].append(
+                        f"Stale Supabase part cleanup deferred: {report['cleanup']['deferredReason']}"
                     )
         except Exception as exc:  # noqa: BLE001
             report["status"] = "blocked"

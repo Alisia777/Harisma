@@ -118,6 +118,21 @@ async function run() {
     auto_action_enabled: 'UNKNOWN'
   });
 
+  const batchedPlan = buildApplyPlan({
+    ...source,
+    now: new Date(source.livePrices.generatedAt),
+    maxRows: 1
+  });
+  assert.strictEqual(batchedPlan.status, 'ready');
+  assert.strictEqual(batchedPlan.applyAllowed, true);
+  assert.strictEqual(batchedPlan.summary.candidateActions, 2);
+  assert.strictEqual(batchedPlan.summary.actions, 1);
+  assert.strictEqual(batchedPlan.summary.deferred, 1);
+  assert.strictEqual(batchedPlan.actions[0].articleKey, 'wb-safe', 'active batches must be deterministic');
+  assert(batchedPlan.ignored.some((row) => row.articleKey === 'oz-safe' && row.reason === 'deferred_batch_limit'));
+  assert(batchedPlan.warnings.includes('actions_deferred_to_next_batch:1'));
+  assert(!batchedPlan.globalBlockers.some((reason) => reason.startsWith('batch_limit_exceeded:')));
+
   const calls = [];
   const submissions = await submitApplyPlan(plan, {
     wbToken: 'wb-test',
@@ -171,6 +186,8 @@ async function run() {
   excessive.canonical.rows[0].policy.cap = 1600;
   const excessivePlan = buildApplyPlan({ ...excessive, now: new Date(excessive.livePrices.generatedAt) });
   assert(excessivePlan.rejected.some((row) => row.reasons.includes('apply_change_limit_exceeded')));
+  assert(excessivePlan.warnings.includes('ready_rows_rejected:1'));
+  assert.strictEqual(excessivePlan.status, 'ready', 'one rejected row must not block independent safe actions');
 
   const applyWorkflow = fs.readFileSync(
     path.join(__dirname, '..', '.github', 'workflows', 'portal-repricer-price-apply.yml'),

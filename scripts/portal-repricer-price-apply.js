@@ -174,7 +174,7 @@ function buildApplyPlan({
 
   const maps = priceMaps(livePrices);
   const stockMap = liveSignalsMap(liveSignals);
-  const actions = [];
+  const candidateActions = [];
   const rejected = [];
   const ignored = [];
   const rows = Array.isArray(canonical?.rows) ? canonical.rows : [];
@@ -217,7 +217,7 @@ function buildApplyPlan({
       rejected.push({ platform: row.platform, articleKey: row.article_key, reasons: [...new Set(reasons)] });
       continue;
     }
-    actions.push({
+    candidateActions.push({
       platform: row.platform,
       articleKey: row.article_key,
       currentSellerPrice: currentPrice,
@@ -229,8 +229,23 @@ function buildApplyPlan({
       apiPayload: platformPayload.payload
     });
   }
-  if (actions.length > maxRows) globalBlockers.push(`batch_limit_exceeded:${actions.length}>${maxRows}`);
-  if (rejected.length) globalBlockers.push(`ready_rows_rejected:${rejected.length}`);
+  const lifecycleRank = { new: 0, active: 1, exit: 2 };
+  const platformRank = { wb: 0, ozon: 1 };
+  candidateActions.sort((left, right) => (
+    (lifecycleRank[left.lifecycle] ?? 3) - (lifecycleRank[right.lifecycle] ?? 3)
+    || (platformRank[left.platform] ?? 2) - (platformRank[right.platform] ?? 2)
+    || left.articleKey.localeCompare(right.articleKey, 'ru')
+  ));
+  const actions = candidateActions.slice(0, maxRows);
+  const deferred = candidateActions.slice(maxRows);
+  ignored.push(...deferred.map((row) => ({
+    platform: row.platform,
+    articleKey: row.articleKey,
+    reason: 'deferred_batch_limit'
+  })));
+  const warnings = [];
+  if (deferred.length) warnings.push(`actions_deferred_to_next_batch:${deferred.length}`);
+  if (rejected.length) warnings.push(`ready_rows_rejected:${rejected.length}`);
   if (!actions.length) globalBlockers.push('no_applicable_price_changes');
 
   const source = {
@@ -257,12 +272,15 @@ function buildApplyPlan({
     limits: { maxSnapshotAgeMinutes, maxRows, maxChangePct },
     summary: {
       actions: actions.length,
+      candidateActions: candidateActions.length,
+      deferred: deferred.length,
       wb: actions.filter((row) => row.platform === 'wb').length,
       ozon: actions.filter((row) => row.platform === 'ozon').length,
       rejected: rejected.length,
       ignored: ignored.length
     },
     globalBlockers,
+    warnings,
     actions,
     rejected,
     ignored

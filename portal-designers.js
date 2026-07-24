@@ -43,6 +43,10 @@
     done: { label: 'Готово', color: '#54a987' }
   };
 
+  var DESIGNER_NAME_ALIASES = {
+    'евгения': 'Ульяна'
+  };
+
   var TYPES = [
     ['card', 'Карточка товара'],
     ['rich', 'Rich-контент'],
@@ -135,6 +139,11 @@
 
   function string(value) { return String(value == null ? '' : value).trim(); }
 
+  function normalizeDesignerName(value) {
+    var name = string(value);
+    return DESIGNER_NAME_ALIASES[name.toLowerCase()] || name;
+  }
+
   function timestamp(value) {
     var parsed = Date.parse(string(value));
     return Number.isFinite(parsed) ? parsed : 0;
@@ -214,7 +223,7 @@
       title: string(raw.title || raw.name) || 'Без названия',
       type: type,
       status: status,
-      owner: string(raw.owner || raw.assignee),
+      owner: normalizeDesignerName(raw.owner || raw.assignee),
       dueDate: normalizeDate(raw.dueDate || raw.deadline || raw.due),
       priority: priority,
       marketplace: string(raw.marketplace || raw.platform),
@@ -244,7 +253,7 @@
       summary: string(raw.summary || raw.description),
       content: string(raw.content || raw.notes),
       url: safeUrl(raw.url || raw.link || raw.href),
-      owner: string(raw.owner),
+      owner: normalizeDesignerName(raw.owner),
       status: raw.status === 'draft' ? 'draft' : 'published',
       archived: raw.archived === true,
       createdAt: createdAt,
@@ -283,7 +292,7 @@
       title: string(raw.title || raw.name) || 'Тест без названия',
       sku: string(raw.sku || raw.article || raw.articleKey),
       marketplace: string(raw.marketplace || raw.platform),
-      owner: string(raw.owner || raw.assignee),
+      owner: normalizeDesignerName(raw.owner || raw.assignee),
       status: status,
       hypothesis: string(raw.hypothesis || raw.description),
       startDate: normalizeDate(raw.startDate || raw.dateFrom),
@@ -358,7 +367,10 @@
     };
     try {
       var parsed = JSON.parse(localStorage.getItem(UI_KEY) || '{}');
-      return Object.assign(fallback, parsed || {});
+      var next = Object.assign(fallback, parsed || {});
+      next.owner = normalizeDesignerName(next.owner);
+      next.testOwner = normalizeDesignerName(next.testOwner);
+      return next;
     } catch (_) { return fallback; }
   }
 

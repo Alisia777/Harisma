@@ -15,9 +15,19 @@ fs.writeFileSync(inventoryPath, JSON.stringify({
 assert.strictEqual(snapshotKeyFromPath('data/iu_drr_summary.json'), 'iu_drr_summary');
 assert.strictEqual(snapshotKeyFromPath('notes/readme.txt'), '');
 assert.deepStrictEqual(snapshotsFromInventory(inventoryPath), ['dashboard', 'iu_drr_summary']);
-const options = resolveOptions({ inventory: inventoryPath, strict: true, 'output-dir': root });
+const options = resolveOptions({
+  inventory: inventoryPath,
+  strict: true,
+  'output-dir': root,
+  'batch-size': '4',
+  'part-batch-size': '6',
+  'request-timeout-ms': '60000'
+});
 assert.deepStrictEqual(options.snapshots, ['dashboard', 'iu_drr_summary']);
 assert.strictEqual(options.strict, true);
+assert.strictEqual(options.requestBatchSize, 4);
+assert.strictEqual(options.partBatchSize, 6);
+assert.strictEqual(options.requestTimeoutMs, 60000);
 const explicit = resolveOptions({ inventory: inventoryPath, snapshot: 'dashboard', 'output-dir': root });
 assert.deepStrictEqual(explicit.snapshots, ['dashboard']);
 

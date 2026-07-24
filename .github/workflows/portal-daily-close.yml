@@ -11,6 +11,11 @@ on:
       cutoff-date:
         description: 'Business cutoff YYYY-MM-DD; empty means Europe/Moscow D-1'
         required: false
+      upload-runtime-data:
+        description: 'Upload the complete runtime data generation for a protected portal refresh'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: portal-daily-close
@@ -333,3 +338,11 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.upload-runtime-data
+        with:
+          name: portal-runtime-data-${{ github.run_id }}
+          path: data/**
+          if-no-files-found: error
+          retention-days: 7

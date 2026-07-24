@@ -296,6 +296,8 @@ function normalizePortalStorageSnapshot(source = {}) {
     resourceLinks: Array.isArray(parsed.resourceLinks) ? parsed.resourceLinks.map(normalizeStoredResourceLink).filter(Boolean) : [],
     resourceFolders: Array.isArray(parsed.resourceFolders) ? parsed.resourceFolders.map(normalizeStoredResourceFolder).filter(Boolean) : [],
     productLifecycleOverrides: Array.isArray(parsed.productLifecycleOverrides) ? parsed.productLifecycleOverrides.map(normalizeProductLifecycleOverride).filter((item) => item.articleKey) : [],
+    productLifecycleOverrideDeletes: Array.isArray(parsed.productLifecycleOverrideDeletes) ? parsed.productLifecycleOverrideDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
+    skuDecisionApprovals: Array.isArray(parsed.skuDecisionApprovals) ? parsed.skuDecisionApprovals.filter((item) => item && typeof item === 'object') : [],
     taskAttachments: Array.isArray(parsed.taskAttachments) ? parsed.taskAttachments.map(normalizeTaskAttachment).filter((item) => item.taskId && item.objectPath) : [],
     autoTaskSnapshot: normalizeAutoTaskSnapshot(parsed.autoTaskSnapshot || defaults.autoTaskSnapshot),
     autoTaskHistory: normalizeAutoTaskHistory(parsed.autoTaskHistory || []),
@@ -378,6 +380,8 @@ function portalStorageHistoryPayload(source = {}) {
     resourceLinks: snapshot.resourceLinks,
     resourceFolders: snapshot.resourceFolders,
     productLifecycleOverrides: snapshot.productLifecycleOverrides,
+    productLifecycleOverrideDeletes: snapshot.productLifecycleOverrideDeletes,
+    skuDecisionApprovals: snapshot.skuDecisionApprovals,
     taskAttachments: snapshot.taskAttachments,
     autoTaskSnapshot: snapshot.autoTaskSnapshot,
     autoTaskHistory: snapshot.autoTaskHistory,
@@ -1033,6 +1037,8 @@ function mergeImportedStorage(imported) {
     resourceLinks: Array.isArray(imported.resourceLinks) ? imported.resourceLinks : [],
     resourceFolders: Array.isArray(imported.resourceFolders) ? imported.resourceFolders : [],
     productLifecycleOverrides: Array.isArray(imported.productLifecycleOverrides) ? imported.productLifecycleOverrides : [],
+    productLifecycleOverrideDeletes: Array.isArray(imported.productLifecycleOverrideDeletes) ? imported.productLifecycleOverrideDeletes : [],
+    skuDecisionApprovals: Array.isArray(imported.skuDecisionApprovals) ? imported.skuDecisionApprovals : [],
     taskAttachments: Array.isArray(imported.taskAttachments) ? imported.taskAttachments : [],
     promoEvents: Array.isArray(imported.promoEvents) ? imported.promoEvents : [],
     promoEventDeletedIds: Array.isArray(imported.promoEventDeletedIds) ? imported.promoEventDeletedIds : [],
@@ -1078,6 +1084,20 @@ function mergeImportedStorage(imported) {
     if (!override.articleKey) continue;
     state.storage.productLifecycleOverrides = (state.storage.productLifecycleOverrides || []).filter((item) => item.articleKey !== override.articleKey);
     state.storage.productLifecycleOverrides.unshift(override);
+  }
+  for (const raw of seed.productLifecycleOverrideDeletes) {
+    const marker = normalizeRepricerDeleteTombstone(raw);
+    if (!marker.articleKey) continue;
+    state.storage.productLifecycleOverrides = (state.storage.productLifecycleOverrides || []).filter((item) => item.articleKey !== marker.articleKey);
+    state.storage.productLifecycleOverrideDeletes = (state.storage.productLifecycleOverrideDeletes || []).filter((item) => item.articleKey !== marker.articleKey);
+    state.storage.productLifecycleOverrideDeletes.unshift(marker);
+  }
+  for (const raw of seed.skuDecisionApprovals) {
+    if (!raw || typeof raw !== 'object') continue;
+    const decisionId = String(raw.id || '').trim();
+    if (!decisionId) continue;
+    state.storage.skuDecisionApprovals = (state.storage.skuDecisionApprovals || []).filter((item) => String(item?.id || '').trim() !== decisionId);
+    state.storage.skuDecisionApprovals.unshift(raw);
   }
   for (const raw of seed.taskAttachments) {
     const attachment = normalizeTaskAttachment(raw);

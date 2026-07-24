@@ -1,53 +1,34 @@
 {
   "schema": "portal-repricing-reconciliation-v1",
-  "generatedAt": "2026-07-17T06:32:10.422Z",
-  "snapshot_id": "repricer:2a2cd4cf1eb9d58a",
-  "status": "warning",
+  "generatedAt": "2026-07-25T00:48:50.043Z",
+  "freshness_reference_date": "2026-07-25",
+  "snapshot_id": "repricer:c53c42c469e32ce0",
+  "status": "ok",
   "publish_allowed": true,
-  "feature_publish_allowed": false,
-  "feature_status": "blocked",
-  "business_fingerprint": "3e453375ff0e58f3fa5006624c5fdeb48c6e4c1abb7ef9e2b372ef20ffaf15b9",
+  "feature_publish_allowed": true,
+  "feature_status": "ok",
+  "business_fingerprint": "bcd356ea08656c78aee99e597fd17fbbc60e963aae2955b94c422c4d68caa3d6",
   "summary": {
-    "rows": 805,
-    "eligible_rows": 805,
-    "publishable_rows": 0,
-    "blocked_rows": 805,
-    "publishable_coverage": 0,
+    "rows": 411,
+    "eligible_rows": 411,
+    "publishable_rows": 37,
+    "blocked_rows": 374,
+    "publishable_coverage": 0.090024,
     "required_publishable_coverage": 0.01,
-    "feature_status": "blocked",
-    "publishable_recommendations": 0,
-    "blocked_recommendations": 805,
+    "feature_status": "ok",
+    "publishable_recommendations": 37,
+    "blocked_recommendations": 374,
     "duplicate_platform_keys": 0,
-    "normalized_article_collisions": 1,
-    "deduped_exact_duplicates": 2
+    "normalized_article_collisions": 0,
+    "deduped_exact_duplicates": 0
   },
   "blockingReasons": [],
   "warnings": [
-    "normalized article collisions deduped for review: 1",
-    "repricer feature blocked: 0/805 publishable recommendations",
-    "805 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
-    "2 exact duplicate source rows were deterministically deduped"
+    "374 repricer rows are present but not publishable because required facts/economics/policy are incomplete"
   ],
   "duplicatePlatformKeys": [],
-  "normalizedArticleCollisions": [
-    {
-      "normalized_article_key": "mikardinplusbad60caps",
-      "articles": [
-        "mikardin plus_bad_60 caps",
-        "mikardin_plus_bad_60_caps"
-      ]
-    }
-  ],
-  "dedupedExactDuplicates": [
-    {
-      "key": "wb|maslodlyavolosparf110ml",
-      "articleKey": "maslo_dlya_volos_parf_110ml"
-    },
-    {
-      "key": "ozon|maslodlyavolosparf110ml",
-      "articleKey": "maslo_dlya_volos_parf_110ml"
-    }
-  ],
+  "normalizedArticleCollisions": [],
+  "dedupedExactDuplicates": [],
   "checks": [
     {
       "id": "repricer:no-duplicate-normalized-sku-platform",
@@ -56,26 +37,22 @@
     },
     {
       "id": "repricer:no-normalized-article-collisions",
-      "status": "warning",
+      "status": "ok",
       "blockingReasons": [],
-      "warnings": [
-        "normalized article collisions deduped for review: 1"
-      ]
+      "warnings": []
     },
     {
       "id": "repricer:feature-readiness",
-      "status": "warning",
+      "status": "ok",
       "blockingReasons": [],
-      "warnings": [
-        "repricer feature blocked: 0/805 publishable recommendations"
-      ],
+      "warnings": [],
       "details": {
-        "eligible_rows": 805,
-        "publishable_rows": 0,
-        "blocked_rows": 805,
-        "publishable_coverage": 0,
+        "eligible_rows": 411,
+        "publishable_rows": 37,
+        "blocked_rows": 374,
+        "publishable_coverage": 0.090024,
         "required_publishable_coverage": 0.01,
-        "feature_status": "blocked"
+        "feature_status": "ok"
       }
     },
     {

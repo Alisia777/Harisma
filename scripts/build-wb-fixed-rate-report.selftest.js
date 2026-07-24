@@ -44,10 +44,24 @@ function makeWorkbook(filePath) {
   XLSX.writeFile(workbook, filePath);
 }
 
+function makeDirectHistoryWorkbook(filePath) {
+  const rows = [
+    ['дата', 'master_id', 'продажи со скидкой продавца', 'план gmv', 'выполнение плана по gmv', 'рекламные затраты', 'план по рекламе', 'выполнение плана по рекламе'],
+    [46204, 433608, 1200, 1000, 1.2, 120, 96, 1.25],
+    [46205, 433608, 800, 1000, 0.8, 40, 64, 0.625],
+    [46206, 433608, 0, 1000, 0, 10, 0, 0]
+  ];
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rows), 'Sheet1');
+  XLSX.writeFile(workbook, filePath);
+}
+
 function main() {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-fixed-rate-test-'));
   const filePath = path.join(tmpDir, 'fixed-rate-test.xlsx');
+  const directHistoryPath = path.join(tmpDir, 'iu-history-test.xlsx');
   makeWorkbook(filePath);
+  makeDirectHistoryWorkbook(directHistoryPath);
 
   assert.strictEqual(normalizeRate(8), 0.08);
   assert.strictEqual(normalizeRate('5.5'), 0.055);
@@ -60,6 +74,14 @@ function main() {
   assert.strictEqual(parsed.daily[0].planPct, 0.08);
   assert.strictEqual(parsed.daily[0].factPct, 0.05);
   assert.strictEqual(parsed.daily[1].adsCompletionPct, 1.25);
+
+  const directHistory = parseWorkbook(directHistoryPath);
+  assert.strictEqual(directHistory.format, 'iu_history_export');
+  assert.deepStrictEqual(directHistory.masterIds, ['433608']);
+  assert.deepStrictEqual(directHistory.daily.map((row) => row.date), ['2026-07-01', '2026-07-02']);
+  assert.strictEqual(directHistory.daily[0].planPct, 0.08);
+  assert.strictEqual(directHistory.daily[0].factPct, 0.1);
+  assert.deepStrictEqual(validateDailyRows(directHistory.daily).errors, []);
 
   const validation = validateDailyRows(parsed.daily);
   assert.deepStrictEqual(validation.errors, []);
@@ -105,6 +127,12 @@ function main() {
   assert.strictEqual(report.diagnostics.workbookRows, 2);
   assert.strictEqual(report.diagnostics.reconciliation.applied.length, 1);
   assert.ok(report.sourceWorkbookSha256);
+
+  const scopedReport = buildReport({ source: directHistoryPath, downloadsDir: tmpDir, reconciliation: reconciliationPath });
+  assert.deepStrictEqual(scopedReport.accountScope, { masterIds: ['433608'] });
+  assert.deepStrictEqual(scopedReport.period, { from: '2026-07-01', to: '2026-07-02' });
+  assert.strictEqual(scopedReport.daily.length, 2, 'unscoped reconciliation must not be mixed into master_id history');
+  assert.strictEqual(scopedReport.diagnostics.reconciliation.skipped[0].reason, 'account_scope_mismatch');
 
   fs.rmSync(tmpDir, { recursive: true, force: true });
   console.log('build-wb-fixed-rate-report selftest ok');

@@ -1,0 +1,11 @@
+{
+  "schema": "repricer-price-apply-verification-v1",
+  "generatedAt": "",
+  "status": "missing",
+  "summary": {
+    "rows": 0,
+    "matched": 0,
+    "mismatched": 0
+  },
+  "rows": []
+}

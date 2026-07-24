@@ -15,7 +15,7 @@ function parseArgs(argv) {
   const args = {};
   for (let index = 2; index < argv.length; index += 1) {
     const token = String(argv[index] || '');
-    if (['--dry-run', '--optional'].includes(token)) {
+    if (['--dry-run', '--optional', '--no-reconciliation'].includes(token)) {
       args[token === '--dry-run' ? 'dryRun' : token.slice(2)] = true;
       continue;
     }
@@ -76,6 +76,82 @@ function isoDate(value, yearHint = '') {
   const direct = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (direct) return `${direct[1]}-${direct[2]}-${direct[3]}`;
   return isoDateFromYearPeriod(yearHint || raw.slice(0, 4), raw);
+}
+
+function isoDateFromWorkbookValue(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const parsed = XLSX.SSF.parse_date_code(value);
+    if (parsed?.y && parsed?.m && parsed?.d) {
+      return `${String(parsed.y).padStart(4, '0')}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}`;
+    }
+  }
+  return isoDate(value);
+}
+
+function normalizedHeader(value) {
+  return String(value ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+    .replace(/ё/g, 'е');
+}
+
+function directHistoryHeaderMap(row = []) {
+  const aliases = {
+    date: ['дата', 'date'],
+    masterId: ['master_id', 'master id', 'кабинет'],
+    revenue: ['продажи со скидкой продавца', 'продажи', 'фактический оборот'],
+    targetRevenue: ['план gmv', 'целевой оборот', 'план продаж'],
+    revenueCompletionPct: ['выполнение плана по gmv', 'выполнение продаж в %'],
+    spendFact: ['рекламные затраты', 'реклама факт'],
+    planSpend: ['план по рекламе', 'маркетинговый план'],
+    adsCompletionPct: ['выполнение плана по рекламе', 'выполнение рекламы в %']
+  };
+  const normalized = row.map(normalizedHeader);
+  const map = {};
+  Object.entries(aliases).forEach(([key, values]) => {
+    map[key] = normalized.findIndex((header) => values.includes(header));
+  });
+  const required = ['date', 'masterId', 'revenue', 'targetRevenue', 'spendFact', 'planSpend'];
+  return required.every((key) => map[key] >= 0) ? map : null;
+}
+
+function directHistoryRows(rows, source) {
+  const headerIndex = rows.findIndex((row) => directHistoryHeaderMap(row));
+  if (headerIndex < 0) return { daily: [], masterIds: [] };
+  const columns = directHistoryHeaderMap(rows[headerIndex]);
+  const masterIds = new Set();
+  const daily = rows.slice(headerIndex + 1).map((row) => {
+    const date = isoDateFromWorkbookValue(row[columns.date]);
+    const masterId = String(row[columns.masterId] ?? '').trim();
+    const revenue = roundMoney(row[columns.revenue]);
+    const targetRevenue = roundMoney(row[columns.targetRevenue]);
+    const spendFact = roundMoney(row[columns.spendFact]);
+    const planSpend = roundMoney(row[columns.planSpend]);
+    if (!date || !masterId || revenue <= 0 || targetRevenue <= 0 || planSpend < 0 || spendFact < 0) return null;
+    masterIds.add(masterId);
+    const revenueDelta = roundMoney(revenue - targetRevenue);
+    const spendDelta = roundMoney(spendFact - planSpend);
+    return {
+      date,
+      period: dateForFileName(date).slice(0, 5),
+      masterId,
+      targetRevenue,
+      revenue,
+      revenueDelta,
+      revenueDeltaPct: roundRate(revenueDelta / targetRevenue),
+      planSpend,
+      planPct: roundRate(revenue > 0 ? planSpend / revenue : 0),
+      spendFact,
+      factPct: roundRate(revenue > 0 ? spendFact / revenue : 0),
+      spendDelta,
+      spendDeltaPct: roundRate(planSpend > 0 ? spendDelta / planSpend : 0),
+      revenueCompletionPct: roundRate(revenue / targetRevenue),
+      adsCompletionPct: roundRate(planSpend > 0 ? spendFact / planSpend : 0),
+      source
+    };
+  }).filter(Boolean);
+  return { daily, masterIds: Array.from(masterIds).sort() };
 }
 
 function dateForFileName(dateKey) {
@@ -281,11 +357,19 @@ function parseWorkbook(workbookPath) {
   for (const sheetName of workbook.SheetNames) {
     const worksheet = workbook.Sheets[sheetName];
     const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null, raw: true });
-    const daily = rows
-      .map((row) => rowToReportItem(row, path.basename(workbookPath)))
-      .filter(Boolean);
+    const directHistory = directHistoryRows(rows, path.basename(workbookPath));
+    const daily = directHistory.daily.length
+      ? directHistory.daily
+      : rows
+        .map((row) => rowToReportItem(row, path.basename(workbookPath)))
+        .filter(Boolean);
     if (!selected || daily.length > selected.daily.length) {
-      selected = { sheetName, daily };
+      selected = {
+        sheetName,
+        daily,
+        format: directHistory.daily.length ? 'iu_history_export' : 'fixed_rate_detail',
+        masterIds: directHistory.masterIds
+      };
     }
   }
   if (!selected || !selected.daily.length) {
@@ -299,6 +383,8 @@ function parseWorkbook(workbookPath) {
   return {
     sheetName: selected.sheetName,
     daily,
+    format: selected.format,
+    masterIds: selected.masterIds || [],
     warnings: validation.warnings
   };
 }
@@ -341,6 +427,10 @@ function findNewestFixedRateWorkbook(options = {}) {
   for (const candidate of candidates) {
     try {
       const parsed = parseWorkbook(candidate.filePath);
+      if (parsed.format === 'iu_history_export') {
+        failures.push(`${path.basename(candidate.filePath)}: account-scoped IU history requires explicit --source and a dedicated output`);
+        continue;
+      }
       if (parsed.daily.length) return candidate.filePath;
     } catch (error) {
       failures.push(`${path.basename(candidate.filePath)}: ${error.message}`);
@@ -374,12 +464,26 @@ function buildReport(options = {}) {
     ? ''
     : path.resolve(options.reconciliation || DEFAULT_RECONCILIATION);
   const reconciliation = readJson(reconciliationPath, null);
-  const reconciled = reconciliation
+  const reconciliationMasterId = String(reconciliation?.masterId ?? '').trim();
+  const workbookMasterIds = parsed.masterIds || [];
+  const reconciliationMatchesScope = !workbookMasterIds.length
+    || (reconciliationMasterId && workbookMasterIds.includes(reconciliationMasterId));
+  const reconciled = reconciliation && reconciliationMatchesScope
     ? applyReconciliation(parsed.daily, {
       ...reconciliation,
       sourceFile: path.basename(reconciliationPath)
     })
-    : { daily: parsed.daily, diagnostics: null };
+    : {
+      daily: parsed.daily,
+      diagnostics: reconciliation
+        ? {
+          sourceFile: path.basename(reconciliationPath),
+          applied: [],
+          skipped: [{ reason: 'account_scope_mismatch', workbookMasterIds, reconciliationMasterId }],
+          controlWindows: []
+        }
+        : null
+    };
   const daily = reconciled.daily;
   const validation = validateDailyRows(daily);
   if (validation.errors.length) {
@@ -400,11 +504,14 @@ function buildReport(options = {}) {
     sourceWorkbookSha256: sha256(workbookPath),
     sourceArchive: archivePath ? path.basename(archivePath) : '',
     sourceSheet: parsed.sheetName,
+    sourceFormat: parsed.format,
+    accountScope: workbookMasterIds.length ? { masterIds: workbookMasterIds } : null,
     period,
     notes: [
       'WB cabinet fixed-rate report. Used as cabinet-comparable factual turnover and factual marketing spend for IU/DRR reconciliation.',
       'Rows are parsed from the WB fixed-rate workbook and validated against the workbook delta/rate columns before publication.',
-      'When the cabinet export misses a day that is visible in a separate WB reconciliation, the missing date is filled from data/wb_fixed_rate_reconciliation.json and marked at row source level.'
+      'When the cabinet export misses a day that is visible in a separate WB reconciliation, the missing date is filled from data/wb_fixed_rate_reconciliation.json and marked at row source level.',
+      'IU history exports are account-scoped by master_id. Reconciliation rows from another or unspecified account are never mixed into that history.'
     ],
     diagnostics: {
       warnings: parsed.warnings.concat(validation.warnings, controlValidation.warnings),
@@ -476,6 +583,7 @@ module.exports = {
   findNewestFixedRateWorkbook,
   normalizeRate,
   parseWorkbook,
+  directHistoryRows,
   applyReconciliation,
   validateControlWindows,
   validateDailyRows

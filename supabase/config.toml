@@ -1,0 +1,5 @@
+[functions.repricer-price-sync]
+verify_jwt = true
+
+[functions.repricer-price-apply]
+verify_jwt = true

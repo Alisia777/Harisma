@@ -1649,16 +1649,14 @@
     var articleKey = String(row && row.articleKey || "").trim();
     if (!articleKey) return "";
     var lifecycle = row.productLifecycle || priceProductLifecycleForRow(row) || {};
-    var override = priceProductLifecycleOverride(articleKey);
     return [
-      '<form class="pw-status-editor" data-price-lifecycle-form data-article-key="', esc(articleKey), '">',
+      '<div class="pw-status-editor" data-price-lifecycle-readonly data-article-key="', esc(articleKey), '">',
       '<div class="pw-status-row">',
-      '<select name="status" aria-label="\u0421\u0442\u0430\u0442\u0443\u0441 \u0442\u043e\u0432\u0430\u0440\u0430">', priceLifecycleOptionsHtml(lifecycle.key || lifecycle.label || row.status), '</select>',
-      '<button type="submit">\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c</button>',
-      '<button type="button" data-price-lifecycle-reset data-article-key="', esc(articleKey), '">\u0410\u0432\u0442\u043e</button>',
+      '<strong>', esc(lifecycle.label || lifecycle.status || row.status || "\u2014"), '</strong>',
+      '<button type="button" data-price-open-sku-workspace data-article-key="', esc(articleKey), '">\u041e\u0442\u043a\u0440\u044b\u0442\u044c SKU Workspace</button>',
       '</div>',
-      compact ? '' : '<textarea name="note" rows="2" placeholder="\u041a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439: \u043f\u043e\u0447\u0435\u043c\u0443 \u043c\u0435\u043d\u044f\u0435\u043c / \u0434\u043e \u043a\u0430\u043a\u043e\u0439 \u0434\u0430\u0442\u044b">' + esc(override && override.note || '') + '</textarea>',
-      '</form>'
+      compact ? '' : '<small>\u0421\u0442\u0430\u0442\u0443\u0441 \u043c\u0435\u043d\u044f\u0435\u0442\u0441\u044f \u043f\u043e \u0446\u0438\u0444\u0440\u0430\u043c \u0432 SKU Workspace \u0438 \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u0441\u043b\u0435 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u044f \u0420\u041e\u041f\u0430.</small>',
+      '</div>'
     ].join("");
   }
 
@@ -1706,27 +1704,18 @@
 
   function attachPriceLifecycleForms(scope) {
     if (!scope) return;
-    scope.querySelectorAll("[data-price-lifecycle-form]").forEach(function (form) {
-      if (form.dataset.priceLifecycleBound === "1") return;
-      form.dataset.priceLifecycleBound = "1";
-      ["click", "mousedown", "touchstart"].forEach(function (eventName) {
-        form.addEventListener(eventName, function (event) {
-          event.stopPropagation();
-        }, { passive: eventName === "touchstart" });
-      });
-      form.addEventListener("submit", function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        savePriceLifecycleForm(form);
-      });
-    });
-    scope.querySelectorAll("[data-price-lifecycle-reset]").forEach(function (button) {
-      if (button.dataset.priceLifecycleResetBound === "1") return;
-      button.dataset.priceLifecycleResetBound = "1";
+    scope.querySelectorAll("[data-price-open-sku-workspace]").forEach(function (button) {
+      if (button.dataset.priceLifecycleBound === "1") return;
+      button.dataset.priceLifecycleBound = "1";
       button.addEventListener("click", function (event) {
         event.preventDefault();
         event.stopPropagation();
-        resetPriceLifecycle(button.getAttribute("data-article-key") || "");
+        var root = rootState();
+        if (root) {
+          root.filters = root.filters || {};
+          root.filters.search = button.getAttribute("data-article-key") || "";
+        }
+        if (typeof window.setView === "function") window.setView("sku-contour");
       });
     });
   }

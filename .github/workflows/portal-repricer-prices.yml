@@ -1,0 +1,123 @@
+name: Repricer live prices
+
+on:
+  schedule:
+    - cron: '7,27,47 * * * *'
+  workflow_dispatch:
+    inputs:
+      requested_by:
+        description: Portal user who requested the refresh
+        required: false
+        type: string
+
+concurrency:
+  group: portal-repricer-live-prices
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TZ: Europe/Moscow
+
+jobs:
+  refresh-prices:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve run date
+        id: run_date
+        shell: bash
+        run: echo "value=$(date +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Check protected credentials
+        env:
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+        shell: bash
+        run: |
+          for name in ALTEA_WB_API_TOKEN ALTEA_OZON_CLIENT_ID ALTEA_OZON_API_KEY SUPABASE_SERVICE_ROLE_KEY; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is missing"
+              exit 1
+            fi
+          done
+
+      - name: Collect current WB and Ozon prices
+        env:
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+        run: |
+          node scripts/portal-repricer-live-prices-sync.js sync \
+            --input-dir data \
+            --output data/repricer_live_prices.json \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --strict
+          node scripts/portal-repricer-live-signals-sync.js sync \
+            --input-dir data \
+            --output data/repricer_live_signals.json \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --strict
+
+      - name: Materialize approved portal decisions
+        env:
+          ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+        run: >-
+          node scripts/materialize-repricer-approved-decisions.js
+          --remote --strict
+          --input-dir data
+          --output-dir data
+
+      - name: Rebuild protected repricer layers
+        run: |
+          node scripts/build-canonical-repricer.js \
+            --input-dir data \
+            --output-dir data \
+            --as-of-date '${{ steps.run_date.outputs.value }}'
+          node scripts/build-repricer-team-policy.js \
+            --input-dir data \
+            --output data/repricer_team_policy_proposals.json
+          node scripts/build-repricer-shadow-report.js \
+            --input-dir data \
+            --output-dir data
+          node scripts/build-legacy-repricer-layer.js
+
+      - name: Publish refreshed repricer snapshots
+        env:
+          ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+          ALTEA_SNAPSHOT_SOURCE: repricer-live-prices
+        run: >-
+          node scripts/portal-google-sheet-upload.js
+          --input-dir data
+          --snapshot repricer_live_prices,repricer_live_signals,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer
+          --source repricer-live-prices
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: repricer-live-prices-${{ github.run_id }}
+          path: |
+            data/repricer_live_prices.json
+            data/repricer_live_signals.json
+            data/canonical_repricer.json
+            data/portal_repricing_reconciliation.json
+            data/repricer_team_policy_proposals.json
+            data/repricer_shadow_report.json
+            data/repricer.json
+          if-no-files-found: warn
+          retention-days: 14

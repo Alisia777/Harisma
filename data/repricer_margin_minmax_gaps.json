@@ -1,0 +1,432 @@
+{
+  "schema": "repricer-margin-minmax-gaps-v1",
+  "generatedAt": "2026-07-25T00:48:50.043Z",
+  "sourceSnapshotId": "repricer:c53c42c469e32ce0",
+  "summary": {
+    "requiredRows": 117,
+    "completeRows": 87,
+    "existingRegistryRows": 99,
+    "migratedRows": 0,
+    "blockedRows": 30,
+    "missingMarginRows": 30,
+    "missingMinRows": 12,
+    "missingMaxRows": 12
+  },
+  "publish_allowed": false,
+  "rows": [
+    {
+      "articleKey": "gel_kudryavii_metod_300ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 825,
+      "maxPrice": 900,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "gel-penka_dlya_lica_150ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 716,
+      "maxPrice": 782,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "krem_dlya_lica_pdrn_50_ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 981,
+      "maxPrice": 1070,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "lifting_maska_pdrn_75ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "maska_dlya_lica_intens_uvl_50ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "maslo-shimmer_spf15_100ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "retinait_syvorotka_025_30ml",
+      "platform": "ozon",
+      "lifecycle": "active",
+      "targetMarginPct": null,
+      "minPrice": 671,
+      "maxPrice": 732,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "shampun_badd_500ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 846,
+      "maxPrice": 923,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "shampun_kudryavii_metod_500ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 944,
+      "maxPrice": 1030,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "spray-syvorotka_pdrn_100ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 800,
+      "maxPrice": 873,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "syvorotka_dlya_lica_intens_uvl_30ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 748,
+      "maxPrice": 816,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "syvorotka_vit_c_30ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 660,
+      "maxPrice": 720,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "termo_maslo_100ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 880,
+      "maxPrice": 960,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "termo_sprei_200ml_v2",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "vosk_stik_15ml",
+      "platform": "ozon",
+      "lifecycle": "active",
+      "targetMarginPct": null,
+      "minPrice": 463,
+      "maxPrice": 505,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "balzam_kudryavii_metod_500ml",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 750.15,
+      "maxPrice": 1000.1999999999999,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "gel_brows_5ml",
+      "platform": "wb",
+      "lifecycle": "active",
+      "targetMarginPct": null,
+      "minPrice": 407.7,
+      "maxPrice": 543.5999999999999,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "gel_kudryavii_metod_300ml",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "gel-penka_dlya_lica_150ml",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "krem_dlya_lica_pdrn_50_ml",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "lifting_maska_pdrn_75ml",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "maska-batter_500ml",
+      "platform": "wb",
+      "lifecycle": "active",
+      "targetMarginPct": null,
+      "minPrice": 663.0749999999999,
+      "maxPrice": 884.0999999999999,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "shampun_badd_500ml",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "shampun_kudryavii_metod_500ml",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 772.65,
+      "maxPrice": 1030.1999999999998,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "skrab_babl_gam_200ml",
+      "platform": "wb",
+      "lifecycle": "active",
+      "targetMarginPct": null,
+      "minPrice": 550.8000000000001,
+      "maxPrice": 734.4000000000001,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "spray-syvorotka_pdrn_100ml",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "syvorotka_dlya_lica_intens_uvl_30ml",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "syvorotka_vit_c_30ml",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 540,
+      "maxPrice": 720,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "termo_maslo_100ml",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": 720,
+      "maxPrice": 960,
+      "missing": [
+        "margin"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "termo_sprei_200ml_v2",
+      "platform": "wb",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    }
+  ]
+}

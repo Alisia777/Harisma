@@ -2,7 +2,7 @@
   if (window.__ALTEA_SKU_LAUNCH_V1__) return;
   window.__ALTEA_SKU_LAUNCH_V1__ = true;
 
-  const VERSION = '20260709launch-perf-v3';
+  const VERSION = '20260724sku-rop-approval-v1';
   const MARKET_LABELS = {
     all: 'Все площадки',
     wb: 'WB',
@@ -1014,14 +1014,70 @@
     `;
   }
 
+  function skuDecisionRows() {
+    if (typeof window.skuDecisionApprovals === 'function') return window.skuDecisionApprovals();
+    return Array.isArray(appState().storage?.skuDecisionApprovals) ? appState().storage.skuDecisionApprovals : [];
+  }
+
+  function skuDecisionStatusMeta(status = '') {
+    const key = String(status || '').trim().toLowerCase();
+    if (key === 'waiting_rop' || key === 'preparing') return { label: 'Ждёт РОПа', tone: 'warn' };
+    if (key === 'changes_requested') return { label: 'На доработке', tone: 'danger' };
+    if (key === 'applied') return { label: 'Применено', tone: 'ok' };
+    if (key === 'error') return { label: 'Ошибка', tone: 'danger' };
+    return { label: key || '—', tone: '' };
+  }
+
+  function renderSkuDecisionQueue(context = {}) {
+    const articleKeys = new Set((context.visibleSkus || []).map((sku) => String(sku.articleKey || sku.article || '').trim()).filter(Boolean));
+    const rows = skuDecisionRows()
+      .filter((item) => item?.articleKey && (!articleKeys.size || articleKeys.has(String(item.articleKey))))
+      .sort((left, right) => String(right.updatedAt || right.createdAt || '').localeCompare(String(left.updatedAt || left.createdAt || '')));
+    const active = rows.filter((item) => ['preparing', 'waiting_rop', 'changes_requested'].includes(String(item.status || '').toLowerCase()));
+    const applied = rows.filter((item) => String(item.status || '').toLowerCase() === 'applied');
+    return `
+      <section class="sl-v1-panel sl-v1-decisions">
+        <div class="sl-v1-panel-head">
+          <div>
+            <span>Решения по SKU</span>
+            <h3>Человек предлагает · РОП подтверждает · система применяет</h3>
+          </div>
+          <div class="sl-v1-inline-actions">
+            ${safeBadge(`${formatInt(active.length)} ждут решения`, active.length ? 'warn' : 'ok')}
+            ${safeBadge(`${formatInt(applied.length)} применено`, 'ok')}
+          </div>
+        </div>
+        <div class="sl-v1-decision-grid">
+          ${active.slice(0, 8).map((item) => {
+            const statusMeta = skuDecisionStatusMeta(item.status);
+            const isPrice = item.type === 'SHARP_PRICE_CHANGE';
+            const deltaPct = Number(item.payload?.deltaPct);
+            return `
+              <button type="button" class="sl-v1-decision-card ${escapeValue(statusMeta.tone)}" ${item.taskId ? `data-open-task="${escapeValue(item.taskId)}"` : ''}>
+                <span>${escapeValue(isPrice ? `Цена · ${String(item.platform || 'all').toUpperCase()}` : 'Статус товара')}</span>
+                <strong>${escapeValue(item.articleKey)}</strong>
+                <b>${escapeValue(String(item.currentValue || '—'))} → ${escapeValue(String(item.proposedValue || '—'))}${isPrice && Number.isFinite(deltaPct) ? ` · ${escapeValue(`${deltaPct > 0 ? '+' : ''}${Math.round(deltaPct * 1000) / 10}%`)}` : ''}</b>
+                <small>${escapeValue(statusMeta.label)} · ${escapeValue(item.reason || 'без основания')}</small>
+              </button>
+            `;
+          }).join('') || '<div class="sl-v1-empty">Нет решений, ожидающих РОПа.</div>'}
+        </div>
+      </section>
+    `;
+  }
+
   function renderSkuLifecycleSelect(sku = {}) {
     const articleKey = sku.articleKey || sku.article || sku.sku || '';
     const lifecycle = skuLifecycle(sku);
     const current = lifecycle?.key || 'active';
+    const pending = typeof window.skuDecisionPendingForArticle === 'function'
+      ? window.skuDecisionPendingForArticle(articleKey, 'PRODUCT_STATUS_CHANGE', 'all')
+      : null;
     return `
-      <select class="sl-v1-inline-select" data-sku-v1-product-status="${escapeValue(articleKey)}" aria-label="Статус товара">
+      <select class="sl-v1-inline-select" data-sku-v1-product-status="${escapeValue(articleKey)}" aria-label="Предложить статус товара" ${pending ? 'disabled' : ''}>
         ${skuLifecycleOptions(current).map((item) => `<option value="${escapeValue(item.key)}" ${item.selected ? 'selected' : ''}>${escapeValue(item.label)}</option>`).join('')}
       </select>
+      ${pending ? `<small class="sl-v1-approval-state">Ждёт РОПа: ${escapeValue(pending.proposedValue || pending.payload?.proposedStatusLabel || 'новый статус')}</small>` : '<small>Выбор создаст задачу РОПу</small>'}
     `;
   }
 
@@ -1199,6 +1255,7 @@
         ${renderSkuAttentionQueue(visibleSkus, issueRows, taskMap, planMap, model, activeMarket)}
         ${renderSkuQualityContour(cards, issueRows, model)}
       </section>
+      ${renderSkuDecisionQueue(context)}
       <section class="sl-v1-panel sl-v1-table-panel">
         <div class="sl-v1-panel-head">
           <div>
@@ -1536,9 +1593,8 @@
     const isPlanFactMode = activeMode === 'planfact';
     const taskMap = isApiMode ? new Map() : buildSkuTaskMap();
     const sourceSkus = (stateRef.skus || []).filter((sku) => skuBelongsToMarket(sku, activeMarket));
-    const needsPlanModel = isApiMode || isPlanFactMode;
-    const model = needsPlanModel ? planModelForWorkspace(activeMarket) : {};
-    const planMap = isPlanFactMode ? buildPlanRowMap(model) : new Map();
+    const model = planModelForWorkspace(activeMarket);
+    const planMap = isApiMode ? new Map() : buildPlanRowMap(model);
     const rawIssueRows = isApiMode && typeof skuContourIssueRows === 'function' ? skuContourIssueRows(model) : [];
     const issueRows = rawIssueRows
       .filter((row) => issuePlatformMatches(row, activeMarket))
@@ -1880,39 +1936,159 @@
     renderSkuWorkspaceV1(rootId);
   }
 
-  function applySkuV1ProductStatusLocal(articleKey = '', meta = {}, status = '') {
-    const stateRef = appState();
-    stateRef.storage = stateRef.storage || {};
-    stateRef.storage.productLifecycleOverrides = Array.isArray(stateRef.storage.productLifecycleOverrides)
-      ? stateRef.storage.productLifecycleOverrides.filter((item) => String(item?.articleKey || '') !== articleKey)
-      : [];
-    stateRef.storage.productLifecycleOverrides.unshift({
-      articleKey,
-      key: meta.key || status,
-      status: meta.label || status,
-      note: 'Quick status from SKU workspace',
-      updatedAt: new Date().toISOString(),
-      updatedBy: stateRef.team?.member?.name || stateRef.team?.userId || 'portal-user'
-    });
+  function closeSkuStatusDecisionDialog() {
+    document.querySelector('[data-sku-status-decision-backdrop]')?.remove();
+  }
+
+  function skuStatusDecisionMetrics(sku = {}, articleKey = '', market = 'all') {
+    const model = planModelForWorkspace(market);
+    const planRow = buildPlanRowMap(model).get(articleKey);
+    const metric = displayMetric(planRow, model);
+    const stock = typeof totalSkuStock === 'function' ? totalSkuStock(sku) : sku?.stock ?? sku?.stockTotal ?? null;
+    const turnoverDays = metric?.turnoverDays ?? sku?.wb?.turnoverDays ?? sku?.ozon?.turnoverDays ?? null;
+    const article = aliasToken(articleKey);
+    const marketKey = normalizeMarket(market);
+    const allowedPlatforms = marketKey === 'all'
+      ? ['wb', 'ozon']
+      : ([marketKey === 'ya' ? 'ym' : marketKey]);
+    const canonicalMargins = (Array.isArray(appState().canonicalRepricer?.rows) ? appState().canonicalRepricer.rows : [])
+      .filter((row) => (
+        aliasToken(row?.article_key || row?.articleKey) === article
+        && allowedPlatforms.includes(String(row?.platform || '').trim().toLowerCase())
+      ))
+      .map((row) => ({
+        platform: String(row?.platform || '').trim().toLowerCase(),
+        value: Number(row?.recommendation?.current_margin_pct),
+        asOf: String(row?.facts?.as_of || '').trim(),
+        freshness: String(row?.facts?.price_freshness || '').trim()
+      }))
+      .filter((row) => Number.isFinite(row.value));
+    const canonicalMargin = canonicalMargins.length
+      ? canonicalMargins.reduce((minimum, row) => row.value < minimum.value ? row : minimum)
+      : null;
+    const marginHint = canonicalMargin
+      ? `ИУ ${canonicalMargin.platform.toUpperCase()} · минимум площадок · ${canonicalMargin.asOf || 'без даты'}${canonicalMargin.freshness === 'stale' ? ' · цена устарела' : ''}`
+      : 'Маржа ИУ не рассчитана: нужна актуальная цена API и полная экономика';
+    return {
+      completionToDate: metric?.completionToDate ?? null,
+      factRevenue: metric?.factRevenue ?? null,
+      planRevenue: metric?.planRevenue ?? null,
+      gapToDate: metric?.gapToDate ?? null,
+      marginPct: canonicalMargin?.value ?? null,
+      marginRub: null,
+      marginHint,
+      marginSource: canonicalMargin ? 'canonical_iu_min_platform' : 'missing_canonical_iu',
+      stock,
+      turnoverDays,
+      focusScore: sku?.focusScore ?? null,
+      underPlan: Boolean(sku?.flags?.underPlan),
+      lowStock: Boolean(sku?.flags?.lowStock),
+      negativeMargin: Boolean(sku?.flags?.negativeMargin || sku?.flags?.wbNegativeMargin || sku?.flags?.ozonNegativeMargin)
+    };
+  }
+
+  function skuDecisionMetricCard(label, value, hint = '') {
+    return `
+      <div class="sl-v1-decision-metric">
+        <span>${escapeValue(label)}</span>
+        <strong>${escapeValue(value)}</strong>
+        <small>${escapeValue(hint)}</small>
+      </div>
+    `;
+  }
+
+  function openSkuStatusDecisionDialog(articleKey = '', status = '', rootId = 'view-sku-contour') {
+    closeSkuStatusDecisionDialog();
     const sku = findSkuByArticle(articleKey);
-    if (sku) {
-      sku.productLifecycle = {
-        ...(sku.productLifecycle || {}),
-        ...meta,
-        key: meta.key || status,
-        label: meta.label || status,
-        status: meta.label || status,
-        source: 'sku-workspace'
-      };
-      sku.status = meta.label || status;
+    if (!sku) {
+      launchV1Toast('Не вижу SKU для предложения статуса.');
+      return;
     }
-    try {
-      if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
-      if (typeof invalidateRepricerRowsCache === 'function') invalidateRepricerRowsCache();
-      if (typeof saveLocalStorage === 'function') saveLocalStorage();
-    } catch (error) {
-      console.warn('[sku-launch-v1] local product status save failed', error);
-    }
+    const current = skuLifecycle(sku);
+    const proposed = typeof productLifecycleMeta === 'function'
+      ? productLifecycleMeta(status)
+      : { key: status, label: status };
+    if ((current?.key || 'active') === (proposed?.key || status)) return;
+    const market = normalizeMarket(appState().filters?.market || readGlobalMarket());
+    const metrics = skuStatusDecisionMetrics(sku, articleKey, market);
+    const reasons = skuReasons(sku, null, market).map((item) => item.label).filter(Boolean);
+    const backdrop = document.createElement('div');
+    backdrop.className = 'sl-v1-decision-backdrop';
+    backdrop.setAttribute('data-sku-status-decision-backdrop', '1');
+    backdrop.innerHTML = `
+      <section class="sl-v1-decision-dialog" role="dialog" aria-modal="true" aria-labelledby="skuDecisionTitle">
+        <form data-sku-status-decision-form>
+          <header>
+            <div>
+              <span>Решение по статусу SKU</span>
+              <h3 id="skuDecisionTitle">${escapeValue(sku.article || articleKey)} · ${escapeValue(sku.name || 'Без названия')}</h3>
+              <p>${escapeValue(current?.label || '—')} → <strong>${escapeValue(proposed?.label || status)}</strong></p>
+            </div>
+            <button type="button" data-sku-status-decision-close aria-label="Закрыть">×</button>
+          </header>
+          <div class="sl-v1-decision-metrics">
+            ${skuDecisionMetricCard('План-факт', metrics.completionToDate == null ? '—' : formatPct(metrics.completionToDate), metrics.gapToDate ? `разрыв ${formatMoney(metrics.gapToDate)}` : '')}
+            ${skuDecisionMetricCard('Маржа ИУ', metrics.marginPct == null ? '—' : formatPct(metrics.marginPct), metrics.marginHint || '')}
+            ${skuDecisionMetricCard('Остаток', metrics.stock == null ? '—' : formatInt(metrics.stock), metrics.turnoverDays == null ? '' : `${formatInt(metrics.turnoverDays)} дн. оборота`)}
+            ${skuDecisionMetricCard('Факт', metrics.factRevenue == null ? '—' : formatMoney(metrics.factRevenue), metrics.planRevenue ? `план ${formatMoney(metrics.planRevenue)}` : '')}
+          </div>
+          <div class="sl-v1-decision-context">
+            <strong>Сигналы для решения</strong>
+            <p>${escapeValue(reasons.join(' · ') || 'Критичных авто-сигналов нет; решение требует явного основания.')}</p>
+            ${(proposed?.key === 'exit' || proposed?.key === 'archived') ? '<p class="danger">Для «Выводится / Выведен» маржинальный запрет активного товара не применяется. Это управленческое решение, поэтому без РОПа статус не изменится.</p>' : ''}
+          </div>
+          <label class="sl-v1-decision-reason">
+            <span>Почему меняем статус</span>
+            <textarea name="reason" rows="4" required minlength="8" placeholder="Коротко: цифры, причина, ожидаемое действие и срок"></textarea>
+          </label>
+          <footer>
+            <button type="button" data-sku-status-decision-close>Отмена</button>
+            <button type="submit">Отправить РОПу</button>
+          </footer>
+        </form>
+      </section>
+    `;
+    document.body.appendChild(backdrop);
+    backdrop.addEventListener('click', (event) => {
+      if (event.target === backdrop || event.target.closest('[data-sku-status-decision-close]')) closeSkuStatusDecisionDialog();
+    });
+    backdrop.querySelector('[data-sku-status-decision-form]')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      const reason = String(formData.get('reason') || '').trim();
+      if (reason.length < 8) {
+        launchV1Toast('Добавьте короткое основание для РОПа.');
+        return;
+      }
+      const submit = event.currentTarget.querySelector('button[type="submit"]');
+      if (submit) submit.disabled = true;
+      try {
+        if (typeof window.requestSkuDecisionApproval !== 'function') throw new Error('Модуль согласования РОПа не загружен.');
+        const decision = await window.requestSkuDecisionApproval({
+          type: 'PRODUCT_STATUS_CHANGE',
+          articleKey,
+          platform: market,
+          currentValue: current?.label || current?.key || '—',
+          proposedValue: proposed?.label || proposed?.key || status,
+          reason,
+          payload: {
+            currentStatusKey: current?.key || 'active',
+            currentStatusLabel: current?.label || '',
+            proposedStatusKey: proposed?.key || status,
+            proposedStatusLabel: proposed?.label || status
+          },
+          metrics
+        });
+        closeSkuStatusDecisionDialog();
+        launchV1Toast(decision.duplicate ? 'Такое решение уже ждёт РОПа.' : 'Задача РОПу создана. Статус пока не изменён.');
+        renderSkuWorkspaceV1(rootId);
+      } catch (error) {
+        console.warn('[sku-launch-v1] status approval request failed', error);
+        launchV1Toast(error?.message || 'Не удалось создать задачу РОПу.');
+        if (submit) submit.disabled = false;
+      }
+    });
+    backdrop.querySelector('textarea[name="reason"]')?.focus();
   }
 
   async function handleSkuV1ProductStatusChange(select, rootId = 'view-sku-contour') {
@@ -1922,23 +2098,10 @@
       launchV1Toast('Не вижу артикул для смены статуса.');
       return;
     }
-    const meta = typeof productLifecycleMeta === 'function'
-      ? productLifecycleMeta(status)
-      : { key: status, label: status };
-    applySkuV1ProductStatusLocal(articleKey, meta, status);
-    launchV1Toast('Статус товара обновлен.');
-    renderSkuWorkspaceV1(rootId);
-    if (typeof upsertProductLifecycleStatus === 'function') {
-      Promise.resolve(upsertProductLifecycleStatus({
-        articleKey,
-        status: meta.label || status,
-        key: meta.key || status,
-        note: 'Quick status from SKU workspace'
-      })).catch((error) => {
-        console.warn('[sku-launch-v1] product status background sync failed', error);
-        launchV1Toast('Статус сохранен локально, синхронизация позже.');
-      });
-    }
+    const sku = findSkuByArticle(articleKey);
+    const current = skuLifecycle(sku);
+    if (select) select.value = current?.key || 'active';
+    openSkuStatusDecisionDialog(articleKey, status, rootId);
   }
 
   function reviewFormRowsCsv(rows = []) {
@@ -2181,6 +2344,14 @@
         event.preventDefault();
         event.stopPropagation();
         await handleSkuV1ProductStatusChange(event.currentTarget, root.id || 'view-sku-contour');
+      });
+    });
+    root.querySelectorAll('[data-open-task]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const taskId = String(button.getAttribute('data-open-task') || '').trim();
+        if (taskId && typeof window.openTaskModal === 'function') window.openTaskModal(taskId);
       });
     });
     root.querySelector('[data-sku-v1-toggle-new]')?.addEventListener('click', () => {
@@ -3518,6 +3689,8 @@
       .sl-v1-api-action{display:grid;gap:8px;min-width:300px}.sl-v1-api-action-main{display:grid;gap:5px}.sl-v1-api-action-main span{color:rgba(247,241,232,.78)}.sl-v1-api-action-buttons{display:flex;flex-wrap:wrap;gap:7px}.sl-v1-api-action-buttons button,.sl-v1-candidate>button:last-child{height:30px;border:1px solid rgba(224,190,126,.22);border-radius:999px;background:rgba(255,255,255,.035);color:#fff4d8;padding:0 10px;font:inherit;font-size:11px;font-weight:900;cursor:pointer}.sl-v1-api-action-buttons button:first-child,.sl-v1-candidate>button:last-child{background:linear-gradient(180deg,rgba(245,223,173,.26),rgba(185,139,71,.16));border-color:rgba(245,218,165,.44)}.sl-v1-candidate-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:7px}.sl-v1-candidate{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:stretch}.sl-v1-candidate>button:first-child{min-width:0;border:1px solid rgba(224,190,126,.16);border-radius:8px;background:rgba(255,255,255,.03);color:var(--sl-text);padding:8px;text-align:left;cursor:pointer;display:grid;gap:2px}.sl-v1-candidate b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sl-v1-candidate em{font-style:normal;color:#ffd98d;font-size:11px}.sl-v1-candidate small,.sl-v1-candidate-empty{color:var(--sl-muted);font-size:11px}
       .sl-v1-planfact-table{min-width:1480px}.sl-v1-planfact-table .chip{display:inline-flex;margin-bottom:4px}.sl-v1-review-dialog{padding:18px;display:grid;gap:14px}.sl-v1-review-dialog header{padding:0}.sl-v1-review-dialog header p{margin:4px 0 0;color:var(--sl-muted)}.sl-v1-review-tools{display:flex;justify-content:flex-end;gap:8px}.sl-v1-review-tools button{height:34px;border:1px solid rgba(224,190,126,.24);border-radius:8px;background:rgba(255,255,255,.04);color:#f7f1e8;padding:0 12px;font:inherit;font-size:12px;font-weight:850;cursor:pointer}.sl-v1-review-tools button:first-child{background:linear-gradient(180deg,rgba(245,223,173,.24),rgba(185,139,71,.14));border-color:rgba(245,218,165,.42)}.sl-v1-review-list{display:grid;gap:10px;max-height:62vh;overflow:auto;padding-right:4px}.sl-v1-review-row{display:grid;grid-template-columns:minmax(220px,1.1fr) 140px minmax(240px,1.2fr) auto;gap:10px;align-items:start;border:1px solid rgba(224,190,126,.16);border-radius:12px;background:rgba(0,0,0,.18);padding:12px}.sl-v1-review-row>div:first-child{display:grid;gap:4px}.sl-v1-review-row strong{color:#fff4d8}.sl-v1-review-row span,.sl-v1-review-row small,.sl-v1-review-candidates em{color:var(--sl-muted);font-style:normal}.sl-v1-review-candidates{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}.sl-v1-review-candidates button{min-height:42px;border:1px solid rgba(224,190,126,.18);border-radius:8px;background:rgba(255,255,255,.035);color:#f7f1e8;padding:7px 9px;text-align:left;cursor:pointer;display:grid;gap:2px}.sl-v1-review-candidates b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sl-v1-review-candidates span{font-size:10px;color:#ffd98d}.sl-v1-review-actions{display:grid;gap:6px}.sl-v1-review-actions button{height:32px;border:1px solid rgba(224,190,126,.24);border-radius:999px;background:rgba(255,255,255,.04);color:#fff4d8;padding:0 10px;font:inherit;font-size:11px;font-weight:900;cursor:pointer}.sl-v1-review-actions button:first-child{background:linear-gradient(180deg,rgba(245,223,173,.26),rgba(185,139,71,.16));border-color:rgba(245,218,165,.44)}
       .sl-v1-status-cell{display:grid;gap:6px;align-items:start}.sl-v1-inline-select{width:100%;max-width:170px;height:28px;border:1px solid rgba(224,190,126,.24);border-radius:7px;background:rgba(5,4,3,.86);color:var(--sl-text);padding:0 8px;font:inherit;font-size:11px;font-weight:800;outline:none}.sl-v1-inline-select:focus{border-color:rgba(245,218,165,.75);box-shadow:0 0 0 3px rgba(214,169,85,.12)}.sl-v1-table td .sl-v1-inline-select{margin-top:6px}
+      .sl-v1-approval-state{color:#f0c469!important;font-weight:850}.sl-v1-decisions{display:grid;gap:12px}.sl-v1-decision-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:9px}.sl-v1-decision-card{min-height:112px;border:1px solid var(--sl-line);border-radius:10px;background:rgba(6,5,4,.42);color:var(--sl-text);padding:12px;text-align:left;display:grid;gap:5px;cursor:pointer}.sl-v1-decision-card.warn{border-color:rgba(240,196,105,.4)}.sl-v1-decision-card.danger{border-color:rgba(255,116,105,.44)}.sl-v1-decision-card.ok{border-color:rgba(103,213,154,.34)}.sl-v1-decision-card span{color:#d8c08a;font-size:10px;font-weight:850;letter-spacing:.14em;text-transform:uppercase}.sl-v1-decision-card strong{font-size:15px}.sl-v1-decision-card b{color:#fff4d8;font-size:12px}.sl-v1-decision-card small{color:var(--sl-muted)}
+      .sl-v1-decision-backdrop{position:fixed;inset:0;z-index:10020;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.68);backdrop-filter:blur(16px)}.sl-v1-decision-dialog{width:min(920px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;border:1px solid rgba(224,190,126,.32);border-radius:16px;background:linear-gradient(145deg,rgba(25,22,18,.99),rgba(8,7,6,.99));box-shadow:0 28px 90px rgba(0,0,0,.64);color:#f7f1e8}.sl-v1-decision-dialog form{display:grid;gap:16px;padding:18px}.sl-v1-decision-dialog header,.sl-v1-decision-dialog footer{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.sl-v1-decision-dialog header span,.sl-v1-decision-reason>span{display:block;color:#d8c08a;font-size:10px;font-weight:850;letter-spacing:.18em;text-transform:uppercase}.sl-v1-decision-dialog h3{margin:5px 0 3px;font-size:25px}.sl-v1-decision-dialog header p{margin:0;color:var(--sl-muted)}.sl-v1-decision-dialog header>button{width:38px;height:38px;border:1px solid rgba(224,190,126,.26);border-radius:50%;background:rgba(255,255,255,.04);color:#f7f1e8;font-size:22px;cursor:pointer}.sl-v1-decision-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.sl-v1-decision-metric{min-height:92px;border:1px solid rgba(224,190,126,.18);border-radius:10px;background:rgba(0,0,0,.18);padding:11px;display:grid;gap:5px}.sl-v1-decision-metric span{color:var(--sl-muted);font-size:10px;text-transform:uppercase;letter-spacing:.12em}.sl-v1-decision-metric strong{font-size:20px}.sl-v1-decision-metric small{color:var(--sl-muted)}.sl-v1-decision-context{border:1px solid rgba(224,190,126,.18);border-radius:10px;background:rgba(0,0,0,.16);padding:12px}.sl-v1-decision-context p{margin:6px 0 0;color:var(--sl-muted)}.sl-v1-decision-context p.danger{color:#ff9b91}.sl-v1-decision-reason{display:grid;gap:7px}.sl-v1-decision-reason textarea{width:100%;border:1px solid rgba(224,190,126,.24);border-radius:10px;background:rgba(5,4,3,.84);color:#f7f1e8;padding:11px 12px;font:inherit;resize:vertical}.sl-v1-decision-dialog footer{justify-content:flex-end}.sl-v1-decision-dialog footer button{height:40px;border:1px solid rgba(224,190,126,.26);border-radius:9px;background:rgba(255,255,255,.04);color:#f7f1e8;padding:0 16px;font:inherit;font-weight:850;cursor:pointer}.sl-v1-decision-dialog footer button[type="submit"]{background:linear-gradient(180deg,#f5dfad,#b98b47);color:#120d07}.sl-v1-decision-dialog footer button:disabled{opacity:.55;cursor:wait}
       .sl-v1-inline-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.sl-v1-inline-actions button{border-color:rgba(224,190,126,.22);background:rgba(255,255,255,.035);padding:0 12px}
       .sl-v1-empty{padding:18px;border:1px dashed rgba(224,190,126,.2);border-radius:9px;color:var(--sl-muted);background:rgba(255,255,255,.018)}
       .launch-v1-filter-grid{grid-template-columns:minmax(260px,1.2fr) repeat(5,minmax(140px,.8fr)) minmax(210px,.8fr)}
@@ -3548,7 +3721,7 @@
       .launch-v1-editor-backdrop{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.62);backdrop-filter:blur(16px)}.launch-v1-editor{width:min(1080px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;border:1px solid rgba(224,190,126,.28);border-radius:16px;background:linear-gradient(145deg,rgba(25,22,18,.98),rgba(8,7,6,.98));box-shadow:0 24px 80px rgba(0,0,0,.58);color:#f7f1e8}.launch-v1-editor form{display:grid;gap:16px;padding:18px}.launch-v1-editor header,.launch-v1-editor footer{display:flex;align-items:center;justify-content:space-between;gap:12px}.launch-v1-editor header span{display:block;color:#d8c08a;font-size:11px;font-weight:850;letter-spacing:.22em;text-transform:uppercase}.launch-v1-editor h3{margin:4px 0 0;font-size:28px}.launch-v1-editor header button{width:38px;height:38px;border:1px solid rgba(224,190,126,.26);border-radius:50%;background:rgba(255,255,255,.04);color:#f7f1e8;font-size:24px;cursor:pointer}.launch-v1-editor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.launch-v1-editor label{display:grid;gap:6px}.launch-v1-editor label.wide{grid-column:1/-1}.launch-v1-editor label span,.launch-v1-editor-stages strong{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:rgba(235,216,174,.64);font-weight:850}.launch-v1-editor input,.launch-v1-editor select,.launch-v1-editor textarea{min-width:0;width:100%;border:1px solid rgba(224,190,126,.22);border-radius:9px;background:rgba(5,4,3,.82);color:#f7f1e8;padding:10px 12px;font:inherit;outline:none}.launch-v1-editor textarea{resize:vertical}.launch-v1-editor-stages{display:grid;gap:10px}.launch-v1-editor-stages fieldset{display:grid;grid-template-columns:1fr 170px 1fr;gap:10px;border:1px solid rgba(224,190,126,.14);border-radius:12px;margin:0;padding:12px;background:rgba(0,0,0,.16)}.launch-v1-editor-stages legend{padding:0 8px;color:#f0d49a;font-weight:900}.launch-v1-editor footer button{height:40px;border:1px solid rgba(224,190,126,.26);border-radius:9px;background:rgba(255,255,255,.04);color:#f7f1e8;padding:0 16px;font:inherit;font-weight:850;cursor:pointer}.launch-v1-editor footer button[type="submit"]{background:linear-gradient(180deg,#f5dfad,#b98b47);color:#120d07}.launch-v1-editor footer button.danger{border-color:rgba(255,116,105,.45);color:#ff8a80}
       .launch-v1-toast{position:fixed;right:22px;bottom:22px;z-index:10000;border:1px solid rgba(103,213,154,.36);border-radius:999px;background:rgba(10,22,16,.94);color:#dfffe9;padding:10px 14px;font-weight:850;box-shadow:0 14px 44px rgba(0,0,0,.35)}
       @media (max-width:1200px){.sl-v1-hero,.launch-v1-workspace,.sl-v1-focus-grid{grid-template-columns:1fr}.sl-v1-kpis,.launch-v1-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sl-v1-filter-grid,.launch-v1-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.launch-v1-detail{position:relative;top:auto}.launch-v1-kanban-columns{grid-template-columns:repeat(3,minmax(220px,1fr))}.sl-v1-review-row{grid-template-columns:1fr}}
-      @media (max-width:720px){.sl-v1-hero h2{font-size:34px}.sl-v1-filter-grid,.launch-v1-filter-grid,.sl-v1-kpis,.launch-v1-kpis,.launch-v1-gate{grid-template-columns:1fr}.sl-v1-segment{grid-template-columns:1fr}.launch-v1-month-grid,.launch-v1-weekdays{min-width:760px}.launch-v1-calendar-card{overflow:auto}.launch-v1-detail-actions,.launch-v1-full-head{display:grid}.launch-v1-kanban-columns{grid-template-columns:repeat(6,220px)}.launch-v1-board-tree{min-width:620px}.launch-v1-board-group{grid-template-columns:1fr}.launch-v1-board-group header{position:relative}.launch-v1-view-mode{width:100%;justify-content:space-between}.launch-v1-view-mode button{min-width:0;flex:1}}
+      @media (max-width:720px){.sl-v1-hero h2{font-size:34px}.sl-v1-filter-grid,.launch-v1-filter-grid,.sl-v1-kpis,.launch-v1-kpis,.launch-v1-gate,.sl-v1-decision-metrics{grid-template-columns:1fr}.sl-v1-segment{grid-template-columns:1fr}.launch-v1-month-grid,.launch-v1-weekdays{min-width:760px}.launch-v1-calendar-card{overflow:auto}.launch-v1-detail-actions,.launch-v1-full-head{display:grid}.launch-v1-kanban-columns{grid-template-columns:repeat(6,220px)}.launch-v1-board-tree{min-width:620px}.launch-v1-board-group{grid-template-columns:1fr}.launch-v1-board-group header{position:relative}.launch-v1-view-mode{width:100%;justify-content:space-between}.launch-v1-view-mode button{min-width:0;flex:1}}
       @media (prefers-reduced-motion:reduce){.sku-launch-v1-shell *{transition:none!important;animation:none!important}}
     `;
     (document.head || document.documentElement).appendChild(style);
@@ -3577,6 +3750,9 @@
     const activeView = appState().activeView || '';
     if (activeView === 'sku-contour') renderSkuWorkspaceV1('view-sku-contour');
     if (activeView === 'launches') renderLaunchesV1('view-launches');
+  });
+  window.addEventListener('altea:sku-decision-updated', () => {
+    if (appState().activeView === 'sku-contour') renderSkuWorkspaceV1('view-sku-contour');
   });
 
   if (document.readyState === 'loading') {

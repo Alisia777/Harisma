@@ -610,6 +610,9 @@
   }
 
   async function submitTaskForRopApproval(taskId, report) {
+    if (typeof window.markSkuDecisionWaitingRop === 'function') {
+      window.markSkuDecisionWaitingRop(taskId);
+    }
     return transitionTaskLocalFirst(taskId, 'waiting_rop', [
       { kind: 'report', text: `\u0418\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c \u0441\u0434\u0430\u043b \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0438 \u043f\u0435\u0440\u0435\u0434\u0430\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0420\u041e\u041f\u0443 \u043d\u0430 \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u0438\u0435: ${report}` }
     ]);
@@ -617,6 +620,23 @@
 
   async function approveTaskByRop(taskId, comment) {
     const note = String(comment || '').trim();
+    const skuDecision = typeof window.skuDecisionForTask === 'function'
+      ? window.skuDecisionForTask(taskId)
+      : null;
+    if (skuDecision) {
+      if (typeof window.approveSkuDecisionForTask !== 'function') {
+        throw new Error('Модуль применения решения SKU не загружен.');
+      }
+      await window.approveSkuDecisionForTask(taskId, note);
+      return transitionTaskLocalFirst(taskId, 'done', [
+        {
+          kind: 'status',
+          text: note
+            ? `РОП подтвердил и применил решение. Комментарий: ${note}`
+            : 'РОП подтвердил решение; изменение применено автоматически.'
+        }
+      ]);
+    }
     return transitionTaskLocalFirst(taskId, 'waiting_decision', [
       {
         kind: 'status',
@@ -629,6 +649,9 @@
 
   async function returnTaskToWork(taskId, comment) {
     const note = String(comment || '').trim();
+    if (typeof window.markSkuDecisionChangesRequested === 'function') {
+      window.markSkuDecisionChangesRequested(taskId, note);
+    }
     return transitionTaskLocalFirst(taskId, 'in_progress', [
       {
         kind: 'comment',
@@ -709,6 +732,39 @@
     if (['done', 'cancelled'].includes(task?.status)) return '';
 
     if (task.status === 'waiting_rop') {
+      const skuDecision = typeof window.skuDecisionForTask === 'function'
+        ? window.skuDecisionForTask(task.id)
+        : null;
+      if (skuDecision) {
+        const isPrice = skuDecision.type === 'SHARP_PRICE_CHANGE';
+        const deltaPct = Number(skuDecision.payload?.deltaPct);
+        const deltaLabel = Number.isFinite(deltaPct)
+          ? ` · ${deltaPct > 0 ? '+' : ''}${Math.round(deltaPct * 1000) / 10}%`
+          : '';
+        return `
+          <div class="card" style="margin-top:14px">
+            <div class="section-subhead">
+              <div>
+                <h3>${isPrice ? 'Подтверждение резкой цены' : 'Подтверждение статуса товара'}</h3>
+                <p class="small muted">До решения РОПа рабочие данные не меняются. Подтверждение применит изменение автоматически и закроет задачу.</p>
+              </div>
+              ${badge('решение РОПа', 'warn')}
+            </div>
+            <div class="quick-note warn">
+              <strong>${escapeHtml(skuDecision.articleKey || task.articleKey || 'SKU')}</strong> ·
+              ${escapeHtml(String(skuDecision.currentValue || '—'))} → ${escapeHtml(String(skuDecision.proposedValue || '—'))}${escapeHtml(deltaLabel)}
+              <br>${escapeHtml(skuDecision.reason || 'Основание не указано')}
+            </div>
+            <form id="taskRopApproveForm" class="form-stack" style="margin-top:12px">
+              <textarea name="comment" rows="3" placeholder="Комментарий РОПа к решению"></textarea>
+              <div class="badge-stack">
+                <button class="btn primary" type="submit">Подтвердить и применить</button>
+                <button class="btn ghost" type="button" data-task-return-to-work>Вернуть на доработку</button>
+              </div>
+            </form>
+          </div>
+        `;
+      }
       return `
         <div class="card" style="margin-top:14px">
           ${renderLifecycleSteps(task.status)}

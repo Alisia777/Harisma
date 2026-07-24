@@ -91,6 +91,7 @@ function resolveOptions(args) {
     brand: args.brand || process.env.ALTEA_PORTAL_BRAND || DEFAULT_BRAND,
     supabaseUrl: args['supabase-url'] || process.env.ALTEA_SUPABASE_URL || DEFAULT_SUPABASE_URL,
     supabaseKey: args['supabase-key'] || process.env.ALTEA_SUPABASE_KEY || DEFAULT_SUPABASE_KEY,
+    source: args.source || process.env.ALTEA_SNAPSHOT_SOURCE || SNAPSHOT_SOURCE,
     snapshots: args.snapshot
       ? String(args.snapshot).split(',').map((value) => value.trim()).filter(Boolean)
       : SNAPSHOT_KEYS,
@@ -173,7 +174,7 @@ async function uploadSnapshot(snapshotKey, payload, options) {
     snapshot_key: snapshotKey,
     payload,
     payload_hash: payloadHash,
-    source: SNAPSHOT_SOURCE,
+    source: options.source,
     generated_at: generatedAt
   };
 
@@ -198,7 +199,7 @@ async function uploadSnapshot(snapshotKey, payload, options) {
       payload_hash: payloadHash
     },
     payload_hash: payloadHash,
-    source: SNAPSHOT_SOURCE,
+    source: options.source,
     generated_at: generatedAt
   }, options);
 
@@ -217,7 +218,7 @@ async function uploadSnapshot(snapshotKey, payload, options) {
         snapshot_key: `${snapshotKey}__part__${String(index + 1).padStart(4, '0')}`,
         payload: { data: chunk },
         payload_hash: hashPayload(chunk),
-        source: SNAPSHOT_SOURCE,
+        source: options.source,
         generated_at: generatedAt
       }, options);
       completed += 1;

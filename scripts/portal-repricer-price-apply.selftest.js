@@ -1,0 +1,200 @@
+#!/usr/bin/env node
+'use strict';
+
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const {
+  buildApplyPlan,
+  submitApplyPlan,
+  verifyReceipt
+} = require('./portal-repricer-price-apply');
+
+function fixture() {
+  const generatedAt = new Date().toISOString();
+  const rows = [
+    {
+      article_key: 'wb-safe',
+      platform: 'wb',
+      facts: {
+        seller_price: 1000,
+        price_freshness: 'fresh',
+        lifecycle_key: 'active',
+        stock_source_status: 'trusted_direct',
+        sources: { seller_price: { file: 'repricer_live_prices.json' } }
+      },
+      policy: { floor: 1200, cap: 1200, margin_guard_required: true, target_margin_pct: 0.2 },
+      recommendation: { status: 'ready', price: 1200, margin_pct: 0.2 },
+      approval_gate: { type: '', required: false }
+    },
+    {
+      article_key: 'oz-safe',
+      platform: 'ozon',
+      facts: {
+        seller_price: 1000,
+        price_freshness: 'fresh',
+        lifecycle_key: 'active',
+        stock_source_status: 'trusted_direct',
+        sources: { seller_price: { file: 'repricer_live_prices.json' } }
+      },
+      policy: { floor: 1100, cap: 1500, margin_guard_required: true, target_margin_pct: 0.2 },
+      recommendation: { status: 'ready', price: 1100, margin_pct: 0.21 },
+      approval_gate: { type: '', required: false }
+    }
+  ];
+  return {
+    canonical: {
+      snapshot_id: 'canonical-test',
+      feature_status: 'ok',
+      rows
+    },
+    livePrices: {
+      status: 'ok',
+      generatedAt,
+      asOfDate: '2026-07-24',
+      platforms: {
+        wb: {
+          rows: [{
+            articleKey: 'wb-safe',
+            nmId: 101,
+            discountPct: 20,
+            currentSellerPrice: 1000,
+            currentListPrice: 1250
+          }]
+        },
+        ozon: {
+          rows: [{
+            articleKey: 'oz-safe',
+            offerId: 'oz-safe',
+            productId: 202,
+            currency: 'RUB',
+            currentSellerPrice: 1000,
+            currentListPrice: 1500
+          }]
+        }
+      }
+    },
+    liveSignals: {
+      generatedAt,
+      asOfDate: '2026-07-24',
+      summary: { directPlatforms: ['wb', 'ozon'] },
+      rows: [
+        { platform: 'wb', articleKey: 'wb-safe', available: 10, oos: false, sourceMode: 'wb_stock_api' },
+        { platform: 'ozon', articleKey: 'oz-safe', available: 20, oos: false, sourceMode: 'ozon_stock_api_v4' }
+      ]
+    },
+    shadow: { cutover_allowed: true }
+  };
+}
+
+async function run() {
+  const source = fixture();
+  const plan = buildApplyPlan({
+    ...source,
+    now: new Date(source.livePrices.generatedAt),
+    requestedBy: 'operator@example.com'
+  });
+  assert.strictEqual(plan.status, 'ready');
+  assert.strictEqual(plan.applyAllowed, true);
+  assert.strictEqual(plan.requestedBy, 'operator@example.com');
+  assert.strictEqual(plan.actions.length, 2);
+  assert.strictEqual(plan.actions[0].apiPayload.nmID, 101);
+  assert.strictEqual(plan.actions[0].apiPayload.price, 1500);
+  assert.strictEqual(plan.actions[0].apiPayload.discount, 20);
+  assert.strictEqual(plan.actions[0].expectedSellerPrice, 1200);
+  const repeatedPlan = buildApplyPlan({
+    ...source,
+    livePrices: { ...source.livePrices, generatedAt: new Date(Date.parse(source.livePrices.generatedAt) + 60000).toISOString() },
+    liveSignals: { ...source.liveSignals, generatedAt: new Date(Date.parse(source.liveSignals.generatedAt) + 60000).toISOString() },
+    now: new Date(Date.parse(source.livePrices.generatedAt) + 60000)
+  });
+  assert.strictEqual(repeatedPlan.confirmationHash, plan.confirmationHash, 'unchanged business plan must keep its confirmation hash across refresh runs');
+  assert.deepStrictEqual(plan.actions[1].apiPayload, {
+    offer_id: 'oz-safe',
+    price: '1100',
+    old_price: '1500',
+    min_price: '1100',
+    currency_code: 'RUB',
+    auto_action_enabled: 'UNKNOWN'
+  });
+
+  const calls = [];
+  const submissions = await submitApplyPlan(plan, {
+    wbToken: 'wb-test',
+    ozonClientId: 'ozon-client',
+    ozonApiKey: 'ozon-key'
+  }, async (url, options) => {
+    calls.push({ url, body: JSON.parse(options.body) });
+    if (url.includes('wildberries')) return { data: { id: 777 }, error: false };
+    return {
+      result: [{ offer_id: 'oz-safe', product_id: 202, updated: true, errors: [] }]
+    };
+  });
+  assert.strictEqual(calls.length, 2);
+  assert.strictEqual(submissions.wb.uploadId, 777);
+  assert.strictEqual(submissions.ozon.accepted, 1);
+
+  const receipt = {
+    actions: plan.actions,
+    requestedBy: plan.requestedBy,
+    confirmationHash: plan.confirmationHash
+  };
+  const verified = verifyReceipt(receipt, {
+    platforms: {
+      wb: { rows: [{ articleKey: 'wb-safe', currentSellerPrice: 1200 }] },
+      ozon: { rows: [{ articleKey: 'oz-safe', currentSellerPrice: 1100 }] }
+    }
+  });
+  assert.strictEqual(verified.status, 'verified');
+  assert.strictEqual(verified.summary.matched, 2);
+  assert.strictEqual(verified.requestedBy, 'operator@example.com');
+  assert.strictEqual(verified.confirmationHash, plan.confirmationHash);
+
+  const fallback = fixture();
+  fallback.liveSignals.summary.directPlatforms = [];
+  fallback.liveSignals.rows[0].sourceMode = 'fallback_procurement';
+  fallback.canonical.rows[0].facts.stock_source_status = 'trusted_fallback';
+  const blocked = buildApplyPlan({ ...fallback, now: new Date(fallback.livePrices.generatedAt) });
+  assert.strictEqual(blocked.status, 'blocked');
+  assert(blocked.globalBlockers.includes('direct_stock_platform_missing:wb'));
+  assert(blocked.globalBlockers.includes('direct_stock_platform_missing:ozon'));
+  assert(blocked.rejected.some((row) => row.reasons.includes('direct_sku_stock_missing')));
+  await assert.rejects(
+    () => submitApplyPlan(blocked, { wbToken: 'x', ozonClientId: 'y', ozonApiKey: 'z' }),
+    /price apply plan is blocked/
+  );
+
+  const excessive = fixture();
+  excessive.canonical.rows[0].recommendation.price = 1600;
+  excessive.canonical.rows[0].recommendation.margin_pct = 0.4;
+  excessive.canonical.rows[0].policy.floor = 1600;
+  excessive.canonical.rows[0].policy.cap = 1600;
+  const excessivePlan = buildApplyPlan({ ...excessive, now: new Date(excessive.livePrices.generatedAt) });
+  assert(excessivePlan.rejected.some((row) => row.reasons.includes('apply_change_limit_exceeded')));
+
+  const applyWorkflow = fs.readFileSync(
+    path.join(__dirname, '..', '.github', 'workflows', 'portal-repricer-price-apply.yml'),
+    'utf8'
+  );
+  const refreshWorkflow = fs.readFileSync(
+    path.join(__dirname, '..', '.github', 'workflows', 'portal-repricer-prices.yml'),
+    'utf8'
+  );
+  assert.match(applyWorkflow, /run:\s+npm ci/);
+  assert.match(refreshWorkflow, /run:\s+npm ci/);
+  assert.match(applyWorkflow, /SUPABASE_SERVICE_ROLE_KEY:/);
+  assert.match(applyWorkflow, /--confirmation "\$CONFIRMATION_HASH"/);
+  assert.doesNotMatch(applyWorkflow, /--confirmation '\$\{\{\s*inputs\.confirmation_hash/);
+  assert.match(
+    applyWorkflow,
+    /repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan/
+  );
+  assert.match(applyWorkflow, /--requested-by "\$REQUESTED_BY"/);
+
+  console.log('[repricer-price-apply] PASS: plan hash, audit identity, direct-stock gate, workflow preflight, safe inputs, submission and post-verification');
+}
+
+run().catch((error) => {
+  console.error(error?.stack || String(error));
+  process.exitCode = 1;
+});

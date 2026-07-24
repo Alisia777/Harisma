@@ -554,6 +554,9 @@ function buildRepricerControlsPayload() {
     overrides: Array.isArray(state.storage?.repricerOverrides)
       ? state.storage.repricerOverrides.map(normalizeRepricerOverride).filter((item) => item.articleKey)
       : [],
+    productLifecycleOverrides: Array.isArray(state.storage?.productLifecycleOverrides)
+      ? state.storage.productLifecycleOverrides.map(normalizeProductLifecycleOverride).filter((item) => item.articleKey)
+      : [],
     skuProfiles: Array.isArray(state.storage?.repricerSkuProfiles)
       ? state.storage.repricerSkuProfiles.map(normalizeRepricerSkuProfile).filter((item) => item.articleKey)
       : [],
@@ -569,10 +572,14 @@ function buildRepricerControlsPayload() {
     corridorDeletes: Array.isArray(state.storage?.repricerCorridorDeletes)
       ? state.storage.repricerCorridorDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey)
       : [],
+    productLifecycleOverrideDeletes: Array.isArray(state.storage?.productLifecycleOverrideDeletes)
+      ? state.storage.productLifecycleOverrideDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey)
+      : [],
     pendingApiAdds: repricerControlsQueueItems(state.storage?.repricerPendingApiAdds),
     pendingApiDeletes: repricerControlsQueueItems(state.storage?.repricerPendingApiDeletes),
     pendingCostFixes: repricerControlsQueueItems(state.storage?.repricerPendingCostFixes),
     pendingApiTasks: repricerControlsQueueItems(state.storage?.repricerPendingApiTasks),
+    skuDecisionApprovals: repricerControlsQueueItems(state.storage?.skuDecisionApprovals).slice(0, 1000),
     repairHistory: repricerControlsQueueItems(state.storage?.repricerRepairHistory).slice(0, 400),
     repairSnapshots: repricerControlsQueueItems(state.storage?.repricerRepairSnapshots).slice(0, 10),
     apiReconcileHistory: repricerControlsQueueItems(state.storage?.repricerApiReconcileHistory).slice(0, 100),
@@ -590,6 +597,9 @@ function applyRepricerControlsPayload(payload) {
   state.storage.repricerOverrides = Array.isArray(payload.overrides || payload.repricerOverrides)
     ? (payload.overrides || payload.repricerOverrides).map(normalizeRepricerOverride).filter((item) => item.articleKey)
     : [];
+  state.storage.productLifecycleOverrides = Array.isArray(payload.productLifecycleOverrides)
+    ? payload.productLifecycleOverrides.map(normalizeProductLifecycleOverride).filter((item) => item.articleKey)
+    : [];
   state.storage.repricerSkuProfiles = Array.isArray(payload.skuProfiles || payload.repricerSkuProfiles)
     ? (payload.skuProfiles || payload.repricerSkuProfiles).map(normalizeRepricerSkuProfile).filter((item) => item.articleKey)
     : [];
@@ -605,10 +615,15 @@ function applyRepricerControlsPayload(payload) {
   state.storage.repricerCorridorDeletes = Array.isArray(payload.corridorDeletes || payload.repricerCorridorDeletes)
     ? (payload.corridorDeletes || payload.repricerCorridorDeletes).map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey)
     : [];
+  state.storage.productLifecycleOverrideDeletes = Array.isArray(payload.productLifecycleOverrideDeletes)
+    ? payload.productLifecycleOverrideDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey)
+    : [];
   if (Array.isArray(payload.pendingApiAdds || payload.repricerPendingApiAdds)) state.storage.repricerPendingApiAdds = repricerControlsQueueItems(payload.pendingApiAdds || payload.repricerPendingApiAdds);
   if (Array.isArray(payload.pendingApiDeletes || payload.repricerPendingApiDeletes)) state.storage.repricerPendingApiDeletes = repricerControlsQueueItems(payload.pendingApiDeletes || payload.repricerPendingApiDeletes);
   if (Array.isArray(payload.pendingCostFixes || payload.repricerPendingCostFixes)) state.storage.repricerPendingCostFixes = repricerControlsQueueItems(payload.pendingCostFixes || payload.repricerPendingCostFixes);
   if (Array.isArray(payload.pendingApiTasks || payload.repricerPendingApiTasks)) state.storage.repricerPendingApiTasks = repricerControlsQueueItems(payload.pendingApiTasks || payload.repricerPendingApiTasks);
+  if (Array.isArray(payload.skuDecisionApprovals)) state.storage.skuDecisionApprovals = repricerControlsQueueItems(payload.skuDecisionApprovals).slice(0, 1000);
+  if (typeof window.skuDecisionApprovals === 'function') window.skuDecisionApprovals();
   if (Array.isArray(payload.repairHistory || payload.repricerRepairHistory)) state.storage.repricerRepairHistory = repricerControlsQueueItems(payload.repairHistory || payload.repricerRepairHistory).slice(0, 400);
   if (Array.isArray(payload.repairSnapshots || payload.repricerRepairSnapshots)) state.storage.repricerRepairSnapshots = repricerControlsQueueItems(payload.repairSnapshots || payload.repricerRepairSnapshots).slice(0, 10);
   if (Array.isArray(payload.apiReconcileHistory || payload.repricerApiReconcileHistory)) state.storage.repricerApiReconcileHistory = repricerControlsQueueItems(payload.apiReconcileHistory || payload.repricerApiReconcileHistory).slice(0, 100);
@@ -771,7 +786,8 @@ function mergeRepricerControlsPayload(remotePayload, localPayload) {
     settingsUpdatedAt: useLocalSettings ? localSettingsUpdatedAt : remoteSettingsUpdatedAt,
     overrideDeletes: mergeRepricerDeleteTombstones(remote.overrideDeletes || remote.repricerOverrideDeletes, local.overrideDeletes || local.repricerOverrideDeletes, true),
     skuProfileDeletes: mergeRepricerDeleteTombstones(remote.skuProfileDeletes || remote.repricerSkuProfileDeletes, local.skuProfileDeletes || local.repricerSkuProfileDeletes, false),
-    corridorDeletes: mergeRepricerDeleteTombstones(remote.corridorDeletes || remote.repricerCorridorDeletes, local.corridorDeletes || local.repricerCorridorDeletes, true)
+    corridorDeletes: mergeRepricerDeleteTombstones(remote.corridorDeletes || remote.repricerCorridorDeletes, local.corridorDeletes || local.repricerCorridorDeletes, true),
+    productLifecycleOverrideDeletes: mergeRepricerDeleteTombstones(remote.productLifecycleOverrideDeletes, local.productLifecycleOverrideDeletes, false)
   };
   merged.overrides = mergeRepricerEntityList(
     remote.overrides || remote.repricerOverrides,
@@ -797,10 +813,19 @@ function mergeRepricerControlsPayload(remotePayload, localPayload) {
     normalizeRepricerCorridor,
     true
   );
+  merged.productLifecycleOverrides = mergeRepricerEntityList(
+    remote.productLifecycleOverrides,
+    local.productLifecycleOverrides,
+    merged.productLifecycleOverrideDeletes,
+    [],
+    normalizeProductLifecycleOverride,
+    false
+  );
   merged.pendingApiAdds = mergeRepricerQueueItems(remote.pendingApiAdds || remote.repricerPendingApiAdds, local.pendingApiAdds || local.repricerPendingApiAdds);
   merged.pendingApiDeletes = mergeRepricerQueueItems(remote.pendingApiDeletes || remote.repricerPendingApiDeletes, local.pendingApiDeletes || local.repricerPendingApiDeletes);
   merged.pendingCostFixes = mergeRepricerQueueItems(remote.pendingCostFixes || remote.repricerPendingCostFixes, local.pendingCostFixes || local.repricerPendingCostFixes);
   merged.pendingApiTasks = mergeRepricerQueueItems(remote.pendingApiTasks || remote.repricerPendingApiTasks, local.pendingApiTasks || local.repricerPendingApiTasks);
+  merged.skuDecisionApprovals = mergeRepricerQueueItems(remote.skuDecisionApprovals, local.skuDecisionApprovals, 1000);
   merged.repairHistory = mergeRepricerQueueItems(remote.repairHistory || remote.repricerRepairHistory, local.repairHistory || local.repricerRepairHistory, 400);
   merged.repairSnapshots = mergeRepricerQueueItems(remote.repairSnapshots || remote.repricerRepairSnapshots, local.repairSnapshots || local.repricerRepairSnapshots, 10);
   merged.apiReconcileHistory = mergeRepricerQueueItems(remote.apiReconcileHistory || remote.repricerApiReconcileHistory, local.apiReconcileHistory || local.repricerApiReconcileHistory, 100);
@@ -830,12 +855,15 @@ async function queryRemoteRepricerControls() {
   return rows?.[0]?.payload ? JSON.parse(JSON.stringify(rows[0].payload)) : null;
 }
 
-async function persistRepricerControls() {
+let repricerControlsPersistRevision = 0;
+let repricerControlsPersistChain = Promise.resolve();
+
+async function persistRepricerControlsRevision(revision) {
   if (!hasRemoteStore()) return;
   const localPayload = buildRepricerControlsPayload();
   const remotePayload = await queryRemoteRepricerControls();
+  if (revision !== repricerControlsPersistRevision) return { superseded: true };
   const payload = mergeRepricerControlsPayload(remotePayload, localPayload);
-  applyRepricerControlsPayload(payload);
   await upsertRemote(PORTAL_SNAPSHOT_TABLE, [{
     brand: currentBrand(),
     snapshot_key: REPRICER_CONTROLS_SNAPSHOT_KEY,
@@ -844,11 +872,24 @@ async function persistRepricerControls() {
     source: 'portal-managed-repricer',
     generated_at: payload.generatedAt
   }], 'brand,snapshot_key');
+  if (revision !== repricerControlsPersistRevision) return { superseded: true };
+  applyRepricerControlsPayload(payload);
   if (typeof resetPortalSnapshotState === 'function') resetPortalSnapshotState();
   state.team.lastSyncAt = new Date().toISOString();
   state.team.note = `Репрайсер синхронизирован · ${fmt.date(state.team.lastSyncAt)}`;
   state.team.mode = 'ready';
   updateSyncBadge();
+  return { superseded: false };
+}
+
+function persistRepricerControls() {
+  if (!hasRemoteStore()) return Promise.resolve();
+  const revision = ++repricerControlsPersistRevision;
+  const operation = repricerControlsPersistChain
+    .catch(() => undefined)
+    .then(() => persistRepricerControlsRevision(revision));
+  repricerControlsPersistChain = operation;
+  return operation;
 }
 
 function teamRestConfig() {

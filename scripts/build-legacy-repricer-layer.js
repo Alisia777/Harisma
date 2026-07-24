@@ -41,6 +41,7 @@ function resolveOptions(args = {}) {
     skusPath: path.resolve(args['skus-file'] || path.join(ROOT, 'data', 'skus.json')),
     procurementWbPath: path.resolve(args['procurement-wb-file'] || path.join(ROOT, 'data', 'order_procurement_wb.json')),
     procurementOzonPath: path.resolve(args['procurement-ozon-file'] || path.join(ROOT, 'data', 'order_procurement_ozon.json')),
+    economicsPolicyPath: path.resolve(args['economics-policy'] || path.join(ROOT, 'data', 'repricer_economics_policy.json')),
     outputPath: path.resolve(args['output-file'] || path.join(ROOT, 'data', 'repricer.json'))
   };
 }
@@ -231,6 +232,30 @@ function defaultTargetTurnoverDays(status = '', platform = '') {
   return 95;
 }
 
+function normalizeLifecycleKey(...values) {
+  const raw = values.map((value) => String(value || '').toLowerCase()).join(' ');
+  if (/перезапуск|relaunch/.test(raw)) return 'relaunch';
+  if (/новин|new|launch/.test(raw)) return 'new';
+  if (/актуаль|active/.test(raw)) return 'active';
+  if (/вывод|архив|inactive|disabled|stop/.test(raw)) return 'exit';
+  return 'other';
+}
+
+function marginGuardRequired(lifecycleKey = '') {
+  return ['active', 'new', 'relaunch'].includes(String(lifecycleKey || '').toLowerCase());
+}
+
+function alignedPriceGenerationForRepricer(prices = {}, overlay = {}) {
+  const pricesGeneration = prices?.priceGeneration;
+  const pricesGenerationId = textValue(pricesGeneration?.id);
+  const overlayGenerationId = textValue(overlay?.priceGeneration?.id);
+  if (!pricesGenerationId || pricesGenerationId !== overlayGenerationId) return null;
+  return {
+    ...pricesGeneration,
+    artifact: 'repricer'
+  };
+}
+
 function inferStrategy(currentPrice, recPrice, stock, minPrice) {
   if ((stock || 0) <= 0) return 'OOS';
   if (currentPrice > 0 && minPrice > 0 && currentPrice + 0.001 < minPrice) return 'FLOOR';
@@ -282,11 +307,55 @@ function platformMatrixRow(sku, platform) {
   return matrix[platform] || null;
 }
 
-function marginPctFromPrice(price, cost) {
+function normalizedRate(value) {
+  const numeric = numberValue(value);
+  if (numeric === null || numeric < 0) return 0;
+  return numeric > 1 ? numeric / 100 : numeric;
+}
+
+function legacyEconomicsForPlatform(payload = {}, platform = '') {
+  const policy = payload?.platforms?.[String(platform || '').trim().toLowerCase()] || {};
+  const breakdown = policy.breakdown && typeof policy.breakdown === 'object' ? policy.breakdown : {};
+  const commissionPct = normalizedRate(policy.commissionPct ?? policy.commission_pct);
+  const internalAdvertisingPct = normalizedRate(
+    policy.internalAdvertisingPct
+      ?? policy.internal_advertising_pct
+      ?? breakdown.internalAdvertisingPct
+      ?? breakdown.internal_advertising_pct
+      ?? breakdown.adPct
+  );
+  const internalAdvertisingRub = numberValue(
+    policy.internalAdvertisingPerUnit,
+    policy.internal_advertising_per_unit,
+    breakdown.internalAdvertisingRub,
+    breakdown.internal_advertising_rub,
+    breakdown.adRub
+  ) || 0;
+  const platformCostsRub = numberValue(policy.platformCostsPerUnit, policy.platform_costs_per_unit)
+    ?? (
+      (numberValue(breakdown.logisticsRub) || 0)
+      + (numberValue(breakdown.storageRub) || 0)
+      + (numberValue(breakdown.returnsRub) || 0)
+      + (numberValue(breakdown.otherRub) || 0)
+    );
+  return {
+    commissionPct,
+    internalAdvertisingPct,
+    internalAdvertisingRub,
+    platformCostsRub: platformCostsRub || 0
+  };
+}
+
+function marginPctFromPrice(price, cost, economics = {}) {
   const actualPrice = positiveValue(price);
   const actualCost = positiveValue(cost);
   if (!(actualPrice > 0) || !(actualCost > 0)) return null;
-  return Number(((actualPrice - actualCost) / actualPrice).toFixed(6));
+  const net = actualPrice
+    * (1 - normalizedRate(economics.commissionPct) - normalizedRate(economics.internalAdvertisingPct))
+    - (numberValue(economics.platformCostsRub) || 0)
+    - (numberValue(economics.internalAdvertisingRub) || 0)
+    - actualCost;
+  return Number((net / actualPrice).toFixed(6));
 }
 
 function formatRub(value) {
@@ -343,7 +412,7 @@ function capRecommendation(recPrice, minPrice, upperCap) {
   };
 }
 
-function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRootGeneratedAt, procurementFact = null) {
+function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRootGeneratedAt, procurementFact = null, skuMatrixRow = null, economicsPolicy = {}) {
   if (!sourceRow && !priceRow && !liveSide) return null;
 
   const supportExportCurrentPrice = platform === 'ozon'
@@ -420,9 +489,8 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
   const marketplaceUnavailable = /не\s*прода|убран|нет\s+на\s+складе|архив|снят\s+с\s+продаж/.test(marketplaceStatusText);
   const noCurrentPlatformSupply = procurementSnapshotAvailable && stock <= 0 && inboundUnits <= 0;
   const stockGateBlocksAutoprice = noCurrentPlatformSupply || marketplaceUnavailable;
-  const recGuard = capRecommendation(seedRecPrice, minPrice, upperCap);
-  let recPrice = recGuard.recPrice || 0;
-  if (stockGateBlocksAutoprice) recPrice = currentPrice || 0;
+  let recGuard = null;
+  let recPrice = seedRecPrice;
   const turnoverDays = numberValue(
     sourceRow?.currentTurnoverDays,
     sourceRow?.turnoverCurrentDays,
@@ -444,6 +512,7 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     priceRow?.costPrice,
     liveSide?.cost
   );
+  const platformEconomics = legacyEconomicsForPlatform(economicsPolicy, platform);
   const sourceMarginPct = numberValue(
     sourceRow?.avgMargin7dPct,
     sourceRow?.marginTotalPct,
@@ -452,30 +521,81 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     priceRow?.marginTotalPct,
     liveSide?.marginPct
   );
-  const marginPct = marginPctFromPrice(positiveValue(currentBuyerPrice, currentPrice, basePrice), cost) ?? sourceMarginPct;
-  const thresholdMarginPct = numberValue(
-    sourceRow?.allowedMarginPct,
-    supportRow?.allowedMarginPct,
-    liveSide?.marginNoAdsMinPct,
-    DEFAULT_ALLOWED_MARGIN_PCT
+  const marginPct = marginPctFromPrice(
+    positiveValue(currentBuyerPrice, currentPrice, basePrice),
+    cost,
+    platformEconomics
+  ) ?? sourceMarginPct;
+  const lifecycleKey = normalizeLifecycleKey(
+    skuMatrixRow?.status,
+    skuMatrixRow?.productStatus,
+    sourceRow?.status,
+    sourceRow?.productStatus,
+    supportRow?.status,
+    supportRow?.productStatus,
+    priceRow?.status,
+    priceRow?.productStatus,
+    liveSide?.status,
+    liveSide?.productStatus
   );
-  const strategy = inferStrategy(currentPrice, recPrice, stock, minPrice);
+  const marginRequired = marginGuardRequired(lifecycleKey);
+  const explicitMarginPct = numberValue(
+    skuMatrixRow?.manualMarginPct,
+    skuMatrixRow?.targetMarginPct,
+    skuMatrixRow?.allowedMarginPct,
+    sourceRow?.manualMarginPct,
+    sourceRow?.targetMarginPct,
+    sourceRow?.allowedMarginPct,
+    supportRow?.manualMarginPct,
+    supportRow?.targetMarginPct,
+    supportRow?.allowedMarginPct,
+    priceRow?.manualMarginPct,
+    priceRow?.targetMarginPct,
+    priceRow?.allowedMarginPct,
+    liveSide?.marginNoAdsMinPct
+  );
+  const thresholdMarginPct = explicitMarginPct === null && !marginRequired
+    ? DEFAULT_ALLOWED_MARGIN_PCT
+    : explicitMarginPct;
+  const marginPolicyMissing = marginRequired && !(thresholdMarginPct > 0 && thresholdMarginPct < 1);
+  const buyerFactor = currentPrice > 0 && currentBuyerPrice > 0
+    ? Math.max(0.01, Math.min(currentBuyerPrice / currentPrice, 1.5))
+    : 1;
+  const variableRate = platformEconomics.commissionPct + platformEconomics.internalAdvertisingPct;
+  const fixedEconomicsRub = platformEconomics.platformCostsRub + platformEconomics.internalAdvertisingRub;
+  const marginDenominator = 1 - variableRate - thresholdMarginPct;
+  const marginFloor = marginRequired && cost > 0 && thresholdMarginPct > 0 && thresholdMarginPct < 1 && marginDenominator > 0
+    ? Math.ceil((cost + fixedEconomicsRub) / (marginDenominator * buyerFactor))
+    : 0;
+  const effectiveFloor = Math.max(minPrice, marginFloor);
+  const capLiftedByMargin = marginFloor > 0 && upperCap > 0 && upperCap + 0.001 < marginFloor;
+  const effectiveUpperCap = capLiftedByMargin ? marginFloor : upperCap;
+  recGuard = capRecommendation(seedRecPrice, effectiveFloor, effectiveUpperCap);
+  recPrice = recGuard.recPrice || 0;
+  if (stockGateBlocksAutoprice || marginPolicyMissing) recPrice = currentPrice || 0;
+  const strategy = marginPolicyMissing
+    ? 'BLOCK_MARGIN'
+    : inferStrategy(currentPrice, recPrice, stock, effectiveFloor);
   const inferredReason = inferReason({
     sourceRow,
     supportRow,
     priceRow,
     currentPrice,
     recPrice,
-    minPrice,
+    minPrice: effectiveFloor,
     strategy,
     stock,
     liveSide: liveSide ? { ...liveSide, generatedAt: liveRootGeneratedAt } : null
   });
   let reason = inferredReason;
-  if (stockGateBlocksAutoprice) {
+  if (marginPolicyMissing) {
+    reason = 'Нет обязательной маржи SKU для активного товара или новинки: автопрайс удерживает текущую цену.';
+  } else if (stockGateBlocksAutoprice) {
     reason = marketplaceUnavailable
       ? 'Товар не продается или отсутствует на складе площадки: автопрайс удерживает текущую цену.'
       : 'Нет актуального остатка и поставок по procurement snapshot: автопрайс удерживает текущую цену.';
+  } else if (capLiftedByMargin) {
+    reason = `Маржа SKU имеет приоритет: MAX ${formatRub(upperCap)} поднят до floor маржи ${formatRub(marginFloor)}. ${inferredReason}`;
   } else if (recGuard.capApplied) {
     const capSourceLabel = sourceRow?.workingZoneTo
       ? 'верхней границей рабочего коридора'
@@ -483,10 +603,12 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
         ? 'верхней границей support-коридора'
         : (supportRow?.maxPrice ? 'support max price' : 'historical max price'));
     reason = `Рекомендация ограничена ${capSourceLabel} ${formatRub(upperCap)}. Исходный target ${formatRub(seedRecPrice)} был выше допустимого диапазона.`;
-  } else if (recGuard.capBlockedByFloor && upperCap > 0 && minPrice > 0) {
-    reason = `Верхний cap ${formatRub(upperCap)} игнорирован, потому что он ниже floor ${formatRub(minPrice)}. ${inferredReason}`;
-  } else if (recGuard.floorApplied && minPrice > 0) {
-    reason = `Рекомендация поднята до рабочего floor ${formatRub(minPrice)}. ${inferredReason}`;
+  } else if (recGuard.capBlockedByFloor && effectiveUpperCap > 0 && effectiveFloor > 0) {
+    reason = `Верхний cap ${formatRub(effectiveUpperCap)} игнорирован, потому что он ниже floor ${formatRub(effectiveFloor)}. ${inferredReason}`;
+  } else if (recGuard.floorApplied && marginFloor >= minPrice && marginFloor > 0) {
+    reason = `Рекомендация поднята до приоритетного floor маржи ${formatRub(marginFloor)}. ${inferredReason}`;
+  } else if (recGuard.floorApplied && effectiveFloor > 0) {
+    reason = `Рекомендация поднята до рабочего floor ${formatRub(effectiveFloor)}. ${inferredReason}`;
   }
   const newBuyerPrice = estimateNewBuyerPrice(
     currentBuyerPrice,
@@ -498,11 +620,18 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
   const changePct = currentPrice > 0 && recPrice > 0
     ? Number((((recPrice - currentPrice) / currentPrice)).toFixed(6))
     : 0;
-  const newMarginPct = marginPctFromPrice(newBuyerPrice, cost) ?? marginPct;
+  const newMarginPct = marginPctFromPrice(newBuyerPrice, cost, platformEconomics) ?? marginPct;
 
   return {
     basePrice,
-    minPrice,
+    minPrice: effectiveFloor,
+    minMaxFloor: minPrice,
+    marginFloor,
+    marginGuardRequired: marginRequired,
+    marginPolicyMissing,
+    marginPriorityApplied: marginFloor > 0 && marginFloor >= minPrice,
+    capLiftedByMargin,
+    lifecycleKey,
     currentPrice,
     buyerPrice: currentBuyerPrice,
     stock,
@@ -523,6 +652,11 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     costImportedAt: textValue(sourceRow?.costImportedAt, supportRow?.costImportedAt, priceRow?.costImportedAt),
     costBackfillReason: textValue(sourceRow?.costBackfillReason, supportRow?.costBackfillReason, priceRow?.costBackfillReason),
     costInheritedFromArticleKey: textValue(sourceRow?.costInheritedFromArticleKey, supportRow?.costInheritedFromArticleKey, priceRow?.costInheritedFromArticleKey),
+    commissionPctValue: platformEconomics.commissionPct,
+    internalAdvertisingPctValue: platformEconomics.internalAdvertisingPct,
+    internalAdvertisingRub: platformEconomics.internalAdvertisingRub,
+    platformCostsRub: platformEconomics.platformCostsRub,
+    feeStackRub: fixedEconomicsRub,
     marginPct: marginPct === null ? null : marginPct,
     recPrice,
     changePct,
@@ -543,7 +677,10 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     workingZoneTo: positiveValue(sourceRow?.workingZoneTo, supportRow?.workingZoneTo, supportRow?.maxPrice, supportRow?.historicalMaxPrice),
     requiredPriceForProfitability: positiveValue(sourceRow?.requiredPriceForProfitability, supportRow?.requiredPriceForProfitability),
     requiredPriceForMargin: positiveValue(sourceRow?.requiredPriceForMargin),
+    targetMarginPct: thresholdMarginPct === null ? null : thresholdMarginPct,
+    manualMarginPct: thresholdMarginPct === null ? null : thresholdMarginPct,
     allowedMarginPct: thresholdMarginPct === null ? null : thresholdMarginPct,
+    marginSource: textValue(sourceRow?.marginSource, supportRow?.marginSource, priceRow?.marginSource),
     minMaxSource: textValue(sourceRow?.minMaxSource, supportRow?.minMaxSource, priceRow?.minMaxSource),
     minMaxImportedAt: textValue(sourceRow?.minMaxImportedAt, supportRow?.minMaxImportedAt, priceRow?.minMaxImportedAt),
     manualMinPrice: positiveValue(sourceRow?.manualMinPrice, supportRow?.manualMinPrice, priceRow?.manualMinPrice),
@@ -554,7 +691,8 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     liveStrategy: textValue(liveSide?.strategy),
     liveReason: textValue(liveSide?.reason),
     seedRecPrice: seedRecPrice || 0,
-    upperCap: upperCap || 0,
+    minMaxCap: upperCap || 0,
+    upperCap: effectiveUpperCap || 0,
     floorApplied: Boolean(recGuard.floorApplied),
     upperCapApplied: recGuard.capApplied
   };
@@ -644,7 +782,9 @@ function buildLegacyRepricerLayer(options = {}) {
   const skus = safeReadJson(options.skusPath, []);
   const procurementWb = safeReadJson(options.procurementWbPath, { generatedAt: '', rows: [] });
   const procurementOzon = safeReadJson(options.procurementOzonPath, { generatedAt: '', rows: [] });
+  const economicsPolicy = safeReadJson(options.economicsPolicyPath, { platforms: {} });
   const liveRepricer = safeReadLooseJson(options.liveRepricerPath, { generatedAt: '', rows: [] });
+  const priceGeneration = alignedPriceGenerationForRepricer(prices, overlay);
 
   const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, liveWorkbench || {});
   const liveRepricerFreshness = liveSourceStatus(
@@ -734,7 +874,18 @@ function buildLegacyRepricerLayer(options = {}) {
         priceRow?.costPrice,
         liveRow?.cost
       );
-      target[platform] = buildSide(sourceRow, platform, supportRow, priceRow, liveRow?.[platform] || null, liveRepricer?.generatedAt || '', procurementFact);
+      const skuMarginProfile = { ...(sku || {}), ...(matrixRow || {}) };
+      target[platform] = buildSide(
+        sourceRow,
+        platform,
+        supportRow,
+        priceRow,
+        liveRow?.[platform] || null,
+        liveRepricer?.generatedAt || '',
+        procurementFact,
+        skuMarginProfile,
+        economicsPolicy
+      );
       if (target[platform]) {
         const matrixStatus = normalizeStatus(matrixRow?.status || matrixRow?.productStatus || '');
         if (matrixStatus) {
@@ -768,6 +919,7 @@ function buildLegacyRepricerLayer(options = {}) {
 
   const payload = {
     generatedAt: merged?.generatedAt || new Date().toISOString(),
+    ...(priceGeneration ? { priceGeneration } : {}),
     note: 'Legacy repricer fallback rebuilt from merged smart-price contour, support rows and local live repricer hints. Used for coldstart, price bridge and compatibility until managed repricer finishes hydration.',
     sourceFreshness: {
       workbench: workbench?.generatedAt || '',
@@ -807,6 +959,10 @@ if (require.main === module) {
 }
 
 module.exports = {
+  alignedPriceGenerationForRepricer,
+  buildSide,
   buildLegacyRepricerLayer,
+  marginGuardRequired,
+  normalizeLifecycleKey,
   resolveOptions
 };

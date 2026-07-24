@@ -1,0 +1,242 @@
+{
+  "schema": "repricer-price-apply-plan-v1",
+  "generatedAt": "2026-07-25T02:38:23.473Z",
+  "requestedBy": "merge-revalidation",
+  "status": "blocked",
+  "applyAllowed": false,
+  "confirmationHash": "9922511b8c684e43dd2657c178b9e7d186e492d541aa112a6df8e6492f26dafd",
+  "source": {
+    "canonicalSnapshotId": "repricer:c53c42c469e32ce0",
+    "livePriceGeneratedAt": "2026-07-25T00:48:50.043Z",
+    "liveSignalGeneratedAt": "2026-07-25T01:30:22.722Z",
+    "actions": []
+  },
+  "limits": {
+    "maxSnapshotAgeMinutes": 120,
+    "maxRows": 20,
+    "maxChangePct": 0.5
+  },
+  "summary": {
+    "actions": 0,
+    "wb": 0,
+    "ozon": 0,
+    "rejected": 27,
+    "ignored": 3
+  },
+  "globalBlockers": [
+    "shadow_cutover_not_allowed",
+    "direct_stock_platform_missing:wb",
+    "direct_stock_platform_missing:ozon",
+    "ready_rows_rejected:27",
+    "no_applicable_price_changes"
+  ],
+  "actions": [],
+  "rejected": [
+    {
+      "platform": "ozon",
+      "articleKey": "limfaks_bad_30caps",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "menoflavon_bad_60caps",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "micardin_1_1_1",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "syvorotka_guk_30ml",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "cardicin_bad_60caps",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "daoshen_75ml",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "dardrakona_1_1",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "dardrakona_75ml",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "erobrut",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "frutalika_bad_60caps",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "gel_dlya_britya_300ml",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "gel_parfum_tabacco_vanille_450ml",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "glikiron_bad_60caps",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "i_am_alpha_bad_60caps",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "insulight_bad_60caps",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "khvoinitsa_1_1",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "micardin_1_1",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "mycoplax",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "nabor_remuver_40ml_1_1",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "psoral_50ml",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "sustalit",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "urolgan",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "uromax",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "uromax_1_1",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "vetonus_1_1",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "wbbiotrin_1_1_1",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "wbgetsizegel",
+      "reasons": [
+        "direct_sku_stock_missing"
+      ]
+    }
+  ],
+  "ignored": [
+    {
+      "platform": "ozon",
+      "articleKey": "khvoinitsa",
+      "reason": "ozon_change_below_api_minimum_5pct"
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "maslo_dlya_borodi_50ml",
+      "reason": "ozon_change_below_api_minimum_5pct"
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "telomeras_60caps",
+      "reason": "ozon_change_below_api_minimum_5pct"
+    }
+  ]
+}

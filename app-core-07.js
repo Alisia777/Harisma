@@ -23,6 +23,23 @@ function skuModalMetricNumber(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function skuModalCanonicalMargin(articleKey = '', platform = '') {
+  const articleToken = skuModalArticleToken(articleKey);
+  const platformKey = String(platform || '').trim().toLowerCase();
+  const row = (Array.isArray(state.canonicalRepricer?.rows) ? state.canonicalRepricer.rows : [])
+    .find((item) => (
+      skuModalArticleToken(item?.article_key || item?.articleKey) === articleToken
+      && String(item?.platform || '').trim().toLowerCase() === platformKey
+    ));
+  const value = skuModalMetricNumber(row?.recommendation?.current_margin_pct);
+  return {
+    value,
+    asOf: String(row?.facts?.as_of || '').trim(),
+    freshness: String(row?.facts?.price_freshness || '').trim(),
+    source: value === null ? '' : 'canonical IU'
+  };
+}
+
 function skuModalPlanFactResultRows(context = {}) {
   const completion = skuModalMetricNumber(context.completionToDate);
   const gap = skuModalMetricNumber(context.gapToDate);
@@ -125,6 +142,9 @@ function renderSkuModal(articleKey) {
   const resultRows = planFactContext
     ? skuModalPlanFactResultRows(planFactContext)
     : skuModalLegacyResultRows(sku, completion);
+  const wbIuMargin = skuModalCanonicalMargin(resolvedArticleKey, 'wb');
+  const ozonIuMargin = skuModalCanonicalMargin(resolvedArticleKey, 'ozon');
+  const iuMarginAsOf = [wbIuMargin.asOf, ozonIuMargin.asOf].filter(Boolean).sort().at(-1) || '';
 
   const modalMarkup = `
     <div class="modal-head">
@@ -140,8 +160,9 @@ function renderSkuModal(articleKey) {
       <div class="card subtle">
         <h3>Результат</h3>
         ${resultRows.join('')}
-        ${metricRow('WB маржа', fmt.pct(sku.wb?.marginPct), (sku.wb?.marginPct || 0) < 0 ? 'danger-text' : '')}
-        ${metricRow('Ozon маржа', fmt.pct(sku.ozon?.marginPct), (sku.ozon?.marginPct || 0) < 0 ? 'danger-text' : '')}
+        ${metricRow('WB маржа ИУ', fmt.pct(wbIuMargin.value), (wbIuMargin.value || 0) < 0 ? 'danger-text' : '')}
+        ${metricRow('Ozon маржа ИУ', fmt.pct(ozonIuMargin.value), (ozonIuMargin.value || 0) < 0 ? 'danger-text' : '')}
+        <div class="muted small" style="margin-top:8px">Маржа ИУ = цена продавца − себестоимость − комиссия − издержки площадки − внутренняя реклама. Срез: ${escapeHtml(iuMarginAsOf || 'нет актуальной цены API')}.</div>
       </div>
       <div class="card subtle">
         <h3>Почему в фокусе</h3>
@@ -220,11 +241,10 @@ function renderSkuModal(articleKey) {
         </div>
         <div class="note-box"><strong>${escapeHtml(lifecycleSourceLabel)}</strong>${lifecycleReason ? `<div>${escapeHtml(lifecycleReason)}</div>` : ''}</div>
         <form id="productLifecycleForm" class="form-grid compact">
-          <select name="status">${typeof productLifecycleOptionsHtml === 'function' ? productLifecycleOptionsHtml(currentLifecycle.key || currentLifecycle.label) : ''}</select>
-          <textarea name="note" rows="3" placeholder="Комментарий: почему выводим, до какой даты, кто ведёт">${escapeHtml(currentLifecycleOverride?.note || '')}</textarea>
+          <select name="status">${typeof productLifecycleOptionsHtml === 'function' ? productLifecycleOptionsHtml(currentLifecycle.key || currentLifecycle.label) : ''}<option value="__auto__">Снять ручной статус после согласования</option></select>
+          <textarea name="note" rows="3" required minlength="8" placeholder="Основание для РОПа: цифры, причина, действие и срок"></textarea>
           <div class="quick-actions">
-            <button class="btn" type="submit">Сохранить статус</button>
-            <button class="btn ghost" type="button" id="clearProductLifecycleBtn">Сбросить ручной статус</button>
+            <button class="btn" type="submit">Отправить РОПу</button>
           </div>
         </form>
         <div class="team-note">Командный режим: ${escapeHtml(state.team.note || 'Локальный режим')}</div>
@@ -343,17 +363,36 @@ function renderSkuModal(articleKey) {
   body.querySelector('#productLifecycleForm')?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    await upsertProductLifecycleStatus({
+    const reason = String(form.get('note') || '').trim();
+    if (reason.length < 8) return;
+    if (typeof window.requestSkuDecisionApproval !== 'function') return;
+    const selected = String(form.get('status') || '').trim();
+    const clearOverride = selected === '__auto__';
+    const proposedLifecycle = clearOverride
+      ? (typeof productLifecycleAutoForSku === 'function' ? productLifecycleAutoForSku(sku, resolvedArticleKey) : productLifecycleMeta('active'))
+      : productLifecycleMeta(selected);
+    const pending = typeof window.skuDecisionPendingForArticle === 'function'
+      ? window.skuDecisionPendingForArticle(resolvedArticleKey, 'PRODUCT_STATUS_CHANGE', 'all')
+      : null;
+    if (pending) {
+      window.alert('По этому SKU уже есть решение, ожидающее РОПа.');
+      return;
+    }
+    await window.requestSkuDecisionApproval({
+      type: 'PRODUCT_STATUS_CHANGE',
       articleKey: resolvedArticleKey,
-      status: form.get('status'),
-      note: form.get('note')
+      platform: state.filters?.market || 'all',
+      currentValue: currentLifecycle.label || currentLifecycle.key || '—',
+      proposedValue: proposedLifecycle.label || proposedLifecycle.key || 'Авто',
+      reason,
+      payload: {
+        currentStatusKey: currentLifecycle.key || 'active',
+        proposedStatusKey: proposedLifecycle.key || 'active',
+        proposedStatusLabel: proposedLifecycle.label || 'Авто',
+        clearOverride
+      }
     });
-    renderSkuModal(resolvedArticleKey);
-    rerenderCurrentView();
-  });
-
-  body.querySelector('#clearProductLifecycleBtn')?.addEventListener('click', async () => {
-    await removeProductLifecycleStatus(resolvedArticleKey);
+    window.alert('Задача РОПу создана. До подтверждения статус не изменится.');
     renderSkuModal(resolvedArticleKey);
     rerenderCurrentView();
   });
@@ -14786,5 +14825,3 @@ function getDocumentGroupsFiltered() {
     }))
     .filter((group) => group.items.length);
 }
-
-

@@ -381,6 +381,45 @@ async function fetchWbStocks(token, indexes, asOfDate) {
   };
 }
 
+async function fetchWbStocksWithTokens(candidates, indexes, asOfDate) {
+  const unique = [];
+  const seen = new Set();
+  for (const candidate of Array.isArray(candidates) ? candidates : []) {
+    const token = String(candidate?.token || candidate || '').trim();
+    if (!token || seen.has(token)) continue;
+    seen.add(token);
+    unique.push({
+      token,
+      source: String(candidate?.source || `candidate_${unique.length + 1}`)
+    });
+  }
+  const failures = [];
+  for (const candidate of unique) {
+    try {
+      const result = await fetchWbStocks(candidate.token, indexes, asOfDate);
+      result.tokenSource = candidate.source;
+      if (failures.length) {
+        result.warnings = failures.map((failure) => `${failure.source}: ${failure.message}`);
+      }
+      return result;
+    } catch (error) {
+      const status = Number(error?.status || 0);
+      failures.push({
+        source: candidate.source,
+        status,
+        message: error?.message || String(error)
+      });
+      if (![401, 403].includes(status)) throw error;
+    }
+  }
+  const detail = failures.length
+    ? failures.map((failure) => `${failure.source} HTTP ${failure.status || 'unknown'}`).join(', ')
+    : 'no configured token candidates';
+  const error = new Error(`WB Analytics token is unavailable (${detail})`);
+  error.status = failures[failures.length - 1]?.status || 0;
+  throw error;
+}
+
 function ozonItems(payload) {
   if (Array.isArray(payload?.items)) return payload.items;
   if (Array.isArray(payload?.result?.items)) return payload.result.items;
@@ -590,6 +629,11 @@ function attachOosRisk(rows, oosControl, platform) {
 function resolveOptions(args) {
   const root = process.cwd();
   const inputDir = path.resolve(args['input-dir'] || path.join(root, 'data'));
+  const wbTokens = [
+    { source: 'argument', token: args['wb-token'] },
+    { source: 'primary', token: process.env.ALTEA_WB_API_TOKEN },
+    { source: 'promotion', token: process.env.ALTEA_WB_PROMOTION_TOKEN }
+  ].filter((candidate) => String(candidate.token || '').trim());
   return {
     inputDir,
     outputPath: path.resolve(args.output || args['output-file'] || path.join(inputDir, 'repricer_live_signals.json')),
@@ -600,7 +644,8 @@ function resolveOptions(args) {
     adWindowDays: Math.max(3, Math.trunc(numberOrZero(args['ad-window-days'] || DEFAULT_AD_WINDOW_DAYS))),
     adMaxAgeDays: Math.max(0, Math.trunc(numberOrZero(args['ad-max-age-days'] || DEFAULT_AD_MAX_AGE_DAYS))),
     stockMaxAgeDays: Math.max(0, Math.trunc(numberOrZero(args['stock-max-age-days'] || DEFAULT_STOCK_MAX_AGE_DAYS))),
-    wbToken: String(args['wb-token'] || process.env.ALTEA_WB_API_TOKEN || process.env.ALTEA_WB_PROMOTION_TOKEN || '').trim(),
+    wbToken: String(wbTokens[0]?.token || '').trim(),
+    wbTokens,
     ozonClientId: String(args['ozon-client-id'] || process.env.ALTEA_OZON_CLIENT_ID || '').trim(),
     ozonApiKey: String(args['ozon-api-key'] || process.env.ALTEA_OZON_API_KEY || '').trim(),
     ozonApiBaseUrl: String(args['ozon-api-base-url'] || process.env.ALTEA_OZON_API_BASE_URL || OZON_API_BASE_URL).replace(/\/+$/, '')
@@ -628,7 +673,13 @@ async function buildLiveSignals(options) {
     let direct = null;
     if (!options.skipStockApi) {
       try {
-        if (platform === 'wb' && options.wbToken) direct = await fetchWbStocks(options.wbToken, indexes, options.asOfDate);
+        if (platform === 'wb' && (options.wbTokens?.length || options.wbToken)) {
+          direct = await fetchWbStocksWithTokens(
+            options.wbTokens?.length ? options.wbTokens : [{ source: 'legacy', token: options.wbToken }],
+            indexes,
+            options.asOfDate
+          );
+        }
         if (platform === 'ozon' && options.ozonClientId && options.ozonApiKey) direct = await fetchOzonStocks(options, indexes, options.asOfDate);
       } catch (error) {
         warnings.push(`${platform} stocks: ${error.message}`);
@@ -639,7 +690,8 @@ async function buildLiveSignals(options) {
       direct = null;
     }
     if (options.strict && !options.skipStockApi && !directSnapshotUsable(direct)) {
-      throw new Error(`${platform} direct stock snapshot is unavailable`);
+      const detail = warnings.filter((warning) => warning.startsWith(`${platform} stocks:`)).slice(-1)[0] || '';
+      throw new Error(`${platform} direct stock snapshot is unavailable${detail ? `: ${detail}` : ''}`);
     }
     const stock = mergeDirectWithFallback(direct, fallback);
     stock.rows = attachOosRisk(stock.rows, oosControl, platform);
@@ -726,6 +778,7 @@ module.exports = {
   directSnapshotUsable,
   fallbackStocks,
   fetchWbStocks,
+  fetchWbStocksWithTokens,
   mergeDirectWithFallback,
   normalizeOzonStocks,
   ozonStockBuckets,

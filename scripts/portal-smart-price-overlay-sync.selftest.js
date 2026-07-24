@@ -11,6 +11,7 @@ const {
   buildWorkbookRequestHeaders,
   decodeWorkbookFromEnvironment,
   extractGoogleFileId,
+  mergeApiPriceOverlay,
   preserveExtraMarketplace,
   redactUrl,
   workbookBufferLooksLikeSmartPrices,
@@ -160,5 +161,33 @@ assert.strictEqual(
 );
 assert.strictEqual(preservedOverlay.extraMarketplace.platforms.goldapple.articleCount, 59);
 fs.rmSync(preserveDir, { recursive: true, force: true });
+
+const apiMerged = mergeApiPriceOverlay({
+  generatedAt: '2026-07-23T10:00:00.000Z',
+  platforms: {
+    wb: { rows: [{ articleKey: 'wb-1', currentPrice: 500, valueDate: '2026-07-23' }] },
+    ym: { rows: [{ articleKey: 'ym-1', currentPrice: 600, valueDate: '2026-07-20' }] }
+  }
+}, {
+  generatedAt: '2026-07-24T08:00:00.000Z',
+  asOfDate: '2026-07-23',
+  source: 'yandex-market-prices-api',
+  priceApiSnapshot: { mappedRowCount: 1, asOfDate: '2026-07-23' },
+  platforms: {
+    ym: {
+      rows: [{
+        articleKey: 'ym-1',
+        currentPrice: 650,
+        currentPriceDate: '2026-07-23',
+        valueDate: '2026-07-23',
+        daily: [{ date: '2026-07-23', price: 650 }]
+      }]
+    }
+  }
+});
+assert.strictEqual(apiMerged.platforms.wb.rows.length, 1);
+assert.strictEqual(apiMerged.platforms.ym.rows[0].currentPrice, 650);
+assert.strictEqual(apiMerged.platforms.ym.rows[0].currentPriceDate, '2026-07-23');
+assert.strictEqual(apiMerged.priceApiSnapshot.mappedRowCount, 1);
 
 console.log('portal-smart-price-overlay-sync selftest ok');

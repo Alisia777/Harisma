@@ -100,6 +100,9 @@ function resolveOptions(args) {
     liveRepricerPath: path.resolve(args['live-repricer-file'] || process.env.ALTEA_LIVE_REPRICER_JSON_PATH || cwdJoin('tmp-live-repricer.json')),
     liveRepricerMaxAgeDays: Number(args['live-repricer-max-age-days'] || process.env.ALTEA_LIVE_REPRICER_MAX_AGE_DAYS || 7),
     supportPath: path.resolve(args['support-file'] || process.env.ALTEA_PRICE_SUPPORT_JSON_PATH || cwdJoin('data', 'price_workbench_support.json')),
+    apiPricePath: args['api-price-file'] || process.env.ALTEA_PRICE_API_OVERLAY_PATH
+      ? path.resolve(args['api-price-file'] || process.env.ALTEA_PRICE_API_OVERLAY_PATH)
+      : '',
     overlayOutputPath: path.resolve(args['overlay-output-file'] || process.env.ALTEA_OVERLAY_JSON_PATH || cwdJoin('data', 'smart_price_overlay.json')),
     pricesOutputPath: path.resolve(args['prices-output-file'] || process.env.ALTEA_PRICES_JSON_PATH || cwdJoin('data', 'prices.json')),
     repricerOutputPath: path.resolve(args['repricer-output-file'] || process.env.ALTEA_REPRICER_JSON_PATH || cwdJoin('data', 'repricer.json')),
@@ -158,6 +161,21 @@ function preserveExtraMarketplace(stagedOverlayPath, liveOverlayPath, previousOv
   overlay.extraMarketplace = extraMarketplace;
   writeJson(stagedOverlayPath, overlay);
   return true;
+}
+
+function mergeApiPriceOverlay(workbookOverlay, apiPriceOverlay) {
+  if (!apiPriceOverlay?.platforms) return workbookOverlay;
+  return {
+    ...mergeOverlayWithPrevious({
+      generatedAt: apiPriceOverlay.generatedAt || workbookOverlay?.generatedAt,
+      platforms: apiPriceOverlay.platforms
+    }, workbookOverlay || {}),
+    priceApiSnapshot: apiPriceOverlay.priceApiSnapshot || {
+      source: apiPriceOverlay.source || '',
+      generatedAt: apiPriceOverlay.generatedAt || '',
+      asOfDate: apiPriceOverlay.asOfDate || ''
+    }
+  };
 }
 
 function normalizePathList(value) {
@@ -644,7 +662,8 @@ async function main() {
 
   try {
     const result = buildSmartPriceOverlay(workbookPath, stagedOverlayPath);
-    const rawOverlay = result.payload;
+    const apiPriceOverlay = readJson(options.apiPricePath, null);
+    const rawOverlay = mergeApiPriceOverlay(result.payload, apiPriceOverlay);
     const mergedOverlay = mergeOverlayWithPrevious(rawOverlay, previousOverlay || {});
     const extraMarketplacePreserved = Boolean(
       previousOverlay?.extraMarketplace && !rawOverlay?.extraMarketplace
@@ -724,6 +743,8 @@ async function main() {
       workbook: workbookPath,
       sourceKind: workbook.sourceKind,
       sourceMtime: workbook.sourceMtimeIso || '',
+      apiPriceFile: options.apiPricePath || '',
+      apiPriceSnapshot: rawOverlay.priceApiSnapshot || null,
       fallbackPath: workbook.fallbackPath || '',
       fallbackAgeHours: workbook.fallbackAgeHours ?? null,
       overlay: {
@@ -757,6 +778,7 @@ module.exports = {
   decodeWorkbookFromEnvironment,
   extractGoogleFileId,
   fetchWorkbookFromUrl,
+  mergeApiPriceOverlay,
   mergeOverlayWithPrevious,
   preserveExtraMarketplace,
   priceFactMetrics,

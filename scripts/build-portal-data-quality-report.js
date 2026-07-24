@@ -459,6 +459,7 @@ function buildOrderQuality(orderProcurement = {}) {
   const summary = {
     rows: rows.length,
     noStockNeedRows: 0,
+    lifecycleSuppressedRows: 0,
     lowTurnoverRows: 0,
     totalNeed7: 0,
     totalNeed14: 0,
@@ -466,6 +467,12 @@ function buildOrderQuality(orderProcurement = {}) {
   };
 
   rows.forEach((row) => {
+    const lifecycleSuppressed = Boolean(row?.needSuppressedByLifecycle)
+      || isDisabledSkuStatus(row?.lifecycleStatus);
+    if (lifecycleSuppressed) {
+      summary.lifecycleSuppressedRows += 1;
+      return;
+    }
     const stock = numberOrZero(row?.inStock);
     const need7 = numberOrZero(row?.targetNeed7);
     const need14 = numberOrZero(row?.targetNeed14);
@@ -482,8 +489,8 @@ function buildOrderQuality(orderProcurement = {}) {
         dataset: 'order_procurement',
         platform: platformKey(row?.platform),
         place: row?.place || '',
-        articleKey: row?.article || '',
-        name: row?.name || row?.article || '',
+        articleKey: row?.articleKey || row?.article || '',
+        name: row?.name || row?.articleKey || row?.article || '',
         need7,
         need14,
         need28,
@@ -929,4 +936,9 @@ function main() {
   }, null, 2));
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = {
+  buildOrderQuality,
+  isDisabledSkuStatus
+};

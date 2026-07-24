@@ -191,12 +191,15 @@ function normalizeExistingYandexRows(payload, skuMap = new Map()) {
     .map((row) => {
       const articleKey = normalizeKey(row?.articleKey || row?.article || row?.sku);
       const sku = skuMap.get(articleKey) || null;
+      const lifecycle = lifecycleStatus(sku || {});
       const avgDaily = numberOrZero(row?.avgDaily);
       const inStock = numberOrZero(row?.inStock);
       const inTransit = numberOrZero(row?.inTransit);
       const inRequest = numberOrZero(row?.inRequest);
       const available = inStock + inTransit + inRequest;
       const safetyStock = numberOrZero(row?.safetyStock);
+      const rawNeed7 = projectedNeedRaw(avgDaily, available, 7, safetyStock);
+      const rawNeed14 = projectedNeedRaw(avgDaily, available, 14, safetyStock);
       const rawNeed28 = projectedNeedRaw(avgDaily, available, LEGACY_COMPAT_DAYS, safetyStock);
       const rawNeed30 = projectedNeedRaw(avgDaily, available, CANONICAL_ORDER_DAYS, safetyStock);
       return {
@@ -211,14 +214,22 @@ function normalizeExistingYandexRows(payload, skuMap = new Map()) {
         available,
         safetyStock,
         turnoverDays: turnoverDays(inStock, avgDaily),
+        sales7: projectedUnits(avgDaily, 7),
+        sales14: projectedUnits(avgDaily, 14),
         sales28: projectedUnits(avgDaily, LEGACY_COMPAT_DAYS),
         sales30: projectedUnits(avgDaily, CANONICAL_ORDER_DAYS),
+        rawNeed7,
+        rawNeed14,
         rawNeed28,
         rawNeed30,
-        targetNeed28: targetNeedFromRaw(rawNeed28),
-        targetNeed30: targetNeedFromRaw(rawNeed30),
+        targetNeed7: targetNeedFromRaw(rawNeed7, lifecycle.blocked),
+        targetNeed14: targetNeedFromRaw(rawNeed14, lifecycle.blocked),
+        targetNeed28: targetNeedFromRaw(rawNeed28, lifecycle.blocked),
+        targetNeed30: targetNeedFromRaw(rawNeed30, lifecycle.blocked),
         targetHorizonDays: CANONICAL_ORDER_DAYS,
-        needFormula: 'max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))'
+        needFormula: 'max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))',
+        lifecycleStatus: lifecycle.label,
+        needSuppressedByLifecycle: lifecycle.blocked
       };
     });
 }
@@ -330,4 +341,10 @@ function main() {
   }, null, 2));
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = {
+  lifecycleStatus,
+  normalizeExistingYandexRows,
+  targetNeedFromRaw
+};

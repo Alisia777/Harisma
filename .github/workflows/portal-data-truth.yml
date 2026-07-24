@@ -9,7 +9,11 @@ on:
       - 'portal-*.js'
       - 'index.html'
       - 'package.json'
+      - 'daria-prices*.csv'
+      - 'daria-prices*.tsv'
+      - 'exports/daria-prices.summary.json'
       - 'docs/PORTAL_DAILY_CLOSE_RUNBOOK.md'
+      - '.github/workflows/daria-prices.yml'
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
       - '.github/workflows/portal-designers-membership-sync.yml'
@@ -23,7 +27,11 @@ on:
       - 'portal-*.js'
       - 'index.html'
       - 'package.json'
+      - 'daria-prices*.csv'
+      - 'daria-prices*.tsv'
+      - 'exports/daria-prices.summary.json'
       - 'docs/PORTAL_DAILY_CLOSE_RUNBOOK.md'
+      - '.github/workflows/daria-prices.yml'
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
       - '.github/workflows/portal-designers-membership-sync.yml'
@@ -75,9 +83,12 @@ jobs:
           node scripts/portal-daily-close-preflight.selftest.js
           node scripts/portal-daily-close-preflight-summary.selftest.js
           node scripts/portal-daily-close-workflow.selftest.js
+          node scripts/portal-auto-refresh-workflow.selftest.js
           node scripts/portal-unified-daily-intake.selftest.js
           node scripts/portal-unified-daily-intake.js --contract-only --no-write
           node scripts/portal-smart-price-overlay-sync.selftest.js
+          node scripts/portal-yandex-market-price-sync.selftest.js
+          node scripts/portal-order-lifecycle.selftest.js
           node scripts/portal-sync-health-quarantine.selftest.js
           node scripts/portal-sync-health-price-generation.selftest.js
           node scripts/portal-dashboard-money-kpi-realdata.selftest.js

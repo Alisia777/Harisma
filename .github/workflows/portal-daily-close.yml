@@ -246,6 +246,8 @@ jobs:
         env:
           ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
           ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          ALTEA_YM_API_KEY: ${{ secrets.ALTEA_YM_API_KEY }}
+          ALTEA_YM_CAMPAIGN_ID: ${{ secrets.ALTEA_YM_CAMPAIGN_ID }}
           ALTEA_SMART_PRICE_SHEET_URL: ${{ secrets.ALTEA_SMART_PRICE_SHEET_URL || vars.ALTEA_SMART_PRICE_SHEET_URL }}
           ALTEA_SMART_PRICE_EXPORT_URL: ${{ secrets.ALTEA_SMART_PRICE_EXPORT_URL || vars.ALTEA_SMART_PRICE_EXPORT_URL }}
           ALTEA_SMART_PRICE_XLSX_URL: ${{ secrets.ALTEA_SMART_PRICE_XLSX_URL || vars.ALTEA_SMART_PRICE_XLSX_URL }}
@@ -275,6 +277,10 @@ jobs:
             fi
             SMART_PRICE_INPUT_ARGS=(--input-xlsx .portal-truth-output/price-sync/smart-price-workbook.xlsx)
           fi
+          node scripts/portal-yandex-market-price-sync.js \
+            --output-file .portal-truth-output/price-sync/yandex-market-prices.json \
+            --as-of-date '${{ steps.cutoff.outputs.value }}' \
+            --min-mapped-rows 10
           node scripts/build-sku-registry-meta.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/build-logistics-from-warehouse-overlay.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/portal-smart-price-overlay-sync.js sync \
@@ -283,6 +289,7 @@ jobs:
             --max-source-lag-days 3 \
             --max-platform-gap-days 3 \
             --min-latest-coverage-ratio 0.55 \
+            --api-price-file .portal-truth-output/price-sync/yandex-market-prices.json \
             "${SMART_PRICE_INPUT_ARGS[@]}"
           node scripts/build-order-procurement-layer.js
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data

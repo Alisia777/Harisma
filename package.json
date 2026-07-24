@@ -88,6 +88,7 @@
     "portal:prices-import-report": "node scripts/import-price-history-report.js",
     "portal:designers-membership-sync-test": "node scripts/sync-design-workspace-memberships.selftest.js",
     "portal:designers-invite-browser-test": "node scripts/portal-auth-invite-browser.selftest.js",
+    "portal:auth-macos-persistence-test": "node scripts/portal-auth-macos-persistence.selftest.js",
     "portal:designers-onboarding-test": "node scripts/provision-portal-designers.selftest.js",
     "portal:designers-file-storage-test": "node scripts/setup-design-attachment-storage.selftest.js",
     "portal:designers-task-import-test": "node scripts/import-design-tasks-to-workspace.selftest.js",

@@ -118,6 +118,7 @@
   var syncState = cache.dirty ? 'pending' : 'local';
   var syncMessage = cache.dirty ? 'Есть несинхронизированные изменения' : 'Сохранено на устройстве';
   var remoteLoadError = '';
+  var membershipCheckFailed = false;
   var toastTimer = 0;
 
   function html(value) {
@@ -936,7 +937,8 @@
     url.searchParams.set('limit', '1');
     var response = await fetchRemoteRequest(url.toString(), { headers: remoteHeaders(cfg) }, 'Проверка доступа заняла слишком много времени');
     if (response.status === 404) return { level: 'setup', message: 'Командная база ожидает настройки' };
-    if (!response.ok) return { level: 'none', message: response.status === 401 ? 'Сессия доступа истекла' : 'Не удалось проверить роль' };
+    if (response.status === 401 || response.status === 403) return { level: 'none', message: 'Сессия доступа истекла' };
+    if (!response.ok) throw new Error('Проверка роли вернула ' + response.status);
     var rows = await response.json();
     var level = rows && rows[0] && rows[0].access_level;
     if (level === 'editor') return { level: 'editor', message: 'Редактор командной базы' };
@@ -1047,11 +1049,17 @@
       var seed = results[0].status === 'fulfilled' ? results[0].value : null;
       var remote = results[1].status === 'fulfilled' ? results[1].value : null;
       var remoteRequestFailed = results[1].status === 'rejected';
+      var membershipRequestFailed = results[3].status === 'rejected';
+      membershipCheckFailed = membershipRequestFailed;
       remoteLoadError = remoteRequestFailed
         ? string(results[1].reason && results[1].reason.message) || 'Не удалось получить командные данные'
-        : '';
+        : (membershipRequestFailed
+          ? string(results[3].reason && results[3].reason.message) || 'Не удалось проверить права доступа'
+          : '');
       var indexed = results[2].status === 'fulfilled' ? results[2].value : null;
-      var membership = results[3].status === 'fulfilled' ? results[3].value : { level: 'none', message: 'Не удалось проверить права доступа' };
+      var membership = results[3].status === 'fulfilled'
+        ? results[3].value
+        : { level: 'viewer', message: 'Офлайн · показана сохранённая копия' };
       remoteHistory = results[4].status === 'fulfilled' ? (results[4].value || []) : [];
       localBackups = results[5].status === 'fulfilled' ? (results[5].value || []) : [];
       remoteAudit = results[6].status === 'fulfilled' ? (results[6].value || []) : [];
@@ -1098,8 +1106,8 @@
         syncState = remoteRequestFailed ? 'error' : (remote && remote.payload ? (cache.dirty ? 'pending' : 'ok') : 'pending');
         syncMessage = remoteRequestFailed ? remoteLoadError : (remote && remote.payload ? (cache.dirty ? 'Нужно отправить локальные изменения' : 'Командная база подключена · редактор') : 'Редактор · создаём общую базу');
       } else if (workspaceAccess === 'viewer') {
-        syncState = remoteRequestFailed ? 'error' : 'ok';
-        syncMessage = remoteRequestFailed ? remoteLoadError : 'Командная база · только просмотр';
+        syncState = (remoteRequestFailed || membershipRequestFailed) ? 'error' : 'ok';
+        syncMessage = membershipRequestFailed ? workspaceAccessMessage : (remoteRequestFailed ? remoteLoadError : 'Командная база · только просмотр');
       } else if (workspaceAccess === 'local') {
         syncState = 'local';
         syncMessage = 'Локальный режим';
@@ -1114,6 +1122,42 @@
       loadFinished = true;
       renderDesigners();
       if (cache.dirty && workspaceAccess === 'editor') scheduleSync(400);
+    }
+  }
+
+  async function refreshMembershipAccess() {
+    if (!membershipCheckFailed) return true;
+    try {
+      var membership = await fetchMembership();
+      membershipCheckFailed = false;
+      workspaceAccess = membership.level;
+      workspaceAccessMessage = membership.message;
+      if (workspaceAccess === 'editor' || workspaceAccess === 'viewer' || workspaceAccess === 'local') return true;
+      if (workspaceAccess === 'none') {
+        data = normalizeData(FALLBACK_DATA);
+        lastSyncedData = normalizeData(FALLBACK_DATA);
+        lastCommittedData = clone(data);
+        remoteHistory = [];
+        remoteAudit = [];
+        localBackups = [];
+        cache.dirty = false;
+        await purgeScopedLocalData();
+        await writeLocal(false);
+      }
+      syncState = 'error';
+      syncMessage = workspaceAccessMessage;
+      remoteLoadError = workspaceAccessMessage;
+      renderDesigners();
+      return false;
+    } catch (error) {
+      membershipCheckFailed = true;
+      workspaceAccess = 'viewer';
+      workspaceAccessMessage = 'Офлайн · показана сохранённая копия';
+      remoteLoadError = string(error && error.message) || 'Не удалось проверить права доступа';
+      syncState = 'error';
+      syncMessage = workspaceAccessMessage;
+      renderDesigners();
+      return false;
     }
   }
 
@@ -1140,6 +1184,7 @@
       renderDesigners();
       return false;
     }
+    if (membershipCheckFailed && !await refreshMembershipAccess()) return false;
     remoteLoadError = '';
     if (workspaceAccess === 'viewer') {
       syncState = 'pending';
@@ -2973,6 +3018,7 @@
         remoteHistoryCount: remoteHistory.length,
         remoteAuditCount: remoteAudit.length,
         remoteLoadError: remoteLoadError,
+        membershipCheckFailed: membershipCheckFailed,
         syncConflictCount: syncConflicts.length,
         localBackupCount: localBackups.length,
         storageScope: storageScope()

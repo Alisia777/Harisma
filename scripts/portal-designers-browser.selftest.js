@@ -47,6 +47,7 @@ async function installRemoteFixture(page, accessLevel, workspace) {
       if (!url.startsWith('https://supabase.test/')) return nativeFetch(input, options);
       window.__designRequests.push({ url, method: options.method || 'GET', body: options.body || '' });
       if (url.includes('/portal_design_workspace_members')) {
+        if (window.__designFailMembership) throw new TypeError('Failed to fetch membership');
         return new Response(JSON.stringify(level ? [{ access_level: level }] : []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       if (url.includes('/portal_design_workspace_history')) {
@@ -230,13 +231,26 @@ async function testViewerKeepsCacheDuringRemoteFailure(browser, baseUrl) {
   const offlinePage = await context.newPage();
   await offlinePage.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
   await installRemoteFixture(offlinePage, 'viewer', workspace);
-  await offlinePage.evaluate(() => { window.__designFailWorkspace = true; });
+  await offlinePage.evaluate(() => {
+    window.__designFailMembership = true;
+    window.__designFailWorkspace = true;
+  });
   const offlineErrors = await loadModule(offlinePage, baseUrl);
   await offlinePage.waitForSelector('[data-design-access="viewer"]');
   await offlinePage.waitForSelector('[data-design-project="cached-viewer-project"]');
   await offlinePage.waitForSelector('.design-ws-notice.is-error [data-design-sync]');
   const diagnostics = await offlinePage.evaluate(() => window.AlteaDesignWorkspace.diagnostics());
   assert.match(diagnostics.remoteLoadError, /503/, 'Remote failure must be reported in diagnostics');
+  assert.strictEqual(diagnostics.membershipCheckFailed, true, 'A membership timeout must remain distinguishable from a confirmed revocation');
+  assert.match(diagnostics.workspaceAccessMessage, /Офлайн/, 'A membership timeout must use the safe read-only fallback');
+  assert.strictEqual(await offlinePage.locator('[data-design-add-project]').count(), 0, 'Offline membership fallback must not grant write access');
+  await offlinePage.evaluate(() => {
+    window.__designFailMembership = false;
+    window.__designFailWorkspace = false;
+  });
+  await offlinePage.click('[data-design-sync]');
+  await offlinePage.waitForFunction(() => !window.AlteaDesignWorkspace.diagnostics().membershipCheckFailed);
+  assert.strictEqual((await offlinePage.evaluate(() => window.AlteaDesignWorkspace.diagnostics())).workspaceAccess, 'viewer', 'Retry must restore the confirmed membership');
   assert.strictEqual(offlineErrors.length, 0, offlineErrors.join('\n'));
   await context.close();
 }

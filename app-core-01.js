@@ -77,7 +77,7 @@
   controlFilters: {
     search: '',
     owner: 'all',
-    status: 'active',
+    status: 'all',
     type: 'all',
     priority: 'all',
     platform: 'all',

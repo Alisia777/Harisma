@@ -6,7 +6,7 @@
   window.__ALTEA_TASK_KANBAN_PRIMARY__ = true;
 
   const AUTO_TOMBSTONE_VERSION = '20260701-task-auto-tombstone-v1';
-  const VERSION = '20260709-task-owner-platform-fallback-v1';
+  const VERSION = '20260724-task-all-statuses-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
@@ -116,7 +116,7 @@
   const TASK_FILTER_DEFAULTS = {
     search: '',
     owner: 'all',
-    status: 'active',
+    status: 'all',
     type: 'all',
     priority: 'all',
     horizon: 'all',
@@ -197,6 +197,11 @@
   const TASK_FILTERS = window.__ALTEA_TASK_DESIGN_FILTERS__ && typeof window.__ALTEA_TASK_DESIGN_FILTERS__ === 'object'
     ? window.__ALTEA_TASK_DESIGN_FILTERS__
     : STATE_FILTERS;
+  const TASK_STATUS_SCOPE_VERSION = '20260724-all-statuses-v1';
+  if (TASK_FILTERS.__statusScopeVersion !== TASK_STATUS_SCOPE_VERSION) {
+    if (!TASK_FILTERS.status || TASK_FILTERS.status === 'active') TASK_FILTERS.status = 'all';
+    TASK_FILTERS.__statusScopeVersion = TASK_STATUS_SCOPE_VERSION;
+  }
   window.__ALTEA_TASK_DESIGN_FILTERS__ = TASK_FILTERS;
   try { appState().controlFilters = TASK_FILTERS; } catch (_) {}
   let taskExtraCache = null;
@@ -1403,7 +1408,7 @@
 
   function matchesFilters(task, filters, platform) {
     const lane = laneFor(task);
-    const status = normalizeText(filters.status || 'active');
+    const status = normalizeText(filters.status || 'all');
     if (status === 'active' && !isActive(task)) return false;
     if (status && status !== 'active' && status !== 'all') {
       if (status === 'waiting') {
@@ -1533,7 +1538,7 @@
             <input type="search" data-task-filter="search" value="${escapeHtml(filters.search || '')}" placeholder="SKU, задача, owner, следующий шаг...">
           </label>
           ${selectHtml('owner', 'Owner', selectedOwner, owners)}
-          ${selectHtml('status', 'Статус', filters.status || 'active', STATUS_OPTIONS)}
+          ${selectHtml('status', 'Статус', filters.status || 'all', STATUS_OPTIONS)}
           ${selectHtml('type', 'Тип', filters.type || 'all', TYPE_OPTIONS)}
           ${selectHtml('priority', 'Приоритет', filters.priority || 'all', PRIORITY_OPTIONS)}
           ${selectHtml('horizon', 'Горизонт', filters.horizon || 'all', HORIZON_OPTIONS)}

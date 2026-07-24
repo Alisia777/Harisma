@@ -32,6 +32,7 @@
   var LOCAL_BACKUP_INTERVAL_MS = 5 * 60 * 1000;
   var REMOTE_REQUEST_TIMEOUT_MS = 12000;
   var LOCAL_READ_TIMEOUT_MS = 6000;
+  var OFFLINE_EDITOR_GRACE_MS = 7 * 24 * 60 * 60 * 1000;
   var SEED_PATH = 'data/design_workspace.json';
   var SCHEMA = 'altea-design-workspace-v1';
 
@@ -118,6 +119,9 @@
   var syncState = cache.dirty ? 'pending' : 'local';
   var syncMessage = cache.dirty ? 'Есть несинхронизированные изменения' : 'Сохранено на устройстве';
   var remoteLoadError = '';
+  var confirmedAccessLevel = normalizeConfirmedAccess(cache.accessLevel);
+  var confirmedAccessCheckedAt = string(cache.accessCheckedAt);
+  var offlineEditMode = false;
   var membershipCheckFailed = false;
   var toastTimer = 0;
 
@@ -340,6 +344,19 @@
     };
   }
 
+  function normalizeConfirmedAccess(value) {
+    var level = string(value).toLowerCase();
+    return level === 'editor' || level === 'viewer' ? level : '';
+  }
+
+  function accessCacheFields(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    return {
+      accessLevel: normalizeConfirmedAccess(raw.accessLevel),
+      accessCheckedAt: string(raw.accessCheckedAt)
+    };
+  }
+
   function readLocal() {
     try {
       var raw = localStorage.getItem(scopedStorageKey());
@@ -352,8 +369,22 @@
       }
       if (!raw) return { data: clone(FALLBACK_DATA), dirty: false, lastSyncedData: null };
       var parsed = JSON.parse(raw);
-      if (parsed && parsed.data) return { data: parsed.data, dirty: parsed.dirty === true, lastSyncedData: parsed.lastSyncedData || null };
-      if (parsed && parsed.indexedDb) return { data: clone(FALLBACK_DATA), dirty: parsed.dirty === true, indexedDb: true, lastSyncedData: null };
+      var access = accessCacheFields(parsed);
+      if (parsed && parsed.data) return {
+        data: parsed.data,
+        dirty: parsed.dirty === true,
+        lastSyncedData: parsed.lastSyncedData || null,
+        accessLevel: access.accessLevel,
+        accessCheckedAt: access.accessCheckedAt
+      };
+      if (parsed && parsed.indexedDb) return {
+        data: clone(FALLBACK_DATA),
+        dirty: parsed.dirty === true,
+        indexedDb: true,
+        lastSyncedData: null,
+        accessLevel: access.accessLevel,
+        accessCheckedAt: access.accessCheckedAt
+      };
       return { data: parsed, dirty: false, lastSyncedData: null };
     } catch (_) {
       return { data: clone(FALLBACK_DATA), dirty: false, lastSyncedData: null };
@@ -545,13 +576,25 @@
   }
 
   function writeLocal(dirty) {
-    cache = { data: data, dirty: dirty === true, lastSyncedData: lastSyncedData };
+    cache = {
+      data: data,
+      dirty: dirty === true,
+      lastSyncedData: lastSyncedData,
+      accessLevel: confirmedAccessLevel,
+      accessCheckedAt: confirmedAccessCheckedAt
+    };
     var snapshot = clone(cache);
     var serialized = JSON.stringify(snapshot);
     var localFallbackSaved = false;
     try {
       if (serialized.length <= LOCAL_STORAGE_SOFT_LIMIT) localStorage.setItem(scopedStorageKey(), serialized);
-      else localStorage.setItem(scopedStorageKey(), JSON.stringify({ indexedDb: true, dirty: dirty === true, updatedAt: data.updatedAt }));
+      else localStorage.setItem(scopedStorageKey(), JSON.stringify({
+        indexedDb: true,
+        dirty: dirty === true,
+        updatedAt: data.updatedAt,
+        accessLevel: confirmedAccessLevel,
+        accessCheckedAt: confirmedAccessCheckedAt
+      }));
       localFallbackSaved = true;
     } catch (_) { localFallbackSaved = false; }
     localPersistState = 'pending';
@@ -707,16 +750,53 @@
       var remoteChanged = !sameValue(remoteItem, baseItem);
       var localChanged = !sameValue(localItem, baseItem);
       var conflict = remoteChanged && localChanged && !sameValue(remoteItem, localItem);
-      if (conflict) {
-        conflicts.push({
-          entityType: entityType,
-          entityId: id,
-          title: string((localItem && localItem.title) || (remoteItem && remoteItem.title) || id)
+      var localChoice;
+      var remoteChoice;
+      if (conflict && baseItem && remoteItem && localItem) {
+        var localMerged = {};
+        var remoteMerged = {};
+        var conflictFields = [];
+        var keys = new Set(Object.keys(baseItem).concat(Object.keys(remoteItem), Object.keys(localItem)));
+        keys.forEach(function (key) {
+          if (key === 'id' || key === 'updatedAt') return;
+          var baseValue = baseItem[key];
+          var remoteValue = remoteItem[key];
+          var localValue = localItem[key];
+          var remoteFieldChanged = !sameValue(remoteValue, baseValue);
+          var localFieldChanged = !sameValue(localValue, baseValue);
+          var fieldConflict = remoteFieldChanged && localFieldChanged && !sameValue(remoteValue, localValue);
+          var safeValue = localFieldChanged ? localValue : remoteValue;
+          if (fieldConflict) conflictFields.push(key);
+          if ((fieldConflict ? localValue : safeValue) !== undefined) localMerged[key] = clone(fieldConflict ? localValue : safeValue);
+          if ((fieldConflict ? remoteValue : safeValue) !== undefined) remoteMerged[key] = clone(fieldConflict ? remoteValue : safeValue);
         });
+        localMerged.id = id;
+        remoteMerged.id = id;
+        localMerged.updatedAt = timestamp(localItem.updatedAt) >= timestamp(remoteItem.updatedAt) ? localItem.updatedAt : remoteItem.updatedAt;
+        remoteMerged.updatedAt = localMerged.updatedAt;
+        localChoice = normalizer(localMerged);
+        remoteChoice = normalizer(remoteMerged);
+        if (conflictFields.length) {
+          conflicts.push({
+            entityType: entityType,
+            entityId: id,
+            title: string((localItem && localItem.title) || (remoteItem && remoteItem.title) || id),
+            fields: conflictFields
+          });
+        }
+      } else {
+        var safeItem = localChanged ? localItem : remoteItem;
+        localChoice = conflict ? localItem : safeItem;
+        remoteChoice = conflict ? remoteItem : safeItem;
+        if (conflict) {
+          conflicts.push({
+            entityType: entityType,
+            entityId: id,
+            title: string((localItem && localItem.title) || (remoteItem && remoteItem.title) || id),
+            fields: ['entity']
+          });
+        }
       }
-      var safeItem = localChanged ? localItem : remoteItem;
-      var localChoice = conflict ? localItem : safeItem;
-      var remoteChoice = conflict ? remoteItem : safeItem;
       if (localChoice) localPreferred.push(localChoice);
       if (remoteChoice) remotePreferred.push(remoteChoice);
     });
@@ -928,6 +1008,39 @@
     }
   }
 
+  function hydrateConfirmedAccess(record) {
+    var access = accessCacheFields(record);
+    if (!access.accessLevel) return;
+    if (!confirmedAccessLevel || timestamp(access.accessCheckedAt) > timestamp(confirmedAccessCheckedAt)) {
+      confirmedAccessLevel = access.accessLevel;
+      confirmedAccessCheckedAt = access.accessCheckedAt;
+    }
+  }
+
+  function rememberConfirmedMembership(membership) {
+    var level = normalizeConfirmedAccess(membership && membership.level);
+    if (!level) {
+      confirmedAccessLevel = '';
+      confirmedAccessCheckedAt = '';
+      return;
+    }
+    confirmedAccessLevel = level;
+    confirmedAccessCheckedAt = nowIso();
+  }
+
+  function offlineMembership() {
+    var checkedAt = timestamp(confirmedAccessCheckedAt);
+    var accessAge = Date.now() - checkedAt;
+    var editorIsFresh = confirmedAccessLevel === 'editor'
+      && checkedAt > 0
+      && accessAge >= -5 * 60 * 1000
+      && accessAge <= OFFLINE_EDITOR_GRACE_MS;
+    offlineEditMode = editorIsFresh;
+    return editorIsFresh
+      ? { level: 'editor', message: 'Офлайн · правки сохраняются на устройстве' }
+      : { level: 'viewer', message: 'Офлайн · показана сохранённая копия' };
+  }
+
   async function fetchMembership() {
     var cfg = remoteConfig();
     if (!cfg || !cfg.token || typeof fetch !== 'function') return { level: 'local', message: 'Локальный режим' };
@@ -1057,9 +1170,15 @@
           ? string(results[3].reason && results[3].reason.message) || 'Не удалось проверить права доступа'
           : '');
       var indexed = results[2].status === 'fulfilled' ? results[2].value : null;
-      var membership = results[3].status === 'fulfilled'
-        ? results[3].value
-        : { level: 'viewer', message: 'Офлайн · показана сохранённая копия' };
+      hydrateConfirmedAccess(indexed);
+      var membership;
+      if (results[3].status === 'fulfilled') {
+        membership = results[3].value;
+        offlineEditMode = false;
+        rememberConfirmedMembership(membership);
+      } else {
+        membership = offlineMembership();
+      }
       remoteHistory = results[4].status === 'fulfilled' ? (results[4].value || []) : [];
       localBackups = results[5].status === 'fulfilled' ? (results[5].value || []) : [];
       remoteAudit = results[6].status === 'fulfilled' ? (results[6].value || []) : [];
@@ -1103,8 +1222,8 @@
       if (localBackups[0]) lastBackupAt = timestamp(localBackups[0].createdAt);
       writeLocal(cache.dirty);
       if (workspaceAccess === 'editor') {
-        syncState = remoteRequestFailed ? 'error' : (remote && remote.payload ? (cache.dirty ? 'pending' : 'ok') : 'pending');
-        syncMessage = remoteRequestFailed ? remoteLoadError : (remote && remote.payload ? (cache.dirty ? 'Нужно отправить локальные изменения' : 'Командная база подключена · редактор') : 'Редактор · создаём общую базу');
+        syncState = membershipRequestFailed ? 'local' : (remoteRequestFailed ? 'error' : (remote && remote.payload ? (cache.dirty ? 'pending' : 'ok') : 'pending'));
+        syncMessage = membershipRequestFailed ? workspaceAccessMessage : (remoteRequestFailed ? remoteLoadError : (remote && remote.payload ? (cache.dirty ? 'Нужно отправить локальные изменения' : 'Командная база подключена · редактор') : 'Редактор · создаём общую базу'));
       } else if (workspaceAccess === 'viewer') {
         syncState = (remoteRequestFailed || membershipRequestFailed) ? 'error' : 'ok';
         syncMessage = membershipRequestFailed ? workspaceAccessMessage : (remoteRequestFailed ? remoteLoadError : 'Командная база · только просмотр');
@@ -1130,10 +1249,29 @@
     try {
       var membership = await fetchMembership();
       membershipCheckFailed = false;
+      offlineEditMode = false;
+      rememberConfirmedMembership(membership);
       workspaceAccess = membership.level;
       workspaceAccessMessage = membership.message;
-      if (workspaceAccess === 'editor' || workspaceAccess === 'viewer' || workspaceAccess === 'local') return true;
+      if (workspaceAccess === 'editor' || workspaceAccess === 'local') return true;
+      if (workspaceAccess === 'viewer' && cache.dirty) {
+        syncState = 'error';
+        syncMessage = 'Офлайн-правки сохранены, но роль редактора не подтверждена';
+        remoteLoadError = syncMessage;
+        await writeLocal(true);
+        renderDesigners();
+        return false;
+      }
+      if (workspaceAccess === 'viewer') return true;
       if (workspaceAccess === 'none') {
+        if (cache.dirty) {
+          syncState = 'error';
+          syncMessage = 'Офлайн-правки не отправлены: доступ редактора отозван';
+          remoteLoadError = syncMessage;
+          await writeLocal(true);
+          renderDesigners();
+          return false;
+        }
         data = normalizeData(FALLBACK_DATA);
         lastSyncedData = normalizeData(FALLBACK_DATA);
         lastCommittedData = clone(data);
@@ -1151,10 +1289,11 @@
       return false;
     } catch (error) {
       membershipCheckFailed = true;
-      workspaceAccess = 'viewer';
-      workspaceAccessMessage = 'Офлайн · показана сохранённая копия';
+      var cachedMembership = offlineMembership();
+      workspaceAccess = cachedMembership.level;
+      workspaceAccessMessage = cachedMembership.message;
       remoteLoadError = string(error && error.message) || 'Не удалось проверить права доступа';
-      syncState = 'error';
+      syncState = workspaceAccess === 'editor' ? 'local' : 'error';
       syncMessage = workspaceAccessMessage;
       renderDesigners();
       return false;
@@ -1166,6 +1305,12 @@
     if (workspaceAccess !== 'editor') {
       syncState = workspaceAccess === 'local' ? 'local' : (workspaceAccess === 'viewer' ? 'ok' : 'error');
       syncMessage = workspaceAccess === 'local' ? 'Сохранено на устройстве' : workspaceAccessMessage;
+      return;
+    }
+    if (membershipCheckFailed || offlineEditMode) {
+      syncState = localPersistState === 'error' ? 'error' : 'local';
+      syncMessage = localPersistState === 'error' ? 'Не удалось сохранить на устройстве' : 'Офлайн · изменения сохранены на устройстве';
+      renderDesigners();
       return;
     }
     syncState = remoteConfig() && remoteConfig().token ? 'pending' : (localPersistState === 'error' ? 'error' : 'local');
@@ -1206,6 +1351,8 @@
         renderDesigners();
         return true;
       } catch (viewerError) {
+        membershipCheckFailed = true;
+        offlineEditMode = false;
         syncState = 'error';
         syncMessage = viewerError && viewerError.message ? viewerError.message : 'Обновление недоступно';
         remoteLoadError = syncMessage;
@@ -1289,8 +1436,14 @@
       return true;
     } catch (error) {
       writeLocal(true);
-      syncState = 'error';
-      syncMessage = 'Сохранено локально · ' + (error && error.message ? error.message : 'синк недоступен');
+      membershipCheckFailed = true;
+      var cachedAccess = offlineMembership();
+      workspaceAccess = cachedAccess.level;
+      workspaceAccessMessage = cachedAccess.message;
+      syncState = workspaceAccess === 'editor' ? 'local' : 'error';
+      syncMessage = workspaceAccess === 'editor'
+        ? 'Офлайн · изменения сохранены на устройстве'
+        : ('Сохранено локально · ' + (error && error.message ? error.message : 'синк недоступен'));
       remoteLoadError = error && error.message ? error.message : 'Синхронизация недоступна';
       renderDesigners();
       return false;
@@ -2112,6 +2265,22 @@
       '<button type="button" class="design-ws-btn" data-design-sync>' + (canEdit() ? 'Синхронизировать' : 'Обновить') + '</button></div>';
   }
 
+  function conflictFieldLabel(field) {
+    var labels = {
+      title: 'название',
+      status: 'статус / колонка',
+      owner: 'ответственный',
+      dueDate: 'срок',
+      priority: 'приоритет',
+      brief: 'бриф',
+      attachments: 'вложения',
+      coverImageUrl: 'обложка',
+      archived: 'архив',
+      entity: 'карточка целиком'
+    };
+    return labels[field] || field;
+  }
+
   function renderDesigners(rootId) {
     var root = document.getElementById(rootId || ROOT_ID);
     if (!root) return null;
@@ -2128,8 +2297,11 @@
     var remoteNotice = remoteLoadError && (workspaceAccess === 'viewer' || workspaceAccess === 'editor')
       ? '<div class="design-ws-notice is-error"><strong>Командные данные временно не загрузились.</strong> Показана последняя сохранённая копия. Проверьте интернет и нажмите «Обновить».<div class="design-ws-head-actions"><button type="button" class="design-ws-btn primary" data-design-sync>Повторить загрузку</button></div></div>'
       : '';
+    var conflictDetails = syncConflicts.slice(0, 5).map(function (conflict) {
+      return html(conflict.title) + ' — ' + html((conflict.fields || ['entity']).map(conflictFieldLabel).join(', '));
+    }).join('; ');
     var conflictNotice = syncConflicts.length && pendingConflict
-      ? '<div class="design-ws-notice is-error"><strong>Одновременно изменены одни и те же материалы: ' + syncConflicts.length + '.</strong> Локальная копия сохранена. Выберите версию для конфликтующих карточек.<div class="design-ws-head-actions"><button type="button" class="design-ws-btn" data-design-conflict-remote>Командная версия</button><button type="button" class="design-ws-btn primary" data-design-conflict-local>Локальная версия</button></div></div>'
+      ? '<div class="design-ws-notice is-error"><strong>Конфликтующие карточки: ' + syncConflicts.length + '.</strong> Совместимые правки уже объединены; выбор применяется только к спорным полям. <small>' + conflictDetails + '</small><div class="design-ws-head-actions"><button type="button" class="design-ws-btn" data-design-conflict-remote>Спорные поля — командные</button><button type="button" class="design-ws-btn primary" data-design-conflict-local>Спорные поля — локальные</button></div></div>'
       : '';
     var renderedSyncLabel = syncStatusLabel();
     root.innerHTML = '<div class="design-ws" data-design-workspace data-design-access="' + html(workspaceAccess) + '" data-design-readonly="' + (!canEdit()) + '">' +
@@ -2761,11 +2933,11 @@
         writeUi(); renderDesigners(); return;
       }
       if (event.target.closest('[data-design-conflict-remote]')) {
-        if (window.confirm('Принять командную версию конфликтующих материалов? Локальная копия уже сохранена.')) resolveSyncConflict(false);
+        if (window.confirm('Принять командные значения только для спорных полей? Локальная копия уже сохранена.')) resolveSyncConflict(false);
         return;
       }
       if (event.target.closest('[data-design-conflict-local]')) {
-        if (window.confirm('Сохранить локальную версию конфликтующих материалов поверх командной? Неконфликтующие изменения коллег сохранятся.')) resolveSyncConflict(true);
+        if (window.confirm('Применить локальные значения только к спорным полям? Остальные изменения коллег сохранятся.')) resolveSyncConflict(true);
         return;
       }
       var restoreLocal = event.target.closest('[data-design-restore-local]');
@@ -3012,6 +3184,7 @@
       return {
         localPersistState: localPersistState,
         localPersistError: localPersistError,
+        cacheDirty: cache.dirty === true,
         remoteRevision: remoteRevision,
         workspaceAccess: workspaceAccess,
         workspaceAccessMessage: workspaceAccessMessage,
@@ -3019,7 +3192,13 @@
         remoteAuditCount: remoteAudit.length,
         remoteLoadError: remoteLoadError,
         membershipCheckFailed: membershipCheckFailed,
+        offlineEditMode: offlineEditMode,
+        confirmedAccessLevel: confirmedAccessLevel,
+        confirmedAccessCheckedAt: confirmedAccessCheckedAt,
         syncConflictCount: syncConflicts.length,
+        syncConflictFields: syncConflicts.reduce(function (fields, conflict) {
+          return fields.concat(conflict.fields || []);
+        }, []),
         localBackupCount: localBackups.length,
         storageScope: storageScope()
       };
@@ -3035,5 +3214,18 @@
   }
   window.addEventListener('altea:viewchange', function (event) {
     if (event && event.detail && event.detail.view === 'designers') renderDesigners();
+  });
+  window.addEventListener('offline', function () {
+    if (workspaceAccess !== 'editor') return;
+    membershipCheckFailed = true;
+    var cachedMembership = offlineMembership();
+    workspaceAccess = cachedMembership.level;
+    workspaceAccessMessage = cachedMembership.message;
+    syncState = workspaceAccess === 'editor' ? 'local' : 'error';
+    syncMessage = workspaceAccessMessage;
+    renderDesigners();
+  });
+  window.addEventListener('online', function () {
+    if (cache.dirty && (membershipCheckFailed || offlineEditMode)) syncRemote(true);
   });
 })();

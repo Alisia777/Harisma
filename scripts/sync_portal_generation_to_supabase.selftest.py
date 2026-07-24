@@ -7,7 +7,13 @@ from pathlib import Path
 from urllib import parse
 
 import sync_portal_generation_to_supabase as publisher
-from sync_portal_generation_to_supabase import build_rows, expected_base_keys, row_batches, stale_part_keys
+from sync_portal_generation_to_supabase import (
+    build_rows,
+    cleanup_stale_parts,
+    expected_base_keys,
+    row_batches,
+    stale_part_keys,
+)
 
 
 def write_json(path: Path, payload: object) -> None:
@@ -108,6 +114,15 @@ publisher.rest_request = fake_rest_request
 try:
     existing = publisher.fetch_existing_part_keys("https://example.supabase.co", "secret", "snapshots", "Алтея", ["logistics"], 90)
     assert existing == ["logistics__part__0001", "logistics__part__0003"]
+    get_calls = [call for call in calls if call["method"] == "GET"]
+    assert len(get_calls) == 1
+    get_query = parse.parse_qs(parse.urlparse(get_calls[0]["url"]).query)
+    assert get_query["brand"] == ["eq.Алтея"]
+    assert get_query["order"] == ["snapshot_key.asc"]
+    assert get_query["limit"] == ["1000"]
+    assert "snapshot_key" not in get_query
+    assert get_calls[0]["attempts"] == 2
+    assert get_calls[0]["timeout_seconds"] == 10
     deleted = publisher.delete_snapshot_keys("https://example.supabase.co", "secret", "snapshots", "Алтея", ["logistics__part__0003"], 90)
     assert deleted == 1
     delete_calls = [call for call in calls if call["method"] == "DELETE"]
@@ -119,6 +134,27 @@ try:
     assert delete_calls[0]["extra_headers"] == {"Prefer": "return=minimal"}
     assert delete_calls[0]["attempts"] == 5
     assert delete_calls[0]["timeout_seconds"] == 90
+finally:
+    publisher.rest_request = original_rest_request
+
+
+def failing_cleanup_request(*_args, **_kwargs):
+    raise TimeoutError("cleanup lookup timed out")
+
+
+publisher.rest_request = failing_cleanup_request
+try:
+    cleanup = cleanup_stale_parts(
+        "https://example.supabase.co",
+        "secret",
+        "snapshots",
+        "Алтея",
+        {"logistics": "root", "logistics__part__0001": "part-1"},
+        90,
+    )
+    assert cleanup["status"] == "warning"
+    assert cleanup["stalePartRowsDeleted"] == 0
+    assert "cleanup lookup timed out" in cleanup["deferredReason"]
 finally:
     publisher.rest_request = original_rest_request
 

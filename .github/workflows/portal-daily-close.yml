@@ -277,7 +277,13 @@ jobs:
           fi
           node scripts/build-sku-registry-meta.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/build-logistics-from-warehouse-overlay.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
-          node scripts/portal-smart-price-overlay-sync.js sync --output-dir .portal-truth-output/price-sync "${SMART_PRICE_INPUT_ARGS[@]}"
+          node scripts/portal-smart-price-overlay-sync.js sync \
+            --output-dir .portal-truth-output/price-sync \
+            --expected-date '${{ steps.cutoff.outputs.value }}' \
+            --max-source-lag-days 3 \
+            --max-platform-gap-days 3 \
+            --min-latest-coverage-ratio 0.55 \
+            "${SMART_PRICE_INPUT_ARGS[@]}"
           node scripts/build-order-procurement-layer.js
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
           node scripts/build-wb-owner-audit-from-skus.js --input-dir data --base-data-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
@@ -296,6 +302,11 @@ jobs:
           node scripts/build-control-auto-task-sources.js --input-dir data --output-dir data
           node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --expected-date '${{ steps.cutoff.outputs.value }}'
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
+          node scripts/portal-unified-daily-intake.js \
+            --data-dir data \
+            --output-dir .portal-truth-output \
+            --expected-date '${{ steps.cutoff.outputs.value }}' \
+            --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --expected-date '${{ steps.cutoff.outputs.value }}'
 
       - name: D-1 and numeric gates

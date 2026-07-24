@@ -910,7 +910,7 @@
     repricer: ["repricer", "prices", "smart_price_workbench", "smart_price_overlay", "price_workbench_support"],
     order: ["logistics", "order_procurement", "order_procurement_wb", "order_procurement_ozon", "order_procurement_ym", "warehouse_stock_overlay"],
     "ads-funnel": ["ads_summary", "smart_price_overlay", "iu_drr_summary"],
-    "oos-control": ["oos_control", "order_procurement", "portal_sync_health", "portal_data_quality", "smart_price_overlay"],
+    "oos-control": ["oos_control", "portal_sync_health", "portal_data_quality"],
     "sku-plan-fact": ["smart_price_workbench", "smart_price_overlay", "price_workbench_support", "ads_summary", "iu_drr_summary", "portal_data_quality", "sku_aliases", "sku_alias_ignore", "sku_alias_audit", "sku_matrix"],
     "iu-drr": ["iu_drr_summary", "ads_summary", "wb_feedbacks_summary", "wb_substitution_traffic"],
     "wb-rating": ["wb_feedbacks_summary", "iu_drr_summary"],
@@ -937,6 +937,11 @@
       var controlKeys = VIEW_REFRESH_KEYS.control.slice();
       (options && Array.isArray(options.keys) ? options.keys : []).forEach(function (key) { pushUniqueKey(controlKeys, key); });
       return controlKeys;
+    }
+    if (view === "oos-control") {
+      var oosKeys = VIEW_REFRESH_KEYS["oos-control"].slice();
+      (options && Array.isArray(options.keys) ? options.keys : []).forEach(function (key) { pushUniqueKey(oosKeys, key); });
+      return oosKeys;
     }
     if (typeof location !== "undefined" && new URLSearchParams(location.search || "").has("portal-refresh")) return null;
     var keys = LIGHT_REFRESH_KEYS.slice();

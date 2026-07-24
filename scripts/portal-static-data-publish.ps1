@@ -231,7 +231,7 @@ $resolvedSourceDir = Resolve-RepoPath -PathValue $SourceDir -DefaultValue ".alte
 $resolvedDeployDir = Resolve-RepoPath -PathValue $DeployDir -DefaultValue ".codex-rollout-main"
 $deployDataDir = Join-Path $resolvedDeployDir "data"
 $gitExe = Resolve-GitPath -RequestedGitPath $GitPath
-$manifestPath = Join-Path $repoRoot "scripts\portal-layer-manifest.json"
+$manifestPath = Join-Path $repoRoot "scripts\portal-truth-manifest.json"
 $script:StaticPushAttempted = $false
 $script:LiveHealthVerified = $null
 
@@ -255,25 +255,28 @@ $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 
 $publishMap = [ordered]@{}
 $requiredSourceFiles = @{}
-foreach ($layer in @($manifest.layers)) {
-  if ($false -eq [bool]$layer.publish) {
+foreach ($source in @($manifest.sources)) {
+  if ($null -ne $source.snapshot -and $false -eq [bool]$source.snapshot) {
     continue
   }
-  $sourceFile = [string]$layer.sourceFile
+  $sourceFile = [string]$source.file
   if ([string]::IsNullOrWhiteSpace($sourceFile)) {
-    $sourceFile = [string]$layer.file
+    throw "Source $($source.key) has no file in portal-truth-manifest.json"
   }
-  if ([string]::IsNullOrWhiteSpace($sourceFile)) {
-    $sourceFile = "$($layer.name).json"
-  }
-  $deployFile = [string]$layer.file
-  if ([string]::IsNullOrWhiteSpace($deployFile)) {
-    $deployFile = $sourceFile
-  }
-  $publishMap[$sourceFile] = $deployFile
-  if ([bool]$layer.required) {
+  $publishMap[$sourceFile] = $sourceFile
+  if ([bool]$source.required) {
     $requiredSourceFiles[$sourceFile] = $true
   }
+}
+
+@(
+  "portal_daily_intake.json",
+  "portal_sync_health.json",
+  "portal_daily_guard.json",
+  "portal_layer_freshness.json"
+) | ForEach-Object {
+  $publishMap[$_] = $_
+  $requiredSourceFiles[$_] = $true
 }
 
 $copied = @()
@@ -283,6 +286,12 @@ $olderSkipped = @()
 
 foreach ($entry in $publishMap.GetEnumerator()) {
   $sourcePath = Join-Path $resolvedSourceDir $entry.Key
+  if (-not (Test-Path -LiteralPath $sourcePath)) {
+    $baseSourcePath = Join-Path (Join-Path $repoRoot "data") $entry.Key
+    if (Test-Path -LiteralPath $baseSourcePath) {
+      $sourcePath = $baseSourcePath
+    }
+  }
   $destPath = Join-Path $deployDataDir $entry.Value
   if (-not (Test-Path -LiteralPath $sourcePath)) {
     $missing += $entry.Key

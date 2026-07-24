@@ -22,6 +22,11 @@ const skus = [{
 const lookup = buildSkuLookup(skus);
 
 assert.strictEqual(lookup.get(normalizeKey('test_sku')), skus[0]);
+assert.notStrictEqual(
+  normalizeKey('test_sku'),
+  normalizeKey('test_sku_'),
+  'Завершающий underscore различает реальные SKU и не должен схлопываться'
+);
 assert.strictEqual(skuOwnerForPlatform(skus[0], 'wb'), WB_OWNER);
 assert.strictEqual(skuOwnerForPlatform(skus[0], 'ozon'), DEFAULT_OWNER);
 

@@ -6,10 +6,16 @@
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
   const SNAPSHOT_KEYS = [
     'dashboard',
+    'company_plan',
     'skus',
     'sku_registry_meta',
+    'seed_comments',
+    'launches',
+    'meetings',
+    'documents',
     'platform_trends',
     'iu_plan',
+    'loyalty_system',
     'ads_summary',
     'control_auto_task_sources',
     'iu_drr_summary',
@@ -17,6 +23,7 @@
     'wb_substitution_traffic_history',
     'platform_plan',
     'portal_sync_health',
+    'portal_daily_intake',
     'portal_data_quarantine',
     'portal_data_quality',
     'sku_aliases',
@@ -42,17 +49,24 @@
   ];
   const BOOT_SNAPSHOT_KEYS = [
     'dashboard',
+    'company_plan',
     'skus',
     'sku_registry_meta',
+    'seed_comments',
+    'launches',
+    'meetings',
+    'documents',
     'platform_trends',
     'platform_plan',
     'iu_plan',
+    'loyalty_system',
     'ads_summary',
     'iu_drr_summary',
     'wb_feedbacks_summary',
     'wb_substitution_traffic',
     'wb_substitution_traffic_history',
     'portal_sync_health',
+    'portal_daily_intake',
     'portal_data_quarantine',
     'portal_data_quality',
     'sku_aliases',
@@ -81,6 +95,7 @@
       'skus',
       'sku_registry_meta',
       'portal_sync_health',
+      'portal_daily_intake',
       'portal_data_quarantine',
       'portal_data_quality',
       'sku_aliases',
@@ -96,7 +111,7 @@
     repricer: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
     order: ['logistics', 'order_procurement', 'order_procurement_wb', 'order_procurement_ozon', 'order_procurement_ym', 'warehouse_stock_overlay'],
     'ads-funnel': ['ads_summary', 'smart_price_overlay', 'iu_drr_summary'],
-    'oos-control': ['oos_control', 'order_procurement', 'portal_sync_health', 'portal_data_quality', 'smart_price_overlay'],
+    'oos-control': ['oos_control', 'portal_sync_health', 'portal_daily_intake', 'portal_data_quality'],
     'sku-plan-fact': ['smart_price_workbench', 'smart_price_overlay', 'price_workbench_support', 'ads_summary', 'iu_drr_summary', 'portal_data_quality', 'sku_aliases', 'sku_alias_ignore', 'sku_alias_audit', 'sku_matrix'],
     'iu-drr': ['iu_drr_summary', 'ads_summary', 'wb_feedbacks_summary', 'wb_substitution_traffic'],
     'wb-rating': ['wb_feedbacks_summary', 'iu_drr_summary'],
@@ -107,10 +122,16 @@
   const AUTO_REFRESH_MIN_GAP_MS = 60 * 1000;
   const SNAPSHOT_TO_STATE = {
     dashboard: 'dashboard',
+    company_plan: 'companyPlan',
     skus: 'skus',
     sku_registry_meta: 'skuRegistryMeta',
+    seed_comments: 'seed',
+    launches: 'launches',
+    meetings: 'meetings',
+    documents: 'documents',
     platform_trends: 'platformTrends',
     iu_plan: 'iuPlan',
+    loyalty_system: 'loyaltySystem',
     logistics: 'logistics',
     ads_summary: 'adsSummary',
     control_auto_task_sources: 'controlAutoTaskSources',
@@ -124,6 +145,7 @@
     smart_price_overlay: 'smartPriceOverlay',
     price_workbench_support: 'priceWorkbenchSupport',
     portal_sync_health: 'syncHealth',
+    portal_daily_intake: 'portalDailyIntake',
     portal_data_quarantine: 'portalDataQuarantine',
     portal_data_quality: 'portalDataQuality',
     sku_aliases: 'skuAliases',
@@ -181,6 +203,14 @@
     if (options?.forceFull || options?.forceAll || options?.full) return SNAPSHOT_KEYS.slice();
     if (view === 'control') {
       const keys = VIEW_SNAPSHOT_KEYS.control.slice();
+      for (const key of options?.keys || []) {
+        const clean = String(key || '').trim();
+        if (clean && SNAPSHOT_KEYS.includes(clean) && !keys.includes(clean)) keys.push(clean);
+      }
+      return keys;
+    }
+    if (view === 'oos-control') {
+      const keys = VIEW_SNAPSHOT_KEYS['oos-control'].slice();
       for (const key of options?.keys || []) {
         const clean = String(key || '').trim();
         if (clean && SNAPSHOT_KEYS.includes(clean) && !keys.includes(clean)) keys.push(clean);

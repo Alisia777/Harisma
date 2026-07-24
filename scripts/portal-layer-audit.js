@@ -79,10 +79,29 @@ function resolveOptions(args) {
     baseDataDir: path.resolve(args['base-data-dir'] || path.join(root, 'data')),
     outputDir: path.resolve(args['output-dir'] || args['input-dir'] || path.join(root, '.altea-google-sheet-sync-output')),
     deployDir: args['deploy-dir'] ? path.resolve(args['deploy-dir']) : '',
-    manifestPath: path.resolve(args.manifest || path.join(root, 'scripts', 'portal-layer-manifest.json')),
+    manifestPath: path.resolve(args.manifest || path.join(root, 'scripts', 'portal-truth-manifest.json')),
     expectedDate: dateKey(args['expected-date']) || dateDaysAgo(1),
     mirrorLocalFallback: Boolean(args['mirror-local-fallback'])
   };
+}
+
+function normalizeLayers(manifest) {
+  if (Array.isArray(manifest?.layers)) return manifest.layers;
+  return (Array.isArray(manifest?.sources) ? manifest.sources : []).map((source) => {
+    const maxAge = String(source.freshness || '').match(/^max-age-(\d+)d$/);
+    return {
+      name: source.key,
+      file: source.file,
+      publish: source.snapshot !== false,
+      required: Boolean(source.required),
+      freshnessPolicy: source.freshness === 'daily' || source.freshness === 'daily-build'
+        ? 'daily'
+        : (maxAge ? 'maxAge' : 'none'),
+      maxAgeDays: maxAge ? Number(maxAge[1]) : undefined,
+      sourceFreshness: source.freshness || 'none',
+      freshnessPaths: source.datePaths || []
+    };
+  });
 }
 
 function pickFreshness(payload, layer, stats) {
@@ -103,7 +122,9 @@ function pickFreshness(payload, layer, stats) {
 function inspectLayer(layer, options) {
   const sourceFile = layer.sourceFile || layer.file || `${layer.name}.json`;
   const deployFile = layer.file || sourceFile;
-  const sourcePath = path.join(options.inputDir, sourceFile);
+  const inputSourcePath = path.join(options.inputDir, sourceFile);
+  const baseSourcePath = path.join(options.baseDataDir, sourceFile);
+  const sourcePath = fs.existsSync(inputSourcePath) ? inputSourcePath : baseSourcePath;
   const deployPath = options.deployDir ? path.join(options.deployDir, 'data', deployFile) : '';
   const result = {
     name: layer.name,
@@ -112,6 +133,7 @@ function inspectLayer(layer, options) {
     required: Boolean(layer.required),
     publish: Boolean(layer.publish),
     freshnessPolicy: layer.freshnessPolicy || 'none',
+    sourceOrigin: fs.existsSync(inputSourcePath) ? 'input' : (fs.existsSync(baseSourcePath) ? 'base-fallback' : 'missing'),
     ok: true,
     warnings: [],
     blockingReasons: []
@@ -122,6 +144,16 @@ function inspectLayer(layer, options) {
     result.missing = true;
     result.blockingReasons.push(`Missing source file ${sourceFile}`);
     return result;
+  }
+
+  if (
+    path.resolve(options.inputDir) !== path.resolve(options.baseDataDir)
+    && result.sourceOrigin === 'base-fallback'
+    && layer.required
+    && ['daily', 'daily-build'].includes(layer.sourceFreshness || '')
+  ) {
+    result.ok = false;
+    result.blockingReasons.push(`Daily staging output is missing for ${sourceFile}; only the previous base snapshot is available`);
   }
 
   const stats = fs.statSync(sourcePath);
@@ -184,7 +216,7 @@ function writeJson(filePath, payload) {
 function main() {
   const options = resolveOptions(parseArgs(process.argv));
   const manifest = readJson(options.manifestPath);
-  const layers = (manifest.layers || []).filter((layer) => layer.publish !== false);
+  const layers = normalizeLayers(manifest).filter((layer) => layer.publish !== false);
   const inspected = layers.map((layer) => inspectLayer(layer, options));
   const blockingReasons = inspected.flatMap((layer) => layer.required ? layer.blockingReasons.map((reason) => `${layer.name}: ${reason}`) : []);
   const warnings = inspected.flatMap((layer) => layer.warnings.map((warning) => `${layer.name}: ${warning}`));

@@ -21,6 +21,20 @@ const paths = Array.isArray(inventory.paths) ? inventory.paths : [];
 if (inventory.protectedScopeExcluded !== false || !paths.includes('data/iu_drr_summary.json')) {
   fail('runtime snapshot inventory must publish the guarded IU/DRR summary after a full daily rebuild');
 }
+[
+  'data/portal_daily_intake.json',
+  'data/company_plan.json',
+  'data/seed_comments.json',
+  'data/launches.json',
+  'data/meetings.json',
+  'data/documents.json',
+  'data/iu_plan.json',
+  'data/loyalty_system.json'
+].forEach((requiredPath) => {
+  if (!paths.includes(requiredPath)) {
+    fail(`runtime snapshot inventory must include unified view source: ${requiredPath}`);
+  }
+});
 
 if (!workflow.includes("workflows: ['Portal data truth']") || !workflow.includes('types: [completed]')) {
   fail('daily close must auto-run after the Portal data truth workflow completes');
@@ -253,7 +267,7 @@ if (!workflow.includes("--expected-run-date '${{ steps.cutoff.outputs.run_date }
   'node scripts/build-portal-dashboard.js --input-dir data --output-dir data',
   'node scripts/build-control-auto-task-sources.js --input-dir data --output-dir data',
   'node scripts/build-wb-sales-funnel-from-platform-trends.js --platform-trends data/platform_trends.json --skus data/skus.json --wb-feedbacks data/wb_feedbacks_summary.json --output-file data/wb_sales_funnel_report.json',
-  'node scripts/portal-smart-price-overlay-sync.js sync --output-dir .portal-truth-output/price-sync',
+  'node scripts/portal-smart-price-overlay-sync.js sync',
   'node scripts/portal-wb-feedback-sync.js sync --input-dir data --base-data-dir data --output-dir data'
 ].forEach((command) => {
   if (!workflow.includes(command)) {
@@ -263,9 +277,21 @@ if (!workflow.includes("--expected-run-date '${{ steps.cutoff.outputs.run_date }
     fail(`${command} must run before daily layer guard`);
   }
 });
+[
+  "--output-dir .portal-truth-output/price-sync",
+  "--expected-date '${{ steps.cutoff.outputs.value }}'",
+  '--max-source-lag-days 3',
+  '--max-platform-gap-days 3',
+  '--min-latest-coverage-ratio 0.55'
+].forEach((argument) => {
+  if (!workflow.includes(argument)) {
+    fail(`daily price sync must include guarded argument: ${argument}`);
+  }
+});
 
 const iuBuildCommand = 'node scripts/build-iu-drr-summary.js --input-dir data --base-data-dir data --output-dir data';
 const fullHealthCommand = 'node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --expected-date';
+const unifiedIntakeCommand = 'node scripts/portal-unified-daily-intake.js';
 const snapshotFinalizeCommand = 'node scripts/portal-atomic-snapshot-finalize.js';
 if (workflow.indexOf(iuBuildCommand) < workflow.indexOf('node scripts/portal-wb-ads-sync.js sync')) {
   fail('daily close must rebuild IU/DRR after fresh advertising facts are loaded');
@@ -275,6 +301,18 @@ if (workflow.indexOf(fullHealthCommand) < workflow.indexOf(iuBuildCommand)) {
 }
 if (workflow.indexOf(fullHealthCommand) > workflow.indexOf(snapshotFinalizeCommand)) {
   fail('daily close must calculate full sync health before snapshot finalization');
+}
+if (!workflow.includes(unifiedIntakeCommand)) {
+  fail('daily close must run the unified intake guard for every registered portal view');
+}
+if (workflow.indexOf(unifiedIntakeCommand) < workflow.indexOf('node scripts/build-control-auto-task-sources.js')) {
+  fail('unified intake must run after all daily view sources are rebuilt');
+}
+if (workflow.indexOf(unifiedIntakeCommand) > workflow.lastIndexOf(fullHealthCommand)) {
+  fail('final sync health must consume the unified intake receipt');
+}
+if (workflow.indexOf(unifiedIntakeCommand) > workflow.indexOf('node scripts/portal-daily-layer-guard.js')) {
+  fail('unified intake must block before the numeric publish gate');
 }
 
 const yandexStockCommand = 'node scripts/portal-yandex-market-stock-sync.js sync';

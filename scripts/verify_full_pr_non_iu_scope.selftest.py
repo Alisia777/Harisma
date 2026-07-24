@@ -33,6 +33,25 @@ def main() -> int:
     assert violations({'data/portal_sync_health.json'}, report_patch)
     assert not violations({'data/portal_sync_health.json'}, report_patch, allow=True)
 
+    intake_patch = patch('data/portal_daily_intake.json', '"key": "iu-drr"')
+    assert violations({'data/portal_daily_intake.json'}, intake_patch)
+    assert not violations({'data/portal_daily_intake.json'}, intake_patch, allow=True)
+
+    registry_patch = patch('scripts/portal-truth-manifest.json', '"file": "iu_drr_summary.json"')
+    assert violations({'scripts/portal-truth-manifest.json'}, registry_patch)
+    assert not violations({'scripts/portal-truth-manifest.json'}, registry_patch, allow=True)
+
+    legacy_registry_patch = patch('scripts/portal-layer-manifest.json', '"name": "iu_drr_summary"')
+    assert violations({'scripts/portal-layer-manifest.json'}, legacy_registry_patch)
+    assert not violations({'scripts/portal-layer-manifest.json'}, legacy_registry_patch, allow=True)
+
+    fixture_patch = patch(
+        'scripts/portal-dashboard-navigation-recovery.selftest.js',
+        'iuDrrSummary: { daily: [] }',
+    )
+    assert violations({'scripts/portal-dashboard-navigation-recovery.selftest.js'}, fixture_patch)
+    assert not violations({'scripts/portal-dashboard-navigation-recovery.selftest.js'}, fixture_patch, allow=True)
+
     plan_patch = patch('data/iu_plan.json', '"iu_drr": 0.12')
     assert violations({'data/iu_plan.json'}, plan_patch, allow=True)
 

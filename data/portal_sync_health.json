@@ -1,14 +1,18 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-07-24T09:06:58.191Z",
+  "generatedAt": "2026-07-24T21:17:48.003Z",
   "status": "warning",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
     "warnings": [
+      "Unified daily intake: wb_substitution_traffic: snapshot age 53 exceeds 45 days.",
+      "Unified daily intake: wb_substitution_traffic_history: snapshot age 53 exceeds 45 days.",
+      "Unified daily intake: View iu-drr has warnings in: wb_substitution_traffic.",
+      "Unified daily intake: View product-leaderboard has warnings in: wb_substitution_traffic, wb_substitution_traffic_history.",
       "Unmapped API SKU revenue: 299363."
     ],
-    "checkedAt": "2026-07-24T09:06:58.191Z"
+    "checkedAt": "2026-07-24T21:17:48.003Z"
   },
   "freshness": {
     "maxDate": "2026-07-23",
@@ -17,7 +21,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-07-24T09:06:58.183Z",
+      "checkedAt": "2026-07-24T21:17:47.926Z",
       "settlementHour": 10,
       "expectedDate": "2026-07-23",
       "maxDate": "2026-07-23",
@@ -64,7 +68,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-07-24T09:06:58.190Z",
+      "checkedAt": "2026-07-24T21:17:47.995Z",
       "expectedDate": "2026-07-23",
       "adsSummaryWindowTo": "2026-07-23",
       "iuDrrWindowTo": "2026-07-23",
@@ -148,22 +152,29 @@
     "prices": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-24T08:50:36.415Z",
-      "asOfDate": "2026-07-24",
+      "generatedAt": "2026-07-23T21:55:56.585Z",
+      "asOfDate": "2026-07-23",
       "revenue": 0
     },
     "repricer": {
       "exists": true,
-      "rows": 213,
-      "generatedAt": "2026-07-24T08:50:36.415Z",
-      "asOfDate": "2026-07-24",
+      "rows": 218,
+      "generatedAt": "2026-07-23T21:55:56.585Z",
+      "asOfDate": "2026-07-23",
       "revenue": 0
     },
     "smart_price_overlay": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-24T08:50:36.415Z",
+      "generatedAt": "2026-07-23T21:55:56.585Z",
       "asOfDate": "2026-07-23",
+      "revenue": 0
+    },
+    "price_update_audit": {
+      "exists": true,
+      "rows": 1,
+      "generatedAt": "2026-07-24T21:16:55.518Z",
+      "asOfDate": "2026-07-24",
       "revenue": 0
     },
     "warehouse_stock_overlay": {
@@ -267,9 +278,17 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-07-24T09:06:57.240Z",
+      "generatedAt": "2026-07-24T09:06:58.182Z",
       "asOfDate": "2026-07-24",
       "revenue": 0
+    },
+    "portal_daily_intake": {
+      "exists": true,
+      "rows": 37,
+      "generatedAt": "2026-07-24T21:17:44.262Z",
+      "asOfDate": "2026-07-23",
+      "revenue": 0,
+      "status": "warning"
     },
     "sku_aliases": {
       "exists": true,
@@ -302,7 +321,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-24T09:06:57.250Z",
+      "generatedAt": "2026-07-24T09:06:58.191Z",
       "asOfDate": "2026-07-24",
       "revenue": 0
     }
@@ -512,6 +531,20 @@
       "rows": 1
     },
     {
+      "name": "required:portal_daily_intake",
+      "status": "ok",
+      "rows": 37
+    },
+    {
+      "name": "daily-intake:all-views",
+      "status": "warning",
+      "expectedDate": "2026-07-23",
+      "runDate": "2026-07-24",
+      "registeredViews": 19,
+      "blockedViews": 0,
+      "warningViews": 2
+    },
+    {
       "name": "sku-contour:aliases-present",
       "status": "ok",
       "message": "SKU alias snapshot is missing; resolved API SKU mappings may return to the queue."
@@ -556,6 +589,21 @@
       "name": "sku-contour:matrix-after-quality",
       "status": "ok",
       "message": "SKU matrix is aligned with portal_data_quality."
+    },
+    {
+      "name": "price-generation:published-audit",
+      "status": "ok",
+      "generationId": "prices-540cd1db900338665698",
+      "activeGenerationId": "prices-540cd1db900338665698"
+    },
+    {
+      "name": "price-generation:aligned-artifacts",
+      "status": "ok",
+      "generationIds": [
+        "prices-540cd1db900338665698",
+        "prices-540cd1db900338665698",
+        "prices-540cd1db900338665698"
+      ]
     },
     {
       "name": "freshness-completeness:wb",

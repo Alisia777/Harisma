@@ -1326,6 +1326,22 @@ try {
   Write-Warning "[sync] SKU matrix build failed, but the portal sync will continue: $($_.Exception.Message)"
 }
 
+$unifiedIntakeArguments = @(
+  "scripts/portal-unified-daily-intake.js",
+  "--data-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--expected-date",
+  $portalApiWindowTo
+)
+
+Write-Output "[sync] unified daily intake started"
+Invoke-NodeStep -StepName "unified daily intake" -Arguments $unifiedIntakeArguments -Attempts 1 -RetryDelaySeconds 10
+Write-Output "[sync] unified daily intake completed"
+
 $syncHealthArguments = @(
   "scripts/portal-sync-health.js",
   "--input-dir",
@@ -1352,7 +1368,7 @@ $layerAuditArguments = @(
   "--output-dir",
   $resolvedOutputDir,
   "--manifest",
-  "scripts/portal-layer-manifest.json",
+  "scripts/portal-truth-manifest.json",
   "--mirror-local-fallback"
 )
 
@@ -1542,6 +1558,9 @@ if (-not $publishAllowed) {
     Add-RetryStep -Id "full-sync" -Name "full portal sync retry after health block" -Message (($publishBlockReasons | Where-Object { $_ }) -join "; ")
   }
   $healthSnapshots = @("portal_sync_health")
+  if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_daily_intake.json")) {
+    $healthSnapshots += "portal_daily_intake"
+  }
   if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_data_quarantine.json")) {
     $healthSnapshots += "portal_data_quarantine"
   }
@@ -1633,6 +1652,10 @@ if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_data_quarantine
 
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_sync_health.json")) {
   $snapshotNames += "portal_sync_health"
+}
+
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_daily_intake.json")) {
+  $snapshotNames += "portal_daily_intake"
 }
 
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_layer_freshness.json")) {

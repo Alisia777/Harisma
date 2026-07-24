@@ -278,6 +278,9 @@ function sourceBuildDate(source, payload, options, sourceDir) {
     const meta = readJsonIfExists(path.join(sourceDir || options.dataDir, 'sku_registry_meta.json'), {});
     return buildTimestampDate(meta?.generatedAt);
   }
+  if (payload?.priceGeneration?.builtAt) {
+    return buildTimestampDate(payload.priceGeneration.builtAt);
+  }
   return buildTimestampDate(payload?.generatedAt || payload?.meta?.generatedAt || payload?.updatedAt);
 }
 

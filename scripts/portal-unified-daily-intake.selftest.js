@@ -148,6 +148,29 @@ try {
   const stalePriceBuild = run(options(base));
   assert.strictEqual(stalePriceBuild.publish.allowed, false);
   assert.ok(stalePriceBuild.publish.blockingReasons.some((reason) => reason.includes('build date 2026-07-23')));
+
+  writeJson(path.join(base.dataDir, 'prices.json'), {
+    generatedAt: '2026-07-06T06:17:17.001Z',
+    asOfDate: '2026-07-23',
+    priceGeneration: {
+      id: 'prices-selftest',
+      builtAt: '2026-07-24T11:36:16.718Z',
+      asOfDate: '2026-07-23',
+      artifact: 'prices'
+    },
+    rows: [{ id: 1 }]
+  });
+  const currentPriceGeneration = run(options(base));
+  assert.strictEqual(
+    currentPriceGeneration.publish.allowed,
+    true,
+    currentPriceGeneration.publish.blockingReasons.join('\n')
+  );
+  assert.strictEqual(
+    currentPriceGeneration.sources.find((source) => source.key === 'price_master').buildDate,
+    '2026-07-24'
+  );
+
   writeJson(path.join(base.dataDir, 'prices.json'), {
     generatedAt: '2026-07-23T21:55:56.585Z',
     asOfDate: '2026-07-23',

@@ -5,6 +5,7 @@ const assert = require('assert');
 const {
   buildPayload,
   buildSkuLookup,
+  campaignIdsFromPayload,
   parseArgs,
   resolveOptions
 } = require('./portal-yandex-market-price-sync');
@@ -53,6 +54,19 @@ const options = resolveOptions(args, { ALTEA_YM_API_KEY: 'test-key' });
 assert.deepStrictEqual(options.campaignIds, ['123']);
 assert.strictEqual(options.asOfDate, '2026-07-23');
 assert.strictEqual(options.minMappedRows, 2);
+
+assert.deepStrictEqual(campaignIdsFromPayload({
+  result: {
+    campaigns: [
+      { id: 101 },
+      { campaignId: '202' },
+      { id: 101 }
+    ]
+  }
+}), ['101', '202']);
+assert.deepStrictEqual(campaignIdsFromPayload({
+  campaigns: [{ id: '303' }]
+}), ['303']);
 
 const payload = buildPayload(options, [
   {

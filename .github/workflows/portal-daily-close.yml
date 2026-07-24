@@ -37,6 +37,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # A workflow_run event otherwise checks out the latest default branch,
+          # which can be newer than the exact revision that passed the truth gate.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
